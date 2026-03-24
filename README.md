@@ -1,6 +1,19 @@
 # Genesis 68K Static Recompiler
 
-A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries into native C code. This is a **tech demo with known bugs** — paired with the [SonicTheHedgehogRecomp](../SonicTheHedgehogRecomp/) runner, it boots Sonic 1 to the title screen, loads Green Hill Zone, and gameplay runs, but jumping doesn't work and audio is garbled.
+> **WARNING: This is an early prototype / work in progress.** It is not production-ready, not feature-complete, and has significant known bugs. The generated code works well enough to boot Sonic 1 and play Green Hill Zone, but core gameplay mechanics are broken. This repo is published for educational and archival purposes — expect rough edges everywhere.
+
+A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries into native C code. Paired with the [SonicTheHedgehogRecomp](../SonicTheHedgehogRecomp/) runner, the game boots to the title screen, loads Green Hill Zone, and gameplay runs — but **jumping doesn't work, audio is garbled, and several runtime hacks paper over timing issues** that a real Genesis handles naturally.
+
+## Status
+
+This project is in active development. What exists today is a proof of concept demonstrating that static recompilation of Genesis 68K ROMs is viable. Major unsolved problems remain:
+
+- The recompiler does not handle all 68K instructions or addressing modes
+- Interrupt timing (VBlank/HBlank) is approximate, not cycle-accurate
+- The runner requires 6 runtime workarounds to avoid crashes and state corruption
+- Only Sonic 1 has been tested — game-agnostic support is a future goal
+
+See [SonicTheHedgehogRecomp/STATUS.md](../SonicTheHedgehogRecomp/STATUS.md) for the full list of known bugs, workarounds, and failed approaches.
 
 ## What's In This Repo
 
@@ -9,7 +22,7 @@ A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries
 | `genesisrecomp/recompiler/` | The recompiler tool — analyzes a ROM binary and emits native C for every 68K subroutine |
 | `genesisrecomp/runner/` | Shared runtime headers (`genesis_runtime.h`, `game_extras.h`) used by both the recompiler output and the game runner |
 | `clownmdemu-core/` | [clownmdemu](https://github.com/Clownacy/clownmdemu) emulator core — provides VDP rendering, Z80/FM/PSG audio, and I/O |
-| `sonicthehedgehog/generated/` | Generated output for Sonic 1 — 337 native C functions (READ-ONLY) |
+| `sonicthehedgehog/generated/` | Generated output for Sonic 1 — 337 native C functions (**READ-ONLY**) |
 | `sonicthehedgehog/game.cfg` | Recompiler configuration — function entry points, yield hints, extra_func entries |
 
 ## How It Works
@@ -50,6 +63,6 @@ See **[SonicTheHedgehogRecomp](../SonicTheHedgehogRecomp/)** for build instructi
 | `genesisrecomp/recompiler/src/code_generator.c` | 103K | Main codegen engine — emits native C for 68K instructions |
 | `genesisrecomp/recompiler/src/m68k_decoder.c` | 35K | 68K instruction decoder |
 | `genesisrecomp/runner/include/genesis_runtime.h` | ~3K | Shared interface between generated code and runner |
-| `sonicthehedgehog/generated/sonic_full.c` | 4.3M | All 337 generated functions (READ-ONLY) |
-| `sonicthehedgehog/generated/sonic_dispatch.c` | 40K | Address-to-function dispatch table (READ-ONLY) |
+| `sonicthehedgehog/generated/sonic_full.c` | 4.3M | All 337 generated functions (**READ-ONLY**) |
+| `sonicthehedgehog/generated/sonic_dispatch.c` | 40K | Address-to-function dispatch table (**READ-ONLY**) |
 | `sonicthehedgehog/game.cfg` | ~380 lines | 337 extra_func entries + yield hints |
