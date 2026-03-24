@@ -1,0 +1,32 @@
+build/
+
+# Recompiler binary
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+
+# CMake / VS
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+.vs/
+*.user
+*.sln
+*.vcxproj
+*.vcxproj.filters
+
+# SDL2 extracted (fetched via CMake FetchContent or placed manually)
+runner/external/SDL2/
+
+# Test ROMs
+*.bin
+*.md
+*.gen
+
+# Debug output
+*.log
+*.sav

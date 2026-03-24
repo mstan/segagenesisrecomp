@@ -1,0 +1,581 @@
+#include "clownmdemu.h"
+
+#include <assert.h>
+#include <stddef.h>
+#include <string.h>
+
+#include "../libraries/clowncommon/clowncommon.h"
+#include "../libraries/clown68000/source/interpreter/clown68000.h"
+#include "../libraries/clownz80/source/interpreter.h"
+
+#include "bus-main-m68k.h"
+#include "bus-sub-m68k.h"
+#include "bus-z80.h"
+#include "fm.h"
+#include "log.h"
+#include "low-pass-filter.h"
+#include "psg.h"
+#include "vdp.h"
+
+#define MAX_ROM_SIZE (1024 * 1024 * 4) /* 4MiB */
+
+/* TODO: Merge this with the functions in 'cdc.c'. */
+static cc_u32f ClownMDEmu_U16sToU32(const cc_u16l* const u16s)
+{
+	return (cc_u32f)u16s[0] << 16 | u16s[1];
+}
+
+static void CDSectorTo68kRAM(const ClownMDEmu_Callbacks* const callbacks, cc_u16l* const ram)
+{
+	callbacks->cd_sector_read((void*)callbacks->user_data, ram);
+}
+
+static void CDSectorsTo68kRAM(const ClownMDEmu_Callbacks* const callbacks, cc_u16l* const ram, const cc_u32f start, const cc_u32f length)
+{
+	cc_u32f i;
+
+	callbacks->cd_seeked((void*)callbacks->user_data, start / CDC_SECTOR_SIZE);
+
+	for (i = 0; i < CC_DIVIDE_CEILING(length, CDC_SECTOR_SIZE); ++i)
+		CDSectorTo68kRAM(callbacks, &ram[i * CDC_SECTOR_SIZE / 2]);
+}
+
+void ClownMDEmu_Constant_Initialise(void)
+{
+	ClownZ80_Constant_Initialise();
+	VDP_Constant_Initialise();
+}
+
+static void ClownMDEmu_State_Initialise(ClownMDEmu* const clownmdemu)
+{
+	cc_u16f i;
+
+	ControllerManager_Initialise(&clownmdemu->controller_manager);
+	ClownZ80_State_Initialise(&clownmdemu->z80);
+	VDP_Initialise(&clownmdemu->vdp);
+	FM_Initialise(&clownmdemu->fm);
+	PSG_Initialise(&clownmdemu->psg);
+	CDC_Initialise(&clownmdemu->mega_cd.cdc);
+	CDDA_Initialise(&clownmdemu->mega_cd.cdda);
+	PCM_Initialise(&clownmdemu->mega_cd.pcm);
+
+	/* M68K */
+	/* A real console does not retain its RAM contents between games, as RAM
+	   is cleared when the console is powered-off.
+	   Failing to clear RAM causes issues with Sonic games and ROM-hacks,
+	   which skip initialisation when a certain magic number is found in RAM. */
+	memset(clownmdemu->state.m68k.ram, 0, sizeof(clownmdemu->state.m68k.ram));
+	clownmdemu->state.m68k.h_int_pending = clownmdemu->state.m68k.v_int_pending = cc_false;
+	clownmdemu->state.m68k.frozen_by_dma_transfer = cc_false;
+
+	/* Z80 */
+	memset(clownmdemu->state.z80.ram, 0, sizeof(clownmdemu->state.z80.ram));
+	clownmdemu->state.z80.cycle_countdown = 1;
+	clownmdemu->state.z80.bank = 0;
+	clownmdemu->state.z80.bus_requested = cc_false; /* This should be false, according to Charles MacDonald's gen-hw.txt. */
+	clownmdemu->state.z80.reset_held = cc_true;
+	clownmdemu->state.z80.frozen_by_dma_transfer = cc_false;
+
+	/* The standard Sega SDK bootcode uses this to detect soft-resets. */
+	for (i = 0; i < CC_COUNT_OF(clownmdemu->state.io_ports); ++i)
+		IOPort_Initialise(&clownmdemu->state.io_ports[i]);
+
+	/* Reset some external RAM state, but preserve the buffer so
+	   that external RAM is not cleared by hard resets. */
+	clownmdemu->state.external_ram.size = 0;
+	clownmdemu->state.external_ram.non_volatile = cc_false;
+	clownmdemu->state.external_ram.data_size = 0;
+	clownmdemu->state.external_ram.device_type = 0;
+	clownmdemu->state.external_ram.mapped_in = cc_false;
+
+	for (i = 0; i < CC_COUNT_OF(clownmdemu->state.cartridge_bankswitch); ++i)
+		clownmdemu->state.cartridge_bankswitch[i] = i;
+
+	clownmdemu->state.cartridge_inserted = cc_false;
+
+	clownmdemu->state.vdp_dma_transfer_countdown = 0;
+
+	/* Mega CD */
+	clownmdemu->state.mega_cd.m68k.bus_requested = cc_true;
+	clownmdemu->state.mega_cd.m68k.reset_held = cc_true;
+
+	clownmdemu->state.mega_cd.prg_ram.bank = 0;
+
+	clownmdemu->state.mega_cd.word_ram.in_1m_mode = cc_false;
+	/* Page 24 of MEGA-CD HARDWARE MANUAL confirms this. */
+	clownmdemu->state.mega_cd.word_ram.dmna = cc_false;
+	clownmdemu->state.mega_cd.word_ram.ret = cc_true;
+
+	clownmdemu->state.mega_cd.communication.flag = 0;
+
+	for (i = 0; i < CC_COUNT_OF(clownmdemu->state.mega_cd.communication.command); ++i)
+		clownmdemu->state.mega_cd.communication.command[i] = 0;
+
+	for (i = 0; i < CC_COUNT_OF(clownmdemu->state.mega_cd.communication.status); ++i)
+		clownmdemu->state.mega_cd.communication.status[i] = 0;
+	
+	for (i = 0; i < CC_COUNT_OF(clownmdemu->state.mega_cd.irq.enabled); ++i)
+		clownmdemu->state.mega_cd.irq.enabled[i] = cc_false;
+
+	clownmdemu->state.mega_cd.irq.irq1_pending = cc_false;
+	clownmdemu->state.mega_cd.irq.irq3_countdown_master = clownmdemu->state.mega_cd.irq.irq3_countdown = 0;
+
+	clownmdemu->state.mega_cd.rotation.large_stamp_map = cc_false;
+	clownmdemu->state.mega_cd.rotation.large_stamp = cc_false;
+	clownmdemu->state.mega_cd.rotation.repeating_stamp_map = cc_false;
+	clownmdemu->state.mega_cd.rotation.stamp_map_address = 0;
+	clownmdemu->state.mega_cd.rotation.image_buffer_address = 0;
+	clownmdemu->state.mega_cd.rotation.image_buffer_width = 0;
+	clownmdemu->state.mega_cd.rotation.image_buffer_height = 0;
+	clownmdemu->state.mega_cd.rotation.image_buffer_height_in_tiles = 0;
+	clownmdemu->state.mega_cd.rotation.image_buffer_x_offset = 0;
+	clownmdemu->state.mega_cd.rotation.image_buffer_y_offset = 0;
+
+	clownmdemu->state.mega_cd.cd_inserted = cc_false;
+	clownmdemu->state.mega_cd.hblank_address = 0xFFFF;
+	clownmdemu->state.mega_cd.delayed_dma_word = 0;
+
+	/* Low-pass filters. */
+	LowPassFilter_FirstOrder_Initialise(clownmdemu->state.low_pass_filters.fm, CC_COUNT_OF(clownmdemu->state.low_pass_filters.fm));
+	LowPassFilter_FirstOrder_Initialise(clownmdemu->state.low_pass_filters.psg, CC_COUNT_OF(clownmdemu->state.low_pass_filters.psg));
+	LowPassFilter_SecondOrder_Initialise(clownmdemu->state.low_pass_filters.pcm, CC_COUNT_OF(clownmdemu->state.low_pass_filters.pcm));
+}
+
+void ClownMDEmu_Initialise(ClownMDEmu* const clownmdemu, const ClownMDEmu_InitialConfiguration* const configuration, const ClownMDEmu_Callbacks* const callbacks)
+{
+	clownmdemu->callbacks = callbacks;
+	clownmdemu->cartridge_buffer = NULL;
+	clownmdemu->cartridge_buffer_length = 0;
+
+	clownmdemu->configuration = configuration->general;
+	clownmdemu->controller_manager.configuration = configuration->controller_manager;
+	clownmdemu->vdp.configuration = configuration->vdp;
+	clownmdemu->fm.configuration = configuration->fm;
+	clownmdemu->psg.configuration = configuration->psg;
+	clownmdemu->mega_cd.pcm.configuration = configuration->pcm;
+	clownmdemu->mega_cd.cdda.configuration = configuration->cdda;
+
+	ClownMDEmu_State_Initialise(clownmdemu);
+}
+
+/* Very useful H-Counter/V-Counter information:
+   https://gendev.spritesmind.net/forum/viewtopic.php?t=3058
+   https://gendev.spritesmind.net/forum/viewtopic.php?t=768 */
+
+#if 0
+static cc_u16f CyclesUntilHorizontalSync(const ClownMDEmu* const clownmdemu)
+{
+	const cc_u16f h32_divider = 5;
+
+	if (clownmdemu->vdp.state.h40_enabled)
+	{
+		const cc_u16f h40_divider = 4;
+	
+		const cc_u16f left_blanking   = VDP_CYCLES_H40_LEFT_BLANKING_1   * h32_divider
+		                              + VDP_CYCLES_H40_LEFT_BLANKING_2   * h40_divider;
+		const cc_u16f left_border     = VDP_CYCLES_H40_LEFT_BORDER       * h40_divider;
+		const cc_u16f active_display  = VDP_CYCLES_H40_ACTIVE_DISPLAY    * h40_divider;
+		const cc_u16f right_border    = VDP_CYCLES_H40_RIGHT_BORDER      * h40_divider;
+		const cc_u16f right_blanking  = VDP_CYCLES_H40_RIGHT_BLANKING    * h40_divider;
+	/*	const cc_u16f horizontal_sync = VDP_CYCLES_H40_HORIZONTAL_SYNC_1 * h32_divider
+		                              + VDP_CYCLES_H40_HORIZONTAL_SYNC_2 * h40_divider
+		                              + VDP_CYCLES_H40_HORIZONTAL_SYNC_3 * h32_divider
+		                              + VDP_CYCLES_H40_HORIZONTAL_SYNC_4 * h40_divider
+		                              + VDP_CYCLES_H40_HORIZONTAL_SYNC_5 * h32_divider
+		                              + VDP_CYCLES_H40_HORIZONTAL_SYNC_6 * h40_divider
+		                              + VDP_CYCLES_H40_HORIZONTAL_SYNC_7 * h32_divider;*/
+
+		return left_blanking + left_border + active_display + right_border + right_blanking;
+	}
+	else
+	{
+		const cc_u16f raster_line     = VDP_CYCLES_H32_PER_RASTER_LINE     * h32_divider;
+	/*	const cc_u16f horizontal_sync = VDP_CYCLES_H32_PER_HORIZONTAL_SYNC * h32_divider;*/
+
+		return raster_line;
+	}
+}
+#endif
+
+/*
+Nemesis' fantastic V-counter table (http://gendev.spritesmind.net/forum/viewtopic.php?p=35660#p35660):
+
+Analog screen sections in relation to VCounter:
+-------------------------------------------------------------------------------------------
+|           Video |NTSC             |NTSC             |PAL              |PAL              |
+|            Mode |H32/H40(RSx00/11)|H32/H40(RSx00/11)|H32/H40(RSx00/11)|H32/H40(RSx00/11)|
+|                 |V28     (M2=0)   |V30     (M2=1)   |V28     (M2=0)   |V30     (M2=1)   |
+|                 |Int none(LSMx=*0)|Int none(LSMx=*0)|Int none(LSMx=*0)|Int none(LSMx=*0)|
+|                 |------------------------------------------------------------------------
+|                 | VCounter  |Line | VCounter  |Line | VCounter  |Line | VCounter  |Line |
+| Screen section  |  value    |count|  value    |count|  value    |count|  value    |count|
+|-----------------|-----------|-----|-----------|-----|-----------|-----|-----------|-----|
+|Active display   |0x000-0x0DF| 224 |0x000-0x1FF| 240*|0x000-0x0DF| 224 |0x000-0x0EF| 240 |
+|-----------------|-----------|-----|-----------|-----|-----------|-----|-----------|-----|
+|Bottom border    |0x0E0-0x0E7|   8 |           |   0 |0x0E0-0x0FF|  32 |0x0F0-0x107|  24 |
+|-----------------|-----------|-----|-----------|-----|-----------|-----|-----------|-----|
+|Bottom blanking  |0x0E8-0x0EA|   3 |           |   0 |0x100-0x102|   3 |0x108-0x10A|   3 |
+|-----------------|-----------|-----|-----------|-----|-----------|-----|-----------|-----|
+|Vertical sync    |0x1E5-0x1E7|   3 |           |   0 |0x1CA-0x1CC|   3 |0x1D2-0x1D4|   3 |
+|-----------------|-----------|-----|-----------|-----|-----------|-----|-----------|-----|
+|Top blanking     |0x1E8-0x1F4|  13 |           |   0 |0x1CD-0x1D9|  13 |0x1D5-0x1E1|  13 |
+|-----------------|-----------|-----|-----------|-----|-----------|-----|-----------|-----|
+|Top border       |0x1F5-0x1FF|  11 |           |   0 |0x1DA-0x1FF|  38 |0x1E2-0x1FF|  30 |
+|-----------------|-----------|-----|-----------|-----|-----------|-----|-----------|-----|
+|TOTALS           |           | 262 |           | 240*|           | 313 |           | 313 |
+-------------------------------------------------------------------------------------------
+*/
+
+void ClownMDEmu_Iterate(ClownMDEmu* const clownmdemu)
+{
+	ClownMDEmu_State* const state = &clownmdemu->state;
+
+	const cc_u16f television_vertical_resolution = GetTelevisionVerticalResolution(clownmdemu);
+	const cc_u16f console_vertical_resolution = VDP_GetScreenHeightInTiles(&clownmdemu->vdp.state) * VDP_STANDARD_TILE_HEIGHT;
+	const CycleMegaDrive cycles_per_frame_mega_drive = GetMegaDriveCyclesPerFrame(clownmdemu);
+	const cc_u16f cycles_per_scanline = cycles_per_frame_mega_drive.cycle / television_vertical_resolution;
+	const CycleMegaCD cycles_per_frame_mega_cd = MakeCycleMegaCD(clownmdemu->configuration.tv_standard == CLOWNMDEMU_TV_STANDARD_PAL ? CLOWNMDEMU_DIVIDE_BY_PAL_FRAMERATE(CLOWNMDEMU_MCD_MASTER_CLOCK) : CLOWNMDEMU_DIVIDE_BY_NTSC_FRAMERATE(CLOWNMDEMU_MCD_MASTER_CLOCK));
+	const cc_u8f bottom_border = (television_vertical_resolution - console_vertical_resolution - VDP_LINES_BOTTOM_BLANKING - VDP_LINES_VERTICAL_SYNC - VDP_LINES_TOP_BLANKING) / 8 * 4;
+	const cc_u16l v_counter_jump = 0 - (television_vertical_resolution - console_vertical_resolution - VDP_LINES_BOTTOM_BLANKING - bottom_border);
+
+	CycleMegaDrive current_mega_drive_cycle = MakeCycleMegaDrive(0);
+	CPUCallbackUserData cpu_callback_user_data;
+	cc_u16f scanline;
+	cc_u8f h_int_counter;
+	cc_u8f i;
+
+	cpu_callback_user_data.clownmdemu = clownmdemu;
+	cpu_callback_user_data.sync.m68k.current_cycle = 0;
+	cpu_callback_user_data.sync.m68k.base_cycle = 0;
+	cpu_callback_user_data.sync.z80.current_cycle = 0;
+	/* TODO: This is awful; stop doing this. */
+	cpu_callback_user_data.sync.z80.cycle_countdown = &state->z80.cycle_countdown;
+	cpu_callback_user_data.sync.mcd_m68k.current_cycle = 0;
+	cpu_callback_user_data.sync.mcd_m68k.base_cycle = 0;
+	cpu_callback_user_data.sync.mcd_m68k_irq3.current_cycle = 0;
+	cpu_callback_user_data.sync.mcd_m68k_irq3.cycle_countdown = &state->mega_cd.irq.irq3_countdown;
+	cpu_callback_user_data.sync.vdp_dma_transfer.current_cycle = 0;
+	cpu_callback_user_data.sync.vdp_dma_transfer.cycle_countdown = &state->vdp_dma_transfer_countdown;
+	cpu_callback_user_data.sync.fm.current_cycle = 0;
+	cpu_callback_user_data.sync.psg.current_cycle = 0;
+	cpu_callback_user_data.sync.pcm.current_cycle = 0;
+	for (i = 0; i < CC_COUNT_OF(cpu_callback_user_data.sync.io_ports); ++i)
+		cpu_callback_user_data.sync.io_ports[i].current_cycle = 0;
+
+	/* We start at V-Int, to minimise input latency (games tend to read the control pads during V-Int). */;
+	state->current_scanline = console_vertical_resolution;
+
+	for (scanline = 0; scanline < television_vertical_resolution; ++scanline)
+	{
+		const cc_u16f v_counter = state->current_scanline;
+
+		if (v_counter < console_vertical_resolution)
+		{
+			/* Fire a H-Int if we've reached the requested line */
+			/* TODO: There is some strange behaviour surrounding how H-Int is asserted. */
+			/* https://gendev.spritesmind.net/forum/viewtopic.php?t=183 */
+			/* TODO: Timing info here: */
+			/* http://gendev.spritesmind.net/forum/viewtopic.php?p=8201#p8201 */
+			/* http://gendev.spritesmind.net/forum/viewtopic.php?p=8443#p8443 */
+			/* http://gendev.spritesmind.net/forum/viewtopic.php?t=3058 */
+			/* http://gendev.spritesmind.net/forum/viewtopic.php?t=519 */
+			if (h_int_counter-- == 0)
+			{
+				h_int_counter = clownmdemu->vdp.state.h_int_interval;
+
+				/* Do H-Int. */
+				state->m68k.h_int_pending = cc_true;
+				RaiseHorizontalInterruptIfNeeded(clownmdemu);
+			}
+
+			VDP_BeginScanline(&clownmdemu->vdp);
+
+			current_mega_drive_cycle.cycle += cycles_per_scanline / 2;
+			/* Sync the 68k, since it's the one thing that can influence the VDP. */
+			SyncM68k(clownmdemu, &cpu_callback_user_data, current_mega_drive_cycle);
+
+			/* Render in the middle of the scanline, since fancy homebrew may fiddle with the display-on register at the edges of the screen. */
+			/* Devon's 'ronald.gen' is one such example, disabling the display near H-counter 0xA0 (which is on-screen). */
+			if (clownmdemu->vdp.state.double_resolution_enabled)
+			{
+				VDP_EndScanline(&clownmdemu->vdp, v_counter * 2 + 0, clownmdemu->callbacks->scanline_rendered, clownmdemu->callbacks->user_data);
+				VDP_EndScanline(&clownmdemu->vdp, v_counter * 2 + 1, clownmdemu->callbacks->scanline_rendered, clownmdemu->callbacks->user_data);
+			}
+			else
+			{
+				VDP_EndScanline(&clownmdemu->vdp, v_counter, clownmdemu->callbacks->scanline_rendered, clownmdemu->callbacks->user_data);
+			}
+
+			current_mega_drive_cycle.cycle += cycles_per_scanline / 2;
+			SyncM68k(clownmdemu, &cpu_callback_user_data, current_mega_drive_cycle);
+		}
+		else
+		{
+			if (v_counter == (cc_u16l)-1)
+			{
+				clownmdemu->vdp.state.currently_in_vblank = cc_false;
+
+				/* Reload H-Int counter at the top of the screen, just like real hardware does. */
+				/* TODO: Try moving this to other scanlines, to see if any are more accurate. */
+				h_int_counter = clownmdemu->vdp.state.h_int_interval;
+			}
+			else if (v_counter == console_vertical_resolution)
+			{
+				clownmdemu->vdp.state.currently_in_vblank = cc_true;
+
+				/* Do V-Int. */
+				/* TODO: This SHOULD occur around H-scroll 0x1FF. */
+				state->m68k.v_int_pending = cc_true;
+				RaiseVerticalInterruptIfNeeded(clownmdemu);
+
+				/* According to Charles MacDonald's gen-hw.txt, this occurs regardless of the 'v_int_enabled' setting. */
+				SyncZ80(clownmdemu, &cpu_callback_user_data, current_mega_drive_cycle);
+				ClownZ80_Interrupt(&clownmdemu->z80, cc_true);
+			}
+			else if (v_counter == console_vertical_resolution + 1)
+			{
+				/* Assert the Z80 interrupt for a whole scanline. This has the side-effect of causing a second interrupt to occur if the handler exits quickly. */
+				/* TODO: According to Vladikcomper, this interrupt should be asserted for roughly 171 Z80 cycles. */
+				SyncZ80(clownmdemu, &cpu_callback_user_data, current_mega_drive_cycle);
+				ClownZ80_Interrupt(&clownmdemu->z80, cc_false);
+			}
+
+			current_mega_drive_cycle.cycle += cycles_per_scanline;
+			SyncM68k(clownmdemu, &cpu_callback_user_data, current_mega_drive_cycle);
+		}
+
+		++state->current_scanline;
+
+		if (state->current_scanline == console_vertical_resolution + bottom_border + VDP_LINES_BOTTOM_BLANKING)
+			state->current_scanline = v_counter_jump;
+	}
+
+	/* Update everything for the rest of the frame. */
+	SyncM68k(clownmdemu, &cpu_callback_user_data, cycles_per_frame_mega_drive);
+	SyncZ80(clownmdemu, &cpu_callback_user_data, cycles_per_frame_mega_drive);
+	SyncMCDM68k(clownmdemu, &cpu_callback_user_data, cycles_per_frame_mega_cd);
+	SyncFM(&cpu_callback_user_data, cycles_per_frame_mega_drive);
+	SyncPSG(&cpu_callback_user_data, cycles_per_frame_mega_drive);
+	SyncPCM(&cpu_callback_user_data, cycles_per_frame_mega_cd);
+	SyncCDDA(&cpu_callback_user_data, clownmdemu->configuration.tv_standard == CLOWNMDEMU_TV_STANDARD_PAL ? CLOWNMDEMU_DIVIDE_BY_PAL_FRAMERATE(44100) : CLOWNMDEMU_DIVIDE_BY_NTSC_FRAMERATE(44100));
+	for (i = 0; i < CC_COUNT_OF(cpu_callback_user_data.sync.io_ports); ++i)
+		SyncIOPort(&cpu_callback_user_data, cycles_per_frame_mega_drive, i);
+
+	/* Fire IRQ1 if needed. */
+	/* TODO: This is a hack. Look into when this interrupt should actually be done. */
+	if (state->mega_cd.irq.irq1_pending)
+	{
+		state->mega_cd.irq.irq1_pending = cc_false;
+		Clown68000_Interrupt(&clownmdemu->mega_cd.m68k, 1);
+	}
+
+	/* TODO: This should be done 75 times a second (in sync with the CDD interrupt), not 60! */
+	CDDA_UpdateFade(&clownmdemu->mega_cd.cdda);
+}
+
+static cc_u16f ReadCartridgeWord(const ClownMDEmu* const clownmdemu, const cc_u32f address)
+{
+	const cc_u32f address_word = address / 2;
+
+	if (address_word >= clownmdemu->cartridge_buffer_length)
+		return 0;
+
+	return clownmdemu->cartridge_buffer[address_word];
+}
+
+static cc_u32f ReadCartridgeLongWord(const ClownMDEmu* const clownmdemu, const cc_u32f address)
+{
+	cc_u32f longword;
+	longword = ReadCartridgeWord(clownmdemu, address + 0) << 16;
+	longword |= ReadCartridgeWord(clownmdemu, address + 2);
+	return longword;
+}
+
+static cc_u32f NextPowerOfTwo(cc_u32f v)
+{
+	/* https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2 */
+	v--;
+	v |= v >> 1;
+	v |= v >> 2;
+	v |= v >> 4;
+	v |= v >> 8;
+	v |= v >> 16;
+	v++;
+	return v;
+}
+
+static void SetUpExternalRAM(ClownMDEmu* const clownmdemu)
+{
+	ClownMDEmu_State* const state = &clownmdemu->state;
+
+	cc_u32f cartridge_base = 0;
+
+	/* If external RAM metadata cannot be found in the ROM header, search for it in the locked-on cartridge instead. */
+	/* This is needed for Sonic 3 & Knuckles to save data. */
+	if (ReadCartridgeWord(clownmdemu, 0x1B0) != ((cc_u16f)'R' << 8 | (cc_u16f)'A' << 0))
+		cartridge_base = ReadCartridgeLongWord(clownmdemu, 0x1D4) + 1;
+
+	if ((cartridge_base & 1) == 0 && ReadCartridgeWord(clownmdemu, cartridge_base + 0x1B0) == ((cc_u16f)'R' << 8 | (cc_u16f)'A' << 0))
+	{
+		const cc_u16f metadata = ReadCartridgeWord(clownmdemu, cartridge_base + 0x1B2);
+		const cc_u16f metadata_junk_bits = metadata & 0xA71F;
+		const cc_u32f start = ReadCartridgeLongWord(clownmdemu, cartridge_base + 0x1B4);
+		const cc_u32f end = ReadCartridgeLongWord(clownmdemu, cartridge_base + 0x1B8) + 1;
+		const cc_u32f size = NextPowerOfTwo(end - 0x200000);
+
+		state->external_ram.size = CC_COUNT_OF(state->external_ram.buffer);
+		state->external_ram.non_volatile = (metadata & 0x4000) != 0;
+		state->external_ram.data_size = (metadata >> 11) & 3;
+		state->external_ram.device_type = (metadata >> 5) & 7;
+		state->external_ram.mapped_in = clownmdemu->cartridge_buffer_length * sizeof(*clownmdemu->cartridge_buffer) <= 2 * 1024 * 1024; /* Cartridges larger than 2MiB need to map-in their external RAM explicitly. */
+		/* TODO: Prevent small cartridges from mapping external RAM out. */
+
+		if (metadata_junk_bits != 0xA000)
+			LogMessage("External RAM metadata data at cartridge address 0x1B2 has incorrect junk bits - should be 0xA000, but was 0x%" CC_PRIXFAST16, metadata_junk_bits);
+
+		if (state->external_ram.device_type != 1 && state->external_ram.device_type != 2)
+			LogMessage("Invalid external RAM device type - should be 1 or 2, but was %" CC_PRIXLEAST8, state->external_ram.device_type);
+
+		/* TODO: Add support for EEPROM. */
+		if (state->external_ram.data_size == 1 || state->external_ram.device_type == 2)
+			LogMessage("EEPROM external RAM is not yet supported - use SRAM instead");
+
+		/* TODO: Should we just disable SRAM in these events? */
+		/* TODO: SRAM should probably not be disabled in the first case, since the Sonic 1 disassembly makes this mistake by default. */
+		if (state->external_ram.data_size != 3 && start != 0x200000)
+		{
+			LogMessage("Invalid external RAM start address - should be 0x200000, but was 0x%" CC_PRIXFAST32, start);
+		}
+		else if (state->external_ram.data_size == 3 && start != 0x200001)
+		{
+			LogMessage("Invalid external RAM start address - should be 0x200001, but was 0x%" CC_PRIXFAST32, start);
+		}
+		else if (end < start)
+		{
+			LogMessage("Invalid external RAM end address - should be after start address but was before it instead");
+		}
+		else if (size > CC_COUNT_OF(state->external_ram.buffer))
+		{
+			LogMessage("External RAM is too large - must be 0x%" CC_PRIXFAST32 " bytes or less, but was 0x%" CC_PRIXFAST32, (cc_u32f)CC_COUNT_OF(state->external_ram.buffer), size);
+		}
+		else
+		{
+			state->external_ram.size = size;
+		}
+	}
+}
+
+void ClownMDEmu_SetCartridge(ClownMDEmu* const clownmdemu, const cc_u16l* const buffer, const cc_u32f buffer_length)
+{
+	clownmdemu->cartridge_buffer = buffer;
+	clownmdemu->cartridge_buffer_length = buffer_length;
+}
+
+void ClownMDEmu_SoftReset(ClownMDEmu* const clownmdemu, const cc_bool cartridge_inserted, const cc_bool cd_inserted)
+{
+	ClownMDEmu_State* const state = &clownmdemu->state;
+
+	Clown68000_ReadWriteCallbacks m68k_read_write_callbacks;
+	CPUCallbackUserData callback_user_data;
+
+	SetUpExternalRAM(clownmdemu);
+
+	state->cartridge_inserted = cartridge_inserted;
+	state->mega_cd.cd_inserted = cd_inserted;
+
+	if (!cartridge_inserted)
+	{
+		/* Boot from CD ("Mode 2"). */
+		cc_u32f ip_start, ip_length, sp_start, sp_length;
+		const cc_u16f boot_header_offset = 0x6000;
+		const cc_u16f ip_start_default = 0x200;
+		const cc_u16f ip_length_default = 0x600;
+		cc_u16l* const sector_words = &state->mega_cd.prg_ram.buffer[boot_header_offset / 2];
+		/*cc_u8l region;*/
+
+		/* Read first sector. */
+		clownmdemu->callbacks->cd_seeked((void*)clownmdemu->callbacks->user_data, 0);
+		clownmdemu->callbacks->cd_sector_read((void*)clownmdemu->callbacks->user_data, sector_words); /* Sega's BIOS reads to PRG-RAM too. */
+		ip_start = ClownMDEmu_U16sToU32(&sector_words[0x18]);
+		ip_length = ClownMDEmu_U16sToU32(&sector_words[0x1A]);
+		sp_start = ClownMDEmu_U16sToU32(&sector_words[0x20]);
+		sp_length = ClownMDEmu_U16sToU32(&sector_words[0x22]);
+		/*region = sector_bytes[0x1F0];*/
+
+		/* Don't allow overflowing the PRG-RAM array. */
+		sp_length = CC_MIN(CC_COUNT_OF(state->mega_cd.prg_ram.buffer) * 2 - boot_header_offset, sp_length);
+
+		/* Read Initial Program. */
+		memcpy(state->mega_cd.word_ram.buffer, &sector_words[ip_start_default / 2], ip_length_default);
+
+		/* Load additional Initial Program data if necessary. */
+		if (ip_start != ip_start_default || ip_length != ip_length_default)
+			CDSectorsTo68kRAM(clownmdemu->callbacks, &state->mega_cd.word_ram.buffer[ip_length_default / 2], ip_start, 32 * CDC_SECTOR_SIZE);
+
+		/* This is what Sega's BIOS does. */
+		memcpy(state->m68k.ram, state->mega_cd.word_ram.buffer, sizeof(state->m68k.ram) / 2);
+
+		/* Read Sub Program. */
+		CDSectorsTo68kRAM(clownmdemu->callbacks, &state->mega_cd.prg_ram.buffer[boot_header_offset / 2], sp_start, sp_length);
+
+		/* Give WORD-RAM to the SUB-CPU. */
+		state->mega_cd.word_ram.dmna = cc_false;
+		state->mega_cd.word_ram.ret = cc_false;
+	}
+
+	callback_user_data.clownmdemu = clownmdemu;
+
+	m68k_read_write_callbacks.user_data = &callback_user_data;
+
+	m68k_read_write_callbacks.read_callback = M68kReadCallback;
+	m68k_read_write_callbacks.write_callback = M68kWriteCallback;
+	Clown68000_Reset(&clownmdemu->m68k, &m68k_read_write_callbacks);
+
+	m68k_read_write_callbacks.read_callback = MCDM68kReadCallback;
+	m68k_read_write_callbacks.write_callback = MCDM68kWriteCallback;
+	Clown68000_Reset(&clownmdemu->mega_cd.m68k, &m68k_read_write_callbacks);
+}
+
+void ClownMDEmu_HardReset(ClownMDEmu* const clownmdemu, const cc_bool cartridge_inserted, const cc_bool cd_inserted)
+{
+	ClownMDEmu_State_Initialise(clownmdemu);
+	ClownMDEmu_SoftReset(clownmdemu, cartridge_inserted, cd_inserted);
+}
+
+void ClownMDEmu_SetLogCallback(const ClownMDEmu_LogCallback log_callback, const void* const user_data)
+{
+	SetLogCallback(log_callback, user_data);
+	Clown68000_SetErrorCallback(log_callback, user_data);
+}
+
+void ClownMDEmu_SaveState(const ClownMDEmu* const clownmdemu, ClownMDEmu_StateBackup* const backup)
+{
+	backup->general = clownmdemu->state;
+
+	backup->m68k = clownmdemu->m68k;
+	backup->z80 = clownmdemu->z80;
+	backup->vdp = clownmdemu->vdp.state;
+	backup->fm = clownmdemu->fm.state;
+	backup->psg = clownmdemu->psg.state;
+
+	backup->mega_cd.m68k = clownmdemu->mega_cd.m68k;
+	backup->mega_cd.cdc = clownmdemu->mega_cd.cdc;
+	backup->mega_cd.cdda = clownmdemu->mega_cd.cdda.state;
+	backup->mega_cd.pcm = clownmdemu->mega_cd.pcm.state;
+}
+
+void ClownMDEmu_LoadState(ClownMDEmu* const clownmdemu, const ClownMDEmu_StateBackup* const backup)
+{
+	clownmdemu->state = backup->general;
+
+	clownmdemu->m68k = backup->m68k;
+	clownmdemu->z80 = backup->z80;
+	clownmdemu->vdp.state = backup->vdp;
+	clownmdemu->fm.state = backup->fm;
+	clownmdemu->psg.state = backup->psg;
+
+	clownmdemu->mega_cd.m68k = backup->mega_cd.m68k;
+	clownmdemu->mega_cd.cdc = backup->mega_cd.cdc;
+	clownmdemu->mega_cd.cdda.state = backup->mega_cd.cdda;
+	clownmdemu->mega_cd.pcm.state = backup->mega_cd.pcm;
+}
