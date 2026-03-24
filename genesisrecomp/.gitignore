@@ -24,7 +24,6 @@ runner/external/SDL2/
 
 # Test ROMs
 *.bin
-*.md
 *.gen
 
 # Debug output
