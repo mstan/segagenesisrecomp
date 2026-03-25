@@ -22,9 +22,14 @@ Makefile
 # SDL2 extracted (fetched via CMake FetchContent or placed manually)
 runner/external/SDL2/
 
-# Test ROMs
+# Test ROMs and Mega Drive ROM extensions
 *.bin
 *.gen
+
+# Internal dev docs (not for publication)
+CLAUDE.md
+EXTRACTION.md
+PATTERNS.md
 
 # Debug output
 *.log

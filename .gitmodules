@@ -1,0 +1,3 @@
+[submodule "clownmdemu-core"]
+	path = clownmdemu-core
+	url = https://github.com/Clownacy/clownmdemu
