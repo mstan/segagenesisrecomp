@@ -13,7 +13,25 @@ This project is in active development. What exists today is a proof of concept d
 - The runner requires 6 runtime workarounds to avoid crashes and state corruption
 - Only Sonic 1 has been tested — game-agnostic support is a future goal
 
-See [SonicTheHedgehogRecomp/STATUS.md](../SonicTheHedgehogRecomp/STATUS.md) for the full list of known bugs, workarounds, and failed approaches.
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Rendering (VDP, sprites, tilemaps, scroll planes) | Works | |
+| SEGA logo + voice sample | Works | |
+| Title screen / menus | Works | |
+| All zones (GHZ and others via attract demo) | Works | |
+| Sonic movement (run, roll, slopes, loops, springs) | Works | |
+| Ring pickups | Works | |
+| Enemies, item monitors | Works | |
+| HUD (score, lives, rings, timer) | Works | |
+| Palette fades | Works | Was broken, fixed via register save/restore |
+| Function dispatch | Works | 337 discovered functions, zero misses so far. Undiscovered functions likely exist on untested code paths |
+| **Jumping** | **Broken** | No height — joypad timing offset causes yvel to be overwritten to 0 |
+| **Scattered rings (damage)** | **Broken** | Rings scatter visually when Sonic takes damage, but can't be picked back up |
+| **Audio** | **Partial** | "SEGA!" sample plays, music/SFX faintly audible but garbled. Z80/FM don't advance during game code |
+| **Some sprite art** | **Broken** | Flower tiles use wrong art (VRAM timing issue) |
+| **Boot sequence transitions** | **Broken** | SEGA -> Sonic Team Presents -> title -> level transitions too fast. In-game transitions work fine |
+
+See [SonicTheHedgehogRecomp/STATUS.md](../SonicTheHedgehogRecomp/STATUS.md) for runtime workarounds, architecture details, and failed approaches.
 
 ## What's In This Repo
 
@@ -66,3 +84,9 @@ See **[SonicTheHedgehogRecomp](../SonicTheHedgehogRecomp/)** for build instructi
 | `sonicthehedgehog/generated/sonic_full.c` | 4.3M | All 337 generated functions (**READ-ONLY**) |
 | `sonicthehedgehog/generated/sonic_dispatch.c` | 40K | Address-to-function dispatch table (**READ-ONLY**) |
 | `sonicthehedgehog/game.cfg` | ~380 lines | 337 extra_func entries + yield hints |
+
+## License
+
+[PolyForm Noncommercial 1.0.0](LICENSE.md) — free for non-commercial use. See [LICENSE.md](LICENSE.md) for details.
+
+Note: `clownmdemu-core/` is third-party code with its own license. See `clownmdemu-core/LICENCE.txt`.
