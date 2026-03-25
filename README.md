@@ -54,6 +54,20 @@ The game runner lives in a separate repo: **[SonicTheHedgehogRecomp](../SonicThe
 - Visual Studio 2022 (MSVC)
 - CMake 3.16+
 
+## Cloning
+
+This repo uses git submodules for [clownmdemu](https://github.com/Clownacy/clownmdemu). Clone with `--recursive`:
+
+```bash
+git clone --recursive <url>
+```
+
+Or if you already cloned without `--recursive`:
+
+```bash
+git submodule update --init --recursive
+```
+
 ## Building the Recompiler
 
 ```bash
