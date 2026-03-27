@@ -1,0 +1,614 @@
+# game.cfg — Sonic the Hedgehog (Sega Genesis/Mega Drive, 1991)
+# 68000, 512KB ROM, no SRAM, no mapper
+# CRC32 (JUE REV00): 0xF9394E97
+# Product serial: GM 00001009-00  (header $0180)
+# Internal checksum: $264A         (header $018E)
+# Revision: 00 (original JUE release)
+
+output_prefix sonic
+
+# Annotations: full s1disasm REV00 label set (~7300 entries)
+annotations annotations_from_disasm.csv
+
+# No bank switching — flat address space from $000000 to $07FFFF
+
+# ---------------------------------------------------------------------------
+# Extra function seeds — entry points not reachable via BSR/JSR static walk
+# Format: extra_func <hex_addr>
+
+# Interrupt vectors (from 68K vector table)
+extra_func 000206   # EntryPoint — initial PC ($000004)
+extra_func 000B10   # VBlank (IRQ level 6) — vector $000078
+extra_func 001126   # HBlank (IRQ level 4) — vector $000070
+
+# GameModeArray BRA.W stubs ($000396-$0003B2)
+# Needed so JSR GameModeArray(PC,D0.W) resolves via call_by_address
+extra_func 000396   # ptr_GM_Sega
+extra_func 00039A   # ptr_GM_Title
+extra_func 00039E   # ptr_GM_Demo
+extra_func 0003A2   # ptr_GM_Level
+extra_func 0003A6   # ptr_GM_Special
+extra_func 0003AA   # ptr_GM_Continue
+extra_func 0003AE   # ptr_GM_Ending
+extra_func 0003B2   # ptr_GM_Credits
+
+# Game mode handlers (dispatch target of above stubs)
+extra_func 002E10   # GM_Sega    — SEGA logo screen
+extra_func 002F18   # GM_Title   — title screen
+extra_func 0037A2   # GM_Level   — gameplay (demo + normal)
+extra_func 0045DC   # GM_Special — special stage
+extra_func 00491E   # GM_Special sub-handler (dispatch miss at frame 187)
+extra_func 004CE0   # GM_Continue
+extra_func 0050E6   # GM_Ending
+extra_func 0057C4   # GM_Credits
+
+# VBlank dispatch table routines (called via indexed pointer: VBla_Index → table)
+extra_func 000B5E   # VBla_Music
+extra_func 000B64   # VBla_Exit
+extra_func 000B6E   # VBla_Index
+extra_func 000B88   # VBla_00
+extra_func 000C32   # VBla_02
+extra_func 000C36   # VBla_14
+extra_func 000C44   # VBla_04
+extra_func 000C6E   # VBla_08
+extra_func 000D84   # VBla_UpdateScreen
+extra_func 000DA6   # VBla_0A
+extra_func 000E72   # VBla_0C / VBla_18
+extra_func 000F8A   # VBla_0E
+extra_func 000F9A   # VBla_12
+extra_func 000FA6   # VBla_16
+extra_func 00106E   # VBla_StandardTransfers
+
+# Nemesis decompressor (called via RAM pointer — not reachable via static JSR walk)
+extra_func 001440   # NemDec
+extra_func 00145C   # NemDecMain
+extra_func 00148A   # NemDec_ProcessCompressedData
+extra_func 0014C0   # NemPCD_ProcessCompressedData
+extra_func 0014C2   # NemPCD_WritePixel
+extra_func 0014D6   # NemPCD_InlineData
+extra_func 001502   # NemPCD_WriteRowToVDP
+extra_func 00150C   # NemPCD_WriteRowToVDP_XOR
+extra_func 001518   # NemPCD_WriteRowToRAM
+extra_func 001522   # NemPCD_WriteRowToRAM_XOR
+extra_func 00152E   # NemDec_BuildCodeTable
+
+# ---------------------------------------------------------------------------
+# Dispatch miss fixes — JMP table targets and indirect call targets
+# discovered at runtime in Step 2 mode.
+
+# Enigma decompressor jump table targets (EniDec_Index at $0017B4)
+extra_func 0017B4   # EniDec_Index
+extra_func 0017B6   # EniDec sub-handler
+extra_func 0017BA   # EniDec sub-handler
+extra_func 0017BC   # EniDec sub-handler
+extra_func 0017B8   # EniDec sub-handler
+extra_func 0017BE   # EniDec sub-handler
+extra_func 0017C0   # EniDec sub-handler
+extra_func 0017C2   # EniDec sub-handler
+
+# PaletteCycle JMP table targets (all zones)
+extra_func 00194E   # PalCycle_Index
+extra_func 001964   # PalCycle_GHZ
+extra_func 001992   # PalCycle_LZ
+extra_func 001A46   # PalCycle_SLZ
+extra_func 001A82   # PalCycle_SYZ
+extra_func 001AC8   # PalCycle_SBZ
+
+# Level-specific handlers — BgScroll, Deform, DLE, AniArt (all zones)
+extra_func 006216   # BgScroll_Index
+extra_func 006224   # BgScroll_GHZ
+extra_func 006228   # BgScroll_LZ
+extra_func 006232   # BgScroll_SLZ
+extra_func 00623E   # BgScroll_SYZ
+extra_func 006252   # BgScroll_SBZ
+extra_func 00625E   # BgScroll_End
+extra_func 0062DE   # Deform_Index
+extra_func 0062EC   # Deform_GHZ
+extra_func 006396   # Deform_LZ
+extra_func 0063D6   # Deform_MZ
+extra_func 00642E   # Deform_SLZ
+extra_func 0064A8   # Deform_SLZ_2
+extra_func 006506   # Deform_SYZ
+extra_func 006544   # Deform_SBZ
+extra_func 006DD0   # DLE_Index
+extra_func 006DDE   # DLE_GHZ
+extra_func 006DF4   # DLE_GHZ1
+extra_func 006E0A   # DLE_GHZ2
+extra_func 006E3C   # DLE_GHZ3
+extra_func 006E50   # DLE_GHZ3main
+extra_func 006EA4   # DLE_GHZ3boss
+extra_func 006EF2   # DLE_LZ
+extra_func 006F0C   # DLE_LZ3
+extra_func 006F66   # DLE_SBZ3
+extra_func 006F8E   # DLE_MZ
+extra_func 006FA4   # DLE_MZ1
+extra_func 007074   # DLE_MZ2
+extra_func 00708A   # DLE_MZ3
+extra_func 00709C   # DLE_MZ3boss
+extra_func 0070F2   # DLE_SLZ
+extra_func 00710A   # DLE_SLZ3
+extra_func 00711E   # DLE_SLZ3main
+extra_func 007132   # DLE_SLZ3boss
+extra_func 007168   # DLE_SYZ
+extra_func 007180   # DLE_SYZ2
+extra_func 0071A4   # DLE_SYZ3
+extra_func 0071B8   # DLE_SYZ3main
+extra_func 0071D0   # DLE_SYZ3boss
+extra_func 00720A   # DLE_SBZ
+extra_func 007220   # DLE_SBZ1
+extra_func 007244   # DLE_SBZ2
+extra_func 00725A   # DLE_SBZ2main
+extra_func 007278   # DLE_SBZ2boss (dispatch miss)
+extra_func 00727C   # DLE_SBZ2boss
+extra_func 00729A   # DLE_SBZ2boss2
+extra_func 0072B8   # DLE_SBZ2end
+extra_func 0072CA   # DLE_FZ
+extra_func 0072E2   # DLE_FZmain
+extra_func 0072F6   # DLE_FZboss
+extra_func 007A48   # level/object sub-handler (dispatch miss at frame 187)
+extra_func 01C046   # AniArt_Index
+extra_func 01C054   # AniArt_GHZ
+extra_func 01C08A   # AniArt_GHZ_Bigflower
+extra_func 01C0C0   # AniArt_GHZ_Smallflower
+extra_func 01C112   # AniArt_MZ
+extra_func 01C150   # AniArt_MZ_Magma
+extra_func 01C1AE   # AniArt_MZ_Torch
+extra_func 01C1EC   # AniArt_SBZ
+extra_func 01C2A2   # AniArt_Ending_BigFlower
+extra_func 01C2F4   # AniArt_Ending_SmallFlower
+extra_func 01C33C   # AniArt_Ending_Flower3
+extra_func 01C37A   # AniArt_Ending_Flower4
+extra_func 01C3B8   # LoadTiles (input)
+extra_func 01C3CE   # AniArt_MZextra
+extra_func 01C3EE   # AniArt sub-handler
+extra_func 01C434   # AniArt sub-handler
+extra_func 01C47C   # AniArt sub-handler
+extra_func 01C4C4   # AniArt sub-handler
+
+# Object handlers (called via object dispatch tables)
+extra_func 00A61C   # TitleSonic
+extra_func 00A632   # TSon_Main
+extra_func 00A69C   # PSBTM
+extra_func 00A666   # TSon_Delay
+extra_func 00A6B4   # PSB_Main
+extra_func 00C306   # TitleCard
+extra_func 00C31C   # Card_CheckSBZ3
+extra_func 017264   # CreditsText
+extra_func 017276   # Cred_Main
+extra_func 006FBA   # DLE_MZ sub-handler
+extra_func 00D8EC   # OPL_Main (object placement list)
+extra_func 00D980   # OPL_Next
+extra_func 012310   # Gargoyle object mapping
+
+# Sound driver — flag pointer targets
+extra_func 071F98   # ptr_flgE0 / Sound_ExIndex
+extra_func 071F9C   # ptr_flgE1
+extra_func 071FA8   # ptr_flgE4
+
+# Sound driver — CoordFlag jump table ($072A64) and sub-handlers
+extra_func 072A64   # coordflagLookup
+extra_func 072A68   # cfFlag sub-handler
+extra_func 072A6C   # cfFlag sub-handler
+extra_func 072A70   # cfFlag sub-handler
+extra_func 072A7C   # cfFlag sub-handler
+extra_func 072A80   # cfFlag sub-handler
+extra_func 072A84   # cfFlag sub-handler
+extra_func 072A88   # cfFlag sub-handler
+extra_func 072A94   # cfFlag sub-handler
+extra_func 072AA0   # cfFlag sub-handler
+extra_func 072AA4   # cfFlag sub-handler
+extra_func 072AAC   # cfFlag sub-handler
+extra_func 072AB0   # cfFlag sub-handler
+extra_func 072AB8   # cfFlag sub-handler
+extra_func 072ABC   # cfFlag sub-handler
+extra_func 072AC0   # cfFlag sub-handler
+extra_func 072AC4   # cfFlag sub-handler
+extra_func 072ACC   # cfPanningAMSFMS
+extra_func 072AD4   # cfFlag sub-handler
+extra_func 072AD8   # cfFlag sub-handler
+
+# ---------------------------------------------------------------------------
+
+# Step 2 dispatch misses — discovered at runtime
+extra_func 00A676   # object routine (sprite processing)
+extra_func 00C3B4   # object routine
+extra_func 072AB4   # sound driver sub-handler
+extra_func 00A68C   # object routine
+extra_func 00C3DA   # object routine
+extra_func 009B26   # object routine
+extra_func 00A118   # object routine
+extra_func 012BD8   # object routine
+extra_func 01C548   # object routine
+extra_func 009B5E   # object sub-entry
+extra_func 00A130   # object sub-entry
+extra_func 012BFC   # object sub-entry
+extra_func 01C55A   # object sub-entry
+
+# VBlank wait function — emit glue_yield_for_vblank() instead of spin loop
+vblank_yield 0029A8
+extra_func 009C16   # round 1
+extra_func 00A192   # round 1
+extra_func 012C3E   # round 1
+extra_func 012E18   # round 1
+extra_func 01C584   # round 1
+extra_func 012E86   # round 2
+extra_func 007E32
+extra_func 0094F0
+extra_func 00DABE
+extra_func 00E90C
+extra_func 010286
+extra_func 01B984
+extra_func 072A78
+extra_func 00F61A
+extra_func 0097DE
+extra_func 0087CA
+extra_func 007E4A
+extra_func 009508
+extra_func 00DB08
+extra_func 00E91E
+extra_func 0102A8
+extra_func 01B9A8
+extra_func 007ED6
+extra_func 007F9E
+extra_func 00955C
+extra_func 00DBEA
+extra_func 00E942
+extra_func 01037C
+extra_func 00957C
+extra_func 01B9E4
+extra_func 01BA2E
+extra_func 00961A
+extra_func 01B508
+extra_func 01B59E
+extra_func 01BA20
+extra_func 01B538
+extra_func 01B614
+extra_func 01BBE0
+extra_func 072A74
+extra_func 00F630
+extra_func 00DB7E
+extra_func 0097F2
+extra_func 0087DC
+extra_func 00AB20
+extra_func 00D0BE
+extra_func 007328
+extra_func 012E3C
+extra_func 00F694
+extra_func 00983C
+extra_func 00981C
+extra_func 00880C
+extra_func 00AB36
+extra_func 007342
+extra_func 013862
+extra_func 00F6E8
+extra_func 0098D2
+extra_func 013902
+extra_func 00F70C
+extra_func 012E66
+extra_func 006304
+extra_func 0070D0
+extra_func 009316
+extra_func 00D2F2
+extra_func 0059EA
+
+# Gameplay object routines (dispatch misses from GHZ playthrough 2026-03-23)
+extra_func 00F77E   # Moto_Delete
+extra_func 008D62   # ExplosionItem
+extra_func 00AB6C   # Chop_ChgSpeed
+extra_func 00D0DA   # WSnd_PlaySnd
+extra_func 007404   # Bri_Action (bridge)
+extra_func 009932   # Missile
+extra_func 008D76   # ExItem_Animal
+extra_func 00994A   # Msl_Main
+extra_func 007588   # Bri_Platform
+extra_func 008F22   # Animals
+extra_func 008DD8   # ExItem_Animate
+extra_func 009994   # Msl_Animate
+extra_func 009C3E   # Ring_Collect
+extra_func 009C64   # Ring_Sparkle
+extra_func 009C72   # Ring_Delete
+extra_func 00B334   # (unlabeled)
+extra_func 072A9C   # (unlabeled, high ROM)
+extra_func 00BB34   # (unlabeled)
+extra_func 00D050   # PurpleRock
+extra_func 00900C   # Anml_Ending
+extra_func 0099B2   # Msl_FromBuzz
+extra_func 00D062   # Rock_Main
+
+# Attract demo dispatch misses (2026-03-23)
+extra_func 009CB6   # RingLoss
+extra_func 00AEB8   # LargeGrass
+extra_func 00F1B8   # LavaTag
+extra_func 0137F2   # Obj01_Hurt
+extra_func 016934   # Caterkiller
+extra_func 01C3FA   # AnimGfx entry
+extra_func 01C410   # AnimGfx entry
+extra_func 01C41E   # AnimGfx entry
+extra_func 01C442   # AnimGfx entry
+extra_func 01C458   # AnimGfx entry
+extra_func 01C466   # AnimGfx entry
+extra_func 01C48A   # AnimGfx entry
+extra_func 01C4A0   # AnimGfx entry
+extra_func 01C4AE   # AnimGfx entry
+extra_func 01C4D2   # AnimGfx entry
+extra_func 01C4E8   # AnimGfx entry
+extra_func 01C4FA   # AnimGfx entry
+extra_func 009412   # Points
+extra_func 00912A   # loc_912A
+extra_func 00D086   # Rock_Solid
+extra_func 0096BE   # Crab_BallMain
+extra_func 009428   # Poi_Main (points)
+extra_func 0091C0   # loc_91C0
+extra_func 0096F4   # Crab_BallMove
+extra_func 009452   # Poi_Slower
+extra_func 009CCE   # RLoss_Count
+extra_func 009D8E   # RLoss_Bounce
+
+# Dispatch misses ingested from C:/Users/Matthew/dispatch_misses.log
+extra_func 0x009184
+extra_func 0x009DE0
+extra_func 0x00CE28
+extra_func 0x00E1D4
+
+# Dispatch misses ingested from dispatch_misses.log
+extra_func 0x007F76
+extra_func 0x007F86
+extra_func 0x007FBC
+extra_func 0x007FCC
+extra_func 0x007FE4
+extra_func 0x008210
+extra_func 0x00AED6
+extra_func 0x00CE46
+extra_func 0x00DD68
+extra_func 0x00DFFA
+extra_func 0x00E1E8
+extra_func 0x00E296
+extra_func 0x00E9D0
+extra_func 0x00F1CE
+extra_func 0x010422
+extra_func 0x016952
+extra_func 0x016E2E
+extra_func 0x072AC8
+
+# Dispatch misses ingested from dispatch_misses.log
+extra_func 0x00822A
+extra_func 0x009DF4
+extra_func 0x00AF34
+extra_func 0x00AFC0
+extra_func 0x00AFCA
+extra_func 0x00CE90
+extra_func 0x00DBDE
+extra_func 0x00DC76
+extra_func 0x00DD7C
+extra_func 0x00E00C
+extra_func 0x00E220
+extra_func 0x00E2B2
+extra_func 0x00E9E2
+extra_func 0x00F1EC
+extra_func 0x016A40
+extra_func 0x016ACE
+extra_func 0x016B98
+extra_func 0x016BCA
+extra_func 0x016E4A
+
+# Dispatch misses ingested from dispatch_misses.log
+extra_func 0x008266
+extra_func 0x00DDAC
+extra_func 0x00DDD2
+extra_func 0x00E054
+extra_func 0x00E2D2
+extra_func 0x00EA0C
+extra_func 0x016B02
+extra_func 0x016CC0
+extra_func 0x016EAE
+
+# Dispatch misses ingested from F:\Projects\segagenesisrecomp-v2\sonicthehedgehog\dispatch_misses.log
+extra_func 0x006FEA
+extra_func 0x008076
+extra_func 0x00A2A4
+extra_func 0x00AFD4
+extra_func 0x00AFFE
+extra_func 0x00B39E
+extra_func 0x00B67C
+extra_func 0x00BD2E
+extra_func 0x00BED2
+extra_func 0x00CF5E
+extra_func 0x00CF72
+extra_func 0x00DE14
+extra_func 0x00DEAE
+extra_func 0x00E0AC
+extra_func 0x00E304
+extra_func 0x00E7D0
+extra_func 0x00FDF8
+extra_func 0x0100A8
+extra_func 0x010976
+extra_func 0x01141A
+extra_func 0x016AC4
+extra_func 0x016F94
+
+# Dispatch misses ingested from F:\Projects\segagenesisrecomp-v2\sonicthehedgehog\dispatch_misses.log
+extra_func 0x00B1DC
+extra_func 0x00B3E8
+extra_func 0x00B6B2
+extra_func 0x00BD40
+extra_func 0x00BEEA
+extra_func 0x00E32E
+extra_func 0x00E7E2
+extra_func 0x0100BA
+extra_func 0x01142C
+
+# Dispatch misses ingested from F:\Projects\segagenesisrecomp-v2\sonicthehedgehog\dispatch_misses.log
+extra_func 0x00B1F0
+extra_func 0x00B48C
+extra_func 0x00B4A4
+extra_func 0x00B4FE
+extra_func 0x00B508
+extra_func 0x00B798
+extra_func 0x00B7E2
+extra_func 0x00B7FE
+extra_func 0x00B810
+extra_func 0x00B854
+extra_func 0x00BD76
+extra_func 0x00BF6E
+extra_func 0x00E3BA
+extra_func 0x00E40A
+extra_func 0x00E81E
+extra_func 0x0100EA
+extra_func 0x01010E
+extra_func 0x011464
+
+# Dispatch misses ingested from F:\Projects\segagenesisrecomp-v2\sonicthehedgehog\dispatch_misses.log
+extra_func 0x00B238
+extra_func 0x00E4C0
+
+# Dispatch misses ingested from dispatch_misses.log
+extra_func 0x00828A
+extra_func 0x00DE88
+
+# Dispatch misses ingested from dispatch_misses.log
+extra_func 0x00C4B8
+
+# Dispatch misses ingested from dispatch_misses.log
+extra_func 0x007EFA
+extra_func 0x0082BA
+extra_func 0x008D98
+extra_func 0x009E06
+extra_func 0x00A302
+extra_func 0x00EB28
+extra_func 0x01715E
+
+# Dispatch misses ingested from F:/Projects/segagenesisrecomp/sonicthehedgehog/dispatch_misses.log
+extra_func 0x00A31A
+extra_func 0x00C4CC
+
+# Dispatch misses ingested from dispatch_misses.log
+extra_func 0x0099FE
+extra_func 0x009E1C
+extra_func 0x00A35A
+extra_func 0x00EB6E
+extra_func 0x017170
+
+# Dispatch misses ingested from dispatch_misses.log
+extra_func 0x009E66
+extra_func 0x00A484
+extra_func 0x00EB92
+
+# Dispatch misses ingested from dispatch_misses.log
+extra_func 0x005328
+extra_func 0x00C7AE
+extra_func 0x00EBBC
+extra_func 0x01721A
+extra_func 0x12806606
+extra_func 0x6A22117C
+extra_func 0x014158
+extra_func 0x00DF16
+extra_func 0x00EC54
+extra_func 0x01416C
+extra_func 0x009E8E
+extra_func 0x00C572
+extra_func 0x009ED6
+extra_func 0x00C592
+extra_func 0x0141DC
+extra_func 0x009EEA
+extra_func 0x00C5EA
+extra_func 0x009F14
+extra_func 0x00A280
+extra_func 0x00C634
+extra_func 0x009F86
+extra_func 0x00C642
+extra_func 0x00C6AE
+extra_func 0x00C7D2
+extra_func 0x00C846
+extra_func 0x00C884
+extra_func 0x00C892
+extra_func 0x00C956
+extra_func 0x00C974
+extra_func 0x00D11C
+extra_func 0x00D134
+extra_func 0x00D15E
+extra_func 0x00C9CC
+extra_func 0x01B5D4
+extra_func 0x00C8F6
+extra_func 0x00C91A
+extra_func 0x00702E
+extra_func 0x007952
+extra_func 0x00796E
+extra_func 0x007ADC
+extra_func 0x007B7A
+extra_func 0x007BBA
+extra_func 0x007C44
+extra_func 0x007CA2
+extra_func 0x007CBA
+extra_func 0x007D7C
+extra_func 0x007D88
+extra_func 0x0080BA
+extra_func 0x008DF6
+extra_func 0x008E08
+extra_func 0x009240
+extra_func 0x00EC8A
+extra_func 0x017700
+extra_func 0x01771C
+extra_func 0x01778A
+extra_func 0x0177CA
+extra_func 0x017860
+extra_func 0x0178A4
+extra_func 0x0178CA
+extra_func 0x01791A
+extra_func 0x017954
+extra_func 0x01797A
+extra_func 0x0179AC
+extra_func 0x0179F6
+extra_func 0x017A24
+extra_func 0x017A76
+extra_func 0x017AE4
+extra_func 0x017AFC
+extra_func 0x017BB8
+extra_func 0x017C1A
+extra_func 0x017C2A
+extra_func 0x017C68
+extra_func 0x017C84
+extra_func 0x01AB22
+extra_func 0x01AB78
+extra_func 0x01ABC2
+extra_func 0x01ABFE
+extra_func 0x01AC62
+extra_func 0x01ACFA
+extra_func 0x01AD4A
+extra_func 0x006490
+extra_func 0x006492
+extra_func 0x00649A
+extra_func 0x00649C
+extra_func 0x007050
+extra_func 0x007AF8
+extra_func 0x007E2A
+extra_func 0x00A046
+extra_func 0x007314
+extra_func 0x018230
+extra_func 0x0188B8
+extra_func 0x019832
+extra_func 0x019B60
+extra_func 0x001A44
+extra_func 0x006230
+extra_func 0x006DAA
+extra_func 0x006F0A
+extra_func 0x007108
+extra_func 0x00717E
+extra_func 0x007322
+extra_func 0x007F74
+extra_func 0x00856E
+extra_func 0x00A6F8
+extra_func 0x00AFBE
+extra_func 0x00CF5C
+extra_func 0x00ED1A
+extra_func 0x0103F2
+extra_func 0x016F92
+extra_func 0x01C3B6
+extra_func 0x000C5E
+extra_func 0x00195C
+extra_func 0x00792E
+extra_func 0x007DF0
+extra_func 0x00A276
+extra_func 0x00A6FA
+extra_func 0x00DBD4
+extra_func 0x00DC6C
+extra_func 0x00DEA8

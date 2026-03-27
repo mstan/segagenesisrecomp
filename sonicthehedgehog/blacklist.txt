@@ -1,0 +1,66 @@
+# Addresses that must NOT be added to game.cfg as extra_func.
+# These are interior labels or data addresses that break the
+# recompiler when treated as function entry points.
+#
+# Format: one hex address per line (with or without 0x prefix)
+# Lines starting with # are comments.
+
+0077B8  # Interior label — causes black screen when compiled as function entry
+007D90  # Interior of Hel_RotateSpikes — splits rotation logic
+000C64  # audit: interior label split
+000F82  # audit: interior label split
+001452  # audit: interior label split
+0014CC  # audit: interior label split
+0014D0  # audit: interior label split
+006488  # audit: interior label split
+00648C  # audit: interior label split
+006DEE  # audit: interior label split
+006EEA  # audit: interior label split
+006F02  # audit: interior label split
+006F9E  # audit: interior label split
+0070EA  # audit: interior label split
+007102  # audit: interior label split
+00715E  # audit: interior label split
+007178  # audit: interior label split
+007202  # audit: interior label split
+00721A  # audit: interior label split
+00AB34  # audit: interior label split
+00C8EC  # audit: interior label split
+00D0D0  # audit: interior label split
+01C106  # audit: interior label split
+072ADC  # audit: interior label split
+072AE0  # audit: interior label split
+
+# Auto-discovered by recompiler static analysis — falls off end (truncates parent)
+00194E  # interior split, falls off end
+006DD0  # interior split, falls off end
+00B334  # interior split, 171 lines orphaned code
+01C046  # interior split, falls off end
+01C3CE  # interior split, falls off end
+00489C  # interior split, 167 lines orphaned code
+
+# Auto-discovered — bare RTS (splits preceding function)
+0016DA  # bare RTS split
+001A44  # bare RTS split
+006230  # bare RTS split
+006DAA  # bare RTS split
+006F0A  # bare RTS split
+0070E8  # bare RTS split
+007108  # bare RTS split
+00717E  # bare RTS split
+00727A  # bare RTS split
+00751E  # bare RTS split
+007F74  # bare RTS split
+00856E  # bare RTS split
+00A6F8  # bare RTS split
+00AFBE  # bare RTS split
+00CF5C  # bare RTS split
+0103F2  # bare RTS split
+013A20  # bare RTS split
+0146E6  # bare RTS split
+01470A  # bare RTS split
+014C4C  # bare RTS split
+016950  # bare RTS split
+016F92  # bare RTS split
+01BB9A  # bare RTS split
+01C3B6  # bare RTS split

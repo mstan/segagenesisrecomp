@@ -74,9 +74,11 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
             add_function(list, handler);
     }
 
-    /* Seeds from game.cfg extra_func entries */
-    for (int i = 0; i < cfg->extra_func_count; i++)
-        add_function(list, cfg->extra_funcs[i]);
+    /* Seeds from game.cfg extra_func entries (skip blacklisted) */
+    for (int i = 0; i < cfg->extra_func_count; i++) {
+        if (!game_config_is_blacklisted(cfg, cfg->extra_funcs[i]))
+            add_function(list, cfg->extra_funcs[i]);
+    }
 
     /* Walk loop */
     while (s_work_top > 0) {

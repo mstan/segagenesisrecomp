@@ -89,6 +89,42 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                 fclose(ef);
             }
         }
+        else if (strcmp(key, "blacklist") == 0 && n >= 2) {
+            if (cfg->blacklist_count < MAX_BLACKLIST)
+                cfg->blacklist[cfg->blacklist_count++] =
+                    (uint32_t)strtoul(val1, NULL, 16);
+        }
+        else if (strcmp(key, "blacklist_file") == 0 && n >= 2) {
+            /* Load blacklist from external file (one hex addr per line, # comments) */
+            char bl_path[512] = {0};
+            const char *slash2 = strrchr(path, '/');
+            const char *bslash2 = strrchr(path, '\\');
+            const char *sep2 = slash2 > bslash2 ? slash2 : bslash2;
+            if (sep2) {
+                int dir_len = (int)(sep2 - path) + 1;
+                snprintf(bl_path, sizeof(bl_path), "%.*s%s", dir_len, path, val1);
+            } else {
+                strncpy(bl_path, val1, sizeof(bl_path) - 1);
+            }
+            FILE *bf = fopen(bl_path, "r");
+            if (!bf) {
+                fprintf(stderr, "game_config: cannot open blacklist_file '%s'\n", bl_path);
+            } else {
+                char bf_line[256];
+                while (fgets(bf_line, sizeof(bf_line), bf)) {
+                    if (bf_line[0] == '#' || bf_line[0] == '\n' || bf_line[0] == '\r') continue;
+                    char baddr[32] = {0};
+                    if (sscanf(bf_line, "%31s", baddr) == 1 && baddr[0] != '#') {
+                        if (cfg->blacklist_count < MAX_BLACKLIST)
+                            cfg->blacklist[cfg->blacklist_count++] =
+                                (uint32_t)strtoul(baddr, NULL, 16);
+                    }
+                }
+                fclose(bf);
+                fprintf(stderr, "game_config: loaded %d blacklist entries from '%s'\n",
+                        cfg->blacklist_count, bl_path);
+            }
+        }
         else if (strcmp(key, "vblank_yield") == 0 && n >= 2) {
             cfg->vblank_yield_addr = (uint32_t)strtoul(val1, NULL, 16);
         }
@@ -99,5 +135,16 @@ bool game_config_load(GameConfig *cfg, const char *path) {
     }
 
     fclose(f);
+
+    if (cfg->blacklist_count > 0)
+        printf("[GameConfig] %d blacklisted addresses loaded\n", cfg->blacklist_count);
+
     return true;
+}
+
+bool game_config_is_blacklisted(const GameConfig *cfg, uint32_t addr) {
+    for (int i = 0; i < cfg->blacklist_count; i++)
+        if (cfg->blacklist[i] == addr)
+            return true;
+    return false;
 }

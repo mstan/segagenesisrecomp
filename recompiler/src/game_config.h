@@ -7,6 +7,7 @@
 
 #define MAX_JUMP_TABLES  256
 #define MAX_EXTRA_FUNCS  8192
+#define MAX_BLACKLIST    1024
 
 typedef struct {
     uint32_t start_addr;
@@ -20,8 +21,13 @@ typedef struct {
     int            jump_table_count;
     uint32_t       extra_funcs[MAX_EXTRA_FUNCS];
     int            extra_func_count;
+    uint32_t       blacklist[MAX_BLACKLIST];
+    int            blacklist_count;
     uint32_t       vblank_yield_addr;   /* 0 = not set; emit glue_yield_for_vblank() for this function */
 } GameConfig;
+
+/* Returns true if addr is in the blacklist */
+bool game_config_is_blacklisted(const GameConfig *cfg, uint32_t addr);
 
 void game_config_init_empty(GameConfig *cfg);
 bool game_config_load(GameConfig *cfg, const char *path);
