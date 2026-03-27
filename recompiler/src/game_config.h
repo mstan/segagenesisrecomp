@@ -17,6 +17,7 @@ typedef struct {
 typedef struct {
     char           output_prefix[64];
     char           annotations_path[256];
+    char           symbols_path[256];       /* TOML symbols file (replaces extra_func) */
     JumpTableEntry jump_tables[MAX_JUMP_TABLES];
     int            jump_table_count;
     uint32_t       extra_funcs[MAX_EXTRA_FUNCS];

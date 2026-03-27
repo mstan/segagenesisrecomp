@@ -6,6 +6,7 @@
  *   jump_table <start> <end>    — address range of an indexed jump table
  *   extra_func <hex_addr>       — additional function entry point seeds
  *   extra_func_file <path>      — file of extra_func lines (relative to cfg)
+ *   symbols_file <path>         — TOML symbols file with function definitions
  *   annotations <path>          — path to the annotations CSV file
  *
  * Lines beginning with '#' are comments.
@@ -15,6 +16,69 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* Resolve a relative path against a base file's directory */
+static void resolve_path(const char *base, const char *rel, char *out, int out_size) {
+    const char *slash  = strrchr(base, '/');
+    const char *bslash = strrchr(base, '\\');
+    const char *sep    = slash > bslash ? slash : bslash;
+    if (sep) {
+        int dir_len = (int)(sep - base) + 1;
+        snprintf(out, out_size, "%.*s%s", dir_len, base, rel);
+    } else {
+        strncpy(out, rel, out_size - 1);
+        out[out_size - 1] = '\0';
+    }
+}
+
+/*
+ * Load function addresses from a TOML symbols file.
+ *
+ * We parse a minimal subset of TOML — just enough for our format:
+ *   { name = "FuncName", addr = 0xNNNNNN },
+ *
+ * Lines starting with # are comments. We look for "addr = 0x" patterns.
+ */
+static int load_symbols_toml(GameConfig *cfg, const char *sym_path) {
+    FILE *sf = fopen(sym_path, "r");
+    if (!sf) {
+        fprintf(stderr, "game_config: cannot open symbols_file '%s'\n", sym_path);
+        return 0;
+    }
+
+    int loaded = 0;
+    char line[512];
+    while (fgets(line, sizeof(line), sf)) {
+        /* Skip comments and BLACKLISTED entries */
+        char *trimmed = line;
+        while (*trimmed == ' ' || *trimmed == '\t') trimmed++;
+        if (*trimmed == '#' || *trimmed == '\n' || *trimmed == '\r') continue;
+
+        /* Look for addr = 0xNNNNNN pattern */
+        char *addr_key = strstr(trimmed, "addr");
+        if (!addr_key) continue;
+
+        /* Find the '=' after addr */
+        char *eq = strchr(addr_key, '=');
+        if (!eq) continue;
+
+        /* Find the hex value */
+        char *hex = strstr(eq, "0x");
+        if (!hex) hex = strstr(eq, "0X");
+        if (!hex) continue;
+
+        uint32_t addr = (uint32_t)strtoul(hex, NULL, 16);
+        if (addr == 0) continue;  /* skip addr 0 */
+
+        if (cfg->extra_func_count < MAX_EXTRA_FUNCS) {
+            cfg->extra_funcs[cfg->extra_func_count++] = addr;
+            loaded++;
+        }
+    }
+
+    fclose(sf);
+    return loaded;
+}
 
 void game_config_init_empty(GameConfig *cfg) {
     memset(cfg, 0, sizeof(*cfg));
@@ -59,18 +123,17 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                 cfg->extra_funcs[cfg->extra_func_count++] =
                     (uint32_t)strtoul(val1, NULL, 16);
         }
+        else if (strcmp(key, "symbols_file") == 0 && n >= 2) {
+            char sym_path[512] = {0};
+            resolve_path(path, val1, sym_path, sizeof(sym_path));
+            strncpy(cfg->symbols_path, sym_path, sizeof(cfg->symbols_path) - 1);
+            int sym_count = load_symbols_toml(cfg, sym_path);
+            printf("[GameConfig] Loaded %d function addresses from symbols_file '%s'\n",
+                   sym_count, sym_path);
+        }
         else if (strcmp(key, "extra_func_file") == 0 && n >= 2) {
-            /* Resolve path relative to the cfg file's directory */
             char ef_path[512] = {0};
-            const char *slash = strrchr(path, '/');
-            const char *bslash = strrchr(path, '\\');
-            const char *sep = slash > bslash ? slash : bslash;
-            if (sep) {
-                int dir_len = (int)(sep - path) + 1;
-                snprintf(ef_path, sizeof(ef_path), "%.*s%s", dir_len, path, val1);
-            } else {
-                strncpy(ef_path, val1, sizeof(ef_path) - 1);
-            }
+            resolve_path(path, val1, ef_path, sizeof(ef_path));
             FILE *ef = fopen(ef_path, "r");
             if (!ef) {
                 fprintf(stderr, "game_config: cannot open extra_func_file '%s'\n", ef_path);
@@ -97,15 +160,7 @@ bool game_config_load(GameConfig *cfg, const char *path) {
         else if (strcmp(key, "blacklist_file") == 0 && n >= 2) {
             /* Load blacklist from external file (one hex addr per line, # comments) */
             char bl_path[512] = {0};
-            const char *slash2 = strrchr(path, '/');
-            const char *bslash2 = strrchr(path, '\\');
-            const char *sep2 = slash2 > bslash2 ? slash2 : bslash2;
-            if (sep2) {
-                int dir_len = (int)(sep2 - path) + 1;
-                snprintf(bl_path, sizeof(bl_path), "%.*s%s", dir_len, path, val1);
-            } else {
-                strncpy(bl_path, val1, sizeof(bl_path) - 1);
-            }
+            resolve_path(path, val1, bl_path, sizeof(bl_path));
             FILE *bf = fopen(bl_path, "r");
             if (!bf) {
                 fprintf(stderr, "game_config: cannot open blacklist_file '%s'\n", bl_path);
