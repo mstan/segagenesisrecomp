@@ -744,7 +744,8 @@ static int estimate_cycles(const M68KInstr *instr) {
 static void emit_instr(FILE *f, const GenesisRom *rom,
                         const M68KInstr *instr,
                         const AddrSet *instrs,
-                        bool *skip_until_label) {
+                        bool *skip_until_label,
+                        int *has_sp_adjust) {
     uint32_t addr = instr->addr;
     M68KSize sz   = instr->size;
 
@@ -766,6 +767,12 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_RTS:
+        /* If this function has any addq.l #N,sp (stack adjustment to skip
+         * return levels), check the local _sp_popped counter.  If > 0,
+         * propagate the return via g_rte_pending. */
+        if (*has_sp_adjust) {
+            fprintf(f, "  if (_sp_popped > 0) { _sp_popped--; g_rte_pending = 1; }\n");
+        }
         fprintf(f, "  return;\n");
         *skip_until_label = true;
         break;
@@ -1105,6 +1112,14 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         if (mode == 1) {
             /* ADDQ to An: no flags */
             fprintf(f, "  g_cpu.A[%d] += %uu;\n", reg, imm);
+            /* Detect early-exit pattern: addq.l #N,sp where N is a multiple of 4.
+             * This discards return address(es) from the 68K stack.  The subsequent
+             * RTS will return to the caller's caller.  Set a function-local flag
+             * so this function's RTS sites propagate the return. */
+            if (reg == 7 && (imm % 4) == 0 && imm > 0) {
+                *has_sp_adjust = 1;
+                fprintf(f, "  _sp_popped += %u;\n", imm / 4);
+            }
         } else {
             /* RMW: use emit_ea_load_ex with rmw=1 so (An)+ doesn't
              * double-increment (read suppresses increment, store does it) */
@@ -1219,6 +1234,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
         if (mode == 1) {
             fprintf(f, "  g_cpu.A[%d] -= %uu;\n", reg, imm);
+            /* Reverse of the ADDQ early-exit pattern: pushing onto the stack
+             * cancels a pending early return level. */
+            if (reg == 7 && (imm % 4) == 0 && imm > 0 && *has_sp_adjust) {
+                fprintf(f, "  if (_sp_popped > 0) _sp_popped -= %u;\n", imm / 4);
+            }
         } else {
             /* RMW: suppress (An)+ increment on read */
             emit_ea_load_ex(f, instr, ea, sz, &er, tmp, src_expr, 1);
@@ -2436,6 +2456,23 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
 
         fprintf(f_full, "void func_%06X(void) {\n", func_addr);
 
+        /* Pre-scan: check if any instruction is ADDQ/ADDA to A7 (sp).
+         * If so, emit a local _sp_popped variable for early-exit tracking. */
+        int has_sp_adjust = 0;
+        for (int j = 0; j < instrs.count; j++) {
+            M68KInstr pre;
+            if (m68k_decode(rom, instrs.addrs[j], &pre)) {
+                if ((pre.mnemonic == MN_ADDQ || pre.mnemonic == MN_ADDA) &&
+                    ((pre.src_ea >> 3) & 7) == 1 && (pre.src_ea & 7) == 7 &&
+                    pre.size == M68K_SIZE_L && (pre.imm32 % 4) == 0 && pre.imm32 > 0) {
+                    has_sp_adjust = 1;
+                    break;
+                }
+            }
+        }
+        if (has_sp_adjust)
+            fprintf(f_full, "  int _sp_popped = 0;\n");
+
         /* TEMPORARY debug counters for VBla chain tracing */
         if (func_addr == 0x000B64)
             fprintf(f_full, "  g_dbg_b64_count++;\n");
@@ -2487,7 +2524,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             }
 
             fprintf(f_full, "  /* $%06X */\n", pc);
-            emit_instr(f_full, rom, &instr, &instrs, &skip_until_label);
+            emit_instr(f_full, rom, &instr, &instrs, &skip_until_label, &has_sp_adjust);
 
             /* Contextual recompiler: accumulate cycles and check for
              * pending VBlank.  The runtime maintains g_cycle_accumulator
@@ -2561,6 +2598,13 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         fprintf(f_dispatch, "    { 0x%06Xu, func_%06X },\n",
                 all_funcs.addrs[i], all_funcs.addrs[i]);
     fprintf(f_dispatch, "    { 0u, NULL }\n};\n\n");
+
+    /* Table accessors for interior-label detection in genesis_log_dispatch_miss */
+    fprintf(f_dispatch, "int game_dispatch_table_size(void) { return %d; }\n", all_funcs.count);
+    fprintf(f_dispatch,
+        "uint32_t game_dispatch_table_addr(int i) {\n"
+        "    return (i >= 0 && i < %d) ? s_dispatch_table[i].addr : 0;\n"
+        "}\n\n", all_funcs.count);
 
     fprintf(f_dispatch,
         "void call_by_address(uint32_t addr) {\n"

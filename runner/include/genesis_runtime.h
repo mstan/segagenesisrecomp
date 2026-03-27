@@ -56,7 +56,6 @@ void call_by_address(uint32_t addr);
 /* Logging for dispatch misses */
 void genesis_log_dispatch_miss(uint32_t addr);
 
-
 /* JMP table interpreter fallback — runs interpreter from target_pc until RTS */
 void hybrid_jmp_interpret(uint32_t target_pc);
 
@@ -97,6 +96,14 @@ extern int g_dbg_b88_count;   /* incremented at start of func_000B88 */
 extern int *g_rte_pending_ptr;
 #define g_rte_pending (*g_rte_pending_ptr)
 
+/* ---- Early return (addq.l #4,sp + rts pattern) ---- */
+/* 68K code uses "addq.l #4,sp" to discard a return address, then "rts" to
+ * return to the caller's caller (skipping the rest of the current routine).
+ * In C, "return" always goes to the immediate caller.  g_early_return counts
+ * how many extra return levels to propagate.  At RTS, if > 0, it decrements
+ * and sets g_rte_pending so the caller's post-JSR check triggers a return. */
+extern int g_early_return;
+
 /* ---- Frame counter ---- */
 extern uint64_t g_frame_count;
 
@@ -115,3 +122,13 @@ void glue_check_vblank(void);
 extern uint8_t g_controller1_buttons;
 extern uint8_t g_controller2_buttons;
 
+/* ---- Dispatch miss monitor ---- */
+extern uint32_t g_miss_count_any;
+extern uint32_t g_miss_last_addr;
+extern uint64_t g_miss_last_frame;
+#define MAX_MISS_UNIQUE 64
+extern uint32_t g_miss_unique_addrs[MAX_MISS_UNIQUE];
+extern int      g_miss_unique_count;
+
+/* ---- Logger ---- */
+void log_on_change(const char *label, uint32_t value);

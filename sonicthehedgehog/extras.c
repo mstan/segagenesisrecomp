@@ -7,7 +7,18 @@
  */
 #include "extras.h"
 #include "genesis_runtime.h"
+#include <SDL2/SDL.h>
+#include <stdio.h>
 #include <string.h>
+
+/* ---- Game thread ---- */
+static SDL_Thread *s_game_thread = NULL;
+
+static int game_thread_func(void *unused) {
+    (void)unused;
+    func_000206();
+    return 0;
+}
 
 /* ---- game_extras.h implementation ---- */
 
@@ -58,9 +69,11 @@ int game_dispatch_override(uint32_t addr) {
 /* ---- Recompiled entry point routing ---- */
 
 void game_call_entry_point(void) {
-    func_000206();
+    s_game_thread = SDL_CreateThread(game_thread_func, "GameThread", NULL);
 }
 void game_call_vblank(void)      {
+    fprintf(stderr, "[VBLANK] enter\n");
     func_000B10();
+    fprintf(stderr, "[VBLANK] exit\n");
 }
 void game_call_hblank(void)      { func_001126(); }
