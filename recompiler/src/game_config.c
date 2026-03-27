@@ -7,6 +7,7 @@
  *   extra_func <hex_addr>       — additional function entry point seeds
  *   extra_func_file <path>      — file of extra_func lines (relative to cfg)
  *   symbols_file <path>         — TOML symbols file with function definitions
+ *   protected_range <lo> <hi>  — address range exempt from boundary splitting
  *   annotations <path>          — path to the annotations CSV file
  *
  * Lines beginning with '#' are comments.
@@ -183,6 +184,15 @@ bool game_config_load(GameConfig *cfg, const char *path) {
         else if (strcmp(key, "vblank_yield") == 0 && n >= 2) {
             cfg->vblank_yield_addr = (uint32_t)strtoul(val1, NULL, 16);
         }
+        else if (strcmp(key, "protected_range") == 0 && n >= 3) {
+            if (cfg->protected_range_count < MAX_PROTECTED_RANGES) {
+                int idx = cfg->protected_range_count++;
+                cfg->protected_ranges[idx].lo = (uint32_t)strtoul(val1, NULL, 16);
+                cfg->protected_ranges[idx].hi = (uint32_t)strtoul(val2, NULL, 16);
+                printf("[GameConfig] Protected range: $%06X-$%06X\n",
+                       cfg->protected_ranges[idx].lo, cfg->protected_ranges[idx].hi);
+            }
+        }
         else if (line[0] != '#') {
             /* Unknown directive — warn but continue */
             fprintf(stderr, "game_config: unknown directive '%s'\n", key);
@@ -200,6 +210,13 @@ bool game_config_load(GameConfig *cfg, const char *path) {
 bool game_config_is_blacklisted(const GameConfig *cfg, uint32_t addr) {
     for (int i = 0; i < cfg->blacklist_count; i++)
         if (cfg->blacklist[i] == addr)
+            return true;
+    return false;
+}
+
+bool game_config_is_protected(const GameConfig *cfg, uint32_t addr) {
+    for (int i = 0; i < cfg->protected_range_count; i++)
+        if (addr >= cfg->protected_ranges[i].lo && addr <= cfg->protected_ranges[i].hi)
             return true;
     return false;
 }

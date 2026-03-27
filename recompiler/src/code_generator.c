@@ -2417,16 +2417,25 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
          * excluding blacklisted addresses (known interior labels). */
         int added = 0;
         int blacklisted_split = 0;
+        int protected_split = 0;
         for (int i = 0; i < extern_targets.count; i++) {
-            if (game_config_is_blacklisted(cfg, extern_targets.addrs[i])) {
+            uint32_t addr = extern_targets.addrs[i];
+            if (game_config_is_blacklisted(cfg, addr)) {
                 blacklisted_split++;
                 continue;
             }
-            if (!addrset_contains(&all_funcs, extern_targets.addrs[i])) {
-                addrset_insert(&all_funcs, extern_targets.addrs[i]);
+            if (game_config_is_protected(cfg, addr) &&
+                !addrset_contains(&all_funcs, addr)) {
+                protected_split++;
+                continue;
+            }
+            if (!addrset_contains(&all_funcs, addr)) {
+                addrset_insert(&all_funcs, addr);
                 added++;
             }
         }
+        if (protected_split > 0)
+            printf("[Codegen] Skipped %d boundary splits in protected ranges\n", protected_split);
         if (blacklisted_split > 0)
             printf("[Codegen] Blocked %d blacklisted addresses from boundary splitting\n", blacklisted_split);
         addrset_free(&extern_targets);
