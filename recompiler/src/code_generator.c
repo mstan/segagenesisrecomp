@@ -2363,8 +2363,6 @@ static void emit_file_header(FILE *f) {
 bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                   const char *out_full_path, const char *out_dispatch_path,
                   const AnnotationTable *at, const GameConfig *cfg) {
-    (void)cfg;
-
     FILE *f_full     = fopen(out_full_path,     "w");
     FILE *f_dispatch = fopen(out_dispatch_path, "w");
 
@@ -2382,11 +2380,21 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
 
     /* Build mutable sorted array of all function entry points for boundary
      * detection. Cross-function branches may discover mid-function targets
-     * that need to become new function entries; iterate until stable. */
+     * that need to become new function entries; iterate until stable.
+     * Filter out blacklisted addresses — these are known interior labels
+     * that the static analyzer incorrectly identifies as function entries. */
     AddrSet all_funcs;
     addrset_init(&all_funcs);
-    for (int i = 0; i < funcs->count; i++)
+    int blacklisted_initial = 0;
+    for (int i = 0; i < funcs->count; i++) {
+        if (game_config_is_blacklisted(cfg, funcs->entries[i].addr)) {
+            blacklisted_initial++;
+            continue;
+        }
         addrset_insert(&all_funcs, funcs->entries[i].addr);
+    }
+    if (blacklisted_initial > 0)
+        printf("[Codegen] Filtered %d blacklisted addresses from initial function list\n", blacklisted_initial);
     addrset_sort(&all_funcs);
 
     /* Discovery loop: scan all functions, collect external branch targets,
@@ -2405,14 +2413,31 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             addrset_free(&labels);
         }
 
-        /* Add any external targets that aren't already function entries */
+        /* Add any external targets that aren't already function entries,
+         * excluding blacklisted addresses (known interior labels). */
         int added = 0;
+        int blacklisted_split = 0;
+        int protected_split = 0;
         for (int i = 0; i < extern_targets.count; i++) {
-            if (!addrset_contains(&all_funcs, extern_targets.addrs[i])) {
-                addrset_insert(&all_funcs, extern_targets.addrs[i]);
+            uint32_t addr = extern_targets.addrs[i];
+            if (game_config_is_blacklisted(cfg, addr)) {
+                blacklisted_split++;
+                continue;
+            }
+            if (game_config_is_protected(cfg, addr) &&
+                !addrset_contains(&all_funcs, addr)) {
+                protected_split++;
+                continue;
+            }
+            if (!addrset_contains(&all_funcs, addr)) {
+                addrset_insert(&all_funcs, addr);
                 added++;
             }
         }
+        if (protected_split > 0)
+            printf("[Codegen] Skipped %d boundary splits in protected ranges\n", protected_split);
+        if (blacklisted_split > 0)
+            printf("[Codegen] Blocked %d blacklisted addresses from boundary splitting\n", blacklisted_split);
         addrset_free(&extern_targets);
 
         if (added == 0) break;
