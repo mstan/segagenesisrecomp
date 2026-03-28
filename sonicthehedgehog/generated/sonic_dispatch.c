@@ -81,6 +81,8 @@ void func_00145C(void);
 void func_00148A(void);
 void func_0014C0(void);
 void func_0014C2(void);
+void func_0014CC(void);
+void func_0014D0(void);
 void func_0014D6(void);
 void func_001502(void);
 void func_00150C(void);
@@ -94,6 +96,8 @@ void func_0015EC(void);
 void func_001642(void);
 void func_00165E(void);
 void func_001676(void);
+void func_0016DA(void);
+void func_0016DC(void);
 void func_0016EC(void);
 void func_00171E(void);
 void func_00173E(void);
@@ -165,6 +169,7 @@ void func_00416E(void);
 void func_004206(void);
 void func_004274(void);
 void func_0045DC(void);
+void func_00489C(void);
 void func_00491E(void);
 void func_004962(void);
 void func_004BE4(void);
@@ -241,6 +246,8 @@ void func_00709C(void);
 void func_0070AE(void);
 void func_0070CA(void);
 void func_0070D0(void);
+void func_0070E8(void);
+void func_0070EA(void);
 void func_0070EC(void);
 void func_0070EE(void);
 void func_0070F2(void);
@@ -260,6 +267,7 @@ void func_007220(void);
 void func_007244(void);
 void func_00725A(void);
 void func_007278(void);
+void func_00727A(void);
 void func_00727C(void);
 void func_00729A(void);
 void func_0072B8(void);
@@ -275,6 +283,7 @@ void func_00744C(void);
 void func_00746E(void);
 void func_007474(void);
 void func_0074AE(void);
+void func_00751E(void);
 void func_007520(void);
 void func_00755C(void);
 void func_007588(void);
@@ -638,6 +647,9 @@ void func_01397D(void);
 void func_0139C2(void);
 void func_0139C4(void);
 void func_013A0C(void);
+void func_013A18(void);
+void func_013A20(void);
+void func_013A22(void);
 void func_013A52(void);
 void func_013B48(void);
 void func_013B4A(void);
@@ -700,6 +712,8 @@ void func_0145EE(void);
 void func_014661(void);
 void func_01468C(void);
 void func_0146A1(void);
+void func_0146E6(void);
+void func_01470A(void);
 void func_014750(void);
 void func_01477C(void);
 void func_014818(void);
@@ -709,6 +723,7 @@ void func_0149CE(void);
 void func_014A74(void);
 void func_014B0C(void);
 void func_014BB4(void);
+void func_014C4C(void);
 void func_014CDE(void);
 void func_014D48(void);
 void func_014D70(void);
@@ -755,6 +770,7 @@ void func_0165BB(void);
 void func_016751(void);
 void func_01681C(void);
 void func_016934(void);
+void func_016950(void);
 void func_016952(void);
 void func_016A40(void);
 void func_016AAA(void);
@@ -982,6 +998,7 @@ void func_01BAF8(void);
 void func_01BAFE(void);
 void func_01BB28(void);
 void func_01BB56(void);
+void func_01BB9A(void);
 void func_01BBB6(void);
 void func_01BBDA(void);
 void func_01BBDE(void);
@@ -4336,6 +4353,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x00148Au, func_00148A },
     { 0x0014C0u, func_0014C0 },
     { 0x0014C2u, func_0014C2 },
+    { 0x0014CCu, func_0014CC },
+    { 0x0014D0u, func_0014D0 },
     { 0x0014D6u, func_0014D6 },
     { 0x001502u, func_001502 },
     { 0x00150Cu, func_00150C },
@@ -4349,6 +4368,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x001642u, func_001642 },
     { 0x00165Eu, func_00165E },
     { 0x001676u, func_001676 },
+    { 0x0016DAu, func_0016DA },
+    { 0x0016DCu, func_0016DC },
     { 0x0016ECu, func_0016EC },
     { 0x00171Eu, func_00171E },
     { 0x00173Eu, func_00173E },
@@ -4420,6 +4441,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x004206u, func_004206 },
     { 0x004274u, func_004274 },
     { 0x0045DCu, func_0045DC },
+    { 0x00489Cu, func_00489C },
     { 0x00491Eu, func_00491E },
     { 0x004962u, func_004962 },
     { 0x004BE4u, func_004BE4 },
@@ -4496,6 +4518,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0070AEu, func_0070AE },
     { 0x0070CAu, func_0070CA },
     { 0x0070D0u, func_0070D0 },
+    { 0x0070E8u, func_0070E8 },
+    { 0x0070EAu, func_0070EA },
     { 0x0070ECu, func_0070EC },
     { 0x0070EEu, func_0070EE },
     { 0x0070F2u, func_0070F2 },
@@ -4515,6 +4539,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x007244u, func_007244 },
     { 0x00725Au, func_00725A },
     { 0x007278u, func_007278 },
+    { 0x00727Au, func_00727A },
     { 0x00727Cu, func_00727C },
     { 0x00729Au, func_00729A },
     { 0x0072B8u, func_0072B8 },
@@ -4530,6 +4555,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x00746Eu, func_00746E },
     { 0x007474u, func_007474 },
     { 0x0074AEu, func_0074AE },
+    { 0x00751Eu, func_00751E },
     { 0x007520u, func_007520 },
     { 0x00755Cu, func_00755C },
     { 0x007588u, func_007588 },
@@ -4893,6 +4919,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0139C2u, func_0139C2 },
     { 0x0139C4u, func_0139C4 },
     { 0x013A0Cu, func_013A0C },
+    { 0x013A18u, func_013A18 },
+    { 0x013A20u, func_013A20 },
+    { 0x013A22u, func_013A22 },
     { 0x013A52u, func_013A52 },
     { 0x013B48u, func_013B48 },
     { 0x013B4Au, func_013B4A },
@@ -4955,6 +4984,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x014661u, func_014661 },
     { 0x01468Cu, func_01468C },
     { 0x0146A1u, func_0146A1 },
+    { 0x0146E6u, func_0146E6 },
+    { 0x01470Au, func_01470A },
     { 0x014750u, func_014750 },
     { 0x01477Cu, func_01477C },
     { 0x014818u, func_014818 },
@@ -4964,6 +4995,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x014A74u, func_014A74 },
     { 0x014B0Cu, func_014B0C },
     { 0x014BB4u, func_014BB4 },
+    { 0x014C4Cu, func_014C4C },
     { 0x014CDEu, func_014CDE },
     { 0x014D48u, func_014D48 },
     { 0x014D70u, func_014D70 },
@@ -5010,6 +5042,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x016751u, func_016751 },
     { 0x01681Cu, func_01681C },
     { 0x016934u, func_016934 },
+    { 0x016950u, func_016950 },
     { 0x016952u, func_016952 },
     { 0x016A40u, func_016A40 },
     { 0x016AAAu, func_016AAA },
@@ -5237,6 +5270,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01BAFEu, func_01BAFE },
     { 0x01BB28u, func_01BB28 },
     { 0x01BB56u, func_01BB56 },
+    { 0x01BB9Au, func_01BB9A },
     { 0x01BBB6u, func_01BBB6 },
     { 0x01BBDAu, func_01BBDA },
     { 0x01BBDEu, func_01BBDE },
@@ -8521,9 +8555,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0u, NULL }
 };
 
-int game_dispatch_table_size(void) { return 4253; }
+int game_dispatch_table_size(void) { return 4270; }
 uint32_t game_dispatch_table_addr(int i) {
-    return (i >= 0 && i < 4253) ? s_dispatch_table[i].addr : 0;
+    return (i >= 0 && i < 4270) ? s_dispatch_table[i].addr : 0;
 }
 
 void call_by_address(uint32_t addr) {
