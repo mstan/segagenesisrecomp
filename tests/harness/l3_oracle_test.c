@@ -142,7 +142,13 @@ uint32_t g_miss_unique_addrs[MAX_MISS_UNIQUE];
 int      g_miss_unique_count = 0;
 
 void log_on_change(const char *label, uint32_t value) { (void)label; (void)value; }
-void genesis_log_dispatch_miss(uint32_t addr) { (void)addr; }
+void genesis_log_dispatch_miss(uint32_t addr) {
+    (void)addr;
+    /* Bump the counter so invoke_recompiled detects "function not in
+     * dispatch table" and reports it as a no-dispatch failure rather
+     * than silently returning a stale state. */
+    g_miss_count_any++;
+}
 void hybrid_jmp_interpret(uint32_t target_pc) { (void)target_pc; }
 void hybrid_call_interpret(uint32_t target_pc) { (void)target_pc; }
 
