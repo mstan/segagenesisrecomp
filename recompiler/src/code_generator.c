@@ -2363,6 +2363,8 @@ static void emit_file_header(FILE *f) {
 bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                   const char *out_full_path, const char *out_dispatch_path,
                   const AnnotationTable *at, const GameConfig *cfg) {
+    (void)cfg;
+
     FILE *f_full     = fopen(out_full_path,     "w");
     FILE *f_dispatch = fopen(out_dispatch_path, "w");
 
@@ -2380,21 +2382,11 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
 
     /* Build mutable sorted array of all function entry points for boundary
      * detection. Cross-function branches may discover mid-function targets
-     * that need to become new function entries; iterate until stable.
-     * Filter out blacklisted addresses — these are known interior labels
-     * that the static analyzer incorrectly identifies as function entries. */
+     * that need to become new function entries; iterate until stable. */
     AddrSet all_funcs;
     addrset_init(&all_funcs);
-    int blacklisted_initial = 0;
-    for (int i = 0; i < funcs->count; i++) {
-        if (game_config_is_blacklisted(cfg, funcs->entries[i].addr)) {
-            blacklisted_initial++;
-            continue;
-        }
+    for (int i = 0; i < funcs->count; i++)
         addrset_insert(&all_funcs, funcs->entries[i].addr);
-    }
-    if (blacklisted_initial > 0)
-        printf("[Codegen] Filtered %d blacklisted addresses from initial function list\n", blacklisted_initial);
     addrset_sort(&all_funcs);
 
     /* Discovery loop: scan all functions, collect external branch targets,
@@ -2413,31 +2405,14 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             addrset_free(&labels);
         }
 
-        /* Add any external targets that aren't already function entries,
-         * excluding blacklisted addresses (known interior labels). */
+        /* Add any external targets that aren't already function entries */
         int added = 0;
-        int blacklisted_split = 0;
-        int protected_split = 0;
         for (int i = 0; i < extern_targets.count; i++) {
-            uint32_t addr = extern_targets.addrs[i];
-            if (game_config_is_blacklisted(cfg, addr)) {
-                blacklisted_split++;
-                continue;
-            }
-            if (game_config_is_protected(cfg, addr) &&
-                !addrset_contains(&all_funcs, addr)) {
-                protected_split++;
-                continue;
-            }
-            if (!addrset_contains(&all_funcs, addr)) {
-                addrset_insert(&all_funcs, addr);
+            if (!addrset_contains(&all_funcs, extern_targets.addrs[i])) {
+                addrset_insert(&all_funcs, extern_targets.addrs[i]);
                 added++;
             }
         }
-        if (protected_split > 0)
-            printf("[Codegen] Skipped %d boundary splits in protected ranges\n", protected_split);
-        if (blacklisted_split > 0)
-            printf("[Codegen] Blocked %d blacklisted addresses from boundary splitting\n", blacklisted_split);
         addrset_free(&extern_targets);
 
         if (added == 0) break;
@@ -2447,69 +2422,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
 
     printf("[Codegen] Final function count after boundary splitting: %d\n", all_funcs.count);
 
-    /* =====================================================================
-     * Auto-merge: detect functions whose entry address falls inside another
-     * function's instruction range.  These are secondary entry points that
-     * get merged into the parent as a multi-entry _body function with goto
-     * dispatch, eliminating the need for a blacklist.
-     * =================================================================== */
-
-    /* merged_into[i] = index of the parent function that absorbed func i,
-     * or -1 if func i is a primary (standalone) function. */
-    int *merged_into = calloc(all_funcs.count, sizeof(int));
-    for (int i = 0; i < all_funcs.count; i++)
-        merged_into[i] = -1;
-
-    /* Detect interior labels: function j is interior to function i if
-     * j's address is between i and i+1 in sorted order AND a preceding
-     * instruction (just before j's entry) is NOT a hard terminator.
-     *
-     * If the byte just before func j is mid-instruction-stream (no RTS/
-     * RTE/JMP/BRA/STOP), then j is a fall-through label inside i. */
-    int merge_count = 0;
-    for (int j = 1; j < all_funcs.count; j++) {
-        uint32_t addr_j = all_funcs.addrs[j];
-        if (addr_j < 2) continue;
-
-        /* Look at the instruction ending just before addr_j.
-         * Try decoding backward — check a few bytes before for a terminator. */
-        bool preceded_by_terminator = false;
-        for (int backoff = 2; backoff <= 10; backoff += 2) {
-            uint32_t try_addr = addr_j - backoff;
-            M68KInstr prev;
-            if (m68k_decode(rom, try_addr, &prev)) {
-                /* Check if this instruction ends exactly at addr_j */
-                if (try_addr + prev.byte_length == addr_j) {
-                    if (prev.mnemonic == MN_RTS  || prev.mnemonic == MN_RTE ||
-                        prev.mnemonic == MN_STOP || prev.mnemonic == MN_JMP ||
-                        prev.mnemonic == MN_BRA) {
-                        preceded_by_terminator = true;
-                    }
-                    break;  /* found the instruction that ends at addr_j */
-                }
-            }
-        }
-
-        if (!preceded_by_terminator) {
-            /* Find the parent function — the one immediately before j in sorted order
-             * that hasn't itself been merged */
-            int parent = -1;
-            for (int k = j - 1; k >= 0; k--) {
-                if (merged_into[k] < 0) {
-                    parent = k;
-                    break;
-                }
-            }
-            if (parent >= 0) {
-                merged_into[j] = parent;
-                merge_count++;
-            }
-        }
-    }
-
-    printf("[Codegen] Auto-merged %d interior labels into parent functions\n", merge_count);
-
-    /* Forward declarations — all functions still get a public void func_XXXXXX(void) */
+    /* Forward declarations */
     for (int i = 0; i < all_funcs.count; i++)
         fprintf(f_full, "void func_%06X(void);\n", all_funcs.addrs[i]);
     fprintf(f_full, "\n");
@@ -2517,19 +2430,6 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
     /* Emit each function body */
     for (int i = 0; i < all_funcs.count; i++) {
         uint32_t func_addr = all_funcs.addrs[i];
-
-        /* Skip functions that were absorbed as secondary entries */
-        if (merged_into[i] >= 0)
-            continue;
-
-        /* Collect secondary entry points for this function */
-        uint32_t secondary_addrs[256];
-        int secondary_count = 0;
-        for (int j = 0; j < all_funcs.count && secondary_count < 256; j++) {
-            if (merged_into[j] == i)
-                secondary_addrs[secondary_count++] = all_funcs.addrs[j];
-        }
-        int is_multi_entry = (secondary_count > 0);
 
         /* Annotation comment */
         const char *name = annotations_get_name(at, func_addr);
@@ -2554,20 +2454,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         if (entry_not_first)
             addrset_insert(&labels, func_addr);
 
-        /* Ensure secondary entry points have labels emitted */
-        for (int si = 0; si < secondary_count; si++)
-            addrset_insert(&labels, secondary_addrs[si]);
-
-        if (is_multi_entry) {
-            fprintf(f_full, "static void func_%06X_body(int _entry) {\n", func_addr);
-            fprintf(f_full, "  switch (_entry) {\n");
-            for (int si = 0; si < secondary_count; si++)
-                fprintf(f_full, "    case %d: goto label_%06X;\n",
-                        si + 1, secondary_addrs[si]);
-            fprintf(f_full, "  }\n");
-        } else {
-            fprintf(f_full, "void func_%06X(void) {\n", func_addr);
-        }
+        fprintf(f_full, "void func_%06X(void) {\n", func_addr);
 
         /* Pre-scan: check if any instruction is ADDQ/ADDA to A7 (sp).
          * If so, emit a local _sp_popped variable for early-exit tracking. */
@@ -2686,30 +2573,9 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
 
         fprintf(f_full, "}\n\n");
 
-        /* Emit wrapper functions for multi-entry bodies */
-        if (is_multi_entry) {
-            /* Primary entry wrapper */
-            fprintf(f_full, "void func_%06X(void) {\n", func_addr);
-            fprintf(f_full, "  func_%06X_body(0);\n", func_addr);
-            fprintf(f_full, "}\n\n");
-
-            /* Secondary entry wrappers */
-            for (int si = 0; si < secondary_count; si++) {
-                uint32_t sa = secondary_addrs[si];
-                const char *sa_name = annotations_get_name(at, sa);
-                if (sa_name)
-                    fprintf(f_full, "/* %s (secondary entry) */\n", sa_name);
-                fprintf(f_full, "void func_%06X(void) {\n", sa);
-                fprintf(f_full, "  func_%06X_body(%d);\n", func_addr, si + 1);
-                fprintf(f_full, "}\n\n");
-            }
-        }
-
         addrset_free(&instrs);
         addrset_free(&labels);
     }
-
-    free(merged_into);
 
     /* Dispatch table */
     fprintf(f_dispatch, "/* sonic_dispatch.c — AUTO-GENERATED by GenesisRecomp. DO NOT EDIT. */\n");
