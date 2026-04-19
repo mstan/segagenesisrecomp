@@ -2408,15 +2408,26 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             addrset_free(&labels);
         }
 
-        /* Add any external targets that aren't already function entries */
-        int added = 0;
+        /* Add any external targets that aren't already function entries.
+         * Skip blacklisted addresses (game.cfg `blacklist` directive) —
+         * useful for data labels the disasm never marks as code that
+         * boundary-split would otherwise promote into bogus function
+         * entries. */
+        int added = 0, skipped_blacklist = 0;
         for (int i = 0; i < extern_targets.count; i++) {
-            if (!addrset_contains(&all_funcs, extern_targets.addrs[i])) {
-                addrset_insert(&all_funcs, extern_targets.addrs[i]);
-                added++;
+            uint32_t a = extern_targets.addrs[i];
+            if (addrset_contains(&all_funcs, a)) continue;
+            if (game_config_is_blacklisted(cfg, a)) {
+                skipped_blacklist++;
+                continue;
             }
+            addrset_insert(&all_funcs, a);
+            added++;
         }
         addrset_free(&extern_targets);
+        if (skipped_blacklist > 0)
+            printf("[Codegen] Skipped %d blacklisted boundary-split entries\n",
+                   skipped_blacklist);
 
         if (added == 0) break;
         printf("[Codegen] Function boundary split: added %d new function entries, re-scanning...\n", added);
