@@ -1,0 +1,1865 @@
+diff --git a/source/bus-common.c b/source/bus-common.c
+index 6652f1f..7088849 100644
+--- a/source/bus-common.c
++++ b/source/bus-common.c
+@@ -197,10 +197,22 @@ void SyncCDDA(CPUCallbackUserData* const other_state, const cc_u32f total_frames
+ 
+ /* https://gendev.spritesmind.net/forum/viewtopic.php?t=3290 */
+ 
+-void RaiseInterruptIfNeeded(ClownMDEmu* const clownmdemu)
++void RaiseHorizontalInterruptIfNeeded(ClownMDEmu* const clownmdemu)
++{
++	if (clownmdemu->state.m68k.h_int_pending && clownmdemu->vdp.state.h_int_enabled)
++	{
++		clownmdemu->state.m68k.h_int_pending = cc_false;
++
++		Clown68000_Interrupt(&clownmdemu->m68k, 4);
++	}
++}
++
++void RaiseVerticalInterruptIfNeeded(ClownMDEmu* const clownmdemu)
+ {
+ 	if (clownmdemu->state.m68k.v_int_pending && clownmdemu->vdp.state.v_int_enabled)
++	{
++		clownmdemu->state.m68k.v_int_pending = cc_false;
++
+ 		Clown68000_Interrupt(&clownmdemu->m68k, 6);
+-	else if (clownmdemu->state.m68k.h_int_pending && clownmdemu->vdp.state.h_int_enabled)
+-		Clown68000_Interrupt(&clownmdemu->m68k, 4);
++	}
+ }
+diff --git a/source/bus-common.h b/source/bus-common.h
+index 751f18e..b00a506 100644
+--- a/source/bus-common.h
++++ b/source/bus-common.h
+@@ -128,6 +128,7 @@ void SyncPSG(CPUCallbackUserData *other_state, CycleMegaDrive target_cycle);
+ void SyncPCM(CPUCallbackUserData *other_state, CycleMegaCD target_cycle);
+ void SyncCDDA(CPUCallbackUserData *other_state, cc_u32f total_frames);
+ 
+-void RaiseInterruptIfNeeded(ClownMDEmu *clownmdemu);
++void RaiseHorizontalInterruptIfNeeded(ClownMDEmu *clownmdemu);
++void RaiseVerticalInterruptIfNeeded(ClownMDEmu *clownmdemu);
+ 
+ #endif /* BUS_COMMON */
+diff --git a/source/bus-main-m68k.c b/source/bus-main-m68k.c
+index d78682a..0d12910 100644
+--- a/source/bus-main-m68k.c
++++ b/source/bus-main-m68k.c
+@@ -1,6 +1,7 @@
+ #include "bus-main-m68k.h"
+ 
+ #include <assert.h>
++#include <stdio.h>
+ 
+ #include "bus-sub-m68k.h"
+ #include "bus-z80.h"
+@@ -258,31 +259,12 @@ static cc_u16f SyncM68kCallback(ClownMDEmu* const clownmdemu, void* const user_d
+ 	return 0;
+ }
+ 
+-void M68kInterruptAcknowledgeCallback(const void* const user_data)
+-{
+-	CPUCallbackUserData* const other_state = (CPUCallbackUserData*)user_data;
+-	ClownMDEmu* const clownmdemu = other_state->clownmdemu;
+-	ClownMDEmu_State* const state = &clownmdemu->state;
+-
+-	/* The 68000 does not report which interrupt it is acknowledging, leading to a
+-	   bug where if H-Int and V-Int are enabled in quick succession, the Mega Drive
+-	   will think the 68000 acknowledged the V-Int instead of the H-Int, causing
+-	   V-Int to be missed and H-Int to be raised twice. */
+-	if (state->m68k.v_int_pending && clownmdemu->vdp.state.v_int_enabled)
+-		state->m68k.v_int_pending = cc_false;
+-	else if (state->m68k.h_int_pending && clownmdemu->vdp.state.h_int_enabled)
+-		state->m68k.h_int_pending = cc_false;
+-
+-	Clown68000_Interrupt(&clownmdemu->m68k, state->m68k.h_int_pending && clownmdemu->vdp.state.h_int_enabled ? 4 : 0);
+-}
+-
+ void SyncM68k(ClownMDEmu* const clownmdemu, CPUCallbackUserData* const other_state, const CycleMegaDrive target_cycle)
+ {
+ 	Clown68000_ReadWriteCallbacks m68k_read_write_callbacks;
+ 
+ 	m68k_read_write_callbacks.read_callback = M68kReadCallback;
+ 	m68k_read_write_callbacks.write_callback = M68kWriteCallback;
+-	m68k_read_write_callbacks.interrupt_acknowledge_callback = M68kInterruptAcknowledgeCallback;
+ 	m68k_read_write_callbacks.user_data = other_state;
+ 
+ 	/* To simulate the CPU being frozen and unfrozen by DMA transfers, we hijack this function to update a DMA sync object. */
+@@ -633,12 +615,8 @@ cc_u16f M68kReadCallbackWithCycleWithDMA(const void* const user_data, const cc_u
+ 					else if (address == 0xA11100)
+ 					{
+ 						/* Z80 BUSREQ */
+-						/* On real hardware, bus requests do not complete if a reset is being held. */
+-						/* http://gendev.spritesmind.net/forum/viewtopic.php?f=2&t=2195 */
+-						const cc_bool z80_bus_obtained = clownmdemu->state.z80.bus_requested && !clownmdemu->state.z80.reset_held;
+-
+-						if (clownmdemu->state.z80.reset_held)
+-							LOG_MAIN_CPU_BUS_ERROR_0("Z80 bus request will never end as long as the reset is asserted");
++						/* Grant bus based solely on bus_requested; real hardware ignores reset state for bus grant. */
++						const cc_bool z80_bus_obtained = clownmdemu->state.z80.bus_requested;
+ 
+ 						/* TODO: According to Charles MacDonald's gen-hw.txt, the upper byte is actually the upper byte
+ 							of the next instruction and the lower byte is just 0 (and the flag bit, of course). */
+@@ -849,6 +827,10 @@ cc_u16f M68kReadCallback(const void* const user_data, const cc_u32f address, con
+ 	return M68kReadCallbackWithCycleWithDMA(user_data, address, do_high_byte, do_low_byte, MakeCycleMegaDrive(callback_user_data->sync.m68k.base_cycle + current_cycle * CLOWNMDEMU_M68K_CLOCK_DIVIDER), cc_false);
+ }
+ 
++/* FM write trace hook — set by runner to capture FM register write timing.
++ * Args: m68k_address (byte), value, target_cycle (master clocks). */
++void (*g_fm_write_trace_fn)(cc_u32f address, cc_u8f value, cc_u32f target_cycle) = NULL;
++
+ void M68kWriteCallbackWithCycle(const void* const user_data, const cc_u32f address_word, const cc_bool do_high_byte, const cc_bool do_low_byte, const cc_u16f value, const CycleMegaDrive target_cycle)
+ {
+ 	CPUCallbackUserData* const callback_user_data = (CPUCallbackUserData*)user_data;
+@@ -859,6 +841,13 @@ void M68kWriteCallbackWithCycle(const void* const user_data, const cc_u32f addre
+ 	const cc_u16f high_byte = (value >> 8) & 0xFF;
+ 	const cc_u16f low_byte = (value >> 0) & 0xFF;
+ 
++	/* Trace FM writes: $A04000-$A04003 (68K addresses for YM2612 ports) */
++	if (g_fm_write_trace_fn != NULL && address >= 0xA04000 && address <= 0xA04003)
++	{
++		cc_u8f byte_val = do_high_byte ? high_byte : low_byte;
++		g_fm_write_trace_fn(address, byte_val, target_cycle.cycle);
++	}
++
+ 	cc_u16f mask = 0;
+ 
+ 	if (do_high_byte)
+@@ -1279,7 +1268,8 @@ void M68kWriteCallbackWithCycle(const void* const user_data, const cc_u32f addre
+ 					VDP_WriteControl(&clownmdemu->vdp, value, frontend_callbacks->colour_updated, frontend_callbacks->user_data, VDPDMATransferBeginCallback, VDPReadCallback, callback_user_data, VDPKDebugCallback, NULL, target_cycle.cycle);
+ 
+ 					/* TODO: This should be done more faithfully once the CPU interpreters are bus-event-oriented. */
+-					RaiseInterruptIfNeeded(clownmdemu);
++					RaiseHorizontalInterruptIfNeeded(clownmdemu);
++					RaiseVerticalInterruptIfNeeded(clownmdemu);
+ 					break;
+ 
+ 				case 8 / 2:
+diff --git a/source/bus-main-m68k.h b/source/bus-main-m68k.h
+index cc806ab..7f23a8d 100644
+--- a/source/bus-main-m68k.h
++++ b/source/bus-main-m68k.h
+@@ -3,7 +3,6 @@
+ 
+ #include "bus-common.h"
+ 
+-void M68kInterruptAcknowledgeCallback(const void *user_data);
+ void SyncM68k(ClownMDEmu *clownmdemu, CPUCallbackUserData *other_state, CycleMegaDrive target_cycle);
+ cc_u8f SyncIOPortAndRead(CPUCallbackUserData *callback_user_data, CycleMegaDrive target_cycle, cc_u16f joypad_index);
+ void SyncIOPortAndWrite(CPUCallbackUserData *callback_user_data, CycleMegaDrive target_cycle, cc_u16f joypad_index, cc_u8f value);
+diff --git a/source/bus-sub-m68k.c b/source/bus-sub-m68k.c
+index eb90b29..97b889b 100644
+--- a/source/bus-sub-m68k.c
++++ b/source/bus-sub-m68k.c
+@@ -348,20 +348,12 @@ static cc_u16f SyncMCDM68kCallback(ClownMDEmu* const clownmdemu, void* const use
+ 	return clownmdemu->state.mega_cd.irq.irq3_countdown_master;
+ }
+ 
+-void MCDM68kInterruptAcknowledgeCallback(const void* const user_data)
+-{
+-	CPUCallbackUserData* const other_state = (CPUCallbackUserData*)user_data;
+-
+-	Clown68000_Interrupt(&other_state->clownmdemu->mega_cd.m68k, 0);
+-}
+-
+ void SyncMCDM68k(ClownMDEmu* const clownmdemu, CPUCallbackUserData* const other_state, const CycleMegaCD target_cycle)
+ {
+ 	Clown68000_ReadWriteCallbacks m68k_read_write_callbacks;
+ 
+ 	m68k_read_write_callbacks.read_callback = MCDM68kReadCallback;
+ 	m68k_read_write_callbacks.write_callback = MCDM68kWriteCallback;
+-	m68k_read_write_callbacks.interrupt_acknowledge_callback = MCDM68kInterruptAcknowledgeCallback;
+ 	m68k_read_write_callbacks.user_data = other_state;
+ 
+ 	/* In order to support the timer interrupt (IRQ3), we hijack this function to update an IRQ3 sync object instead. */
+diff --git a/source/bus-sub-m68k.h b/source/bus-sub-m68k.h
+index c4794d1..73def90 100644
+--- a/source/bus-sub-m68k.h
++++ b/source/bus-sub-m68k.h
+@@ -4,7 +4,6 @@
+ #include "bus-common.h"
+ 
+ /* TODO: Rename these to 'SubM68k'. */
+-void MCDM68kInterruptAcknowledgeCallback(const void *user_data);
+ void SyncMCDM68k(ClownMDEmu *clownmdemu, CPUCallbackUserData *other_state, CycleMegaCD target_cycle);
+ cc_u16f MCDM68kReadCallbackWithCycle(const void *user_data, cc_u32f address, cc_bool do_high_byte, cc_bool do_low_byte, CycleMegaCD target_cycle);
+ cc_u16f MCDM68kReadCallback(const void *user_data, cc_u32f address, cc_bool do_high_byte, cc_bool do_low_byte, cc_u32f current_cycle);
+diff --git a/source/clownmdemu.c b/source/clownmdemu.c
+index a1d605c..3afb1d3 100644
+--- a/source/clownmdemu.c
++++ b/source/clownmdemu.c
+@@ -230,16 +230,17 @@ void ClownMDEmu_Iterate(ClownMDEmu* const clownmdemu)
+ {
+ 	ClownMDEmu_State* const state = &clownmdemu->state;
+ 
+-	const cc_s16f television_vertical_resolution = GetTelevisionVerticalResolution(clownmdemu);
+-	const cc_s16f console_vertical_resolution = VDP_GetScreenHeightInTiles(&clownmdemu->vdp.state) * VDP_STANDARD_TILE_HEIGHT;
++	const cc_u16f television_vertical_resolution = GetTelevisionVerticalResolution(clownmdemu);
++	const cc_u16f console_vertical_resolution = VDP_GetScreenHeightInTiles(&clownmdemu->vdp.state) * VDP_STANDARD_TILE_HEIGHT;
+ 	const CycleMegaDrive cycles_per_frame_mega_drive = GetMegaDriveCyclesPerFrame(clownmdemu);
+ 	const cc_u16f cycles_per_scanline = cycles_per_frame_mega_drive.cycle / television_vertical_resolution;
+ 	const CycleMegaCD cycles_per_frame_mega_cd = MakeCycleMegaCD(clownmdemu->configuration.tv_standard == CLOWNMDEMU_TV_STANDARD_PAL ? CLOWNMDEMU_DIVIDE_BY_PAL_FRAMERATE(CLOWNMDEMU_MCD_MASTER_CLOCK) : CLOWNMDEMU_DIVIDE_BY_NTSC_FRAMERATE(CLOWNMDEMU_MCD_MASTER_CLOCK));
+-	const cc_s8f bottom_border = (television_vertical_resolution - console_vertical_resolution - VDP_LINES_BOTTOM_BLANKING - VDP_LINES_VERTICAL_SYNC - VDP_LINES_TOP_BLANKING) / 8 * 4;
++	const cc_u8f bottom_border = (television_vertical_resolution - console_vertical_resolution - VDP_LINES_BOTTOM_BLANKING - VDP_LINES_VERTICAL_SYNC - VDP_LINES_TOP_BLANKING) / 8 * 4;
++	const cc_u16l v_counter_jump = 0 - (television_vertical_resolution - console_vertical_resolution - VDP_LINES_BOTTOM_BLANKING - bottom_border);
+ 
+ 	CycleMegaDrive current_mega_drive_cycle = MakeCycleMegaDrive(0);
+ 	CPUCallbackUserData cpu_callback_user_data;
+-	cc_s16f scanline;
++	cc_u16f scanline;
+ 	cc_u8f h_int_counter;
+ 	cc_u8f i;
+ 
+@@ -261,15 +262,32 @@ void ClownMDEmu_Iterate(ClownMDEmu* const clownmdemu)
+ 	for (i = 0; i < CC_COUNT_OF(cpu_callback_user_data.sync.io_ports); ++i)
+ 		cpu_callback_user_data.sync.io_ports[i].current_cycle = 0;
+ 
+-	/* We start at V-Int, to minimise input latency (games tend to read the control pads during V-Int). */
+-	scanline = console_vertical_resolution;
++	/* We start at V-Int, to minimise input latency (games tend to read the control pads during V-Int). */;
++	state->current_scanline = console_vertical_resolution;
+ 
+-	do 
++	for (scanline = 0; scanline < television_vertical_resolution; ++scanline)
+ 	{
+-		state->current_scanline = scanline;
++		const cc_u16f v_counter = state->current_scanline;
+ 
+-		if (scanline >= 0 && scanline < console_vertical_resolution)
++		if (v_counter < console_vertical_resolution)
+ 		{
++			/* Fire a H-Int if we've reached the requested line */
++			/* TODO: There is some strange behaviour surrounding how H-Int is asserted. */
++			/* https://gendev.spritesmind.net/forum/viewtopic.php?t=183 */
++			/* TODO: Timing info here: */
++			/* http://gendev.spritesmind.net/forum/viewtopic.php?p=8201#p8201 */
++			/* http://gendev.spritesmind.net/forum/viewtopic.php?p=8443#p8443 */
++			/* http://gendev.spritesmind.net/forum/viewtopic.php?t=3058 */
++			/* http://gendev.spritesmind.net/forum/viewtopic.php?t=519 */
++			if (h_int_counter-- == 0)
++			{
++				h_int_counter = clownmdemu->vdp.state.h_int_interval;
++
++				/* Do H-Int. */
++				state->m68k.h_int_pending = cc_true;
++				RaiseHorizontalInterruptIfNeeded(clownmdemu);
++			}
++
+ 			VDP_BeginScanline(&clownmdemu->vdp);
+ 
+ 			current_mega_drive_cycle.cycle += cycles_per_scanline / 2;
+@@ -280,12 +298,12 @@ void ClownMDEmu_Iterate(ClownMDEmu* const clownmdemu)
+ 			/* Devon's 'ronald.gen' is one such example, disabling the display near H-counter 0xA0 (which is on-screen). */
+ 			if (clownmdemu->vdp.state.double_resolution_enabled)
+ 			{
+-				VDP_EndScanline(&clownmdemu->vdp, scanline * 2 + 0, clownmdemu->callbacks->scanline_rendered, clownmdemu->callbacks->user_data);
+-				VDP_EndScanline(&clownmdemu->vdp, scanline * 2 + 1, clownmdemu->callbacks->scanline_rendered, clownmdemu->callbacks->user_data);
++				VDP_EndScanline(&clownmdemu->vdp, v_counter * 2 + 0, clownmdemu->callbacks->scanline_rendered, clownmdemu->callbacks->user_data);
++				VDP_EndScanline(&clownmdemu->vdp, v_counter * 2 + 1, clownmdemu->callbacks->scanline_rendered, clownmdemu->callbacks->user_data);
+ 			}
+ 			else
+ 			{
+-				VDP_EndScanline(&clownmdemu->vdp, scanline, clownmdemu->callbacks->scanline_rendered, clownmdemu->callbacks->user_data);
++				VDP_EndScanline(&clownmdemu->vdp, v_counter, clownmdemu->callbacks->scanline_rendered, clownmdemu->callbacks->user_data);
+ 			}
+ 
+ 			current_mega_drive_cycle.cycle += cycles_per_scanline / 2;
+@@ -293,7 +311,7 @@ void ClownMDEmu_Iterate(ClownMDEmu* const clownmdemu)
+ 		}
+ 		else
+ 		{
+-			if (scanline == -1)
++			if (v_counter == (cc_u16l)-1)
+ 			{
+ 				clownmdemu->vdp.state.currently_in_vblank = cc_false;
+ 
+@@ -301,20 +319,20 @@ void ClownMDEmu_Iterate(ClownMDEmu* const clownmdemu)
+ 				/* TODO: Try moving this to other scanlines, to see if any are more accurate. */
+ 				h_int_counter = clownmdemu->vdp.state.h_int_interval;
+ 			}
+-			else if (scanline == console_vertical_resolution)
++			else if (v_counter == console_vertical_resolution)
+ 			{
+ 				clownmdemu->vdp.state.currently_in_vblank = cc_true;
+ 
+ 				/* Do V-Int. */
+ 				/* TODO: This SHOULD occur around H-scroll 0x1FF. */
+ 				state->m68k.v_int_pending = cc_true;
+-				RaiseInterruptIfNeeded(clownmdemu);
++				RaiseVerticalInterruptIfNeeded(clownmdemu);
+ 
+ 				/* According to Charles MacDonald's gen-hw.txt, this occurs regardless of the 'v_int_enabled' setting. */
+ 				SyncZ80(clownmdemu, &cpu_callback_user_data, current_mega_drive_cycle);
+ 				ClownZ80_Interrupt(&clownmdemu->z80, cc_true);
+ 			}
+-			else if (scanline == console_vertical_resolution + 1)
++			else if (v_counter == console_vertical_resolution + 1)
+ 			{
+ 				/* Assert the Z80 interrupt for a whole scanline. This has the side-effect of causing a second interrupt to occur if the handler exits quickly. */
+ 				/* TODO: According to Vladikcomper, this interrupt should be asserted for roughly 171 Z80 cycles. */
+@@ -326,36 +344,11 @@ void ClownMDEmu_Iterate(ClownMDEmu* const clownmdemu)
+ 			SyncM68k(clownmdemu, &cpu_callback_user_data, current_mega_drive_cycle);
+ 		}
+ 
+-		/* Line -1 is treated as a display line on real Mega Drives:
+-		   - It performs sprite pre-processing.
+-		   - It decrements the H-Int counter.
+-		   - H-Int can occur on it.
+-		   - It displays proper graphics when the border-blanking is disabled. */
+-		if (scanline >= -1 && scanline < console_vertical_resolution)
+-		{
+-			/* Fire a H-Int if we've reached the requested line */
+-			/* TODO: There is some strange behaviour surrounding how H-Int is asserted. */
+-			/* https://gendev.spritesmind.net/forum/viewtopic.php?t=183 */
+-			/* TODO: Timing info here: */
+-			/* http://gendev.spritesmind.net/forum/viewtopic.php?p=8201#p8201 */
+-			/* http://gendev.spritesmind.net/forum/viewtopic.php?p=8443#p8443 */
+-			/* http://gendev.spritesmind.net/forum/viewtopic.php?t=3058 */
+-			/* http://gendev.spritesmind.net/forum/viewtopic.php?t=519 */
+-			if (h_int_counter-- == 0)
+-			{
+-				h_int_counter = clownmdemu->vdp.state.h_int_interval;
+-
+-				/* Do H-Int. */
+-				state->m68k.h_int_pending = cc_true;
+-				RaiseInterruptIfNeeded(clownmdemu);
+-			}
+-		}
++		++state->current_scanline;
+ 
+-		++scanline;
+-
+-		if (scanline == console_vertical_resolution + bottom_border + VDP_LINES_BOTTOM_BLANKING)
+-			scanline = -(television_vertical_resolution - console_vertical_resolution - VDP_LINES_BOTTOM_BLANKING - bottom_border);
+-	} while (scanline != console_vertical_resolution);
++		if (state->current_scanline == console_vertical_resolution + bottom_border + VDP_LINES_BOTTOM_BLANKING)
++			state->current_scanline = v_counter_jump;
++	}
+ 
+ 	/* Update everything for the rest of the frame. */
+ 	SyncM68k(clownmdemu, &cpu_callback_user_data, cycles_per_frame_mega_drive);
+@@ -536,12 +529,10 @@ void ClownMDEmu_SoftReset(ClownMDEmu* const clownmdemu, const cc_bool cartridge_
+ 
+ 	m68k_read_write_callbacks.read_callback = M68kReadCallback;
+ 	m68k_read_write_callbacks.write_callback = M68kWriteCallback;
+-	m68k_read_write_callbacks.interrupt_acknowledge_callback = M68kInterruptAcknowledgeCallback;
+ 	Clown68000_Reset(&clownmdemu->m68k, &m68k_read_write_callbacks);
+ 
+ 	m68k_read_write_callbacks.read_callback = MCDM68kReadCallback;
+ 	m68k_read_write_callbacks.write_callback = MCDM68kWriteCallback;
+-	m68k_read_write_callbacks.interrupt_acknowledge_callback = MCDM68kInterruptAcknowledgeCallback;
+ 	Clown68000_Reset(&clownmdemu->mega_cd.m68k, &m68k_read_write_callbacks);
+ }
+ 
+diff --git a/source/clownmdemu.h b/source/clownmdemu.h
+index 410f242..3511120 100644
+--- a/source/clownmdemu.h
++++ b/source/clownmdemu.h
+@@ -1,740 +1,740 @@
+-#ifndef CLOWNMDEMU_H
+-#define CLOWNMDEMU_H
+-
+-#include <stdarg.h>
+-#include <stddef.h>
+-
+-#include "../libraries/clowncommon/clowncommon.h"
+-#include "../libraries/clown68000/source/interpreter/clown68000.h"
+-#include "../libraries/clownz80/source/interpreter.h"
+-
+-#include "cdc.h"
+-#include "cdda.h"
+-#include "controller-manager.h"
+-#include "fm.h"
+-#include "io-port.h"
+-#include "low-pass-filter.h"
+-#include "pcm.h"
+-#include "psg.h"
+-#include "vdp.h"
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/* TODO: Documentation. */
+-
+-/* Mega Drive */
+-#define CLOWNMDEMU_MASTER_CLOCK_NTSC 53693175
+-#define CLOWNMDEMU_MASTER_CLOCK_PAL  53203424
+-
+-#define CLOWNMDEMU_M68K_CLOCK_DIVIDER 7
+-#define CLOWNMDEMU_M68K_CLOCK_NTSC (CLOWNMDEMU_MASTER_CLOCK_NTSC / CLOWNMDEMU_M68K_CLOCK_DIVIDER)
+-#define CLOWNMDEMU_M68K_CLOCK_PAL  (CLOWNMDEMU_MASTER_CLOCK_PAL / CLOWNMDEMU_M68K_CLOCK_DIVIDER)
+-
+-#define CLOWNMDEMU_Z80_CLOCK_DIVIDER 15
+-#define CLOWNMDEMU_Z80_CLOCK_NTSC (CLOWNMDEMU_MASTER_CLOCK_NTSC / CLOWNMDEMU_Z80_CLOCK_DIVIDER)
+-#define CLOWNMDEMU_Z80_CLOCK_PAL  (CLOWNMDEMU_MASTER_CLOCK_PAL / CLOWNMDEMU_Z80_CLOCK_DIVIDER)
+-
+-#define CLOWNMDEMU_FM_SAMPLE_RATE_NTSC (CLOWNMDEMU_M68K_CLOCK_NTSC / FM_SAMPLE_RATE_DIVIDER)
+-#define CLOWNMDEMU_FM_SAMPLE_RATE_PAL  (CLOWNMDEMU_M68K_CLOCK_PAL / FM_SAMPLE_RATE_DIVIDER)
+-#define CLOWNMDEMU_FM_CHANNEL_COUNT 2
+-#define CLOWNMDEMU_FM_VOLUME_DIVISOR (1 << 0)
+-
+-#define CLOWNMDEMU_PSG_SAMPLE_RATE_DIVIDER 16
+-#define CLOWNMDEMU_PSG_SAMPLE_RATE_NTSC (CLOWNMDEMU_Z80_CLOCK_NTSC / CLOWNMDEMU_PSG_SAMPLE_RATE_DIVIDER)
+-#define CLOWNMDEMU_PSG_SAMPLE_RATE_PAL  (CLOWNMDEMU_Z80_CLOCK_PAL / CLOWNMDEMU_PSG_SAMPLE_RATE_DIVIDER)
+-#define CLOWNMDEMU_PSG_CHANNEL_COUNT 1
+-#define CLOWNMDEMU_PSG_VOLUME_DIVISOR (1 << 3)
+-
+-/* Mega CD */
+-#define CLOWNMDEMU_MCD_MASTER_CLOCK 50000000
+-#define CLOWNMDEMU_MCD_M68K_CLOCK_DIVIDER 4
+-#define CLOWNMDEMU_MCD_M68K_CLOCK (CLOWNMDEMU_MCD_MASTER_CLOCK / CLOWNMDEMU_MCD_M68K_CLOCK_DIVIDER)
+-
+-#define CLOWNMDEMU_PCM_SAMPLE_RATE_DIVIDER 0x180
+-#define CLOWNMDEMU_PCM_SAMPLE_RATE (CLOWNMDEMU_MCD_M68K_CLOCK / CLOWNMDEMU_PCM_SAMPLE_RATE_DIVIDER)
+-#define CLOWNMDEMU_PCM_CHANNEL_COUNT 2
+-#define CLOWNMDEMU_PCM_VOLUME_DIVISOR (1 << 2)
+-
+-#define CLOWNMDEMU_CDDA_SAMPLE_RATE 44100
+-#define CLOWNMDEMU_CDDA_CHANNEL_COUNT 2
+-#define CLOWNMDEMU_CDDA_VOLUME_DIVISOR (1 << 2)
+-
+-/* The NTSC framerate is 59.94FPS (60 divided by 1.001) */
+-#define CLOWNMDEMU_MULTIPLY_BY_NTSC_FRAMERATE(x) ((x) * (60 * 1000) / 1001)
+-#define CLOWNMDEMU_DIVIDE_BY_NTSC_FRAMERATE(x) (((x) / 60) + ((x) / (60 * 1000)))
+-
+-/* The PAL framerate is 50FPS */
+-#define CLOWNMDEMU_MULTIPLY_BY_PAL_FRAMERATE(x) ((x) * 50)
+-#define CLOWNMDEMU_DIVIDE_BY_PAL_FRAMERATE(x) ((x) / 50)
+-
+-typedef enum ClownMDEmu_Button
+-{
+-	CLOWNMDEMU_BUTTON_UP,
+-	CLOWNMDEMU_BUTTON_DOWN,
+-	CLOWNMDEMU_BUTTON_LEFT,
+-	CLOWNMDEMU_BUTTON_RIGHT,
+-	CLOWNMDEMU_BUTTON_A,
+-	CLOWNMDEMU_BUTTON_B,
+-	CLOWNMDEMU_BUTTON_C,
+-	CLOWNMDEMU_BUTTON_X,
+-	CLOWNMDEMU_BUTTON_Y,
+-	CLOWNMDEMU_BUTTON_Z,
+-	CLOWNMDEMU_BUTTON_START,
+-	CLOWNMDEMU_BUTTON_MODE,
+-	CLOWNMDEMU_BUTTON_MAX
+-} ClownMDEmu_Button;
+-
+-typedef enum ClownMDEmu_Region
+-{
+-	CLOWNMDEMU_REGION_DOMESTIC, /* Japanese */
+-	CLOWNMDEMU_REGION_OVERSEAS  /* Elsewhere */
+-} ClownMDEmu_Region;
+-
+-typedef enum ClownMDEmu_TVStandard
+-{
+-	CLOWNMDEMU_TV_STANDARD_NTSC, /* 60Hz */
+-	CLOWNMDEMU_TV_STANDARD_PAL   /* 50Hz */
+-} ClownMDEmu_TVStandard;
+-
+-typedef enum ClownMDEmu_CDDAMode
+-{
+-	CLOWNMDEMU_CDDA_PLAY_ALL,
+-	CLOWNMDEMU_CDDA_PLAY_ONCE,
+-	CLOWNMDEMU_CDDA_PLAY_REPEAT
+-} ClownMDEmu_CDDAMode;
+-
+-typedef struct ClownMDEmu_Configuration
+-{
+-	ClownMDEmu_Region region;
+-	ClownMDEmu_TVStandard tv_standard;
+-	cc_bool low_pass_filter_disabled;
+-	cc_bool cd_add_on_enabled;
+-} ClownMDEmu_Configuration;
+-
+-typedef struct ClownMDEmu_InitialConfiguration
+-{
+-	ClownMDEmu_Configuration general;
+-	ControllerManager_Configuration controller_manager;
+-	VDP_Configuration vdp;
+-	FM_Configuration fm;
+-	PSG_Configuration psg;
+-	PCM_Configuration pcm;
+-	CDDA_Configuration cdda;
+-} ClownMDEmu_InitialConfiguration;
+-
+-typedef struct ClownMDEmu_State
+-{
+-	struct
+-	{
+-		cc_u16l ram[0x8000];
+-		cc_bool h_int_pending, v_int_pending;
+-		cc_bool frozen_by_dma_transfer;
+-	} m68k;
+-
+-	struct
+-	{
+-		cc_u8l ram[0x2000];
+-		cc_u32l cycle_countdown;
+-		cc_u16l bank;
+-		cc_bool bus_requested;
+-		cc_bool reset_held;
+-		cc_bool frozen_by_dma_transfer;
+-	} z80;
+-
+-	IOPort io_ports[3];
+-
+-	struct
+-	{
+-		cc_u8l buffer[0x10000]; /* 64 KiB is the maximum that I have ever seen used (by homebrew). */
+-		cc_u32l size;
+-		cc_bool non_volatile;
+-		cc_u8l data_size;
+-		cc_u8l device_type;
+-		cc_bool mapped_in;
+-	} external_ram;
+-
+-	cc_u8l cartridge_bankswitch[8];
+-	cc_bool cartridge_inserted;
+-
+-	cc_u16l current_scanline;
+-
+-	cc_u32l vdp_dma_transfer_countdown;
+-
+-	struct
+-	{
+-		struct
+-		{
+-			cc_bool bus_requested;
+-			cc_bool reset_held;
+-		} m68k;
+-
+-		struct
+-		{
+-			cc_u16l buffer[0x40000];
+-			cc_u8l bank;
+-			cc_u8l write_protect;
+-		} prg_ram;
+-
+-		struct
+-		{
+-			cc_u16l buffer[0x20000];
+-			cc_bool in_1m_mode;
+-			cc_bool dmna, ret;
+-		} word_ram;
+-
+-		struct
+-		{
+-			cc_u16l flag;
+-			cc_u16l command[8]; /* The MAIN-CPU one. */
+-			cc_u16l status[8];  /* The SUB-CPU one. */
+-		} communication;
+-
+-		struct
+-		{
+-			cc_bool enabled[6];
+-			cc_bool irq1_pending;
+-			cc_u32l irq3_countdown, irq3_countdown_master;
+-		} irq;
+-
+-		/* TODO: Just convert this to a plain array? Presumably, that's what the original hardware does. */
+-		struct
+-		{
+-			cc_bool large_stamp_map, large_stamp, repeating_stamp_map;
+-			cc_u16l stamp_map_address, image_buffer_address, image_buffer_width;
+-			cc_u8l image_buffer_height, image_buffer_height_in_tiles, image_buffer_x_offset, image_buffer_y_offset;
+-		} rotation;
+-
+-		cc_bool cd_inserted;
+-		cc_u16l hblank_address;
+-		cc_u16l delayed_dma_word;
+-	} mega_cd;
+-
+-	struct
+-	{
+-		LowPassFilter_FirstOrder_State fm[2];
+-		LowPassFilter_FirstOrder_State psg[1];
+-		LowPassFilter_SecondOrder_State pcm[2];
+-	} low_pass_filters;
+-} ClownMDEmu_State;
+-
+-struct ClownMDEmu;
+-
+-typedef struct ClownMDEmu_Callbacks
+-{
+-	const void *user_data;
+-
+-	/* TODO: Rename these to be less mind-numbing. */
+-	void (*colour_updated)(void *user_data, cc_u16f index, cc_u16f colour);
+-	VDP_ScanlineRenderedCallback scanline_rendered;
+-	cc_bool (*input_requested)(void *user_data, cc_u8f player_id, ClownMDEmu_Button button_id);
+-
+-	void (*fm_audio_to_be_generated)(void *user_data, struct ClownMDEmu *clownmdemu, size_t total_frames, void (*generate_fm_audio)(struct ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, size_t total_frames));
+-	void (*psg_audio_to_be_generated)(void *user_data, struct ClownMDEmu *clownmdemu, size_t total_frames, void (*generate_psg_audio)(struct ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, size_t total_frames));
+-	void (*pcm_audio_to_be_generated)(void *user_data, struct ClownMDEmu *clownmdemu, size_t total_frames, void (*generate_pcm_audio)(struct ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, size_t total_frames));
+-	void (*cdda_audio_to_be_generated)(void *user_data, struct ClownMDEmu *clownmdemu, size_t total_frames, void (*generate_cdda_audio)(struct ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, size_t total_frames));
+-
+-	void (*cd_seeked)(void *user_data, cc_u32f sector_index);
+-	CDC_SectorReadCallback cd_sector_read;
+-	cc_bool (*cd_track_seeked)(void *user_data, cc_u16f track_index, ClownMDEmu_CDDAMode mode);
+-	CDDA_AudioReadCallback cd_audio_read;
+-
+-	cc_bool (*save_file_opened_for_reading)(void *user_data, const char *filename);
+-	cc_s16f (*save_file_read)(void *user_data);
+-	cc_bool (*save_file_opened_for_writing)(void *user_data, const char *filename);
+-	void (*save_file_written)(void *user_data, cc_u8f byte);
+-	void (*save_file_closed)(void *user_data);
+-	cc_bool (*save_file_removed)(void *user_data, const char *filename);
+-	cc_bool (*save_file_size_obtained)(void *user_data, const char *filename, size_t *size);
+-} ClownMDEmu_Callbacks;
+-
+-typedef struct ClownMDEmu
+-{
+-	const ClownMDEmu_Callbacks *callbacks;
+-
+-	const cc_u16l *cartridge_buffer;
+-	cc_u32l cartridge_buffer_length;
+-
+-	ControllerManager controller_manager;
+-	Clown68000_State m68k;
+-	ClownZ80_State z80;
+-	VDP vdp;
+-	FM fm;
+-	PSG psg;
+-
+-	struct
+-	{
+-		Clown68000_State m68k;
+-		CDC_State cdc;
+-		CDDA cdda;
+-		PCM pcm;
+-	} mega_cd;
+-
+-	ClownMDEmu_Configuration configuration;
+-	ClownMDEmu_State state;
+-} ClownMDEmu;
+-
+-typedef void (*ClownMDEmu_LogCallback)(void *user_data, const char *format, va_list arg);
+-
+-void ClownMDEmu_Constant_Initialise(void);
+-void ClownMDEmu_Initialise(ClownMDEmu *clownmdemu, const ClownMDEmu_InitialConfiguration *configuration, const ClownMDEmu_Callbacks *callbacks);
+-void ClownMDEmu_Iterate(ClownMDEmu *clownmdemu);
+-void ClownMDEmu_SetCartridge(ClownMDEmu *clownmdemu, const cc_u16l *buffer, cc_u32f buffer_length);
+-void ClownMDEmu_SoftReset(ClownMDEmu *clownmdemu, cc_bool cartridge_inserted, cc_bool cd_inserted);
+-void ClownMDEmu_HardReset(ClownMDEmu *clownmdemu, cc_bool cartridge_inserted, cc_bool cd_inserted);
+-void ClownMDEmu_SetLogCallback(const ClownMDEmu_LogCallback log_callback, const void *user_data);
+-
+-typedef struct ClownMDEmu_StateBackup
+-{
+-	ClownMDEmu_State general;
+-
+-	Clown68000_State m68k;
+-	ClownZ80_State z80;
+-	VDP_State vdp;
+-	FM_State fm;
+-	PSG_State psg;
+-
+-	struct
+-	{
+-		Clown68000_State m68k;
+-		CDC_State cdc;
+-		CDDA_State cdda;
+-		PCM_State pcm;
+-	} mega_cd;
+-} ClownMDEmu_StateBackup;
+-
+-void ClownMDEmu_SaveState(const ClownMDEmu *clownmdemu, ClownMDEmu_StateBackup *backup);
+-void ClownMDEmu_LoadState(ClownMDEmu *clownmdemu, const ClownMDEmu_StateBackup *backup);
+-
+-#ifdef __cplusplus
+-}
+-#endif
+-
+-#if defined(CC_CPLUSPLUS) && CC_CPLUSPLUS >= 201703L
+-
+-#include <cassert>
+-#include <cstdarg>
+-#include <cstddef>
+-#include <cstdio>
+-#include <array>
+-#include <functional>
+-#include <string>
+-#include <type_traits>
+-
+-namespace ClownMDEmuCXX
+-{
+-	namespace Internal
+-	{
+-		class Constant
+-		{
+-		public:
+-			Constant()
+-			{
+-				ClownMDEmu_Constant_Initialise();
+-			}
+-		};
+-
+-		inline Constant constant;
+-
+-		template<typename T, std::size_t S>
+-		auto& CArrayAsStdArray(T (&array)[S])
+-		{
+-			return *reinterpret_cast<std::array<T, S>*>(array);
+-		}
+-	}
+-
+-	template<typename Derived>
+-	class Emulator;
+-
+-	class InitialConfiguration : private ClownMDEmu_InitialConfiguration
+-	{
+-		template<typename Derived>
+-		friend class Emulator;
+-
+-	public:
+-		InitialConfiguration()
+-			: ClownMDEmu_InitialConfiguration()
+-		{}
+-
+-#define CLOWNMDEMU_CONFIGURATION_AS_IS(VALUE) VALUE
+-#define CLOWNMDEMU_CONFIGURATION_NOT(VALUE) !VALUE
+-
+-#define CLOWNMDEMU_CONFIGURATION_GETTER_SETTER(IDENTIFIER, VALUE, OPERATION) \
+-	std::remove_reference_t<decltype(VALUE)> Get##IDENTIFIER() const { return OPERATION(VALUE); } \
+-	void Set##IDENTIFIER(const std::remove_reference_t<decltype(VALUE)> value){ VALUE = OPERATION(value); }
+-
+-#define CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(IDENTIFIER, VALUE) \
+-	CLOWNMDEMU_CONFIGURATION_GETTER_SETTER(IDENTIFIER, VALUE, CLOWNMDEMU_CONFIGURATION_AS_IS)
+-
+-#define CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(IDENTIFIER, VALUE) \
+-	CLOWNMDEMU_CONFIGURATION_GETTER_SETTER(IDENTIFIER, VALUE, CLOWNMDEMU_CONFIGURATION_NOT)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(TVStandard, general.tv_standard)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(Region, general.region)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(LowPassFilterEnabled, general.low_pass_filter_disabled)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(CDAddOnEnabled, general.cd_add_on_enabled)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(ControllerProtocol, controller_manager.protocol)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(SpritePlaneEnabled, vdp.sprites_disabled)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(WindowPlaneEnabled, vdp.window_disabled)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(ScrollPlaneAEnabled, vdp.planes_disabled[0])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(ScrollPlaneBEnabled, vdp.planes_disabled[1])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(WidescreenTiles, vdp.widescreen_tiles)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM1Enabled, fm.fm_channels_disabled[0])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM2Enabled, fm.fm_channels_disabled[1])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM3Enabled, fm.fm_channels_disabled[2])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM4Enabled, fm.fm_channels_disabled[3])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM5Enabled, fm.fm_channels_disabled[4])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM6Enabled, fm.fm_channels_disabled[5])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(DACEnabled, fm.dac_channel_disabled)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(LadderEffectEnabled, fm.ladder_effect_disabled)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG1Enabled, psg.tone_disabled[0])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG2Enabled, psg.tone_disabled[1])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG3Enabled, psg.tone_disabled[2])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSGNoiseEnabled, psg.noise_disabled)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(CDDAEnabled, cdda.disabled)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM1Enabled, pcm.channels_disabled[0])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM2Enabled, pcm.channels_disabled[1])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM3Enabled, pcm.channels_disabled[2])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM4Enabled, pcm.channels_disabled[3])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM5Enabled, pcm.channels_disabled[4])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM6Enabled, pcm.channels_disabled[5])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM7Enabled, pcm.channels_disabled[6])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM8Enabled, pcm.channels_disabled[7])
+-	};
+-
+-	class StateBackup : private ClownMDEmu_StateBackup
+-	{
+-		template<typename Derived>
+-		friend class Emulator;
+-
+-	public:
+-		template<typename T>
+-		StateBackup(const Emulator<T> &emulator)
+-		{
+-			emulator.SaveState(*this);
+-		}
+-
+-		template<typename T>
+-		void Apply(Emulator<T> &emulator) const
+-		{
+-			emulator.LoadState(*this);
+-		}
+-	};
+-
+-	template<typename Derived>
+-	class Emulator : protected ClownMDEmu
+-	{
+-		/*************/
+-		/* Callbacks */
+-		/*************/
+-
+-	private:
+-		const ClownMDEmu_Callbacks callbacks = {
+-			this,
+-			Callback_ColourUpdated,
+-			Callback_ScanlineRendered,
+-			Callback_InputRequested,
+-			Callback_FMAudioToBeGenerated,
+-			Callback_PSGAudioToBeGenerated,
+-			Callback_PCMAudioToBeGenerated,
+-			Callback_CDDAAudioToBeGenerated,
+-			Callback_CDSeeked,
+-			Callback_CDSectorRead,
+-			Callback_CDTrackSeeked,
+-			Callback_CDAudioRead,
+-			Callback_SaveFileOpenedForReading,
+-			Callback_SaveFileRead,
+-			Callback_SaveFileOpenedForWriting,
+-			Callback_SaveFileWritten,
+-			Callback_SaveFileClosed,
+-			Callback_SaveFileRemoved,
+-			Callback_SaveFileSizeObtained
+-		};
+-
+-		static void Callback_ColourUpdated(void* const user_data, const cc_u16f index, const cc_u16f colour)
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->ColourUpdated(index, colour);
+-		}
+-		static void Callback_ScanlineRendered(void* const user_data, const cc_u16f scanline, const cc_u8l* const pixels, const cc_u16f left_boundary, const cc_u16f right_boundary, const cc_u16f screen_width, const cc_u16f screen_height)
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->ScanlineRendered(scanline, pixels, left_boundary, right_boundary, screen_width, screen_height);
+-		}
+-		static cc_bool Callback_InputRequested(void* const user_data, const cc_u8f player_id, const ClownMDEmu_Button button_id)
+-		{
+-			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->InputRequested(player_id, button_id);
+-		}
+-
+-		static void Callback_FMAudioToBeGenerated(void* const user_data, ClownMDEmu* const clownmdemu, const std::size_t total_frames, void (* const generate_fm_audio)(ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, std::size_t total_frames))
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->FMAudioToBeGenerated(clownmdemu, total_frames, generate_fm_audio);
+-		}
+-		static void Callback_PSGAudioToBeGenerated(void* const user_data, ClownMDEmu* const clownmdemu, const std::size_t total_frames, void (* const generate_psg_audio)(ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, std::size_t total_frames))
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->PSGAudioToBeGenerated(clownmdemu, total_frames, generate_psg_audio);
+-		}
+-		static void Callback_PCMAudioToBeGenerated(void* const user_data, ClownMDEmu* const clownmdemu, const std::size_t total_frames, void (* const generate_pcm_audio)(ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, std::size_t total_frames))
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->PCMAudioToBeGenerated(clownmdemu, total_frames, generate_pcm_audio);
+-		}
+-		static void Callback_CDDAAudioToBeGenerated(void* const user_data, ClownMDEmu* const clownmdemu, const std::size_t total_frames, void (* const generate_cdda_audio)(ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, std::size_t total_frames))
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDDAAudioToBeGenerated(clownmdemu, total_frames, generate_cdda_audio);
+-		}
+-
+-		static void Callback_CDSeeked(void* const user_data, const cc_u32f sector_index)
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDSeeked(sector_index);
+-		}
+-		static void Callback_CDSectorRead(void* const user_data, cc_u16l* const buffer)
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDSectorRead(buffer);
+-		}
+-		static cc_bool Callback_CDTrackSeeked(void* const user_data, const cc_u16f track_index, const ClownMDEmu_CDDAMode mode)
+-		{
+-			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDTrackSeeked(track_index, mode);
+-		}
+-		static std::size_t Callback_CDAudioRead(void* const user_data, cc_s16l* const sample_buffer, const std::size_t total_frames)
+-		{
+-			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDAudioRead(sample_buffer, total_frames);
+-		}
+-
+-		static cc_bool Callback_SaveFileOpenedForReading(void* const user_data, const char* const filename)
+-		{
+-			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileOpenedForReading(filename);
+-		}
+-		static cc_s16f Callback_SaveFileRead(void* const user_data)
+-		{
+-			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileRead();
+-		}
+-		static cc_bool Callback_SaveFileOpenedForWriting(void* const user_data, const char* const filename)
+-		{
+-			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileOpenedForWriting(filename);
+-		}
+-		static void Callback_SaveFileWritten(void* const user_data, const cc_u8f byte)
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileWritten(byte);
+-		}
+-		static void Callback_SaveFileClosed(void* const user_data)
+-		{
+-			static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileClosed();
+-		}
+-		static cc_bool Callback_SaveFileRemoved(void* const user_data, const char* const filename)
+-		{
+-			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileRemoved(filename);
+-		}
+-		static cc_bool Callback_SaveFileSizeObtained(void* const user_data, const char* const filename, std::size_t* const size)
+-		{
+-			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileSizeObtained(filename, size);
+-		}
+-
+-		/*************/
+-		/* Interface */
+-		/*************/
+-
+-	public:
+-		Emulator(const InitialConfiguration &configuration)
+-		{
+-			ClownMDEmu_Initialise(this, &configuration, &callbacks);
+-		}
+-
+-		Emulator(const Emulator &other) = delete;
+-		Emulator(Emulator &&other) = delete;
+-
+-		Emulator& operator=(const Emulator &other) = delete;
+-		Emulator& operator=(Emulator &&other) = delete;
+-
+-		void InsertCartridge(const cc_u16l* const buffer, const cc_u32f buffer_length)
+-		{
+-			ClownMDEmu_SetCartridge(this, buffer, buffer_length);
+-		}
+-
+-		void EjectCartridge()
+-		{
+-			ClownMDEmu_SetCartridge(this, nullptr, 0);
+-		}
+-
+-		[[nodiscard]] bool IsCartridgeInserted() const
+-		{
+-			return cartridge_buffer_length != 0;
+-		}
+-
+-		void SoftReset(const cc_bool cd_inserted)
+-		{
+-			ClownMDEmu_SoftReset(this, IsCartridgeInserted(), cd_inserted);
+-		}
+-
+-		void HardReset(const cc_bool cd_inserted)
+-		{
+-			ClownMDEmu_HardReset(this, IsCartridgeInserted(), cd_inserted);
+-		}
+-
+-		void Iterate()
+-		{
+-			ClownMDEmu_Iterate(this);
+-		}
+-
+-		void SaveState(StateBackup &state_backup) const
+-		{
+-			ClownMDEmu_SaveState(this, &state_backup);
+-		}
+-
+-		void LoadState(const StateBackup &state_backup)
+-		{
+-			ClownMDEmu_LoadState(this, &state_backup);
+-		}
+-
+-		/****************/
+-		/* Log Callback */
+-		/****************/
+-
+-	public:
+-		using LogCallbackFormatted = std::function<void(const char *format, std::va_list arg)>;
+-		using LogCallbackPlain = std::function<void(const std::string &message)>;
+-
+-	private:
+-		static inline LogCallbackFormatted log_callback;
+-
+-	public:
+-		static void SetLogCallback(const LogCallbackFormatted &callback)
+-		{
+-			log_callback = callback;
+-			ClownMDEmu_SetLogCallback(
+-				[](void* const user_data, const char *format, std::va_list arg)
+-				{
+-					(*static_cast<const LogCallbackFormatted*>(user_data))(format, arg);
+-				}, &log_callback
+-			);
+-		}
+-
+-		static void SetLogCallback(const LogCallbackPlain &callback)
+-		{
+-			SetLogCallback(
+-				[callback](const char* const format, std::va_list arg)
+-				{
+-					/* TODO: Use 'std::string::resize_and_overwrite' here when C++23 becomes the norm. */
+-					std::va_list arg_copy;
+-					va_copy(arg_copy, arg);
+-					std::string string(std::vsnprintf(nullptr, 0, format, arg_copy), '\0');
+-					va_end(arg_copy);
+-
+-					std::vsnprintf(std::data(string), std::size(string) + 1, format, arg);
+-					callback(string);
+-				}
+-			);
+-		}
+-
+-		/****************/
+-		/* State Access */
+-		/****************/
+-
+-	public:
+-		[[nodiscard]] const auto& GetState() const
+-		{
+-			return state;
+-		}
+-
+-		[[nodiscard]] const auto& GetM68kState() const
+-		{
+-			return m68k;
+-		}
+-
+-		[[nodiscard]] const auto& GetZ80State() const
+-		{
+-			return z80;
+-		}
+-
+-		[[nodiscard]] const auto& GetVDPState() const
+-		{
+-			return vdp.state;
+-		}
+-
+-		[[nodiscard]] const auto& GetFMState() const
+-		{
+-			return fm.state;
+-		}
+-
+-		[[nodiscard]] const auto& GetPSGState() const
+-		{
+-			return psg.state;
+-		}
+-
+-		[[nodiscard]] const auto& GetSubM68kState() const
+-		{
+-			return mega_cd.m68k;
+-		}
+-
+-		[[nodiscard]] const auto& GetCDCState() const
+-		{
+-			return mega_cd.cdc;
+-		}
+-
+-		[[nodiscard]] const auto& GetCDDAState() const
+-		{
+-			return mega_cd.cdda.state;
+-		}
+-
+-		[[nodiscard]] const auto& GetPCMState() const
+-		{
+-			return mega_cd.pcm.state;
+-		}
+-
+-		[[nodiscard]] auto& GetExternalRAM()
+-		{
+-			return Internal::CArrayAsStdArray(state.external_ram.buffer);
+-		}
+-
+-		/*****************/
+-		/* Configuration */
+-		/*****************/
+-
+-	public:
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(TVStandard, configuration.tv_standard)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(Region, configuration.region)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(LowPassFilterEnabled, configuration.low_pass_filter_disabled)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(CDAddOnEnabled, configuration.cd_add_on_enabled)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(ControllerProtocol, controller_manager.configuration.protocol)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(SpritePlaneEnabled, vdp.configuration.sprites_disabled)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(WindowPlaneEnabled, vdp.configuration.window_disabled)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(ScrollPlaneAEnabled, vdp.configuration.planes_disabled[0])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(ScrollPlaneBEnabled, vdp.configuration.planes_disabled[1])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(WidescreenTiles, vdp.configuration.widescreen_tiles)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM1Enabled, fm.configuration.fm_channels_disabled[0])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM2Enabled, fm.configuration.fm_channels_disabled[1])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM3Enabled, fm.configuration.fm_channels_disabled[2])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM4Enabled, fm.configuration.fm_channels_disabled[3])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM5Enabled, fm.configuration.fm_channels_disabled[4])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM6Enabled, fm.configuration.fm_channels_disabled[5])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(DACEnabled, fm.configuration.dac_channel_disabled)
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(LadderEffectEnabled, fm.configuration.ladder_effect_disabled)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG1Enabled, psg.configuration.tone_disabled[0])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG2Enabled, psg.configuration.tone_disabled[1])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG3Enabled, psg.configuration.tone_disabled[2])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSGNoiseEnabled, psg.configuration.noise_disabled)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(CDDAEnabled, mega_cd.cdda.configuration.disabled)
+-
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM1Enabled, mega_cd.pcm.configuration.channels_disabled[0])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM2Enabled, mega_cd.pcm.configuration.channels_disabled[1])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM3Enabled, mega_cd.pcm.configuration.channels_disabled[2])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM4Enabled, mega_cd.pcm.configuration.channels_disabled[3])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM5Enabled, mega_cd.pcm.configuration.channels_disabled[4])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM6Enabled, mega_cd.pcm.configuration.channels_disabled[5])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM7Enabled, mega_cd.pcm.configuration.channels_disabled[6])
+-		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM8Enabled, mega_cd.pcm.configuration.channels_disabled[7])
+-	};
+-}
+-
+-#endif
+-
+-#endif /* CLOWNMDEMU_H */
++#ifndef CLOWNMDEMU_H
++#define CLOWNMDEMU_H
++
++#include <stdarg.h>
++#include <stddef.h>
++
++#include "../libraries/clowncommon/clowncommon.h"
++#include "../libraries/clown68000/source/interpreter/clown68000.h"
++#include "../libraries/clownz80/source/interpreter.h"
++
++#include "cdc.h"
++#include "cdda.h"
++#include "controller-manager.h"
++#include "fm.h"
++#include "io-port.h"
++#include "low-pass-filter.h"
++#include "pcm.h"
++#include "psg.h"
++#include "vdp.h"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/* TODO: Documentation. */
++
++/* Mega Drive */
++#define CLOWNMDEMU_MASTER_CLOCK_NTSC 53693175
++#define CLOWNMDEMU_MASTER_CLOCK_PAL  53203424
++
++#define CLOWNMDEMU_M68K_CLOCK_DIVIDER 7
++#define CLOWNMDEMU_M68K_CLOCK_NTSC (CLOWNMDEMU_MASTER_CLOCK_NTSC / CLOWNMDEMU_M68K_CLOCK_DIVIDER)
++#define CLOWNMDEMU_M68K_CLOCK_PAL  (CLOWNMDEMU_MASTER_CLOCK_PAL / CLOWNMDEMU_M68K_CLOCK_DIVIDER)
++
++#define CLOWNMDEMU_Z80_CLOCK_DIVIDER 15
++#define CLOWNMDEMU_Z80_CLOCK_NTSC (CLOWNMDEMU_MASTER_CLOCK_NTSC / CLOWNMDEMU_Z80_CLOCK_DIVIDER)
++#define CLOWNMDEMU_Z80_CLOCK_PAL  (CLOWNMDEMU_MASTER_CLOCK_PAL / CLOWNMDEMU_Z80_CLOCK_DIVIDER)
++
++#define CLOWNMDEMU_FM_SAMPLE_RATE_NTSC (CLOWNMDEMU_M68K_CLOCK_NTSC / FM_SAMPLE_RATE_DIVIDER)
++#define CLOWNMDEMU_FM_SAMPLE_RATE_PAL  (CLOWNMDEMU_M68K_CLOCK_PAL / FM_SAMPLE_RATE_DIVIDER)
++#define CLOWNMDEMU_FM_CHANNEL_COUNT 2
++#define CLOWNMDEMU_FM_VOLUME_DIVISOR (1 << 0)
++
++#define CLOWNMDEMU_PSG_SAMPLE_RATE_DIVIDER 16
++#define CLOWNMDEMU_PSG_SAMPLE_RATE_NTSC (CLOWNMDEMU_Z80_CLOCK_NTSC / CLOWNMDEMU_PSG_SAMPLE_RATE_DIVIDER)
++#define CLOWNMDEMU_PSG_SAMPLE_RATE_PAL  (CLOWNMDEMU_Z80_CLOCK_PAL / CLOWNMDEMU_PSG_SAMPLE_RATE_DIVIDER)
++#define CLOWNMDEMU_PSG_CHANNEL_COUNT 1
++#define CLOWNMDEMU_PSG_VOLUME_DIVISOR (1 << 3)
++
++/* Mega CD */
++#define CLOWNMDEMU_MCD_MASTER_CLOCK 50000000
++#define CLOWNMDEMU_MCD_M68K_CLOCK_DIVIDER 4
++#define CLOWNMDEMU_MCD_M68K_CLOCK (CLOWNMDEMU_MCD_MASTER_CLOCK / CLOWNMDEMU_MCD_M68K_CLOCK_DIVIDER)
++
++#define CLOWNMDEMU_PCM_SAMPLE_RATE_DIVIDER 0x180
++#define CLOWNMDEMU_PCM_SAMPLE_RATE (CLOWNMDEMU_MCD_M68K_CLOCK / CLOWNMDEMU_PCM_SAMPLE_RATE_DIVIDER)
++#define CLOWNMDEMU_PCM_CHANNEL_COUNT 2
++#define CLOWNMDEMU_PCM_VOLUME_DIVISOR (1 << 2)
++
++#define CLOWNMDEMU_CDDA_SAMPLE_RATE 44100
++#define CLOWNMDEMU_CDDA_CHANNEL_COUNT 2
++#define CLOWNMDEMU_CDDA_VOLUME_DIVISOR (1 << 2)
++
++/* The NTSC framerate is 59.94FPS (60 divided by 1.001) */
++#define CLOWNMDEMU_MULTIPLY_BY_NTSC_FRAMERATE(x) ((x) * (60 * 1000) / 1001)
++#define CLOWNMDEMU_DIVIDE_BY_NTSC_FRAMERATE(x) (((x) / 60) + ((x) / (60 * 1000)))
++
++/* The PAL framerate is 50FPS */
++#define CLOWNMDEMU_MULTIPLY_BY_PAL_FRAMERATE(x) ((x) * 50)
++#define CLOWNMDEMU_DIVIDE_BY_PAL_FRAMERATE(x) ((x) / 50)
++
++typedef enum ClownMDEmu_Button
++{
++	CLOWNMDEMU_BUTTON_UP,
++	CLOWNMDEMU_BUTTON_DOWN,
++	CLOWNMDEMU_BUTTON_LEFT,
++	CLOWNMDEMU_BUTTON_RIGHT,
++	CLOWNMDEMU_BUTTON_A,
++	CLOWNMDEMU_BUTTON_B,
++	CLOWNMDEMU_BUTTON_C,
++	CLOWNMDEMU_BUTTON_X,
++	CLOWNMDEMU_BUTTON_Y,
++	CLOWNMDEMU_BUTTON_Z,
++	CLOWNMDEMU_BUTTON_START,
++	CLOWNMDEMU_BUTTON_MODE,
++	CLOWNMDEMU_BUTTON_MAX
++} ClownMDEmu_Button;
++
++typedef enum ClownMDEmu_Region
++{
++	CLOWNMDEMU_REGION_DOMESTIC, /* Japanese */
++	CLOWNMDEMU_REGION_OVERSEAS  /* Elsewhere */
++} ClownMDEmu_Region;
++
++typedef enum ClownMDEmu_TVStandard
++{
++	CLOWNMDEMU_TV_STANDARD_NTSC, /* 60Hz */
++	CLOWNMDEMU_TV_STANDARD_PAL   /* 50Hz */
++} ClownMDEmu_TVStandard;
++
++typedef enum ClownMDEmu_CDDAMode
++{
++	CLOWNMDEMU_CDDA_PLAY_ALL,
++	CLOWNMDEMU_CDDA_PLAY_ONCE,
++	CLOWNMDEMU_CDDA_PLAY_REPEAT
++} ClownMDEmu_CDDAMode;
++
++typedef struct ClownMDEmu_Configuration
++{
++	ClownMDEmu_Region region;
++	ClownMDEmu_TVStandard tv_standard;
++	cc_bool low_pass_filter_disabled;
++	cc_bool cd_add_on_enabled;
++} ClownMDEmu_Configuration;
++
++typedef struct ClownMDEmu_InitialConfiguration
++{
++	ClownMDEmu_Configuration general;
++	ControllerManager_Configuration controller_manager;
++	VDP_Configuration vdp;
++	FM_Configuration fm;
++	PSG_Configuration psg;
++	PCM_Configuration pcm;
++	CDDA_Configuration cdda;
++} ClownMDEmu_InitialConfiguration;
++
++typedef struct ClownMDEmu_State
++{
++	struct
++	{
++		cc_u16l ram[0x8000];
++		cc_bool h_int_pending, v_int_pending;
++		cc_bool frozen_by_dma_transfer;
++	} m68k;
++
++	struct
++	{
++		cc_u8l ram[0x2000];
++		cc_u32l cycle_countdown;
++		cc_u16l bank;
++		cc_bool bus_requested;
++		cc_bool reset_held;
++		cc_bool frozen_by_dma_transfer;
++	} z80;
++
++	IOPort io_ports[3];
++
++	struct
++	{
++		cc_u8l buffer[0x10000]; /* 64 KiB is the maximum that I have ever seen used (by homebrew). */
++		cc_u32l size;
++		cc_bool non_volatile;
++		cc_u8l data_size;
++		cc_u8l device_type;
++		cc_bool mapped_in;
++	} external_ram;
++
++	cc_u8l cartridge_bankswitch[8];
++	cc_bool cartridge_inserted;
++
++	cc_u16l current_scanline;
++
++	cc_u32l vdp_dma_transfer_countdown;
++
++	struct
++	{
++		struct
++		{
++			cc_bool bus_requested;
++			cc_bool reset_held;
++		} m68k;
++
++		struct
++		{
++			cc_u16l buffer[0x40000];
++			cc_u8l bank;
++			cc_u8l write_protect;
++		} prg_ram;
++
++		struct
++		{
++			cc_u16l buffer[0x20000];
++			cc_bool in_1m_mode;
++			cc_bool dmna, ret;
++		} word_ram;
++
++		struct
++		{
++			cc_u16l flag;
++			cc_u16l command[8]; /* The MAIN-CPU one. */
++			cc_u16l status[8];  /* The SUB-CPU one. */
++		} communication;
++
++		struct
++		{
++			cc_bool enabled[6];
++			cc_bool irq1_pending;
++			cc_u32l irq3_countdown, irq3_countdown_master;
++		} irq;
++
++		/* TODO: Just convert this to a plain array? Presumably, that's what the original hardware does. */
++		struct
++		{
++			cc_bool large_stamp_map, large_stamp, repeating_stamp_map;
++			cc_u16l stamp_map_address, image_buffer_address, image_buffer_width;
++			cc_u8l image_buffer_height, image_buffer_height_in_tiles, image_buffer_x_offset, image_buffer_y_offset;
++		} rotation;
++
++		cc_bool cd_inserted;
++		cc_u16l hblank_address;
++		cc_u16l delayed_dma_word;
++	} mega_cd;
++
++	struct
++	{
++		LowPassFilter_FirstOrder_State fm[2];
++		LowPassFilter_FirstOrder_State psg[1];
++		LowPassFilter_SecondOrder_State pcm[2];
++	} low_pass_filters;
++} ClownMDEmu_State;
++
++struct ClownMDEmu;
++
++typedef struct ClownMDEmu_Callbacks
++{
++	const void *user_data;
++
++	/* TODO: Rename these to be less mind-numbing. */
++	void (*colour_updated)(void *user_data, cc_u16f index, cc_u16f colour);
++	VDP_ScanlineRenderedCallback scanline_rendered;
++	cc_bool (*input_requested)(void *user_data, cc_u8f player_id, ClownMDEmu_Button button_id);
++
++	void (*fm_audio_to_be_generated)(void *user_data, struct ClownMDEmu *clownmdemu, size_t total_frames, void (*generate_fm_audio)(struct ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, size_t total_frames));
++	void (*psg_audio_to_be_generated)(void *user_data, struct ClownMDEmu *clownmdemu, size_t total_frames, void (*generate_psg_audio)(struct ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, size_t total_frames));
++	void (*pcm_audio_to_be_generated)(void *user_data, struct ClownMDEmu *clownmdemu, size_t total_frames, void (*generate_pcm_audio)(struct ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, size_t total_frames));
++	void (*cdda_audio_to_be_generated)(void *user_data, struct ClownMDEmu *clownmdemu, size_t total_frames, void (*generate_cdda_audio)(struct ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, size_t total_frames));
++
++	void (*cd_seeked)(void *user_data, cc_u32f sector_index);
++	CDC_SectorReadCallback cd_sector_read;
++	cc_bool (*cd_track_seeked)(void *user_data, cc_u16f track_index, ClownMDEmu_CDDAMode mode);
++	CDDA_AudioReadCallback cd_audio_read;
++
++	cc_bool (*save_file_opened_for_reading)(void *user_data, const char *filename);
++	cc_s16f (*save_file_read)(void *user_data);
++	cc_bool (*save_file_opened_for_writing)(void *user_data, const char *filename);
++	void (*save_file_written)(void *user_data, cc_u8f byte);
++	void (*save_file_closed)(void *user_data);
++	cc_bool (*save_file_removed)(void *user_data, const char *filename);
++	cc_bool (*save_file_size_obtained)(void *user_data, const char *filename, size_t *size);
++} ClownMDEmu_Callbacks;
++
++typedef struct ClownMDEmu
++{
++	const ClownMDEmu_Callbacks *callbacks;
++
++	const cc_u16l *cartridge_buffer;
++	cc_u32l cartridge_buffer_length;
++
++	ControllerManager controller_manager;
++	Clown68000_State m68k;
++	ClownZ80_State z80;
++	VDP vdp;
++	FM fm;
++	PSG psg;
++
++	struct
++	{
++		Clown68000_State m68k;
++		CDC_State cdc;
++		CDDA cdda;
++		PCM pcm;
++	} mega_cd;
++
++	ClownMDEmu_Configuration configuration;
++	ClownMDEmu_State state;
++} ClownMDEmu;
++
++typedef void (*ClownMDEmu_LogCallback)(void *user_data, const char *format, va_list arg);
++
++void ClownMDEmu_Constant_Initialise(void);
++void ClownMDEmu_Initialise(ClownMDEmu *clownmdemu, const ClownMDEmu_InitialConfiguration *configuration, const ClownMDEmu_Callbacks *callbacks);
++void ClownMDEmu_Iterate(ClownMDEmu *clownmdemu);
++void ClownMDEmu_SetCartridge(ClownMDEmu *clownmdemu, const cc_u16l *buffer, cc_u32f buffer_length);
++void ClownMDEmu_SoftReset(ClownMDEmu *clownmdemu, cc_bool cartridge_inserted, cc_bool cd_inserted);
++void ClownMDEmu_HardReset(ClownMDEmu *clownmdemu, cc_bool cartridge_inserted, cc_bool cd_inserted);
++void ClownMDEmu_SetLogCallback(const ClownMDEmu_LogCallback log_callback, const void *user_data);
++
++typedef struct ClownMDEmu_StateBackup
++{
++	ClownMDEmu_State general;
++
++	Clown68000_State m68k;
++	ClownZ80_State z80;
++	VDP_State vdp;
++	FM_State fm;
++	PSG_State psg;
++
++	struct
++	{
++		Clown68000_State m68k;
++		CDC_State cdc;
++		CDDA_State cdda;
++		PCM_State pcm;
++	} mega_cd;
++} ClownMDEmu_StateBackup;
++
++void ClownMDEmu_SaveState(const ClownMDEmu *clownmdemu, ClownMDEmu_StateBackup *backup);
++void ClownMDEmu_LoadState(ClownMDEmu *clownmdemu, const ClownMDEmu_StateBackup *backup);
++
++#ifdef __cplusplus
++}
++#endif
++
++#if defined(CC_CPLUSPLUS) && CC_CPLUSPLUS >= 201703L
++
++#include <cassert>
++#include <cstdarg>
++#include <cstddef>
++#include <cstdio>
++#include <array>
++#include <functional>
++#include <string>
++#include <type_traits>
++
++namespace ClownMDEmuCXX
++{
++	namespace Internal
++	{
++		class Constant
++		{
++		public:
++			Constant()
++			{
++				ClownMDEmu_Constant_Initialise();
++			}
++		};
++
++		inline Constant constant;
++
++		template<typename T, std::size_t S>
++		auto& CArrayAsStdArray(T (&array)[S])
++		{
++			return *reinterpret_cast<std::array<T, S>*>(array);
++		}
++	}
++
++	template<typename Derived>
++	class Emulator;
++
++	class InitialConfiguration : private ClownMDEmu_InitialConfiguration
++	{
++		template<typename Derived>
++		friend class Emulator;
++
++	public:
++		InitialConfiguration()
++			: ClownMDEmu_InitialConfiguration()
++		{}
++
++#define CLOWNMDEMU_CONFIGURATION_AS_IS(VALUE) VALUE
++#define CLOWNMDEMU_CONFIGURATION_NOT(VALUE) !VALUE
++
++#define CLOWNMDEMU_CONFIGURATION_GETTER_SETTER(IDENTIFIER, VALUE, OPERATION) \
++	std::remove_reference_t<decltype(VALUE)> Get##IDENTIFIER() const { return OPERATION(VALUE); } \
++	void Set##IDENTIFIER(const std::remove_reference_t<decltype(VALUE)> value){ VALUE = OPERATION(value); }
++
++#define CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(IDENTIFIER, VALUE) \
++	CLOWNMDEMU_CONFIGURATION_GETTER_SETTER(IDENTIFIER, VALUE, CLOWNMDEMU_CONFIGURATION_AS_IS)
++
++#define CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(IDENTIFIER, VALUE) \
++	CLOWNMDEMU_CONFIGURATION_GETTER_SETTER(IDENTIFIER, VALUE, CLOWNMDEMU_CONFIGURATION_NOT)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(TVStandard, general.tv_standard)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(Region, general.region)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(LowPassFilterEnabled, general.low_pass_filter_disabled)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(CDAddOnEnabled, general.cd_add_on_enabled)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(ControllerProtocol, controller_manager.protocol)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(SpritePlaneEnabled, vdp.sprites_disabled)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(WindowPlaneEnabled, vdp.window_disabled)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(ScrollPlaneAEnabled, vdp.planes_disabled[0])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(ScrollPlaneBEnabled, vdp.planes_disabled[1])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(WidescreenTiles, vdp.widescreen_tiles)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM1Enabled, fm.fm_channels_disabled[0])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM2Enabled, fm.fm_channels_disabled[1])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM3Enabled, fm.fm_channels_disabled[2])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM4Enabled, fm.fm_channels_disabled[3])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM5Enabled, fm.fm_channels_disabled[4])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM6Enabled, fm.fm_channels_disabled[5])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(DACEnabled, fm.dac_channel_disabled)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(LadderEffectEnabled, fm.ladder_effect_disabled)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG1Enabled, psg.tone_disabled[0])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG2Enabled, psg.tone_disabled[1])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG3Enabled, psg.tone_disabled[2])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSGNoiseEnabled, psg.noise_disabled)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(CDDAEnabled, cdda.disabled)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM1Enabled, pcm.channels_disabled[0])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM2Enabled, pcm.channels_disabled[1])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM3Enabled, pcm.channels_disabled[2])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM4Enabled, pcm.channels_disabled[3])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM5Enabled, pcm.channels_disabled[4])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM6Enabled, pcm.channels_disabled[5])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM7Enabled, pcm.channels_disabled[6])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM8Enabled, pcm.channels_disabled[7])
++	};
++
++	class StateBackup : private ClownMDEmu_StateBackup
++	{
++		template<typename Derived>
++		friend class Emulator;
++
++	public:
++		template<typename T>
++		StateBackup(const Emulator<T> &emulator)
++		{
++			emulator.SaveState(*this);
++		}
++
++		template<typename T>
++		void Apply(Emulator<T> &emulator) const
++		{
++			emulator.LoadState(*this);
++		}
++	};
++
++	template<typename Derived>
++	class Emulator : protected ClownMDEmu
++	{
++		/*************/
++		/* Callbacks */
++		/*************/
++
++	private:
++		const ClownMDEmu_Callbacks callbacks = {
++			this,
++			Callback_ColourUpdated,
++			Callback_ScanlineRendered,
++			Callback_InputRequested,
++			Callback_FMAudioToBeGenerated,
++			Callback_PSGAudioToBeGenerated,
++			Callback_PCMAudioToBeGenerated,
++			Callback_CDDAAudioToBeGenerated,
++			Callback_CDSeeked,
++			Callback_CDSectorRead,
++			Callback_CDTrackSeeked,
++			Callback_CDAudioRead,
++			Callback_SaveFileOpenedForReading,
++			Callback_SaveFileRead,
++			Callback_SaveFileOpenedForWriting,
++			Callback_SaveFileWritten,
++			Callback_SaveFileClosed,
++			Callback_SaveFileRemoved,
++			Callback_SaveFileSizeObtained
++		};
++
++		static void Callback_ColourUpdated(void* const user_data, const cc_u16f index, const cc_u16f colour)
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->ColourUpdated(index, colour);
++		}
++		static void Callback_ScanlineRendered(void* const user_data, const cc_u16f scanline, const cc_u8l* const pixels, const cc_u16f left_boundary, const cc_u16f right_boundary, const cc_u16f screen_width, const cc_u16f screen_height)
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->ScanlineRendered(scanline, pixels, left_boundary, right_boundary, screen_width, screen_height);
++		}
++		static cc_bool Callback_InputRequested(void* const user_data, const cc_u8f player_id, const ClownMDEmu_Button button_id)
++		{
++			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->InputRequested(player_id, button_id);
++		}
++
++		static void Callback_FMAudioToBeGenerated(void* const user_data, ClownMDEmu* const clownmdemu, const std::size_t total_frames, void (* const generate_fm_audio)(ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, std::size_t total_frames))
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->FMAudioToBeGenerated(clownmdemu, total_frames, generate_fm_audio);
++		}
++		static void Callback_PSGAudioToBeGenerated(void* const user_data, ClownMDEmu* const clownmdemu, const std::size_t total_frames, void (* const generate_psg_audio)(ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, std::size_t total_frames))
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->PSGAudioToBeGenerated(clownmdemu, total_frames, generate_psg_audio);
++		}
++		static void Callback_PCMAudioToBeGenerated(void* const user_data, ClownMDEmu* const clownmdemu, const std::size_t total_frames, void (* const generate_pcm_audio)(ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, std::size_t total_frames))
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->PCMAudioToBeGenerated(clownmdemu, total_frames, generate_pcm_audio);
++		}
++		static void Callback_CDDAAudioToBeGenerated(void* const user_data, ClownMDEmu* const clownmdemu, const std::size_t total_frames, void (* const generate_cdda_audio)(ClownMDEmu *clownmdemu, cc_s16l *sample_buffer, std::size_t total_frames))
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDDAAudioToBeGenerated(clownmdemu, total_frames, generate_cdda_audio);
++		}
++
++		static void Callback_CDSeeked(void* const user_data, const cc_u32f sector_index)
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDSeeked(sector_index);
++		}
++		static void Callback_CDSectorRead(void* const user_data, cc_u16l* const buffer)
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDSectorRead(buffer);
++		}
++		static cc_bool Callback_CDTrackSeeked(void* const user_data, const cc_u16f track_index, const ClownMDEmu_CDDAMode mode)
++		{
++			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDTrackSeeked(track_index, mode);
++		}
++		static std::size_t Callback_CDAudioRead(void* const user_data, cc_s16l* const sample_buffer, const std::size_t total_frames)
++		{
++			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->CDAudioRead(sample_buffer, total_frames);
++		}
++
++		static cc_bool Callback_SaveFileOpenedForReading(void* const user_data, const char* const filename)
++		{
++			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileOpenedForReading(filename);
++		}
++		static cc_s16f Callback_SaveFileRead(void* const user_data)
++		{
++			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileRead();
++		}
++		static cc_bool Callback_SaveFileOpenedForWriting(void* const user_data, const char* const filename)
++		{
++			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileOpenedForWriting(filename);
++		}
++		static void Callback_SaveFileWritten(void* const user_data, const cc_u8f byte)
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileWritten(byte);
++		}
++		static void Callback_SaveFileClosed(void* const user_data)
++		{
++			static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileClosed();
++		}
++		static cc_bool Callback_SaveFileRemoved(void* const user_data, const char* const filename)
++		{
++			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileRemoved(filename);
++		}
++		static cc_bool Callback_SaveFileSizeObtained(void* const user_data, const char* const filename, std::size_t* const size)
++		{
++			return static_cast<Derived*>(static_cast<Emulator*>(user_data))->SaveFileSizeObtained(filename, size);
++		}
++
++		/*************/
++		/* Interface */
++		/*************/
++
++	public:
++		Emulator(const InitialConfiguration &configuration)
++		{
++			ClownMDEmu_Initialise(this, &configuration, &callbacks);
++		}
++
++		Emulator(const Emulator &other) = delete;
++		Emulator(Emulator &&other) = delete;
++
++		Emulator& operator=(const Emulator &other) = delete;
++		Emulator& operator=(Emulator &&other) = delete;
++
++		void InsertCartridge(const cc_u16l* const buffer, const cc_u32f buffer_length)
++		{
++			ClownMDEmu_SetCartridge(this, buffer, buffer_length);
++		}
++
++		void EjectCartridge()
++		{
++			ClownMDEmu_SetCartridge(this, nullptr, 0);
++		}
++
++		[[nodiscard]] bool IsCartridgeInserted() const
++		{
++			return cartridge_buffer_length != 0;
++		}
++
++		void SoftReset(const cc_bool cd_inserted)
++		{
++			ClownMDEmu_SoftReset(this, IsCartridgeInserted(), cd_inserted);
++		}
++
++		void HardReset(const cc_bool cd_inserted)
++		{
++			ClownMDEmu_HardReset(this, IsCartridgeInserted(), cd_inserted);
++		}
++
++		void Iterate()
++		{
++			ClownMDEmu_Iterate(this);
++		}
++
++		void SaveState(StateBackup &state_backup) const
++		{
++			ClownMDEmu_SaveState(this, &state_backup);
++		}
++
++		void LoadState(const StateBackup &state_backup)
++		{
++			ClownMDEmu_LoadState(this, &state_backup);
++		}
++
++		/****************/
++		/* Log Callback */
++		/****************/
++
++	public:
++		using LogCallbackFormatted = std::function<void(const char *format, std::va_list arg)>;
++		using LogCallbackPlain = std::function<void(const std::string &message)>;
++
++	private:
++		static inline LogCallbackFormatted log_callback;
++
++	public:
++		static void SetLogCallback(const LogCallbackFormatted &callback)
++		{
++			log_callback = callback;
++			ClownMDEmu_SetLogCallback(
++				[](void* const user_data, const char *format, std::va_list arg)
++				{
++					(*static_cast<const LogCallbackFormatted*>(user_data))(format, arg);
++				}, &log_callback
++			);
++		}
++
++		static void SetLogCallback(const LogCallbackPlain &callback)
++		{
++			SetLogCallback(
++				[callback](const char* const format, std::va_list arg)
++				{
++					/* TODO: Use 'std::string::resize_and_overwrite' here when C++23 becomes the norm. */
++					std::va_list arg_copy;
++					va_copy(arg_copy, arg);
++					std::string string(std::vsnprintf(nullptr, 0, format, arg_copy), '\0');
++					va_end(arg_copy);
++
++					std::vsnprintf(std::data(string), std::size(string) + 1, format, arg);
++					callback(string);
++				}
++			);
++		}
++
++		/****************/
++		/* State Access */
++		/****************/
++
++	public:
++		[[nodiscard]] const auto& GetState() const
++		{
++			return state;
++		}
++
++		[[nodiscard]] const auto& GetM68kState() const
++		{
++			return m68k;
++		}
++
++		[[nodiscard]] const auto& GetZ80State() const
++		{
++			return z80;
++		}
++
++		[[nodiscard]] const auto& GetVDPState() const
++		{
++			return vdp.state;
++		}
++
++		[[nodiscard]] const auto& GetFMState() const
++		{
++			return fm.state;
++		}
++
++		[[nodiscard]] const auto& GetPSGState() const
++		{
++			return psg.state;
++		}
++
++		[[nodiscard]] const auto& GetSubM68kState() const
++		{
++			return mega_cd.m68k;
++		}
++
++		[[nodiscard]] const auto& GetCDCState() const
++		{
++			return mega_cd.cdc;
++		}
++
++		[[nodiscard]] const auto& GetCDDAState() const
++		{
++			return mega_cd.cdda.state;
++		}
++
++		[[nodiscard]] const auto& GetPCMState() const
++		{
++			return mega_cd.pcm.state;
++		}
++
++		[[nodiscard]] auto& GetExternalRAM()
++		{
++			return Internal::CArrayAsStdArray(state.external_ram.buffer);
++		}
++
++		/*****************/
++		/* Configuration */
++		/*****************/
++
++	public:
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(TVStandard, configuration.tv_standard)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(Region, configuration.region)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(LowPassFilterEnabled, configuration.low_pass_filter_disabled)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(CDAddOnEnabled, configuration.cd_add_on_enabled)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(ControllerProtocol, controller_manager.configuration.protocol)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(SpritePlaneEnabled, vdp.configuration.sprites_disabled)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(WindowPlaneEnabled, vdp.configuration.window_disabled)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(ScrollPlaneAEnabled, vdp.configuration.planes_disabled[0])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(ScrollPlaneBEnabled, vdp.configuration.planes_disabled[1])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_AS_IS(WidescreenTiles, vdp.configuration.widescreen_tiles)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM1Enabled, fm.configuration.fm_channels_disabled[0])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM2Enabled, fm.configuration.fm_channels_disabled[1])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM3Enabled, fm.configuration.fm_channels_disabled[2])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM4Enabled, fm.configuration.fm_channels_disabled[3])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM5Enabled, fm.configuration.fm_channels_disabled[4])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(FM6Enabled, fm.configuration.fm_channels_disabled[5])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(DACEnabled, fm.configuration.dac_channel_disabled)
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(LadderEffectEnabled, fm.configuration.ladder_effect_disabled)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG1Enabled, psg.configuration.tone_disabled[0])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG2Enabled, psg.configuration.tone_disabled[1])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSG3Enabled, psg.configuration.tone_disabled[2])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PSGNoiseEnabled, psg.configuration.noise_disabled)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(CDDAEnabled, mega_cd.cdda.configuration.disabled)
++
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM1Enabled, mega_cd.pcm.configuration.channels_disabled[0])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM2Enabled, mega_cd.pcm.configuration.channels_disabled[1])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM3Enabled, mega_cd.pcm.configuration.channels_disabled[2])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM4Enabled, mega_cd.pcm.configuration.channels_disabled[3])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM5Enabled, mega_cd.pcm.configuration.channels_disabled[4])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM6Enabled, mega_cd.pcm.configuration.channels_disabled[5])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM7Enabled, mega_cd.pcm.configuration.channels_disabled[6])
++		CLOWNMDEMU_CONFIGURATION_GETTER_SETTER_NOT(PCM8Enabled, mega_cd.pcm.configuration.channels_disabled[7])
++	};
++}
++
++#endif
++
++#endif /* CLOWNMDEMU_H */
+diff --git a/source/vdp.c b/source/vdp.c
+index 009e9c1..c1473b6 100644
+--- a/source/vdp.c
++++ b/source/vdp.c
+@@ -89,12 +89,7 @@ static void SetHScrollMode(VDP_State* const state, const VDP_HScrollMode mode)
+ static cc_u32f GetSpriteTableAddress(const VDP_State* const state)
+ {
+ 	/* This masking is required for Titan Overdrive II's scene of the ship crash-landing to display the correct sprites. */
+-	return state->sprite_table_address & (~(cc_u32f)0x1FF << state->h40_enabled);
+-}
+-
+-static cc_u32f GetWindowPlaneTableAddress(const VDP_State* const state)
+-{
+-	return state->window_address & (~(cc_u32f)0x7FF << state->h40_enabled);
++	return state->sprite_table_address & (state->h40_enabled ? ~(cc_u32f)0x3FF : ~(cc_u32f)0x1FF);
+ }
+ 
+ static cc_u32f DecodeVRAMAddress(const VDP_State* const state, cc_u32f address)
+@@ -540,7 +535,7 @@ static void RenderWindowPlane(const VDP* const vdp, const cc_u8f start, const cc
+ 	const cc_u8f plane_pitch_shift = 5 + state->h40_enabled;
+ 	const cc_u8f plane_width_bitmask = (1 << plane_pitch_shift) - 1;
+ 
+-	const cc_u32f vram_address_base = GetWindowPlaneTableAddress(state) + (tile_y << plane_pitch_shift) * 2;
++	const cc_u32f vram_address_base = state->window_address + (tile_y << plane_pitch_shift) * 2;
+ 	const cc_u16f tile_x_base = (0 - WIDESCREEN_X_OFFSET_TILES(vdp)) & plane_width_bitmask;
+ 
+ 	cc_u8l *metapixels_pointer = &metapixels[start * TILE_PAIR_WIDTH];

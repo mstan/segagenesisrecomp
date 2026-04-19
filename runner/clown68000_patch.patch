@@ -1,0 +1,153 @@
+diff --git a/source/interpreter/clown68000.c b/source/interpreter/clown68000.c
+index 744dd7f..20c6901 100644
+--- a/source/interpreter/clown68000.c
++++ b/source/interpreter/clown68000.c
+@@ -39,6 +39,7 @@ https://github.com/TomHarte/ProcessorTests/issues/28
+ #include <setjmp.h>
+ #include <stdarg.h>
+ #include <stddef.h>
++#include <stdio.h>
+ 
+ /* This is needed so that '_POSIX_VERSION' has the chance to defined. */
+ #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+@@ -1547,11 +1548,46 @@ static void Action_RTR(Stuff* const stuff)
+ 	stuff->cycles_left_in_instruction += 16;
+ }
+ 
++/* Log unique JMP/JSR/BSR targets for native coverage auditing.
++ * When running the interpreter, this captures every function entry
++ * point so we know what native needs to compile. */
++#ifndef CLOWN68000_COVERAGE_LOG_DISABLE
++#define COVERAGE_MAX 8192
++static cc_u32f s_coverage_addrs[COVERAGE_MAX];
++static int     s_coverage_count = 0;
++
++static void coverage_log(cc_u32f addr)
++{
++	int i;
++	for (i = 0; i < s_coverage_count; i++)
++		if (s_coverage_addrs[i] == addr) return;
++	if (s_coverage_count < COVERAGE_MAX)
++		s_coverage_addrs[s_coverage_count++] = addr;
++}
++
++int clown68000_coverage_count(void) { return s_coverage_count; }
++cc_u32f clown68000_coverage_addr(int i) {
++	return (i >= 0 && i < s_coverage_count) ? s_coverage_addrs[i] : 0;
++}
++void clown68000_coverage_dump(const char *path)
++{
++	FILE *f = fopen(path, "w");
++	int i;
++	if (!f) return;
++	for (i = 0; i < s_coverage_count; i++)
++		fprintf(f, "extra_func 0x%06X\n", (unsigned)s_coverage_addrs[i]);
++	fclose(f);
++}
++#else
++#define coverage_log(addr) ((void)0)
++#endif
++
+ static void Action_JMP(Stuff* const stuff)
+ {
+ 	Clown68000_State* const state = stuff->state;
+ 
+ 	state->program_counter = stuff->source_value;
++	coverage_log(stuff->source_value);
+ 
+ 	ProgramCounterChanged(stuff);
+ 
+@@ -1844,6 +1880,7 @@ static void Action_BSR_SHORT(Stuff* const stuff)
+ 	DecrementAddressRegister(state, 7, 4);
+ 	WriteLongWordBackwards(stuff, state->address_registers[7], state->program_counter);
+ 	Action_BRA_SHORT(stuff);
++	coverage_log(state->program_counter);
+ 
+ 	stuff->cycles_left_in_instruction += 8;
+ }
+@@ -1855,6 +1892,7 @@ static void Action_BSR_WORD(Stuff* const stuff)
+ 	DecrementAddressRegister(state, 7, 4);
+ 	WriteLongWordBackwards(stuff, state->address_registers[7], state->program_counter);
+ 	Action_BRA_WORD(stuff);
++	coverage_log(state->program_counter);
+ 
+ 	stuff->cycles_left_in_instruction += 8;
+ }
+@@ -2384,10 +2422,14 @@ void Clown68000_Reset(Clown68000_State *state, const Clown68000_ReadWriteCallbac
+ 
+ void Clown68000_Interrupt(Clown68000_State *state, cc_u16f level)
+ {
+-	assert(level <= 7);
++	assert(level >= 1 && level <= 7);
+ 	state->pending_interrupt = level;
+ }
+ 
++/* Pre-instruction hook for hybrid dispatch. Set by the runner to intercept
++ * execution at specific PCs before the interpreter fetches the opcode. */
++extern void (*g_hybrid_pre_insn_fn)(cc_u32l pc);
++
+ void Clown68000_DoCycles(Clown68000_State *state, const Clown68000_ReadWriteCallbacks *callbacks, const cc_u32f cycles_to_do)
+ {
+ 	/* Initialise closure and exception stuff. */
+@@ -2418,12 +2460,20 @@ void Clown68000_DoCycles(Clown68000_State *state, const Clown68000_ReadWriteCall
+ 
+ 		while ((stuff.cycles_done += stuff.cycles_left_in_instruction) <= cycles_to_do)
+ 		{
+-			/* Latch pending interrupt, to approximate the latency that Sesame Street: Counting Cafe depends on. */
+-			const cc_u8f pending_interrupt = state->pending_interrupt;
+-
+ 			stuff.cycles_left_in_instruction = 4;
+ 			stuff.starting_program_counter = state->program_counter;
+ 
++			/* Trace Sonic_Move execution after jump */
++			{
++			}
++
++			if (g_hybrid_pre_insn_fn != NULL)
++			{
++				extern cc_u32f g_hybrid_cycle_counter;
++				g_hybrid_cycle_counter = stuff.cycles_done;
++				g_hybrid_pre_insn_fn(state->program_counter);
++			}
++
+ 			if (!state->stopped)
+ 			{
+ 				/* Process next instruction. */
+@@ -2444,11 +2494,11 @@ void Clown68000_DoCycles(Clown68000_State *state, const Clown68000_ReadWriteCall
+ 			/* TODO: Does this occur before or after instruction processing? Apparently a Sesame Street game depends on a one-instruction latency.
+ 				https://gendev.spritesmind.net/forum/viewtopic.php?t=2202 */
+ 			/* Process pending interrupt. */
+-			if (pending_interrupt == 7 || pending_interrupt > (((cc_u16f)state->status_register >> 8) & 7))
++			if (state->pending_interrupt == 7 || state->pending_interrupt > (((cc_u16f)state->status_register >> 8) & 7))
+ 			{
+ 				state->stopped = cc_false;
+ 
+-				DoInterrupt(&stuff, 24 + pending_interrupt);
++				DoInterrupt(&stuff, 24 + state->pending_interrupt);
+ 
+ 				/* TODO: Integrate this into the exception logic, and give all exceptions proper durations. */
+ 				/* TODO: Didn't James Groth mention that this should be 24 in one of his blog posts? */
+@@ -2456,9 +2506,9 @@ void Clown68000_DoCycles(Clown68000_State *state, const Clown68000_ReadWriteCall
+ 
+ 				/* Set interrupt mask to current level */
+ 				state->status_register &= ~STATUS_INTERRUPT_MASK;
+-				state->status_register |= pending_interrupt << 8;
++				state->status_register |= state->pending_interrupt << 8;
+ 
+-				callbacks->interrupt_acknowledge_callback(callbacks->user_data);
++				state->pending_interrupt = 0;
+ 			}
+ 		}
+ 
+diff --git a/source/interpreter/clown68000.h b/source/interpreter/clown68000.h
+index f5e039c..568bf69 100644
+--- a/source/interpreter/clown68000.h
++++ b/source/interpreter/clown68000.h
+@@ -45,7 +45,6 @@ typedef struct Clown68000_ReadWriteCallbacks
+ {
+ 	cc_u16f (*read_callback)(const void *user_data, cc_u32f address, cc_bool do_high_byte, cc_bool do_low_byte, cc_u32f current_cycle);
+ 	void (*write_callback)(const void *user_data, cc_u32f address, cc_bool do_high_byte, cc_bool do_low_byte, cc_u32f current_cycle, cc_u16f value);
+-	void (*interrupt_acknowledge_callback)(const void *user_data);
+ 	const void *user_data;
+ } Clown68000_ReadWriteCallbacks;
+ 
