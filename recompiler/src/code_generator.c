@@ -498,12 +498,15 @@ static void emit_flags_logic(FILE *f, const char *expr, M68KSize sz) {
 static void emit_flags_add(FILE *f, const char *a, const char *b,
                             const char *res, M68KSize sz) {
     int bits = size_bits(sz);
+    /* Carry is detected by widening to 64-bit before addition; a 32-bit
+     * sum wraps so the previous "(uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu"
+     * compare could never fire. Found by L3 oracle on Hud_TimeRingBonus. */
     fprintf(f,
         "  { uint%d_t _fa = (uint%d_t)(%s), _fb = (uint%d_t)(%s), _fr = (uint%d_t)(%s);\n"
         "    g_cpu.SR &= ~(0x1Fu);\n"
         "    if (!_fr)                        g_cpu.SR |= %s;\n"
         "    if (_fr >> %d)                   g_cpu.SR |= %s;\n"
-        "    if ((uint32_t)_fa + (uint32_t)_fb > 0x%08Xu) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+        "    if ((uint64_t)_fa + (uint64_t)_fb > 0x%08Xu) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
         "    if (!((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s; }\n",
         bits, bits, a, bits, b, bits, res,
         SR_Z,

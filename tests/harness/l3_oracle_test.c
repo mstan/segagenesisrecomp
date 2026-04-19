@@ -271,7 +271,14 @@ typedef struct {
     int      diff_D_mask;
     int      diff_A_mask;
     bool     diff_SR;
+    uint16_t int_SR;
+    uint16_t rec_SR;
     int      diff_RAM_count;
+    /* exemplar: first divergent register/byte for verbose mode */
+    int      first_D_idx;       /* -1 if none */
+    uint32_t int_D_val, rec_D_val;
+    int      first_A_idx;
+    uint32_t int_A_val, rec_A_val;
 } TestResult;
 
 #define MAX_RUN_CYCLES   200000   /* generous; leaf functions finish in <100 */
@@ -396,14 +403,32 @@ static TestResult test_function(uint32_t func_addr, uint32_t seed) {
      * caller"; the difference is bookkeeping, not computation. */
     r.diff_D_mask = 0;
     r.diff_A_mask = 0;
+    r.first_D_idx = -1;
+    r.first_A_idx = -1;
     for (int i = 0; i < 8; i++) {
-        if (int_cpu.D[i] != rec_cpu.D[i]) r.diff_D_mask |= (1 << i);
+        if (int_cpu.D[i] != rec_cpu.D[i]) {
+            r.diff_D_mask |= (1 << i);
+            if (r.first_D_idx < 0) {
+                r.first_D_idx = i;
+                r.int_D_val = int_cpu.D[i];
+                r.rec_D_val = rec_cpu.D[i];
+            }
+        }
         if (i == 7) continue;
-        if (int_cpu.A[i] != rec_cpu.A[i]) r.diff_A_mask |= (1 << i);
+        if (int_cpu.A[i] != rec_cpu.A[i]) {
+            r.diff_A_mask |= (1 << i);
+            if (r.first_A_idx < 0) {
+                r.first_A_idx = i;
+                r.int_A_val = int_cpu.A[i];
+                r.rec_A_val = rec_cpu.A[i];
+            }
+        }
     }
     /* Mask SR to user-visible flags + supervisor bit; ignore trace etc. */
     uint16_t sr_mask = 0x271F;
-    r.diff_SR = (int_cpu.SR & sr_mask) != (rec_cpu.SR & sr_mask);
+    r.int_SR = int_cpu.SR & sr_mask;
+    r.rec_SR = rec_cpu.SR & sr_mask;
+    r.diff_SR = r.int_SR != r.rec_SR;
     r.diff_RAM_count = diff_ram(int_ram, g_ram);
     r.match = (r.diff_D_mask == 0 && r.diff_A_mask == 0 && !r.diff_SR && r.diff_RAM_count == 0);
     return r;
@@ -516,9 +541,16 @@ static int run(const Options *opt) {
                 if (worst.timed_out)         fprintf(stderr, "timeout/no-dispatch ");
                 if (worst.diff_D_mask)       fprintf(stderr, "D=0x%02X ", worst.diff_D_mask);
                 if (worst.diff_A_mask)       fprintf(stderr, "A=0x%02X ", worst.diff_A_mask);
-                if (worst.diff_SR)           fprintf(stderr, "SR ");
+                if (worst.diff_SR)           fprintf(stderr, "SR(int=%04X rec=%04X) ",
+                                                     worst.int_SR, worst.rec_SR);
                 if (worst.diff_RAM_count)    fprintf(stderr, "RAM=%d bytes", worst.diff_RAM_count);
                 fprintf(stderr, "\n");
+                if (worst.first_D_idx >= 0)
+                    fprintf(stderr, "       first D[%d]: int=0x%08X rec=0x%08X\n",
+                            worst.first_D_idx, worst.int_D_val, worst.rec_D_val);
+                if (worst.first_A_idx >= 0)
+                    fprintf(stderr, "       first A[%d]: int=0x%08X rec=0x%08X\n",
+                            worst.first_A_idx, worst.int_A_val, worst.rec_A_val);
             }
         } else {
             ++pass;

@@ -32,7 +32,7 @@ OUT_PATH  = SUB_ROOT / "tests" / "fixtures" / "sonic1" / "l3" / "manifest.txt"
 
 FUNC_DEF_RE = re.compile(r"^void (func_([0-9A-Fa-f]+))\(void\)\s*\{", re.MULTILINE)
 CALL_RE     = re.compile(r"\bfunc_([0-9A-Fa-f]+)\s*\(\s*\)")
-DYNDISP_RE  = re.compile(r"\bcall_by_address\s*\(")
+DYNDISP_RE  = re.compile(r"\bcall_by_address\s*\(|\bhybrid_jmp_interpret\s*\(|\bglue_yield_for_vblank\s*\(")
 
 def parse_function_bodies(src: str) -> dict[int, set[int]]:
     """For each defined function, return the set of other-function

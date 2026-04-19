@@ -1137,7 +1137,7 @@ void func_000206(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_000242r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -1434,7 +1434,7 @@ void func_000206(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00032Cr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -1760,7 +1760,7 @@ void func_0003E6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(g_cpu.A[7] + (int32_t)2), (uint32_t)(_0003ECr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -1855,7 +1855,7 @@ void func_00041A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(g_cpu.A[7] + (int32_t)2), (uint32_t)(_000420r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -1880,7 +1880,7 @@ void func_000426(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(g_cpu.A[7] + (int32_t)2), (uint32_t)(_00042Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -2168,7 +2168,7 @@ void func_000488(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0004C6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -2274,7 +2274,7 @@ void func_0005CA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0005D6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -2285,7 +2285,7 @@ void func_0005CA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0005D8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -2476,7 +2476,7 @@ void func_000B64(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(int32_t)(int16_t)0xFE0C, (uint32_t)(_000B64r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -3941,7 +3941,7 @@ void func_000F8A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF628, (uint8_t)(_000F8Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -5767,7 +5767,7 @@ void func_001420(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_001438r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -6017,7 +6017,7 @@ void func_00148A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00149Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -6064,7 +6064,7 @@ void func_00148A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0014ACr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -6246,7 +6246,7 @@ void func_0014D6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0014DEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -6345,7 +6345,7 @@ void func_0014D6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0014FAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -6656,7 +6656,7 @@ void func_00152E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001560r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -6697,7 +6697,7 @@ void func_00152E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00156Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -6744,7 +6744,7 @@ void func_00152E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_001578r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -6778,7 +6778,7 @@ void func_001580(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00158Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -6879,7 +6879,7 @@ void func_0015B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0015BCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -7191,7 +7191,7 @@ void func_001642(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF684, (uint16_t)(_001656r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -7241,7 +7241,7 @@ void func_00165E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF684, (uint16_t)(_001670r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -7493,7 +7493,7 @@ void func_0016EC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0016F2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -7836,7 +7836,7 @@ void func_00173E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001762r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -7947,7 +7947,7 @@ void func_001786(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00178Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8183,7 +8183,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_0017E0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8222,7 +8222,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_0017EEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8252,7 +8252,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0017F8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8263,7 +8263,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_0017FCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8293,7 +8293,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_001806r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8304,7 +8304,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00180Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8343,7 +8343,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_001818r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8416,7 +8416,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_001830r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8468,7 +8468,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[7] = (g_cpu.D[7] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00183Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8487,7 +8487,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001842r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8505,7 +8505,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001846r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8524,7 +8524,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00184Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8587,7 +8587,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00185Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8606,7 +8606,7 @@ void func_0017DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001862r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -8663,7 +8663,7 @@ void func_00188C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_001894r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9009,7 +9009,7 @@ void func_00189C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0018FEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9104,7 +9104,7 @@ void func_00189C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00191Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9208,7 +9208,7 @@ void func_00193C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001944r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9313,7 +9313,7 @@ void func_00196A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF632, (uint16_t)(_00197Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9399,7 +9399,7 @@ void func_001992(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF632, (uint16_t)(_0019A2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9558,7 +9558,7 @@ void func_001992(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0019F8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9618,7 +9618,7 @@ void func_001992(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001A0Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9635,7 +9635,7 @@ void func_001992(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001A12r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9645,7 +9645,7 @@ void func_001992(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001A14r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9743,7 +9743,7 @@ void func_001A46(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_001A56r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9787,7 +9787,7 @@ void func_001A46(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001A66r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9797,7 +9797,7 @@ void func_001A46(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001A68r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9807,7 +9807,7 @@ void func_001A46(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001A6Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9877,7 +9877,7 @@ void func_001A82(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF632, (uint16_t)(_001A92r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -9913,7 +9913,7 @@ void func_001A82(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001A9Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -10044,7 +10044,7 @@ void func_001AC8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_001AEEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -10090,7 +10090,7 @@ void func_001AC8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001AFCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -10214,7 +10214,7 @@ void func_001AC8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001B40r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -10274,7 +10274,7 @@ void func_001AC8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001B56r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -10579,7 +10579,7 @@ void func_001E26(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_001E30r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -10619,7 +10619,7 @@ void func_001E26(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_001E3Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -10653,7 +10653,7 @@ void func_001E26(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16(g_cpu.A[0], (uint16_t)(_001E4Ar)); g_cpu.A[0] += 2;
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11512,7 +11512,7 @@ void func_001FCA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16(g_cpu.A[0], (uint16_t)(_001FDEr)); g_cpu.A[0] += 2;
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11554,7 +11554,7 @@ void func_001FCA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16(g_cpu.A[0], (uint16_t)(_001FEEr)); g_cpu.A[0] += 2;
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11596,7 +11596,7 @@ void func_001FCA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16(g_cpu.A[0], (uint16_t)(_002000r)); g_cpu.A[0] += 2;
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11668,7 +11668,7 @@ void func_00200A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_002026r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11700,7 +11700,7 @@ void func_00200A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_002032r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11732,7 +11732,7 @@ void func_00200A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00203Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11758,7 +11758,7 @@ void func_00200A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_002048r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11786,7 +11786,7 @@ void func_00200A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_002052r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11871,7 +11871,7 @@ void func_00200A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00207Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11980,7 +11980,7 @@ void func_00200A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0020B0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -11999,7 +11999,7 @@ void func_00200A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0020B6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -12318,7 +12318,7 @@ void func_0029B4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_0029C4r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -12344,7 +12344,7 @@ void func_0029B4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_0029C8r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -12368,7 +12368,7 @@ void func_0029B4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0029CEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -12414,7 +12414,7 @@ void func_0029DA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0029DEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -12424,7 +12424,7 @@ void func_0029DA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0029E0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -12674,7 +12674,7 @@ void func_002CA8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_002CEEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -12704,7 +12704,7 @@ void func_002CA8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_002CFAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -13916,7 +13916,7 @@ void func_002F18(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0031A2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -14018,7 +14018,7 @@ void func_002F18(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFFE4, (uint16_t)(_0031DCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -14169,7 +14169,7 @@ void func_002F18(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFFE6, (uint16_t)(_00322Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -14392,7 +14392,7 @@ void func_002F18(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0032BEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -14521,7 +14521,7 @@ void func_002F18(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00330Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -14761,7 +14761,7 @@ void func_002F18(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0033D0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -14852,7 +14852,7 @@ void func_002F18(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_003406r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -14878,7 +14878,7 @@ void func_002F18(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFFF2, (uint16_t)(_003410r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15096,7 +15096,7 @@ void func_003460(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_003496r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15218,7 +15218,7 @@ void func_003460(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0034D2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15310,7 +15310,7 @@ void func_0034E6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (uint32_t)(uint32_t)(_003506r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15375,7 +15375,7 @@ void func_0034E6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (uint32_t)_003522r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15406,7 +15406,7 @@ void func_0034E6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00352Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15416,7 +15416,7 @@ void func_0034E6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_003530r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15492,7 +15492,7 @@ void func_0034E6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00355Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15566,7 +15566,7 @@ void func_003572(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00357Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15577,7 +15577,7 @@ void func_003572(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_003580r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -15646,7 +15646,7 @@ void func_003586(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_003598r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -16069,7 +16069,7 @@ void func_0037A2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_003888r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -16939,7 +16939,7 @@ void func_0037A2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xD0A4, (uint8_t)(_003AB2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -16950,7 +16950,7 @@ void func_0037A2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xD0E4, (uint8_t)(_003AB6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -16961,7 +16961,7 @@ void func_0037A2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xD124, (uint8_t)(_003ABAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -16972,7 +16972,7 @@ void func_0037A2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xD164, (uint8_t)(_003ABEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -17014,7 +17014,7 @@ void func_0037A2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_003AD2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -17060,7 +17060,7 @@ void func_0037A2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFE04, (uint16_t)(_003AF0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -17460,7 +17460,7 @@ void func_003BD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_003BF8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -17573,7 +17573,7 @@ void func_003C32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_003C38r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -17649,7 +17649,7 @@ void func_003C32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF648, (uint16_t)(_003C56r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -17927,7 +17927,7 @@ void func_003E32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)12), (uint16_t)(_003EBAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -17939,7 +17939,7 @@ void func_003E32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_003EBEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -18007,7 +18007,7 @@ void func_003E32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)12), (uint16_t)(_003EEEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -18117,7 +18117,7 @@ void func_003F34(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_003F52r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -18539,7 +18539,7 @@ void func_003FD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF790, (uint16_t)(_00407Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -18701,7 +18701,7 @@ void func_00416E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_004190r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -18719,7 +18719,7 @@ void func_00416E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)0), (uint16_t)(_004196r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -18779,7 +18779,7 @@ void func_00416E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)0), (uint16_t)(_0041AEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -18900,7 +18900,7 @@ void func_004206(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFEC3, (uint8_t)(_004228r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -18942,7 +18942,7 @@ void func_004206(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFEC5, (uint8_t)(_00423Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -18999,7 +18999,7 @@ void func_004206(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00425Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -20343,7 +20343,7 @@ void func_00489C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_0048F2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -20361,7 +20361,7 @@ void func_00489C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_0048FCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -20387,7 +20387,7 @@ void func_00489C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)(uint32_t)(_00490Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -20407,7 +20407,7 @@ void func_00489C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)(uint32_t)(_004914r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -20561,7 +20561,7 @@ void func_004962(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF79A, (uint16_t)(_004978r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -20793,7 +20793,7 @@ void func_004962(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0049F2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -20902,7 +20902,7 @@ void func_004962(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_004A30r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -20912,7 +20912,7 @@ void func_004962(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_004A32r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -21000,7 +21000,7 @@ void func_004BE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF718, (uint16_t)(_004C02r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -21011,7 +21011,7 @@ void func_004BE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF70C, (uint16_t)(_004C06r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -21148,7 +21148,7 @@ void func_004BE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16(g_cpu.A[3], (uint16_t)(_004C3Cr)); g_cpu.A[3] += 2;
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -21393,7 +21393,7 @@ void func_004BE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_004CA8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -22558,7 +22558,7 @@ void func_005284(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFE04, (uint16_t)(_005292r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -22710,7 +22710,7 @@ void func_0052F0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFE04, (uint16_t)(_0052FEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -22891,7 +22891,7 @@ void func_005370(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7D7, (uint8_t)(_00537Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -22946,7 +22946,7 @@ void func_005370(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7D7, (uint8_t)(_00539Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -23030,7 +23030,7 @@ void func_005370(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7D7, (uint8_t)(_0053CCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -23419,7 +23419,7 @@ void func_005898(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0058A0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -23445,7 +23445,7 @@ void func_005898(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFFF4, (uint16_t)(_0058AAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -23959,7 +23959,7 @@ void func_005EBE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_005EDEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -23969,7 +23969,7 @@ void func_005EBE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_005EE0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -24049,7 +24049,7 @@ void func_005EBE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_005F04r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -24515,7 +24515,7 @@ void func_0061EC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00620Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -24627,7 +24627,7 @@ void func_006232(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006234r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -24690,7 +24690,7 @@ void func_00623E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_006244r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -24925,7 +24925,7 @@ void func_006286(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0062D4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25031,7 +25031,7 @@ void func_0062EC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (uint32_t)_0062F8r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25104,7 +25104,7 @@ void func_006304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006314r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25288,7 +25288,7 @@ void func_006304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006360r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25306,7 +25306,7 @@ void func_006304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006368r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25405,7 +25405,7 @@ void func_006304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006382r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25447,7 +25447,7 @@ void func_006304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)_00638Cr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25704,7 +25704,7 @@ void func_0063D6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (uint32_t)_0063E2r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25762,7 +25762,7 @@ void func_0063D6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0063FAr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25772,7 +25772,7 @@ void func_0063D6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0063FCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -25795,7 +25795,7 @@ void func_0063D6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006400r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -26078,7 +26078,7 @@ void func_00642E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006478r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -26417,7 +26417,7 @@ void func_0064A8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)_0064D2r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -26663,7 +26663,7 @@ void func_006506(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (uint32_t)_00651Ar;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -27112,7 +27112,7 @@ void func_0065B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0065D6r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -27197,7 +27197,7 @@ void func_0065B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0065F6r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -27288,7 +27288,7 @@ void func_006616(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006632r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -27554,7 +27554,7 @@ void func_006616(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0066B2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -27611,7 +27611,7 @@ void func_006616(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_0066C6r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -27729,7 +27729,7 @@ void func_006616(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_0066FAr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -27981,7 +27981,7 @@ void func_006768(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_00676Er;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -28097,7 +28097,7 @@ void func_006768(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_0067A2r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -28220,7 +28220,7 @@ void func_0067D2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_0067D8r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -28252,7 +28252,7 @@ void func_0067D2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_0067E4r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -28507,7 +28507,7 @@ void func_006844(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(int32_t)(int16_t)0xF710, (uint32_t)(_006854r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -29705,7 +29705,7 @@ void func_006ADA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_006AF0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -29729,7 +29729,7 @@ void func_006ADA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006AFAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -29806,7 +29806,7 @@ void func_006B06(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006B1Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -29830,7 +29830,7 @@ void func_006B06(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006B28r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -29901,7 +29901,7 @@ void func_006B32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_006B46r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -29967,7 +29967,7 @@ void func_006B32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_006B5Cr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30064,7 +30064,7 @@ void func_006B32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_006B82r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30145,7 +30145,7 @@ void func_006B32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_006BA0r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30195,7 +30195,7 @@ void func_006BD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006BDAr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30206,7 +30206,7 @@ void func_006BD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006BDEr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30279,7 +30279,7 @@ void func_006BD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006BF2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30336,7 +30336,7 @@ void func_006BD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006C04r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30362,7 +30362,7 @@ void func_006BD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006C0Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30372,7 +30372,7 @@ void func_006BD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006C10r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30424,7 +30424,7 @@ void func_006C20(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006C20r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30435,7 +30435,7 @@ void func_006C20(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006C24r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30483,7 +30483,7 @@ void func_006C20(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006C32r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30522,7 +30522,7 @@ void func_006C3C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006C3Cr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30533,7 +30533,7 @@ void func_006C3C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006C40r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30581,7 +30581,7 @@ void func_006C3C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006C4Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -30738,7 +30738,7 @@ void func_006C7E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006C9Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31070,7 +31070,7 @@ void func_006D32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006D3Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31080,7 +31080,7 @@ void func_006D32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006D3Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31090,7 +31090,7 @@ void func_006D32(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006D40r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31205,7 +31205,7 @@ void func_006D6C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006D72r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31310,7 +31310,7 @@ void func_006D6C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF72E, (uint16_t)(_006DA0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31347,7 +31347,7 @@ void func_006DAC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_006DB0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31378,7 +31378,7 @@ void func_006DAC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006DC0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31388,7 +31388,7 @@ void func_006DAC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006DC2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31400,7 +31400,7 @@ void func_006DAC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF72E, (uint16_t)(_006DC4r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31482,7 +31482,7 @@ void func_006DDE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006DE4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31765,7 +31765,7 @@ void func_006E50(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_006E9Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31872,7 +31872,7 @@ void func_006EA4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_006EDEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -31915,7 +31915,7 @@ void func_006EF2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006EF8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32070,7 +32070,7 @@ void func_006F0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_006F58r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32176,7 +32176,7 @@ void func_006F8E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_006F94r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32296,7 +32296,7 @@ void func_006FBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_006FE4r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32410,7 +32410,7 @@ void func_006FEA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_007028r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32477,7 +32477,7 @@ void func_00702E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_00704Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32713,7 +32713,7 @@ void func_0070D0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_0070DEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32759,7 +32759,7 @@ void func_0070F2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0070F8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32846,7 +32846,7 @@ void func_00711E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_00712Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32915,7 +32915,7 @@ void func_007132(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_007152r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -32958,7 +32958,7 @@ void func_007168(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00716Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33109,7 +33109,7 @@ void func_0071B8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_0071CAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33164,7 +33164,7 @@ void func_0071D0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_0071E8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33228,7 +33228,7 @@ void func_00720A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007210r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33383,7 +33383,7 @@ void func_00725A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_007276r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33442,7 +33442,7 @@ void func_00727C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_00728Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33500,7 +33500,7 @@ void func_00729A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_0072ACr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33607,7 +33607,7 @@ void func_0072E2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_0072EAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33668,7 +33668,7 @@ void func_0072F6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_007308r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33707,7 +33707,7 @@ void func_007314(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_00731Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33765,7 +33765,7 @@ void func_007342(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_007342r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33922,7 +33922,7 @@ void func_007342(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)40), (uint8_t)(_007390r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -33945,7 +33945,7 @@ void func_007342(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00739Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34013,7 +34013,7 @@ void func_007342(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)40), (uint8_t)(_0073B4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34137,7 +34137,7 @@ void func_007342(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0073FCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34240,7 +34240,7 @@ void func_00741C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_007426r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34250,7 +34250,7 @@ void func_00741C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007428r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34292,7 +34292,7 @@ void func_00741C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00743Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34356,7 +34356,7 @@ void func_00744C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007460r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34369,7 +34369,7 @@ void func_00744C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007466r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34442,7 +34442,7 @@ void func_007474(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00747Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34452,7 +34452,7 @@ void func_007474(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_007480r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34510,7 +34510,7 @@ void func_007474(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0074A2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34520,7 +34520,7 @@ void func_007474(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0074A4r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34538,7 +34538,7 @@ void func_007474(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_0074AAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34587,7 +34587,7 @@ void func_0074AE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_0074BEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34791,7 +34791,7 @@ void func_007520(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007534r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34804,7 +34804,7 @@ void func_007520(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007538r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34842,7 +34842,7 @@ void func_007520(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007548r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34936,7 +34936,7 @@ void func_00755C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007570r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -34949,7 +34949,7 @@ void func_00755C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007576r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35048,7 +35048,7 @@ void func_007592(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00759Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35106,7 +35106,7 @@ void func_007592(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)62), (uint8_t)(_0075B2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35149,7 +35149,7 @@ void func_0075C2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0075C2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35189,7 +35189,7 @@ void func_0075C2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0075D8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35280,7 +35280,7 @@ void func_0075F4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_007600r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35425,7 +35425,7 @@ void func_007620(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007640r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35505,7 +35505,7 @@ void func_007620(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_007662r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35533,7 +35533,7 @@ void func_007620(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00766Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35565,7 +35565,7 @@ void func_007620(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007676r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35620,7 +35620,7 @@ void func_007620(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00768Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35717,7 +35717,7 @@ void func_007620(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_0076AAr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35745,7 +35745,7 @@ void func_007620(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0076B6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35777,7 +35777,7 @@ void func_007620(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0076BEr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -35936,7 +35936,7 @@ void func_0078DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_00790Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -36036,7 +36036,7 @@ void func_00796E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00796Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -36275,7 +36275,7 @@ void func_00796E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_007A14r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -36312,7 +36312,7 @@ void func_00796E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_007A22r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -36347,7 +36347,7 @@ void func_007A26(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)40), (uint8_t)(_007A2Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -36770,7 +36770,7 @@ void func_007AF8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_007B12r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -36981,7 +36981,7 @@ void func_007B64(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007B76r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37017,7 +37017,7 @@ void func_007B7A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_007B84r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37035,7 +37035,7 @@ void func_007B7A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)38), (uint16_t)(_007B8Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37094,7 +37094,7 @@ void func_007B7A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)38), (uint16_t)(_007BA6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37204,7 +37204,7 @@ void func_007BBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (uint32_t)(uint32_t)(_007BD4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37279,7 +37279,7 @@ void func_007BBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007BECr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37289,7 +37289,7 @@ void func_007BBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007BEEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37441,7 +37441,7 @@ void func_007BFE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_007C2Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37515,7 +37515,7 @@ void func_007CBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_007CBAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37686,7 +37686,7 @@ void func_007CBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)40), (uint8_t)(_007D10r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37810,7 +37810,7 @@ void func_007CBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_007D56r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37828,7 +37828,7 @@ void func_007CBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_007D5Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37858,7 +37858,7 @@ void func_007CBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_007D6Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37876,7 +37876,7 @@ void func_007CBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_007D70r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37887,7 +37887,7 @@ void func_007CBA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)40), (uint8_t)(_007D74r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -37946,7 +37946,7 @@ void func_007D88(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_007D92r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38115,7 +38115,7 @@ void func_007DA8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_007DDAr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38227,7 +38227,7 @@ void func_007E4A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_007E4Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38400,7 +38400,7 @@ void func_007E4A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_007ECAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38512,7 +38512,7 @@ void func_007EFA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)56), (uint8_t)(_007F02r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38627,7 +38627,7 @@ void func_007F2C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007F3Cr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38674,7 +38674,7 @@ void func_007F46(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007F50r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38734,7 +38734,7 @@ void func_007F76(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_007F80r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38789,7 +38789,7 @@ void func_007F92(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007F94r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38839,7 +38839,7 @@ void func_007F9E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_007FA8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38882,7 +38882,7 @@ void func_007FBC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_007FC6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38937,7 +38937,7 @@ void func_007FD8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_007FDAr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -39013,7 +39013,7 @@ void func_007FE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)40), (uint8_t)(_008006r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -39106,7 +39106,7 @@ void func_008076(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)40), (uint8_t)(_00809Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -39169,7 +39169,7 @@ void func_0080BA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0080CAr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -39314,7 +39314,7 @@ void func_00822A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00822Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -39740,7 +39740,7 @@ void func_00847A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(_008482r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -39765,7 +39765,7 @@ void func_00847A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00848Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -39985,7 +39985,7 @@ void func_00852A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00853Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40022,7 +40022,7 @@ void func_00852A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00854Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40165,7 +40165,7 @@ void func_0087DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_0087DCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40355,7 +40355,7 @@ void func_0088E0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0088ECr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40368,7 +40368,7 @@ void func_0088E0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0088F0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40413,7 +40413,7 @@ void func_0088E0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_008900r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40698,7 +40698,7 @@ void func_008ADA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_008AE6r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40718,7 +40718,7 @@ void func_008ADA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_008AECr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40755,7 +40755,7 @@ void func_008ADA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_008AF8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40784,7 +40784,7 @@ void func_008ADA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_008B02r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40804,7 +40804,7 @@ void func_008ADA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_008B08r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -40878,7 +40878,7 @@ void func_008ADA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_008B28r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41076,7 +41076,7 @@ void func_008D76(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_008D76r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41132,7 +41132,7 @@ void func_008D98(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_008D98r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41238,7 +41238,7 @@ void func_008DD8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(_008DE4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41302,7 +41302,7 @@ void func_008E08(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_008E08r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41439,7 +41439,7 @@ void func_00900C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00901Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41474,7 +41474,7 @@ void func_00900C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00902Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41575,7 +41575,7 @@ void func_00900C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_009076r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41614,7 +41614,7 @@ void func_00900C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_009088r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41624,7 +41624,7 @@ void func_00900C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00908Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41906,7 +41906,7 @@ void func_00912A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_009146r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41947,7 +41947,7 @@ void func_00912A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_009160r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -41957,7 +41957,7 @@ void func_00912A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_009162r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42065,7 +42065,7 @@ void func_009184(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_0091A4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42118,7 +42118,7 @@ void func_0091C0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_0091C4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42154,7 +42154,7 @@ void func_0091C0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_0091DAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42237,7 +42237,7 @@ void func_0091C0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(_009208r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42458,7 +42458,7 @@ void func_0093C4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_0093E0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42603,7 +42603,7 @@ void func_009428(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_009428r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42677,7 +42677,7 @@ void func_009452(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00945Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42804,7 +42804,7 @@ void func_009508(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_009548r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42829,7 +42829,7 @@ void func_009508(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_009556r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42929,7 +42929,7 @@ void func_00957C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_009590r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -42959,7 +42959,7 @@ void func_00957C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_0095A4r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43107,7 +43107,7 @@ void func_00957C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_009606r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43179,7 +43179,7 @@ void func_00961A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_009630r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43249,7 +43249,7 @@ void func_00961A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00965Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43272,7 +43272,7 @@ void func_00961A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_009666r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43438,7 +43438,7 @@ void func_0096BE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_0096BEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43538,7 +43538,7 @@ void func_0096F4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00970Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43605,7 +43605,7 @@ void func_0097F2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_0097F2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43730,7 +43730,7 @@ void func_00983C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_00984Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43818,7 +43818,7 @@ void func_00983C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)12), (uint16_t)(_009886r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -43880,7 +43880,7 @@ void func_00983C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_0098AAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -44147,7 +44147,7 @@ void func_00994A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_009950r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -44336,7 +44336,7 @@ void func_0099B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0099DCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -44569,7 +44569,7 @@ void func_009B5E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_009B88r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -44701,7 +44701,7 @@ void func_009B5E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)36), (uint8_t)(_009BC0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -44791,7 +44791,7 @@ void func_009B5E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_009C02r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -44801,7 +44801,7 @@ void func_009B5E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_009C04r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -44811,7 +44811,7 @@ void func_009B5E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_009C06r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -44936,7 +44936,7 @@ void func_009C3E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_009C3Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45029,7 +45029,7 @@ void func_009C76(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFE20, (uint16_t)(_009C76r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45105,7 +45105,7 @@ void func_009C76(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE12, (uint8_t)(_009CA4r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45116,7 +45116,7 @@ void func_009C76(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE1C, (uint8_t)(_009CA8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45257,7 +45257,7 @@ void func_009CCE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)36), (uint8_t)(_009CF4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45434,7 +45434,7 @@ void func_009CCE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_009D52r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45565,7 +45565,7 @@ void func_009D8E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_009D98r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45586,7 +45586,7 @@ void func_009D8E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_009DA4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45623,7 +45623,7 @@ void func_009D8E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_009DB6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45695,7 +45695,7 @@ void func_009D8E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_009DD2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45726,7 +45726,7 @@ void func_009DE0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_009DE0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -45887,7 +45887,7 @@ void func_009E1C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_009E50r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -46149,7 +46149,7 @@ void func_009EEA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_009EEAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -46308,7 +46308,7 @@ void func_009F38(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(_009F44r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -46384,7 +46384,7 @@ void func_009F38(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_009F78r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -46919,7 +46919,7 @@ void func_00A130(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A130r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47089,7 +47089,7 @@ void func_00A192(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00A1A2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47168,7 +47168,7 @@ void func_00A192(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00A1DCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47494,7 +47494,7 @@ void func_00A2A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A2A4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47569,7 +47569,7 @@ void func_00A2A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)36), (uint8_t)(_00A2D8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47673,7 +47673,7 @@ void func_00A31A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A31Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47733,7 +47733,7 @@ void func_00A31A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A342r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47753,7 +47753,7 @@ void func_00A31A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A34Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47799,7 +47799,7 @@ void func_00A35A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00A366r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47814,7 +47814,7 @@ void func_00A35A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A36Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47869,7 +47869,7 @@ void func_00A35A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE12, (uint8_t)(_00A38Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -47880,7 +47880,7 @@ void func_00A35A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE1C, (uint8_t)(_00A38Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48116,7 +48116,7 @@ void func_00A35A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFE20, (uint16_t)(_00A440r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48261,7 +48261,7 @@ void func_00A48E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00A49Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48281,7 +48281,7 @@ void func_00A48E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00A4A0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48318,7 +48318,7 @@ void func_00A48E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00A4ACr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48347,7 +48347,7 @@ void func_00A48E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00A4B6r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48360,7 +48360,7 @@ void func_00A48E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00A4BAr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48427,7 +48427,7 @@ void func_00A48E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00A4D8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48498,7 +48498,7 @@ void func_00A48E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00A4F0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48515,7 +48515,7 @@ void func_00A48E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00A4F4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48526,7 +48526,7 @@ void func_00A48E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00A4F6r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48609,7 +48609,7 @@ void func_00A632(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A632r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48690,7 +48690,7 @@ void func_00A666(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A66Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48736,7 +48736,7 @@ void func_00A676(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A682r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48807,7 +48807,7 @@ void func_00A6B4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A6B4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48859,7 +48859,7 @@ void func_00A6B4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A6DAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -48989,7 +48989,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00A73Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49114,7 +49114,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)27), (uint8_t)(_00A770r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49129,7 +49129,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A776r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49161,7 +49161,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A786r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49215,7 +49215,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A79Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49237,7 +49237,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A7A4r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49251,7 +49251,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00A7A8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49262,7 +49262,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A7ACr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49287,7 +49287,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A7BAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49301,7 +49301,7 @@ void func_00A718(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_00A7BEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49356,7 +49356,7 @@ void func_00AB36(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00AB36r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49444,7 +49444,7 @@ void func_00AB6C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00AB7Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49667,7 +49667,7 @@ void func_00AED6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00AED6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49852,7 +49852,7 @@ void func_00AF34(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00AF44r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49899,7 +49899,7 @@ void func_00AF34(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00AF62r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -49946,7 +49946,7 @@ void func_00AF34(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00AF7Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50031,7 +50031,7 @@ void func_00AF9E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00AFA8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50149,7 +50149,7 @@ void func_00AFE6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00AFF0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50234,7 +50234,7 @@ void func_00AFFE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00B010r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50296,7 +50296,7 @@ void func_00AFFE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B02Ar);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50376,7 +50376,7 @@ void func_00AFFE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)44), (uint16_t)(_00B05Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50491,7 +50491,7 @@ void func_00AFFE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00B08Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50546,7 +50546,7 @@ void func_00B09C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[2], (uint8_t)(_00B0A4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50764,7 +50764,7 @@ void func_00B0BA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00B0FCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50846,7 +50846,7 @@ void func_00B1F0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00B1F0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50930,7 +50930,7 @@ void func_00B1F0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00B230r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -50970,7 +50970,7 @@ void func_00B238(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00B244r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51017,7 +51017,7 @@ void func_00B238(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B252r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51035,7 +51035,7 @@ void func_00B238(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B258r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51065,7 +51065,7 @@ void func_00B238(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint32_t)(_00B266r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51095,7 +51095,7 @@ void func_00B238(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_00B278r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51189,7 +51189,7 @@ void func_00B2B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B2B6r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51303,7 +51303,7 @@ void func_00B334(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00B350r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51684,7 +51684,7 @@ void func_00B3E8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B42Ar);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51790,7 +51790,7 @@ void func_00B3E8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)40), (uint8_t)(_00B476r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51914,7 +51914,7 @@ void func_00B4DE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B4E8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -51988,7 +51988,7 @@ void func_00B508(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B512r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52021,7 +52021,7 @@ void func_00B514(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B51Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52042,7 +52042,7 @@ void func_00B514(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00B522r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52147,7 +52147,7 @@ void func_00B6B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B6BEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52192,7 +52192,7 @@ void func_00B6B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B6D2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52293,7 +52293,7 @@ void func_00B6B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B708r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52441,7 +52441,7 @@ void func_00B6B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00B768r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52564,7 +52564,7 @@ void func_00B798(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00B7A8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52690,7 +52690,7 @@ void func_00B7E2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00B7F8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52732,7 +52732,7 @@ void func_00B7FE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B808r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -52852,7 +52852,7 @@ void func_00B834(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B83Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53047,7 +53047,7 @@ void func_00B854(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00B8B6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53058,7 +53058,7 @@ void func_00B854(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)50), (uint16_t)(_00B8BCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53135,7 +53135,7 @@ void func_00B854(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00B8E6r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53174,7 +53174,7 @@ void func_00BAC6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00BACCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53276,7 +53276,7 @@ void func_00BD40(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00BD40r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53343,7 +53343,7 @@ void func_00BD40(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00BD72r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53801,7 +53801,7 @@ void func_00BE22(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00BE64r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53860,7 +53860,7 @@ void func_00BE22(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00BE78r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53870,7 +53870,7 @@ void func_00BE22(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00BE7Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53946,7 +53946,7 @@ void func_00BE22(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00BE92r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -53956,7 +53956,7 @@ void func_00BE22(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00BE94r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -54041,7 +54041,7 @@ void func_00BEEA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00BEEAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -54145,7 +54145,7 @@ void func_00BEEA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00BF34r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -54270,7 +54270,7 @@ void func_00BF6E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00BF7Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -54666,7 +54666,7 @@ void func_00BF6E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00C05Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -54692,7 +54692,7 @@ void func_00BF6E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00C070r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -54884,7 +54884,7 @@ void func_00BF6E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint32_t)(_00C0D6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -54923,7 +54923,7 @@ void func_00BF6E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00C0ECr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -55144,7 +55144,7 @@ void func_00C11A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_00C170r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -55163,7 +55163,7 @@ void func_00C11A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)12), (uint16_t)(_00C17Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -55265,7 +55265,7 @@ void func_00C186(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00C1B2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -55291,7 +55291,7 @@ void func_00C186(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00C1C4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -55540,7 +55540,7 @@ void func_00C186(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint32_t)(_00C258r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -55659,7 +55659,7 @@ void func_00C186(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_00C298r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -55794,7 +55794,7 @@ void func_00C186(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00C2E0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56025,7 +56025,7 @@ void func_00C31C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00C374r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56167,7 +56167,7 @@ void func_00C3B4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_00C3C4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56290,7 +56290,7 @@ void func_00C3DA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_00C3FEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56372,7 +56372,7 @@ void func_00C3DA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00C42Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56443,7 +56443,7 @@ void func_00C4CC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C4D4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56546,7 +56546,7 @@ void func_00C4CC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_00C51Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56568,7 +56568,7 @@ void func_00C4CC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C528r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56713,7 +56713,7 @@ void func_00C592(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00C5C6r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56811,7 +56811,7 @@ void func_00C5EA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_00C5FAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56891,7 +56891,7 @@ void func_00C5EA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C62Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56928,7 +56928,7 @@ void func_00C634(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C63Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -56976,7 +56976,7 @@ void func_00C642(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00C654r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57008,7 +57008,7 @@ void func_00C642(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00C664r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57053,7 +57053,7 @@ void func_00C642(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C67Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57077,7 +57077,7 @@ void func_00C642(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C688r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57182,7 +57182,7 @@ void func_00C6AE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00C6C0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57192,7 +57192,7 @@ void func_00C6AE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00C6C2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57320,7 +57320,7 @@ void func_00C724(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_00C734r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57375,7 +57375,7 @@ void func_00C724(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C754r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57475,7 +57475,7 @@ void func_00C7D2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00C7ECr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57679,7 +57679,7 @@ void func_00C846(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_00C856r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57735,7 +57735,7 @@ void func_00C846(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C874r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57779,7 +57779,7 @@ void func_00C884(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C88Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57888,7 +57888,7 @@ void func_00C892(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C8CEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57926,7 +57926,7 @@ void func_00C892(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C8E6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -57972,7 +57972,7 @@ void func_00C8F6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00C90Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -58152,7 +58152,7 @@ void func_00C974(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00C9AAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -58163,7 +58163,7 @@ void func_00C974(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)36), (uint8_t)(_00C9ACr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -58286,7 +58286,7 @@ void func_00CE46(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00CE46r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -58466,7 +58466,7 @@ void func_00CE90(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00CEB2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -58529,7 +58529,7 @@ void func_00CE90(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00CED2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -58781,7 +58781,7 @@ void func_00CF46(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00CF4Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -58837,7 +58837,7 @@ void func_00CF5E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00CF68r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -58883,7 +58883,7 @@ void func_00CF72(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00CF7Cr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -59008,7 +59008,7 @@ void func_00CF86(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)52), (uint16_t)(_00CFC6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -59093,7 +59093,7 @@ void func_00D062(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00D062r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -59428,7 +59428,7 @@ void func_00D134(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00D134r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -59598,7 +59598,7 @@ void func_00D15E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_00D19Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -59698,7 +59698,7 @@ void func_00D15E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00D1DAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -59746,7 +59746,7 @@ void func_00D1EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D1F4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -59925,7 +59925,7 @@ void func_00D1EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00D25Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60141,7 +60141,7 @@ void func_00D348(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D34Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60151,7 +60151,7 @@ void func_00D348(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D34Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60318,7 +60318,7 @@ void func_00D5B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_00D5C2r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60337,7 +60337,7 @@ void func_00D5B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00D5C8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60370,7 +60370,7 @@ void func_00D5B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)_00D5D2r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60448,7 +60448,7 @@ void func_00D5DE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_00D5EEr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60489,7 +60489,7 @@ void func_00D5DE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)_00D5F8r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60567,7 +60567,7 @@ void func_00D604(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16(g_cpu.A[1], (uint16_t)(_00D61Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60643,7 +60643,7 @@ void func_00D622(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16(g_cpu.A[2], (uint16_t)(_00D638r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60849,7 +60849,7 @@ void func_00D65E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D6A0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60891,7 +60891,7 @@ void func_00D65E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D6B0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60949,7 +60949,7 @@ void func_00D65E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D6CAr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -60991,7 +60991,7 @@ void func_00D65E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D6D8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61044,7 +61044,7 @@ void func_00D65E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D6F0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61105,7 +61105,7 @@ void func_00D65E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00D710r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61157,7 +61157,7 @@ void func_00D65E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D726r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61288,7 +61288,7 @@ void func_00D762(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D76Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61313,7 +61313,7 @@ void func_00D762(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D772r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61357,7 +61357,7 @@ void func_00D762(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D77Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61389,7 +61389,7 @@ void func_00D762(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D784r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61410,7 +61410,7 @@ void func_00D762(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D78Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61479,7 +61479,7 @@ void func_00D796(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D7A8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61511,7 +61511,7 @@ void func_00D796(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D7B0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61555,7 +61555,7 @@ void func_00D796(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D7BAr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61605,7 +61605,7 @@ void func_00D796(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00D7C8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61623,7 +61623,7 @@ void func_00D796(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D7CEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61643,7 +61643,7 @@ void func_00D796(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D7D2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61664,7 +61664,7 @@ void func_00D796(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D7DAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61763,7 +61763,7 @@ void func_00D7E4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D7F8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61783,7 +61783,7 @@ void func_00D7E4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D7FCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61808,7 +61808,7 @@ void func_00D7E4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D802r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61852,7 +61852,7 @@ void func_00D7E4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D80Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61892,7 +61892,7 @@ void func_00D7E4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D818r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -61913,7 +61913,7 @@ void func_00D7E4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D820r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62012,7 +62012,7 @@ void func_00D82A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D83Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62032,7 +62032,7 @@ void func_00D82A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D842r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62064,7 +62064,7 @@ void func_00D82A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D84Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62108,7 +62108,7 @@ void func_00D82A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D854r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62158,7 +62158,7 @@ void func_00D82A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00D862r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62176,7 +62176,7 @@ void func_00D82A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D868r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62196,7 +62196,7 @@ void func_00D82A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D86Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62217,7 +62217,7 @@ void func_00D82A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D874r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62378,7 +62378,7 @@ void func_00D8A6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D8B4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62391,7 +62391,7 @@ void func_00D8A6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00D8B8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62515,7 +62515,7 @@ void func_00D8EC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF76C, (uint8_t)(_00D8ECr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62711,7 +62711,7 @@ void func_00D8EC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[2], (uint8_t)(_00D950r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62778,7 +62778,7 @@ void func_00D8EC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[2] + (int32_t)1), (uint8_t)(_00D96Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62955,7 +62955,7 @@ void func_00D980(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[2] + (int32_t)1), (uint8_t)(_00D9CCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -62981,7 +62981,7 @@ void func_00D980(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D9DAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -63056,7 +63056,7 @@ void func_00D980(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00D9FEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -63099,7 +63099,7 @@ void func_00D980(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[2], (uint8_t)(_00DA0Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -63169,7 +63169,7 @@ void func_00D980(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[2] + (int32_t)1), (uint8_t)(_00DA2Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -63595,7 +63595,7 @@ void func_00DB08(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00DB08r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -63805,7 +63805,7 @@ void func_00DB7E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00DB9Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -63816,7 +63816,7 @@ void func_00DB7E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)12), (uint16_t)(_00DB9Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -63998,7 +63998,7 @@ void func_00DBEA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00DC16r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64017,7 +64017,7 @@ void func_00DBEA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_00DC20r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64199,7 +64199,7 @@ void func_00DD7C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00DD7Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64370,7 +64370,7 @@ void func_00DDD2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_00DDF0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64525,7 +64525,7 @@ void func_00DE14(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00DE4Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64543,7 +64543,7 @@ void func_00DE14(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_00DE58r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64569,7 +64569,7 @@ void func_00DE14(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)28), (uint8_t)(_00DE6Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64658,7 +64658,7 @@ void func_00DE88(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00DE9Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64673,7 +64673,7 @@ void func_00DE88(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_00DEA2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64842,7 +64842,7 @@ void func_00DEAE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_00DF04r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64950,7 +64950,7 @@ void func_00E00C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00E024r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -64968,7 +64968,7 @@ void func_00E00C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00E02Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -65201,7 +65201,7 @@ void func_00E0AC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_00E0BCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -65368,7 +65368,7 @@ void func_00E1E8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00E1E8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -65435,7 +65435,7 @@ void func_00E1E8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00E21Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -65591,7 +65591,7 @@ void func_00E2B2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00E2B2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -65774,7 +65774,7 @@ void func_00E32E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00E32Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -65873,7 +65873,7 @@ void func_00E32E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)24), (uint8_t)(_00E378r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -65899,7 +65899,7 @@ void func_00E32E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00E382r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -66000,7 +66000,7 @@ void func_00E3BA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00E3C0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -66116,7 +66116,7 @@ void func_00E40A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_00E40Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -66148,7 +66148,7 @@ void func_00E40A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00E41Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -66233,7 +66233,7 @@ void func_00E7E2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00E7E2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -66345,7 +66345,7 @@ void func_00E81E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00E82Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -66515,7 +66515,7 @@ void func_00E91E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00E91Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -66587,7 +66587,7 @@ void func_00E942(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(_00E94Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -66722,7 +66722,7 @@ void func_00E9E2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00E9E2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -66983,7 +66983,7 @@ void func_00EA0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.D[0] + (2)), (uint8_t)(_00EA86r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67277,7 +67277,7 @@ void func_00EB6E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00EB6Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67387,7 +67387,7 @@ void func_00EB92(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00EBB6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67427,7 +67427,7 @@ void func_00EBBC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)28), (uint8_t)(_00EBC8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67451,7 +67451,7 @@ void func_00EBBC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00EBD4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67499,7 +67499,7 @@ void func_00EBBC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)52), (uint8_t)(_00EBEAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67560,7 +67560,7 @@ void func_00EBBC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00EC0Er);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67593,7 +67593,7 @@ void func_00EBBC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00EC1Ar);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67712,7 +67712,7 @@ void func_00EC54(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00EC7Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67736,7 +67736,7 @@ void func_00EC54(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00EC86r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67841,7 +67841,7 @@ void func_00EC8A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00ECC2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -67890,7 +67890,7 @@ void func_00EC8A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00ECD0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -68119,7 +68119,7 @@ void func_00F1CE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00F1CEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -68365,7 +68365,7 @@ void func_00F630(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00F676r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -68383,7 +68383,7 @@ void func_00F630(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00F680r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -68407,7 +68407,7 @@ void func_00F630(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_00F68Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -68587,7 +68587,7 @@ void func_00F6E8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_00F6EEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -68678,7 +68678,7 @@ void func_00F70C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_00F722r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -68831,7 +68831,7 @@ void func_00F808(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00F80Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -68959,7 +68959,7 @@ void func_00F9D6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00F9E0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -68999,7 +68999,7 @@ void func_00F9D6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00F9F6r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69100,7 +69100,7 @@ void func_00FA1C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FA26r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69140,7 +69140,7 @@ void func_00FA1C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FA3Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69256,7 +69256,7 @@ void func_00FA62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FA76r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69276,7 +69276,7 @@ void func_00FA62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FA7Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69321,7 +69321,7 @@ void func_00FA62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FA92r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69402,7 +69402,7 @@ void func_00FA62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FAAAr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69430,7 +69430,7 @@ void func_00FA62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00FAB2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69440,7 +69440,7 @@ void func_00FA62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FAB4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69460,7 +69460,7 @@ void func_00FA62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FABCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69526,7 +69526,7 @@ void func_00FAD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FADCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69546,7 +69546,7 @@ void func_00FAD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FAE4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69583,7 +69583,7 @@ void func_00FAD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FAF2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69612,7 +69612,7 @@ void func_00FAD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00FAFCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69622,7 +69622,7 @@ void func_00FAD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FAFEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69642,7 +69642,7 @@ void func_00FAD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FB06r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -69721,7 +69721,7 @@ void func_00FB0E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FB2Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -70161,7 +70161,7 @@ void func_00FBB0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FBF8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -70172,7 +70172,7 @@ void func_00FBB0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FBFAr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -70320,7 +70320,7 @@ void func_00FC2C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_00FC3Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -70518,7 +70518,7 @@ void func_00FEE6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00FEF0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -70578,7 +70578,7 @@ void func_0100BA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_0100BAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -70762,7 +70762,7 @@ void func_01010E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_010136r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -70791,7 +70791,7 @@ void func_01010E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_010144r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -70924,7 +70924,7 @@ void func_0102A8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_0102A8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71085,7 +71085,7 @@ void func_0102A8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_010302r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71286,7 +71286,7 @@ void func_0102A8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)40), (uint8_t)(_010374r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71336,7 +71336,7 @@ void func_01037C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01038Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71393,7 +71393,7 @@ void func_01037C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0103A2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71425,7 +71425,7 @@ void func_01037C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0103AEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71564,7 +71564,7 @@ void func_010422(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_010442r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71616,7 +71616,7 @@ void func_0108BE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)38), (uint16_t)(_0108C2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71701,7 +71701,7 @@ void func_0108BE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (uint32_t)(uint32_t)(_0108E6r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71776,7 +71776,7 @@ void func_0108BE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0108FEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71786,7 +71786,7 @@ void func_0108BE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_010900r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71880,7 +71880,7 @@ void func_010BD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_010BE0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -71937,7 +71937,7 @@ void func_010CB2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_010CC2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -72002,7 +72002,7 @@ void func_010CB2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_010CD8r;
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -72054,7 +72054,7 @@ void func_010CB2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_010CF0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -72172,7 +72172,7 @@ void func_01142C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_01142Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -72228,7 +72228,7 @@ void func_01142C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01144Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -72264,7 +72264,7 @@ void func_01142C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01145Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -72321,7 +72321,7 @@ void func_011464(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_011470r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -72353,7 +72353,7 @@ void func_011464(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01147Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -72564,7 +72564,7 @@ void func_011766(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_011770r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -73025,7 +73025,7 @@ void func_011B70(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_011BDCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -73118,7 +73118,7 @@ void func_012180(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)62), (uint8_t)(_0121A2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -73165,7 +73165,7 @@ void func_012180(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0121B8r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -73313,7 +73313,7 @@ void func_012502(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_01253Ar);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -73813,7 +73813,7 @@ void func_01295E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_012978r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -73863,7 +73863,7 @@ void func_01295E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01298Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -73957,7 +73957,7 @@ void func_012BFC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_012BFCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -74519,7 +74519,7 @@ void func_012D5E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7A9, (uint8_t)(_012D72r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75102,7 +75102,7 @@ void func_012EB0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_012EE8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75220,7 +75220,7 @@ void func_012EB0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_012F2Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75241,7 +75241,7 @@ void func_012EB0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_012F32r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75397,7 +75397,7 @@ void func_012EB0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF73E, (uint16_t)(_012F8Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75471,7 +75471,7 @@ void func_012EB0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF73E, (uint16_t)(_012FBAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75559,7 +75559,7 @@ void func_012EB0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_012FE2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75671,7 +75671,7 @@ void func_01300C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013010r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75723,7 +75723,7 @@ void func_01300C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_013028r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75779,7 +75779,7 @@ void func_01300C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013038r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75825,7 +75825,7 @@ void func_01300C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)16), (uint16_t)(_01304Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -75900,7 +75900,7 @@ void func_01300C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_013078r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -76061,7 +76061,7 @@ void func_01307E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_0130C2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -76168,7 +76168,7 @@ void func_0130EA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_013104r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -76216,7 +76216,7 @@ void func_0130EA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_013118r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -76252,7 +76252,7 @@ void func_0130EA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013128r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -76483,7 +76483,7 @@ void func_013150(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01319Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -76779,7 +76779,7 @@ void func_013226(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01323Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -76941,7 +76941,7 @@ void func_013248(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_013286r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -76996,7 +76996,7 @@ void func_013248(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF73E, (uint16_t)(_01329Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77173,7 +77173,7 @@ void func_013304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_013310r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77198,7 +77198,7 @@ void func_013304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_013318r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77228,7 +77228,7 @@ void func_013304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_013324r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77248,7 +77248,7 @@ void func_013304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01332Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77280,7 +77280,7 @@ void func_013304(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01333Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77511,7 +77511,7 @@ void func_0133AC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_0133CEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77594,7 +77594,7 @@ void func_0133EA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_0133FCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77697,7 +77697,7 @@ void func_0133EA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)16), (uint16_t)(_013430r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77728,7 +77728,7 @@ void func_0133EA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_013438r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77834,7 +77834,7 @@ void func_0133EA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_01348Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -77979,7 +77979,7 @@ void func_0134D4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_0134D8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78058,7 +78058,7 @@ void func_0134D4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)20), (uint16_t)(_0134FEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78074,7 +78074,7 @@ void func_0134D4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)20), (uint16_t)(_013504r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78100,7 +78100,7 @@ void func_01350A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01350Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78190,7 +78190,7 @@ void func_01350A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)20), (uint16_t)(_013534r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78228,7 +78228,7 @@ void func_01350A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)20), (uint16_t)(_013540r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78277,7 +78277,7 @@ void func_013546(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013558r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78388,7 +78388,7 @@ void func_013588(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013590r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78596,7 +78596,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_0135F8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78644,7 +78644,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013612r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78690,7 +78690,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_01361Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78727,7 +78727,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013632r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78755,7 +78755,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01363Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -78993,7 +78993,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_0136C2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -79093,7 +79093,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_0136FCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -79144,7 +79144,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013714r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -79238,7 +79238,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_013746r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -79341,7 +79341,7 @@ void func_0135A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_013780r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -79513,7 +79513,7 @@ void func_0137F2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_0137F8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -79588,7 +79588,7 @@ void func_013826(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01382Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -79731,7 +79731,7 @@ void func_01387E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_013882r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -79762,7 +79762,7 @@ void func_01387E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_013894r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -79777,7 +79777,7 @@ void func_01387E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE1C, (uint8_t)(_01389Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80027,7 +80027,7 @@ void func_013916(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_013938r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80320,7 +80320,7 @@ void func_0139C4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0139E6r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80444,7 +80444,7 @@ void func_013A18(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)27), (uint8_t)(_013A1Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80466,7 +80466,7 @@ void func_013A22(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013A22r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80498,7 +80498,7 @@ void func_013A22(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013A32r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80552,7 +80552,7 @@ void func_013A22(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013A46r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80595,7 +80595,7 @@ void func_013A52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013A58r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80651,7 +80651,7 @@ void func_013A52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013A70r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80783,7 +80783,7 @@ void func_013A52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_013AB2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80794,7 +80794,7 @@ void func_013A52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_013AB4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80821,7 +80821,7 @@ void func_013A52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_013ABAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80867,7 +80867,7 @@ void func_013A52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(_013ACCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80881,7 +80881,7 @@ void func_013A52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_013AD2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -80945,7 +80945,7 @@ void func_013A52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_013AF2r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81044,7 +81044,7 @@ void func_013A52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_013B1Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81165,7 +81165,7 @@ void func_013C3E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_013C54r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81413,7 +81413,7 @@ void func_013DD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_013DFCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81449,7 +81449,7 @@ void func_013DD0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_013E0Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81580,7 +81580,7 @@ void func_01416C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_01416Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81640,7 +81640,7 @@ void func_01416C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_014198r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81722,7 +81722,7 @@ void func_0141DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_01420Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81732,7 +81732,7 @@ void func_0141DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_01420Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81742,7 +81742,7 @@ void func_0141DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01420Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81780,7 +81780,7 @@ void func_0141DC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_014218r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81929,7 +81929,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_014610r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81964,7 +81964,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01461Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -81989,7 +81989,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01462Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82000,7 +82000,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01462Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82093,7 +82093,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01465Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82118,7 +82118,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014664r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82199,7 +82199,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01468Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82234,7 +82234,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014694r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82309,7 +82309,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_0146BAr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82338,7 +82338,7 @@ void func_0145EE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_0146C6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82468,7 +82468,7 @@ void func_014750(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01476Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82548,7 +82548,7 @@ void func_01477C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01478Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82573,7 +82573,7 @@ void func_01477C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014796r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82654,7 +82654,7 @@ void func_01477C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0147BCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82679,7 +82679,7 @@ void func_01477C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0147C4r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82754,7 +82754,7 @@ void func_01477C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_0147ECr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82783,7 +82783,7 @@ void func_01477C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_0147F8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -82908,7 +82908,7 @@ void func_014818(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014834r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83332,7 +83332,7 @@ void func_0148BA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0148FCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83575,7 +83575,7 @@ void func_01495C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01496Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83644,7 +83644,7 @@ void func_01495C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014984r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83662,7 +83662,7 @@ void func_01495C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01498Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83698,7 +83698,7 @@ void func_01495C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014994r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83732,7 +83732,7 @@ void func_01495C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0149A6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83790,7 +83790,7 @@ void func_01495C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0149B8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83808,7 +83808,7 @@ void func_01495C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0149BEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83844,7 +83844,7 @@ void func_01495C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0149C8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83904,7 +83904,7 @@ void func_0149CE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0149DEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -83930,7 +83930,7 @@ void func_0149CE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0149E6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84031,7 +84031,7 @@ void func_0149CE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[4], (uint8_t)(_014A18r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84072,7 +84072,7 @@ void func_0149CE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014A26r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84165,7 +84165,7 @@ void func_0149CE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014A50r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84211,7 +84211,7 @@ void func_0149CE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014A60r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84241,7 +84241,7 @@ void func_0149CE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014A6Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84431,7 +84431,7 @@ void func_014A74(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[4], (uint8_t)(_014AC0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84472,7 +84472,7 @@ void func_014A74(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014ACEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84553,7 +84553,7 @@ void func_014A74(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014AF2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84599,7 +84599,7 @@ void func_014A74(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014B02r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84667,7 +84667,7 @@ void func_014B0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014B1Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84693,7 +84693,7 @@ void func_014B0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_014B26r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84775,7 +84775,7 @@ void func_014B0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[4], (uint8_t)(_014B50r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84835,7 +84835,7 @@ void func_014B0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014B66r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84928,7 +84928,7 @@ void func_014B0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014B90r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -84974,7 +84974,7 @@ void func_014B0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014BA0r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85004,7 +85004,7 @@ void func_014B0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014BACr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85175,7 +85175,7 @@ void func_014BB4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[4], (uint8_t)(_014BF8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85235,7 +85235,7 @@ void func_014BB4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014C0Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85316,7 +85316,7 @@ void func_014BB4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014C32r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85362,7 +85362,7 @@ void func_014BB4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014C42r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85448,7 +85448,7 @@ void func_014CA2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_014CB6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85606,7 +85606,7 @@ void func_014CDE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)_014CEEr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85647,7 +85647,7 @@ void func_014CDE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_014CF8r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85692,7 +85692,7 @@ void func_014CDE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_014D08r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85726,7 +85726,7 @@ void func_014CDE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_014D14r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85750,7 +85750,7 @@ void func_014CDE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_014D1Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85761,7 +85761,7 @@ void func_014CDE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_014D20r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85806,7 +85806,7 @@ void func_014CDE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_014D3Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85850,7 +85850,7 @@ void func_014D48(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_014D50r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85947,7 +85947,7 @@ void func_014D70(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014D80r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -85972,7 +85972,7 @@ void func_014D70(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014D88r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -86053,7 +86053,7 @@ void func_014D70(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014DAEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -86188,7 +86188,7 @@ void func_014DF0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_014DF0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -86309,7 +86309,7 @@ void func_014E1C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014E28r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -86445,7 +86445,7 @@ void func_014E50(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014E68r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -86526,7 +86526,7 @@ void func_014E50(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014E8Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -86551,7 +86551,7 @@ void func_014E50(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014E96r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -86630,7 +86630,7 @@ void func_014EBC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_014EBCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -86681,7 +86681,7 @@ void func_014EDA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014EDAr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -86833,7 +86833,7 @@ void func_014F08(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_014F24r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -87327,7 +87327,7 @@ void func_014FD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_015018r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -87498,7 +87498,7 @@ void func_01506C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01506Cr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -87679,7 +87679,7 @@ void func_015200(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_01523Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -87730,7 +87730,7 @@ void func_015248(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_015252r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -87759,7 +87759,7 @@ void func_015248(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01525Cr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -87792,7 +87792,7 @@ void func_015248(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_015268r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -87838,7 +87838,7 @@ void func_015570(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_015578r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -87870,7 +87870,7 @@ void func_015570(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_015586r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -87911,7 +87911,7 @@ void func_015570(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_015594r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -88149,7 +88149,7 @@ void func_015624(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)38), (uint16_t)(_015628r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -88250,7 +88250,7 @@ void func_015624(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)_015650r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -88260,7 +88260,7 @@ void func_015624(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_015652r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -88313,7 +88313,7 @@ void func_0156F0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0156F8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -88345,7 +88345,7 @@ void func_0156F0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_015706r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -88386,7 +88386,7 @@ void func_0156F0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_015714r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -88425,7 +88425,7 @@ void func_0156F0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_01572Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -88501,7 +88501,7 @@ void func_016424(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_01643Er);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -88691,7 +88691,7 @@ void func_0165DE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)56), (uint8_t)(_0165FCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -89197,7 +89197,7 @@ void func_016952(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_01696Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -89212,7 +89212,7 @@ void func_016952(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_016976r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -89393,7 +89393,7 @@ void func_016952(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_0169E8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -89440,7 +89440,7 @@ void func_016952(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_016A08r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -89502,7 +89502,7 @@ void func_016952(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_016A2Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -89610,7 +89610,7 @@ void func_016A40(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)38), (uint8_t)(_016A6Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -89651,7 +89651,7 @@ void func_016A40(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_016A80r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -89810,7 +89810,7 @@ void func_016ACE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_016AD6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -89961,7 +89961,7 @@ void func_016B02(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_016B22r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90017,7 +90017,7 @@ void func_016B02(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_016B3Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90063,7 +90063,7 @@ void func_016B02(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)60), (uint8_t)(_016B4Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90169,7 +90169,7 @@ void func_016B02(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)60), (uint8_t)(_016B8Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90230,7 +90230,7 @@ void func_016B98(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)38), (uint8_t)(_016BB2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90251,7 +90251,7 @@ void func_016B98(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)38), (uint8_t)(_016BBCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90270,7 +90270,7 @@ void func_016B98(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_016BC4r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90342,7 +90342,7 @@ void func_016BCA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_016BF0r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90424,7 +90424,7 @@ void func_016BCA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_016C10r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90534,7 +90534,7 @@ void func_016BCA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)60), (uint8_t)(_016C44r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90565,7 +90565,7 @@ void func_016BCA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_016C52r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90576,7 +90576,7 @@ void func_016BCA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)60), (uint8_t)(_016C56r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90777,7 +90777,7 @@ void func_016CC0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_016CD6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -90849,7 +90849,7 @@ void func_016E4A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_016E4Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -91129,7 +91129,7 @@ void func_016EAE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_016EFAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -91170,7 +91170,7 @@ void func_016EAE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_016F0Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -91206,7 +91206,7 @@ void func_016EAE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_016F20r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -91442,7 +91442,7 @@ void func_016F94(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_016FBAr);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -91474,7 +91474,7 @@ void func_016F94(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_016FC8r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -91962,7 +91962,7 @@ void func_017170(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)_017174r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -91994,7 +91994,7 @@ void func_017170(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_017182r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -92035,7 +92035,7 @@ void func_017170(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_017190r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -92078,7 +92078,7 @@ void func_017170(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_0171A2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -92168,7 +92168,7 @@ void func_017170(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0171E2r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -92390,7 +92390,7 @@ void func_017276(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_017276r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -92829,7 +92829,7 @@ void func_0177CA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_0177E2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -92872,7 +92872,7 @@ void func_0177E6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0177F2r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -92898,7 +92898,7 @@ void func_0177E6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)63), (uint8_t)(_017800r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93167,7 +93167,7 @@ void func_017860(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_017896r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93200,7 +93200,7 @@ void func_017860(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)12), (uint16_t)(_01789Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93265,7 +93265,7 @@ void func_0178A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_0178B4r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93306,7 +93306,7 @@ void func_0178A4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)_0178BEr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93385,7 +93385,7 @@ void func_0178CA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_0178EEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93465,7 +93465,7 @@ void func_01791A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_017920r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93648,7 +93648,7 @@ void func_01797A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_017994r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93691,7 +93691,7 @@ void func_0179AC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)60), (uint16_t)(_0179ACr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93708,7 +93708,7 @@ void func_0179AC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_0179B4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93760,7 +93760,7 @@ void func_0179AC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(_0179D4r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -93848,7 +93848,7 @@ void func_0179F6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF72A, (uint16_t)(_017A0Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -94251,7 +94251,7 @@ void func_017AFC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_017AFCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -94374,7 +94374,7 @@ void func_017AFC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)40), (uint8_t)(_017B5Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -94563,7 +94563,7 @@ void func_017BB8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (uint32_t)(uint32_t)(_017BCCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -94598,7 +94598,7 @@ void func_017BB8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)60), (uint8_t)(_017BDCr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -94648,7 +94648,7 @@ void func_017BB8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_017BF6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -94673,7 +94673,7 @@ void func_017BB8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)50), (uint16_t)(_017C02r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -94735,7 +94735,7 @@ void func_017C2A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)27), (uint8_t)(_017C2Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -94774,7 +94774,7 @@ void func_017C2A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_017C46r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -94884,7 +94884,7 @@ void func_017C84(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_017C8Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -95190,7 +95190,7 @@ void func_01977A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_019788r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -95310,7 +95310,7 @@ void func_01977A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_0197C0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -95329,7 +95329,7 @@ void func_01977A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)12), (uint16_t)(_0197C6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -95346,7 +95346,7 @@ void func_01977A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_0197CEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -95839,7 +95839,7 @@ void func_01ABFE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_01AC2Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96006,7 +96006,7 @@ void func_01AC62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_01AC94r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96039,7 +96039,7 @@ void func_01AC62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)12), (uint16_t)(_01AC9Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96097,7 +96097,7 @@ void func_01AC62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_01ACC0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96162,7 +96162,7 @@ void func_01AC62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_01ACE8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96172,7 +96172,7 @@ void func_01AC62(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01ACECr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96311,7 +96311,7 @@ void func_01ACFA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)8), (uint16_t)(_01AD2Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96344,7 +96344,7 @@ void func_01ACFA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_01AD3Er));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96512,7 +96512,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01AE02r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96537,7 +96537,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01AE0Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96610,7 +96610,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01AE7Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96669,7 +96669,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01AE8Er);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96679,7 +96679,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01AE90r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96755,7 +96755,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01AEACr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96765,7 +96765,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01AEAEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96877,7 +96877,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)36), (uint8_t)(_01AEEEr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -96962,7 +96962,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)37), (uint8_t)(_01AF18r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -97001,7 +97001,7 @@ void func_01ADE4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)36), (uint8_t)(_01AF2Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -97161,7 +97161,7 @@ void func_01AF30(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF7D0, (uint16_t)(_01AF76r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -97301,7 +97301,7 @@ void func_01AF30(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)18), (uint16_t)(_01AFC2r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -97909,7 +97909,7 @@ void func_01B0F0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01B134r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -97948,7 +97948,7 @@ void func_01B0F0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)33), (uint8_t)(_01B148r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98081,7 +98081,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01B184r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98135,7 +98135,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01B196r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98197,7 +98197,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (uint32_t)_01B1AEr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98227,7 +98227,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_01B1B8r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98306,7 +98306,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_01B1CCr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98316,7 +98316,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_01B1CEr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98341,7 +98341,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01B1D8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98494,7 +98494,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01B21Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98536,7 +98536,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01B232r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98599,7 +98599,7 @@ void func_01B14E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01B252r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98806,7 +98806,7 @@ void func_01B290(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFEC3, (uint8_t)(_01B2BEr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98856,7 +98856,7 @@ void func_01B290(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFEC5, (uint8_t)(_01B2DAr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -98976,7 +98976,7 @@ void func_01B290(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFEC7, (uint8_t)(_01B31Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -99095,7 +99095,7 @@ void func_01B290(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01B362r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -99541,7 +99541,7 @@ void func_01B508(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)3), (uint8_t)(_01B51Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -99626,7 +99626,7 @@ void func_01B538(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)3), (uint8_t)(_01B54Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -99722,7 +99722,7 @@ void func_01B59E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)3), (uint8_t)(_01B5B0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -99818,7 +99818,7 @@ void func_01B5D4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)3), (uint8_t)(_01B5E6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -99923,7 +99923,7 @@ void func_01B614(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)3), (uint8_t)(_01B626r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -99996,7 +99996,7 @@ void func_01B67C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE16, (uint8_t)(_01B682r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -100356,7 +100356,7 @@ void func_01B9A8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_01B9A8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -100600,7 +100600,7 @@ void func_01BA3A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01BA50r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -100725,7 +100725,7 @@ void func_01BA60(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01BA9Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -100762,7 +100762,7 @@ void func_01BA60(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01BAACr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -100805,7 +100805,7 @@ void func_01BA60(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint32_t)(_01BAC0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -100824,7 +100824,7 @@ void func_01BA60(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint32_t)(_01BAC8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101031,7 +101031,7 @@ void func_01BB28(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01BB34r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101072,7 +101072,7 @@ void func_01BB28(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01BB48r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101365,7 +101365,7 @@ void func_01BBE0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF782, (uint16_t)(_01BBE0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101424,7 +101424,7 @@ void func_01BBE0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_01BC08r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101451,7 +101451,7 @@ void func_01BBE0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01BC16r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101569,7 +101569,7 @@ void func_01BC56(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_01BC78r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101617,7 +101617,7 @@ void func_01BC56(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_01BC86r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101627,7 +101627,7 @@ void func_01BC56(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)_01BC88r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101678,7 +101678,7 @@ void func_01BC56(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_01BC9Er;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101725,7 +101725,7 @@ void func_01BC56(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_01BCB0r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101907,7 +101907,7 @@ void func_01BCE8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01BCF6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -101967,7 +101967,7 @@ void func_01BCE8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01BD0Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -102161,7 +102161,7 @@ void func_01BD52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01BD5Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -102208,7 +102208,7 @@ void func_01BD52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01BD72r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -102332,7 +102332,7 @@ void func_01BD52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE18, (uint8_t)(_01BDB6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -102404,7 +102404,7 @@ void func_01BD52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE12, (uint8_t)(_01BDDCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -102415,7 +102415,7 @@ void func_01BD52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE1C, (uint8_t)(_01BDE0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -102546,7 +102546,7 @@ void func_01BD52(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE57, (uint8_t)(_01BE26r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -103058,7 +103058,7 @@ void func_01BE8E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_01BF2Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -103422,7 +103422,7 @@ void func_01BE8E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01C008r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -103509,7 +103509,7 @@ void func_01C024(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01C03Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -103605,7 +103605,7 @@ void func_01C054(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B0, (uint8_t)(_01C06Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -103684,7 +103684,7 @@ void func_01C08A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B2, (uint8_t)(_01C0A0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -103760,7 +103760,7 @@ void func_01C0C0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B4, (uint8_t)(_01C0D0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -103819,7 +103819,7 @@ void func_01C0C0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01C0ECr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -103829,7 +103829,7 @@ void func_01C0C0(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01C0EEr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -103912,7 +103912,7 @@ void func_01C112(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_01C12Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104060,7 +104060,7 @@ void func_01C150(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B2, (uint8_t)(_01C17Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104093,7 +104093,7 @@ void func_01C150(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01C18Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104141,7 +104141,7 @@ void func_01C150(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01C1A6r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104206,7 +104206,7 @@ void func_01C1AE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B6, (uint8_t)(_01C1C8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104325,7 +104325,7 @@ void func_01C1EC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B0, (uint8_t)(_01C218r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104477,7 +104477,7 @@ void func_01C1EC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B2, (uint8_t)(_01C27Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104583,7 +104583,7 @@ void func_01C2A2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B2, (uint8_t)(_01C2BCr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104685,7 +104685,7 @@ void func_01C2F4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B4, (uint8_t)(_01C304r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104729,7 +104729,7 @@ void func_01C2F4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01C314r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104739,7 +104739,7 @@ void func_01C2F4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01C316r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104806,7 +104806,7 @@ void func_01C33C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7B8, (uint8_t)(_01C34Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104843,7 +104843,7 @@ void func_01C33C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01C35Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104910,7 +104910,7 @@ void func_01C37A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7BA, (uint8_t)(_01C38Ar));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -104947,7 +104947,7 @@ void func_01C37A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_01C398r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -105820,7 +105820,7 @@ void func_01C510(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01C52Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -105921,7 +105921,7 @@ void func_01C55A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)36), (uint8_t)(_01C55Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -106011,7 +106011,7 @@ void func_01C584(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01C59Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -106034,7 +106034,7 @@ void func_01C584(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01C5A8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -106073,7 +106073,7 @@ void func_01C68C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   m68k_write32(g_cpu.A[3], (uint32_t)(_01C69Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -106290,7 +106290,7 @@ void func_01C6B8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[1], (uint8_t)(_01C710r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -106321,7 +106321,7 @@ void func_01C6B8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[1], (uint8_t)(_01C71Cr));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -106352,7 +106352,7 @@ void func_01C6B8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[1], (uint8_t)(_01C728r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -106998,7 +106998,7 @@ void func_01C89A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01C8B0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107181,7 +107181,7 @@ void func_01C8E2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01C8F0r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107195,7 +107195,7 @@ void func_01C8E2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_01C8F4r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107381,7 +107381,7 @@ void func_01C8E2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_01C92Cr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107466,7 +107466,7 @@ void func_01C938(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01C95Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107480,7 +107480,7 @@ void func_01C938(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_01C962r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107719,7 +107719,7 @@ void func_01C9BA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01C9C8r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107733,7 +107733,7 @@ void func_01C9BA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_01C9CCr;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107909,7 +107909,7 @@ void func_01C9BA(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_01CA00r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107984,7 +107984,7 @@ void func_01CA0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01CA22r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -107998,7 +107998,7 @@ void func_01CA0C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_01CA26r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -108298,7 +108298,7 @@ void func_01CA6E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01CA94r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -108312,7 +108312,7 @@ void func_01CA6E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_01CA98r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -108428,7 +108428,7 @@ void func_01CA6E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_01CABCr);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -108613,7 +108613,7 @@ void func_01CFD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE0B, (uint8_t)(_01D00Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -108658,7 +108658,7 @@ void func_01CFD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01D022r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -108739,7 +108739,7 @@ void func_01CFD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[2] = (uint32_t)_01D042r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -108804,7 +108804,7 @@ void func_01CFD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[3] = (uint32_t)_01D064r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -108861,7 +108861,7 @@ void func_01CFD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE06, (uint8_t)(_01D084r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -108884,7 +108884,7 @@ void func_01CFD6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE06, (uint8_t)(_01D092r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -110017,7 +110017,7 @@ void func_071D22(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_071D28r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -110100,7 +110100,7 @@ void func_071D40(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_071D4Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -110469,7 +110469,7 @@ void func_071DC6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)_071E08r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -110487,7 +110487,7 @@ void func_071DC6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)_071E10r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -110549,7 +110549,7 @@ void func_071E24(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)_071E2Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -110702,7 +110702,7 @@ void func_071E50(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_071E72r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -110748,7 +110748,7 @@ void func_071E50(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_071E82r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -111536,7 +111536,7 @@ void func_071FD2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_072050r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -111737,7 +111737,7 @@ void func_071FD2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_0720B4r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -112018,7 +112018,7 @@ void func_071FD2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_07213Er;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -112424,7 +112424,7 @@ void func_0721C6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (uint32_t)_07221Er;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -112665,7 +112665,7 @@ void func_0721C6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_072286r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -112866,7 +112866,7 @@ void func_07230C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_07233Ar;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -113008,7 +113008,7 @@ void func_07230C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)_072378r;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -113703,7 +113703,7 @@ void func_072504(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)9), (uint8_t)(_072528r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -113765,7 +113765,7 @@ void func_072504(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)9), (uint8_t)(_072546r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -113861,7 +113861,7 @@ void func_07256A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_072574r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -113927,7 +113927,7 @@ void func_07256A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_07258Er));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -114198,7 +114198,7 @@ void func_07260C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8(g_cpu.A[0], (uint8_t)(_07261Ar));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -114555,7 +114555,7 @@ void func_072722(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_07272Ar);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -114647,7 +114647,7 @@ void func_07275A(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_072762r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -114909,7 +114909,7 @@ void func_0728AC(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_0728B2r);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -115012,7 +115012,7 @@ void func_0728E2(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0728E8r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -115232,7 +115232,7 @@ void func_07292E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)12), (uint8_t)(_072950r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -115262,7 +115262,7 @@ void func_07292E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)_072960r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -115334,7 +115334,7 @@ void func_07297C(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[6] = (g_cpu.D[6] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_072980r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -115794,7 +115794,7 @@ void func_072AF8(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_072B0Cr));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -115906,7 +115906,7 @@ void func_072B14(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)9), (uint8_t)(_072B44r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -115992,7 +115992,7 @@ void func_072B14(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)9), (uint8_t)(_072B74r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -116078,7 +116078,7 @@ void func_072BA4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)9), (uint8_t)(_072BA6r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -116142,7 +116142,7 @@ void func_072BBE(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)8), (uint8_t)(_072BC0r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -116168,7 +116168,7 @@ void func_072BE6(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)9), (uint8_t)(_072BE8r));
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -116512,7 +116512,7 @@ void func_072C4E(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_072C94r);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -116738,7 +116738,7 @@ void func_072CB4(void) {
     g_cpu.SR &= ~(0x1Fu);
     if (!_fr)                        g_cpu.SR |= (1u<<2);
     if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fa + (uint32_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_072D0Ar);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
