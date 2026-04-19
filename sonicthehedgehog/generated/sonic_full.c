@@ -34,7 +34,6 @@ void func_0005E0(void);
 void func_000B10(void);
 void func_000B5E(void);
 void func_000B64(void);
-void func_000B6E(void);
 void func_000B88(void);
 void func_000C32(void);
 void func_000C36(void);
@@ -103,7 +102,6 @@ void func_0017DC(void);
 void func_00188C(void);
 void func_00189C(void);
 void func_00193C(void);
-void func_00194E(void);
 void func_00195C(void);
 void func_001964(void);
 void func_00196A(void);
@@ -153,7 +151,6 @@ void func_004206(void);
 void func_004274(void);
 void func_0045DC(void);
 void func_00489C(void);
-void func_00491E(void);
 void func_004962(void);
 void func_004BE4(void);
 void func_004CE0(void);
@@ -165,10 +162,8 @@ void func_005370(void);
 void func_0057C4(void);
 void func_005898(void);
 void func_00592C(void);
-void func_0059EA(void);
 void func_005EBE(void);
 void func_0061EC(void);
-void func_006216(void);
 void func_006224(void);
 void func_006228(void);
 void func_006230(void);
@@ -177,7 +172,6 @@ void func_00623E(void);
 void func_006252(void);
 void func_00625E(void);
 void func_006286(void);
-void func_0062DE(void);
 void func_0062EC(void);
 void func_006304(void);
 void func_006396(void);
@@ -218,7 +212,6 @@ void func_006D32(void);
 void func_006D6C(void);
 void func_006DAA(void);
 void func_006DAC(void);
-void func_006DD0(void);
 void func_006DDE(void);
 void func_006DF4(void);
 void func_006E0A(void);
@@ -255,8 +248,6 @@ void func_00720A(void);
 void func_007220(void);
 void func_007244(void);
 void func_00725A(void);
-void func_007278(void);
-void func_00727A(void);
 void func_00727C(void);
 void func_00729A(void);
 void func_0072B8(void);
@@ -307,7 +298,6 @@ void func_007D7C(void);
 void func_007D88(void);
 void func_007DA8(void);
 void func_007DF0(void);
-void func_007E2A(void);
 void func_007E32(void);
 void func_007E4A(void);
 void func_007ED6(void);
@@ -358,7 +348,6 @@ void func_009184(void);
 void func_0091C0(void);
 void func_009224(void);
 void func_009240(void);
-void func_009316(void);
 void func_0093C4(void);
 void func_0093EC(void);
 void func_009404(void);
@@ -409,7 +398,6 @@ void func_009EEA(void);
 void func_009F14(void);
 void func_009F38(void);
 void func_009F86(void);
-void func_00A046(void);
 void func_00A118(void);
 void func_00A130(void);
 void func_00A192(void);
@@ -452,7 +440,6 @@ void func_00B1F0(void);
 void func_00B238(void);
 void func_00B2B2(void);
 void func_00B2BE(void);
-void func_00B334(void);
 void func_00B39E(void);
 void func_00B3E8(void);
 void func_00B48C(void);
@@ -471,7 +458,6 @@ void func_00B814(void);
 void func_00B834(void);
 void func_00B854(void);
 void func_00BAC6(void);
-void func_00BB34(void);
 void func_00BD2E(void);
 void func_00BD40(void);
 void func_00BD76(void);
@@ -521,7 +507,6 @@ void func_00D11C(void);
 void func_00D134(void);
 void func_00D15E(void);
 void func_00D1EE(void);
-void func_00D2F2(void);
 void func_00D338(void);
 void func_00D348(void);
 void func_00D362(void);
@@ -838,7 +823,6 @@ void func_01BD30(void);
 void func_01BD52(void);
 void func_01BE8E(void);
 void func_01C024(void);
-void func_01C046(void);
 void func_01C054(void);
 void func_01C08A(void);
 void func_01C0C0(void);
@@ -852,7 +836,6 @@ void func_01C33C(void);
 void func_01C37A(void);
 void func_01C3B6(void);
 void func_01C3B8(void);
-void func_01C3CE(void);
 void func_01C3EE(void);
 void func_01C3FA(void);
 void func_01C410(void);
@@ -910,16 +893,8 @@ void func_071E4A(void);
 void func_071E50(void);
 void func_071F02(void);
 void func_071F4C(void);
-void func_071F98(void);
-void func_071F9C(void);
-void func_071FA8(void);
-void func_071FAC(void);
-void func_071FD2(void);
-void func_0721C6(void);
-void func_07230C(void);
 void func_0723E0(void);
 void func_07247C(void);
-void func_0724E6(void);
 void func_072504(void);
 void func_07256A(void);
 void func_07259E(void);
@@ -2504,46 +2479,6 @@ void func_000B64(void) {
   g_cpu.PC = m68k_read32(g_cpu.A[7]);            g_cpu.A[7] += 4; /* RTE: pop PC */
   g_rte_pending = 1; return; /* RTE */
   g_cycle_accumulator += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* VBla_Index */
-void func_000B6E(void) {
-  /* $000B6E */
-  uint8_t _t000B6E = m68k_read8(g_cpu.A[2]);
-  uint8_t _000B6Er = (uint8_t)(_t000B6E) | (uint8_t)0xC4u;
-  { uint8_t _fv = (uint8_t)(_000B6Er);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[2], (uint8_t)(_000B6Er)); g_cpu.A[2] += 1;
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $000B72 */
-  /* unimplemented opcode $00D6 @ $000B72 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $000B76 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $000B78 */
-  uint8_t _t000B78 = m68k_read8((uint32_t)(int32_t)(int16_t)0x041C);
-  uint8_t _000B78r = (uint8_t)(_t000B78) & (uint8_t)0x4u;
-  { uint8_t _fv = (uint8_t)(_000B78r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8((uint32_t)(int32_t)(int16_t)0x041C, (uint8_t)(_000B78r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $000B7E */
-  /* unimplemented opcode $00F6 @ $000B7E */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $000B82 */
-  /* unimplemented opcode $00C8 @ $000B82 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $000B86 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[1] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[4]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  func_000B88(); return;
 }
 
 /* loc_B88 */
@@ -9225,36 +9160,6 @@ void func_00193C(void) {
   hybrid_jmp_interpret(0x0000194Eu + (uint32_t)(int16_t)g_cpu.D[0]);
   return;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* PalCycle_Index */
-void func_00194E(void) {
-  /* $00194E */
-  uint8_t _t00194E = m68k_read8(g_cpu.A[6]);
-  uint8_t _00194Er = (uint8_t)(_t00194E) | (uint8_t)0x44u;
-  { uint8_t _fv = (uint8_t)(_00194Er);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[6], (uint8_t)(_00194Er));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $001952 */
-  /* unimplemented opcode $00F6 @ $001952 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $001956 */
-  uint8_t _t001956 = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[0] + (122)));
-  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t001956) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00195A */
-  uint8_t _t00195A = m68k_read8(g_cpu.A[6]);
-  uint8_t _00195Ar = (uint8_t)(_t00195A) | (uint8_t)0xF9u;
-  { uint8_t _fv = (uint8_t)(_00195Ar);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[6], (uint8_t)(_00195Ar));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 /* PalCycle_Title */
@@ -20219,6 +20124,7 @@ void func_00489C(void) {
     if (!_fv)             g_cpu.SR |= (1u<<2);
     if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_0048BE:;
   /* $0048BE */
   g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[3]);
   { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[3]);
@@ -20422,17 +20328,14 @@ void func_00489C(void) {
   /* $00491C */
   g_cpu.A[2] += (uint32_t)(int32_t)(int16_t)(0x0080u);
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-void func_00491E(void) {
-  /* $00491E */
-  uint32_t _00491Er = (uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)0x51CFFF9Cu;
-  { uint32_t _fv = (uint32_t)(_00491Er);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[0] = (uint32_t)(uint32_t)(_00491Er);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $004920 */
+  if (!(0)) {
+    g_cpu.D[7] = (g_cpu.D[7] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)(g_cpu.D[7]) - 1u));
+    if ((int16_t)g_cpu.D[7] != -1) {
+      goto label_0048BE;
+    }
+  }
+  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004924 */
   g_cpu.A[1] = 0x00FF0000u;
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -23851,27 +23754,6 @@ void func_00592C(void) {
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
-void func_0059EA(void) {
-  /* $0059EA */
-  uint8_t _0059EAr = (uint8_t)(g_cpu.A[4]) | (uint8_t)0xBBu;
-  { uint8_t _fv = (uint8_t)(_0059EAr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[4] = (uint32_t)(_0059EAr);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $0059EE */
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(g_cpu.A[0]));
-  { uint8_t _fv = (uint8_t)(g_cpu.A[0]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $0059F0 */
-  func_00D604(); return;
-  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
 /* LevelSizeLoad */
 void func_005EBE(void) {
   /* $005EBE */
@@ -24534,37 +24416,6 @@ void func_0061EC(void) {
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
-/* BgScroll_Index */
-void func_006216(void) {
-  /* $006216 */
-  uint8_t _006216r = (uint8_t)(g_cpu.A[6]) | (uint8_t)0x12u;
-  { uint8_t _fv = (uint8_t)(_006216r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[6] = (uint32_t)(_006216r);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00621A */
-  uint8_t _t00621A = m68k_read8(g_cpu.A[2]);
-  uint8_t _00621Ar = (uint8_t)(_t00621A) | (uint8_t)0x1Cu;
-  { uint8_t _fv = (uint8_t)(_00621Ar);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[2], (uint8_t)(_00621Ar)); g_cpu.A[2] += 1;
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00621E */
-  uint8_t _t00621E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)72));
-  uint8_t _00621Er = (uint8_t)(_t00621E) | (uint8_t)0x3Cu;
-  { uint8_t _fv = (uint8_t)(_00621Er);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)72), (uint8_t)(_00621Er));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  func_006224(); return;
-}
-
 /* BgScroll_GHZ */
 void func_006224(void) {
   /* $006224 */
@@ -24942,31 +24793,6 @@ void func_006286(void) {
   hybrid_jmp_interpret(0x000062DEu + (uint32_t)(int16_t)g_cpu.D[0]);
   return;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* Deform_Index */
-void func_0062DE(void) {
-  /* $0062DE */
-  uint8_t _0062DEr = (uint8_t)(g_cpu.A[6]) | (uint8_t)0xB8u;
-  { uint8_t _fv = (uint8_t)(_0062DEr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[6] = (uint32_t)(_0062DEr);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $0062E2 */
-  /* unimplemented opcode $00F8 @ $0062E2 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $0062E6 */
-  uint8_t _t0062E6 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)14));
-  uint8_t _0062E6r = (uint8_t)(_t0062E6) & (uint8_t)0x66u;
-  { uint8_t _fv = (uint8_t)(_0062E6r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)14), (uint8_t)(_0062E6r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  func_0062EC(); return;
 }
 
 /* Deform_GHZ */
@@ -31416,49 +31242,6 @@ void func_006DAC(void) {
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
-/* DLE_Index */
-void func_006DD0(void) {
-  /* $006DD0 */
-  uint8_t _006DD0r = (uint8_t)(g_cpu.A[6]) | (uint8_t)0x22u;
-  { uint8_t _fv = (uint8_t)(_006DD0r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[6] = (uint32_t)(_006DD0r);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $006DD4 */
-  uint8_t _006DD4r = 0;
-  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(0 /* unknown EA 7/6 */) & (1u<<_bn)) ? (1u<<2) : 0u);
-    _006DD4r = (uint8_t)((uint8_t)(0 /* unknown EA 7/6 */) & ~(uint8_t)(1u<<_bn)); }
-  /* cannot store to EA 7/6 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $006DD6 */
-  g_cpu.A[2] -= 1; uint8_t _t006DD6 = m68k_read8(g_cpu.A[2]);
-  { uint32_t _bn = (uint32_t)g_cpu.D[1] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t006DD6) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $006DD8 */
-  uint8_t _t006DD8 = m68k_read8(g_cpu.A[0]);
-  uint8_t _006DD8r = 0;
-  { uint32_t _bn = (uint32_t)g_cpu.D[1] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t006DD8) & (1u<<_bn)) ? (1u<<2) : 0u);
-    _006DD8r = (uint8_t)((uint8_t)(_t006DD8) & ~(uint8_t)(1u<<_bn)); }
-  m68k_write8(g_cpu.A[0], (uint8_t)(_006DD8r)); g_cpu.A[0] += 1;
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $006DDA */
-  uint8_t _t006DDA = m68k_read8(0x0000DDDE);
-  uint8_t _006DDAr = (uint8_t)((uint8_t)(_t006DDA) - (uint8_t)0x56u);
-  { uint8_t _fa = (uint8_t)((uint8_t)(_t006DDA)), _fb = (uint8_t)((uint8_t)0x56u), _fr = (uint8_t)(_006DDAr);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_fr)                   g_cpu.SR |= (1u<<2);
-    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
-  /* cannot store to EA 7/2 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
 /* DLE_GHZ */
 void func_006DDE(void) {
   /* $006DDE */
@@ -33354,7 +33137,7 @@ void func_00725A(void) {
     if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007266 */
-  if ((g_cpu.SR & (1u<<0))) { func_00727A(); return; }
+  if ((g_cpu.SR & (1u<<0))) goto label_00727A;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007268 */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF726, (uint16_t)(0x0510u));
@@ -33374,7 +33157,7 @@ void func_00725A(void) {
     if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007274 */
-  if ((g_cpu.SR & (1u<<0))) { func_00727A(); return; }
+  if ((g_cpu.SR & (1u<<0))) goto label_00727A;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007276 */
   uint8_t _t007276 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF742);
@@ -33387,18 +33170,7 @@ void func_00725A(void) {
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF742, (uint8_t)(_007276r));
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  func_00727A(); return;
-}
-
-void func_007278(void) {
-  /* $007278 */
-  /* unimplemented opcode $F742 @ $007278 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  func_00727A(); return;
-}
-
-/* locret_727A */
-void func_00727A(void) {
+  label_00727A:;
   /* $00727A */
   return;
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
@@ -38161,31 +37933,6 @@ void func_007DF0(void) {
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
-void func_007E2A(void) {
-  /* $007E2A */
-  m68k_write8(g_cpu.A[0], (uint8_t)(0 /* unknown EA 7/5 */)); g_cpu.A[0] += 1;
-  { uint8_t _fv = (uint8_t)(0 /* unknown EA 7/5 */);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $007E2C */
-  uint8_t _t007E2C = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[0] + (0)));
-  uint8_t _007E2Cr = 0;
-  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t007E2C) & (1u<<_bn)) ? (1u<<2) : 0u);
-    _007E2Cr = (uint8_t)((uint8_t)(_t007E2C) | (uint8_t)(1u<<_bn)); }
-  m68k_write8((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[0] + (0)), (uint8_t)(_007E2Cr));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $007E30 */
-  m68k_write8((uint32_t)(int32_t)(int16_t)0x7000, (uint8_t)(0 /* unknown EA 7/5 */));
-  { uint8_t _fv = (uint8_t)(0 /* unknown EA 7/5 */);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
 /* BasicPlatform */
 void func_007E32(void) {
   /* $007E32 */
@@ -42375,41 +42122,6 @@ void func_009240(void) {
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
-void func_009316(void) {
-  /* $009316 */
-  /* unimplemented opcode $00EE @ $009316 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00931A */
-  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)16), (uint16_t)(0));
-  g_cpu.SR = (g_cpu.SR & ~0x1Fu) | (1u<<2);
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00931E */
-  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)50), (uint16_t)(0));
-  g_cpu.SR = (g_cpu.SR & ~0x1Fu) | (1u<<2);
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $009322 */
-  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009326u); /* JSR push */
-  func_00D5B2();
-  g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
-  g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $009326 */
-  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00932Au); /* JSR push */
-  func_0093C4();
-  g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
-  g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00932A */
-  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00932Eu); /* JSR push */
-  func_0093EC();
-  g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
-  g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00932E */
-  func_009224(); return;
-  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
 /* loc_93C4 */
 void func_0093C4(void) {
   /* $0093C4 */
@@ -46410,472 +46122,6 @@ void func_009F86(void) {
   /* $009F86 */
   func_00D640(); return;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-void func_00A046(void) {
-  /* $00A046 */
-  uint8_t _00A046r = (uint8_t)((uint8_t)g_cpu.D[3]) | (uint8_t)0x5Au;
-  { uint8_t _fv = (uint8_t)(_00A046r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A046r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A04A */
-  uint8_t _00A04Ar = (uint8_t)((uint8_t)(g_cpu.A[0]) - (uint8_t)0xCu);
-  { uint8_t _fa = (uint8_t)((uint8_t)(g_cpu.A[0])), _fb = (uint8_t)((uint8_t)0xCu), _fr = (uint8_t)(_00A04Ar);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_fr)                   g_cpu.SR |= (1u<<2);
-    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
-  g_cpu.A[0] = (uint32_t)(_00A04Ar);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A04E */
-  uint8_t _t00A04E = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)2056));
-  { uint32_t _bn = 0u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00A04E) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A054 */
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)g_cpu.D[0]));
-  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A056 */
-  { uint8_t _sv = (uint8_t)g_cpu.D[1];
-    uint8_t _00A056r = (4 > 0 && 4 < 8) ? (_sv >> 4) : (4 == 0 ? _sv : (uint8_t)0);
-    uint32_t _c = (4 <= 8) ? ((_sv >> (4 - 1)) & 1u) : 0u;
-    g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A056r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00A056r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00A056r >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A058 */
-  uint8_t _t00A058 = m68k_read8((uint32_t)(g_cpu.A[3] + (int32_t)(int16_t)g_cpu.D[0] + (8)));
-  { uint32_t _bn = 0u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00A058) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A05E */
-  g_cpu.A[4] -= 2; m68k_write16(g_cpu.A[4], (uint16_t)(g_cpu.A[0]));
-  { uint16_t _fv = (uint16_t)(g_cpu.A[0]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A060 */
-  /* unimplemented opcode $F805 @ $00A060 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A062 */
-  uint16_t _00A062r = 0;
-  { uint32_t _bn = 8u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint16_t)g_cpu.D[1]) & (1u<<_bn)) ? (1u<<2) : 0u);
-    _00A062r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) ^ (uint16_t)(1u<<_bn)); }
-  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00A062r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A066 */
-  /* TODO: MOVEP — byte/word transfer to alternating bytes */
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A06A */
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(g_cpu.A[0]));
-  { uint8_t _fv = (uint8_t)(g_cpu.A[0]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A06C */
-  uint8_t _00A06Cr = 0;
-  { uint32_t _bn = 0u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(g_cpu.A[3]) & (1u<<_bn)) ? (1u<<2) : 0u);
-    _00A06Cr = (uint8_t)((uint8_t)(g_cpu.A[3]) ^ (uint8_t)(1u<<_bn)); }
-  g_cpu.A[3] = (uint32_t)(_00A06Cr);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A070 */
-  uint8_t _00A070r = (uint8_t)((uint8_t)(g_cpu.A[0]) - (uint8_t)0xF0u);
-  { uint8_t _fa = (uint8_t)((uint8_t)(g_cpu.A[0])), _fb = (uint8_t)((uint8_t)0xF0u), _fr = (uint8_t)(_00A070r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fr)                   g_cpu.SR |= (1u<<2);
-    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
-    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A074 */
-  uint8_t _t00A074 = m68k_read8(g_cpu.A[0]);
-  uint8_t _00A074r = (uint8_t)(_t00A074) | (uint8_t)0x1Bu;
-  { uint8_t _fv = (uint8_t)(_00A074r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[0], (uint8_t)(_00A074r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A078 */
-  uint8_t _t00A078 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (90)));
-  uint8_t _00A078r = (uint8_t)(_t00A078) | (uint8_t)0x45u;
-  { uint8_t _fv = (uint8_t)(_00A078r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (90)), (uint8_t)(_00A078r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A07E */
-  uint16_t _t00A07E = m68k_read16((uint32_t)(g_cpu.A[7] + (int32_t)143));
-  uint16_t _00A07Er = (uint16_t)(_t00A07E) | (uint16_t)0x84u;
-  { uint16_t _fv = (uint16_t)(_00A07Er);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  m68k_write16((uint32_t)(g_cpu.A[7] + (int32_t)143), (uint16_t)(_00A07Er));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A084 */
-  /* unimplemented opcode $02E0 @ $00A084 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A088 */
-  uint8_t _00A088r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0xFu;
-  { uint8_t _fv = (uint8_t)(_00A088r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A088r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A08C */
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)((uint8_t)g_cpu.D[0]));
-  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A08E */
-  uint8_t _00A08Er = (uint8_t)((uint8_t)g_cpu.D[4]) | (uint8_t)0xFu;
-  { uint8_t _fv = (uint8_t)(_00A08Er);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A08Er));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A092 */
-  uint8_t _t00A092 = m68k_read8(g_cpu.A[0]);
-  uint8_t _00A092r = (uint8_t)(_t00A092) | (uint8_t)0xE0u;
-  { uint8_t _fv = (uint8_t)(_00A092r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[0], (uint8_t)(_00A092r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A096 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[3] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A098 */
-  uint32_t _ts00A098 = m68k_read32(g_cpu.A[0]);
-  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts00A098);
-  { uint32_t _fv = (uint32_t)(_ts00A098);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A09A */
-  uint8_t _00A09Ar = (uint8_t)(g_cpu.A[7]) | (uint8_t)0x10u;
-  { uint8_t _fv = (uint8_t)(_00A09Ar);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[7] = (uint32_t)(_00A09Ar);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A09E */
-  /* unimplemented opcode $F000 @ $00A09E */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0A0 */
-  uint8_t _t00A0A0 = m68k_read8(g_cpu.A[0]);
-  { uint32_t _bn = (uint32_t)g_cpu.D[3] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00A0A0) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0A2 */
-  uint32_t _ts00A0A2 = m68k_read32(g_cpu.A[0]);
-  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts00A0A2);
-  { uint32_t _fv = (uint32_t)(_ts00A0A2);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0A4 */
-  /* unimplemented opcode $04E0 @ $00A0A4 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0A8 */
-  uint32_t _ts00A0A8 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)-8181));
-  m68k_write32(g_cpu.A[4], (uint32_t)(_ts00A0A8)); g_cpu.A[4] += 4;
-  { uint32_t _fv = (uint32_t)(_ts00A0A8);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0AC */
-  uint8_t _t00A0AC = m68k_read8((uint32_t)(int32_t)(int16_t)0x0F10);
-  uint8_t _00A0ACr = (uint8_t)(_t00A0AC) | (uint8_t)0x0u;
-  { uint8_t _fv = (uint8_t)(_00A0ACr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8((uint32_t)(int32_t)(int16_t)0x0F10, (uint8_t)(_00A0ACr));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0B2 */
-  uint32_t _ts00A0B2 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)11));
-  m68k_write32(g_cpu.A[4], (uint32_t)(_ts00A0B2)); g_cpu.A[4] += 4;
-  { uint32_t _fv = (uint32_t)(_ts00A0B2);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0B6 */
-  uint8_t _ts00A0B6 = m68k_read8((uint32_t)(int32_t)(int16_t)0x0804);
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_ts00A0B6));
-  { uint8_t _fv = (uint8_t)(_ts00A0B6);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0BA */
-  { uint8_t _sv = (uint8_t)g_cpu.D[7];
-    uint8_t _00A0BAr = (8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (uint8_t)0);
-    uint32_t _c = (8 <= 8) ? ((_sv >> (8 - 1)) & 1u) : 0u;
-    g_cpu.D[7] = (g_cpu.D[7] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A0BAr);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00A0BAr) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00A0BAr >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0BC */
-  uint8_t _t00A0BC = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[0] + (0)));
-  { uint32_t _bn = 0u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00A0BC) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0C2 */
-  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)g_cpu.D[0]));
-  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0C4 */
-  uint8_t _00A0C4r = (uint8_t)(g_cpu.A[7]) | (uint8_t)0x34u;
-  { uint8_t _fv = (uint8_t)(_00A0C4r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[7] = (uint32_t)(_00A0C4r);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0C8 */
-  { int8_t _sv = (int8_t)(uint8_t)g_cpu.D[0];
-    uint8_t _00A0C8r = (uint8_t)((8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (_sv < 0 ? (uint8_t)~(uint8_t)0 : (uint8_t)0)));
-    uint32_t _c = (8 > 0 && 8 <= 8) ? (((uint32_t)_sv >> (8 - 1)) & 1u) : 0u;
-    uint32_t _v = 0u;
-    g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A0C8r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00A0C8r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00A0C8r >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (_v) g_cpu.SR |= (1u<<1);
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0CA */
-  uint8_t _t00A0CA = m68k_read8(g_cpu.A[0]);
-  { uint32_t _bn = (uint32_t)g_cpu.D[7] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00A0CA) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0CC */
-  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)g_cpu.D[0]));
-  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0CE */
-  /* unimplemented opcode $04E0 @ $00A0CE */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0D2 */
-  g_cpu.A[0] -= 2; uint16_t _ts00A0D2 = m68k_read16(g_cpu.A[0]);
-  m68k_write16(g_cpu.A[4], (uint16_t)(_ts00A0D2)); g_cpu.A[4] += 2;
-  { uint16_t _fv = (uint16_t)(_ts00A0D2);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0D4 */
-  { uint8_t _sv = (uint8_t)g_cpu.D[7];
-    uint8_t _00A0D4r = (8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (uint8_t)0);
-    uint32_t _c = (8 <= 8) ? ((_sv >> (8 - 1)) & 1u) : 0u;
-    g_cpu.D[7] = (g_cpu.D[7] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A0D4r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00A0D4r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00A0D4r >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0D6 */
-  uint8_t _t00A0D6 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)2840));
-  { uint32_t _bn = 0u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00A0D6) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0DC */
-  g_cpu.A[0] -= 2; uint16_t _ts00A0DC = m68k_read16(g_cpu.A[0]);
-  m68k_write16(g_cpu.A[4], (uint16_t)(_ts00A0DC)); g_cpu.A[4] += 2;
-  { uint16_t _fv = (uint16_t)(_ts00A0DC);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0DE */
-  uint8_t _00A0DEr = (uint8_t)(g_cpu.A[7]) | (uint8_t)0x28u;
-  { uint8_t _fv = (uint8_t)(_00A0DEr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[7] = (uint32_t)(_00A0DEr);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0E2 */
-  /* unimplemented opcode $F804 @ $00A0E2 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0E4 */
-  { int8_t _sv = (int8_t)(uint8_t)g_cpu.D[7];
-    uint8_t _00A0E4r = (uint8_t)((8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (_sv < 0 ? (uint8_t)~(uint8_t)0 : (uint8_t)0)));
-    uint32_t _c = (8 > 0 && 8 <= 8) ? (((uint32_t)_sv >> (8 - 1)) & 1u) : 0u;
-    uint32_t _v = 0u;
-    g_cpu.D[7] = (g_cpu.D[7] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A0E4r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00A0E4r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00A0E4r >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (_v) g_cpu.SR |= (1u<<1);
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0E6 */
-  g_cpu.A[0] -= 1; uint8_t _t00A0E6 = m68k_read8(g_cpu.A[0]);
-  { uint32_t _bn = 0u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00A0E6) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0EA */
-  /* TODO: MOVEP — byte/word transfer to alternating bytes */
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0EE */
-  uint8_t _00A0EEr = (uint8_t)((uint8_t)g_cpu.D[7]) | (uint8_t)0x20u;
-  { uint8_t _fv = (uint8_t)(_00A0EEr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[7] = (g_cpu.D[7] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A0EEr));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0F2 */
-  { int8_t _sv = (int8_t)(uint8_t)g_cpu.D[0];
-    uint8_t _00A0F2r = (uint8_t)((8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (_sv < 0 ? (uint8_t)~(uint8_t)0 : (uint8_t)0)));
-    uint32_t _c = (8 > 0 && 8 <= 8) ? (((uint32_t)_sv >> (8 - 1)) & 1u) : 0u;
-    uint32_t _v = 0u;
-    g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A0F2r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00A0F2r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00A0F2r >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (_v) g_cpu.SR |= (1u<<1);
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0F4 */
-  uint8_t _t00A0F4 = m68k_read8(g_cpu.A[0]); g_cpu.A[0] += 1;
-  { uint32_t _bn = (uint32_t)g_cpu.D[7] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00A0F4) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0F6 */
-  uint8_t _ts00A0F6 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-32)));
-  m68k_write8(g_cpu.A[0], (uint8_t)(_ts00A0F6)); g_cpu.A[0] += 1;
-  { uint8_t _fv = (uint8_t)(_ts00A0F6);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0FA */
-  /* TODO: MOVEP — byte/word transfer to alternating bytes */
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A0FE */
-  uint8_t _00A0FEr = (uint8_t)(g_cpu.A[7]) | (uint8_t)0x0u;
-  { uint8_t _fv = (uint8_t)(_00A0FEr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[7] = (uint32_t)(_00A0FEr);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A102 */
-  { int8_t _sv = (int8_t)(uint8_t)g_cpu.D[4];
-    uint8_t _00A102r = (uint8_t)((8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (_sv < 0 ? (uint8_t)~(uint8_t)0 : (uint8_t)0)));
-    uint32_t _c = (8 > 0 && 8 <= 8) ? (((uint32_t)_sv >> (8 - 1)) & 1u) : 0u;
-    uint32_t _v = 0u;
-    g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A102r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00A102r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00A102r >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (_v) g_cpu.SR |= (1u<<1);
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A104 */
-  { uint8_t _sv = (uint8_t)g_cpu.D[7];
-    uint8_t _00A104r = (8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (uint8_t)0);
-    uint32_t _c = (8 <= 8) ? ((_sv >> (8 - 1)) & 1u) : 0u;
-    g_cpu.D[7] = (g_cpu.D[7] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A104r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00A104r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00A104r >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A106 */
-  uint16_t _00A106r = (uint16_t)((uint16_t)g_cpu.D[4]) | (uint16_t)0xE0E0u;
-  { uint16_t _fv = (uint16_t)(_00A106r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_00A106r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A10A */
-  /* TODO: MOVEP — byte/word transfer to alternating bytes */
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A10E */
-  uint8_t _00A10Er = (uint8_t)(g_cpu.A[7]) | (uint8_t)0x44u;
-  { uint8_t _fv = (uint8_t)(_00A10Er);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[7] = (uint32_t)(_00A10Er);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A112 */
-  { int8_t _sv = (int8_t)(uint8_t)g_cpu.D[0];
-    uint8_t _00A112r = (uint8_t)((8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (_sv < 0 ? (uint8_t)~(uint8_t)0 : (uint8_t)0)));
-    uint32_t _c = (8 > 0 && 8 <= 8) ? (((uint32_t)_sv >> (8 - 1)) & 1u) : 0u;
-    uint32_t _v = 0u;
-    g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00A112r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00A112r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00A112r >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (_v) g_cpu.SR |= (1u<<1);
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A114 */
-  uint8_t _t00A114 = m68k_read8(g_cpu.A[0]); g_cpu.A[0] += 1;
-  { uint32_t _bn = (uint32_t)g_cpu.D[7] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00A114) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00A116 */
-  uint8_t _00A116r = (uint8_t)(0 - (uint8_t)((uint8_t)g_cpu.D[0]));
-  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)((uint8_t)g_cpu.D[0]), _fr = (uint8_t)(_00A116r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_fr)                   g_cpu.SR |= (1u<<2);
-    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00A116r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  func_00A118(); return;
 }
 
 /* Monitor */
@@ -51219,255 +50465,6 @@ void func_00B2BE(void) {
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
-void func_00B334(void) {
-  /* $00B334 */
-  g_cpu.A[0] -= 2; uint16_t _ts00B334 = m68k_read16(g_cpu.A[0]);
-  /* cannot store to EA 7/3 */
-  { uint16_t _fv = (uint16_t)(_ts00B334);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B338 */
-  uint8_t _00B338r = (uint8_t)((uint8_t)g_cpu.D[1]) | (uint8_t)0xC0u;
-  { uint8_t _fv = (uint8_t)(_00B338r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00B338r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B33C */
-  { uint32_t _bn = (uint32_t)g_cpu.D[7] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B33E */
-  g_cpu.A[0] -= 1; m68k_write8(g_cpu.A[0], (uint8_t)((uint8_t)g_cpu.D[0]));
-  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B340 */
-  { uint8_t _sv = (uint8_t)g_cpu.D[7];
-    uint8_t _00B340r = (8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (uint8_t)0);
-    uint32_t _c = (8 <= 8) ? ((_sv >> (8 - 1)) & 1u) : 0u;
-    g_cpu.D[7] = (g_cpu.D[7] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00B340r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00B340r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00B340r >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B342 */
-  uint8_t _00B342r = (uint8_t)((uint8_t)g_cpu.D[1]) | (uint8_t)0xC0u;
-  { uint8_t _fv = (uint8_t)(_00B342r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00B342r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B346 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[7] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B348 */
-  g_cpu.A[0] -= 2; uint16_t _ts00B348 = m68k_read16(g_cpu.A[0]);
-  g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)(_ts00B348));
-  { uint16_t _fv = (uint16_t)(_ts00B348);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B34A */
-  { uint8_t _sv = (uint8_t)g_cpu.D[5];
-    uint8_t _00B34Ar = (8 > 0 && 8 < 8) ? (_sv >> 8) : (8 == 0 ? _sv : (uint8_t)0);
-    uint32_t _c = (8 <= 8) ? ((_sv >> (8 - 1)) & 1u) : 0u;
-    g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00B34Ar);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00B34Ar) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00B34Ar >> 7) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-  }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B34C */
-  uint16_t _00B34Cr = (uint16_t)(g_cpu.A[7]) | (uint16_t)0x2006u;
-  { uint16_t _fv = (uint16_t)(_00B34Cr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[7] = (uint32_t)(_00B34Cr);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B350 */
-  uint8_t _00B350r = (uint8_t)((uint8_t)g_cpu.D[0] + (uint8_t)(g_cpu.A[7]));
-  { uint8_t _fa = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fb = (uint8_t)((uint8_t)(g_cpu.A[7])), _fr = (uint8_t)(_00B350r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_fr)                        g_cpu.SR |= (1u<<2);
-    if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
-    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_00B350r);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B352 */
-  uint8_t _t00B352 = m68k_read8(g_cpu.A[1]);
-  uint8_t _00B352r = (uint8_t)(_t00B352) | (uint8_t)0xF0u;
-  { uint8_t _fv = (uint8_t)(_00B352r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[1], (uint8_t)(_00B352r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B356 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[7] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B358 */
-  g_cpu.A[0] -= 1; uint8_t _t00B358 = m68k_read8(g_cpu.A[0]);
-  uint8_t _00B358r = 0;
-  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00B358) & (1u<<_bn)) ? (1u<<2) : 0u);
-    _00B358r = (uint8_t)((uint8_t)(_t00B358) | (uint8_t)(1u<<_bn)); }
-  m68k_write8(g_cpu.A[0], (uint8_t)(_00B358r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B35A */
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(g_cpu.A[7]));
-  { uint8_t _fv = (uint8_t)(g_cpu.A[7]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B35C */
-  uint8_t _00B35Cr = (uint8_t)((uint8_t)g_cpu.D[1]) | (uint8_t)0xD0u;
-  { uint8_t _fv = (uint8_t)(_00B35Cr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00B35Cr));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B360 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[7] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B362 */
-  g_cpu.A[0] -= 1; m68k_write8(g_cpu.A[0], (uint8_t)((uint8_t)g_cpu.D[0]));
-  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B364 */
-  /* unimplemented opcode $F00F @ $00B364 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B366 */
-  uint8_t _00B366r = (uint8_t)((uint8_t)g_cpu.D[1]) | (uint8_t)0x10u;
-  { uint8_t _fv = (uint8_t)(_00B366r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00B366r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B36A */
-  { uint32_t _bn = (uint32_t)g_cpu.D[7] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B36C */
-  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B36E */
-  uint8_t _00B36Er = (uint8_t)(g_cpu.A[4]) | (uint8_t)0x12u;
-  { uint8_t _fv = (uint8_t)(_00B36Er);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[4] = (uint32_t)(_00B36Er);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B372 */
-  uint8_t _t00B372 = m68k_read8(g_cpu.A[0]);
-  uint8_t _00B372r = (uint8_t)(_t00B372) | (uint8_t)0x1Eu;
-  { uint8_t _fv = (uint8_t)(_00B372r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[0], (uint8_t)(_00B372r)); g_cpu.A[0] += 1;
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B376 */
-  g_cpu.A[4] -= 1; uint8_t _t00B376 = m68k_read8(g_cpu.A[4]);
-  uint8_t _00B376r = (uint8_t)(_t00B376) | (uint8_t)0x2Au;
-  { uint8_t _fv = (uint8_t)(_00B376r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[4], (uint8_t)(_00B376r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B37A */
-  uint8_t _t00B37A = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1792));
-  uint8_t _00B37Ar = 0;
-  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00B37A) & (1u<<_bn)) ? (1u<<2) : 0u);
-    _00B37Ar = (uint8_t)((uint8_t)(_t00B37A) | (uint8_t)(1u<<_bn)); }
-  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)1792), (uint8_t)(_00B37Ar));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B37E */
-  /* unimplemented opcode $00F8 @ $00B37E */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B382 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[3] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B384 */
-  uint8_t _t00B384 = m68k_read8((uint32_t)(int32_t)(int16_t)0x0600);
-  uint8_t _00B384r = 0;
-  { uint32_t _bn = 0u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t00B384) & (1u<<_bn)) ? (1u<<2) : 0u);
-    _00B384r = (uint8_t)((uint8_t)(_t00B384) | (uint8_t)(1u<<_bn)); }
-  m68k_write8((uint32_t)(int32_t)(int16_t)0x0600, (uint8_t)(_00B384r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B38A */
-  uint8_t _ts00B38A = m68k_read8((uint32_t)(int32_t)(int16_t)0x01F8);
-  m68k_write8(g_cpu.A[0], (uint8_t)(_ts00B38A)); g_cpu.A[0] += 1;
-  { uint8_t _fv = (uint8_t)(_ts00B38A);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B38E */
-  { uint32_t _bn = (uint32_t)g_cpu.D[6] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B390 */
-  uint8_t _ts00B390 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)504));
-  m68k_write8(g_cpu.A[3], (uint8_t)(_ts00B390)); g_cpu.A[3] += 1;
-  { uint8_t _fv = (uint8_t)(_ts00B390);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B394 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[6] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B396 */
-  uint8_t _ts00B396 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)504));
-  m68k_write8(g_cpu.A[7], (uint8_t)(_ts00B396)); g_cpu.A[7] += 1;
-  { uint8_t _fv = (uint8_t)(_ts00B396);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B39A */
-  { uint32_t _bn = (uint32_t)g_cpu.D[4] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00B39C */
-  uint32_t _ts00B39C = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[7] + (0)));
-  m68k_write32(g_cpu.A[3], (uint32_t)(_ts00B39C)); g_cpu.A[3] += 4;
-  { uint32_t _fv = (uint32_t)(_ts00B39C);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
 /* GlassBlock */
 void func_00B39E(void) {
   /* $00B39E */
@@ -53191,48 +52188,6 @@ void func_00BAC6(void) {
   hybrid_jmp_interpret(0x0000BAD6u + (uint32_t)(int16_t)g_cpu.D[1]);
   return;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-void func_00BB34(void) {
-  /* $00BB34 */
-  uint8_t _t00BB34 = m68k_read8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (60)));
-  uint8_t _00BB34r = (uint8_t)(_t00BB34) | (uint8_t)0x7Cu;
-  { uint8_t _fv = (uint8_t)(_00BB34r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (60)), (uint8_t)(_00BB34r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00BB3A */
-  uint8_t _t00BB3A = m68k_read8((uint32_t)(int32_t)(int16_t)0x1028);
-  uint8_t _00BB3Ar = (uint8_t)(_t00BB3A) | (uint8_t)0x0u;
-  { uint8_t _fv = (uint8_t)(_00BB3Ar);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8((uint32_t)(int32_t)(int16_t)0x1028, (uint8_t)(_00BB3Ar));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00BB40 */
-  uint8_t _t00BB40 = m68k_read8((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.A[5] + (104)));
-  uint8_t _00BB40r = (uint8_t)(_t00BB40) | (uint8_t)0x40u;
-  { uint8_t _fv = (uint8_t)(_00BB40r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.A[5] + (104)), (uint8_t)(_00BB40r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00BB46 */
-  uint8_t _t00BB46 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (8)));
-  uint8_t _00BB46r = (uint8_t)(_t00BB46) | (uint8_t)0x40u;
-  { uint8_t _fv = (uint8_t)(_00BB46r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (8)), (uint8_t)(_00BB46r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00BB4C */
-  return;
-  g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 /* Button */
@@ -59959,131 +58914,6 @@ void func_00D1EE(void) {
   /* $00D270 */
   func_00139C(); return;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-void func_00D2F2(void) {
-  /* $00D2F2 */
-  uint8_t _00D2F2r = (uint8_t)((uint8_t)g_cpu.D[4]) | (uint8_t)0x10u;
-  { uint8_t _fv = (uint8_t)(_00D2F2r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D2F2r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D2F6 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D2F8 */
-  /* unimplemented opcode $04F0 @ $00D2F8 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D2FC */
-  uint8_t _00D2FCr = (uint8_t)((uint8_t)g_cpu.D[4]) | (uint8_t)0xF0u;
-  { uint8_t _fv = (uint8_t)(_00D2FCr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D2FCr));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D300 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D302 */
-  uint8_t _00D302r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) - (uint8_t)0x5u);
-  { uint8_t _fa = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fb = (uint8_t)((uint8_t)0x5u), _fr = (uint8_t)(_00D302r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_fr)                   g_cpu.SR |= (1u<<2);
-    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D302r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D306 */
-  uint8_t _00D306r = (uint8_t)((uint8_t)g_cpu.D[4]) | (uint8_t)0x10u;
-  { uint8_t _fv = (uint8_t)(_00D306r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D306r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D30A */
-  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D30C */
-  uint8_t _00D30Cr = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) - (uint8_t)0xE0u);
-  { uint8_t _fa = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fb = (uint8_t)((uint8_t)0xE0u), _fr = (uint8_t)(_00D30Cr);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_fr)                   g_cpu.SR |= (1u<<2);
-    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
-    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
-    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D30Cr));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D310 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D312 */
-  /* unimplemented opcode $04F0 @ $00D312 */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D316 */
-  uint8_t _00D316r = (uint8_t)((uint8_t)g_cpu.D[4]) | (uint8_t)0x0u;
-  { uint8_t _fv = (uint8_t)(_00D316r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D316r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D31A */
-  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D31C */
-  /* unimplemented opcode $04F0 @ $00D31C */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D320 */
-  uint8_t _00D320r = (uint8_t)((uint8_t)g_cpu.D[4]) | (uint8_t)0xE0u;
-  { uint8_t _fv = (uint8_t)(_00D320r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_00D320r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D324 */
-  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D326 */
-  { uint32_t _bn = 5u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D32A */
-  uint8_t _00D32Ar = (uint8_t)(g_cpu.A[0]) | (uint8_t)0x0u;
-  { uint8_t _fv = (uint8_t)(_00D32Ar);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[0] = (uint32_t)(_00D32Ar);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D32E */
-  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 31u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D330 */
-  { uint32_t _bn = 5u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $00D334 */
-  uint8_t _00D334r = (uint8_t)(g_cpu.A[0]) | (uint8_t)0x0u;
-  { uint8_t _fv = (uint8_t)(_00D334r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[0] = (uint32_t)(_00D334r);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  func_00D338(); return;
 }
 
 /* ExecuteObjects */
@@ -103532,38 +102362,6 @@ void func_01C024(void) {
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
-/* AniArt_Index */
-void func_01C046(void) {
-  /* $01C046 */
-  uint8_t _01C046r = (uint8_t)(g_cpu.A[6]) | (uint8_t)0x70u;
-  { uint8_t _fv = (uint8_t)(_01C046r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[6] = (uint32_t)(_01C046r);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $01C04A */
-  /* unimplemented opcode $00CC @ $01C04A */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $01C04E */
-  uint8_t _t01C04E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-90)));
-  uint8_t _01C04Er = 0;
-  { uint32_t _bn = (uint32_t)g_cpu.D[1] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t01C04E) & (1u<<_bn)) ? (1u<<2) : 0u);
-    _01C04Er = (uint8_t)((uint8_t)(_t01C04E) ^ (uint8_t)(1u<<_bn)); }
-  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-90)), (uint8_t)(_01C04Er));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $01C052 */
-  uint16_t _t01C052 = m68k_read16(g_cpu.A[4]);
-  uint16_t _01C052r = (uint16_t)(_t01C052) & (uint16_t)0x5338u;
-  { uint16_t _fv = (uint16_t)(_01C052r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  m68k_write16(g_cpu.A[4], (uint16_t)(_01C052r)); g_cpu.A[4] += 2;
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
 /* AniArt_GHZ */
 void func_01C054(void) {
   /* $01C054 */
@@ -105065,57 +103863,6 @@ void func_01C3B8(void) {
   /* $01C3CC */
   return;
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* AniArt_MZextra */
-void func_01C3CE(void) {
-  /* $01C3CE */
-  g_cpu.A[0] -= 1; uint8_t _t01C3CE = m68k_read8(g_cpu.A[0]);
-  uint8_t _01C3CEr = (uint8_t)(_t01C3CE) | (uint8_t)0x2Cu;
-  { uint8_t _fv = (uint8_t)(_01C3CEr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  m68k_write8(g_cpu.A[0], (uint8_t)(_01C3CEr));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $01C3D2 */
-  uint16_t _01C3D2r = (uint16_t)((uint16_t)g_cpu.D[2]) | (uint16_t)0x50u;
-  { uint16_t _fv = (uint16_t)(_01C3D2r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_01C3D2r));
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $01C3D6 */
-  g_cpu.A[6] -= 2; uint16_t _t01C3D6 = m68k_read16(g_cpu.A[6]);
-  uint16_t _01C3D6r = (uint16_t)(_t01C3D6) | (uint16_t)0x74u;
-  { uint16_t _fv = (uint16_t)(_01C3D6r);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  m68k_write16(g_cpu.A[6], (uint16_t)(_01C3D6r));
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $01C3DA */
-  uint32_t _01C3DAr = (uint32_t)(g_cpu.A[2]) | (uint32_t)0x9800AEu;
-  { uint32_t _fv = (uint32_t)(_01C3DAr);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
-  g_cpu.A[2] = (uint32_t)(_01C3DAr);
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $01C3E0 */
-  g_cpu.SR |= 0xD200E0u;
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $01C3EA */
-  uint8_t _t01C3EA = m68k_read8(g_cpu.A[2]); g_cpu.A[2] += 1;
-  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t01C3EA) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $01C3EC */
-  uint8_t _t01C3EC = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)11409));
-  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
-    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t01C3EC) & (1u<<_bn)) ? (1u<<2) : 0u); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 /* loc_1C3EE */
@@ -111109,6 +109856,7 @@ void func_071F02(void) {
 
 /* Sound_ChkValue */
 void func_071F4C(void) {
+  int _sp_popped = 0;
   /* $071F4C */
   g_cpu.D[7] = 0x00000000u;
   { uint32_t _fv = (uint32_t)((uint32_t)0x00000000u);
@@ -111147,7 +109895,7 @@ void func_071F4C(void) {
     if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071F62 */
-  if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) { func_071FD2(); return; }
+  if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) goto label_071FD2;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071F66 */
   uint8_t _071F66r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[7]) - (uint8_t)0xA0u);
@@ -111171,7 +109919,7 @@ void func_071F4C(void) {
     if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071F72 */
-  if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) { func_0721C6(); return; }
+  if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) goto label_0721C6;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071F76 */
   uint8_t _071F76r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[7]) - (uint8_t)0xD0u);
@@ -111195,7 +109943,7 @@ void func_071F4C(void) {
     if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071F82 */
-  if ((g_cpu.SR & (1u<<0))) { func_07230C(); return; }
+  if ((g_cpu.SR & (1u<<0))) goto label_07230C;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071F86 */
   uint8_t _071F86r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[7]) - (uint8_t)0xE4u);
@@ -111211,6 +109959,7 @@ void func_071F4C(void) {
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071F8C:;
   /* $071F8C */
+  if (_sp_popped > 0) { _sp_popped--; g_rte_pending = 1; }
   return;
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071F8E:;
@@ -111240,94 +109989,7 @@ void func_071F4C(void) {
   hybrid_jmp_interpret(0x00071F98u + (uint32_t)(int16_t)g_cpu.D[7]);
   return;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* Sound_ExIndex */
-void func_071F98(void) {
-  /* $071F98 */
-  func_0724E6(); return;
-  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* ptr_flgE1 */
-void func_071F9C(void) {
-  /* $071F9C */
-  func_071FAC(); return;
-  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* ptr_flgE4 */
-void func_071FA8(void) {
-  /* $071FA8 */
-  func_07259E(); return;
-  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* Sound_E1 */
-void func_071FAC(void) {
-  int _sp_popped = 0;
-  /* $071FAC */
-  m68k_write8(0x00A01FFFu, (uint8_t)(0x88u));
-  { uint8_t _fv = (uint8_t)(0x88u);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $071FB4 */
-  m68k_write16(0x00A11100u, (uint16_t)(0x0000u));
-  { uint16_t _fv = (uint16_t)(0x0000u);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $071FBC */
-  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x0011u));
-  { uint16_t _fv = (uint16_t)(0x0011u);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  label_071FC0:;
-  /* $071FC0 */
-  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0xFFFFu));
-  { uint16_t _fv = (uint16_t)(0xFFFFu);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  label_071FC4:;
-  /* $071FC4 */
-  /* NOP */
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $071FC6 */
-  if (!(0)) {
-    g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)(g_cpu.D[0]) - 1u));
-    if ((int16_t)g_cpu.D[0] != -1) {
-      goto label_071FC4;
-    }
-  }
-  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $071FCA */
-  if (!(0)) {
-    g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)(g_cpu.D[1]) - 1u));
-    if ((int16_t)g_cpu.D[1] != -1) {
-      goto label_071FC0;
-    }
-  }
-  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $071FCE */
-  g_cpu.A[7] += 4u;
-  _sp_popped += 1;
-  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $071FD0 */
-  if (_sp_popped > 0) { _sp_popped--; g_rte_pending = 1; }
-  return;
-  g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* Sound_81to9F */
-void func_071FD2(void) {
-  int _sp_popped = 0;
+  label_071FD2:;
   /* $071FD2 */
   uint8_t _071FD2r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[7]) - (uint8_t)0x88u);
   { uint8_t _fa = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[7])), _fb = (uint8_t)((uint8_t)0x88u), _fr = (uint8_t)(_071FD2r);
@@ -112268,10 +110930,7 @@ void func_071FD2(void) {
   if (_sp_popped > 0) { _sp_popped--; g_rte_pending = 1; }
   return;
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* Sound_A0toCF */
-void func_0721C6(void) {
+  label_0721C6:;
   /* $0721C6 */
   uint8_t _t0721C6 = m68k_read8((uint32_t)(g_cpu.A[6] + (int32_t)39));
   { uint8_t _fv = (uint8_t)(_t0721C6);
@@ -112769,6 +111428,7 @@ void func_0721C6(void) {
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0722C4:;
   /* $0722C4 */
+  if (_sp_popped > 0) { _sp_popped--; g_rte_pending = 1; }
   return;
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0722C6:;
@@ -112777,12 +111437,10 @@ void func_0721C6(void) {
   g_cpu.SR = (g_cpu.SR & ~0x1Fu) | (1u<<2);
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0722CA */
+  if (_sp_popped > 0) { _sp_popped--; g_rte_pending = 1; }
   return;
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* Sound_D0toDF */
-void func_07230C(void) {
+  label_07230C:;
   /* $07230C */
   uint8_t _t07230C = m68k_read8((uint32_t)(g_cpu.A[6] + (int32_t)39));
   { uint8_t _fv = (uint8_t)(_t07230C);
@@ -113134,6 +111792,7 @@ void func_07230C(void) {
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0723C6:;
   /* $0723C6 */
+  if (_sp_popped > 0) { _sp_popped--; g_rte_pending = 1; }
   return;
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
@@ -113581,47 +112240,6 @@ void func_07247C(void) {
   g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0724E4:;
   /* $0724E4 */
-  return;
-  g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-}
-
-/* Sound_E0 */
-void func_0724E6(void) {
-  /* $0724E6 */
-  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0724EAu); /* JSR push */
-  func_0723E0();
-  g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
-  g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $0724EA */
-  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0724EEu); /* JSR push */
-  func_07247C();
-  g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
-  g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $0724EE */
-  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)6), (uint8_t)(0x03u));
-  { uint8_t _fv = (uint8_t)(0x03u);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $0724F4 */
-  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)4), (uint8_t)(0x28u));
-  { uint8_t _fv = (uint8_t)(0x28u);
-    g_cpu.SR &= ~(0x0Fu);
-    if (!_fv)             g_cpu.SR |= (1u<<2);
-    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $0724FA */
-  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)64), (uint8_t)(0));
-  g_cpu.SR = (g_cpu.SR & ~0x1Fu) | (1u<<2);
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $0724FE */
-  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)42), (uint8_t)(0));
-  g_cpu.SR = (g_cpu.SR & ~0x1Fu) | (1u<<2);
-  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-  /* $072502 */
   return;
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }

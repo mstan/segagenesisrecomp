@@ -29,6 +29,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[5]
 LST_PATH  = REPO_ROOT / "_s1disasm" / "sonic.lst"
 OUT_PATH  = Path(__file__).resolve().parents[1] / "fixtures" / "sonic1" / "l1" / "instructions.txt"
+# Side-output: every code address the disasm emits, including macro-
+# expanded instructions whose bytes-on-listing differ from the final
+# ROM (those don't go in the L1 fixture but DO count as code for
+# data-as-function detection).
+CODE_ADDR_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "sonic1" / "l1" / "code_addresses.txt"
 
 # Primary instruction line:
 #   "     212/     236 : 7000                \t\tmoveq\t#0,d0\t; clear d0"
@@ -69,32 +74,62 @@ M68K_MNEMS = {
 
 SIZE_SUFFIXES = (".b", ".w", ".l", ".s")
 
+_INLINE_LABEL_RE = re.compile(r"^[A-Za-z_.][\w.]*:\s+")
+
 def first_token_and_size(src: str) -> tuple[str, str]:
     """Return (base_mnem, size_suffix) from the source line.
     `move.l foo,bar` -> ("move", ".l"). `rts` -> ("rts", "").
-    Returns ("", "") if the first token doesn't look like an instruction."""
+    `.loop: move.w a2,(a1)+` -> ("move", ".w") — inline labels
+    (LABEL: followed by an instruction on the same line, common in
+    s1disasm) are stripped before mnemonic detection.
+    Returns ("", "") if the first token doesn't look like an
+    instruction."""
     s = src.lstrip()
     # Strip trailing comment so a comment-only line is empty.
     s = re.sub(r";.*$", "", s).rstrip()
     if not s:
         return "", ""
+    # Strip inline label (LABEL: at the start, followed by whitespace).
+    while True:
+        m = _INLINE_LABEL_RE.match(s)
+        if not m:
+            break
+        s = s[m.end():]
     # First whitespace-delimited token.
     tok = re.split(r"[\s\t]", s, maxsplit=1)[0].lower()
     if not tok:
         return "", ""
+    # AS marks macro-expanded instructions with a leading '!'. Strip the
+    # prefix so we recognize the mnemonic, but tag the result with a
+    # `!`-prefix on the BASE mnem (after size-suffix removal below) so
+    # the caller knows to record-but-not-emit.
+    is_macro = False
+    if tok.startswith("!"):
+        is_macro = True
+        tok = tok[1:]
     # Strip size suffix.
+    base, sfx_out = tok, ""
     for sfx in SIZE_SUFFIXES:
         if tok.endswith(sfx):
-            return tok[:-len(sfx)], sfx
-    return tok, ""
+            base, sfx_out = tok[:-len(sfx)], sfx
+            break
+    if is_macro:
+        base = "!" + base
+    return base, sfx_out
 
 def normalize_operands(src: str) -> str:
-    """Strip leading mnemonic, trailing comment, excess whitespace. The
-    harness only bucket-compares mnemonics today; operand text is kept for
-    drill-down and future full-text canonicalization."""
+    """Strip leading inline-label + mnemonic, trailing comment, excess
+    whitespace. The harness only bucket-compares mnemonics today; operand
+    text is kept for drill-down and future full-text canonicalization."""
     s = src
     # Strip comment.
     s = re.sub(r";.*$", "", s).rstrip()
+    # Strip inline label(s).
+    while True:
+        m = _INLINE_LABEL_RE.match(s.lstrip())
+        if not m:
+            break
+        s = s.lstrip()[m.end():]
     # Drop the first token (mnemonic) and any leading whitespace.
     m = re.match(r"^\s*\S+\s*(.*)$", s)
     if not m:
@@ -120,6 +155,7 @@ def main() -> int:
         return 2
 
     rows: list[tuple[int, str, str, str]] = []  # (addr, bytes_hex, mnem, ops)
+    code_addrs: set[int] = set()  # all code addresses, including !-macros
     skipped_directive = 0
     skipped_equate = 0
     skipped_unknown = 0
@@ -166,6 +202,11 @@ def main() -> int:
         mnem, size = first_token_and_size(tail)
         if not mnem:
             continue
+        # Macro-expanded instruction marker — track the address as code
+        # in the side file, but don't emit it into the L1 fixture.
+        is_macro = mnem.startswith("!")
+        if is_macro:
+            mnem = mnem[1:]
         if mnem not in M68K_MNEMS:
             # Directive (.b-style data, macros, dc.*, align, etc.).
             skipped_directive += 1
@@ -190,6 +231,17 @@ def main() -> int:
             skipped_unknown += 1
             continue
 
+        # Always record the address as code (used by L2 data-as-function
+         # check) — including macro-expanded ones whose final ROM bytes
+         # don't match the listing.
+        code_addrs.add(addr)
+
+        # Macro-expanded instructions don't go in the L1 fixture — their
+        # listed bytes are pre-patch and would mismatch our decoder
+        # comparing against actual ROM.
+        if is_macro:
+            continue
+
         # De-dup: first-seen per address wins. Macro-expanded copies of
         # the same physical bytes (via jsr/jmp through macros) can end up
         # re-listing the same address — keep the first.
@@ -207,6 +259,15 @@ def main() -> int:
     with args.output.open("w", encoding="utf-8", newline="\n") as f:
         for addr, bh, mnem, ops in rows:
             f.write(f"{addr:08x} {bh}\t{mnem}\t{ops}\n")
+
+    # Side file: every code address (including macro-expanded ones).
+    CODE_ADDR_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with CODE_ADDR_PATH.open("w", encoding="utf-8", newline="\n") as f:
+        f.write("# Every disasm-emitted code address — used by the L2\n")
+        f.write("# data-as-function check. Includes macro-expanded\n")
+        f.write("# instructions excluded from the L1 fixture proper.\n")
+        for a in sorted(code_addrs):
+            f.write(f"{a:08x}\n")
 
     print(
         f"l1-gen: {len(rows)} instructions, "

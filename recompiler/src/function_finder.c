@@ -87,8 +87,12 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
             M68KInstr instr;
             if (!m68k_decode(rom, pc, &instr)) break;
 
-            /* Follow calls */
-            if (m68k_is_call(&instr) && instr.has_target) {
+            /* Follow calls — but skip blacklisted addresses (game.cfg
+             * `blacklist` directive). Useful for JSR/BSR targets that
+             * happen to land on non-code addresses (e.g., conditional
+             * code paths the static walker can't prove dead). */
+            if (m68k_is_call(&instr) && instr.has_target
+                    && !game_config_is_blacklisted(cfg, instr.target_addr)) {
                 add_function(list, instr.target_addr);
             }
 
