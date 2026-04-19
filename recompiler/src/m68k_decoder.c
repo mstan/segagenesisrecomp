@@ -743,7 +743,7 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
 
         if (dir && (ea_mode == EA_Dn || ea_mode == EA_An)) {
             /* SUBX */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_SUBX;
             out->size     = (M68KSize)ss;
             out->reg      = (w0 >> 9) & 7;
             break;
@@ -850,19 +850,19 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
         /* EXG: various forms, bit 8 = 1 with specific opmode */
         if ((w0 & 0xF1F8) == 0xC140) {
             /* EXG Dx,Dy */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_EXG;
             out->size     = M68K_SIZE_L;
             break;
         }
         if ((w0 & 0xF1F8) == 0xC148) {
             /* EXG Ax,Ay */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_EXG;
             out->size     = M68K_SIZE_L;
             break;
         }
         if ((w0 & 0xF1F8) == 0xC188) {
             /* EXG Dx,Ay */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_EXG;
             out->size     = M68K_SIZE_L;
             break;
         }
@@ -897,7 +897,7 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
 
         if (dir && (ea_mode == EA_Dn || ea_mode == EA_An)) {
             /* ADDX */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_ADDX;
             out->size     = (M68KSize)ss;
             out->reg      = (w0 >> 9) & 7;
             break;

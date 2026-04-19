@@ -1801,11 +1801,27 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         else
             fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
                     dreg, dreg, size_mask(sz), ct, res);
-        /* Flags */
-        fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
-        fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
-        fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
-        fprintf(f, "    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
+        /* Flags. LSL/LSR with shift count == 0 leaves X UNCHANGED; only
+         * count > 0 sets X = C = last bit shifted out. Register-counted
+         * shifts can hit count == 0 at runtime; immediate-count shifts
+         * encode 0 as 8, so they always shift. */
+        if (reg_count) {
+            fprintf(f, "    if (_cnt == 0) {\n");
+            fprintf(f, "      g_cpu.SR &= ~(0x0Fu);  /* preserve X */\n");
+            fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+            fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
+            fprintf(f, "    } else {\n");
+            fprintf(f, "      g_cpu.SR &= ~(0x1Fu);\n");
+            fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+            fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
+            fprintf(f, "      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
+            fprintf(f, "    }\n");
+        } else {
+            fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
+            fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+            fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
+            fprintf(f, "    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
+        }
         fprintf(f, "  }\n");
         break;
     }
@@ -2344,6 +2360,104 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     case MN_NBCD:
         fprintf(f, "  /* TODO: NBCD — BCD negate (not emitted) */\n");
         break;
+
+    /* ------------------------------------------------------------------ */
+    case MN_EXG: {
+        /* Swap two 32-bit registers; no flags affected.
+         * Encoding: 1100 Rx 1 opmode rrr  where opmode selects D-D, A-A,
+         * or D-A form. Rx = bits 11-9, Ry = bits 2-0. */
+        uint16_t w0 = instr->words[0];
+        int rx = (w0 >> 9) & 7;
+        int ry = w0 & 7;
+        if ((w0 & 0xF1F8) == 0xC140) {
+            fprintf(f, "  { uint32_t _t = g_cpu.D[%d]; g_cpu.D[%d] = g_cpu.D[%d]; g_cpu.D[%d] = _t; }\n",
+                    rx, rx, ry, ry);
+        } else if ((w0 & 0xF1F8) == 0xC148) {
+            fprintf(f, "  { uint32_t _t = g_cpu.A[%d]; g_cpu.A[%d] = g_cpu.A[%d]; g_cpu.A[%d] = _t; }\n",
+                    rx, rx, ry, ry);
+        } else {
+            /* 0xC188: EXG Dx,Ay */
+            fprintf(f, "  { uint32_t _t = g_cpu.D[%d]; g_cpu.D[%d] = g_cpu.A[%d]; g_cpu.A[%d] = _t; }\n",
+                    rx, rx, ry, ry);
+        }
+        break;
+    }
+
+    /* ------------------------------------------------------------------ */
+    case MN_ADDX: {
+        /* D-D form only: Dy = Dy + Dx + X.
+         * Z is cleared unless result==0 AND previous Z was set (for
+         * multi-precision chains).  X = C. */
+        uint16_t w0 = instr->words[0];
+        if ((w0 >> 3) & 1) {
+            fprintf(f, "  /* TODO: ADDX -(Ay),-(Ax) memory form @ $%06X */\n", addr);
+            break;
+        }
+        int dst = (w0 >> 9) & 7;
+        int src = w0 & 7;
+        int bits = size_bits(sz);
+        uint32_t sign_mask = (bits == 32) ? 0x80000000u : (bits == 16 ? 0x8000u : 0x80u);
+        uint32_t low_mask  = (bits == 32) ? 0xFFFFFFFFu : (bits == 16 ? 0xFFFFu : 0xFFu);
+        fprintf(f,
+            "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
+            "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
+            "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+            "    uint64_t _full = (uint64_t)_fa + (uint64_t)_fb + (uint64_t)_fx;\n"
+            "    uint%d_t _fr = (uint%d_t)_full;\n"
+            "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+            "    g_cpu.SR &= ~(0x1Fu);\n"
+            "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+            "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+            "    if (_full >> %d)                                { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+            "    if (!((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
+            bits, bits, dst, bits, bits, src, bits, bits,
+            SR_Z, bits - 1, SR_N, bits, SR_C, SR_X,
+            sign_mask, sign_mask, SR_V);
+        if (sz == M68K_SIZE_L)
+            fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
+        else
+            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
+                    dst, dst, (uint32_t)~low_mask);
+        fprintf(f, "  }\n");
+        break;
+    }
+
+    /* ------------------------------------------------------------------ */
+    case MN_SUBX: {
+        /* D-D form only: Dy = Dy - Dx - X. Z-preserve semantics. X = C. */
+        uint16_t w0 = instr->words[0];
+        if ((w0 >> 3) & 1) {
+            fprintf(f, "  /* TODO: SUBX -(Ay),-(Ax) memory form @ $%06X */\n", addr);
+            break;
+        }
+        int dst = (w0 >> 9) & 7;
+        int src = w0 & 7;
+        int bits = size_bits(sz);
+        uint32_t sign_mask = (bits == 32) ? 0x80000000u : (bits == 16 ? 0x8000u : 0x80u);
+        uint32_t low_mask  = (bits == 32) ? 0xFFFFFFFFu : (bits == 16 ? 0xFFFFu : 0xFFu);
+        fprintf(f,
+            "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
+            "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
+            "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+            "    uint64_t _full = (uint64_t)_fa - (uint64_t)_fb - (uint64_t)_fx;\n"
+            "    uint%d_t _fr = (uint%d_t)_full;\n"
+            "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+            "    g_cpu.SR &= ~(0x1Fu);\n"
+            "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+            "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+            "    if ((_full >> 63) & 1u)                         { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+            "    if (((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
+            bits, bits, dst, bits, bits, src, bits, bits,
+            SR_Z, bits - 1, SR_N, SR_C, SR_X,
+            sign_mask, sign_mask, SR_V);
+        if (sz == M68K_SIZE_L)
+            fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
+        else
+            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
+                    dst, dst, (uint32_t)~low_mask);
+        fprintf(f, "  }\n");
+        break;
+    }
 
     case MN_OTHER:
     default:

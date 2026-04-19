@@ -5920,10 +5920,16 @@ void func_00148A(void) {
     uint16_t _001490r = (_cnt > 0 && _cnt < 16) ? (_sv >> _cnt) : (_cnt == 0 ? _sv : (uint16_t)0);
     uint32_t _c = (_cnt > 0 && _cnt <= 16) ? ((_sv >> (_cnt - 1)) & 1u) : 0u;
     g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001490r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_001490r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_001490r >> 15) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (_cnt == 0) {
+      g_cpu.SR &= ~(0x0Fu);  /* preserve X */
+      if (!_001490r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001490r >> 15) g_cpu.SR |= (1u<<3);
+    } else {
+      g_cpu.SR &= ~(0x1Fu);
+      if (!_001490r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001490r >> 15) g_cpu.SR |= (1u<<3);
+      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    }
   }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001492 */
@@ -6233,10 +6239,16 @@ void func_0014D6(void) {
     uint16_t _0014E8r = (_cnt > 0 && _cnt < 16) ? (_sv >> _cnt) : (_cnt == 0 ? _sv : (uint16_t)0);
     uint32_t _c = (_cnt > 0 && _cnt <= 16) ? ((_sv >> (_cnt - 1)) & 1u) : 0u;
     g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_0014E8r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_0014E8r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_0014E8r >> 15) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (_cnt == 0) {
+      g_cpu.SR &= ~(0x0Fu);  /* preserve X */
+      if (!_0014E8r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_0014E8r >> 15) g_cpu.SR |= (1u<<3);
+    } else {
+      g_cpu.SR &= ~(0x1Fu);
+      if (!_0014E8r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_0014E8r >> 15) g_cpu.SR |= (1u<<3);
+      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    }
   }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0014EA */
@@ -6620,10 +6632,16 @@ void func_00152E(void) {
     uint16_t _00156Ar = (_cnt > 0 && _cnt < 16) ? (_sv << _cnt) : (_cnt == 0 ? _sv : (uint16_t)0);
     uint32_t _c = (_cnt > 0 && _cnt <= 16) ? ((_sv >> (16 - _cnt)) & 1u) : 0u;
     g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)_00156Ar);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_00156Ar) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_00156Ar >> 15) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (_cnt == 0) {
+      g_cpu.SR &= ~(0x0Fu);  /* preserve X */
+      if (!_00156Ar) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_00156Ar >> 15) g_cpu.SR |= (1u<<3);
+    } else {
+      g_cpu.SR &= ~(0x1Fu);
+      if (!_00156Ar) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_00156Ar >> 15) g_cpu.SR |= (1u<<3);
+      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    }
   }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00156C */
@@ -6649,10 +6667,16 @@ void func_00152E(void) {
     uint16_t _001570r = (_cnt > 0 && _cnt < 16) ? (_sv << _cnt) : (_cnt == 0 ? _sv : (uint16_t)0);
     uint32_t _c = (_cnt > 0 && _cnt <= 16) ? ((_sv >> (16 - _cnt)) & 1u) : 0u;
     g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001570r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_001570r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_001570r >> 15) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (_cnt == 0) {
+      g_cpu.SR &= ~(0x0Fu);  /* preserve X */
+      if (!_001570r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001570r >> 15) g_cpu.SR |= (1u<<3);
+    } else {
+      g_cpu.SR &= ~(0x1Fu);
+      if (!_001570r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001570r >> 15) g_cpu.SR |= (1u<<3);
+      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    }
   }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001572 */
@@ -7688,10 +7712,16 @@ void func_00173E(void) {
     uint16_t _001746r = (_cnt > 0 && _cnt < 16) ? (_sv >> _cnt) : (_cnt == 0 ? _sv : (uint16_t)0);
     uint32_t _c = (_cnt > 0 && _cnt <= 16) ? ((_sv >> (_cnt - 1)) & 1u) : 0u;
     g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001746r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_001746r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_001746r >> 15) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (_cnt == 0) {
+      g_cpu.SR &= ~(0x0Fu);  /* preserve X */
+      if (!_001746r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001746r >> 15) g_cpu.SR |= (1u<<3);
+    } else {
+      g_cpu.SR &= ~(0x1Fu);
+      if (!_001746r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001746r >> 15) g_cpu.SR |= (1u<<3);
+      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    }
   }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001748 */
@@ -8371,10 +8401,16 @@ void func_0017DC(void) {
     uint16_t _001836r = (_cnt > 0 && _cnt < 16) ? (_sv << _cnt) : (_cnt == 0 ? _sv : (uint16_t)0);
     uint32_t _c = (_cnt > 0 && _cnt <= 16) ? ((_sv >> (16 - _cnt)) & 1u) : 0u;
     g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001836r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_001836r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_001836r >> 15) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (_cnt == 0) {
+      g_cpu.SR &= ~(0x0Fu);  /* preserve X */
+      if (!_001836r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001836r >> 15) g_cpu.SR |= (1u<<3);
+    } else {
+      g_cpu.SR &= ~(0x1Fu);
+      if (!_001836r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001836r >> 15) g_cpu.SR |= (1u<<3);
+      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    }
   }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001838 */
@@ -8503,10 +8539,16 @@ void func_0017DC(void) {
     uint16_t _001858r = (_cnt > 0 && _cnt < 16) ? (_sv >> _cnt) : (_cnt == 0 ? _sv : (uint16_t)0);
     uint32_t _c = (_cnt > 0 && _cnt <= 16) ? ((_sv >> (_cnt - 1)) & 1u) : 0u;
     g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)_001858r);
-    g_cpu.SR &= ~(0x1Fu);
-    if (!_001858r) g_cpu.SR |= (1u<<2);
-    if ((uint32_t)_001858r >> 15) g_cpu.SR |= (1u<<3);
-    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (_cnt == 0) {
+      g_cpu.SR &= ~(0x0Fu);  /* preserve X */
+      if (!_001858r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001858r >> 15) g_cpu.SR |= (1u<<3);
+    } else {
+      g_cpu.SR &= ~(0x1Fu);
+      if (!_001858r) g_cpu.SR |= (1u<<2);
+      if ((uint32_t)_001858r >> 15) g_cpu.SR |= (1u<<3);
+      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    }
   }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00185A */
@@ -84987,7 +85029,7 @@ void func_014DD0(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014DDC */
-  /* unimplemented opcode $C141 @ $014DDC */
+  { uint32_t _t = g_cpu.D[0]; g_cpu.D[0] = g_cpu.D[1]; g_cpu.D[1] = _t; }
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_014DDE:;
   /* $014DDE */

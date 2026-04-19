@@ -87,6 +87,9 @@ typedef enum {
     MN_MOVE_USP,
     MN_MOVE_SR,
     MN_MOVE_CCR,
+    MN_EXG,
+    MN_ADDX,
+    MN_SUBX,
 } M68KMnemonic;
 
 #define M68K_MAX_WORDS 8   /* Maximum instruction length in 16-bit words */
