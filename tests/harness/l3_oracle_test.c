@@ -368,7 +368,12 @@ static bool run_interpreter(uint32_t func_addr, uint32_t cycle_budget) {
 }
 
 static TestResult test_function(uint32_t func_addr, uint32_t seed) {
-    TestResult r = { .func_addr = func_addr, .seed = seed };
+    TestResult r = {
+        .func_addr   = func_addr,
+        .seed        = seed,
+        .first_D_idx = -1,
+        .first_A_idx = -1,
+    };
     const uint32_t STACK_TOP = 0xFFFF80;  /* well within RAM, plenty of headroom */
 
     /* --- Run interpreter side --- */
