@@ -870,9 +870,15 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             fprintf(f, "  /* TODO: dynamic JSR/BSR EA %d/%d */\n", mode, reg);
         }
 
-        /* Pop return address from 68K stack */
+        /* Pop return address from 68K stack.
+         * Check g_rte_pending BEFORE the pop: when the callee used the
+         * `addq.l #4,sp; rts` skip idiom, the game's own addq already
+         * adjusted A7 and SJ's rts popped the slot this wrapper pushed.
+         * Doing our pop here would double-adjust A7 by +4. Skipping the
+         * pop keeps A7 in sync with hardware. Flag is cleared so the
+         * next level up resumes normally. */
+        fprintf(f, "  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */\n");
         fprintf(f, "  g_cpu.A[7] += 4; /* JSR pop */\n");
-        fprintf(f, "  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */\n");
         break;
     }
 
