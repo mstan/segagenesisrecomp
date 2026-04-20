@@ -696,6 +696,7 @@ void func_013DD0(void);
 void func_01408E(void);
 void func_014158(void);
 void func_01416C(void);
+void func_0141A4(void);
 void func_0141DC(void);
 void func_0145EE(void);
 void func_0146E6(void);
@@ -81343,6 +81344,74 @@ void func_01416C(void) {
   /* $0141A2 */
   return;
   g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+}
+
+/* Shi_Shield */
+void func_0141A4(void) {
+  /* $0141A4 */
+  uint8_t _t0141A4 = m68k_read8((uint32_t)(int32_t)(int16_t)0xFE2D);
+  { uint8_t _fv = (uint8_t)(_t0141A4);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0141A8 */
+  if (!(g_cpu.SR & (1u<<2))) goto label_0141D4;
+  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0141AA */
+  uint8_t _t0141AA = m68k_read8((uint32_t)(int32_t)(int16_t)0xFE2C);
+  { uint8_t _fv = (uint8_t)(_t0141AA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0141AE */
+  if ((g_cpu.SR & (1u<<2))) goto label_0141D6;
+  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0141B0 */
+  uint16_t _ts0141B0 = m68k_read16((uint32_t)(int32_t)(int16_t)0xD008);
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)8), (uint16_t)(_ts0141B0));
+  { uint16_t _fv = (uint16_t)(_ts0141B0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0141B6 */
+  uint16_t _ts0141B6 = m68k_read16((uint32_t)(int32_t)(int16_t)0xD00C);
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)12), (uint16_t)(_ts0141B6));
+  { uint16_t _fv = (uint16_t)(_ts0141B6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0141BC */
+  uint8_t _ts0141BC = m68k_read8((uint32_t)(int32_t)(int16_t)0xD022);
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)34), (uint8_t)(_ts0141BC));
+  { uint8_t _fv = (uint8_t)(_ts0141BC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cycle_accumulator += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0141C2 */
+  g_cpu.A[1] = 0x0001434Cu;
+  g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0141C8 */
+  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0141CEu); /* JSR push */
+  func_00A718();
+  g_cpu.A[7] += 4; /* JSR pop */
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
+  g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0141CE */
+  func_00D604(); return;
+  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_0141D4:;
+  /* $0141D4 */
+  return;
+  g_cycle_accumulator += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_0141D6:;
+  /* $0141D6 */
+  func_00D640(); return;
+  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 /* Shi_Stars */
