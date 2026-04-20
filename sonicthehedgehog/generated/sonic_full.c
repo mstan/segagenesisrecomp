@@ -1902,6 +1902,10 @@ void func_071F02(void);
 void func_071F4C(void);
 void func_071F8E(void);
 void func_071F98(void);
+void func_071F9C(void);
+void func_071FA0(void);
+void func_071FA4(void);
+void func_071FA8(void);
 void func_071FAC(void);
 void func_071FD2(void);
 void func_0721C6(void);
@@ -160700,6 +160704,34 @@ void func_071F8E(void) {
 void func_071F98(void) {
   /* $071F98 */
   func_0724E6(); return;
+  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+}
+
+/* ptr_flgE1 */
+void func_071F9C(void) {
+  /* $071F9C */
+  func_071FAC(); return;
+  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+}
+
+/* ptr_flgE2 */
+void func_071FA0(void) {
+  /* $071FA0 */
+  func_072624(); return;
+  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+}
+
+/* ptr_flgE3 */
+void func_071FA4(void) {
+  /* $071FA4 */
+  func_072652(); return;
+  g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+}
+
+/* ptr_flgE4 */
+void func_071FA8(void) {
+  /* $071FA8 */
+  func_07259E(); return;
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 

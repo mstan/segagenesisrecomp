@@ -1910,6 +1910,10 @@ void func_071F02(void);
 void func_071F4C(void);
 void func_071F8E(void);
 void func_071F98(void);
+void func_071F9C(void);
+void func_071FA0(void);
+void func_071FA4(void);
+void func_071FA8(void);
 void func_071FAC(void);
 void func_071FD2(void);
 void func_0721C6(void);
@@ -3908,6 +3912,10 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x071F4Cu, func_071F4C },
     { 0x071F8Eu, func_071F8E },
     { 0x071F98u, func_071F98 },
+    { 0x071F9Cu, func_071F9C },
+    { 0x071FA0u, func_071FA0 },
+    { 0x071FA4u, func_071FA4 },
+    { 0x071FA8u, func_071FA8 },
     { 0x071FACu, func_071FAC },
     { 0x071FD2u, func_071FD2 },
     { 0x0721C6u, func_0721C6 },
@@ -4007,9 +4015,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0u, NULL }
 };
 
-int game_dispatch_table_size(void) { return 1996; }
+int game_dispatch_table_size(void) { return 2000; }
 uint32_t game_dispatch_table_addr(int i) {
-    return (i >= 0 && i < 1996) ? s_dispatch_table[i].addr : 0;
+    return (i >= 0 && i < 2000) ? s_dispatch_table[i].addr : 0;
 }
 
 void call_by_address(uint32_t addr) {
