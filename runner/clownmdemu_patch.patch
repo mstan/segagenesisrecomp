@@ -1,3 +1,9 @@
+diff --git a/libraries/clown68000 b/libraries/clown68000
+--- a/libraries/clown68000
++++ b/libraries/clown68000
+@@ -1 +1 @@
+-Subproject commit e12ead17d0725e414d347bc9c0c096594235120d
++Subproject commit e12ead17d0725e414d347bc9c0c096594235120d-dirty
 diff --git a/source/bus-common.c b/source/bus-common.c
 index 6652f1f..7088849 100644
 --- a/source/bus-common.c
@@ -42,7 +48,7 @@ index 751f18e..b00a506 100644
  
  #endif /* BUS_COMMON */
 diff --git a/source/bus-main-m68k.c b/source/bus-main-m68k.c
-index d78682a..0d12910 100644
+index d78682a..f28653b 100644
 --- a/source/bus-main-m68k.c
 +++ b/source/bus-main-m68k.c
 @@ -1,6 +1,7 @@
@@ -100,7 +106,7 @@ index d78682a..0d12910 100644
  
  						/* TODO: According to Charles MacDonald's gen-hw.txt, the upper byte is actually the upper byte
  							of the next instruction and the lower byte is just 0 (and the flag bit, of course). */
-@@ -849,6 +827,10 @@ cc_u16f M68kReadCallback(const void* const user_data, const cc_u32f address, con
+@@ -849,6 +827,17 @@ cc_u16f M68kReadCallback(const void* const user_data, const cc_u32f address, con
  	return M68kReadCallbackWithCycleWithDMA(user_data, address, do_high_byte, do_low_byte, MakeCycleMegaDrive(callback_user_data->sync.m68k.base_cycle + current_cycle * CLOWNMDEMU_M68K_CLOCK_DIVIDER), cc_false);
  }
  
@@ -108,10 +114,17 @@ index d78682a..0d12910 100644
 + * Args: m68k_address (byte), value, target_cycle (master clocks). */
 +void (*g_fm_write_trace_fn)(cc_u32f address, cc_u8f value, cc_u32f target_cycle) = NULL;
 +
++/* Generic 68K memory write trace hook — fires once per affected byte at
++ * the byte address (not the word address).  Callback is responsible for
++ * its own watchlist filtering.  Lives on the same M68kWriteCallbackWith
++ * Cycle path as the FM hook, so works in both interpreter (oracle) and
++ * recompiled (native) builds. */
++void (*g_mem_write_trace_fn)(cc_u32f byte_address, cc_u8f value, cc_u32f target_cycle) = NULL;
++
  void M68kWriteCallbackWithCycle(const void* const user_data, const cc_u32f address_word, const cc_bool do_high_byte, const cc_bool do_low_byte, const cc_u16f value, const CycleMegaDrive target_cycle)
  {
  	CPUCallbackUserData* const callback_user_data = (CPUCallbackUserData*)user_data;
-@@ -859,6 +841,13 @@ void M68kWriteCallbackWithCycle(const void* const user_data, const cc_u32f addre
+@@ -859,6 +848,22 @@ void M68kWriteCallbackWithCycle(const void* const user_data, const cc_u32f addre
  	const cc_u16f high_byte = (value >> 8) & 0xFF;
  	const cc_u16f low_byte = (value >> 0) & 0xFF;
  
@@ -122,10 +135,19 @@ index d78682a..0d12910 100644
 +		g_fm_write_trace_fn(address, byte_val, target_cycle.cycle);
 +	}
 +
++	/* Generic memory-write trace — fires once per byte actually written.
++	 * Callback filters its own watchlist so we don't pay per-address
++	 * checks in the bus-critical path beyond the function-pointer test. */
++	if (g_mem_write_trace_fn != NULL)
++	{
++		if (do_high_byte) g_mem_write_trace_fn(address,     high_byte, target_cycle.cycle);
++		if (do_low_byte)  g_mem_write_trace_fn(address + 1, low_byte,  target_cycle.cycle);
++	}
++
  	cc_u16f mask = 0;
  
  	if (do_high_byte)
-@@ -1279,7 +1268,8 @@ void M68kWriteCallbackWithCycle(const void* const user_data, const cc_u32f addre
+@@ -1279,7 +1284,8 @@ void M68kWriteCallbackWithCycle(const void* const user_data, const cc_u32f addre
  					VDP_WriteControl(&clownmdemu->vdp, value, frontend_callbacks->colour_updated, frontend_callbacks->user_data, VDPDMATransferBeginCallback, VDPReadCallback, callback_user_data, VDPKDebugCallback, NULL, target_cycle.cycle);
  
  					/* TODO: This should be done more faithfully once the CPU interpreters are bus-event-oriented. */
