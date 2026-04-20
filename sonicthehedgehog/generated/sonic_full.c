@@ -2629,20 +2629,20 @@ void func_000370(void) {
   /* $000376 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00037Au); /* JSR push */
   func_001222();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00037A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00037Eu); /* JSR push */
   func_001352();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00037E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000382u); /* JSR push */
   func_0011B6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000382 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF600, (uint8_t)(0x00u));
@@ -2676,8 +2676,8 @@ void func_000388(void) {
   /* $000390 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000394u); /* JSR push */
   call_by_address((uint32_t)(0x00000392u + (int32_t)(int16_t)g_cpu.D[0] + (4)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000394 */
   goto label_000388;
@@ -2745,8 +2745,8 @@ void func_0003B8(void) {
   /* $0003B8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0003BCu); /* JSR push */
   func_001222();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0003BC */
   m68k_write32(0x00C00004u, (uint32_t)(0xC0000000u));
@@ -3017,8 +3017,8 @@ void func_000440(void) {
   /* $00044C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000450u); /* JSR push */
   func_000488();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000450 */
   uint32_t _ts000450 = m68k_read32((uint32_t)(g_cpu.A[7] + (int32_t)2));
@@ -3031,8 +3031,8 @@ void func_000440(void) {
   /* $000454 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000458u); /* JSR push */
   func_0005BA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000458 */
   uint32_t _ts000458 = m68k_read32((uint32_t)(int32_t)(int16_t)0xFC40);
@@ -3045,8 +3045,8 @@ void func_000440(void) {
   /* $00045C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000460u); /* JSR push */
   func_0005BA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000460 */
   func_000478(); return;
@@ -3081,8 +3081,8 @@ void func_000462(void) {
   /* $00046C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000470u); /* JSR push */
   func_000488();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000470 */
   uint32_t _ts000470 = m68k_read32((uint32_t)(g_cpu.A[7] + (int32_t)2));
@@ -3095,8 +3095,8 @@ void func_000462(void) {
   /* $000474 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000478u); /* JSR push */
   func_0005BA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_000478(); return;
 }
@@ -3106,8 +3106,8 @@ void func_000478(void) {
   /* $000478 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00047Cu); /* JSR push */
   func_0005E0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00047C */
   { uint32_t _mbase = (uint32_t)(int32_t)(int16_t)0xFC00;
@@ -3295,8 +3295,8 @@ void func_0005BA(void) {
   /* $0005C2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0005C4u); /* JSR push */
   func_0005CA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0005C4 */
   if (!(0)) {
@@ -3379,8 +3379,8 @@ void func_0005E0(void) {
   /* $0005E0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0005E4u); /* JSR push */
   func_0011E6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0005E4 */
   uint8_t _t0005E4 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF605);
@@ -3520,8 +3520,8 @@ void func_000B10(void) {
   /* $000B5A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000B5Eu); /* JSR push */
   call_by_address((uint32_t)(0x00000B5Cu + (int32_t)(int16_t)g_cpu.D[0] + (18)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_000B5E(); return;
 }
@@ -3532,8 +3532,8 @@ void func_000B5E(void) {
   /* $000B5E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000B64u); /* JSR push */
   func_071B4C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_000B64(); return;
 }
@@ -3813,8 +3813,8 @@ void func_000C32(void) {
   /* $000C32 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000C36u); /* JSR push */
   func_00106E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_000C36(); return;
 }
@@ -3853,20 +3853,20 @@ void func_000C44(void) {
   /* $000C44 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000C48u); /* JSR push */
   func_00106E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000C48 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000C4Cu); /* JSR push */
   func_006886();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000C4C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000C50u); /* JSR push */
   func_001642();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000C50 */
   uint16_t _t000C50 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF614);
@@ -3900,8 +3900,8 @@ void func_000C5E(void) {
   /* $000C5E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000C62u); /* JSR push */
   func_00106E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000C62 */
   return;
@@ -3948,8 +3948,8 @@ void func_000C6E(void) {
   /* $000C80 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000C84u); /* JSR push */
   func_0011E6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000C84 */
   uint8_t _t000C84 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF64E);
@@ -4299,26 +4299,26 @@ void func_000D84(void) {
   /* $000D84 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000D88u); /* JSR push */
   func_0068B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000D88 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000D8Eu); /* JSR push */
   func_01C024();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000D8E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000D94u); /* JSR push */
   func_01C6B8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000D94 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000D98u); /* JSR push */
   func_00165E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000D98 */
   uint16_t _t000D98 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF614);
@@ -4368,8 +4368,8 @@ void func_000DA6(void) {
   /* $000DB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000DBCu); /* JSR push */
   func_0011E6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000DBC */
   g_cpu.A[5] = 0x00C00004u;
@@ -4519,8 +4519,8 @@ void func_000DA6(void) {
   /* $000E30 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000E34u); /* JSR push */
   func_004962();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000E34 */
   uint8_t _t000E34 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF767);
@@ -4634,8 +4634,8 @@ void func_000E72(void) {
   /* $000E84 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000E88u); /* JSR push */
   func_0011E6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000E88 */
   uint8_t _t000E88 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF64E);
@@ -4954,26 +4954,26 @@ void func_000E72(void) {
   /* $000F74 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000F78u); /* JSR push */
   func_0068B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000F78 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000F7Eu); /* JSR push */
   func_01C024();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000F7E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000F84u); /* JSR push */
   func_01C6B8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000F84 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000F88u); /* JSR push */
   func_001642();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000F88 */
   return;
@@ -4985,8 +4985,8 @@ void func_000F8A(void) {
   /* $000F8A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000F8Eu); /* JSR push */
   func_00106E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000F8E */
   uint8_t _t000F8E = m68k_read8((uint32_t)(int32_t)(int16_t)0xF628);
@@ -5016,8 +5016,8 @@ void func_000F9A(void) {
   /* $000F9A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000F9Eu); /* JSR push */
   func_00106E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000F9E */
   uint16_t _ts000F9E = m68k_read16((uint32_t)(int32_t)(int16_t)0xF624);
@@ -5053,8 +5053,8 @@ void func_000FA6(void) {
   /* $000FB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x000FBCu); /* JSR push */
   func_0011E6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $000FBC */
   g_cpu.A[5] = 0x00C00004u;
@@ -5313,8 +5313,8 @@ void func_00106E(void) {
   /* $001080 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001084u); /* JSR push */
   func_0011E6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001084 */
   uint8_t _t001084 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF64E);
@@ -5880,14 +5880,14 @@ void func_001126(void) {
   /* $0011A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0011AAu); /* JSR push */
   func_000D84();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0011AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0011B0u); /* JSR push */
   func_071B4C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0011B0 */
   { uint32_t _mbase = g_cpu.A[7];
@@ -5984,8 +5984,8 @@ void func_0011E6(void) {
   /* $0011F0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0011F2u); /* JSR push */
   func_0011F4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0011F2 */
   g_cpu.A[1] += 2u;
@@ -6543,8 +6543,8 @@ void func_001352(void) {
   /* $001370 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001374u); /* JSR push */
   func_00189C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001374 */
   m68k_write16(0x00A11200u, (uint16_t)(0x0000u));
@@ -6693,8 +6693,8 @@ void func_0013CA(void) {
   /* $0013D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0013D4u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0013D4 */
   uint8_t _t0013D4 = m68k_read8((uint32_t)(int32_t)(int16_t)0xFFE1);
@@ -7015,8 +7015,8 @@ void func_00145C(void) {
   /* $001474 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001478u); /* JSR push */
   func_00152E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001478 */
   uint8_t _ts001478 = m68k_read8(g_cpu.A[0]); g_cpu.A[0] += 1;
@@ -7060,8 +7060,8 @@ void func_00145C(void) {
   /* $001482 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001484u); /* JSR push */
   func_00148A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001484 */
   { uint32_t _mbase = g_cpu.A[7];
@@ -8073,8 +8073,8 @@ void func_0015B2(void) {
   /* $0015C6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0015C8u); /* JSR push */
   func_0015DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0015C8 */
   g_cpu.A[2] = (uint32_t)(int32_t)(int16_t)0xF680;
@@ -8222,8 +8222,8 @@ void func_0015EC(void) {
   /* $001616 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00161Au); /* JSR push */
   func_00152E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00161A */
   uint8_t _ts00161A = m68k_read8(g_cpu.A[0]); g_cpu.A[0] += 1;
@@ -8534,8 +8534,8 @@ void func_001676(void) {
   /* $0016AE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0016B2u); /* JSR push */
   func_0014CC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0016B2 */
   uint16_t _t0016B2 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF6F8);
@@ -8759,8 +8759,8 @@ void func_0016EC(void) {
   /* $001714 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001718u); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001718 */
   if (!(0)) {
@@ -8990,8 +8990,8 @@ void func_00173E(void) {
   /* $001758 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00175Cu); /* JSR push */
   func_00188C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00175C */
   uint16_t _00175Cr = (uint16_t)((uint16_t)g_cpu.D[2]) & (uint16_t)0xFu;
@@ -9083,8 +9083,8 @@ void func_00177A(void) {
   /* $00177A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00177Eu); /* JSR push */
   func_0017DC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00177E:;
   /* $00177E */
@@ -9112,8 +9112,8 @@ void func_001786(void) {
   /* $001786 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00178Au); /* JSR push */
   func_0017DC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00178A:;
   /* $00178A */
@@ -9151,8 +9151,8 @@ void func_001794(void) {
   /* $001794 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001798u); /* JSR push */
   func_0017DC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_001798:;
   /* $001798 */
@@ -9203,8 +9203,8 @@ void func_0017A2(void) {
   /* $0017A8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0017ACu); /* JSR push */
   func_0017DC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0017AC */
   m68k_write16(g_cpu.A[1], (uint16_t)((uint16_t)g_cpu.D[1])); g_cpu.A[1] += 2;
@@ -11593,20 +11593,20 @@ void func_001DB2(void) {
   /* $001DD4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001DD8u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001DD8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001DDAu); /* JSR push */
   func_001DE4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001DDA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001DDEu); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001DDE */
   if (!(0)) {
@@ -11662,8 +11662,8 @@ void func_001DE4(void) {
   /* $001DFA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001DFCu); /* JSR push */
   func_001E26();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001DFC */
   if (!(0)) {
@@ -11725,8 +11725,8 @@ void func_001DE4(void) {
   /* $001E1E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001E20u); /* JSR push */
   func_001E26();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001E20 */
   if (!(0)) {
@@ -11902,20 +11902,20 @@ void func_001E52(void) {
   /* $001E62 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001E66u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001E66 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001E68u); /* JSR push */
   func_001E72();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001E68 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001E6Cu); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001E6C */
   if (!(0)) {
@@ -11965,8 +11965,8 @@ void func_001E72(void) {
   /* $001E82 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001E84u); /* JSR push */
   func_001EA0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001E84 */
   if (!(0)) {
@@ -12009,8 +12009,8 @@ void func_001E72(void) {
   /* $001E98 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001E9Au); /* JSR push */
   func_001EA0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001E9A */
   if (!(0)) {
@@ -12224,20 +12224,20 @@ void func_001ED0(void) {
   /* $001EFA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001EFEu); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001EFE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001F00u); /* JSR push */
   func_001F0A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001F00 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001F04u); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001F04 */
   if (!(0)) {
@@ -12293,8 +12293,8 @@ void func_001F0A(void) {
   /* $001F20 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001F22u); /* JSR push */
   func_001F4C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001F22 */
   if (!(0)) {
@@ -12356,8 +12356,8 @@ void func_001F0A(void) {
   /* $001F44 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001F46u); /* JSR push */
   func_001F4C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001F46 */
   if (!(0)) {
@@ -12539,20 +12539,20 @@ void func_001F7C(void) {
   /* $001F8C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001F90u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001F90 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001F92u); /* JSR push */
   func_001F9C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001F92 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001F96u); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001F96 */
   if (!(0)) {
@@ -12602,8 +12602,8 @@ void func_001F9C(void) {
   /* $001FAC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001FAEu); /* JSR push */
   func_001FCA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001FAE */
   if (!(0)) {
@@ -12646,8 +12646,8 @@ void func_001F9C(void) {
   /* $001FC2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x001FC4u); /* JSR push */
   func_001FCA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $001FC4 */
   if (!(0)) {
@@ -14138,20 +14138,20 @@ void func_002E10(void) {
   /* $002E14 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002E18u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002E18 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002E1Cu); /* JSR push */
   func_0015DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002E1C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002E20u); /* JSR push */
   func_001E52();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002E20 */
   g_cpu.A[6] = 0x00C00004u;
@@ -14224,8 +14224,8 @@ void func_002E10(void) {
   /* $002E50 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002E54u); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002E54 */
   m68k_write32(0x00C00004u, (uint32_t)(0x40000000u));
@@ -14240,8 +14240,8 @@ void func_002E10(void) {
   /* $002E64 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002E68u); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002E68 */
   g_cpu.A[1] = 0x00FF0000u;
@@ -14259,8 +14259,8 @@ void func_002E10(void) {
   /* $002E78 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002E7Cu); /* JSR push */
   func_00171E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002E7C */
   g_cpu.A[1] = 0x00FF0000u;
@@ -14289,8 +14289,8 @@ void func_002E10(void) {
   /* $002E8C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002E90u); /* JSR push */
   func_001420();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002E90 */
   g_cpu.A[1] = 0x00FF0180u;
@@ -14319,8 +14319,8 @@ void func_002E10(void) {
   /* $002EA0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002EA4u); /* JSR push */
   func_001420();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002EA4 */
   g_cpu.D[0] = 0x00000000u;
@@ -14332,8 +14332,8 @@ void func_002E10(void) {
   /* $002EA6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002EAAu); /* JSR push */
   func_002118();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002EAA */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF632, (uint16_t)(0xFFF6u));
@@ -14402,14 +14402,14 @@ void func_002ED0(void) {
   /* $002ED6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002EDAu); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002EDA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002EDEu); /* JSR push */
   func_00200A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002EDE */
   if (!(g_cpu.SR & (1u<<2))) goto label_002ED0;
@@ -14424,8 +14424,8 @@ void func_002ED0(void) {
   /* $002EE4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002EE8u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002EE8 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF62A, (uint8_t)(0x14u));
@@ -14437,8 +14437,8 @@ void func_002ED0(void) {
   /* $002EEE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002EF2u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002EF2 */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF614, (uint16_t)(0x001Eu));
@@ -14463,8 +14463,8 @@ void func_002EF8(void) {
   /* $002EFE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002F02u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002F02 */
   uint16_t _t002F02 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF614);
@@ -14517,20 +14517,20 @@ void func_002F18(void) {
   /* $002F1C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002F20u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002F20 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002F24u); /* JSR push */
   func_0015DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002F24 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002F28u); /* JSR push */
   func_001E52();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002F28 */
   g_cpu.SR = (uint16_t)(0x2700u);
@@ -14538,8 +14538,8 @@ void func_002F18(void) {
   /* $002F2C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002F30u); /* JSR push */
   func_001352();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002F30 */
   g_cpu.A[6] = 0x00C00004u;
@@ -14600,8 +14600,8 @@ void func_002F18(void) {
   /* $002F56 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002F5Au); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002F5A */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -14649,8 +14649,8 @@ void func_002F18(void) {
   /* $002F7A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002F7Eu); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002F7E */
   m68k_write32(0x00C00004u, (uint32_t)(0x54C00000u));
@@ -14665,8 +14665,8 @@ void func_002F18(void) {
   /* $002F8E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002F92u); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002F92 */
   g_cpu.A[1] = 0x00FF0000u;
@@ -14684,8 +14684,8 @@ void func_002F18(void) {
   /* $002FA2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002FA6u); /* JSR push */
   func_00171E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002FA6 */
   g_cpu.A[1] = 0x00FF0000u;
@@ -14714,8 +14714,8 @@ void func_002F18(void) {
   /* $002FB6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002FBAu); /* JSR push */
   func_001420();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002FBA */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xFB80;
@@ -14760,8 +14760,8 @@ void func_002F18(void) {
   /* $002FCC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002FD0u); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002FD0 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xD080, (uint8_t)(0x8Au));
@@ -14773,20 +14773,20 @@ void func_002F18(void) {
   /* $002FD6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002FDCu); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002FDC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002FE2u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002FE2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002FE6u); /* JSR push */
   func_001DAC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002FE6 */
   g_cpu.SR = (uint16_t)(0x2700u);
@@ -14804,8 +14804,8 @@ void func_002F18(void) {
   /* $002FFA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x002FFEu); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $002FFE */
   m68k_write32(0x00C00004u, (uint32_t)(0x60000001u));
@@ -14820,8 +14820,8 @@ void func_002F18(void) {
   /* $00300E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003012u); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003012 */
   m68k_write32(0x00C00004u, (uint32_t)(0x62000002u));
@@ -14836,8 +14836,8 @@ void func_002F18(void) {
   /* $003022 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003026u); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003026 */
   g_cpu.A[6] = 0x00C00000u;
@@ -14926,14 +14926,14 @@ void func_00303E(void) {
   /* $003068 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00306Cu); /* JSR push */
   func_005EBE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00306C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003070u); /* JSR push */
   func_006286();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003070 */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xB000;
@@ -14951,8 +14951,8 @@ void func_00303E(void) {
   /* $00307E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003082u); /* JSR push */
   func_00171E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003082 */
   g_cpu.A[0] = 0x0003F09Au;
@@ -14963,20 +14963,20 @@ void func_00303E(void) {
   /* $00308E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003092u); /* JSR push */
   func_00189C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003092 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003096u); /* JSR push */
   func_006D12();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003096 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00309Au); /* JSR push */
   func_001E52();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00309A */
   g_cpu.SR = (uint16_t)(0x2700u);
@@ -14984,8 +14984,8 @@ void func_00303E(void) {
   /* $00309E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0030A2u); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0030A2 */
   g_cpu.A[5] = 0x00C00004u;
@@ -15009,8 +15009,8 @@ void func_00303E(void) {
   /* $0030BA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0030BEu); /* JSR push */
   func_006C7E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0030BE */
   g_cpu.A[1] = 0x00FF0000u;
@@ -15028,8 +15028,8 @@ void func_00303E(void) {
   /* $0030CE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0030D2u); /* JSR push */
   func_00171E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0030D2 */
   g_cpu.A[1] = 0x00FF0000u;
@@ -15058,8 +15058,8 @@ void func_00303E(void) {
   /* $0030E2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0030E6u); /* JSR push */
   func_001420();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0030E6 */
   m68k_write32(0x00C00004u, (uint32_t)(0x40000000u));
@@ -15074,8 +15074,8 @@ void func_00303E(void) {
   /* $0030F6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0030FAu); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0030FA */
   g_cpu.D[0] = 0x00000001u;
@@ -15087,8 +15087,8 @@ void func_00303E(void) {
   /* $0030FC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003100u); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003100 */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x8Au));
@@ -15100,8 +15100,8 @@ void func_00303E(void) {
   /* $003104 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003108u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003108 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFFFA, (uint8_t)(0x00u));
@@ -15195,20 +15195,20 @@ void func_00303E(void) {
   /* $003148 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00314Eu); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00314E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003152u); /* JSR push */
   func_006286();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003152 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003158u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003158 */
   g_cpu.D[0] = 0x00000000u;
@@ -15220,8 +15220,8 @@ void func_00303E(void) {
   /* $00315A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00315Eu); /* JSR push */
   func_0015B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00315E */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFFE4, (uint16_t)(0x0000u));
@@ -15263,8 +15263,8 @@ void func_00303E(void) {
   /* $003178 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00317Cu); /* JSR push */
   func_001DAC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00317C(); return;
 }
@@ -15281,38 +15281,38 @@ void func_00317C(void) {
   /* $003182 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003186u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003186 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00318Cu); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00318C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003190u); /* JSR push */
   func_006286();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003190 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003196u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003196 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00319Au); /* JSR push */
   func_00195C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00319A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00319Eu); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00319E */
   uint16_t _ts00319E = m68k_read16((uint32_t)(int32_t)(int16_t)0xD008);
@@ -15537,8 +15537,8 @@ void func_003200(void) {
   /* $00320A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00320Eu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00320E */
   func_003222(); return;
@@ -15676,8 +15676,8 @@ void func_003254(void) {
   /* $003256 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00325Au); /* JSR push */
   func_002118();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00325A */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xCC00;
@@ -15758,8 +15758,8 @@ void func_003254(void) {
   /* $00328C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003290u); /* JSR push */
   func_0034E6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_003290(); return;
 }
@@ -15777,20 +15777,20 @@ void func_003290(void) {
   /* $003296 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00329Au); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00329A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00329Eu); /* JSR push */
   func_003460();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00329E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0032A2u); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0032A2 */
   uint32_t _t0032A2 = m68k_read32((uint32_t)(int32_t)(int16_t)0xF680);
@@ -15928,8 +15928,8 @@ void func_0032E0(void) {
   /* $0032E0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0032E4u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0032E4 */
   func_003290(); return;
@@ -15976,8 +15976,8 @@ void func_0032F4(void) {
   /* $0032FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003302u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003302 */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFFF4, (uint16_t)(0x0000u));
@@ -16186,8 +16186,8 @@ void func_003342(void) {
   /* $003374 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003378u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003378 */
   return;
@@ -16218,26 +16218,26 @@ void func_0033B6(void) {
   /* $0033BC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0033C0u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0033C0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0033C4u); /* JSR push */
   func_006286();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0033C4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0033C8u); /* JSR push */
   func_00193C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0033C8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0033CCu); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0033CC */
   uint16_t _ts0033CC = m68k_read16((uint32_t)(int32_t)(int16_t)0xD008);
@@ -16322,8 +16322,8 @@ void func_0033E4(void) {
   /* $0033FA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0033FEu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0033FE */
   uint16_t _ts0033FE = m68k_read16((uint32_t)(int32_t)(int16_t)0xFFF2);
@@ -16645,8 +16645,8 @@ void func_0034A0(void) {
   /* $0034A4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0034A8u); /* JSR push */
   func_0034E6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0034A8 */
   return;
@@ -16778,8 +16778,8 @@ void func_0034DC(void) {
   /* $0034E0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0034E4u); /* JSR push */
   func_0034E6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_0034E4(); return;
 }
@@ -16831,8 +16831,8 @@ void func_0034E6(void) {
   /* $003502 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003506u); /* JSR push */
   func_003586();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003506 */
   uint32_t _003506r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[4]) + (uint32_t)0x800000u);
@@ -16970,8 +16970,8 @@ void func_0034E6(void) {
   /* $00353C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003540u); /* JSR push */
   func_003586();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003540 */
   g_cpu.D[3] = (g_cpu.D[3] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0xE680u));
@@ -17051,8 +17051,8 @@ void func_003550(void) {
   /* $003566 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00356Au); /* JSR push */
   func_003572();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00356A */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)((uint8_t)g_cpu.D[2]));
@@ -17064,8 +17064,8 @@ void func_003550(void) {
   /* $00356C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003570u); /* JSR push */
   func_003572();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003570 */
   return;
@@ -17234,8 +17234,8 @@ void func_0037A2(void) {
   /* $0037B2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0037B6u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_0037B6(); return;
 }
@@ -17245,14 +17245,14 @@ void func_0037B6(void) {
   /* $0037B6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0037BAu); /* JSR push */
   func_0015DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0037BA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0037BEu); /* JSR push */
   func_001E52();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0037BE */
   uint16_t _t0037BE = m68k_read16((uint32_t)(int32_t)(int16_t)0xFFF0);
@@ -17280,8 +17280,8 @@ void func_0037B6(void) {
   /* $0037D8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0037DCu); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0037DC */
   g_cpu.SR = (uint16_t)(0x2300u);
@@ -17339,8 +17339,8 @@ void func_0037B6(void) {
   /* $0037F8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0037FCu); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_0037FC(); return;
 }
@@ -17357,8 +17357,8 @@ void func_0037FC(void) {
   /* $0037FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003802u); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_003802(); return;
 }
@@ -17503,8 +17503,8 @@ void func_003802(void) {
   /* $003846 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00384Au); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00384A */
   g_cpu.A[6] = 0x00C00004u;
@@ -17690,8 +17690,8 @@ void func_0038AE(void) {
   /* $0038BA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0038BEu); /* JSR push */
   func_002118();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0038BE */
   uint8_t _t0038BE = m68k_read8((uint32_t)(int32_t)(int16_t)0xFE10);
@@ -17741,8 +17741,8 @@ void func_0038D2(void) {
   /* $0038D2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0038D6u); /* JSR push */
   func_002130();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0038D6 */
   uint8_t _t0038D6 = m68k_read8((uint32_t)(int32_t)(int16_t)0xFE30);
@@ -17856,8 +17856,8 @@ void func_003902(void) {
   /* $00390C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003910u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003910 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xD080, (uint8_t)(0x34u));
@@ -17882,26 +17882,26 @@ void func_003916(void) {
   /* $00391C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003920u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003920 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003926u); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003926 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00392Cu); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00392C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003930u); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003930 */
   uint16_t _ts003930 = m68k_read16((uint32_t)(int32_t)(int16_t)0xD108);
@@ -17937,8 +17937,8 @@ void func_003916(void) {
   /* $003940 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003946u); /* JSR push */
   func_01C822();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_003946(); return;
 }
@@ -17955,20 +17955,20 @@ void func_003946(void) {
   /* $003948 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00394Cu); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00394C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003950u); /* JSR push */
   func_005EBE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003950 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003954u); /* JSR push */
   func_006286();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003954 */
   uint8_t _t003954 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF754);
@@ -17981,32 +17981,32 @@ void func_003946(void) {
   /* $00395A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00395Eu); /* JSR push */
   func_006CA6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00395E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003962u); /* JSR push */
   func_006C58();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003962 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003968u); /* JSR push */
   func_014C4C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003968 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00396Cu); /* JSR push */
   func_0040F0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00396C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003970u); /* JSR push */
   func_003BD0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003970 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xD000, (uint8_t)(0x01u));
@@ -18130,20 +18130,20 @@ void func_0039C2(void) {
   /* $0039C2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0039C8u); /* JSR push */
   func_00D8DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0039C8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0039CEu); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0039CE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0039D4u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0039D4 */
   g_cpu.D[0] = 0x00000000u;
@@ -18247,8 +18247,8 @@ void func_0039E8(void) {
   /* $003A08 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003A0Cu); /* JSR push */
   func_004118();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003A0C */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE1F, (uint8_t)(0x01u));
@@ -18478,8 +18478,8 @@ void func_003A8C(void) {
   /* $003A8C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003A90u); /* JSR push */
   func_00214C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_003A90(); return;
 }
@@ -18509,8 +18509,8 @@ void func_003A94(void) {
   /* $003A9A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003A9Eu); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003A9E */
   if (!(0)) {
@@ -18530,8 +18530,8 @@ void func_003A94(void) {
   /* $003AA8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003AACu); /* JSR push */
   func_001DB2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003AAC */
   uint16_t _t003AAC = m68k_read16((uint32_t)(int32_t)(int16_t)0xFFF0);
@@ -18604,8 +18604,8 @@ void func_003AC4(void) {
   /* $003AC6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003ACCu); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003ACC */
   g_cpu.D[0] = 0x00000000u;
@@ -18635,8 +18635,8 @@ void func_003AC4(void) {
   /* $003AD6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003ADCu); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_003ADC(); return;
 }
@@ -18659,8 +18659,8 @@ void func_003AE2(void) {
   /* $003AE2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003AE6u); /* JSR push */
   func_0013A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003AE6 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF62A, (uint8_t)(0x08u));
@@ -18672,8 +18672,8 @@ void func_003AE2(void) {
   /* $003AEC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003AF0u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003AF0 */
   uint16_t _t003AF0 = m68k_read16((uint32_t)(int32_t)(int16_t)0xFE04);
@@ -18689,20 +18689,20 @@ void func_003AE2(void) {
   /* $003AF4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003AF8u); /* JSR push */
   func_003FD0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003AF8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003AFCu); /* JSR push */
   func_003BD0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003AFC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003B02u); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003B02 */
   uint16_t _t003B02 = m68k_read16((uint32_t)(int32_t)(int16_t)0xFE08);
@@ -18735,8 +18735,8 @@ void func_003B10(void) {
   /* $003B10 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003B14u); /* JSR push */
   func_006286();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_003B14(); return;
 }
@@ -18746,44 +18746,44 @@ void func_003B14(void) {
   /* $003B14 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003B1Au); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003B1A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003B20u); /* JSR push */
   func_00D8DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003B20 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003B24u); /* JSR push */
   func_00193C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003B24 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003B28u); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003B28 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003B2Cu); /* JSR push */
   func_00416E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003B2C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003B30u); /* JSR push */
   func_004206();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003B30 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003B34u); /* JSR push */
   func_004274();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003B34 */
   uint8_t _t003B34 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF600);
@@ -18950,32 +18950,32 @@ void func_003B98(void) {
   /* $003B9E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003BA2u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003BA2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003BA6u); /* JSR push */
   func_003FD0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003BA6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003BACu); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003BAC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003BB2u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003BB2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003BB8u); /* JSR push */
   func_00D8DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003BB8 */
   uint16_t _t003BB8 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF794);
@@ -19001,8 +19001,8 @@ void func_003B98(void) {
   /* $003BC4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003BC8u); /* JSR push */
   func_001E72();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_003BC8(); return;
 }
@@ -19055,20 +19055,20 @@ void func_003BD0(void) {
   /* $003BE0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003BE4u); /* JSR push */
   func_003E32();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003BE4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003BE8u); /* JSR push */
   func_003F34();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003BE8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003BECu); /* JSR push */
   func_003C32();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_003BEC:;
   /* $003BEC */
@@ -19236,8 +19236,8 @@ void func_003C32(void) {
   /* $003C3E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003C42u); /* JSR push */
   call_by_address((uint32_t)(0x00003C40u + (int32_t)(int16_t)g_cpu.D[0] + (28)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $003C42 */
   g_cpu.D[1] = 0x00000000u;
@@ -19743,8 +19743,8 @@ void func_003D18(void) {
   /* $003D50 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003D54u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_003D54:;
   /* $003D54 */
@@ -20326,8 +20326,8 @@ void func_003E32(void) {
   /* $003E8A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003E90u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_003E90:;
   /* $003E90 */
@@ -20786,8 +20786,8 @@ void func_003F7C(void) {
   /* $003FB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x003FBEu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_003FBE:;
   /* $003FBE */
@@ -21794,14 +21794,14 @@ void func_0045DC(void) {
   /* $0045E0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0045E4u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0045E4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0045E8u); /* JSR push */
   func_001F7C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0045E8 */
   g_cpu.SR = (uint16_t)(0x2700u);
@@ -21863,8 +21863,8 @@ void func_0045DC(void) {
   /* $004612 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004616u); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004616 */
   g_cpu.SR = (uint16_t)(0x2300u);
@@ -21933,8 +21933,8 @@ void func_0045DC(void) {
   /* $004648 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00464Cu); /* JSR push */
   func_00489C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00464C */
   g_cpu.D[0] = 0x00000014u;
@@ -21946,8 +21946,8 @@ void func_0045DC(void) {
   /* $00464E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004652u); /* JSR push */
   func_0016EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004652 */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -22099,14 +22099,14 @@ void func_0045DC(void) {
   /* $00469C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0046A0u); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0046A0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0046A6u); /* JSR push */
   func_01B67C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0046A6 */
   m68k_write32((uint32_t)(int32_t)(int16_t)0xF700, (uint32_t)(0x00000000u));
@@ -22132,8 +22132,8 @@ void func_0045DC(void) {
   /* $0046BC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0046C0u); /* JSR push */
   func_004962();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0046C0 */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF780, (uint16_t)(0));
@@ -22156,8 +22156,8 @@ void func_0045DC(void) {
   /* $0046CE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0046D2u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0046D2 */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF790, (uint16_t)(0x0000u));
@@ -22288,8 +22288,8 @@ void func_004718(void) {
   /* $004726 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00472Au); /* JSR push */
   func_001ED0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00472A(); return;
 }
@@ -22299,8 +22299,8 @@ void func_00472A(void) {
   /* $00472A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00472Eu); /* JSR push */
   func_0013A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00472E */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF62A, (uint8_t)(0x0Au));
@@ -22312,14 +22312,14 @@ void func_00472A(void) {
   /* $004734 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004738u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004738 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00473Cu); /* JSR push */
   func_003FD0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00473C */
   uint16_t _ts00473C = m68k_read16((uint32_t)(int32_t)(int16_t)0xF604);
@@ -22332,26 +22332,26 @@ void func_00472A(void) {
   /* $004742 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004748u); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004748 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00474Eu); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00474E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004754u); /* JSR push */
   func_01B14E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004754 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004758u); /* JSR push */
   func_004BE4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004758 */
   uint16_t _t004758 = m68k_read16((uint32_t)(int32_t)(int16_t)0xFFF0);
@@ -22463,14 +22463,14 @@ void func_00479A(void) {
   /* $0047A0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0047A4u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0047A4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0047A8u); /* JSR push */
   func_003FD0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0047A8 */
   uint16_t _ts0047A8 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF604);
@@ -22483,26 +22483,26 @@ void func_00479A(void) {
   /* $0047AE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0047B4u); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0047B4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0047BAu); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0047BA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0047C0u); /* JSR push */
   func_01B14E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0047C0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0047C4u); /* JSR push */
   func_004BE4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0047C4 */
   uint16_t _t0047C4 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF794);
@@ -22528,8 +22528,8 @@ void func_00479A(void) {
   /* $0047D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0047D4u); /* JSR push */
   func_001F9C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_0047D4(); return;
 }
@@ -22576,8 +22576,8 @@ void func_0047D4(void) {
   /* $0047F0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0047F4u); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0047F4 */
   m68k_write32(0x00C00004u, (uint32_t)(0x70000002u));
@@ -22592,14 +22592,14 @@ void func_0047D4(void) {
   /* $004804 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004808u); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004808 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00480Eu); /* JSR push */
   func_01C822();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00480E */
   g_cpu.SR = (uint16_t)(0x2300u);
@@ -22614,8 +22614,8 @@ void func_0047D4(void) {
   /* $004814 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004818u); /* JSR push */
   func_002118();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004818 */
   g_cpu.D[0] = 0x00000000u;
@@ -22627,8 +22627,8 @@ void func_0047D4(void) {
   /* $00481A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00481Eu); /* JSR push */
   func_0015B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00481E */
   g_cpu.D[0] = 0x0000001Bu;
@@ -22640,8 +22640,8 @@ void func_0047D4(void) {
   /* $004820 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004824u); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004824 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE1F, (uint8_t)(0x01u));
@@ -22689,8 +22689,8 @@ void func_0047D4(void) {
   /* $004840 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004846u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004846 */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -22741,8 +22741,8 @@ void func_00485C(void) {
   /* $00485C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004860u); /* JSR push */
   func_0013A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004860 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF62A, (uint8_t)(0x0Cu));
@@ -22754,26 +22754,26 @@ void func_00485C(void) {
   /* $004866 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00486Au); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00486A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004870u); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004870 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004876u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004876 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00487Au); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00487A */
   uint16_t _t00487A = m68k_read16((uint32_t)(int32_t)(int16_t)0xFE02);
@@ -22805,14 +22805,14 @@ void func_00485C(void) {
   /* $00488A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00488Eu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00488E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004892u); /* JSR push */
   func_001F7C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004892 */
   return;
@@ -22851,8 +22851,8 @@ void func_00489C(void) {
   /* $0048AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0048B0u); /* JSR push */
   func_00171E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0048B0 */
   g_cpu.D[3] = (uint32_t)(uint32_t)(0x50000001u);
@@ -22977,8 +22977,8 @@ void func_00489C(void) {
   /* $0048EA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0048EEu); /* JSR push */
   func_001420();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0048EE */
   { uint32_t _mbase = g_cpu.A[7];
@@ -23099,8 +23099,8 @@ void func_00489C(void) {
   /* $004934 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004938u); /* JSR push */
   func_00171E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004938 */
   g_cpu.A[1] = 0x00FF0000u;
@@ -23129,8 +23129,8 @@ void func_00489C(void) {
   /* $004948 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00494Cu); /* JSR push */
   func_001420();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00494C */
   g_cpu.A[1] = 0x00FF0000u;
@@ -23159,8 +23159,8 @@ void func_00489C(void) {
   /* $00495C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004960u); /* JSR push */
   func_001420();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004960 */
   return;
@@ -23731,8 +23731,8 @@ void func_004BE4(void) {
   /* $004C2A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004C2Eu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004C2E */
   g_cpu.D[2] = 0x00000000u;
@@ -24081,8 +24081,8 @@ void func_004CE0(void) {
   /* $004CE0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004CE4u); /* JSR push */
   func_001E52();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004CE4 */
   g_cpu.SR = (uint16_t)(0x2700u);
@@ -24130,8 +24130,8 @@ void func_004CE0(void) {
   /* $004D04 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004D08u); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004D08 */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -24179,8 +24179,8 @@ void func_004CE0(void) {
   /* $004D28 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004D2Cu); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004D2C */
   m68k_write32(0x00C00004u, (uint32_t)(0x60000002u));
@@ -24195,8 +24195,8 @@ void func_004CE0(void) {
   /* $004D3C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004D40u); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004D40 */
   m68k_write32(0x00C00004u, (uint32_t)(0x6A200002u));
@@ -24211,8 +24211,8 @@ void func_004CE0(void) {
   /* $004D50 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004D54u); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004D54 */
   g_cpu.D[1] = 0x0000000Au;
@@ -24224,8 +24224,8 @@ void func_004CE0(void) {
   /* $004D56 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004D5Cu); /* JSR push */
   func_01C938();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004D5C */
   g_cpu.D[0] = 0x00000012u;
@@ -24237,8 +24237,8 @@ void func_004CE0(void) {
   /* $004D5E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004D62u); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004D62 */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x90u));
@@ -24250,8 +24250,8 @@ void func_004CE0(void) {
   /* $004D66 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004D6Au); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004D6A */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF614, (uint16_t)(0x0293u));
@@ -24323,14 +24323,14 @@ void func_004CE0(void) {
   /* $004DA6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004DACu); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004DAC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004DB2u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004DB2 */
   uint16_t _ts004DB2 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF60C);
@@ -24358,8 +24358,8 @@ void func_004CE0(void) {
   /* $004DC0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004DC4u); /* JSR push */
   func_001DAC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_004DC4(); return;
 }
@@ -24376,8 +24376,8 @@ void func_004DC4(void) {
   /* $004DCA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004DCEu); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004DCE */
   uint8_t _t004DCE = m68k_read8((uint32_t)(int32_t)(int16_t)0xD024);
@@ -24426,8 +24426,8 @@ void func_004DC4(void) {
   /* $004DE8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004DEEu); /* JSR push */
   func_01C938();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004DEE */
   g_cpu.SR = (uint16_t)(0x2300u);
@@ -24440,14 +24440,14 @@ void func_004DF2(void) {
   /* $004DF2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004DF8u); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004DF8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004DFEu); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004DFE */
   uint16_t _t004DFE = m68k_read16((uint32_t)(int32_t)(int16_t)0xD008);
@@ -25008,8 +25008,8 @@ void func_004F5C(void) {
   /* $004F66 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004F6Au); /* JSR push */
   call_by_address((uint32_t)(0x00004F68u + (int32_t)(int16_t)g_cpu.D[1] + (8)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004F6A */
   func_00D604(); return;
@@ -25149,14 +25149,14 @@ void func_004FD4(void) {
   /* $004FD4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004FDAu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004FDA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x004FE0u); /* JSR push */
   func_0139C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $004FE0 */
   func_013C3E(); return;
@@ -25242,8 +25242,8 @@ void func_004FF8(void) {
   /* $00501C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005020u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_005020(); return;
 }
@@ -25296,14 +25296,14 @@ void func_005036(void) {
   /* $005036 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00503Cu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00503C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005042u); /* JSR push */
   func_0139C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005042 */
   func_013C3E(); return;
@@ -25322,14 +25322,14 @@ void func_0050E6(void) {
   /* $0050EA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0050EEu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0050EE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0050F2u); /* JSR push */
   func_001E52();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0050F2 */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -25492,8 +25492,8 @@ void func_0050E6(void) {
   /* $005144 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005148u); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005148 */
   g_cpu.A[6] = 0x00C00004u;
@@ -25611,26 +25611,26 @@ void func_00518E(void) {
   /* $005190 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005194u); /* JSR push */
   func_0016EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005194 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00519Au); /* JSR push */
   func_01C822();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00519A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00519Eu); /* JSR push */
   func_005EBE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00519E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0051A2u); /* JSR push */
   func_006286();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0051A2 */
   uint8_t _t0051A2 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF754);
@@ -25643,14 +25643,14 @@ void func_00518E(void) {
   /* $0051A8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0051ACu); /* JSR push */
   func_006CA6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0051AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0051B0u); /* JSR push */
   func_006C58();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0051B0 */
   m68k_write32((uint32_t)(int32_t)(int16_t)0xF796, (uint32_t)(0x00064A00u));
@@ -25671,8 +25671,8 @@ void func_00518E(void) {
   /* $0051C6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0051CAu); /* JSR push */
   func_00189C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0051CA */
   g_cpu.D[0] = 0x00000003u;
@@ -25684,8 +25684,8 @@ void func_00518E(void) {
   /* $0051CC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0051D0u); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0051D0 */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x008Bu));
@@ -25697,8 +25697,8 @@ void func_00518E(void) {
   /* $0051D4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0051D8u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0051D8 */
   uint8_t _t0051D8 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF604);
@@ -25766,20 +25766,20 @@ void func_0051E6(void) {
   /* $00520A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005210u); /* JSR push */
   func_00D8DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005210 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005216u); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005216 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00521Cu); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00521C */
   g_cpu.D[0] = 0x00000000u;
@@ -25861,8 +25861,8 @@ void func_0051E6(void) {
   /* $005246 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00524Au); /* JSR push */
   func_004118();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00524A */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE1F, (uint8_t)(0x01u));
@@ -25902,8 +25902,8 @@ void func_0051E6(void) {
   /* $005268 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00526Cu); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00526C */
   uint16_t _ts00526C = m68k_read16((uint32_t)(int32_t)(int16_t)0xF60C);
@@ -25938,8 +25938,8 @@ void func_0051E6(void) {
   /* $005280 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005284u); /* JSR push */
   func_001DAC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_005284(); return;
 }
@@ -25949,8 +25949,8 @@ void func_005284(void) {
   /* $005284 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005288u); /* JSR push */
   func_0013A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005288 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF62A, (uint8_t)(0x18u));
@@ -25962,8 +25962,8 @@ void func_005284(void) {
   /* $00528E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005292u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005292 */
   uint16_t _t005292 = m68k_read16((uint32_t)(int32_t)(int16_t)0xFE04);
@@ -25979,50 +25979,50 @@ void func_005284(void) {
   /* $005296 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00529Au); /* JSR push */
   func_005370();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00529A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052A0u); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052A0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052A4u); /* JSR push */
   func_006286();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052A4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052AAu); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052B0u); /* JSR push */
   func_00D8DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052B0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052B4u); /* JSR push */
   func_00193C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052B4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052B8u); /* JSR push */
   func_00416E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052B8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052BCu); /* JSR push */
   func_004206();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052BC */
   uint8_t _t0052BC = m68k_read8((uint32_t)(int32_t)(int16_t)0xF600);
@@ -26054,8 +26054,8 @@ void func_005284(void) {
   /* $0052CE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052D2u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052D2 */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFFF4, (uint16_t)(0x0000u));
@@ -26104,8 +26104,8 @@ void func_0052F0(void) {
   /* $0052F0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052F4u); /* JSR push */
   func_0013A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052F4 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF62A, (uint8_t)(0x18u));
@@ -26117,8 +26117,8 @@ void func_0052F0(void) {
   /* $0052FA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0052FEu); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0052FE */
   uint16_t _t0052FE = m68k_read16((uint32_t)(int32_t)(int16_t)0xFE04);
@@ -26134,44 +26134,44 @@ void func_0052F0(void) {
   /* $005302 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005306u); /* JSR push */
   func_005370();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005306 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00530Cu); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00530C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005310u); /* JSR push */
   func_006286();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005310 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005316u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005316 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00531Cu); /* JSR push */
   func_00D8DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00531C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005320u); /* JSR push */
   func_00416E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005320 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005324u); /* JSR push */
   func_004206();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005324 */
   uint16_t _t005324 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF794);
@@ -26201,8 +26201,8 @@ void func_005328(void) {
   /* $005330 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005334u); /* JSR push */
   func_001F9C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_005334(); return;
 }
@@ -26252,8 +26252,8 @@ void func_005334(void) {
   /* $00535E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005362u); /* JSR push */
   func_006C7E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005362 */
   g_cpu.D[0] = 0x00000013u;
@@ -26265,14 +26265,14 @@ void func_005334(void) {
   /* $005364 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005368u); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005368 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00536Cu); /* JSR push */
   func_001ED0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00536C */
   func_005284(); return;
@@ -26517,8 +26517,8 @@ void func_0053E2(void) {
   /* $0053EC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0053F0u); /* JSR push */
   call_by_address((uint32_t)(0x000053EEu + (int32_t)(int16_t)g_cpu.D[1] + (8)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0053F0 */
   func_00D604(); return;
@@ -26996,8 +26996,8 @@ void func_00553C(void) {
   /* $005546 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00554Au); /* JSR push */
   call_by_address((uint32_t)(0x00005548u + (int32_t)(int16_t)g_cpu.D[1] + (8)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00554A */
   func_00D604(); return;
@@ -27227,8 +27227,8 @@ void func_0055BC(void) {
   /* $0055C8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0055CEu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0055CE */
   g_cpu.D[4] = 0x00000000u;
@@ -27600,14 +27600,14 @@ void func_0057C4(void) {
   /* $0057C4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0057C8u); /* JSR push */
   func_0015DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0057C8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0057CCu); /* JSR push */
   func_001E52();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0057CC */
   g_cpu.A[6] = 0x00C00004u;
@@ -27668,8 +27668,8 @@ void func_0057C4(void) {
   /* $0057F2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0057F6u); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0057F6 */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -27717,8 +27717,8 @@ void func_0057C4(void) {
   /* $005816 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00581Au); /* JSR push */
   func_001440();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00581A */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xFB80;
@@ -27763,8 +27763,8 @@ void func_0057C4(void) {
   /* $00582C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005830u); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005830 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xD080, (uint8_t)(0x8Au));
@@ -27776,20 +27776,20 @@ void func_0057C4(void) {
   /* $005836 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00583Cu); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00583C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005842u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005842 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005846u); /* JSR push */
   func_005898();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005846 */
   g_cpu.D[0] = 0x00000000u;
@@ -27844,8 +27844,8 @@ void func_0057C4(void) {
   /* $00585E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005862u); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_005862(); return;
 }
@@ -27862,8 +27862,8 @@ void func_005862(void) {
   /* $005864 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005868u); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005868 */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF614, (uint16_t)(0x0078u));
@@ -27875,8 +27875,8 @@ void func_005862(void) {
   /* $00586E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005872u); /* JSR push */
   func_001DAC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_005872(); return;
 }
@@ -27894,14 +27894,14 @@ void func_005872(void) {
   /* $005878 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00587Cu); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00587C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005880u); /* JSR push */
   func_0015EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005880 */
   uint16_t _t005880 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF614);
@@ -28127,14 +28127,14 @@ void func_00592C(void) {
   /* $00592C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005930u); /* JSR push */
   func_0015DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005930 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005934u); /* JSR push */
   func_001E52();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005934 */
   g_cpu.A[6] = 0x00C00004u;
@@ -28195,8 +28195,8 @@ void func_00592C(void) {
   /* $00595A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00595Eu); /* JSR push */
   func_0012C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00595E */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -28241,8 +28241,8 @@ void func_00592C(void) {
   /* $005970 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005974u); /* JSR push */
   func_0016EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005974 */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xFB80;
@@ -28287,8 +28287,8 @@ void func_00592C(void) {
   /* $005986 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00598Au); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00598A */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xFBC0, (uint16_t)(0));
@@ -28304,14 +28304,14 @@ void func_00592C(void) {
   /* $005994 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00599Au); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00599A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0059A0u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0059A0 */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF614, (uint16_t)(0x0708u));
@@ -28323,8 +28323,8 @@ void func_00592C(void) {
   /* $0059A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0059AAu); /* JSR push */
   func_001DAC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_0059AA(); return;
 }
@@ -28335,8 +28335,8 @@ void func_0059AA(void) {
   /* $0059AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0059AEu); /* JSR push */
   func_0013A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0059AE */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF62A, (uint8_t)(0x04u));
@@ -28348,20 +28348,20 @@ void func_0059AA(void) {
   /* $0059B4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0059B8u); /* JSR push */
   func_0029A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0059B8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0059BEu); /* JSR push */
   func_00D338();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0059BE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0059C4u); /* JSR push */
   func_00D65E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0059C4 */
   uint8_t _t0059C4 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF605);
@@ -28443,8 +28443,8 @@ void func_0059E2(void) {
   /* $0059EC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0059F0u); /* JSR push */
   call_by_address((uint32_t)(0x000059EEu + (int32_t)(int16_t)g_cpu.D[1] + (8)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0059F0 */
   func_00D604(); return;
@@ -28755,8 +28755,8 @@ void func_005AC2(void) {
   /* $005ACC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005AD0u); /* JSR push */
   call_by_address((uint32_t)(0x00005ACEu + (int32_t)(int16_t)g_cpu.D[1] + (8)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005AD0 */
   func_00D604(); return;
@@ -29122,8 +29122,8 @@ void func_005B66(void) {
   /* $005B96 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x005B9Cu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $005B9C */
   g_cpu.D[4] = 0x00000000u;
@@ -29452,8 +29452,8 @@ void func_00608C(void) {
   /* $006092 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006098u); /* JSR push */
   func_01704C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006098 */
   uint16_t _ts006098 = m68k_read16((uint32_t)(int32_t)(int16_t)0xD008);
@@ -29732,8 +29732,8 @@ void func_0060F8(void) {
   /* $0060FC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006100u); /* JSR push */
   func_0061EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006100 */
   g_cpu.D[0] = 0x00000000u;
@@ -30193,20 +30193,20 @@ void func_006286(void) {
   /* $00629E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0062A2u); /* JSR push */
   func_00657E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0062A2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0062A6u); /* JSR push */
   func_006616();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0062A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0062AAu); /* JSR push */
   func_006D6C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0062AA */
   uint16_t _ts0062AA = m68k_read16((uint32_t)(int32_t)(int16_t)0xF700);
@@ -30372,14 +30372,14 @@ void func_0062EC(void) {
   /* $0062FC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006300u); /* JSR push */
   func_006768();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006300 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006304u); /* JSR push */
   func_006844();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_006304(); return;
 }
@@ -30452,8 +30452,8 @@ void func_006304(void) {
   /* $00631E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006322u); /* JSR push */
   func_006814();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006322 */
   uint16_t _ts006322 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF70C);
@@ -30865,8 +30865,8 @@ void func_006396(void) {
   /* $0063A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0063AAu); /* JSR push */
   func_006768();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0063AA */
   uint16_t _ts0063AA = m68k_read16((uint32_t)(int32_t)(int16_t)0xF70C);
@@ -31045,8 +31045,8 @@ void func_0063D6(void) {
   /* $0063E6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0063EAu); /* JSR push */
   func_006768();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0063EA */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x0200u));
@@ -31137,8 +31137,8 @@ void func_0063D6(void) {
   /* $006406 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00640Au); /* JSR push */
   func_006814();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00640A */
   uint16_t _ts00640A = m68k_read16((uint32_t)(int32_t)(int16_t)0xF70C);
@@ -31289,8 +31289,8 @@ void func_00642E(void) {
   /* $00643E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006442u); /* JSR push */
   func_0067D2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006442 */
   uint16_t _ts006442 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF70C);
@@ -31303,8 +31303,8 @@ void func_00642E(void) {
   /* $006448 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00644Cu); /* JSR push */
   func_0064A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00644C */
   g_cpu.A[2] = (uint32_t)(int32_t)(int16_t)0xA800;
@@ -31997,8 +31997,8 @@ void func_006506(void) {
   /* $00651C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006520u); /* JSR push */
   func_006768();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006520 */
   uint16_t _ts006520 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF70C);
@@ -32165,8 +32165,8 @@ void func_006544(void) {
   /* $006556 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00655Au); /* JSR push */
   func_006768();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00655A */
   uint16_t _ts00655A = m68k_read16((uint32_t)(int32_t)(int16_t)0xF70C);
@@ -32263,8 +32263,8 @@ void func_00657E(void) {
   /* $006582 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006584u); /* JSR push */
   func_0065B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006584 */
   uint16_t _ts006584 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF700);
@@ -33981,8 +33981,8 @@ void func_006886(void) {
   /* $0068A2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0068A6u); /* JSR push */
   func_006954();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0068A6 */
   g_cpu.A[2] = (uint32_t)(int32_t)(int16_t)0xF758;
@@ -34022,8 +34022,8 @@ void func_0068B2(void) {
   /* $0068CE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0068D2u); /* JSR push */
   func_006954();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0068D2 */
   g_cpu.A[2] = (uint32_t)(int32_t)(int16_t)0xFF34;
@@ -34034,8 +34034,8 @@ void func_0068B2(void) {
   /* $0068DA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0068DEu); /* JSR push */
   func_0069F4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0068DE */
   g_cpu.A[2] = (uint32_t)(int32_t)(int16_t)0xFF30;
@@ -34091,8 +34091,8 @@ void func_0068B2(void) {
   /* $0068FC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006900u); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006900 */
   g_cpu.D[4] = 0xFFFFFFF0u;
@@ -34111,8 +34111,8 @@ void func_0068B2(void) {
   /* $006904 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006908u); /* JSR push */
   func_006AD8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006908:;
   /* $006908 */
@@ -34143,8 +34143,8 @@ void func_0068B2(void) {
   /* $006914 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006918u); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006918 */
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x00E0u));
@@ -34163,8 +34163,8 @@ void func_0068B2(void) {
   /* $00691E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006922u); /* JSR push */
   func_006AD8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006922:;
   /* $006922 */
@@ -34195,8 +34195,8 @@ void func_0068B2(void) {
   /* $00692C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006930u); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006930 */
   g_cpu.D[4] = 0xFFFFFFF0u;
@@ -34215,8 +34215,8 @@ void func_0068B2(void) {
   /* $006934 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006938u); /* JSR push */
   func_006B04();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006938:;
   /* $006938 */
@@ -34247,8 +34247,8 @@ void func_0068B2(void) {
   /* $006944 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006948u); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006948 */
   g_cpu.D[4] = 0xFFFFFFF0u;
@@ -34267,8 +34267,8 @@ void func_0068B2(void) {
   /* $00694E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006952u); /* JSR push */
   func_006B04();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006952:;
   /* $006952 */
@@ -34316,8 +34316,8 @@ void func_006954(void) {
   /* $006964 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006968u); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006968 */
   g_cpu.D[4] = 0xFFFFFFF0u;
@@ -34343,8 +34343,8 @@ void func_006954(void) {
   /* $00696E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006972u); /* JSR push */
   func_006ADA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006972:;
   /* $006972 */
@@ -34375,8 +34375,8 @@ void func_006954(void) {
   /* $00697E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006982u); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006982 */
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x00E0u));
@@ -34402,8 +34402,8 @@ void func_006954(void) {
   /* $00698A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00698Eu); /* JSR push */
   func_006ADA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00698E:;
   /* $00698E */
@@ -34434,8 +34434,8 @@ void func_006954(void) {
   /* $006998 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00699Cu); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00699C */
   g_cpu.D[4] = 0xFFFFFFF0u;
@@ -34522,8 +34522,8 @@ void func_006954(void) {
   /* $0069BA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0069BEu); /* JSR push */
   func_006B06();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0069BE:;
   /* $0069BE */
@@ -34554,8 +34554,8 @@ void func_006954(void) {
   /* $0069CA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0069CEu); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0069CE */
   g_cpu.D[4] = 0xFFFFFFF0u;
@@ -34642,8 +34642,8 @@ void func_006954(void) {
   /* $0069EE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0069F2u); /* JSR push */
   func_006B06();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0069F2:;
   /* $0069F2 */
@@ -34738,8 +34738,8 @@ void func_0069F4(void) {
   /* $006A18 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006A1Cu); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006A1C */
   uint16_t _ts006A1C = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -34830,8 +34830,8 @@ void func_0069F4(void) {
   /* $006A3A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006A3Eu); /* JSR push */
   func_006B06();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006A3E:;
   /* $006A3E */
@@ -34896,8 +34896,8 @@ void func_0069F4(void) {
   /* $006A58 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006A5Cu); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006A5C */
   uint16_t _ts006A5C = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -34988,8 +34988,8 @@ void func_0069F4(void) {
   /* $006A7C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006A80u); /* JSR push */
   func_006B06();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006A80:;
   /* $006A80 */
@@ -35069,8 +35069,8 @@ void func_006A82(void) {
   /* $006A9E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006AA2u); /* JSR push */
   func_006C3C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006AA2 */
   uint16_t _ts006AA2 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -35097,8 +35097,8 @@ void func_006A82(void) {
   /* $006AA8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006AACu); /* JSR push */
   func_006B06();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006AAC:;
   /* $006AAC */
@@ -35162,8 +35162,8 @@ void func_006A82(void) {
   /* $006AC6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006ACAu); /* JSR push */
   func_006C3C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006ACA */
   uint16_t _ts006ACA = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -35190,8 +35190,8 @@ void func_006A82(void) {
   /* $006AD2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006AD6u); /* JSR push */
   func_006B06();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006AD6:;
   /* $006AD6 */
@@ -35237,8 +35237,8 @@ void func_006ADA(void) {
   /* $006AE6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006AEAu); /* JSR push */
   func_006BD6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006AEA */
   g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[1]);
@@ -35250,8 +35250,8 @@ void func_006ADA(void) {
   /* $006AEC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006AF0u); /* JSR push */
   func_006B32();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006AF0 */
   uint8_t _006AF0r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[1]) + (uint8_t)4u);
@@ -35338,8 +35338,8 @@ void func_006B06(void) {
   /* $006B12 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006B16u); /* JSR push */
   func_006BD6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006B16 */
   g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[1]);
@@ -35351,8 +35351,8 @@ void func_006B06(void) {
   /* $006B18 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006B1Cu); /* JSR push */
   func_006B32();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006B1C */
   uint16_t _006B1Cr = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)0x100u);
@@ -36198,8 +36198,8 @@ void func_006C58(void) {
   /* $006C70 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006C72u); /* JSR push */
   func_006C7E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006C72 */
   g_cpu.A[3] = (uint32_t)(int32_t)(int16_t)0xF708;
@@ -36258,8 +36258,8 @@ void func_006C7E(void) {
   /* $006C8A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006C8Eu); /* JSR push */
   func_006C20();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006C8E */
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)g_cpu.D[1]));
@@ -36285,8 +36285,8 @@ void func_006C7E(void) {
   /* $006C94 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006C98u); /* JSR push */
   func_006ADA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006C98 */
   { uint32_t _mbase = g_cpu.A[7];
@@ -36379,8 +36379,8 @@ void func_006CA6(void) {
   /* $006CC6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006CCAu); /* JSR push */
   func_00171E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006CCA */
   uint32_t _t006CCA = m68k_read32(g_cpu.A[2]); g_cpu.A[2] += 4;
@@ -36392,14 +36392,14 @@ void func_006CA6(void) {
   /* $006CD2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006CD6u); /* JSR push */
   func_00189C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006CD6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006CDAu); /* JSR push */
   func_006D12();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006CDA */
   uint16_t _ts006CDA = m68k_read16(g_cpu.A[2]); g_cpu.A[2] += 2;
@@ -36484,8 +36484,8 @@ void func_006CA6(void) {
   /* $006CFE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006D02u); /* JSR push */
   func_0020FC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006D02 */
   uint32_t _t006D02 = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;
@@ -36515,8 +36515,8 @@ void func_006CA6(void) {
   /* $006D0C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006D10u); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006D10:;
   /* $006D10 */
@@ -36577,8 +36577,8 @@ void func_006D1C(void) {
   /* $006D28 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006D2Cu); /* JSR push */
   func_006D32();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006D2C */
   g_cpu.A[3] = (uint32_t)(int32_t)(int16_t)0xA440;
@@ -36797,8 +36797,8 @@ void func_006D6C(void) {
   /* $006D78 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006D7Cu); /* JSR push */
   call_by_address((uint32_t)(0x00006D7Au + (int32_t)(int16_t)g_cpu.D[0] + (86)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006D7C */
   g_cpu.D[1] = 0x00000002u;
@@ -37351,8 +37351,8 @@ void func_006EA4(void) {
   /* $006EB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006EBCu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006EBC */
   if (!(g_cpu.SR & (1u<<2))) goto label_006ED0;
@@ -37389,8 +37389,8 @@ void func_006EA4(void) {
   /* $006ED4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006ED8u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006ED8 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7AA, (uint8_t)(0x01u));
@@ -37535,8 +37535,8 @@ void func_006F0C(void) {
   /* $006F24 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006F28u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_006F28:;
   /* $006F28 */
@@ -37578,8 +37578,8 @@ void func_006F0C(void) {
   /* $006F3E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006F42u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006F42 */
   if (!(g_cpu.SR & (1u<<2))) goto label_006F4A;
@@ -37602,8 +37602,8 @@ void func_006F0C(void) {
   /* $006F4E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x006F52u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $006F52 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7AA, (uint8_t)(0x01u));
@@ -38203,8 +38203,8 @@ void func_00709C(void) {
   /* $0070B8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0070BCu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0070BC */
   if (!(g_cpu.SR & (1u<<2))) { func_0070D0(); return; }
@@ -38245,8 +38245,8 @@ void func_0070D0(void) {
   /* $0070D4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0070D8u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0070D8 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7AA, (uint8_t)(0x01u));
@@ -38438,8 +38438,8 @@ void func_007132(void) {
   /* $00713A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00713Eu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00713E */
   if (!(g_cpu.SR & (1u<<2))) goto label_007144;
@@ -38462,8 +38462,8 @@ void func_007132(void) {
   /* $007148 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00714Cu); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00714C */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7AA, (uint8_t)(0x01u));
@@ -38668,8 +38668,8 @@ void func_0071B8(void) {
   /* $0071C0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0071C4u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0071C4 */
   if (!(g_cpu.SR & (1u<<2))) goto label_0071CE;
@@ -38723,8 +38723,8 @@ void func_0071D0(void) {
   /* $0071DE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0071E2u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0071E2 */
   if (!(g_cpu.SR & (1u<<2))) goto label_0071EC;
@@ -38758,8 +38758,8 @@ void func_0071D0(void) {
   /* $0071F0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0071F4u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0071F4 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7AA, (uint8_t)(0x01u));
@@ -39005,8 +39005,8 @@ void func_00727C(void) {
   /* $007284 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007288u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007288 */
   if (!(g_cpu.SR & (1u<<2))) goto label_007298;
@@ -39063,8 +39063,8 @@ void func_00729A(void) {
   /* $0072A2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0072A6u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0072A6 */
   if (!(g_cpu.SR & (1u<<2))) goto label_0072B0;
@@ -39204,8 +39204,8 @@ void func_0072E2(void) {
   /* $0072F0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0072F4u); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0072F4:;
   /* $0072F4 */
@@ -39231,8 +39231,8 @@ void func_0072F6(void) {
   /* $0072FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007302u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007302 */
   if (!(g_cpu.SR & (1u<<2))) goto label_007312;
@@ -39506,8 +39506,8 @@ void func_007342(void) {
   /* $00738A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00738Eu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00738E */
   if (!(g_cpu.SR & (1u<<2))) { func_007404(); return; }
@@ -39754,8 +39754,8 @@ void func_007404(void) {
   /* $007404 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007406u); /* JSR push */
   func_00741C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007406 */
   uint8_t _t007406 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)62));
@@ -39781,15 +39781,15 @@ void func_007404(void) {
   /* $007410 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007414u); /* JSR push */
   func_007620();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_007414:;
   /* $007414 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007418u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007418 */
   func_0078DC(); return;
@@ -40314,8 +40314,8 @@ void func_0074AE(void) {
   /* $00750A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007510u); /* JSR push */
   func_0137A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007510 */
   uint32_t _t007510 = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;
@@ -40590,14 +40590,14 @@ void func_007588(void) {
   /* $007588 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00758Au); /* JSR push */
   func_007592();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00758A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00758Eu); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00758E */
   func_0078DC(); return;
@@ -40652,8 +40652,8 @@ void func_007592(void) {
   /* $00759E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0075A0u); /* JSR push */
   func_0075C2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0075A0 */
   if (!(g_cpu.SR & (1u<<0))) goto label_0075BE;
@@ -40711,14 +40711,14 @@ void func_007592(void) {
   /* $0075B6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0075BAu); /* JSR push */
   func_007620();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0075BA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0075BEu); /* JSR push */
   func_0075F4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0075BE:;
   /* $0075BE */
@@ -40955,8 +40955,8 @@ void func_007620(void) {
   /* $007624 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007628u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007628 */
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)g_cpu.D[0]));
@@ -41555,8 +41555,8 @@ void func_0078DC(void) {
   /* $00791A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00791Eu); /* JSR push */
   func_00D642();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00791E:;
   /* $00791E */
@@ -41571,8 +41571,8 @@ void func_0078DC(void) {
   /* $007922 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007926u); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007926 */
   return;
@@ -41584,8 +41584,8 @@ void func_007928(void) {
   /* $007928 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00792Cu); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00792C */
   return;
@@ -41597,8 +41597,8 @@ void func_00792E(void) {
   /* $00792E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007932u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007932 */
   return;
@@ -41944,8 +41944,8 @@ void func_007A26(void) {
   /* $007A26 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007A2Au); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007A2A */
   if (!(g_cpu.SR & (1u<<2))) { func_007A92(); return; }
@@ -42289,8 +42289,8 @@ void func_007ADC(void) {
   /* $007AE8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007AECu); /* JSR push */
   func_00755C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_007AEC(); return;
 }
@@ -42300,14 +42300,14 @@ void func_007AEC(void) {
   /* $007AEC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007AF0u); /* JSR push */
   func_007B64();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007AF0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007AF4u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007AF4 */
   func_007BFE(); return;
@@ -42334,8 +42334,8 @@ void func_007AF8(void) {
   /* $007AFE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007B02u); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007B02 */
   uint16_t _ts007B02 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -42348,8 +42348,8 @@ void func_007AF8(void) {
   /* $007B06 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007B0Au); /* JSR push */
   func_007B64();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007B0A */
   uint16_t _ts007B0A = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -42387,14 +42387,14 @@ void func_007AF8(void) {
   /* $007B14 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007B18u); /* JSR push */
   func_007B22();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007B18 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007B1Cu); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007B1C */
   func_007BFE(); return;
@@ -42744,8 +42744,8 @@ void func_007BBA(void) {
   /* $007BBA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007BBEu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007BBE */
   uint16_t _ts007BBE = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)56));
@@ -43069,8 +43069,8 @@ void func_007C26(void) {
   /* $007C34 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007C38u); /* JSR push */
   func_00D642();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007C38 */
   if (!(0)) {
@@ -43090,8 +43090,8 @@ void func_007C3E(void) {
   /* $007C3E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007C42u); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007C42 */
   return;
@@ -43308,8 +43308,8 @@ void func_007D0A(void) {
   /* $007D0A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007D0Eu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007D0E */
   if (!(g_cpu.SR & (1u<<2))) { func_007D7C(); return; }
@@ -43547,14 +43547,14 @@ void func_007D7C(void) {
   /* $007D7C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007D80u); /* JSR push */
   func_007D88();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007D80 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007D84u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007D84 */
   func_007DA8(); return;
@@ -43772,8 +43772,8 @@ void func_007DD4(void) {
   /* $007DE2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007DE6u); /* JSR push */
   func_00D642();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007DE6 */
   if (!(0)) {
@@ -43791,8 +43791,8 @@ void func_007DEA(void) {
   /* $007DEA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007DEEu); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007DEE */
   return;
@@ -43804,8 +43804,8 @@ void func_007DF0(void) {
   /* $007DF0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007DF4u); /* JSR push */
   func_007D88();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007DF4 */
   func_00D604(); return;
@@ -44090,8 +44090,8 @@ void func_007ED6(void) {
   /* $007EE6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007EEAu); /* JSR push */
   func_00744C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_007EEA(); return;
 }
@@ -44101,20 +44101,20 @@ void func_007EEA(void) {
   /* $007EEA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007EEEu); /* JSR push */
   func_007F46();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007EEE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007EF2u); /* JSR push */
   func_007F2C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007EF2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007EF6u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007EF6 */
   func_0080D8(); return;
@@ -44166,8 +44166,8 @@ void func_007EFA(void) {
   /* $007F0C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007F10u); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007F10 */
   uint16_t _ts007F10 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -44180,14 +44180,14 @@ void func_007EFA(void) {
   /* $007F14 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007F18u); /* JSR push */
   func_007F46();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007F18 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007F1Cu); /* JSR push */
   func_007F2C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007F1C */
   uint16_t _ts007F1C = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -44200,14 +44200,14 @@ void func_007EFA(void) {
   /* $007F1E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007F22u); /* JSR push */
   func_007B2E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007F22 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007F26u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007F26 */
   func_0080D8(); return;
@@ -44227,8 +44227,8 @@ void func_007F2C(void) {
   /* $007F30 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x007F34u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $007F34 */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x0400u));
@@ -45076,8 +45076,8 @@ void func_008266(void) {
   /* $008282 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008286u); /* JSR push */
   func_007520();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008286 */
   func_00F6AC(); return;
@@ -45129,8 +45129,8 @@ void func_00829C(void) {
   /* $0082A0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0082A4u); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0082A4 */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x0030u));
@@ -45153,8 +45153,8 @@ void func_00829C(void) {
   /* $0082B2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0082B6u); /* JSR push */
   func_00852A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0082B6 */
   func_00F6AC(); return;
@@ -45212,8 +45212,8 @@ void func_0082BA(void) {
   /* $0082D4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0082D8u); /* JSR push */
   func_00829C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0082D8 */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -45285,14 +45285,14 @@ void func_00830A(void) {
   /* $00830A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00830Eu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00830E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008312u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008312 */
   uint8_t _t008312 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -45314,8 +45314,8 @@ void func_00831A(void) {
   /* $00831A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00831Eu); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00831E */
   return;
@@ -45511,8 +45511,8 @@ void func_008384(void) {
   /* $00839A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00839Eu); /* JSR push */
   func_00744C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00839E */
   uint8_t _t00839E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)40));
@@ -45621,8 +45621,8 @@ void func_0083D8(void) {
   /* $0083DC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0083E0u); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0083E0 */
   uint16_t _ts0083E0 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -45635,8 +45635,8 @@ void func_0083D8(void) {
   /* $0083E4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0083E8u); /* JSR push */
   func_007B2E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0083E8 */
   func_00F6AC(); return;
@@ -45694,8 +45694,8 @@ void func_0083EC(void) {
   /* $008406 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00840Au); /* JSR push */
   func_0083D8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00840A */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -45767,14 +45767,14 @@ void func_00843C(void) {
   /* $00843C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008440u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008440 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008444u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008444 */
   uint8_t _t008444 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -45796,8 +45796,8 @@ void func_00844C(void) {
   /* $00844C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008450u); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008450 */
   return;
@@ -45966,8 +45966,8 @@ void func_008486(void) {
   /* $0084AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0084AEu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0084AE */
   if (!(g_cpu.SR & (1u<<2))) goto label_0084F2;
@@ -46068,8 +46068,8 @@ void func_008486(void) {
   /* $0084EA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0084EEu); /* JSR push */
   func_00D622();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0084EE:;
   /* $0084EE */
@@ -46084,8 +46084,8 @@ void func_008486(void) {
   /* $0084F2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0084F6u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0084F6 */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x00B9u));
@@ -46588,8 +46588,8 @@ void func_00889C(void) {
   /* $0088A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0088AAu); /* JSR push */
   func_0088E0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0088AA */
   if ((g_cpu.SR & (1u<<2))) { func_0088B6(); return; }
@@ -46627,8 +46627,8 @@ void func_0088B6(void) {
   /* $0088B6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0088BAu); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0088BA */
   uint16_t _ts0088BA = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -46704,8 +46704,8 @@ void func_0088DA(void) {
   /* $0088DA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0088DEu); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0088DE */
   return;
@@ -47101,8 +47101,8 @@ void func_0089A8(void) {
   /* $0089AE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0089B2u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0089B2 */
   uint8_t _t0089B2 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -47156,8 +47156,8 @@ void func_0089A8(void) {
   /* $0089C8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0089CCu); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0089CC:;
   /* $0089CC */
@@ -47170,8 +47170,8 @@ void func_008A62(void) {
   /* $008A62 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008A66u); /* JSR push */
   func_008ADA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008A66 */
   if ((g_cpu.SR & (1u<<2))) goto label_008AA8;
@@ -47778,14 +47778,14 @@ void func_008B5E(void) {
   /* $008B90 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008B94u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008B94 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008B9Au); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008B9A */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -47839,8 +47839,8 @@ void func_008BAE(void) {
   /* $008BB4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008BB8u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008BB8 */
   uint8_t _t008BB8 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -47888,8 +47888,8 @@ void func_008BAE(void) {
   /* $008BD6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008BDAu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008BDA */
   if (!(g_cpu.SR & (1u<<2))) goto label_008C1A;
@@ -48142,8 +48142,8 @@ void func_008C72(void) {
   /* $008C72 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008C78u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008C78 */
   uint16_t _t008C78 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -48158,8 +48158,8 @@ void func_008C72(void) {
   /* $008C7E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008C84u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008C84 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -48335,8 +48335,8 @@ void func_008CDC(void) {
   /* $008CDC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008CE0u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008CE0 */
   uint16_t _ts008CE0 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF72E);
@@ -48485,8 +48485,8 @@ void func_008D04(void) {
   /* $008D3E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008D44u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_008D44(); return;
 }
@@ -48592,8 +48592,8 @@ void func_008D76(void) {
   /* $008D7A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008D7Eu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $008D7E */
   if (!(g_cpu.SR & (1u<<2))) { func_008D98(); return; }
@@ -48711,8 +48711,8 @@ void func_008D98(void) {
   /* $008DD2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x008DD8u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_008DD8(); return;
 }
@@ -49094,8 +49094,8 @@ void func_009076(void) {
   /* $00907A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00907Eu); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00907E */
   uint16_t _00907Er = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0x1u;
@@ -49292,8 +49292,8 @@ void func_009076(void) {
   /* $0090F6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0090FAu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0090FA */
   if (!(g_cpu.SR & (1u<<2))) { func_009118(); return; }
@@ -49390,8 +49390,8 @@ void func_00912A(void) {
   /* $009132 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009136u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009136 */
   uint16_t _t009136 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -49406,8 +49406,8 @@ void func_00912A(void) {
   /* $00913C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009142u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009142 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -49535,8 +49535,8 @@ void func_009184(void) {
   /* $009184 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009188u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009188 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(0x01u));
@@ -49565,8 +49565,8 @@ void func_009184(void) {
   /* $00919A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0091A0u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0091A0 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -49627,8 +49627,8 @@ void func_0091C0(void) {
   /* $0091C0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0091C4u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0091C4 */
   uint16_t _t0091C4 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -49654,8 +49654,8 @@ void func_0091C0(void) {
   /* $0091D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0091D6u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0091D6 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -49899,8 +49899,8 @@ void func_009260(void) {
   /* $009260 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009264u); /* JSR push */
   func_009404();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009264 */
   if (!(g_cpu.SR & (1u<<0))) goto label_00927C;
@@ -49942,8 +49942,8 @@ void func_009280(void) {
   /* $009280 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009284u); /* JSR push */
   func_009404();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009284 */
   if (!(g_cpu.SR & (1u<<3))) goto label_0092B6;
@@ -49959,8 +49959,8 @@ void func_009280(void) {
   /* $00928E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009292u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009292 */
   uint16_t _t009292 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -49976,14 +49976,14 @@ void func_009280(void) {
   /* $009298 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00929Cu); /* JSR push */
   func_0093C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00929C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0092A0u); /* JSR push */
   func_0093EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0092A0 */
   uint8_t _t0092A0 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)30));
@@ -50037,8 +50037,8 @@ void func_0092BA(void) {
   /* $0092BA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0092BEu); /* JSR push */
   func_009404();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0092BE */
   if (!(g_cpu.SR & (1u<<3))) { func_009310(); return; }
@@ -50076,8 +50076,8 @@ void func_0092D6(void) {
   /* $0092D6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0092DAu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0092DA */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(0x01u));
@@ -50106,8 +50106,8 @@ void func_0092D6(void) {
   /* $0092EC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0092F2u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0092F2 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -50184,8 +50184,8 @@ void func_009314(void) {
   /* $009314 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009318u); /* JSR push */
   func_009404();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009318 */
   if (!(g_cpu.SR & (1u<<3))) goto label_00932E;
@@ -50201,20 +50201,20 @@ void func_009314(void) {
   /* $009322 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009326u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009326 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00932Au); /* JSR push */
   func_0093C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00932A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00932Eu); /* JSR push */
   func_0093EC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00932E:;
   /* $00932E */
@@ -50227,8 +50227,8 @@ void func_009332(void) {
   /* $009332 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009336u); /* JSR push */
   func_009404();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009336 */
   if (!(g_cpu.SR & (1u<<3))) goto label_00936C;
@@ -50236,8 +50236,8 @@ void func_009332(void) {
   /* $009338 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00933Cu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00933C */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(0x01u));
@@ -50266,8 +50266,8 @@ void func_009332(void) {
   /* $00934E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009354u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009354 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -50327,8 +50327,8 @@ void func_009370(void) {
   /* $009370 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009374u); /* JSR push */
   func_009404();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009374 */
   if (!(g_cpu.SR & (1u<<3))) goto label_0093C0;
@@ -50336,8 +50336,8 @@ void func_009370(void) {
   /* $009376 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00937Au); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00937A */
   uint16_t _t00937A = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -50363,8 +50363,8 @@ void func_009370(void) {
   /* $009386 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00938Cu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00938C */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -50503,8 +50503,8 @@ void func_0093C4(void) {
   /* $0093D6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0093DCu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0093DC */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -50650,8 +50650,8 @@ void func_009412(void) {
   /* $00941C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009420u); /* JSR push */
   call_by_address((uint32_t)(0x0000941Eu + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009420 */
   func_00D604(); return;
@@ -50731,8 +50731,8 @@ void func_009452(void) {
   /* $00945A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00945Eu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00945E */
   uint16_t _t00945E = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -50843,14 +50843,14 @@ void func_009508(void) {
   /* $00953A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00953Eu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00953E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009544u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009544 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -50931,8 +50931,8 @@ void func_00955C(void) {
   /* $009566 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00956Au); /* JSR push */
   call_by_address((uint32_t)(0x00009568u + (int32_t)(int16_t)g_cpu.D[1] + (16)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00956A */
   g_cpu.A[1] = 0x0000971Au;
@@ -50940,8 +50940,8 @@ void func_00955C(void) {
   /* $009570 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009574u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009574 */
   func_00F6AC(); return;
@@ -51014,8 +51014,8 @@ void func_00957C(void) {
   /* $0095A0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0095A4u); /* JSR push */
   func_009688();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0095A4 */
   uint8_t _0095A4r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) + (uint8_t)3u);
@@ -51078,8 +51078,8 @@ void func_00957C(void) {
   /* $0095C4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0095C8u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0095C8 */
   if (!(g_cpu.SR & (1u<<2))) goto label_0095EE;
@@ -51136,8 +51136,8 @@ void func_00957C(void) {
   /* $0095EE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0095F2u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0095F2 */
   if (!(g_cpu.SR & (1u<<2))) goto label_009618;
@@ -51215,8 +51215,8 @@ void func_00961A(void) {
   /* $009620 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009624u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009624 */
   uint8_t _t009624 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)50));
@@ -51269,8 +51269,8 @@ void func_00961A(void) {
   /* $009640 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009646u); /* JSR push */
   func_014E1C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009646 */
   uint16_t _009646r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)0xFFF8u);
@@ -51303,8 +51303,8 @@ void func_00961A(void) {
   /* $009654 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00965Au); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00965A */
   uint16_t _t00965A = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)12));
@@ -51327,8 +51327,8 @@ void func_00961A(void) {
   /* $009662 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009666u); /* JSR push */
   func_009688();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009666 */
   uint8_t _009666r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) + (uint8_t)3u);
@@ -51379,8 +51379,8 @@ void func_00961A(void) {
   /* $00967E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009682u); /* JSR push */
   func_009688();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009682 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)28), (uint8_t)((uint8_t)g_cpu.D[0]));
@@ -51498,8 +51498,8 @@ void func_0096B8(void) {
   /* $0096B8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0096BCu); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0096BC */
   return;
@@ -51586,20 +51586,20 @@ void func_0096F4(void) {
   /* $0096FA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0096FEu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0096FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009702u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009702 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009706u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009706 */
   uint16_t _ts009706 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF72E);
@@ -51759,8 +51759,8 @@ void func_00981C(void) {
   /* $009826 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00982Au); /* JSR push */
   call_by_address((uint32_t)(0x00009828u + (int32_t)(int16_t)g_cpu.D[1] + (16)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00982A */
   g_cpu.A[1] = 0x00009A18u;
@@ -51768,8 +51768,8 @@ void func_00981C(void) {
   /* $009830 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009834u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009834 */
   func_00F6AC(); return;
@@ -51859,8 +51859,8 @@ void func_00983C(void) {
   /* $00986E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009872u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009872 */
   if (!(g_cpu.SR & (1u<<2))) goto label_0098D0;
@@ -52029,8 +52029,8 @@ void func_0098D2(void) {
   /* $0098D8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0098DCu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0098DC */
   uint8_t _t0098DC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)52));
@@ -52174,8 +52174,8 @@ void func_00992C(void) {
   /* $00992C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009930u); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009930 */
   return;
@@ -52326,8 +52326,8 @@ void func_009994(void) {
   /* $009994 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009996u); /* JSR push */
   func_0099A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009996 */
   g_cpu.A[1] = 0x00009A2Au;
@@ -52335,8 +52335,8 @@ void func_009994(void) {
   /* $00999C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0099A0u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0099A0 */
   func_00D604(); return;
@@ -52394,8 +52394,8 @@ void func_0099B2(void) {
   /* $0099C6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0099CAu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0099CA */
   g_cpu.A[1] = 0x00009A2Au;
@@ -52403,14 +52403,14 @@ void func_0099B2(void) {
   /* $0099D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0099D4u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0099D4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0099D8u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0099D8 */
   uint16_t _ts0099D8 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF72E);
@@ -52471,8 +52471,8 @@ void func_0099F8(void) {
   /* $0099F8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0099FCu); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0099FC */
   return;
@@ -52494,8 +52494,8 @@ void func_0099FE(void) {
   /* $009A04 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009A08u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_009A08(); return;
 }
@@ -52508,14 +52508,14 @@ void func_009A08(void) {
   /* $009A0E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009A12u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009A12 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009A16u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009A16 */
   return;
@@ -52773,8 +52773,8 @@ void func_009BAA(void) {
   /* $009BB4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009BB8u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009BB8 */
   if (!(g_cpu.SR & (1u<<2))) { func_009C0E(); return; }
@@ -52960,8 +52960,8 @@ void func_009C16(void) {
   /* $009C1C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009C20u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009C20 */
   uint16_t _ts009C20 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)50));
@@ -53062,8 +53062,8 @@ void func_009C3E(void) {
   /* $009C4E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009C52u); /* JSR push */
   func_009C76();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009C52 */
   g_cpu.A[2] = (uint32_t)(int32_t)(int16_t)0xFC00;
@@ -53110,8 +53110,8 @@ void func_009C64(void) {
   /* $009C6A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009C6Eu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009C6E */
   func_00D604(); return;
@@ -53341,8 +53341,8 @@ void func_009CCE(void) {
   /* $009CE6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009CEAu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009CEA */
   if (!(g_cpu.SR & (1u<<2))) goto label_009D72;
@@ -53464,8 +53464,8 @@ void func_009CCE(void) {
   /* $009D42 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009D46u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009D46 */
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)g_cpu.D[4]));
@@ -53653,8 +53653,8 @@ void func_009CCE(void) {
   /* $009D88 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009D8Eu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_009D8E(); return;
 }
@@ -53672,8 +53672,8 @@ void func_009D8E(void) {
   /* $009D94 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009D98u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009D98 */
   uint16_t _t009D98 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -53721,8 +53721,8 @@ void func_009D8E(void) {
   /* $009DAC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009DB2u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009DB2 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -53864,8 +53864,8 @@ void func_009DE0(void) {
   /* $009DF0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009DF4u); /* JSR push */
   func_009C76();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_009DF4(); return;
 }
@@ -53878,8 +53878,8 @@ void func_009DF4(void) {
   /* $009DFA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009DFEu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009DFE */
   func_00D604(); return;
@@ -54137,8 +54137,8 @@ void func_009E8E(void) {
   /* $009E98 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009E9Cu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009E9C */
   if (!(g_cpu.SR & (1u<<2))) { func_009EC6(); return; }
@@ -54217,8 +54217,8 @@ void func_009EC6(void) {
   /* $009ECA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009ED0u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009ED0 */
   func_009E66(); return;
@@ -54329,8 +54329,8 @@ void func_009F14(void) {
   /* $009F14 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x009F16u); /* JSR push */
   func_009F38();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $009F16 */
   uint16_t _ts009F16 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -54756,8 +54756,8 @@ void func_00A192(void) {
   /* $00A1A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A1AAu); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A1AA */
   uint8_t _t00A1AA = m68k_read8((uint32_t)(g_cpu.A[1] + (int32_t)34));
@@ -54793,8 +54793,8 @@ void func_00A192(void) {
   /* $00A1C4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A1C8u); /* JSR push */
   func_007B22();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A1C8 */
   func_00A276(); return;
@@ -54803,14 +54803,14 @@ void func_00A192(void) {
   /* $00A1CC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A1D0u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A1D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A1D6u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A1D6 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -54861,8 +54861,8 @@ void func_00A192(void) {
   /* $00A1F4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A1F8u); /* JSR push */
   func_00A48E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A1F8 */
   if ((g_cpu.SR & (1u<<2))) goto label_00A25C;
@@ -54914,8 +54914,8 @@ void func_00A192(void) {
   /* $00A212 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A216u); /* JSR push */
   func_0074AE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A216 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(0x02u));
@@ -55062,8 +55062,8 @@ void func_00A276(void) {
   /* $00A27C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A280u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00A280(); return;
 }
@@ -55073,8 +55073,8 @@ void func_00A280(void) {
   /* $00A280 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A284u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A284 */
   uint16_t _ts00A284 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -55168,8 +55168,8 @@ void func_00A2A4(void) {
   /* $00A2AE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A2B2u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A2B2 */
   if (!(g_cpu.SR & (1u<<2))) { func_00A2CC(); return; }
@@ -55213,8 +55213,8 @@ void func_00A2CC(void) {
   /* $00A2CC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A2D0u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A2D0 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00A2E8;
@@ -55320,8 +55320,8 @@ void func_00A302(void) {
   /* $00A30C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A310u); /* JSR push */
   call_by_address((uint32_t)(0x0000A30Eu + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A310 */
   func_00D604(); return;
@@ -55453,8 +55453,8 @@ void func_00A35A(void) {
   /* $00A362 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A366u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A366 */
   uint16_t _t00A366 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -56366,8 +56366,8 @@ void func_00A632(void) {
   /* $00A662 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A666u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00A666(); return;
 }
@@ -56459,8 +56459,8 @@ void func_00A68C(void) {
   /* $00A692 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A696u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A696 */
   func_00D604(); return;
@@ -56495,8 +56495,8 @@ void func_00A69C(void) {
   /* $00A6A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00A6AAu); /* JSR push */
   call_by_address((uint32_t)(0x0000A6A8u + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00A6AA */
   func_00D604(); return;
@@ -57081,8 +57081,8 @@ void func_00AB20(void) {
   /* $00AB2A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AB2Eu); /* JSR push */
   call_by_address((uint32_t)(0x0000AB2Cu + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AB2E */
   func_00F6AC(); return;
@@ -57170,14 +57170,14 @@ void func_00AB6C(void) {
   /* $00AB72 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AB76u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AB76 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AB7Au); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AB7A */
   uint16_t _t00AB7A = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -57511,14 +57511,14 @@ void func_00AC3A(void) {
   /* $00AC5C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AC60u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AC60 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AC64u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AC64 */
   func_00F6AC(); return;
@@ -57677,8 +57677,8 @@ void func_00ACF6(void) {
   /* $00AD00 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AD04u); /* JSR push */
   call_by_address((uint32_t)(0x0000AD02u + (int32_t)(int16_t)g_cpu.D[1] + (16)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AD04 */
   g_cpu.A[1] = 0x0000AE44u;
@@ -57686,8 +57686,8 @@ void func_00ACF6(void) {
   /* $00AD0A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AD0Eu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AD0E */
   func_00F6AC(); return;
@@ -57713,8 +57713,8 @@ void func_00AD44(void) {
   /* $00AD4A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AD4Eu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AD4E */
   uint8_t _t00AD4E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)50));
@@ -57767,8 +57767,8 @@ void func_00AD44(void) {
   /* $00AD6A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AD70u); /* JSR push */
   func_014E1C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AD70 */
   uint16_t _00AD70r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)0xCu);
@@ -57789,8 +57789,8 @@ void func_00AD44(void) {
   /* $00AD78 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AD7Eu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AD7E */
   uint16_t _t00AD7E = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)12));
@@ -57886,8 +57886,8 @@ void func_00ADB6(void) {
   /* $00ADB6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00ADBAu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00ADBA */
   uint16_t _t00ADBA = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -57913,8 +57913,8 @@ void func_00ADB6(void) {
   /* $00ADC8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00ADCEu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00ADCE */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -57971,8 +57971,8 @@ void func_00ADB6(void) {
   /* $00ADEC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00ADF0u); /* JSR push */
   func_00AE22();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00ADF0:;
   /* $00ADF0 */
@@ -57992,8 +57992,8 @@ void func_00ADF2(void) {
   /* $00ADF6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00ADFAu); /* JSR push */
   func_00AE22();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00ADFA */
   if (!(g_cpu.SR & (1u<<0))) goto label_00AE20;
@@ -58347,8 +58347,8 @@ void func_00AF34(void) {
   /* $00AF34 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AF38u); /* JSR push */
   func_00AF9E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AF38 */
   uint8_t _t00AF38 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)37));
@@ -58388,8 +58388,8 @@ void func_00AF34(void) {
   /* $00AF48 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AF4Cu); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AF4C */
   uint8_t _t00AF4C = m68k_read8((uint32_t)(g_cpu.A[1] + (int32_t)34));
@@ -58450,8 +58450,8 @@ void func_00AF5C(void) {
   /* $00AF6E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AF72u); /* JSR push */
   func_00852A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AF72 */
   func_00AF96(); return;
@@ -58520,8 +58520,8 @@ void func_00AF74(void) {
   /* $00AF92 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AF96u); /* JSR push */
   func_00FA62();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00AF96(); return;
 }
@@ -58531,8 +58531,8 @@ void func_00AF96(void) {
   /* $00AF96 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00AF9Au); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00AF9A */
   func_00B0BA(); return;
@@ -58827,8 +58827,8 @@ void func_00AFFE(void) {
   /* $00B020 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B026u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B026 */
   { uint16_t _sv = (uint16_t)g_cpu.D[0];
@@ -58899,8 +58899,8 @@ void func_00AFFE(void) {
   /* $00B046 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B04Au); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B04A */
   if (!(g_cpu.SR & (1u<<2))) goto label_00B07A;
@@ -58982,8 +58982,8 @@ void func_00AFFE(void) {
   /* $00B078 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B07Au); /* JSR push */
   func_00B09C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00B07A:;
   /* $00B07A */
@@ -59336,8 +59336,8 @@ void func_00B0E6(void) {
   /* $00B102 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B106u); /* JSR push */
   func_00D642();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B106 */
   if (!(0)) {
@@ -59472,8 +59472,8 @@ void func_00B1F0(void) {
   /* $00B224 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B22Au); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B22A */
   uint8_t _t00B22A = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)40));
@@ -59675,8 +59675,8 @@ void func_00B238(void) {
   /* $00B286 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B28Au); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B28A */
   if (!(g_cpu.SR & (1u<<2))) goto label_00B2B0;
@@ -59725,8 +59725,8 @@ void func_00B238(void) {
   /* $00B2AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B2B0u); /* JSR push */
   func_00B09C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00B2B0:;
   /* $00B2B0 */
@@ -59773,8 +59773,8 @@ void func_00B2BE(void) {
   /* $00B2C4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B2C8u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B2C8 */
   func_00D604(); return;
@@ -59809,8 +59809,8 @@ void func_00B39E(void) {
   /* $00B3A8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B3ACu); /* JSR push */
   call_by_address((uint32_t)(0x0000B3AAu + (int32_t)(int16_t)g_cpu.D[1] + (40)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B3AC */
   uint16_t _ts00B3AC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -59948,8 +59948,8 @@ void func_00B3E8(void) {
   /* $00B410 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B414u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B414 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00B480;
@@ -60143,8 +60143,8 @@ void func_00B48C(void) {
   /* $00B48C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B490u); /* JSR push */
   func_00B4DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B490 */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x002Bu));
@@ -60204,8 +60204,8 @@ void func_00B4B2(void) {
   /* $00B4B2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B4B6u); /* JSR push */
   func_00B4DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B4B6 */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x002Bu));
@@ -60980,8 +60980,8 @@ void func_00B6EC(void) {
   /* $00B6EC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B6F0u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B6F0 */
   if (!(g_cpu.SR & (1u<<2))) { func_00B778(); return; }
@@ -61280,8 +61280,8 @@ void func_00B798(void) {
   /* $00B798 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B79Cu); /* JSR push */
   func_00B834();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B79C */
   uint16_t _ts00B79C = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)12));
@@ -61341,8 +61341,8 @@ void func_00B798(void) {
   /* $00B7B8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B7BCu); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B7BC */
   uint8_t _t00B7BC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -61374,8 +61374,8 @@ void func_00B798(void) {
   /* $00B7D2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B7D8u); /* JSR push */
   func_01B098();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B7D8 */
   g_cpu.A[0] = (uint32_t)(g_cpu.A[2]);
@@ -61388,8 +61388,8 @@ void func_00B7DA(void) {
   /* $00B7DA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B7DEu); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B7DE */
   func_00B814(); return;
@@ -61503,8 +61503,8 @@ void func_00B810(void) {
   /* $00B810 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B814u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00B814(); return;
 }
@@ -61726,8 +61726,8 @@ void func_00B854(void) {
   /* $00B88C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B892u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00B892:;
   /* $00B892 */
@@ -61861,8 +61861,8 @@ void func_00B854(void) {
   /* $00B8DA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B8E0u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00B8E0(); return;
 }
@@ -61983,8 +61983,8 @@ void func_00B8F0(void) {
   /* $00B916 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B91Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00B91C:;
   /* $00B91C */
@@ -62138,8 +62138,8 @@ void func_00B8F0(void) {
   /* $00B976 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B97Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00B97C:;
   /* $00B97C */
@@ -62298,8 +62298,8 @@ void func_00B9C4(void) {
   /* $00B9DC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00B9E0u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00B9E0 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00BA52;
@@ -62502,8 +62502,8 @@ void func_00BA58(void) {
   /* $00BA5C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BA60u); /* JSR push */
   func_00BAC6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00BA60 */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x0017u));
@@ -62537,14 +62537,14 @@ void func_00BA58(void) {
   /* $00BA6E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BA72u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00BA72 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BA76u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00BA76 */
   func_00BAA6(); return;
@@ -62663,8 +62663,8 @@ void func_00BAA2(void) {
   /* $00BAA2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BAA6u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00BAA6(); return;
 }
@@ -63162,8 +63162,8 @@ void func_00BD76(void) {
   /* $00BD8C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BD90u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00BD90 */
   uint8_t _t00BD90 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -63231,8 +63231,8 @@ void func_00BD76(void) {
   /* $00BDB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BDBCu); /* JSR push */
   func_00BE22();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00BDBC */
   if (!(g_cpu.SR & (1u<<2))) goto label_00BDC8;
@@ -63280,8 +63280,8 @@ void func_00BD76(void) {
   /* $00BDD0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BDD6u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00BDD6:;
   /* $00BDD6 */
@@ -63346,8 +63346,8 @@ void func_00BDF8(void) {
   /* $00BDF8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BDFCu); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00BDFC */
   uint16_t _ts00BDFC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -63423,8 +63423,8 @@ void func_00BE1C(void) {
   /* $00BE1C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BE20u); /* JSR push */
   func_00D640();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00BE20 */
   return;
@@ -64079,8 +64079,8 @@ void func_00BF6E(void) {
   /* $00BF8C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00BF90u); /* JSR push */
   func_00C186();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00BF90 */
   uint16_t _t00BF90 = m68k_read16((uint32_t)(int32_t)(int16_t)0xFE10);
@@ -64383,8 +64383,8 @@ void func_00C02C(void) {
   /* $00C02C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C030u); /* JSR push */
   func_00D8A6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C030 */
   if ((g_cpu.SR & (1u<<2))) goto label_00C044;
@@ -64440,8 +64440,8 @@ void func_00C046(void) {
   /* $00C052 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C056u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00C056:;
   /* $00C056 */
@@ -64466,8 +64466,8 @@ void func_00C046(void) {
   /* $00C064 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C06Au); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C06A */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -64604,8 +64604,8 @@ void func_00C046(void) {
   /* $00C0B0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C0B6u); /* JSR push */
   func_014EDA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C0B6 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -64646,8 +64646,8 @@ void func_00C046(void) {
   /* $00C0C4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C0CAu); /* JSR push */
   func_01506C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C0CA */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -64755,14 +64755,14 @@ void func_00C0E6(void) {
   /* $00C0FA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C0FEu); /* JSR push */
   func_00C186();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C0FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C100u); /* JSR push */
   func_00C11A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C100 */
   func_00BFC6(); return;
@@ -64932,8 +64932,8 @@ void func_00C15E(void) {
   /* $00C15E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C162u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C162 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00C184;
@@ -65025,8 +65025,8 @@ void func_00C186(void) {
   /* $00C192 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C196u); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C196 */
   uint8_t _t00C196 = m68k_read8((uint32_t)(g_cpu.A[1] + (int32_t)34));
@@ -65071,8 +65071,8 @@ void func_00C186(void) {
   /* $00C1AE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C1B2u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C1B2 */
   uint16_t _t00C1B2 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -65088,8 +65088,8 @@ void func_00C186(void) {
   /* $00C1B8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C1BEu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C1BE */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -65194,8 +65194,8 @@ void func_00C186(void) {
   /* $00C1F2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C1F6u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C1F6 */
   uint16_t _ts00C1F6 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -65255,8 +65255,8 @@ void func_00C186(void) {
   /* $00C218 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C21Cu); /* JSR push */
   func_00FAC8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C21C */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[4]);
@@ -65329,8 +65329,8 @@ void func_00C186(void) {
   /* $00C24A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C250u); /* JSR push */
   func_014EDA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C250 */
   uint16_t _ts00C250 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -65419,8 +65419,8 @@ void func_00C186(void) {
   /* $00C27A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C280u); /* JSR push */
   func_01506C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C280 */
   uint16_t _ts00C280 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -65510,8 +65510,8 @@ void func_00C186(void) {
   /* $00C2AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C2B2u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C2B2 */
   uint16_t _ts00C2B2 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -65541,8 +65541,8 @@ void func_00C186(void) {
   /* $00C2BC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C2C2u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C2C2 */
   uint16_t _ts00C2C2 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -66202,8 +66202,8 @@ void func_00C414(void) {
   /* $00C41E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C424u); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C424 */
   g_cpu.D[0] = 0x00000000u;
@@ -66233,8 +66233,8 @@ void func_00C414(void) {
   /* $00C42E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C434u); /* JSR push */
   func_001580();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00C434(); return;
 }
@@ -66961,8 +66961,8 @@ void func_00C642(void) {
   /* $00C642 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C646u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C646 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7D6, (uint8_t)(0x01u));
@@ -67069,8 +67069,8 @@ void func_00C66E(void) {
   /* $00C676 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C67Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C67C */
   uint8_t _t00C67C = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)36));
@@ -67134,8 +67134,8 @@ void func_00C694(void) {
   /* $00C694 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C69Au); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C69A */
   uint8_t _ts00C69A = m68k_read8((uint32_t)(int32_t)(int16_t)0xFE0F);
@@ -67899,8 +67899,8 @@ void func_00C892(void) {
   /* $00C892 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C896u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C896 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7D6, (uint8_t)(0x01u));
@@ -67940,8 +67940,8 @@ void func_00C892(void) {
   /* $00C8AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C8B0u); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C8B0 */
   uint8_t _ts00C8B0 = m68k_read8((uint32_t)(int32_t)(int16_t)0xFE0F);
@@ -67983,8 +67983,8 @@ void func_00C892(void) {
   /* $00C8C8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C8CEu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C8CE */
   uint8_t _t00C8CE = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)36));
@@ -68081,8 +68081,8 @@ void func_00C8F6(void) {
   /* $00C906 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00C90Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00C90C */
   uint8_t _t00C90C = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)36));
@@ -68534,8 +68534,8 @@ void func_00CE90(void) {
   /* $00CE90 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00CE94u); /* JSR push */
   func_00CF46();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00CE94 */
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x0004u));
@@ -68617,8 +68617,8 @@ void func_00CEAC(void) {
   /* $00CEB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00CEBCu); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00CEBC */
   uint8_t _t00CEBC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -68697,8 +68697,8 @@ void func_00CECC(void) {
   /* $00CEE2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00CEE6u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00CEE6 */
   uint8_t _t00CEE6 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -68817,8 +68817,8 @@ void func_00CEF2(void) {
   /* $00CF1A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00CF20u); /* JSR push */
   func_01AFF4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00CF20:;
   /* $00CF20 */
@@ -68833,8 +68833,8 @@ void func_00CF22(void) {
   /* $00CF22 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00CF26u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00CF26 */
   uint16_t _ts00CF26 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -68959,8 +68959,8 @@ void func_00CF5E(void) {
   /* $00CF5E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00CF62u); /* JSR push */
   func_00CF86();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00CF62 */
   g_cpu.D[0] = 0x00000000u;
@@ -69005,8 +69005,8 @@ void func_00CF72(void) {
   /* $00CF72 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00CF76u); /* JSR push */
   func_00CF86();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00CF76 */
   g_cpu.D[0] = 0x00000000u;
@@ -69092,8 +69092,8 @@ void func_00CF86(void) {
   /* $00CF9C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00CFA2u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00CFA2 */
   goto label_00CFE6;
@@ -69316,14 +69316,14 @@ void func_00D086(void) {
   /* $00D096 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D09Au); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D09A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D09Eu); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D09E */
   uint16_t _ts00D09E = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -69480,8 +69480,8 @@ void func_00D0DA(void) {
   /* $00D0E8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D0EEu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00D0EE(); return;
 }
@@ -69585,8 +69585,8 @@ void func_00D11C(void) {
   /* $00D126 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D12Au); /* JSR push */
   call_by_address((uint32_t)(0x0000D128u + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D12A */
   func_00F6AC(); return;
@@ -69694,8 +69694,8 @@ void func_00D15E(void) {
   /* $00D174 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D178u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D178 */
   uint8_t _t00D178 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -69856,8 +69856,8 @@ void func_00D15E(void) {
   /* $00D1D4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D1D6u); /* JSR push */
   func_00D1EE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00D1D6(); return;
 }
@@ -69867,8 +69867,8 @@ void func_00D1D6(void) {
   /* $00D1D6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D1DAu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D1DA */
   uint16_t _t00D1DA = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -69884,8 +69884,8 @@ void func_00D1D6(void) {
   /* $00D1E0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D1E4u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D1E4 */
   uint8_t _t00D1E4 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -69974,8 +69974,8 @@ void func_00D1EE(void) {
   /* $00D212 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D216u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D216 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00D26C;
@@ -70094,8 +70094,8 @@ void func_00D1EE(void) {
   /* $00D25A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D25Eu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D25E */
   uint16_t _t00D25E = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -70115,8 +70115,8 @@ void func_00D1EE(void) {
   /* $00D264 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D268u); /* JSR push */
   func_00D622();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00D268:;
   /* $00D268 */
@@ -70216,8 +70216,8 @@ void func_00D348(void) {
   /* $00D354 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D356u); /* JSR push */
   call_by_address(g_cpu.A[1]);
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D356 */
   g_cpu.D[0] = 0x00000000u;
@@ -70255,8 +70255,8 @@ void func_00D362(void) {
   /* $00D364 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D366u); /* JSR push */
   func_00D348();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D366 */
   g_cpu.D[7] = 0x0000005Fu;
@@ -70297,8 +70297,8 @@ void func_00D362(void) {
   /* $00D374 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D378u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00D378:;
   /* $00D378 */
@@ -71205,8 +71205,8 @@ void func_00D65E(void) {
   /* $00D71C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D720u); /* JSR push */
   func_00D750();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00D720:;
   /* $00D720 */
@@ -72997,8 +72997,8 @@ void func_00D980(void) {
   /* $00D9BC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00D9C0u); /* JSR push */
   func_00DA3C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00D9C0 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00D9C6;
@@ -73179,8 +73179,8 @@ void func_00D980(void) {
   /* $00DA10 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DA14u); /* JSR push */
   func_00DA3C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DA14 */
   if ((g_cpu.SR & (1u<<2))) goto label_00DA02;
@@ -73309,8 +73309,8 @@ void func_00DA50(void) {
   /* $00DA50 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DA54u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DA54 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00DA8A;
@@ -73601,14 +73601,14 @@ void func_00DABE(void) {
   /* $00DAC8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DACCu); /* JSR push */
   call_by_address((uint32_t)(0x0000DACAu + (int32_t)(int16_t)g_cpu.D[1] + (38)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DACC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DAD0u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DAD0 */
   uint16_t _ts00DAD0 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -73882,8 +73882,8 @@ void func_00DB7E(void) {
   /* $00DB8E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DB92u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DB92 */
   uint8_t _t00DB92 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)37));
@@ -73984,8 +73984,8 @@ void func_00DB9A(void) {
   /* $00DBCE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DBD4u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00DBD4(); return;
 }
@@ -74059,8 +74059,8 @@ void func_00DBEA(void) {
   /* $00DBFA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DBFEu); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DBFE */
   uint8_t _t00DBFE = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)36));
@@ -74228,8 +74228,8 @@ void func_00DC36(void) {
   /* $00DC66 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DC6Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00DC6C(); return;
 }
@@ -74303,8 +74303,8 @@ void func_00DC82(void) {
   /* $00DC92 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DC96u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DC96 */
   uint8_t _t00DC96 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)36));
@@ -74440,8 +74440,8 @@ void func_00DCB0(void) {
   /* $00DCE2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DCE8u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00DCE8(); return;
 }
@@ -74606,8 +74606,8 @@ void func_00DDAC(void) {
   /* $00DDB6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DDBAu); /* JSR push */
   call_by_address((uint32_t)(0x0000DDB8u + (int32_t)(int16_t)g_cpu.D[1] + (16)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DDBA */
   g_cpu.A[1] = 0x0000DF1Au;
@@ -74615,8 +74615,8 @@ void func_00DDAC(void) {
   /* $00DDC0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DDC4u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DDC4 */
   func_00F6AC(); return;
@@ -74823,14 +74823,14 @@ void func_00DE14(void) {
   /* $00DE42 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DE46u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DE46 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DE4Au); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DE4A */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -74941,14 +74941,14 @@ void func_00DE88(void) {
   /* $00DE88 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DE8Cu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DE8C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DE90u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DE90 */
   uint16_t _00DE90r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)0xFFF8u);
@@ -75010,8 +75010,8 @@ void func_00DEA8(void) {
   /* $00DEA8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DEACu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DEAC */
   return;
@@ -75074,8 +75074,8 @@ void func_00DEAE(void) {
   /* $00DED0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00DED4u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00DED4 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00DF14;
@@ -75248,14 +75248,14 @@ void func_00E00C(void) {
   /* $00E018 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E01Cu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E01C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E020u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E020 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -75364,8 +75364,8 @@ void func_00E054(void) {
   /* $00E05E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E062u); /* JSR push */
   call_by_address((uint32_t)(0x0000E060u + (int32_t)(int16_t)g_cpu.D[1] + (68)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E062 */
   g_cpu.A[1] = 0x0000E18Au;
@@ -75373,8 +75373,8 @@ void func_00E054(void) {
   /* $00E068 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E06Cu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E06C */
   uint16_t _ts00E06C = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -75643,20 +75643,20 @@ void func_00E0FE(void) {
   /* $00E0FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E102u); /* JSR push */
   func_00E152();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E102 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E106u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E106 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E10Au); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E10A */
   uint16_t _00E10Ar = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)0xFFF8u);
@@ -75740,8 +75740,8 @@ void func_00E130(void) {
   /* $00E130 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E134u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E134 */
   uint16_t _t00E134 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -75756,8 +75756,8 @@ void func_00E130(void) {
   /* $00E13A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E13Eu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E13E */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -76029,8 +76029,8 @@ void func_00E220(void) {
   /* $00E228 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E22Cu); /* JSR push */
   func_008A62();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00E22C(); return;
 }
@@ -76040,8 +76040,8 @@ void func_00E22C(void) {
   /* $00E22C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E230u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E230 */
   uint16_t _ts00E230 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -76140,8 +76140,8 @@ void func_00E296(void) {
   /* $00E2A0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E2A4u); /* JSR push */
   call_by_address((uint32_t)(0x0000E2A2u + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E2A4 */
   func_00E3D8(); return;
@@ -76243,8 +76243,8 @@ void func_00E2D2(void) {
   /* $00E2DE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E2E2u); /* JSR push */
   func_00D87E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E2E2 */
   if (!(g_cpu.SR & (1u<<2))) { func_00E302(); return; }
@@ -76252,8 +76252,8 @@ void func_00E2D2(void) {
   /* $00E2E4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E2E8u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E2E8 */
   if (!(g_cpu.SR & (1u<<2))) { func_00E302(); return; }
@@ -76327,8 +76327,8 @@ void func_00E304(void) {
   /* $00E30E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E312u); /* JSR push */
   call_by_address((uint32_t)(0x0000E310u + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E312 */
   func_00D604(); return;
@@ -76541,8 +76541,8 @@ void func_00E32E(void) {
   /* $00E3B4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E3BAu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00E3BA(); return;
 }
@@ -76585,14 +76585,14 @@ void func_00E3BA(void) {
   /* $00E3C6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E3CAu); /* JSR push */
   call_by_address((uint32_t)(0x0000E3C8u + (int32_t)(int16_t)g_cpu.D[1] + (48)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E3CA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E3CEu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E3CE */
   g_cpu.A[1] = 0x0000E4C4u;
@@ -76600,8 +76600,8 @@ void func_00E3BA(void) {
   /* $00E3D4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E3D8u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00E3D8(); return;
 }
@@ -76768,8 +76768,8 @@ void func_00E432(void) {
   /* $00E438 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E43Cu); /* JSR push */
   func_014F9E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E43C */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -76820,8 +76820,8 @@ void func_00E454(void) {
   /* $00E45A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E45Eu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E45E */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -76879,8 +76879,8 @@ void func_00E476(void) {
   /* $00E47E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E482u); /* JSR push */
   func_01506C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E482 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -76938,8 +76938,8 @@ void func_00E49A(void) {
   /* $00E4A2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E4A6u); /* JSR push */
   func_014EDA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E4A6 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -77240,8 +77240,8 @@ void func_00E556(void) {
   /* $00E574 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E57Au); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00E57A:;
   /* $00E57A */
@@ -77250,8 +77250,8 @@ void func_00E556(void) {
   /* $00E580 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E584u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E584 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)32), (uint8_t)(0x00u));
@@ -77530,8 +77530,8 @@ void func_00E81E(void) {
   /* $00E834 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E838u); /* JSR push */
   call_by_address((uint32_t)(0x0000E836u + (int32_t)(int16_t)g_cpu.D[1] + (58)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E838 */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x001Bu));
@@ -77565,15 +77565,15 @@ void func_00E81E(void) {
   /* $00E848 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E84Cu); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00E84C:;
   /* $00E84C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E850u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E850 */
   uint16_t _ts00E850 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -77789,8 +77789,8 @@ void func_00E8B4(void) {
   /* $00E8B4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E8B8u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E8B8 */
   uint16_t _t00E8B8 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -77806,8 +77806,8 @@ void func_00E8B4(void) {
   /* $00E8BE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00E8C2u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00E8C2 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -78304,14 +78304,14 @@ void func_00EA0C(void) {
   /* $00EA2C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EA32u); /* JSR push */
   func_002CA8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EA32 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EA38u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EA38 */
   g_cpu.D[1] = (uint32_t)((int32_t)(int16_t)g_cpu.D[1] * (int32_t)(int16_t)(0xF900u));
@@ -78412,8 +78412,8 @@ void func_00EA0C(void) {
   /* $00EA6C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EA72u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EA72 */
   g_cpu.A[2] = (uint32_t)(int32_t)(int16_t)0xFC00;
@@ -78471,14 +78471,14 @@ void func_00EA0C(void) {
   /* $00EA8C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EA92u); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EA92 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EA96u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EA96 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00EAB0;
@@ -78520,8 +78520,8 @@ void func_00EA0C(void) {
   /* $00EAB6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EABAu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EABA */
   uint16_t _ts00EABA = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -78654,8 +78654,8 @@ void func_00EB28(void) {
   /* $00EB32 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EB36u); /* JSR push */
   call_by_address((uint32_t)(0x0000EB34u + (int32_t)(int16_t)g_cpu.D[1] + (48)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EB36 */
   g_cpu.A[1] = 0x0000ED1Cu;
@@ -78663,14 +78663,14 @@ void func_00EB28(void) {
   /* $00EB3C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EB40u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EB40 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EB44u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EB44 */
   uint16_t _ts00EB44 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -78838,8 +78838,8 @@ void func_00EB92(void) {
   /* $00EBA6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EBACu); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EBAC */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE1E, (uint8_t)(0));
@@ -78991,8 +78991,8 @@ void func_00EBBC(void) {
   /* $00EBF8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EBFCu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EBFC */
   if (!(g_cpu.SR & (1u<<2))) goto label_00EC42;
@@ -79261,8 +79261,8 @@ void func_00EC8A(void) {
   /* $00ECA6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00ECACu); /* JSR push */
   func_0015B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00ECAC */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7D6, (uint8_t)(0x01u));
@@ -79407,8 +79407,8 @@ void func_00EC8A(void) {
   /* $00ECE8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00ECEEu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00ECEE(); return;
 }
@@ -79455,8 +79455,8 @@ void func_00ED84(void) {
   /* $00ED8E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00ED92u); /* JSR push */
   call_by_address((uint32_t)(0x0000ED90u + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00ED92 */
   func_00EF98(); return;
@@ -79628,8 +79628,8 @@ void func_00EDF2(void) {
   /* $00EDF6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EDFAu); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EDFA */
   if (!(g_cpu.SR & (1u<<2))) goto label_00EE18;
@@ -79761,14 +79761,14 @@ void func_00EE4A(void) {
   /* $00EE50 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EE54u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EE54 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EE58u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EE58 */
   return;
@@ -79834,8 +79834,8 @@ void func_00EE70(void) {
   /* $00EE7A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EE7Eu); /* JSR push */
   call_by_address((uint32_t)(0x0000EE7Cu + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EE7E */
   func_00D604(); return;
@@ -79931,8 +79931,8 @@ void func_00EE8E(void) {
   /* $00EEB6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EEB8u); /* JSR push */
   func_00EEC0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EEB8 */
   func_00EF10(); return;
@@ -79944,8 +79944,8 @@ void func_00EEBA(void) {
   /* $00EEBA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EEBEu); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EEBE */
   if (!(g_cpu.SR & (1u<<2))) { func_00EF0A(); return; }
@@ -80155,8 +80155,8 @@ void func_00EF10(void) {
   /* $00EF44 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EF48u); /* JSR push */
   func_00EEBA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EF48 */
   uint8_t _t00EF48 = m68k_read8((uint32_t)(g_cpu.A[1] + (int32_t)36));
@@ -80229,8 +80229,8 @@ void func_00EF10(void) {
   /* $00EF74 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EF7Au); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00EF7A(); return;
 }
@@ -80273,14 +80273,14 @@ void func_00EF7A(void) {
   /* $00EF86 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EF8Au); /* JSR push */
   call_by_address((uint32_t)(0x0000EF88u + (int32_t)(int16_t)g_cpu.D[1] + (48)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EF8A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EF8Eu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00EF8E */
   g_cpu.A[1] = 0x0000F214u;
@@ -80288,8 +80288,8 @@ void func_00EF7A(void) {
   /* $00EF94 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00EF98u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00EF98(); return;
 }
@@ -80753,8 +80753,8 @@ void func_00F076(void) {
   /* $00F080 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F084u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F084 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00F0C8;
@@ -81062,8 +81062,8 @@ void func_00F112(void) {
   /* $00F128 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F12Cu); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F12C */
   uint16_t _ts00F12C = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -81108,8 +81108,8 @@ void func_00F112(void) {
   /* $00F148 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F14Cu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F14C */
   uint8_t _t00F14C = m68k_read8((uint32_t)(int32_t)(int16_t)0xD024);
@@ -81127,15 +81127,15 @@ void func_00F112(void) {
   /* $00F154 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F158u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_00F158:;
   /* $00F158 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F15Cu); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F15C */
   uint8_t _t00F15C = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)54));
@@ -81566,14 +81566,14 @@ void func_00F630(void) {
   /* $00F668 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F66Cu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F66C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F672u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F672 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -81670,8 +81670,8 @@ void func_00F694(void) {
   /* $00F69E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F6A2u); /* JSR push */
   call_by_address((uint32_t)(0x0000F6A0u + (int32_t)(int16_t)g_cpu.D[1] + (68)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F6A2 */
   g_cpu.A[1] = 0x0000F782u;
@@ -81679,8 +81679,8 @@ void func_00F694(void) {
   /* $00F6A8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F6ACu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00F6AC(); return;
 }
@@ -81864,14 +81864,14 @@ void func_00F70C(void) {
   /* $00F70C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F710u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F710 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F716u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F716 */
   uint16_t _00F716r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)0xFFF8u);
@@ -81932,8 +81932,8 @@ void func_00F70C(void) {
   /* $00F732 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F736u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F736 */
   if (!(g_cpu.SR & (1u<<2))) goto label_00F756;
@@ -82026,8 +82026,8 @@ void func_00F770(void) {
   /* $00F776 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F77Au); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F77A */
   func_00D604(); return;
@@ -82107,8 +82107,8 @@ void func_00F808(void) {
   /* $00F820 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F824u); /* JSR push */
   func_014EDA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F824 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -82142,8 +82142,8 @@ void func_00F808(void) {
   /* $00F82E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F832u); /* JSR push */
   func_01506C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F832 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -82260,14 +82260,14 @@ void func_00F84C(void) {
   /* $00F87E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F882u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F882 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F886u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F886 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -82349,8 +82349,8 @@ void func_00F8A0(void) {
   /* $00F8AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F8AEu); /* JSR push */
   call_by_address((uint32_t)(0x0000F8ACu + (int32_t)(int16_t)g_cpu.D[1] + (16)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F8AE */
   g_cpu.A[1] = 0x0000F91Cu;
@@ -82358,8 +82358,8 @@ void func_00F8A0(void) {
   /* $00F8B4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F8B8u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F8B8 */
   func_00F6AC(); return;
@@ -82440,14 +82440,14 @@ void func_00F8E4(void) {
   /* $00F8E4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F8E8u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F8E8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F8ECu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F8EC */
   uint16_t _00F8ECr = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)0xFFF8u);
@@ -82487,8 +82487,8 @@ void func_00F8E4(void) {
   /* $00F8FC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00F900u); /* JSR push */
   func_00F808();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00F900 */
   if (!(g_cpu.SR & (1u<<2))) { func_00F904(); return; }
@@ -82663,8 +82663,8 @@ void func_00F9D6(void) {
   /* $00FA14 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FA18u); /* JSR push */
   func_007B22();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FA18 */
   g_cpu.D[4] = 0x00000000u;
@@ -82804,8 +82804,8 @@ void func_00FA1C(void) {
   /* $00FA5A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FA5Eu); /* JSR push */
   func_007B22();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FA5E */
   g_cpu.D[4] = 0x00000000u;
@@ -83552,8 +83552,8 @@ void func_00FB8C(void) {
   /* $00FB8C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FB8Eu); /* JSR push */
   func_00FBA0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FB8E */
   g_cpu.D[4] = 0x00000001u;
@@ -83732,8 +83732,8 @@ void func_00FBD6(void) {
   /* $00FBE2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FBE8u); /* JSR push */
   func_01B098();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FBE8 */
   uint32_t _t00FBE8 = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;
@@ -83867,8 +83867,8 @@ void func_00FBEE(void) {
   /* $00FC16 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FC18u); /* JSR push */
   func_00FC2C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FC18 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(0x02u));
@@ -84059,8 +84059,8 @@ void func_00FC2C(void) {
   /* $00FC7C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FC82u); /* JSR push */
   func_0137A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FC82 */
   uint32_t _t00FC82 = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;
@@ -84116,8 +84116,8 @@ void func_00FC92(void) {
   /* $00FC9C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FCA0u); /* JSR push */
   call_by_address((uint32_t)(0x0000FC9Eu + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FCA0 */
   func_00F6AC(); return;
@@ -84233,8 +84233,8 @@ void func_00FCD4(void) {
   /* $00FCF0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FCF4u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FCF4 */
   uint8_t _t00FCF4 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -84368,14 +84368,14 @@ void func_00FCD4(void) {
   /* $00FD58 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FD5Cu); /* JSR push */
   func_00D1EE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FD5C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FD60u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FD60 */
   if (!(g_cpu.SR & (1u<<2))) { func_00FDA4(); return; }
@@ -84488,8 +84488,8 @@ void func_00FCD4(void) {
   /* $00FD98 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FD9Eu); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FD9E */
   { uint16_t _sv = (uint16_t)g_cpu.D[2];
@@ -84517,8 +84517,8 @@ void func_00FDA4(void) {
   /* $00FDA4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FDA8u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FDA8 */
   uint16_t _t00FDA8 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -84534,8 +84534,8 @@ void func_00FDA4(void) {
   /* $00FDAE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FDB2u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FDB2 */
   uint8_t _t00FDB2 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -84787,8 +84787,8 @@ void func_00FE96(void) {
   /* $00FE96 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FE9Au); /* JSR push */
   func_00FEE6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FE9A */
   g_cpu.D[1] = 0x00000000u;
@@ -84808,8 +84808,8 @@ void func_00FE96(void) {
   /* $00FEA0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FEA6u); /* JSR push */
   func_00744C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FEA6 */
   func_00FEC4(); return;
@@ -84836,8 +84836,8 @@ void func_00FEA8(void) {
   /* $00FEAE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FEB4u); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FEB4 */
   uint16_t _ts00FEB4 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -84850,8 +84850,8 @@ void func_00FEA8(void) {
   /* $00FEB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FEBCu); /* JSR push */
   func_00FEE6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FEBC */
   uint16_t _ts00FEBC = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -84864,8 +84864,8 @@ void func_00FEA8(void) {
   /* $00FEBE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FEC4u); /* JSR push */
   func_007B2E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_00FEC4(); return;
 }
@@ -85130,8 +85130,8 @@ void func_00FF40(void) {
   /* $00FF46 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FF4Au); /* JSR push */
   func_014EDA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FF4A */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -85197,8 +85197,8 @@ void func_00FF60(void) {
   /* $00FF66 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FF6Au); /* JSR push */
   func_014EDA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FF6A */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -85256,8 +85256,8 @@ void func_00FF80(void) {
   /* $00FF80 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FF84u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FF84 */
   uint16_t _t00FF84 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -85273,8 +85273,8 @@ void func_00FF80(void) {
   /* $00FF8A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x00FF8Eu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00FF8E */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -85832,8 +85832,8 @@ void func_0100EA(void) {
   /* $0100F4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0100F8u); /* JSR push */
   call_by_address((uint32_t)(0x000100F6u + (int32_t)(int16_t)g_cpu.D[1] + (16)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0100F8 */
   g_cpu.A[1] = 0x0001022Au;
@@ -85841,8 +85841,8 @@ void func_0100EA(void) {
   /* $0100FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010102u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010102 */
   func_00F6AC(); return;
@@ -85861,8 +85861,8 @@ void func_01010E(void) {
   /* $010112 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010116u); /* JSR push */
   func_0101F6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010116 */
   if (!(g_cpu.SR & (1u<<0))) goto label_010148;
@@ -86521,8 +86521,8 @@ void func_01037C(void) {
   /* $010390 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010394u); /* JSR push */
   call_by_address((uint32_t)(0x00010392u + (int32_t)(int16_t)g_cpu.D[1] + (68)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010394 */
   uint16_t _ts010394 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -86602,8 +86602,8 @@ void func_01037C(void) {
   /* $0103B0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0103B4u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0103B4:;
   /* $0103B4 */
@@ -87076,8 +87076,8 @@ void func_010796(void) {
   /* $01082E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010832u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010832 */
   if (!(g_cpu.SR & (1u<<2))) goto label_010894;
@@ -87333,8 +87333,8 @@ void func_0108B6(void) {
   /* $0108B6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0108BAu); /* JSR push */
   func_0108BE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0108BA */
   func_010910(); return;
@@ -87373,8 +87373,8 @@ void func_0108BE(void) {
   /* $0108CA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0108D0u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0108D0 */
   uint16_t _ts0108D0 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)56));
@@ -87690,8 +87690,8 @@ void func_010910(void) {
   /* $010948 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01094Cu); /* JSR push */
   func_00D642();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01094C */
   if (!(0)) {
@@ -87952,8 +87952,8 @@ void func_0109E2(void) {
   /* $0109F2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0109F6u); /* JSR push */
   call_by_address((uint32_t)(0x000109F4u + (int32_t)(int16_t)g_cpu.D[1] + (36)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0109F6 */
   uint16_t _ts0109F6 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)58));
@@ -88052,8 +88052,8 @@ void func_010AD2(void) {
   /* $010ADC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010AE0u); /* JSR push */
   call_by_address((uint32_t)(0x00010ADEu + (int32_t)(int16_t)g_cpu.D[1] + (36)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010AE0 */
   uint16_t _ts010AE0 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)50));
@@ -88380,8 +88380,8 @@ void func_010BA2(void) {
   /* $010BA8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010BAEu); /* JSR push */
   func_00744C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010BAE */
   func_010BD6(); return;
@@ -88408,8 +88408,8 @@ void func_010BB2(void) {
   /* $010BB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010BBEu); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010BBE */
   uint16_t _ts010BBE = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -88422,8 +88422,8 @@ void func_010BB2(void) {
   /* $010BC2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010BC6u); /* JSR push */
   func_010BD6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010BC6 */
   uint16_t _ts010BC6 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -88711,8 +88711,8 @@ void func_010CFC(void) {
   /* $010D08 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010D0Cu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010D0C */
   if (!(g_cpu.SR & (1u<<2))) goto label_010D26;
@@ -88850,8 +88850,8 @@ void func_010D5A(void) {
   /* $010D64 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010D68u); /* JSR push */
   call_by_address((uint32_t)(0x00010D66u + (int32_t)(int16_t)g_cpu.D[1] + (36)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010D68 */
   uint16_t _ts010D68 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)50));
@@ -89009,8 +89009,8 @@ void func_010DC0(void) {
   /* $010DC6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010DCCu); /* JSR push */
   func_00744C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010DCC */
   func_010DEC(); return;
@@ -89037,8 +89037,8 @@ void func_010DD0(void) {
   /* $010DD6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010DDCu); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010DDC */
   uint16_t _ts010DDC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -89051,8 +89051,8 @@ void func_010DD0(void) {
   /* $010DE0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010DE4u); /* JSR push */
   func_010DEC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010DE4 */
   uint16_t _ts010DE4 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -89146,8 +89146,8 @@ void func_010E90(void) {
   /* $010E9A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010E9Eu); /* JSR push */
   call_by_address((uint32_t)(0x00010E9Cu + (int32_t)(int16_t)g_cpu.D[1] + (36)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010E9E */
   uint16_t _ts010E9E = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -89293,8 +89293,8 @@ void func_010EC6(void) {
   /* $010EE4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010EE8u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010EE8 */
   if (!(g_cpu.SR & (1u<<2))) { func_010F46(); return; }
@@ -89479,8 +89479,8 @@ void func_010F46(void) {
   /* $010F56 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010F5Au); /* JSR push */
   call_by_address((uint32_t)(0x00010F58u + (int32_t)(int16_t)g_cpu.D[1] + (74)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_010F5A(); return;
 }
@@ -89582,8 +89582,8 @@ void func_010F5A(void) {
   /* $010F86 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x010F8Au); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $010F8A */
   { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[4]);
@@ -91071,8 +91071,8 @@ void func_011384(void) {
   /* $0113A0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0113A6u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0113A6:;
   /* $0113A6 */
@@ -91081,8 +91081,8 @@ void func_011384(void) {
   /* $0113AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0113B0u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0113B0 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7C9, (uint8_t)(0));
@@ -91168,8 +91168,8 @@ void func_011384(void) {
   /* $0113DA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0113DEu); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0113DE:;
   /* $0113DE */
@@ -91340,8 +91340,8 @@ void func_011464(void) {
   /* $011464 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011468u); /* JSR push */
   func_00D87E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011468 */
   if (!(g_cpu.SR & (1u<<2))) goto label_011486;
@@ -91414,8 +91414,8 @@ void func_011464(void) {
   /* $011482 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011486u); /* JSR push */
   func_00FA1C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_011486:;
   /* $011486 */
@@ -91970,8 +91970,8 @@ void func_011532(void) {
   /* $0115EC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0115F0u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0115F0 */
   uint16_t _ts0115F0 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -92070,8 +92070,8 @@ void func_01163C(void) {
   /* $011646 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01164Au); /* JSR push */
   call_by_address((uint32_t)(0x00011648u + (int32_t)(int16_t)g_cpu.D[1] + (40)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01164A */
   uint16_t _ts01164A = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -92216,8 +92216,8 @@ void func_01167C(void) {
   /* $0116AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0116B0u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0116B0 */
   if (!(g_cpu.SR & (1u<<2))) goto label_0116D2;
@@ -92312,8 +92312,8 @@ void func_0116E6(void) {
   /* $0116EA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0116EEu); /* JSR push */
   func_011766();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0116EE */
   g_cpu.A[2] = 0x00011944u;
@@ -92351,8 +92351,8 @@ void func_0116E6(void) {
   /* $011710 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011716u); /* JSR push */
   func_007520();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011716 */
   return;
@@ -92364,8 +92364,8 @@ void func_011718(void) {
   /* $011718 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01171Cu); /* JSR push */
   func_01174A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01171C */
   g_cpu.A[2] = 0x00011944u;
@@ -92392,8 +92392,8 @@ void func_011718(void) {
   /* $011734 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01173Au); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01173A */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x0030u));
@@ -92413,8 +92413,8 @@ void func_011718(void) {
   /* $011742 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011748u); /* JSR push */
   func_00852A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011748 */
   return;
@@ -93035,8 +93035,8 @@ void func_01187C(void) {
   /* $011882 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011886u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011886 */
   uint16_t _ts011886 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)52));
@@ -93072,8 +93072,8 @@ void func_01187C(void) {
   /* $011894 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011898u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_011898:;
   /* $011898 */
@@ -93083,8 +93083,8 @@ void func_01187C(void) {
   /* $01189A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01189Eu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01189E */
   uint32_t _t01189E = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)60));
@@ -93331,8 +93331,8 @@ void func_0118D8(void) {
   /* $011926 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01192Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01192C:;
   /* $01192C */
@@ -93514,8 +93514,8 @@ void func_011A48(void) {
   /* $011A52 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011A56u); /* JSR push */
   call_by_address((uint32_t)(0x00011A54u + (int32_t)(int16_t)g_cpu.D[1] + (16)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011A56 */
   g_cpu.A[1] = 0x00011C08u;
@@ -93523,8 +93523,8 @@ void func_011A48(void) {
   /* $011A5C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011A60u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011A60 */
   func_00F6AC(); return;
@@ -93661,8 +93661,8 @@ void func_011AD2(void) {
   /* $011B12 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011B16u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011B16 */
   if (!(g_cpu.SR & (1u<<2))) goto label_011B5E;
@@ -93772,8 +93772,8 @@ void func_011B60(void) {
   /* $011B60 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011B62u); /* JSR push */
   func_011B70();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011B62 */
   g_cpu.A[1] = 0x00011C08u;
@@ -93781,8 +93781,8 @@ void func_011B60(void) {
   /* $011B68 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011B6Cu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011B6C */
   func_00F6AC(); return;
@@ -93808,8 +93808,8 @@ void func_011B70(void) {
   /* $011B76 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011B7Au); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011B7A */
   return;
@@ -93851,8 +93851,8 @@ void func_011B70(void) {
   /* $011B96 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011B9Au); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011B9A */
   if (!(g_cpu.SR & (1u<<2))) goto label_011BCE;
@@ -93950,8 +93950,8 @@ void func_011BD8(void) {
   /* $011BD8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011BDCu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011BDC */
   uint16_t _t011BDC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -93970,8 +93970,8 @@ void func_011BD8(void) {
   /* $011BE8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011BECu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011BEC */
   uint8_t _t011BEC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -94135,8 +94135,8 @@ void func_011CE6(void) {
   /* $011D34 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011D38u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011D38 */
   if (!(g_cpu.SR & (1u<<2))) goto label_011D90;
@@ -94496,8 +94496,8 @@ void func_011DBE(void) {
   /* $011DF4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011DF8u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011DF8 */
   func_011E00(); return;
@@ -94509,8 +94509,8 @@ void func_011DFC(void) {
   /* $011DFC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011E00u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_011E00(); return;
 }
@@ -94689,8 +94689,8 @@ void func_011E00(void) {
   /* $011E4E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011E52u); /* JSR push */
   func_00D642();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011E52 */
   if (!(0)) {
@@ -94834,8 +94834,8 @@ void func_011E5A(void) {
   /* $011EA0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011EA6u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011EA6 */
   { int16_t _sv = (int16_t)(uint16_t)g_cpu.D[1];
@@ -94928,8 +94928,8 @@ void func_011EC6(void) {
   /* $011EC6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011ECAu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011ECA */
   uint8_t _t011ECA = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -95054,8 +95054,8 @@ void func_011F48(void) {
   /* $011F4E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x011F52u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $011F52 */
   g_cpu.D[0] = 0x00000000u;
@@ -95388,8 +95388,8 @@ void func_01204C(void) {
   /* $012060 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012064u); /* JSR push */
   call_by_address((uint32_t)(0x00012062u + (int32_t)(int16_t)g_cpu.D[1] + (76)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012064 */
   uint16_t _ts012064 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -95469,8 +95469,8 @@ void func_01204C(void) {
   /* $012080 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012084u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012084 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)63), (uint8_t)((uint8_t)g_cpu.D[4]));
@@ -95482,8 +95482,8 @@ void func_01204C(void) {
   /* $012088 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01208Cu); /* JSR push */
   func_012180();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01208C:;
   /* $01208C */
@@ -95636,8 +95636,8 @@ void func_012180(void) {
   /* $0121AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0121B0u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0121B0 */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x0400u));
@@ -95712,8 +95712,8 @@ void func_0121E8(void) {
   /* $0121F2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0121F6u); /* JSR push */
   call_by_address((uint32_t)(0x000121F4u + (int32_t)(int16_t)g_cpu.D[1] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0121F6 */
   func_00F6AC(); return;
@@ -95841,8 +95841,8 @@ void func_012248(void) {
   /* $012254 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012258u); /* JSR push */
   func_00D87E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012258 */
   if (!(g_cpu.SR & (1u<<2))) goto label_012282;
@@ -95850,8 +95850,8 @@ void func_012248(void) {
   /* $01225A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01225Eu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01225E */
   if (!(g_cpu.SR & (1u<<2))) goto label_012282;
@@ -96038,8 +96038,8 @@ void func_012284(void) {
   /* $0122DA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0122E0u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_0122E0(); return;
 }
@@ -96077,8 +96077,8 @@ void func_0122E0(void) {
   /* $0122F0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0122F4u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0122F4 */
   uint8_t _t0122F4 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -96098,8 +96098,8 @@ void func_0122E0(void) {
   /* $0122FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012302u); /* JSR push */
   func_01506C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012302 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -96124,8 +96124,8 @@ void func_0122E0(void) {
   /* $01230C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012310u); /* JSR push */
   func_014EDA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_012310(); return;
 }
@@ -96173,8 +96173,8 @@ void func_01233C(void) {
   /* $012346 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01234Au); /* JSR push */
   call_by_address((uint32_t)(0x00012348u + (int32_t)(int16_t)g_cpu.D[1] + (74)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01234A */
   uint16_t _ts01234A = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -96663,8 +96663,8 @@ void func_01239A(void) {
   /* $012458 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01245Cu); /* JSR push */
   func_012570();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01245C */
   func_0124B2(); return;
@@ -96755,8 +96755,8 @@ void func_012490(void) {
   /* $012490 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012494u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012494 */
   if (!(g_cpu.SR & (1u<<2))) { func_0124AA(); return; }
@@ -96848,8 +96848,8 @@ void func_0124B2(void) {
   /* $0124B8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0124BEu); /* JSR push */
   func_00744C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0124BE */
   func_012502(); return;
@@ -96876,8 +96876,8 @@ void func_0124C2(void) {
   /* $0124C8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0124CEu); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0124CE */
   uint16_t _ts0124CE = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -96890,8 +96890,8 @@ void func_0124C2(void) {
   /* $0124D2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0124D6u); /* JSR push */
   func_012502();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0124D6 */
   uint16_t _ts0124D6 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -97191,15 +97191,15 @@ void func_012502(void) {
   /* $012566 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01256Au); /* JSR push */
   func_012570();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01256A:;
   /* $01256A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01256Eu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01256E */
   return;
@@ -97703,8 +97703,8 @@ void func_0126BE(void) {
   /* $012712 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012718u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012718 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)38), (uint8_t)((uint8_t)g_cpu.D[0]));
@@ -97724,8 +97724,8 @@ void func_01271C(void) {
   /* $012722 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012728u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012728 */
   uint8_t _t012728 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -97872,8 +97872,8 @@ void func_012736(void) {
   /* $012774 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012778u); /* JSR push */
   func_01295E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012778 */
   if ((g_cpu.SR & (1u<<2))) goto label_0127DA;
@@ -97881,8 +97881,8 @@ void func_012736(void) {
   /* $01277A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01277Eu); /* JSR push */
   func_01408E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01277E */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x00ADu));
@@ -97894,8 +97894,8 @@ void func_012736(void) {
   /* $012782 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012788u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012788 */
   g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xD000;
@@ -97997,8 +97997,8 @@ void func_012736(void) {
   /* $0127DA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0127DEu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0127DE */
   uint8_t _t0127DE = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -98027,8 +98027,8 @@ void func_0127F0(void) {
   /* $0127F6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0127FCu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0127FC */
   uint8_t _t0127FC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -98124,8 +98124,8 @@ void func_012812(void) {
   /* $01283A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012840u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012840 */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)g_cpu.D[0]));
@@ -98235,8 +98235,8 @@ void func_012812(void) {
   /* $01287C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012882u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012882 */
   uint16_t _012882r = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0x1Fu;
@@ -98256,8 +98256,8 @@ void func_012812(void) {
   /* $01288A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01288Eu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01288E */
   if (!(g_cpu.SR & (1u<<2))) goto label_0128F8;
@@ -98280,8 +98280,8 @@ void func_012812(void) {
   /* $01289C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0128A2u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0128A2 */
   uint16_t _0128A2r = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0xFu;
@@ -98358,8 +98358,8 @@ void func_012812(void) {
   /* $0128CA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0128D0u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0128D0 */
   uint16_t _0128D0r = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0x3u;
@@ -98437,8 +98437,8 @@ void func_012812(void) {
   /* $0128FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012904u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012904 */
   uint16_t _012904r = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0x7Fu;
@@ -98480,8 +98480,8 @@ void func_012812(void) {
   /* $01291A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012920u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_012920:;
   /* $012920 */
@@ -98908,8 +98908,8 @@ void func_012B18(void) {
   /* $012B1E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012B24u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_012B24(); return;
 }
@@ -99221,27 +99221,27 @@ void func_012C3E(void) {
   /* $012C7A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012C7Eu); /* JSR push */
   call_by_address((uint32_t)(0x00012C7Cu + (int32_t)(int16_t)g_cpu.D[1] + (68)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_012C7E:;
   /* $012C7E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012C80u); /* JSR push */
   func_012CCE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012C80 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012C84u); /* JSR push */
   func_012D5E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012C84 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012C88u); /* JSR push */
   func_012D78();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012C88 */
   uint8_t _ts012C88 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF768);
@@ -99291,8 +99291,8 @@ void func_012C3E(void) {
   /* $012CA6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012CAAu); /* JSR push */
   func_0139C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012CAA */
   uint8_t _t012CAA = m68k_read8((uint32_t)(int32_t)(int16_t)0xF7C8);
@@ -99307,21 +99307,21 @@ void func_012C3E(void) {
   /* $012CB0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012CB6u); /* JSR push */
   func_01ADE4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_012CB6:;
   /* $012CB6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012CBAu); /* JSR push */
   func_013916();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012CBA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012CBEu); /* JSR push */
   func_013C3E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012CBE */
   return;
@@ -99370,8 +99370,8 @@ void func_012CCE(void) {
   /* $012CDC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012CE2u); /* JSR push */
   func_00D604();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_012CE2:;
   /* $012CE2 */
@@ -99481,8 +99481,8 @@ void func_012CCE(void) {
   /* $012D1C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012D22u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_012D22:;
   /* $012D22 */
@@ -99674,8 +99674,8 @@ void func_012D78(void) {
   /* $012D94 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012D98u); /* JSR push */
   func_01408E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012D98 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xD340, (uint8_t)(0x0Au));
@@ -99807,8 +99807,8 @@ void func_012D78(void) {
   /* $012DDC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012DE0u); /* JSR push */
   func_01408E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012DE0 */
   m68k_write16((uint32_t)(int32_t)(int16_t)0xF760, (uint16_t)(0x0600u));
@@ -99902,50 +99902,50 @@ void func_012E18(void) {
   /* $012E18 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E1Cu); /* JSR push */
   func_0133EA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E1C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E20u); /* JSR push */
   func_0134D4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E20 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E24u); /* JSR push */
   func_012EB0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E24 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E28u); /* JSR push */
   func_013384();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E28 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E2Cu); /* JSR push */
   func_013304();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E2C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E32u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E32 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E36u); /* JSR push */
   func_0145EE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E36 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E3Au); /* JSR push */
   func_013546();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E3A */
   return;
@@ -99957,26 +99957,26 @@ void func_012E3C(void) {
   /* $012E3C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E40u); /* JSR push */
   func_013498();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E40 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E44u); /* JSR push */
   func_013248();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E44 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E48u); /* JSR push */
   func_013304();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E48 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E4Eu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E4E */
   uint8_t _t012E4E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -100001,14 +100001,14 @@ void func_012E3C(void) {
   /* $012E5C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E60u); /* JSR push */
   func_013588();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E60 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E64u); /* JSR push */
   func_0135A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E64 */
   return;
@@ -100020,44 +100020,44 @@ void func_012E66(void) {
   /* $012E66 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E6Au); /* JSR push */
   func_0133EA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E6A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E6Eu); /* JSR push */
   func_01350A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E6E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E72u); /* JSR push */
   func_013150();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E72 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E76u); /* JSR push */
   func_013304();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E76 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E7Cu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E7C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E80u); /* JSR push */
   func_0145EE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E80 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E84u); /* JSR push */
   func_013546();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E84 */
   return;
@@ -100069,26 +100069,26 @@ void func_012E86(void) {
   /* $012E86 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E8Au); /* JSR push */
   func_013498();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E8A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E8Eu); /* JSR push */
   func_013248();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E8E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E92u); /* JSR push */
   func_013304();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E92 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012E98u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012E98 */
   uint8_t _t012E98 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -100113,14 +100113,14 @@ void func_012E86(void) {
   /* $012EA6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012EAAu); /* JSR push */
   func_013588();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012EAA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012EAEu); /* JSR push */
   func_0135A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012EAE */
   return;
@@ -100184,8 +100184,8 @@ void func_012EB0(void) {
   /* $012ED4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012ED8u); /* JSR push */
   func_01307E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_012ED8:;
   /* $012ED8 */
@@ -100199,8 +100199,8 @@ void func_012EB0(void) {
   /* $012EE0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012EE4u); /* JSR push */
   func_0130EA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_012EE4:;
   /* $012EE4 */
@@ -100402,8 +100402,8 @@ void func_012EB0(void) {
   /* $012F46 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012F4Cu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012F4C */
   uint16_t _012F4Cr = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)0xCu);
@@ -100725,8 +100725,8 @@ void func_012FEE(void) {
   /* $012FF2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x012FF8u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $012FF8 */
   uint16_t _t012FF8 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)20));
@@ -100869,8 +100869,8 @@ void func_01300C(void) {
   /* $01302C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013030u); /* JSR push */
   func_014CDE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013030 */
   uint16_t _ts013030 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -101245,8 +101245,8 @@ void func_01307E(void) {
   /* $0130E2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0130E8u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0130E8:;
   /* $0130E8 */
@@ -101436,8 +101436,8 @@ void func_0130EA(void) {
   /* $013148 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01314Eu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01314E:;
   /* $01314E */
@@ -101544,8 +101544,8 @@ void func_013150(void) {
   /* $013178 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01317Cu); /* JSR push */
   func_013202();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01317C:;
   /* $01317C */
@@ -101559,8 +101559,8 @@ void func_013150(void) {
   /* $013184 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013188u); /* JSR push */
   func_013226();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_013188:;
   /* $013188 */
@@ -101708,8 +101708,8 @@ void func_0131CC(void) {
   /* $0131D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0131D6u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0131D6 */
   uint16_t _t0131D6 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)20));
@@ -102312,8 +102312,8 @@ void func_0132D4(void) {
   /* $0132E2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0132E6u); /* JSR push */
   func_014F08();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0132E6 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -102757,8 +102757,8 @@ void func_0133AC(void) {
   /* $0133D6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0133DCu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0133DC */
   uint16_t _t0133DC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)20));
@@ -102833,8 +102833,8 @@ void func_0133EA(void) {
   /* $013400 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013404u); /* JSR push */
   func_014D48();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013404 */
   uint16_t _013404r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)0x6u);
@@ -102899,8 +102899,8 @@ void func_0133EA(void) {
   /* $013426 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01342Cu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01342C */
   g_cpu.D[1] = (uint32_t)((int32_t)(int16_t)g_cpu.D[1] * (int32_t)(int16_t)((uint16_t)g_cpu.D[2]));
@@ -103005,8 +103005,8 @@ void func_0133EA(void) {
   /* $013458 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01345Eu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01345E */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)22), (uint8_t)(0x13u));
@@ -103238,8 +103238,8 @@ void func_0134D4(void) {
   /* $0134E6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0134ECu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0134EC */
   g_cpu.D[0] = (uint32_t)((int32_t)(int16_t)g_cpu.D[0] * (int32_t)(int16_t)(0x0020u));
@@ -103359,8 +103359,8 @@ void func_01350A(void) {
   /* $01351C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013522u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013522 */
   g_cpu.D[0] = (uint32_t)((int32_t)(int16_t)g_cpu.D[0] * (int32_t)(int16_t)(0x0050u));
@@ -103694,8 +103694,8 @@ void func_0135A4(void) {
   /* $0135AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0135B2u); /* JSR push */
   func_002CA8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0135B2 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFFEC, (uint8_t)((uint8_t)g_cpu.D[0]));
@@ -103779,8 +103779,8 @@ void func_0135DE(void) {
   /* $0135DE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0135E2u); /* JSR push */
   func_015042();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0135E2 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -103813,8 +103813,8 @@ void func_0135DE(void) {
   /* $0135F0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0135F4u); /* JSR push */
   func_014EB4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0135F4 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -103847,8 +103847,8 @@ void func_0135DE(void) {
   /* $013602 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013606u); /* JSR push */
   func_014D70();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013606 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFFEF, (uint8_t)((uint8_t)g_cpu.D[1]));
@@ -103940,8 +103940,8 @@ void func_0135DE(void) {
   /* $013626 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01362Au); /* JSR push */
   func_0137A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01362A */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)28), (uint8_t)(0x00u));
@@ -104116,8 +104116,8 @@ void func_013680(void) {
   /* $013680 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013684u); /* JSR push */
   func_015042();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013684 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -104161,8 +104161,8 @@ void func_013680(void) {
   /* $01369A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01369Eu); /* JSR push */
   func_014F08();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01369E */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -104219,8 +104219,8 @@ void func_013680(void) {
   /* $0136BA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0136BEu); /* JSR push */
   func_014D70();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0136BE */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -104252,8 +104252,8 @@ void func_013680(void) {
   /* $0136CA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0136CEu); /* JSR push */
   func_0137A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0136CE */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)28), (uint8_t)(0x00u));
@@ -104288,8 +104288,8 @@ void func_0136E2(void) {
   /* $0136E2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0136E6u); /* JSR push */
   func_015042();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0136E6 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -104322,8 +104322,8 @@ void func_0136E2(void) {
   /* $0136F4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0136F8u); /* JSR push */
   func_014EB4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0136F8 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -104356,8 +104356,8 @@ void func_0136E2(void) {
   /* $013706 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01370Au); /* JSR push */
   func_014F08();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01370A */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -104428,8 +104428,8 @@ void func_0136E2(void) {
   /* $01372A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01372Eu); /* JSR push */
   func_0137A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01372E */
   uint16_t _ts01372E = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -104470,8 +104470,8 @@ void func_01373E(void) {
   /* $01373E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013742u); /* JSR push */
   func_014EB4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013742 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -104515,8 +104515,8 @@ void func_01373E(void) {
   /* $013758 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01375Cu); /* JSR push */
   func_014F08();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01375C */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -104573,8 +104573,8 @@ void func_01373E(void) {
   /* $013778 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01377Cu); /* JSR push */
   func_014D70();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01377C */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -104606,8 +104606,8 @@ void func_01373E(void) {
   /* $013788 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01378Cu); /* JSR push */
   func_0137A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01378C */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)28), (uint8_t)(0x00u));
@@ -104754,8 +104754,8 @@ void func_0137F2(void) {
   /* $0137F2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0137F8u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0137F8 */
   uint16_t _t0137F8 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -104791,32 +104791,32 @@ void func_0137F2(void) {
   /* $01380C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013810u); /* JSR push */
   func_013826();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013810 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013814u); /* JSR push */
   func_013304();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013814 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013818u); /* JSR push */
   func_012D5E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013818 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01381Cu); /* JSR push */
   func_0139C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01381C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013820u); /* JSR push */
   func_013C3E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013820 */
   func_00D604(); return;
@@ -104859,8 +104859,8 @@ void func_013826(void) {
   /* $013836 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01383Au); /* JSR push */
   func_0135A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01383A */
   uint8_t _t01383A = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -104934,32 +104934,32 @@ void func_013862(void) {
   /* $013862 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013866u); /* JSR push */
   func_01387E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013866 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01386Cu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01386C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013870u); /* JSR push */
   func_012D5E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013870 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013874u); /* JSR push */
   func_0139C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013874 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013878u); /* JSR push */
   func_013C3E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013878 */
   func_00D604(); return;
@@ -105089,8 +105089,8 @@ void func_01387E(void) {
   /* $0138C6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0138CCu); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0138CC */
   g_cpu.D[0] = 0x00000003u;
@@ -106108,8 +106108,8 @@ void func_013A52(void) {
   /* $013AC8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013ACCu); /* JSR push */
   func_013A0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013ACC */
   uint8_t _t013ACC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -106750,8 +106750,8 @@ void func_013D10(void) {
   /* $013D16 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013D1Cu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_013D1C(); return;
 }
@@ -106902,14 +106902,14 @@ void func_013D1C(void) {
   /* $013D64 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013D66u); /* JSR push */
   func_013DD0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013D66 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013D6Cu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013D6C */
   uint8_t _t013D6C = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -106935,8 +106935,8 @@ void func_013D7E(void) {
   /* $013D7E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013D80u); /* JSR push */
   func_013DD0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013D80 */
   g_cpu.A[1] = 0x000140B8u;
@@ -106944,8 +106944,8 @@ void func_013D7E(void) {
   /* $013D86 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013D8Cu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013D8C */
   func_00D604(); return;
@@ -107016,8 +107016,8 @@ void func_013D98(void) {
   /* $013DB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013DBEu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013DBE */
   uint8_t _t013DBE = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -107247,8 +107247,8 @@ void func_013E9C(void) {
   /* $013ECC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013ED2u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013ED2 */
   uint16_t _013ED2r = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0x1u;
@@ -107334,8 +107334,8 @@ void func_013E9C(void) {
   /* $013EFC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013F02u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_013F02:;
   /* $013F02 */
@@ -107382,8 +107382,8 @@ void func_013E9C(void) {
   /* $013F1A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013F20u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_013F20:;
   /* $013F20 */
@@ -107403,8 +107403,8 @@ void func_013E9C(void) {
   /* $013F28 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013F2Cu); /* JSR push */
   func_01408E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013F2C */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xF7C8, (uint8_t)(0x81u));
@@ -107423,8 +107423,8 @@ void func_013E9C(void) {
   /* $013F36 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013F3Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013F3C */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)52), (uint8_t)(0x0Au));
@@ -107460,8 +107460,8 @@ void func_013E9C(void) {
   /* $013F54 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013F58u); /* JSR push */
   func_0137A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013F58 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)28), (uint8_t)(0x17u));
@@ -107560,8 +107560,8 @@ void func_013E9C(void) {
   /* $013F9A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013FA0u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013FA0 */
   uint16_t _t013FA0 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -107614,8 +107614,8 @@ void func_013E9C(void) {
   /* $013FBC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013FC2u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013FC2 */
   uint16_t _013FC2r = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0xFu;
@@ -107635,8 +107635,8 @@ void func_013E9C(void) {
   /* $013FCA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x013FD0u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $013FD0 */
   if (!(g_cpu.SR & (1u<<2))) goto label_01408C;
@@ -107773,8 +107773,8 @@ void func_013E9C(void) {
   /* $014022 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014028u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014028 */
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)38), (uint8_t)((uint8_t)g_cpu.D[0]));
@@ -107843,8 +107843,8 @@ void func_013E9C(void) {
   /* $01404C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014052u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014052 */
   uint16_t _014052r = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0x3u;
@@ -107989,8 +107989,8 @@ void func_01408E(void) {
   /* $0140A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0140ACu); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0140AC:;
   /* $0140AC */
@@ -108178,8 +108178,8 @@ void func_0141A4(void) {
   /* $0141C8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0141CEu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0141CE */
   func_00D604(); return;
@@ -108385,8 +108385,8 @@ void func_0141DC(void) {
   /* $014242 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014248u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014248 */
   func_00D604(); return;
@@ -108536,8 +108536,8 @@ void func_01429A(void) {
   /* $0142B2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0142B8u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0142B8 */
   uint8_t _t0142B8 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -108579,8 +108579,8 @@ void func_01429A(void) {
   /* $0142D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0142D6u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0142D6:;
   /* $0142D6 */
@@ -108729,8 +108729,8 @@ void func_01432E(void) {
   /* $01433A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014340u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014340 */
   func_00D604(); return;
@@ -109030,8 +109030,8 @@ void func_0145EE(void) {
   /* $014674 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014678u); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014678 */
   g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[1]));
@@ -109146,8 +109146,8 @@ void func_0145EE(void) {
   /* $0146A4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0146A8u); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0146A8 */
   uint16_t _ts0146A8 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -109160,8 +109160,8 @@ void func_0145EE(void) {
   /* $0146AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0146AEu); /* JSR push */
   func_014750();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0146AE */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -109485,8 +109485,8 @@ void func_01477C(void) {
   /* $0147A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0147AAu); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0147AA */
   g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[1]));
@@ -109591,8 +109591,8 @@ void func_01477C(void) {
   /* $0147D4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0147D8u); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0147D8 */
   uint16_t _ts0147D8 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -109605,8 +109605,8 @@ void func_01477C(void) {
   /* $0147DA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0147DEu); /* JSR push */
   func_014750();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0147DE */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -109820,8 +109820,8 @@ void func_014818(void) {
   /* $014844 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014848u); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014848 */
   g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[1]));
@@ -109934,8 +109934,8 @@ void func_014818(void) {
   /* $014876 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01487Au); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01487A */
   uint16_t _ts01487A = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -109948,8 +109948,8 @@ void func_014818(void) {
   /* $01487C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014880u); /* JSR push */
   func_014750();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014880 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -110163,8 +110163,8 @@ void func_0148BA(void) {
   /* $0148E6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0148EAu); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0148EA */
   g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[1]));
@@ -110277,8 +110277,8 @@ void func_0148BA(void) {
   /* $014918 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01491Cu); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01491C */
   uint16_t _ts01491C = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -110291,8 +110291,8 @@ void func_0148BA(void) {
   /* $01491E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014922u); /* JSR push */
   func_014750();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014922 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -110746,8 +110746,8 @@ void func_0149CE(void) {
   /* $0149CE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0149D0u); /* JSR push */
   func_01495C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0149D0 */
   uint16_t _ts0149D0 = m68k_read16(g_cpu.A[1]);
@@ -110796,8 +110796,8 @@ void func_0149CE(void) {
   /* $0149E0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0149E4u); /* JSR push */
   func_014A74();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0149E4 */
   uint16_t _0149E4r = (uint16_t)((uint16_t)g_cpu.D[2] - (uint16_t)(g_cpu.A[3]));
@@ -111117,8 +111117,8 @@ void func_0149CE(void) {
   /* $014A68 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014A6Cu); /* JSR push */
   func_014A74();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014A6C */
   uint16_t _014A6Cr = (uint16_t)((uint16_t)g_cpu.D[2] + (uint16_t)(g_cpu.A[3]));
@@ -111150,8 +111150,8 @@ void func_014A74(void) {
   /* $014A74 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014A78u); /* JSR push */
   func_01495C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014A78 */
   uint16_t _ts014A78 = m68k_read16(g_cpu.A[1]);
@@ -111509,8 +111509,8 @@ void func_014B0C(void) {
   /* $014B0C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014B10u); /* JSR push */
   func_01495C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014B10 */
   uint16_t _ts014B10 = m68k_read16(g_cpu.A[1]);
@@ -111559,8 +111559,8 @@ void func_014B0C(void) {
   /* $014B20 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014B24u); /* JSR push */
   func_014BB4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014B24 */
   uint16_t _014B24r = (uint16_t)((uint16_t)g_cpu.D[3] - (uint16_t)(g_cpu.A[3]));
@@ -111880,8 +111880,8 @@ void func_014B0C(void) {
   /* $014BA8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014BACu); /* JSR push */
   func_014BB4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014BAC */
   uint16_t _014BACr = (uint16_t)((uint16_t)g_cpu.D[3] + (uint16_t)(g_cpu.A[3]));
@@ -111913,8 +111913,8 @@ void func_014BB4(void) {
   /* $014BB4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014BB8u); /* JSR push */
   func_01495C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014BB8 */
   uint16_t _ts014BB8 = m68k_read16(g_cpu.A[1]);
@@ -112733,8 +112733,8 @@ void func_014D70(void) {
   /* $014D98 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014D9Cu); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014D9C */
   g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[1]));
@@ -112839,8 +112839,8 @@ void func_014D70(void) {
   /* $014DC6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014DCAu); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014DCA */
   uint16_t _ts014DCA = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -112973,8 +112973,8 @@ void func_014DF0(void) {
   /* $014E02 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014E06u); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014E06 */
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x00u));
@@ -113101,8 +113101,8 @@ void func_014E1C(void) {
   /* $014E3C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014E40u); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014E40 */
   uint8_t _ts014E40 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF768);
@@ -113230,8 +113230,8 @@ void func_014E50(void) {
   /* $014E78 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014E7Cu); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014E7C */
   g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[1]));
@@ -113336,8 +113336,8 @@ void func_014E50(void) {
   /* $014EA6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014EAAu); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014EAA */
   uint16_t _ts014EAA = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -113415,8 +113415,8 @@ void func_014EBC(void) {
   /* $014ECE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014ED2u); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014ED2 */
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0xC0u));
@@ -113481,8 +113481,8 @@ void func_014EDA(void) {
   /* $014EF4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014EF8u); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014EF8 */
   uint8_t _ts014EF8 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF768);
@@ -113618,8 +113618,8 @@ void func_014F08(void) {
   /* $014F34 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014F38u); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014F38 */
   g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[1]));
@@ -113732,8 +113732,8 @@ void func_014F08(void) {
   /* $014F66 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014F6Au); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014F6A */
   uint16_t _ts014F6A = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -113818,8 +113818,8 @@ void func_014F7C(void) {
   /* $014F92 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014F96u); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014F96 */
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x80u));
@@ -113914,8 +113914,8 @@ void func_014F9E(void) {
   /* $014FC2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x014FC6u); /* JSR push */
   func_0149CE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $014FC6 */
   uint8_t _ts014FC6 = m68k_read8((uint32_t)(int32_t)(int16_t)0xF768);
@@ -114051,8 +114051,8 @@ void func_014FD6(void) {
   /* $015002 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015006u); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $015006 */
   g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[1]));
@@ -114165,8 +114165,8 @@ void func_014FD6(void) {
   /* $015034 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015038u); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $015038 */
   uint16_t _ts015038 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -114252,8 +114252,8 @@ void func_01504A(void) {
   /* $015060 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015064u); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $015064 */
   g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x40u));
@@ -114318,8 +114318,8 @@ void func_01506C(void) {
   /* $015086 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01508Au); /* JSR push */
   func_014B0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01508A */
   uint8_t _ts01508A = m68k_read8((uint32_t)(int32_t)(int16_t)0xF768);
@@ -114411,8 +114411,8 @@ void func_0150B0(void) {
   /* $0150BC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0150C0u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0150C0 */
   if (!(g_cpu.SR & (1u<<2))) goto label_0150FE;
@@ -114549,8 +114549,8 @@ void func_015120(void) {
   /* $015120 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015124u); /* JSR push */
   func_015200();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $015124 */
   uint8_t _t015124 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1));
@@ -114604,8 +114604,8 @@ void func_015120(void) {
   /* $01513A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01513Eu); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01513E */
   uint8_t _t01513E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -114763,8 +114763,8 @@ void func_015120(void) {
   /* $0151A0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0151A4u); /* JSR push */
   func_015248();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0151A4 */
   uint16_t _t0151A4 = m68k_read16((uint32_t)(g_cpu.A[1] + (int32_t)8));
@@ -114949,14 +114949,14 @@ void func_0151B8(void) {
   /* $0151F8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0151FAu); /* JSR push */
   func_015200();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0151FA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0151FCu); /* JSR push */
   func_015248();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0151FC */
   func_00F6AC(); return;
@@ -115432,14 +115432,14 @@ void func_015564(void) {
   /* $015564 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015568u); /* JSR push */
   func_015570();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $015568 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01556Cu); /* JSR push */
   func_015624();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01556C */
   func_01565E(); return;
@@ -115802,8 +115802,8 @@ void func_015624(void) {
   /* $015630 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015636u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $015636 */
   uint16_t _ts015636 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -116126,8 +116126,8 @@ void func_0156CA(void) {
   /* $0156CA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0156CCu); /* JSR push */
   func_0156F0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0156CC */
   uint16_t _ts0156CC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -116669,8 +116669,8 @@ void func_0157C2(void) {
   /* $0157DE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0157E4u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0157E4:;
   /* $0157E4 */
@@ -116679,8 +116679,8 @@ void func_0157C2(void) {
   /* $0157EA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0157F0u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0157F0 */
   uint8_t _t0157F0 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -116734,8 +116734,8 @@ void func_0157C2(void) {
   /* $015806 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01580Au); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01580A */
   func_00F6AC(); return;
@@ -116859,8 +116859,8 @@ void func_01582E(void) {
   /* $015860 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015866u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $015866 */
   uint8_t _t015866 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -116914,8 +116914,8 @@ void func_01582E(void) {
   /* $01587C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015880u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $015880 */
   func_00F6AC(); return;
@@ -117123,8 +117123,8 @@ void func_0159CC(void) {
   /* $0159DC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0159E0u); /* JSR push */
   call_by_address((uint32_t)(0x000159DEu + (int32_t)(int16_t)g_cpu.D[1] + (42)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0159E0 */
   uint16_t _ts0159E0 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)58));
@@ -117648,8 +117648,8 @@ void func_015D0A(void) {
   /* $015D1E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015D22u); /* JSR push */
   call_by_address((uint32_t)(0x00015D20u + (int32_t)(int16_t)g_cpu.D[1] + (104)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $015D22 */
   uint16_t _ts015D22 = m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;
@@ -117729,8 +117729,8 @@ void func_015D0A(void) {
   /* $015D3E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x015D42u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_015D42:;
   /* $015D42 */
@@ -118142,8 +118142,8 @@ void func_016068(void) {
   /* $016082 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016088u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016088 */
   func_00F6AC(); return;
@@ -118207,8 +118207,8 @@ void func_01608C(void) {
   /* $0160B0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0160B6u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0160B6 */
   uint8_t _t0160B6 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -118249,8 +118249,8 @@ void func_01608C(void) {
   /* $0160CC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0160D2u); /* JSR push */
   func_00744C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0160D2 */
   func_00F6AC(); return;
@@ -118274,8 +118274,8 @@ void func_01608C(void) {
   /* $0160DC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0160E2u); /* JSR push */
   func_0075C0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0160E2 */
   uint16_t _ts0160E2 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -118288,8 +118288,8 @@ void func_01608C(void) {
   /* $0160E6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0160ECu); /* JSR push */
   func_007B2E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0160EC */
   func_00F6AC(); return;
@@ -118509,8 +118509,8 @@ void func_016184(void) {
   /* $01619E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0161A4u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0161A4:;
   /* $0161A4 */
@@ -118519,8 +118519,8 @@ void func_016184(void) {
   /* $0161AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0161B0u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0161B0 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)32), (uint8_t)(0x00u));
@@ -118583,8 +118583,8 @@ void func_01626A(void) {
   /* $016274 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016278u); /* JSR push */
   call_by_address((uint32_t)(0x00016276u + (int32_t)(int16_t)g_cpu.D[1] + (76)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016278 */
   uint16_t _ts016278 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -119070,8 +119070,8 @@ void func_0162C6(void) {
   /* $016378 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01637Cu); /* JSR push */
   func_012570();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01637C */
   func_0163D8(); return;
@@ -119166,8 +119166,8 @@ void func_0163B4(void) {
   /* $0163B4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0163BAu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0163BA */
   if (!(g_cpu.SR & (1u<<2))) { func_0163D0(); return; }
@@ -119247,8 +119247,8 @@ void func_0163D8(void) {
   /* $0163DE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0163E4u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0163E4 */
   uint8_t _t0163E4 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)26));
@@ -119271,8 +119271,8 @@ void func_0163D8(void) {
   /* $0163EE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0163F2u); /* JSR push */
   func_016424();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0163F2 */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(0x001Bu));
@@ -119546,8 +119546,8 @@ void func_016424(void) {
   /* $016480 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016484u); /* JSR push */
   func_012570();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_016484:;
   /* $016484 */
@@ -119663,8 +119663,8 @@ void func_01653C(void) {
   /* $016572 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016576u); /* JSR push */
   func_0165DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_016576(); return;
 }
@@ -119707,8 +119707,8 @@ void func_016576(void) {
   /* $016586 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01658Cu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01658C */
   uint16_t _t01658C = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)52));
@@ -119727,8 +119727,8 @@ void func_016576(void) {
   /* $016592 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016596u); /* JSR push */
   func_0165DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_016596:;
   /* $016596 */
@@ -119809,8 +119809,8 @@ void func_016576(void) {
   /* $0165B2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0165B6u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0165B6:;
   /* $0165B6 */
@@ -119985,8 +119985,8 @@ void func_016668(void) {
   /* $016672 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016676u); /* JSR push */
   call_by_address((uint32_t)(0x00016674u + (int32_t)(int16_t)g_cpu.D[1] + (38)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016676 */
   uint16_t _ts016676 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -120374,8 +120374,8 @@ void func_0166C8(void) {
   /* $016756 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01675Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01675C:;
   /* $01675C */
@@ -120410,8 +120410,8 @@ void func_01675E(void) {
   /* $01676A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016770u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016770 */
   { int16_t _sv = (int16_t)(uint16_t)g_cpu.D[0];
@@ -120467,8 +120467,8 @@ void func_01675E(void) {
   /* $016784 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016788u); /* JSR push */
   func_01681C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016788 */
   uint8_t _t016788 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)36));
@@ -120491,8 +120491,8 @@ void func_01675E(void) {
   /* $016790 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016796u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_016796:;
   /* $016796 */
@@ -121239,14 +121239,14 @@ void func_016952(void) {
   /* $01695E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016964u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016964 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01696Au); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01696A */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -121439,8 +121439,8 @@ void func_0169D6(void) {
   /* $0169D6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0169DCu); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0169DC */
   if (!(g_cpu.SR & (1u<<2))) goto label_016A32;
@@ -121642,8 +121642,8 @@ void func_016A40(void) {
   /* $016A52 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016A56u); /* JSR push */
   call_by_address((uint32_t)(0x00016A54u + (int32_t)(int16_t)g_cpu.D[1] + (118)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016A56 */
   uint8_t _ts016A56 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)43));
@@ -122047,8 +122047,8 @@ void func_016B02(void) {
   /* $016B28 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016B2Eu); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016B2E */
   uint32_t _ts016B2E = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;
@@ -122818,8 +122818,8 @@ void func_016CC0(void) {
   /* $016CC0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016CC6u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016CC6 */
   uint16_t _t016CC6 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -122834,8 +122834,8 @@ void func_016CC0(void) {
   /* $016CCC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016CD2u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016CD2 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -122908,8 +122908,8 @@ void func_016E2E(void) {
   /* $016E38 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016E3Cu); /* JSR push */
   call_by_address((uint32_t)(0x00016E3Au + (int32_t)(int16_t)g_cpu.D[1] + (8)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016E3C */
   func_00F6AC(); return;
@@ -123272,8 +123272,8 @@ void func_016EAE(void) {
   /* $016F1A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016F20u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016F20 */
   uint8_t _t016F20 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)36));
@@ -123289,8 +123289,8 @@ void func_016EAE(void) {
   /* $016F24 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016F2Au); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016F2A */
   if (!(g_cpu.SR & (1u<<2))) goto label_016F76;
@@ -123396,8 +123396,8 @@ void func_016EAE(void) {
   /* $016F7C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016F80u); /* JSR push */
   func_016FD2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016F80 */
   g_cpu.A[2] = (uint32_t)(int32_t)(int16_t)0xFC00;
@@ -123494,8 +123494,8 @@ void func_016F94(void) {
   /* $016FAE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x016FB4u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016FB4 */
   g_cpu.D[1] = (uint32_t)((int32_t)(int16_t)g_cpu.D[1] * (int32_t)(int16_t)(0x0C00u));
@@ -124220,8 +124220,8 @@ void func_017170(void) {
   /* $0171D6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0171DCu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0171DC */
   g_cpu.D[0] = 0x00000000u;
@@ -124259,8 +124259,8 @@ void func_017170(void) {
   /* $0171E8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0171EEu); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0171EE:;
   /* $0171EE */
@@ -124663,8 +124663,8 @@ void func_017728(void) {
   /* $017728 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01772Eu); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01772E */
   if (!(g_cpu.SR & (1u<<2))) { func_017772(); return; }
@@ -124829,8 +124829,8 @@ void func_01778A(void) {
   /* $017794 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017798u); /* JSR push */
   call_by_address((uint32_t)(0x00017796u + (int32_t)(int16_t)g_cpu.D[1] + (38)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017798 */
   g_cpu.A[1] = 0x00017CBCu;
@@ -124838,8 +124838,8 @@ void func_01778A(void) {
   /* $01779E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0177A4u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0177A4 */
   uint8_t _ts0177A4 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -124892,8 +124892,8 @@ void func_0177CA(void) {
   /* $0177D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0177D4u); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0177D4 */
   uint16_t _t0177D4 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)56));
@@ -124942,8 +124942,8 @@ void func_0177E6(void) {
   /* $0177EA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0177F0u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0177F0 */
   { int16_t _sv = (int16_t)(uint16_t)g_cpu.D[0];
@@ -125055,8 +125055,8 @@ void func_0177E6(void) {
   /* $017828 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01782Eu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01782E(); return;
 }
@@ -125141,8 +125141,8 @@ void func_01784C(void) {
   /* $01784E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017852u); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017852 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(0x08u));
@@ -125187,8 +125187,8 @@ void func_017860(void) {
   /* $01786A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017870u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017870 */
   if (!(g_cpu.SR & (1u<<2))) goto label_0178A2;
@@ -125219,8 +125219,8 @@ void func_017860(void) {
   /* $017884 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01788Au); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01788A */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)g_cpu.D[0]));
@@ -125452,8 +125452,8 @@ void func_0178CA(void) {
   /* $0178D6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0178DAu); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0178DA */
   uint16_t _t0178DA = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -125496,8 +125496,8 @@ void func_0178CA(void) {
   /* $0178F2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0178F8u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0178F8 */
   if (!(g_cpu.SR & (1u<<2))) goto label_017910;
@@ -125663,8 +125663,8 @@ void func_017954(void) {
   /* $01795A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01795Eu); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01795E */
   goto label_017976;
@@ -125905,15 +125905,15 @@ void func_0179AC(void) {
   /* $0179E8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0179EEu); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0179EE:;
   /* $0179EE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0179F2u); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0179F2 */
   func_0177E6(); return;
@@ -125978,8 +125978,8 @@ void func_0179F6(void) {
   /* $017A16 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017A1Au); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017A1A */
   func_0177E6(); return;
@@ -126293,8 +126293,8 @@ void func_017AAA(void) {
   /* $017AC6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017ACCu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017ACC */
   uint8_t _ts017ACC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -126438,8 +126438,8 @@ void func_017B28(void) {
   /* $017B28 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017B2Eu); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017B2E */
   if (!(g_cpu.SR & (1u<<2))) { func_017B8A(); return; }
@@ -126821,8 +126821,8 @@ void func_017C06(void) {
   /* $017C06 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017C0Au); /* JSR push */
   func_017C2A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017C0A */
   uint8_t _ts017C0A = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)38));
@@ -126835,8 +126835,8 @@ void func_017C06(void) {
   /* $017C0E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017C14u); /* JSR push */
   func_007BBA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017C14 */
   func_00D604(); return;
@@ -126848,14 +126848,14 @@ void func_017C1A(void) {
   /* $017C1A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017C1Eu); /* JSR push */
   func_017C2A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017C1E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017C24u); /* JSR push */
   func_007B7A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017C24 */
   func_00D604(); return;
@@ -127068,8 +127068,8 @@ void func_017C8E(void) {
   /* $017CA2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017CA6u); /* JSR push */
   func_017860();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017CA6 */
   uint8_t _t017CA6 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)60));
@@ -127217,8 +127217,8 @@ void func_017E86(void) {
   /* $017E86 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017E8Cu); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017E8C */
   if (!(g_cpu.SR & (1u<<2))) { func_017EDA(); return; }
@@ -127364,8 +127364,8 @@ void func_017EDA(void) {
   /* $017EE8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017EECu); /* JSR push */
   call_by_address((uint32_t)(0x00017EEAu + (int32_t)(int16_t)g_cpu.D[1] + (36)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017EEC */
   g_cpu.A[1] = 0x00017CBCu;
@@ -127373,8 +127373,8 @@ void func_017EDA(void) {
   /* $017EF2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017EF8u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017EF8 */
   g_cpu.D[0] = 0x00000003u;
@@ -127470,8 +127470,8 @@ void func_017F38(void) {
   /* $017F38 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017F3Cu); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017F3C */
   uint16_t _ts017F3C = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)56));
@@ -127551,8 +127551,8 @@ void func_017F48(void) {
   /* $017F6A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017F70u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_017F70:;
   /* $017F70 */
@@ -127630,8 +127630,8 @@ void func_017F48(void) {
   /* $017F94 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x017F98u); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017F98 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)61), (uint8_t)(0xFFu));
@@ -128006,8 +128006,8 @@ void func_01801E(void) {
   /* $01805C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018062u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018062 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -128410,8 +128410,8 @@ void func_0180F6(void) {
   /* $018116 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01811Cu); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01811C */
   uint8_t _t01811C = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -128806,8 +128806,8 @@ void func_0181F8(void) {
   /* $0181FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018204u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018204 */
   uint32_t _t018204 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)52));
@@ -128963,8 +128963,8 @@ void func_018276(void) {
   /* $018276 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01827Cu); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01827C */
   if (!(g_cpu.SR & (1u<<2))) { func_0182C8(); return; }
@@ -129107,8 +129107,8 @@ void func_0182C8(void) {
   /* $0182D2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0182D6u); /* JSR push */
   call_by_address((uint32_t)(0x000182D4u + (int32_t)(int16_t)g_cpu.D[1] + (36)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0182D6 */
   g_cpu.A[1] = 0x00017CBCu;
@@ -129116,8 +129116,8 @@ void func_0182C8(void) {
   /* $0182DC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0182E2u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0182E2 */
   g_cpu.D[0] = 0x00000003u;
@@ -129182,8 +129182,8 @@ void func_018302(void) {
   /* $01830A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018310u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018310 */
   { int16_t _sv = (int16_t)(uint16_t)g_cpu.D[0];
@@ -129215,8 +129215,8 @@ void func_018302(void) {
   /* $01831C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018320u); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018320 */
   uint16_t _t018320 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -129254,8 +129254,8 @@ void func_018302(void) {
   /* $018334 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01833Au); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01833A */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)52), (uint8_t)((uint8_t)g_cpu.D[0]));
@@ -129345,8 +129345,8 @@ void func_01833E(void) {
   /* $01836E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018374u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_018374:;
   /* $018374 */
@@ -129420,8 +129420,8 @@ void func_01833E(void) {
   /* $018394 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018398u); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018398 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(0x04u));
@@ -129474,8 +129474,8 @@ void func_0183AA(void) {
   /* $0183B4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0183B8u); /* JSR push */
   call_by_address((uint32_t)(0x000183B6u + (int32_t)(int16_t)g_cpu.D[0] + (12)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0183B8 */
   uint8_t _t0183B8 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)40));
@@ -129598,8 +129598,8 @@ void func_0183CA(void) {
   /* $018406 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01840Au); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01840A */
   uint16_t _t01840A = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -129634,8 +129634,8 @@ void func_01840E(void) {
   /* $018414 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01841Au); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01841A */
   if (!(g_cpu.SR & (1u<<2))) goto label_01844A;
@@ -129657,8 +129657,8 @@ void func_01840E(void) {
   /* $018428 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01842Eu); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01842E */
   uint32_t _01842Er = (uint32_t)((uint32_t)g_cpu.D[0]) & (uint32_t)0xFFFFu;
@@ -129726,8 +129726,8 @@ void func_01840E(void) {
   /* $01844A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018450u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018450 */
   uint8_t _018450r = (uint8_t)((uint8_t)g_cpu.D[0]) & (uint8_t)0x1Fu;
@@ -129866,8 +129866,8 @@ void func_01849E(void) {
   /* $01849E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0184A2u); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0184A2 */
   uint16_t _ts0184A2 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)56));
@@ -129929,8 +129929,8 @@ void func_01849E(void) {
   /* $0184C6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0184CCu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0184CC */
   if (!(g_cpu.SR & (1u<<2))) goto label_0184EA;
@@ -130225,15 +130225,15 @@ void func_01852C(void) {
   /* $018574 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01857Au); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01857A:;
   /* $01857A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01857Eu); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01857E */
   func_01833E(); return;
@@ -130298,8 +130298,8 @@ void func_018582(void) {
   /* $0185A2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0185A6u); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0185A6 */
   func_01833E(); return;
@@ -130584,8 +130584,8 @@ void func_01863E(void) {
   /* $018644 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01864Au); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01864A(); return;
 }
@@ -130750,8 +130750,8 @@ void func_0186A4(void) {
   /* $0186AE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0186B2u); /* JSR push */
   call_by_address((uint32_t)(0x000186B0u + (int32_t)(int16_t)g_cpu.D[0] + (8)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0186B2 */
   func_00D604(); return;
@@ -130877,8 +130877,8 @@ void func_0186C0(void) {
   /* $018714 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01871Au); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01871A(); return;
 }
@@ -130911,14 +130911,14 @@ void func_01871A(void) {
   /* $018724 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018728u); /* JSR push */
   call_by_address((uint32_t)(0x00018726u + (int32_t)(int16_t)g_cpu.D[0] + (36)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018728 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01872Eu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01872E */
   g_cpu.A[1] = 0x0000E4C4u;
@@ -130926,8 +130926,8 @@ void func_01871A(void) {
   /* $018734 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01873Au); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01873A */
   uint16_t _t01873A = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)12));
@@ -131011,8 +131011,8 @@ void func_018752(void) {
   /* $018774 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018778u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018778 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -131098,8 +131098,8 @@ void func_018782(void) {
   /* $0187A8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0187AEu); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0187AE */
   if (!(g_cpu.SR & (1u<<2))) { func_0187CA(); return; }
@@ -131211,8 +131211,8 @@ void func_0187D0(void) {
   /* $0187D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0187D6u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0187D6 */
   if (!(g_cpu.SR & (1u<<2))) goto label_0187EE;
@@ -131258,8 +131258,8 @@ void func_0187F0(void) {
   /* $0187F0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0187F4u); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0187F4 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -131341,8 +131341,8 @@ void func_0187F0(void) {
   /* $018816 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018818u); /* JSR push */
   func_0187D0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018818 */
   uint16_t _ts018818 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -131474,8 +131474,8 @@ void func_018832(void) {
   /* $018856 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01885Au); /* JSR push */
   func_014E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01885A */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[1]);
@@ -131726,8 +131726,8 @@ void func_01890A(void) {
   /* $01890A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018910u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018910 */
   if (!(g_cpu.SR & (1u<<2))) { func_01895C(); return; }
@@ -131938,8 +131938,8 @@ void func_01897C(void) {
   /* $018986 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01898Au); /* JSR push */
   call_by_address((uint32_t)(0x00018988u + (int32_t)(int16_t)g_cpu.D[0] + (36)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01898A */
   g_cpu.A[1] = 0x00017CBCu;
@@ -131947,8 +131947,8 @@ void func_01897C(void) {
   /* $018990 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018996u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018996 */
   g_cpu.D[0] = 0x00000003u;
@@ -132030,8 +132030,8 @@ void func_0189CA(void) {
   /* $0189CA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0189CEu); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0189CE */
   uint8_t _ts0189CE = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)63));
@@ -132055,8 +132055,8 @@ void func_0189CA(void) {
   /* $0189D6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0189DCu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0189DC */
   { int16_t _sv = (int16_t)(uint16_t)g_cpu.D[0];
@@ -132107,8 +132107,8 @@ void func_0189EE(void) {
   /* $0189EE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0189F2u); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0189F2 */
   uint16_t _ts0189F2 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)56));
@@ -132191,8 +132191,8 @@ void func_0189FE(void) {
   /* $018A22 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018A28u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_018A28:;
   /* $018A28 */
@@ -132266,8 +132266,8 @@ void func_0189FE(void) {
   /* $018A48 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018A4Cu); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018A4C */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(0x06u));
@@ -132651,8 +132651,8 @@ void func_018AD2(void) {
   /* $018B0C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018B12u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018B12 */
   uint32_t _t018B12 = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;
@@ -132945,8 +132945,8 @@ void func_018B80(void) {
   /* $018BBC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018BC2u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_018BC2:;
   /* $018BC2 */
@@ -133012,8 +133012,8 @@ void func_018BC6(void) {
   /* $018BE8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018BECu); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018BEC */
   func_0189CA(); return;
@@ -133246,8 +133246,8 @@ void func_018C6C(void) {
   /* $018C72 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018C78u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_018C78(); return;
 }
@@ -133405,8 +133405,8 @@ void func_018CCE(void) {
   /* $018CD8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018CDCu); /* JSR push */
   call_by_address((uint32_t)(0x00018CDAu + (int32_t)(int16_t)g_cpu.D[0] + (42)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018CDC */
   uint16_t _ts018CDC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -133617,8 +133617,8 @@ void func_018D6C(void) {
   /* $018D6C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018D72u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018D72 */
   uint32_t _t018D72 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)60));
@@ -134616,8 +134616,8 @@ void func_018EAA(void) {
   /* $018F3E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018F44u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018F44 */
   uint16_t _ts018F44 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)52));
@@ -134653,8 +134653,8 @@ void func_018EAA(void) {
   /* $018F52 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018F58u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_018F58:;
   /* $018F58 */
@@ -134664,8 +134664,8 @@ void func_018EAA(void) {
   /* $018F5C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018F62u); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018F62 */
   uint32_t _t018F62 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)60));
@@ -134943,8 +134943,8 @@ void func_018FA2(void) {
   /* $018FF0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x018FF6u); /* JSR push */
   func_0133AC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $018FF6 */
   uint32_t _t018FF6 = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;
@@ -134967,8 +134967,8 @@ void func_018FA2(void) {
   /* $019002 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019008u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_019008:;
   /* $019008 */
@@ -135055,8 +135055,8 @@ void func_019048(void) {
   /* $019048 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01904Eu); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01904E */
   if (!(g_cpu.SR & (1u<<2))) goto label_01909A;
@@ -135178,8 +135178,8 @@ void func_0190B0(void) {
   /* $0190B0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0190B6u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0190B6 */
   uint16_t _ts0190B6 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -135358,8 +135358,8 @@ void func_019140(void) {
   /* $019140 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019146u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019146 */
   if (!(g_cpu.SR & (1u<<2))) { func_019190(); return; }
@@ -135502,8 +135502,8 @@ void func_019190(void) {
   /* $01919A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01919Eu); /* JSR push */
   call_by_address((uint32_t)(0x0001919Cu + (int32_t)(int16_t)g_cpu.D[1] + (36)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01919E */
   g_cpu.A[1] = 0x00017CBCu;
@@ -135511,8 +135511,8 @@ void func_019190(void) {
   /* $0191A4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0191AAu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0191AA */
   g_cpu.D[0] = 0x00000003u;
@@ -135613,8 +135613,8 @@ void func_0191DE(void) {
   /* $0191E6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0191ECu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0191EC */
   { int16_t _sv = (int16_t)(uint16_t)g_cpu.D[0];
@@ -135644,8 +135644,8 @@ void func_0191F2(void) {
   /* $0191F2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0191F6u); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0191F6 */
   uint16_t _ts0191F6 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)56));
@@ -135764,8 +135764,8 @@ void func_019202(void) {
   /* $019234 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01923Au); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01923A:;
   /* $01923A */
@@ -135839,8 +135839,8 @@ void func_019202(void) {
   /* $01925A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01925Eu); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01925E */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)37), (uint8_t)(0x06u));
@@ -136103,8 +136103,8 @@ void func_019270(void) {
   /* $0192D8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0192DCu); /* JSR push */
   func_01944A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0192DC */
   uint8_t _t0192DC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)37));
@@ -137076,8 +137076,8 @@ void func_0194AC(void) {
   /* $0194E8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0194EEu); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0194EE:;
   /* $0194EE */
@@ -137143,8 +137143,8 @@ void func_0194F2(void) {
   /* $019512 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019516u); /* JSR push */
   func_0178A4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019516 */
   func_0191DE(); return;
@@ -137197,8 +137197,8 @@ void func_019520(void) {
   /* $019530 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019534u); /* JSR push */
   call_by_address((uint32_t)(0x00019532u + (int32_t)(int16_t)g_cpu.D[0] + (20)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019534 */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)28), (uint8_t)((uint8_t)g_cpu.D[1]));
@@ -137453,8 +137453,8 @@ void func_0195BE(void) {
   /* $0195C4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0195CAu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0195CA */
   uint32_t _t0195CA = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)52));
@@ -137857,8 +137857,8 @@ void func_0196B2(void) {
   /* $0196B2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0196B8u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0196B8 */
   if (!(g_cpu.SR & (1u<<2))) { func_019702(); return; }
@@ -138023,8 +138023,8 @@ void func_019704(void) {
   /* $019712 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019716u); /* JSR push */
   func_01977A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019716 */
   func_01975C(); return;
@@ -138162,8 +138162,8 @@ void func_019746(void) {
   /* $019756 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01975Cu); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01975C(); return;
 }
@@ -138190,8 +138190,8 @@ void func_019762(void) {
   /* $019768 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01976Eu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01976E */
   func_00D604(); return;
@@ -138272,8 +138272,8 @@ void func_01979C(void) {
   /* $01979C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0197A2u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0197A2 */
   if (!(g_cpu.SR & (1u<<2))) { func_0197D4(); return; }
@@ -138580,8 +138580,8 @@ void func_01984C(void) {
   /* $01989E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0198A4u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0198A4 */
   if (!(g_cpu.SR & (1u<<2))) { func_0198F0(); return; }
@@ -138716,8 +138716,8 @@ void func_0198F0(void) {
   /* $0198FA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0198FEu); /* JSR push */
   call_by_address((uint32_t)(0x000198FCu + (int32_t)(int16_t)g_cpu.D[1] + (18)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0198FE */
   g_cpu.A[1] = 0x00019A02u;
@@ -138725,8 +138725,8 @@ void func_0198F0(void) {
   /* $019902 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019908u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019908 */
   func_00D604(); return;
@@ -139272,8 +139272,8 @@ void func_019BAA(void) {
   /* $019BAA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019BB0u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019BB0 */
   if (!(g_cpu.SR & (1u<<2))) { func_019BF6(); return; }
@@ -139712,8 +139712,8 @@ void func_019C80(void) {
   /* $019C88 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019C8Eu); /* JSR push */
   func_00D5B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019C8E */
   func_00D604(); return;
@@ -139787,8 +139787,8 @@ void func_019CB6(void) {
   /* $019CB6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019CBCu); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019CBC */
   if (!(g_cpu.SR & (1u<<2))) { func_019CEA(); return; }
@@ -139938,8 +139938,8 @@ void func_019CEA(void) {
   /* $019CEE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019CF4u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019CF4 */
   func_00D604(); return;
@@ -140013,8 +140013,8 @@ void func_019DDC(void) {
   /* $019DDC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019DE2u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019DE2 */
   if (!(g_cpu.SR & (1u<<2))) { func_019E20(); return; }
@@ -140144,8 +140144,8 @@ void func_019E20(void) {
   /* $019E24 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019E2Au); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019E2A */
   if (!(g_cpu.SR & (1u<<2))) goto label_019E5A;
@@ -140192,8 +140192,8 @@ void func_019E20(void) {
   /* $019E3E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019E44u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019E44 */
   if (!(g_cpu.SR & (1u<<2))) goto label_019E5A;
@@ -140297,8 +140297,8 @@ void func_019E6C(void) {
   /* $019E76 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019E7Au); /* JSR push */
   call_by_address((uint32_t)(0x00019E78u + (int32_t)(int16_t)g_cpu.D[0] + (8)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019E7A */
   func_00D604(); return;
@@ -140377,8 +140377,8 @@ void func_019EA8(void) {
   /* $019EB2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019EB8u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019EB8 */
   uint16_t _019EB8r = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0xCu;
@@ -140522,8 +140522,8 @@ void func_019EA8(void) {
   /* $019F0A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019F10u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_019F10:;
   /* $019F10 */
@@ -140607,8 +140607,8 @@ void func_019EA8(void) {
   /* $019F3E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019F44u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $019F44 */
   { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[4]);
@@ -140729,8 +140729,8 @@ void func_019EA8(void) {
   /* $019F82 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x019F88u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_019F88:;
   /* $019F88 */
@@ -140886,8 +140886,8 @@ void func_019FE6(void) {
   /* $019FFE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A000u); /* JSR push */
   func_01A020();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01A000:;
   /* $01A000 */
@@ -140912,8 +140912,8 @@ void func_019FE6(void) {
   /* $01A008 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A00Au); /* JSR push */
   func_01A020();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01A00A:;
   /* $01A00A */
@@ -140988,8 +140988,8 @@ void func_01A02A(void) {
   /* $01A036 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A03Cu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A03C */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)26), (uint8_t)(0x06u));
@@ -141098,8 +141098,8 @@ void func_01A074(void) {
   /* $01A080 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A086u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A086 */
   uint16_t _t01A086 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)18));
@@ -141367,8 +141367,8 @@ void func_01A112(void) {
   /* $01A112 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A118u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A118 */
   uint16_t _t01A118 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -141490,8 +141490,8 @@ void func_01A15C(void) {
   /* $01A160 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A166u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01A166(); return;
 }
@@ -141608,8 +141608,8 @@ void func_01A192(void) {
   /* $01A1AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A1B2u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A1B2 */
   uint16_t _t01A1B2 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)12));
@@ -141675,8 +141675,8 @@ void func_01A1D4(void) {
   /* $01A1DA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A1E0u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A1E0 */
   uint16_t _t01A1E0 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -141715,8 +141715,8 @@ void func_01A1D4(void) {
   /* $01A1F6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A1FCu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01A1FC:;
   /* $01A1FC */
@@ -141946,8 +141946,8 @@ void func_01A264(void) {
   /* $01A290 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A296u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01A296(); return;
 }
@@ -142125,8 +142125,8 @@ void func_01A2C6(void) {
   /* $01A308 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A30Eu); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A30E */
   func_01A296(); return;
@@ -142145,8 +142145,8 @@ void func_01A2C6(void) {
   /* $01A31A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A31Eu); /* JSR push */
   func_017860();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A31E */
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)24), (uint8_t)(0x02u));
@@ -142182,8 +142182,8 @@ void func_01A2C6(void) {
   /* $01A33C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A342u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A342 */
   func_01A296(); return;
@@ -142788,8 +142788,8 @@ void func_01A4EA(void) {
   /* $01A534 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A53Au); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A53A */
   g_cpu.D[0] = 0x00000000u;
@@ -143002,8 +143002,8 @@ void func_01A57E(void) {
   /* $01A588 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A58Cu); /* JSR push */
   call_by_address((uint32_t)(0x0001A58Au + (int32_t)(int16_t)g_cpu.D[0] + (6)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A58C */
   func_01A4EA(); return;
@@ -143039,8 +143039,8 @@ void func_01A598(void) {
   /* $01A5A8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A5ACu); /* JSR push */
   func_017860();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A5AC */
   uint32_t _t01A5AC = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)60));
@@ -143213,8 +143213,8 @@ void func_01A604(void) {
   /* $01A61A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A61Eu); /* JSR push */
   func_017860();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A61E */
   uint32_t _t01A61E = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)60));
@@ -143585,8 +143585,8 @@ void func_01A86C(void) {
   /* $01A87C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A882u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A882 */
   uint16_t _ts01A882 = m68k_read16((uint32_t)(int32_t)(int16_t)0xD008);
@@ -143640,8 +143640,8 @@ void func_01A86C(void) {
   /* $01A89E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A8A4u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A8A4 */
   func_00D604(); return;
@@ -143717,8 +143717,8 @@ void func_01A8CA(void) {
   /* $01A8CA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A8D0u); /* JSR push */
   func_00DAA2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A8D0 */
   if (!(g_cpu.SR & (1u<<2))) { func_01A954(); return; }
@@ -143826,8 +143826,8 @@ void func_01A8CA(void) {
   /* $01A926 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A92Cu); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A92C */
   uint16_t _ts01A92C = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)50));
@@ -144019,8 +144019,8 @@ void func_01A982(void) {
   /* $01A98C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A990u); /* JSR push */
   call_by_address((uint32_t)(0x0001A98Eu + (int32_t)(int16_t)g_cpu.D[0] + (18)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A990 */
   g_cpu.A[1] = 0x0001AA76u;
@@ -144028,8 +144028,8 @@ void func_01A982(void) {
   /* $01A994 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A99Au); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A99A */
   func_00D604(); return;
@@ -144118,8 +144118,8 @@ void func_01A9C0(void) {
   /* $01A9C6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01A9CCu); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01A9CC */
   uint16_t _ts01A9CC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -144278,8 +144278,8 @@ void func_01AA1E(void) {
   /* $01AA1E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AA24u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AA24 */
   uint16_t _t01AA24 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)12));
@@ -144360,8 +144360,8 @@ void func_01AB22(void) {
   /* $01AB2C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AB30u); /* JSR push */
   call_by_address((uint32_t)(0x0001AB2Eu + (int32_t)(int16_t)g_cpu.D[1] + (42)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AB30 */
   uint16_t _ts01AB30 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)8));
@@ -144685,8 +144685,8 @@ void func_01ABFE(void) {
   /* $01AC0E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AC14u); /* JSR push */
   func_00F9D6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AC14 */
   g_cpu.A[1] = 0x0001AD6Cu;
@@ -144694,8 +144694,8 @@ void func_01ABFE(void) {
   /* $01AC1A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AC20u); /* JSR push */
   func_00A718();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AC20 */
   uint16_t _ts01AC20 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)48));
@@ -144812,8 +144812,8 @@ void func_01AC62(void) {
   /* $01AC6A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AC70u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AC70 */
   if (!(g_cpu.SR & (1u<<2))) goto label_01ACA0;
@@ -144844,8 +144844,8 @@ void func_01AC62(void) {
   /* $01AC84 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AC8Au); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AC8A */
   g_cpu.D[1] = 0x00000000u;
@@ -145009,8 +145009,8 @@ void func_01AC62(void) {
   /* $01ACCE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01ACD4u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01ACD4 */
   if (!(g_cpu.SR & (1u<<2))) goto label_01ACF8;
@@ -145114,8 +145114,8 @@ void func_01ACFA(void) {
   /* $01AD02 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AD08u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AD08 */
   if (!(g_cpu.SR & (1u<<2))) goto label_01AD38;
@@ -145146,8 +145146,8 @@ void func_01ACFA(void) {
   /* $01AD1C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AD22u); /* JSR push */
   func_0029B4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AD22 */
   uint16_t _01AD22r = (uint16_t)((uint16_t)g_cpu.D[0]) & (uint16_t)0x1Fu;
@@ -145298,8 +145298,8 @@ void func_01AD4A(void) {
   /* $01AD5E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AD64u); /* JSR push */
   func_00EC8A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AD64 */
   func_00D640(); return;
@@ -146129,8 +146129,8 @@ void func_01AF30(void) {
   /* $01AF9C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01AFA0u); /* JSR push */
   func_01C68C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01AFA0 */
   m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)0), (uint8_t)(0x27u));
@@ -146304,8 +146304,8 @@ void func_01AFF4(void) {
   /* $01B002 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B008u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B008 */
   if (!(g_cpu.SR & (1u<<2))) goto label_01B01C;
@@ -146351,8 +146351,8 @@ void func_01AFF4(void) {
   /* $01B028 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B02Cu); /* JSR push */
   func_0137A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B02C */
   uint8_t _t01B02C = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -146497,8 +146497,8 @@ void func_01AFF4(void) {
   /* $01B086 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B08Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B08C */
   g_cpu.D[0] = 0xFFFFFFFFu;
@@ -146553,8 +146553,8 @@ void func_01B098(void) {
   /* $01B0AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B0AEu); /* JSR push */
   func_0137A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B0AE */
   uint8_t _t01B0AE = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)34));
@@ -146639,8 +146639,8 @@ void func_01B098(void) {
   /* $01B0E6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B0ECu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01B0EC:;
   /* $01B0EC */
@@ -146860,14 +146860,14 @@ void func_01B14E(void) {
   /* $01B14E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B152u); /* JSR push */
   func_01B290();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B152 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B156u); /* JSR push */
   func_01B4D0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B156 */
   g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[5]));
@@ -146898,8 +146898,8 @@ void func_01B14E(void) {
   /* $01B164 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B16Au); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B16A */
   g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)g_cpu.D[0]));
@@ -147540,8 +147540,8 @@ void func_01B14E(void) {
   /* $01B262 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B268u); /* JSR push */
   func_00D762();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01B268:;
   /* $01B268 */
@@ -148374,8 +148374,8 @@ void func_01B4D0(void) {
   /* $01B4E6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B4E8u); /* JSR push */
   call_by_address(g_cpu.A[1]);
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01B4E8:;
   /* $01B4E8 */
@@ -148852,8 +148852,8 @@ void func_01B5D4(void) {
   /* $01B606 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B60Cu); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01B60C:;
   /* $01B60C */
@@ -149136,8 +149136,8 @@ void func_01B6B6(void) {
   /* $01B6D2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B6D8u); /* JSR push */
   func_00171E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B6D8 */
   g_cpu.A[1] = 0x00FF0000u;
@@ -149312,8 +149312,8 @@ void func_01B984(void) {
   /* $01B98A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01B98Eu); /* JSR push */
   func_01BBB6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B98E */
   func_01CF1A(); return;
@@ -149506,14 +149506,14 @@ void func_01B9F8(void) {
   /* $01BA0C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA10u); /* JSR push */
   call_by_address((uint32_t)(0x0001BA0Eu + (int32_t)(int16_t)g_cpu.D[1] + (14)));
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA10 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA16u); /* JSR push */
   func_013C3E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA16 */
   func_00D604(); return;
@@ -149525,20 +149525,20 @@ void func_01BA20(void) {
   /* $01BA20 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA24u); /* JSR push */
   func_01BB56();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA24 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA28u); /* JSR push */
   func_01BA60();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA28 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA2Cu); /* JSR push */
   func_01BC56();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA2C */
   func_01BA3A(); return;
@@ -149550,20 +149550,20 @@ void func_01BA2E(void) {
   /* $01BA2E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA32u); /* JSR push */
   func_01BB9A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA32 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA36u); /* JSR push */
   func_01BA60();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA36 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA3Au); /* JSR push */
   func_01BC56();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01BA3A(); return;
 }
@@ -149573,26 +149573,26 @@ void func_01BA3A(void) {
   /* $01BA3A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA3Eu); /* JSR push */
   func_01BD52();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA3E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA42u); /* JSR push */
   func_01BE8E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA42 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA48u); /* JSR push */
   func_00D5DE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA48 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA4Cu); /* JSR push */
   func_01BBB6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA4C */
   uint16_t _ts01BA4C = m68k_read16((uint32_t)(int32_t)(int16_t)0xF780);
@@ -149623,8 +149623,8 @@ void func_01BA3A(void) {
   /* $01BA58 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA5Eu); /* JSR push */
   func_0139C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BA5E */
   return;
@@ -149644,8 +149644,8 @@ void func_01BA60(void) {
   /* $01BA68 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA6Cu); /* JSR push */
   func_01BAF8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01BA6C(); return;
 }
@@ -149663,8 +149663,8 @@ void func_01BA6C(void) {
   /* $01BA74 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BA78u); /* JSR push */
   func_01BB28();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01BA78:;
   /* $01BA78 */
@@ -149800,8 +149800,8 @@ void func_01BA6C(void) {
   /* $01BAB6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BABCu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BABC */
   uint16_t _t01BABC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)20));
@@ -149866,8 +149866,8 @@ void func_01BA6C(void) {
   /* $01BAD8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BADCu); /* JSR push */
   func_01BCE8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BADC */
   if ((g_cpu.SR & (1u<<2))) goto label_01BAF2;
@@ -150169,8 +150169,8 @@ void func_01BB56(void) {
   /* $01BB6E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BB74u); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BB74 */
   g_cpu.D[1] = (uint32_t)((int32_t)(int16_t)g_cpu.D[1] * (int32_t)(int16_t)(0x0680u));
@@ -150244,8 +150244,8 @@ void func_01BB56(void) {
   /* $01BB92 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BB98u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01BB98(); return;
 }
@@ -150482,20 +150482,20 @@ void func_01BBE0(void) {
   /* $01BC1E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BC24u); /* JSR push */
   func_0139C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BC24 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BC2Au); /* JSR push */
   func_013C3E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BC2A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BC2Eu); /* JSR push */
   func_01BBB6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BC2E */
   func_00D604(); return;
@@ -150529,20 +150529,20 @@ void func_01BC34(void) {
   /* $01BC40 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BC46u); /* JSR push */
   func_0139C4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BC46 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BC4Cu); /* JSR push */
   func_013C3E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BC4C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BC50u); /* JSR push */
   func_01BBB6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BC50 */
   func_00D604(); return;
@@ -150586,8 +150586,8 @@ void func_01BC56(void) {
   /* $01BC66 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BC6Cu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BC6C */
   uint16_t _ts01BC6C = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)16));
@@ -150698,8 +150698,8 @@ void func_01BC56(void) {
   /* $01BC8A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BC8Eu); /* JSR push */
   func_01BCE8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BC8E */
   if ((g_cpu.SR & (1u<<2))) goto label_01BCB0;
@@ -150749,8 +150749,8 @@ void func_01BC56(void) {
   /* $01BCA0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BCA4u); /* JSR push */
   func_01BCE8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BCA4 */
   if ((g_cpu.SR & (1u<<2))) goto label_01BCC6;
@@ -150796,8 +150796,8 @@ void func_01BC56(void) {
   /* $01BCB2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BCB6u); /* JSR push */
   func_01BCE8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BCB6 */
   if ((g_cpu.SR & (1u<<2))) goto label_01BCD4;
@@ -151068,8 +151068,8 @@ void func_01BCE8(void) {
   /* $01BD1A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BD1Cu); /* JSR push */
   func_01BD30();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BD1C */
   uint8_t _ts01BD1C = m68k_read8(g_cpu.A[1]); g_cpu.A[1] += 1;
@@ -151082,8 +151082,8 @@ void func_01BCE8(void) {
   /* $01BD1E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BD20u); /* JSR push */
   func_01BD30();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BD20 */
   g_cpu.A[1] += (uint32_t)(int32_t)(int16_t)(0x007Eu);
@@ -151099,8 +151099,8 @@ void func_01BCE8(void) {
   /* $01BD26 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BD28u); /* JSR push */
   func_01BD30();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BD28 */
   uint8_t _ts01BD28 = m68k_read8(g_cpu.A[1]); g_cpu.A[1] += 1;
@@ -151113,8 +151113,8 @@ void func_01BCE8(void) {
   /* $01BD2A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BD2Cu); /* JSR push */
   func_01BD30();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BD2C */
   { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[5]);
@@ -151341,8 +151341,8 @@ void func_01BD8C(void) {
   /* $01BD92 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BD96u); /* JSR push */
   func_01B4BA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BD96 */
   if (!(g_cpu.SR & (1u<<2))) { func_01BDA0(); return; }
@@ -151369,8 +151369,8 @@ void func_01BDA0(void) {
   /* $01BDA0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BDA6u); /* JSR push */
   func_009C76();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BDA6 */
   uint16_t _t01BDA6 = m68k_read16((uint32_t)(int32_t)(int16_t)0xFE20);
@@ -151417,8 +151417,8 @@ void func_01BDA0(void) {
   /* $01BDBE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BDC4u); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01BDC4(); return;
 }
@@ -151454,8 +151454,8 @@ void func_01BDC8(void) {
   /* $01BDCE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BDD2u); /* JSR push */
   func_01B4BA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BDD2 */
   if (!(g_cpu.SR & (1u<<2))) { func_01BDDC(); return; }
@@ -151511,8 +151511,8 @@ void func_01BDDC(void) {
   /* $01BDE8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BDEEu); /* JSR push */
   func_001396();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BDEE */
   g_cpu.D[4] = 0x00000000u;
@@ -151555,8 +151555,8 @@ void func_01BDF2(void) {
   /* $01BDFE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BE02u); /* JSR push */
   func_01B4BA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BE02 */
   if (!(g_cpu.SR & (1u<<2))) { func_01BE0C(); return; }
@@ -151654,8 +151654,8 @@ void func_01BE2A(void) {
   /* $01BE2E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BE34u); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BE34 */
   g_cpu.D[4] = 0x00000000u;
@@ -152041,14 +152041,14 @@ void func_01BEAE(void) {
   /* $01BEE2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BEE8u); /* JSR push */
   func_002CA8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BEE8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BEEEu); /* JSR push */
   func_0029DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BEEE */
   g_cpu.D[1] = (uint32_t)((int32_t)(int16_t)g_cpu.D[1] * (int32_t)(int16_t)(0xF900u));
@@ -152115,8 +152115,8 @@ void func_01BEAE(void) {
   /* $01BF08 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BF0Cu); /* JSR push */
   func_01B4BA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BF0C */
   if (!(g_cpu.SR & (1u<<2))) { func_01BF1C(); return; }
@@ -152205,8 +152205,8 @@ void func_01BF26(void) {
   /* $01BF34 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BF3Au); /* JSR push */
   func_00139C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BF3A */
   return;
@@ -152430,8 +152430,8 @@ void func_01BFA4(void) {
   /* $01BFB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BFBCu); /* JSR push */
   func_01B4BA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BFBC */
   if (!(g_cpu.SR & (1u<<2))) { func_01BFCC(); return; }
@@ -152554,8 +152554,8 @@ void func_01BFF2(void) {
   /* $01BFF2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01BFF6u); /* JSR push */
   func_01B4BA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01BFF6 */
   if (!(g_cpu.SR & (1u<<2))) { func_01C016(); return; }
@@ -152676,8 +152676,8 @@ void func_01C024(void) {
   /* $01C030 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C034u); /* JSR push */
   func_01C510();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C034 */
   g_cpu.D[0] = 0x00000000u;
@@ -153015,8 +153015,8 @@ void func_01C0C0(void) {
   /* $01C108 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C10Cu); /* JSR push */
   func_01C3B8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C10C:;
   /* $01C10C */
@@ -153129,8 +153129,8 @@ void func_01C112(void) {
   /* $01C14C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C150u); /* JSR push */
   func_01C3B8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_01C150(); return;
 }
@@ -153291,8 +153291,8 @@ void func_01C150(void) {
   /* $01C1A4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C1A6u); /* JSR push */
   call_by_address(g_cpu.A[3]);
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C1A6 */
   uint16_t _01C1A6r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[3]) + (uint16_t)4u);
@@ -153548,8 +153548,8 @@ void func_01C1EC(void) {
   /* $01C23E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C242u); /* JSR push */
   func_01C3B8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C242 */
   g_cpu.A[1] = 0x00068156u;
@@ -153781,8 +153781,8 @@ void func_01C2A2(void) {
   /* $01C2DC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C2E0u); /* JSR push */
   func_01C3B8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C2E0 */
   g_cpu.A[1] = (uint32_t)(g_cpu.A[2]);
@@ -155298,8 +155298,8 @@ void func_01C6B8(void) {
   /* $01C6D4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C6D8u); /* JSR push */
   func_01C8DA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C6D8:;
   /* $01C6D8 */
@@ -155318,8 +155318,8 @@ void func_01C6B8(void) {
   /* $01C6E0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C6E4u); /* JSR push */
   func_01C80E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C6E4:;
   /* $01C6E4 */
@@ -155351,8 +155351,8 @@ void func_01C6B8(void) {
   /* $01C6F4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C6F8u); /* JSR push */
   func_01C8D0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C6F8:;
   /* $01C6F8 */
@@ -155510,8 +155510,8 @@ void func_01C6B8(void) {
   /* $01C740 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C744u); /* JSR push */
   func_01C9A8();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C744 */
   g_cpu.D[0] = (uint32_t)(uint32_t)(0x5EC00003u);
@@ -155538,8 +155538,8 @@ void func_01C6B8(void) {
   /* $01C750 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C754u); /* JSR push */
   func_01C9B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C754:;
   /* $01C754 */
@@ -155559,8 +155559,8 @@ void func_01C6B8(void) {
   /* $01C75E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C762u); /* JSR push */
   func_01CA6E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C762:;
   /* $01C762 */
@@ -155602,8 +155602,8 @@ void func_01C6B8(void) {
   /* $01C77C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C780u); /* JSR push */
   func_01CA0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C780 */
   g_cpu.D[1] = 0x00000000u;
@@ -155623,8 +155623,8 @@ void func_01C6B8(void) {
   /* $01C786 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C78Au); /* JSR push */
   func_01CA0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C78A:;
   /* $01C78A */
@@ -155647,8 +155647,8 @@ void func_01C78C(void) {
   /* $01C796 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C79Au); /* JSR push */
   func_01B098();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C79A */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE1A, (uint8_t)(0x01u));
@@ -155667,8 +155667,8 @@ void func_01C7A2(void) {
   /* $01C7A2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C7A6u); /* JSR push */
   func_01C87A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C7A6 */
   uint8_t _t01C7A6 = m68k_read8((uint32_t)(int32_t)(int16_t)0xFE1D);
@@ -155686,8 +155686,8 @@ void func_01C7A2(void) {
   /* $01C7AE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C7B2u); /* JSR push */
   func_01C80E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C7B2:;
   /* $01C7B2 */
@@ -155719,8 +155719,8 @@ void func_01C7A2(void) {
   /* $01C7C2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C7C6u); /* JSR push */
   func_01C8D0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C7C6:;
   /* $01C7C6 */
@@ -155748,8 +155748,8 @@ void func_01C7A2(void) {
   /* $01C7D2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C7D6u); /* JSR push */
   func_01C9B2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C7D6 */
   uint8_t _t01C7D6 = m68k_read8((uint32_t)(int32_t)(int16_t)0xFE1C);
@@ -155768,8 +155768,8 @@ void func_01C7A2(void) {
   /* $01C7E0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C7E4u); /* JSR push */
   func_01CA6E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C7E4:;
   /* $01C7E4 */
@@ -155811,8 +155811,8 @@ void func_01C7A2(void) {
   /* $01C7FE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C802u); /* JSR push */
   func_01CA0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C802 */
   g_cpu.D[1] = 0x00000000u;
@@ -155832,8 +155832,8 @@ void func_01C7A2(void) {
   /* $01C808 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C80Cu); /* JSR push */
   func_01CA0C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_01C80C:;
   /* $01C80C */
@@ -155873,8 +155873,8 @@ void func_01C822(void) {
   /* $01C828 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C82Cu); /* JSR push */
   func_01CA6E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C82C */
   m68k_write32(0x00C00004u, (uint32_t)(0x5C400003u));
@@ -156026,8 +156026,8 @@ void func_01C87A(void) {
   /* $01C88E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01C890u); /* JSR push */
   func_01C89A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01C890 */
   uint16_t _ts01C890 = m68k_read16((uint32_t)(int32_t)(int16_t)0xF704);
@@ -157870,8 +157870,8 @@ void func_01CF2C(void) {
   /* $01CF9E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01CFA2u); /* JSR push */
   func_01D152();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01CFA2 */
   m68k_write8((uint32_t)(int32_t)(int16_t)0xFE0A, (uint8_t)(0x0Cu));
@@ -157956,8 +157956,8 @@ void func_01CFAE(void) {
   /* $01CFCC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01CFD0u); /* JSR push */
   func_01CFD6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01CFD0 */
   func_00D604(); return;
@@ -158379,8 +158379,8 @@ void func_01D06E(void) {
   /* $01D0AE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x01D0B4u); /* JSR push */
   func_00DA8C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01D0B4 */
   if (!(g_cpu.SR & (1u<<2))) goto label_01D0EA;
@@ -158765,8 +158765,8 @@ void func_071B4C(void) {
   /* $071B9A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071B9Eu); /* JSR push */
   func_07260C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071B9E:;
   /* $071B9E */
@@ -158783,8 +158783,8 @@ void func_071B4C(void) {
   /* $071BA4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071BA8u); /* JSR push */
   func_072504();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071BA8:;
   /* $071BA8 */
@@ -158800,8 +158800,8 @@ void func_071B4C(void) {
   /* $071BAE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071BB2u); /* JSR push */
   func_07267C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071BB2:;
   /* $071BB2 */
@@ -158817,8 +158817,8 @@ void func_071B4C(void) {
   /* $071BB8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071BBCu); /* JSR push */
   func_071F02();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071BBC:;
   /* $071BBC */
@@ -158837,8 +158837,8 @@ void func_071B4C(void) {
   /* $071BC4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071BC8u); /* JSR push */
   func_071F4C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071BC8:;
   /* $071BC8 */
@@ -158857,8 +158857,8 @@ void func_071B4C(void) {
   /* $071BD0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071BD4u); /* JSR push */
   func_071C4E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071BD4:;
   /* $071BD4 */
@@ -158889,8 +158889,8 @@ void func_071B4C(void) {
   /* $071BE2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071BE6u); /* JSR push */
   func_071CCA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071BE6:;
   /* $071BE6 */
@@ -158925,8 +158925,8 @@ void func_071B4C(void) {
   /* $071BF4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071BF8u); /* JSR push */
   func_072850();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071BF8:;
   /* $071BF8 */
@@ -158968,8 +158968,8 @@ void func_071B4C(void) {
   /* $071C0C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071C10u); /* JSR push */
   func_071CCA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071C10:;
   /* $071C10 */
@@ -159004,8 +159004,8 @@ void func_071B4C(void) {
   /* $071C1E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071C22u); /* JSR push */
   func_072850();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071C22:;
   /* $071C22 */
@@ -159039,8 +159039,8 @@ void func_071B4C(void) {
   /* $071C34 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071C38u); /* JSR push */
   func_071CCA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071C38:;
   /* $071C38 */
@@ -159059,8 +159059,8 @@ void func_071B4C(void) {
   /* $071C40 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071C44u); /* JSR push */
   func_072850();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_071C44(); return;
 }
@@ -159137,8 +159137,8 @@ void func_071C4E(void) {
   /* $071C68 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071C6Cu); /* JSR push */
   func_072A5A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071C6C */
   goto label_071C5E;
@@ -159189,8 +159189,8 @@ void func_071C4E(void) {
   /* $071C84 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071C88u); /* JSR push */
   func_071D40();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071C88:;
   /* $071C88 */
@@ -159318,14 +159318,14 @@ void func_071CCA(void) {
   /* $071CD4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071CD8u); /* JSR push */
   func_071CEC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071CD8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071CDCu); /* JSR push */
   func_071E18();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071CDC */
   func_0726E2(); return;
@@ -159334,14 +159334,14 @@ void func_071CCA(void) {
   /* $071CE0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071CE4u); /* JSR push */
   func_071D9E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071CE4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071CE8u); /* JSR push */
   func_071DC6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071CE8 */
   func_071E24(); return;
@@ -159393,8 +159393,8 @@ void func_071CEC(void) {
   /* $071CFE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071D02u); /* JSR push */
   func_072A5A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071D02 */
   goto label_071CF4;
@@ -159403,8 +159403,8 @@ void func_071CEC(void) {
   /* $071D04 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071D08u); /* JSR push */
   func_0726FE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071D08 */
   { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[5]);
@@ -159418,8 +159418,8 @@ void func_071CEC(void) {
   /* $071D0C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071D10u); /* JSR push */
   func_071D22();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071D10 */
   uint8_t _ts071D10 = m68k_read8(g_cpu.A[4]); g_cpu.A[4] += 1;
@@ -159442,8 +159442,8 @@ void func_071CEC(void) {
   /* $071D1A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071D1Eu); /* JSR push */
   func_071D40();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071D1E */
   func_071D60(); return;
@@ -159756,8 +159756,8 @@ void func_071D9E(void) {
   /* $071DB6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071DBAu); /* JSR push */
   func_0726FE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071DBA */
   g_cpu.A[7] += 4u;
@@ -159771,8 +159771,8 @@ void func_071D9E(void) {
   /* $071DBE */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071DC2u); /* JSR push */
   func_0729A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071DC2 */
   g_cpu.A[7] += 4u;
@@ -160044,8 +160044,8 @@ void func_071E24(void) {
   /* $071E3A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071E3Eu); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071E3E */
   g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)((uint8_t)g_cpu.D[6]));
@@ -160064,8 +160064,8 @@ void func_071E24(void) {
   /* $071E44 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071E48u); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_071E48(); return;
 }
@@ -160142,14 +160142,14 @@ void func_071E50(void) {
   /* $071E6A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071E6Eu); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071E6E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071E72u); /* JSR push */
   func_072764();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071E72 */
   uint8_t _071E72r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) + (uint8_t)1u);
@@ -160194,8 +160194,8 @@ void func_071E50(void) {
   /* $071E7E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071E82u); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071E82 */
   uint8_t _071E82r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[1]) + (uint8_t)4u);
@@ -160210,8 +160210,8 @@ void func_071E50(void) {
   /* $071E84 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071E88u); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071E88 */
   if (!(0)) {
@@ -160224,8 +160224,8 @@ void func_071E50(void) {
   /* $071E8C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071E90u); /* JSR push */
   func_0729B6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $071E90 */
   func_071C44(); return;
@@ -160287,8 +160287,8 @@ void func_071E50(void) {
   /* $071EB4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071EB8u); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071EB8:;
   /* $071EB8 */
@@ -160347,8 +160347,8 @@ void func_071E50(void) {
   /* $071ED8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071EDCu); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071EDC:;
   /* $071EDC */
@@ -160399,8 +160399,8 @@ void func_071E50(void) {
   /* $071EFA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x071EFEu); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_071EFE:;
   /* $071EFE */
@@ -160943,8 +160943,8 @@ void func_071FD2(void) {
   /* $07202C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072030u); /* JSR push */
   func_0725CA();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072030 */
   uint32_t _t072030 = m68k_read32(0x000719A0);
@@ -161269,8 +161269,8 @@ void func_071FD2(void) {
   /* $0720D0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0720D4u); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0720D4 */
   goto label_072114;
@@ -161293,8 +161293,8 @@ void func_071FD2(void) {
   /* $0720DC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0720E0u); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0720E0 */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x42u));
@@ -161313,8 +161313,8 @@ void func_071FD2(void) {
   /* $0720E6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0720EAu); /* JSR push */
   func_072764();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0720EA */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x4Au));
@@ -161333,8 +161333,8 @@ void func_071FD2(void) {
   /* $0720F0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0720F4u); /* JSR push */
   func_072764();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0720F4 */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x46u));
@@ -161353,8 +161353,8 @@ void func_071FD2(void) {
   /* $0720FA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0720FEu); /* JSR push */
   func_072764();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0720FE */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x4Eu));
@@ -161373,8 +161373,8 @@ void func_071FD2(void) {
   /* $072104 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072108u); /* JSR push */
   func_072764();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072108 */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0xB6u));
@@ -161393,8 +161393,8 @@ void func_071FD2(void) {
   /* $072110 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072114u); /* JSR push */
   func_072764();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_072114:;
   /* $072114 */
@@ -161692,8 +161692,8 @@ void func_071FD2(void) {
   /* $0721A0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0721A4u); /* JSR push */
   func_0726FE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0721A4 */
   g_cpu.A[5] += (uint32_t)(int32_t)(int16_t)((uint16_t)g_cpu.D[6]);
@@ -161717,8 +161717,8 @@ void func_071FD2(void) {
   /* $0721AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0721B0u); /* JSR push */
   func_0729A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0721B0 */
   g_cpu.A[5] += (uint32_t)(int32_t)(int16_t)((uint16_t)g_cpu.D[6]);
@@ -162666,8 +162666,8 @@ void func_0723E0(void) {
   /* $0723FC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072400u); /* JSR push */
   func_0726FE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072400 */
   uint8_t _072400r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[3]) - (uint8_t)0x4u);
@@ -162765,8 +162765,8 @@ void func_0723E0(void) {
   /* $072434 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072438u); /* JSR push */
   func_072C4E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072438 */
   g_cpu.A[5] = (uint32_t)(g_cpu.A[3]);
@@ -162778,8 +162778,8 @@ void func_0723E0(void) {
   /* $07243C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072440u); /* JSR push */
   func_0729A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072440 */
   g_cpu.A[0] = (uint32_t)(g_cpu.A[6] + (int32_t)880);
@@ -162915,8 +162915,8 @@ void func_07247C(void) {
   /* $07248E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072492u); /* JSR push */
   func_07270A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072492 */
   g_cpu.A[5] = (uint32_t)(g_cpu.A[6] + (int32_t)256);
@@ -162962,8 +162962,8 @@ void func_07247C(void) {
   /* $0724AA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0724AEu); /* JSR push */
   func_072C4E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0724AE:;
   /* $0724AE */
@@ -162998,8 +162998,8 @@ void func_07247C(void) {
   /* $0724C0 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0724C4u); /* JSR push */
   func_0729A6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0724C4 */
   g_cpu.A[5] = (uint32_t)(g_cpu.A[6] + (int32_t)496);
@@ -163062,14 +163062,14 @@ void func_0724E6(void) {
   /* $0724E6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0724EAu); /* JSR push */
   func_0723E0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0724EA */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0724EEu); /* JSR push */
   func_07247C();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0724EE */
   m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)6), (uint8_t)(0x03u));
@@ -163197,8 +163197,8 @@ void func_072504(void) {
   /* $072534 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072538u); /* JSR push */
   func_072CB4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_072538:;
   /* $072538 */
@@ -163277,8 +163277,8 @@ void func_072504(void) {
   /* $07255C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072560u); /* JSR push */
   func_07296A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_072560:;
   /* $072560 */
@@ -163324,8 +163324,8 @@ void func_07256A(void) {
   /* $072570 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072574u); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072574 */
   uint8_t _072574r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[1]) + (uint8_t)4u);
@@ -163340,8 +163340,8 @@ void func_07256A(void) {
   /* $072576 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x07257Au); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $07257A */
   if (!(0)) {
@@ -163384,14 +163384,14 @@ void func_07256A(void) {
   /* $072586 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x07258Au); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $07258A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x07258Eu); /* JSR push */
   func_072764();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $07258E */
   uint16_t _07258Er = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[0]) + (uint16_t)4u);
@@ -163453,8 +163453,8 @@ void func_07259E(void) {
   /* $0725A4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0725A8u); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0725A8 */
   g_cpu.D[0] = 0x00000027u;
@@ -163473,8 +163473,8 @@ void func_07259E(void) {
   /* $0725AC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0725B0u); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0725B0 */
   g_cpu.A[0] = (uint32_t)(g_cpu.A[6]);
@@ -163509,8 +163509,8 @@ void func_07259E(void) {
   /* $0725C2 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0725C6u); /* JSR push */
   func_07256A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0725C6 */
   func_0729B6(); return;
@@ -163627,8 +163627,8 @@ void func_0725CA(void) {
   /* $072604 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072608u); /* JSR push */
   func_07256A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072608 */
   func_0729B6(); return;
@@ -163908,8 +163908,8 @@ void func_07267C(void) {
   /* $0726A6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0726AAu); /* JSR push */
   func_072CB4();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0726AA:;
   /* $0726AA */
@@ -163983,8 +163983,8 @@ void func_07267C(void) {
   /* $0726C8 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0726CCu); /* JSR push */
   func_07296A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_0726CC:;
   /* $0726CC */
@@ -164343,14 +164343,14 @@ void func_072850(void) {
   /* $07285A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x07285Eu); /* JSR push */
   func_072878();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $07285E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072862u); /* JSR push */
   func_0728DC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072862 */
   func_07292E(); return;
@@ -164359,26 +164359,26 @@ void func_072850(void) {
   /* $072866 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x07286Au); /* JSR push */
   func_071D9E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $07286A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x07286Eu); /* JSR push */
   func_072926();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $07286E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072872u); /* JSR push */
   func_071DC6();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072872 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072876u); /* JSR push */
   func_0728E2();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072876 */
   return;
@@ -164430,8 +164430,8 @@ void func_072878(void) {
   /* $07288A */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x07288Eu); /* JSR push */
   func_072A5A();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $07288E */
   goto label_072880;
@@ -164449,8 +164449,8 @@ void func_072878(void) {
   /* $072894 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072898u); /* JSR push */
   func_0728AC();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072898 */
   uint8_t _ts072898 = m68k_read8(g_cpu.A[4]); g_cpu.A[4] += 1;
@@ -164479,8 +164479,8 @@ void func_072878(void) {
   /* $0728A4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0728A8u); /* JSR push */
   func_071D40();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0728A8 */
   func_071D60(); return;
@@ -164565,8 +164565,8 @@ void func_0728AC(void) {
   /* $0728D4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x0728D8u); /* JSR push */
   func_071D60();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $0728D8 */
   func_0729A0(); return;
@@ -165540,8 +165540,8 @@ void func_072B14(void) {
   /* $072B58 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072B5Cu); /* JSR push */
   func_072C4E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_072B5C:;
   /* $072B5C */
@@ -165582,8 +165582,8 @@ void func_072B14(void) {
   /* $072B70 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072B74u); /* JSR push */
   func_0729A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072B74 */
   uint8_t _t072B74 = m68k_read8((uint32_t)(g_cpu.A[5] + (int32_t)9));
@@ -165884,8 +165884,8 @@ void func_072BF4(void) {
   /* $072BFC */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072C00u); /* JSR push */
   func_0726FE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072C00 */
   uint8_t _t072C00 = m68k_read8((uint32_t)(g_cpu.A[6] + (int32_t)592));
@@ -165934,8 +165934,8 @@ void func_072BF4(void) {
   /* $072C1C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072C20u); /* JSR push */
   func_072C4E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072C20 */
   g_cpu.A[5] = (uint32_t)(g_cpu.A[3]);
@@ -166085,8 +166085,8 @@ void func_072C4E(void) {
   /* $072C68 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072C6Cu); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072C6C */
   g_cpu.A[2] = 0x00072D18u;
@@ -166118,8 +166118,8 @@ void func_072C4E(void) {
   /* $072C76 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072C7Au); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072C7A */
   if (!(0)) {
@@ -166205,8 +166205,8 @@ void func_072C4E(void) {
   /* $072C96 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072C9Au); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072C9A */
   if (!(0)) {
@@ -166234,8 +166234,8 @@ void func_072C4E(void) {
   /* $072CA6 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072CAAu); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   func_072CAA(); return;
 }
@@ -166433,8 +166433,8 @@ void func_072CB4(void) {
   /* $072D0E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072D12u); /* JSR push */
   func_072722();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_072D12:;
   /* $072D12 */
@@ -166584,8 +166584,8 @@ void func_072D58(void) {
   /* $072D6E */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072D72u); /* JSR push */
   func_0726FE();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072D72 */
   goto label_072D78;
@@ -166594,8 +166594,8 @@ void func_072D58(void) {
   /* $072D74 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072D78u); /* JSR push */
   func_0729A0();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_072D78:;
   /* $072D78 */
@@ -166736,8 +166736,8 @@ void func_072D58(void) {
   /* $072DC4 */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072DC8u); /* JSR push */
   func_072C4E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_072DC8:;
   /* $072DC8 */
@@ -167091,8 +167091,8 @@ void func_072E64(void) {
   /* $072E6C */
   g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x072E70u); /* JSR push */
   func_07272E();
+  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */
   g_cpu.A[7] += 4; /* JSR pop */
-  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE propagation */
   g_cycle_accumulator += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $072E70 */
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0x8Cu));
