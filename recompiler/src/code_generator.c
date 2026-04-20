@@ -1902,11 +1902,28 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         else
             fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
                     dreg, dreg, size_mask(sz), ct, res);
-        fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
-        fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
-        fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
-        fprintf(f, "    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
-        fprintf(f, "    if (_v) g_cpu.SR |= (1u<<1);\n");
+        /* ASL/ASR with register count == 0 leaves X UNCHANGED (sets C=0, V=0).
+         * Immediate count of 0 is decoded as 8, so only register-count form
+         * can hit this case at runtime. Mirrors LSL/LSR's _cnt==0 handling. */
+        if (asr_reg_count) {
+            fprintf(f, "    if (_cnt == 0) {\n");
+            fprintf(f, "      g_cpu.SR &= ~(0x0Fu);  /* preserve X */\n");
+            fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+            fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
+            fprintf(f, "    } else {\n");
+            fprintf(f, "      g_cpu.SR &= ~(0x1Fu);\n");
+            fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+            fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
+            fprintf(f, "      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
+            fprintf(f, "      if (_v) g_cpu.SR |= (1u<<1);\n");
+            fprintf(f, "    }\n");
+        } else {
+            fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
+            fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+            fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
+            fprintf(f, "    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
+            fprintf(f, "    if (_v) g_cpu.SR |= (1u<<1);\n");
+        }
         fprintf(f, "  }\n");
         break;
     }
