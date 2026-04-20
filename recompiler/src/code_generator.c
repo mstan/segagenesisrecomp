@@ -1420,7 +1420,13 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             imm = (sz == M68K_SIZE_B) ? (w & 0xFF) : w;
         }
         if (ea_mode == 7 && ea_reg == 4) {
-            fprintf(f, "  g_cpu.SR &= 0x%04Xu;\n", (unsigned)imm);
+            /* ANDI to CCR (.B) only touches the low byte of SR.
+             * ANDI to SR  (.W) is a full 16-bit AND.
+             * Forcing the upper byte to stay set on .B prevents wiping
+             * supervisor mode + interrupt mask bits — found while
+             * tracking SMPS audio squelching. */
+            uint32_t mask = (sz == M68K_SIZE_B) ? (0xFF00u | (imm & 0xFFu)) : (imm & 0xFFFFu);
+            fprintf(f, "  g_cpu.SR &= 0x%04Xu;\n", (unsigned)mask);
         } else {
             const char *ct = size_ctype(sz);
             emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
@@ -2267,8 +2273,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                         fprintf(f, "    g_cpu.A[%d] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;\n",
                                 ridx);
                     } else {
-                        fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0xFFFF0000u) | m68k_read16(_mbase); _mbase += 2;\n",
-                                ridx, ridx);
+                        /* MOVEM.W mem->Dn sign-extends to 32 bits per 68K spec
+                         * (unlike MOVE.W which preserves Dn's upper word).
+                         * Found while hunting SMPS audio squelching. */
+                        fprintf(f, "    g_cpu.D[%d] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;\n",
+                                ridx);
                     }
                 }
             }

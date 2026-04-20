@@ -2041,9 +2041,9 @@ void func_000206(void) {
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00021A */
   { uint32_t _mbase = g_cpu.A[5];
-    g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | m68k_read16(_mbase); _mbase += 2;
-    g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | m68k_read16(_mbase); _mbase += 2;
-    g_cpu.D[7] = (g_cpu.D[7] & 0xFFFF0000u) | m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[5] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[6] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[7] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
     g_cpu.A[5] = _mbase; }
   g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $00021E */
@@ -147097,8 +147097,8 @@ void func_01B14E(void) {
   g_cycle_accumulator += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B1B0 */
   { uint32_t _mbase = g_cpu.A[7];
-    g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | m68k_read16(_mbase); _mbase += 2;
-    g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[0] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[1] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
     g_cpu.A[7] = _mbase; }
   g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B1B4 */
@@ -147224,9 +147224,9 @@ void func_01B14E(void) {
   g_cycle_accumulator += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B1D4 */
   { uint32_t _mbase = g_cpu.A[7];
-    g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | m68k_read16(_mbase); _mbase += 2;
-    g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | m68k_read16(_mbase); _mbase += 2;
-    g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[0] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[1] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[2] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
     g_cpu.A[7] = _mbase; }
   g_cycle_accumulator += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $01B1D8 */
