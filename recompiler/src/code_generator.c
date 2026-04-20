@@ -1533,10 +1533,17 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_CLR: {
-        /* Write 0 to EA; Z=1, N=V=C=X=0 */
+        /* Write 0 to EA. Per 68K spec: Z=1, N=V=C=0, **X unchanged**.
+         * Earlier emission cleared X too, which broke any code path that
+         * relied on the X bit set by an earlier arithmetic op surviving
+         * across a CLR. Notably the SMPS sound driver: PSG track update
+         * does CLR.B SMPS_Track.VolEnvIndex(a5) inside FinishTrackUpdate,
+         * silently zeroing the X flag set by the earlier subi.b in
+         * PSGSetFreq — corrupting downstream Bcc paths that read X
+         * (squelched notes, drift). */
         ExtReader er2; er_init(&er2, instr);
         emit_ea_store_ex(f, instr, instr->src_ea, sz, &er2, "0", 1);
-        fprintf(f, "  g_cpu.SR = (g_cpu.SR & ~0x1Fu) | (1u<<2);\n");
+        fprintf(f, "  g_cpu.SR = (g_cpu.SR & ~0x0Fu) | (1u<<2);\n");
         break;
     }
 
