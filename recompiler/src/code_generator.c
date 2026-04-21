@@ -727,6 +727,8 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
  * g_vblank_threshold (109,312 cycles = scanline 224).
  * ========================================================================= */
 
+#include "cycle_probe.h"
+
 /* popcount of a 16-bit mask — used for MOVEM register count. */
 static int popcount16(uint16_t v) {
     int c = 0;
@@ -769,7 +771,7 @@ static int ea_write_cost(int ea, M68KSize sz)
     return ea_read_cost(ea, sz);
 }
 
-static int estimate_cycles(const M68KInstr *instr)
+static int estimate_cycles_prm(const M68KInstr *instr)
 {
     M68KSize sz     = instr->size;
     int      is_long = (sz == M68K_SIZE_L);
@@ -925,6 +927,21 @@ static int estimate_cycles(const M68KInstr *instr)
          * opcodes that haven't been tuned above. */
         return 4 + ea_src + ea_dst;
     }
+}
+
+/* Primary cycle-cost entry point. Asks the clown68000 interpreter (via
+ * cycle_probe) for the exact cost; falls back to the PRM-derived table
+ * above if the probe isn't initialised (e.g. unit-test paths) or if
+ * clown returned an unreasonable value. */
+static int estimate_cycles(const M68KInstr *instr)
+{
+    int measured = cycle_probe_measure(instr->addr);
+    /* Guard: any positive value within a sane range wins. Outside that
+     * range, fall back — clown returned <=0 (not initialised) or some
+     * absurd count (illegal opcode trap path, etc). */
+    if (measured > 0 && measured <= 300)
+        return measured;
+    return estimate_cycles_prm(instr);
 }
 
 static void emit_instr(FILE *f, const GenesisRom *rom,

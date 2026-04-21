@@ -3,7 +3,13 @@ project(GenesisRecomp C)
 
 set(CMAKE_C_STANDARD 11)
 
-# Pure C11, zero external dependencies
+# We link clown68000 into the recompiler so cycle_probe can single-step each
+# instruction at codegen time and emit the interpreter's own cycle count. The
+# existing submodule patch (runner/clown68000_patch.patch) has already been
+# applied to the source; we disable its coverage logging here so codegen
+# traffic doesn't pollute the coverage table.
+set(C68K_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../clownmdemu-core/libraries/clown68000/source")
+
 add_executable(GenesisRecomp
     src/main_genesis.c
     src/rom_parser.c
@@ -12,9 +18,21 @@ add_executable(GenesisRecomp
     src/code_generator.c
     src/annotations.c
     src/game_config.c
+    src/cycle_probe.c
+    "${C68K_DIR}/interpreter/clown68000.c"
+    "${C68K_DIR}/common/opcode.c"
 )
 
-target_include_directories(GenesisRecomp PRIVATE src)
+target_compile_definitions(GenesisRecomp PRIVATE
+    CLOWN68000_COVERAGE_LOG_DISABLE
+)
+
+target_include_directories(GenesisRecomp PRIVATE
+    src
+    "${C68K_DIR}/interpreter"
+    "${C68K_DIR}/common"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../clownmdemu-core/libraries/clowncommon"
+)
 
 # Output directly to build/recompiler/
 set_target_properties(GenesisRecomp PROPERTIES
