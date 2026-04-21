@@ -2524,10 +2524,10 @@ static void emit_file_header(FILE *f) {
     fprintf(f, "#include \"genesis_runtime.h\"\n");
     fprintf(f, "#include \"game_extras.h\"\n");
     if (s_reverse_debug) {
-        /* Tier-1: declare the current-func global that every function
-         * prologue writes to. The record side lives in runner/reverse_debug.c
-         * (bus-callback tap) — works identically in native + oracle. */
-        fprintf(f, "extern unsigned int g_rdb_current_func;\n");
+        /* Pull in the reverse-debugger API: g_rdb_current_func extern
+         * (Tier 1) and rdb_on_block inline fast path (Tier 2). Header
+         * is in runner/ which is on both targets' include path. */
+        fprintf(f, "#include \"reverse_debug.h\"\n");
     }
     fprintf(f, "\n");
 }
@@ -2640,8 +2640,10 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             addrset_insert(&labels, func_addr);
 
         fprintf(f_full, "void func_%06X(void) {\n", func_addr);
-        if (s_reverse_debug)
+        if (s_reverse_debug) {
             fprintf(f_full, "  g_rdb_current_func = 0x%06Xu;\n", func_addr);
+            fprintf(f_full, "  rdb_on_block(0x%06Xu);\n",        func_addr);
+        }
 
         /* Pre-scan: check if any instruction is ADDQ/ADDA to A7 (sp).
          * If so, emit a local _sp_popped variable for early-exit tracking. */
@@ -2697,6 +2699,8 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             /* Emit label if this address is a branch target */
             if (addrset_contains(&labels, pc)) {
                 fprintf(f_full, "  label_%06X:;\n", pc);
+                if (s_reverse_debug)
+                    fprintf(f_full, "  rdb_on_block(0x%06Xu);\n", pc);
                 skip_until_label = false;
             }
 
