@@ -5,6 +5,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include "rom_parser.h"
 #include "function_finder.h"
@@ -14,16 +15,25 @@
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "Usage: GenesisRecomp <rom.md|rom.bin> [--game <path/to/game.cfg>]\n");
+        fprintf(stderr,
+            "Usage: GenesisRecomp <rom.md|rom.bin> [--game <path/to/game.cfg>] "
+            "[--reverse-debug]\n");
         return 1;
     }
 
     const char *rom_path  = argv[1];
     const char *game_path = NULL;
+    bool reverse_debug = false;
 
     for (int i = 2; i < argc; i++) {
         if (strcmp(argv[i], "--game") == 0 && i+1 < argc) game_path = argv[++i];
+        else if (strcmp(argv[i], "--reverse-debug") == 0) reverse_debug = true;
     }
+
+    if (reverse_debug)
+        printf("[GenesisRecomp] --reverse-debug ON: emitting sgrdb_write* "
+               "hooks + g_rdb_current_func. Runner must be built with "
+               "-DSONIC_REVERSE_DEBUG=ON.\n");
 
     printf("[GenesisRecomp] Loading ROM: %s\n", rom_path);
 
@@ -102,7 +112,7 @@ int main(int argc, char *argv[]) {
     snprintf(out_full,     sizeof(out_full),     "generated/%s_full.c",     output_prefix);
     snprintf(out_dispatch, sizeof(out_dispatch), "generated/%s_dispatch.c", output_prefix);
 
-    if (!codegen_emit(&rom, &funcs, out_full, out_dispatch, &at, &cfg)) {
+    if (!codegen_emit(&rom, &funcs, out_full, out_dispatch, &at, &cfg, reverse_debug)) {
         fprintf(stderr, "[GenesisRecomp] Code generation failed\n");
         rom_free(&rom);
         function_list_free(&funcs);
