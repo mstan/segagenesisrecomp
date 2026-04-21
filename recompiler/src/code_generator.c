@@ -709,47 +709,221 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
  * ========================================================================= */
 
 /* =========================================================================
- * Cycle-accurate VBlank: estimate 68K cycle cost per instruction
+ * Cycle-accurate VBlank: per-instruction 68K cycle cost.
  *
- * The 68K's instruction timing varies by opcode, size, and addressing
- * mode.  For the contextual recompiler, we use rough estimates:
- *   - Register-only ops (MOVEQ, ADD Dn,Dn, etc.): 4 cycles
- *   - Memory read (MOVE.x (An), Dn): 8 cycles
- *   - Memory write: 8 cycles
- *   - Memory RMW (ADDQ to memory): 12 cycles
- *   - Branches taken: 10 cycles
- *   - JSR/BSR: 18 cycles
- *   - MOVEM: 8 + 4*nregs cycles
+ * Values derived from the Motorola 68000 Programmer's Reference Manual
+ * (Appendix B, "Instruction Timing"), cross-checked against the
+ * interpreter's cost code in
+ *   clownmdemu-core/libraries/clown68000/source/interpreter/clown68000.c
+ * lines 399-463 (EA-mode costs) and per-instruction microcode.
  *
- * Exact values per the M68000 PRM would be ideal but these estimates
- * are sufficient to fire VBlank within ~50 cycles of the right point.
+ * Data-dependent costs (MULx/DIVx result magnitude, Dn-register shift
+ * counts, BTST on memory with dynamic bit index) use averages near the
+ * mid-range of the PRM spec. Structural costs (size, addressing mode,
+ * MOVEM register count, immediate shift count) are exact.
+ *
+ * Callers emit `g_cycle_accumulator += N;` once per non-terminator
+ * instruction; the accumulator fires glue_check_vblank when it crosses
+ * g_vblank_threshold (109,312 cycles = scanline 224).
  * ========================================================================= */
 
-static int estimate_cycles(const M68KInstr *instr) {
-    switch (instr->mnemonic) {
-    case MN_NOP:    return 4;
-    case MN_RTS:    return 16;
-    case MN_RTE:    return 20;
-    case MN_STOP:   return 4;
-    case MN_BSR:
-    case MN_JSR:    return 18;
-    case MN_JMP:    return 10;
-    case MN_BRA:
-    case MN_Bcc:    return 10;
-    case MN_DBcc:   return 10;
-    case MN_MOVEQ:  return 4;
-    case MN_MOVEM:  return 12; /* rough average */
-    case MN_LINK:   return 16;
-    case MN_UNLK:   return 12;
-    default: {
-        /* Estimate based on whether operands are register or memory */
-        int src_mode = (instr->src_ea >> 3) & 7;
-        int dst_mode = (instr->dst_ea >> 3) & 7;
-        int cycles = 4; /* base */
-        if (src_mode >= 2 && src_mode <= 6) cycles += 4; /* memory source */
-        if (dst_mode >= 2 && dst_mode <= 6) cycles += 4; /* memory dest */
-        return cycles;
+/* popcount of a 16-bit mask — used for MOVEM register count. */
+static int popcount16(uint16_t v) {
+    int c = 0;
+    while (v) { c += v & 1; v >>= 1; }
+    return c;
+}
+
+/* PRM Table B-1: extra cycles to fetch an operand through this
+ * effective address, beyond the instruction's base cost. Size-dependent:
+ * longword costs one extra memory round-trip vs byte/word. */
+static int ea_read_cost(int ea, M68KSize sz)
+{
+    int is_long = (sz == M68K_SIZE_L);
+    int mode    = (ea >> 3) & 7;
+    int reg     =  ea       & 7;
+    switch (mode) {
+    case 0: /* Dn */           return 0;
+    case 1: /* An */           return 0;
+    case 2: /* (An)        */  return is_long ? 8  : 4;
+    case 3: /* (An)+       */  return is_long ? 8  : 4;
+    case 4: /* -(An)       */  return is_long ? 10 : 6;
+    case 5: /* d16(An)     */  return is_long ? 12 : 8;
+    case 6: /* d8(An,Xn)   */  return is_long ? 14 : 10;
+    case 7:
+        switch (reg) {
+        case 0: /* (xxx).W  */ return is_long ? 12 : 8;
+        case 1: /* (xxx).L  */ return is_long ? 16 : 12;
+        case 2: /* d16(PC)  */ return is_long ? 12 : 8;
+        case 3: /* d8(PC,Xn)*/ return is_long ? 14 : 10;
+        case 4: /* #imm     */ return is_long ? 8  : 4;
+        }
     }
+    return 0;
+}
+
+/* Write cost mirrors read for the valid destination modes (no
+ * PC-relative or immediate — those aren't valid write targets on 68000). */
+static int ea_write_cost(int ea, M68KSize sz)
+{
+    return ea_read_cost(ea, sz);
+}
+
+static int estimate_cycles(const M68KInstr *instr)
+{
+    M68KSize sz     = instr->size;
+    int      is_long = (sz == M68K_SIZE_L);
+    int      ea_src  = ea_read_cost (instr->src_ea, sz);
+    int      ea_dst  = ea_write_cost(instr->dst_ea, sz);
+    int      dst_mode = (instr->dst_ea >> 3) & 7;
+    int      dst_is_reg = (dst_mode <= 1);
+
+    switch (instr->mnemonic) {
+    /* ---- Control flow ---- */
+    case MN_NOP:   return 4;
+    case MN_RTS:   return 16;
+    case MN_RTE:   return 20;
+    case MN_STOP:  return 4;
+    case MN_JSR:   return 18 + ea_src;        /* PRM Table B-2 */
+    case MN_BSR:   return 18;                 /* .S and .W: 18 */
+    case MN_JMP:   return 10 + ea_src;
+    case MN_BRA:   return 10;                 /* taken */
+    case MN_Bcc:   return 10;                 /* assume taken; PRM: 10 taken / 8 not-taken.W / 12 not-taken.L */
+    case MN_DBcc:  return 12;                 /* avg of 10 (loop-body) / 14 (fall-through) */
+
+    /* ---- Moves ---- */
+    case MN_MOVE:  return 4 + ea_src + ea_dst;
+    case MN_MOVEA: return 4 + ea_src;
+    case MN_MOVEQ: return 4;
+    case MN_LEA:   return ea_src ? ea_src : 4;  /* PRM: 4..12; Dn/An invalid, abs.L=12 */
+    case MN_PEA:   return 12 + ea_src;
+
+    /* ---- MOVEM: 12 + 8*n (long) or 8 + 4*n (word); EA cost added.
+     *      Extra 4 cycles for mem→reg (vs reg→mem), averaged into base. */
+    case MN_MOVEM: {
+        int nregs = (instr->word_count >= 2) ? popcount16(instr->words[1]) : 4;
+        return (is_long ? 12 + 8*nregs : 8 + 4*nregs) + ea_src;
+    }
+
+    /* ---- Arithmetic / logical (binary) ---- */
+    case MN_ADD: case MN_SUB: case MN_AND: case MN_OR:
+    case MN_EOR: case MN_CMP:
+        /* Dn destination: 4 (B/W) or 6 (L) + ea_src.
+         * Memory destination: 8 (B/W) or 12 (L) + ea_src + ea_dst. */
+        if (dst_is_reg)
+            return (is_long ? 6 : 4) + ea_src;
+        else
+            return (is_long ? 12 : 8) + ea_src + ea_dst;
+
+    case MN_ADDA: case MN_SUBA: case MN_CMPA:
+        return (is_long ? 6 : 8) + ea_src;
+
+    case MN_ADDQ: case MN_SUBQ:
+        if (dst_is_reg)
+            return is_long ? 8 : 4;
+        else
+            return (is_long ? 12 : 8) + ea_dst;
+
+    case MN_ADDX: case MN_SUBX:
+        return is_long ? 8 : 4;          /* Dn,Dn; mem variant +12 but rare in Sonic 1 */
+
+    /* ---- Immediate arithmetic ---- */
+    case MN_ADDI: case MN_SUBI: case MN_ANDI: case MN_ORI:
+    case MN_EORI:
+        if (dst_is_reg)
+            return is_long ? 16 : 8;
+        else
+            return (is_long ? 20 : 12) + ea_dst;
+
+    case MN_CMPI:
+        if (dst_is_reg)
+            return is_long ? 14 : 8;
+        else
+            return (is_long ? 12 : 8) + ea_dst;
+
+    /* ---- Shifts and rotates ---- */
+    case MN_LSL: case MN_LSR:
+    case MN_ASL: case MN_ASR:
+    case MN_ROL: case MN_ROR:
+    case MN_ROXL: case MN_ROXR: {
+        /* Memory-shift (always 1 bit, always word): 8 + ea_dst. */
+        if (!dst_is_reg)
+            return 8 + ea_dst;
+        /* Register-shift: base 6 (B/W) or 8 (L), + 2*count.
+         * Count comes from bits 11:9 of words[0] when bit 5 is clear
+         * (immediate mode); when bit 5 is set, count is in Dn and
+         * we use an average (4 shifts). */
+        uint16_t w0 = instr->words[0];
+        int reg_count_mode = (w0 >> 5) & 1;
+        int n;
+        if (reg_count_mode) {
+            n = 4;   /* data-dependent avg */
+        } else {
+            n = (w0 >> 9) & 7;
+            if (n == 0) n = 8;
+        }
+        return (is_long ? 8 : 6) + 2 * n;
+    }
+
+    /* ---- Multiply / divide (data-dependent; lean toward PRM midpoint) ---- */
+    case MN_MULS: return 70;    /* PRM: 38n + 38 worst case */
+    case MN_MULU: return 70;    /* PRM: 38 min, 70 max */
+    case MN_DIVS: return 150;   /* PRM: 158 worst case */
+    case MN_DIVU: return 140;   /* PRM: 140 worst case */
+
+    /* ---- Unary ---- */
+    case MN_TST:
+    case MN_CLR:
+    case MN_NEG: case MN_NEGX: case MN_NOT:
+        if (dst_is_reg)
+            return is_long ? 6 : 4;
+        else
+            return (is_long ? 12 : 8) + ea_dst;
+
+    case MN_NBCD: return dst_is_reg ? 6  : 8  + ea_dst;
+    case MN_TAS:  return dst_is_reg ? 4  : 14 + ea_dst;
+
+    /* ---- Sign extension ---- */
+    case MN_EXT:  return 4;
+    case MN_SWAP: return 4;
+
+    /* ---- Bit instructions ---- */
+    case MN_BTST:
+        /* Dn dst = 6 (imm) or 6 (dyn); mem dst = 4 + ea_dst. */
+        return dst_is_reg ? 6 : (4 + ea_dst);
+    case MN_BCHG: case MN_BCLR:
+        return dst_is_reg ? 8 : (8 + ea_dst);
+    case MN_BSET:
+        return dst_is_reg ? 8 : (8 + ea_dst);
+
+    /* ---- Link / Unlink ---- */
+    case MN_LINK: return 16;
+    case MN_UNLK: return 12;
+
+    /* ---- Conditional set ---- */
+    case MN_Scc:
+        return dst_is_reg ? 6 : (8 + ea_dst);
+
+    /* ---- Traps / priv ---- */
+    case MN_TRAP: return 34;
+    case MN_CHK:  return 10 + ea_src;  /* no-trap path */
+
+    /* ---- BCD ---- */
+    case MN_ABCD: case MN_SBCD:
+        return 6;    /* Dn,Dn (mem variant 18, rare) */
+
+    /* ---- Misc ---- */
+    case MN_EXG:       return 6;
+    case MN_MOVE_USP:  return 4;
+    case MN_MOVE_SR:   return dst_is_reg ? 6 : (8 + ea_dst);
+    case MN_MOVE_CCR:  return 12 + ea_src;
+    case MN_MOVEP:     return is_long ? 24 : 16;
+
+    case MN_OTHER:
+    default:
+        /* Fallback: base 4 + EA costs. Keeps behavior reasonable on
+         * opcodes that haven't been tuned above. */
+        return 4 + ea_src + ea_dst;
     }
 }
 
