@@ -2906,6 +2906,8 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             }
 
             fprintf(f_full, "  /* $%06X */\n", pc);
+            if (s_reverse_debug)
+                fprintf(f_full, "  rdb_on_insn(0x%06Xu);\n", pc);
             emit_instr(f_full, rom, &instr, &instrs, &skip_until_label, &has_sp_adjust);
 
             /* Contextual recompiler: accumulate cycles and check for
