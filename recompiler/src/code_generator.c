@@ -2919,8 +2919,9 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             {
                 int cyc = estimate_cycles(&instr);
                 fprintf(f_full, "  g_native_insn_count++; g_cycle_accumulator += %d;"
+                        " g_audio_cycle_counter += %d;"
                         " if (g_cycle_accumulator >= g_vblank_threshold)"
-                        " glue_check_vblank();\n", cyc);
+                        " glue_check_vblank();\n", cyc, cyc);
             }
         }
 
