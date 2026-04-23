@@ -120,6 +120,13 @@ extern uint32_t g_cycle_accumulator;
 extern uint32_t g_vblank_threshold;
 void glue_check_vblank(void);
 
+/* Audio event-queue cycle stamp. Bumped per-instruction by the generator
+ * (same cycle-table source as g_cycle_accumulator). Monotonic within a
+ * wall frame; resets at end-of-wall-frame. Used to time-stamp FM/PSG
+ * register writes onto the cycle-stamped event queue consumed by the
+ * audio mixer (runner/audio/). Defined in runner/glue.c. */
+extern uint32_t g_audio_cycle_counter;
+
 /* ---- Controller ---- */
 /* 3-button pad bitmask: bit5=C, bit4=B, bit3=A,
  *   bit2=Start, bit1=Up, bit0=Down (bit6=Left? depends on read mode)
