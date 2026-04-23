@@ -1,9 +1,3 @@
-diff --git a/libraries/clown68000 b/libraries/clown68000
---- a/libraries/clown68000
-+++ b/libraries/clown68000
-@@ -1 +1 @@
--Subproject commit e12ead17d0725e414d347bc9c0c096594235120d
-+Subproject commit e12ead17d0725e414d347bc9c0c096594235120d-dirty
 diff --git a/source/bus-common.c b/source/bus-common.c
 index 6652f1f..7088849 100644
 --- a/source/bus-common.c
@@ -48,7 +42,7 @@ index 751f18e..b00a506 100644
  
  #endif /* BUS_COMMON */
 diff --git a/source/bus-main-m68k.c b/source/bus-main-m68k.c
-index d78682a..f28653b 100644
+index d78682a..60de901 100644
 --- a/source/bus-main-m68k.c
 +++ b/source/bus-main-m68k.c
 @@ -1,6 +1,7 @@
@@ -157,6 +151,24 @@ index d78682a..f28653b 100644
  					break;
  
  				case 8 / 2:
+@@ -1299,6 +1305,17 @@ void M68kWriteCallbackWithCycle(const void* const user_data, const cc_u32f addre
+ 
+ 						/* Alter the PSG's state */
+ 						PSG_DoCommand(&clownmdemu->psg, low_byte);
++
++						/* SonicTheHedgehogRecomp: also push to the runner's
++						 * cycle-stamped audio event queue so our own PSG
++						 * renderer sees the write at the right cycle. */
++						{
++							/* Stamp in master cycles (full precision). */
++							extern void audio_event_push(cc_u32f stamp, cc_u8f port, cc_u8f value);
++							audio_event_push((cc_u32f)target_cycle.cycle,
++							                 4 /* AUDIO_PORT_PSG */,
++							                 low_byte);
++						}
+ 					}
+ 					break;
+ 
 diff --git a/source/bus-main-m68k.h b/source/bus-main-m68k.h
 index cc806ab..7f23a8d 100644
 --- a/source/bus-main-m68k.h
@@ -206,6 +218,35 @@ index c4794d1..73def90 100644
  void SyncMCDM68k(ClownMDEmu *clownmdemu, CPUCallbackUserData *other_state, CycleMegaCD target_cycle);
  cc_u16f MCDM68kReadCallbackWithCycle(const void *user_data, cc_u32f address, cc_bool do_high_byte, cc_bool do_low_byte, CycleMegaCD target_cycle);
  cc_u16f MCDM68kReadCallback(const void *user_data, cc_u32f address, cc_bool do_high_byte, cc_bool do_low_byte, cc_u32f current_cycle);
+diff --git a/source/bus-z80.c b/source/bus-z80.c
+index 42a4e04..0fc2706 100644
+--- a/source/bus-z80.c
++++ b/source/bus-z80.c
+@@ -155,6 +155,24 @@ void Z80WriteCallbackWithCycle(const void* const user_data, const cc_u16f addres
+ 			else
+ 				FM_DoData(&clownmdemu->fm, value);
+ 
++			{
++				/* SonicTheHedgehogRecomp: route all YM2612 writes (from
++				 * both 68K bus-forwarded-to-Z80 AND native Z80 code)
++				 * through the runner's cycle-stamped audio event queue.
++				 * Stamp uses target_cycle.cycle / 7 (master cycles → 68K
++				 * cycles), which tracks clownmdemu's scanline progression
++				 * through Iterate — monotonic and consistent across all
++				 * bus write sites (Z80 here, PSG in bus-main-m68k). */
++				extern void audio_event_push(cc_u32f cycle_stamp, cc_u8f port, cc_u8f value);
++				cc_u8f port;
++				if ((address & 1) == 0)
++					port = ((address & 2) != 0) ? 2 : 0;
++				else
++					port = ((address & 2) != 0) ? 3 : 1;
++				/* Stamp in master cycles (full precision). Runner's mixer
++				 * divides appropriately per chip at advance time. */
++				audio_event_push((cc_u32f)target_cycle.cycle, port, value);
++			}
+ 			break;
+ 
+ 		case 3: /* 0x6000 */
 diff --git a/source/clownmdemu.c b/source/clownmdemu.c
 index a1d605c..3afb1d3 100644
 --- a/source/clownmdemu.c
