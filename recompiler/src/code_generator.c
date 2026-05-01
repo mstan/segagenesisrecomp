@@ -92,6 +92,21 @@ static uint16_t er_next(ExtReader *er) {
     return v;
 }
 
+/* Read a long (32-bit) word from the extension stream — high word first. */
+static uint32_t er_next_dword(ExtReader *er) {
+    uint16_t hi = er_next(er);
+    uint16_t lo = er_next(er);
+    return ((uint32_t)hi << 16) | lo;
+}
+
+/* Read a size-tagged immediate from the extension stream:
+ * .B → 1 word, low byte; .W → 1 word; .L → 2 words. */
+static uint32_t er_next_imm(ExtReader *er, M68KSize sz) {
+    if (sz == M68K_SIZE_L) return er_next_dword(er);
+    uint16_t w = er_next(er);
+    return (sz == M68K_SIZE_B) ? (uint32_t)(w & 0xFFu) : (uint32_t)w;
+}
+
 /* =========================================================================
  * ea_ext_words_count — mirrors m68k_decoder.c logic
  * ========================================================================= */
@@ -179,6 +194,19 @@ static int size_bits(M68KSize sz) {
     case M68K_SIZE_L: return 32;
     default: return 16;
     }
+}
+
+/* Size-qualified write back to a data register from a result variable that is
+ * already typed as size_ctype(sz). For .L: full overwrite. For .B/.W: preserve
+ * the unmodified upper bits via size_mask. The `indent` string lets callers
+ * inside `{ ... }` blocks (e.g. shifts) match their surrounding indentation. */
+static void emit_store_dn(FILE *f, const char *indent,
+                          int dreg, const char *res, M68KSize sz) {
+    if (sz == M68K_SIZE_L)
+        fprintf(f, "%sg_cpu.D[%d] = (uint32_t)%s;\n", indent, dreg, res);
+    else
+        fprintf(f, "%sg_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
+                indent, dreg, dreg, size_mask(sz), size_ctype(sz), res);
 }
 
 /* =========================================================================
@@ -305,11 +333,16 @@ static void emit_ea_load_ex(FILE *f, const M68KInstr *instr, int ea, M68KSize sz
 }
 
 /* =========================================================================
- * emit_ea_addr — fill addr_expr with the address (for LEA/PEA, no read)
+ * emit_ea_addr — fill addr_expr with the address (no read)
+ *
+ * Used by LEA/PEA (u_suffix=false) and by JSR/JMP/BSR (u_suffix=true), which
+ * historically formatted the mode 7/3 PC-relative literal slightly
+ * differently. The flag picks `0x%08X` vs `0x%08Xu` to keep both call paths
+ * byte-for-byte identical to their pre-refactor output.
  * ========================================================================= */
 
-static void emit_ea_addr(FILE *f, const M68KInstr *instr, int ea,
-                         ExtReader *er, char *out_expr) {
+static void emit_ea_addr_ex(FILE *f, const M68KInstr *instr, int ea,
+                            ExtReader *er, char *out_expr, bool u_suffix) {
     int mode = (ea >> 3) & 7;
     int reg  = ea & 7;
     (void)f;
@@ -343,9 +376,7 @@ static void emit_ea_addr(FILE *f, const M68KInstr *instr, int ea,
             break;
         }
         case 1: {
-            uint16_t hi = er_next(er);
-            uint16_t lo = er_next(er);
-            uint32_t addr = ((uint32_t)hi << 16) | lo;
+            uint32_t addr = er_next_dword(er);
             snprintf(out_expr, 256, "0x%08Xu", addr);
             break;
         }
@@ -365,7 +396,9 @@ static void emit_ea_addr(FILE *f, const M68KInstr *instr, int ea,
             int8_t d8 = (int8_t)(ext & 0xFF);
             const char *xr = xtype ? "g_cpu.A" : "g_cpu.D";
             snprintf(out_expr, 256,
-                     "(uint32_t)(0x%08X + (int32_t)(int16_t)%s[%d] + (%d))",
+                     u_suffix
+                       ? "(uint32_t)(0x%08Xu + (int32_t)(int16_t)%s[%d] + (%d))"
+                       : "(uint32_t)(0x%08X + (int32_t)(int16_t)%s[%d] + (%d))",
                      pc_addr, xr, xreg, (int)d8);
             break;
         }
@@ -378,6 +411,12 @@ static void emit_ea_addr(FILE *f, const M68KInstr *instr, int ea,
         snprintf(out_expr, 256, "0 /* cannot take addr of mode %d */", mode);
         break;
     }
+}
+
+/* LEA/PEA wrapper: preserves the no-suffix mode 7/3 literal formatting. */
+static void emit_ea_addr(FILE *f, const M68KInstr *instr, int ea,
+                         ExtReader *er, char *out_expr) {
+    emit_ea_addr_ex(f, instr, ea, er, out_expr, false);
 }
 
 /* Non-RMW wrapper — preserves old signature for all existing callers */
@@ -563,6 +602,194 @@ static void emit_flags_cmp(FILE *f, const char *a, const char *b,
         (bits == 32) ? 0x80000000u : (bits == 16 ? 0x8000u : 0x80u),
         (bits == 32) ? 0x80000000u : (bits == 16 ? 0x8000u : 0x80u),
         SR_V);
+}
+
+/* =========================================================================
+ * Per-mnemonic emission helpers
+ *
+ * These collapse the 5 ADD/SUB and 5 AND/OR/EOR mirror copies, plus the
+ * 5 ADDI/SUBI/ANDI/ORI/EORI immediate-RMW mirror copies, plus the 3
+ * BCHG/BCLR/BSET mirror copies, into per-family helpers parameterized by
+ * operator string and (for arith) flag-update function pointer. Format
+ * strings preserved verbatim so generated output is byte-identical.
+ * ========================================================================= */
+
+typedef void (*EmitFlagsArithFn)(FILE *, const char *, const char *,
+                                 const char *, M68KSize);
+
+/* ADD/SUB: dir=0 is EA→Dn, dir=1 is Dn→EA. Outer cast (`(ct)((ct)x op (ct)y)`)
+ * matches arithmetic flag semantics. emit_flags is called BEFORE storing to
+ * Dn so it sees the original Dn value, not the result. */
+static void emit_alu_arith(FILE *f, const M68KInstr *instr, M68KSize sz,
+                           ExtReader *er, const char *tmp, uint32_t addr,
+                           const char *op,
+                           EmitFlagsArithFn emit_flags) {
+    int dir  = (instr->words[0] >> 8) & 1;
+    int dreg = instr->reg;
+    const char *ct = size_ctype(sz);
+    char src_expr[256];
+    char res[64];
+    snprintf(res, sizeof(res), "_%06Xr", addr);
+
+    if (dir == 0) {
+        emit_ea_load(f, instr, instr->src_ea, sz, er, tmp, src_expr);
+        fprintf(f, "  %s %s = (%s)((%s)g_cpu.D[%d] %s (%s)(%s));\n",
+                ct, res, ct, ct, dreg, op, ct, src_expr);
+        char da[256], db[256];
+        snprintf(da, sizeof(da), "(%s)((%s)g_cpu.D[%d])", ct, ct, dreg);
+        snprintf(db, sizeof(db), "(%s)(%s)", ct, src_expr);
+        emit_flags(f, da, db, res, sz);
+        emit_store_dn(f, "  ", dreg, res, sz);
+    } else {
+        ExtReader er_save = *er;
+        emit_ea_load_ex(f, instr, instr->src_ea, sz, er, tmp, src_expr, 1);
+        fprintf(f, "  %s %s = (%s)((%s)(%s) %s (%s)g_cpu.D[%d]);\n",
+                ct, res, ct, ct, src_expr, op, ct, dreg);
+        char da[256], db[256];
+        snprintf(da, sizeof(da), "(%s)(%s)", ct, src_expr);
+        snprintf(db, sizeof(db), "(%s)g_cpu.D[%d]", ct, dreg);
+        emit_flags(f, da, db, res, sz);
+        *er = er_save;
+        emit_ea_store_ex(f, instr, instr->src_ea, sz, er, res, 1);
+    }
+}
+
+/* AND/OR/EOR: logic ops have no outer cast and no operand-order swap-related
+ * flag dependency. dir=0 (EA→Dn) emits store-then-flags; dir=1 (Dn→EA) emits
+ * flags-then-store. Pass dir=1 from EOR (which has no Dn-destination form). */
+static void emit_alu_logic(FILE *f, const M68KInstr *instr, M68KSize sz,
+                           ExtReader *er, const char *tmp, uint32_t addr,
+                           int dir, const char *op) {
+    int dreg = instr->reg;
+    const char *ct = size_ctype(sz);
+    char src_expr[256];
+    char res[64];
+    snprintf(res, sizeof(res), "_%06Xr", addr);
+
+    if (dir == 0) {
+        emit_ea_load(f, instr, instr->src_ea, sz, er, tmp, src_expr);
+        fprintf(f, "  %s %s = (%s)g_cpu.D[%d] %s (%s)(%s);\n",
+                ct, res, ct, dreg, op, ct, src_expr);
+        emit_store_dn(f, "  ", dreg, res, sz);
+        emit_flags_logic(f, res, sz);
+    } else {
+        ExtReader er_save = *er;
+        emit_ea_load_ex(f, instr, instr->src_ea, sz, er, tmp, src_expr, 1);
+        fprintf(f, "  %s %s = (%s)(%s) %s (%s)g_cpu.D[%d];\n",
+                ct, res, ct, src_expr, op, ct, dreg);
+        emit_flags_logic(f, res, sz);
+        *er = er_save;
+        emit_ea_store_ex(f, instr, instr->src_ea, sz, er, res, 1);
+    }
+}
+
+/* ADDI/SUBI: immediate-RMW on EA, with arithmetic flag semantics. Caller
+ * has already consumed the immediate words via er_next_imm. The store walks
+ * a fresh ExtReader at words[1 + imm_words] so the EA extension is re-read. */
+static void emit_alui_arith(FILE *f, const M68KInstr *instr, M68KSize sz,
+                            ExtReader *er, const char *tmp, uint32_t addr,
+                            uint32_t imm, const char *op,
+                            EmitFlagsArithFn emit_flags) {
+    const char *ct = size_ctype(sz);
+    char src_expr[256];
+    char res[64];
+    snprintf(res, sizeof(res), "_%06Xr", addr);
+
+    emit_ea_load_ex(f, instr, instr->src_ea, sz, er, tmp, src_expr, 1);
+    fprintf(f, "  %s %s = (%s)((%s)(%s) %s (%s)0x%Xu);\n",
+            ct, res, ct, ct, src_expr, op, ct, imm);
+    char da[256], db[256];
+    snprintf(da, sizeof(da), "(%s)(%s)", ct, src_expr);
+    snprintf(db, sizeof(db), "(%s)0x%Xu", ct, imm);
+    emit_flags(f, da, db, res, sz);
+    int imm_words = (sz == M68K_SIZE_L) ? 2 : 1;
+    ExtReader er3;
+    er_init_at(&er3, instr, 1 + imm_words);
+    emit_ea_store_ex(f, instr, instr->src_ea, sz, &er3, res, 1);
+}
+
+/* ANDI/ORI/EORI RMW path (the EA-target case, NOT the SR/CCR special case
+ * — caller handles that inline). Logic flag semantics, no outer cast. */
+static void emit_alui_logic(FILE *f, const M68KInstr *instr, M68KSize sz,
+                            ExtReader *er, const char *tmp, uint32_t addr,
+                            uint32_t imm, const char *op) {
+    const char *ct = size_ctype(sz);
+    char src_expr[256];
+    char res[64];
+    snprintf(res, sizeof(res), "_%06Xr", addr);
+
+    emit_ea_load_ex(f, instr, instr->src_ea, sz, er, tmp, src_expr, 1);
+    fprintf(f, "  %s %s = (%s)(%s) %s (%s)0x%Xu;\n",
+            ct, res, ct, src_expr, op, ct, imm);
+    emit_flags_logic(f, res, sz);
+    int imm_words = (sz == M68K_SIZE_L) ? 2 : 1;
+    ExtReader er3;
+    er_init_at(&er3, instr, 1 + imm_words);
+    emit_ea_store_ex(f, instr, instr->src_ea, sz, &er3, res, 1);
+}
+
+/* SR-update tail shared by LSL/LSR (with_v=false) and ASL/ASR (with_v=true).
+ * Both shift families end with the same N/Z/C/X update, gated on the
+ * count-zero exception (preserve X when register-counted shift sees count=0).
+ * ASL/ASR additionally sets V if the sign bit changed during the shift. */
+static void emit_shift_sr_update(FILE *f, const char *res, int bits,
+                                 bool reg_count, bool with_v) {
+    if (reg_count) {
+        fprintf(f, "    if (_cnt == 0) {\n");
+        fprintf(f, "      g_cpu.SR &= ~(0x0Fu);  /* preserve X */\n");
+        fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+        fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
+        fprintf(f, "    } else {\n");
+        fprintf(f, "      g_cpu.SR &= ~(0x1Fu);\n");
+        fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+        fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
+        fprintf(f, "      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
+        if (with_v) fprintf(f, "      if (_v) g_cpu.SR |= (1u<<1);\n");
+        fprintf(f, "    }\n");
+    } else {
+        fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
+        fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+        fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
+        fprintf(f, "    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
+        if (with_v) fprintf(f, "    if (_v) g_cpu.SR |= (1u<<1);\n");
+    }
+}
+
+/* BCHG/BCLR/BSET: identical except for the bit-modify operator string
+ * (`"^"`, `"& ~"`, `"|"`). BTST stays inline since it has no RMW/result-var. */
+static void emit_bitop_modify(FILE *f, const M68KInstr *instr, M68KSize sz,
+                              ExtReader *er, const char *tmp, uint32_t addr,
+                              const char *modify_op) {
+    int dreg    = instr->reg;
+    int is_imm  = (dreg < 0);
+    int ea      = instr->src_ea;
+    int ea_mode = (ea >> 3) & 7;
+    int bit_mask = (ea_mode == 0) ? 31 : 7;
+    /* 68K: bit ops on memory are always byte-sized */
+    M68KSize bsz = (ea_mode == 0) ? sz : M68K_SIZE_B;
+    const char *ct = size_ctype(bsz);
+
+    char bit_expr[64];
+    if (is_imm) {
+        uint32_t imm = instr->imm32 & (uint32_t)bit_mask;
+        snprintf(bit_expr, sizeof(bit_expr), "%uu", imm);
+        er_init_at(er, instr, 2);
+    } else {
+        snprintf(bit_expr, sizeof(bit_expr), "(uint32_t)g_cpu.D[%d] & %uu", dreg, (unsigned)bit_mask);
+    }
+    char src_expr[256];
+    ExtReader er_save = *er;
+    emit_ea_load_ex(f, instr, ea, bsz, er, tmp, src_expr, 1);
+    char res[64];
+    snprintf(res, sizeof(res), "_%06Xr", addr);
+    fprintf(f, "  %s %s = 0;\n", ct, res);   /* declare outside block */
+    fprintf(f,
+        "  { uint32_t _bn = %s;\n"
+        "    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(%s) & (1u<<_bn)) ? (1u<<2) : 0u);\n"
+        "    %s = (%s)((%s)(%s) %s(%s)(1u<<_bn)); }\n",
+        bit_expr, src_expr, res, ct, ct, src_expr, modify_op, ct);
+    *er = er_save;
+    emit_ea_store_ex(f, instr, ea, bsz, er, res, 1);
 }
 
 /* =========================================================================
@@ -1025,47 +1252,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
         if (instr->has_target) {
             fprintf(f, "  func_%06X();\n", instr->target_addr);
-        } else if (mode == 2) {
-            fprintf(f, "  call_by_address(g_cpu.A[%d]);\n", reg);
-        } else if (mode == 5) {
-            uint16_t ext = er_next(&er);
-            int16_t d16 = (int16_t)ext;
-            fprintf(f, "  call_by_address((uint32_t)(g_cpu.A[%d] + (int32_t)%d));\n",
-                    reg, (int)d16);
-        } else if (mode == 7 && reg == 0) {
-            uint16_t ext = er_next(&er);
-            fprintf(f, "  call_by_address((uint32_t)(int32_t)(int16_t)0x%04X);\n", ext);
-        } else if (mode == 6) {
-            /* (d8,An,Xn) */
-            uint16_t ext = er_next(&er);
-            int xreg  = (ext >> 12) & 7;
-            int xtype = (ext >> 15) & 1;
-            int8_t d8 = (int8_t)(ext & 0xFF);
-            const char *xr = xtype ? "g_cpu.A" : "g_cpu.D";
-            fprintf(f, "  call_by_address((uint32_t)(g_cpu.A[%d] + (int32_t)(int16_t)%s[%d] + (%d)));\n",
-                    reg, xr, xreg, (int)d8);
-        } else if (mode == 7 && reg == 1) {
-            uint16_t hi = er_next(&er);
-            uint16_t lo = er_next(&er);
-            uint32_t a = ((uint32_t)hi << 16) | lo;
-            fprintf(f, "  call_by_address(0x%08Xu);\n", a);
-        } else if (mode == 7 && reg == 2) {
-            /* (d16,PC) */
-            uint32_t pc_addr = instr->addr + er.bp;
-            uint16_t ext = er_next(&er);
-            int16_t d16 = (int16_t)ext;
-            uint32_t eff = (uint32_t)((int32_t)pc_addr + (int32_t)d16);
-            fprintf(f, "  call_by_address(0x%08Xu);\n", eff);
-        } else if (mode == 7 && reg == 3) {
-            /* (d8,PC,Xn) */
-            uint32_t pc_addr = instr->addr + er.bp;
-            uint16_t ext = er_next(&er);
-            int xreg  = (ext >> 12) & 7;
-            int xtype = (ext >> 15) & 1;
-            int8_t d8 = (int8_t)(ext & 0xFF);
-            const char *xr = xtype ? "g_cpu.A" : "g_cpu.D";
-            fprintf(f, "  call_by_address((uint32_t)(0x%08Xu + (int32_t)(int16_t)%s[%d] + (%d)));\n",
-                    pc_addr, xr, xreg, (int)d8);
+        } else if (mode == 2 || mode == 5 || mode == 6 ||
+                   (mode == 7 && reg <= 3)) {
+            char ae[256];
+            emit_ea_addr_ex(f, instr, ea, &er, ae, true);
+            fprintf(f, "  call_by_address(%s);\n", ae);
         } else {
             fprintf(f, "  /* TODO: dynamic JSR/BSR EA %d/%d */\n", mode, reg);
         }
@@ -1093,29 +1284,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             } else {
                 fprintf(f, "  func_%06X(); return;\n", instr->target_addr);
             }
-        } else if (mode == 2) {
-            fprintf(f, "  call_by_address(g_cpu.A[%d]); return;\n", reg);
-        } else if (mode == 5) {
-            uint16_t ext = er_next(&er);
-            int16_t d16 = (int16_t)ext;
-            fprintf(f, "  call_by_address((uint32_t)(g_cpu.A[%d] + (int32_t)%d)); return;\n",
-                    reg, (int)d16);
-        } else if (mode == 6) {
-            uint16_t ext = er_next(&er);
-            int xreg  = (ext >> 12) & 7;
-            int xtype = (ext >> 15) & 1;
-            int8_t d8 = (int8_t)(ext & 0xFF);
-            const char *xr = xtype ? "g_cpu.A" : "g_cpu.D";
-            fprintf(f, "  call_by_address((uint32_t)(g_cpu.A[%d] + (int32_t)(int16_t)%s[%d] + (%d))); return;\n",
-                    reg, xr, xreg, (int)d8);
-        } else if (mode == 7 && reg == 0) {
-            uint16_t ext = er_next(&er);
-            fprintf(f, "  call_by_address((uint32_t)(int32_t)(int16_t)0x%04X); return;\n", ext);
-        } else if (mode == 7 && reg == 1) {
-            uint16_t hi = er_next(&er);
-            uint16_t lo = er_next(&er);
-            uint32_t a = ((uint32_t)hi << 16) | lo;
-            fprintf(f, "  call_by_address(0x%08Xu); return;\n", a);
+        } else if (mode == 2 || mode == 5 || mode == 6 ||
+                   (mode == 7 && (reg == 0 || reg == 1))) {
+            char ae[256];
+            emit_ea_addr_ex(f, instr, ea, &er, ae, true);
+            fprintf(f, "  call_by_address(%s); return;\n", ae);
         } else if (mode == 7 && reg == 3) {
             /* JMP (d8,PC,Xn) — indexed jump table.  Compute target at runtime
              * and dispatch via hybrid_jmp_interpret (interpreter fallback). */
@@ -1258,46 +1431,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     }
 
     /* ------------------------------------------------------------------ */
-    case MN_ADD: {
-        /* bit 8 of opcode = direction: 0=EA→Dn, 1=Dn→EA */
-        int dir  = (instr->words[0] >> 8) & 1;
-        int dreg = instr->reg;
-        const char *ct = size_ctype(sz);
-
-        if (dir == 0) {
-            emit_ea_load(f, instr, instr->src_ea, sz, &er, tmp, src_expr);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)((%s)g_cpu.D[%d] + (%s)(%s));\n",
-                    ct, res, ct, ct, dreg, ct, src_expr);
-            /* Emit flags BEFORE modifying the register so _fa reads
-             * the original Dn value, not the result. */
-            char da[256], db[256];
-            snprintf(da, sizeof(da), "(%s)((%s)g_cpu.D[%d])", ct, ct, dreg);
-            snprintf(db, sizeof(db), "(%s)(%s)", ct, src_expr);
-            emit_flags_add(f, da, db, res, sz);
-            if (sz == M68K_SIZE_L)
-                fprintf(f, "  g_cpu.D[%d] = (uint32_t)%s;\n", dreg, res);
-            else
-                fprintf(f, "  g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
-                        dreg, dreg, size_mask(sz), ct, res);
-        } else {
-            /* dir=1: Dn → EA (memory destination) */
-            ExtReader er_save = er;
-            emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)((%s)(%s) + (%s)g_cpu.D[%d]);\n",
-                    ct, res, ct, ct, src_expr, ct, dreg);
-            char da[256], db[256];
-            snprintf(da, sizeof(da), "(%s)(%s)", ct, src_expr);
-            snprintf(db, sizeof(db), "(%s)g_cpu.D[%d]", ct, dreg);
-            emit_flags_add(f, da, db, res, sz);
-            er = er_save;
-            emit_ea_store_ex(f, instr, instr->src_ea, sz, &er, res, 1);
-        }
+    case MN_ADD:
+        emit_alu_arith(f, instr, sz, &er, tmp, addr, "+", emit_flags_add);
         break;
-    }
 
     /* ------------------------------------------------------------------ */
     case MN_ADDA: {
@@ -1350,77 +1486,15 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_ADDI: {
-        /* immediate in words[1] (B/W) or words[1..2] (L), then EA ext */
-        uint32_t imm;
-        if (sz == M68K_SIZE_L) {
-            uint16_t hi = er_next(&er);
-            uint16_t lo = er_next(&er);
-            imm = ((uint32_t)hi << 16) | lo;
-        } else {
-            uint16_t w = er_next(&er);
-            imm = (sz == M68K_SIZE_B) ? (w & 0xFF) : w;
-        }
-        const char *ct = size_ctype(sz);
-        emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-        char res[64];
-        snprintf(res, sizeof(res), "_%06Xr", addr);
-        fprintf(f, "  %s %s = (%s)((%s)(%s) + (%s)0x%Xu);\n",
-                ct, res, ct, ct, src_expr, ct, imm);
-        char da[256], db[256];
-        snprintf(da, sizeof(da), "(%s)(%s)", ct, src_expr);
-        snprintf(db, sizeof(db), "(%s)0x%Xu", ct, imm);
-        emit_flags_add(f, da, db, res, sz);
-        ExtReader er2;
-        er_init_at(&er2, instr, er.wi - (int)(instr->src_ea != -1 ? 0 : 0));
-        /* Re-walk: re-init from start, skip imm words, then EA ext for store */
-        {
-            int imm_words = (sz == M68K_SIZE_L) ? 2 : 1;
-            ExtReader er3;
-            er_init_at(&er3, instr, 1 + imm_words);
-            emit_ea_store_ex(f, instr, instr->src_ea, sz, &er3, res, 1);
-        }
+        uint32_t imm = er_next_imm(&er, sz);
+        emit_alui_arith(f, instr, sz, &er, tmp, addr, imm, "+", emit_flags_add);
         break;
     }
 
     /* ------------------------------------------------------------------ */
-    case MN_SUB: {
-        int dir  = (instr->words[0] >> 8) & 1;
-        int dreg = instr->reg;
-        const char *ct = size_ctype(sz);
-
-        if (dir == 0) {
-            emit_ea_load(f, instr, instr->src_ea, sz, &er, tmp, src_expr);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)((%s)g_cpu.D[%d] - (%s)(%s));\n",
-                    ct, res, ct, ct, dreg, ct, src_expr);
-            /* Emit flags BEFORE modifying the register so _fa reads
-             * the original Dn value, not the result. */
-            char da[256], db[256];
-            snprintf(da, sizeof(da), "(%s)((%s)g_cpu.D[%d])", ct, ct, dreg);
-            snprintf(db, sizeof(db), "(%s)(%s)", ct, src_expr);
-            emit_flags_sub(f, da, db, res, sz);
-            if (sz == M68K_SIZE_L)
-                fprintf(f, "  g_cpu.D[%d] = (uint32_t)%s;\n", dreg, res);
-            else
-                fprintf(f, "  g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
-                        dreg, dreg, size_mask(sz), ct, res);
-        } else {
-            ExtReader er_save = er;
-            emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)((%s)(%s) - (%s)g_cpu.D[%d]);\n",
-                    ct, res, ct, ct, src_expr, ct, dreg);
-            char da[256], db[256];
-            snprintf(da, sizeof(da), "(%s)(%s)", ct, src_expr);
-            snprintf(db, sizeof(db), "(%s)g_cpu.D[%d]", ct, dreg);
-            emit_flags_sub(f, da, db, res, sz);
-            er = er_save;
-            emit_ea_store_ex(f, instr, instr->src_ea, sz, &er, res, 1);
-        }
+    case MN_SUB:
+        emit_alu_arith(f, instr, sz, &er, tmp, addr, "-", emit_flags_sub);
         break;
-    }
 
     /* ------------------------------------------------------------------ */
     case MN_SUBA: {
@@ -1468,146 +1542,39 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_SUBI: {
-        uint32_t imm;
-        if (sz == M68K_SIZE_L) {
-            uint16_t hi = er_next(&er);
-            uint16_t lo = er_next(&er);
-            imm = ((uint32_t)hi << 16) | lo;
-        } else {
-            uint16_t w = er_next(&er);
-            imm = (sz == M68K_SIZE_B) ? (w & 0xFF) : w;
-        }
-        const char *ct = size_ctype(sz);
-        emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-        char res[64];
-        snprintf(res, sizeof(res), "_%06Xr", addr);
-        fprintf(f, "  %s %s = (%s)((%s)(%s) - (%s)0x%Xu);\n",
-                ct, res, ct, ct, src_expr, ct, imm);
-        char da[256], db[256];
-        snprintf(da, sizeof(da), "(%s)(%s)", ct, src_expr);
-        snprintf(db, sizeof(db), "(%s)0x%Xu", ct, imm);
-        emit_flags_sub(f, da, db, res, sz);
-        {
-            int imm_words = (sz == M68K_SIZE_L) ? 2 : 1;
-            ExtReader er3;
-            er_init_at(&er3, instr, 1 + imm_words);
-            emit_ea_store_ex(f, instr, instr->src_ea, sz, &er3, res, 1);
-        }
+        uint32_t imm = er_next_imm(&er, sz);
+        emit_alui_arith(f, instr, sz, &er, tmp, addr, imm, "-", emit_flags_sub);
         break;
     }
 
     /* ------------------------------------------------------------------ */
-    case MN_AND: {
-        int dir  = (instr->words[0] >> 8) & 1;
-        int dreg = instr->reg;
-        const char *ct = size_ctype(sz);
-
-        if (dir == 0) {
-            emit_ea_load(f, instr, instr->src_ea, sz, &er, tmp, src_expr);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)g_cpu.D[%d] & (%s)(%s);\n",
-                    ct, res, ct, dreg, ct, src_expr);
-            if (sz == M68K_SIZE_L)
-                fprintf(f, "  g_cpu.D[%d] = (uint32_t)%s;\n", dreg, res);
-            else
-                fprintf(f, "  g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
-                        dreg, dreg, size_mask(sz), ct, res);
-            emit_flags_logic(f, res, sz);
-        } else {
-            ExtReader er_save = er;
-            emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)(%s) & (%s)g_cpu.D[%d];\n",
-                    ct, res, ct, src_expr, ct, dreg);
-            emit_flags_logic(f, res, sz);
-            er = er_save;
-            emit_ea_store_ex(f, instr, instr->src_ea, sz, &er, res, 1);
-        }
+    case MN_AND:
+        emit_alu_logic(f, instr, sz, &er, tmp, addr,
+                       (instr->words[0] >> 8) & 1, "&");
         break;
-    }
 
     /* ------------------------------------------------------------------ */
-    case MN_OR: {
-        int dir  = (instr->words[0] >> 8) & 1;
-        int dreg = instr->reg;
-        const char *ct = size_ctype(sz);
-
-        if (dir == 0) {
-            emit_ea_load(f, instr, instr->src_ea, sz, &er, tmp, src_expr);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)g_cpu.D[%d] | (%s)(%s);\n",
-                    ct, res, ct, dreg, ct, src_expr);
-            if (sz == M68K_SIZE_L)
-                fprintf(f, "  g_cpu.D[%d] = (uint32_t)%s;\n", dreg, res);
-            else
-                fprintf(f, "  g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
-                        dreg, dreg, size_mask(sz), ct, res);
-            emit_flags_logic(f, res, sz);
-        } else {
-            ExtReader er_save = er;
-            emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)(%s) | (%s)g_cpu.D[%d];\n",
-                    ct, res, ct, src_expr, ct, dreg);
-            emit_flags_logic(f, res, sz);
-            er = er_save;
-            emit_ea_store_ex(f, instr, instr->src_ea, sz, &er, res, 1);
-        }
+    case MN_OR:
+        emit_alu_logic(f, instr, sz, &er, tmp, addr,
+                       (instr->words[0] >> 8) & 1, "|");
         break;
-    }
 
     /* ------------------------------------------------------------------ */
-    case MN_EOR: {
-        /* EOR always dir=1 (Dn ^ EA → EA), reg field in instr->reg */
-        int dreg = instr->reg;
-        const char *ct = size_ctype(sz);
-        ExtReader er_save = er;
-        emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-        char res[64];
-        snprintf(res, sizeof(res), "_%06Xr", addr);
-        fprintf(f, "  %s %s = (%s)(%s) ^ (%s)g_cpu.D[%d];\n",
-                ct, res, ct, src_expr, ct, dreg);
-        emit_flags_logic(f, res, sz);
-        er = er_save;
-        emit_ea_store_ex(f, instr, instr->src_ea, sz, &er, res, 1);
+    case MN_EOR:
+        /* EOR has only the Dn → EA form (no Dn-destination variant). */
+        emit_alu_logic(f, instr, sz, &er, tmp, addr, 1, "^");
         break;
-    }
 
     /* ------------------------------------------------------------------ */
     case MN_ORI: {
-        /* Special: ORI to SR */
+        /* Special: ORI to SR/CCR */
         int ea_mode = (instr->src_ea >> 3) & 7;
         int ea_reg  = instr->src_ea & 7;
-        uint32_t imm;
-        if (sz == M68K_SIZE_L) {
-            uint16_t hi = er_next(&er);
-            uint16_t lo = er_next(&er);
-            imm = ((uint32_t)hi << 16) | lo;
-        } else {
-            uint16_t w = er_next(&er);
-            imm = (sz == M68K_SIZE_B) ? (w & 0xFF) : w;
-        }
+        uint32_t imm = er_next_imm(&er, sz);
         if (ea_mode == 7 && ea_reg == 4) {
-            /* ORI to SR/CCR */
             fprintf(f, "  g_cpu.SR |= 0x%04Xu;\n", (unsigned)imm);
         } else {
-            const char *ct = size_ctype(sz);
-            emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)(%s) | (%s)0x%Xu;\n",
-                    ct, res, ct, src_expr, ct, imm);
-            emit_flags_logic(f, res, sz);
-            {
-                int imm_words = (sz == M68K_SIZE_L) ? 2 : 1;
-                ExtReader er3;
-                er_init_at(&er3, instr, 1 + imm_words);
-                emit_ea_store_ex(f, instr, instr->src_ea, sz, &er3, res, 1);
-            }
+            emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "|");
         }
         break;
     }
@@ -1616,15 +1583,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     case MN_ANDI: {
         int ea_mode = (instr->src_ea >> 3) & 7;
         int ea_reg  = instr->src_ea & 7;
-        uint32_t imm;
-        if (sz == M68K_SIZE_L) {
-            uint16_t hi = er_next(&er);
-            uint16_t lo = er_next(&er);
-            imm = ((uint32_t)hi << 16) | lo;
-        } else {
-            uint16_t w = er_next(&er);
-            imm = (sz == M68K_SIZE_B) ? (w & 0xFF) : w;
-        }
+        uint32_t imm = er_next_imm(&er, sz);
         if (ea_mode == 7 && ea_reg == 4) {
             /* ANDI to CCR (.B) only touches the low byte of SR.
              * ANDI to SR  (.W) is a full 16-bit AND.
@@ -1634,19 +1593,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             uint32_t mask = (sz == M68K_SIZE_B) ? (0xFF00u | (imm & 0xFFu)) : (imm & 0xFFFFu);
             fprintf(f, "  g_cpu.SR &= 0x%04Xu;\n", (unsigned)mask);
         } else {
-            const char *ct = size_ctype(sz);
-            emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)(%s) & (%s)0x%Xu;\n",
-                    ct, res, ct, src_expr, ct, imm);
-            emit_flags_logic(f, res, sz);
-            {
-                int imm_words = (sz == M68K_SIZE_L) ? 2 : 1;
-                ExtReader er3;
-                er_init_at(&er3, instr, 1 + imm_words);
-                emit_ea_store_ex(f, instr, instr->src_ea, sz, &er3, res, 1);
-            }
+            emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "&");
         }
         break;
     }
@@ -1655,31 +1602,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     case MN_EORI: {
         int ea_mode = (instr->src_ea >> 3) & 7;
         int ea_reg  = instr->src_ea & 7;
-        uint32_t imm;
-        if (sz == M68K_SIZE_L) {
-            uint16_t hi = er_next(&er);
-            uint16_t lo = er_next(&er);
-            imm = ((uint32_t)hi << 16) | lo;
-        } else {
-            uint16_t w = er_next(&er);
-            imm = (sz == M68K_SIZE_B) ? (w & 0xFF) : w;
-        }
+        uint32_t imm = er_next_imm(&er, sz);
         if (ea_mode == 7 && ea_reg == 4) {
             fprintf(f, "  g_cpu.SR ^= 0x%04Xu;\n", (unsigned)imm);
         } else {
-            const char *ct = size_ctype(sz);
-            emit_ea_load_ex(f, instr, instr->src_ea, sz, &er, tmp, src_expr, 1);
-            char res[64];
-            snprintf(res, sizeof(res), "_%06Xr", addr);
-            fprintf(f, "  %s %s = (%s)(%s) ^ (%s)0x%Xu;\n",
-                    ct, res, ct, src_expr, ct, imm);
-            emit_flags_logic(f, res, sz);
-            {
-                int imm_words = (sz == M68K_SIZE_L) ? 2 : 1;
-                ExtReader er3;
-                er_init_at(&er3, instr, 1 + imm_words);
-                emit_ea_store_ex(f, instr, instr->src_ea, sz, &er3, res, 1);
-            }
+            emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "^");
         }
         break;
     }
@@ -1721,15 +1648,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_CMPI: {
-        uint32_t imm;
-        if (sz == M68K_SIZE_L) {
-            uint16_t hi = er_next(&er);
-            uint16_t lo = er_next(&er);
-            imm = ((uint32_t)hi << 16) | lo;
-        } else {
-            uint16_t w = er_next(&er);
-            imm = (sz == M68K_SIZE_B) ? (w & 0xFF) : w;
-        }
+        uint32_t imm = er_next_imm(&er, sz);
         const char *ct = size_ctype(sz);
         emit_ea_load(f, instr, instr->src_ea, sz, &er, tmp, src_expr);
         char res[64];
@@ -1828,106 +1747,19 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     }
 
     /* ------------------------------------------------------------------ */
-    case MN_BCHG: {
-        int dreg    = instr->reg;
-        int is_imm  = (dreg < 0);
-        int ea      = instr->src_ea;
-        int ea_mode = (ea >> 3) & 7;
-        int bit_mask = (ea_mode == 0) ? 31 : 7;
-        /* 68K: bit ops on memory are always byte-sized */
-        M68KSize bsz = (ea_mode == 0) ? sz : M68K_SIZE_B;
-        const char *ct = size_ctype(bsz);
-
-        char bit_expr[64];
-        if (is_imm) {
-            uint32_t imm = instr->imm32 & (uint32_t)bit_mask;
-            snprintf(bit_expr, sizeof(bit_expr), "%uu", imm);
-            er_init_at(&er, instr, 2);
-        } else {
-            snprintf(bit_expr, sizeof(bit_expr), "(uint32_t)g_cpu.D[%d] & %uu", dreg, (unsigned)bit_mask);
-        }
-        ExtReader er_save = er;
-        emit_ea_load_ex(f, instr, ea, bsz, &er, tmp, src_expr, 1);
-        char res[64];
-        snprintf(res, sizeof(res), "_%06Xr", addr);
-        fprintf(f, "  %s %s = 0;\n", ct, res);   /* declare outside block */
-        fprintf(f,
-            "  { uint32_t _bn = %s;\n"
-            "    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(%s) & (1u<<_bn)) ? (1u<<2) : 0u);\n"
-            "    %s = (%s)((%s)(%s) ^ (%s)(1u<<_bn)); }\n",
-            bit_expr, src_expr, res, ct, ct, src_expr, ct);
-        er = er_save;
-        emit_ea_store_ex(f, instr, ea, bsz, &er, res, 1);
+    case MN_BCHG:
+        emit_bitop_modify(f, instr, sz, &er, tmp, addr, "^ ");
         break;
-    }
 
     /* ------------------------------------------------------------------ */
-    case MN_BCLR: {
-        int dreg    = instr->reg;
-        int is_imm  = (dreg < 0);
-        int ea      = instr->src_ea;
-        int ea_mode = (ea >> 3) & 7;
-        int bit_mask = (ea_mode == 0) ? 31 : 7;
-        /* 68K: bit ops on memory are always byte-sized */
-        M68KSize bsz = (ea_mode == 0) ? sz : M68K_SIZE_B;
-        const char *ct = size_ctype(bsz);
-
-        char bit_expr[64];
-        if (is_imm) {
-            uint32_t imm = instr->imm32 & (uint32_t)bit_mask;
-            snprintf(bit_expr, sizeof(bit_expr), "%uu", imm);
-            er_init_at(&er, instr, 2);
-        } else {
-            snprintf(bit_expr, sizeof(bit_expr), "(uint32_t)g_cpu.D[%d] & %uu", dreg, (unsigned)bit_mask);
-        }
-        ExtReader er_save = er;
-        emit_ea_load_ex(f, instr, ea, bsz, &er, tmp, src_expr, 1);
-        char res[64];
-        snprintf(res, sizeof(res), "_%06Xr", addr);
-        fprintf(f, "  %s %s = 0;\n", ct, res);   /* declare outside block */
-        fprintf(f,
-            "  { uint32_t _bn = %s;\n"
-            "    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(%s) & (1u<<_bn)) ? (1u<<2) : 0u);\n"
-            "    %s = (%s)((%s)(%s) & ~(%s)(1u<<_bn)); }\n",
-            bit_expr, src_expr, res, ct, ct, src_expr, ct);
-        er = er_save;
-        emit_ea_store_ex(f, instr, ea, bsz, &er, res, 1);
+    case MN_BCLR:
+        emit_bitop_modify(f, instr, sz, &er, tmp, addr, "& ~");
         break;
-    }
 
     /* ------------------------------------------------------------------ */
-    case MN_BSET: {
-        int dreg    = instr->reg;
-        int is_imm  = (dreg < 0);
-        int ea      = instr->src_ea;
-        int ea_mode = (ea >> 3) & 7;
-        int bit_mask = (ea_mode == 0) ? 31 : 7;
-        /* 68K: bit ops on memory are always byte-sized */
-        M68KSize bsz = (ea_mode == 0) ? sz : M68K_SIZE_B;
-        const char *ct = size_ctype(bsz);
-
-        char bit_expr[64];
-        if (is_imm) {
-            uint32_t imm = instr->imm32 & (uint32_t)bit_mask;
-            snprintf(bit_expr, sizeof(bit_expr), "%uu", imm);
-            er_init_at(&er, instr, 2);
-        } else {
-            snprintf(bit_expr, sizeof(bit_expr), "(uint32_t)g_cpu.D[%d] & %uu", dreg, (unsigned)bit_mask);
-        }
-        ExtReader er_save = er;
-        emit_ea_load_ex(f, instr, ea, bsz, &er, tmp, src_expr, 1);
-        char res[64];
-        snprintf(res, sizeof(res), "_%06Xr", addr);
-        fprintf(f, "  %s %s = 0;\n", ct, res);   /* declare outside block */
-        fprintf(f,
-            "  { uint32_t _bn = %s;\n"
-            "    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(%s) & (1u<<_bn)) ? (1u<<2) : 0u);\n"
-            "    %s = (%s)((%s)(%s) | (%s)(1u<<_bn)); }\n",
-            bit_expr, src_expr, res, ct, ct, src_expr, ct);
-        er = er_save;
-        emit_ea_store_ex(f, instr, ea, bsz, &er, res, 1);
+    case MN_BSET:
+        emit_bitop_modify(f, instr, sz, &er, tmp, addr, "| ");
         break;
-    }
 
     /* ------------------------------------------------------------------ */
     case MN_SWAP: {
@@ -2015,32 +1847,12 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             }
         }
         /* Update Dn */
-        if (sz == M68K_SIZE_L)
-            fprintf(f, "    g_cpu.D[%d] = (uint32_t)%s;\n", dreg, res);
-        else
-            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
-                    dreg, dreg, size_mask(sz), ct, res);
+        emit_store_dn(f, "    ", dreg, res, sz);
         /* Flags. LSL/LSR with shift count == 0 leaves X UNCHANGED; only
          * count > 0 sets X = C = last bit shifted out. Register-counted
          * shifts can hit count == 0 at runtime; immediate-count shifts
          * encode 0 as 8, so they always shift. */
-        if (reg_count) {
-            fprintf(f, "    if (_cnt == 0) {\n");
-            fprintf(f, "      g_cpu.SR &= ~(0x0Fu);  /* preserve X */\n");
-            fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
-            fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
-            fprintf(f, "    } else {\n");
-            fprintf(f, "      g_cpu.SR &= ~(0x1Fu);\n");
-            fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
-            fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
-            fprintf(f, "      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
-            fprintf(f, "    }\n");
-        } else {
-            fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
-            fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
-            fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
-            fprintf(f, "    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
-        }
+        emit_shift_sr_update(f, res, bits, reg_count, false);
         fprintf(f, "  }\n");
         break;
     }
@@ -2109,33 +1921,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             fprintf(f, "    uint32_t _v = 0u;\n");
         }
         /* Update Dn */
-        if (sz == M68K_SIZE_L)
-            fprintf(f, "    g_cpu.D[%d] = (uint32_t)%s;\n", dreg, res);
-        else
-            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
-                    dreg, dreg, size_mask(sz), ct, res);
+        emit_store_dn(f, "    ", dreg, res, sz);
         /* ASL/ASR with register count == 0 leaves X UNCHANGED (sets C=0, V=0).
          * Immediate count of 0 is decoded as 8, so only register-count form
          * can hit this case at runtime. Mirrors LSL/LSR's _cnt==0 handling. */
-        if (asr_reg_count) {
-            fprintf(f, "    if (_cnt == 0) {\n");
-            fprintf(f, "      g_cpu.SR &= ~(0x0Fu);  /* preserve X */\n");
-            fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
-            fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
-            fprintf(f, "    } else {\n");
-            fprintf(f, "      g_cpu.SR &= ~(0x1Fu);\n");
-            fprintf(f, "      if (!%s) g_cpu.SR |= (1u<<2);\n", res);
-            fprintf(f, "      if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
-            fprintf(f, "      if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
-            fprintf(f, "      if (_v) g_cpu.SR |= (1u<<1);\n");
-            fprintf(f, "    }\n");
-        } else {
-            fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
-            fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
-            fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
-            fprintf(f, "    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
-            fprintf(f, "    if (_v) g_cpu.SR |= (1u<<1);\n");
-        }
+        emit_shift_sr_update(f, res, bits, asr_reg_count, true);
         fprintf(f, "  }\n");
         break;
     }
@@ -2188,11 +1978,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                     count ? "1" : "0", res, bits - 1);
         }
         } /* end !rot_reg_count */
-        if (sz == M68K_SIZE_L)
-            fprintf(f, "    g_cpu.D[%d] = (uint32_t)%s;\n", dreg, res);
-        else
-            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
-                    dreg, dreg, size_mask(sz), ct, res);
+        emit_store_dn(f, "    ", dreg, res, sz);
         fprintf(f, "    g_cpu.SR &= ~(0x0Fu);\n"); /* clear N,Z,V,C; leave X */
         fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
         fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
@@ -2237,11 +2023,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                 ct, res, ct, (bits == 32) ? 0xFFFFFFFFu : ((1u << bits) - 1u),
                 bits);
         }
-        if (sz == M68K_SIZE_L)
-            fprintf(f, "    g_cpu.D[%d] = (uint32_t)%s;\n", dreg, res);
-        else
-            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)((%s)%s);\n",
-                    dreg, dreg, size_mask(sz), ct, res);
+        emit_store_dn(f, "    ", dreg, res, sz);
         fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
         fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
         fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
