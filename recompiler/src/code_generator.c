@@ -2318,14 +2318,13 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_MOVE_SR: {
-        /* words[0] bit 9..8: if direction = from SR, EA is dst; else EA is src */
-        /* Encoding: 0x40C0 = MOVE SR,<ea>; 0x46C0 = MOVE <ea>,SR */
-        int to_sr = ((instr->words[0] & 0x0E00) == 0x0600); /* bits 11-9 = 011 = MOVE <ea>,SR */
-        if (to_sr) {
+        /* Direction comes from the decoder's dst_is_ea flag:
+         *   dst_is_ea=false → MOVE <ea>,SR  (load EA → SR)
+         *   dst_is_ea=true  → MOVE SR,<ea>  (store SR → EA) */
+        if (!instr->dst_is_ea) {
             emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
             fprintf(f, "  g_cpu.SR = (uint16_t)(%s);\n", src_expr);
         } else {
-            /* MOVE SR, <ea> */
             emit_ea_store(f, instr, instr->src_ea, M68K_SIZE_W, &er, "g_cpu.SR");
         }
         break;
@@ -2333,8 +2332,19 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_MOVE_CCR: {
-        emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
-        fprintf(f, "  g_cpu.SR = (g_cpu.SR & 0xFF00u) | (uint16_t)((%s) & 0xFFu);\n", src_expr);
+        /* Direction from decoder:
+         *   dst_is_ea=false → MOVE <ea>,CCR  (load low byte of EA into CCR;
+         *                     upper byte of SR is preserved per 68K spec)
+         *   dst_is_ea=true  → MOVE CCR,<ea>  (read CCR as a word — low 8
+         *                     bits are CCR, upper 8 bits are zero — and
+         *                     store to EA as a word) */
+        if (!instr->dst_is_ea) {
+            emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
+            fprintf(f, "  g_cpu.SR = (g_cpu.SR & 0xFF00u) | (uint16_t)((%s) & 0xFFu);\n", src_expr);
+        } else {
+            emit_ea_store(f, instr, instr->src_ea, M68K_SIZE_W, &er,
+                          "(uint16_t)(g_cpu.SR & 0x00FFu)");
+        }
         break;
     }
 
