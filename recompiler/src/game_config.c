@@ -184,6 +184,12 @@ bool game_config_load(GameConfig *cfg, const char *path) {
         else if (strcmp(key, "vblank_yield") == 0 && n >= 2) {
             cfg->vblank_yield_addr = (uint32_t)strtoul(val1, NULL, 16);
         }
+        else if (strcmp(key, "allow_68020_branch") == 0 && n >= 2) {
+            /* Accept "1" / "true" / "yes" as on; everything else is off. */
+            cfg->allow_68020_branch = (strcmp(val1, "1") == 0 ||
+                                       strcmp(val1, "true") == 0 ||
+                                       strcmp(val1, "yes")  == 0);
+        }
         else if (strcmp(key, "protected_range") == 0 && n >= 3) {
             if (cfg->protected_range_count < MAX_PROTECTED_RANGES) {
                 int idx = cfg->protected_range_count++;

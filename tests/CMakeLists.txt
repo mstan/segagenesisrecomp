@@ -30,6 +30,21 @@ if(MSVC)
 endif()
 
 # ---------------------------------------------------------------------------
+# m68k_validator_test — synthetic legality fixtures (Phase 5).
+# ---------------------------------------------------------------------------
+add_executable(m68k_validator_test
+    harness/m68k_validator_test.c
+    "${RECOMP_SRC}/m68k_decoder.c"
+    "${RECOMP_SRC}/m68k_validator.c"
+    "${RECOMP_SRC}/rom_parser.c"
+)
+target_include_directories(m68k_validator_test PRIVATE "${RECOMP_SRC}")
+if(MSVC)
+    target_compile_definitions(m68k_validator_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_options(m68k_validator_test PRIVATE /W3 /wd4996)
+endif()
+
+# ---------------------------------------------------------------------------
 # m68k_decoder_synth_test — synthetic decoder fixtures for instruction
 # forms Sonic's disasm doesn't exercise (MOVE_CCR/SR direction, CMPM,
 # immediate-to-CCR/SR, ADDX/SUBX memory-predec, etc.). Grows phase-by-phase.

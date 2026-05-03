@@ -14,6 +14,7 @@ add_executable(GenesisRecomp
     src/main_genesis.c
     src/rom_parser.c
     src/m68k_decoder.c
+    src/m68k_validator.c
     src/function_finder.c
     src/code_generator.c
     src/codegen_diag.c

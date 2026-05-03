@@ -16,6 +16,7 @@
  */
 #include "function_finder.h"
 #include "m68k_decoder.h"
+#include "m68k_validator.h"
 #include "rom_parser.h"
 #include "game_config.h"
 #include <stdio.h>
@@ -29,6 +30,10 @@ static uint32_t s_work_stack[WORK_STACK_SIZE];
 static int      s_work_top = 0;
 
 static bool addr_seen[0x400000];   /* one byte per ROM address — visited flags */
+
+/* Validator-rejection counter — surfaces speculative-scan terminations
+ * so misdecoded data regions show up at the end of the run. */
+static int s_invalid_terminations = 0;
 
 static void push_addr(uint32_t addr) {
     if (addr >= 0x400000 || addr_seen[addr]) return;
@@ -61,6 +66,9 @@ static void add_function(FunctionList *list, uint32_t addr) {
 void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameConfig *cfg) {
     memset(addr_seen, 0, sizeof(addr_seen));
     s_work_top = 0;
+    s_invalid_terminations = 0;
+    M68KValidatorOptions vopts = {0};
+    vopts.allow_68020_branch = cfg ? cfg->allow_68020_branch : false;
 
     /* Seed from vector table at $000000 */
     /* Offset 4 = initial PC (RESET handler) */
@@ -90,6 +98,16 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
         while (pc < rom->rom_size) {
             M68KInstr instr;
             if (!m68k_decode(rom, pc, &instr)) break;
+
+            /* Post-decode legality check: if this byte sequence isn't
+             * a valid MC68000 encoding we are most likely scanning
+             * data, not code. Stop the path so we don't pollute the
+             * function list with speculative entries. */
+            M68KValidity v = m68k_validate(&instr, &vopts);
+            if (v != M68K_LEGAL) {
+                s_invalid_terminations++;
+                break;
+            }
 
             /* Follow calls — but skip blacklisted addresses (game.cfg
              * `blacklist` directive). Useful for JSR/BSR targets that
@@ -134,6 +152,8 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
     }
 
     printf("[FunctionFinder] %d functions found\n", list->count);
+    printf("[FunctionFinder] %d speculative paths terminated by validator\n",
+           s_invalid_terminations);
 }
 
 void function_list_free(FunctionList *list) {
