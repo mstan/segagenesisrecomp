@@ -10,6 +10,7 @@
 #include "rom_parser.h"
 #include "function_finder.h"
 #include "code_generator.h"
+#include "codegen_diag.h"
 #include "annotations.h"
 #include "game_config.h"
 #include "cycle_probe.h"
@@ -18,17 +19,19 @@ int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr,
             "Usage: GenesisRecomp <rom.md|rom.bin> [--game <path/to/game.cfg>] "
-            "[--reverse-debug]\n");
+            "[--reverse-debug] [--fail-on-unsupported]\n");
         return 1;
     }
 
     const char *rom_path  = argv[1];
     const char *game_path = NULL;
     bool reverse_debug = false;
+    bool fail_on_unsupported = false;
 
     for (int i = 2; i < argc; i++) {
         if (strcmp(argv[i], "--game") == 0 && i+1 < argc) game_path = argv[++i];
         else if (strcmp(argv[i], "--reverse-debug") == 0) reverse_debug = true;
+        else if (strcmp(argv[i], "--fail-on-unsupported") == 0) fail_on_unsupported = true;
     }
 
     if (reverse_debug)
@@ -130,9 +133,21 @@ int main(int argc, char *argv[]) {
 
     printf("[GenesisRecomp] Done. Output:\n  %s\n  %s\n", out_full, out_dispatch);
 
+    /* Always print the unsupported summary so coverage misses are visible
+     * without grepping the generated C. --fail-on-unsupported turns any
+     * non-zero count into a hard build failure. */
+    codegen_diag_print_summary(stderr);
+    int diag_total = codegen_diag_total();
+
     cycle_probe_shutdown();
     rom_free(&rom);
     function_list_free(&funcs);
     annotations_free(&at);
+
+    if (fail_on_unsupported && diag_total > 0) {
+        fprintf(stderr, "[GenesisRecomp] --fail-on-unsupported: %d unsupported "
+                        "events; failing build.\n", diag_total);
+        return 2;
+    }
     return 0;
 }

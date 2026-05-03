@@ -6,6 +6,7 @@
  * and a dispatch table file (sonic_dispatch.c) for call_by_address().
  */
 #include "code_generator.h"
+#include "codegen_diag.h"
 #include "m68k_decoder.h"
 #include "function_finder.h"
 #include "annotations.h"
@@ -16,6 +17,15 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+/* Current-instruction context for diagnostics, set at the top of
+ * emit_instr and read by helpers (e.g., emit_ea_store_ex) so they can
+ * attribute diagnostics to the right ROM PC and containing function
+ * without threading params through every helper signature. Codegen is
+ * single-threaded. */
+static const char      *s_diag_func_name = NULL;
+static uint32_t         s_diag_func_addr = 0;
+static const M68KInstr *s_diag_instr     = NULL;
 
 /* =========================================================================
  * AddrSet — simple sorted dynamic array of uint32_t addresses
@@ -504,11 +514,21 @@ static void emit_ea_store_ex(FILE *f, const M68KInstr *instr, int ea, M68KSize s
             break;
         }
         default:
+            codegen_diag_record(CGD_INVALID_STORE_EA,
+                                s_diag_instr ? s_diag_instr->addr : 0,
+                                s_diag_instr ? s_diag_instr->words[0] : 0,
+                                s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                                s_diag_func_name, s_diag_func_addr);
             fprintf(f, "  /* cannot store to EA 7/%d */\n", reg);
             break;
         }
         break;
     default:
+        codegen_diag_record(CGD_INVALID_STORE_EA,
+                            s_diag_instr ? s_diag_instr->addr : 0,
+                            s_diag_instr ? s_diag_instr->words[0] : 0,
+                            s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                            s_diag_func_name, s_diag_func_addr);
         fprintf(f, "  /* cannot store to mode %d */\n", mode);
         break;
     }
@@ -1175,9 +1195,14 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                         const M68KInstr *instr,
                         const AddrSet *instrs,
                         bool *skip_until_label,
-                        int *has_sp_adjust) {
+                        int *has_sp_adjust,
+                        const char *func_name,
+                        uint32_t func_addr) {
     uint32_t addr = instr->addr;
     M68KSize sz   = instr->size;
+    s_diag_func_name = func_name;
+    s_diag_func_addr = func_addr;
+    s_diag_instr     = instr;
 
     /* Unique temp-var suffix based on address */
     char tmp[32];
@@ -1236,6 +1261,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_TRAP:
+        codegen_diag_record(CGD_TODO_TRAP, addr, instr->words[0], MN_TRAP,
+                            func_name, func_addr);
         fprintf(f, "  /* TRAP #%u — ignored */\n", instr->imm32 & 0xF);
         break;
 
@@ -1258,6 +1285,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             emit_ea_addr_ex(f, instr, ea, &er, ae, true);
             fprintf(f, "  call_by_address(%s);\n", ae);
         } else {
+            codegen_diag_record(CGD_TODO_DYNAMIC_JSR_UNSUPPORTED, addr,
+                                instr->words[0], instr->mnemonic,
+                                func_name, func_addr);
             fprintf(f, "  /* TODO: dynamic JSR/BSR EA %d/%d */\n", mode, reg);
         }
 
@@ -1304,6 +1334,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                     pc_addr + (int32_t)d8, xr, xreg);
             fprintf(f, "  return;\n");
         } else {
+            codegen_diag_record(CGD_TODO_DYNAMIC_JMP_UNSUPPORTED, addr,
+                                instr->words[0], MN_JMP,
+                                func_name, func_addr);
             fprintf(f, "  /* TODO: dynamic JMP mode %d/%d */ return;\n", mode, reg);
         }
         *skip_until_label = true;
@@ -1319,6 +1352,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                 fprintf(f, "  func_%06X(); return;\n", instr->target_addr);
             }
         } else {
+            codegen_diag_record(CGD_BRANCH_WITHOUT_TARGET, addr,
+                                instr->words[0], MN_BRA,
+                                func_name, func_addr);
             fprintf(f, "  /* BRA with no target */ return;\n");
         }
         *skip_until_label = true;
@@ -1335,6 +1371,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                 fprintf(f, "  if (%s) { func_%06X(); return; }\n", ce, instr->target_addr);
             }
         } else {
+            codegen_diag_record(CGD_BRANCH_WITHOUT_TARGET, addr,
+                                instr->words[0], MN_Bcc,
+                                func_name, func_addr);
             fprintf(f, "  /* Bcc no target */\n");
         }
         break;
@@ -2345,6 +2384,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_CHK:
+        codegen_diag_record(CGD_TODO_CHK, addr, instr->words[0], MN_CHK,
+                            func_name, func_addr);
         fprintf(f, "  /* CHK — bounds check, trap on underflow/overflow (not emitted) */\n");
         break;
 
@@ -2367,18 +2408,26 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         break;
 
     case MN_MOVEP:
+        codegen_diag_record(CGD_TODO_MOVEP, addr, instr->words[0], MN_MOVEP,
+                            func_name, func_addr);
         fprintf(f, "  /* TODO: MOVEP — byte/word transfer to alternating bytes */\n");
         break;
 
     case MN_ABCD:
+        codegen_diag_record(CGD_TODO_ABCD, addr, instr->words[0], MN_ABCD,
+                            func_name, func_addr);
         fprintf(f, "  /* TODO: ABCD — BCD add (not emitted) */\n");
         break;
 
     case MN_SBCD:
+        codegen_diag_record(CGD_TODO_SBCD, addr, instr->words[0], MN_SBCD,
+                            func_name, func_addr);
         fprintf(f, "  /* TODO: SBCD — BCD sub (not emitted) */\n");
         break;
 
     case MN_NBCD:
+        codegen_diag_record(CGD_TODO_NBCD, addr, instr->words[0], MN_NBCD,
+                            func_name, func_addr);
         fprintf(f, "  /* TODO: NBCD — BCD negate (not emitted) */\n");
         break;
 
@@ -2411,6 +2460,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
          * multi-precision chains).  X = C. */
         uint16_t w0 = instr->words[0];
         if ((w0 >> 3) & 1) {
+            codegen_diag_record(CGD_TODO_ADDX_MEM_PREDEC, addr, w0, MN_ADDX,
+                                func_name, func_addr);
             fprintf(f, "  /* TODO: ADDX -(Ay),-(Ax) memory form @ $%06X */\n", addr);
             break;
         }
@@ -2448,6 +2499,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         /* D-D form only: Dy = Dy - Dx - X. Z-preserve semantics. X = C. */
         uint16_t w0 = instr->words[0];
         if ((w0 >> 3) & 1) {
+            codegen_diag_record(CGD_TODO_SUBX_MEM_PREDEC, addr, w0, MN_SUBX,
+                                func_name, func_addr);
             fprintf(f, "  /* TODO: SUBX -(Ay),-(Ax) memory form @ $%06X */\n", addr);
             break;
         }
@@ -2482,6 +2535,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     case MN_OTHER:
     default:
+        codegen_diag_record(CGD_MN_OTHER, addr, instr->words[0],
+                            instr->mnemonic, func_name, func_addr);
         fprintf(f, "  /* unimplemented opcode $%04X @ $%06X */\n",
                 instr->words[0], addr);
         break;
@@ -2511,6 +2566,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                   bool reverse_debug) {
     (void)cfg;
     s_reverse_debug = reverse_debug;
+    codegen_diag_reset();
 
     FILE *f_full     = fopen(out_full_path,     "w");
     FILE *f_dispatch = fopen(out_dispatch_path, "w");
@@ -2690,7 +2746,8 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             fprintf(f_full, "  /* $%06X */\n", pc);
             if (s_reverse_debug)
                 fprintf(f_full, "  rdb_on_insn(0x%06Xu);\n", pc);
-            emit_instr(f_full, rom, &instr, &instrs, &skip_until_label, &has_sp_adjust);
+            emit_instr(f_full, rom, &instr, &instrs, &skip_until_label, &has_sp_adjust,
+                       name, func_addr);
 
             /* Contextual recompiler: accumulate cycles and check for
              * pending VBlank.  The runtime maintains g_cycle_accumulator
