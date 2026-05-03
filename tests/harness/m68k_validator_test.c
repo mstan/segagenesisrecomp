@@ -73,25 +73,38 @@ int main(void) {
               "BRA d8==FF (with allow_68020_branch) → LEGAL");
     }
 
-    /* ILLEGAL opcode 0x4AFC. */
+    /* Phase 7A: 0x4AFC / A-line / F-line decode to MN_ILLEGAL with real
+     * codegen (m68k_illegal_trap → vectored trap), so the validator now
+     * marks them legal. function_finder still terminates speculative
+     * scans on them via m68k_is_terminator instead of via the validator. */
     {
         uint8_t b[] = { 0x4A, 0xFC };
-        CHECK(validate_one(b, sizeof(b), false) == M68K_ILLEGAL_OPCODE,
-              "0x4AFC ILLEGAL → ILLEGAL_OPCODE");
+        CHECK(validate_one(b, sizeof(b), false) == M68K_LEGAL,
+              "0x4AFC ILLEGAL → LEGAL (Phase 7A: real codegen)");
     }
-
-    /* A-line trap (top nibble 0xA). */
     {
         uint8_t b[] = { 0xA0, 0x00 };
-        CHECK(validate_one(b, sizeof(b), false) == M68K_ILLEGAL_OPCODE,
-              "A-line → ILLEGAL_OPCODE");
+        CHECK(validate_one(b, sizeof(b), false) == M68K_LEGAL,
+              "A-line → LEGAL (Phase 7A: real codegen)");
     }
-
-    /* F-line trap (top nibble 0xF). */
     {
         uint8_t b[] = { 0xF0, 0x00 };
-        CHECK(validate_one(b, sizeof(b), false) == M68K_ILLEGAL_OPCODE,
-              "F-line → ILLEGAL_OPCODE");
+        CHECK(validate_one(b, sizeof(b), false) == M68K_LEGAL,
+              "F-line → LEGAL (Phase 7A: real codegen)");
+    }
+
+    /* RTR / RESET / TRAPV: legal post-Phase-7A as well. */
+    {
+        uint8_t b[] = { 0x4E, 0x77 }; /* RTR   */
+        CHECK(validate_one(b, sizeof(b), false) == M68K_LEGAL, "RTR → LEGAL");
+    }
+    {
+        uint8_t b[] = { 0x4E, 0x70 }; /* RESET */
+        CHECK(validate_one(b, sizeof(b), false) == M68K_LEGAL, "RESET → LEGAL");
+    }
+    {
+        uint8_t b[] = { 0x4E, 0x76 }; /* TRAPV */
+        CHECK(validate_one(b, sizeof(b), false) == M68K_LEGAL, "TRAPV → LEGAL");
     }
 
     /* MOVE D0,#imm is illegal (immediate as destination).

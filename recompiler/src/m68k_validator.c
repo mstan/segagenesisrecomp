@@ -32,17 +32,14 @@ M68KValidity m68k_validate(const M68KInstr *instr,
                            const M68KValidatorOptions *opts) {
     if (!instr) return M68K_LEGAL;
 
-    /* Canonical illegal-instruction encodings, identified by raw
-     * opcode word regardless of how the permissive decoder classified
-     * them. 0x4AFC is the MC68000 ILLEGAL opcode (vector 4); A-line
-     * (top nibble 0xA) and F-line (0xF) are the dedicated trap classes
-     * Motorola reserved for OS / coprocessor emulation. */
-    {
-        uint16_t w0 = instr->words[0];
-        int top4 = (w0 >> 12) & 0xF;
-        if (w0 == 0x4AFC)              return M68K_ILLEGAL_OPCODE;
-        if (top4 == 0xA || top4 == 0xF) return M68K_ILLEGAL_OPCODE;
-    }
+    /* Phase 7A retired the blanket "0x4AFC / A-line / F-line are illegal-
+     * encoding" rule. Those opcodes now decode to MN_ILLEGAL with real
+     * codegen (m68k_illegal_trap → vectored trap), so they are valid
+     * executable instructions when reached deliberately. They remain
+     * dangerous when reached *speculatively* during function discovery
+     * (data masquerading as code), but the function_finder doesn't need
+     * the validator to flag them — m68k_is_terminator now treats
+     * MN_ILLEGAL as a terminator, ending the linear scan cleanly. */
 
     /* Branches with the 32-bit displacement form (d8==0xFF) are 68020+.
      * The decoder tolerates them; the validator flags them unless the
@@ -97,20 +94,14 @@ M68KValidity m68k_validate(const M68KInstr *instr,
             return M68K_ILLEGAL_DST_EA;
         break;
 
-    /* ILLEGAL / A-line / F-line opcodes. The decoder folds them into
-     * MN_OTHER today (Phase 7A will give them their own mnemonics).
-     * Returning ILLEGAL_OPCODE lets function_finder treat them as
-     * trap-class terminators. */
-    case MN_OTHER: {
-        uint16_t w0 = instr->words[0];
-        int top4 = (w0 >> 12) & 0xF;
-        if (w0 == 0x4AFC) return M68K_ILLEGAL_OPCODE;   /* ILLEGAL */
-        if (top4 == 0xA)  return M68K_ILLEGAL_OPCODE;   /* A-line  */
-        if (top4 == 0xF)  return M68K_ILLEGAL_OPCODE;   /* F-line  */
-        /* All other MN_OTHER are decode misses we can't cleanly
-         * classify; mark as illegal opcode so callers stop scanning. */
+    /* MN_OTHER is the residual decode-miss class: any byte sequence
+     * the decoder couldn't classify after Phase 7A's coverage. Treat as
+     * illegal so speculative scans stop on unknown encodings instead of
+     * extending function bodies into ambiguous data. ILLEGAL / A-line /
+     * F-line are no longer folded here — they decode to MN_ILLEGAL
+     * directly and are treated as legitimate (trap-emitting) code. */
+    case MN_OTHER:
         return M68K_ILLEGAL_OPCODE;
-    }
 
     default:
         break;

@@ -106,6 +106,18 @@ typedef enum {
      * Source register Ay is in src_ea (low 3 bits); destination Ax
      * is held in `reg` ((w0 >> 9) & 7). */
     MN_CMPM,
+    /* Vectored exceptions / privileged single-word opcodes promoted out
+     * of MN_OTHER in Phase 7A so they have real semantics in codegen
+     * (m68k_trap_vector / m68k_illegal_trap) instead of comment-only stubs.
+     *   MN_RTR     — 0x4E77, return-and-restore (pop CCR, pop PC)
+     *   MN_RESET   — 0x4E70, pulses external /RESET line (CPU keeps state)
+     *   MN_TRAPV   — 0x4E76, traps via vector 7 if V flag set
+     *   MN_ILLEGAL — 0x4AFC, A-line (top4=0xA), or F-line (top4=0xF);
+     *                routes to vector 4 / 10 / 11 respectively */
+    MN_RTR,
+    MN_RESET,
+    MN_TRAPV,
+    MN_ILLEGAL,
 } M68KMnemonic;
 
 #define M68K_MAX_WORDS 8   /* Maximum instruction length in 16-bit words */

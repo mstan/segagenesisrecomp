@@ -162,6 +162,20 @@ void vdp_render_frame(uint32_t *fb) { (void)fb; }
 void runtime_init(void) {}
 void runtime_request_vblank(void) {}
 
+/* Vectored exceptions (Phase 7A). Sonic's L3 leaf-function oracle does
+ * not expect to take any traps; if generated code calls these, that's a
+ * regression and the harness should fail loud. */
+void m68k_trap_vector(uint8_t vec) {
+    fprintf(stderr, "[L3 oracle] unexpected m68k_trap_vector(%u)\n", (unsigned)vec);
+    abort();
+}
+void m68k_illegal_trap(uint32_t pc, uint16_t opcode) {
+    fprintf(stderr, "[L3 oracle] unexpected m68k_illegal_trap(pc=%06X, op=%04X)\n",
+            pc, (unsigned)opcode);
+    abort();
+}
+void genesis_reset_devices(void) {}
+
 /* call_by_address: provided by sonic_dispatch.c. It calls
  * game_dispatch_override() on a miss (hook for per-game extras.c) —
  * we stub it to "not handled" so unknown addresses just log + return. */

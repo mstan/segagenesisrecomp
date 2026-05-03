@@ -139,6 +139,10 @@ static const char *mnem_string(M68KMnemonic m) {
     case MN_EORI_TO_CCR: return "eori";
     case MN_EORI_TO_SR:  return "eori";
     case MN_CMPM:        return "cmpm";
+    case MN_RTR:         return "rtr";
+    case MN_RESET:       return "reset";
+    case MN_TRAPV:       return "trapv";
+    case MN_ILLEGAL:     return "illegal";
     }
     return "?";
 }
