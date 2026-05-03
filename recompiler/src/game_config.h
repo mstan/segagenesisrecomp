@@ -28,6 +28,11 @@ typedef struct {
     uint32_t       vblank_yield_addr;   /* 0 = not set; emit glue_yield_for_vblank() for this function */
     struct { uint32_t lo; uint32_t hi; } protected_ranges[MAX_PROTECTED_RANGES];
     int            protected_range_count;
+    /* When true, the validator tolerates Bcc/BSR/BRA forms that use
+     * a 32-bit displacement (d8 == 0xFF). Those are 68020+ extensions
+     * and out of scope for MC68000-only Genesis ROMs unless a game
+     * specifically opts in. Default: false. */
+    bool           allow_68020_branch;
 } GameConfig;
 
 /* Returns true if addr falls in a protected range (no boundary splitting) */
