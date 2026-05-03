@@ -739,11 +739,17 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
 
-        /* SBCD: 1000 DDD1 0000 0rrr or 1000 DDD1 0000 1rrr */
+        /* SBCD: 1000 DDD1 0000 0rrr (Dy,Dx) or 1000 DDD1 0000 1rrr
+         *       (-(Ay),-(Ax)). The R/M bit (bit 3) selects which form;
+         *       Phase 7B routes both via the predec_mem_form flag the
+         *       ADDX/SUBX work introduced in Phase 4, so codegen can
+         *       share BCD evaluation between forms. */
         if ((w0 & 0xF1F0) == 0x8100) {
-            out->mnemonic = MN_SBCD;
-            out->size     = M68K_SIZE_B;
-            out->reg      = (w0 >> 9) & 7;
+            out->mnemonic        = MN_SBCD;
+            out->size            = M68K_SIZE_B;
+            out->reg             = (w0 >> 9) & 7;   /* Dx / Ax */
+            out->src_ea          = w0 & 7;          /* Dy / Ay */
+            out->predec_mem_form = ((w0 >> 3) & 1) != 0;
             break;
         }
 
@@ -881,11 +887,15 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
 
-        /* ABCD: 1100 DDD1 0000 0rrr or -(Ax),-(Ay) form */
+        /* ABCD: 1100 DDD1 0000 0rrr (Dy,Dx) or -(Ay),-(Ax). Mirrors the
+         * SBCD layout — predec_mem_form selects the memory form so
+         * Phase 7B can share evaluation. */
         if ((w0 & 0xF1F0) == 0xC100) {
-            out->mnemonic = MN_ABCD;
-            out->size     = M68K_SIZE_B;
-            out->reg      = (w0 >> 9) & 7;
+            out->mnemonic        = MN_ABCD;
+            out->size            = M68K_SIZE_B;
+            out->reg             = (w0 >> 9) & 7;   /* Dx / Ax */
+            out->src_ea          = w0 & 7;          /* Dy / Ay */
+            out->predec_mem_form = ((w0 >> 3) & 1) != 0;
             break;
         }
 

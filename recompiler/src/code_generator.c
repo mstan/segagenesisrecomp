@@ -2515,23 +2515,166 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         fprintf(f, "  /* TODO: MOVEP — byte/word transfer to alternating bytes */\n");
         break;
 
-    case MN_ABCD:
-        codegen_diag_record(CGD_TODO_ABCD, addr, instr->words[0], MN_ABCD,
-                            func_name, func_addr);
-        fprintf(f, "  /* TODO: ABCD — BCD add (not emitted) */\n");
+    case MN_ABCD: {
+        /* result = a + b + X, packed-BCD.
+         *   low nibble: (a&0xF) + (b&0xF) + X; if >9, +6, low carry.
+         *   high nibble: (a>>4) + (b>>4) + low_carry; if >9, +6, high carry.
+         * SR: X = C; Z is "sticky" — cleared only when result != 0,
+         *     preserved otherwise (multi-precision BCD chains rely on
+         *     this: the chain reports overall zeroness, not per-byte).
+         * N and V are undefined per PRM; we emit conservative values
+         *     (N from result bit 7, V cleared) so generated code is
+         *     deterministic. */
+        int dst = instr->reg;
+        int src = instr->src_ea & 7;
+        if (instr->predec_mem_form) {
+            int ay_dec = (src == 7) ? 2 : 1;
+            int ax_dec = (dst == 7) ? 2 : 1;
+            fprintf(f,
+                "  { g_cpu.A[%d] -= %d;\n"
+                "    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[%d]);\n"
+                "    g_cpu.A[%d] -= %d;\n"
+                "    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[%d]);\n"
+                "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint32_t _lo = (uint32_t)(_a & 0xF) + (uint32_t)(_b & 0xF) + _x;\n"
+                "    uint32_t _adj_lo = (_lo > 9u) ? 6u : 0u;\n"
+                "    uint32_t _hi = (uint32_t)(_a >> 4) + (uint32_t)(_b >> 4) + ((_lo + _adj_lo) >> 4);\n"
+                "    uint32_t _adj_hi = (_hi > 9u) ? 6u : 0u;\n"
+                "    uint32_t _full = (_hi << 4) + _adj_hi*16u + ((_lo + _adj_lo) & 0xFu);\n"
+                "    uint8_t _r = (uint8_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~%s;\n"
+                "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+                "    g_cpu.SR &= ~(%s | %s | %s);\n"
+                "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+                "    if (_full & 0x100u) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    m68k_write8(g_cpu.A[%d], _r);\n"
+                "  }\n",
+                src, ay_dec, src,
+                dst, ax_dec, dst,
+                SR_V, SR_Z, SR_Z,
+                SR_C, SR_X, SR_N, SR_N, SR_C, SR_X,
+                dst);
+        } else {
+            fprintf(f,
+                "  { uint8_t _a = (uint8_t)g_cpu.D[%d];\n"
+                "    uint8_t _b = (uint8_t)g_cpu.D[%d];\n"
+                "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint32_t _lo = (uint32_t)(_a & 0xF) + (uint32_t)(_b & 0xF) + _x;\n"
+                "    uint32_t _adj_lo = (_lo > 9u) ? 6u : 0u;\n"
+                "    uint32_t _hi = (uint32_t)(_a >> 4) + (uint32_t)(_b >> 4) + ((_lo + _adj_lo) >> 4);\n"
+                "    uint32_t _adj_hi = (_hi > 9u) ? 6u : 0u;\n"
+                "    uint32_t _full = (_hi << 4) + _adj_hi*16u + ((_lo + _adj_lo) & 0xFu);\n"
+                "    uint8_t _r = (uint8_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~%s;\n"
+                "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+                "    g_cpu.SR &= ~(%s | %s | %s);\n"
+                "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+                "    if (_full & 0x100u) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    g_cpu.D[%d] = (g_cpu.D[%d] & 0xFFFFFF00u) | _r;\n"
+                "  }\n",
+                dst, src,
+                SR_V, SR_Z, SR_Z,
+                SR_C, SR_X, SR_N, SR_N, SR_C, SR_X,
+                dst, dst);
+        }
         break;
+    }
 
-    case MN_SBCD:
-        codegen_diag_record(CGD_TODO_SBCD, addr, instr->words[0], MN_SBCD,
-                            func_name, func_addr);
-        fprintf(f, "  /* TODO: SBCD — BCD sub (not emitted) */\n");
+    case MN_SBCD: {
+        /* result = a - b - X, packed-BCD. Borrow propagation mirrors the
+         * carry path in ABCD; subtract the BCD adjustment instead of
+         * adding it. Z is sticky like ABCD. */
+        int dst = instr->reg;
+        int src = instr->src_ea & 7;
+        if (instr->predec_mem_form) {
+            int ay_dec = (src == 7) ? 2 : 1;
+            int ax_dec = (dst == 7) ? 2 : 1;
+            fprintf(f,
+                "  { g_cpu.A[%d] -= %d;\n"
+                "    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[%d]);\n"
+                "    g_cpu.A[%d] -= %d;\n"
+                "    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[%d]);\n"
+                "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+                "    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;\n"
+                "    int32_t _adj_lo = (_lo < 0) ? 6 : 0;\n"
+                "    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);\n"
+                "    int32_t _adj_hi = (_hi < 0) ? 6 : 0;\n"
+                "    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);\n"
+                "    uint8_t _r = (uint8_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~%s;\n"
+                "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+                "    g_cpu.SR &= ~(%s | %s | %s);\n"
+                "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+                "    if (_hi < 0) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    m68k_write8(g_cpu.A[%d], _r);\n"
+                "  }\n",
+                src, ay_dec, src,
+                dst, ax_dec, dst,
+                SR_V, SR_Z, SR_Z,
+                SR_C, SR_X, SR_N, SR_N, SR_C, SR_X,
+                dst);
+        } else {
+            fprintf(f,
+                "  { uint8_t _a = (uint8_t)g_cpu.D[%d];\n"
+                "    uint8_t _b = (uint8_t)g_cpu.D[%d];\n"
+                "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+                "    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;\n"
+                "    int32_t _adj_lo = (_lo < 0) ? 6 : 0;\n"
+                "    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);\n"
+                "    int32_t _adj_hi = (_hi < 0) ? 6 : 0;\n"
+                "    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);\n"
+                "    uint8_t _r = (uint8_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~%s;\n"
+                "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+                "    g_cpu.SR &= ~(%s | %s | %s);\n"
+                "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+                "    if (_hi < 0) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    g_cpu.D[%d] = (g_cpu.D[%d] & 0xFFFFFF00u) | _r;\n"
+                "  }\n",
+                dst, src,
+                SR_V, SR_Z, SR_Z,
+                SR_C, SR_X, SR_N, SR_N, SR_C, SR_X,
+                dst, dst);
+        }
         break;
+    }
 
-    case MN_NBCD:
-        codegen_diag_record(CGD_TODO_NBCD, addr, instr->words[0], MN_NBCD,
-                            func_name, func_addr);
-        fprintf(f, "  /* TODO: NBCD — BCD negate (not emitted) */\n");
+    case MN_NBCD: {
+        /* NBCD <ea>:  result = 0 - dst - X, packed-BCD. Same flag
+         * semantics as SBCD (sticky Z, X = C). EA can be Dn, (An),
+         * (An)+, -(An), d16(An), d8(An,Xn), abs.W, abs.L. */
+        ExtReader er2; er_init(&er2, instr);
+        emit_ea_load_ex(f, instr, instr->src_ea, M68K_SIZE_B, &er, tmp, src_expr, 1);
+        fprintf(f,
+            "  { uint8_t _a = (uint8_t)(%s);\n"
+            "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+            "    int32_t _lo = -(int32_t)(_a & 0xF) - (int32_t)_x;\n"
+            "    int32_t _adj_lo = (_lo < 0) ? 6 : 0;\n"
+            "    int32_t _hi = -(int32_t)(_a >> 4) - (_lo < 0 ? 1 : 0);\n"
+            "    int32_t _adj_hi = (_hi < 0) ? 6 : 0;\n"
+            "    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);\n"
+            "    uint8_t _r = (uint8_t)_full;\n"
+            "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+            "    g_cpu.SR &= ~%s;\n"
+            "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+            "    g_cpu.SR &= ~(%s | %s | %s);\n"
+            "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+            "    if (_hi < 0) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n",
+            src_expr,
+            SR_V, SR_Z, SR_Z,
+            SR_C, SR_X, SR_N, SR_N, SR_C, SR_X);
+        {
+            char res_expr[16];
+            snprintf(res_expr, sizeof(res_expr), "_r");
+            emit_ea_store_ex(f, instr, instr->src_ea, M68K_SIZE_B, &er2, res_expr, 1);
+        }
+        fprintf(f, "  }\n");
         break;
+    }
 
     /* ------------------------------------------------------------------ */
     case MN_EXG: {

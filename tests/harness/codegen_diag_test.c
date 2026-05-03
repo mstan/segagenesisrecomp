@@ -35,17 +35,17 @@ int main(void) {
     CHECK(codegen_diag_event_count() == 0, "reset → events 0");
 
     /* Single record */
-    codegen_diag_record(CGD_TODO_ABCD, 0x001234, 0xC100, MN_ABCD,
+    codegen_diag_record(CGD_TODO_CHK, 0x001234, 0x4180, MN_CHK,
                         "TestFunc", 0x001000);
-    CHECK(codegen_diag_count(CGD_TODO_ABCD) == 1, "ABCD count = 1");
+    CHECK(codegen_diag_count(CGD_TODO_CHK) == 1, "CHK count = 1");
     CHECK(codegen_diag_total() == 1, "total = 1");
 
     const CodegenDiagEvent *e0 = codegen_diag_get(0);
     CHECK(e0 != NULL, "get(0) non-null");
-    CHECK(e0->kind == CGD_TODO_ABCD, "event kind preserved");
+    CHECK(e0->kind == CGD_TODO_CHK, "event kind preserved");
     CHECK(e0->addr == 0x001234, "event addr preserved");
-    CHECK(e0->opcode == 0xC100, "event opcode preserved");
-    CHECK(e0->mnemonic == MN_ABCD, "event mnemonic preserved");
+    CHECK(e0->opcode == 0x4180, "event opcode preserved");
+    CHECK(e0->mnemonic == MN_CHK, "event mnemonic preserved");
     CHECK(e0->func_name && strcmp(e0->func_name, "TestFunc") == 0,
           "event func_name preserved");
     CHECK(e0->func_addr == 0x001000, "event func_addr preserved");
@@ -58,7 +58,7 @@ int main(void) {
 
     CHECK(codegen_diag_count(CGD_TODO_MOVEP) == 2, "MOVEP count = 2");
     CHECK(codegen_diag_count(CGD_BRANCH_WITHOUT_TARGET) == 1, "branch = 1");
-    CHECK(codegen_diag_count(CGD_TODO_ABCD) == 1, "ABCD still 1");
+    CHECK(codegen_diag_count(CGD_TODO_CHK) == 1, "CHK still 1");
     CHECK(codegen_diag_total() == 4, "total = 4");
     CHECK(codegen_diag_event_count() == 4, "events = 4");
 
@@ -71,7 +71,7 @@ int main(void) {
     codegen_diag_reset();
     CHECK(codegen_diag_total() == 0, "post-reset total = 0");
     CHECK(codegen_diag_event_count() == 0, "post-reset events = 0");
-    CHECK(codegen_diag_count(CGD_TODO_ABCD) == 0, "post-reset ABCD = 0");
+    CHECK(codegen_diag_count(CGD_TODO_CHK) == 0, "post-reset CHK = 0");
 
     /* Kind names */
     for (int k = 0; k < CGD_KIND_COUNT; k++) {

@@ -299,6 +299,60 @@ static void test_phase7a_traps(void) {
     CHECK(m68k_is_terminator(&probe), "ILLEGAL is a terminator");
 }
 
+/* ---------------------------------------------------------------------
+ * Phase 7B — ABCD / SBCD / NBCD packed-BCD forms
+ * --------------------------------------------------------------------- */
+static void test_phase7b_bcd(void) {
+    /* ABCD register form : 1100 xxx 1 0000 0 yyy   → 0xC1 00 | (xxx<<9) | yyy
+     *      memory  form  : 1100 xxx 1 0000 1 yyy
+     * SBCD register form : 1000 xxx 1 0000 0 yyy
+     *      memory  form  : 1000 xxx 1 0000 1 yyy
+     * NBCD <ea>          : 0100 1000 00 mmm rrr   → 0x4800 | ea
+     *
+     * Encodings:
+     *   C5 01 = ABCD.B D1,D2          xxx=010, R/M=0, yyy=001
+     *   C5 09 = ABCD.B -(A1),-(A2)    xxx=010, R/M=1, yyy=001
+     *   85 01 = SBCD.B D1,D2
+     *   85 09 = SBCD.B -(A1),-(A2)
+     *   48 03 = NBCD.B D3             ea=D3 (mode=0,reg=3) */
+    uint8_t bytes[] = {
+        0xC5, 0x01,    /* ABCD.B D1,D2          */
+        0xC5, 0x09,    /* ABCD.B -(A1),-(A2)    */
+        0x85, 0x01,    /* SBCD.B D1,D2          */
+        0x85, 0x09,    /* SBCD.B -(A1),-(A2)    */
+        0x48, 0x03,    /* NBCD.B D3             */
+    };
+    GenesisRom rom; make_rom(&rom, bytes, sizeof(bytes));
+
+    M68KInstr a = {0};
+    CHECK(m68k_decode(&rom, 0, &a), "ABCD.B reg decode");
+    CHECK(a.mnemonic == MN_ABCD && a.size == M68K_SIZE_B, "ABCD.B reg-form");
+    CHECK(a.predec_mem_form == false, "ABCD.B reg: predec=false");
+    CHECK(a.reg == 2 && (a.src_ea & 7) == 1, "ABCD.B reg: Dx=2 Dy=1");
+
+    M68KInstr b = {0};
+    CHECK(m68k_decode(&rom, 2, &b), "ABCD.B mem decode");
+    CHECK(b.mnemonic == MN_ABCD, "ABCD.B mem-form");
+    CHECK(b.predec_mem_form == true, "ABCD.B mem: predec=true");
+    CHECK(b.reg == 2 && (b.src_ea & 7) == 1, "ABCD.B mem: Ax=2 Ay=1");
+
+    M68KInstr c = {0};
+    CHECK(m68k_decode(&rom, 4, &c), "SBCD.B reg decode");
+    CHECK(c.mnemonic == MN_SBCD, "SBCD.B reg-form");
+    CHECK(c.predec_mem_form == false, "SBCD.B reg: predec=false");
+    CHECK(c.reg == 2 && (c.src_ea & 7) == 1, "SBCD.B reg: Dx=2 Dy=1");
+
+    M68KInstr d = {0};
+    CHECK(m68k_decode(&rom, 6, &d), "SBCD.B mem decode");
+    CHECK(d.mnemonic == MN_SBCD, "SBCD.B mem-form");
+    CHECK(d.predec_mem_form == true, "SBCD.B mem: predec=true");
+
+    M68KInstr e = {0};
+    CHECK(m68k_decode(&rom, 8, &e), "NBCD.B decode");
+    CHECK(e.mnemonic == MN_NBCD && e.size == M68K_SIZE_B, "NBCD.B");
+    CHECK(e.src_ea == 0x03, "NBCD.B EA=D3");
+}
+
 int main(void) {
     test_move_ccr_directions();
     test_move_sr_directions();
@@ -306,6 +360,7 @@ int main(void) {
     test_cmpm();
     test_addx_subx_forms();
     test_phase7a_traps();
+    test_phase7b_bcd();
 
     if (g_failures == 0) {
         printf("m68k_decoder_synth: all checks passed\n");
