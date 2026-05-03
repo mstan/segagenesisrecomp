@@ -20,11 +20,9 @@ typedef enum {
     CGD_TODO_SBCD,
     CGD_TODO_NBCD,
     CGD_TODO_CHK,
-    CGD_TODO_TRAP,
-    CGD_TODO_TRAPV,
-    CGD_TODO_RTR,
-    CGD_TODO_RESET,
-    CGD_TODO_ILLEGAL,
+    /* CGD_TODO_TRAP/TRAPV/RTR/RESET/ILLEGAL retired in Phase 7A:
+     * those mnemonics now have real semantics in code_generator.c
+     * (m68k_trap_vector / m68k_illegal_trap / genesis_reset_devices). */
     CGD_TODO_ADDX_MEM_PREDEC,
     CGD_TODO_SUBX_MEM_PREDEC,
     CGD_TODO_DYNAMIC_JSR_UNSUPPORTED,

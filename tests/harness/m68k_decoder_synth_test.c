@@ -237,12 +237,75 @@ static void test_addx_subx_forms(void) {
           "SUBX.L mem Ax=A1, Ay=A1 (self)");
 }
 
+/* ---------------------------------------------------------------------
+ * Phase 7A — vectored exception mnemonics
+ * --------------------------------------------------------------------- */
+static void test_phase7a_traps(void) {
+    /* Single-word group 4 traps. Each must round-trip through the decoder
+     * with byte_length=2 (no extension words) and the right mnemonic.
+     * Before Phase 7A every one of these decoded to MN_OTHER, leaving
+     * codegen to emit a comment-only stub. */
+    uint8_t bytes[] = {
+        0x4E, 0x70,    /* RESET           */
+        0x4E, 0x76,    /* TRAPV           */
+        0x4E, 0x77,    /* RTR             */
+        0x4A, 0xFC,    /* ILLEGAL ($4AFC) */
+        0xA0, 0x00,    /* A-line trap     */
+        0xF0, 0x00,    /* F-line trap     */
+        0x4E, 0x40,    /* TRAP #0         */
+        0x4E, 0x4F,    /* TRAP #15        */
+    };
+    GenesisRom rom; make_rom(&rom, bytes, sizeof(bytes));
+
+    struct {
+        uint32_t pc;
+        M68KMnemonic expect_mn;
+        const char  *label;
+    } cases[] = {
+        { 0,  MN_RESET,   "RESET decodes to MN_RESET"     },
+        { 2,  MN_TRAPV,   "TRAPV decodes to MN_TRAPV"     },
+        { 4,  MN_RTR,     "RTR decodes to MN_RTR"         },
+        { 6,  MN_ILLEGAL, "$4AFC decodes to MN_ILLEGAL"   },
+        { 8,  MN_ILLEGAL, "A-line decodes to MN_ILLEGAL"  },
+        { 10, MN_ILLEGAL, "F-line decodes to MN_ILLEGAL"  },
+        { 12, MN_TRAP,    "TRAP #0 still decodes to MN_TRAP"  },
+        { 14, MN_TRAP,    "TRAP #15 still decodes to MN_TRAP" },
+    };
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+        M68KInstr d = {0};
+        char msg[160];
+        snprintf(msg, sizeof(msg), "decode @ %u (%s)", cases[i].pc, cases[i].label);
+        CHECK(m68k_decode(&rom, cases[i].pc, &d), msg);
+        snprintf(msg, sizeof(msg), "%s — mnemonic", cases[i].label);
+        CHECK(d.mnemonic == cases[i].expect_mn, msg);
+        snprintf(msg, sizeof(msg), "%s — byte_length=2", cases[i].label);
+        CHECK(d.byte_length == 2, msg);
+    }
+
+    /* TRAP #N immediate carries the vector-low nibble. */
+    M68KInstr t0 = {0}, tF = {0};
+    CHECK(m68k_decode(&rom, 12, &t0), "decode TRAP #0 imm");
+    CHECK(t0.imm32 == 0, "TRAP #0 imm32==0");
+    CHECK(m68k_decode(&rom, 14, &tF), "decode TRAP #15 imm");
+    CHECK(tF.imm32 == 0xF, "TRAP #15 imm32==15");
+
+    /* RTR, ILLEGAL, A-line and F-line must be recognised as path
+     * terminators by m68k_is_terminator (function_finder relies on
+     * this to stop linear scans cleanly). */
+    M68KInstr probe = {0};
+    CHECK(m68k_decode(&rom, 4, &probe), "decode RTR for terminator check");
+    CHECK(m68k_is_terminator(&probe), "RTR is a terminator");
+    CHECK(m68k_decode(&rom, 6, &probe), "decode ILLEGAL for terminator check");
+    CHECK(m68k_is_terminator(&probe), "ILLEGAL is a terminator");
+}
+
 int main(void) {
     test_move_ccr_directions();
     test_move_sr_directions();
     test_imm_to_ccr_sr();
     test_cmpm();
     test_addx_subx_forms();
+    test_phase7a_traps();
 
     if (g_failures == 0) {
         printf("m68k_decoder_synth: all checks passed\n");

@@ -347,3 +347,48 @@ void genesis_vblank_callback(void) {
     /* TODO: trigger V-blank interrupt to 68K */
     game_call_vblank();
 }
+
+/* ---- Vectored exceptions (Phase 7A) ----
+ *
+ * Sonic 1 never raises any of these in steady-state play. The hooks
+ * exist so generated code has a real call site (no more comment-only
+ * stubs) and so a regression — corrupt PC speculatively executing a
+ * ROM region as code, runaway recursion blowing the stack into a
+ * non-instruction byte sequence, etc. — surfaces immediately as a
+ * loud halt instead of silently continuing past a comment.
+ *
+ * If a trap is later required by another title or a deliberate Sonic
+ * codepath, replace the abort with a proper supervisor stack frame
+ * push (SR + PC) and a dispatch to the recompiled vector handler. */
+static int s_trap_logged = 0;
+void m68k_trap_vector(uint8_t vec) {
+    if (s_trap_logged < 8) {
+        fprintf(stderr, "[TRAP] vector=%u SR=%04X A7=%08X (frame %llu)\n",
+                (unsigned)vec, g_cpu.SR, g_cpu.A[7],
+                (unsigned long long)g_frame_count);
+        s_trap_logged++;
+    }
+    /* Halt: trapping in Sonic indicates corrupt control flow. Continuing
+     * would mask the regression. Fail loud. */
+    abort();
+}
+
+void genesis_reset_devices(void) {
+    /* No-op for Sonic 1. The runner has already initialised Z80 / YM2612
+     * / VDP at startup; the game's boot RESET happens before we hand
+     * control to the recompiled code, so by the time generated C calls
+     * this, the external devices are already in their post-reset state.
+     * Other titles can reuse this hook to re-init audio mid-execution. */
+}
+
+void m68k_illegal_trap(uint32_t pc, uint16_t opcode) {
+    int top4 = (opcode >> 12) & 0xF;
+    uint8_t vec;
+    if (opcode == 0x4AFC)      vec = 4;    /* canonical ILLEGAL */
+    else if (top4 == 0xA)      vec = 10;   /* A-line trap       */
+    else if (top4 == 0xF)      vec = 11;   /* F-line trap       */
+    else                       vec = 4;    /* unknown decode miss → vector 4 */
+    fprintf(stderr, "[ILLEGAL] pc=%06X opcode=%04X vec=%u\n",
+            pc, (unsigned)opcode, (unsigned)vec);
+    m68k_trap_vector(vec);
+}

@@ -903,7 +903,9 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
             switch (instr.mnemonic) {
             case MN_RTS:
             case MN_RTE:
+            case MN_RTR:
             case MN_STOP:
+            case MN_ILLEGAL:
                 goto next_work; /* terminate this path */
 
             case MN_BRA:
@@ -1154,8 +1156,12 @@ static int estimate_cycles_prm(const M68KInstr *instr)
         return dst_is_reg ? 6 : (8 + ea_dst);
 
     /* ---- Traps / priv ---- */
-    case MN_TRAP: return 34;
-    case MN_CHK:  return 10 + ea_src;  /* no-trap path */
+    case MN_TRAP:    return 34;
+    case MN_TRAPV:   return 4;             /* untaken; taken adds vector cost */
+    case MN_CHK:     return 10 + ea_src;   /* no-trap path */
+    case MN_RTR:     return 20;
+    case MN_RESET:   return 132;           /* PRM: 132 cycles, mostly /RESET pulse */
+    case MN_ILLEGAL: return 34;            /* same as TRAP */
 
     /* ---- BCD ---- */
     case MN_ABCD: case MN_SBCD:
@@ -1261,9 +1267,50 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_TRAP:
-        codegen_diag_record(CGD_TODO_TRAP, addr, instr->words[0], MN_TRAP,
-                            func_name, func_addr);
-        fprintf(f, "  /* TRAP #%u — ignored */\n", instr->imm32 & 0xF);
+        /* TRAP #N: vectors 0x20..0x2F. Hand off to the runtime; on Sonic
+         * this aborts loud since no trap is expected in steady state. */
+        fprintf(f, "  m68k_trap_vector(0x%02Xu); return;\n",
+                0x20u + (unsigned)(instr->imm32 & 0xF));
+        *skip_until_label = true;
+        break;
+
+    /* ------------------------------------------------------------------ */
+    case MN_TRAPV:
+        /* Vector 7 — only fires when V is set. Falls through otherwise. */
+        fprintf(f, "  if (g_cpu.SR & %s) { m68k_trap_vector(7u); return; }\n",
+                SR_V);
+        break;
+
+    /* ------------------------------------------------------------------ */
+    case MN_RTR:
+        /* Pop CCR (low byte of pushed word) then PC, like RTE but only
+         * the user-visible CCR bits get restored. Mirrors the RTE
+         * propagation idiom so unwind reaches the original caller. */
+        fprintf(f, "  { uint16_t _ccrw = (uint16_t)m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;\n");
+        fprintf(f, "    g_cpu.SR = (uint16_t)((g_cpu.SR & 0xFF00u) | (_ccrw & 0x00FFu)); }\n");
+        fprintf(f, "  g_cpu.PC = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;\n");
+        fprintf(f, "  g_rte_pending = 1; return; /* RTR */\n");
+        *skip_until_label = true;
+        break;
+
+    /* ------------------------------------------------------------------ */
+    case MN_RESET:
+        /* RESET pulses the external /RESET line; CPU registers are
+         * unaffected. The runtime hook decides what (if anything) to
+         * re-init — for Sonic 1 the runner already brought devices up
+         * in runtime_init() before this instruction can execute, so the
+         * hook is empty. Calling through it (rather than emitting a
+         * comment) keeps the codegen behaviour honest with the rule
+         * that every site has real semantics. */
+        fprintf(f, "  genesis_reset_devices();\n");
+        break;
+
+    /* ------------------------------------------------------------------ */
+    case MN_ILLEGAL:
+        /* 0x4AFC, A-line, F-line — runtime picks the right vector. */
+        fprintf(f, "  m68k_illegal_trap(0x%06Xu, 0x%04Xu); return;\n",
+                addr, (unsigned)instr->words[0]);
+        *skip_until_label = true;
         break;
 
     /* ------------------------------------------------------------------ */
@@ -2892,10 +2939,12 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             uint32_t last_pc = instrs.addrs[instrs.count - 1];
             M68KInstr last_instr;
             if (m68k_decode(rom, last_pc, &last_instr)) {
-                bool is_terminator = (last_instr.mnemonic == MN_RTS  ||
-                                      last_instr.mnemonic == MN_RTE  ||
-                                      last_instr.mnemonic == MN_STOP ||
-                                      last_instr.mnemonic == MN_JMP  ||
+                bool is_terminator = (last_instr.mnemonic == MN_RTS     ||
+                                      last_instr.mnemonic == MN_RTE     ||
+                                      last_instr.mnemonic == MN_RTR     ||
+                                      last_instr.mnemonic == MN_STOP    ||
+                                      last_instr.mnemonic == MN_ILLEGAL ||
+                                      last_instr.mnemonic == MN_JMP     ||
                                       last_instr.mnemonic == MN_BRA);
                 if (!is_terminator) {
                     uint32_t fall_through = last_pc + last_instr.byte_length;

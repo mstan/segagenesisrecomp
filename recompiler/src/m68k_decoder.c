@@ -281,20 +281,25 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
         if (w0 == 0x4E70) {
-            /* RESET */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_RESET;
             out->size     = M68K_SIZE_NONE;
             break;
         }
         if (w0 == 0x4E76) {
-            /* TRAPV */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_TRAPV;
             out->size     = M68K_SIZE_NONE;
             break;
         }
         if (w0 == 0x4E77) {
-            /* RTR */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_RTR;
+            out->size     = M68K_SIZE_NONE;
+            break;
+        }
+        if (w0 == 0x4AFC) {
+            /* Canonical 68K ILLEGAL — vector 4. Caught here so the rest
+             * of group 4 doesn't try to match it as TAS or some other
+             * 0x4Axx form. */
+            out->mnemonic = MN_ILLEGAL;
             out->size     = M68K_SIZE_NONE;
             break;
         }
@@ -792,10 +797,10 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
     }
 
     /* ------------------------------------------------------------------ */
-    /* GROUP 0xA — A-line (illegal)                                        */
+    /* GROUP 0xA — A-line (vector 10)                                      */
     /* ------------------------------------------------------------------ */
     case 0xA:
-        out->mnemonic = MN_OTHER;
+        out->mnemonic = MN_ILLEGAL;
         out->size     = M68K_SIZE_NONE;
         break;
 
@@ -1011,10 +1016,10 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
     }
 
     /* ------------------------------------------------------------------ */
-    /* GROUP 0xF — F-line (illegal / coprocessor)                          */
+    /* GROUP 0xF — F-line (vector 11; coprocessor on 68020+)               */
     /* ------------------------------------------------------------------ */
     case 0xF:
-        out->mnemonic = MN_OTHER;
+        out->mnemonic = MN_ILLEGAL;
         out->size     = M68K_SIZE_NONE;
         break;
 
@@ -1031,8 +1036,10 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
 bool m68k_is_terminator(const M68KInstr *instr) {
     return instr->mnemonic == MN_RTS
         || instr->mnemonic == MN_RTE
+        || instr->mnemonic == MN_RTR
         || instr->mnemonic == MN_JMP
-        || instr->mnemonic == MN_BRA;  /* unconditional branch, no fall-through */
+        || instr->mnemonic == MN_BRA       /* unconditional branch, no fall-through */
+        || instr->mnemonic == MN_ILLEGAL;  /* traps out, doesn't fall through */
 }
 
 bool m68k_is_call(const M68KInstr *instr) {

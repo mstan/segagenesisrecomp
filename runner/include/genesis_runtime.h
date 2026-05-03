@@ -65,6 +65,29 @@ void hybrid_call_interpret(uint32_t target_pc);
 /* ---- Fiber yield (Step 2) ---- */
 void glue_yield_for_vblank(void);
 
+/* ---- Vectored exceptions (Phase 7A) ----
+ * Real semantics for TRAP #N / TRAPV / RTR / RESET / ILLEGAL / A-line /
+ * F-line. Generated code calls into these instead of emitting a comment.
+ *
+ * m68k_trap_vector(vec) — dispatches a vectored trap by 8-bit vector
+ *   number. Vectors 0x20..0x2F are the TRAP #0..#15 family. Other slots
+ *   used by Phase 7A: 4=ILLEGAL, 6=CHK (Phase 7C), 7=TRAPV, 10=A-line,
+ *   11=F-line. Sonic 1 in steady-state takes none of these — the hook
+ *   logs and halts to surface the regression loudly rather than silently
+ *   continuing past corrupt CPU state.
+ *
+ * m68k_illegal_trap(pc, opcode) — convenience wrapper that picks the
+ *   right vector from the offending opcode (0x4AFC→4, A-line→10,
+ *   F-line→11) and forwards to m68k_trap_vector. */
+void m68k_trap_vector(uint8_t vec);
+void m68k_illegal_trap(uint32_t pc, uint16_t opcode);
+
+/* RESET pulses the external /RESET line. Re-initialise external devices
+ * (Z80, YM2612, PSG) here if needed. Sonic 1's boot path issues this
+ * once at startup, before runtime_init() has finished setting up the
+ * devices for the first time, so for that title the hook is a no-op. */
+void genesis_reset_devices(void);
+
 /* ---- VDP Interface ---- */
 void vdp_write_data(uint16_t val);
 void vdp_write_ctrl(uint16_t val);
