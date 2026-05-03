@@ -30,6 +30,24 @@ if(MSVC)
 endif()
 
 # ---------------------------------------------------------------------------
+# codegen_diag_test — unit smoke test for the diagnostics module.
+# Exercises codegen_diag directly without spinning up a ROM/codegen
+# pipeline; ensures recording, counting, and summary stay correct as
+# new diag kinds are added in later phases.
+# ---------------------------------------------------------------------------
+add_executable(codegen_diag_test
+    harness/codegen_diag_test.c
+    "${RECOMP_SRC}/codegen_diag.c"
+    "${RECOMP_SRC}/m68k_decoder.c"
+    "${RECOMP_SRC}/rom_parser.c"
+)
+target_include_directories(codegen_diag_test PRIVATE "${RECOMP_SRC}")
+if(MSVC)
+    target_compile_definitions(codegen_diag_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_options(codegen_diag_test PRIVATE /W3 /wd4996)
+endif()
+
+# ---------------------------------------------------------------------------
 # L3 oracle. Links against the same generated sonic_full.c +
 # sonic_dispatch.c that ship in the game binary, plus clown68000 as the
 # semantic ground truth. NO SDL, NO clownmdemu-core, NO runner — the

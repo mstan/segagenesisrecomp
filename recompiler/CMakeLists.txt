@@ -16,6 +16,7 @@ add_executable(GenesisRecomp
     src/m68k_decoder.c
     src/function_finder.c
     src/code_generator.c
+    src/codegen_diag.c
     src/annotations.c
     src/game_config.c
     src/cycle_probe.c
