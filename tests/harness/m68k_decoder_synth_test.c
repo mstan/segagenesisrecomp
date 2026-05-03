@@ -93,9 +93,65 @@ static void test_move_sr_directions(void) {
     CHECK(b.dst_is_ea == true, "MOVE SR,D0 dst_is_ea=true");
 }
 
+/* ---------------------------------------------------------------------
+ * Phase 3B — immediate-to-CCR / immediate-to-SR
+ * --------------------------------------------------------------------- */
+static void test_imm_to_ccr_sr(void) {
+    /* All six forms are 4 bytes: opcode word + immediate word.
+     * Per 68K spec the immediate is .B for CCR (held in low byte of
+     * the immediate word) and .W for SR. */
+    uint8_t bytes[] = {
+        0x00, 0x3C, 0x00, 0x05,  /* ORI  #$05,CCR     */
+        0x00, 0x7C, 0x07, 0x00,  /* ORI  #$0700,SR    */
+        0x02, 0x3C, 0x00, 0xEF,  /* ANDI #$EF,CCR     */
+        0x02, 0x7C, 0xF8, 0xFF,  /* ANDI #$F8FF,SR    */
+        0x0A, 0x3C, 0x00, 0x10,  /* EORI #$10,CCR     */
+        0x0A, 0x7C, 0x20, 0x00,  /* EORI #$2000,SR    */
+    };
+    GenesisRom rom; make_rom(&rom, bytes, sizeof(bytes));
+
+    struct {
+        uint32_t pc;
+        M68KMnemonic expect_mn;
+        M68KSize     expect_size;
+        uint32_t     expect_imm;
+    } cases[] = {
+        { 0,  MN_ORI_TO_CCR,  M68K_SIZE_B, 0x05   },
+        { 4,  MN_ORI_TO_SR,   M68K_SIZE_W, 0x0700 },
+        { 8,  MN_ANDI_TO_CCR, M68K_SIZE_B, 0xEF   },
+        { 12, MN_ANDI_TO_SR,  M68K_SIZE_W, 0xF8FF },
+        { 16, MN_EORI_TO_CCR, M68K_SIZE_B, 0x10   },
+        { 20, MN_EORI_TO_SR,  M68K_SIZE_W, 0x2000 },
+    };
+
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+        M68KInstr d = {0};
+        char msg[128];
+        snprintf(msg, sizeof(msg), "decode @ %u (case %zu)", cases[i].pc, i);
+        CHECK(m68k_decode(&rom, cases[i].pc, &d), msg);
+
+        snprintf(msg, sizeof(msg), "case %zu mnemonic", i);
+        CHECK(d.mnemonic == cases[i].expect_mn, msg);
+
+        snprintf(msg, sizeof(msg), "case %zu size", i);
+        CHECK(d.size == cases[i].expect_size, msg);
+
+        /* CRITICAL: byte_length must be 4 — the prior decoder
+         * over-consumed by an extra word for these forms because the
+         * pseudo-EA mode 7 reg 4 made consume_ea_ext re-fetch the
+         * immediate. The fix gates consume_ea_ext on src_ea != 0x3C. */
+        snprintf(msg, sizeof(msg), "case %zu byte_length=4", i);
+        CHECK(d.byte_length == 4, msg);
+
+        snprintf(msg, sizeof(msg), "case %zu imm32", i);
+        CHECK(d.imm32 == cases[i].expect_imm, msg);
+    }
+}
+
 int main(void) {
     test_move_ccr_directions();
     test_move_sr_directions();
+    test_imm_to_ccr_sr();
 
     if (g_failures == 0) {
         printf("m68k_decoder_synth: all checks passed\n");

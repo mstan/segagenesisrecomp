@@ -132,6 +132,12 @@ static const char *mnem_string(M68KMnemonic m) {
     case MN_EXG:      return "exg";
     case MN_ADDX:     return "addx";
     case MN_SUBX:     return "subx";
+    case MN_ORI_TO_CCR:  return "ori";
+    case MN_ORI_TO_SR:   return "ori";
+    case MN_ANDI_TO_CCR: return "andi";
+    case MN_ANDI_TO_SR:  return "andi";
+    case MN_EORI_TO_CCR: return "eori";
+    case MN_EORI_TO_SR:  return "eori";
     }
     return "?";
 }

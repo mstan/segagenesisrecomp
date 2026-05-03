@@ -1606,49 +1606,57 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_ORI: {
-        /* Special: ORI to SR/CCR */
-        int ea_mode = (instr->src_ea >> 3) & 7;
-        int ea_reg  = instr->src_ea & 7;
         uint32_t imm = er_next_imm(&er, sz);
-        if (ea_mode == 7 && ea_reg == 4) {
-            fprintf(f, "  g_cpu.SR |= 0x%04Xu;\n", (unsigned)imm);
-        } else {
-            emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "|");
-        }
+        emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "|");
         break;
     }
 
     /* ------------------------------------------------------------------ */
     case MN_ANDI: {
-        int ea_mode = (instr->src_ea >> 3) & 7;
-        int ea_reg  = instr->src_ea & 7;
         uint32_t imm = er_next_imm(&er, sz);
-        if (ea_mode == 7 && ea_reg == 4) {
-            /* ANDI to CCR (.B) only touches the low byte of SR.
-             * ANDI to SR  (.W) is a full 16-bit AND.
-             * Forcing the upper byte to stay set on .B prevents wiping
-             * supervisor mode + interrupt mask bits — found while
-             * tracking SMPS audio squelching. */
-            uint32_t mask = (sz == M68K_SIZE_B) ? (0xFF00u | (imm & 0xFFu)) : (imm & 0xFFFFu);
-            fprintf(f, "  g_cpu.SR &= 0x%04Xu;\n", (unsigned)mask);
-        } else {
-            emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "&");
-        }
+        emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "&");
         break;
     }
 
     /* ------------------------------------------------------------------ */
     case MN_EORI: {
-        int ea_mode = (instr->src_ea >> 3) & 7;
-        int ea_reg  = instr->src_ea & 7;
         uint32_t imm = er_next_imm(&er, sz);
-        if (ea_mode == 7 && ea_reg == 4) {
-            fprintf(f, "  g_cpu.SR ^= 0x%04Xu;\n", (unsigned)imm);
-        } else {
-            emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "^");
-        }
+        emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "^");
         break;
     }
+
+    /* ------------------------------------------------------------------ */
+    /* Immediate-to-CCR / -to-SR (Phase 3B).
+     * CCR forms touch only the low byte of SR; SR forms touch the full
+     * word. Privilege-violation modeling for SR forms is out of scope
+     * (this recompiler doesn't track supervisor mode separately yet).
+     * The mask forced on ANDI #imm,CCR keeps the upper byte set so we
+     * don't wipe supervisor + interrupt-mask bits — same rationale as
+     * the SMPS-audio fix that previously guarded the inline branch. */
+    case MN_ORI_TO_CCR:
+        fprintf(f, "  g_cpu.SR |= 0x%02Xu; /* ORI #imm,CCR */\n",
+                (unsigned)(instr->imm32 & 0xFFu));
+        break;
+    case MN_ORI_TO_SR:
+        fprintf(f, "  g_cpu.SR |= 0x%04Xu; /* ORI #imm,SR */\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        break;
+    case MN_ANDI_TO_CCR:
+        fprintf(f, "  g_cpu.SR &= 0x%04Xu; /* ANDI #imm,CCR */\n",
+                (unsigned)(0xFF00u | (instr->imm32 & 0xFFu)));
+        break;
+    case MN_ANDI_TO_SR:
+        fprintf(f, "  g_cpu.SR &= 0x%04Xu; /* ANDI #imm,SR */\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        break;
+    case MN_EORI_TO_CCR:
+        fprintf(f, "  g_cpu.SR ^= 0x%02Xu; /* EORI #imm,CCR */\n",
+                (unsigned)(instr->imm32 & 0xFFu));
+        break;
+    case MN_EORI_TO_SR:
+        fprintf(f, "  g_cpu.SR ^= 0x%04Xu; /* EORI #imm,SR */\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        break;
 
     /* ------------------------------------------------------------------ */
     case MN_CMP: {
