@@ -30,6 +30,22 @@ if(MSVC)
 endif()
 
 # ---------------------------------------------------------------------------
+# m68k_decoder_synth_test — synthetic decoder fixtures for instruction
+# forms Sonic's disasm doesn't exercise (MOVE_CCR/SR direction, CMPM,
+# immediate-to-CCR/SR, ADDX/SUBX memory-predec, etc.). Grows phase-by-phase.
+# ---------------------------------------------------------------------------
+add_executable(m68k_decoder_synth_test
+    harness/m68k_decoder_synth_test.c
+    "${RECOMP_SRC}/m68k_decoder.c"
+    "${RECOMP_SRC}/rom_parser.c"
+)
+target_include_directories(m68k_decoder_synth_test PRIVATE "${RECOMP_SRC}")
+if(MSVC)
+    target_compile_definitions(m68k_decoder_synth_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_options(m68k_decoder_synth_test PRIVATE /W3 /wd4996)
+endif()
+
+# ---------------------------------------------------------------------------
 # codegen_diag_test — unit smoke test for the diagnostics module.
 # Exercises codegen_diag directly without spinning up a ROM/codegen
 # pipeline; ensures recording, counting, and summary stay correct as

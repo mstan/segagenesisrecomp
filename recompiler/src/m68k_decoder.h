@@ -107,6 +107,11 @@ typedef struct {
     uint32_t     imm32;                   /* Decoded immediate value */
     uint32_t     target_addr;             /* Static branch/call target (if has_target) */
     bool         has_target;
+    /* For MN_MOVE_CCR and MN_MOVE_SR: true when the EA is the destination
+     * (e.g. MOVE CCR,<ea>) and false when EA is the source (MOVE <ea>,CCR).
+     * Resolves the direction ambiguity without forcing codegen to
+     * re-inspect the raw opcode word. Unused for other mnemonics. */
+    bool         dst_is_ea;
 } M68KInstr;
 
 /* EA mode constants */

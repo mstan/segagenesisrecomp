@@ -417,38 +417,42 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
 
-        /* MOVE <ea>, CCR: 0100 0100 11 mmm rrr */
+        /* MOVE <ea>, CCR: 0100 0100 11 mmm rrr — EA is source, CCR is dest */
         if ((w0 & 0xFFC0) == 0x44C0) {
-            out->mnemonic = MN_MOVE_CCR;
-            out->size     = M68K_SIZE_W;
-            out->src_ea   = w0 & 0x3F;
+            out->mnemonic  = MN_MOVE_CCR;
+            out->size      = M68K_SIZE_W;
+            out->src_ea    = w0 & 0x3F;
+            out->dst_is_ea = false;
             consume_ea_ext(rom, &pc, out, ea_mode, ea_reg, M68K_SIZE_W);
             break;
         }
 
-        /* MOVE <ea>, SR: 0100 0110 11 mmm rrr */
+        /* MOVE <ea>, SR: 0100 0110 11 mmm rrr — EA is source, SR is dest */
         if ((w0 & 0xFFC0) == 0x46C0) {
-            out->mnemonic = MN_MOVE_SR;
-            out->size     = M68K_SIZE_W;
-            out->src_ea   = w0 & 0x3F;
+            out->mnemonic  = MN_MOVE_SR;
+            out->size      = M68K_SIZE_W;
+            out->src_ea    = w0 & 0x3F;
+            out->dst_is_ea = false;
             consume_ea_ext(rom, &pc, out, ea_mode, ea_reg, M68K_SIZE_W);
             break;
         }
 
-        /* MOVE SR, <ea>: 0100 0000 11 mmm rrr */
+        /* MOVE SR, <ea>: 0100 0000 11 mmm rrr — SR is source, EA is dest */
         if ((w0 & 0xFFC0) == 0x40C0) {
-            out->mnemonic = MN_MOVE_SR;
-            out->size     = M68K_SIZE_W;
-            out->src_ea   = w0 & 0x3F;
+            out->mnemonic  = MN_MOVE_SR;
+            out->size      = M68K_SIZE_W;
+            out->src_ea    = w0 & 0x3F;
+            out->dst_is_ea = true;
             consume_ea_ext(rom, &pc, out, ea_mode, ea_reg, M68K_SIZE_W);
             break;
         }
 
-        /* MOVE CCR, <ea>: 0100 0010 11 mmm rrr */
+        /* MOVE CCR, <ea>: 0100 0010 11 mmm rrr — CCR is source, EA is dest */
         if ((w0 & 0xFFC0) == 0x42C0) {
-            out->mnemonic = MN_MOVE_CCR;
-            out->size     = M68K_SIZE_W;
-            out->src_ea   = w0 & 0x3F;
+            out->mnemonic  = MN_MOVE_CCR;
+            out->size      = M68K_SIZE_W;
+            out->src_ea    = w0 & 0x3F;
+            out->dst_is_ea = true;
             consume_ea_ext(rom, &pc, out, ea_mode, ea_reg, M68K_SIZE_W);
             break;
         }
