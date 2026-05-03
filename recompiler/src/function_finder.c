@@ -35,6 +35,88 @@ static bool addr_seen[0x400000];   /* one byte per ROM address — visited flags
  * so misdecoded data regions show up at the end of the run. */
 static int s_invalid_terminations = 0;
 
+/* Phase 6: PC-indexed jump-table discovery counters. */
+static int s_jt_pc_indexed_sites      = 0;  /* JMP (d8,PC,Xn.W) seen        */
+static int s_jt_auto_enumerated       = 0;  /* tables auto-walked from rom  */
+static int s_jt_manual_enumerated     = 0;  /* tables matched in game.cfg   */
+static int s_jt_targets_pushed        = 0;  /* worklist additions           */
+static int s_jt_targets_rejected      = 0;  /* failed validation            */
+static int s_jt_unresolved            = 0;  /* path terminated, no table    */
+
+#define JT_AUTO_MAX_ENTRIES   256
+#define JT_AUTO_MIN_ENTRIES     2
+
+/* Forward decl — defined later, but jt_enumerate needs to call it. */
+static void add_function(FunctionList *list, uint32_t addr);
+
+static const JumpTableEntry *
+jt_lookup_manual(const GameConfig *cfg, uint32_t base) {
+    if (!cfg) return NULL;
+    for (int i = 0; i < cfg->jump_table_count; i++) {
+        if (cfg->jump_tables[i].start_addr == base)
+            return &cfg->jump_tables[i];
+    }
+    return NULL;
+}
+
+/* Compute the absolute jump target for entry `i` of a table at `base`
+ * with the supplied stride/format, reading from rom. Returns
+ * 0xFFFFFFFFu on out-of-rom or unaligned target — signal to stop. */
+static uint32_t
+jt_entry_target(const GenesisRom *rom, uint32_t base,
+                uint32_t stride, JumpTableFormat fmt, int i) {
+    uint32_t entry_addr = base + (uint32_t)i * stride;
+    if (entry_addr + (stride - 1) >= rom->rom_size) return 0xFFFFFFFFu;
+
+    uint32_t target;
+    if (fmt == JT_FMT_PCREL_W) {
+        /* 16-bit signed offset relative to the table base. */
+        int16_t off = (int16_t)rom_read16(rom, entry_addr);
+        target = base + (int32_t)off;
+    } else {
+        target = rom_read32(rom, entry_addr) & 0xFFFFFFu;
+    }
+    if (target & 1) return 0xFFFFFFFFu;        /* must be even-aligned */
+    if (target >= rom->rom_size) return 0xFFFFFFFFu;
+    return target;
+}
+
+/* Walk a jump table at `base` and push every legal target into the
+ * worklist via add_function. Honors a hard cap so a misidentified
+ * table can't run away through random data. Returns number of
+ * targets pushed. */
+static int
+jt_enumerate(const GenesisRom *rom, const GameConfig *cfg,
+             FunctionList *list,
+             uint32_t base, uint32_t stride, JumpTableFormat fmt,
+             int max_entries,
+             const M68KValidatorOptions *vopts) {
+    int pushed = 0;
+    for (int i = 0; i < max_entries; i++) {
+        uint32_t target = jt_entry_target(rom, base, stride, fmt, i);
+        if (target == 0xFFFFFFFFu) break;
+
+        /* Validator gate: the target's first instruction must be a
+         * legal MC68000 encoding. If not, the table likely ran into
+         * adjacent data; stop. */
+        M68KInstr probe;
+        if (!m68k_decode(rom, target, &probe)) { s_jt_targets_rejected++; break; }
+        if (m68k_validate(&probe, vopts) != M68K_LEGAL) {
+            s_jt_targets_rejected++;
+            break;
+        }
+
+        if (cfg && game_config_is_blacklisted(cfg, target)) {
+            s_jt_targets_rejected++;
+            continue;
+        }
+        add_function(list, target);
+        pushed++;
+        s_jt_targets_pushed++;
+    }
+    return pushed;
+}
+
 static void push_addr(uint32_t addr) {
     if (addr >= 0x400000 || addr_seen[addr]) return;
     if (s_work_top >= WORK_STACK_SIZE) {
@@ -67,6 +149,12 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
     memset(addr_seen, 0, sizeof(addr_seen));
     s_work_top = 0;
     s_invalid_terminations = 0;
+    s_jt_pc_indexed_sites = 0;
+    s_jt_auto_enumerated  = 0;
+    s_jt_manual_enumerated = 0;
+    s_jt_targets_pushed   = 0;
+    s_jt_targets_rejected = 0;
+    s_jt_unresolved       = 0;
     M68KValidatorOptions vopts = {0};
     vopts.allow_68020_branch = cfg ? cfg->allow_68020_branch : false;
 
@@ -137,11 +225,59 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
                 break;  /* JMP: no fall-through */
             }
 
-            /* JMP with indexed EA — consult game.cfg jump tables */
+            /* JMP with indexed EA — handle the common Genesis pattern
+             * `JMP (d8,PC,Xn.W)` (mode 7, reg 3) by enumerating its
+             * jump table either from a matching game.cfg jump_table
+             * directive or, failing that, by an auto-walk of pcrel16
+             * entries until the validator says we've left the table. */
             if (instr.mnemonic == MN_JMP && !instr.has_target) {
-                /* TODO: detect JMP table(PC,Dn.W) pattern and enumerate jump_table entries */
-                /* For now, just terminate the path */
-                break;
+                int ea_mode = (instr.src_ea >> 3) & 7;
+                int ea_reg  = instr.src_ea & 7;
+                if (ea_mode == 7 && ea_reg == 3 && instr.word_count >= 2) {
+                    s_jt_pc_indexed_sites++;
+                    uint16_t ext = instr.words[1];
+                    int8_t   d8  = (int8_t)(ext & 0xFF);
+                    /* Codegen uses (instr->addr + er.bp + d8); for the
+                     * (d8,PC,Xn.W) form the PC bias is 2 (one ext word
+                     * read) plus d8. */
+                    uint32_t base = pc + 2 + (int32_t)d8;
+                    const JumpTableEntry *m = jt_lookup_manual(cfg, base);
+                    if (m) {
+                        int max_entries = (int)((m->end_addr > m->start_addr)
+                            ? (m->end_addr - m->start_addr) / m->stride_bytes
+                            : JT_AUTO_MAX_ENTRIES);
+                        if (max_entries < 1) max_entries = 1;
+                        if (max_entries > JT_AUTO_MAX_ENTRIES)
+                            max_entries = JT_AUTO_MAX_ENTRIES;
+                        jt_enumerate(rom, cfg, list, base,
+                                     m->stride_bytes, m->format,
+                                     max_entries, &vopts);
+                        s_jt_manual_enumerated++;
+                    } else if (cfg && cfg->jump_table_autodiscovery) {
+                        /* Conservative auto-walk: pcrel16 only. The
+                         * validator gate inside jt_enumerate stops
+                         * at the first target that doesn't decode
+                         * cleanly. Off by default — game-specific
+                         * data layouts can produce data sequences
+                         * whose first decoded instruction is legal
+                         * MC68000 even though the address is data,
+                         * so unsupervised auto-walk pollutes the
+                         * function list. Sonic 1 measured 495
+                         * spurious externs with auto-walk on. */
+                        int n = jt_enumerate(rom, cfg, list, base,
+                                             2, JT_FMT_PCREL_W,
+                                             JT_AUTO_MAX_ENTRIES, &vopts);
+                        if (n >= JT_AUTO_MIN_ENTRIES)
+                            s_jt_auto_enumerated++;
+                        else
+                            s_jt_unresolved++;
+                    } else {
+                        s_jt_unresolved++;
+                    }
+                } else {
+                    s_jt_unresolved++;
+                }
+                break;  /* JMP terminates the path either way */
             }
 
             /* Terminator */
@@ -154,6 +290,11 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
     printf("[FunctionFinder] %d functions found\n", list->count);
     printf("[FunctionFinder] %d speculative paths terminated by validator\n",
            s_invalid_terminations);
+    printf("[FunctionFinder] Jump-table discovery: pc_indexed=%d "
+           "auto=%d manual=%d targets=%d rejected=%d unresolved=%d\n",
+           s_jt_pc_indexed_sites, s_jt_auto_enumerated,
+           s_jt_manual_enumerated, s_jt_targets_pushed,
+           s_jt_targets_rejected, s_jt_unresolved);
 }
 
 void function_list_free(FunctionList *list) {
