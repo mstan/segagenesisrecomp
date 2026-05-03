@@ -172,6 +172,12 @@ bool game_dispatch_override(uint32_t addr) { (void)addr; return false; }
 void (*g_hybrid_pre_insn_fn)(void) = NULL;
 unsigned int g_hybrid_cycle_counter = 0;
 
+/* Per-instruction counters emitted by codegen. The harness doesn't drive
+ * audio or instruction-level telemetry, but the symbols must exist so
+ * the generated `func_*` translation units link. */
+uint64_t g_native_insn_count   = 0;
+uint32_t g_audio_cycle_counter = 0;
+
 /* ====================================================================
  * Interpreter callbacks (clown68000)
  * ==================================================================== */
