@@ -158,10 +158,36 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
         };
 
         if (ss == 3) {
-            /* Special: CCR/SR form (byte already encoded) */
+            /* Reserved size encoding for the immediate group. */
             out->mnemonic = MN_OTHER;
             out->size     = M68K_SIZE_W;
             out->words[out->word_count++] = fetch16(rom, &pc);
+            break;
+        }
+
+        /* Immediate-to-CCR / -to-SR special forms.
+         *   src_ea == 0x3C  (mode 7, reg 4 = #imm pseudo-EA)
+         *   ss == 0  →  CCR (.B, immediate held in low byte of one word)
+         *   ss == 1  →  SR  (.W, immediate is one word)
+         *   op_bits 0=ORI, 1=ANDI, 5=EORI; other op_bits with this EA
+         *   are illegal (e.g., ADDI/SUBI/CMPI #imm,#imm) — leave them as
+         *   MN_OTHER for the legality validator to flag. The immediate
+         *   is consumed exactly once; consume_ea_ext is skipped because
+         *   the EA's "extension" *is* the immediate operand. */
+        if (src_ea == 0x3C && (ss == 0 || ss == 1) &&
+            (op_bits == 0 || op_bits == 1 || op_bits == 5)) {
+            static const M68KMnemonic to_ccr[8] = {
+                [0] = MN_ORI_TO_CCR, [1] = MN_ANDI_TO_CCR, [5] = MN_EORI_TO_CCR
+            };
+            static const M68KMnemonic to_sr[8] = {
+                [0] = MN_ORI_TO_SR,  [1] = MN_ANDI_TO_SR,  [5] = MN_EORI_TO_SR
+            };
+            out->mnemonic = (ss == 0) ? to_ccr[op_bits] : to_sr[op_bits];
+            out->size     = (ss == 0) ? M68K_SIZE_B : M68K_SIZE_W;
+            out->src_ea   = src_ea;
+            uint16_t imm_w = fetch16(rom, &pc);
+            out->words[out->word_count++] = imm_w;
+            out->imm32 = (ss == 0) ? (uint32_t)(imm_w & 0xFFu) : (uint32_t)imm_w;
             break;
         }
 

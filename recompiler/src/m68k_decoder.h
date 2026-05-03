@@ -90,6 +90,16 @@ typedef enum {
     MN_EXG,
     MN_ADDX,
     MN_SUBX,
+    /* Immediate-to-CCR / Immediate-to-SR forms.
+     * Encoded as 0x003C / 0x007C / 0x023C / 0x027C / 0x0A3C / 0x0A7C.
+     * Distinct mnemonics so codegen never has to re-check src_ea == 0x3C
+     * and the decoder doesn't double-consume the immediate operand. */
+    MN_ORI_TO_CCR,
+    MN_ORI_TO_SR,
+    MN_ANDI_TO_CCR,
+    MN_ANDI_TO_SR,
+    MN_EORI_TO_CCR,
+    MN_EORI_TO_SR,
 } M68KMnemonic;
 
 #define M68K_MAX_WORDS 8   /* Maximum instruction length in 16-bit words */
