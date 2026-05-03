@@ -186,11 +186,63 @@ static void test_cmpm(void) {
     CHECK(c.reg == 1 && (c.src_ea & 7) == 1, "CMPM.L Ax=A1, Ay=A1 (self)");
 }
 
+/* ---------------------------------------------------------------------
+ * Phase 4 — ADDX / SUBX memory predecrement form
+ * --------------------------------------------------------------------- */
+static void test_addx_subx_forms(void) {
+    /* ADDX register form: 1101 xxx 1 ss 00 0 yyy
+     * ADDX memory form  : 1101 xxx 1 ss 00 1 yyy
+     * SUBX register form: 1001 xxx 1 ss 00 0 yyy
+     * SUBX memory form  : 1001 xxx 1 ss 00 1 yyy
+     *
+     * Encodings used:
+     *   D7 01 = ADDX.B D1,D3      (xxx=011, ss=00, R/M=0, yyy=001)
+     *   D7 09 = ADDX.B -(A1)-,-(A3)+ (xxx=011, ss=00, R/M=1, yyy=001)
+     *   95 41 = SUBX.W D1,D2      (xxx=010, ss=01, R/M=0, yyy=001)
+     *   93 89 = SUBX.L -(A1)-,-(A1)- (xxx=001, ss=10, R/M=1, yyy=001) */
+    uint8_t bytes[] = {
+        0xD7, 0x01,    /* ADDX.B D1,D3        */
+        0xD7, 0x09,    /* ADDX.B -(A1),-(A3)  */
+        0x95, 0x41,    /* SUBX.W D1,D2        */
+        0x93, 0x89,    /* SUBX.L -(A1),-(A1)  */
+    };
+    GenesisRom rom; make_rom(&rom, bytes, sizeof(bytes));
+
+    M68KInstr a = {0};
+    CHECK(m68k_decode(&rom, 0, &a), "ADDX.B Dy,Dx decode");
+    CHECK(a.mnemonic == MN_ADDX && a.size == M68K_SIZE_B,
+          "ADDX.B reg-form mnemonic+size");
+    CHECK(a.predec_mem_form == false, "ADDX.B reg-form: predec=false");
+    CHECK(a.reg == 3 && (a.src_ea & 7) == 1, "ADDX.B Ax=D3, Ay=D1");
+
+    M68KInstr b = {0};
+    CHECK(m68k_decode(&rom, 2, &b), "ADDX.B mem decode");
+    CHECK(b.mnemonic == MN_ADDX && b.size == M68K_SIZE_B,
+          "ADDX.B mem-form mnemonic+size");
+    CHECK(b.predec_mem_form == true,  "ADDX.B mem-form: predec=true");
+    CHECK(b.reg == 3 && (b.src_ea & 7) == 1, "ADDX.B mem Ax=A3, Ay=A1");
+
+    M68KInstr c = {0};
+    CHECK(m68k_decode(&rom, 4, &c), "SUBX.W reg decode");
+    CHECK(c.mnemonic == MN_SUBX && c.size == M68K_SIZE_W,
+          "SUBX.W reg-form mnemonic+size");
+    CHECK(c.predec_mem_form == false, "SUBX.W reg-form: predec=false");
+
+    M68KInstr d = {0};
+    CHECK(m68k_decode(&rom, 6, &d), "SUBX.L mem decode");
+    CHECK(d.mnemonic == MN_SUBX && d.size == M68K_SIZE_L,
+          "SUBX.L mem-form mnemonic+size");
+    CHECK(d.predec_mem_form == true,  "SUBX.L mem-form: predec=true");
+    CHECK(d.reg == 1 && (d.src_ea & 7) == 1,
+          "SUBX.L mem Ax=A1, Ay=A1 (self)");
+}
+
 int main(void) {
     test_move_ccr_directions();
     test_move_sr_directions();
     test_imm_to_ccr_sr();
     test_cmpm();
+    test_addx_subx_forms();
 
     if (g_failures == 0) {
         printf("m68k_decoder_synth: all checks passed\n");
