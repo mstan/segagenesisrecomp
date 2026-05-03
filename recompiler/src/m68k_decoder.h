@@ -128,6 +128,11 @@ typedef struct {
      * Resolves the direction ambiguity without forcing codegen to
      * re-inspect the raw opcode word. Unused for other mnemonics. */
     bool         dst_is_ea;
+    /* For MN_ADDX, MN_SUBX, MN_ABCD, MN_SBCD: true when the R/M bit
+     * selects the memory predecrement form -(Ay),-(Ax); false for the
+     * register form Dy,Dx. Source register is `src_ea & 7` (Ay), and
+     * destination register is `reg` (Ax) — same shape for both forms. */
+    bool         predec_mem_form;
 } M68KInstr;
 
 /* EA mode constants */

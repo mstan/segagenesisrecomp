@@ -2510,81 +2510,141 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_ADDX: {
-        /* D-D form only: Dy = Dy + Dx + X.
+        /* Dy/Dx → D-D form;  -(Ay),-(Ax) → memory predecrement form.
          * Z is cleared unless result==0 AND previous Z was set (for
          * multi-precision chains).  X = C. */
         uint16_t w0 = instr->words[0];
-        if ((w0 >> 3) & 1) {
-            codegen_diag_record(CGD_TODO_ADDX_MEM_PREDEC, addr, w0, MN_ADDX,
-                                func_name, func_addr);
-            fprintf(f, "  /* TODO: ADDX -(Ay),-(Ax) memory form @ $%06X */\n", addr);
-            break;
-        }
-        int dst = (w0 >> 9) & 7;
-        int src = w0 & 7;
+        int dst  = (w0 >> 9) & 7;
+        int src  = w0 & 7;
         int bits = size_bits(sz);
         uint32_t sign_mask = (bits == 32) ? 0x80000000u : (bits == 16 ? 0x8000u : 0x80u);
         uint32_t low_mask  = (bits == 32) ? 0xFFFFFFFFu : (bits == 16 ? 0xFFFFu : 0xFFu);
-        fprintf(f,
-            "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
-            "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
-            "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
-            "    uint64_t _full = (uint64_t)_fa + (uint64_t)_fb + (uint64_t)_fx;\n"
-            "    uint%d_t _fr = (uint%d_t)_full;\n"
-            "    int _zold = (g_cpu.SR >> 2) & 1;\n"
-            "    g_cpu.SR &= ~(0x1Fu);\n"
-            "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
-            "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
-            "    if (_full >> %d)                                { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
-            "    if (!((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
-            bits, bits, dst, bits, bits, src, bits, bits,
-            SR_Z, bits - 1, SR_N, bits, SR_C, SR_X,
-            sign_mask, sign_mask, SR_V);
-        if (sz == M68K_SIZE_L)
-            fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
-        else
-            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
-                    dst, dst, (uint32_t)~low_mask);
-        fprintf(f, "  }\n");
+        if (instr->predec_mem_form) {
+            /* -(Ay),-(Ax): predec both, read both, compute (Ax) + (Ay) + X,
+             * write back to (Ax). Byte size on A7 still increments by 2
+             * to keep the supervisor stack aligned. */
+            int sb = size_bytes(sz);
+            int ay_dec = (src == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+            int ax_dec = (dst == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+            const char *rf = size_read_fn(sz);
+            const char *wf = size_write_fn(sz);
+            const char *ct = size_ctype(sz);
+            fprintf(f,
+                "  { g_cpu.A[%d] -= %d;\n"
+                "    %s _fb = (%s)%s(g_cpu.A[%d]);\n"
+                "    g_cpu.A[%d] -= %d;\n"
+                "    %s _fa = (%s)%s(g_cpu.A[%d]);\n"
+                "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint64_t _full = (uint64_t)(uint%d_t)_fa + (uint64_t)(uint%d_t)_fb + (uint64_t)_fx;\n"
+                "    uint%d_t _fr = (uint%d_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~(0x1Fu);\n"
+                "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+                "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+                "    if (_full >> %d)                                { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    if (!(((uint%d_t)_fa^(uint%d_t)_fb) & 0x%08Xu) && (((uint%d_t)_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n"
+                "    %s(g_cpu.A[%d], (%s)_fr);\n"
+                "  }\n",
+                src, ay_dec,
+                ct, ct, rf, src,
+                dst, ax_dec,
+                ct, ct, rf, dst,
+                bits, bits,
+                bits, bits,
+                SR_Z, bits - 1, SR_N, bits, SR_C, SR_X,
+                bits, bits, sign_mask, bits, sign_mask, SR_V,
+                wf, dst, ct);
+        } else {
+            fprintf(f,
+                "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
+                "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
+                "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint64_t _full = (uint64_t)_fa + (uint64_t)_fb + (uint64_t)_fx;\n"
+                "    uint%d_t _fr = (uint%d_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~(0x1Fu);\n"
+                "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+                "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+                "    if (_full >> %d)                                { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    if (!((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
+                bits, bits, dst, bits, bits, src, bits, bits,
+                SR_Z, bits - 1, SR_N, bits, SR_C, SR_X,
+                sign_mask, sign_mask, SR_V);
+            if (sz == M68K_SIZE_L)
+                fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
+            else
+                fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
+                        dst, dst, (uint32_t)~low_mask);
+            fprintf(f, "  }\n");
+        }
         break;
     }
 
     /* ------------------------------------------------------------------ */
     case MN_SUBX: {
-        /* D-D form only: Dy = Dy - Dx - X. Z-preserve semantics. X = C. */
+        /* Dy/Dx → D-D form;  -(Ay),-(Ax) → memory predecrement form.
+         * Z-preserve semantics. X = C. */
         uint16_t w0 = instr->words[0];
-        if ((w0 >> 3) & 1) {
-            codegen_diag_record(CGD_TODO_SUBX_MEM_PREDEC, addr, w0, MN_SUBX,
-                                func_name, func_addr);
-            fprintf(f, "  /* TODO: SUBX -(Ay),-(Ax) memory form @ $%06X */\n", addr);
-            break;
-        }
-        int dst = (w0 >> 9) & 7;
-        int src = w0 & 7;
+        int dst  = (w0 >> 9) & 7;
+        int src  = w0 & 7;
         int bits = size_bits(sz);
         uint32_t sign_mask = (bits == 32) ? 0x80000000u : (bits == 16 ? 0x8000u : 0x80u);
         uint32_t low_mask  = (bits == 32) ? 0xFFFFFFFFu : (bits == 16 ? 0xFFFFu : 0xFFu);
-        fprintf(f,
-            "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
-            "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
-            "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
-            "    uint64_t _full = (uint64_t)_fa - (uint64_t)_fb - (uint64_t)_fx;\n"
-            "    uint%d_t _fr = (uint%d_t)_full;\n"
-            "    int _zold = (g_cpu.SR >> 2) & 1;\n"
-            "    g_cpu.SR &= ~(0x1Fu);\n"
-            "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
-            "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
-            "    if ((_full >> 63) & 1u)                         { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
-            "    if (((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
-            bits, bits, dst, bits, bits, src, bits, bits,
-            SR_Z, bits - 1, SR_N, SR_C, SR_X,
-            sign_mask, sign_mask, SR_V);
-        if (sz == M68K_SIZE_L)
-            fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
-        else
-            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
-                    dst, dst, (uint32_t)~low_mask);
-        fprintf(f, "  }\n");
+        if (instr->predec_mem_form) {
+            int sb = size_bytes(sz);
+            int ay_dec = (src == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+            int ax_dec = (dst == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+            const char *rf = size_read_fn(sz);
+            const char *wf = size_write_fn(sz);
+            const char *ct = size_ctype(sz);
+            fprintf(f,
+                "  { g_cpu.A[%d] -= %d;\n"
+                "    %s _fb = (%s)%s(g_cpu.A[%d]);\n"
+                "    g_cpu.A[%d] -= %d;\n"
+                "    %s _fa = (%s)%s(g_cpu.A[%d]);\n"
+                "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint64_t _full = (uint64_t)(uint%d_t)_fa - (uint64_t)(uint%d_t)_fb - (uint64_t)_fx;\n"
+                "    uint%d_t _fr = (uint%d_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~(0x1Fu);\n"
+                "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+                "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+                "    if ((_full >> 63) & 1u)                         { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    if ((((uint%d_t)_fa^(uint%d_t)_fb) & 0x%08Xu) && (((uint%d_t)_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n"
+                "    %s(g_cpu.A[%d], (%s)_fr);\n"
+                "  }\n",
+                src, ay_dec,
+                ct, ct, rf, src,
+                dst, ax_dec,
+                ct, ct, rf, dst,
+                bits, bits,
+                bits, bits,
+                SR_Z, bits - 1, SR_N, SR_C, SR_X,
+                bits, bits, sign_mask, bits, sign_mask, SR_V,
+                wf, dst, ct);
+        } else {
+            fprintf(f,
+                "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
+                "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
+                "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint64_t _full = (uint64_t)_fa - (uint64_t)_fb - (uint64_t)_fx;\n"
+                "    uint%d_t _fr = (uint%d_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~(0x1Fu);\n"
+                "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+                "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+                "    if ((_full >> 63) & 1u)                         { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    if (((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
+                bits, bits, dst, bits, bits, src, bits, bits,
+                SR_Z, bits - 1, SR_N, SR_C, SR_X,
+                sign_mask, sign_mask, SR_V);
+            if (sz == M68K_SIZE_L)
+                fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
+            else
+                fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
+                        dst, dst, (uint32_t)~low_mask);
+            fprintf(f, "  }\n");
+        }
         break;
     }
 

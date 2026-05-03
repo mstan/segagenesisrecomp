@@ -772,10 +772,13 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
         }
 
         if (dir && (ea_mode == EA_Dn || ea_mode == EA_An)) {
-            /* SUBX */
-            out->mnemonic = MN_SUBX;
-            out->size     = (M68KSize)ss;
-            out->reg      = (w0 >> 9) & 7;
+            /* SUBX — bit 3 (R/M) = 0 → register form Dy,Dx
+             *        bit 3 (R/M) = 1 → memory form -(Ay),-(Ax) */
+            out->mnemonic        = MN_SUBX;
+            out->size            = (M68KSize)ss;
+            out->reg             = (w0 >> 9) & 7;   /* Ax (destination)   */
+            out->src_ea          = w0 & 0x3F;       /* low 3 bits = Ay    */
+            out->predec_mem_form = ((w0 >> 3) & 1) != 0;
             break;
         }
 
@@ -930,10 +933,13 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
         }
 
         if (dir && (ea_mode == EA_Dn || ea_mode == EA_An)) {
-            /* ADDX */
-            out->mnemonic = MN_ADDX;
-            out->size     = (M68KSize)ss;
-            out->reg      = (w0 >> 9) & 7;
+            /* ADDX — bit 3 (R/M) = 0 → register form Dy,Dx
+             *        bit 3 (R/M) = 1 → memory form -(Ay),-(Ax) */
+            out->mnemonic        = MN_ADDX;
+            out->size            = (M68KSize)ss;
+            out->reg             = (w0 >> 9) & 7;
+            out->src_ea          = w0 & 0x3F;
+            out->predec_mem_form = ((w0 >> 3) & 1) != 0;
             break;
         }
 
