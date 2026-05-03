@@ -14,9 +14,6 @@ static int s_event_count = 0;
 static const char *s_kind_names[CGD_KIND_COUNT] = {
     "MN_OTHER",
     "TODO_MOVEP",
-    "TODO_ABCD",
-    "TODO_SBCD",
-    "TODO_NBCD",
     "TODO_CHK",
     "TODO_ADDX_MEM_PREDEC",
     "TODO_SUBX_MEM_PREDEC",
