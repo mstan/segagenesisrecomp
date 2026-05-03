@@ -818,9 +818,13 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
         if (dir) {
             /* bit 8 = 1, ss < 3 */
             if (ea_mode == EA_An_POST) {
-                /* CMPM (An)+,(An)+ */
-                out->mnemonic = MN_OTHER;
+                /* CMPM (Ay)+,(Ax)+
+                 *   src_ea = Ay  (postinc, ea_reg)
+                 *   reg    = Ax  ((w0 >> 9) & 7) */
+                out->mnemonic = MN_CMPM;
                 out->size     = (M68KSize)ss;
+                out->src_ea   = w0 & 0x3F;
+                out->reg      = (w0 >> 9) & 7;
             } else {
                 /* EOR Dn,<ea> */
                 out->mnemonic = MN_EOR;

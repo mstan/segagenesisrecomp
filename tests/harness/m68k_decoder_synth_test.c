@@ -148,10 +148,49 @@ static void test_imm_to_ccr_sr(void) {
     }
 }
 
+/* ---------------------------------------------------------------------
+ * Phase 3C — CMPM (Ay)+,(Ax)+
+ * --------------------------------------------------------------------- */
+static void test_cmpm(void) {
+    /* Pattern: 1011 xxx 1 ss 011 yyy   (mode=011=(An)+)
+     * Encodings here:
+     *   B7 19 = CMPM.B (A1)+,(A3)+   xxx=011 (Ax=A3), ss=00, yyy=001
+     *   B5 59 = CMPM.W (A1)+,(A2)+   xxx=010 (Ax=A2), ss=01, yyy=001
+     *   B3 99 = CMPM.L (A1)+,(A1)+   xxx=001 (Ax=A1), ss=10, yyy=001  */
+    uint8_t bytes[] = {
+        0xB7, 0x19,    /* CMPM.B (A1)+,(A3)+ */
+        0xB5, 0x59,    /* CMPM.W (A1)+,(A2)+ */
+        0xB3, 0x99,    /* CMPM.L (A1)+,(A1)+ */
+    };
+    GenesisRom rom; make_rom(&rom, bytes, sizeof(bytes));
+
+    M68KInstr a = {0};
+    CHECK(m68k_decode(&rom, 0, &a), "decode CMPM.B");
+    CHECK(a.mnemonic == MN_CMPM,           "CMPM.B → MN_CMPM");
+    CHECK(a.size     == M68K_SIZE_B,       "CMPM.B size=B");
+    CHECK(a.byte_length == 2,              "CMPM.B length=2");
+    CHECK((a.src_ea & 7) == 1,             "CMPM.B Ay=A1 (src_ea low bits)");
+    CHECK(((a.src_ea >> 3) & 7) == EA_An_POST, "CMPM.B src EA mode=(An)+");
+    CHECK(a.reg == 3,                      "CMPM.B Ax=A3");
+
+    M68KInstr b = {0};
+    CHECK(m68k_decode(&rom, 2, &b), "decode CMPM.W");
+    CHECK(b.mnemonic == MN_CMPM,           "CMPM.W → MN_CMPM");
+    CHECK(b.size     == M68K_SIZE_W,       "CMPM.W size=W");
+    CHECK(b.reg == 2 && (b.src_ea & 7) == 1, "CMPM.W Ax=A2, Ay=A1");
+
+    M68KInstr c = {0};
+    CHECK(m68k_decode(&rom, 4, &c), "decode CMPM.L");
+    CHECK(c.mnemonic == MN_CMPM,           "CMPM.L → MN_CMPM");
+    CHECK(c.size     == M68K_SIZE_L,       "CMPM.L size=L");
+    CHECK(c.reg == 1 && (c.src_ea & 7) == 1, "CMPM.L Ax=A1, Ay=A1 (self)");
+}
+
 int main(void) {
     test_move_ccr_directions();
     test_move_sr_directions();
     test_imm_to_ccr_sr();
+    test_cmpm();
 
     if (g_failures == 0) {
         printf("m68k_decoder_synth: all checks passed\n");

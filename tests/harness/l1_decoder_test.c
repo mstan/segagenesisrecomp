@@ -138,6 +138,7 @@ static const char *mnem_string(M68KMnemonic m) {
     case MN_ANDI_TO_SR:  return "andi";
     case MN_EORI_TO_CCR: return "eori";
     case MN_EORI_TO_SR:  return "eori";
+    case MN_CMPM:        return "cmpm";
     }
     return "?";
 }

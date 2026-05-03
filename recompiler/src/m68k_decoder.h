@@ -100,6 +100,12 @@ typedef enum {
     MN_ANDI_TO_SR,
     MN_EORI_TO_CCR,
     MN_EORI_TO_SR,
+    /* CMPM.B/W/L (Ay)+,(Ax)+
+     * Encoded inside the CMP family (group 0xB) as
+     *   1011 xxx 1 ss 001 yyy   (bit 8=1, ea_mode = (An)+ = 011, ss<3).
+     * Source register Ay is in src_ea (low 3 bits); destination Ax
+     * is held in `reg` ((w0 >> 9) & 7). */
+    MN_CMPM,
 } M68KMnemonic;
 
 #define M68K_MAX_WORDS 8   /* Maximum instruction length in 16-bit words */
