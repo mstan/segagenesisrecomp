@@ -381,6 +381,18 @@ void genesis_reset_devices(void) {
      * Other titles can reuse this hook to re-init audio mid-execution. */
 }
 
+void genesis_stop_until_interrupt(uint16_t sr_imm) {
+    /* Yield to the VBlank fiber so the next 60Hz frame service tick
+     * runs and raises the V/HBlank IRQ. The recompiled MN_STOP emission
+     * has already written sr_imm into g_cpu.SR before calling us, so the
+     * SR I-mask the service routine will compare against is up to date.
+     *
+     * For Sonic 1, STOP is reachable only on disabled or hard-error
+     * paths; the yield keeps the host loop alive instead of spinning. */
+    (void)sr_imm;
+    glue_yield_for_vblank();
+}
+
 void m68k_illegal_trap(uint32_t pc, uint16_t opcode) {
     int top4 = (opcode >> 12) & 0xF;
     uint8_t vec;

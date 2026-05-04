@@ -175,6 +175,7 @@ void m68k_illegal_trap(uint32_t pc, uint16_t opcode) {
     abort();
 }
 void genesis_reset_devices(void) {}
+void genesis_stop_until_interrupt(uint16_t sr_imm) { (void)sr_imm; }
 
 /* call_by_address: provided by sonic_dispatch.c. It calls
  * game_dispatch_override() on a miss (hook for per-game extras.c) —

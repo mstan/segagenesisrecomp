@@ -1261,7 +1261,23 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_STOP:
-        fprintf(f, "  return; /* STOP */\n");
+        /* STOP #imm: load imm into SR, halt until an interrupt of higher
+         * priority than I-mask. genesis_stop_until_interrupt is the
+         * runtime hook that yields control until the next VBlank /
+         * HBlank service runs (which raises the relevant IRQ).
+         *
+         * Real-hardware behaviour after the interrupt RTEs is to resume
+         * at the instruction following STOP. Our flat call model can't
+         * cleanly express that — function_finder still treats STOP as a
+         * static terminator and the post-STOP bytes typically aren't in
+         * the codegen instr set. So we yield and return, matching the
+         * prior (comment-only) emission's control-flow shape but adding
+         * real SR + yield semantics. */
+        fprintf(f, "  g_cpu.SR = (uint16_t)0x%04Xu;\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        fprintf(f, "  genesis_stop_until_interrupt((uint16_t)0x%04Xu);\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        fprintf(f, "  return; /* STOP — yield+return, see comment above */\n");
         *skip_until_label = true;
         break;
 
@@ -2485,11 +2501,24 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     }
 
     /* ------------------------------------------------------------------ */
-    case MN_CHK:
-        codegen_diag_record(CGD_TODO_CHK, addr, instr->words[0], MN_CHK,
-                            func_name, func_addr);
-        fprintf(f, "  /* CHK — bounds check, trap on underflow/overflow (not emitted) */\n");
+    case MN_CHK: {
+        /* CHK <ea>,Dn — bounds check (signed word). Trap via vector 6
+         * if Dn < 0 or Dn > <ea>. PRM:
+         *   N is set if Dn < 0, cleared if Dn > <ea>, undefined otherwise.
+         *   Z, V, C are undefined; X is unchanged.
+         * On Sonic the check never trips in steady-state — m68k_trap_vector
+         * aborts loud if it does. */
+        int dn = instr->reg;
+        emit_ea_load_ex(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr, 1);
+        fprintf(f,
+            "  { int16_t _bound = (int16_t)(%s);\n"
+            "    int16_t _val   = (int16_t)g_cpu.D[%d];\n"
+            "    if (_val < 0)        { g_cpu.SR |= %s;  m68k_trap_vector(6u); return; }\n"
+            "    if (_val > _bound)   { g_cpu.SR &= ~%s; m68k_trap_vector(6u); return; }\n"
+            "  }\n",
+            src_expr, dn, SR_N, SR_N);
         break;
+    }
 
     case MN_TAS:
         /* Test and Set: read EA, set N/Z, then set bit 7 */
@@ -2509,11 +2538,71 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         fprintf(f, "  }\n");
         break;
 
-    case MN_MOVEP:
-        codegen_diag_record(CGD_TODO_MOVEP, addr, instr->words[0], MN_MOVEP,
-                            func_name, func_addr);
-        fprintf(f, "  /* TODO: MOVEP — byte/word transfer to alternating bytes */\n");
+    case MN_MOVEP: {
+        /* MOVEP Dn, d16(An) and MOVEP d16(An), Dn — alternating-byte
+         * transfer between a data register and memory at every other
+         * byte starting at d16(An). Used by 8-bit-on-16-bit-bus glue
+         * where each port lives at one half of a word lane.
+         *
+         * Encoding bits in words[0]:
+         *   bit 7 (0x80):  0 = mem → Dn,  1 = Dn → mem
+         *   bit 6 (0x40):  0 = .W (2 bytes),  1 = .L (4 bytes)
+         * reg     = Dn ((w0 >> 9) & 7)        — populated by decoder
+         * src_ea  = (5<<3)|An (d16(An) form)  — low 3 bits = An reg
+         * words[1] = signed 16-bit displacement
+         *
+         * Memory bytes go: addr+0, addr+2, addr+4, addr+6 (most-
+         * significant to least-significant). For .W only the low half
+         * of Dn is touched; for .L the full 32 bits are read/written
+         * with bit 31 at addr+0. */
+        int dn   = instr->reg;
+        int an   = instr->src_ea & 7;
+        int dir  = (instr->words[0] >> 7) & 1;     /* 1 = Dn→mem */
+        int isL  = (instr->words[0] >> 6) & 1;     /* 1 = .L     */
+        int16_t d16 = (int16_t)instr->words[1];
+        if (dir) {
+            if (isL) {
+                fprintf(f,
+                    "  { uint32_t _ea = (uint32_t)(g_cpu.A[%d] + (int32_t)%d);\n"
+                    "    uint32_t _v  = g_cpu.D[%d];\n"
+                    "    m68k_write8(_ea + 0, (uint8_t)(_v >> 24));\n"
+                    "    m68k_write8(_ea + 2, (uint8_t)(_v >> 16));\n"
+                    "    m68k_write8(_ea + 4, (uint8_t)(_v >>  8));\n"
+                    "    m68k_write8(_ea + 6, (uint8_t)(_v      ));\n"
+                    "  }\n",
+                    an, (int)d16, dn);
+            } else {
+                fprintf(f,
+                    "  { uint32_t _ea = (uint32_t)(g_cpu.A[%d] + (int32_t)%d);\n"
+                    "    uint32_t _v  = g_cpu.D[%d];\n"
+                    "    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));\n"
+                    "    m68k_write8(_ea + 2, (uint8_t)(_v     ));\n"
+                    "  }\n",
+                    an, (int)d16, dn);
+            }
+        } else {
+            if (isL) {
+                fprintf(f,
+                    "  { uint32_t _ea = (uint32_t)(g_cpu.A[%d] + (int32_t)%d);\n"
+                    "    uint32_t _v  = ((uint32_t)m68k_read8(_ea + 0) << 24)\n"
+                    "                 | ((uint32_t)m68k_read8(_ea + 2) << 16)\n"
+                    "                 | ((uint32_t)m68k_read8(_ea + 4) <<  8)\n"
+                    "                 | ((uint32_t)m68k_read8(_ea + 6)      );\n"
+                    "    g_cpu.D[%d] = _v;\n"
+                    "  }\n",
+                    an, (int)d16, dn);
+            } else {
+                fprintf(f,
+                    "  { uint32_t _ea = (uint32_t)(g_cpu.A[%d] + (int32_t)%d);\n"
+                    "    uint16_t _v  = (uint16_t)(((uint16_t)m68k_read8(_ea + 0) << 8)\n"
+                    "                            | (uint16_t)m68k_read8(_ea + 2));\n"
+                    "    g_cpu.D[%d] = (g_cpu.D[%d] & 0xFFFF0000u) | _v;\n"
+                    "  }\n",
+                    an, (int)d16, dn, dn);
+            }
+        }
         break;
+    }
 
     case MN_ABCD: {
         /* result = a + b + X, packed-BCD.

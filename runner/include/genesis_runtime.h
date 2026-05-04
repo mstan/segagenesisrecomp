@@ -88,6 +88,12 @@ void m68k_illegal_trap(uint32_t pc, uint16_t opcode);
  * devices for the first time, so for that title the hook is a no-op. */
 void genesis_reset_devices(void);
 
+/* STOP #imm halts the 68K until an interrupt of priority > I-mask
+ * arrives. Generated code calls this after writing imm into SR. The
+ * runtime yields to the VBlank fiber so frame-pacing keeps moving and
+ * the next service_vblank() raises VBlank/HBlank IRQs. */
+void genesis_stop_until_interrupt(uint16_t sr_imm);
+
 /* ---- VDP Interface ---- */
 void vdp_write_data(uint16_t val);
 void vdp_write_ctrl(uint16_t val);

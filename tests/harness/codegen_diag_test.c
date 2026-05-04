@@ -35,43 +35,49 @@ int main(void) {
     CHECK(codegen_diag_event_count() == 0, "reset → events 0");
 
     /* Single record */
-    codegen_diag_record(CGD_TODO_CHK, 0x001234, 0x4180, MN_CHK,
+    codegen_diag_record(CGD_BRANCH_WITHOUT_TARGET, 0x001234, 0x6000, MN_BRA,
                         "TestFunc", 0x001000);
-    CHECK(codegen_diag_count(CGD_TODO_CHK) == 1, "CHK count = 1");
+    CHECK(codegen_diag_count(CGD_BRANCH_WITHOUT_TARGET) == 1, "branch count = 1");
     CHECK(codegen_diag_total() == 1, "total = 1");
 
     const CodegenDiagEvent *e0 = codegen_diag_get(0);
     CHECK(e0 != NULL, "get(0) non-null");
-    CHECK(e0->kind == CGD_TODO_CHK, "event kind preserved");
+    CHECK(e0->kind == CGD_BRANCH_WITHOUT_TARGET, "event kind preserved");
     CHECK(e0->addr == 0x001234, "event addr preserved");
-    CHECK(e0->opcode == 0x4180, "event opcode preserved");
-    CHECK(e0->mnemonic == MN_CHK, "event mnemonic preserved");
+    CHECK(e0->opcode == 0x6000, "event opcode preserved");
+    CHECK(e0->mnemonic == MN_BRA, "event mnemonic preserved");
     CHECK(e0->func_name && strcmp(e0->func_name, "TestFunc") == 0,
           "event func_name preserved");
     CHECK(e0->func_addr == 0x001000, "event func_addr preserved");
 
     /* Multiple records of mixed kinds */
-    codegen_diag_record(CGD_TODO_MOVEP, 0x002000, 0x0108, MN_MOVEP, NULL, 0);
-    codegen_diag_record(CGD_TODO_MOVEP, 0x002004, 0x0108, MN_MOVEP, NULL, 0);
-    codegen_diag_record(CGD_BRANCH_WITHOUT_TARGET, 0x003000, 0x6000,
-                        MN_BRA, "BranchFunc", 0x002F00);
+    codegen_diag_record(CGD_TODO_DYNAMIC_JSR_UNSUPPORTED, 0x002000, 0x4E90,
+                        MN_JSR, NULL, 0);
+    codegen_diag_record(CGD_TODO_DYNAMIC_JSR_UNSUPPORTED, 0x002004, 0x4E90,
+                        MN_JSR, NULL, 0);
+    codegen_diag_record(CGD_INVALID_STORE_EA, 0x003000, 0x4280,
+                        MN_CLR, "ClrFunc", 0x002F00);
 
-    CHECK(codegen_diag_count(CGD_TODO_MOVEP) == 2, "MOVEP count = 2");
-    CHECK(codegen_diag_count(CGD_BRANCH_WITHOUT_TARGET) == 1, "branch = 1");
-    CHECK(codegen_diag_count(CGD_TODO_CHK) == 1, "CHK still 1");
+    CHECK(codegen_diag_count(CGD_TODO_DYNAMIC_JSR_UNSUPPORTED) == 2,
+          "dyn JSR count = 2");
+    CHECK(codegen_diag_count(CGD_INVALID_STORE_EA) == 1, "invalid store = 1");
+    CHECK(codegen_diag_count(CGD_BRANCH_WITHOUT_TARGET) == 1, "branch still 1");
     CHECK(codegen_diag_total() == 4, "total = 4");
     CHECK(codegen_diag_event_count() == 4, "events = 4");
 
     /* Order preserved */
-    CHECK(codegen_diag_get(1)->kind == CGD_TODO_MOVEP, "event 1 kind");
-    CHECK(codegen_diag_get(2)->kind == CGD_TODO_MOVEP, "event 2 kind");
-    CHECK(codegen_diag_get(3)->kind == CGD_BRANCH_WITHOUT_TARGET, "event 3 kind");
+    CHECK(codegen_diag_get(1)->kind == CGD_TODO_DYNAMIC_JSR_UNSUPPORTED,
+          "event 1 kind");
+    CHECK(codegen_diag_get(2)->kind == CGD_TODO_DYNAMIC_JSR_UNSUPPORTED,
+          "event 2 kind");
+    CHECK(codegen_diag_get(3)->kind == CGD_INVALID_STORE_EA, "event 3 kind");
 
     /* Reset clears everything */
     codegen_diag_reset();
     CHECK(codegen_diag_total() == 0, "post-reset total = 0");
     CHECK(codegen_diag_event_count() == 0, "post-reset events = 0");
-    CHECK(codegen_diag_count(CGD_TODO_CHK) == 0, "post-reset CHK = 0");
+    CHECK(codegen_diag_count(CGD_BRANCH_WITHOUT_TARGET) == 0,
+          "post-reset branch = 0");
 
     /* Kind names */
     for (int k = 0; k < CGD_KIND_COUNT; k++) {
@@ -80,8 +86,8 @@ int main(void) {
     }
 
     /* Summary writes something non-trivial when there are events */
-    codegen_diag_record(CGD_TODO_CHK, 0x004000, 0x4180, MN_CHK,
-                        "CheckFunc", 0x003F00);
+    codegen_diag_record(CGD_BRANCH_WITHOUT_TARGET, 0x004000, 0x6000, MN_BRA,
+                        "BranchFunc", 0x003F00);
     char buf[4096] = {0};
     FILE *mem = NULL;
 #ifdef _WIN32
@@ -94,8 +100,8 @@ int main(void) {
         size_t n = fread(buf, 1, sizeof(buf) - 1, mem);
         buf[n] = 0;
         fclose(mem);
-        CHECK(strstr(buf, "TODO_CHK") != NULL,
-              "summary mentions TODO_CHK");
+        CHECK(strstr(buf, "BRANCH_WITHOUT_TARGET") != NULL,
+              "summary mentions BRANCH_WITHOUT_TARGET");
         CHECK(strstr(buf, "TOTAL") != NULL, "summary has TOTAL");
     }
 #else
@@ -104,8 +110,8 @@ int main(void) {
     if (mem) {
         codegen_diag_print_summary(mem);
         fclose(mem);
-        CHECK(strstr(buf, "TODO_CHK") != NULL,
-              "summary mentions TODO_CHK");
+        CHECK(strstr(buf, "BRANCH_WITHOUT_TARGET") != NULL,
+              "summary mentions BRANCH_WITHOUT_TARGET");
         CHECK(strstr(buf, "TOTAL") != NULL, "summary has TOTAL");
     }
 #endif
