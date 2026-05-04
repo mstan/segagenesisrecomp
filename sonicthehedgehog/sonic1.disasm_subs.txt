@@ -1027,7 +1027,6 @@ extra_func 071E24   # FMUpdateFreq
 extra_func 071E4A   # FMSetRest
 extra_func 071E50   # PauseMusic
 extra_func 071F8E   # Sound_E0toE4
-extra_func 071F98   # Sound_ExIndex
 extra_func 071FAC   # PlaySegaSound
 extra_func 071FD2   # Sound_PlayBGM
 extra_func 0721C6   # Sound_PlaySFX

@@ -3099,13 +3099,55 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
          * In Step 2, VBlank only fires when the game fiber yields to the main
          * loop.  We MUST yield unconditionally so the main loop can run Iterate
          * and service VBlank (which sets $F62A).  After resuming, $F62A will
-         * be non-zero and the game continues. */
-        if (cfg->vblank_yield_addr && func_addr == cfg->vblank_yield_addr) {
+         * be non-zero and the game continues.
+         *
+         * Two ways this triggers:
+         *   1. Explicit cfg directive: `vblank_yield <addr>` matches.
+         *   2. Pattern detection (preferred): the function body is the
+         *      4-instruction WaitForVint idiom every Genesis disasm uses:
+         *
+         *          move    #$XX00,sr           ; XX < $26 → VBlank allowed
+         *          tst.b   <ram_byte>.w        ; poll a flag
+         *          bne.s   self                ; loop back to tst
+         *          rts
+         *
+         *      Same shape across Sonic 1's func_0029A8, Sonic 2's
+         *      func_003384, and (by inspection) virtually every other
+         *      Genesis disasm port. Detecting the shape statically means
+         *      we don't need a per-game cfg directive for any future port. */
+        bool yield_via_cfg = (cfg->vblank_yield_addr &&
+                              func_addr == cfg->vblank_yield_addr);
+        bool yield_via_pattern = false;
+        if (!yield_via_cfg && instrs.count == 4) {
+            M68KInstr di[4];
+            bool ok = true;
+            for (int k = 0; k < 4 && ok; k++) {
+                if (!m68k_decode(rom, instrs.addrs[k], &di[k]))
+                    ok = false;
+            }
+            if (ok &&
+                /* move #imm,sr with VBlank-permitting mask */
+                di[0].mnemonic == MN_MOVE_SR && !di[0].dst_is_ea &&
+                di[0].src_ea == 0x3C &&
+                ((di[0].imm32 & 0x0700) <= 0x0500) &&
+                /* tst.b <mem> */
+                di[1].mnemonic == MN_TST && di[1].size == M68K_SIZE_B &&
+                /* bne back to the tst */
+                di[2].mnemonic == MN_Bcc && di[2].has_target &&
+                di[2].target_addr == instrs.addrs[1] &&
+                /* rts */
+                di[3].mnemonic == MN_RTS) {
+                yield_via_pattern = true;
+            }
+        }
+        if (yield_via_cfg || yield_via_pattern) {
             fprintf(f_full,
-                "  /* WaitForVBlank — yield to main loop (game.cfg: vblank_yield %06X) */\n"
+                "  /* WaitForVBlank — yield to main loop (%s) */\n"
                 "  g_cpu.SR = 0x2300u;\n"
                 "  glue_yield_for_vblank();\n"
-                "}\n\n", func_addr);
+                "}\n\n",
+                yield_via_pattern ? "pattern-detected: move/tst.b/bne self/rts"
+                                  : "game.cfg: vblank_yield");
             addrset_free(&instrs);
             addrset_free(&labels);
             continue;

@@ -43,6 +43,36 @@ static int s_jt_targets_pushed        = 0;  /* worklist additions           */
 static int s_jt_targets_rejected      = 0;  /* failed validation            */
 static int s_jt_unresolved            = 0;  /* path terminated, no table    */
 
+/* Per-site record for every dispatch we couldn't enumerate. Dumped to
+ * generated/<prefix>.unresolved_jumptables.log so the user can grep
+ * disasm for these PCs and either add manual jump_table directives or
+ * confirm the dispatch is OK to leave dynamic. */
+typedef struct {
+    uint32_t pc;        /* PC of the JMP instruction itself */
+    uint32_t base;      /* computed table base from (d8,PC,Xn.W) */
+    uint16_t ext;       /* extension word (Xn.W register encoded here) */
+    uint8_t  reason;    /* 0 = no manual + no auto-walk; 1 = auto-walk
+                           found < MIN entries; 2 = non-PC-indexed JMP */
+} UnresolvedSite;
+static UnresolvedSite *s_jt_unresolved_sites = NULL;
+static int             s_jt_unresolved_cap   = 0;
+
+static void record_unresolved(uint32_t pc, uint32_t base, uint16_t ext, uint8_t reason) {
+    if (s_jt_unresolved >= s_jt_unresolved_cap) {
+        int new_cap = s_jt_unresolved_cap ? s_jt_unresolved_cap * 2 : 64;
+        UnresolvedSite *p = realloc(s_jt_unresolved_sites,
+                                    (size_t)new_cap * sizeof(UnresolvedSite));
+        if (!p) return;
+        s_jt_unresolved_sites = p;
+        s_jt_unresolved_cap   = new_cap;
+    }
+    UnresolvedSite *e = &s_jt_unresolved_sites[s_jt_unresolved++];
+    e->pc     = pc;
+    e->base   = base;
+    e->ext    = ext;
+    e->reason = reason;
+}
+
 #define JT_AUTO_MAX_ENTRIES   256
 #define JT_AUTO_MIN_ENTRIES     2
 
@@ -155,6 +185,9 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
     s_jt_targets_pushed   = 0;
     s_jt_targets_rejected = 0;
     s_jt_unresolved       = 0;
+    /* Reuse the unresolved-site buffer across runs but reset its
+     * logical length. Capacity is preserved so the next run avoids
+     * re-allocating from scratch. */
     M68KValidatorOptions vopts = {0};
     vopts.allow_68020_branch = cfg ? cfg->allow_68020_branch : false;
 
@@ -270,12 +303,12 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
                         if (n >= JT_AUTO_MIN_ENTRIES)
                             s_jt_auto_enumerated++;
                         else
-                            s_jt_unresolved++;
+                            record_unresolved(pc, base, ext, 1);
                     } else {
-                        s_jt_unresolved++;
+                        record_unresolved(pc, base, ext, 0);
                     }
                 } else {
-                    s_jt_unresolved++;
+                    record_unresolved(pc, 0, 0, 2);
                 }
                 break;  /* JMP terminates the path either way */
             }
@@ -295,6 +328,41 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
            s_jt_pc_indexed_sites, s_jt_auto_enumerated,
            s_jt_manual_enumerated, s_jt_targets_pushed,
            s_jt_targets_rejected, s_jt_unresolved);
+
+    /* Dump unresolved dispatch sites so the user can investigate which
+     * tables the static extractor missed. The recompiler still emits
+     * a runtime dynamic-dispatch path for these — they don't break
+     * correctness — but a non-zero count is a signal that gen_disasm_
+     * jumptables.py left some tables on the table. */
+    if (s_jt_unresolved > 0 && cfg && cfg->output_prefix[0]) {
+        char log_path[256];
+        snprintf(log_path, sizeof(log_path),
+                 "generated/%s.unresolved_jumptables.log", cfg->output_prefix);
+        FILE *lf = fopen(log_path, "w");
+        if (lf) {
+            fprintf(lf, "# %d PC-indexed JMP dispatch sites with no static "
+                        "table coverage.\n", s_jt_unresolved);
+            fprintf(lf, "# Format: <jmp_pc> <table_base> <ext_word> <reason>\n");
+            fprintf(lf, "# Reason: 0=no manual jump_table directive, "
+                        "1=auto-walk yielded too few entries, "
+                        "2=non-PC-indexed JMP variant\n");
+            fprintf(lf, "# Each line is one runtime dynamic dispatch — add a\n"
+                        "#   jump_table <base> <end> <stride> <fmt>\n"
+                        "# directive to game.cfg (or to the disasm_jumptables\n"
+                        "# side file) to convert it to static enumeration.\n");
+            for (int i = 0; i < s_jt_unresolved; i++) {
+                const UnresolvedSite *u = &s_jt_unresolved_sites[i];
+                fprintf(lf, "%06X %06X %04X %u\n",
+                        u->pc, u->base, u->ext, u->reason);
+            }
+            fclose(lf);
+            printf("[FunctionFinder] Wrote %d unresolved sites to %s\n",
+                   s_jt_unresolved, log_path);
+        } else {
+            fprintf(stderr, "[FunctionFinder] could not open %s for writing\n",
+                    log_path);
+        }
+    }
 }
 
 void function_list_free(FunctionList *list) {

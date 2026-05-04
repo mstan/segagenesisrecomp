@@ -1,2 +1,15 @@
 build/
 *.bin
+
+# External disasm clones (sibling repos under per-game dirs).
+# Sonic 1 keeps its disasm outside the tree; Sonic 2 / future ports
+# clone alongside game.cfg for the regen pipeline. Track *.cfg and
+# tooling output, not the disasm source tree itself.
+**/s1disasm/
+**/s2disasm/
+**/skdisasm/
+
+# Per-run / generated artifacts.
+**/__pycache__/
+tests/last_run/
+**/*.unresolved_jumptables.log
