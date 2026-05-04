@@ -162,6 +162,21 @@ void vdp_render_frame(uint32_t *fb) { (void)fb; }
 void runtime_init(void) {}
 void runtime_request_vblank(void) {}
 
+/* Vectored exceptions (Phase 7A). Sonic's L3 leaf-function oracle does
+ * not expect to take any traps; if generated code calls these, that's a
+ * regression and the harness should fail loud. */
+void m68k_trap_vector(uint8_t vec) {
+    fprintf(stderr, "[L3 oracle] unexpected m68k_trap_vector(%u)\n", (unsigned)vec);
+    abort();
+}
+void m68k_illegal_trap(uint32_t pc, uint16_t opcode) {
+    fprintf(stderr, "[L3 oracle] unexpected m68k_illegal_trap(pc=%06X, op=%04X)\n",
+            pc, (unsigned)opcode);
+    abort();
+}
+void genesis_reset_devices(void) {}
+void genesis_stop_until_interrupt(uint16_t sr_imm) { (void)sr_imm; }
+
 /* call_by_address: provided by sonic_dispatch.c. It calls
  * game_dispatch_override() on a miss (hook for per-game extras.c) —
  * we stub it to "not handled" so unknown addresses just log + return. */
@@ -171,6 +186,12 @@ bool game_dispatch_override(uint32_t addr) { (void)addr; return false; }
  * hybrid here — provide null/zero stubs. */
 void (*g_hybrid_pre_insn_fn)(void) = NULL;
 unsigned int g_hybrid_cycle_counter = 0;
+
+/* Per-instruction counters emitted by codegen. The harness doesn't drive
+ * audio or instruction-level telemetry, but the symbols must exist so
+ * the generated `func_*` translation units link. */
+uint64_t g_native_insn_count   = 0;
+uint32_t g_audio_cycle_counter = 0;
 
 /* ====================================================================
  * Interpreter callbacks (clown68000)

@@ -90,6 +90,34 @@ typedef enum {
     MN_EXG,
     MN_ADDX,
     MN_SUBX,
+    /* Immediate-to-CCR / Immediate-to-SR forms.
+     * Encoded as 0x003C / 0x007C / 0x023C / 0x027C / 0x0A3C / 0x0A7C.
+     * Distinct mnemonics so codegen never has to re-check src_ea == 0x3C
+     * and the decoder doesn't double-consume the immediate operand. */
+    MN_ORI_TO_CCR,
+    MN_ORI_TO_SR,
+    MN_ANDI_TO_CCR,
+    MN_ANDI_TO_SR,
+    MN_EORI_TO_CCR,
+    MN_EORI_TO_SR,
+    /* CMPM.B/W/L (Ay)+,(Ax)+
+     * Encoded inside the CMP family (group 0xB) as
+     *   1011 xxx 1 ss 001 yyy   (bit 8=1, ea_mode = (An)+ = 011, ss<3).
+     * Source register Ay is in src_ea (low 3 bits); destination Ax
+     * is held in `reg` ((w0 >> 9) & 7). */
+    MN_CMPM,
+    /* Vectored exceptions / privileged single-word opcodes promoted out
+     * of MN_OTHER in Phase 7A so they have real semantics in codegen
+     * (m68k_trap_vector / m68k_illegal_trap) instead of comment-only stubs.
+     *   MN_RTR     — 0x4E77, return-and-restore (pop CCR, pop PC)
+     *   MN_RESET   — 0x4E70, pulses external /RESET line (CPU keeps state)
+     *   MN_TRAPV   — 0x4E76, traps via vector 7 if V flag set
+     *   MN_ILLEGAL — 0x4AFC, A-line (top4=0xA), or F-line (top4=0xF);
+     *                routes to vector 4 / 10 / 11 respectively */
+    MN_RTR,
+    MN_RESET,
+    MN_TRAPV,
+    MN_ILLEGAL,
 } M68KMnemonic;
 
 #define M68K_MAX_WORDS 8   /* Maximum instruction length in 16-bit words */
@@ -107,6 +135,16 @@ typedef struct {
     uint32_t     imm32;                   /* Decoded immediate value */
     uint32_t     target_addr;             /* Static branch/call target (if has_target) */
     bool         has_target;
+    /* For MN_MOVE_CCR and MN_MOVE_SR: true when the EA is the destination
+     * (e.g. MOVE CCR,<ea>) and false when EA is the source (MOVE <ea>,CCR).
+     * Resolves the direction ambiguity without forcing codegen to
+     * re-inspect the raw opcode word. Unused for other mnemonics. */
+    bool         dst_is_ea;
+    /* For MN_ADDX, MN_SUBX, MN_ABCD, MN_SBCD: true when the R/M bit
+     * selects the memory predecrement form -(Ay),-(Ax); false for the
+     * register form Dy,Dx. Source register is `src_ea & 7` (Ay), and
+     * destination register is `reg` (Ax) — same shape for both forms. */
+    bool         predec_mem_form;
 } M68KInstr;
 
 /* EA mode constants */

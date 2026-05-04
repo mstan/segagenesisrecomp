@@ -158,10 +158,36 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
         };
 
         if (ss == 3) {
-            /* Special: CCR/SR form (byte already encoded) */
+            /* Reserved size encoding for the immediate group. */
             out->mnemonic = MN_OTHER;
             out->size     = M68K_SIZE_W;
             out->words[out->word_count++] = fetch16(rom, &pc);
+            break;
+        }
+
+        /* Immediate-to-CCR / -to-SR special forms.
+         *   src_ea == 0x3C  (mode 7, reg 4 = #imm pseudo-EA)
+         *   ss == 0  →  CCR (.B, immediate held in low byte of one word)
+         *   ss == 1  →  SR  (.W, immediate is one word)
+         *   op_bits 0=ORI, 1=ANDI, 5=EORI; other op_bits with this EA
+         *   are illegal (e.g., ADDI/SUBI/CMPI #imm,#imm) — leave them as
+         *   MN_OTHER for the legality validator to flag. The immediate
+         *   is consumed exactly once; consume_ea_ext is skipped because
+         *   the EA's "extension" *is* the immediate operand. */
+        if (src_ea == 0x3C && (ss == 0 || ss == 1) &&
+            (op_bits == 0 || op_bits == 1 || op_bits == 5)) {
+            static const M68KMnemonic to_ccr[8] = {
+                [0] = MN_ORI_TO_CCR, [1] = MN_ANDI_TO_CCR, [5] = MN_EORI_TO_CCR
+            };
+            static const M68KMnemonic to_sr[8] = {
+                [0] = MN_ORI_TO_SR,  [1] = MN_ANDI_TO_SR,  [5] = MN_EORI_TO_SR
+            };
+            out->mnemonic = (ss == 0) ? to_ccr[op_bits] : to_sr[op_bits];
+            out->size     = (ss == 0) ? M68K_SIZE_B : M68K_SIZE_W;
+            out->src_ea   = src_ea;
+            uint16_t imm_w = fetch16(rom, &pc);
+            out->words[out->word_count++] = imm_w;
+            out->imm32 = (ss == 0) ? (uint32_t)(imm_w & 0xFFu) : (uint32_t)imm_w;
             break;
         }
 
@@ -244,9 +270,13 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
         if (w0 == 0x4E72) {
+            /* STOP #imm — immediate word becomes the new SR. Phase 7C
+             * codegen reads imm32 to emit "g_cpu.SR = imm". */
             out->mnemonic = MN_STOP;
             out->size     = M68K_SIZE_NONE;
-            out->words[out->word_count++] = fetch16(rom, &pc);
+            uint16_t imm = fetch16(rom, &pc);
+            out->words[out->word_count++] = imm;
+            out->imm32    = (uint32_t)imm;
             break;
         }
         if (w0 == 0x4E73) {
@@ -255,20 +285,25 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
         if (w0 == 0x4E70) {
-            /* RESET */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_RESET;
             out->size     = M68K_SIZE_NONE;
             break;
         }
         if (w0 == 0x4E76) {
-            /* TRAPV */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_TRAPV;
             out->size     = M68K_SIZE_NONE;
             break;
         }
         if (w0 == 0x4E77) {
-            /* RTR */
-            out->mnemonic = MN_OTHER;
+            out->mnemonic = MN_RTR;
+            out->size     = M68K_SIZE_NONE;
+            break;
+        }
+        if (w0 == 0x4AFC) {
+            /* Canonical 68K ILLEGAL — vector 4. Caught here so the rest
+             * of group 4 doesn't try to match it as TAS or some other
+             * 0x4Axx form. */
+            out->mnemonic = MN_ILLEGAL;
             out->size     = M68K_SIZE_NONE;
             break;
         }
@@ -417,38 +452,42 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
 
-        /* MOVE <ea>, CCR: 0100 0100 11 mmm rrr */
+        /* MOVE <ea>, CCR: 0100 0100 11 mmm rrr — EA is source, CCR is dest */
         if ((w0 & 0xFFC0) == 0x44C0) {
-            out->mnemonic = MN_MOVE_CCR;
-            out->size     = M68K_SIZE_W;
-            out->src_ea   = w0 & 0x3F;
+            out->mnemonic  = MN_MOVE_CCR;
+            out->size      = M68K_SIZE_W;
+            out->src_ea    = w0 & 0x3F;
+            out->dst_is_ea = false;
             consume_ea_ext(rom, &pc, out, ea_mode, ea_reg, M68K_SIZE_W);
             break;
         }
 
-        /* MOVE <ea>, SR: 0100 0110 11 mmm rrr */
+        /* MOVE <ea>, SR: 0100 0110 11 mmm rrr — EA is source, SR is dest */
         if ((w0 & 0xFFC0) == 0x46C0) {
-            out->mnemonic = MN_MOVE_SR;
-            out->size     = M68K_SIZE_W;
-            out->src_ea   = w0 & 0x3F;
+            out->mnemonic  = MN_MOVE_SR;
+            out->size      = M68K_SIZE_W;
+            out->src_ea    = w0 & 0x3F;
+            out->dst_is_ea = false;
             consume_ea_ext(rom, &pc, out, ea_mode, ea_reg, M68K_SIZE_W);
             break;
         }
 
-        /* MOVE SR, <ea>: 0100 0000 11 mmm rrr */
+        /* MOVE SR, <ea>: 0100 0000 11 mmm rrr — SR is source, EA is dest */
         if ((w0 & 0xFFC0) == 0x40C0) {
-            out->mnemonic = MN_MOVE_SR;
-            out->size     = M68K_SIZE_W;
-            out->src_ea   = w0 & 0x3F;
+            out->mnemonic  = MN_MOVE_SR;
+            out->size      = M68K_SIZE_W;
+            out->src_ea    = w0 & 0x3F;
+            out->dst_is_ea = true;
             consume_ea_ext(rom, &pc, out, ea_mode, ea_reg, M68K_SIZE_W);
             break;
         }
 
-        /* MOVE CCR, <ea>: 0100 0010 11 mmm rrr */
+        /* MOVE CCR, <ea>: 0100 0010 11 mmm rrr — CCR is source, EA is dest */
         if ((w0 & 0xFFC0) == 0x42C0) {
-            out->mnemonic = MN_MOVE_CCR;
-            out->size     = M68K_SIZE_W;
-            out->src_ea   = w0 & 0x3F;
+            out->mnemonic  = MN_MOVE_CCR;
+            out->size      = M68K_SIZE_W;
+            out->src_ea    = w0 & 0x3F;
+            out->dst_is_ea = true;
             consume_ea_ext(rom, &pc, out, ea_mode, ea_reg, M68K_SIZE_W);
             break;
         }
@@ -704,11 +743,17 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
 
-        /* SBCD: 1000 DDD1 0000 0rrr or 1000 DDD1 0000 1rrr */
+        /* SBCD: 1000 DDD1 0000 0rrr (Dy,Dx) or 1000 DDD1 0000 1rrr
+         *       (-(Ay),-(Ax)). The R/M bit (bit 3) selects which form;
+         *       Phase 7B routes both via the predec_mem_form flag the
+         *       ADDX/SUBX work introduced in Phase 4, so codegen can
+         *       share BCD evaluation between forms. */
         if ((w0 & 0xF1F0) == 0x8100) {
-            out->mnemonic = MN_SBCD;
-            out->size     = M68K_SIZE_B;
-            out->reg      = (w0 >> 9) & 7;
+            out->mnemonic        = MN_SBCD;
+            out->size            = M68K_SIZE_B;
+            out->reg             = (w0 >> 9) & 7;   /* Dx / Ax */
+            out->src_ea          = w0 & 7;          /* Dy / Ay */
+            out->predec_mem_form = ((w0 >> 3) & 1) != 0;
             break;
         }
 
@@ -742,10 +787,13 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
         }
 
         if (dir && (ea_mode == EA_Dn || ea_mode == EA_An)) {
-            /* SUBX */
-            out->mnemonic = MN_SUBX;
-            out->size     = (M68KSize)ss;
-            out->reg      = (w0 >> 9) & 7;
+            /* SUBX — bit 3 (R/M) = 0 → register form Dy,Dx
+             *        bit 3 (R/M) = 1 → memory form -(Ay),-(Ax) */
+            out->mnemonic        = MN_SUBX;
+            out->size            = (M68KSize)ss;
+            out->reg             = (w0 >> 9) & 7;   /* Ax (destination)   */
+            out->src_ea          = w0 & 0x3F;       /* low 3 bits = Ay    */
+            out->predec_mem_form = ((w0 >> 3) & 1) != 0;
             break;
         }
 
@@ -759,10 +807,10 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
     }
 
     /* ------------------------------------------------------------------ */
-    /* GROUP 0xA — A-line (illegal)                                        */
+    /* GROUP 0xA — A-line (vector 10)                                      */
     /* ------------------------------------------------------------------ */
     case 0xA:
-        out->mnemonic = MN_OTHER;
+        out->mnemonic = MN_ILLEGAL;
         out->size     = M68K_SIZE_NONE;
         break;
 
@@ -788,9 +836,13 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
         if (dir) {
             /* bit 8 = 1, ss < 3 */
             if (ea_mode == EA_An_POST) {
-                /* CMPM (An)+,(An)+ */
-                out->mnemonic = MN_OTHER;
+                /* CMPM (Ay)+,(Ax)+
+                 *   src_ea = Ay  (postinc, ea_reg)
+                 *   reg    = Ax  ((w0 >> 9) & 7) */
+                out->mnemonic = MN_CMPM;
                 out->size     = (M68KSize)ss;
+                out->src_ea   = w0 & 0x3F;
+                out->reg      = (w0 >> 9) & 7;
             } else {
                 /* EOR Dn,<ea> */
                 out->mnemonic = MN_EOR;
@@ -839,11 +891,15 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
 
-        /* ABCD: 1100 DDD1 0000 0rrr or -(Ax),-(Ay) form */
+        /* ABCD: 1100 DDD1 0000 0rrr (Dy,Dx) or -(Ay),-(Ax). Mirrors the
+         * SBCD layout — predec_mem_form selects the memory form so
+         * Phase 7B can share evaluation. */
         if ((w0 & 0xF1F0) == 0xC100) {
-            out->mnemonic = MN_ABCD;
-            out->size     = M68K_SIZE_B;
-            out->reg      = (w0 >> 9) & 7;
+            out->mnemonic        = MN_ABCD;
+            out->size            = M68K_SIZE_B;
+            out->reg             = (w0 >> 9) & 7;   /* Dx / Ax */
+            out->src_ea          = w0 & 7;          /* Dy / Ay */
+            out->predec_mem_form = ((w0 >> 3) & 1) != 0;
             break;
         }
 
@@ -896,10 +952,13 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
         }
 
         if (dir && (ea_mode == EA_Dn || ea_mode == EA_An)) {
-            /* ADDX */
-            out->mnemonic = MN_ADDX;
-            out->size     = (M68KSize)ss;
-            out->reg      = (w0 >> 9) & 7;
+            /* ADDX — bit 3 (R/M) = 0 → register form Dy,Dx
+             *        bit 3 (R/M) = 1 → memory form -(Ay),-(Ax) */
+            out->mnemonic        = MN_ADDX;
+            out->size            = (M68KSize)ss;
+            out->reg             = (w0 >> 9) & 7;
+            out->src_ea          = w0 & 0x3F;
+            out->predec_mem_form = ((w0 >> 3) & 1) != 0;
             break;
         }
 
@@ -971,10 +1030,10 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
     }
 
     /* ------------------------------------------------------------------ */
-    /* GROUP 0xF — F-line (illegal / coprocessor)                          */
+    /* GROUP 0xF — F-line (vector 11; coprocessor on 68020+)               */
     /* ------------------------------------------------------------------ */
     case 0xF:
-        out->mnemonic = MN_OTHER;
+        out->mnemonic = MN_ILLEGAL;
         out->size     = M68K_SIZE_NONE;
         break;
 
@@ -991,8 +1050,10 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
 bool m68k_is_terminator(const M68KInstr *instr) {
     return instr->mnemonic == MN_RTS
         || instr->mnemonic == MN_RTE
+        || instr->mnemonic == MN_RTR
         || instr->mnemonic == MN_JMP
-        || instr->mnemonic == MN_BRA;  /* unconditional branch, no fall-through */
+        || instr->mnemonic == MN_BRA       /* unconditional branch, no fall-through */
+        || instr->mnemonic == MN_ILLEGAL;  /* traps out, doesn't fall through */
 }
 
 bool m68k_is_call(const M68KInstr *instr) {
