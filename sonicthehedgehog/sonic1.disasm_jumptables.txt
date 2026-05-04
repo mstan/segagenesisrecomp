@@ -10,8 +10,8 @@
 #   jump_table <start_hex> <end_hex_exclusive> <stride> <abs|pcrel16>
 #   extra_func <target_hex>     # <label>
 
-# Tables found: 201 pcrel16, 3 abs
-# Unique targets: 919
+# Tables found: 201 pcrel16, 3 abs, 14 bra-trampoline
+# Unique targets: 1037
 
 # ---- PCREL_W tables ----
 jump_table 000B6E 000B88 2 pcrel16   # VBlank_Index (13 entries)
@@ -221,9 +221,39 @@ jump_table 000004 000100 4 abs   # 63 entries, first=EntryPoint
 jump_table 00D382 00D5B2 4 abs   # 140 entries, first=SonicPlayer
 jump_table 01B4F0 01B508 4 abs   # 6 entries, first=SS_AniRingSparks
 
+# ---- bra.w / bra.s trampoline tables ----
+# (no `jump_table` directive emitted — each entry's
+#  address is itself a function entry, the bra.w/bra.s
+#  trampoline body. The recompiler creates a func_NNNNNN
+#  for each via extra_func, plus a func_NNNNNN for the
+#  bra destination since the trampoline becomes a tail
+#  call to it in the codegen output.)
+# bra-trampoline 000396 0003B6 4 bra_w   # 8 entries, first=GM_Sega
+# bra-trampoline 0017B2 0017C4 2 bra_s   # 9 entries, first=Eni_Loop
+# bra-trampoline 009278 009280 4 bra_w   # 2 entries, first=Anml_Type1
+# bra-trampoline 009C6E 009C76 4 bra_w   # 2 entries, first=DisplaySprite
+# bra-trampoline 009DFE 009E06 4 bra_w   # 2 entries, first=DisplaySprite
+# bra-trampoline 00B3CA 00B3D2 4 bra_w   # 2 entries, first=DisplaySprite
+# bra-trampoline 00F056 00F05E 4 bra_w   # 2 entries, first=Geyser_ChkDel
+# bra-trampoline 00F1B0 00F1B8 4 bra_w   # 2 entries, first=DisplaySprite
+# bra-trampoline 00F77A 00F782 4 bra_w   # 2 entries, first=DisplaySprite
+# bra-trampoline 013FA8 013FAC 2 bra_s   # 2 entries, first=.nochange
+# bra-trampoline 01A25C 01A264 4 bra_w   # 2 entries, first=BossFinal_Delete
+# bra-trampoline 01B140 01B148 4 bra_w   # 2 entries, first=React_ChkHurt
+# bra-trampoline 071F98 071FAC 4 bra_w   # 5 entries, first=FadeOutMusic
+# bra-trampoline 072A64 072ACC 4 bra_w   # 26 entries, first=cfPanningAMSFMS
+
 # ---- Targets ----
 extra_func 000200   # ErrorTrap
 extra_func 000206   # EntryPoint
+extra_func 000396   # GM_Sega
+extra_func 00039A   # GM_Title
+extra_func 00039E   # GM_Level
+extra_func 0003A2   # GM_Level
+extra_func 0003A6   # GM_Special
+extra_func 0003AA   # GM_Continue
+extra_func 0003AE   # GM_Ending
+extra_func 0003B2   # GM_Credits
 extra_func 0003D6   # BusError
 extra_func 0003DE   # AddressError
 extra_func 0003E6   # IllegalInstr
@@ -249,16 +279,37 @@ extra_func 000F8A   # VBlank_Unused0E
 extra_func 000F9A   # VBlank_PaletteFade
 extra_func 000FA6   # VBlank_Continue
 extra_func 001126   # HBlank
+extra_func 00173E   # Eni_Loop
+extra_func 001768   # EniDec_00
+extra_func 001772   # EniDec_01
+extra_func 00177A   # EniDec_100
+extra_func 001786   # EniDec_101
+extra_func 001794   # EniDec_110
+extra_func 0017A2   # EniDec_111
+extra_func 0017B2   # Eni_Loop
+extra_func 0017B4   # EniDec_00
+extra_func 0017B6   # EniDec_00
+extra_func 0017B8   # EniDec_01
+extra_func 0017BA   # EniDec_01
+extra_func 0017BC   # EniDec_100
+extra_func 0017BE   # EniDec_101
+extra_func 0017C0   # EniDec_110
+extra_func 0017C2   # EniDec_111
 extra_func 001964   # PalCycle_GHZ
 extra_func 001992   # PalCycle_LZ
 extra_func 001A44   # PalCycle_MZ
 extra_func 001A46   # PalCycle_SLZ
 extra_func 001A82   # PalCycle_SYZ
 extra_func 001AC8   # PalCycle_SBZ
+extra_func 002E10   # GM_Sega
+extra_func 002F18   # GM_Title
+extra_func 0037A2   # GM_Level
 extra_func 003C64   # DynWater_LZ1
 extra_func 003CF6   # DynWater_LZ2
 extra_func 003D18   # DynWater_LZ3
 extra_func 003E1C   # DynWater_SBZ3
+extra_func 0045DC   # GM_Special
+extra_func 004CE0   # GM_Continue
 extra_func 004E42   # ContScrItem
 extra_func 004E58   # CSI_Main
 extra_func 004E88   # CSI_Display
@@ -269,6 +320,7 @@ extra_func 004F78   # CSon_Main
 extra_func 004FAE   # CSon_ChkLand
 extra_func 004FE6   # CSon_Animate
 extra_func 005020   # CSon_Run
+extra_func 0050E6   # GM_Ending
 extra_func 0053E2   # EndSonic
 extra_func 00540A   # ESon_Main
 extra_func 00544E   # ESon_MakeEmeralds
@@ -284,6 +336,7 @@ extra_func 005616   # EndSTH
 extra_func 00562A   # ESth_Main
 extra_func 005654   # ESth_Move
 extra_func 005670   # ESth_GotoCredits
+extra_func 0057C4   # GM_Credits
 extra_func 0059E2   # EndEggman
 extra_func 0059FE   # EEgg_Main
 extra_func 005A4E   # EEgg_Animate
@@ -431,8 +484,11 @@ extra_func 00900C   # Anml_Main
 extra_func 00912A   # Anml_ChkFloor
 extra_func 009184   # Anml_Type0
 extra_func 0091C0   # Anml_Type1
+extra_func 009224   # loc_9224
 extra_func 009240   # Anml_FromPrison
 extra_func 009260   # Anml_End_0A
+extra_func 009278   # Anml_Type1
+extra_func 00927C   # loc_9224
 extra_func 009280   # Anml_End_0C
 extra_func 0092BA   # Anml_End_0D
 extra_func 0092D6   # Anml_End_14
@@ -463,12 +519,14 @@ extra_func 009B5E   # Ring_Main
 extra_func 009C16   # Ring_Animate
 extra_func 009C3E   # Ring_Collect
 extra_func 009C64   # Ring_Sparkle
+extra_func 009C6E   # DisplaySprite
 extra_func 009C72   # Ring_Delete
 extra_func 009CB6   # RingLoss
 extra_func 009CCE   # RLoss_Count
 extra_func 009D8E   # RLoss_Bounce
 extra_func 009DE0   # RLoss_Collect
 extra_func 009DF4   # RLoss_Sparkle
+extra_func 009DFE   # DisplaySprite
 extra_func 009E02   # RLoss_Delete
 extra_func 009E06   # GiantRing
 extra_func 009E1C   # GRing_Main
@@ -523,6 +581,8 @@ extra_func 00B1F0   # GFire_Main
 extra_func 00B238   # GFire_Spread
 extra_func 00B2B2   # GFire_Move
 extra_func 00B39E   # GlassBlock
+extra_func 00B3CA   # DisplaySprite
+extra_func 00B3CE   # DeleteObject
 extra_func 00B3E8   # Glass_Main
 extra_func 00B48C   # Glass_Block012
 extra_func 00B4A4   # Glass_Reflect012
@@ -600,6 +660,8 @@ extra_func 00D134   # Smash_Main
 extra_func 00D15E   # Smash_Solid
 extra_func 00D1D6   # Smash_FragMove
 extra_func 00D5B2   # NullObject
+extra_func 00D604   # DisplaySprite
+extra_func 00D640   # DeleteObject
 extra_func 00D8EC   # OPL_Main
 extra_func 00D980   # OPL_Next
 extra_func 00DABE   # Springs
@@ -676,15 +738,18 @@ extra_func 00EE5A   # GMake_Delete
 extra_func 00EE70   # LavaGeyser
 extra_func 00EE8E   # Geyser_Main
 extra_func 00EF7A   # Geyser_Action
+extra_func 00EF98   # Geyser_ChkDel
 extra_func 00EFBC   # Geyser_Type00
 extra_func 00EFDC   # Geyser_Type01
 extra_func 00EFFC   # Geyser_Middle
+extra_func 00F056   # Geyser_ChkDel
 extra_func 00F05A   # Geyser_Delete
 extra_func 00F05E   # LavaWall
 extra_func 00F076   # LWall_Main
 extra_func 00F0D6   # LWall_Action
 extra_func 00F112   # LWall_Solid
 extra_func 00F198   # LWall_Move
+extra_func 00F1B0   # DisplaySprite
 extra_func 00F1B4   # LWall_Delete
 extra_func 00F1B8   # LavaTag
 extra_func 00F1CE   # LTag_Main
@@ -695,6 +760,7 @@ extra_func 00F694   # Moto_Action
 extra_func 00F6E8   # .move
 extra_func 00F70C   # .findfloor
 extra_func 00F770   # Moto_Animate
+extra_func 00F77A   # DisplaySprite
 extra_func 00F77E   # Moto_Delete
 extra_func 00F806   # Obj4F
 extra_func 00F808   # .smoke3
@@ -867,6 +933,10 @@ extra_func 013D7E   # Drown_Display
 extra_func 013D92   # Drown_Delete
 extra_func 013D98   # Drown_AirLeft
 extra_func 013E9C   # Drown_Countdown
+extra_func 013FA8   # .nochange
+extra_func 013FAA   # .makenum
+extra_func 013FAC   # .nochange
+extra_func 013FBC   # .makenum
 extra_func 014158   # ShieldItem
 extra_func 01416C   # Shi_Main
 extra_func 0141A4   # Shi_Shield
@@ -1063,6 +1133,7 @@ extra_func 019C36   # FFloor_Break
 extra_func 019C62   # FFloor_AllGone
 extra_func 019C72   # FFloor_Block
 extra_func 019C80   # FFloor_Frag
+extra_func 019D52   # BossFinal_Delete
 extra_func 019D58   # BossFinal
 extra_func 019DCE   # BossFinal_Main
 extra_func 019E6C   # BossFinal_Eggman
@@ -1072,8 +1143,11 @@ extra_func 019FE6   # BossFinal_Eggman_Plasma
 extra_func 01A02A   # BossFinal_Eggman_Fall
 extra_func 01A074   # BossFinal_Eggman_Run
 extra_func 01A112   # BossFinal_Eggman_Jump
+extra_func 01A15C   # loc_1A15C
 extra_func 01A192   # BossFinal_Eggman_Ship
 extra_func 01A1D4   # BossFinal_Eggman_Escape
+extra_func 01A25C   # BossFinal_Delete
+extra_func 01A260   # loc_1A15C
 extra_func 01A264   # BossFinal_Flame
 extra_func 01A2C6   # BossFinal_Cockpit
 extra_func 01A346   # BossFinal_Legs
@@ -1101,6 +1175,10 @@ extra_func 01ABFE   # Pri_Switched
 extra_func 01AC62   # Pri_Explosion
 extra_func 01ACFA   # Pri_Animals
 extra_func 01AD4A   # Pri_EndAct
+extra_func 01AF30   # React_Enemy
+extra_func 01AFE0   # React_ChkHurt
+extra_func 01B140   # React_ChkHurt
+extra_func 01B144   # React_Enemy
 extra_func 01B508   # SS_AniRingSparks
 extra_func 01B538   # SS_AniBumper
 extra_func 01B56E   # SS_Ani1Up
@@ -1141,3 +1219,65 @@ extra_func 01C55A   # HUD_Main
 extra_func 01C584   # HUD_Flash
 extra_func 01CF2C   # Debug_Main
 extra_func 01CFAE   # Debug_Action
+extra_func 071F98   # FadeOutMusic
+extra_func 071F9C   # PlaySegaSound
+extra_func 071FA0   # SpeedUpMusic
+extra_func 071FA4   # SlowDownMusic
+extra_func 071FA8   # StopAllSound
+extra_func 071FAC   # PlaySegaSound
+extra_func 0724E6   # FadeOutMusic
+extra_func 07259E   # StopAllSound
+extra_func 072624   # SpeedUpMusic
+extra_func 072652   # SlowDownMusic
+extra_func 072A64   # cfPanningAMSFMS
+extra_func 072A68   # cfDetune
+extra_func 072A6C   # cfSetCommunication
+extra_func 072A70   # cfJumpReturn
+extra_func 072A74   # cfFadeInToPrevious
+extra_func 072A78   # cfSetTempoDivider
+extra_func 072A7C   # cfChangeFMVolume
+extra_func 072A80   # cfHoldNote
+extra_func 072A84   # cfNoteTimeout
+extra_func 072A88   # cfChangeTransposition
+extra_func 072A8C   # cfSetTempo
+extra_func 072A90   # cfSetTempoDividerAll
+extra_func 072A94   # cfChangePSGVolume
+extra_func 072A98   # cfClearPush
+extra_func 072A9C   # cfStopSpecialFM4
+extra_func 072AA0   # cfSetVoice
+extra_func 072AA4   # cfModulation
+extra_func 072AA8   # cfEnableModulation
+extra_func 072AAC   # cfStopTrack
+extra_func 072AB0   # cfSetPSGNoise
+extra_func 072AB4   # cfDisableModulation
+extra_func 072AB8   # cfSetPSGTone
+extra_func 072ABC   # cfJumpTo
+extra_func 072AC0   # cfRepeatAtPos
+extra_func 072AC4   # cfJumpToGosub
+extra_func 072AC8   # cfOpF9
+extra_func 072ACC   # cfPanningAMSFMS
+extra_func 072AEC   # cfDetune
+extra_func 072AF2   # cfSetCommunication
+extra_func 072AF8   # cfJumpReturn
+extra_func 072B14   # cfFadeInToPrevious
+extra_func 072B9E   # cfSetTempoDivider
+extra_func 072BA4   # cfChangeFMVolume
+extra_func 072BAE   # cfHoldNote
+extra_func 072BB4   # cfNoteTimeout
+extra_func 072BBE   # cfChangeTransposition
+extra_func 072BC6   # cfSetTempo
+extra_func 072BD0   # cfSetTempoDividerAll
+extra_func 072BE6   # cfChangePSGVolume
+extra_func 072BEE   # cfClearPush
+extra_func 072BF4   # cfStopSpecialFM4
+extra_func 072C26   # cfSetVoice
+extra_func 072D30   # cfModulation
+extra_func 072D52   # cfEnableModulation
+extra_func 072D58   # cfStopTrack
+extra_func 072E06   # cfSetPSGNoise
+extra_func 072E20   # cfDisableModulation
+extra_func 072E26   # cfSetPSGTone
+extra_func 072E2C   # cfJumpTo
+extra_func 072E38   # cfRepeatAtPos
+extra_func 072E52   # cfJumpToGosub
+extra_func 072E64   # cfOpF9
