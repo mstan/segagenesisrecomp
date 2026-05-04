@@ -353,6 +353,68 @@ static void test_phase7b_bcd(void) {
     CHECK(e.src_ea == 0x03, "NBCD.B EA=D3");
 }
 
+/* ---------------------------------------------------------------------
+ * Phase 7C — MOVEP / CHK / STOP
+ * --------------------------------------------------------------------- */
+static void test_phase7c_movep_chk_stop(void) {
+    /* MOVEP encodings: 0000 ddd 1MM 001 aaa  d16
+     *   MM=00 .W mem→Dn, 01 .L mem→Dn, 10 .W Dn→mem, 11 .L Dn→mem
+     * CHK: 0100 DDD 110 mmm rrr (size .W)
+     * STOP: 0x4E72  imm
+     *
+     * Encodings:
+     *   01 09 00 10 = MOVEP.W d16=0x0010 (A1)→D0    ddd=000, MM=00, aaa=001
+     *   03 49 00 20 = MOVEP.L d16=0x0020 (A1)→D1    ddd=001, MM=01
+     *   01 89 00 30 = MOVEP.W D0→d16=0x0030 (A1)    ddd=000, MM=10
+     *   03 C9 00 40 = MOVEP.L D1→d16=0x0040 (A1)    ddd=001, MM=11
+     *   41 81       = CHK.W D1,D0                   ddd=000, mmm=000, rrr=001
+     *   4E 72 27 00 = STOP #$2700                                                */
+    uint8_t bytes[] = {
+        0x01, 0x09, 0x00, 0x10,   /* MOVEP.W (mem→D0)       */
+        0x03, 0x49, 0x00, 0x20,   /* MOVEP.L (mem→D1)       */
+        0x01, 0x89, 0x00, 0x30,   /* MOVEP.W (D0→mem)       */
+        0x03, 0xC9, 0x00, 0x40,   /* MOVEP.L (D1→mem)       */
+        0x41, 0x81,               /* CHK.W D1,D0            */
+        0x4E, 0x72, 0x27, 0x00,   /* STOP #$2700            */
+    };
+    GenesisRom rom; make_rom(&rom, bytes, sizeof(bytes));
+
+    M68KInstr m1 = {0};
+    CHECK(m68k_decode(&rom, 0, &m1), "MOVEP.W mem→Dn decode");
+    CHECK(m1.mnemonic == MN_MOVEP && m1.size == M68K_SIZE_W, "MOVEP.W mnemonic+size");
+    CHECK(m1.byte_length == 4, "MOVEP.W length=4 (op+disp)");
+    CHECK(m1.reg == 0, "MOVEP.W Dn=D0");
+    CHECK((m1.src_ea & 7) == 1, "MOVEP.W An=A1 in src_ea low bits");
+    CHECK((m1.words[0] & 0x80) == 0, "MOVEP.W direction bit=0 (mem→Dn)");
+    CHECK(m1.words[1] == 0x0010, "MOVEP.W disp word preserved");
+
+    M68KInstr m2 = {0};
+    CHECK(m68k_decode(&rom, 4, &m2), "MOVEP.L mem→Dn decode");
+    CHECK(m2.mnemonic == MN_MOVEP && m2.size == M68K_SIZE_L, "MOVEP.L mnemonic+size");
+    CHECK(m2.reg == 1, "MOVEP.L Dn=D1");
+
+    M68KInstr m3 = {0};
+    CHECK(m68k_decode(&rom, 8, &m3), "MOVEP.W Dn→mem decode");
+    CHECK(m3.mnemonic == MN_MOVEP && m3.size == M68K_SIZE_W, "MOVEP.W out mnemonic+size");
+    CHECK((m3.words[0] & 0x80) != 0, "MOVEP.W direction bit=1 (Dn→mem)");
+
+    M68KInstr m4 = {0};
+    CHECK(m68k_decode(&rom, 12, &m4), "MOVEP.L Dn→mem decode");
+    CHECK(m4.mnemonic == MN_MOVEP && m4.size == M68K_SIZE_L, "MOVEP.L out mnemonic+size");
+    CHECK((m4.words[0] & 0x80) != 0, "MOVEP.L direction bit=1 (Dn→mem)");
+
+    M68KInstr c = {0};
+    CHECK(m68k_decode(&rom, 16, &c), "CHK.W decode");
+    CHECK(c.mnemonic == MN_CHK && c.size == M68K_SIZE_W, "CHK.W mnemonic+size");
+    CHECK(c.reg == 0 && (c.src_ea & 7) == 1, "CHK.W Dn=D0, EA=D1");
+
+    M68KInstr s = {0};
+    CHECK(m68k_decode(&rom, 18, &s), "STOP decode");
+    CHECK(s.mnemonic == MN_STOP, "STOP mnemonic");
+    CHECK(s.byte_length == 4, "STOP length=4 (op+imm)");
+    CHECK(s.imm32 == 0x2700, "STOP imm preserved");
+}
+
 int main(void) {
     test_move_ccr_directions();
     test_move_sr_directions();
@@ -361,6 +423,7 @@ int main(void) {
     test_addx_subx_forms();
     test_phase7a_traps();
     test_phase7b_bcd();
+    test_phase7c_movep_chk_stop();
 
     if (g_failures == 0) {
         printf("m68k_decoder_synth: all checks passed\n");

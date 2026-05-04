@@ -270,9 +270,13 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             break;
         }
         if (w0 == 0x4E72) {
+            /* STOP #imm — immediate word becomes the new SR. Phase 7C
+             * codegen reads imm32 to emit "g_cpu.SR = imm". */
             out->mnemonic = MN_STOP;
             out->size     = M68K_SIZE_NONE;
-            out->words[out->word_count++] = fetch16(rom, &pc);
+            uint16_t imm = fetch16(rom, &pc);
+            out->words[out->word_count++] = imm;
+            out->imm32    = (uint32_t)imm;
             break;
         }
         if (w0 == 0x4E73) {

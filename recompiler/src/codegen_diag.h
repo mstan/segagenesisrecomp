@@ -15,13 +15,13 @@
 
 typedef enum {
     CGD_MN_OTHER,
-    CGD_TODO_MOVEP,
-    CGD_TODO_CHK,
     /* Retired in Phase 7A: CGD_TODO_TRAP/TRAPV/RTR/RESET/ILLEGAL —
      * those mnemonics now route through m68k_trap_vector /
      * m68k_illegal_trap / genesis_reset_devices.
      * Retired in Phase 7B: CGD_TODO_ABCD/SBCD/NBCD — real packed-BCD
-     * codegen with sticky-Z semantics now lives in code_generator.c. */
+     * codegen with sticky-Z semantics now lives in code_generator.c.
+     * Retired in Phase 7C: CGD_TODO_MOVEP/CHK — real codegen for
+     * alternating-byte transfer and bounds-check-via-vector-6. */
     CGD_TODO_ADDX_MEM_PREDEC,
     CGD_TODO_SUBX_MEM_PREDEC,
     CGD_TODO_DYNAMIC_JSR_UNSUPPORTED,
