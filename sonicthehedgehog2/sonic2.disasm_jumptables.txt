@@ -10,8 +10,8 @@
 #   jump_table <start_hex> <end_hex_exclusive> <stride> <abs|pcrel16>
 #   extra_func <target_hex>     # <label>
 
-# Tables found: 382 pcrel16, 2 abs
-# Unique targets: 1758
+# Tables found: 382 pcrel16, 2 abs, 15 bra-trampoline
+# Unique targets: 1844
 
 # ---- PCREL_W tables ----
 jump_table 000468 000484 2 pcrel16   # current_offset_table (14 entries)
@@ -401,9 +401,47 @@ jump_table 041A86 041A8A 2 pcrel16   # current_offset_table (2 entries)
 jump_table 000004 000100 4 abs   # 63 entries, first=EntryPoint
 jump_table 01600C 01637C 4 abs   # 220 entries, first=Obj01
 
+# ---- bra.w / bra.s trampoline tables ----
+# (no `jump_table` directive emitted — each entry's
+#  address is itself a function entry, the bra.w/bra.s
+#  trampoline body. The recompiler creates a func_NNNNNN
+#  for each via extra_func, plus a func_NNNNNN for the
+#  bra destination since the trampoline becomes a tail
+#  call to it in the codegen output.)
+# bra-trampoline 0003A2 0003CE 4 bra_w   # 11 entries, first=SegaScreen
+# bra-trampoline 001850 001862 2 bra_s   # 9 entries, first=EniDec_Loop
+# bra-trampoline 00F808 00F810 4 bra_w   # 2 entries, first=DeleteObject
+# bra-trampoline 010036 01003E 4 bra_w   # 2 entries, first=DeleteObject
+# bra-trampoline 0105CC 0105D4 4 bra_w   # 2 entries, first=DisplaySprite
+# bra-trampoline 011C2C 011C34 4 bra_w   # 2 entries, first=Obj28_Fly
+# bra-trampoline 011FBA 011FC2 4 bra_w   # 2 entries, first=DisplaySprite
+# bra-trampoline 0121F8 012200 4 bra_w   # 2 entries, first=DisplaySprite
+# bra-trampoline 012656 01265E 4 bra_w   # 2 entries, first=DisplaySprite
+# bra-trampoline 01D728 01D72C 2 bra_s   # 2 entries, first=Obj0A_MakeBubbleMaybe
+# bra-trampoline 02BF32 02BF4A 4 bra_w   # 6 entries, first=SlotMachine_Routine1
+# bra-trampoline 02C0E6 02C0F6 4 bra_w   # 4 entries, first=SlotMachine_Routine5_1
+# bra-trampoline 02C224 02C22C 4 bra_w   # 2 entries, first=SlotMachine_Subroutine1
+# bra-trampoline 02C304 02C310 4 bra_w   # 3 entries, first=SlotMachine_Unmatched1
+# bra-trampoline 03F9F8 03FA00 4 bra_w   # 2 entries, first=Touch_ChkHurt
+
 # ---- Targets ----
 extra_func 000200   # ErrorTrap
 extra_func 000206   # EntryPoint
+extra_func 0003A2   # SegaScreen
+extra_func 0003A6   # TitleScreen
+extra_func 0003AA   # Level
+extra_func 0003AE   # Level
+extra_func 0003B2   # SpecialStage
+extra_func 0003B6   # ContinueScreen
+extra_func 0003BA   # TwoPlayerResults
+extra_func 0003BE   # LevelSelectMenu2P
+extra_func 0003C2   # JmpTo_EndingSequence
+extra_func 0003C6   # OptionsMenu
+extra_func 0003CA   # LevelSelectMenu
+extra_func 0003F0   # LevelSelectMenu2P
+extra_func 0003F6   # JmpTo_EndingSequence
+extra_func 0003FC   # OptionsMenu
+extra_func 000402   # LevelSelectMenu
 extra_func 000408   # V_Int
 extra_func 000484   # Vint_Lag
 extra_func 0005F0   # Vint_SEGA
@@ -428,6 +466,22 @@ extra_func 000C6E   # Vint_Fade
 extra_func 000C7A   # Vint_Ending
 extra_func 000DF4   # Vint_Menu
 extra_func 000F54   # H_Int
+extra_func 0017DC   # EniDec_Loop
+extra_func 001806   # EniDec_Sub0
+extra_func 001810   # EniDec_Sub4
+extra_func 001818   # EniDec_Sub8
+extra_func 001824   # EniDec_SubA
+extra_func 001832   # EniDec_SubC
+extra_func 001840   # EniDec_SubE
+extra_func 001850   # EniDec_Loop
+extra_func 001852   # EniDec_Sub0
+extra_func 001854   # EniDec_Sub0
+extra_func 001856   # EniDec_Sub4
+extra_func 001858   # EniDec_Sub4
+extra_func 00185A   # EniDec_Sub8
+extra_func 00185C   # EniDec_SubA
+extra_func 00185E   # EniDec_SubC
+extra_func 001860   # EniDec_SubE
 extra_func 001A16   # PalCycle_Null
 extra_func 001A18   # PalCycle_EHZ
 extra_func 001A46   # PalCycle_WZ
@@ -440,8 +494,12 @@ extra_func 001BEE   # PalCycle_CNZ
 extra_func 001D16   # PalCycle_CPZ
 extra_func 001D88   # PalCycle_ARZ
 extra_func 001DB6   # PalCycle_WFZ
+extra_func 0037B8   # SegaScreen
+extra_func 003998   # TitleScreen
+extra_func 003EC4   # Level
 extra_func 0045F8   # DynamicWaterNull
 extra_func 0045FA   # DynamicWaterCPZ2
+extra_func 004F64   # SpecialStage
 extra_func 0057DE   # SSTrackDrawUnc_Read10_Got0
 extra_func 005806   # SSTrackDrawUnc_Read10_Got1
 extra_func 005836   # SSTrackDrawUnc_Read10_Got2
@@ -521,6 +579,7 @@ extra_func 00736C   # Obj87_Init
 extra_func 007480   # loc_7480
 extra_func 00753E   # loc_753E
 extra_func 0075DE   # loc_75DE
+extra_func 007870   # ContinueScreen
 extra_func 007A68   # ObjDA
 extra_func 007A7E   # ObjDA_Init
 extra_func 007AAC   # JmpTo2_DisplaySprite
@@ -533,6 +592,7 @@ extra_func 007BFA   # ObjDB_Sonic_Run
 extra_func 007C22   # ObjDB_Tails_Init
 extra_func 007C52   # ObjDB_Tails_Wait
 extra_func 007C88   # ObjDB_Tails_Run
+extra_func 007D50   # TwoPlayerResults
 extra_func 0080BE   # Obj21
 extra_func 0080E4   # Obj21_Init
 extra_func 00812C   # Obj21_Main
@@ -687,11 +747,13 @@ extra_func 00F622   # LevEvents_SCZ_RoutineNull
 extra_func 00F66C   # Obj11
 extra_func 00F694   # Obj11_Init
 extra_func 00F77A   # Obj11_EHZ
+extra_func 00F808   # DeleteObject
 extra_func 00F80C   # Obj11_Display
 extra_func 00F810   # Obj11_HPZ
 extra_func 00FC9C   # Obj15
 extra_func 00FCCA   # Obj15_Init
 extra_func 00FE50   # Obj15_State2
+extra_func 010036   # DeleteObject
 extra_func 01003A   # Obj15_Display
 extra_func 01003E   # Obj15_State4
 extra_func 0100F8   # Obj15_State5
@@ -705,6 +767,7 @@ extra_func 0104AC   # Obj18
 extra_func 0104CE   # Obj18_Init
 extra_func 01056A   # loc_1056A
 extra_func 0105A8   # loc_105A8
+extra_func 0105CC   # DisplaySprite
 extra_func 0105D0   # BranchTo3_DeleteObject
 extra_func 0105D4   # loc_105D4
 extra_func 010668   # return_10668
@@ -745,8 +808,11 @@ extra_func 0119BE   # Obj28_Init
 extra_func 011ADE   # Obj28_Main
 extra_func 011B38   # Obj28_Walk
 extra_func 011B74   # Obj28_Fly
+extra_func 011BD8   # Obj28_ChkDel
 extra_func 011BF4   # Obj28_Prison
 extra_func 011C14   # Obj28_FlickyWait
+extra_func 011C2C   # Obj28_Fly
+extra_func 011C30   # Obj28_ChkDel
 extra_func 011C34   # Obj28_FlickyJump
 extra_func 011C6E   # Obj28_RabbitWait
 extra_func 011C8A   # Obj28_DoubleBounce
@@ -761,12 +827,14 @@ extra_func 011F5C   # Obj25_Init
 extra_func 011F90   # Obj25_Animate
 extra_func 011F9E   # Obj25_Collect
 extra_func 011FB0   # Obj25_Sparkle
+extra_func 011FBA   # DisplaySprite
 extra_func 011FBE   # Obj25_Delete
 extra_func 012078   # Obj37
 extra_func 012090   # Obj37_Init
 extra_func 012178   # Obj37_Main
 extra_func 0121DA   # Obj37_Collect
 extra_func 0121EE   # Obj37_Sparkle
+extra_func 0121F8   # DisplaySprite
 extra_func 0121FC   # Obj37_Delete
 extra_func 012216   # BigRing_Init
 extra_func 012264   # BigRing_Main
@@ -778,6 +846,7 @@ extra_func 012376   # BigRingFlash_Delete
 extra_func 0125E6   # ObjDC
 extra_func 0125FA   # ObjDC_Main
 extra_func 01264E   # ObjDC_Animate
+extra_func 012656   # DisplaySprite
 extra_func 01265A   # ObjDC_Delete
 extra_func 012670   # Obj26
 extra_func 012688   # Obj26_Init
@@ -911,6 +980,8 @@ extra_func 015D5C   # Obj3C_Init
 extra_func 015D8A   # Obj3C_Main
 extra_func 015E02   # Obj3C_Fragment
 extra_func 01637C   # ObjNull
+extra_func 0164E6   # DeleteObject
+extra_func 0164F4   # DisplaySprite
 extra_func 016F9A   # RingsManager_Init
 extra_func 016FDE   # RingsManager_Main
 extra_func 0173CE   # SpecialCNZBumpers_Init
@@ -986,6 +1057,10 @@ extra_func 01D41A   # Obj0A_Display
 extra_func 01D42E   # JmpTo5_DeleteObject
 extra_func 01D434   # Obj0A_AirLeft
 extra_func 01D606   # Obj0A_Countdown
+extra_func 01D728   # Obj0A_MakeBubbleMaybe
+extra_func 01D72A   # Obj0A_MakeBubbleNow
+extra_func 01D72C   # Obj0A_MakeBubbleMaybe
+extra_func 01D73C   # Obj0A_MakeBubbleNow
 extra_func 01D8F2   # Obj38
 extra_func 01D904   # Obj38_Main
 extra_func 01D92C   # Obj38_Shield
@@ -1381,6 +1456,36 @@ extra_func 02BBA6   # ObjD6_Main
 extra_func 02BBF8   # loc_2BBF8
 extra_func 02BDF8   # loc_2BDF8
 extra_func 02BE9C   # loc_2BE9C
+extra_func 02BF32   # SlotMachine_Routine1
+extra_func 02BF36   # SlotMachine_Routine2
+extra_func 02BF3A   # SlotMachine_Routine3
+extra_func 02BF3E   # SlotMachine_Routine4
+extra_func 02BF42   # SlotMachine_Routine5
+extra_func 02BF46   # SlotMachine_Routine6
+extra_func 02BF4C   # SlotMachine_Routine1
+extra_func 02BF9A   # SlotMachine_Routine2
+extra_func 02BFBA   # SlotMachine_Routine3
+extra_func 02C070   # SlotMachine_Routine4
+extra_func 02C0A8   # SlotMachine_Routine5
+extra_func 02C0E6   # SlotMachine_Routine5_1
+extra_func 02C0EA   # SlotMachine_Routine5_2
+extra_func 02C0EE   # SlotMachine_Routine5_3
+extra_func 02C0F2   # SlotMachine_Routine5_4
+extra_func 02C134   # SlotMachine_Routine5_1
+extra_func 02C170   # SlotMachine_Routine5_2
+extra_func 02C1DA   # SlotMachine_Routine5_3
+extra_func 02C1EC   # SlotMachine_Routine5_4
+extra_func 02C1EE   # SlotMachine_Routine6
+extra_func 02C224   # SlotMachine_Subroutine1
+extra_func 02C228   # SlotMachine_Subroutine2
+extra_func 02C23A   # SlotMachine_Subroutine1
+extra_func 02C246   # SlotMachine_Subroutine2
+extra_func 02C304   # SlotMachine_Unmatched1
+extra_func 02C308   # SlotMachine_Match12
+extra_func 02C30C   # SlotMachine_Match13
+extra_func 02C31C   # SlotMachine_Match13
+extra_func 02C34A   # SlotMachine_Match12
+extra_func 02C374   # SlotMachine_Unmatched1
 extra_func 02C448   # ObjD7
 extra_func 02C45A   # ObjD7_Init
 extra_func 02C4AC   # ObjD7_Main
@@ -2139,6 +2244,10 @@ extra_func 03F354   # loc_3F354
 extra_func 03F38E   # loc_3F38E
 extra_func 03F3A8   # loc_3F3A8
 extra_func 03F406   # loc_3F406
+extra_func 03F78C   # Touch_Enemy
+extra_func 03F862   # Touch_ChkHurt
+extra_func 03F9F8   # Touch_ChkHurt
+extra_func 03F9FC   # Touch_Enemy
 extra_func 03FA5A   # BossCollision_EHZ_CPZ
 extra_func 03FA5E   # return_3FA5E
 extra_func 03FA60   # BossCollision_HTZ

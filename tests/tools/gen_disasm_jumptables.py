@@ -83,6 +83,22 @@ ABS_L_RE = re.compile(
     r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
     r"dc\.l\s+([A-Za-z_.][\w.]*)\s*(?:;.*)?$"
 )
+# bra.w / bra.s trampoline-table form. Each entry is a single 68K
+# instruction (`bra.w Target` = 4 bytes 60 00 XX XX, or `bra.s Target`
+# = 2 bytes 60 XX) at the table address. The dispatcher does
+# `JMP/JSR Table(pc,Dn.W)` and lands on the trampoline, which then
+# branches on to the real handler. Each entry's ADDRESS is therefore
+# itself a function entry point; the extractor emits an extra_func
+# for each. Sonic 2's GameModesArray ($003A2) and Sonic 1's
+# EniDec_JmpTable ($1852) are the canonical examples.
+BRA_W_RE = re.compile(
+    r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
+    r"bra\.w\s+([A-Za-z_.][\w.]*)\s*(?:;.*)?$"
+)
+BRA_S_RE = re.compile(
+    r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
+    r"bra(?:\.s)?\s+([A-Za-z_.][\w.]*)\s*(?:;.*)?$"
+)
 
 # Labels pinned to the current address. AS produces several forms in
 # the listing depending on how the label was declared:
@@ -234,6 +250,7 @@ def main() -> int:
 
     pcrel_tables: list[dict] = []
     abs_tables: list[dict] = []
+    bra_tables: list[dict] = []
     used_rows: set[int] = set()
 
     for i, (addr, bytes_hex, source) in enumerate(rows):
@@ -321,6 +338,101 @@ def main() -> int:
                 used_rows.update(row_idxs)
                 continue
 
+        # Then bra.w trampoline runs (e.g. Sonic 2's GameModesArray).
+        # Each entry is a 4-byte `bra.w Target` (60 00 XX XX). The
+        # entry's ADDRESS is itself the dispatched function — so the
+        # extracted target is the entry address, not the bra.w
+        # destination. We still validate the bra.w destination is a
+        # code address as a sanity check.
+        m3 = BRA_W_RE.match(source)
+        if m3 and len(bytes_hex) == 2 and bytes_hex[0].lower() == "6000":
+            entries = []
+            row_idxs = []
+            cur = i
+            expected_addr = addr
+            while cur < len(rows):
+                a2, b2, s2 = rows[cur]
+                if a2 != expected_addr:
+                    break
+                mm = BRA_W_RE.match(s2)
+                if not mm or len(b2) != 2 or b2[0].lower() != "6000":
+                    break
+                # Validate the bra.w destination is in-rom code (so we
+                # don't mis-detect a stray `bra.w` followed by data as
+                # a table).
+                disp = int(b2[1], 16)
+                if disp & 0x8000: disp -= 0x10000
+                bra_dest = (a2 + 2 + disp) & 0xFFFFFF
+                if (bra_dest & 1) or bra_dest >= args.rom_max:
+                    break
+                if bra_dest not in code_addrs:
+                    break
+                # The entry address itself is what gets dispatched
+                # (the trampoline). Track the bra destination too —
+                # in the recompiler's codegen the trampoline body
+                # becomes a tail call to the destination function, so
+                # that destination must also be a discovered function
+                # entry (e.g. GM_Sega at $002E10 reached via the
+                # GameModeArray trampoline at $000396).
+                entries.append((a2, mm.group(1), bra_dest))
+                row_idxs.append(cur)
+                expected_addr += 4
+                cur += 1
+
+            if len(entries) >= args.min_entries:
+                bra_tables.append({
+                    "start": addr,
+                    "end":   addr + 4 * len(entries),
+                    "stride": 4,
+                    "format": "bra_w",
+                    "entries": entries,
+                })
+                used_rows.update(row_idxs)
+                continue
+
+        # And bra.s trampoline runs (e.g. Sonic 1's EniDec_JmpTable).
+        # Each entry is 2 bytes (60 XX with XX != 00 and != FF).
+        m4 = BRA_S_RE.match(source)
+        if (m4 and len(bytes_hex) == 1 and
+                bytes_hex[0][:2].lower() == "60" and
+                bytes_hex[0][2:].lower() not in ("00", "ff")):
+            entries = []
+            row_idxs = []
+            cur = i
+            expected_addr = addr
+            while cur < len(rows):
+                a2, b2, s2 = rows[cur]
+                if a2 != expected_addr:
+                    break
+                mm = BRA_S_RE.match(s2)
+                if not mm or len(b2) != 1:
+                    break
+                w = b2[0].lower()
+                if w[:2] != "60" or w[2:] in ("00", "ff"):
+                    break
+                disp = int(w[2:], 16)
+                if disp & 0x80: disp -= 0x100
+                bra_dest = (a2 + 2 + disp) & 0xFFFFFF
+                if (bra_dest & 1) or bra_dest >= args.rom_max:
+                    break
+                if bra_dest not in code_addrs:
+                    break
+                entries.append((a2, mm.group(1), bra_dest))
+                row_idxs.append(cur)
+                expected_addr += 2
+                cur += 1
+
+            if len(entries) >= args.min_entries:
+                bra_tables.append({
+                    "start": addr,
+                    "end":   addr + 2 * len(entries),
+                    "stride": 2,
+                    "format": "bra_s",
+                    "entries": entries,
+                })
+                used_rows.update(row_idxs)
+                continue
+
     # ----- Emit ---------------------------------------------------------
     args.output.parent.mkdir(parents=True, exist_ok=True)
     header = (args.header if args.header is not None
@@ -328,6 +440,7 @@ def main() -> int:
 
     pcrel_tables.sort(key=lambda t: t["start"])
     abs_tables.sort(key=lambda t: t["start"])
+    bra_tables.sort(key=lambda t: t["start"])
 
     targets: set[int] = set()
     target_names: dict[int, str] = {}
@@ -335,10 +448,20 @@ def main() -> int:
         for addr_t, name in t["entries"]:
             targets.add(addr_t)
             target_names.setdefault(addr_t, name)
+    # bra-trampoline entries are 3-tuples; seed both the entry
+    # (the dispatched trampoline) AND the bra destination (the actual
+    # handler the trampoline tail-calls into).
+    for t in bra_tables:
+        for entry_addr, name, bra_dest in t["entries"]:
+            targets.add(entry_addr)
+            target_names.setdefault(entry_addr, name)
+            targets.add(bra_dest)
+            target_names.setdefault(bra_dest, name)
 
     with args.output.open("w", encoding="utf-8", newline="\n") as f:
         f.write(header)
-        f.write(f"# Tables found: {len(pcrel_tables)} pcrel16, {len(abs_tables)} abs\n")
+        f.write(f"# Tables found: {len(pcrel_tables)} pcrel16, "
+                f"{len(abs_tables)} abs, {len(bra_tables)} bra-trampoline\n")
         f.write(f"# Unique targets: {len(targets)}\n\n")
 
         if pcrel_tables:
@@ -354,6 +477,20 @@ def main() -> int:
                 f.write(f"jump_table {t['start']:06X} {t['end']:06X} 4 abs"
                         f"   # {len(t['entries'])} entries, first={first_name}\n")
             f.write("\n")
+        if bra_tables:
+            f.write("# ---- bra.w / bra.s trampoline tables ----\n")
+            f.write("# (no `jump_table` directive emitted — each entry's\n"
+                    "#  address is itself a function entry, the bra.w/bra.s\n"
+                    "#  trampoline body. The recompiler creates a func_NNNNNN\n"
+                    "#  for each via extra_func, plus a func_NNNNNN for the\n"
+                    "#  bra destination since the trampoline becomes a tail\n"
+                    "#  call to it in the codegen output.)\n")
+            for t in bra_tables:
+                first_name = t["entries"][0][1] if t["entries"] else ""
+                f.write(f"# bra-trampoline {t['start']:06X} {t['end']:06X} "
+                        f"{t['stride']} {t['format']}"
+                        f"   # {len(t['entries'])} entries, first={first_name}\n")
+            f.write("\n")
 
         f.write("# ---- Targets ----\n")
         for a in sorted(targets):
@@ -361,7 +498,8 @@ def main() -> int:
 
     print(
         f"gen_disasm_jumptables: {len(pcrel_tables)} pcrel16 + "
-        f"{len(abs_tables)} abs tables, {len(targets)} unique targets -> {args.output}"
+        f"{len(abs_tables)} abs + {len(bra_tables)} bra tables, "
+        f"{len(targets)} unique targets -> {args.output}"
     )
     return 0
 
