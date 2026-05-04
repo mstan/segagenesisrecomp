@@ -5,11 +5,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MAX_JUMP_TABLES      256
-#define MAX_EXTRA_FUNCS      8192
-#define MAX_BLACKLIST        1024
-#define MAX_PROTECTED_RANGES 16
-
 /* Encoding of each entry in a static jump table.
  *
  * JT_FMT_ABS_L   : 32-bit absolute target per entry (stride defaults 4).
@@ -30,19 +25,32 @@ typedef struct {
     JumpTableFormat format;
 } JumpTableEntry;
 
+typedef struct { uint32_t lo; uint32_t hi; } ProtectedRange;
+
+/*
+ * GameConfig — every list grows on demand. After game_config_load,
+ * the arrays are owned by the cfg; call game_config_free to release
+ * them (or just leak them at process exit, which is what the CLI
+ * does today). Counts are how many entries are populated; capacities
+ * are the current allocation size and are an internal detail.
+ */
 typedef struct {
     char           output_prefix[64];
     char           annotations_path[256];
     char           symbols_path[256];       /* TOML symbols file (replaces extra_func) */
-    JumpTableEntry jump_tables[MAX_JUMP_TABLES];
+    JumpTableEntry *jump_tables;
     int            jump_table_count;
-    uint32_t       extra_funcs[MAX_EXTRA_FUNCS];
+    int            jump_table_cap;
+    uint32_t       *extra_funcs;
     int            extra_func_count;
-    uint32_t       blacklist[MAX_BLACKLIST];
+    int            extra_func_cap;
+    uint32_t       *blacklist;
     int            blacklist_count;
+    int            blacklist_cap;
     uint32_t       vblank_yield_addr;   /* 0 = not set; emit glue_yield_for_vblank() for this function */
-    struct { uint32_t lo; uint32_t hi; } protected_ranges[MAX_PROTECTED_RANGES];
+    ProtectedRange *protected_ranges;
     int            protected_range_count;
+    int            protected_range_cap;
     /* When true, the validator tolerates Bcc/BSR/BRA forms that use
      * a 32-bit displacement (d8 == 0xFF). Those are 68020+ extensions
      * and out of scope for MC68000-only Genesis ROMs unless a game
@@ -65,4 +73,5 @@ bool game_config_is_protected(const GameConfig *cfg, uint32_t addr);
 bool game_config_is_blacklisted(const GameConfig *cfg, uint32_t addr);
 
 void game_config_init_empty(GameConfig *cfg);
+void game_config_free(GameConfig *cfg);
 bool game_config_load(GameConfig *cfg, const char *path);

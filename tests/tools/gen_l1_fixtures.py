@@ -147,8 +147,20 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("-v", action="count", default=0, help="verbose")
     ap.add_argument("--lst", type=Path, default=LST_PATH)
-    ap.add_argument("-o", "--output", type=Path, default=OUT_PATH)
+    ap.add_argument("-o", "--output", type=Path, default=OUT_PATH,
+                    help="instructions.txt output path")
+    ap.add_argument("--code-addrs", type=Path, default=None,
+                    help="code_addresses.txt output path "
+                         "(default: sibling of --output)")
     args = ap.parse_args()
+
+    code_addr_path = args.code_addrs
+    if code_addr_path is None:
+        # If output overrides the default, sibling-of-output; else legacy default.
+        if args.output == OUT_PATH:
+            code_addr_path = CODE_ADDR_PATH
+        else:
+            code_addr_path = args.output.parent / "code_addresses.txt"
 
     if not args.lst.exists():
         print(f"lst not found: {args.lst}", file=sys.stderr)
@@ -261,8 +273,8 @@ def main() -> int:
             f.write(f"{addr:08x} {bh}\t{mnem}\t{ops}\n")
 
     # Side file: every code address (including macro-expanded ones).
-    CODE_ADDR_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with CODE_ADDR_PATH.open("w", encoding="utf-8", newline="\n") as f:
+    code_addr_path.parent.mkdir(parents=True, exist_ok=True)
+    with code_addr_path.open("w", encoding="utf-8", newline="\n") as f:
         f.write("# Every disasm-emitted code address — used by the L2\n")
         f.write("# data-as-function check. Includes macro-expanded\n")
         f.write("# instructions excluded from the L1 fixture proper.\n")

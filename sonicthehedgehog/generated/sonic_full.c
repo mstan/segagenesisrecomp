@@ -13472,7 +13472,7 @@ void func_00214C(void) {
 
 /* Pal_Ending_end */
 void func_0029A8(void) {
-  /* WaitForVBlank — yield to main loop (game.cfg: vblank_yield 0029A8) */
+  /* WaitForVBlank — yield to main loop (game.cfg: vblank_yield) */
   g_cpu.SR = 0x2300u;
   glue_yield_for_vblank();
 }

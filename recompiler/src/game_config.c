@@ -4,6 +4,7 @@
  * Parses the game.cfg file that tells the recompiler:
  *   output_prefix <name>        — prefix for generated file names
  *   jump_table <start> <end>    — address range of an indexed jump table
+ *   jump_table_file <path>      — file of jump_table + extra_func lines
  *   extra_func <hex_addr>       — additional function entry point seeds
  *   extra_func_file <path>      — file of extra_func lines (relative to cfg)
  *   symbols_file <path>         — TOML symbols file with function definitions
@@ -17,6 +18,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/*
+ * grow_to_fit — bump *cap_ptr until it can hold (count+1) elements,
+ * realloc *arr_ptr to match, and return the new pointer. Used by
+ * every list inside GameConfig so we don't need a static MAX_X cap
+ * on any of them. Aborts the process on allocation failure: a cfg
+ * load that can't allocate its tables can't produce correct output,
+ * and silently dropping entries was the bug we're fixing.
+ */
+static void *grow_to_fit(void *arr, int *cap_ptr, int count, size_t elem_size) {
+    if (count < *cap_ptr) return arr;
+    int new_cap = *cap_ptr ? *cap_ptr * 2 : 64;
+    while (new_cap <= count) new_cap *= 2;
+    void *p = realloc(arr, (size_t)new_cap * elem_size);
+    if (!p) {
+        fprintf(stderr, "game_config: out of memory growing to %d entries\n", new_cap);
+        abort();
+    }
+    *cap_ptr = new_cap;
+    return p;
+}
+
+static void append_extra_func(GameConfig *cfg, uint32_t addr);
+static void append_blacklist(GameConfig *cfg, uint32_t addr);
+static void append_protected_range(GameConfig *cfg, uint32_t lo, uint32_t hi);
 
 /* Resolve a relative path against a base file's directory */
 static void resolve_path(const char *base, const char *rel, char *out, int out_size) {
@@ -71,17 +97,87 @@ static int load_symbols_toml(GameConfig *cfg, const char *sym_path) {
         uint32_t addr = (uint32_t)strtoul(hex, NULL, 16);
         if (addr == 0) continue;  /* skip addr 0 */
 
-        if (cfg->extra_func_count < MAX_EXTRA_FUNCS) {
-            cfg->extra_funcs[cfg->extra_func_count++] = addr;
-            loaded++;
-        }
+        append_extra_func(cfg, addr);
+        loaded++;
     }
 
     fclose(sf);
     return loaded;
 }
 
+/*
+ * Parse a single "jump_table <start> <end> [stride] [format]" line.
+ * Used both by the top-level cfg parser and by jump_table_file lines.
+ * Returns 1 if the line matched the directive shape (and was appended),
+ * 0 otherwise.
+ */
+static int parse_jump_table_line(GameConfig *cfg, const char *line) {
+    char key[64] = {0}, val1[64] = {0}, val2[64] = {0};
+    int n = sscanf(line, "%63s %63s %63s", key, val1, val2);
+    if (n < 3 || strcmp(key, "jump_table") != 0) return 0;
+
+    cfg->jump_tables = grow_to_fit(cfg->jump_tables,
+                                   &cfg->jump_table_cap,
+                                   cfg->jump_table_count,
+                                   sizeof(JumpTableEntry));
+    JumpTableEntry *e = &cfg->jump_tables[cfg->jump_table_count++];
+    e->start_addr   = (uint32_t)strtoul(val1, NULL, 16);
+    e->end_addr     = (uint32_t)strtoul(val2, NULL, 16);
+    e->stride_bytes = 4;
+    e->format       = JT_FMT_ABS_L;
+    char extra3[64] = {0}, extra4[64] = {0};
+    if (sscanf(line, "%*s %*s %*s %63s %63s",
+               extra3, extra4) >= 1 && extra3[0]) {
+        e->stride_bytes = (uint32_t)strtoul(extra3, NULL, 0);
+        if (e->stride_bytes == 0) e->stride_bytes = 4;
+    }
+    if (extra4[0]) {
+        if (strcmp(extra4, "pcrel16") == 0)
+            e->format = JT_FMT_PCREL_W;
+        else
+            e->format = JT_FMT_ABS_L;
+    }
+    return 1;
+}
+
+/* Append one extra_func address to the cfg, growing on demand. */
+static void append_extra_func(GameConfig *cfg, uint32_t addr) {
+    cfg->extra_funcs = grow_to_fit(cfg->extra_funcs,
+                                   &cfg->extra_func_cap,
+                                   cfg->extra_func_count,
+                                   sizeof(uint32_t));
+    cfg->extra_funcs[cfg->extra_func_count++] = addr;
+}
+
+/* Append one blacklist address, growing on demand. */
+static void append_blacklist(GameConfig *cfg, uint32_t addr) {
+    cfg->blacklist = grow_to_fit(cfg->blacklist,
+                                 &cfg->blacklist_cap,
+                                 cfg->blacklist_count,
+                                 sizeof(uint32_t));
+    cfg->blacklist[cfg->blacklist_count++] = addr;
+}
+
+/* Append one protected_range, growing on demand. */
+static void append_protected_range(GameConfig *cfg, uint32_t lo, uint32_t hi) {
+    cfg->protected_ranges = grow_to_fit(cfg->protected_ranges,
+                                        &cfg->protected_range_cap,
+                                        cfg->protected_range_count,
+                                        sizeof(ProtectedRange));
+    int idx = cfg->protected_range_count++;
+    cfg->protected_ranges[idx].lo = lo;
+    cfg->protected_ranges[idx].hi = hi;
+}
+
 void game_config_init_empty(GameConfig *cfg) {
+    memset(cfg, 0, sizeof(*cfg));
+}
+
+void game_config_free(GameConfig *cfg) {
+    free(cfg->jump_tables);
+    free(cfg->extra_funcs);
+    free(cfg->blacklist);
+    free(cfg->protected_ranges);
     memset(cfg, 0, sizeof(*cfg));
 }
 
@@ -113,33 +209,10 @@ bool game_config_load(GameConfig *cfg, const char *path) {
             strncpy(cfg->annotations_path, val1, sizeof(cfg->annotations_path) - 1);
         }
         else if (strcmp(key, "jump_table") == 0 && n >= 3) {
-            if (cfg->jump_table_count < MAX_JUMP_TABLES) {
-                JumpTableEntry *e = &cfg->jump_tables[cfg->jump_table_count++];
-                e->start_addr   = (uint32_t)strtoul(val1, NULL, 16);
-                e->end_addr     = (uint32_t)strtoul(val2, NULL, 16);
-                e->stride_bytes = 4;            /* default: 32-bit absolute */
-                e->format       = JT_FMT_ABS_L;
-                /* Optional 4th/5th tokens: stride (bytes) and format
-                 * ("abs" or "pcrel16"). Re-scan the line so we don't
-                 * lose precision from sscanf's 3-token cap above. */
-                char extra3[64] = {0}, extra4[64] = {0};
-                if (sscanf(line, "%*s %*s %*s %63s %63s",
-                           extra3, extra4) >= 1 && extra3[0]) {
-                    e->stride_bytes = (uint32_t)strtoul(extra3, NULL, 0);
-                    if (e->stride_bytes == 0) e->stride_bytes = 4;
-                }
-                if (extra4[0]) {
-                    if (strcmp(extra4, "pcrel16") == 0)
-                        e->format = JT_FMT_PCREL_W;
-                    else
-                        e->format = JT_FMT_ABS_L;
-                }
-            }
+            parse_jump_table_line(cfg, line);
         }
         else if (strcmp(key, "extra_func") == 0 && n >= 2) {
-            if (cfg->extra_func_count < MAX_EXTRA_FUNCS)
-                cfg->extra_funcs[cfg->extra_func_count++] =
-                    (uint32_t)strtoul(val1, NULL, 16);
+            append_extra_func(cfg, (uint32_t)strtoul(val1, NULL, 16));
         }
         else if (strcmp(key, "symbols_file") == 0 && n >= 2) {
             char sym_path[512] = {0};
@@ -162,18 +235,46 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                     if (ef_line[0] == '#' || ef_line[0] == '\n') continue;
                     if (sscanf(ef_line, "%31s %31s", ekey, eaddr) == 2 &&
                         strcmp(ekey, "extra_func") == 0) {
-                        if (cfg->extra_func_count < MAX_EXTRA_FUNCS)
-                            cfg->extra_funcs[cfg->extra_func_count++] =
-                                (uint32_t)strtoul(eaddr, NULL, 16);
+                        append_extra_func(cfg,
+                            (uint32_t)strtoul(eaddr, NULL, 16));
                     }
                 }
                 fclose(ef);
             }
         }
+        else if (strcmp(key, "jump_table_file") == 0 && n >= 2) {
+            /* Side file for auto-generated jump_table + extra_func
+             * directives (gen_disasm_jumptables.py output). */
+            char jt_path[512] = {0};
+            resolve_path(path, val1, jt_path, sizeof(jt_path));
+            FILE *jf = fopen(jt_path, "r");
+            if (!jf) {
+                fprintf(stderr, "game_config: cannot open jump_table_file '%s'\n", jt_path);
+            } else {
+                char jt_line[256];
+                int jt_loaded = 0, ef_loaded = 0;
+                while (fgets(jt_line, sizeof(jt_line), jf)) {
+                    if (jt_line[0] == '#' || jt_line[0] == '\n' || jt_line[0] == '\r')
+                        continue;
+                    if (parse_jump_table_line(cfg, jt_line)) {
+                        jt_loaded++;
+                        continue;
+                    }
+                    char ekey[32] = {0}, eaddr[32] = {0};
+                    if (sscanf(jt_line, "%31s %31s", ekey, eaddr) == 2 &&
+                        strcmp(ekey, "extra_func") == 0) {
+                        append_extra_func(cfg,
+                            (uint32_t)strtoul(eaddr, NULL, 16));
+                        ef_loaded++;
+                    }
+                }
+                fclose(jf);
+                fprintf(stderr, "game_config: loaded %d jump_table + %d extra_func from '%s'\n",
+                        jt_loaded, ef_loaded, jt_path);
+            }
+        }
         else if (strcmp(key, "blacklist") == 0 && n >= 2) {
-            if (cfg->blacklist_count < MAX_BLACKLIST)
-                cfg->blacklist[cfg->blacklist_count++] =
-                    (uint32_t)strtoul(val1, NULL, 16);
+            append_blacklist(cfg, (uint32_t)strtoul(val1, NULL, 16));
         }
         else if (strcmp(key, "blacklist_file") == 0 && n >= 2) {
             /* Load blacklist from external file (one hex addr per line, # comments) */
@@ -188,9 +289,8 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                     if (bf_line[0] == '#' || bf_line[0] == '\n' || bf_line[0] == '\r') continue;
                     char baddr[32] = {0};
                     if (sscanf(bf_line, "%31s", baddr) == 1 && baddr[0] != '#') {
-                        if (cfg->blacklist_count < MAX_BLACKLIST)
-                            cfg->blacklist[cfg->blacklist_count++] =
-                                (uint32_t)strtoul(baddr, NULL, 16);
+                        append_blacklist(cfg,
+                            (uint32_t)strtoul(baddr, NULL, 16));
                     }
                 }
                 fclose(bf);
@@ -213,13 +313,10 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                                              strcmp(val1, "yes")  == 0);
         }
         else if (strcmp(key, "protected_range") == 0 && n >= 3) {
-            if (cfg->protected_range_count < MAX_PROTECTED_RANGES) {
-                int idx = cfg->protected_range_count++;
-                cfg->protected_ranges[idx].lo = (uint32_t)strtoul(val1, NULL, 16);
-                cfg->protected_ranges[idx].hi = (uint32_t)strtoul(val2, NULL, 16);
-                printf("[GameConfig] Protected range: $%06X-$%06X\n",
-                       cfg->protected_ranges[idx].lo, cfg->protected_ranges[idx].hi);
-            }
+            uint32_t lo = (uint32_t)strtoul(val1, NULL, 16);
+            uint32_t hi = (uint32_t)strtoul(val2, NULL, 16);
+            append_protected_range(cfg, lo, hi);
+            printf("[GameConfig] Protected range: $%06X-$%06X\n", lo, hi);
         }
         else if (line[0] != '#') {
             /* Unknown directive — warn but continue */
