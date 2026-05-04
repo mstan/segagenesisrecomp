@@ -115,8 +115,25 @@ bool game_config_load(GameConfig *cfg, const char *path) {
         else if (strcmp(key, "jump_table") == 0 && n >= 3) {
             if (cfg->jump_table_count < MAX_JUMP_TABLES) {
                 JumpTableEntry *e = &cfg->jump_tables[cfg->jump_table_count++];
-                e->start_addr = (uint32_t)strtoul(val1, NULL, 16);
-                e->end_addr   = (uint32_t)strtoul(val2, NULL, 16);
+                e->start_addr   = (uint32_t)strtoul(val1, NULL, 16);
+                e->end_addr     = (uint32_t)strtoul(val2, NULL, 16);
+                e->stride_bytes = 4;            /* default: 32-bit absolute */
+                e->format       = JT_FMT_ABS_L;
+                /* Optional 4th/5th tokens: stride (bytes) and format
+                 * ("abs" or "pcrel16"). Re-scan the line so we don't
+                 * lose precision from sscanf's 3-token cap above. */
+                char extra3[64] = {0}, extra4[64] = {0};
+                if (sscanf(line, "%*s %*s %*s %63s %63s",
+                           extra3, extra4) >= 1 && extra3[0]) {
+                    e->stride_bytes = (uint32_t)strtoul(extra3, NULL, 0);
+                    if (e->stride_bytes == 0) e->stride_bytes = 4;
+                }
+                if (extra4[0]) {
+                    if (strcmp(extra4, "pcrel16") == 0)
+                        e->format = JT_FMT_PCREL_W;
+                    else
+                        e->format = JT_FMT_ABS_L;
+                }
             }
         }
         else if (strcmp(key, "extra_func") == 0 && n >= 2) {
@@ -183,6 +200,17 @@ bool game_config_load(GameConfig *cfg, const char *path) {
         }
         else if (strcmp(key, "vblank_yield") == 0 && n >= 2) {
             cfg->vblank_yield_addr = (uint32_t)strtoul(val1, NULL, 16);
+        }
+        else if (strcmp(key, "allow_68020_branch") == 0 && n >= 2) {
+            /* Accept "1" / "true" / "yes" as on; everything else is off. */
+            cfg->allow_68020_branch = (strcmp(val1, "1") == 0 ||
+                                       strcmp(val1, "true") == 0 ||
+                                       strcmp(val1, "yes")  == 0);
+        }
+        else if (strcmp(key, "jump_table_autodiscovery") == 0 && n >= 2) {
+            cfg->jump_table_autodiscovery = (strcmp(val1, "1") == 0 ||
+                                             strcmp(val1, "true") == 0 ||
+                                             strcmp(val1, "yes")  == 0);
         }
         else if (strcmp(key, "protected_range") == 0 && n >= 3) {
             if (cfg->protected_range_count < MAX_PROTECTED_RANGES) {

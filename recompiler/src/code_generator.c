@@ -6,6 +6,7 @@
  * and a dispatch table file (sonic_dispatch.c) for call_by_address().
  */
 #include "code_generator.h"
+#include "codegen_diag.h"
 #include "m68k_decoder.h"
 #include "function_finder.h"
 #include "annotations.h"
@@ -16,6 +17,15 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+/* Current-instruction context for diagnostics, set at the top of
+ * emit_instr and read by helpers (e.g., emit_ea_store_ex) so they can
+ * attribute diagnostics to the right ROM PC and containing function
+ * without threading params through every helper signature. Codegen is
+ * single-threaded. */
+static const char      *s_diag_func_name = NULL;
+static uint32_t         s_diag_func_addr = 0;
+static const M68KInstr *s_diag_instr     = NULL;
 
 /* =========================================================================
  * AddrSet — simple sorted dynamic array of uint32_t addresses
@@ -504,11 +514,21 @@ static void emit_ea_store_ex(FILE *f, const M68KInstr *instr, int ea, M68KSize s
             break;
         }
         default:
+            codegen_diag_record(CGD_INVALID_STORE_EA,
+                                s_diag_instr ? s_diag_instr->addr : 0,
+                                s_diag_instr ? s_diag_instr->words[0] : 0,
+                                s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                                s_diag_func_name, s_diag_func_addr);
             fprintf(f, "  /* cannot store to EA 7/%d */\n", reg);
             break;
         }
         break;
     default:
+        codegen_diag_record(CGD_INVALID_STORE_EA,
+                            s_diag_instr ? s_diag_instr->addr : 0,
+                            s_diag_instr ? s_diag_instr->words[0] : 0,
+                            s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                            s_diag_func_name, s_diag_func_addr);
         fprintf(f, "  /* cannot store to mode %d */\n", mode);
         break;
     }
@@ -883,7 +903,9 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
             switch (instr.mnemonic) {
             case MN_RTS:
             case MN_RTE:
+            case MN_RTR:
             case MN_STOP:
+            case MN_ILLEGAL:
                 goto next_work; /* terminate this path */
 
             case MN_BRA:
@@ -1134,8 +1156,12 @@ static int estimate_cycles_prm(const M68KInstr *instr)
         return dst_is_reg ? 6 : (8 + ea_dst);
 
     /* ---- Traps / priv ---- */
-    case MN_TRAP: return 34;
-    case MN_CHK:  return 10 + ea_src;  /* no-trap path */
+    case MN_TRAP:    return 34;
+    case MN_TRAPV:   return 4;             /* untaken; taken adds vector cost */
+    case MN_CHK:     return 10 + ea_src;   /* no-trap path */
+    case MN_RTR:     return 20;
+    case MN_RESET:   return 132;           /* PRM: 132 cycles, mostly /RESET pulse */
+    case MN_ILLEGAL: return 34;            /* same as TRAP */
 
     /* ---- BCD ---- */
     case MN_ABCD: case MN_SBCD:
@@ -1175,9 +1201,14 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                         const M68KInstr *instr,
                         const AddrSet *instrs,
                         bool *skip_until_label,
-                        int *has_sp_adjust) {
+                        int *has_sp_adjust,
+                        const char *func_name,
+                        uint32_t func_addr) {
     uint32_t addr = instr->addr;
     M68KSize sz   = instr->size;
+    s_diag_func_name = func_name;
+    s_diag_func_addr = func_addr;
+    s_diag_instr     = instr;
 
     /* Unique temp-var suffix based on address */
     char tmp[32];
@@ -1230,13 +1261,72 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_STOP:
-        fprintf(f, "  return; /* STOP */\n");
+        /* STOP #imm: load imm into SR, halt until an interrupt of higher
+         * priority than I-mask. genesis_stop_until_interrupt is the
+         * runtime hook that yields control until the next VBlank /
+         * HBlank service runs (which raises the relevant IRQ).
+         *
+         * Real-hardware behaviour after the interrupt RTEs is to resume
+         * at the instruction following STOP. Our flat call model can't
+         * cleanly express that — function_finder still treats STOP as a
+         * static terminator and the post-STOP bytes typically aren't in
+         * the codegen instr set. So we yield and return, matching the
+         * prior (comment-only) emission's control-flow shape but adding
+         * real SR + yield semantics. */
+        fprintf(f, "  g_cpu.SR = (uint16_t)0x%04Xu;\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        fprintf(f, "  genesis_stop_until_interrupt((uint16_t)0x%04Xu);\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        fprintf(f, "  return; /* STOP — yield+return, see comment above */\n");
         *skip_until_label = true;
         break;
 
     /* ------------------------------------------------------------------ */
     case MN_TRAP:
-        fprintf(f, "  /* TRAP #%u — ignored */\n", instr->imm32 & 0xF);
+        /* TRAP #N: vectors 0x20..0x2F. Hand off to the runtime; on Sonic
+         * this aborts loud since no trap is expected in steady state. */
+        fprintf(f, "  m68k_trap_vector(0x%02Xu); return;\n",
+                0x20u + (unsigned)(instr->imm32 & 0xF));
+        *skip_until_label = true;
+        break;
+
+    /* ------------------------------------------------------------------ */
+    case MN_TRAPV:
+        /* Vector 7 — only fires when V is set. Falls through otherwise. */
+        fprintf(f, "  if (g_cpu.SR & %s) { m68k_trap_vector(7u); return; }\n",
+                SR_V);
+        break;
+
+    /* ------------------------------------------------------------------ */
+    case MN_RTR:
+        /* Pop CCR (low byte of pushed word) then PC, like RTE but only
+         * the user-visible CCR bits get restored. Mirrors the RTE
+         * propagation idiom so unwind reaches the original caller. */
+        fprintf(f, "  { uint16_t _ccrw = (uint16_t)m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;\n");
+        fprintf(f, "    g_cpu.SR = (uint16_t)((g_cpu.SR & 0xFF00u) | (_ccrw & 0x00FFu)); }\n");
+        fprintf(f, "  g_cpu.PC = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;\n");
+        fprintf(f, "  g_rte_pending = 1; return; /* RTR */\n");
+        *skip_until_label = true;
+        break;
+
+    /* ------------------------------------------------------------------ */
+    case MN_RESET:
+        /* RESET pulses the external /RESET line; CPU registers are
+         * unaffected. The runtime hook decides what (if anything) to
+         * re-init — for Sonic 1 the runner already brought devices up
+         * in runtime_init() before this instruction can execute, so the
+         * hook is empty. Calling through it (rather than emitting a
+         * comment) keeps the codegen behaviour honest with the rule
+         * that every site has real semantics. */
+        fprintf(f, "  genesis_reset_devices();\n");
+        break;
+
+    /* ------------------------------------------------------------------ */
+    case MN_ILLEGAL:
+        /* 0x4AFC, A-line, F-line — runtime picks the right vector. */
+        fprintf(f, "  m68k_illegal_trap(0x%06Xu, 0x%04Xu); return;\n",
+                addr, (unsigned)instr->words[0]);
+        *skip_until_label = true;
         break;
 
     /* ------------------------------------------------------------------ */
@@ -1258,6 +1348,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             emit_ea_addr_ex(f, instr, ea, &er, ae, true);
             fprintf(f, "  call_by_address(%s);\n", ae);
         } else {
+            codegen_diag_record(CGD_TODO_DYNAMIC_JSR_UNSUPPORTED, addr,
+                                instr->words[0], instr->mnemonic,
+                                func_name, func_addr);
             fprintf(f, "  /* TODO: dynamic JSR/BSR EA %d/%d */\n", mode, reg);
         }
 
@@ -1304,6 +1397,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                     pc_addr + (int32_t)d8, xr, xreg);
             fprintf(f, "  return;\n");
         } else {
+            codegen_diag_record(CGD_TODO_DYNAMIC_JMP_UNSUPPORTED, addr,
+                                instr->words[0], MN_JMP,
+                                func_name, func_addr);
             fprintf(f, "  /* TODO: dynamic JMP mode %d/%d */ return;\n", mode, reg);
         }
         *skip_until_label = true;
@@ -1319,6 +1415,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                 fprintf(f, "  func_%06X(); return;\n", instr->target_addr);
             }
         } else {
+            codegen_diag_record(CGD_BRANCH_WITHOUT_TARGET, addr,
+                                instr->words[0], MN_BRA,
+                                func_name, func_addr);
             fprintf(f, "  /* BRA with no target */ return;\n");
         }
         *skip_until_label = true;
@@ -1335,6 +1434,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                 fprintf(f, "  if (%s) { func_%06X(); return; }\n", ce, instr->target_addr);
             }
         } else {
+            codegen_diag_record(CGD_BRANCH_WITHOUT_TARGET, addr,
+                                instr->words[0], MN_Bcc,
+                                func_name, func_addr);
             fprintf(f, "  /* Bcc no target */\n");
         }
         break;
@@ -1567,49 +1669,57 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_ORI: {
-        /* Special: ORI to SR/CCR */
-        int ea_mode = (instr->src_ea >> 3) & 7;
-        int ea_reg  = instr->src_ea & 7;
         uint32_t imm = er_next_imm(&er, sz);
-        if (ea_mode == 7 && ea_reg == 4) {
-            fprintf(f, "  g_cpu.SR |= 0x%04Xu;\n", (unsigned)imm);
-        } else {
-            emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "|");
-        }
+        emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "|");
         break;
     }
 
     /* ------------------------------------------------------------------ */
     case MN_ANDI: {
-        int ea_mode = (instr->src_ea >> 3) & 7;
-        int ea_reg  = instr->src_ea & 7;
         uint32_t imm = er_next_imm(&er, sz);
-        if (ea_mode == 7 && ea_reg == 4) {
-            /* ANDI to CCR (.B) only touches the low byte of SR.
-             * ANDI to SR  (.W) is a full 16-bit AND.
-             * Forcing the upper byte to stay set on .B prevents wiping
-             * supervisor mode + interrupt mask bits — found while
-             * tracking SMPS audio squelching. */
-            uint32_t mask = (sz == M68K_SIZE_B) ? (0xFF00u | (imm & 0xFFu)) : (imm & 0xFFFFu);
-            fprintf(f, "  g_cpu.SR &= 0x%04Xu;\n", (unsigned)mask);
-        } else {
-            emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "&");
-        }
+        emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "&");
         break;
     }
 
     /* ------------------------------------------------------------------ */
     case MN_EORI: {
-        int ea_mode = (instr->src_ea >> 3) & 7;
-        int ea_reg  = instr->src_ea & 7;
         uint32_t imm = er_next_imm(&er, sz);
-        if (ea_mode == 7 && ea_reg == 4) {
-            fprintf(f, "  g_cpu.SR ^= 0x%04Xu;\n", (unsigned)imm);
-        } else {
-            emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "^");
-        }
+        emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "^");
         break;
     }
+
+    /* ------------------------------------------------------------------ */
+    /* Immediate-to-CCR / -to-SR (Phase 3B).
+     * CCR forms touch only the low byte of SR; SR forms touch the full
+     * word. Privilege-violation modeling for SR forms is out of scope
+     * (this recompiler doesn't track supervisor mode separately yet).
+     * The mask forced on ANDI #imm,CCR keeps the upper byte set so we
+     * don't wipe supervisor + interrupt-mask bits — same rationale as
+     * the SMPS-audio fix that previously guarded the inline branch. */
+    case MN_ORI_TO_CCR:
+        fprintf(f, "  g_cpu.SR |= 0x%02Xu; /* ORI #imm,CCR */\n",
+                (unsigned)(instr->imm32 & 0xFFu));
+        break;
+    case MN_ORI_TO_SR:
+        fprintf(f, "  g_cpu.SR |= 0x%04Xu; /* ORI #imm,SR */\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        break;
+    case MN_ANDI_TO_CCR:
+        fprintf(f, "  g_cpu.SR &= 0x%04Xu; /* ANDI #imm,CCR */\n",
+                (unsigned)(0xFF00u | (instr->imm32 & 0xFFu)));
+        break;
+    case MN_ANDI_TO_SR:
+        fprintf(f, "  g_cpu.SR &= 0x%04Xu; /* ANDI #imm,SR */\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        break;
+    case MN_EORI_TO_CCR:
+        fprintf(f, "  g_cpu.SR ^= 0x%02Xu; /* EORI #imm,CCR */\n",
+                (unsigned)(instr->imm32 & 0xFFu));
+        break;
+    case MN_EORI_TO_SR:
+        fprintf(f, "  g_cpu.SR ^= 0x%04Xu; /* EORI #imm,SR */\n",
+                (unsigned)(instr->imm32 & 0xFFFFu));
+        break;
 
     /* ------------------------------------------------------------------ */
     case MN_CMP: {
@@ -1643,6 +1753,43 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         fprintf(f, "    if ((uint32_t)_cmp_b > (uint32_t)g_cpu.A[%d]) { g_cpu.SR |= (1u<<0); }\n", areg);
         fprintf(f, "    if (((g_cpu.A[%d]^_cmp_b) & 0x80000000u) && ((g_cpu.A[%d]^_cmp_r) & 0x80000000u)) g_cpu.SR |= (1u<<1);\n", areg, areg);
         fprintf(f, "  }\n");
+        break;
+    }
+
+    /* ------------------------------------------------------------------ */
+    case MN_CMPM: {
+        /* CMPM (Ay)+,(Ax)+ — read both via post-increment, compute
+         * Ax-source - Ay-source as a CMP, set flags, then advance both
+         * address registers. X is unchanged (same as CMP).
+         *
+         * 68K quirk: byte-size post-increment on A7 increments by 2
+         * to keep the supervisor stack aligned. CMPM (A7)+,(A7)+ is
+         * legal but rare. */
+        int ay = instr->src_ea & 7;             /* source register   */
+        int ax = instr->reg;                    /* destination Ax    */
+        int sb = size_bytes(sz);
+        int ay_inc = (ay == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+        int ax_inc = (ax == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+        const char *ct = size_ctype(sz);
+        const char *rf = size_read_fn(sz);
+        char res[64];
+        snprintf(res, sizeof(res), "_%06Xr", addr);
+        fprintf(f,
+            "  { %s _cmpm_s = (%s)%s(g_cpu.A[%d]);\n"
+            "    %s _cmpm_d = (%s)%s(g_cpu.A[%d]);\n"
+            "    %s %s = (%s)(_cmpm_d - _cmpm_s);\n",
+            ct, ct, rf, ay,
+            ct, ct, rf, ax,
+            ct, res, ct);
+        char da[64], db[64];
+        snprintf(da, sizeof(da), "_cmpm_d");
+        snprintf(db, sizeof(db), "_cmpm_s");
+        emit_flags_cmp(f, da, db, res, sz);
+        fprintf(f,
+            "    g_cpu.A[%d] += %d;\n"
+            "    g_cpu.A[%d] += %d;\n"
+            "  }\n",
+            ay, ay_inc, ax, ax_inc);
         break;
     }
 
@@ -2279,14 +2426,13 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_MOVE_SR: {
-        /* words[0] bit 9..8: if direction = from SR, EA is dst; else EA is src */
-        /* Encoding: 0x40C0 = MOVE SR,<ea>; 0x46C0 = MOVE <ea>,SR */
-        int to_sr = ((instr->words[0] & 0x0E00) == 0x0600); /* bits 11-9 = 011 = MOVE <ea>,SR */
-        if (to_sr) {
+        /* Direction comes from the decoder's dst_is_ea flag:
+         *   dst_is_ea=false → MOVE <ea>,SR  (load EA → SR)
+         *   dst_is_ea=true  → MOVE SR,<ea>  (store SR → EA) */
+        if (!instr->dst_is_ea) {
             emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
             fprintf(f, "  g_cpu.SR = (uint16_t)(%s);\n", src_expr);
         } else {
-            /* MOVE SR, <ea> */
             emit_ea_store(f, instr, instr->src_ea, M68K_SIZE_W, &er, "g_cpu.SR");
         }
         break;
@@ -2294,8 +2440,19 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_MOVE_CCR: {
-        emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
-        fprintf(f, "  g_cpu.SR = (g_cpu.SR & 0xFF00u) | (uint16_t)((%s) & 0xFFu);\n", src_expr);
+        /* Direction from decoder:
+         *   dst_is_ea=false → MOVE <ea>,CCR  (load low byte of EA into CCR;
+         *                     upper byte of SR is preserved per 68K spec)
+         *   dst_is_ea=true  → MOVE CCR,<ea>  (read CCR as a word — low 8
+         *                     bits are CCR, upper 8 bits are zero — and
+         *                     store to EA as a word) */
+        if (!instr->dst_is_ea) {
+            emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
+            fprintf(f, "  g_cpu.SR = (g_cpu.SR & 0xFF00u) | (uint16_t)((%s) & 0xFFu);\n", src_expr);
+        } else {
+            emit_ea_store(f, instr, instr->src_ea, M68K_SIZE_W, &er,
+                          "(uint16_t)(g_cpu.SR & 0x00FFu)");
+        }
         break;
     }
 
@@ -2344,9 +2501,24 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     }
 
     /* ------------------------------------------------------------------ */
-    case MN_CHK:
-        fprintf(f, "  /* CHK — bounds check, trap on underflow/overflow (not emitted) */\n");
+    case MN_CHK: {
+        /* CHK <ea>,Dn — bounds check (signed word). Trap via vector 6
+         * if Dn < 0 or Dn > <ea>. PRM:
+         *   N is set if Dn < 0, cleared if Dn > <ea>, undefined otherwise.
+         *   Z, V, C are undefined; X is unchanged.
+         * On Sonic the check never trips in steady-state — m68k_trap_vector
+         * aborts loud if it does. */
+        int dn = instr->reg;
+        emit_ea_load_ex(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr, 1);
+        fprintf(f,
+            "  { int16_t _bound = (int16_t)(%s);\n"
+            "    int16_t _val   = (int16_t)g_cpu.D[%d];\n"
+            "    if (_val < 0)        { g_cpu.SR |= %s;  m68k_trap_vector(6u); return; }\n"
+            "    if (_val > _bound)   { g_cpu.SR &= ~%s; m68k_trap_vector(6u); return; }\n"
+            "  }\n",
+            src_expr, dn, SR_N, SR_N);
         break;
+    }
 
     case MN_TAS:
         /* Test and Set: read EA, set N/Z, then set bit 7 */
@@ -2366,21 +2538,232 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         fprintf(f, "  }\n");
         break;
 
-    case MN_MOVEP:
-        fprintf(f, "  /* TODO: MOVEP — byte/word transfer to alternating bytes */\n");
+    case MN_MOVEP: {
+        /* MOVEP Dn, d16(An) and MOVEP d16(An), Dn — alternating-byte
+         * transfer between a data register and memory at every other
+         * byte starting at d16(An). Used by 8-bit-on-16-bit-bus glue
+         * where each port lives at one half of a word lane.
+         *
+         * Encoding bits in words[0]:
+         *   bit 7 (0x80):  0 = mem → Dn,  1 = Dn → mem
+         *   bit 6 (0x40):  0 = .W (2 bytes),  1 = .L (4 bytes)
+         * reg     = Dn ((w0 >> 9) & 7)        — populated by decoder
+         * src_ea  = (5<<3)|An (d16(An) form)  — low 3 bits = An reg
+         * words[1] = signed 16-bit displacement
+         *
+         * Memory bytes go: addr+0, addr+2, addr+4, addr+6 (most-
+         * significant to least-significant). For .W only the low half
+         * of Dn is touched; for .L the full 32 bits are read/written
+         * with bit 31 at addr+0. */
+        int dn   = instr->reg;
+        int an   = instr->src_ea & 7;
+        int dir  = (instr->words[0] >> 7) & 1;     /* 1 = Dn→mem */
+        int isL  = (instr->words[0] >> 6) & 1;     /* 1 = .L     */
+        int16_t d16 = (int16_t)instr->words[1];
+        if (dir) {
+            if (isL) {
+                fprintf(f,
+                    "  { uint32_t _ea = (uint32_t)(g_cpu.A[%d] + (int32_t)%d);\n"
+                    "    uint32_t _v  = g_cpu.D[%d];\n"
+                    "    m68k_write8(_ea + 0, (uint8_t)(_v >> 24));\n"
+                    "    m68k_write8(_ea + 2, (uint8_t)(_v >> 16));\n"
+                    "    m68k_write8(_ea + 4, (uint8_t)(_v >>  8));\n"
+                    "    m68k_write8(_ea + 6, (uint8_t)(_v      ));\n"
+                    "  }\n",
+                    an, (int)d16, dn);
+            } else {
+                fprintf(f,
+                    "  { uint32_t _ea = (uint32_t)(g_cpu.A[%d] + (int32_t)%d);\n"
+                    "    uint32_t _v  = g_cpu.D[%d];\n"
+                    "    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));\n"
+                    "    m68k_write8(_ea + 2, (uint8_t)(_v     ));\n"
+                    "  }\n",
+                    an, (int)d16, dn);
+            }
+        } else {
+            if (isL) {
+                fprintf(f,
+                    "  { uint32_t _ea = (uint32_t)(g_cpu.A[%d] + (int32_t)%d);\n"
+                    "    uint32_t _v  = ((uint32_t)m68k_read8(_ea + 0) << 24)\n"
+                    "                 | ((uint32_t)m68k_read8(_ea + 2) << 16)\n"
+                    "                 | ((uint32_t)m68k_read8(_ea + 4) <<  8)\n"
+                    "                 | ((uint32_t)m68k_read8(_ea + 6)      );\n"
+                    "    g_cpu.D[%d] = _v;\n"
+                    "  }\n",
+                    an, (int)d16, dn);
+            } else {
+                fprintf(f,
+                    "  { uint32_t _ea = (uint32_t)(g_cpu.A[%d] + (int32_t)%d);\n"
+                    "    uint16_t _v  = (uint16_t)(((uint16_t)m68k_read8(_ea + 0) << 8)\n"
+                    "                            | (uint16_t)m68k_read8(_ea + 2));\n"
+                    "    g_cpu.D[%d] = (g_cpu.D[%d] & 0xFFFF0000u) | _v;\n"
+                    "  }\n",
+                    an, (int)d16, dn, dn);
+            }
+        }
         break;
+    }
 
-    case MN_ABCD:
-        fprintf(f, "  /* TODO: ABCD — BCD add (not emitted) */\n");
+    case MN_ABCD: {
+        /* result = a + b + X, packed-BCD.
+         *   low nibble: (a&0xF) + (b&0xF) + X; if >9, +6, low carry.
+         *   high nibble: (a>>4) + (b>>4) + low_carry; if >9, +6, high carry.
+         * SR: X = C; Z is "sticky" — cleared only when result != 0,
+         *     preserved otherwise (multi-precision BCD chains rely on
+         *     this: the chain reports overall zeroness, not per-byte).
+         * N and V are undefined per PRM; we emit conservative values
+         *     (N from result bit 7, V cleared) so generated code is
+         *     deterministic. */
+        int dst = instr->reg;
+        int src = instr->src_ea & 7;
+        if (instr->predec_mem_form) {
+            int ay_dec = (src == 7) ? 2 : 1;
+            int ax_dec = (dst == 7) ? 2 : 1;
+            fprintf(f,
+                "  { g_cpu.A[%d] -= %d;\n"
+                "    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[%d]);\n"
+                "    g_cpu.A[%d] -= %d;\n"
+                "    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[%d]);\n"
+                "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint32_t _lo = (uint32_t)(_a & 0xF) + (uint32_t)(_b & 0xF) + _x;\n"
+                "    uint32_t _adj_lo = (_lo > 9u) ? 6u : 0u;\n"
+                "    uint32_t _hi = (uint32_t)(_a >> 4) + (uint32_t)(_b >> 4) + ((_lo + _adj_lo) >> 4);\n"
+                "    uint32_t _adj_hi = (_hi > 9u) ? 6u : 0u;\n"
+                "    uint32_t _full = (_hi << 4) + _adj_hi*16u + ((_lo + _adj_lo) & 0xFu);\n"
+                "    uint8_t _r = (uint8_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~%s;\n"
+                "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+                "    g_cpu.SR &= ~(%s | %s | %s);\n"
+                "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+                "    if (_full & 0x100u) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    m68k_write8(g_cpu.A[%d], _r);\n"
+                "  }\n",
+                src, ay_dec, src,
+                dst, ax_dec, dst,
+                SR_V, SR_Z, SR_Z,
+                SR_C, SR_X, SR_N, SR_N, SR_C, SR_X,
+                dst);
+        } else {
+            fprintf(f,
+                "  { uint8_t _a = (uint8_t)g_cpu.D[%d];\n"
+                "    uint8_t _b = (uint8_t)g_cpu.D[%d];\n"
+                "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint32_t _lo = (uint32_t)(_a & 0xF) + (uint32_t)(_b & 0xF) + _x;\n"
+                "    uint32_t _adj_lo = (_lo > 9u) ? 6u : 0u;\n"
+                "    uint32_t _hi = (uint32_t)(_a >> 4) + (uint32_t)(_b >> 4) + ((_lo + _adj_lo) >> 4);\n"
+                "    uint32_t _adj_hi = (_hi > 9u) ? 6u : 0u;\n"
+                "    uint32_t _full = (_hi << 4) + _adj_hi*16u + ((_lo + _adj_lo) & 0xFu);\n"
+                "    uint8_t _r = (uint8_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~%s;\n"
+                "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+                "    g_cpu.SR &= ~(%s | %s | %s);\n"
+                "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+                "    if (_full & 0x100u) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    g_cpu.D[%d] = (g_cpu.D[%d] & 0xFFFFFF00u) | _r;\n"
+                "  }\n",
+                dst, src,
+                SR_V, SR_Z, SR_Z,
+                SR_C, SR_X, SR_N, SR_N, SR_C, SR_X,
+                dst, dst);
+        }
         break;
+    }
 
-    case MN_SBCD:
-        fprintf(f, "  /* TODO: SBCD — BCD sub (not emitted) */\n");
+    case MN_SBCD: {
+        /* result = a - b - X, packed-BCD. Borrow propagation mirrors the
+         * carry path in ABCD; subtract the BCD adjustment instead of
+         * adding it. Z is sticky like ABCD. */
+        int dst = instr->reg;
+        int src = instr->src_ea & 7;
+        if (instr->predec_mem_form) {
+            int ay_dec = (src == 7) ? 2 : 1;
+            int ax_dec = (dst == 7) ? 2 : 1;
+            fprintf(f,
+                "  { g_cpu.A[%d] -= %d;\n"
+                "    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[%d]);\n"
+                "    g_cpu.A[%d] -= %d;\n"
+                "    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[%d]);\n"
+                "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+                "    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;\n"
+                "    int32_t _adj_lo = (_lo < 0) ? 6 : 0;\n"
+                "    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);\n"
+                "    int32_t _adj_hi = (_hi < 0) ? 6 : 0;\n"
+                "    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);\n"
+                "    uint8_t _r = (uint8_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~%s;\n"
+                "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+                "    g_cpu.SR &= ~(%s | %s | %s);\n"
+                "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+                "    if (_hi < 0) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    m68k_write8(g_cpu.A[%d], _r);\n"
+                "  }\n",
+                src, ay_dec, src,
+                dst, ax_dec, dst,
+                SR_V, SR_Z, SR_Z,
+                SR_C, SR_X, SR_N, SR_N, SR_C, SR_X,
+                dst);
+        } else {
+            fprintf(f,
+                "  { uint8_t _a = (uint8_t)g_cpu.D[%d];\n"
+                "    uint8_t _b = (uint8_t)g_cpu.D[%d];\n"
+                "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+                "    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;\n"
+                "    int32_t _adj_lo = (_lo < 0) ? 6 : 0;\n"
+                "    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);\n"
+                "    int32_t _adj_hi = (_hi < 0) ? 6 : 0;\n"
+                "    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);\n"
+                "    uint8_t _r = (uint8_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~%s;\n"
+                "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+                "    g_cpu.SR &= ~(%s | %s | %s);\n"
+                "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+                "    if (_hi < 0) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    g_cpu.D[%d] = (g_cpu.D[%d] & 0xFFFFFF00u) | _r;\n"
+                "  }\n",
+                dst, src,
+                SR_V, SR_Z, SR_Z,
+                SR_C, SR_X, SR_N, SR_N, SR_C, SR_X,
+                dst, dst);
+        }
         break;
+    }
 
-    case MN_NBCD:
-        fprintf(f, "  /* TODO: NBCD — BCD negate (not emitted) */\n");
+    case MN_NBCD: {
+        /* NBCD <ea>:  result = 0 - dst - X, packed-BCD. Same flag
+         * semantics as SBCD (sticky Z, X = C). EA can be Dn, (An),
+         * (An)+, -(An), d16(An), d8(An,Xn), abs.W, abs.L. */
+        ExtReader er2; er_init(&er2, instr);
+        emit_ea_load_ex(f, instr, instr->src_ea, M68K_SIZE_B, &er, tmp, src_expr, 1);
+        fprintf(f,
+            "  { uint8_t _a = (uint8_t)(%s);\n"
+            "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n"
+            "    int32_t _lo = -(int32_t)(_a & 0xF) - (int32_t)_x;\n"
+            "    int32_t _adj_lo = (_lo < 0) ? 6 : 0;\n"
+            "    int32_t _hi = -(int32_t)(_a >> 4) - (_lo < 0 ? 1 : 0);\n"
+            "    int32_t _adj_hi = (_hi < 0) ? 6 : 0;\n"
+            "    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);\n"
+            "    uint8_t _r = (uint8_t)_full;\n"
+            "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+            "    g_cpu.SR &= ~%s;\n"
+            "    if (_r) { g_cpu.SR &= ~%s; } else if (_zold) { g_cpu.SR |= %s; }\n"
+            "    g_cpu.SR &= ~(%s | %s | %s);\n"
+            "    if (_r & 0x80u) g_cpu.SR |= %s;\n"
+            "    if (_hi < 0) { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n",
+            src_expr,
+            SR_V, SR_Z, SR_Z,
+            SR_C, SR_X, SR_N, SR_N, SR_C, SR_X);
+        {
+            char res_expr[16];
+            snprintf(res_expr, sizeof(res_expr), "_r");
+            emit_ea_store_ex(f, instr, instr->src_ea, M68K_SIZE_B, &er2, res_expr, 1);
+        }
+        fprintf(f, "  }\n");
         break;
+    }
 
     /* ------------------------------------------------------------------ */
     case MN_EXG: {
@@ -2406,82 +2789,148 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_ADDX: {
-        /* D-D form only: Dy = Dy + Dx + X.
+        /* Dy/Dx → D-D form;  -(Ay),-(Ax) → memory predecrement form.
          * Z is cleared unless result==0 AND previous Z was set (for
          * multi-precision chains).  X = C. */
         uint16_t w0 = instr->words[0];
-        if ((w0 >> 3) & 1) {
-            fprintf(f, "  /* TODO: ADDX -(Ay),-(Ax) memory form @ $%06X */\n", addr);
-            break;
-        }
-        int dst = (w0 >> 9) & 7;
-        int src = w0 & 7;
+        int dst  = (w0 >> 9) & 7;
+        int src  = w0 & 7;
         int bits = size_bits(sz);
         uint32_t sign_mask = (bits == 32) ? 0x80000000u : (bits == 16 ? 0x8000u : 0x80u);
         uint32_t low_mask  = (bits == 32) ? 0xFFFFFFFFu : (bits == 16 ? 0xFFFFu : 0xFFu);
-        fprintf(f,
-            "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
-            "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
-            "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
-            "    uint64_t _full = (uint64_t)_fa + (uint64_t)_fb + (uint64_t)_fx;\n"
-            "    uint%d_t _fr = (uint%d_t)_full;\n"
-            "    int _zold = (g_cpu.SR >> 2) & 1;\n"
-            "    g_cpu.SR &= ~(0x1Fu);\n"
-            "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
-            "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
-            "    if (_full >> %d)                                { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
-            "    if (!((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
-            bits, bits, dst, bits, bits, src, bits, bits,
-            SR_Z, bits - 1, SR_N, bits, SR_C, SR_X,
-            sign_mask, sign_mask, SR_V);
-        if (sz == M68K_SIZE_L)
-            fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
-        else
-            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
-                    dst, dst, (uint32_t)~low_mask);
-        fprintf(f, "  }\n");
+        if (instr->predec_mem_form) {
+            /* -(Ay),-(Ax): predec both, read both, compute (Ax) + (Ay) + X,
+             * write back to (Ax). Byte size on A7 still increments by 2
+             * to keep the supervisor stack aligned. */
+            int sb = size_bytes(sz);
+            int ay_dec = (src == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+            int ax_dec = (dst == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+            const char *rf = size_read_fn(sz);
+            const char *wf = size_write_fn(sz);
+            const char *ct = size_ctype(sz);
+            fprintf(f,
+                "  { g_cpu.A[%d] -= %d;\n"
+                "    %s _fb = (%s)%s(g_cpu.A[%d]);\n"
+                "    g_cpu.A[%d] -= %d;\n"
+                "    %s _fa = (%s)%s(g_cpu.A[%d]);\n"
+                "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint64_t _full = (uint64_t)(uint%d_t)_fa + (uint64_t)(uint%d_t)_fb + (uint64_t)_fx;\n"
+                "    uint%d_t _fr = (uint%d_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~(0x1Fu);\n"
+                "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+                "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+                "    if (_full >> %d)                                { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    if (!(((uint%d_t)_fa^(uint%d_t)_fb) & 0x%08Xu) && (((uint%d_t)_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n"
+                "    %s(g_cpu.A[%d], (%s)_fr);\n"
+                "  }\n",
+                src, ay_dec,
+                ct, ct, rf, src,
+                dst, ax_dec,
+                ct, ct, rf, dst,
+                bits, bits,
+                bits, bits,
+                SR_Z, bits - 1, SR_N, bits, SR_C, SR_X,
+                bits, bits, sign_mask, bits, sign_mask, SR_V,
+                wf, dst, ct);
+        } else {
+            fprintf(f,
+                "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
+                "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
+                "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint64_t _full = (uint64_t)_fa + (uint64_t)_fb + (uint64_t)_fx;\n"
+                "    uint%d_t _fr = (uint%d_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~(0x1Fu);\n"
+                "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+                "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+                "    if (_full >> %d)                                { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    if (!((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
+                bits, bits, dst, bits, bits, src, bits, bits,
+                SR_Z, bits - 1, SR_N, bits, SR_C, SR_X,
+                sign_mask, sign_mask, SR_V);
+            if (sz == M68K_SIZE_L)
+                fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
+            else
+                fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
+                        dst, dst, (uint32_t)~low_mask);
+            fprintf(f, "  }\n");
+        }
         break;
     }
 
     /* ------------------------------------------------------------------ */
     case MN_SUBX: {
-        /* D-D form only: Dy = Dy - Dx - X. Z-preserve semantics. X = C. */
+        /* Dy/Dx → D-D form;  -(Ay),-(Ax) → memory predecrement form.
+         * Z-preserve semantics. X = C. */
         uint16_t w0 = instr->words[0];
-        if ((w0 >> 3) & 1) {
-            fprintf(f, "  /* TODO: SUBX -(Ay),-(Ax) memory form @ $%06X */\n", addr);
-            break;
-        }
-        int dst = (w0 >> 9) & 7;
-        int src = w0 & 7;
+        int dst  = (w0 >> 9) & 7;
+        int src  = w0 & 7;
         int bits = size_bits(sz);
         uint32_t sign_mask = (bits == 32) ? 0x80000000u : (bits == 16 ? 0x8000u : 0x80u);
         uint32_t low_mask  = (bits == 32) ? 0xFFFFFFFFu : (bits == 16 ? 0xFFFFu : 0xFFu);
-        fprintf(f,
-            "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
-            "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
-            "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
-            "    uint64_t _full = (uint64_t)_fa - (uint64_t)_fb - (uint64_t)_fx;\n"
-            "    uint%d_t _fr = (uint%d_t)_full;\n"
-            "    int _zold = (g_cpu.SR >> 2) & 1;\n"
-            "    g_cpu.SR &= ~(0x1Fu);\n"
-            "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
-            "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
-            "    if ((_full >> 63) & 1u)                         { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
-            "    if (((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
-            bits, bits, dst, bits, bits, src, bits, bits,
-            SR_Z, bits - 1, SR_N, SR_C, SR_X,
-            sign_mask, sign_mask, SR_V);
-        if (sz == M68K_SIZE_L)
-            fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
-        else
-            fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
-                    dst, dst, (uint32_t)~low_mask);
-        fprintf(f, "  }\n");
+        if (instr->predec_mem_form) {
+            int sb = size_bytes(sz);
+            int ay_dec = (src == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+            int ax_dec = (dst == 7 && sz == M68K_SIZE_B) ? 2 : sb;
+            const char *rf = size_read_fn(sz);
+            const char *wf = size_write_fn(sz);
+            const char *ct = size_ctype(sz);
+            fprintf(f,
+                "  { g_cpu.A[%d] -= %d;\n"
+                "    %s _fb = (%s)%s(g_cpu.A[%d]);\n"
+                "    g_cpu.A[%d] -= %d;\n"
+                "    %s _fa = (%s)%s(g_cpu.A[%d]);\n"
+                "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint64_t _full = (uint64_t)(uint%d_t)_fa - (uint64_t)(uint%d_t)_fb - (uint64_t)_fx;\n"
+                "    uint%d_t _fr = (uint%d_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~(0x1Fu);\n"
+                "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+                "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+                "    if ((_full >> 63) & 1u)                         { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    if ((((uint%d_t)_fa^(uint%d_t)_fb) & 0x%08Xu) && (((uint%d_t)_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n"
+                "    %s(g_cpu.A[%d], (%s)_fr);\n"
+                "  }\n",
+                src, ay_dec,
+                ct, ct, rf, src,
+                dst, ax_dec,
+                ct, ct, rf, dst,
+                bits, bits,
+                bits, bits,
+                SR_Z, bits - 1, SR_N, SR_C, SR_X,
+                bits, bits, sign_mask, bits, sign_mask, SR_V,
+                wf, dst, ct);
+        } else {
+            fprintf(f,
+                "  { uint%d_t _fa = (uint%d_t)g_cpu.D[%d];\n"
+                "    uint%d_t _fb = (uint%d_t)g_cpu.D[%d];\n"
+                "    uint32_t _fx = (g_cpu.SR >> 4) & 1u;\n"
+                "    uint64_t _full = (uint64_t)_fa - (uint64_t)_fb - (uint64_t)_fx;\n"
+                "    uint%d_t _fr = (uint%d_t)_full;\n"
+                "    int _zold = (g_cpu.SR >> 2) & 1;\n"
+                "    g_cpu.SR &= ~(0x1Fu);\n"
+                "    if (!_fr && _zold)                              g_cpu.SR |= %s;\n"
+                "    if (_fr >> %d)                                  g_cpu.SR |= %s;\n"
+                "    if ((_full >> 63) & 1u)                         { g_cpu.SR |= %s; g_cpu.SR |= %s; }\n"
+                "    if (((_fa^_fb) & 0x%08Xu) && ((_fa^_fr) & 0x%08Xu)) g_cpu.SR |= %s;\n",
+                bits, bits, dst, bits, bits, src, bits, bits,
+                SR_Z, bits - 1, SR_N, SR_C, SR_X,
+                sign_mask, sign_mask, SR_V);
+            if (sz == M68K_SIZE_L)
+                fprintf(f, "    g_cpu.D[%d] = (uint32_t)_fr;\n", dst);
+            else
+                fprintf(f, "    g_cpu.D[%d] = (g_cpu.D[%d] & 0x%08Xu) | (uint32_t)_fr;\n",
+                        dst, dst, (uint32_t)~low_mask);
+            fprintf(f, "  }\n");
+        }
         break;
     }
 
     case MN_OTHER:
     default:
+        codegen_diag_record(CGD_MN_OTHER, addr, instr->words[0],
+                            instr->mnemonic, func_name, func_addr);
         fprintf(f, "  /* unimplemented opcode $%04X @ $%06X */\n",
                 instr->words[0], addr);
         break;
@@ -2511,6 +2960,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                   bool reverse_debug) {
     (void)cfg;
     s_reverse_debug = reverse_debug;
+    codegen_diag_reset();
 
     FILE *f_full     = fopen(out_full_path,     "w");
     FILE *f_dispatch = fopen(out_dispatch_path, "w");
@@ -2690,7 +3140,8 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             fprintf(f_full, "  /* $%06X */\n", pc);
             if (s_reverse_debug)
                 fprintf(f_full, "  rdb_on_insn(0x%06Xu);\n", pc);
-            emit_instr(f_full, rom, &instr, &instrs, &skip_until_label, &has_sp_adjust);
+            emit_instr(f_full, rom, &instr, &instrs, &skip_until_label, &has_sp_adjust,
+                       name, func_addr);
 
             /* Contextual recompiler: accumulate cycles and check for
              * pending VBlank.  The runtime maintains g_cycle_accumulator
@@ -2720,10 +3171,12 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             uint32_t last_pc = instrs.addrs[instrs.count - 1];
             M68KInstr last_instr;
             if (m68k_decode(rom, last_pc, &last_instr)) {
-                bool is_terminator = (last_instr.mnemonic == MN_RTS  ||
-                                      last_instr.mnemonic == MN_RTE  ||
-                                      last_instr.mnemonic == MN_STOP ||
-                                      last_instr.mnemonic == MN_JMP  ||
+                bool is_terminator = (last_instr.mnemonic == MN_RTS     ||
+                                      last_instr.mnemonic == MN_RTE     ||
+                                      last_instr.mnemonic == MN_RTR     ||
+                                      last_instr.mnemonic == MN_STOP    ||
+                                      last_instr.mnemonic == MN_ILLEGAL ||
+                                      last_instr.mnemonic == MN_JMP     ||
                                       last_instr.mnemonic == MN_BRA);
                 if (!is_terminator) {
                     uint32_t fall_through = last_pc + last_instr.byte_length;
