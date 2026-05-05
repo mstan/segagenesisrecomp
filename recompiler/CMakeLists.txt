@@ -21,6 +21,7 @@ add_executable(GenesisRecomp
     src/annotations.c
     src/game_config.c
     src/cycle_probe.c
+    src/toml.c
     "${C68K_DIR}/interpreter/clown68000.c"
     "${C68K_DIR}/common/opcode.c"
 )

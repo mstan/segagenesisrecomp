@@ -1,5 +1,9 @@
 /*
- * game_config.h — .cfg file parser interface.
+ * game_config.h — game.toml parser interface.
+ *
+ * The legacy whitespace `.cfg` format has been retired; see
+ * game_config.c for the TOML schema and how `discovery_files`
+ * recursively merge auto-generated address tables into this struct.
  */
 #pragma once
 #include <stdint.h>

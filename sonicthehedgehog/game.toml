@@ -1,0 +1,114 @@
+# game.toml — Sonic the Hedgehog (Sega Genesis/Mega Drive, 1991)
+# 68000, 512KB ROM, no SRAM, no mapper
+# CRC32 (JUE REV00): 0xF9394E97
+# Product serial: GM 00001009-00  (header $0180)
+# Internal checksum: $264A         (header $018E)
+# Revision: 00 (original JUE release)
+
+[game]
+output_prefix = "sonic"
+# Annotations: full s1disasm REV00 label set (~7300 entries).
+annotations = "annotations_from_disasm.csv"
+
+# Auto-generated discovery files (regen via tests/tools/gen_disasm_*.py).
+# This game.toml only carries IRREDUCIBLE residual entries — things the
+# extractors can't yet identify from the disasm alone.
+discovery_files = [
+    "sonic1.disasm_seeds.toml",        # Static JSR/BSR targets from sonic.lst
+    "sonic1.disasm_subs.toml",         # Named subroutine labels not in seeds
+    "sonic1.disasm_jumptables.toml",   # PC-indexed jump tables + bra-trampolines
+]
+
+# ---------------------------------------------------------------------------
+# Residual extras — dispatch targets the auto-extractors don't yet identify.
+# Each is a coverage gap; ideally this list shrinks to zero as extractors
+# improve. Names are from s1disasm where known.
+# ---------------------------------------------------------------------------
+
+[functions]
+extra = [
+    # VBlank handler sub-routines (entered via the V-int dispatch but
+    # their specific shape — a per-mode JSR chain — isn't a single jump
+    # table).
+    0x000B5E,   # VBla_Music
+    0x000B64,   # VBla_Exit
+
+    # Nemesis decompressor sub-handlers — reached via RAM-loaded function
+    # pointers (NemDec_TableSelect's jmp (a3) form), not a static table.
+    0x00145C,   # NemDecMain
+    0x0014C0,   # NemPCD_ProcessCompressedData
+    0x0014C2,   # NemPCD_WritePixel
+    0x0014D6,   # NemPCD_InlineData
+    0x001502,   # NemPCD_WriteRowToVDP
+    0x00150C,   # NemPCD_WriteRowToVDP_XOR
+    0x001518,   # NemPCD_WriteRowToRAM
+    0x001522,   # NemPCD_WriteRowToRAM_XOR
+
+    # Sonic_Find* helper chain — interior labels reached via fall-through
+    # the function_finder doesn't promote.
+    0x014C26,   # loc_14C26
+    0x014DDE,   # loc_14DDE
+    0x014DE8,   # Sonic_FindFloor_Quick_UsePos
+    0x014F74,   # Sonic_FindCeiling_Quick_UsePos
+
+    # Animated-art sub-handlers (AniArt_*) — reached via
+    # LoadTilesAsYouMove data-driven dispatch.
+    0x01C08A,   # AniArt_GHZ_Bigflower
+    0x01C0C0,   # AniArt_GHZ_Smallflower
+    0x01C150,   # AniArt_MZ_Magma
+    0x01C1AE,   # AniArt_MZ_Torch
+    0x01C2F4,   # AniArt_Ending_SmallFlower
+    0x01C33C,   # AniArt_Ending_Flower3
+    0x01C37A,   # AniArt_Ending_Flower4
+
+    # Misc object/handler entries that runtime dispatch_misses.log
+    # surfaced but no extractor catches statically. Most likely indexed
+    # via a table shape we don't yet recognize (RAM-pointer-driven
+    # dispatch, dc.b stride-1 tables, etc.).
+    0x005328,
+    0x006304,
+    0x006490,
+    0x006492,
+    0x00649A,
+    0x00649C,
+    0x006DAA,
+    0x0070D0,
+    0x007A48,   # level/object sub-handler (frame 187)
+    0x007F74,
+    0x007F76,
+    0x007F9E,
+    0x007FBC,
+    0x007FCC,
+    0x007FE4,
+    0x008076,
+    0x0080BA,
+    0x00856E,
+    0x00957C,
+    0x00961A,
+    0x00983C,
+    0x0098D2,
+    0x00DDD2,
+    0x00DE14,
+    0x00DE88,
+    0x00DEA8,
+    0x00DEAE,
+    0x01010E,
+    0x0103F2,
+    0x010422,
+    0x012310,   # Gargoyle object mapping
+
+    # Sound driver — CoordFlag sub-handlers not in the dispatched table.
+    0x072AD4,   # cfFlag sub-handler
+    0x072AD8,   # cfFlag sub-handler
+]
+
+# Blacklist: addresses boundary-split would otherwise promote to function
+# entries but the disasm marks as data. Keeps func_XXXXXX bodies from
+# being emitted for non-code addresses (verified against L1 fixture).
+blacklist = [
+    0x007E2A,
+    0x00A046,
+    # .convertArray — interior label of ConvertCollisionArray that
+    # boundary-split promoted but nothing actually calls.
+    0x014CA2,
+]
