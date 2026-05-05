@@ -13,12 +13,10 @@ typedef struct {
 void func_000200(void);
 void func_000206(void);
 void func_000214(void);
-void func_00022A(void);
 void func_000234(void);
 void func_00023E(void);
 void func_000250(void);
 void func_000256(void);
-void func_000258(void);
 void func_000262(void);
 void func_00026E(void);
 void func_000278(void);
@@ -50,35 +48,26 @@ void func_0003F6(void);
 void func_0003FC(void);
 void func_000402(void);
 void func_000408(void);
-void func_000438(void);
 void func_00045E(void);
 void func_000484(void);
-void func_000526(void);
-void func_00054A(void);
 void func_000566(void);
 void func_0005F0(void);
-void func_0005F4(void);
-void func_000600(void);
 void func_00062A(void);
 void func_000660(void);
-void func_000674(void);
 void func_000676(void);
 void func_00067C(void);
 void func_000686(void);
-void func_00078E(void);
 void func_0007E6(void);
 void func_000802(void);
+void func_00084A(void);
+void func_00086E(void);
 void func_000878(void);
-void func_0008D0(void);
-void func_000920(void);
+void func_000906(void);
 void func_00092A(void);
-void func_000942(void);
-void func_000950(void);
 void func_0009B8(void);
 void func_0009DE(void);
 void func_000A04(void);
 void func_000A2A(void);
-void func_000A3C(void);
 void func_000A50(void);
 void func_000A76(void);
 void func_000A9C(void);
@@ -87,36 +76,20 @@ void func_000AE8(void);
 void func_000B02(void);
 void func_000B4E(void);
 void func_000B70(void);
-void func_000B78(void);
-void func_000BBE(void);
+void func_000BB2(void);
 void func_000BD6(void);
-void func_000BE0(void);
-void func_000C46(void);
 void func_000C5E(void);
 void func_000C6E(void);
 void func_000C7A(void);
-void func_000CFC(void);
 void func_000DF4(void);
-void func_000E24(void);
-void func_000E8A(void);
 void func_000E98(void);
+void func_000EDA(void);
 void func_000EFE(void);
 void func_000F54(void);
-void func_000F6E(void);
-void func_000F78(void);
-void func_000F88(void);
-void func_000FD8(void);
 void func_000FFE(void);
 void func_001000(void);
-void func_00105A(void);
 void func_001072(void);
 void func_001084(void);
-void func_0010B6(void);
-void func_0010C0(void);
-void func_0010C4(void);
-void func_0010C6(void);
-void func_0010D2(void);
-void func_0010DA(void);
 void func_0010E0(void);
 void func_0010E6(void);
 void func_0010EC(void);
@@ -126,8 +99,6 @@ void func_001158(void);
 void func_00116C(void);
 void func_0011A0(void);
 void func_001208(void);
-void func_0012FA(void);
-void func_0012FC(void);
 void func_00130A(void);
 void func_00135E(void);
 void func_001370(void);
@@ -204,8 +175,6 @@ void func_001A76(void);
 void func_001B0C(void);
 void func_001B50(void);
 void func_001B92(void);
-void func_001B98(void);
-void func_001BBE(void);
 void func_001BC0(void);
 void func_001BEE(void);
 void func_001C20(void);
@@ -213,14 +182,12 @@ void func_001C26(void);
 void func_001C4E(void);
 void func_001C54(void);
 void func_001C8C(void);
-void func_001CBE(void);
 void func_001CC6(void);
 void func_001CCC(void);
 void func_001D14(void);
 void func_001D16(void);
 void func_001D88(void);
 void func_001DB6(void);
-void func_001DBA(void);
 void func_00213E(void);
 void func_0023C6(void);
 void func_0023FE(void);
@@ -234,6 +201,17 @@ void func_002562(void);
 void func_002592(void);
 void func_0025B2(void);
 void func_0025E0(void);
+void func_002636(void);
+void func_002640(void);
+void func_00264A(void);
+void func_002654(void);
+void func_00266A(void);
+void func_002678(void);
+void func_002680(void);
+void func_00269E(void);
+void func_0026BE(void);
+void func_0026C8(void);
+void func_0026D2(void);
 void func_002712(void);
 void func_00272E(void);
 void func_002746(void);
@@ -288,6 +266,8 @@ void func_0046A2(void);
 void func_0046A6(void);
 void func_0046B8(void);
 void func_0046CA(void);
+void func_004712(void);
+void func_00476E(void);
 void func_00481E(void);
 void func_00486A(void);
 void func_0048AA(void);
@@ -312,6 +292,7 @@ void func_004F52(void);
 void func_004F58(void);
 void func_004F5E(void);
 void func_004F64(void);
+void func_00540C(void);
 void func_00541A(void);
 void func_00543A(void);
 void func_005482(void);
@@ -403,6 +384,7 @@ void func_006E3C(void);
 void func_006EE0(void);
 void func_006F0A(void);
 void func_006F2A(void);
+void func_006F4C(void);
 void func_006F6A(void);
 void func_006F8E(void);
 void func_006FA4(void);
@@ -417,6 +399,8 @@ void func_00723E(void);
 void func_007356(void);
 void func_00736C(void);
 void func_007480(void);
+void func_0074EA(void);
+void func_007536(void);
 void func_00753E(void);
 void func_0075DE(void);
 void func_007650(void);
@@ -468,17 +452,23 @@ void func_008476(void);
 void func_0084A4(void);
 void func_0084C4(void);
 void func_00854A(void);
+void func_008582(void);
+void func_0085A6(void);
 void func_0085CE(void);
+void func_00862C(void);
 void func_008652(void);
 void func_008672(void);
 void func_008698(void);
 void func_0086B0(void);
 void func_0086F6(void);
+void func_0087DC(void);
 void func_008BC8(void);
 void func_008BCE(void);
 void func_008BD4(void);
 void func_008DA8(void);
 void func_008DE2(void);
+void func_008DF4(void);
+void func_008E3A(void);
 void func_008E5A(void);
 void func_008E7E(void);
 void func_008EFE(void);
@@ -530,6 +520,7 @@ void func_00A30A(void);
 void func_00A34C(void);
 void func_00A38C(void);
 void func_00A38E(void);
+void func_00A3BE(void);
 void func_00A3C8(void);
 void func_00A3DE(void);
 void func_00A456(void);
@@ -546,6 +537,7 @@ void func_00A58C(void);
 void func_00A594(void);
 void func_00A5A6(void);
 void func_00A6C6(void);
+void func_00A720(void);
 void func_00A7DE(void);
 void func_00A83E(void);
 void func_00A894(void);
@@ -608,6 +600,7 @@ void func_00C364(void);
 void func_00C372(void);
 void func_00C38A(void);
 void func_00C38C(void);
+void func_00C3A6(void);
 void func_00C3C6(void);
 void func_00C3D0(void);
 void func_00C480(void);
@@ -683,7 +676,6 @@ void func_00E300(void);
 void func_00E396(void);
 void func_00E3C6(void);
 void func_00E462(void);
-void func_00E4A2(void);
 void func_00E59C(void);
 void func_00E5BC(void);
 void func_00E5C2(void);
@@ -799,12 +791,17 @@ void func_00F66C(void);
 void func_00F694(void);
 void func_00F728(void);
 void func_00F77A(void);
+void func_00F7B8(void);
+void func_00F7BC(void);
 void func_00F7D4(void);
 void func_00F808(void);
 void func_00F80C(void);
 void func_00F810(void);
+void func_00F84E(void);
+void func_00F852(void);
 void func_00F872(void);
 void func_00F88C(void);
+void func_00F8F0(void);
 void func_00F912(void);
 void func_00F9E8(void);
 void func_00FC88(void);
@@ -814,11 +811,16 @@ void func_00FC9C(void);
 void func_00FCCA(void);
 void func_00FE50(void);
 void func_00FE70(void);
+void func_00FEC2(void);
+void func_00FF6C(void);
 void func_00FF6E(void);
+void func_010006(void);
 void func_01000C(void);
 void func_010036(void);
 void func_01003A(void);
 void func_01003E(void);
+void func_0100E4(void);
+void func_0100F4(void);
 void func_0100F8(void);
 void func_010100(void);
 void func_010166(void);
@@ -855,9 +857,14 @@ void func_0106B0(void);
 void func_0106C0(void);
 void func_0106CC(void);
 void func_0106D8(void);
+void func_0106EE(void);
+void func_0106F0(void);
 void func_010702(void);
+void func_010730(void);
 void func_01075E(void);
 void func_010778(void);
+void func_010796(void);
+void func_010798(void);
 void func_0107A4(void);
 void func_0107BC(void);
 void func_0107D6(void);
@@ -940,6 +947,8 @@ void func_01201E(void);
 void func_012078(void);
 void func_012090(void);
 void func_012178(void);
+void func_0121B8(void);
+void func_0121D0(void);
 void func_0121DA(void);
 void func_0121EE(void);
 void func_0121F8(void);
@@ -973,6 +982,7 @@ void func_0127EC(void);
 void func_01281E(void);
 void func_012854(void);
 void func_012868(void);
+void func_0128C6(void);
 void func_0128DE(void);
 void func_0128E4(void);
 void func_012938(void);
@@ -1036,6 +1046,14 @@ void func_0132D2(void);
 void func_0132F0(void);
 void func_013302(void);
 void func_013344(void);
+void func_01344C(void);
+void func_01345C(void);
+void func_01347E(void);
+void func_013484(void);
+void func_01348A(void);
+void func_013498(void);
+void func_0134B0(void);
+void func_0134B6(void);
 void func_0134BC(void);
 void func_0135EA(void);
 void func_013600(void);
@@ -1072,19 +1090,34 @@ void func_01403E(void);
 void func_014082(void);
 void func_014086(void);
 void func_0140AC(void);
+void func_0140BC(void);
+void func_0140CE(void);
 void func_014102(void);
+void func_014118(void);
 void func_014138(void);
 void func_01413A(void);
 void func_014142(void);
 void func_014146(void);
+void func_01415E(void);
 void func_014168(void);
+void func_01418E(void);
+void func_014194(void);
 void func_01419C(void);
 void func_0141AA(void);
+void func_0141C6(void);
+void func_0141D6(void);
+void func_0141E6(void);
+void func_014214(void);
+void func_014220(void);
 void func_014254(void);
 void func_014256(void);
 void func_014270(void);
+void func_01428C(void);
+void func_01429C(void);
 void func_0142B0(void);
+void func_0142BC(void);
 void func_0142CC(void);
+void func_0142E2(void);
 void func_0143C0(void);
 void func_014406(void);
 void func_014450(void);
@@ -1110,11 +1143,36 @@ void func_0146A6(void);
 void func_014714(void);
 void func_014736(void);
 void func_015584(void);
+void func_0155A8(void);
+void func_0155AE(void);
+void func_0155C0(void);
+void func_0155C6(void);
+void func_0155EA(void);
+void func_0155F0(void);
+void func_0155FE(void);
+void func_015604(void);
+void func_015614(void);
+void func_015634(void);
+void func_015640(void);
+void func_01564E(void);
+void func_015654(void);
+void func_015664(void);
+void func_015670(void);
+void func_0156A2(void);
+void func_0156B0(void);
+void func_0156CE(void);
+void func_0156F4(void);
+void func_015714(void);
+void func_015758(void);
+void func_01578C(void);
 void func_015792(void);
 void func_0157A4(void);
 void func_0157B0(void);
 void func_0157D2(void);
 void func_0157EC(void);
+void func_0157FE(void);
+void func_015812(void);
+void func_01581A(void);
 void func_0158E8(void);
 void func_0158EE(void);
 void func_0158F4(void);
@@ -1153,6 +1211,20 @@ void func_015FDC(void);
 void func_015FE4(void);
 void func_015FE6(void);
 void func_015FF2(void);
+void func_01600C(void);
+void func_016028(void);
+void func_016068(void);
+void func_01606C(void);
+void func_016078(void);
+void func_0160D0(void);
+void func_0160EC(void);
+void func_016184(void);
+void func_0161B0(void);
+void func_0161B4(void);
+void func_0161CC(void);
+void func_016218(void);
+void func_016340(void);
+void func_016370(void);
 void func_01637C(void);
 void func_016380(void);
 void func_0163AC(void);
@@ -1256,20 +1328,49 @@ void func_0173CE(void);
 void func_017422(void);
 void func_0174C8(void);
 void func_01750E(void);
+void func_017530(void);
+void func_017536(void);
+void func_017550(void);
+void func_017564(void);
 void func_01756E(void);
 void func_017578(void);
 void func_017586(void);
+void func_0175A0(void);
+void func_0175BA(void);
+void func_0175CC(void);
 void func_0175E8(void);
 void func_0175EA(void);
+void func_017618(void);
 void func_017638(void);
+void func_017652(void);
+void func_01766A(void);
+void func_01767E(void);
 void func_01769C(void);
 void func_01769E(void);
+void func_0176B8(void);
+void func_0176D0(void);
+void func_0176E2(void);
+void func_0176EE(void);
 void func_0176F6(void);
+void func_01770E(void);
+void func_017726(void);
+void func_017738(void);
+void func_017744(void);
 void func_01774C(void);
+void func_017766(void);
+void func_01777E(void);
+void func_017790(void);
+void func_01779C(void);
 void func_0177A4(void);
+void func_0177BC(void);
+void func_0177D4(void);
+void func_0177E6(void);
+void func_0177F2(void);
 void func_0177FA(void);
 void func_017AA4(void);
 void func_017AB8(void);
+void func_017B3E(void);
+void func_017B62(void);
 void func_017B84(void);
 void func_017C0A(void);
 void func_017C4E(void);
@@ -1300,24 +1401,80 @@ void func_01891C(void);
 void func_018936(void);
 void func_018954(void);
 void func_018980(void);
+void func_0189A8(void);
+void func_0189C0(void);
 void func_0189CA(void);
+void func_0189FE(void);
+void func_018A2E(void);
+void func_018A3E(void);
+void func_018A54(void);
+void func_018A66(void);
 void func_018A70(void);
+void func_018AA8(void);
+void func_018AB0(void);
+void func_018AD8(void);
+void func_018AE0(void);
 void func_018AEE(void);
+void func_018B1C(void);
+void func_018B36(void);
+void func_018B42(void);
+void func_018B72(void);
+void func_018B82(void);
+void func_018B98(void);
+void func_018BAA(void);
 void func_018BC6(void);
+void func_018BE8(void);
+void func_018C10(void);
+void func_018C3C(void);
+void func_018C56(void);
 void func_018C7E(void);
 void func_018C80(void);
+void func_018CA6(void);
+void func_018CBC(void);
 void func_018CC6(void);
+void func_018CE6(void);
+void func_018D16(void);
+void func_018D26(void);
+void func_018D3C(void);
+void func_018D4E(void);
 void func_018D6A(void);
+void func_018D92(void);
+void func_018DAA(void);
 void func_018DB4(void);
+void func_018DCA(void);
+void func_018DD8(void);
+void func_018E10(void);
+void func_018E5C(void);
+void func_018E6C(void);
+void func_018E82(void);
+void func_018E94(void);
 void func_018E9E(void);
+void func_018EC4(void);
+void func_018EDA(void);
 void func_018EE6(void);
+void func_018F22(void);
+void func_018F68(void);
+void func_018F78(void);
+void func_018F8E(void);
+void func_018FA0(void);
 void func_0191B8(void);
 void func_0191DC(void);
+void func_019208(void);
+void func_01921E(void);
+void func_01922C(void);
 void func_01924C(void);
+void func_0192A0(void);
+void func_0192BC(void);
+void func_0192D6(void);
+void func_01932E(void);
+void func_019350(void);
 void func_019366(void);
 void func_019368(void);
+void func_019398(void);
 void func_019406(void);
 void func_019418(void);
+void func_019434(void);
+void func_01944C(void);
 void func_019452(void);
 void func_0194D0(void);
 void func_0194FC(void);
@@ -1328,14 +1485,23 @@ void func_019564(void);
 void func_01958C(void);
 void func_019718(void);
 void func_019736(void);
+void func_01975A(void);
+void func_01976E(void);
 void func_019776(void);
 void func_019778(void);
 void func_01978E(void);
+void func_0197B2(void);
+void func_0197C6(void);
 void func_0197D0(void);
 void func_0197E6(void);
-void func_01983E(void);
+void func_01980A(void);
+void func_01981E(void);
+void func_019862(void);
+void func_019876(void);
 void func_019880(void);
 void func_019896(void);
+void func_0198B8(void);
+void func_0198CC(void);
 void func_0198EC(void);
 void func_01992E(void);
 void func_019988(void);
@@ -1357,28 +1523,48 @@ void func_019B28(void);
 void func_019B56(void);
 void func_019B8E(void);
 void func_019B92(void);
+void func_019BA2(void);
 void func_019BCA(void);
 void func_019BCC(void);
 void func_019BEC(void);
 void func_019C0C(void);
 void func_019C0E(void);
+void func_019C2C(void);
 void func_019C32(void);
 void func_019C48(void);
+void func_019C80(void);
 void func_019C8A(void);
 void func_019CA0(void);
+void func_019CC4(void);
+void func_019CD8(void);
 void func_019CE2(void);
 void func_019CF8(void);
+void func_019D1C(void);
+void func_019D30(void);
 void func_019D3A(void);
 void func_019D50(void);
+void func_019D62(void);
+void func_019D7E(void);
+void func_019D8E(void);
+void func_019D92(void);
 void func_019D9C(void);
 void func_019DBA(void);
 void func_019DD8(void);
 void func_019DDE(void);
 void func_019E14(void);
+void func_019E30(void);
+void func_019E76(void);
+void func_019E7C(void);
+void func_019E7E(void);
 void func_019E8E(void);
 void func_019E90(void);
+void func_019EB6(void);
 void func_019EC8(void);
 void func_019EF0(void);
+void func_019F08(void);
+void func_019F1E(void);
+void func_019F36(void);
+void func_019F4C(void);
 void func_019F50(void);
 void func_019F5C(void);
 void func_019F76(void);
@@ -1423,6 +1609,9 @@ void func_01A5F8(void);
 void func_01A624(void);
 void func_01A630(void);
 void func_01A64E(void);
+void func_01A6A2(void);
+void func_01A6A8(void);
+void func_01A6BA(void);
 void func_01A6BE(void);
 void func_01A6C0(void);
 void func_01A6FA(void);
@@ -1471,14 +1660,20 @@ void func_01AC8C(void);
 void func_01AC8E(void);
 void func_01AD30(void);
 void func_01AD78(void);
+void func_01AD8C(void);
 void func_01AD96(void);
+void func_01ADC6(void);
 void func_01ADCA(void);
 void func_01ADCC(void);
+void func_01ADF6(void);
+void func_01ADFC(void);
+void func_01AE02(void);
 void func_01AE06(void);
 void func_01AE08(void);
 void func_01AE42(void);
 void func_01AE44(void);
 void func_01AE4A(void);
+void func_01AE5A(void);
 void func_01AE60(void);
 void func_01AE64(void);
 void func_01AE70(void);
@@ -1486,6 +1681,9 @@ void func_01AE88(void);
 void func_01AEA4(void);
 void func_01AEA8(void);
 void func_01AEAA(void);
+void func_01AF5A(void);
+void func_01AF68(void);
+void func_01AF7C(void);
 void func_01AF8A(void);
 void func_01AF8C(void);
 void func_01AFA6(void);
@@ -1493,6 +1691,7 @@ void func_01AFBE(void);
 void func_01AFC0(void);
 void func_01AFE6(void);
 void func_01AFE8(void);
+void func_01B02C(void);
 void func_01B042(void);
 void func_01B044(void);
 void func_01B05E(void);
@@ -1533,6 +1732,8 @@ void func_01B4C8(void);
 void func_01B51E(void);
 void func_01B520(void);
 void func_01B54E(void);
+void func_01B566(void);
+void func_01B572(void);
 void func_01B586(void);
 void func_01B5D2(void);
 void func_01B848(void);
@@ -1561,6 +1762,11 @@ void func_01BB88(void);
 void func_01BB8A(void);
 void func_01BBC8(void);
 void func_01BBCE(void);
+void func_01BC40(void);
+void func_01BC50(void);
+void func_01BC54(void);
+void func_01BC64(void);
+void func_01BC68(void);
 void func_01BCDE(void);
 void func_01BCE0(void);
 void func_01BD0E(void);
@@ -1606,6 +1812,9 @@ void func_01C1E8(void);
 void func_01C208(void);
 void func_01C214(void);
 void func_01C232(void);
+void func_01C286(void);
+void func_01C28C(void);
+void func_01C29E(void);
 void func_01C2A2(void);
 void func_01C2A4(void);
 void func_01C2DE(void);
@@ -1645,18 +1854,26 @@ void func_01C6CC(void);
 void func_01C6F8(void);
 void func_01C70C(void);
 void func_01C70E(void);
+void func_01C754(void);
 void func_01C75C(void);
 void func_01C75E(void);
 void func_01C7E0(void);
+void func_01C7F8(void);
 void func_01C828(void);
+void func_01C83C(void);
 void func_01C846(void);
+void func_01C876(void);
 void func_01C87A(void);
 void func_01C87C(void);
+void func_01C8A6(void);
+void func_01C8AC(void);
+void func_01C8B2(void);
 void func_01C8B6(void);
 void func_01C8B8(void);
 void func_01C8F2(void);
 void func_01C8F4(void);
 void func_01C8FA(void);
+void func_01C90A(void);
 void func_01C910(void);
 void func_01C914(void);
 void func_01C920(void);
@@ -1664,6 +1881,9 @@ void func_01C938(void);
 void func_01C954(void);
 void func_01C958(void);
 void func_01C95A(void);
+void func_01CA0A(void);
+void func_01CA18(void);
+void func_01CA2C(void);
 void func_01CA3A(void);
 void func_01CA3C(void);
 void func_01CA56(void);
@@ -1671,6 +1891,7 @@ void func_01CA6E(void);
 void func_01CA70(void);
 void func_01CA96(void);
 void func_01CA98(void);
+void func_01CADC(void);
 void func_01CAF2(void);
 void func_01CAF4(void);
 void func_01CB0E(void);
@@ -1711,6 +1932,8 @@ void func_01CF36(void);
 void func_01CF6E(void);
 void func_01CFB2(void);
 void func_01CFE4(void);
+void func_01D002(void);
+void func_01D006(void);
 void func_01D184(void);
 void func_01D190(void);
 void func_01D194(void);
@@ -1726,6 +1949,7 @@ void func_01D23A(void);
 void func_01D318(void);
 void func_01D320(void);
 void func_01D340(void);
+void func_01D388(void);
 void func_01D398(void);
 void func_01D3A4(void);
 void func_01D3CA(void);
@@ -1761,7 +1985,15 @@ void func_01D978(void);
 void func_01D97E(void);
 void func_01D9A4(void);
 void func_01DA0C(void);
+void func_01DA34(void);
+void func_01DA44(void);
+void func_01DA74(void);
 void func_01DA80(void);
+void func_01DAA4(void);
+void func_01DAAC(void);
+void func_01DAD4(void);
+void func_01DAE4(void);
+void func_01DB20(void);
 void func_01DB2C(void);
 void func_01DD20(void);
 void func_01DD36(void);
@@ -1774,37 +2006,76 @@ void func_01DE3E(void);
 void func_01DE46(void);
 void func_01DE4A(void);
 void func_01DE64(void);
+void func_01DEE0(void);
 void func_01DEE4(void);
 void func_01DF36(void);
 void func_01E0F0(void);
 void func_01E102(void);
 void func_01E10E(void);
 void func_01E138(void);
+void func_01E170(void);
+void func_01E176(void);
+void func_01E182(void);
+void func_01E188(void);
+void func_01E1AA(void);
+void func_01E1B8(void);
 void func_01E234(void);
+void func_01E286(void);
+void func_01E28E(void);
+void func_01E292(void);
 void func_01E31C(void);
 void func_01E31E(void);
+void func_01E336(void);
+void func_01E33C(void);
 void func_01E356(void);
+void func_01E380(void);
 void func_01E392(void);
 void func_01E400(void);
 void func_01E402(void);
+void func_01E41A(void);
+void func_01E420(void);
 void func_01E43A(void);
 void func_01E4AE(void);
 void func_01E4B0(void);
+void func_01E4C8(void);
+void func_01E4CE(void);
 void func_01E4E8(void);
 void func_01E55C(void);
 void func_01E55E(void);
+void func_01E576(void);
+void func_01E57C(void);
 void func_01E596(void);
 void func_01E7D0(void);
+void func_01E7E2(void);
+void func_01E7F0(void);
+void func_01E85E(void);
+void func_01E86A(void);
 void func_01E878(void);
+void func_01E88A(void);
+void func_01E898(void);
+void func_01E900(void);
 void func_01E910(void);
+void func_01E922(void);
+void func_01E928(void);
+void func_01E996(void);
+void func_01E9A2(void);
 void func_01E9B0(void);
+void func_01E9C2(void);
+void func_01E9D0(void);
+void func_01EA3E(void);
+void func_01EA4A(void);
 void func_01EA58(void);
+void func_01EA6A(void);
+void func_01EA78(void);
+void func_01EAE0(void);
 void func_01EAF0(void);
-void func_01EB46(void);
 void func_01EB84(void);
+void func_01EBDC(void);
+void func_01EBE6(void);
 void func_01EC0A(void);
 void func_01EC4E(void);
 void func_01ECC6(void);
+void func_01ECD4(void);
 void func_01ECE6(void);
 void func_01ECFE(void);
 void func_01ED56(void);
@@ -1827,8 +2098,10 @@ void func_01F066(void);
 void func_01F086(void);
 void func_01F0B4(void);
 void func_01F0CC(void);
+void func_01F120(void);
 void func_01F12C(void);
 void func_01F154(void);
+void func_01F206(void);
 void func_01F220(void);
 void func_01F222(void);
 void func_01F22E(void);
@@ -1841,6 +2114,14 @@ void func_01F35E(void);
 void func_01F412(void);
 void func_01F4C4(void);
 void func_01F536(void);
+void func_01F554(void);
+void func_01F594(void);
+void func_01F5B4(void);
+void func_01F5BE(void);
+void func_01F5C4(void);
+void func_01F5D6(void);
+void func_01F608(void);
+void func_01F610(void);
 void func_01F616(void);
 void func_01F61C(void);
 void func_01F624(void);
@@ -1858,13 +2139,25 @@ void func_01F89A(void);
 void func_01F8A0(void);
 void func_01F8A8(void);
 void func_01F8C2(void);
+void func_01F90A(void);
 void func_01F924(void);
 void func_01F93E(void);
+void func_01F956(void);
+void func_01F988(void);
 void func_01F99E(void);
 void func_01F9BC(void);
 void func_01F9C0(void);
+void func_01F9E8(void);
+void func_01FA22(void);
+void func_01FA2A(void);
+void func_01FA92(void);
+void func_01FAA6(void);
+void func_01FAC2(void);
+void func_01FACE(void);
 void func_01FB02(void);
 void func_01FB0C(void);
+void func_01FBA8(void);
+void func_01FBB8(void);
 void func_01FBCA(void);
 void func_01FCC4(void);
 void func_01FCCA(void);
@@ -1886,11 +2179,17 @@ void func_02009C(void);
 void func_0200B0(void);
 void func_020104(void);
 void func_020112(void);
+void func_020130(void);
 void func_02013C(void);
 void func_02020A(void);
 void func_020210(void);
 void func_020222(void);
 void func_020282(void);
+void func_0202A2(void);
+void func_0202C0(void);
+void func_0202D0(void);
+void func_0202D4(void);
+void func_0202E6(void);
 void func_02030E(void);
 void func_020314(void);
 void func_02031C(void);
@@ -1902,6 +2201,8 @@ void func_0203C0(void);
 void func_020428(void);
 void func_02046C(void);
 void func_020486(void);
+void func_0204D8(void);
+void func_0204F0(void);
 void func_020510(void);
 void func_0208C4(void);
 void func_0208CA(void);
@@ -1919,6 +2220,7 @@ void func_020A0A(void);
 void func_020B9E(void);
 void func_020BB0(void);
 void func_020BEA(void);
+void func_020C36(void);
 void func_020C48(void);
 void func_020DEC(void);
 void func_020E02(void);
@@ -1947,6 +2249,7 @@ void func_021350(void);
 void func_021352(void);
 void func_021392(void);
 void func_0213B2(void);
+void func_021402(void);
 void func_021412(void);
 void func_02142A(void);
 void func_02146A(void);
@@ -1960,6 +2263,11 @@ void func_0214DA(void);
 void func_0214FA(void);
 void func_021512(void);
 void func_021520(void);
+void func_021556(void);
+void func_021562(void);
+void func_021580(void);
+void func_02159C(void);
+void func_0215A8(void);
 void func_0215BE(void);
 void func_0215C0(void);
 void func_0215EA(void);
@@ -1968,11 +2276,18 @@ void func_021808(void);
 void func_02181E(void);
 void func_02188A(void);
 void func_02188C(void);
+void func_0218A8(void);
+void func_0218C6(void);
+void func_0218E0(void);
 void func_02191E(void);
 void func_021920(void);
 void func_021928(void);
 void func_02194A(void);
+void func_0219A4(void);
+void func_0219B2(void);
 void func_0219B8(void);
+void func_021A12(void);
+void func_021A38(void);
 void func_021A4A(void);
 void func_021A74(void);
 void func_021A76(void);
@@ -1983,6 +2298,7 @@ void func_021B56(void);
 void func_021B94(void);
 void func_021BB4(void);
 void func_021BB6(void);
+void func_021C1E(void);
 void func_021C2A(void);
 void func_021C2C(void);
 void func_021C66(void);
@@ -2006,6 +2322,8 @@ void func_02200A(void);
 void func_022010(void);
 void func_022018(void);
 void func_022032(void);
+void func_0220AA(void);
+void func_0220B2(void);
 void func_0220B8(void);
 void func_0220E8(void);
 void func_02211C(void);
@@ -2047,25 +2365,41 @@ void func_0225C2(void);
 void func_0225D6(void);
 void func_0225E8(void);
 void func_0225FC(void);
+void func_02267E(void);
+void func_022688(void);
 void func_022718(void);
 void func_02271A(void);
 void func_02275E(void);
 void func_022784(void);
+void func_0227A6(void);
 void func_0227FE(void);
+void func_02281C(void);
 void func_022832(void);
 void func_022858(void);
 void func_02286A(void);
+void func_02288E(void);
 void func_022892(void);
+void func_0228C4(void);
+void func_0228E4(void);
 void func_022902(void);
+void func_022952(void);
 void func_022FF0(void);
 void func_022FF8(void);
 void func_023014(void);
 void func_023076(void);
 void func_023084(void);
+void func_0230A6(void);
+void func_0230B4(void);
 void func_0230C2(void);
 void func_02311E(void);
+void func_023136(void);
 void func_023144(void);
+void func_02315A(void);
+void func_023176(void);
 void func_0231D2(void);
+void func_0231F0(void);
+void func_023214(void);
+void func_023224(void);
 void func_023232(void);
 void func_0232DC(void);
 void func_0232E2(void);
@@ -2078,10 +2412,18 @@ void func_02331E(void);
 void func_023368(void);
 void func_0233A0(void);
 void func_0233A4(void);
+void func_0233C0(void);
+void func_0233E2(void);
+void func_0233F0(void);
+void func_023408(void);
+void func_023426(void);
+void func_023436(void);
 void func_02343E(void);
 void func_023444(void);
 void func_02345C(void);
 void func_023470(void);
+void func_02348E(void);
+void func_02349E(void);
 void func_0234A4(void);
 void func_0234DC(void);
 void func_02351A(void);
@@ -2139,9 +2481,17 @@ void func_023E32(void);
 void func_023E38(void);
 void func_023E40(void);
 void func_023E66(void);
+void func_023E84(void);
+void func_023EA8(void);
+void func_023ED4(void);
 void func_023F0A(void);
+void func_023F36(void);
+void func_023F44(void);
 void func_023F5C(void);
 void func_023F66(void);
+void func_023F88(void);
+void func_023F8E(void);
+void func_023FAA(void);
 void func_023FB0(void);
 void func_023FDE(void);
 void func_024014(void);
@@ -2162,22 +2512,55 @@ void func_024110(void);
 void func_02414A(void);
 void func_02416E(void);
 void func_024186(void);
+void func_02419C(void);
+void func_0241A8(void);
 void func_0241C6(void);
 void func_0241D4(void);
+void func_024206(void);
+void func_024236(void);
+void func_024246(void);
+void func_02425C(void);
+void func_02426E(void);
 void func_024278(void);
 void func_02427A(void);
+void func_0242B6(void);
+void func_0242C0(void);
+void func_0242E6(void);
+void func_0242EE(void);
+void func_02431C(void);
+void func_024336(void);
 void func_02433A(void);
 void func_02433C(void);
+void func_02435E(void);
+void func_024378(void);
+void func_02438E(void);
+void func_0243A6(void);
+void func_0243C0(void);
+void func_0243C8(void);
 void func_0243CE(void);
 void func_0243D0(void);
 void func_0243EA(void);
+void func_0243FE(void);
+void func_02442C(void);
+void func_024446(void);
+void func_024452(void);
+void func_024482(void);
+void func_024492(void);
+void func_0244A8(void);
+void func_0244BA(void);
 void func_0244D0(void);
 void func_024A16(void);
 void func_024A2C(void);
 void func_024AEA(void);
 void func_024B38(void);
+void func_024B8C(void);
+void func_024BA0(void);
+void func_024BA4(void);
+void func_024BC4(void);
 void func_024BDC(void);
 void func_024BF0(void);
+void func_024C2A(void);
+void func_024C32(void);
 void func_024CC4(void);
 void func_024CCA(void);
 void func_024CD0(void);
@@ -2196,15 +2579,23 @@ void func_024DE6(void);
 void func_024E26(void);
 void func_024E5C(void);
 void func_024E60(void);
+void func_024E76(void);
+void func_024E96(void);
 void func_024EB2(void);
 void func_024EB8(void);
 void func_024ED4(void);
 void func_024EE8(void);
 void func_024F04(void);
+void func_024F16(void);
+void func_024F28(void);
 void func_024F3C(void);
 void func_024F52(void);
 void func_024F74(void);
 void func_024F84(void);
+void func_024FAA(void);
+void func_024FC2(void);
+void func_024FF0(void);
+void func_025002(void);
 void func_025034(void);
 void func_025036(void);
 void func_025054(void);
@@ -2229,6 +2620,8 @@ void func_0253EE(void);
 void func_025408(void);
 void func_025462(void);
 void func_025474(void);
+void func_025492(void);
+void func_0254C2(void);
 void func_0254CC(void);
 void func_0254F2(void);
 void func_025680(void);
@@ -2242,6 +2635,9 @@ void func_025714(void);
 void func_02572A(void);
 void func_02577A(void);
 void func_0257BE(void);
+void func_0257DA(void);
+void func_0257DE(void);
+void func_025868(void);
 void func_02586E(void);
 void func_025874(void);
 void func_02587A(void);
@@ -2255,20 +2651,28 @@ void func_02595E(void);
 void func_02596E(void);
 void func_02598C(void);
 void func_02598E(void);
+void func_02599C(void);
 void func_0259B8(void);
 void func_025A5A(void);
 void func_025A6E(void);
 void func_025A9C(void);
+void func_025ACE(void);
 void func_025AF6(void);
 void func_025B26(void);
 void func_025B28(void);
 void func_025B3C(void);
 void func_025B4C(void);
+void func_025B58(void);
 void func_025B64(void);
 void func_025B66(void);
 void func_025B8C(void);
 void func_025B8E(void);
+void func_025B9A(void);
+void func_025BA4(void);
 void func_025BF6(void);
+void func_025C1C(void);
+void func_025C24(void);
+void func_025C64(void);
 void func_0260D8(void);
 void func_0260DE(void);
 void func_0260E4(void);
@@ -2279,9 +2683,13 @@ void func_0260FC(void);
 void func_026104(void);
 void func_02611C(void);
 void func_026152(void);
+void func_026198(void);
 void func_0261BC(void);
 void func_0261C2(void);
 void func_0261C8(void);
+void func_0261E4(void);
+void func_0261EC(void);
+void func_026278(void);
 void func_026296(void);
 void func_026356(void);
 void func_02635C(void);
@@ -2291,6 +2699,18 @@ void func_026370(void);
 void func_02638C(void);
 void func_0263C8(void);
 void func_02641E(void);
+void func_026436(void);
+void func_026446(void);
+void func_026456(void);
+void func_02645E(void);
+void func_02647A(void);
+void func_026480(void);
+void func_0264AA(void);
+void func_0264BC(void);
+void func_02650E(void);
+void func_02651E(void);
+void func_026534(void);
+void func_026546(void);
 void func_02661C(void);
 void func_026622(void);
 void func_026628(void);
@@ -2298,8 +2718,16 @@ void func_02662E(void);
 void func_026634(void);
 void func_026648(void);
 void func_026688(void);
+void func_0266E4(void);
+void func_026708(void);
+void func_026716(void);
+void func_02672C(void);
+void func_02673C(void);
+void func_026748(void);
 void func_02674C(void);
 void func_02678E(void);
+void func_026798(void);
+void func_026808(void);
 void func_02683A(void);
 void func_026908(void);
 void func_02690E(void);
@@ -2310,11 +2738,20 @@ void func_02693A(void);
 void func_0269A2(void);
 void func_0269F8(void);
 void func_0269FA(void);
+void func_026A0C(void);
+void func_026A1E(void);
+void func_026A2E(void);
+void func_026A3E(void);
+void func_026A50(void);
 void func_026AD4(void);
 void func_026ADA(void);
 void func_026AE0(void);
 void func_026B06(void);
+void func_026B6E(void);
+void func_026C04(void);
+void func_026C16(void);
 void func_026C1C(void);
+void func_026C66(void);
 void func_026C8E(void);
 void func_026C90(void);
 void func_026CA4(void);
@@ -2327,9 +2764,17 @@ void func_026D46(void);
 void func_026D50(void);
 void func_026D72(void);
 void func_026D94(void);
+void func_026DAC(void);
+void func_026DB4(void);
+void func_026E0E(void);
+void func_026E1A(void);
 void func_026E3A(void);
 void func_026E3C(void);
 void func_026E4A(void);
+void func_026E6C(void);
+void func_026E74(void);
+void func_026E84(void);
+void func_026E96(void);
 void func_026EA4(void);
 void func_026EAC(void);
 void func_026EC2(void);
@@ -2340,7 +2785,11 @@ void func_026F52(void);
 void func_026F58(void);
 void func_026F6A(void);
 void func_026FAE(void);
+void func_026FF6(void);
+void func_02702C(void);
 void func_027042(void);
+void func_02704C(void);
+void func_0270DC(void);
 void func_027148(void);
 void func_02714E(void);
 void func_027154(void);
@@ -2355,7 +2804,14 @@ void func_027294(void);
 void func_0272C8(void);
 void func_0272EE(void);
 void func_027310(void);
+void func_027344(void);
+void func_027368(void);
 void func_027374(void);
+void func_027384(void);
+void func_027392(void);
+void func_0273B0(void);
+void func_0273C4(void);
+void func_0273DE(void);
 void func_027580(void);
 void func_027586(void);
 void func_02758C(void);
@@ -2389,6 +2845,7 @@ void func_027912(void);
 void func_02792C(void);
 void func_02794C(void);
 void func_02796E(void);
+void func_0279CC(void);
 void func_0279D2(void);
 void func_0279D4(void);
 void func_0279FC(void);
@@ -2403,7 +2860,15 @@ void func_027B9E(void);
 void func_027BC4(void);
 void func_027BD0(void);
 void func_027BDE(void);
+void func_027C0A(void);
+void func_027C0E(void);
+void func_027C28(void);
+void func_027C2E(void);
+void func_027C3E(void);
+void func_027C5E(void);
 void func_027C66(void);
+void func_027C7A(void);
+void func_027C9A(void);
 void func_027CA2(void);
 void func_027CDA(void);
 void func_027D54(void);
@@ -2420,29 +2885,46 @@ void func_027E7E(void);
 void func_027E96(void);
 void func_027EA2(void);
 void func_027EAC(void);
+void func_027EB8(void);
 void func_027EC4(void);
 void func_027EE0(void);
 void func_027EE2(void);
 void func_027F0E(void);
 void func_027F10(void);
+void func_027F26(void);
+void func_027F3C(void);
 void func_027F4C(void);
 void func_027F4E(void);
 void func_027F60(void);
 void func_027F70(void);
 void func_027F80(void);
 void func_027F8E(void);
+void func_027F9C(void);
+void func_027FBC(void);
+void func_027FDA(void);
+void func_027FF8(void);
 void func_02801C(void);
 void func_028022(void);
 void func_028028(void);
 void func_02802E(void);
 void func_028034(void);
 void func_028060(void);
+void func_0280EE(void);
+void func_0280F2(void);
+void func_028112(void);
 void func_028130(void);
 void func_028136(void);
 void func_028160(void);
 void func_028168(void);
 void func_02817E(void);
+void func_0281B0(void);
+void func_0281D4(void);
 void func_0281DA(void);
+void func_0281EE(void);
+void func_028202(void);
+void func_028218(void);
+void func_02822C(void);
+void func_02823E(void);
 void func_028388(void);
 void func_02838E(void);
 void func_028394(void);
@@ -2461,6 +2943,9 @@ void func_0285EE(void);
 void func_0285F4(void);
 void func_02864E(void);
 void func_028652(void);
+void func_028684(void);
+void func_0286A2(void);
+void func_0286CA(void);
 void func_028928(void);
 void func_02892E(void);
 void func_028934(void);
@@ -2476,6 +2961,7 @@ void func_028A6E(void);
 void func_028AC8(void);
 void func_028AD6(void);
 void func_028AF4(void);
+void func_028B16(void);
 void func_028B46(void);
 void func_028B7E(void);
 void func_028BA8(void);
@@ -2486,6 +2972,7 @@ void func_028BC0(void);
 void func_028BC8(void);
 void func_028BEE(void);
 void func_028CCA(void);
+void func_028D3E(void);
 void func_028D6C(void);
 void func_028DC0(void);
 void func_028DC6(void);
@@ -2499,6 +2986,7 @@ void func_028DF0(void);
 void func_028DF8(void);
 void func_028E0E(void);
 void func_028E5E(void);
+void func_028EC2(void);
 void func_028ECE(void);
 void func_028ED8(void);
 void func_028F1E(void);
@@ -2525,6 +3013,7 @@ void func_0292E0(void);
 void func_0292EC(void);
 void func_029302(void);
 void func_029304(void);
+void func_029310(void);
 void func_029334(void);
 void func_02935C(void);
 void func_02935E(void);
@@ -2539,8 +3028,11 @@ void func_029408(void);
 void func_029426(void);
 void func_02944A(void);
 void func_02948E(void);
+void func_0294C4(void);
 void func_0294EA(void);
 void func_0294F4(void);
+void func_029516(void);
+void func_02952C(void);
 void func_02953E(void);
 void func_029578(void);
 void func_02957E(void);
@@ -2549,7 +3041,11 @@ void func_02958A(void);
 void func_029590(void);
 void func_0295C8(void);
 void func_0295FE(void);
+void func_029648(void);
+void func_029686(void);
+void func_0296B6(void);
 void func_0296C2(void);
+void func_029736(void);
 void func_0297C4(void);
 void func_0297CA(void);
 void func_0297D0(void);
@@ -2559,6 +3055,7 @@ void func_0297E4(void);
 void func_0297F6(void);
 void func_02981E(void);
 void func_02983C(void);
+void func_029890(void);
 void func_029936(void);
 void func_029970(void);
 void func_029976(void);
@@ -2566,15 +3063,33 @@ void func_02997C(void);
 void func_029990(void);
 void func_029A1C(void);
 void func_029A66(void);
+void func_029A74(void);
+void func_029A7A(void);
+void func_029A8A(void);
+void func_029A94(void);
+void func_029AAE(void);
 void func_029ACC(void);
+void func_029B42(void);
+void func_029B50(void);
+void func_029B5E(void);
 void func_029BF8(void);
 void func_029BFA(void);
+void func_029C08(void);
+void func_029C0E(void);
+void func_029C1E(void);
+void func_029C28(void);
+void func_029C42(void);
 void func_029FF4(void);
 void func_029FFA(void);
 void func_02A000(void);
 void func_02A026(void);
 void func_02A0FE(void);
+void func_02A154(void);
+void func_02A180(void);
+void func_02A188(void);
 void func_02A18A(void);
+void func_02A1A8(void);
+void func_02A1B4(void);
 void func_02A1EA(void);
 void func_02A24C(void);
 void func_02A260(void);
@@ -2599,10 +3114,14 @@ void func_02A3D6(void);
 void func_02A3D8(void);
 void func_02A3EA(void);
 void func_02A3EC(void);
+void func_02A400(void);
 void func_02A412(void);
 void func_02A414(void);
+void func_02A41C(void);
 void func_02A430(void);
 void func_02A432(void);
+void func_02A44E(void);
+void func_02A45A(void);
 void func_02A474(void);
 void func_02A4D8(void);
 void func_02A4DE(void);
@@ -2628,9 +3147,23 @@ void func_02A7A8(void);
 void func_02A7B0(void);
 void func_02A7C4(void);
 void func_02A802(void);
+void func_02A82A(void);
+void func_02A84E(void);
+void func_02A86A(void);
+void func_02A87C(void);
+void func_02A888(void);
+void func_02A890(void);
 void func_02A894(void);
+void func_02A8B4(void);
+void func_02A8DC(void);
+void func_02A8EA(void);
+void func_02A8F8(void);
 void func_02A8FC(void);
 void func_02A8FE(void);
+void func_02A926(void);
+void func_02A94A(void);
+void func_02A966(void);
+void func_02A98C(void);
 void func_02A990(void);
 void func_02AA10(void);
 void func_02AB78(void);
@@ -2639,16 +3172,30 @@ void func_02AB84(void);
 void func_02ABD4(void);
 void func_02AC54(void);
 void func_02AC84(void);
+void func_02AD14(void);
 void func_02AD24(void);
 void func_02AD26(void);
 void func_02AD2A(void);
 void func_02AD78(void);
 void func_02AD7A(void);
+void func_02ADB0(void);
+void func_02ADDA(void);
+void func_02ADF8(void);
+void func_02ADFE(void);
+void func_02AE0C(void);
 void func_02AE56(void);
+void func_02AEF4(void);
 void func_02AF04(void);
 void func_02AF06(void);
+void func_02AF2E(void);
 void func_02AF78(void);
 void func_02AF7A(void);
+void func_02AFB0(void);
+void func_02AFDA(void);
+void func_02AFF8(void);
+void func_02AFFE(void);
+void func_02B018(void);
+void func_02B068(void);
 void func_02B128(void);
 void func_02B12E(void);
 void func_02B134(void);
@@ -2656,11 +3203,25 @@ void func_02B13A(void);
 void func_02B140(void);
 void func_02B158(void);
 void func_02B194(void);
+void func_02B1B6(void);
+void func_02B1FE(void);
 void func_02B208(void);
 void func_02B20A(void);
+void func_02B238(void);
+void func_02B23C(void);
+void func_02B254(void);
+void func_02B272(void);
+void func_02B288(void);
 void func_02B290(void);
+void func_02B2AA(void);
+void func_02B2BA(void);
+void func_02B2E2(void);
 void func_02B312(void);
+void func_02B33A(void);
+void func_02B352(void);
 void func_02B35C(void);
+void func_02B392(void);
+void func_02B3BC(void);
 void func_02B504(void);
 void func_02B50A(void);
 void func_02B510(void);
@@ -2670,6 +3231,9 @@ void func_02B522(void);
 void func_02B528(void);
 void func_02B53A(void);
 void func_02B57E(void);
+void func_02B5E2(void);
+void func_02B5EA(void);
+void func_02B5EC(void);
 void func_02B60C(void);
 void func_02B834(void);
 void func_02B83A(void);
@@ -2678,6 +3242,7 @@ void func_02B846(void);
 void func_02B84C(void);
 void func_02B8EC(void);
 void func_02B8FE(void);
+void func_02B95A(void);
 void func_02B96E(void);
 void func_02B9A2(void);
 void func_02B9B6(void);
@@ -2701,10 +3266,14 @@ void func_02BB7E(void);
 void func_02BBA6(void);
 void func_02BBE8(void);
 void func_02BBF8(void);
+void func_02BC0C(void);
 void func_02BC84(void);
 void func_02BC86(void);
+void func_02BD48(void);
+void func_02BD4E(void);
 void func_02BDF6(void);
 void func_02BDF8(void);
+void func_02BE28(void);
 void func_02BE2E(void);
 void func_02BE5E(void);
 void func_02BE9C(void);
@@ -2728,6 +3297,7 @@ void func_02C0F6(void);
 void func_02C112(void);
 void func_02C134(void);
 void func_02C170(void);
+void func_02C1AE(void);
 void func_02C1DA(void);
 void func_02C1EC(void);
 void func_02C1EE(void);
@@ -2765,12 +3335,32 @@ void func_02C534(void);
 void func_02C542(void);
 void func_02C55E(void);
 void func_02C57E(void);
+void func_02C5AE(void);
+void func_02C5C4(void);
+void func_02C5F8(void);
+void func_02C694(void);
+void func_02C69A(void);
 void func_02C6A0(void);
 void func_02C6A6(void);
 void func_02C6AC(void);
 void func_02C6C0(void);
 void func_02C6FC(void);
+void func_02C70A(void);
+void func_02C716(void);
+void func_02C724(void);
+void func_02C72E(void);
+void func_02C73C(void);
+void func_02C740(void);
 void func_02C74E(void);
+void func_02C75C(void);
+void func_02C77A(void);
+void func_02C794(void);
+void func_02C7BE(void);
+void func_02C7D0(void);
+void func_02C7EC(void);
+void func_02C806(void);
+void func_02C85C(void);
+void func_02C87E(void);
 void func_02C884(void);
 void func_02C912(void);
 void func_02C918(void);
@@ -2780,6 +3370,7 @@ void func_02C92C(void);
 void func_02C93E(void);
 void func_02C954(void);
 void func_02C972(void);
+void func_02C9A0(void);
 void func_02CA08(void);
 void func_02CA0C(void);
 void func_02CA14(void);
@@ -2874,6 +3465,8 @@ void func_02D726(void);
 void func_02D72C(void);
 void func_02D734(void);
 void func_02D75E(void);
+void func_02D8AC(void);
+void func_02D908(void);
 void func_02D94C(void);
 void func_02D94E(void);
 void func_02D992(void);
@@ -2924,8 +3517,16 @@ void func_02E130(void);
 void func_02E192(void);
 void func_02E1AC(void);
 void func_02E25C(void);
+void func_02E2AC(void);
+void func_02E2E0(void);
 void func_02E2E8(void);
+void func_02E352(void);
+void func_02E354(void);
+void func_02E356(void);
+void func_02E35C(void);
+void func_02E3E6(void);
 void func_02E3F2(void);
+void func_02E464(void);
 void func_02E4CC(void);
 void func_02E4CE(void);
 void func_02E550(void);
@@ -2951,6 +3552,8 @@ void func_02E8CC(void);
 void func_02E8F6(void);
 void func_02E938(void);
 void func_02E94E(void);
+void func_02E996(void);
+void func_02E9A8(void);
 void func_02E9F6(void);
 void func_02EED0(void);
 void func_02EED6(void);
@@ -2969,36 +3572,72 @@ void func_02EF36(void);
 void func_02F098(void);
 void func_02F262(void);
 void func_02F27C(void);
+void func_02F29A(void);
 void func_02F2A8(void);
 void func_02F2BA(void);
+void func_02F2CC(void);
 void func_02F2E0(void);
 void func_02F304(void);
 void func_02F336(void);
+void func_02F35C(void);
 void func_02F374(void);
 void func_02F38A(void);
 void func_02F3A2(void);
 void func_02F424(void);
 void func_02F442(void);
+void func_02F45C(void);
+void func_02F460(void);
+void func_02F46E(void);
 void func_02F482(void);
 void func_02F484(void);
+void func_02F494(void);
 void func_02F4A4(void);
 void func_02F4A6(void);
+void func_02F4D0(void);
+void func_02F4DE(void);
 void func_02F4EC(void);
 void func_02F4EE(void);
 void func_02F52A(void);
 void func_02F54E(void);
 void func_02F560(void);
+void func_02F58E(void);
+void func_02F5A0(void);
 void func_02F5C6(void);
+void func_02F5E8(void);
 void func_02F5F6(void);
+void func_02F618(void);
+void func_02F626(void);
 void func_02F664(void);
 void func_02F67C(void);
+void func_02F6A6(void);
+void func_02F6B6(void);
+void func_02F6C6(void);
+void func_02F6D2(void);
+void func_02F6DE(void);
+void func_02F6E8(void);
+void func_02F6FA(void);
+void func_02F706(void);
 void func_02F714(void);
 void func_02F746(void);
+void func_02F768(void);
+void func_02F77E(void);
+void func_02F798(void);
 void func_02F7A6(void);
 void func_02F7D2(void);
 void func_02F7F4(void);
+void func_02F816(void);
+void func_02F824(void);
+void func_02F878(void);
+void func_02F88A(void);
+void func_02F898(void);
 void func_02F8AA(void);
+void func_02F8B4(void);
+void func_02F8C8(void);
+void func_02F8D2(void);
 void func_02F8DA(void);
+void func_02F906(void);
+void func_02F916(void);
+void func_02F924(void);
 void func_02FBF4(void);
 void func_02FBFA(void);
 void func_02FC00(void);
@@ -3019,32 +3658,56 @@ void func_02FC68(void);
 void func_02FCEA(void);
 void func_02FD00(void);
 void func_02FD18(void);
+void func_02FD32(void);
+void func_02FD3A(void);
+void func_02FD50(void);
 void func_02FD5E(void);
 void func_02FDAA(void);
 void func_02FDC0(void);
 void func_02FDDA(void);
 void func_02FE0E(void);
+void func_02FE22(void);
 void func_02FE2A(void);
 void func_02FE58(void);
+void func_02FE6E(void);
+void func_02FE7C(void);
+void func_02FEA8(void);
+void func_02FEB8(void);
+void func_02FECA(void);
+void func_02FED0(void);
 void func_02FEDE(void);
 void func_02FEF0(void);
 void func_02FF02(void);
+void func_02FF46(void);
 void func_02FF50(void);
 void func_02FF66(void);
 void func_02FF78(void);
+void func_02FF80(void);
+void func_02FF94(void);
+void func_02FFE8(void);
+void func_030000(void);
 void func_030006(void);
 void func_030008(void);
+void func_030064(void);
 void func_030072(void);
 void func_0300A4(void);
+void func_0300CE(void);
+void func_0300DC(void);
 void func_0300EA(void);
 void func_0300EC(void);
 void func_030106(void);
 void func_03013A(void);
 void func_030142(void);
 void func_030152(void);
+void func_030170(void);
+void func_030182(void);
+void func_03019C(void);
+void func_0301A6(void);
+void func_0301AA(void);
 void func_0301B4(void);
 void func_03020E(void);
 void func_030210(void);
+void func_03022A(void);
 void func_030430(void);
 void func_030436(void);
 void func_03043C(void);
@@ -3193,24 +3856,47 @@ void func_0318F0(void);
 void func_031904(void);
 void func_0319D6(void);
 void func_031A04(void);
+void func_031A1C(void);
 void func_031A36(void);
 void func_031A48(void);
 void func_031A78(void);
 void func_031AA4(void);
+void func_031AB6(void);
+void func_031B06(void);
+void func_031B46(void);
+void func_031B86(void);
 void func_031BA8(void);
+void func_031BC6(void);
 void func_031BF2(void);
 void func_031C06(void);
 void func_031C08(void);
 void func_031C22(void);
+void func_031C60(void);
 void func_031C92(void);
+void func_031CAC(void);
+void func_031CBC(void);
 void func_031CDA(void);
 void func_031CDC(void);
+void func_031D24(void);
+void func_031D32(void);
 void func_031D40(void);
 void func_031D42(void);
 void func_031D5C(void);
+void func_031D7E(void);
+void func_031DB8(void);
 void func_031DCC(void);
+void func_031DDC(void);
+void func_031DE2(void);
+void func_031DFA(void);
+void func_031E02(void);
+void func_031E0E(void);
 void func_031E2A(void);
+void func_031E44(void);
+void func_031E4A(void);
+void func_031E70(void);
 void func_031E76(void);
+void func_031EAE(void);
+void func_031EE8(void);
 void func_031F22(void);
 void func_031F24(void);
 void func_031F48(void);
@@ -3218,6 +3904,7 @@ void func_031F96(void);
 void func_031FDC(void);
 void func_031FF8(void);
 void func_032030(void);
+void func_03206E(void);
 void func_03207E(void);
 void func_032080(void);
 void func_03224C(void);
@@ -3364,10 +4051,13 @@ void func_033A22(void);
 void func_033A90(void);
 void func_033AB2(void);
 void func_033AD8(void);
+void func_033AFE(void);
 void func_033B16(void);
 void func_033B3E(void);
 void func_033B40(void);
 void func_033B44(void);
+void func_033B9E(void);
+void func_033BA2(void);
 void func_033BAC(void);
 void func_033BAE(void);
 void func_033BD8(void);
@@ -3376,12 +4066,22 @@ void func_033C32(void);
 void func_033C54(void);
 void func_033CB4(void);
 void func_033D02(void);
+void func_033D10(void);
+void func_033D24(void);
+void func_033D2C(void);
 void func_033DB4(void);
 void func_033DFC(void);
+void func_033E38(void);
 void func_033E42(void);
 void func_033E44(void);
+void func_033E5E(void);
+void func_033E64(void);
+void func_033E6E(void);
+void func_033E76(void);
+void func_033E88(void);
 void func_033E8E(void);
 void func_033EA0(void);
+void func_033EF8(void);
 void func_033EFE(void);
 void func_033F00(void);
 void func_033F1C(void);
@@ -3395,7 +4095,12 @@ void func_034048(void);
 void func_03404A(void);
 void func_034084(void);
 void func_0340A4(void);
+void func_0340BC(void);
 void func_0340CC(void);
+void func_034108(void);
+void func_03411A(void);
+void func_034164(void);
+void func_03416A(void);
 void func_034178(void);
 void func_0341BA(void);
 void func_0341E0(void);
@@ -3406,6 +4111,7 @@ void func_0347EE(void);
 void func_0347F2(void);
 void func_0347F6(void);
 void func_034804(void);
+void func_034864(void);
 void func_034908(void);
 void func_03495E(void);
 void func_034972(void);
@@ -3415,6 +4121,7 @@ void func_034A24(void);
 void func_034A5C(void);
 void func_034A9E(void);
 void func_034AAC(void);
+void func_034AE4(void);
 void func_034B1A(void);
 void func_034EA4(void);
 void func_034EAA(void);
@@ -3432,21 +4139,62 @@ void func_034FB6(void);
 void func_034FF0(void);
 void func_035010(void);
 void func_035036(void);
+void func_03504E(void);
+void func_035052(void);
+void func_03507A(void);
+void func_035094(void);
 void func_03509E(void);
 void func_0350A0(void);
+void func_0350CE(void);
+void func_0350DC(void);
 void func_0350E0(void);
 void func_0350E2(void);
+void func_035110(void);
+void func_035112(void);
+void func_03511A(void);
+void func_035120(void);
 void func_03512A(void);
+void func_035146(void);
+void func_035150(void);
+void func_035164(void);
 void func_03516A(void);
 void func_03516C(void);
 void func_0351A0(void);
+void func_0351E8(void);
+void func_0351F8(void);
+void func_035202(void);
+void func_03524E(void);
+void func_035254(void);
+void func_035258(void);
+void func_035260(void);
+void func_035282(void);
 void func_03529C(void);
+void func_0352E6(void);
+void func_0352FE(void);
+void func_035310(void);
+void func_035322(void);
 void func_03532C(void);
 void func_03533A(void);
+void func_03534E(void);
+void func_035362(void);
+void func_035380(void);
+void func_03538A(void);
+void func_035392(void);
+void func_03539A(void);
 void func_03539E(void);
+void func_0353CA(void);
 void func_0353E8(void);
 void func_0353FE(void);
 void func_035410(void);
+void func_035428(void);
+void func_035440(void);
+void func_035458(void);
+void func_03545C(void);
+void func_035468(void);
+void func_03546C(void);
+void func_035478(void);
+void func_03547E(void);
+void func_0354DE(void);
 void func_0354E4(void);
 void func_03551C(void);
 void func_035534(void);
@@ -3458,10 +4206,12 @@ void func_0356E4(void);
 void func_0356E6(void);
 void func_035706(void);
 void func_035716(void);
+void func_03577A(void);
 void func_0357B2(void);
 void func_0357D2(void);
 void func_0357E8(void);
 void func_0357FE(void);
+void func_035978(void);
 void func_0359A6(void);
 void func_0359BC(void);
 void func_0359CE(void);
@@ -3480,12 +4230,18 @@ void func_035FBC(void);
 void func_035FD4(void);
 void func_036022(void);
 void func_03603C(void);
+void func_036088(void);
 void func_0360F0(void);
+void func_03610C(void);
 void func_036140(void);
 void func_036142(void);
 void func_036160(void);
 void func_036172(void);
+void func_0361A4(void);
 void func_0361CC(void);
+void func_0361D8(void);
+void func_036208(void);
+void func_036210(void);
 void func_0365BC(void);
 void func_0365C2(void);
 void func_0365C8(void);
@@ -3526,7 +4282,10 @@ void func_03694E(void);
 void func_036958(void);
 void func_03695E(void);
 void func_036970(void);
+void func_036996(void);
 void func_0369A8(void);
+void func_0369C2(void);
+void func_0369F8(void);
 void func_036A26(void);
 void func_036A76(void);
 void func_036A90(void);
@@ -3534,7 +4293,9 @@ void func_036ADC(void);
 void func_036B00(void);
 void func_036B0E(void);
 void func_036B34(void);
+void func_036B5C(void);
 void func_036B6A(void);
+void func_036B74(void);
 void func_036B88(void);
 void func_036B9C(void);
 void func_036BA6(void);
@@ -3563,26 +4324,42 @@ void func_036EE2(void);
 void func_036F0E(void);
 void func_036F24(void);
 void func_036F3C(void);
+void func_036F48(void);
+void func_036F5A(void);
 void func_036F68(void);
+void func_036F78(void);
 void func_036F90(void);
+void func_036FA4(void);
+void func_036FDC(void);
 void func_036FE6(void);
 void func_036FF8(void);
 void func_037028(void);
 void func_03703E(void);
+void func_037062(void);
+void func_037066(void);
 void func_0370FE(void);
 void func_037116(void);
 void func_037152(void);
+void func_0371AE(void);
+void func_0371BA(void);
 void func_0371DA(void);
 void func_0371DC(void);
+void func_0371E8(void);
+void func_0371FA(void);
+void func_03720C(void);
 void func_037224(void);
 void func_03723C(void);
+void func_037278(void);
 void func_03728E(void);
 void func_0372B8(void);
 void func_037322(void);
 void func_037338(void);
 void func_037350(void);
+void func_037362(void);
 void func_037380(void);
+void func_037396(void);
 void func_03739C(void);
+void func_0373AE(void);
 void func_0373B6(void);
 void func_0373CA(void);
 void func_0373D0(void);
@@ -3592,11 +4369,13 @@ void func_037462(void);
 void func_037488(void);
 void func_0374A0(void);
 void func_0374C2(void);
+void func_0374D8(void);
 void func_0374F4(void);
 void func_03750C(void);
 void func_037532(void);
 void func_03758A(void);
 void func_0375AC(void);
+void func_0375CE(void);
 void func_037604(void);
 void func_03765A(void);
 void func_03765C(void);
@@ -3614,8 +4393,10 @@ void func_037756(void);
 void func_0377C8(void);
 void func_0377DC(void);
 void func_0377E8(void);
+void func_0377FA(void);
 void func_037810(void);
 void func_03781C(void);
+void func_037834(void);
 void func_037850(void);
 void func_037886(void);
 void func_037936(void);
@@ -3655,83 +4436,144 @@ void func_037D74(void);
 void func_037E16(void);
 void func_037E30(void);
 void func_037E42(void);
+void func_037E62(void);
 void func_037E98(void);
 void func_037EB6(void);
 void func_037ED4(void);
 void func_037EFC(void);
+void func_037F6C(void);
 void func_037F74(void);
 void func_03800C(void);
 void func_038022(void);
 void func_03804E(void);
+void func_03805E(void);
+void func_038068(void);
+void func_038096(void);
+void func_03809A(void);
 void func_0380AE(void);
 void func_0380C4(void);
+void func_0380DA(void);
+void func_0380E4(void);
+void func_0380EE(void);
 void func_0380FC(void);
 void func_038114(void);
+void func_03811C(void);
 void func_03812A(void);
+void func_038132(void);
 void func_03813E(void);
+void func_038146(void);
 void func_03815C(void);
 void func_038170(void);
+void func_038198(void);
 void func_0381AC(void);
+void func_0381D0(void);
 void func_0381E0(void);
+void func_0381EA(void);
+void func_038206(void);
+void func_03821A(void);
 void func_03822A(void);
+void func_038238(void);
 void func_038244(void);
+void func_03824E(void);
 void func_038258(void);
+void func_038266(void);
+void func_03827A(void);
 void func_038280(void);
 void func_038292(void);
+void func_038296(void);
+void func_0382D8(void);
 void func_0382EE(void);
 void func_0383B4(void);
 void func_0383CC(void);
+void func_0383DE(void);
 void func_0383F0(void);
+void func_038404(void);
+void func_03841C(void);
+void func_038444(void);
+void func_038452(void);
 void func_038466(void);
+void func_038470(void);
 void func_038482(void);
+void func_03848C(void);
 void func_03849E(void);
 void func_0384A2(void);
 void func_0384B6(void);
 void func_0384BE(void);
+void func_03851A(void);
 void func_038524(void);
 void func_03853E(void);
+void func_038546(void);
+void func_03858A(void);
+void func_0385A0(void);
 void func_0385BA(void);
 void func_03873E(void);
 void func_03875A(void);
 void func_038766(void);
+void func_038770(void);
 void func_038794(void);
+void func_0387C0(void);
+void func_0387E4(void);
+void func_0387EC(void);
+void func_0387FC(void);
 void func_038832(void);
+void func_03884A(void);
 void func_03885C(void);
+void func_038870(void);
 void func_038880(void);
 void func_03888E(void);
 void func_03899C(void);
 void func_0389B2(void);
 void func_0389B6(void);
+void func_0389D2(void);
 void func_0389DA(void);
+void func_0389FA(void);
 void func_038A1E(void);
 void func_038A2C(void);
+void func_038A44(void);
 void func_038A58(void);
 void func_038AEA(void);
 void func_038AFE(void);
 void func_038B10(void);
+void func_038B1E(void);
+void func_038B2C(void);
+void func_038B3C(void);
+void func_038B4E(void);
 void func_038B62(void);
+void func_038B78(void);
 void func_038B86(void);
 void func_038B9A(void);
 void func_038BAC(void);
+void func_038BBA(void);
+void func_038BC8(void);
+void func_038BEA(void);
 void func_038BFE(void);
+void func_038C14(void);
 void func_038C22(void);
 void func_038C6E(void);
 void func_038DBA(void);
 void func_038DCC(void);
 void func_038E0C(void);
 void func_038E52(void);
+void func_038E66(void);
 void func_038E82(void);
 void func_038E84(void);
 void func_038E9A(void);
+void func_038EA2(void);
 void func_038EB4(void);
+void func_038ECC(void);
+void func_038ED6(void);
 void func_038EEE(void);
+void func_038F2A(void);
 void func_038F3E(void);
+void func_038F4E(void);
 void func_038F58(void);
 void func_038F62(void);
 void func_038F66(void);
 void func_038F7C(void);
 void func_038F88(void);
 void func_038FE8(void);
+void func_03900A(void);
+void func_03901A(void);
 void func_039022(void);
 void func_039032(void);
 void func_039044(void);
@@ -3767,32 +4609,48 @@ void func_039526(void);
 void func_03972C(void);
 void func_03975E(void);
 void func_0397AC(void);
+void func_0397BA(void);
 void func_0397E6(void);
+void func_0397F0(void);
 void func_0397FE(void);
+void func_03980E(void);
+void func_039830(void);
 void func_03984A(void);
+void func_03986A(void);
+void func_039886(void);
 void func_0398C0(void);
 void func_03991E(void);
 void func_03992E(void);
 void func_039946(void);
+void func_03994E(void);
 void func_039976(void);
+void func_039994(void);
 void func_0399C0(void);
 void func_0399C2(void);
 void func_0399D6(void);
 void func_039A0A(void);
 void func_039A1C(void);
+void func_039A2A(void);
 void func_039A44(void);
+void func_039A56(void);
 void func_039A68(void);
 void func_039A7C(void);
 void func_039A96(void);
 void func_039AAA(void);
+void func_039ABC(void);
 void func_039ACE(void);
+void func_039ADE(void);
 void func_039AE8(void);
 void func_039AF4(void);
+void func_039B0A(void);
 void func_039B1A(void);
 void func_039B28(void);
 void func_039B44(void);
+void func_039B66(void);
+void func_039B74(void);
 void func_039B84(void);
 void func_039B92(void);
+void func_039BA4(void);
 void func_039BBA(void);
 void func_039BCC(void);
 void func_039BE2(void);
@@ -3801,24 +4659,41 @@ void func_039C02(void);
 void func_039C0A(void);
 void func_039C12(void);
 void func_039C2A(void);
+void func_039C3A(void);
 void func_039C42(void);
 void func_039C50(void);
+void func_039C78(void);
+void func_039C84(void);
+void func_039C92(void);
 void func_039CA0(void);
 void func_039CAE(void);
+void func_039CD0(void);
+void func_039CDE(void);
 void func_039CEE(void);
 void func_039CF0(void);
 void func_039D1C(void);
 void func_039D24(void);
+void func_039D42(void);
 void func_039D4A(void);
+void func_039D58(void);
 void func_039D60(void);
+void func_039D68(void);
 void func_039D72(void);
+void func_039D7C(void);
 void func_039D82(void);
 void func_03A1DC(void);
 void func_03A1F6(void);
 void func_03A2F4(void);
+void func_03A312(void);
 void func_03A32C(void);
+void func_03A33A(void);
+void func_03A346(void);
+void func_03A38A(void);
 void func_03A396(void);
+void func_03A3B4(void);
 void func_03A3CC(void);
+void func_03A3DA(void);
+void func_03A3E6(void);
 void func_03A3F6(void);
 void func_03A3F8(void);
 void func_03A40A(void);
@@ -3826,8 +4701,13 @@ void func_03A422(void);
 void func_03A426(void);
 void func_03A43A(void);
 void func_03A44E(void);
+void func_03A468(void);
 void func_03A46C(void);
 void func_03A472(void);
+void func_03A482(void);
+void func_03A48A(void);
+void func_03A48C(void);
+void func_03A490(void);
 void func_03A496(void);
 void func_03A49A(void);
 void func_03A68A(void);
@@ -3838,6 +4718,8 @@ void func_03A742(void);
 void func_03A790(void);
 void func_03A7AE(void);
 void func_03A7DE(void);
+void func_03A878(void);
+void func_03A87C(void);
 void func_03A880(void);
 void func_03A88E(void);
 void func_03A89A(void);
@@ -3854,16 +4736,19 @@ void func_03AA4C(void);
 void func_03AA74(void);
 void func_03AAA8(void);
 void func_03AAFE(void);
+void func_03AB18(void);
 void func_03AB68(void);
 void func_03AB7C(void);
 void func_03AB8A(void);
 void func_03ABDE(void);
+void func_03AC0E(void);
 void func_03AC40(void);
 void func_03AC46(void);
 void func_03AC56(void);
 void func_03AC6A(void);
 void func_03AC7E(void);
 void func_03AC84(void);
+void func_03ACC8(void);
 void func_03ACF0(void);
 void func_03ACF2(void);
 void func_03AD0C(void);
@@ -3875,14 +4760,29 @@ void func_03AD6E(void);
 void func_03AD8C(void);
 void func_03ADAA(void);
 void func_03ADC6(void);
+void func_03ADD4(void);
+void func_03ADE2(void);
+void func_03ADE8(void);
 void func_03ADF6(void);
+void func_03AE16(void);
+void func_03AE26(void);
+void func_03AE34(void);
 void func_03AE38(void);
 void func_03AE3A(void);
+void func_03AE66(void);
+void func_03AE72(void);
+void func_03AE94(void);
 void func_03AE9E(void);
 void func_03AEA0(void);
+void func_03AEC0(void);
+void func_03AED0(void);
+void func_03AEDE(void);
 void func_03AEEC(void);
+void func_03AF00(void);
 void func_03AF0A(void);
 void func_03AF0C(void);
+void func_03AF26(void);
+void func_03AF2E(void);
 void func_03AF32(void);
 void func_03AF34(void);
 void func_03AF58(void);
@@ -3905,6 +4805,7 @@ void func_03B5E8(void);
 void func_03B602(void);
 void func_03B61C(void);
 void func_03B624(void);
+void func_03B638(void);
 void func_03B644(void);
 void func_03B64E(void);
 void func_03B65C(void);
@@ -3918,10 +4819,12 @@ void func_03B736(void);
 void func_03B73C(void);
 void func_03B756(void);
 void func_03B764(void);
+void func_03B770(void);
 void func_03B77E(void);
 void func_03B790(void);
 void func_03B7A6(void);
 void func_03B7BC(void);
+void func_03B7DE(void);
 void func_03B7F6(void);
 void func_03B7F8(void);
 void func_03B8A6(void);
@@ -3931,6 +4834,7 @@ void func_03B968(void);
 void func_03B97C(void);
 void func_03B980(void);
 void func_03B9AA(void);
+void func_03B9C0(void);
 void func_03B9D8(void);
 void func_03BABA(void);
 void func_03BACE(void);
@@ -3951,8 +4855,10 @@ void func_03BC30(void);
 void func_03BC3C(void);
 void func_03BC50(void);
 void func_03BC6C(void);
+void func_03BC92(void);
 void func_03BCAC(void);
 void func_03BCB6(void);
+void func_03BCC0(void);
 void func_03BCCC(void);
 void func_03BCD6(void);
 void func_03BCDE(void);
@@ -3977,6 +4883,7 @@ void func_03BFD8(void);
 void func_03C01E(void);
 void func_03C020(void);
 void func_03C034(void);
+void func_03C056(void);
 void func_03C062(void);
 void func_03C0AC(void);
 void func_03C0C0(void);
@@ -3987,6 +4894,9 @@ void func_03C196(void);
 void func_03C19A(void);
 void func_03C1AA(void);
 void func_03C1F4(void);
+void func_03C208(void);
+void func_03C20E(void);
+void func_03C26C(void);
 void func_03C328(void);
 void func_03C33A(void);
 void func_03C33E(void);
@@ -4092,12 +5002,16 @@ void func_03CEE6(void);
 void func_03CEF8(void);
 void func_03CF10(void);
 void func_03CF32(void);
+void func_03CF44(void);
 void func_03CF58(void);
+void func_03CF62(void);
 void func_03CF7C(void);
+void func_03CFC0(void);
 void func_03CFF6(void);
 void func_03D00C(void);
 void func_03D036(void);
 void func_03D04A(void);
+void func_03D05E(void);
 void func_03D066(void);
 void func_03D078(void);
 void func_03D086(void);
@@ -4107,6 +5021,10 @@ void func_03D254(void);
 void func_03D27C(void);
 void func_03D2A6(void);
 void func_03D2D4(void);
+void func_03D36C(void);
+void func_03D386(void);
+void func_03D390(void);
+void func_03D39A(void);
 void func_03D3A4(void);
 void func_03D416(void);
 void func_03D4C8(void);
@@ -4140,6 +5058,7 @@ void func_03D922(void);
 void func_03D93C(void);
 void func_03D970(void);
 void func_03D9B0(void);
+void func_03D9BE(void);
 void func_03D9D6(void);
 void func_03DA14(void);
 void func_03DA3C(void);
@@ -4182,7 +5101,9 @@ void func_03DD4E(void);
 void func_03DD50(void);
 void func_03DD64(void);
 void func_03DDA6(void);
+void func_03DE0A(void);
 void func_03DE3C(void);
+void func_03DE62(void);
 void func_03DE70(void);
 void func_03DE82(void);
 void func_03DEA2(void);
@@ -4253,6 +5174,9 @@ void func_03EB48(void);
 void func_03F1DC(void);
 void func_03F1E4(void);
 void func_03F212(void);
+void func_03F220(void);
+void func_03F228(void);
+void func_03F272(void);
 void func_03F278(void);
 void func_03F2B4(void);
 void func_03F2FC(void);
@@ -4260,6 +5184,7 @@ void func_03F352(void);
 void func_03F354(void);
 void func_03F38E(void);
 void func_03F3A8(void);
+void func_03F3F4(void);
 void func_03F404(void);
 void func_03F406(void);
 void func_03F548(void);
@@ -4269,12 +5194,16 @@ void func_03F592(void);
 void func_03F5A0(void);
 void func_03F5A8(void);
 void func_03F5B4(void);
+void func_03F5D6(void);
 void func_03F5DC(void);
+void func_03F5F6(void);
 void func_03F666(void);
 void func_03F69C(void);
 void func_03F6A2(void);
 void func_03F6AE(void);
+void func_03F6D4(void);
 void func_03F6D8(void);
+void func_03F6EE(void);
 void func_03F6F2(void);
 void func_03F73C(void);
 void func_03F78A(void);
@@ -4283,11 +5212,16 @@ void func_03F7C6(void);
 void func_03F7C8(void);
 void func_03F7E8(void);
 void func_03F7EA(void);
+void func_03F802(void);
+void func_03F81C(void);
+void func_03F844(void);
+void func_03F84C(void);
 void func_03F85C(void);
 void func_03F862(void);
 void func_03F86A(void);
 void func_03F86E(void);
 void func_03F878(void);
+void func_03F88C(void);
 void func_03F8B8(void);
 void func_03F8BE(void);
 void func_03F8EE(void);
@@ -4295,6 +5229,9 @@ void func_03F8FC(void);
 void func_03F91C(void);
 void func_03F926(void);
 void func_03F976(void);
+void func_03F9CE(void);
+void func_03F9E8(void);
+void func_03F9F4(void);
 void func_03F9F8(void);
 void func_03F9FC(void);
 void func_03FA00(void);
@@ -4305,20 +5242,30 @@ void func_03FA2C(void);
 void func_03FA5A(void);
 void func_03FA5E(void);
 void func_03FA60(void);
+void func_03FA8E(void);
+void func_03FA92(void);
+void func_03FAA8(void);
 void func_03FAC8(void);
 void func_03FAFE(void);
 void func_03FB46(void);
 void func_03FB8A(void);
 void func_03FBC4(void);
 void func_03FBCA(void);
+void func_03FBF6(void);
+void func_03FBFA(void);
+void func_03FC1C(void);
+void func_03FC46(void);
 void func_03FC4C(void);
 void func_03FC58(void);
 void func_03FC5A(void);
 void func_03FC5E(void);
+void func_03FC70(void);
 void func_03FC7A(void);
 void func_03FC86(void);
 void func_03FC88(void);
 void func_03FC8C(void);
+void func_03FC9E(void);
+void func_03FCA4(void);
 void func_03FCB0(void);
 void func_03FCB6(void);
 void func_03FCBC(void);
@@ -4350,7 +5297,11 @@ void func_0402D4(void);
 void func_040330(void);
 void func_040336(void);
 void func_040338(void);
+void func_0407BE(void);
 void func_0407C0(void);
+void func_0407DA(void);
+void func_0407DC(void);
+void func_0407E4(void);
 void func_0407FC(void);
 void func_040804(void);
 void func_04085A(void);
@@ -4359,8 +5310,16 @@ void func_04088C(void);
 void func_04092E(void);
 void func_040938(void);
 void func_040940(void);
+void func_040944(void);
+void func_04094C(void);
 void func_04096A(void);
 void func_040984(void);
+void func_04098C(void);
+void func_040990(void);
+void func_040998(void);
+void func_0409A6(void);
+void func_0409AA(void);
+void func_0409BE(void);
 void func_0409C6(void);
 void func_0409E2(void);
 void func_0409F8(void);
@@ -4368,14 +5327,24 @@ void func_040D06(void);
 void func_040D42(void);
 void func_040D8A(void);
 void func_040DBA(void);
+void func_040DC6(void);
 void func_040DDA(void);
 void func_040E38(void);
 void func_040E46(void);
 void func_040E82(void);
 void func_040E84(void);
 void func_040E9A(void);
+void func_040EAA(void);
+void func_040EBE(void);
+void func_040EDC(void);
+void func_040F18(void);
 void func_040F4E(void);
 void func_040F50(void);
+void func_040F90(void);
+void func_040FC8(void);
+void func_040FD6(void);
+void func_040FE4(void);
+void func_041010(void);
 void func_04101A(void);
 void func_04101C(void);
 void func_04102A(void);
@@ -4384,22 +5353,39 @@ void func_041058(void);
 void func_04105A(void);
 void func_04106E(void);
 void func_041090(void);
+void func_041094(void);
+void func_0410A4(void);
+void func_0410AA(void);
+void func_0410B0(void);
 void func_0410BC(void);
 void func_0410E4(void);
 void func_041104(void);
 void func_04110C(void);
+void func_04111E(void);
 void func_04113C(void);
 void func_041146(void);
 void func_04114E(void);
 void func_041154(void);
+void func_041158(void);
+void func_041160(void);
+void func_04116A(void);
+void func_041198(void);
 void func_0411A4(void);
 void func_0411C2(void);
+void func_0411C6(void);
+void func_0411CE(void);
 void func_041214(void);
 void func_04121C(void);
 void func_041222(void);
 void func_041228(void);
+void func_04122C(void);
+void func_041234(void);
+void func_04123E(void);
 void func_041274(void);
 void func_041280(void);
+void func_041284(void);
+void func_04128C(void);
+void func_041296(void);
 void func_0412C0(void);
 void func_0412C6(void);
 void func_0412C8(void);
@@ -4407,6 +5393,8 @@ void func_0412D4(void);
 void func_0412E2(void);
 void func_0412EE(void);
 void func_0412FA(void);
+void func_04130A(void);
+void func_041314(void);
 void func_041318(void);
 void func_04132E(void);
 void func_04133A(void);
@@ -4440,12 +5428,10 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x000200u, func_000200 },
     { 0x000206u, func_000206 },
     { 0x000214u, func_000214 },
-    { 0x00022Au, func_00022A },
     { 0x000234u, func_000234 },
     { 0x00023Eu, func_00023E },
     { 0x000250u, func_000250 },
     { 0x000256u, func_000256 },
-    { 0x000258u, func_000258 },
     { 0x000262u, func_000262 },
     { 0x00026Eu, func_00026E },
     { 0x000278u, func_000278 },
@@ -4477,35 +5463,26 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0003FCu, func_0003FC },
     { 0x000402u, func_000402 },
     { 0x000408u, func_000408 },
-    { 0x000438u, func_000438 },
     { 0x00045Eu, func_00045E },
     { 0x000484u, func_000484 },
-    { 0x000526u, func_000526 },
-    { 0x00054Au, func_00054A },
     { 0x000566u, func_000566 },
     { 0x0005F0u, func_0005F0 },
-    { 0x0005F4u, func_0005F4 },
-    { 0x000600u, func_000600 },
     { 0x00062Au, func_00062A },
     { 0x000660u, func_000660 },
-    { 0x000674u, func_000674 },
     { 0x000676u, func_000676 },
     { 0x00067Cu, func_00067C },
     { 0x000686u, func_000686 },
-    { 0x00078Eu, func_00078E },
     { 0x0007E6u, func_0007E6 },
     { 0x000802u, func_000802 },
+    { 0x00084Au, func_00084A },
+    { 0x00086Eu, func_00086E },
     { 0x000878u, func_000878 },
-    { 0x0008D0u, func_0008D0 },
-    { 0x000920u, func_000920 },
+    { 0x000906u, func_000906 },
     { 0x00092Au, func_00092A },
-    { 0x000942u, func_000942 },
-    { 0x000950u, func_000950 },
     { 0x0009B8u, func_0009B8 },
     { 0x0009DEu, func_0009DE },
     { 0x000A04u, func_000A04 },
     { 0x000A2Au, func_000A2A },
-    { 0x000A3Cu, func_000A3C },
     { 0x000A50u, func_000A50 },
     { 0x000A76u, func_000A76 },
     { 0x000A9Cu, func_000A9C },
@@ -4514,36 +5491,20 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x000B02u, func_000B02 },
     { 0x000B4Eu, func_000B4E },
     { 0x000B70u, func_000B70 },
-    { 0x000B78u, func_000B78 },
-    { 0x000BBEu, func_000BBE },
+    { 0x000BB2u, func_000BB2 },
     { 0x000BD6u, func_000BD6 },
-    { 0x000BE0u, func_000BE0 },
-    { 0x000C46u, func_000C46 },
     { 0x000C5Eu, func_000C5E },
     { 0x000C6Eu, func_000C6E },
     { 0x000C7Au, func_000C7A },
-    { 0x000CFCu, func_000CFC },
     { 0x000DF4u, func_000DF4 },
-    { 0x000E24u, func_000E24 },
-    { 0x000E8Au, func_000E8A },
     { 0x000E98u, func_000E98 },
+    { 0x000EDAu, func_000EDA },
     { 0x000EFEu, func_000EFE },
     { 0x000F54u, func_000F54 },
-    { 0x000F6Eu, func_000F6E },
-    { 0x000F78u, func_000F78 },
-    { 0x000F88u, func_000F88 },
-    { 0x000FD8u, func_000FD8 },
     { 0x000FFEu, func_000FFE },
     { 0x001000u, func_001000 },
-    { 0x00105Au, func_00105A },
     { 0x001072u, func_001072 },
     { 0x001084u, func_001084 },
-    { 0x0010B6u, func_0010B6 },
-    { 0x0010C0u, func_0010C0 },
-    { 0x0010C4u, func_0010C4 },
-    { 0x0010C6u, func_0010C6 },
-    { 0x0010D2u, func_0010D2 },
-    { 0x0010DAu, func_0010DA },
     { 0x0010E0u, func_0010E0 },
     { 0x0010E6u, func_0010E6 },
     { 0x0010ECu, func_0010EC },
@@ -4553,8 +5514,6 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x00116Cu, func_00116C },
     { 0x0011A0u, func_0011A0 },
     { 0x001208u, func_001208 },
-    { 0x0012FAu, func_0012FA },
-    { 0x0012FCu, func_0012FC },
     { 0x00130Au, func_00130A },
     { 0x00135Eu, func_00135E },
     { 0x001370u, func_001370 },
@@ -4631,8 +5590,6 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x001B0Cu, func_001B0C },
     { 0x001B50u, func_001B50 },
     { 0x001B92u, func_001B92 },
-    { 0x001B98u, func_001B98 },
-    { 0x001BBEu, func_001BBE },
     { 0x001BC0u, func_001BC0 },
     { 0x001BEEu, func_001BEE },
     { 0x001C20u, func_001C20 },
@@ -4640,14 +5597,12 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x001C4Eu, func_001C4E },
     { 0x001C54u, func_001C54 },
     { 0x001C8Cu, func_001C8C },
-    { 0x001CBEu, func_001CBE },
     { 0x001CC6u, func_001CC6 },
     { 0x001CCCu, func_001CCC },
     { 0x001D14u, func_001D14 },
     { 0x001D16u, func_001D16 },
     { 0x001D88u, func_001D88 },
     { 0x001DB6u, func_001DB6 },
-    { 0x001DBAu, func_001DBA },
     { 0x00213Eu, func_00213E },
     { 0x0023C6u, func_0023C6 },
     { 0x0023FEu, func_0023FE },
@@ -4661,6 +5616,17 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x002592u, func_002592 },
     { 0x0025B2u, func_0025B2 },
     { 0x0025E0u, func_0025E0 },
+    { 0x002636u, func_002636 },
+    { 0x002640u, func_002640 },
+    { 0x00264Au, func_00264A },
+    { 0x002654u, func_002654 },
+    { 0x00266Au, func_00266A },
+    { 0x002678u, func_002678 },
+    { 0x002680u, func_002680 },
+    { 0x00269Eu, func_00269E },
+    { 0x0026BEu, func_0026BE },
+    { 0x0026C8u, func_0026C8 },
+    { 0x0026D2u, func_0026D2 },
     { 0x002712u, func_002712 },
     { 0x00272Eu, func_00272E },
     { 0x002746u, func_002746 },
@@ -4715,6 +5681,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0046A6u, func_0046A6 },
     { 0x0046B8u, func_0046B8 },
     { 0x0046CAu, func_0046CA },
+    { 0x004712u, func_004712 },
+    { 0x00476Eu, func_00476E },
     { 0x00481Eu, func_00481E },
     { 0x00486Au, func_00486A },
     { 0x0048AAu, func_0048AA },
@@ -4739,6 +5707,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x004F58u, func_004F58 },
     { 0x004F5Eu, func_004F5E },
     { 0x004F64u, func_004F64 },
+    { 0x00540Cu, func_00540C },
     { 0x00541Au, func_00541A },
     { 0x00543Au, func_00543A },
     { 0x005482u, func_005482 },
@@ -4830,6 +5799,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x006EE0u, func_006EE0 },
     { 0x006F0Au, func_006F0A },
     { 0x006F2Au, func_006F2A },
+    { 0x006F4Cu, func_006F4C },
     { 0x006F6Au, func_006F6A },
     { 0x006F8Eu, func_006F8E },
     { 0x006FA4u, func_006FA4 },
@@ -4844,6 +5814,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x007356u, func_007356 },
     { 0x00736Cu, func_00736C },
     { 0x007480u, func_007480 },
+    { 0x0074EAu, func_0074EA },
+    { 0x007536u, func_007536 },
     { 0x00753Eu, func_00753E },
     { 0x0075DEu, func_0075DE },
     { 0x007650u, func_007650 },
@@ -4895,17 +5867,23 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0084A4u, func_0084A4 },
     { 0x0084C4u, func_0084C4 },
     { 0x00854Au, func_00854A },
+    { 0x008582u, func_008582 },
+    { 0x0085A6u, func_0085A6 },
     { 0x0085CEu, func_0085CE },
+    { 0x00862Cu, func_00862C },
     { 0x008652u, func_008652 },
     { 0x008672u, func_008672 },
     { 0x008698u, func_008698 },
     { 0x0086B0u, func_0086B0 },
     { 0x0086F6u, func_0086F6 },
+    { 0x0087DCu, func_0087DC },
     { 0x008BC8u, func_008BC8 },
     { 0x008BCEu, func_008BCE },
     { 0x008BD4u, func_008BD4 },
     { 0x008DA8u, func_008DA8 },
     { 0x008DE2u, func_008DE2 },
+    { 0x008DF4u, func_008DF4 },
+    { 0x008E3Au, func_008E3A },
     { 0x008E5Au, func_008E5A },
     { 0x008E7Eu, func_008E7E },
     { 0x008EFEu, func_008EFE },
@@ -4957,6 +5935,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x00A34Cu, func_00A34C },
     { 0x00A38Cu, func_00A38C },
     { 0x00A38Eu, func_00A38E },
+    { 0x00A3BEu, func_00A3BE },
     { 0x00A3C8u, func_00A3C8 },
     { 0x00A3DEu, func_00A3DE },
     { 0x00A456u, func_00A456 },
@@ -4973,6 +5952,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x00A594u, func_00A594 },
     { 0x00A5A6u, func_00A5A6 },
     { 0x00A6C6u, func_00A6C6 },
+    { 0x00A720u, func_00A720 },
     { 0x00A7DEu, func_00A7DE },
     { 0x00A83Eu, func_00A83E },
     { 0x00A894u, func_00A894 },
@@ -5035,6 +6015,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x00C372u, func_00C372 },
     { 0x00C38Au, func_00C38A },
     { 0x00C38Cu, func_00C38C },
+    { 0x00C3A6u, func_00C3A6 },
     { 0x00C3C6u, func_00C3C6 },
     { 0x00C3D0u, func_00C3D0 },
     { 0x00C480u, func_00C480 },
@@ -5110,7 +6091,6 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x00E396u, func_00E396 },
     { 0x00E3C6u, func_00E3C6 },
     { 0x00E462u, func_00E462 },
-    { 0x00E4A2u, func_00E4A2 },
     { 0x00E59Cu, func_00E59C },
     { 0x00E5BCu, func_00E5BC },
     { 0x00E5C2u, func_00E5C2 },
@@ -5226,12 +6206,17 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x00F694u, func_00F694 },
     { 0x00F728u, func_00F728 },
     { 0x00F77Au, func_00F77A },
+    { 0x00F7B8u, func_00F7B8 },
+    { 0x00F7BCu, func_00F7BC },
     { 0x00F7D4u, func_00F7D4 },
     { 0x00F808u, func_00F808 },
     { 0x00F80Cu, func_00F80C },
     { 0x00F810u, func_00F810 },
+    { 0x00F84Eu, func_00F84E },
+    { 0x00F852u, func_00F852 },
     { 0x00F872u, func_00F872 },
     { 0x00F88Cu, func_00F88C },
+    { 0x00F8F0u, func_00F8F0 },
     { 0x00F912u, func_00F912 },
     { 0x00F9E8u, func_00F9E8 },
     { 0x00FC88u, func_00FC88 },
@@ -5241,11 +6226,16 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x00FCCAu, func_00FCCA },
     { 0x00FE50u, func_00FE50 },
     { 0x00FE70u, func_00FE70 },
+    { 0x00FEC2u, func_00FEC2 },
+    { 0x00FF6Cu, func_00FF6C },
     { 0x00FF6Eu, func_00FF6E },
+    { 0x010006u, func_010006 },
     { 0x01000Cu, func_01000C },
     { 0x010036u, func_010036 },
     { 0x01003Au, func_01003A },
     { 0x01003Eu, func_01003E },
+    { 0x0100E4u, func_0100E4 },
+    { 0x0100F4u, func_0100F4 },
     { 0x0100F8u, func_0100F8 },
     { 0x010100u, func_010100 },
     { 0x010166u, func_010166 },
@@ -5282,9 +6272,14 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0106C0u, func_0106C0 },
     { 0x0106CCu, func_0106CC },
     { 0x0106D8u, func_0106D8 },
+    { 0x0106EEu, func_0106EE },
+    { 0x0106F0u, func_0106F0 },
     { 0x010702u, func_010702 },
+    { 0x010730u, func_010730 },
     { 0x01075Eu, func_01075E },
     { 0x010778u, func_010778 },
+    { 0x010796u, func_010796 },
+    { 0x010798u, func_010798 },
     { 0x0107A4u, func_0107A4 },
     { 0x0107BCu, func_0107BC },
     { 0x0107D6u, func_0107D6 },
@@ -5367,6 +6362,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x012078u, func_012078 },
     { 0x012090u, func_012090 },
     { 0x012178u, func_012178 },
+    { 0x0121B8u, func_0121B8 },
+    { 0x0121D0u, func_0121D0 },
     { 0x0121DAu, func_0121DA },
     { 0x0121EEu, func_0121EE },
     { 0x0121F8u, func_0121F8 },
@@ -5400,6 +6397,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01281Eu, func_01281E },
     { 0x012854u, func_012854 },
     { 0x012868u, func_012868 },
+    { 0x0128C6u, func_0128C6 },
     { 0x0128DEu, func_0128DE },
     { 0x0128E4u, func_0128E4 },
     { 0x012938u, func_012938 },
@@ -5463,6 +6461,14 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0132F0u, func_0132F0 },
     { 0x013302u, func_013302 },
     { 0x013344u, func_013344 },
+    { 0x01344Cu, func_01344C },
+    { 0x01345Cu, func_01345C },
+    { 0x01347Eu, func_01347E },
+    { 0x013484u, func_013484 },
+    { 0x01348Au, func_01348A },
+    { 0x013498u, func_013498 },
+    { 0x0134B0u, func_0134B0 },
+    { 0x0134B6u, func_0134B6 },
     { 0x0134BCu, func_0134BC },
     { 0x0135EAu, func_0135EA },
     { 0x013600u, func_013600 },
@@ -5499,19 +6505,34 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x014082u, func_014082 },
     { 0x014086u, func_014086 },
     { 0x0140ACu, func_0140AC },
+    { 0x0140BCu, func_0140BC },
+    { 0x0140CEu, func_0140CE },
     { 0x014102u, func_014102 },
+    { 0x014118u, func_014118 },
     { 0x014138u, func_014138 },
     { 0x01413Au, func_01413A },
     { 0x014142u, func_014142 },
     { 0x014146u, func_014146 },
+    { 0x01415Eu, func_01415E },
     { 0x014168u, func_014168 },
+    { 0x01418Eu, func_01418E },
+    { 0x014194u, func_014194 },
     { 0x01419Cu, func_01419C },
     { 0x0141AAu, func_0141AA },
+    { 0x0141C6u, func_0141C6 },
+    { 0x0141D6u, func_0141D6 },
+    { 0x0141E6u, func_0141E6 },
+    { 0x014214u, func_014214 },
+    { 0x014220u, func_014220 },
     { 0x014254u, func_014254 },
     { 0x014256u, func_014256 },
     { 0x014270u, func_014270 },
+    { 0x01428Cu, func_01428C },
+    { 0x01429Cu, func_01429C },
     { 0x0142B0u, func_0142B0 },
+    { 0x0142BCu, func_0142BC },
     { 0x0142CCu, func_0142CC },
+    { 0x0142E2u, func_0142E2 },
     { 0x0143C0u, func_0143C0 },
     { 0x014406u, func_014406 },
     { 0x014450u, func_014450 },
@@ -5537,11 +6558,36 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x014714u, func_014714 },
     { 0x014736u, func_014736 },
     { 0x015584u, func_015584 },
+    { 0x0155A8u, func_0155A8 },
+    { 0x0155AEu, func_0155AE },
+    { 0x0155C0u, func_0155C0 },
+    { 0x0155C6u, func_0155C6 },
+    { 0x0155EAu, func_0155EA },
+    { 0x0155F0u, func_0155F0 },
+    { 0x0155FEu, func_0155FE },
+    { 0x015604u, func_015604 },
+    { 0x015614u, func_015614 },
+    { 0x015634u, func_015634 },
+    { 0x015640u, func_015640 },
+    { 0x01564Eu, func_01564E },
+    { 0x015654u, func_015654 },
+    { 0x015664u, func_015664 },
+    { 0x015670u, func_015670 },
+    { 0x0156A2u, func_0156A2 },
+    { 0x0156B0u, func_0156B0 },
+    { 0x0156CEu, func_0156CE },
+    { 0x0156F4u, func_0156F4 },
+    { 0x015714u, func_015714 },
+    { 0x015758u, func_015758 },
+    { 0x01578Cu, func_01578C },
     { 0x015792u, func_015792 },
     { 0x0157A4u, func_0157A4 },
     { 0x0157B0u, func_0157B0 },
     { 0x0157D2u, func_0157D2 },
     { 0x0157ECu, func_0157EC },
+    { 0x0157FEu, func_0157FE },
+    { 0x015812u, func_015812 },
+    { 0x01581Au, func_01581A },
     { 0x0158E8u, func_0158E8 },
     { 0x0158EEu, func_0158EE },
     { 0x0158F4u, func_0158F4 },
@@ -5580,6 +6626,20 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x015FE4u, func_015FE4 },
     { 0x015FE6u, func_015FE6 },
     { 0x015FF2u, func_015FF2 },
+    { 0x01600Cu, func_01600C },
+    { 0x016028u, func_016028 },
+    { 0x016068u, func_016068 },
+    { 0x01606Cu, func_01606C },
+    { 0x016078u, func_016078 },
+    { 0x0160D0u, func_0160D0 },
+    { 0x0160ECu, func_0160EC },
+    { 0x016184u, func_016184 },
+    { 0x0161B0u, func_0161B0 },
+    { 0x0161B4u, func_0161B4 },
+    { 0x0161CCu, func_0161CC },
+    { 0x016218u, func_016218 },
+    { 0x016340u, func_016340 },
+    { 0x016370u, func_016370 },
     { 0x01637Cu, func_01637C },
     { 0x016380u, func_016380 },
     { 0x0163ACu, func_0163AC },
@@ -5683,20 +6743,49 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x017422u, func_017422 },
     { 0x0174C8u, func_0174C8 },
     { 0x01750Eu, func_01750E },
+    { 0x017530u, func_017530 },
+    { 0x017536u, func_017536 },
+    { 0x017550u, func_017550 },
+    { 0x017564u, func_017564 },
     { 0x01756Eu, func_01756E },
     { 0x017578u, func_017578 },
     { 0x017586u, func_017586 },
+    { 0x0175A0u, func_0175A0 },
+    { 0x0175BAu, func_0175BA },
+    { 0x0175CCu, func_0175CC },
     { 0x0175E8u, func_0175E8 },
     { 0x0175EAu, func_0175EA },
+    { 0x017618u, func_017618 },
     { 0x017638u, func_017638 },
+    { 0x017652u, func_017652 },
+    { 0x01766Au, func_01766A },
+    { 0x01767Eu, func_01767E },
     { 0x01769Cu, func_01769C },
     { 0x01769Eu, func_01769E },
+    { 0x0176B8u, func_0176B8 },
+    { 0x0176D0u, func_0176D0 },
+    { 0x0176E2u, func_0176E2 },
+    { 0x0176EEu, func_0176EE },
     { 0x0176F6u, func_0176F6 },
+    { 0x01770Eu, func_01770E },
+    { 0x017726u, func_017726 },
+    { 0x017738u, func_017738 },
+    { 0x017744u, func_017744 },
     { 0x01774Cu, func_01774C },
+    { 0x017766u, func_017766 },
+    { 0x01777Eu, func_01777E },
+    { 0x017790u, func_017790 },
+    { 0x01779Cu, func_01779C },
     { 0x0177A4u, func_0177A4 },
+    { 0x0177BCu, func_0177BC },
+    { 0x0177D4u, func_0177D4 },
+    { 0x0177E6u, func_0177E6 },
+    { 0x0177F2u, func_0177F2 },
     { 0x0177FAu, func_0177FA },
     { 0x017AA4u, func_017AA4 },
     { 0x017AB8u, func_017AB8 },
+    { 0x017B3Eu, func_017B3E },
+    { 0x017B62u, func_017B62 },
     { 0x017B84u, func_017B84 },
     { 0x017C0Au, func_017C0A },
     { 0x017C4Eu, func_017C4E },
@@ -5727,24 +6816,80 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x018936u, func_018936 },
     { 0x018954u, func_018954 },
     { 0x018980u, func_018980 },
+    { 0x0189A8u, func_0189A8 },
+    { 0x0189C0u, func_0189C0 },
     { 0x0189CAu, func_0189CA },
+    { 0x0189FEu, func_0189FE },
+    { 0x018A2Eu, func_018A2E },
+    { 0x018A3Eu, func_018A3E },
+    { 0x018A54u, func_018A54 },
+    { 0x018A66u, func_018A66 },
     { 0x018A70u, func_018A70 },
+    { 0x018AA8u, func_018AA8 },
+    { 0x018AB0u, func_018AB0 },
+    { 0x018AD8u, func_018AD8 },
+    { 0x018AE0u, func_018AE0 },
     { 0x018AEEu, func_018AEE },
+    { 0x018B1Cu, func_018B1C },
+    { 0x018B36u, func_018B36 },
+    { 0x018B42u, func_018B42 },
+    { 0x018B72u, func_018B72 },
+    { 0x018B82u, func_018B82 },
+    { 0x018B98u, func_018B98 },
+    { 0x018BAAu, func_018BAA },
     { 0x018BC6u, func_018BC6 },
+    { 0x018BE8u, func_018BE8 },
+    { 0x018C10u, func_018C10 },
+    { 0x018C3Cu, func_018C3C },
+    { 0x018C56u, func_018C56 },
     { 0x018C7Eu, func_018C7E },
     { 0x018C80u, func_018C80 },
+    { 0x018CA6u, func_018CA6 },
+    { 0x018CBCu, func_018CBC },
     { 0x018CC6u, func_018CC6 },
+    { 0x018CE6u, func_018CE6 },
+    { 0x018D16u, func_018D16 },
+    { 0x018D26u, func_018D26 },
+    { 0x018D3Cu, func_018D3C },
+    { 0x018D4Eu, func_018D4E },
     { 0x018D6Au, func_018D6A },
+    { 0x018D92u, func_018D92 },
+    { 0x018DAAu, func_018DAA },
     { 0x018DB4u, func_018DB4 },
+    { 0x018DCAu, func_018DCA },
+    { 0x018DD8u, func_018DD8 },
+    { 0x018E10u, func_018E10 },
+    { 0x018E5Cu, func_018E5C },
+    { 0x018E6Cu, func_018E6C },
+    { 0x018E82u, func_018E82 },
+    { 0x018E94u, func_018E94 },
     { 0x018E9Eu, func_018E9E },
+    { 0x018EC4u, func_018EC4 },
+    { 0x018EDAu, func_018EDA },
     { 0x018EE6u, func_018EE6 },
+    { 0x018F22u, func_018F22 },
+    { 0x018F68u, func_018F68 },
+    { 0x018F78u, func_018F78 },
+    { 0x018F8Eu, func_018F8E },
+    { 0x018FA0u, func_018FA0 },
     { 0x0191B8u, func_0191B8 },
     { 0x0191DCu, func_0191DC },
+    { 0x019208u, func_019208 },
+    { 0x01921Eu, func_01921E },
+    { 0x01922Cu, func_01922C },
     { 0x01924Cu, func_01924C },
+    { 0x0192A0u, func_0192A0 },
+    { 0x0192BCu, func_0192BC },
+    { 0x0192D6u, func_0192D6 },
+    { 0x01932Eu, func_01932E },
+    { 0x019350u, func_019350 },
     { 0x019366u, func_019366 },
     { 0x019368u, func_019368 },
+    { 0x019398u, func_019398 },
     { 0x019406u, func_019406 },
     { 0x019418u, func_019418 },
+    { 0x019434u, func_019434 },
+    { 0x01944Cu, func_01944C },
     { 0x019452u, func_019452 },
     { 0x0194D0u, func_0194D0 },
     { 0x0194FCu, func_0194FC },
@@ -5755,14 +6900,23 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01958Cu, func_01958C },
     { 0x019718u, func_019718 },
     { 0x019736u, func_019736 },
+    { 0x01975Au, func_01975A },
+    { 0x01976Eu, func_01976E },
     { 0x019776u, func_019776 },
     { 0x019778u, func_019778 },
     { 0x01978Eu, func_01978E },
+    { 0x0197B2u, func_0197B2 },
+    { 0x0197C6u, func_0197C6 },
     { 0x0197D0u, func_0197D0 },
     { 0x0197E6u, func_0197E6 },
-    { 0x01983Eu, func_01983E },
+    { 0x01980Au, func_01980A },
+    { 0x01981Eu, func_01981E },
+    { 0x019862u, func_019862 },
+    { 0x019876u, func_019876 },
     { 0x019880u, func_019880 },
     { 0x019896u, func_019896 },
+    { 0x0198B8u, func_0198B8 },
+    { 0x0198CCu, func_0198CC },
     { 0x0198ECu, func_0198EC },
     { 0x01992Eu, func_01992E },
     { 0x019988u, func_019988 },
@@ -5784,28 +6938,48 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x019B56u, func_019B56 },
     { 0x019B8Eu, func_019B8E },
     { 0x019B92u, func_019B92 },
+    { 0x019BA2u, func_019BA2 },
     { 0x019BCAu, func_019BCA },
     { 0x019BCCu, func_019BCC },
     { 0x019BECu, func_019BEC },
     { 0x019C0Cu, func_019C0C },
     { 0x019C0Eu, func_019C0E },
+    { 0x019C2Cu, func_019C2C },
     { 0x019C32u, func_019C32 },
     { 0x019C48u, func_019C48 },
+    { 0x019C80u, func_019C80 },
     { 0x019C8Au, func_019C8A },
     { 0x019CA0u, func_019CA0 },
+    { 0x019CC4u, func_019CC4 },
+    { 0x019CD8u, func_019CD8 },
     { 0x019CE2u, func_019CE2 },
     { 0x019CF8u, func_019CF8 },
+    { 0x019D1Cu, func_019D1C },
+    { 0x019D30u, func_019D30 },
     { 0x019D3Au, func_019D3A },
     { 0x019D50u, func_019D50 },
+    { 0x019D62u, func_019D62 },
+    { 0x019D7Eu, func_019D7E },
+    { 0x019D8Eu, func_019D8E },
+    { 0x019D92u, func_019D92 },
     { 0x019D9Cu, func_019D9C },
     { 0x019DBAu, func_019DBA },
     { 0x019DD8u, func_019DD8 },
     { 0x019DDEu, func_019DDE },
     { 0x019E14u, func_019E14 },
+    { 0x019E30u, func_019E30 },
+    { 0x019E76u, func_019E76 },
+    { 0x019E7Cu, func_019E7C },
+    { 0x019E7Eu, func_019E7E },
     { 0x019E8Eu, func_019E8E },
     { 0x019E90u, func_019E90 },
+    { 0x019EB6u, func_019EB6 },
     { 0x019EC8u, func_019EC8 },
     { 0x019EF0u, func_019EF0 },
+    { 0x019F08u, func_019F08 },
+    { 0x019F1Eu, func_019F1E },
+    { 0x019F36u, func_019F36 },
+    { 0x019F4Cu, func_019F4C },
     { 0x019F50u, func_019F50 },
     { 0x019F5Cu, func_019F5C },
     { 0x019F76u, func_019F76 },
@@ -5850,6 +7024,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01A624u, func_01A624 },
     { 0x01A630u, func_01A630 },
     { 0x01A64Eu, func_01A64E },
+    { 0x01A6A2u, func_01A6A2 },
+    { 0x01A6A8u, func_01A6A8 },
+    { 0x01A6BAu, func_01A6BA },
     { 0x01A6BEu, func_01A6BE },
     { 0x01A6C0u, func_01A6C0 },
     { 0x01A6FAu, func_01A6FA },
@@ -5898,14 +7075,20 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01AC8Eu, func_01AC8E },
     { 0x01AD30u, func_01AD30 },
     { 0x01AD78u, func_01AD78 },
+    { 0x01AD8Cu, func_01AD8C },
     { 0x01AD96u, func_01AD96 },
+    { 0x01ADC6u, func_01ADC6 },
     { 0x01ADCAu, func_01ADCA },
     { 0x01ADCCu, func_01ADCC },
+    { 0x01ADF6u, func_01ADF6 },
+    { 0x01ADFCu, func_01ADFC },
+    { 0x01AE02u, func_01AE02 },
     { 0x01AE06u, func_01AE06 },
     { 0x01AE08u, func_01AE08 },
     { 0x01AE42u, func_01AE42 },
     { 0x01AE44u, func_01AE44 },
     { 0x01AE4Au, func_01AE4A },
+    { 0x01AE5Au, func_01AE5A },
     { 0x01AE60u, func_01AE60 },
     { 0x01AE64u, func_01AE64 },
     { 0x01AE70u, func_01AE70 },
@@ -5913,6 +7096,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01AEA4u, func_01AEA4 },
     { 0x01AEA8u, func_01AEA8 },
     { 0x01AEAAu, func_01AEAA },
+    { 0x01AF5Au, func_01AF5A },
+    { 0x01AF68u, func_01AF68 },
+    { 0x01AF7Cu, func_01AF7C },
     { 0x01AF8Au, func_01AF8A },
     { 0x01AF8Cu, func_01AF8C },
     { 0x01AFA6u, func_01AFA6 },
@@ -5920,6 +7106,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01AFC0u, func_01AFC0 },
     { 0x01AFE6u, func_01AFE6 },
     { 0x01AFE8u, func_01AFE8 },
+    { 0x01B02Cu, func_01B02C },
     { 0x01B042u, func_01B042 },
     { 0x01B044u, func_01B044 },
     { 0x01B05Eu, func_01B05E },
@@ -5960,6 +7147,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01B51Eu, func_01B51E },
     { 0x01B520u, func_01B520 },
     { 0x01B54Eu, func_01B54E },
+    { 0x01B566u, func_01B566 },
+    { 0x01B572u, func_01B572 },
     { 0x01B586u, func_01B586 },
     { 0x01B5D2u, func_01B5D2 },
     { 0x01B848u, func_01B848 },
@@ -5988,6 +7177,11 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01BB8Au, func_01BB8A },
     { 0x01BBC8u, func_01BBC8 },
     { 0x01BBCEu, func_01BBCE },
+    { 0x01BC40u, func_01BC40 },
+    { 0x01BC50u, func_01BC50 },
+    { 0x01BC54u, func_01BC54 },
+    { 0x01BC64u, func_01BC64 },
+    { 0x01BC68u, func_01BC68 },
     { 0x01BCDEu, func_01BCDE },
     { 0x01BCE0u, func_01BCE0 },
     { 0x01BD0Eu, func_01BD0E },
@@ -6033,6 +7227,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01C208u, func_01C208 },
     { 0x01C214u, func_01C214 },
     { 0x01C232u, func_01C232 },
+    { 0x01C286u, func_01C286 },
+    { 0x01C28Cu, func_01C28C },
+    { 0x01C29Eu, func_01C29E },
     { 0x01C2A2u, func_01C2A2 },
     { 0x01C2A4u, func_01C2A4 },
     { 0x01C2DEu, func_01C2DE },
@@ -6072,18 +7269,26 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01C6F8u, func_01C6F8 },
     { 0x01C70Cu, func_01C70C },
     { 0x01C70Eu, func_01C70E },
+    { 0x01C754u, func_01C754 },
     { 0x01C75Cu, func_01C75C },
     { 0x01C75Eu, func_01C75E },
     { 0x01C7E0u, func_01C7E0 },
+    { 0x01C7F8u, func_01C7F8 },
     { 0x01C828u, func_01C828 },
+    { 0x01C83Cu, func_01C83C },
     { 0x01C846u, func_01C846 },
+    { 0x01C876u, func_01C876 },
     { 0x01C87Au, func_01C87A },
     { 0x01C87Cu, func_01C87C },
+    { 0x01C8A6u, func_01C8A6 },
+    { 0x01C8ACu, func_01C8AC },
+    { 0x01C8B2u, func_01C8B2 },
     { 0x01C8B6u, func_01C8B6 },
     { 0x01C8B8u, func_01C8B8 },
     { 0x01C8F2u, func_01C8F2 },
     { 0x01C8F4u, func_01C8F4 },
     { 0x01C8FAu, func_01C8FA },
+    { 0x01C90Au, func_01C90A },
     { 0x01C910u, func_01C910 },
     { 0x01C914u, func_01C914 },
     { 0x01C920u, func_01C920 },
@@ -6091,6 +7296,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01C954u, func_01C954 },
     { 0x01C958u, func_01C958 },
     { 0x01C95Au, func_01C95A },
+    { 0x01CA0Au, func_01CA0A },
+    { 0x01CA18u, func_01CA18 },
+    { 0x01CA2Cu, func_01CA2C },
     { 0x01CA3Au, func_01CA3A },
     { 0x01CA3Cu, func_01CA3C },
     { 0x01CA56u, func_01CA56 },
@@ -6098,6 +7306,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01CA70u, func_01CA70 },
     { 0x01CA96u, func_01CA96 },
     { 0x01CA98u, func_01CA98 },
+    { 0x01CADCu, func_01CADC },
     { 0x01CAF2u, func_01CAF2 },
     { 0x01CAF4u, func_01CAF4 },
     { 0x01CB0Eu, func_01CB0E },
@@ -6138,6 +7347,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01CF6Eu, func_01CF6E },
     { 0x01CFB2u, func_01CFB2 },
     { 0x01CFE4u, func_01CFE4 },
+    { 0x01D002u, func_01D002 },
+    { 0x01D006u, func_01D006 },
     { 0x01D184u, func_01D184 },
     { 0x01D190u, func_01D190 },
     { 0x01D194u, func_01D194 },
@@ -6153,6 +7364,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01D318u, func_01D318 },
     { 0x01D320u, func_01D320 },
     { 0x01D340u, func_01D340 },
+    { 0x01D388u, func_01D388 },
     { 0x01D398u, func_01D398 },
     { 0x01D3A4u, func_01D3A4 },
     { 0x01D3CAu, func_01D3CA },
@@ -6188,7 +7400,15 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01D97Eu, func_01D97E },
     { 0x01D9A4u, func_01D9A4 },
     { 0x01DA0Cu, func_01DA0C },
+    { 0x01DA34u, func_01DA34 },
+    { 0x01DA44u, func_01DA44 },
+    { 0x01DA74u, func_01DA74 },
     { 0x01DA80u, func_01DA80 },
+    { 0x01DAA4u, func_01DAA4 },
+    { 0x01DAACu, func_01DAAC },
+    { 0x01DAD4u, func_01DAD4 },
+    { 0x01DAE4u, func_01DAE4 },
+    { 0x01DB20u, func_01DB20 },
     { 0x01DB2Cu, func_01DB2C },
     { 0x01DD20u, func_01DD20 },
     { 0x01DD36u, func_01DD36 },
@@ -6201,37 +7421,76 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01DE46u, func_01DE46 },
     { 0x01DE4Au, func_01DE4A },
     { 0x01DE64u, func_01DE64 },
+    { 0x01DEE0u, func_01DEE0 },
     { 0x01DEE4u, func_01DEE4 },
     { 0x01DF36u, func_01DF36 },
     { 0x01E0F0u, func_01E0F0 },
     { 0x01E102u, func_01E102 },
     { 0x01E10Eu, func_01E10E },
     { 0x01E138u, func_01E138 },
+    { 0x01E170u, func_01E170 },
+    { 0x01E176u, func_01E176 },
+    { 0x01E182u, func_01E182 },
+    { 0x01E188u, func_01E188 },
+    { 0x01E1AAu, func_01E1AA },
+    { 0x01E1B8u, func_01E1B8 },
     { 0x01E234u, func_01E234 },
+    { 0x01E286u, func_01E286 },
+    { 0x01E28Eu, func_01E28E },
+    { 0x01E292u, func_01E292 },
     { 0x01E31Cu, func_01E31C },
     { 0x01E31Eu, func_01E31E },
+    { 0x01E336u, func_01E336 },
+    { 0x01E33Cu, func_01E33C },
     { 0x01E356u, func_01E356 },
+    { 0x01E380u, func_01E380 },
     { 0x01E392u, func_01E392 },
     { 0x01E400u, func_01E400 },
     { 0x01E402u, func_01E402 },
+    { 0x01E41Au, func_01E41A },
+    { 0x01E420u, func_01E420 },
     { 0x01E43Au, func_01E43A },
     { 0x01E4AEu, func_01E4AE },
     { 0x01E4B0u, func_01E4B0 },
+    { 0x01E4C8u, func_01E4C8 },
+    { 0x01E4CEu, func_01E4CE },
     { 0x01E4E8u, func_01E4E8 },
     { 0x01E55Cu, func_01E55C },
     { 0x01E55Eu, func_01E55E },
+    { 0x01E576u, func_01E576 },
+    { 0x01E57Cu, func_01E57C },
     { 0x01E596u, func_01E596 },
     { 0x01E7D0u, func_01E7D0 },
+    { 0x01E7E2u, func_01E7E2 },
+    { 0x01E7F0u, func_01E7F0 },
+    { 0x01E85Eu, func_01E85E },
+    { 0x01E86Au, func_01E86A },
     { 0x01E878u, func_01E878 },
+    { 0x01E88Au, func_01E88A },
+    { 0x01E898u, func_01E898 },
+    { 0x01E900u, func_01E900 },
     { 0x01E910u, func_01E910 },
+    { 0x01E922u, func_01E922 },
+    { 0x01E928u, func_01E928 },
+    { 0x01E996u, func_01E996 },
+    { 0x01E9A2u, func_01E9A2 },
     { 0x01E9B0u, func_01E9B0 },
+    { 0x01E9C2u, func_01E9C2 },
+    { 0x01E9D0u, func_01E9D0 },
+    { 0x01EA3Eu, func_01EA3E },
+    { 0x01EA4Au, func_01EA4A },
     { 0x01EA58u, func_01EA58 },
+    { 0x01EA6Au, func_01EA6A },
+    { 0x01EA78u, func_01EA78 },
+    { 0x01EAE0u, func_01EAE0 },
     { 0x01EAF0u, func_01EAF0 },
-    { 0x01EB46u, func_01EB46 },
     { 0x01EB84u, func_01EB84 },
+    { 0x01EBDCu, func_01EBDC },
+    { 0x01EBE6u, func_01EBE6 },
     { 0x01EC0Au, func_01EC0A },
     { 0x01EC4Eu, func_01EC4E },
     { 0x01ECC6u, func_01ECC6 },
+    { 0x01ECD4u, func_01ECD4 },
     { 0x01ECE6u, func_01ECE6 },
     { 0x01ECFEu, func_01ECFE },
     { 0x01ED56u, func_01ED56 },
@@ -6254,8 +7513,10 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01F086u, func_01F086 },
     { 0x01F0B4u, func_01F0B4 },
     { 0x01F0CCu, func_01F0CC },
+    { 0x01F120u, func_01F120 },
     { 0x01F12Cu, func_01F12C },
     { 0x01F154u, func_01F154 },
+    { 0x01F206u, func_01F206 },
     { 0x01F220u, func_01F220 },
     { 0x01F222u, func_01F222 },
     { 0x01F22Eu, func_01F22E },
@@ -6268,6 +7529,14 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01F412u, func_01F412 },
     { 0x01F4C4u, func_01F4C4 },
     { 0x01F536u, func_01F536 },
+    { 0x01F554u, func_01F554 },
+    { 0x01F594u, func_01F594 },
+    { 0x01F5B4u, func_01F5B4 },
+    { 0x01F5BEu, func_01F5BE },
+    { 0x01F5C4u, func_01F5C4 },
+    { 0x01F5D6u, func_01F5D6 },
+    { 0x01F608u, func_01F608 },
+    { 0x01F610u, func_01F610 },
     { 0x01F616u, func_01F616 },
     { 0x01F61Cu, func_01F61C },
     { 0x01F624u, func_01F624 },
@@ -6285,13 +7554,25 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01F8A0u, func_01F8A0 },
     { 0x01F8A8u, func_01F8A8 },
     { 0x01F8C2u, func_01F8C2 },
+    { 0x01F90Au, func_01F90A },
     { 0x01F924u, func_01F924 },
     { 0x01F93Eu, func_01F93E },
+    { 0x01F956u, func_01F956 },
+    { 0x01F988u, func_01F988 },
     { 0x01F99Eu, func_01F99E },
     { 0x01F9BCu, func_01F9BC },
     { 0x01F9C0u, func_01F9C0 },
+    { 0x01F9E8u, func_01F9E8 },
+    { 0x01FA22u, func_01FA22 },
+    { 0x01FA2Au, func_01FA2A },
+    { 0x01FA92u, func_01FA92 },
+    { 0x01FAA6u, func_01FAA6 },
+    { 0x01FAC2u, func_01FAC2 },
+    { 0x01FACEu, func_01FACE },
     { 0x01FB02u, func_01FB02 },
     { 0x01FB0Cu, func_01FB0C },
+    { 0x01FBA8u, func_01FBA8 },
+    { 0x01FBB8u, func_01FBB8 },
     { 0x01FBCAu, func_01FBCA },
     { 0x01FCC4u, func_01FCC4 },
     { 0x01FCCAu, func_01FCCA },
@@ -6313,11 +7594,17 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0200B0u, func_0200B0 },
     { 0x020104u, func_020104 },
     { 0x020112u, func_020112 },
+    { 0x020130u, func_020130 },
     { 0x02013Cu, func_02013C },
     { 0x02020Au, func_02020A },
     { 0x020210u, func_020210 },
     { 0x020222u, func_020222 },
     { 0x020282u, func_020282 },
+    { 0x0202A2u, func_0202A2 },
+    { 0x0202C0u, func_0202C0 },
+    { 0x0202D0u, func_0202D0 },
+    { 0x0202D4u, func_0202D4 },
+    { 0x0202E6u, func_0202E6 },
     { 0x02030Eu, func_02030E },
     { 0x020314u, func_020314 },
     { 0x02031Cu, func_02031C },
@@ -6329,6 +7616,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x020428u, func_020428 },
     { 0x02046Cu, func_02046C },
     { 0x020486u, func_020486 },
+    { 0x0204D8u, func_0204D8 },
+    { 0x0204F0u, func_0204F0 },
     { 0x020510u, func_020510 },
     { 0x0208C4u, func_0208C4 },
     { 0x0208CAu, func_0208CA },
@@ -6346,6 +7635,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x020B9Eu, func_020B9E },
     { 0x020BB0u, func_020BB0 },
     { 0x020BEAu, func_020BEA },
+    { 0x020C36u, func_020C36 },
     { 0x020C48u, func_020C48 },
     { 0x020DECu, func_020DEC },
     { 0x020E02u, func_020E02 },
@@ -6374,6 +7664,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x021352u, func_021352 },
     { 0x021392u, func_021392 },
     { 0x0213B2u, func_0213B2 },
+    { 0x021402u, func_021402 },
     { 0x021412u, func_021412 },
     { 0x02142Au, func_02142A },
     { 0x02146Au, func_02146A },
@@ -6387,6 +7678,11 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0214FAu, func_0214FA },
     { 0x021512u, func_021512 },
     { 0x021520u, func_021520 },
+    { 0x021556u, func_021556 },
+    { 0x021562u, func_021562 },
+    { 0x021580u, func_021580 },
+    { 0x02159Cu, func_02159C },
+    { 0x0215A8u, func_0215A8 },
     { 0x0215BEu, func_0215BE },
     { 0x0215C0u, func_0215C0 },
     { 0x0215EAu, func_0215EA },
@@ -6395,11 +7691,18 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02181Eu, func_02181E },
     { 0x02188Au, func_02188A },
     { 0x02188Cu, func_02188C },
+    { 0x0218A8u, func_0218A8 },
+    { 0x0218C6u, func_0218C6 },
+    { 0x0218E0u, func_0218E0 },
     { 0x02191Eu, func_02191E },
     { 0x021920u, func_021920 },
     { 0x021928u, func_021928 },
     { 0x02194Au, func_02194A },
+    { 0x0219A4u, func_0219A4 },
+    { 0x0219B2u, func_0219B2 },
     { 0x0219B8u, func_0219B8 },
+    { 0x021A12u, func_021A12 },
+    { 0x021A38u, func_021A38 },
     { 0x021A4Au, func_021A4A },
     { 0x021A74u, func_021A74 },
     { 0x021A76u, func_021A76 },
@@ -6410,6 +7713,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x021B94u, func_021B94 },
     { 0x021BB4u, func_021BB4 },
     { 0x021BB6u, func_021BB6 },
+    { 0x021C1Eu, func_021C1E },
     { 0x021C2Au, func_021C2A },
     { 0x021C2Cu, func_021C2C },
     { 0x021C66u, func_021C66 },
@@ -6433,6 +7737,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x022010u, func_022010 },
     { 0x022018u, func_022018 },
     { 0x022032u, func_022032 },
+    { 0x0220AAu, func_0220AA },
+    { 0x0220B2u, func_0220B2 },
     { 0x0220B8u, func_0220B8 },
     { 0x0220E8u, func_0220E8 },
     { 0x02211Cu, func_02211C },
@@ -6474,25 +7780,41 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0225D6u, func_0225D6 },
     { 0x0225E8u, func_0225E8 },
     { 0x0225FCu, func_0225FC },
+    { 0x02267Eu, func_02267E },
+    { 0x022688u, func_022688 },
     { 0x022718u, func_022718 },
     { 0x02271Au, func_02271A },
     { 0x02275Eu, func_02275E },
     { 0x022784u, func_022784 },
+    { 0x0227A6u, func_0227A6 },
     { 0x0227FEu, func_0227FE },
+    { 0x02281Cu, func_02281C },
     { 0x022832u, func_022832 },
     { 0x022858u, func_022858 },
     { 0x02286Au, func_02286A },
+    { 0x02288Eu, func_02288E },
     { 0x022892u, func_022892 },
+    { 0x0228C4u, func_0228C4 },
+    { 0x0228E4u, func_0228E4 },
     { 0x022902u, func_022902 },
+    { 0x022952u, func_022952 },
     { 0x022FF0u, func_022FF0 },
     { 0x022FF8u, func_022FF8 },
     { 0x023014u, func_023014 },
     { 0x023076u, func_023076 },
     { 0x023084u, func_023084 },
+    { 0x0230A6u, func_0230A6 },
+    { 0x0230B4u, func_0230B4 },
     { 0x0230C2u, func_0230C2 },
     { 0x02311Eu, func_02311E },
+    { 0x023136u, func_023136 },
     { 0x023144u, func_023144 },
+    { 0x02315Au, func_02315A },
+    { 0x023176u, func_023176 },
     { 0x0231D2u, func_0231D2 },
+    { 0x0231F0u, func_0231F0 },
+    { 0x023214u, func_023214 },
+    { 0x023224u, func_023224 },
     { 0x023232u, func_023232 },
     { 0x0232DCu, func_0232DC },
     { 0x0232E2u, func_0232E2 },
@@ -6505,10 +7827,18 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x023368u, func_023368 },
     { 0x0233A0u, func_0233A0 },
     { 0x0233A4u, func_0233A4 },
+    { 0x0233C0u, func_0233C0 },
+    { 0x0233E2u, func_0233E2 },
+    { 0x0233F0u, func_0233F0 },
+    { 0x023408u, func_023408 },
+    { 0x023426u, func_023426 },
+    { 0x023436u, func_023436 },
     { 0x02343Eu, func_02343E },
     { 0x023444u, func_023444 },
     { 0x02345Cu, func_02345C },
     { 0x023470u, func_023470 },
+    { 0x02348Eu, func_02348E },
+    { 0x02349Eu, func_02349E },
     { 0x0234A4u, func_0234A4 },
     { 0x0234DCu, func_0234DC },
     { 0x02351Au, func_02351A },
@@ -6566,9 +7896,17 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x023E38u, func_023E38 },
     { 0x023E40u, func_023E40 },
     { 0x023E66u, func_023E66 },
+    { 0x023E84u, func_023E84 },
+    { 0x023EA8u, func_023EA8 },
+    { 0x023ED4u, func_023ED4 },
     { 0x023F0Au, func_023F0A },
+    { 0x023F36u, func_023F36 },
+    { 0x023F44u, func_023F44 },
     { 0x023F5Cu, func_023F5C },
     { 0x023F66u, func_023F66 },
+    { 0x023F88u, func_023F88 },
+    { 0x023F8Eu, func_023F8E },
+    { 0x023FAAu, func_023FAA },
     { 0x023FB0u, func_023FB0 },
     { 0x023FDEu, func_023FDE },
     { 0x024014u, func_024014 },
@@ -6589,22 +7927,55 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02414Au, func_02414A },
     { 0x02416Eu, func_02416E },
     { 0x024186u, func_024186 },
+    { 0x02419Cu, func_02419C },
+    { 0x0241A8u, func_0241A8 },
     { 0x0241C6u, func_0241C6 },
     { 0x0241D4u, func_0241D4 },
+    { 0x024206u, func_024206 },
+    { 0x024236u, func_024236 },
+    { 0x024246u, func_024246 },
+    { 0x02425Cu, func_02425C },
+    { 0x02426Eu, func_02426E },
     { 0x024278u, func_024278 },
     { 0x02427Au, func_02427A },
+    { 0x0242B6u, func_0242B6 },
+    { 0x0242C0u, func_0242C0 },
+    { 0x0242E6u, func_0242E6 },
+    { 0x0242EEu, func_0242EE },
+    { 0x02431Cu, func_02431C },
+    { 0x024336u, func_024336 },
     { 0x02433Au, func_02433A },
     { 0x02433Cu, func_02433C },
+    { 0x02435Eu, func_02435E },
+    { 0x024378u, func_024378 },
+    { 0x02438Eu, func_02438E },
+    { 0x0243A6u, func_0243A6 },
+    { 0x0243C0u, func_0243C0 },
+    { 0x0243C8u, func_0243C8 },
     { 0x0243CEu, func_0243CE },
     { 0x0243D0u, func_0243D0 },
     { 0x0243EAu, func_0243EA },
+    { 0x0243FEu, func_0243FE },
+    { 0x02442Cu, func_02442C },
+    { 0x024446u, func_024446 },
+    { 0x024452u, func_024452 },
+    { 0x024482u, func_024482 },
+    { 0x024492u, func_024492 },
+    { 0x0244A8u, func_0244A8 },
+    { 0x0244BAu, func_0244BA },
     { 0x0244D0u, func_0244D0 },
     { 0x024A16u, func_024A16 },
     { 0x024A2Cu, func_024A2C },
     { 0x024AEAu, func_024AEA },
     { 0x024B38u, func_024B38 },
+    { 0x024B8Cu, func_024B8C },
+    { 0x024BA0u, func_024BA0 },
+    { 0x024BA4u, func_024BA4 },
+    { 0x024BC4u, func_024BC4 },
     { 0x024BDCu, func_024BDC },
     { 0x024BF0u, func_024BF0 },
+    { 0x024C2Au, func_024C2A },
+    { 0x024C32u, func_024C32 },
     { 0x024CC4u, func_024CC4 },
     { 0x024CCAu, func_024CCA },
     { 0x024CD0u, func_024CD0 },
@@ -6623,15 +7994,23 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x024E26u, func_024E26 },
     { 0x024E5Cu, func_024E5C },
     { 0x024E60u, func_024E60 },
+    { 0x024E76u, func_024E76 },
+    { 0x024E96u, func_024E96 },
     { 0x024EB2u, func_024EB2 },
     { 0x024EB8u, func_024EB8 },
     { 0x024ED4u, func_024ED4 },
     { 0x024EE8u, func_024EE8 },
     { 0x024F04u, func_024F04 },
+    { 0x024F16u, func_024F16 },
+    { 0x024F28u, func_024F28 },
     { 0x024F3Cu, func_024F3C },
     { 0x024F52u, func_024F52 },
     { 0x024F74u, func_024F74 },
     { 0x024F84u, func_024F84 },
+    { 0x024FAAu, func_024FAA },
+    { 0x024FC2u, func_024FC2 },
+    { 0x024FF0u, func_024FF0 },
+    { 0x025002u, func_025002 },
     { 0x025034u, func_025034 },
     { 0x025036u, func_025036 },
     { 0x025054u, func_025054 },
@@ -6656,6 +8035,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x025408u, func_025408 },
     { 0x025462u, func_025462 },
     { 0x025474u, func_025474 },
+    { 0x025492u, func_025492 },
+    { 0x0254C2u, func_0254C2 },
     { 0x0254CCu, func_0254CC },
     { 0x0254F2u, func_0254F2 },
     { 0x025680u, func_025680 },
@@ -6669,6 +8050,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02572Au, func_02572A },
     { 0x02577Au, func_02577A },
     { 0x0257BEu, func_0257BE },
+    { 0x0257DAu, func_0257DA },
+    { 0x0257DEu, func_0257DE },
+    { 0x025868u, func_025868 },
     { 0x02586Eu, func_02586E },
     { 0x025874u, func_025874 },
     { 0x02587Au, func_02587A },
@@ -6682,20 +8066,28 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02596Eu, func_02596E },
     { 0x02598Cu, func_02598C },
     { 0x02598Eu, func_02598E },
+    { 0x02599Cu, func_02599C },
     { 0x0259B8u, func_0259B8 },
     { 0x025A5Au, func_025A5A },
     { 0x025A6Eu, func_025A6E },
     { 0x025A9Cu, func_025A9C },
+    { 0x025ACEu, func_025ACE },
     { 0x025AF6u, func_025AF6 },
     { 0x025B26u, func_025B26 },
     { 0x025B28u, func_025B28 },
     { 0x025B3Cu, func_025B3C },
     { 0x025B4Cu, func_025B4C },
+    { 0x025B58u, func_025B58 },
     { 0x025B64u, func_025B64 },
     { 0x025B66u, func_025B66 },
     { 0x025B8Cu, func_025B8C },
     { 0x025B8Eu, func_025B8E },
+    { 0x025B9Au, func_025B9A },
+    { 0x025BA4u, func_025BA4 },
     { 0x025BF6u, func_025BF6 },
+    { 0x025C1Cu, func_025C1C },
+    { 0x025C24u, func_025C24 },
+    { 0x025C64u, func_025C64 },
     { 0x0260D8u, func_0260D8 },
     { 0x0260DEu, func_0260DE },
     { 0x0260E4u, func_0260E4 },
@@ -6706,9 +8098,13 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x026104u, func_026104 },
     { 0x02611Cu, func_02611C },
     { 0x026152u, func_026152 },
+    { 0x026198u, func_026198 },
     { 0x0261BCu, func_0261BC },
     { 0x0261C2u, func_0261C2 },
     { 0x0261C8u, func_0261C8 },
+    { 0x0261E4u, func_0261E4 },
+    { 0x0261ECu, func_0261EC },
+    { 0x026278u, func_026278 },
     { 0x026296u, func_026296 },
     { 0x026356u, func_026356 },
     { 0x02635Cu, func_02635C },
@@ -6718,6 +8114,18 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02638Cu, func_02638C },
     { 0x0263C8u, func_0263C8 },
     { 0x02641Eu, func_02641E },
+    { 0x026436u, func_026436 },
+    { 0x026446u, func_026446 },
+    { 0x026456u, func_026456 },
+    { 0x02645Eu, func_02645E },
+    { 0x02647Au, func_02647A },
+    { 0x026480u, func_026480 },
+    { 0x0264AAu, func_0264AA },
+    { 0x0264BCu, func_0264BC },
+    { 0x02650Eu, func_02650E },
+    { 0x02651Eu, func_02651E },
+    { 0x026534u, func_026534 },
+    { 0x026546u, func_026546 },
     { 0x02661Cu, func_02661C },
     { 0x026622u, func_026622 },
     { 0x026628u, func_026628 },
@@ -6725,8 +8133,16 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x026634u, func_026634 },
     { 0x026648u, func_026648 },
     { 0x026688u, func_026688 },
+    { 0x0266E4u, func_0266E4 },
+    { 0x026708u, func_026708 },
+    { 0x026716u, func_026716 },
+    { 0x02672Cu, func_02672C },
+    { 0x02673Cu, func_02673C },
+    { 0x026748u, func_026748 },
     { 0x02674Cu, func_02674C },
     { 0x02678Eu, func_02678E },
+    { 0x026798u, func_026798 },
+    { 0x026808u, func_026808 },
     { 0x02683Au, func_02683A },
     { 0x026908u, func_026908 },
     { 0x02690Eu, func_02690E },
@@ -6737,11 +8153,20 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0269A2u, func_0269A2 },
     { 0x0269F8u, func_0269F8 },
     { 0x0269FAu, func_0269FA },
+    { 0x026A0Cu, func_026A0C },
+    { 0x026A1Eu, func_026A1E },
+    { 0x026A2Eu, func_026A2E },
+    { 0x026A3Eu, func_026A3E },
+    { 0x026A50u, func_026A50 },
     { 0x026AD4u, func_026AD4 },
     { 0x026ADAu, func_026ADA },
     { 0x026AE0u, func_026AE0 },
     { 0x026B06u, func_026B06 },
+    { 0x026B6Eu, func_026B6E },
+    { 0x026C04u, func_026C04 },
+    { 0x026C16u, func_026C16 },
     { 0x026C1Cu, func_026C1C },
+    { 0x026C66u, func_026C66 },
     { 0x026C8Eu, func_026C8E },
     { 0x026C90u, func_026C90 },
     { 0x026CA4u, func_026CA4 },
@@ -6754,9 +8179,17 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x026D50u, func_026D50 },
     { 0x026D72u, func_026D72 },
     { 0x026D94u, func_026D94 },
+    { 0x026DACu, func_026DAC },
+    { 0x026DB4u, func_026DB4 },
+    { 0x026E0Eu, func_026E0E },
+    { 0x026E1Au, func_026E1A },
     { 0x026E3Au, func_026E3A },
     { 0x026E3Cu, func_026E3C },
     { 0x026E4Au, func_026E4A },
+    { 0x026E6Cu, func_026E6C },
+    { 0x026E74u, func_026E74 },
+    { 0x026E84u, func_026E84 },
+    { 0x026E96u, func_026E96 },
     { 0x026EA4u, func_026EA4 },
     { 0x026EACu, func_026EAC },
     { 0x026EC2u, func_026EC2 },
@@ -6767,7 +8200,11 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x026F58u, func_026F58 },
     { 0x026F6Au, func_026F6A },
     { 0x026FAEu, func_026FAE },
+    { 0x026FF6u, func_026FF6 },
+    { 0x02702Cu, func_02702C },
     { 0x027042u, func_027042 },
+    { 0x02704Cu, func_02704C },
+    { 0x0270DCu, func_0270DC },
     { 0x027148u, func_027148 },
     { 0x02714Eu, func_02714E },
     { 0x027154u, func_027154 },
@@ -6782,7 +8219,14 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0272C8u, func_0272C8 },
     { 0x0272EEu, func_0272EE },
     { 0x027310u, func_027310 },
+    { 0x027344u, func_027344 },
+    { 0x027368u, func_027368 },
     { 0x027374u, func_027374 },
+    { 0x027384u, func_027384 },
+    { 0x027392u, func_027392 },
+    { 0x0273B0u, func_0273B0 },
+    { 0x0273C4u, func_0273C4 },
+    { 0x0273DEu, func_0273DE },
     { 0x027580u, func_027580 },
     { 0x027586u, func_027586 },
     { 0x02758Cu, func_02758C },
@@ -6816,6 +8260,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02792Cu, func_02792C },
     { 0x02794Cu, func_02794C },
     { 0x02796Eu, func_02796E },
+    { 0x0279CCu, func_0279CC },
     { 0x0279D2u, func_0279D2 },
     { 0x0279D4u, func_0279D4 },
     { 0x0279FCu, func_0279FC },
@@ -6830,7 +8275,15 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x027BC4u, func_027BC4 },
     { 0x027BD0u, func_027BD0 },
     { 0x027BDEu, func_027BDE },
+    { 0x027C0Au, func_027C0A },
+    { 0x027C0Eu, func_027C0E },
+    { 0x027C28u, func_027C28 },
+    { 0x027C2Eu, func_027C2E },
+    { 0x027C3Eu, func_027C3E },
+    { 0x027C5Eu, func_027C5E },
     { 0x027C66u, func_027C66 },
+    { 0x027C7Au, func_027C7A },
+    { 0x027C9Au, func_027C9A },
     { 0x027CA2u, func_027CA2 },
     { 0x027CDAu, func_027CDA },
     { 0x027D54u, func_027D54 },
@@ -6847,29 +8300,46 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x027E96u, func_027E96 },
     { 0x027EA2u, func_027EA2 },
     { 0x027EACu, func_027EAC },
+    { 0x027EB8u, func_027EB8 },
     { 0x027EC4u, func_027EC4 },
     { 0x027EE0u, func_027EE0 },
     { 0x027EE2u, func_027EE2 },
     { 0x027F0Eu, func_027F0E },
     { 0x027F10u, func_027F10 },
+    { 0x027F26u, func_027F26 },
+    { 0x027F3Cu, func_027F3C },
     { 0x027F4Cu, func_027F4C },
     { 0x027F4Eu, func_027F4E },
     { 0x027F60u, func_027F60 },
     { 0x027F70u, func_027F70 },
     { 0x027F80u, func_027F80 },
     { 0x027F8Eu, func_027F8E },
+    { 0x027F9Cu, func_027F9C },
+    { 0x027FBCu, func_027FBC },
+    { 0x027FDAu, func_027FDA },
+    { 0x027FF8u, func_027FF8 },
     { 0x02801Cu, func_02801C },
     { 0x028022u, func_028022 },
     { 0x028028u, func_028028 },
     { 0x02802Eu, func_02802E },
     { 0x028034u, func_028034 },
     { 0x028060u, func_028060 },
+    { 0x0280EEu, func_0280EE },
+    { 0x0280F2u, func_0280F2 },
+    { 0x028112u, func_028112 },
     { 0x028130u, func_028130 },
     { 0x028136u, func_028136 },
     { 0x028160u, func_028160 },
     { 0x028168u, func_028168 },
     { 0x02817Eu, func_02817E },
+    { 0x0281B0u, func_0281B0 },
+    { 0x0281D4u, func_0281D4 },
     { 0x0281DAu, func_0281DA },
+    { 0x0281EEu, func_0281EE },
+    { 0x028202u, func_028202 },
+    { 0x028218u, func_028218 },
+    { 0x02822Cu, func_02822C },
+    { 0x02823Eu, func_02823E },
     { 0x028388u, func_028388 },
     { 0x02838Eu, func_02838E },
     { 0x028394u, func_028394 },
@@ -6888,6 +8358,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0285F4u, func_0285F4 },
     { 0x02864Eu, func_02864E },
     { 0x028652u, func_028652 },
+    { 0x028684u, func_028684 },
+    { 0x0286A2u, func_0286A2 },
+    { 0x0286CAu, func_0286CA },
     { 0x028928u, func_028928 },
     { 0x02892Eu, func_02892E },
     { 0x028934u, func_028934 },
@@ -6903,6 +8376,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x028AC8u, func_028AC8 },
     { 0x028AD6u, func_028AD6 },
     { 0x028AF4u, func_028AF4 },
+    { 0x028B16u, func_028B16 },
     { 0x028B46u, func_028B46 },
     { 0x028B7Eu, func_028B7E },
     { 0x028BA8u, func_028BA8 },
@@ -6913,6 +8387,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x028BC8u, func_028BC8 },
     { 0x028BEEu, func_028BEE },
     { 0x028CCAu, func_028CCA },
+    { 0x028D3Eu, func_028D3E },
     { 0x028D6Cu, func_028D6C },
     { 0x028DC0u, func_028DC0 },
     { 0x028DC6u, func_028DC6 },
@@ -6926,6 +8401,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x028DF8u, func_028DF8 },
     { 0x028E0Eu, func_028E0E },
     { 0x028E5Eu, func_028E5E },
+    { 0x028EC2u, func_028EC2 },
     { 0x028ECEu, func_028ECE },
     { 0x028ED8u, func_028ED8 },
     { 0x028F1Eu, func_028F1E },
@@ -6952,6 +8428,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0292ECu, func_0292EC },
     { 0x029302u, func_029302 },
     { 0x029304u, func_029304 },
+    { 0x029310u, func_029310 },
     { 0x029334u, func_029334 },
     { 0x02935Cu, func_02935C },
     { 0x02935Eu, func_02935E },
@@ -6966,8 +8443,11 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x029426u, func_029426 },
     { 0x02944Au, func_02944A },
     { 0x02948Eu, func_02948E },
+    { 0x0294C4u, func_0294C4 },
     { 0x0294EAu, func_0294EA },
     { 0x0294F4u, func_0294F4 },
+    { 0x029516u, func_029516 },
+    { 0x02952Cu, func_02952C },
     { 0x02953Eu, func_02953E },
     { 0x029578u, func_029578 },
     { 0x02957Eu, func_02957E },
@@ -6976,7 +8456,11 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x029590u, func_029590 },
     { 0x0295C8u, func_0295C8 },
     { 0x0295FEu, func_0295FE },
+    { 0x029648u, func_029648 },
+    { 0x029686u, func_029686 },
+    { 0x0296B6u, func_0296B6 },
     { 0x0296C2u, func_0296C2 },
+    { 0x029736u, func_029736 },
     { 0x0297C4u, func_0297C4 },
     { 0x0297CAu, func_0297CA },
     { 0x0297D0u, func_0297D0 },
@@ -6986,6 +8470,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0297F6u, func_0297F6 },
     { 0x02981Eu, func_02981E },
     { 0x02983Cu, func_02983C },
+    { 0x029890u, func_029890 },
     { 0x029936u, func_029936 },
     { 0x029970u, func_029970 },
     { 0x029976u, func_029976 },
@@ -6993,15 +8478,33 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x029990u, func_029990 },
     { 0x029A1Cu, func_029A1C },
     { 0x029A66u, func_029A66 },
+    { 0x029A74u, func_029A74 },
+    { 0x029A7Au, func_029A7A },
+    { 0x029A8Au, func_029A8A },
+    { 0x029A94u, func_029A94 },
+    { 0x029AAEu, func_029AAE },
     { 0x029ACCu, func_029ACC },
+    { 0x029B42u, func_029B42 },
+    { 0x029B50u, func_029B50 },
+    { 0x029B5Eu, func_029B5E },
     { 0x029BF8u, func_029BF8 },
     { 0x029BFAu, func_029BFA },
+    { 0x029C08u, func_029C08 },
+    { 0x029C0Eu, func_029C0E },
+    { 0x029C1Eu, func_029C1E },
+    { 0x029C28u, func_029C28 },
+    { 0x029C42u, func_029C42 },
     { 0x029FF4u, func_029FF4 },
     { 0x029FFAu, func_029FFA },
     { 0x02A000u, func_02A000 },
     { 0x02A026u, func_02A026 },
     { 0x02A0FEu, func_02A0FE },
+    { 0x02A154u, func_02A154 },
+    { 0x02A180u, func_02A180 },
+    { 0x02A188u, func_02A188 },
     { 0x02A18Au, func_02A18A },
+    { 0x02A1A8u, func_02A1A8 },
+    { 0x02A1B4u, func_02A1B4 },
     { 0x02A1EAu, func_02A1EA },
     { 0x02A24Cu, func_02A24C },
     { 0x02A260u, func_02A260 },
@@ -7026,10 +8529,14 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02A3D8u, func_02A3D8 },
     { 0x02A3EAu, func_02A3EA },
     { 0x02A3ECu, func_02A3EC },
+    { 0x02A400u, func_02A400 },
     { 0x02A412u, func_02A412 },
     { 0x02A414u, func_02A414 },
+    { 0x02A41Cu, func_02A41C },
     { 0x02A430u, func_02A430 },
     { 0x02A432u, func_02A432 },
+    { 0x02A44Eu, func_02A44E },
+    { 0x02A45Au, func_02A45A },
     { 0x02A474u, func_02A474 },
     { 0x02A4D8u, func_02A4D8 },
     { 0x02A4DEu, func_02A4DE },
@@ -7055,9 +8562,23 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02A7B0u, func_02A7B0 },
     { 0x02A7C4u, func_02A7C4 },
     { 0x02A802u, func_02A802 },
+    { 0x02A82Au, func_02A82A },
+    { 0x02A84Eu, func_02A84E },
+    { 0x02A86Au, func_02A86A },
+    { 0x02A87Cu, func_02A87C },
+    { 0x02A888u, func_02A888 },
+    { 0x02A890u, func_02A890 },
     { 0x02A894u, func_02A894 },
+    { 0x02A8B4u, func_02A8B4 },
+    { 0x02A8DCu, func_02A8DC },
+    { 0x02A8EAu, func_02A8EA },
+    { 0x02A8F8u, func_02A8F8 },
     { 0x02A8FCu, func_02A8FC },
     { 0x02A8FEu, func_02A8FE },
+    { 0x02A926u, func_02A926 },
+    { 0x02A94Au, func_02A94A },
+    { 0x02A966u, func_02A966 },
+    { 0x02A98Cu, func_02A98C },
     { 0x02A990u, func_02A990 },
     { 0x02AA10u, func_02AA10 },
     { 0x02AB78u, func_02AB78 },
@@ -7066,16 +8587,30 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02ABD4u, func_02ABD4 },
     { 0x02AC54u, func_02AC54 },
     { 0x02AC84u, func_02AC84 },
+    { 0x02AD14u, func_02AD14 },
     { 0x02AD24u, func_02AD24 },
     { 0x02AD26u, func_02AD26 },
     { 0x02AD2Au, func_02AD2A },
     { 0x02AD78u, func_02AD78 },
     { 0x02AD7Au, func_02AD7A },
+    { 0x02ADB0u, func_02ADB0 },
+    { 0x02ADDAu, func_02ADDA },
+    { 0x02ADF8u, func_02ADF8 },
+    { 0x02ADFEu, func_02ADFE },
+    { 0x02AE0Cu, func_02AE0C },
     { 0x02AE56u, func_02AE56 },
+    { 0x02AEF4u, func_02AEF4 },
     { 0x02AF04u, func_02AF04 },
     { 0x02AF06u, func_02AF06 },
+    { 0x02AF2Eu, func_02AF2E },
     { 0x02AF78u, func_02AF78 },
     { 0x02AF7Au, func_02AF7A },
+    { 0x02AFB0u, func_02AFB0 },
+    { 0x02AFDAu, func_02AFDA },
+    { 0x02AFF8u, func_02AFF8 },
+    { 0x02AFFEu, func_02AFFE },
+    { 0x02B018u, func_02B018 },
+    { 0x02B068u, func_02B068 },
     { 0x02B128u, func_02B128 },
     { 0x02B12Eu, func_02B12E },
     { 0x02B134u, func_02B134 },
@@ -7083,11 +8618,25 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02B140u, func_02B140 },
     { 0x02B158u, func_02B158 },
     { 0x02B194u, func_02B194 },
+    { 0x02B1B6u, func_02B1B6 },
+    { 0x02B1FEu, func_02B1FE },
     { 0x02B208u, func_02B208 },
     { 0x02B20Au, func_02B20A },
+    { 0x02B238u, func_02B238 },
+    { 0x02B23Cu, func_02B23C },
+    { 0x02B254u, func_02B254 },
+    { 0x02B272u, func_02B272 },
+    { 0x02B288u, func_02B288 },
     { 0x02B290u, func_02B290 },
+    { 0x02B2AAu, func_02B2AA },
+    { 0x02B2BAu, func_02B2BA },
+    { 0x02B2E2u, func_02B2E2 },
     { 0x02B312u, func_02B312 },
+    { 0x02B33Au, func_02B33A },
+    { 0x02B352u, func_02B352 },
     { 0x02B35Cu, func_02B35C },
+    { 0x02B392u, func_02B392 },
+    { 0x02B3BCu, func_02B3BC },
     { 0x02B504u, func_02B504 },
     { 0x02B50Au, func_02B50A },
     { 0x02B510u, func_02B510 },
@@ -7097,6 +8646,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02B528u, func_02B528 },
     { 0x02B53Au, func_02B53A },
     { 0x02B57Eu, func_02B57E },
+    { 0x02B5E2u, func_02B5E2 },
+    { 0x02B5EAu, func_02B5EA },
+    { 0x02B5ECu, func_02B5EC },
     { 0x02B60Cu, func_02B60C },
     { 0x02B834u, func_02B834 },
     { 0x02B83Au, func_02B83A },
@@ -7105,6 +8657,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02B84Cu, func_02B84C },
     { 0x02B8ECu, func_02B8EC },
     { 0x02B8FEu, func_02B8FE },
+    { 0x02B95Au, func_02B95A },
     { 0x02B96Eu, func_02B96E },
     { 0x02B9A2u, func_02B9A2 },
     { 0x02B9B6u, func_02B9B6 },
@@ -7128,10 +8681,14 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02BBA6u, func_02BBA6 },
     { 0x02BBE8u, func_02BBE8 },
     { 0x02BBF8u, func_02BBF8 },
+    { 0x02BC0Cu, func_02BC0C },
     { 0x02BC84u, func_02BC84 },
     { 0x02BC86u, func_02BC86 },
+    { 0x02BD48u, func_02BD48 },
+    { 0x02BD4Eu, func_02BD4E },
     { 0x02BDF6u, func_02BDF6 },
     { 0x02BDF8u, func_02BDF8 },
+    { 0x02BE28u, func_02BE28 },
     { 0x02BE2Eu, func_02BE2E },
     { 0x02BE5Eu, func_02BE5E },
     { 0x02BE9Cu, func_02BE9C },
@@ -7155,6 +8712,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02C112u, func_02C112 },
     { 0x02C134u, func_02C134 },
     { 0x02C170u, func_02C170 },
+    { 0x02C1AEu, func_02C1AE },
     { 0x02C1DAu, func_02C1DA },
     { 0x02C1ECu, func_02C1EC },
     { 0x02C1EEu, func_02C1EE },
@@ -7192,12 +8750,32 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02C542u, func_02C542 },
     { 0x02C55Eu, func_02C55E },
     { 0x02C57Eu, func_02C57E },
+    { 0x02C5AEu, func_02C5AE },
+    { 0x02C5C4u, func_02C5C4 },
+    { 0x02C5F8u, func_02C5F8 },
+    { 0x02C694u, func_02C694 },
+    { 0x02C69Au, func_02C69A },
     { 0x02C6A0u, func_02C6A0 },
     { 0x02C6A6u, func_02C6A6 },
     { 0x02C6ACu, func_02C6AC },
     { 0x02C6C0u, func_02C6C0 },
     { 0x02C6FCu, func_02C6FC },
+    { 0x02C70Au, func_02C70A },
+    { 0x02C716u, func_02C716 },
+    { 0x02C724u, func_02C724 },
+    { 0x02C72Eu, func_02C72E },
+    { 0x02C73Cu, func_02C73C },
+    { 0x02C740u, func_02C740 },
     { 0x02C74Eu, func_02C74E },
+    { 0x02C75Cu, func_02C75C },
+    { 0x02C77Au, func_02C77A },
+    { 0x02C794u, func_02C794 },
+    { 0x02C7BEu, func_02C7BE },
+    { 0x02C7D0u, func_02C7D0 },
+    { 0x02C7ECu, func_02C7EC },
+    { 0x02C806u, func_02C806 },
+    { 0x02C85Cu, func_02C85C },
+    { 0x02C87Eu, func_02C87E },
     { 0x02C884u, func_02C884 },
     { 0x02C912u, func_02C912 },
     { 0x02C918u, func_02C918 },
@@ -7207,6 +8785,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02C93Eu, func_02C93E },
     { 0x02C954u, func_02C954 },
     { 0x02C972u, func_02C972 },
+    { 0x02C9A0u, func_02C9A0 },
     { 0x02CA08u, func_02CA08 },
     { 0x02CA0Cu, func_02CA0C },
     { 0x02CA14u, func_02CA14 },
@@ -7301,6 +8880,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02D72Cu, func_02D72C },
     { 0x02D734u, func_02D734 },
     { 0x02D75Eu, func_02D75E },
+    { 0x02D8ACu, func_02D8AC },
+    { 0x02D908u, func_02D908 },
     { 0x02D94Cu, func_02D94C },
     { 0x02D94Eu, func_02D94E },
     { 0x02D992u, func_02D992 },
@@ -7351,8 +8932,16 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02E192u, func_02E192 },
     { 0x02E1ACu, func_02E1AC },
     { 0x02E25Cu, func_02E25C },
+    { 0x02E2ACu, func_02E2AC },
+    { 0x02E2E0u, func_02E2E0 },
     { 0x02E2E8u, func_02E2E8 },
+    { 0x02E352u, func_02E352 },
+    { 0x02E354u, func_02E354 },
+    { 0x02E356u, func_02E356 },
+    { 0x02E35Cu, func_02E35C },
+    { 0x02E3E6u, func_02E3E6 },
     { 0x02E3F2u, func_02E3F2 },
+    { 0x02E464u, func_02E464 },
     { 0x02E4CCu, func_02E4CC },
     { 0x02E4CEu, func_02E4CE },
     { 0x02E550u, func_02E550 },
@@ -7378,6 +8967,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02E8F6u, func_02E8F6 },
     { 0x02E938u, func_02E938 },
     { 0x02E94Eu, func_02E94E },
+    { 0x02E996u, func_02E996 },
+    { 0x02E9A8u, func_02E9A8 },
     { 0x02E9F6u, func_02E9F6 },
     { 0x02EED0u, func_02EED0 },
     { 0x02EED6u, func_02EED6 },
@@ -7396,36 +8987,72 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02F098u, func_02F098 },
     { 0x02F262u, func_02F262 },
     { 0x02F27Cu, func_02F27C },
+    { 0x02F29Au, func_02F29A },
     { 0x02F2A8u, func_02F2A8 },
     { 0x02F2BAu, func_02F2BA },
+    { 0x02F2CCu, func_02F2CC },
     { 0x02F2E0u, func_02F2E0 },
     { 0x02F304u, func_02F304 },
     { 0x02F336u, func_02F336 },
+    { 0x02F35Cu, func_02F35C },
     { 0x02F374u, func_02F374 },
     { 0x02F38Au, func_02F38A },
     { 0x02F3A2u, func_02F3A2 },
     { 0x02F424u, func_02F424 },
     { 0x02F442u, func_02F442 },
+    { 0x02F45Cu, func_02F45C },
+    { 0x02F460u, func_02F460 },
+    { 0x02F46Eu, func_02F46E },
     { 0x02F482u, func_02F482 },
     { 0x02F484u, func_02F484 },
+    { 0x02F494u, func_02F494 },
     { 0x02F4A4u, func_02F4A4 },
     { 0x02F4A6u, func_02F4A6 },
+    { 0x02F4D0u, func_02F4D0 },
+    { 0x02F4DEu, func_02F4DE },
     { 0x02F4ECu, func_02F4EC },
     { 0x02F4EEu, func_02F4EE },
     { 0x02F52Au, func_02F52A },
     { 0x02F54Eu, func_02F54E },
     { 0x02F560u, func_02F560 },
+    { 0x02F58Eu, func_02F58E },
+    { 0x02F5A0u, func_02F5A0 },
     { 0x02F5C6u, func_02F5C6 },
+    { 0x02F5E8u, func_02F5E8 },
     { 0x02F5F6u, func_02F5F6 },
+    { 0x02F618u, func_02F618 },
+    { 0x02F626u, func_02F626 },
     { 0x02F664u, func_02F664 },
     { 0x02F67Cu, func_02F67C },
+    { 0x02F6A6u, func_02F6A6 },
+    { 0x02F6B6u, func_02F6B6 },
+    { 0x02F6C6u, func_02F6C6 },
+    { 0x02F6D2u, func_02F6D2 },
+    { 0x02F6DEu, func_02F6DE },
+    { 0x02F6E8u, func_02F6E8 },
+    { 0x02F6FAu, func_02F6FA },
+    { 0x02F706u, func_02F706 },
     { 0x02F714u, func_02F714 },
     { 0x02F746u, func_02F746 },
+    { 0x02F768u, func_02F768 },
+    { 0x02F77Eu, func_02F77E },
+    { 0x02F798u, func_02F798 },
     { 0x02F7A6u, func_02F7A6 },
     { 0x02F7D2u, func_02F7D2 },
     { 0x02F7F4u, func_02F7F4 },
+    { 0x02F816u, func_02F816 },
+    { 0x02F824u, func_02F824 },
+    { 0x02F878u, func_02F878 },
+    { 0x02F88Au, func_02F88A },
+    { 0x02F898u, func_02F898 },
     { 0x02F8AAu, func_02F8AA },
+    { 0x02F8B4u, func_02F8B4 },
+    { 0x02F8C8u, func_02F8C8 },
+    { 0x02F8D2u, func_02F8D2 },
     { 0x02F8DAu, func_02F8DA },
+    { 0x02F906u, func_02F906 },
+    { 0x02F916u, func_02F916 },
+    { 0x02F924u, func_02F924 },
     { 0x02FBF4u, func_02FBF4 },
     { 0x02FBFAu, func_02FBFA },
     { 0x02FC00u, func_02FC00 },
@@ -7446,32 +9073,56 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02FCEAu, func_02FCEA },
     { 0x02FD00u, func_02FD00 },
     { 0x02FD18u, func_02FD18 },
+    { 0x02FD32u, func_02FD32 },
+    { 0x02FD3Au, func_02FD3A },
+    { 0x02FD50u, func_02FD50 },
     { 0x02FD5Eu, func_02FD5E },
     { 0x02FDAAu, func_02FDAA },
     { 0x02FDC0u, func_02FDC0 },
     { 0x02FDDAu, func_02FDDA },
     { 0x02FE0Eu, func_02FE0E },
+    { 0x02FE22u, func_02FE22 },
     { 0x02FE2Au, func_02FE2A },
     { 0x02FE58u, func_02FE58 },
+    { 0x02FE6Eu, func_02FE6E },
+    { 0x02FE7Cu, func_02FE7C },
+    { 0x02FEA8u, func_02FEA8 },
+    { 0x02FEB8u, func_02FEB8 },
+    { 0x02FECAu, func_02FECA },
+    { 0x02FED0u, func_02FED0 },
     { 0x02FEDEu, func_02FEDE },
     { 0x02FEF0u, func_02FEF0 },
     { 0x02FF02u, func_02FF02 },
+    { 0x02FF46u, func_02FF46 },
     { 0x02FF50u, func_02FF50 },
     { 0x02FF66u, func_02FF66 },
     { 0x02FF78u, func_02FF78 },
+    { 0x02FF80u, func_02FF80 },
+    { 0x02FF94u, func_02FF94 },
+    { 0x02FFE8u, func_02FFE8 },
+    { 0x030000u, func_030000 },
     { 0x030006u, func_030006 },
     { 0x030008u, func_030008 },
+    { 0x030064u, func_030064 },
     { 0x030072u, func_030072 },
     { 0x0300A4u, func_0300A4 },
+    { 0x0300CEu, func_0300CE },
+    { 0x0300DCu, func_0300DC },
     { 0x0300EAu, func_0300EA },
     { 0x0300ECu, func_0300EC },
     { 0x030106u, func_030106 },
     { 0x03013Au, func_03013A },
     { 0x030142u, func_030142 },
     { 0x030152u, func_030152 },
+    { 0x030170u, func_030170 },
+    { 0x030182u, func_030182 },
+    { 0x03019Cu, func_03019C },
+    { 0x0301A6u, func_0301A6 },
+    { 0x0301AAu, func_0301AA },
     { 0x0301B4u, func_0301B4 },
     { 0x03020Eu, func_03020E },
     { 0x030210u, func_030210 },
+    { 0x03022Au, func_03022A },
     { 0x030430u, func_030430 },
     { 0x030436u, func_030436 },
     { 0x03043Cu, func_03043C },
@@ -7620,24 +9271,47 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x031904u, func_031904 },
     { 0x0319D6u, func_0319D6 },
     { 0x031A04u, func_031A04 },
+    { 0x031A1Cu, func_031A1C },
     { 0x031A36u, func_031A36 },
     { 0x031A48u, func_031A48 },
     { 0x031A78u, func_031A78 },
     { 0x031AA4u, func_031AA4 },
+    { 0x031AB6u, func_031AB6 },
+    { 0x031B06u, func_031B06 },
+    { 0x031B46u, func_031B46 },
+    { 0x031B86u, func_031B86 },
     { 0x031BA8u, func_031BA8 },
+    { 0x031BC6u, func_031BC6 },
     { 0x031BF2u, func_031BF2 },
     { 0x031C06u, func_031C06 },
     { 0x031C08u, func_031C08 },
     { 0x031C22u, func_031C22 },
+    { 0x031C60u, func_031C60 },
     { 0x031C92u, func_031C92 },
+    { 0x031CACu, func_031CAC },
+    { 0x031CBCu, func_031CBC },
     { 0x031CDAu, func_031CDA },
     { 0x031CDCu, func_031CDC },
+    { 0x031D24u, func_031D24 },
+    { 0x031D32u, func_031D32 },
     { 0x031D40u, func_031D40 },
     { 0x031D42u, func_031D42 },
     { 0x031D5Cu, func_031D5C },
+    { 0x031D7Eu, func_031D7E },
+    { 0x031DB8u, func_031DB8 },
     { 0x031DCCu, func_031DCC },
+    { 0x031DDCu, func_031DDC },
+    { 0x031DE2u, func_031DE2 },
+    { 0x031DFAu, func_031DFA },
+    { 0x031E02u, func_031E02 },
+    { 0x031E0Eu, func_031E0E },
     { 0x031E2Au, func_031E2A },
+    { 0x031E44u, func_031E44 },
+    { 0x031E4Au, func_031E4A },
+    { 0x031E70u, func_031E70 },
     { 0x031E76u, func_031E76 },
+    { 0x031EAEu, func_031EAE },
+    { 0x031EE8u, func_031EE8 },
     { 0x031F22u, func_031F22 },
     { 0x031F24u, func_031F24 },
     { 0x031F48u, func_031F48 },
@@ -7645,6 +9319,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x031FDCu, func_031FDC },
     { 0x031FF8u, func_031FF8 },
     { 0x032030u, func_032030 },
+    { 0x03206Eu, func_03206E },
     { 0x03207Eu, func_03207E },
     { 0x032080u, func_032080 },
     { 0x03224Cu, func_03224C },
@@ -7791,10 +9466,13 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x033A90u, func_033A90 },
     { 0x033AB2u, func_033AB2 },
     { 0x033AD8u, func_033AD8 },
+    { 0x033AFEu, func_033AFE },
     { 0x033B16u, func_033B16 },
     { 0x033B3Eu, func_033B3E },
     { 0x033B40u, func_033B40 },
     { 0x033B44u, func_033B44 },
+    { 0x033B9Eu, func_033B9E },
+    { 0x033BA2u, func_033BA2 },
     { 0x033BACu, func_033BAC },
     { 0x033BAEu, func_033BAE },
     { 0x033BD8u, func_033BD8 },
@@ -7803,12 +9481,22 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x033C54u, func_033C54 },
     { 0x033CB4u, func_033CB4 },
     { 0x033D02u, func_033D02 },
+    { 0x033D10u, func_033D10 },
+    { 0x033D24u, func_033D24 },
+    { 0x033D2Cu, func_033D2C },
     { 0x033DB4u, func_033DB4 },
     { 0x033DFCu, func_033DFC },
+    { 0x033E38u, func_033E38 },
     { 0x033E42u, func_033E42 },
     { 0x033E44u, func_033E44 },
+    { 0x033E5Eu, func_033E5E },
+    { 0x033E64u, func_033E64 },
+    { 0x033E6Eu, func_033E6E },
+    { 0x033E76u, func_033E76 },
+    { 0x033E88u, func_033E88 },
     { 0x033E8Eu, func_033E8E },
     { 0x033EA0u, func_033EA0 },
+    { 0x033EF8u, func_033EF8 },
     { 0x033EFEu, func_033EFE },
     { 0x033F00u, func_033F00 },
     { 0x033F1Cu, func_033F1C },
@@ -7822,7 +9510,12 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03404Au, func_03404A },
     { 0x034084u, func_034084 },
     { 0x0340A4u, func_0340A4 },
+    { 0x0340BCu, func_0340BC },
     { 0x0340CCu, func_0340CC },
+    { 0x034108u, func_034108 },
+    { 0x03411Au, func_03411A },
+    { 0x034164u, func_034164 },
+    { 0x03416Au, func_03416A },
     { 0x034178u, func_034178 },
     { 0x0341BAu, func_0341BA },
     { 0x0341E0u, func_0341E0 },
@@ -7833,6 +9526,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0347F2u, func_0347F2 },
     { 0x0347F6u, func_0347F6 },
     { 0x034804u, func_034804 },
+    { 0x034864u, func_034864 },
     { 0x034908u, func_034908 },
     { 0x03495Eu, func_03495E },
     { 0x034972u, func_034972 },
@@ -7842,6 +9536,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x034A5Cu, func_034A5C },
     { 0x034A9Eu, func_034A9E },
     { 0x034AACu, func_034AAC },
+    { 0x034AE4u, func_034AE4 },
     { 0x034B1Au, func_034B1A },
     { 0x034EA4u, func_034EA4 },
     { 0x034EAAu, func_034EAA },
@@ -7859,21 +9554,62 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x034FF0u, func_034FF0 },
     { 0x035010u, func_035010 },
     { 0x035036u, func_035036 },
+    { 0x03504Eu, func_03504E },
+    { 0x035052u, func_035052 },
+    { 0x03507Au, func_03507A },
+    { 0x035094u, func_035094 },
     { 0x03509Eu, func_03509E },
     { 0x0350A0u, func_0350A0 },
+    { 0x0350CEu, func_0350CE },
+    { 0x0350DCu, func_0350DC },
     { 0x0350E0u, func_0350E0 },
     { 0x0350E2u, func_0350E2 },
+    { 0x035110u, func_035110 },
+    { 0x035112u, func_035112 },
+    { 0x03511Au, func_03511A },
+    { 0x035120u, func_035120 },
     { 0x03512Au, func_03512A },
+    { 0x035146u, func_035146 },
+    { 0x035150u, func_035150 },
+    { 0x035164u, func_035164 },
     { 0x03516Au, func_03516A },
     { 0x03516Cu, func_03516C },
     { 0x0351A0u, func_0351A0 },
+    { 0x0351E8u, func_0351E8 },
+    { 0x0351F8u, func_0351F8 },
+    { 0x035202u, func_035202 },
+    { 0x03524Eu, func_03524E },
+    { 0x035254u, func_035254 },
+    { 0x035258u, func_035258 },
+    { 0x035260u, func_035260 },
+    { 0x035282u, func_035282 },
     { 0x03529Cu, func_03529C },
+    { 0x0352E6u, func_0352E6 },
+    { 0x0352FEu, func_0352FE },
+    { 0x035310u, func_035310 },
+    { 0x035322u, func_035322 },
     { 0x03532Cu, func_03532C },
     { 0x03533Au, func_03533A },
+    { 0x03534Eu, func_03534E },
+    { 0x035362u, func_035362 },
+    { 0x035380u, func_035380 },
+    { 0x03538Au, func_03538A },
+    { 0x035392u, func_035392 },
+    { 0x03539Au, func_03539A },
     { 0x03539Eu, func_03539E },
+    { 0x0353CAu, func_0353CA },
     { 0x0353E8u, func_0353E8 },
     { 0x0353FEu, func_0353FE },
     { 0x035410u, func_035410 },
+    { 0x035428u, func_035428 },
+    { 0x035440u, func_035440 },
+    { 0x035458u, func_035458 },
+    { 0x03545Cu, func_03545C },
+    { 0x035468u, func_035468 },
+    { 0x03546Cu, func_03546C },
+    { 0x035478u, func_035478 },
+    { 0x03547Eu, func_03547E },
+    { 0x0354DEu, func_0354DE },
     { 0x0354E4u, func_0354E4 },
     { 0x03551Cu, func_03551C },
     { 0x035534u, func_035534 },
@@ -7885,10 +9621,12 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0356E6u, func_0356E6 },
     { 0x035706u, func_035706 },
     { 0x035716u, func_035716 },
+    { 0x03577Au, func_03577A },
     { 0x0357B2u, func_0357B2 },
     { 0x0357D2u, func_0357D2 },
     { 0x0357E8u, func_0357E8 },
     { 0x0357FEu, func_0357FE },
+    { 0x035978u, func_035978 },
     { 0x0359A6u, func_0359A6 },
     { 0x0359BCu, func_0359BC },
     { 0x0359CEu, func_0359CE },
@@ -7907,12 +9645,18 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x035FD4u, func_035FD4 },
     { 0x036022u, func_036022 },
     { 0x03603Cu, func_03603C },
+    { 0x036088u, func_036088 },
     { 0x0360F0u, func_0360F0 },
+    { 0x03610Cu, func_03610C },
     { 0x036140u, func_036140 },
     { 0x036142u, func_036142 },
     { 0x036160u, func_036160 },
     { 0x036172u, func_036172 },
+    { 0x0361A4u, func_0361A4 },
     { 0x0361CCu, func_0361CC },
+    { 0x0361D8u, func_0361D8 },
+    { 0x036208u, func_036208 },
+    { 0x036210u, func_036210 },
     { 0x0365BCu, func_0365BC },
     { 0x0365C2u, func_0365C2 },
     { 0x0365C8u, func_0365C8 },
@@ -7953,7 +9697,10 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x036958u, func_036958 },
     { 0x03695Eu, func_03695E },
     { 0x036970u, func_036970 },
+    { 0x036996u, func_036996 },
     { 0x0369A8u, func_0369A8 },
+    { 0x0369C2u, func_0369C2 },
+    { 0x0369F8u, func_0369F8 },
     { 0x036A26u, func_036A26 },
     { 0x036A76u, func_036A76 },
     { 0x036A90u, func_036A90 },
@@ -7961,7 +9708,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x036B00u, func_036B00 },
     { 0x036B0Eu, func_036B0E },
     { 0x036B34u, func_036B34 },
+    { 0x036B5Cu, func_036B5C },
     { 0x036B6Au, func_036B6A },
+    { 0x036B74u, func_036B74 },
     { 0x036B88u, func_036B88 },
     { 0x036B9Cu, func_036B9C },
     { 0x036BA6u, func_036BA6 },
@@ -7990,26 +9739,42 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x036F0Eu, func_036F0E },
     { 0x036F24u, func_036F24 },
     { 0x036F3Cu, func_036F3C },
+    { 0x036F48u, func_036F48 },
+    { 0x036F5Au, func_036F5A },
     { 0x036F68u, func_036F68 },
+    { 0x036F78u, func_036F78 },
     { 0x036F90u, func_036F90 },
+    { 0x036FA4u, func_036FA4 },
+    { 0x036FDCu, func_036FDC },
     { 0x036FE6u, func_036FE6 },
     { 0x036FF8u, func_036FF8 },
     { 0x037028u, func_037028 },
     { 0x03703Eu, func_03703E },
+    { 0x037062u, func_037062 },
+    { 0x037066u, func_037066 },
     { 0x0370FEu, func_0370FE },
     { 0x037116u, func_037116 },
     { 0x037152u, func_037152 },
+    { 0x0371AEu, func_0371AE },
+    { 0x0371BAu, func_0371BA },
     { 0x0371DAu, func_0371DA },
     { 0x0371DCu, func_0371DC },
+    { 0x0371E8u, func_0371E8 },
+    { 0x0371FAu, func_0371FA },
+    { 0x03720Cu, func_03720C },
     { 0x037224u, func_037224 },
     { 0x03723Cu, func_03723C },
+    { 0x037278u, func_037278 },
     { 0x03728Eu, func_03728E },
     { 0x0372B8u, func_0372B8 },
     { 0x037322u, func_037322 },
     { 0x037338u, func_037338 },
     { 0x037350u, func_037350 },
+    { 0x037362u, func_037362 },
     { 0x037380u, func_037380 },
+    { 0x037396u, func_037396 },
     { 0x03739Cu, func_03739C },
+    { 0x0373AEu, func_0373AE },
     { 0x0373B6u, func_0373B6 },
     { 0x0373CAu, func_0373CA },
     { 0x0373D0u, func_0373D0 },
@@ -8019,11 +9784,13 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x037488u, func_037488 },
     { 0x0374A0u, func_0374A0 },
     { 0x0374C2u, func_0374C2 },
+    { 0x0374D8u, func_0374D8 },
     { 0x0374F4u, func_0374F4 },
     { 0x03750Cu, func_03750C },
     { 0x037532u, func_037532 },
     { 0x03758Au, func_03758A },
     { 0x0375ACu, func_0375AC },
+    { 0x0375CEu, func_0375CE },
     { 0x037604u, func_037604 },
     { 0x03765Au, func_03765A },
     { 0x03765Cu, func_03765C },
@@ -8041,8 +9808,10 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0377C8u, func_0377C8 },
     { 0x0377DCu, func_0377DC },
     { 0x0377E8u, func_0377E8 },
+    { 0x0377FAu, func_0377FA },
     { 0x037810u, func_037810 },
     { 0x03781Cu, func_03781C },
+    { 0x037834u, func_037834 },
     { 0x037850u, func_037850 },
     { 0x037886u, func_037886 },
     { 0x037936u, func_037936 },
@@ -8082,83 +9851,144 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x037E16u, func_037E16 },
     { 0x037E30u, func_037E30 },
     { 0x037E42u, func_037E42 },
+    { 0x037E62u, func_037E62 },
     { 0x037E98u, func_037E98 },
     { 0x037EB6u, func_037EB6 },
     { 0x037ED4u, func_037ED4 },
     { 0x037EFCu, func_037EFC },
+    { 0x037F6Cu, func_037F6C },
     { 0x037F74u, func_037F74 },
     { 0x03800Cu, func_03800C },
     { 0x038022u, func_038022 },
     { 0x03804Eu, func_03804E },
+    { 0x03805Eu, func_03805E },
+    { 0x038068u, func_038068 },
+    { 0x038096u, func_038096 },
+    { 0x03809Au, func_03809A },
     { 0x0380AEu, func_0380AE },
     { 0x0380C4u, func_0380C4 },
+    { 0x0380DAu, func_0380DA },
+    { 0x0380E4u, func_0380E4 },
+    { 0x0380EEu, func_0380EE },
     { 0x0380FCu, func_0380FC },
     { 0x038114u, func_038114 },
+    { 0x03811Cu, func_03811C },
     { 0x03812Au, func_03812A },
+    { 0x038132u, func_038132 },
     { 0x03813Eu, func_03813E },
+    { 0x038146u, func_038146 },
     { 0x03815Cu, func_03815C },
     { 0x038170u, func_038170 },
+    { 0x038198u, func_038198 },
     { 0x0381ACu, func_0381AC },
+    { 0x0381D0u, func_0381D0 },
     { 0x0381E0u, func_0381E0 },
+    { 0x0381EAu, func_0381EA },
+    { 0x038206u, func_038206 },
+    { 0x03821Au, func_03821A },
     { 0x03822Au, func_03822A },
+    { 0x038238u, func_038238 },
     { 0x038244u, func_038244 },
+    { 0x03824Eu, func_03824E },
     { 0x038258u, func_038258 },
+    { 0x038266u, func_038266 },
+    { 0x03827Au, func_03827A },
     { 0x038280u, func_038280 },
     { 0x038292u, func_038292 },
+    { 0x038296u, func_038296 },
+    { 0x0382D8u, func_0382D8 },
     { 0x0382EEu, func_0382EE },
     { 0x0383B4u, func_0383B4 },
     { 0x0383CCu, func_0383CC },
+    { 0x0383DEu, func_0383DE },
     { 0x0383F0u, func_0383F0 },
+    { 0x038404u, func_038404 },
+    { 0x03841Cu, func_03841C },
+    { 0x038444u, func_038444 },
+    { 0x038452u, func_038452 },
     { 0x038466u, func_038466 },
+    { 0x038470u, func_038470 },
     { 0x038482u, func_038482 },
+    { 0x03848Cu, func_03848C },
     { 0x03849Eu, func_03849E },
     { 0x0384A2u, func_0384A2 },
     { 0x0384B6u, func_0384B6 },
     { 0x0384BEu, func_0384BE },
+    { 0x03851Au, func_03851A },
     { 0x038524u, func_038524 },
     { 0x03853Eu, func_03853E },
+    { 0x038546u, func_038546 },
+    { 0x03858Au, func_03858A },
+    { 0x0385A0u, func_0385A0 },
     { 0x0385BAu, func_0385BA },
     { 0x03873Eu, func_03873E },
     { 0x03875Au, func_03875A },
     { 0x038766u, func_038766 },
+    { 0x038770u, func_038770 },
     { 0x038794u, func_038794 },
+    { 0x0387C0u, func_0387C0 },
+    { 0x0387E4u, func_0387E4 },
+    { 0x0387ECu, func_0387EC },
+    { 0x0387FCu, func_0387FC },
     { 0x038832u, func_038832 },
+    { 0x03884Au, func_03884A },
     { 0x03885Cu, func_03885C },
+    { 0x038870u, func_038870 },
     { 0x038880u, func_038880 },
     { 0x03888Eu, func_03888E },
     { 0x03899Cu, func_03899C },
     { 0x0389B2u, func_0389B2 },
     { 0x0389B6u, func_0389B6 },
+    { 0x0389D2u, func_0389D2 },
     { 0x0389DAu, func_0389DA },
+    { 0x0389FAu, func_0389FA },
     { 0x038A1Eu, func_038A1E },
     { 0x038A2Cu, func_038A2C },
+    { 0x038A44u, func_038A44 },
     { 0x038A58u, func_038A58 },
     { 0x038AEAu, func_038AEA },
     { 0x038AFEu, func_038AFE },
     { 0x038B10u, func_038B10 },
+    { 0x038B1Eu, func_038B1E },
+    { 0x038B2Cu, func_038B2C },
+    { 0x038B3Cu, func_038B3C },
+    { 0x038B4Eu, func_038B4E },
     { 0x038B62u, func_038B62 },
+    { 0x038B78u, func_038B78 },
     { 0x038B86u, func_038B86 },
     { 0x038B9Au, func_038B9A },
     { 0x038BACu, func_038BAC },
+    { 0x038BBAu, func_038BBA },
+    { 0x038BC8u, func_038BC8 },
+    { 0x038BEAu, func_038BEA },
     { 0x038BFEu, func_038BFE },
+    { 0x038C14u, func_038C14 },
     { 0x038C22u, func_038C22 },
     { 0x038C6Eu, func_038C6E },
     { 0x038DBAu, func_038DBA },
     { 0x038DCCu, func_038DCC },
     { 0x038E0Cu, func_038E0C },
     { 0x038E52u, func_038E52 },
+    { 0x038E66u, func_038E66 },
     { 0x038E82u, func_038E82 },
     { 0x038E84u, func_038E84 },
     { 0x038E9Au, func_038E9A },
+    { 0x038EA2u, func_038EA2 },
     { 0x038EB4u, func_038EB4 },
+    { 0x038ECCu, func_038ECC },
+    { 0x038ED6u, func_038ED6 },
     { 0x038EEEu, func_038EEE },
+    { 0x038F2Au, func_038F2A },
     { 0x038F3Eu, func_038F3E },
+    { 0x038F4Eu, func_038F4E },
     { 0x038F58u, func_038F58 },
     { 0x038F62u, func_038F62 },
     { 0x038F66u, func_038F66 },
     { 0x038F7Cu, func_038F7C },
     { 0x038F88u, func_038F88 },
     { 0x038FE8u, func_038FE8 },
+    { 0x03900Au, func_03900A },
+    { 0x03901Au, func_03901A },
     { 0x039022u, func_039022 },
     { 0x039032u, func_039032 },
     { 0x039044u, func_039044 },
@@ -8194,32 +10024,48 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03972Cu, func_03972C },
     { 0x03975Eu, func_03975E },
     { 0x0397ACu, func_0397AC },
+    { 0x0397BAu, func_0397BA },
     { 0x0397E6u, func_0397E6 },
+    { 0x0397F0u, func_0397F0 },
     { 0x0397FEu, func_0397FE },
+    { 0x03980Eu, func_03980E },
+    { 0x039830u, func_039830 },
     { 0x03984Au, func_03984A },
+    { 0x03986Au, func_03986A },
+    { 0x039886u, func_039886 },
     { 0x0398C0u, func_0398C0 },
     { 0x03991Eu, func_03991E },
     { 0x03992Eu, func_03992E },
     { 0x039946u, func_039946 },
+    { 0x03994Eu, func_03994E },
     { 0x039976u, func_039976 },
+    { 0x039994u, func_039994 },
     { 0x0399C0u, func_0399C0 },
     { 0x0399C2u, func_0399C2 },
     { 0x0399D6u, func_0399D6 },
     { 0x039A0Au, func_039A0A },
     { 0x039A1Cu, func_039A1C },
+    { 0x039A2Au, func_039A2A },
     { 0x039A44u, func_039A44 },
+    { 0x039A56u, func_039A56 },
     { 0x039A68u, func_039A68 },
     { 0x039A7Cu, func_039A7C },
     { 0x039A96u, func_039A96 },
     { 0x039AAAu, func_039AAA },
+    { 0x039ABCu, func_039ABC },
     { 0x039ACEu, func_039ACE },
+    { 0x039ADEu, func_039ADE },
     { 0x039AE8u, func_039AE8 },
     { 0x039AF4u, func_039AF4 },
+    { 0x039B0Au, func_039B0A },
     { 0x039B1Au, func_039B1A },
     { 0x039B28u, func_039B28 },
     { 0x039B44u, func_039B44 },
+    { 0x039B66u, func_039B66 },
+    { 0x039B74u, func_039B74 },
     { 0x039B84u, func_039B84 },
     { 0x039B92u, func_039B92 },
+    { 0x039BA4u, func_039BA4 },
     { 0x039BBAu, func_039BBA },
     { 0x039BCCu, func_039BCC },
     { 0x039BE2u, func_039BE2 },
@@ -8228,24 +10074,41 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x039C0Au, func_039C0A },
     { 0x039C12u, func_039C12 },
     { 0x039C2Au, func_039C2A },
+    { 0x039C3Au, func_039C3A },
     { 0x039C42u, func_039C42 },
     { 0x039C50u, func_039C50 },
+    { 0x039C78u, func_039C78 },
+    { 0x039C84u, func_039C84 },
+    { 0x039C92u, func_039C92 },
     { 0x039CA0u, func_039CA0 },
     { 0x039CAEu, func_039CAE },
+    { 0x039CD0u, func_039CD0 },
+    { 0x039CDEu, func_039CDE },
     { 0x039CEEu, func_039CEE },
     { 0x039CF0u, func_039CF0 },
     { 0x039D1Cu, func_039D1C },
     { 0x039D24u, func_039D24 },
+    { 0x039D42u, func_039D42 },
     { 0x039D4Au, func_039D4A },
+    { 0x039D58u, func_039D58 },
     { 0x039D60u, func_039D60 },
+    { 0x039D68u, func_039D68 },
     { 0x039D72u, func_039D72 },
+    { 0x039D7Cu, func_039D7C },
     { 0x039D82u, func_039D82 },
     { 0x03A1DCu, func_03A1DC },
     { 0x03A1F6u, func_03A1F6 },
     { 0x03A2F4u, func_03A2F4 },
+    { 0x03A312u, func_03A312 },
     { 0x03A32Cu, func_03A32C },
+    { 0x03A33Au, func_03A33A },
+    { 0x03A346u, func_03A346 },
+    { 0x03A38Au, func_03A38A },
     { 0x03A396u, func_03A396 },
+    { 0x03A3B4u, func_03A3B4 },
     { 0x03A3CCu, func_03A3CC },
+    { 0x03A3DAu, func_03A3DA },
+    { 0x03A3E6u, func_03A3E6 },
     { 0x03A3F6u, func_03A3F6 },
     { 0x03A3F8u, func_03A3F8 },
     { 0x03A40Au, func_03A40A },
@@ -8253,8 +10116,13 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03A426u, func_03A426 },
     { 0x03A43Au, func_03A43A },
     { 0x03A44Eu, func_03A44E },
+    { 0x03A468u, func_03A468 },
     { 0x03A46Cu, func_03A46C },
     { 0x03A472u, func_03A472 },
+    { 0x03A482u, func_03A482 },
+    { 0x03A48Au, func_03A48A },
+    { 0x03A48Cu, func_03A48C },
+    { 0x03A490u, func_03A490 },
     { 0x03A496u, func_03A496 },
     { 0x03A49Au, func_03A49A },
     { 0x03A68Au, func_03A68A },
@@ -8265,6 +10133,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03A790u, func_03A790 },
     { 0x03A7AEu, func_03A7AE },
     { 0x03A7DEu, func_03A7DE },
+    { 0x03A878u, func_03A878 },
+    { 0x03A87Cu, func_03A87C },
     { 0x03A880u, func_03A880 },
     { 0x03A88Eu, func_03A88E },
     { 0x03A89Au, func_03A89A },
@@ -8281,16 +10151,19 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03AA74u, func_03AA74 },
     { 0x03AAA8u, func_03AAA8 },
     { 0x03AAFEu, func_03AAFE },
+    { 0x03AB18u, func_03AB18 },
     { 0x03AB68u, func_03AB68 },
     { 0x03AB7Cu, func_03AB7C },
     { 0x03AB8Au, func_03AB8A },
     { 0x03ABDEu, func_03ABDE },
+    { 0x03AC0Eu, func_03AC0E },
     { 0x03AC40u, func_03AC40 },
     { 0x03AC46u, func_03AC46 },
     { 0x03AC56u, func_03AC56 },
     { 0x03AC6Au, func_03AC6A },
     { 0x03AC7Eu, func_03AC7E },
     { 0x03AC84u, func_03AC84 },
+    { 0x03ACC8u, func_03ACC8 },
     { 0x03ACF0u, func_03ACF0 },
     { 0x03ACF2u, func_03ACF2 },
     { 0x03AD0Cu, func_03AD0C },
@@ -8302,14 +10175,29 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03AD8Cu, func_03AD8C },
     { 0x03ADAAu, func_03ADAA },
     { 0x03ADC6u, func_03ADC6 },
+    { 0x03ADD4u, func_03ADD4 },
+    { 0x03ADE2u, func_03ADE2 },
+    { 0x03ADE8u, func_03ADE8 },
     { 0x03ADF6u, func_03ADF6 },
+    { 0x03AE16u, func_03AE16 },
+    { 0x03AE26u, func_03AE26 },
+    { 0x03AE34u, func_03AE34 },
     { 0x03AE38u, func_03AE38 },
     { 0x03AE3Au, func_03AE3A },
+    { 0x03AE66u, func_03AE66 },
+    { 0x03AE72u, func_03AE72 },
+    { 0x03AE94u, func_03AE94 },
     { 0x03AE9Eu, func_03AE9E },
     { 0x03AEA0u, func_03AEA0 },
+    { 0x03AEC0u, func_03AEC0 },
+    { 0x03AED0u, func_03AED0 },
+    { 0x03AEDEu, func_03AEDE },
     { 0x03AEECu, func_03AEEC },
+    { 0x03AF00u, func_03AF00 },
     { 0x03AF0Au, func_03AF0A },
     { 0x03AF0Cu, func_03AF0C },
+    { 0x03AF26u, func_03AF26 },
+    { 0x03AF2Eu, func_03AF2E },
     { 0x03AF32u, func_03AF32 },
     { 0x03AF34u, func_03AF34 },
     { 0x03AF58u, func_03AF58 },
@@ -8332,6 +10220,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03B602u, func_03B602 },
     { 0x03B61Cu, func_03B61C },
     { 0x03B624u, func_03B624 },
+    { 0x03B638u, func_03B638 },
     { 0x03B644u, func_03B644 },
     { 0x03B64Eu, func_03B64E },
     { 0x03B65Cu, func_03B65C },
@@ -8345,10 +10234,12 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03B73Cu, func_03B73C },
     { 0x03B756u, func_03B756 },
     { 0x03B764u, func_03B764 },
+    { 0x03B770u, func_03B770 },
     { 0x03B77Eu, func_03B77E },
     { 0x03B790u, func_03B790 },
     { 0x03B7A6u, func_03B7A6 },
     { 0x03B7BCu, func_03B7BC },
+    { 0x03B7DEu, func_03B7DE },
     { 0x03B7F6u, func_03B7F6 },
     { 0x03B7F8u, func_03B7F8 },
     { 0x03B8A6u, func_03B8A6 },
@@ -8358,6 +10249,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03B97Cu, func_03B97C },
     { 0x03B980u, func_03B980 },
     { 0x03B9AAu, func_03B9AA },
+    { 0x03B9C0u, func_03B9C0 },
     { 0x03B9D8u, func_03B9D8 },
     { 0x03BABAu, func_03BABA },
     { 0x03BACEu, func_03BACE },
@@ -8378,8 +10270,10 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03BC3Cu, func_03BC3C },
     { 0x03BC50u, func_03BC50 },
     { 0x03BC6Cu, func_03BC6C },
+    { 0x03BC92u, func_03BC92 },
     { 0x03BCACu, func_03BCAC },
     { 0x03BCB6u, func_03BCB6 },
+    { 0x03BCC0u, func_03BCC0 },
     { 0x03BCCCu, func_03BCCC },
     { 0x03BCD6u, func_03BCD6 },
     { 0x03BCDEu, func_03BCDE },
@@ -8404,6 +10298,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03C01Eu, func_03C01E },
     { 0x03C020u, func_03C020 },
     { 0x03C034u, func_03C034 },
+    { 0x03C056u, func_03C056 },
     { 0x03C062u, func_03C062 },
     { 0x03C0ACu, func_03C0AC },
     { 0x03C0C0u, func_03C0C0 },
@@ -8414,6 +10309,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03C19Au, func_03C19A },
     { 0x03C1AAu, func_03C1AA },
     { 0x03C1F4u, func_03C1F4 },
+    { 0x03C208u, func_03C208 },
+    { 0x03C20Eu, func_03C20E },
+    { 0x03C26Cu, func_03C26C },
     { 0x03C328u, func_03C328 },
     { 0x03C33Au, func_03C33A },
     { 0x03C33Eu, func_03C33E },
@@ -8519,12 +10417,16 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03CEF8u, func_03CEF8 },
     { 0x03CF10u, func_03CF10 },
     { 0x03CF32u, func_03CF32 },
+    { 0x03CF44u, func_03CF44 },
     { 0x03CF58u, func_03CF58 },
+    { 0x03CF62u, func_03CF62 },
     { 0x03CF7Cu, func_03CF7C },
+    { 0x03CFC0u, func_03CFC0 },
     { 0x03CFF6u, func_03CFF6 },
     { 0x03D00Cu, func_03D00C },
     { 0x03D036u, func_03D036 },
     { 0x03D04Au, func_03D04A },
+    { 0x03D05Eu, func_03D05E },
     { 0x03D066u, func_03D066 },
     { 0x03D078u, func_03D078 },
     { 0x03D086u, func_03D086 },
@@ -8534,6 +10436,10 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03D27Cu, func_03D27C },
     { 0x03D2A6u, func_03D2A6 },
     { 0x03D2D4u, func_03D2D4 },
+    { 0x03D36Cu, func_03D36C },
+    { 0x03D386u, func_03D386 },
+    { 0x03D390u, func_03D390 },
+    { 0x03D39Au, func_03D39A },
     { 0x03D3A4u, func_03D3A4 },
     { 0x03D416u, func_03D416 },
     { 0x03D4C8u, func_03D4C8 },
@@ -8567,6 +10473,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03D93Cu, func_03D93C },
     { 0x03D970u, func_03D970 },
     { 0x03D9B0u, func_03D9B0 },
+    { 0x03D9BEu, func_03D9BE },
     { 0x03D9D6u, func_03D9D6 },
     { 0x03DA14u, func_03DA14 },
     { 0x03DA3Cu, func_03DA3C },
@@ -8609,7 +10516,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03DD50u, func_03DD50 },
     { 0x03DD64u, func_03DD64 },
     { 0x03DDA6u, func_03DDA6 },
+    { 0x03DE0Au, func_03DE0A },
     { 0x03DE3Cu, func_03DE3C },
+    { 0x03DE62u, func_03DE62 },
     { 0x03DE70u, func_03DE70 },
     { 0x03DE82u, func_03DE82 },
     { 0x03DEA2u, func_03DEA2 },
@@ -8680,6 +10589,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03F1DCu, func_03F1DC },
     { 0x03F1E4u, func_03F1E4 },
     { 0x03F212u, func_03F212 },
+    { 0x03F220u, func_03F220 },
+    { 0x03F228u, func_03F228 },
+    { 0x03F272u, func_03F272 },
     { 0x03F278u, func_03F278 },
     { 0x03F2B4u, func_03F2B4 },
     { 0x03F2FCu, func_03F2FC },
@@ -8687,6 +10599,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03F354u, func_03F354 },
     { 0x03F38Eu, func_03F38E },
     { 0x03F3A8u, func_03F3A8 },
+    { 0x03F3F4u, func_03F3F4 },
     { 0x03F404u, func_03F404 },
     { 0x03F406u, func_03F406 },
     { 0x03F548u, func_03F548 },
@@ -8696,12 +10609,16 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03F5A0u, func_03F5A0 },
     { 0x03F5A8u, func_03F5A8 },
     { 0x03F5B4u, func_03F5B4 },
+    { 0x03F5D6u, func_03F5D6 },
     { 0x03F5DCu, func_03F5DC },
+    { 0x03F5F6u, func_03F5F6 },
     { 0x03F666u, func_03F666 },
     { 0x03F69Cu, func_03F69C },
     { 0x03F6A2u, func_03F6A2 },
     { 0x03F6AEu, func_03F6AE },
+    { 0x03F6D4u, func_03F6D4 },
     { 0x03F6D8u, func_03F6D8 },
+    { 0x03F6EEu, func_03F6EE },
     { 0x03F6F2u, func_03F6F2 },
     { 0x03F73Cu, func_03F73C },
     { 0x03F78Au, func_03F78A },
@@ -8710,11 +10627,16 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03F7C8u, func_03F7C8 },
     { 0x03F7E8u, func_03F7E8 },
     { 0x03F7EAu, func_03F7EA },
+    { 0x03F802u, func_03F802 },
+    { 0x03F81Cu, func_03F81C },
+    { 0x03F844u, func_03F844 },
+    { 0x03F84Cu, func_03F84C },
     { 0x03F85Cu, func_03F85C },
     { 0x03F862u, func_03F862 },
     { 0x03F86Au, func_03F86A },
     { 0x03F86Eu, func_03F86E },
     { 0x03F878u, func_03F878 },
+    { 0x03F88Cu, func_03F88C },
     { 0x03F8B8u, func_03F8B8 },
     { 0x03F8BEu, func_03F8BE },
     { 0x03F8EEu, func_03F8EE },
@@ -8722,6 +10644,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03F91Cu, func_03F91C },
     { 0x03F926u, func_03F926 },
     { 0x03F976u, func_03F976 },
+    { 0x03F9CEu, func_03F9CE },
+    { 0x03F9E8u, func_03F9E8 },
+    { 0x03F9F4u, func_03F9F4 },
     { 0x03F9F8u, func_03F9F8 },
     { 0x03F9FCu, func_03F9FC },
     { 0x03FA00u, func_03FA00 },
@@ -8732,20 +10657,30 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x03FA5Au, func_03FA5A },
     { 0x03FA5Eu, func_03FA5E },
     { 0x03FA60u, func_03FA60 },
+    { 0x03FA8Eu, func_03FA8E },
+    { 0x03FA92u, func_03FA92 },
+    { 0x03FAA8u, func_03FAA8 },
     { 0x03FAC8u, func_03FAC8 },
     { 0x03FAFEu, func_03FAFE },
     { 0x03FB46u, func_03FB46 },
     { 0x03FB8Au, func_03FB8A },
     { 0x03FBC4u, func_03FBC4 },
     { 0x03FBCAu, func_03FBCA },
+    { 0x03FBF6u, func_03FBF6 },
+    { 0x03FBFAu, func_03FBFA },
+    { 0x03FC1Cu, func_03FC1C },
+    { 0x03FC46u, func_03FC46 },
     { 0x03FC4Cu, func_03FC4C },
     { 0x03FC58u, func_03FC58 },
     { 0x03FC5Au, func_03FC5A },
     { 0x03FC5Eu, func_03FC5E },
+    { 0x03FC70u, func_03FC70 },
     { 0x03FC7Au, func_03FC7A },
     { 0x03FC86u, func_03FC86 },
     { 0x03FC88u, func_03FC88 },
     { 0x03FC8Cu, func_03FC8C },
+    { 0x03FC9Eu, func_03FC9E },
+    { 0x03FCA4u, func_03FCA4 },
     { 0x03FCB0u, func_03FCB0 },
     { 0x03FCB6u, func_03FCB6 },
     { 0x03FCBCu, func_03FCBC },
@@ -8777,7 +10712,11 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x040330u, func_040330 },
     { 0x040336u, func_040336 },
     { 0x040338u, func_040338 },
+    { 0x0407BEu, func_0407BE },
     { 0x0407C0u, func_0407C0 },
+    { 0x0407DAu, func_0407DA },
+    { 0x0407DCu, func_0407DC },
+    { 0x0407E4u, func_0407E4 },
     { 0x0407FCu, func_0407FC },
     { 0x040804u, func_040804 },
     { 0x04085Au, func_04085A },
@@ -8786,8 +10725,16 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x04092Eu, func_04092E },
     { 0x040938u, func_040938 },
     { 0x040940u, func_040940 },
+    { 0x040944u, func_040944 },
+    { 0x04094Cu, func_04094C },
     { 0x04096Au, func_04096A },
     { 0x040984u, func_040984 },
+    { 0x04098Cu, func_04098C },
+    { 0x040990u, func_040990 },
+    { 0x040998u, func_040998 },
+    { 0x0409A6u, func_0409A6 },
+    { 0x0409AAu, func_0409AA },
+    { 0x0409BEu, func_0409BE },
     { 0x0409C6u, func_0409C6 },
     { 0x0409E2u, func_0409E2 },
     { 0x0409F8u, func_0409F8 },
@@ -8795,14 +10742,24 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x040D42u, func_040D42 },
     { 0x040D8Au, func_040D8A },
     { 0x040DBAu, func_040DBA },
+    { 0x040DC6u, func_040DC6 },
     { 0x040DDAu, func_040DDA },
     { 0x040E38u, func_040E38 },
     { 0x040E46u, func_040E46 },
     { 0x040E82u, func_040E82 },
     { 0x040E84u, func_040E84 },
     { 0x040E9Au, func_040E9A },
+    { 0x040EAAu, func_040EAA },
+    { 0x040EBEu, func_040EBE },
+    { 0x040EDCu, func_040EDC },
+    { 0x040F18u, func_040F18 },
     { 0x040F4Eu, func_040F4E },
     { 0x040F50u, func_040F50 },
+    { 0x040F90u, func_040F90 },
+    { 0x040FC8u, func_040FC8 },
+    { 0x040FD6u, func_040FD6 },
+    { 0x040FE4u, func_040FE4 },
+    { 0x041010u, func_041010 },
     { 0x04101Au, func_04101A },
     { 0x04101Cu, func_04101C },
     { 0x04102Au, func_04102A },
@@ -8811,22 +10768,39 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x04105Au, func_04105A },
     { 0x04106Eu, func_04106E },
     { 0x041090u, func_041090 },
+    { 0x041094u, func_041094 },
+    { 0x0410A4u, func_0410A4 },
+    { 0x0410AAu, func_0410AA },
+    { 0x0410B0u, func_0410B0 },
     { 0x0410BCu, func_0410BC },
     { 0x0410E4u, func_0410E4 },
     { 0x041104u, func_041104 },
     { 0x04110Cu, func_04110C },
+    { 0x04111Eu, func_04111E },
     { 0x04113Cu, func_04113C },
     { 0x041146u, func_041146 },
     { 0x04114Eu, func_04114E },
     { 0x041154u, func_041154 },
+    { 0x041158u, func_041158 },
+    { 0x041160u, func_041160 },
+    { 0x04116Au, func_04116A },
+    { 0x041198u, func_041198 },
     { 0x0411A4u, func_0411A4 },
     { 0x0411C2u, func_0411C2 },
+    { 0x0411C6u, func_0411C6 },
+    { 0x0411CEu, func_0411CE },
     { 0x041214u, func_041214 },
     { 0x04121Cu, func_04121C },
     { 0x041222u, func_041222 },
     { 0x041228u, func_041228 },
+    { 0x04122Cu, func_04122C },
+    { 0x041234u, func_041234 },
+    { 0x04123Eu, func_04123E },
     { 0x041274u, func_041274 },
     { 0x041280u, func_041280 },
+    { 0x041284u, func_041284 },
+    { 0x04128Cu, func_04128C },
+    { 0x041296u, func_041296 },
     { 0x0412C0u, func_0412C0 },
     { 0x0412C6u, func_0412C6 },
     { 0x0412C8u, func_0412C8 },
@@ -8834,6 +10808,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0412E2u, func_0412E2 },
     { 0x0412EEu, func_0412EE },
     { 0x0412FAu, func_0412FA },
+    { 0x04130Au, func_04130A },
+    { 0x041314u, func_041314 },
     { 0x041318u, func_041318 },
     { 0x04132Eu, func_04132E },
     { 0x04133Au, func_04133A },
@@ -8865,9 +10841,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0u, NULL }
 };
 
-int game_dispatch_table_size(void) { return 4425; }
+int game_dispatch_table_size(void) { return 5413; }
 uint32_t game_dispatch_table_addr(int i) {
-    return (i >= 0 && i < 4425) ? s_dispatch_table[i].addr : 0;
+    return (i >= 0 && i < 5413) ? s_dispatch_table[i].addr : 0;
 }
 
 void call_by_address(uint32_t addr) {

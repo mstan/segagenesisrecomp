@@ -1,0 +1,44 @@
+# game.toml — Sonic the Hedgehog 2 (Sega Genesis/Mega Drive, 1992)
+# 68000, 1MB ROM, no SRAM, no mapper
+# Product serial: GM 00001051-01  (header $0180)
+# Internal checksum: $D951        (header $018E)
+# Region: JUE
+# Entry PC: $000206 (vector $000004)
+# VBlank handler: $000408 (vector $000078)
+# HBlank handler: $000F54 (vector $000070)
+
+[game]
+output_prefix = "sonic2"
+
+# Annotation CSV: 2949 (addr,name) pairs — surfaces meaningful labels
+# in generated C (e.g. EntryPoint, VBlank instead of func_000206).
+annotations = "annotations_from_disasm.csv"
+
+# Auto-generated discovery files (regenerate via the gen_disasm_*.py
+# tools, paths relative to this game.toml). The labels file is the
+# disasm's own ground truth — every assembler-resolved label↔offset
+# pair, with data labels filtered. It supersedes the older seeds + subs
+# heuristics. The jumptables file complements it with [[jump_table]]
+# records the recompiler's auto-discovery can't follow.
+#
+# Regenerate via:
+#   python ../tests/tools/gen_disasm_labels.py s2disasm/s2.lst \
+#       > sonic2.disasm_labels.toml
+#   python ../tests/tools/gen_disasm_jumptables.py \
+#       --lst s2disasm/s2.lst \
+#       --code-addrs ../tests/fixtures/sonic2/l1/code_addresses.txt \
+#       --prefix sonic2 --rom-max 0x100000 \
+#       -o sonic2.disasm_jumptables.toml
+discovery_files = [
+    "sonic2.disasm_labels.toml",
+    "sonic2.disasm_jumptables.toml",
+]
+
+# ---------------------------------------------------------------------------
+# Interrupt vectors (from 68K vector table)
+[functions]
+extra = [
+    0x000206,   # EntryPoint — initial PC ($000004)
+    0x000408,   # VBlank (IRQ level 6) — vector $000078
+    0x000F54,   # HBlank (IRQ level 4) — vector $000070
+]

@@ -203,9 +203,8 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
             add_function(list, handler);
     }
 
-    /* Seeds from game.cfg extra_func entries — but skip any blacklisted
-     * addresses, even if some other directive (extra_func_file, etc.)
-     * tried to add them. */
+    /* Seeds from game.toml [functions].extra entries — but skip any
+     * blacklisted addresses, even if a discovery_files merge added them. */
     for (int i = 0; i < cfg->extra_func_count; i++) {
         if (game_config_is_blacklisted(cfg, cfg->extra_funcs[i])) continue;
         add_function(list, cfg->extra_funcs[i]);

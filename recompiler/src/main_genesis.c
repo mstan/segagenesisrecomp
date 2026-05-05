@@ -1,6 +1,6 @@
 /*
  * main_genesis.c — GenesisRecomp entry point
- * Usage: GenesisRecomp.exe <rom.md|rom.bin> [--game <path/to/game.cfg>]
+ * Usage: GenesisRecomp.exe <rom.md|rom.bin> [--game <path/to/game.toml>]
  * Output: generated/<prefix>_full.c + generated/<prefix>_dispatch.c
  */
 #include <stdio.h>
@@ -18,7 +18,7 @@
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr,
-            "Usage: GenesisRecomp <rom.md|rom.bin> [--game <path/to/game.cfg>] "
+            "Usage: GenesisRecomp <rom.md|rom.bin> [--game <path/to/game.toml>] "
             "[--reverse-debug] [--fail-on-unsupported]\n");
         return 1;
     }

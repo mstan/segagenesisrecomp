@@ -1,0 +1,53 @@
+# game.toml — Sonic the Hedgehog 3 & Knuckles (locked-on, 1994)
+# 68000, 4MB combined ROM (S&K 2MB + S3 ~1.5MB), SRAM-backed save data,
+# Sega Lock-On cartridge memory mapper.
+# Product serial: GM MK-1563 -00  (S&K's header $0180)
+# Internal checksum: $DFB3        (header $018E)
+# Region: JUE
+# Entry PC: $000206 (vector $000004)
+# VBlank vector: $FFFFFFF0 — RAM-installed handler
+# HBlank vector: $FFFFFFF6 — RAM-installed handler
+#
+# STATUS: skeleton — *significant* unknowns vs S1/S2. Read first.
+#
+# Why S3K is hard:
+#   1. The IRQ vectors point into 68K RAM ($FF0000-$FFFFFF), not ROM.
+#      At boot, ROM code copies a small trampoline into RAM that then
+#      dispatches the real handlers. Static recompilation cannot follow
+#      a function pointer into RAM that didn't exist at link time.
+#      Will need either a hand-written runtime hook for VBlank/HBlank,
+#      or a special directive in the recompiler to emit
+#      `glue_call_ram_vector(0xFFFFF0)` at the dispatch site.
+#   2. Sega Lock-On cartridge memory map: S&K ROM occupies $000000-
+#      $1FFFFF, S3 ROM mapped to $200000-$3FFFFF via the cart MMU.
+#      Some routines in S&K reach into S3's address space — those will
+#      need ROM mapping support in the runtime.
+#   3. SRAM at $200001-$203FFF (odd bytes only, S&K cart). No mapping
+#      support in the current runtime.
+#   4. ROM is 4MB but the validator currently rejects targets >= 0x400000
+#      in tests/tools/gen_disasm_seeds.py. That heuristic was for 4MB
+#      cart limit — should still pass since 0x400000 is exclusive.
+#
+# Recommend doing Sonic 2 end-to-end first; treat S3K as a stretch goal.
+
+[game]
+output_prefix = "sonic3k"
+# annotations = "annotations_from_disasm.csv"   # not yet generated
+
+# Discovery files (auto-generated; uncomment when the disasm tools are
+# ported against skdisasm). See game.toml for Sonic 1/2 for the workflow.
+# discovery_files = [
+#     "sonic3k.disasm_labels.toml",
+#     "sonic3k.disasm_jumptables.toml",
+# ]
+
+# ---------------------------------------------------------------------------
+# Interrupt vectors (from 68K vector table)
+[functions]
+extra = [
+    0x000206,   # EntryPoint — initial PC ($000004)
+    # NOTE: VBlank/HBlank vectors are $FFFFFFF0 / $FFFFFFF6 — RAM, not ROM.
+    # Cannot seed those statically. Boot code must be traced to find the
+    # ROM routine that builds the RAM trampoline; that routine then
+    # becomes the entry seed for the IRQ chain.
+]
