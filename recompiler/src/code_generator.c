@@ -3179,6 +3179,35 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                 continue;
             }
 
+            /* "Wait for IRQ-cleared flag" idiom — generalization of the
+             * full WaitForVint pattern. Detected when the current
+             * instruction is `tst.X (mem)` and the NEXT instruction is
+             * `bne self` (i.e. branches to this tst). On real hardware
+             * the IRQ handler clears the polled flag asynchronously;
+             * in our cooperative-fiber model the game thread must
+             * yield each iteration so the main loop can run Iterate
+             * (which fires the H/V-Int handler). Insert a
+             * glue_yield_for_vblank() before the tst so every spin
+             * cycle gives the runner a chance to advance.
+             *
+             * Examples:
+             *   Sonic 2 BuildSprites_P2 ($016A7A):
+             *       tst.w (Hint_flag).w
+             *       bne.s BuildSprites_P2
+             *   Sonic 1 ScrollHorizontal entry, etc. */
+            if (j + 1 < instrs.count && instr.mnemonic == MN_TST) {
+                M68KInstr next;
+                if (m68k_decode(rom, instrs.addrs[j + 1], &next) &&
+                    next.mnemonic == MN_Bcc &&
+                    next.has_target &&
+                    next.target_addr == pc) {
+                    fprintf(f_full,
+                        "  /* IRQ-flag spin detected (tst+bne self) — "
+                        "yield each iteration */\n"
+                        "  glue_yield_for_vblank();\n");
+                }
+            }
+
             fprintf(f_full, "  /* $%06X */\n", pc);
             if (s_reverse_debug)
                 fprintf(f_full, "  rdb_on_insn(0x%06Xu);\n", pc);
