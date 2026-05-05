@@ -179,6 +179,17 @@ static const char *size_read_fn(M68KSize sz) {
  * identical to the pre-Tier-1 baseline. */
 static bool s_reverse_debug = false;
 
+/*
+ * Set by the per-instruction emit loop just before processing a Bcc
+ * that's part of the IRQ-flag-spin idiom (tst.X mem; bne self). The
+ * Bcc handler then emits glue_yield_for_vblank() inside the goto
+ * branch so the spin yields once per actual loop iteration without
+ * paying yield cost on the fall-through path. Reset by the Bcc
+ * handler after consuming. Module-global rather than parameter so
+ * the existing emit_instr signature stays unchanged.
+ */
+static bool g_yield_in_next_bne = false;
+
 static const char *size_write_fn(M68KSize sz) {
     switch (sz) {
     case M68K_SIZE_B: return "m68k_write8";
@@ -1428,7 +1439,23 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         int cond = (instr->words[0] >> 8) & 0xF;
         const char *ce = bcc_cond_expr(cond);
         if (instr->has_target) {
-            if (addrset_contains(instrs, instr->target_addr)) {
+            if (g_yield_in_next_bne) {
+                /* IRQ-flag-spin loop-back path: the previous tst set
+                 * the polled-flag's Z bit; we're about to branch back
+                 * to retest. Yield first so the runner can advance
+                 * clownmdemu and let the IRQ handler clear the flag.
+                 * Falls through naturally when the flag is clear. */
+                if (addrset_contains(instrs, instr->target_addr)) {
+                    fprintf(f, "  if (%s) { glue_yield_for_vblank();"
+                               " goto label_%06X; }\n",
+                            ce, instr->target_addr);
+                } else {
+                    fprintf(f, "  if (%s) { glue_yield_for_vblank();"
+                               " func_%06X(); return; }\n",
+                            ce, instr->target_addr);
+                }
+                g_yield_in_next_bne = false;
+            } else if (addrset_contains(instrs, instr->target_addr)) {
                 fprintf(f, "  if (%s) goto label_%06X;\n", ce, instr->target_addr);
             } else {
                 fprintf(f, "  if (%s) { func_%06X(); return; }\n", ce, instr->target_addr);
@@ -3179,32 +3206,31 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                 continue;
             }
 
-            /* "Wait for IRQ-cleared flag" idiom — generalization of the
-             * full WaitForVint pattern. Detected when the current
-             * instruction is `tst.X (mem)` and the NEXT instruction is
-             * `bne self` (i.e. branches to this tst). On real hardware
-             * the IRQ handler clears the polled flag asynchronously;
-             * in our cooperative-fiber model the game thread must
-             * yield each iteration so the main loop can run Iterate
-             * (which fires the H/V-Int handler). Insert a
-             * glue_yield_for_vblank() before the tst so every spin
-             * cycle gives the runner a chance to advance.
+            /* "Wait for IRQ-cleared flag" idiom — generalization of
+             * the full WaitForVint pattern. The current instruction is
+             * `tst.X (mem)` and the NEXT instruction is `bne self`
+             * (i.e. branches to this tst). On real hardware the IRQ
+             * handler clears the polled flag asynchronously; in our
+             * cooperative-fiber model the game thread must yield to
+             * let the runner advance clownmdemu (which fires the
+             * H/V-Int handler that clears the flag).
+             *
+             * Mark the next bne so its emitter inserts
+             * glue_yield_for_vblank() inside the loop-back branch
+             * (NOT before the tst — yielding on the fall-through path
+             * is unnecessary and was draining audio cycle accounting).
              *
              * Examples:
              *   Sonic 2 BuildSprites_P2 ($016A7A):
              *       tst.w (Hint_flag).w
-             *       bne.s BuildSprites_P2
-             *   Sonic 1 ScrollHorizontal entry, etc. */
+             *       bne.s BuildSprites_P2 */
             if (j + 1 < instrs.count && instr.mnemonic == MN_TST) {
                 M68KInstr next;
                 if (m68k_decode(rom, instrs.addrs[j + 1], &next) &&
                     next.mnemonic == MN_Bcc &&
                     next.has_target &&
                     next.target_addr == pc) {
-                    fprintf(f_full,
-                        "  /* IRQ-flag spin detected (tst+bne self) — "
-                        "yield each iteration */\n"
-                        "  glue_yield_for_vblank();\n");
+                    g_yield_in_next_bne = true;
                 }
             }
 
