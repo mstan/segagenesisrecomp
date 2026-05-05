@@ -139152,8 +139152,6 @@ void func_016A7A(void) {
   rdb_on_block(0x016A7Au);
   label_016A7A:;
   rdb_on_block(0x016A7Au);
-  /* IRQ-flag spin detected (tst+bne self) — yield each iteration */
-  glue_yield_for_vblank();
   /* $016A7A */
   rdb_on_insn(0x016A7Au);
   uint16_t _t016A7A = m68k_read16((uint32_t)(int32_t)(int16_t)0xF644);
@@ -139164,7 +139162,7 @@ void func_016A7A(void) {
   g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016A7E */
   rdb_on_insn(0x016A7Eu);
-  if (!(g_cpu.SR & (1u<<2))) goto label_016A7A;
+  if (!(g_cpu.SR & (1u<<2))) { glue_yield_for_vblank(); goto label_016A7A; }
   g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $016A80 */
   rdb_on_insn(0x016A80u);
@@ -143770,8 +143768,6 @@ void func_017112(void) {
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   label_017152:;
   rdb_on_block(0x017152u);
-  /* IRQ-flag spin detected (tst+bne self) — yield each iteration */
-  glue_yield_for_vblank();
   /* $017152 */
   rdb_on_insn(0x017152u);
   uint16_t _t017152 = m68k_read16(g_cpu.A[3]); g_cpu.A[3] += 2;
@@ -143782,7 +143778,7 @@ void func_017112(void) {
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017154 */
   rdb_on_insn(0x017154u);
-  if (!(g_cpu.SR & (1u<<2))) goto label_017152;
+  if (!(g_cpu.SR & (1u<<2))) { glue_yield_for_vblank(); goto label_017152; }
   g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $017156 */
   rdb_on_insn(0x017156u);
