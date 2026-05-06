@@ -74,13 +74,20 @@ LINE_RE = re.compile(
 # leading "Label:" (or "Label1:Label2:...") covers tables whose base
 # label is pinned inline with the first entry, e.g.
 #   VBlank_Index: dc.w VBlank_Lag-VBlank_Index
+# AS-flavor anonymous labels (`+`, `-`, `++`, etc.) appear at multiple
+# offsets in the listing for nameless temporary jump targets. The first
+# captured group is the entry's named target; we permit `+`/`-` runs as
+# valid operands so single-entry PCREL_W tables that point at an
+# anonymous label still get extracted.
+LBL_NAME = r"(?:[A-Za-z_.][\w.]*|[+\-]+)"
+
 PCREL_W_RE = re.compile(
     r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
-    r"dc\.w\s+([A-Za-z_.][\w.]*)\s*-\s*([A-Za-z_.][\w.]*)\s*(?:;.*)?$"
+    r"dc\.w\s+(" + LBL_NAME + r")\s*-\s*(" + LBL_NAME + r")\s*(?:;.*)?$"
 )
 ABS_L_RE = re.compile(
     r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
-    r"dc\.l\s+([A-Za-z_.][\w.]*)\s*(?:;.*)?$"
+    r"dc\.l\s+(" + LBL_NAME + r")\s*(?:;.*)?$"
 )
 # bra.w / bra.s trampoline-table form. Each entry is a single 68K
 # instruction (`bra.w Target` = 4 bytes 60 00 XX XX, or `bra.s Target`
@@ -92,11 +99,11 @@ ABS_L_RE = re.compile(
 # EniDec_JmpTable ($1852) are the canonical examples.
 BRA_W_RE = re.compile(
     r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
-    r"bra\.w\s+([A-Za-z_.][\w.]*)\s*(?:;.*)?$"
+    r"bra\.w\s+(" + LBL_NAME + r")\s*(?:;.*)?$"
 )
 BRA_S_RE = re.compile(
     r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
-    r"bra(?:\.s)?\s+([A-Za-z_.][\w.]*)\s*(?:;.*)?$"
+    r"bra(?:\.s)?\s+(" + LBL_NAME + r")\s*(?:;.*)?$"
 )
 
 # Labels pinned to the current address. AS produces several forms in
@@ -181,7 +188,13 @@ def main() -> int:
     ap.add_argument("--header", type=str, default=None,
                     help="override the file's header comment")
     ap.add_argument("--min-entries", type=int, default=2,
-                    help="minimum entries to qualify as a jump table")
+                    help="minimum entries to qualify as a jump table. "
+                         "Per-entry validation (target in code_addresses, "
+                         "even, in-rom) is the safety net for false "
+                         "positives within an accepted run; this gate "
+                         "prevents single isolated bra.s/bra.w "
+                         "instructions outside any table from being "
+                         "misclassified as 1-entry tables.")
     args = ap.parse_args()
 
     if not args.lst.exists():
@@ -251,6 +264,20 @@ def main() -> int:
     abs_tables: list[dict] = []
     bra_tables: list[dict] = []
     used_rows: set[int] = set()
+
+    # Pre-compute the set of addresses that have at least one NAMED
+    # label pinned to them (i.e., not loc_/sub_/off_/byte_/word_/
+    # locret_/j_, anonymous +/-, or pure local .foo names). Used as
+    # a "this address is a table base" anchor for bra-trampoline
+    # detection — without this, runs of consecutive bra.s/bra.w
+    # instructions inside ordinary code get misclassified as tables.
+    _AUTO_PREFIX = ("loc_", "locret_", "sub_",
+                    "byte_", "word_", "off_", "j_")
+    table_base_addrs: set[int] = set()
+    for name, name_addr in label_addr.items():
+        if name.startswith(_AUTO_PREFIX): continue
+        if name.startswith(("+", "-", ".")): continue
+        table_base_addrs.add(name_addr)
 
     for i, (addr, bytes_hex, source) in enumerate(rows):
         if i in used_rows:
@@ -343,8 +370,15 @@ def main() -> int:
         # extracted target is the entry address, not the bra.w
         # destination. We still validate the bra.w destination is a
         # code address as a sanity check.
+        #
+        # Anchor the table-start to a row that has a NAMED label
+        # pinned to its address (precomputed in table_base_addrs).
+        # Without this, sequences of bra.w / bra.s instructions that
+        # aren't tables (just ordinary code with consecutive branches)
+        # get misidentified — the run would appear coherent because
+        # every bra destination is a valid code address.
         m3 = BRA_W_RE.match(source)
-        if m3 and len(bytes_hex) == 2 and bytes_hex[0].lower() == "6000":
+        if m3 and len(bytes_hex) == 2 and bytes_hex[0].lower() == "6000" and addr in table_base_addrs:
             entries = []
             row_idxs = []
             cur = i
@@ -391,10 +425,12 @@ def main() -> int:
 
         # And bra.s trampoline runs (e.g. Sonic 1's EniDec_JmpTable).
         # Each entry is 2 bytes (60 XX with XX != 00 and != FF).
+        # Same named-label anchor as the bra.w branch above.
         m4 = BRA_S_RE.match(source)
         if (m4 and len(bytes_hex) == 1 and
                 bytes_hex[0][:2].lower() == "60" and
-                bytes_hex[0][2:].lower() not in ("00", "ff")):
+                bytes_hex[0][2:].lower() not in ("00", "ff") and
+                addr in table_base_addrs):
             entries = []
             row_idxs = []
             cur = i
@@ -480,18 +516,19 @@ def main() -> int:
             f.write(f"stride = 4\n")
             f.write(f"format = \"abs\"   # {len(t['entries'])} entries, first={first_name}\n\n")
 
-        # bra.w / bra.s trampoline runs are not jump tables in the codegen
-        # sense — each entry's address is itself a function (the trampoline
-        # body), and the bra destination is its tail-call target. Both
-        # land in [functions].extra below; no [[jump_table]] for them.
-        if bra_tables:
-            f.write("# ---- bra-trampoline tables (entries enumerated as functions) ----\n")
-            for t in bra_tables:
-                first_name = t["entries"][0][1] if t["entries"] else ""
-                f.write(f"# bra-trampoline 0x{t['start']:06X} 0x{t['end']:06X} "
-                        f"stride={t['stride']} fmt={t['format']} "
-                        f"({len(t['entries'])} entries, first={first_name})\n")
-            f.write("\n")
+        # bra.w / bra.s trampoline runs ARE jump tables: the dispatch JMP
+        # at the source site lands on the trampoline body itself (which
+        # then bra's onward to the real handler). The recompiler reads
+        # the bra_w / bra_s formats and treats each entry as its own
+        # function. The bra destinations are also added to
+        # [functions].extra below so the trampoline tail-call resolves.
+        for t in bra_tables:
+            first_name = t["entries"][0][1] if t["entries"] else ""
+            f.write("[[jump_table]]\n")
+            f.write(f"start  = 0x{t['start']:06X}\n")
+            f.write(f"end    = 0x{t['end']:06X}\n")
+            f.write(f"stride = {t['stride']}\n")
+            f.write(f"format = \"{t['format']}\"   # {len(t['entries'])} entries, first={first_name}\n\n")
 
         # Targets: flat array under [functions].extra.
         f.write("[functions]\n")

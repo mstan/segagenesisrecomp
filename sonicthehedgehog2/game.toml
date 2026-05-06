@@ -35,6 +35,32 @@ discovery_files = [
 ]
 
 # ---------------------------------------------------------------------------
+# Per-game RAM layout — see runner/game_layout.h. Source: s2.constants.asm
+# resolved through s2.lst.
+#
+# Important per-game divergences vs Sonic 1:
+#   - vbla_stack is $FFFE00, NOT $FFD000.  Sonic 2's Object_RAM_End is at
+#     $FFD000, so the previous hardcode placed the VBlank-handler stack
+#     immediately past Sonic's dynamic object table — and the 256-byte
+#     save window at $FFCF00..$FFCFFE landed *inside* Dynamic_Object_RAM.
+#     Every VBla was clobbering 2 dynamic-object slots and restoring them
+#     ~immediately, but any VInt push >256 bytes silently corrupted other
+#     objects. Move the stack to the initial-SSP scratch region instead.
+#   - player_object is $FFB000 (Object_RAM start), not $FFD000.
+#   - plc_pending is 0 (call_periodic is NULL on Sonic 2; gate isn't read).
+# ---------------------------------------------------------------------------
+[ram_layout]
+game_mode      = 0xFFF600   # Game_Mode
+vint_runcount  = 0xFFFE0C   # Vint_runcount (longword, +1 per VBla)
+vint_routine   = 0xFFF62A   # Vint_routine (byte, dispatch index)
+plc_pending    = 0x000000   # no periodic hook wired
+initial_ssp    = 0xFFFE00   # SSP from reset vector $0
+vbla_stack     = 0xFFFE00   # safe scratch top — NOT $FFD000 (object table)
+intr_stack     = 0xFFFE00
+player_object  = 0xFFB000   # MainCharacter (Reserved_Object_RAM start)
+level_modes    = [0x08, 0x0C]   # GM_Demo, GM_Level (high bit may set on transition)
+
+# ---------------------------------------------------------------------------
 # Interrupt vectors (from 68K vector table)
 [functions]
 extra = [
@@ -42,3 +68,20 @@ extra = [
     0x000408,   # VBlank (IRQ level 6) — vector $000078
     0x000F54,   # HBlank (IRQ level 4) — vector $000070
 ]
+
+# ---------------------------------------------------------------------------
+# Known-dynamic dispatch sites — intentionally absent from any
+# [[jump_table]] directive because the dispatcher computes its target
+# at runtime from RAM contents. The recompiler's static walker logs
+# these in sonic2.unresolved_jumptables.log; they are NOT bugs.
+#
+#   $001568   NemDec_TableSelect: `jmp (a3)` where a3 holds a function
+#             pointer chosen during Nemesis decompression based on
+#             compressed-stream state. Targets (NemPCD_WriteRowToVDP,
+#             NemPCD_WriteRowToVDP_XOR, NemPCD_WriteRowToRAM,
+#             NemPCD_WriteRowToRAM_XOR) are labeled in s2.lst and
+#             therefore present in sonic2.disasm_labels.toml's
+#             [functions].extra, so call_by_address resolves correctly
+#             at runtime. This site fires every frame during title-
+#             screen art decompression; an empty dispatch_misses.log
+#             after a multi-second run confirms coverage.

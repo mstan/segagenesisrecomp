@@ -9,8 +9,8 @@
 #   [game]
 #   discovery_files = ["sonic1.disasm_jumptables.toml"]
 
-# Tables found: 201 pcrel16, 3 abs, 14 bra-trampoline
-# Unique targets: 1037
+# Tables found: 201 pcrel16, 3 abs, 4 bra-trampoline
+# Unique targets: 1010
 
 [[jump_table]]
 start  = 0x000B6E
@@ -1236,21 +1236,29 @@ end    = 0x01B508
 stride = 4
 format = "abs"   # 6 entries, first=SS_AniRingSparks
 
-# ---- bra-trampoline tables (entries enumerated as functions) ----
-# bra-trampoline 0x000396 0x0003B6 stride=4 fmt=bra_w (8 entries, first=GM_Sega)
-# bra-trampoline 0x0017B2 0x0017C4 stride=2 fmt=bra_s (9 entries, first=Eni_Loop)
-# bra-trampoline 0x009278 0x009280 stride=4 fmt=bra_w (2 entries, first=Anml_Type1)
-# bra-trampoline 0x009C6E 0x009C76 stride=4 fmt=bra_w (2 entries, first=DisplaySprite)
-# bra-trampoline 0x009DFE 0x009E06 stride=4 fmt=bra_w (2 entries, first=DisplaySprite)
-# bra-trampoline 0x00B3CA 0x00B3D2 stride=4 fmt=bra_w (2 entries, first=DisplaySprite)
-# bra-trampoline 0x00F056 0x00F05E stride=4 fmt=bra_w (2 entries, first=Geyser_ChkDel)
-# bra-trampoline 0x00F1B0 0x00F1B8 stride=4 fmt=bra_w (2 entries, first=DisplaySprite)
-# bra-trampoline 0x00F77A 0x00F782 stride=4 fmt=bra_w (2 entries, first=DisplaySprite)
-# bra-trampoline 0x013FA8 0x013FAC stride=2 fmt=bra_s (2 entries, first=.nochange)
-# bra-trampoline 0x01A25C 0x01A264 stride=4 fmt=bra_w (2 entries, first=BossFinal_Delete)
-# bra-trampoline 0x01B140 0x01B148 stride=4 fmt=bra_w (2 entries, first=React_ChkHurt)
-# bra-trampoline 0x071F98 0x071FAC stride=4 fmt=bra_w (5 entries, first=FadeOutMusic)
-# bra-trampoline 0x072A64 0x072ACC stride=4 fmt=bra_w (26 entries, first=cfPanningAMSFMS)
+[[jump_table]]
+start  = 0x000396
+end    = 0x0003B6
+stride = 4
+format = "bra_w"   # 8 entries, first=GM_Sega
+
+[[jump_table]]
+start  = 0x0017B4
+end    = 0x0017C4
+stride = 2
+format = "bra_s"   # 8 entries, first=EniDec_00
+
+[[jump_table]]
+start  = 0x071F98
+end    = 0x071FAC
+stride = 4
+format = "bra_w"   # 5 entries, first=FadeOutMusic
+
+[[jump_table]]
+start  = 0x072A64
+end    = 0x072ACC
+stride = 4
+format = "bra_w"   # 26 entries, first=cfPanningAMSFMS
 
 [functions]
 extra = [
@@ -1289,14 +1297,12 @@ extra = [
     0x000F9A,   # VBlank_PaletteFade
     0x000FA6,   # VBlank_Continue
     0x001126,   # HBlank
-    0x00173E,   # Eni_Loop
     0x001768,   # EniDec_00
     0x001772,   # EniDec_01
     0x00177A,   # EniDec_100
     0x001786,   # EniDec_101
     0x001794,   # EniDec_110
     0x0017A2,   # EniDec_111
-    0x0017B2,   # Eni_Loop
     0x0017B4,   # EniDec_00
     0x0017B6,   # EniDec_00
     0x0017B8,   # EniDec_01
@@ -1494,11 +1500,8 @@ extra = [
     0x00912A,   # Anml_ChkFloor
     0x009184,   # Anml_Type0
     0x0091C0,   # Anml_Type1
-    0x009224,   # loc_9224
     0x009240,   # Anml_FromPrison
     0x009260,   # Anml_End_0A
-    0x009278,   # Anml_Type1
-    0x00927C,   # loc_9224
     0x009280,   # Anml_End_0C
     0x0092BA,   # Anml_End_0D
     0x0092D6,   # Anml_End_14
@@ -1529,14 +1532,12 @@ extra = [
     0x009C16,   # Ring_Animate
     0x009C3E,   # Ring_Collect
     0x009C64,   # Ring_Sparkle
-    0x009C6E,   # DisplaySprite
     0x009C72,   # Ring_Delete
     0x009CB6,   # RingLoss
     0x009CCE,   # RLoss_Count
     0x009D8E,   # RLoss_Bounce
     0x009DE0,   # RLoss_Collect
     0x009DF4,   # RLoss_Sparkle
-    0x009DFE,   # DisplaySprite
     0x009E02,   # RLoss_Delete
     0x009E06,   # GiantRing
     0x009E1C,   # GRing_Main
@@ -1591,8 +1592,6 @@ extra = [
     0x00B238,   # GFire_Spread
     0x00B2B2,   # GFire_Move
     0x00B39E,   # GlassBlock
-    0x00B3CA,   # DisplaySprite
-    0x00B3CE,   # DeleteObject
     0x00B3E8,   # Glass_Main
     0x00B48C,   # Glass_Block012
     0x00B4A4,   # Glass_Reflect012
@@ -1670,8 +1669,6 @@ extra = [
     0x00D15E,   # Smash_Solid
     0x00D1D6,   # Smash_FragMove
     0x00D5B2,   # NullObject
-    0x00D604,   # DisplaySprite
-    0x00D640,   # DeleteObject
     0x00D8EC,   # OPL_Main
     0x00D980,   # OPL_Next
     0x00DABE,   # Springs
@@ -1748,18 +1745,15 @@ extra = [
     0x00EE70,   # LavaGeyser
     0x00EE8E,   # Geyser_Main
     0x00EF7A,   # Geyser_Action
-    0x00EF98,   # Geyser_ChkDel
     0x00EFBC,   # Geyser_Type00
     0x00EFDC,   # Geyser_Type01
     0x00EFFC,   # Geyser_Middle
-    0x00F056,   # Geyser_ChkDel
     0x00F05A,   # Geyser_Delete
     0x00F05E,   # LavaWall
     0x00F076,   # LWall_Main
     0x00F0D6,   # LWall_Action
     0x00F112,   # LWall_Solid
     0x00F198,   # LWall_Move
-    0x00F1B0,   # DisplaySprite
     0x00F1B4,   # LWall_Delete
     0x00F1B8,   # LavaTag
     0x00F1CE,   # LTag_Main
@@ -1770,7 +1764,6 @@ extra = [
     0x00F6E8,   # .move
     0x00F70C,   # .findfloor
     0x00F770,   # Moto_Animate
-    0x00F77A,   # DisplaySprite
     0x00F77E,   # Moto_Delete
     0x00F806,   # Obj4F
     0x00F808,   # .smoke3
@@ -1943,10 +1936,6 @@ extra = [
     0x013D92,   # Drown_Delete
     0x013D98,   # Drown_AirLeft
     0x013E9C,   # Drown_Countdown
-    0x013FA8,   # .nochange
-    0x013FAA,   # .makenum
-    0x013FAC,   # .nochange
-    0x013FBC,   # .makenum
     0x014158,   # ShieldItem
     0x01416C,   # Shi_Main
     0x0141A4,   # Shi_Shield
@@ -2143,7 +2132,6 @@ extra = [
     0x019C62,   # FFloor_AllGone
     0x019C72,   # FFloor_Block
     0x019C80,   # FFloor_Frag
-    0x019D52,   # BossFinal_Delete
     0x019D58,   # BossFinal
     0x019DCE,   # BossFinal_Main
     0x019E6C,   # BossFinal_Eggman
@@ -2153,11 +2141,8 @@ extra = [
     0x01A02A,   # BossFinal_Eggman_Fall
     0x01A074,   # BossFinal_Eggman_Run
     0x01A112,   # BossFinal_Eggman_Jump
-    0x01A15C,   # loc_1A15C
     0x01A192,   # BossFinal_Eggman_Ship
     0x01A1D4,   # BossFinal_Eggman_Escape
-    0x01A25C,   # BossFinal_Delete
-    0x01A260,   # loc_1A15C
     0x01A264,   # BossFinal_Flame
     0x01A2C6,   # BossFinal_Cockpit
     0x01A346,   # BossFinal_Legs
@@ -2185,10 +2170,6 @@ extra = [
     0x01AC62,   # Pri_Explosion
     0x01ACFA,   # Pri_Animals
     0x01AD4A,   # Pri_EndAct
-    0x01AF30,   # React_Enemy
-    0x01AFE0,   # React_ChkHurt
-    0x01B140,   # React_ChkHurt
-    0x01B144,   # React_Enemy
     0x01B508,   # SS_AniRingSparks
     0x01B538,   # SS_AniBumper
     0x01B56E,   # SS_Ani1Up

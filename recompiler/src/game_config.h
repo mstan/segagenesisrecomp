@@ -16,10 +16,17 @@
  *                  this is the common Sega pattern emitted by
  *                  `JMP <table>(PC,Dn.W)` where the assembler assembles
  *                  `dc.w  (target - <table>)` rows.
+ * JT_FMT_BRA_W   : 4-byte bra.w trampolines per entry (stride 4). The
+ *                  JMP lands ON the trampoline body itself; each entry
+ *                  IS a function entry at base + i*stride.
+ * JT_FMT_BRA_S   : 2-byte bra.s trampolines per entry (stride 2). Same
+ *                  semantics as BRA_W, narrower instruction.
  */
 typedef enum {
     JT_FMT_ABS_L  = 0,
     JT_FMT_PCREL_W = 1,
+    JT_FMT_BRA_W  = 2,
+    JT_FMT_BRA_S  = 3,
 } JumpTableFormat;
 
 typedef struct {
@@ -30,6 +37,33 @@ typedef struct {
 } JumpTableEntry;
 
 typedef struct { uint32_t lo; uint32_t hi; } ProtectedRange;
+
+/*
+ * Per-game RAM layout, parsed from the [ram_layout] table of game.toml.
+ * The recompiler reads these here, then emits <prefix>_layout.c that
+ * declares the runtime struct (GameRamLayout in runner/game_layout.h)
+ * and instantiates `g_game_layout` with the same values.
+ *
+ * `present` is true when [ram_layout] was found in the source TOML.
+ * The recompiler refuses to emit a layout TU for a config without it
+ * — partial migration is not allowed; once shared runner code reads
+ * g_game_layout, every game must populate the table.
+ */
+#define GAMECFG_LEVEL_MODES_MAX 16
+
+typedef struct {
+    bool     present;
+    uint32_t game_mode_addr;
+    uint32_t vint_runcount_addr;
+    uint32_t vint_routine_addr;
+    uint32_t plc_pending_addr;     /* 0 = no PLC system */
+    uint32_t initial_ssp;
+    uint32_t vbla_stack;
+    uint32_t intr_stack;
+    uint32_t player_object_addr;
+    uint8_t  level_modes[GAMECFG_LEVEL_MODES_MAX];
+    int      level_mode_count;
+} GameRamLayoutCfg;
 
 /*
  * GameConfig — every list grows on demand. After game_config_load,
@@ -68,6 +102,7 @@ typedef struct {
      * Manual jump_table directives are always honored regardless of
      * this flag. Default: false. */
     bool           jump_table_autodiscovery;
+    GameRamLayoutCfg ram_layout;
 } GameConfig;
 
 /* Returns true if addr falls in a protected range (no boundary splitting) */
@@ -79,3 +114,10 @@ bool game_config_is_blacklisted(const GameConfig *cfg, uint32_t addr);
 void game_config_init_empty(GameConfig *cfg);
 void game_config_free(GameConfig *cfg);
 bool game_config_load(GameConfig *cfg, const char *path);
+
+/* Emit <prefix>_layout.c — defines `const GameRamLayout g_game_layout`
+ * populated from cfg->ram_layout. Returns false if [ram_layout] was
+ * absent in the source TOML; the caller decides whether to treat that
+ * as a build failure. The output_path argument is the full file path
+ * (typically generated/<prefix>_layout.c). */
+bool game_config_emit_layout(const GameConfig *cfg, const char *output_path);

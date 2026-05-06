@@ -42,6 +42,22 @@ output_prefix = "sonic3k"
 # ]
 
 # ---------------------------------------------------------------------------
+# Per-game RAM layout — placeholder values copied from Sonic 2's layout
+# so the build proceeds. Verify against skdisasm before trusting any of
+# these on a real S3K run.
+# ---------------------------------------------------------------------------
+[ram_layout]
+game_mode      = 0xFFF600   # TODO: verify against skdisasm
+vint_runcount  = 0xFFFE0C   # TODO
+vint_routine   = 0xFFF62A   # TODO
+plc_pending    = 0x000000
+initial_ssp    = 0xFFFE00
+vbla_stack     = 0xFFFE00
+intr_stack     = 0xFFFE00
+player_object  = 0xFFB000
+level_modes    = [0x08, 0x0C]
+
+# ---------------------------------------------------------------------------
 # Interrupt vectors (from 68K vector table)
 [functions]
 extra = [

@@ -20,6 +20,23 @@ discovery_files = [
 ]
 
 # ---------------------------------------------------------------------------
+# Per-game RAM layout — addresses + state-shape constants the shared
+# runner code reads via g_game_layout (see runner/game_layout.h).
+# Replaces the old Sonic-1-shaped hardcodes in glue.c / main.c /
+# cmd_server.c. Source: s1.sonic.asm (s1disasm REV00).
+# ---------------------------------------------------------------------------
+[ram_layout]
+game_mode      = 0xFFF600   # v_gamemode
+vint_runcount  = 0xFFFE0C   # v_vblank_count (longword, +1 per VBla)
+vint_routine   = 0xFFF62A   # v_vbla_routine (byte, dispatch index)
+plc_pending    = 0xFFF6F8   # v_plc_buffer_count (16-bit; gates RunPLC periodic)
+initial_ssp    = 0xFFFE00   # SSP from reset vector $0
+vbla_stack     = 0xFFD000   # VBlank-handler stack base (Sonic 1 historical)
+intr_stack     = 0xFFD000   # IRQ-handler stack base
+player_object  = 0xFFD000   # Sonic's object slot ($D000 in S1)
+level_modes    = [0x08, 0x0C]   # GM_Demo, GM_Level — gameplay states
+
+# ---------------------------------------------------------------------------
 # Residual extras — dispatch targets the auto-extractors don't yet identify.
 # Each is a coverage gap; ideally this list shrinks to zero as extractors
 # improve. Names are from s1disasm where known.

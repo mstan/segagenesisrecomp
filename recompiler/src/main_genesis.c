@@ -120,9 +120,10 @@ int main(int argc, char *argv[]) {
     printf("[GenesisRecomp] Found %d functions\n", funcs.count);
 
     /* Emit C */
-    char out_full[256], out_dispatch[256];
+    char out_full[256], out_dispatch[256], out_layout[256];
     snprintf(out_full,     sizeof(out_full),     "generated/%s_full.c",     output_prefix);
     snprintf(out_dispatch, sizeof(out_dispatch), "generated/%s_dispatch.c", output_prefix);
+    snprintf(out_layout,   sizeof(out_layout),   "generated/%s_layout.c",   output_prefix);
 
     if (!codegen_emit(&rom, &funcs, out_full, out_dispatch, &at, &cfg, reverse_debug)) {
         fprintf(stderr, "[GenesisRecomp] Code generation failed\n");
@@ -131,7 +132,17 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("[GenesisRecomp] Done. Output:\n  %s\n  %s\n", out_full, out_dispatch);
+    /* Emit per-game RAM layout TU. Hard build failure if the game.toml
+     * has no [ram_layout] — shared runner code now reads g_game_layout
+     * unconditionally and would crash without it. */
+    if (!game_config_emit_layout(&cfg, out_layout)) {
+        rom_free(&rom);
+        function_list_free(&funcs);
+        return 1;
+    }
+
+    printf("[GenesisRecomp] Done. Output:\n  %s\n  %s\n  %s\n",
+           out_full, out_dispatch, out_layout);
 
     /* Always print the unsupported summary so coverage misses are visible
      * without grepping the generated C. --fail-on-unsupported turns any

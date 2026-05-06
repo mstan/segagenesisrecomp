@@ -103,6 +103,14 @@ jt_entry_target(const GenesisRom *rom, uint32_t base,
         /* 16-bit signed offset relative to the table base. */
         int16_t off = (int16_t)rom_read16(rom, entry_addr);
         target = base + (int32_t)off;
+    } else if (fmt == JT_FMT_BRA_W || fmt == JT_FMT_BRA_S) {
+        /* bra-trampoline tables: the JMP at the dispatch site lands on
+         * the trampoline body itself, so the function entry IS the
+         * entry's address. (The bra.w / bra.s instruction inside that
+         * trampoline branches on to the real handler — that target
+         * comes in via the python tool's [functions].extra emission,
+         * not via this enumerate step.) */
+        target = entry_addr;
     } else {
         target = rom_read32(rom, entry_addr) & 0xFFFFFFu;
     }

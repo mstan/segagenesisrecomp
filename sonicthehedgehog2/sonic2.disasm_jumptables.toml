@@ -9,8 +9,8 @@
 #   [game]
 #   discovery_files = ["sonic2.disasm_jumptables.toml"]
 
-# Tables found: 382 pcrel16, 2 abs, 15 bra-trampoline
-# Unique targets: 1844
+# Tables found: 383 pcrel16, 2 abs, 5 bra-trampoline
+# Unique targets: 1823
 
 [[jump_table]]
 start  = 0x000468
@@ -85,10 +85,16 @@ stride = 2
 format = "pcrel16"   # current_offset_table (8 entries)
 
 [[jump_table]]
-start  = 0x006EFE
-end    = 0x006F02
+start  = 0x006E54
+end    = 0x006E5E
 stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
+format = "pcrel16"   # current_offset_table (5 entries)
+
+[[jump_table]]
+start  = 0x006EFE
+end    = 0x006F08
+stride = 2
+format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
 start  = 0x0070FE
@@ -2316,22 +2322,35 @@ end    = 0x01637C
 stride = 4
 format = "abs"   # 220 entries, first=Obj01
 
-# ---- bra-trampoline tables (entries enumerated as functions) ----
-# bra-trampoline 0x0003A2 0x0003CE stride=4 fmt=bra_w (11 entries, first=SegaScreen)
-# bra-trampoline 0x001850 0x001862 stride=2 fmt=bra_s (9 entries, first=EniDec_Loop)
-# bra-trampoline 0x00F808 0x00F810 stride=4 fmt=bra_w (2 entries, first=DeleteObject)
-# bra-trampoline 0x010036 0x01003E stride=4 fmt=bra_w (2 entries, first=DeleteObject)
-# bra-trampoline 0x0105CC 0x0105D4 stride=4 fmt=bra_w (2 entries, first=DisplaySprite)
-# bra-trampoline 0x011C2C 0x011C34 stride=4 fmt=bra_w (2 entries, first=Obj28_Fly)
-# bra-trampoline 0x011FBA 0x011FC2 stride=4 fmt=bra_w (2 entries, first=DisplaySprite)
-# bra-trampoline 0x0121F8 0x012200 stride=4 fmt=bra_w (2 entries, first=DisplaySprite)
-# bra-trampoline 0x012656 0x01265E stride=4 fmt=bra_w (2 entries, first=DisplaySprite)
-# bra-trampoline 0x01D728 0x01D72C stride=2 fmt=bra_s (2 entries, first=Obj0A_MakeBubbleMaybe)
-# bra-trampoline 0x02BF32 0x02BF4A stride=4 fmt=bra_w (6 entries, first=SlotMachine_Routine1)
-# bra-trampoline 0x02C0E6 0x02C0F6 stride=4 fmt=bra_w (4 entries, first=SlotMachine_Routine5_1)
-# bra-trampoline 0x02C224 0x02C22C stride=4 fmt=bra_w (2 entries, first=SlotMachine_Subroutine1)
-# bra-trampoline 0x02C304 0x02C310 stride=4 fmt=bra_w (3 entries, first=SlotMachine_Unmatched1)
-# bra-trampoline 0x03F9F8 0x03FA00 stride=4 fmt=bra_w (2 entries, first=Touch_ChkHurt)
+[[jump_table]]
+start  = 0x0003A2
+end    = 0x0003CE
+stride = 4
+format = "bra_w"   # 11 entries, first=SegaScreen
+
+[[jump_table]]
+start  = 0x001852
+end    = 0x001862
+stride = 2
+format = "bra_s"   # 8 entries, first=EniDec_Sub0
+
+[[jump_table]]
+start  = 0x02BF32
+end    = 0x02BF4A
+stride = 4
+format = "bra_w"   # 6 entries, first=SlotMachine_Routine1
+
+[[jump_table]]
+start  = 0x02C0E6
+end    = 0x02C0F6
+stride = 4
+format = "bra_w"   # 4 entries, first=SlotMachine_Routine5_1
+
+[[jump_table]]
+start  = 0x02C304
+end    = 0x02C310
+stride = 4
+format = "bra_w"   # 3 entries, first=SlotMachine_Unmatched1
 
 [functions]
 extra = [
@@ -2376,14 +2395,12 @@ extra = [
     0x000C7A,   # Vint_Ending
     0x000DF4,   # Vint_Menu
     0x000F54,   # H_Int
-    0x0017DC,   # EniDec_Loop
     0x001806,   # EniDec_Sub0
     0x001810,   # EniDec_Sub4
     0x001818,   # EniDec_Sub8
     0x001824,   # EniDec_SubA
     0x001832,   # EniDec_SubC
     0x001840,   # EniDec_SubE
-    0x001850,   # EniDec_Loop
     0x001852,   # EniDec_Sub0
     0x001854,   # EniDec_Sub0
     0x001856,   # EniDec_Sub4
@@ -2474,8 +2491,12 @@ extra = [
     0x006366,   # SSTrackDrawFlipRLE_Read6_Got5
     0x006396,   # SSTrackDrawFlipRLE_Read6_Got6
     0x0063B8,   # SSTrackDrawFlipRLE_Read6_Got7
+    0x006E5E,   # +
+    0x006E86,   # ++
+    0x006F08,   # +
     0x006F0A,   # loc_6F0A
     0x006F2A,   # loc_6F2A
+    0x006F4C,   # loc_6F4C
     0x006FC0,   # Obj5E
     0x0070F0,   # Obj5F
     0x00710A,   # loc_710A
@@ -2657,13 +2678,11 @@ extra = [
     0x00F66C,   # Obj11
     0x00F694,   # Obj11_Init
     0x00F77A,   # Obj11_EHZ
-    0x00F808,   # DeleteObject
     0x00F80C,   # Obj11_Display
     0x00F810,   # Obj11_HPZ
     0x00FC9C,   # Obj15
     0x00FCCA,   # Obj15_Init
     0x00FE50,   # Obj15_State2
-    0x010036,   # DeleteObject
     0x01003A,   # Obj15_Display
     0x01003E,   # Obj15_State4
     0x0100F8,   # Obj15_State5
@@ -2677,7 +2696,6 @@ extra = [
     0x0104CE,   # Obj18_Init
     0x01056A,   # loc_1056A
     0x0105A8,   # loc_105A8
-    0x0105CC,   # DisplaySprite
     0x0105D0,   # BranchTo3_DeleteObject
     0x0105D4,   # loc_105D4
     0x010668,   # return_10668
@@ -2718,11 +2736,8 @@ extra = [
     0x011ADE,   # Obj28_Main
     0x011B38,   # Obj28_Walk
     0x011B74,   # Obj28_Fly
-    0x011BD8,   # Obj28_ChkDel
     0x011BF4,   # Obj28_Prison
     0x011C14,   # Obj28_FlickyWait
-    0x011C2C,   # Obj28_Fly
-    0x011C30,   # Obj28_ChkDel
     0x011C34,   # Obj28_FlickyJump
     0x011C6E,   # Obj28_RabbitWait
     0x011C8A,   # Obj28_DoubleBounce
@@ -2737,14 +2752,12 @@ extra = [
     0x011F90,   # Obj25_Animate
     0x011F9E,   # Obj25_Collect
     0x011FB0,   # Obj25_Sparkle
-    0x011FBA,   # DisplaySprite
     0x011FBE,   # Obj25_Delete
     0x012078,   # Obj37
     0x012090,   # Obj37_Init
     0x012178,   # Obj37_Main
     0x0121DA,   # Obj37_Collect
     0x0121EE,   # Obj37_Sparkle
-    0x0121F8,   # DisplaySprite
     0x0121FC,   # Obj37_Delete
     0x012216,   # BigRing_Init
     0x012264,   # BigRing_Main
@@ -2756,7 +2769,6 @@ extra = [
     0x0125E6,   # ObjDC
     0x0125FA,   # ObjDC_Main
     0x01264E,   # ObjDC_Animate
-    0x012656,   # DisplaySprite
     0x01265A,   # ObjDC_Delete
     0x012670,   # Obj26
     0x012688,   # Obj26_Init
@@ -2890,8 +2902,6 @@ extra = [
     0x015D8A,   # Obj3C_Main
     0x015E02,   # Obj3C_Fragment
     0x01637C,   # ObjNull
-    0x0164E6,   # DeleteObject
-    0x0164F4,   # DisplaySprite
     0x016F9A,   # RingsManager_Init
     0x016FDE,   # RingsManager_Main
     0x0173CE,   # SpecialCNZBumpers_Init
@@ -2967,10 +2977,6 @@ extra = [
     0x01D42E,   # JmpTo5_DeleteObject
     0x01D434,   # Obj0A_AirLeft
     0x01D606,   # Obj0A_Countdown
-    0x01D728,   # Obj0A_MakeBubbleMaybe
-    0x01D72A,   # Obj0A_MakeBubbleNow
-    0x01D72C,   # Obj0A_MakeBubbleMaybe
-    0x01D73C,   # Obj0A_MakeBubbleNow
     0x01D8F2,   # Obj38
     0x01D904,   # Obj38_Main
     0x01D92C,   # Obj38_Shield
@@ -3386,10 +3392,6 @@ extra = [
     0x02C1DA,   # SlotMachine_Routine5_3
     0x02C1EC,   # SlotMachine_Routine5_4
     0x02C1EE,   # SlotMachine_Routine6
-    0x02C224,   # SlotMachine_Subroutine1
-    0x02C228,   # SlotMachine_Subroutine2
-    0x02C23A,   # SlotMachine_Subroutine1
-    0x02C246,   # SlotMachine_Subroutine2
     0x02C304,   # SlotMachine_Unmatched1
     0x02C308,   # SlotMachine_Match12
     0x02C30C,   # SlotMachine_Match13
@@ -4154,10 +4156,6 @@ extra = [
     0x03F38E,   # loc_3F38E
     0x03F3A8,   # loc_3F3A8
     0x03F406,   # loc_3F406
-    0x03F78C,   # Touch_Enemy
-    0x03F862,   # Touch_ChkHurt
-    0x03F9F8,   # Touch_ChkHurt
-    0x03F9FC,   # Touch_Enemy
     0x03FA5A,   # BossCollision_EHZ_CPZ
     0x03FA5E,   # return_3FA5E
     0x03FA60,   # BossCollision_HTZ
