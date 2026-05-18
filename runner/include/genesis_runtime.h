@@ -73,6 +73,7 @@ void hybrid_call_interpret(uint32_t target_pc);
 
 /* ---- Fiber yield (Step 2) ---- */
 void glue_yield_for_vblank(void);
+void glue_yield_for_interrupt_poll(void);
 
 /* ---- Vectored exceptions (Phase 7A) ----
  * Real semantics for TRAP #N / TRAPV / RTR / RESET / ILLEGAL / A-line /

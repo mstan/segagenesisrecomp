@@ -181,12 +181,12 @@ static bool s_reverse_debug = false;
 
 /*
  * Set by the per-instruction emit loop just before processing a Bcc
- * that's part of the IRQ-flag-spin idiom (tst.X mem; bne self). The
- * Bcc handler then emits glue_yield_for_vblank() inside the goto
+ * that's part of a hardware-flag spin idiom (tst.X mem; bcc self). The
+ * Bcc handler then emits glue_yield_for_interrupt_poll() inside the goto
  * branch so the spin yields once per actual loop iteration without
- * paying yield cost on the fall-through path. Reset by the Bcc
- * handler after consuming. Module-global rather than parameter so
- * the existing emit_instr signature stays unchanged.
+ * paying yield cost on the fall-through path. Reset by the Bcc handler
+ * after consuming. Module-global rather than parameter so the existing
+ * emit_instr signature stays unchanged.
  */
 static bool g_yield_in_next_bne = false;
 
@@ -796,8 +796,9 @@ static void emit_bitop_modify(FILE *f, const M68KInstr *instr, M68KSize sz,
     int ea      = instr->src_ea;
     int ea_mode = (ea >> 3) & 7;
     int bit_mask = (ea_mode == 0) ? 31 : 7;
-    /* 68K: bit ops on memory are always byte-sized */
-    M68KSize bsz = (ea_mode == 0) ? sz : M68K_SIZE_B;
+    /* 68K: bit ops on data registers operate on all 32 bits; memory
+     * destinations are always byte-sized. */
+    M68KSize bsz = (ea_mode == 0) ? M68K_SIZE_L : M68K_SIZE_B;
     const char *ct = size_ctype(bsz);
 
     char bit_expr[64];
@@ -1514,13 +1515,13 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                 if (addrset_contains(instrs, instr->target_addr)) {
                     fprintf(f, "  if (%s) {\n", ce);
                     emit_cycle_accounting(f, "    ", estimate_cycles(instr));
-                    fprintf(f, "    glue_yield_for_vblank(); goto label_%06X;\n",
+                    fprintf(f, "    glue_yield_for_interrupt_poll(); goto label_%06X;\n",
                             instr->target_addr);
                     fprintf(f, "  }\n");
                 } else {
                     fprintf(f, "  if (%s) {\n", ce);
                     emit_cycle_accounting(f, "    ", estimate_cycles(instr));
-                    fprintf(f, "    glue_yield_for_vblank();\n");
+                    fprintf(f, "    glue_yield_for_interrupt_poll();\n");
                     emit_split_tail_call(f, "    ", instr->target_addr, *has_sp_adjust != 0,
                                          -1);
                     fprintf(f, "  }\n");
@@ -3307,9 +3308,10 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
              * H/V-Int handler that clears the flag).
              *
              * Mark the next bne so its emitter inserts
-             * glue_yield_for_vblank() inside the loop-back branch
+             * glue_yield_for_interrupt_poll() inside the loop-back branch
              * (NOT before the tst — yielding on the fall-through path
-             * is unnecessary and was draining audio cycle accounting).
+             * is unnecessary and would mark non-VBlank waits as frame
+             * boundaries).
              *
              * Examples:
              *   Sonic 2 BuildSprites_P2 ($016A7A):
