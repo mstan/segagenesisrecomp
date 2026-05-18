@@ -849,6 +849,45 @@ static const char *bcc_cond_expr(int cond) {
     }
 }
 
+static void emit_cycle_accounting(FILE *f, const char *indent, int cycles)
+{
+    if (cycles < 0)
+        return;
+    fprintf(f, "%sg_native_insn_count++; g_cycle_accumulator += %d;"
+               " g_audio_cycle_counter += %d;"
+               " if (g_cycle_accumulator >= g_vblank_threshold)"
+               " glue_check_vblank();\n", indent, cycles, cycles);
+}
+
+static void emit_split_tail_call(FILE *f, const char *indent,
+                                 uint32_t target_addr, bool carry_sp_adjust,
+                                 int cycles_before) {
+    emit_cycle_accounting(f, indent, cycles_before);
+    if (carry_sp_adjust) {
+        fprintf(f, "%s{ g_split_sp_popped += _sp_popped; _sp_popped = 0;\n", indent);
+        fprintf(f, "%s  recomp_tail_call(0x%06Xu);\n", indent, target_addr);
+        fprintf(f, "%s  return;\n", indent);
+        fprintf(f, "%s}\n", indent);
+    } else {
+        fprintf(f, "%srecomp_tail_call(0x%06Xu); return;\n", indent, target_addr);
+    }
+}
+
+static void emit_split_tail_call_expr(FILE *f, const char *indent,
+                                      const char *addr_expr,
+                                      bool carry_sp_adjust,
+                                      int cycles_before) {
+    emit_cycle_accounting(f, indent, cycles_before);
+    if (carry_sp_adjust) {
+        fprintf(f, "%s{ g_split_sp_popped += _sp_popped; _sp_popped = 0;\n", indent);
+        fprintf(f, "%s  recomp_tail_call(%s);\n", indent, addr_expr);
+        fprintf(f, "%s  return;\n", indent);
+        fprintf(f, "%s}\n", indent);
+    } else {
+        fprintf(f, "%srecomp_tail_call(%s); return;\n", indent, addr_expr);
+    }
+}
+
 /* =========================================================================
  * scan_function — discover all instruction addresses and branch-target labels
  * ========================================================================= */
@@ -1239,12 +1278,16 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     /* ------------------------------------------------------------------ */
     case MN_RTS:
-        /* If this function has any addq.l #N,sp (stack adjustment to skip
-         * return levels), check the local _sp_popped counter.  If > 0,
+        /* If this function or a split tail-call predecessor has any
+         * addq.l #N,sp stack skip levels, consume one at the RTS and
          * propagate the return via g_rte_pending. */
         if (*has_sp_adjust) {
             fprintf(f, "  if (_sp_popped > 0) { _sp_popped--; g_rte_pending = 1; }\n");
+            fprintf(f, "  else if (g_split_sp_popped > 0) { g_split_sp_popped--; g_rte_pending = 1; }\n");
+        } else {
+            fprintf(f, "  if (g_split_sp_popped > 0) { g_split_sp_popped--; g_rte_pending = 1; }\n");
         }
+        emit_cycle_accounting(f, "  ", estimate_cycles(instr));
         fprintf(f, "  return;\n");
         *skip_until_label = true;
         break;
@@ -1266,6 +1309,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
          * need to be reinstated as the sole SR restore mechanism. */
         fprintf(f, "  g_cpu.SR = (uint16_t)m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2; /* RTE: pop SR */\n");
         fprintf(f, "  g_cpu.PC = m68k_read32(g_cpu.A[7]);            g_cpu.A[7] += 4; /* RTE: pop PC */\n");
+        emit_cycle_accounting(f, "  ", estimate_cycles(instr));
         fprintf(f, "  g_rte_pending = 1; return; /* RTE */\n");
         *skip_until_label = true;
         break;
@@ -1286,6 +1330,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
          * real SR + yield semantics. */
         fprintf(f, "  g_cpu.SR = (uint16_t)0x%04Xu;\n",
                 (unsigned)(instr->imm32 & 0xFFFFu));
+        emit_cycle_accounting(f, "  ", estimate_cycles(instr));
         fprintf(f, "  genesis_stop_until_interrupt((uint16_t)0x%04Xu);\n",
                 (unsigned)(instr->imm32 & 0xFFFFu));
         fprintf(f, "  return; /* STOP — yield+return, see comment above */\n");
@@ -1296,6 +1341,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     case MN_TRAP:
         /* TRAP #N: vectors 0x20..0x2F. Hand off to the runtime; on Sonic
          * this aborts loud since no trap is expected in steady state. */
+        emit_cycle_accounting(f, "  ", estimate_cycles(instr));
         fprintf(f, "  m68k_trap_vector(0x%02Xu); return;\n",
                 0x20u + (unsigned)(instr->imm32 & 0xF));
         *skip_until_label = true;
@@ -1304,8 +1350,10 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     /* ------------------------------------------------------------------ */
     case MN_TRAPV:
         /* Vector 7 — only fires when V is set. Falls through otherwise. */
-        fprintf(f, "  if (g_cpu.SR & %s) { m68k_trap_vector(7u); return; }\n",
-                SR_V);
+        fprintf(f, "  if (g_cpu.SR & %s) {\n", SR_V);
+        emit_cycle_accounting(f, "    ", estimate_cycles(instr));
+        fprintf(f, "    m68k_trap_vector(7u); return;\n");
+        fprintf(f, "  }\n");
         break;
 
     /* ------------------------------------------------------------------ */
@@ -1316,6 +1364,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         fprintf(f, "  { uint16_t _ccrw = (uint16_t)m68k_read16(g_cpu.A[7]); g_cpu.A[7] += 2;\n");
         fprintf(f, "    g_cpu.SR = (uint16_t)((g_cpu.SR & 0xFF00u) | (_ccrw & 0x00FFu)); }\n");
         fprintf(f, "  g_cpu.PC = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4;\n");
+        emit_cycle_accounting(f, "  ", estimate_cycles(instr));
         fprintf(f, "  g_rte_pending = 1; return; /* RTR */\n");
         *skip_until_label = true;
         break;
@@ -1335,6 +1384,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     /* ------------------------------------------------------------------ */
     case MN_ILLEGAL:
         /* 0x4AFC, A-line, F-line — runtime picks the right vector. */
+        emit_cycle_accounting(f, "  ", estimate_cycles(instr));
         fprintf(f, "  m68k_illegal_trap(0x%06Xu, 0x%04Xu); return;\n",
                 addr, (unsigned)instr->words[0]);
         *skip_until_label = true;
@@ -1348,16 +1398,22 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         int reg  = ea & 7;
         uint32_t ret_addr = instr->addr + instr->byte_length;
 
-        /* Simulate JSR stack: push return address onto 68K stack */
-        fprintf(f, "  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0x%06Xu); /* JSR push */\n", ret_addr);
+        /* Simulate JSR/BSR stack: push return address onto the 68K stack. */
+        fprintf(f, "  recomp_push_return(0x%06Xu); /* JSR push */\n", ret_addr);
 
         if (instr->has_target) {
-            fprintf(f, "  func_%06X();\n", instr->target_addr);
+            fprintf(f, "  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;\n");
+            fprintf(f, "    recomp_call_func(func_%06X);\n", instr->target_addr);
+            fprintf(f, "    g_split_sp_popped = _saved_split_sp_popped;\n");
+            fprintf(f, "  }\n");
         } else if (mode == 2 || mode == 5 || mode == 6 ||
                    (mode == 7 && reg <= 3)) {
             char ae[256];
             emit_ea_addr_ex(f, instr, ea, &er, ae, true);
-            fprintf(f, "  call_by_address(%s);\n", ae);
+            fprintf(f, "  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;\n");
+            fprintf(f, "    recomp_call_addr(%s);\n", ae);
+            fprintf(f, "    g_split_sp_popped = _saved_split_sp_popped;\n");
+            fprintf(f, "  }\n");
         } else {
             codegen_diag_record(CGD_TODO_DYNAMIC_JSR_UNSUPPORTED, addr,
                                 instr->words[0], instr->mnemonic,
@@ -1372,7 +1428,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
          * Doing our pop here would double-adjust A7 by +4. Skipping the
          * pop keeps A7 in sync with hardware. Flag is cleared so the
          * next level up resumes normally. */
-        fprintf(f, "  if (g_rte_pending) { g_rte_pending = 0; return; } /* RTE/skip propagation (pre-pop) */\n");
+        fprintf(f, "  if (g_rte_pending) { g_rte_pending = 0;\n");
+        emit_cycle_accounting(f, "    ", estimate_cycles(instr));
+        fprintf(f, "    return; } /* RTE/skip propagation (pre-pop) */\n");
         fprintf(f, "  g_cpu.A[7] += 4; /* JSR pop */\n");
         break;
     }
@@ -1384,15 +1442,18 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         int reg  = ea & 7;
         if (instr->has_target) {
             if (addrset_contains(instrs, instr->target_addr)) {
+                emit_cycle_accounting(f, "  ", estimate_cycles(instr));
                 fprintf(f, "  goto label_%06X;\n", instr->target_addr);
             } else {
-                fprintf(f, "  func_%06X(); return;\n", instr->target_addr);
+                emit_split_tail_call(f, "  ", instr->target_addr, *has_sp_adjust != 0,
+                                     estimate_cycles(instr));
             }
         } else if (mode == 2 || mode == 5 || mode == 6 ||
                    (mode == 7 && (reg == 0 || reg == 1))) {
             char ae[256];
             emit_ea_addr_ex(f, instr, ea, &er, ae, true);
-            fprintf(f, "  call_by_address(%s); return;\n", ae);
+            emit_split_tail_call_expr(f, "  ", ae, *has_sp_adjust != 0,
+                                      estimate_cycles(instr));
         } else if (mode == 7 && reg == 3) {
             /* JMP (d8,PC,Xn) — indexed jump table.  Compute target at runtime
              * and dispatch via hybrid_jmp_interpret (interpreter fallback). */
@@ -1404,6 +1465,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             const char *xr = xtype ? "g_cpu.A" : "g_cpu.D";
             fprintf(f, "  /* JMP table at $%06X: interpret handler at base $%06X + %s[%d] */\n",
                     instr->addr, pc_addr + d8, xr + 6 /* skip "g_cpu." */, xreg);
+            emit_cycle_accounting(f, "  ", estimate_cycles(instr));
             fprintf(f, "  hybrid_jmp_interpret(0x%08Xu + (uint32_t)(int16_t)%s[%d]);\n",
                     pc_addr + (int32_t)d8, xr, xreg);
             fprintf(f, "  return;\n");
@@ -1411,6 +1473,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             codegen_diag_record(CGD_TODO_DYNAMIC_JMP_UNSUPPORTED, addr,
                                 instr->words[0], MN_JMP,
                                 func_name, func_addr);
+            emit_cycle_accounting(f, "  ", estimate_cycles(instr));
             fprintf(f, "  /* TODO: dynamic JMP mode %d/%d */ return;\n", mode, reg);
         }
         *skip_until_label = true;
@@ -1421,14 +1484,17 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     case MN_BRA:
         if (instr->has_target) {
             if (addrset_contains(instrs, instr->target_addr)) {
+                emit_cycle_accounting(f, "  ", estimate_cycles(instr));
                 fprintf(f, "  goto label_%06X;\n", instr->target_addr);
             } else {
-                fprintf(f, "  func_%06X(); return;\n", instr->target_addr);
+                emit_split_tail_call(f, "  ", instr->target_addr, *has_sp_adjust != 0,
+                                     estimate_cycles(instr));
             }
         } else {
             codegen_diag_record(CGD_BRANCH_WITHOUT_TARGET, addr,
                                 instr->words[0], MN_BRA,
                                 func_name, func_addr);
+            emit_cycle_accounting(f, "  ", estimate_cycles(instr));
             fprintf(f, "  /* BRA with no target */ return;\n");
         }
         *skip_until_label = true;
@@ -1446,19 +1512,30 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                  * clownmdemu and let the IRQ handler clear the flag.
                  * Falls through naturally when the flag is clear. */
                 if (addrset_contains(instrs, instr->target_addr)) {
-                    fprintf(f, "  if (%s) { glue_yield_for_vblank();"
-                               " goto label_%06X; }\n",
-                            ce, instr->target_addr);
+                    fprintf(f, "  if (%s) {\n", ce);
+                    emit_cycle_accounting(f, "    ", estimate_cycles(instr));
+                    fprintf(f, "    glue_yield_for_vblank(); goto label_%06X;\n",
+                            instr->target_addr);
+                    fprintf(f, "  }\n");
                 } else {
-                    fprintf(f, "  if (%s) { glue_yield_for_vblank();"
-                               " func_%06X(); return; }\n",
-                            ce, instr->target_addr);
+                    fprintf(f, "  if (%s) {\n", ce);
+                    emit_cycle_accounting(f, "    ", estimate_cycles(instr));
+                    fprintf(f, "    glue_yield_for_vblank();\n");
+                    emit_split_tail_call(f, "    ", instr->target_addr, *has_sp_adjust != 0,
+                                         -1);
+                    fprintf(f, "  }\n");
                 }
                 g_yield_in_next_bne = false;
             } else if (addrset_contains(instrs, instr->target_addr)) {
-                fprintf(f, "  if (%s) goto label_%06X;\n", ce, instr->target_addr);
+                fprintf(f, "  if (%s) {\n", ce);
+                emit_cycle_accounting(f, "    ", estimate_cycles(instr));
+                fprintf(f, "    goto label_%06X;\n", instr->target_addr);
+                fprintf(f, "  }\n");
             } else {
-                fprintf(f, "  if (%s) { func_%06X(); return; }\n", ce, instr->target_addr);
+                fprintf(f, "  if (%s) {\n", ce);
+                emit_split_tail_call(f, "    ", instr->target_addr, *has_sp_adjust != 0,
+                                     estimate_cycles(instr));
+                fprintf(f, "  }\n");
             }
         } else {
             codegen_diag_record(CGD_BRANCH_WITHOUT_TARGET, addr,
@@ -1482,9 +1559,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         fprintf(f, "    if ((int16_t)g_cpu.D[%d] != -1) {\n", dreg);
         if (instr->has_target) {
             if (addrset_contains(instrs, instr->target_addr)) {
+                emit_cycle_accounting(f, "      ", estimate_cycles(instr));
                 fprintf(f, "      goto label_%06X;\n", instr->target_addr);
             } else {
-                fprintf(f, "      func_%06X(); return;\n", instr->target_addr);
+                emit_split_tail_call(f, "      ", instr->target_addr, *has_sp_adjust != 0,
+                                     estimate_cycles(instr));
             }
         }
         fprintf(f, "    }\n  }\n");
@@ -2540,10 +2619,17 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         fprintf(f,
             "  { int16_t _bound = (int16_t)(%s);\n"
             "    int16_t _val   = (int16_t)g_cpu.D[%d];\n"
-            "    if (_val < 0)        { g_cpu.SR |= %s;  m68k_trap_vector(6u); return; }\n"
-            "    if (_val > _bound)   { g_cpu.SR &= ~%s; m68k_trap_vector(6u); return; }\n"
-            "  }\n",
-            src_expr, dn, SR_N, SR_N);
+            "    if (_val < 0)        { g_cpu.SR |= %s;\n",
+            src_expr, dn, SR_N);
+        emit_cycle_accounting(f, "      ", estimate_cycles(instr));
+        fprintf(f,
+            "      m68k_trap_vector(6u); return; }\n"
+            "    if (_val > _bound)   { g_cpu.SR &= ~%s;\n",
+            SR_N);
+        emit_cycle_accounting(f, "      ", estimate_cycles(instr));
+        fprintf(f,
+            "      m68k_trap_vector(6u); return; }\n"
+            "  }\n");
         break;
     }
 
@@ -2979,6 +3065,11 @@ static void emit_file_header(FILE *f) {
         fprintf(f, "#include \"reverse_debug.h\"\n");
     }
     fprintf(f, "\n");
+    fprintf(f, "/* Stack-skip levels carried across generated split-function tail calls.\n");
+    fprintf(f, " * Real 68K JSR calls hide this value from callees; branch/JMP/fallthrough\n");
+    fprintf(f, " * split calls preserve it until the next RTS consumes it. */\n");
+    fprintf(f, "static int g_split_sp_popped = 0;\n");
+    fprintf(f, "\n");
 }
 
 bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
@@ -3248,10 +3339,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
              * matching the interpreter's interrupt-driven behavior. */
             {
                 int cyc = estimate_cycles(&instr);
-                fprintf(f_full, "  g_native_insn_count++; g_cycle_accumulator += %d;"
-                        " g_audio_cycle_counter += %d;"
-                        " if (g_cycle_accumulator >= g_vblank_threshold)"
-                        " glue_check_vblank();\n", cyc, cyc);
+                emit_cycle_accounting(f_full, "  ", cyc);
             }
         }
 
@@ -3282,7 +3370,8 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                      * inside another function's range). */
                     if (fall_through != func_addr &&
                         addrset_contains(&all_funcs, fall_through)) {
-                        fprintf(f_full, "  func_%06X(); return;\n", fall_through);
+                        emit_split_tail_call(f_full, "  ", fall_through, has_sp_adjust != 0,
+                                             -1);
                     }
                 }
             }
@@ -3298,7 +3387,9 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
     fprintf(f_dispatch, "/* sonic_dispatch.c — AUTO-GENERATED by GenesisRecomp. DO NOT EDIT. */\n");
     fprintf(f_dispatch, "#include \"genesis_runtime.h\"\n");
     fprintf(f_dispatch, "#include \"game_extras.h\"\n");
-    fprintf(f_dispatch, "#include <stddef.h>\n\n");
+    fprintf(f_dispatch, "#include <stddef.h>\n");
+    fprintf(f_dispatch, "#include <stdio.h>\n");
+    fprintf(f_dispatch, "#include <stdlib.h>\n\n");
     fprintf(f_dispatch, "typedef void (*FuncPtr)(void);\n\n");
     fprintf(f_dispatch,
         "typedef struct {\n"
@@ -3324,7 +3415,21 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         "}\n\n", all_funcs.count);
 
     fprintf(f_dispatch,
-        "void call_by_address(uint32_t addr) {\n"
+        "typedef struct RecompTailFrame {\n"
+        "    int pending;\n"
+        "    uint32_t addr;\n"
+        "    struct RecompTailFrame *prev;\n"
+        "} RecompTailFrame;\n\n"
+        "static RecompTailFrame *g_recomp_tail_frame = NULL;\n\n"
+        "void recomp_tail_call(uint32_t addr) {\n"
+        "    if (!g_recomp_tail_frame) {\n"
+        "        fprintf(stderr, \"recompiled tail call without dispatch frame at $%%06X\\n\", addr & 0xFFFFFFu);\n"
+        "        exit(2);\n"
+        "    }\n"
+        "    g_recomp_tail_frame->addr = addr & 0xFFFFFFu;\n"
+        "    g_recomp_tail_frame->pending = 1;\n"
+        "}\n\n"
+        "static void recomp_dispatch_once(uint32_t addr) {\n"
         "    for (int i = 0; s_dispatch_table[i].fn; i++) {\n"
         "        if (s_dispatch_table[i].addr == addr) {\n"
         "            s_dispatch_table[i].fn();\n"
@@ -3333,6 +3438,39 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         "    }\n"
         "    if (!game_dispatch_override(addr))\n"
         "        genesis_log_dispatch_miss(addr);\n"
+        "}\n\n"
+        "static void recomp_drain_tailcalls(RecompTailFrame *frame) {\n"
+        "    unsigned guard = 0;\n"
+        "    while (frame->pending) {\n"
+        "        uint32_t addr = frame->addr;\n"
+        "        frame->pending = 0;\n"
+        "        recomp_dispatch_once(addr);\n"
+        "        if (g_rte_pending)\n"
+        "            break;\n"
+        "        if (++guard > 1000000u) {\n"
+        "            fprintf(stderr, \"recompiled tail-dispatch runaway at $%%06X\\n\", addr);\n"
+        "            exit(2);\n"
+        "        }\n"
+        "    }\n"
+        "}\n\n"
+        "void recomp_call_func(RecompFuncPtr fn) {\n"
+        "    if (!fn)\n"
+        "        return;\n"
+        "    RecompTailFrame frame = { 0, 0, g_recomp_tail_frame };\n"
+        "    g_recomp_tail_frame = &frame;\n"
+        "    fn();\n"
+        "    recomp_drain_tailcalls(&frame);\n"
+        "    g_recomp_tail_frame = frame.prev;\n"
+        "}\n\n"
+        "void recomp_call_addr(uint32_t addr) {\n"
+        "    RecompTailFrame frame = { 0, 0, g_recomp_tail_frame };\n"
+        "    g_recomp_tail_frame = &frame;\n"
+        "    recomp_tail_call(addr);\n"
+        "    recomp_drain_tailcalls(&frame);\n"
+        "    g_recomp_tail_frame = frame.prev;\n"
+        "}\n\n"
+        "void call_by_address(uint32_t addr) {\n"
+        "    recomp_call_addr(addr);\n"
         "}\n");
 
     addrset_free(&all_funcs);

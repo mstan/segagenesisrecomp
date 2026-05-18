@@ -1,0 +1,46 @@
+{
+  "frame": 60,
+  "layout_resolved": {
+    "game_mode": 0,
+    "game_mode_addr": "0xFFF600",
+    "plc_pending": null,
+    "plc_pending_addr": "0x000000",
+    "vint_routine": 18,
+    "vint_routine_addr": "0xFFF62A",
+    "vint_runcount": 17,
+    "vint_runcount_addr": "0xFFFE0C"
+  },
+  "m68k": {
+    "A": [
+      4294963456,
+      12582912,
+      4294964992,
+      0,
+      0,
+      12582916,
+      16776704,
+      16776692
+    ],
+    "D": [
+      65535,
+      55633,
+      0,
+      0,
+      4,
+      0,
+      65535,
+      65535
+    ],
+    "PC": 0,
+    "SR": 8960,
+    "USP": 0
+  },
+  "meta": {
+    "game": "sonic2",
+    "target_frame": 60,
+    "tool": "boot_smoke.py",
+    "version": 1
+  },
+  "verify_pass": -1,
+  "wram_fnv1a64": "26ddad68560a9089"
+}

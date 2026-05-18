@@ -53,6 +53,15 @@ void     m68k_write32(uint32_t addr, uint32_t val);
 /* Called for JMP (An) and indexed jump tables — dispatch to the correct recompiled function */
 void call_by_address(uint32_t addr);
 
+/* Generated-code trampoline helpers. Branch/JMP edges that cross a generated
+ * split-function boundary are 68K tail jumps, not C calls; these helpers keep
+ * those chains off the host stack while preserving direct JSR/BSR calls. */
+typedef void (*RecompFuncPtr)(void);
+void recomp_tail_call(uint32_t addr);
+void recomp_call_addr(uint32_t addr);
+void recomp_call_func(RecompFuncPtr fn);
+void recomp_push_return(uint32_t ret_addr);
+
 /* Logging for dispatch misses */
 void genesis_log_dispatch_miss(uint32_t addr);
 

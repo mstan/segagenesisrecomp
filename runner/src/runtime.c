@@ -1,5 +1,30 @@
 /*
- * runtime.c — Genesis 68K memory map and I/O stubs.
+ * ============================================================================
+ *  ⚠️  DEAD CODE — NOT BUILT IN CURRENT TARGETS  ⚠️
+ *
+ *  This file (and everything in `segagenesisrecomp/runner/src/`) is the
+ *  scaffolded "submodule-internal runner" shape that runner.cmake exposes
+ *  as `GENESISRECOMP_RUNNER_SOURCES`. NEITHER Sonic 1's nor Sonic 2's
+ *  CMakeLists currently consume this — they both build the production
+ *  runner at `SonicTheHedgehogRecomp/runner/` directly.
+ *
+ *  The production m68k_read*/m68k_write* live in
+ *      SonicTheHedgehogRecomp/runner/glue.c (lines 1007 / 1108 / 1134).
+ *
+ *  This file contains Sonic-1-bring-up-era diagnostic fprintfs in hot
+ *  paths (NemDec/NEM_ROM/NEM_READ/NEM_ENTRY/NEM_ZERO, $FFF62A logging,
+ *  Z80 BUSREQ trace). Those VIOLATE PRINCIPLES.md #18 (no printf
+ *  telemetry in hot paths). Do NOT reference this file as a pattern,
+ *  and do NOT extend it. Wave 4 of the active improvement plan will
+ *  decide whether to (a) delete this skeleton entirely, or (b) promote
+ *  it into the canonical shared runner location after the production
+ *  runner has migrated.
+ *
+ *  See `CLAUDE.md` for the dual-runner situation and `PRINCIPLES.md`
+ *  for the rules this file does not yet meet.
+ * ============================================================================
+ *
+ * runtime.c — Genesis 68K memory map and I/O stubs (DEAD; reference only).
  *
  * Implements the m68k_read/m68k_write functions declared in genesis_runtime.h.
  * Routes accesses to:
