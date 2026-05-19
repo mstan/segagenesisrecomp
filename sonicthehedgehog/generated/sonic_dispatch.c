@@ -2,6 +2,8 @@
 #include "genesis_runtime.h"
 #include "game_extras.h"
 #include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef void (*FuncPtr)(void);
 
@@ -4146,7 +4148,24 @@ uint32_t game_dispatch_table_addr(int i) {
     return (i >= 0 && i < 2063) ? s_dispatch_table[i].addr : 0;
 }
 
-void call_by_address(uint32_t addr) {
+typedef struct RecompTailFrame {
+    int pending;
+    uint32_t addr;
+    struct RecompTailFrame *prev;
+} RecompTailFrame;
+
+static RecompTailFrame *g_recomp_tail_frame = NULL;
+
+void recomp_tail_call(uint32_t addr) {
+    if (!g_recomp_tail_frame) {
+        fprintf(stderr, "recompiled tail call without dispatch frame at $%06X\n", addr & 0xFFFFFFu);
+        exit(2);
+    }
+    g_recomp_tail_frame->addr = addr & 0xFFFFFFu;
+    g_recomp_tail_frame->pending = 1;
+}
+
+static void recomp_dispatch_once(uint32_t addr) {
     for (int i = 0; s_dispatch_table[i].fn; i++) {
         if (s_dispatch_table[i].addr == addr) {
             s_dispatch_table[i].fn();
@@ -4155,4 +4174,41 @@ void call_by_address(uint32_t addr) {
     }
     if (!game_dispatch_override(addr))
         genesis_log_dispatch_miss(addr);
+}
+
+static void recomp_drain_tailcalls(RecompTailFrame *frame) {
+    unsigned guard = 0;
+    while (frame->pending) {
+        uint32_t addr = frame->addr;
+        frame->pending = 0;
+        recomp_dispatch_once(addr);
+        if (g_rte_pending)
+            break;
+        if (++guard > 1000000u) {
+            fprintf(stderr, "recompiled tail-dispatch runaway at $%06X\n", addr);
+            exit(2);
+        }
+    }
+}
+
+void recomp_call_func(RecompFuncPtr fn) {
+    if (!fn)
+        return;
+    RecompTailFrame frame = { 0, 0, g_recomp_tail_frame };
+    g_recomp_tail_frame = &frame;
+    fn();
+    recomp_drain_tailcalls(&frame);
+    g_recomp_tail_frame = frame.prev;
+}
+
+void recomp_call_addr(uint32_t addr) {
+    RecompTailFrame frame = { 0, 0, g_recomp_tail_frame };
+    g_recomp_tail_frame = &frame;
+    recomp_tail_call(addr);
+    recomp_drain_tailcalls(&frame);
+    g_recomp_tail_frame = frame.prev;
+}
+
+void call_by_address(uint32_t addr) {
+    recomp_call_addr(addr);
 }
