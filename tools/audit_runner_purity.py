@@ -1,26 +1,23 @@
 #!/usr/bin/env python3
 """audit_runner_purity.py — scan shared runner code for per-game leakage.
 
-The shared runner (currently `SonicTheHedgehogRecomp/runner/`) is supposed
-to be game-agnostic: per-game data flows through `g_game_spec` (function
-hooks) and `g_game_layout` (WRAM addresses) only. This script greps for
-patterns that violate that contract:
+The shared runner (`segagenesisrecomp/runner/`) is supposed to be
+game-agnostic: per-game data flows through `g_game_spec` (function hooks)
+and `g_game_layout` (WRAM addresses) only. This script greps for patterns
+that violate that contract:
 
   - Genesis WRAM literal addresses: `0xFF[0-9A-F]{4}`, `0x00FF[0-9A-F]{4}`,
     `$FF[0-9A-F]{4}` (68K disasm syntax in comments).
   - Decimal equivalents of known per-game addresses (vetted list).
-  - Per-game function names harvested from `sonic1_spec.c` and
-    `sonic2_spec.c`.
+  - Per-game function names harvested from each game's spec file.
   - Per-game identifier substrings (`nemesis`, `nem_dec`, `plc_buffer`,
     `dynamic_object_ram`, `kosinski`, `enigma`, `saxman`).
 
-Per-game spec / hybrid-table files are EXCLUDED — they legitimately reference
-their own game's symbols.
+Per-game files no longer live in `runner/` after the runner-promotion
+refactor; they're under `sonicthehedgehog/` and `sonicthehedgehog2/`.
 
-Hits are reported, not failed. After Wave 4's topology cleanup, this script
-flips to hard-fail (exit 1 on any hit) and is meant to be run manually
-before committing changes that touch shared runner code. Until then it's
-documentation: the output is the agreed cleanup baseline.
+Hits are reported, not failed. The audit is a manual pre-commit gate
+when touching shared runner code.
 
 There is no GitHub Actions / cloud CI for this project (the build needs a
 ROM that can't be checked in upstream). All checks are local.
@@ -28,8 +25,7 @@ ROM that can't be checked in upstream). All checks are local.
 Usage:
   python tools/audit_runner_purity.py [--root PATH] [--verbose]
 
-Default root is `../SonicTheHedgehogRecomp/runner/` relative to this file's
-parent (the `segagenesisrecomp` submodule).
+Default root is `runner/` inside the submodule.
 """
 
 from __future__ import annotations
@@ -44,16 +40,11 @@ from pathlib import Path
 # Configuration
 # ---------------------------------------------------------------------------
 
-# Files in the shared runner directory that legitimately contain per-game
-# data and should be excluded from the purity audit. They will be relocated
-# to per-game directories in Wave 4 of the improvement plan.
-PER_GAME_FILES_EXCLUDE = {
-    "sonic1_spec.c",
-    "sonic1_hybrid_table.c",
-    "sonic2_hybrid_table.c",
-    "sonic_extras.c",
-    "sonic_extras.h",
-}
+# Files inside runner/ that would be excluded from the audit if any
+# per-game code lived there. Empty after the runner-promotion refactor
+# moved sonic1_spec.c, sonic_extras.{c,h}, sonic1_hybrid_table.c, and
+# sonic2_hybrid_table.c into their per-game directories.
+PER_GAME_FILES_EXCLUDE: set[str] = set()
 
 # Files we never want to scan (artifacts, third-party, generated).
 PATH_EXCLUDE_DIRS = {"build", "external", "audio/external"}
@@ -205,16 +196,14 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--root", type=Path, default=None,
                    help="Shared runner directory to audit (default: "
-                        "../SonicTheHedgehogRecomp/runner relative to this "
-                        "file's parent submodule).")
+                        "runner/ inside this file's parent submodule).")
     p.add_argument("--verbose", action="store_true",
                    help="Print every hit with full snippet.")
     args = p.parse_args(argv)
 
     here = Path(__file__).resolve().parent          # segagenesisrecomp/tools
     submodule_root = here.parent                    # segagenesisrecomp/
-    release_root = submodule_root.parent            # SonicTheHedgehogRecomp/
-    runner_root = args.root or (release_root / "runner")
+    runner_root = args.root or (submodule_root / "runner")
 
     if not runner_root.is_dir():
         print(f"[audit] runner root not found: {runner_root}", file=sys.stderr)
@@ -222,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Harvest per-game function names from the spec files we know about.
     spec_paths = [
-        runner_root / "sonic1_spec.c",
+        submodule_root / "sonicthehedgehog"  / "sonic1_spec.c",
         submodule_root / "sonicthehedgehog2" / "sonic2_spec.c",
     ]
     per_game_funcs = harvest_func_names(spec_paths)

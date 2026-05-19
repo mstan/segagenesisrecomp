@@ -272,9 +272,8 @@ If you need to observe a value: add it to `g_pace_snap`, the frame-record
 `game_data` tail, the bus_ring entry shape, or a Tier-1 entry. TCP
 queries pull the structured data; printfs spam the terminal.
 
-The dead `segagenesisrecomp/runner/src/runtime.c` skeleton violates this
-rule heavily; it is not built and is marked DEAD CODE. Do not reference
-it as a pattern.
+(The dead `runner/src/runtime.c` skeleton that violated this rule has
+been removed; production runner code lives flat under `runner/`.)
 
 ---
 

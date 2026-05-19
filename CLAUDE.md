@@ -22,45 +22,43 @@ There are THREE repos in play:
 ```
 F:\Projects\segagenesisrecomp-release\
 ├── SonicTheHedgehogRecomp\           (Sonic 1 release repo)
-│   ├── runner\                       ← shared engine; consumed by both releases
-│   │   ├── glue.c, cmd_server.c, oracle_trace.c, frame_snapshots.c, ...
-│   │   ├── sonic1_spec.c             ← Sonic 1's GameSpec instance (TODO: relocate)
-│   │   ├── sonic1_hybrid_table.c     ← Sonic 1 hybrid table (TODO: relocate)
-│   │   └── sonic2_hybrid_table.c     ← Sonic 2 hybrid table (TODO: relocate)
+│   ├── CMakeLists.txt                ← references segagenesisrecomp/runner/
 │   ├── segagenesisrecomp\            ← submodule; THIS REPO
 │   └── tools\                        ← Sonic-1-flavored probes
 │
 ├── SonicTheHedgehog2Recomp\          (Sonic 2 release repo)
-│   ├── CMakeLists.txt                ← references ../SonicTheHedgehogRecomp/runner/
+│   ├── CMakeLists.txt                ← references segagenesisrecomp/runner/
+│   │                                   (via ../SonicTheHedgehogRecomp/segagenesisrecomp/)
 │   └── tools\                        ← Sonic-2 probes (cleaner, fewer)
 │
-└── (this submodule)
+└── (this submodule, checked out as SonicTheHedgehogRecomp/segagenesisrecomp/)
     ├── PRINCIPLES.md                 ← rules; READ FIRST
     ├── CLAUDE.md                     ← (this file)
     ├── DEBUG.md                      ← ring inventory + TCP commands
     ├── recompiler\                   ← C++ tool; builds GenesisRecomp.exe
-    ├── runner\                       ← (UNUSED skeleton; see runner/src/runtime.c
-    │                                    DEAD CODE banner). Production runner is
-    │                                    in SonicTheHedgehogRecomp/runner/.
+    ├── runner\                       ← SHARED ENGINE; consumed by both releases
+    │   ├── glue.c, cmd_server.c, oracle_trace.c, frame_snapshots.c, ...
+    │   ├── main.c, audio.c, audio/, crash_report.c, hybrid*.c, ...
+    │   ├── stub_clown68000.c         ← native-only (linked into native target)
+    │   ├── clownmdemu_patches.cmake  ← applied to clownmdemu-core
+    │   ├── external/SDL2/            ← bundled SDL2
+    │   └── include/genesis_runtime.h ← shared interface header
     ├── tools\                        ← shared genesis-agnostic tooling
-    ├── sonicthehedgehog\             ← Sonic 1 game.toml + generated/
+    ├── sonicthehedgehog\             ← Sonic 1 game.toml + generated/ + sonic1_spec.c
+    │                                   + sonic1_hybrid_table.c + sonic_extras.{c,h}
     ├── sonicthehedgehog2\            ← Sonic 2 game.toml + generated/ + sonic2_spec.c
+    │                                   + sonic2_hybrid_table.c
     ├── sonic3k\                      ← placeholder
     ├── tests\
     │   └── tools\                    ← gen_disasm_*, recompiler-side
     └── clownmdemu-core\              ← embedded emulator
 ```
 
-**Asymmetric placements you will trip over** (status as of plan Wave 0;
-fixed by Wave 4):
-- The shared runner lives inside `SonicTheHedgehogRecomp/`, not in this
-  submodule.
-- `sonic1_spec.c` lives in the shared runner directory; `sonic2_spec.c`
-  lives in this submodule. They should be symmetric.
-- `sonic2_hybrid_table.c` lives in Sonic 1's release repo's runner. (Yes,
-  really.) `g_game_spec.hybrid_table` is declared but not yet wired.
-- This submodule's `runner/src/` is a SECOND runner skeleton that is NOT
-  compiled. `runner/src/runtime.c` has a DEAD CODE banner.
+**Topology invariant**: shared runner is at `segagenesisrecomp/runner/`.
+Per-game code (`<game>_spec.c`, `<game>_hybrid_table.c`, `<game>_extras.{c,h}`)
+lives next to that game's `generated/` directory. Sonic 2's release repo
+has no runner of its own — it reaches through Sonic 1's release repo only
+to get to the submodule.
 
 When in doubt about "which runner is built": grep the relevant
 `CMakeLists.txt` for `RUNNER_ROOT` — that's the source of truth.
@@ -71,18 +69,18 @@ Shared runner code reads two tables:
 
 ### `g_game_spec` (function-pointer hooks)
 
-Defined in `SonicTheHedgehogRecomp/runner/game_spec.h`. Each game project
-provides exactly one TU defining `const GameSpec g_game_spec`. Fields
-include identity (name, CRC32, ROM size), entry/IRQ/periodic callbacks,
-lifecycle hooks (`on_post_reset`, `on_frame_pre/post`), CLI handler,
-dispatch override, frame-record packer, per-game TCP commands, and
-hybrid table for oracle build.
+Defined in `runner/game_spec.h`. Each game project provides exactly one
+TU defining `const GameSpec g_game_spec` (e.g.
+`sonicthehedgehog/sonic1_spec.c`, `sonicthehedgehog2/sonic2_spec.c`).
+Fields include identity (name, CRC32, ROM size), entry/IRQ/periodic
+callbacks, lifecycle hooks (`on_post_reset`, `on_frame_pre/post`), CLI
+handler, dispatch override, frame-record packer, per-game TCP commands,
+and hybrid table for oracle build.
 
 ### `g_game_layout` (WRAM addresses)
 
-Defined in `SonicTheHedgehogRecomp/runner/game_layout.h`. Populated from
-`[ram_layout]` in `game.toml` by the recompiler, emitted as
-`<prefix>_layout.c` per game. Current fields: `game_mode_addr`,
+Defined in `runner/game_layout.h`. Populated from `[ram_layout]` in
+`game.toml` by the recompiler, emitted as `<prefix>_layout.c` per game. Current fields: `game_mode_addr`,
 `vint_runcount_addr`, `vint_routine_addr`, `plc_pending_addr`,
 `initial_ssp`, `vbla_stack`, `intr_stack`, `player_object_addr`,
 `level_modes[]`.
