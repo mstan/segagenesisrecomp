@@ -77,9 +77,10 @@ const char *exe_relative(const char *filename)
  * Framebuffer and palette
  * ========================================================================= */
 
-/* Maximum output dimensions we support. Sonic 1 uses 320×224 (H40, V28). */
+/* Maximum output dimensions we support. 2P Sonic 2 uses interlace
+ * double-resolution mode, which reports 320x448 active pixels. */
 #define MAX_SCREEN_WIDTH  320
-#define MAX_SCREEN_HEIGHT 240
+#define MAX_SCREEN_HEIGHT 480
 
 static uint32_t s_framebuf[MAX_SCREEN_WIDTH * MAX_SCREEN_HEIGHT]; /* ARGB8888 */
 
@@ -89,6 +90,44 @@ static uint32_t s_cram[192];
 
 static int s_screen_width  = 320;
 static int s_screen_height = 224;
+
+typedef enum InterlaceDisplayMode {
+    INTERLACE_DISPLAY_TV,
+    INTERLACE_DISPLAY_RAW,
+} InterlaceDisplayMode;
+
+static InterlaceDisplayMode s_interlace_display_mode = INTERLACE_DISPLAY_TV;
+
+static void set_interlace_display_mode(const char *value)
+{
+    if (!value || !*value)
+        return;
+
+    if (strcmp(value, "tv") == 0 || strcmp(value, "original") == 0 ||
+        strcmp(value, "squash") == 0) {
+        s_interlace_display_mode = INTERLACE_DISPLAY_TV;
+    } else if (strcmp(value, "raw") == 0 || strcmp(value, "full") == 0 ||
+               strcmp(value, "expanded") == 0) {
+        s_interlace_display_mode = INTERLACE_DISPLAY_RAW;
+    } else {
+        fprintf(stderr,
+                "[display] unknown interlace_display=%s (use tv|raw); using tv\n",
+                value);
+        s_interlace_display_mode = INTERLACE_DISPLAY_TV;
+    }
+}
+
+static int display_logical_height(void)
+{
+    if (s_screen_height > 240 && s_interlace_display_mode == INTERLACE_DISPLAY_TV)
+        return (s_screen_height + 1) / 2;
+    return s_screen_height;
+}
+
+static void update_render_logical_size(SDL_Renderer *renderer)
+{
+    SDL_RenderSetLogicalSize(renderer, s_screen_width, display_logical_height());
+}
 
 /* Convert a Genesis CRAM value to ARGB8888.
  *
@@ -723,6 +762,7 @@ int main(int argc, char *argv[])
      * NULL = not set via CLI (debug.ini may still override; otherwise
      * compiled default in glue.c wins). */
     const char *pacing_cli = NULL;
+    const char *interlace_display_cli = NULL;
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--max-frames") == 0 && i + 1 < argc) {
@@ -747,6 +787,10 @@ int main(int argc, char *argv[])
             pacing_cli = argv[++i];
         } else if (strncmp(argv[i], "--pacing=", 9) == 0) {
             pacing_cli = argv[i] + 9;
+        } else if (strcmp(argv[i], "--interlace-display") == 0 && i + 1 < argc) {
+            interlace_display_cli = argv[++i];
+        } else if (strncmp(argv[i], "--interlace-display=", 20) == 0) {
+            interlace_display_cli = argv[i] + 20;
         } else if (strcmp(argv[i], "--hash-frames") == 0 && i + 1 < argc) {
             hash_frames = (uint32_t)atol(argv[++i]);
         } else if (strcmp(argv[i], "--input-script") == 0 && i + 1 < argc) {
@@ -851,7 +895,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
         return 1;
     }
-    SDL_RenderSetLogicalSize(renderer, MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT);
+    update_render_logical_size(renderer);
 
     SDL_Texture *texture = SDL_CreateTexture(
         renderer,
@@ -924,6 +968,7 @@ int main(int argc, char *argv[])
     int    debug_port_from_ini    = 0;
     double target_fps_from_ini    = 0.0;
     char   pacing_from_ini[32]    = {0};
+    char   interlace_display_from_ini[32] = {0};
     {
         FILE *df = fopen(exe_relative("debug.ini"), "r");
         if (df) {
@@ -949,9 +994,19 @@ int main(int argc, char *argv[])
                 else if (strcmp(k, "target_fps") == 0) target_fps_from_ini = atof(v);
                 else if (strcmp(k, "pacing")     == 0)
                     strncpy(pacing_from_ini, v, sizeof(pacing_from_ini) - 1);
+                else if (strcmp(k, "interlace_display") == 0)
+                    strncpy(interlace_display_from_ini, v, sizeof(interlace_display_from_ini) - 1);
             }
             fclose(df);
         }
+    }
+    {
+        const char *chosen = interlace_display_cli ? interlace_display_cli :
+            (interlace_display_from_ini[0] ? interlace_display_from_ini : NULL);
+        if (chosen)
+            set_interlace_display_mode(chosen);
+        fprintf(stderr, "[display] interlace_display=%s\n",
+                s_interlace_display_mode == INTERLACE_DISPLAY_RAW ? "raw" : "tv");
     }
     /* --target-fps wins over debug.ini, which wins over default 59.94. */
     double target_fps = (target_fps_cli > 0.0)     ? target_fps_cli :
@@ -1331,6 +1386,7 @@ int main(int argc, char *argv[])
         SDL_UpdateTexture(texture, NULL, s_framebuf,
                           MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
 
+        update_render_logical_size(renderer);
         SDL_RenderClear(renderer);
 
         /* Only show the active area the VDP reported */
