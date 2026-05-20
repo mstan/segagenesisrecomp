@@ -405,10 +405,22 @@ void func_006396(void);
 void func_0063D6(void);
 void func_00642E(void);
 void func_006480(void);
+void func_006482(void);
+void func_006484(void);
+void func_006486(void);
+void func_006488(void);
+void func_00648A(void);
+void func_00648C(void);
+void func_00648E(void);
 void func_006490(void);
 void func_006492(void);
+void func_006494(void);
+void func_006496(void);
+void func_006498(void);
 void func_00649A(void);
 void func_00649C(void);
+void func_00649E(void);
+void func_0064A0(void);
 void func_0064A8(void);
 void func_006506(void);
 void func_006544(void);
@@ -1210,6 +1222,7 @@ void func_010BA2(void);
 void func_010BB2(void);
 void func_010BD6(void);
 void func_010C08(void);
+void func_010C0C(void);
 void func_010C2A(void);
 void func_010C3C(void);
 void func_010C5E(void);
@@ -2470,10 +2483,22 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x0063D6u, func_0063D6 },
     { 0x00642Eu, func_00642E },
     { 0x006480u, func_006480 },
+    { 0x006482u, func_006482 },
+    { 0x006484u, func_006484 },
+    { 0x006486u, func_006486 },
+    { 0x006488u, func_006488 },
+    { 0x00648Au, func_00648A },
+    { 0x00648Cu, func_00648C },
+    { 0x00648Eu, func_00648E },
     { 0x006490u, func_006490 },
     { 0x006492u, func_006492 },
+    { 0x006494u, func_006494 },
+    { 0x006496u, func_006496 },
+    { 0x006498u, func_006498 },
     { 0x00649Au, func_00649A },
     { 0x00649Cu, func_00649C },
+    { 0x00649Eu, func_00649E },
+    { 0x0064A0u, func_0064A0 },
     { 0x0064A8u, func_0064A8 },
     { 0x006506u, func_006506 },
     { 0x006544u, func_006544 },
@@ -3275,6 +3300,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x010BB2u, func_010BB2 },
     { 0x010BD6u, func_010BD6 },
     { 0x010C08u, func_010C08 },
+    { 0x010C0Cu, func_010C0C },
     { 0x010C2Au, func_010C2A },
     { 0x010C3Cu, func_010C3C },
     { 0x010C5Eu, func_010C5E },
@@ -4143,9 +4169,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0u, NULL }
 };
 
-int game_dispatch_table_size(void) { return 2063; }
+int game_dispatch_table_size(void) { return 2076; }
 uint32_t game_dispatch_table_addr(int i) {
-    return (i >= 0 && i < 2063) ? s_dispatch_table[i].addr : 0;
+    return (i >= 0 && i < 2076) ? s_dispatch_table[i].addr : 0;
 }
 
 typedef struct RecompTailFrame {

@@ -3,13 +3,13 @@
 #
 # Summary:
 #   static_target            155  (JMP with statically resolved target — safe)
-#   in_function_switch         0  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
+#   in_function_switch         2  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
 #   dynamic_register           1  (JMP (An)/(d,An)/(An,Xn) — runtime address from register, safe via call_by_address)
 #   fallback_hybrid                — JMP(PC,Dn.W) routed through hybrid_jmp_interpret; subdivided:
-#     function_entry           3    (base IS a registered function — call_by_address resolves it directly)
+#     function_entry           4    (base IS a registered function — call_by_address resolves it directly)
 #     bra_w_trampoline         0    (base opcode = 0x6000; runtime miss feedback works)
-#     offset_table           129    (base is a dc.w (target-base) table; 3+ entries decode to functions — runtime resolves it)
-#     INTERIOR_UNRESOLVED      4    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)
+#     offset_table           130    (base is a dc.w (target-base) table; 1+ entries decode to functions — runtime resolves it)
+#     INTERIOR_UNRESOLVED      0    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)
 #     external_unresolved      0    (base outside any known function — investigate)
 #   unsupported                0  (decoder hit a JMP mode the emitter doesn't handle)
 #
@@ -41,7 +41,7 @@ $005A54  in func $005A4E  base $00A718  kind=static_target
 $005AD0  in func $005AC2  base $00D604  kind=static_target
 $006212  in func $0061EC  base $006216  kind=fallback_hybrid/offset_table
 $0062DA  in func $006286  base $0062DE  kind=fallback_hybrid/offset_table
-$00647C  in func $00642E  base $006482  kind=fallback_hybrid/INTERIOR_UNRESOLVED
+$00647C  in func $00642E  base $006482  kind=fallback_hybrid/function_entry
 $006DEA  in func $006DDE  base $006DEE  kind=fallback_hybrid/offset_table
 $006E46  in func $006E3C  base $006E4A  kind=fallback_hybrid/offset_table
 $006EFE  in func $006EF2  base $006F02  kind=fallback_hybrid/offset_table
@@ -97,7 +97,7 @@ $00B4EE  in func $00B4DE  base $00B4F2  kind=fallback_hybrid/offset_table
 $00B686  in func $00B67C  base $00B68A  kind=fallback_hybrid/offset_table
 $00B842  in func $00B834  base $00B846  kind=fallback_hybrid/offset_table
 $00B9A4  in func $00B99A  base $00B9A8  kind=fallback_hybrid/offset_table
-$00BAD2  in func $00BAC6  base $00BAD6  kind=fallback_hybrid/INTERIOR_UNRESOLVED
+$00BAD2  in func $00BAC6  base $00BAD6  kind=fallback_hybrid/offset_table
 $00BD38  in func $00BD2E  base $00BD3C  kind=fallback_hybrid/offset_table
 $00BEDC  in func $00BED2  base $00BEE0  kind=fallback_hybrid/offset_table
 $00C310  in func $00C306  base $00C314  kind=fallback_hybrid/offset_table
@@ -132,9 +132,9 @@ $010290  in func $010286  base $010294  kind=fallback_hybrid/offset_table
 $01078C  in func $010782  base $010790  kind=fallback_hybrid/offset_table
 $010980  in func $010976  base $010984  kind=fallback_hybrid/offset_table
 $010BCE  in func $010BB2  base $007B2E  kind=static_target
-$010BE6  in func $010BD6  base $010BEA  kind=fallback_hybrid/INTERIOR_UNRESOLVED
+$010BE6  in func $010BD6  base $010BEA  kind=in_function_switch targets=2
 $010DE6  in func $010DD0  base $007B2E  kind=static_target
-$010DFC  in func $010DEC  base $010E00  kind=fallback_hybrid/INTERIOR_UNRESOLVED
+$010DFC  in func $010DEC  base $010E00  kind=in_function_switch targets=2
 $01104E  in func $011044  base $011052  kind=fallback_hybrid/offset_table
 $0110D0  in func $0110C6  base $0110D4  kind=fallback_hybrid/offset_table
 $011210  in func $011206  base $011214  kind=fallback_hybrid/offset_table

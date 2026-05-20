@@ -8,7 +8,7 @@
 #   fallback_hybrid                — JMP(PC,Dn.W) routed through hybrid_jmp_interpret; subdivided:
 #     function_entry           4    (base IS a registered function — call_by_address resolves it directly)
 #     bra_w_trampoline         1    (base opcode = 0x6000; runtime miss feedback works)
-#     offset_table           291    (base is a dc.w (target-base) table; 3+ entries decode to functions — runtime resolves it)
+#     offset_table           291    (base is a dc.w (target-base) table; 1+ entries decode to functions — runtime resolves it)
 #     INTERIOR_UNRESOLVED      0    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)
 #     external_unresolved      0    (base outside any known function — investigate)
 #   unsupported                0  (decoder hit a JMP mode the emitter doesn't handle)

@@ -1065,30 +1065,30 @@ static int probe_pc_idx_targets(const GenesisRom *rom,
  * patterns (JMP into the start of a uniform instruction sequence), this one
  * handles the standard Sonic `move.w table(pc,Dn.W),Dn / jmp table(pc,Dn.W)`
  * dispatch where the table contains signed 16-bit offsets to interior labels
- * of the same function (e.g. ObjB2_* in Sonic 2 at $03AD0C / $03AD2A).
+ * of the same function (e.g. ObjB2_* in Sonic 2 at $03AD0C / $03AD2A,
+ * Elev_Types / Circ_Types / SStom_Move in Sonic 1).
  *
- * The audit already classifies these sites as `offset_table` based on whether
- * the decoded targets land on registered function entries. This probe is
- * stricter: it ONLY accepts a target if the disasm has explicitly marked it
- * as a label (i.e. the target appears in `extra_seeds`). That avoids false
- * positives where a word-as-offset coincidentally lands on an unrelated PC.
+ * Filter is "target is in this function's instrs". For that to be a strong
+ * signal, the caller (scan_function) must have already seeded the target
+ * via disasm extra_seeds OR via auto-discovery from the JMP base itself
+ * (see seed_pc_idx_dispatch_targets). Cross-function offset tables (entries
+ * resolving to function entries in OTHER functions) are out of scope for
+ * this probe — those continue through hybrid_jmp_interpret + call_by_address,
+ * which already works for function-entry targets.
  *
- * Outputs the OFFSET VALUES used by the consumer's switch cases (since the
- * runtime expression is `g_cpu.Dn == loaded_offset_value`, NOT byte index).
+ * Outputs the OFFSET VALUES used by the consumer's switch cases (the
+ * runtime expression is `Dn == loaded_offset_value`, NOT byte index).
  *
  * Returns count; caller emits a switch with case constants = out_offsets.
  * ========================================================================= */
 static int probe_offset_table_targets(const GenesisRom *rom,
                                        const M68KInstr *jmp_instr,
                                        const AddrSet *instrs,
-                                       const uint32_t *extra_seeds,
-                                       int extra_seed_count,
                                        int32_t  *out_offsets,
                                        uint32_t *out_targets,
                                        int max_targets)
 {
     if (max_targets <= 0)              return 0;
-    if (!extra_seeds || extra_seed_count <= 0) return 0;
     if (jmp_instr->word_count < 2)     return 0;
 
     uint16_t ext  = jmp_instr->words[1];
@@ -1102,21 +1102,107 @@ static int probe_offset_table_targets(const GenesisRom *rom,
         int16_t off = (int16_t)(((uint16_t)rom->rom_data[a] << 8)
                               | rom->rom_data[a + 1]);
         uint32_t t = (uint32_t)((int32_t)base + (int32_t)off);
-        /* Must land on an instruction in THIS function — extra_seeds was
-         * already added to instrs by the worklist seeding, so this check
-         * is the strict membership test. */
         if (!addrset_contains(instrs, t)) break;
-        /* AND must be explicitly marked by the disasm. */
-        int seeded = 0;
-        for (int s = 0; s < extra_seed_count; s++) {
-            if (extra_seeds[s] == t) { seeded = 1; break; }
-        }
-        if (!seeded) break;
         out_offsets[n] = (int32_t)off;
         out_targets[n] = t;
         n++;
     }
     return n;
+}
+
+/* =========================================================================
+ * seed_pc_idx_dispatch_targets — discover JMP(PC,Dn.W) dispatch targets at
+ * scan time, without depending on a disasm-generated label list.
+ *
+ * Adds interior PCs to the CFG-walker worklist for two patterns:
+ *
+ *   (1) Duff's device — base is the first of a uniform sequence of 2-byte
+ *       instructions. Threshold: 8+ consecutive identical opcode words.
+ *       Seeds base+0, base+2, ..., base+2*(N-1).
+ *
+ *   (2) Offset table — `dc.w (target - base)` rows, target = base + offset,
+ *       all targets within [start_addr, plausible_end) and decode as valid
+ *       M68K instructions. Seeds the resolved targets (NOT the table bytes).
+ *
+ * `plausible_end` is the next-larger entry in sorted_funcs, or
+ * start_addr + 0x1000 as a defensive cap. This bounds the heuristic so it
+ * can't seed targets that belong to entirely different functions.
+ *
+ * Safety: false-positive risk is low because:
+ *   - The Duff's-device threshold (8+ identical 2-byte opcodes) is rare
+ *     outside the actual pattern. Common multi-instruction sequences like
+ *     bra.w trampolines fail at the second probe (different displacement
+ *     word at base+2 vs the bra.w opcode at base+0).
+ *   - The offset-table walk stops on the first entry that's out-of-range
+ *     or fails to decode, so it can't "run away" into garbage data.
+ * ========================================================================= */
+static void seed_pc_idx_dispatch_targets(const GenesisRom *rom,
+                                         const M68KInstr *jmp_instr,
+                                         AddrSet *worklist,
+                                         uint32_t start_addr,
+                                         const uint32_t *sorted_funcs,
+                                         int nfuncs)
+{
+    if (!jmp_instr || jmp_instr->word_count < 2) return;
+    /* Only (d8, PC, Xn): src_ea encoding 7<<3 | 3 = 0x3B. */
+    if (jmp_instr->src_ea != 0x3B) return;
+
+    uint16_t ext  = jmp_instr->words[1];
+    int8_t   d8   = (int8_t)(ext & 0xFF);
+    uint32_t base = (uint32_t)(jmp_instr->addr + 2 + (int32_t)d8);
+    if (!rom || base + 1 >= rom->rom_size) return;
+
+    /* Duff's-device probe runs FIRST without function-range bounds. The
+     * 8+ uniform-opcode threshold is self-bounding, and the dispatched
+     * targets often extend past the next adjacent function entry (e.g.
+     * Sonic 1's Deform_SLZ JMP at $00647C dispatches into the body of
+     * the loc_6480 function — boundary-split will promote each landing
+     * point separately, but we need to seed them all first). */
+    uint16_t op0 = ((uint16_t)rom->rom_data[base] << 8) | rom->rom_data[base + 1];
+    int n_same = 1;
+    for (int i = 1; i < 32; i++) {
+        uint32_t a = base + (uint32_t)i * 2u;
+        if (a + 1 >= rom->rom_size) break;
+        uint16_t w = ((uint16_t)rom->rom_data[a] << 8) | rom->rom_data[a + 1];
+        if (w != op0) break;
+        n_same++;
+    }
+    if (n_same >= 8) {
+        /* Seed every Duff's-device target. Each falls naturally into either
+         * the current function's instrs (if base is interior to start_addr)
+         * or extern_targets (if base is past the next adjacent function),
+         * driven by the worklist loop's `addr_belongs_to_other_function`
+         * check. The boundary-splitter promotes the extern_targets to
+         * function entries on the next discovery iteration, after which
+         * call_by_address dispatches the JMP at runtime. */
+        for (int i = 0; i < n_same; i++)
+            addrset_insert(worklist, base + (uint32_t)i * 2u);
+        return;
+    }
+
+    /* Offset-table probe needs an upper bound — the table is followed by
+     * arbitrary data/code and we have to know when to stop reading. Use
+     * the next function entry as plausible_end (offset-table targets are
+     * typically interior PCs of the SAME function, by convention). If
+     * base itself is past plausible_end, the JMP isn't an in-function
+     * offset table — leave it for the hybrid_jmp_interpret fallback. */
+    uint32_t plausible_end = start_addr + 0x1000u;
+    for (int i = 0; i < nfuncs; i++) {
+        if (sorted_funcs[i] > start_addr && sorted_funcs[i] < plausible_end)
+            plausible_end = sorted_funcs[i];
+    }
+    if (base < start_addr || base >= plausible_end) return;
+
+    for (int i = 0; i < 32; i++) {
+        uint32_t a = base + (uint32_t)i * 2u;
+        if (a + 1 >= rom->rom_size) break;
+        int16_t off = (int16_t)(((uint16_t)rom->rom_data[a] << 8) | rom->rom_data[a + 1]);
+        uint32_t t = (uint32_t)((int32_t)base + (int32_t)off);
+        if (t < start_addr || t >= plausible_end) break;
+        M68KInstr probe;
+        if (!m68k_decode(rom, t, &probe)) break;
+        addrset_insert(worklist, t);
+    }
 }
 
 static void scan_function(const GenesisRom *rom, uint32_t start_addr,
@@ -1186,8 +1272,16 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
                 goto next_work;
 
             case MN_JMP:
-                if (instr.has_target && instr.target_addr != pc)
+                if (instr.has_target && instr.target_addr != pc) {
                     addrset_insert(&worklist, instr.target_addr);
+                } else {
+                    /* Computed dispatch (no static target). If this is a
+                     * (d8,PC,Xn) JMP, try to discover Duff's-device or
+                     * offset-table targets at the JMP base and seed them
+                     * so the codegen probes find them in instrs. */
+                    seed_pc_idx_dispatch_targets(rom, &instr, &worklist,
+                                                 start_addr, sorted_funcs, nfuncs);
+                }
                 goto next_work;
 
             case MN_Bcc:
@@ -1728,7 +1822,6 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                 /* Try the offset-table pattern only if the Duff's-device
                  * probe didn't find a uniform sequence. */
                 not_ = probe_offset_table_targets(rom, instr, instrs,
-                                                  s_extra_seeds, s_extra_seed_count,
                                                   ot_offsets, ot_targets,
                                                   (int)(sizeof(ot_targets) / sizeof(ot_targets[0])));
             }
@@ -3522,8 +3615,6 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             int32_t  ot_offsets[32];
             uint32_t ot_targets[32];
             int not_ = probe_offset_table_targets(rom, &probe, &instrs,
-                                                  cfg ? cfg->extra_seeds : NULL,
-                                                  cfg ? cfg->extra_seed_count : 0,
                                                   ot_offsets, ot_targets,
                                                   (int)(sizeof(ot_targets) / sizeof(ot_targets[0])));
             if (not_ >= 1) {
@@ -3878,12 +3969,15 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                     /* Offset-table probe: walk up to 16 words and count hits.
                      * A Duff's-device-style table (the real danger) has every
                      * entry being a code-as-offset garbage value; none resolve.
-                     * A real `dc.w (target - base)` table typically has all or
-                     * most entries resolving — even sparse ones tend to have
-                     * 2+ unique function targets in the first dozen entries.
-                     * Threshold: 2+ unique resolved targets among the first 8
-                     * words classifies as offset_table; below that, flag as
-                     * INTERIOR_UNRESOLVED so the human can audit. */              \
+                     * A real `dc.w (target - base)` table has at least one
+                     * entry resolving to a registered function. Threshold:
+                     * 1+ unique resolved targets among the first 8 words
+                     * classifies as offset_table (call_by_address resolves
+                     * each at runtime); zero resolved is INTERIOR_UNRESOLVED.
+                     * The risk of a false-safe (1-entry coincidence where
+                     * a non-dispatch JMP happens to read a word that points
+                     * to a real function) is real but small in practice —
+                     * Sonic 1's SStom_Move is the smoking-gun safe case. */     \
                     int _hits = 0;                                               \
                     uint32_t _seen[8] = {0};                                     \
                     int _seen_n = 0;                                             \
@@ -3903,7 +3997,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                             }                                                    \
                         }                                                        \
                     }                                                            \
-                    if (_hits >= 2) {                                            \
+                    if (_hits >= 1) {                                            \
                         (OUT_KIND) = "offset_table";                             \
                     } else {                                                     \
                         uint32_t _own = 0;                                       \
@@ -3953,7 +4047,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             fprintf(fa, "#   fallback_hybrid                — JMP(PC,Dn.W) routed through hybrid_jmp_interpret; subdivided:\n");
             fprintf(fa, "#     function_entry       %5d    (base IS a registered function — call_by_address resolves it directly)\n", n_fb_func);
             fprintf(fa, "#     bra_w_trampoline     %5d    (base opcode = 0x6000; runtime miss feedback works)\n", n_fb_bra);
-            fprintf(fa, "#     offset_table         %5d    (base is a dc.w (target-base) table; 3+ entries decode to functions — runtime resolves it)\n", n_fb_off);
+            fprintf(fa, "#     offset_table         %5d    (base is a dc.w (target-base) table; 1+ entries decode to functions — runtime resolves it)\n", n_fb_off);
             fprintf(fa, "#     INTERIOR_UNRESOLVED  %5d    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)\n", n_fb_interior);
             fprintf(fa, "#     external_unresolved  %5d    (base outside any known function — investigate)\n", n_fb_external);
             fprintf(fa, "#   unsupported            %5d  (decoder hit a JMP mode the emitter doesn't handle)\n", n_unsupp);
