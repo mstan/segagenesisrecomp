@@ -69,6 +69,7 @@ const char *exe_relative(const char *filename)
 #include "cmd_server.h"
 #include "game_spec.h"
 #include "game_layout.h"
+#include "gamepad.h"
 #if SONIC_REVERSE_DEBUG
 #include "reverse_debug.h"
 #endif
@@ -267,18 +268,24 @@ static cc_bool input_requested_cb(void *user_data,
         return result;
     }
 
+    /* Keyboard OR gamepad — either source can drive a button so both
+     * inputs work simultaneously (e.g., D-pad on the controller while a
+     * second player presses keys, or one user mixing the two). */
     const Uint8 *keys = SDL_GetKeyboardState(NULL);
+    int kb = 0;
     switch (button_id) {
-        case CLOWNMDEMU_BUTTON_UP:    return keys[SDL_SCANCODE_UP]     ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_DOWN:  return keys[SDL_SCANCODE_DOWN]   ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_LEFT:  return keys[SDL_SCANCODE_LEFT]   ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_RIGHT: return keys[SDL_SCANCODE_RIGHT]  ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_A:     return keys[SDL_SCANCODE_Z]      ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_B:     return keys[SDL_SCANCODE_X]      ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_C:     return keys[SDL_SCANCODE_C]      ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_START: return keys[SDL_SCANCODE_RETURN] ? cc_true : cc_false;
-        default:                      return cc_false;
+        case CLOWNMDEMU_BUTTON_UP:    kb = keys[SDL_SCANCODE_UP];     break;
+        case CLOWNMDEMU_BUTTON_DOWN:  kb = keys[SDL_SCANCODE_DOWN];   break;
+        case CLOWNMDEMU_BUTTON_LEFT:  kb = keys[SDL_SCANCODE_LEFT];   break;
+        case CLOWNMDEMU_BUTTON_RIGHT: kb = keys[SDL_SCANCODE_RIGHT];  break;
+        case CLOWNMDEMU_BUTTON_A:     kb = keys[SDL_SCANCODE_Z];      break;
+        case CLOWNMDEMU_BUTTON_B:     kb = keys[SDL_SCANCODE_X];      break;
+        case CLOWNMDEMU_BUTTON_C:     kb = keys[SDL_SCANCODE_C];      break;
+        case CLOWNMDEMU_BUTTON_START: kb = keys[SDL_SCANCODE_RETURN]; break;
+        default:                      break;
     }
+    if (kb) return cc_true;
+    return gamepad_button_pressed(button_id);
 }
 
 /*
@@ -872,11 +879,15 @@ int main(int argc, char *argv[])
             fprintf(stderr, "[crash_report] loaded %d symbols from %s\n", n, sym_path);
     }
 
-    /* --- SDL init --- */
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS) != 0) {
+    /* --- SDL init ---
+     * GAMECONTROLLER enables XInput (Xbox pads) and HID gamepads via SDL's
+     * controller database. Init is non-fatal if no controller is attached. */
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS
+                 | SDL_INIT_GAMECONTROLLER) != 0) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         return 1;
     }
+    gamepad_init();
 
     SDL_Window *window = SDL_CreateWindow(
         g_game_spec.display_name ? g_game_spec.display_name : "Sonic the Hedgehog",
@@ -1128,6 +1139,7 @@ int main(int argc, char *argv[])
         if (s_debug_enabled && cmd_server_is_paused()) {
             SDL_Event pev;
             while (SDL_PollEvent(&pev)) {
+                gamepad_handle_event(&pev);
                 if (pev.type == SDL_QUIT) { running = 0; break; }
             }
             if (!running) break;
@@ -1139,6 +1151,7 @@ int main(int argc, char *argv[])
 
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
+            gamepad_handle_event(&ev);
             if (ev.type == SDL_QUIT) running = 0;
             if (ev.type == SDL_KEYDOWN) {
                 if (ev.key.keysym.sym == SDLK_ESCAPE) running = 0;
@@ -1170,9 +1183,29 @@ int main(int argc, char *argv[])
             }
         }
 
-        /* Tab = hold for turbo */
+        /* Controller shoulder taps: LB = quicksave slot 1, RB = quickload
+         * slot 1. Edge-triggered inside gamepad_handle_event so a single
+         * press fires once even at 60 Hz polling. */
+        {
+            int save_slot = gamepad_consume_quicksave();
+            int load_slot = gamepad_consume_quickload();
+            if (save_slot || load_slot) {
+                int slot = save_slot ? save_slot : load_slot;
+                char slot_name[48];
+#if ENABLE_RECOMPILED_CODE
+                snprintf(slot_name, sizeof(slot_name), "native_save_%d.bin", slot);
+#else
+                snprintf(slot_name, sizeof(slot_name), "interp_save_%d.bin", slot);
+#endif
+                if (save_slot) runner_save_state_file(slot_name);
+                else           runner_load_state_file(slot_name);
+            }
+        }
+
+        /* Tab OR controller Back = hold for turbo */
         { const Uint8 *ks = SDL_GetKeyboardState(NULL);
-          turbo = ks[SDL_SCANCODE_TAB] ? 1 : (start_turbo ? 1 : 0); }
+          int held = ks[SDL_SCANCODE_TAB] || gamepad_turbo_held();
+          turbo = held ? 1 : (start_turbo ? 1 : 0); }
 
         /* Zero accum buffers before Iterate(): PSG_Update (and FM_OutputSamples)
          * use += to accumulate into the provided buffer, not overwrite.
@@ -1453,6 +1486,7 @@ int main(int argc, char *argv[])
 #endif
     audio_close();
     SDL_DestroyTexture(texture);
+    gamepad_shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
