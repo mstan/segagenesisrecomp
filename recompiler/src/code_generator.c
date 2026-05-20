@@ -74,6 +74,57 @@ static void addrset_sort(AddrSet *s) {
 }
 
 /* =========================================================================
+ * JMP-table dispatch audit
+ *
+ * Every JMP-table site we emit gets recorded with its classification. At
+ * the end of codegen we write `<game>_dispatch_audit.log` grouping sites
+ * by kind. The danger category is `interior_unresolved`: a `JMP (PC,Dn.W)`
+ * whose base lands on an interior PC of the containing function but my
+ * Duff's-device probe didn't find enough uniform-instruction targets to
+ * emit a switch. After my codegen fix landed in the previous commit this
+ * category should be empty; if a new pattern shows up there in a future
+ * regen, it's a Sonic-2-CPZ-style silent-failure waiting to happen.
+ * ========================================================================= */
+
+typedef enum {
+    JMPAUDIT_STATIC_TARGET = 0,      /* JMP with statically-known target */
+    JMPAUDIT_IN_FUNCTION_SWITCH,     /* (PC,Dn.W) resolved to in-function switch+goto */
+    JMPAUDIT_FALLBACK_HYBRID,        /* (PC,Dn.W) punted to hybrid_jmp_interpret */
+    JMPAUDIT_DYNAMIC_REGISTER,       /* JMP (An) / JMP (d16,An) / similar — not table */
+    JMPAUDIT_UNSUPPORTED,            /* Decode succeeded but emitter couldn't handle */
+} JmpAuditKind;
+
+typedef struct {
+    uint32_t     jmp_addr;
+    uint32_t     func_addr;
+    uint32_t     base;        /* for (PC,Dn.W); 0 otherwise */
+    JmpAuditKind kind;
+    int          n_targets;   /* for IN_FUNCTION_SWITCH */
+} JmpAuditEntry;
+
+static JmpAuditEntry *s_jmp_audit_arr = NULL;
+static int            s_jmp_audit_count = 0;
+static int            s_jmp_audit_cap   = 0;
+
+static void audit_reset(void) { s_jmp_audit_count = 0; }
+
+static void audit_record(uint32_t jmp_addr, uint32_t func_addr, uint32_t base,
+                         JmpAuditKind kind, int n_targets)
+{
+    if (s_jmp_audit_count == s_jmp_audit_cap) {
+        s_jmp_audit_cap = s_jmp_audit_cap ? s_jmp_audit_cap * 2 : 64;
+        s_jmp_audit_arr = (JmpAuditEntry *)realloc(s_jmp_audit_arr,
+                              (size_t)s_jmp_audit_cap * sizeof(JmpAuditEntry));
+    }
+    JmpAuditEntry *e = &s_jmp_audit_arr[s_jmp_audit_count++];
+    e->jmp_addr  = jmp_addr;
+    e->func_addr = func_addr;
+    e->base      = base;
+    e->kind      = kind;
+    e->n_targets = n_targets;
+}
+
+/* =========================================================================
  * ExtReader — sequential walker over instruction extension words
  * ========================================================================= */
 
@@ -1527,6 +1578,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         int mode = (ea >> 3) & 7;
         int reg  = ea & 7;
         if (instr->has_target) {
+            audit_record(instr->addr, func_addr, instr->target_addr,
+                         JMPAUDIT_STATIC_TARGET, 0);
             if (addrset_contains(instrs, instr->target_addr)) {
                 emit_cycle_accounting(f, "  ", estimate_cycles(instr));
                 fprintf(f, "  goto label_%06X;\n", instr->target_addr);
@@ -1536,6 +1589,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             }
         } else if (mode == 2 || mode == 5 || mode == 6 ||
                    (mode == 7 && (reg == 0 || reg == 1))) {
+            audit_record(instr->addr, func_addr, 0,
+                         JMPAUDIT_DYNAMIC_REGISTER, 0);
             char ae[256];
             emit_ea_addr_ex(f, instr, ea, &er, ae, true);
             emit_split_tail_call_expr(f, "  ", ae, *has_sp_adjust != 0,
@@ -1562,6 +1617,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             int nt = probe_pc_idx_targets(rom, instr, instrs, targets,
                                           (int)(sizeof(targets) / sizeof(targets[0])));
             if (nt >= 2) {
+                audit_record(instr->addr, func_addr, base,
+                             JMPAUDIT_IN_FUNCTION_SWITCH, nt);
                 /* Case (a): in-function switch. */
                 fprintf(f, "  /* JMP table at $%06X: in-function dispatch — base $%06X + %s[%d], %d targets */\n",
                         instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg, nt);
@@ -1579,6 +1636,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                         base, xr, xreg);
                 fprintf(f, "  }\n");
             } else {
+                audit_record(instr->addr, func_addr, base,
+                             JMPAUDIT_FALLBACK_HYBRID, 0);
                 /* Case (b): existing fallback. */
                 fprintf(f, "  /* JMP table at $%06X: interpret handler at base $%06X + %s[%d] */\n",
                         instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg);
@@ -1588,6 +1647,8 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                 fprintf(f, "  return;\n");
             }
         } else {
+            audit_record(instr->addr, func_addr, 0,
+                         JMPAUDIT_UNSUPPORTED, 0);
             codegen_diag_record(CGD_TODO_DYNAMIC_JMP_UNSUPPORTED, addr,
                                 instr->words[0], MN_JMP,
                                 func_name, func_addr);
@@ -3197,6 +3258,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
     (void)cfg;
     s_reverse_debug = reverse_debug;
     codegen_diag_reset();
+    audit_reset();
 
     FILE *f_full     = fopen(out_full_path,     "w");
     FILE *f_dispatch = fopen(out_dispatch_path, "w");
@@ -3613,6 +3675,171 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         "void call_by_address(uint32_t addr) {\n"
         "    recomp_call_addr(addr);\n"
         "}\n");
+
+    /* JMP-table dispatch audit. Derive the audit path from the dispatch
+     * path by swapping `_dispatch.c` -> `_dispatch_audit.log`. Skip the
+     * write silently if the path doesn't follow that convention; the audit
+     * is diagnostic, not load-bearing. */
+    {
+        char audit_path[512];
+        size_t dl = strlen(out_dispatch_path);
+        const char *suffix = "_dispatch.c";
+        size_t sl = strlen(suffix);
+        if (dl > sl && strcmp(out_dispatch_path + dl - sl, suffix) == 0) {
+            snprintf(audit_path, sizeof(audit_path),
+                     "%.*s_dispatch_audit.log",
+                     (int)(dl - sl), out_dispatch_path);
+        } else {
+            snprintf(audit_path, sizeof(audit_path), "%s.audit.log", out_dispatch_path);
+        }
+
+        /* Subcategorize FALLBACK_HYBRID entries by what's at `base`:
+         *   function_entry:      base IS a registered function entry
+         *   bra_w_trampoline:    opcode at base is 0x6000 (bra.w) — runtime
+         *                        miss seeds extra_func, then it works
+         *   offset_table:        base is the start of a `dc.w (target - base)`
+         *                        table — at least 3 of the first 4 entries
+         *                        decode to a registered function entry. This
+         *                        is the standard Sonic `move.w table(pc,d.w),d
+         *                        / jmp table(pc,d.w)` dispatch. Works at
+         *                        runtime via call_by_address(base + offset).
+         *   interior_unresolved: none of the above and base is interior to a
+         *                        function — DANGER ZONE, the pre-fix CPZ class.
+         *   external_unresolved: base outside any known function. */
+        #define AUDIT_CLASSIFY_HYBRID(BASE, OUT_KIND) do {                       \
+            uint32_t _b = (BASE);                                                \
+            if (addrset_contains(&all_funcs, _b)) {                              \
+                (OUT_KIND) = "function_entry";                                   \
+            } else {                                                             \
+                uint16_t _op = (rom && _b + 1 < rom->rom_size)                   \
+                               ? ((uint16_t)rom->rom_data[_b] << 8) | rom->rom_data[_b + 1] \
+                               : 0;                                              \
+                if (_op == 0x6000u) {                                            \
+                    (OUT_KIND) = "bra_w_trampoline";                             \
+                } else {                                                         \
+                    /* Offset-table probe: walk up to 16 words and count hits.
+                     * A Duff's-device-style table (the real danger) has every
+                     * entry being a code-as-offset garbage value; none resolve.
+                     * A real `dc.w (target - base)` table typically has all or
+                     * most entries resolving — even sparse ones tend to have
+                     * 2+ unique function targets in the first dozen entries.
+                     * Threshold: 2+ unique resolved targets among the first 8
+                     * words classifies as offset_table; below that, flag as
+                     * INTERIOR_UNRESOLVED so the human can audit. */              \
+                    int _hits = 0;                                               \
+                    uint32_t _seen[8] = {0};                                     \
+                    int _seen_n = 0;                                             \
+                    for (int _w = 0; _w < 8; _w++) {                             \
+                        uint32_t _a = _b + (uint32_t)_w * 2u;                    \
+                        if (_a + 1 >= rom->rom_size) break;                      \
+                        int16_t _off = (int16_t)(((uint16_t)rom->rom_data[_a] << 8) \
+                                                | rom->rom_data[_a + 1]);        \
+                        uint32_t _t = (uint32_t)((int32_t)_b + (int32_t)_off);   \
+                        if (addrset_contains(&all_funcs, _t)) {                  \
+                            int _dup = 0;                                        \
+                            for (int _s = 0; _s < _seen_n; _s++)                 \
+                                if (_seen[_s] == _t) { _dup = 1; break; }        \
+                            if (!_dup) {                                         \
+                                _seen[_seen_n++] = _t;                           \
+                                _hits++;                                         \
+                            }                                                    \
+                        }                                                        \
+                    }                                                            \
+                    if (_hits >= 2) {                                            \
+                        (OUT_KIND) = "offset_table";                             \
+                    } else {                                                     \
+                        uint32_t _own = 0;                                       \
+                        for (int _k = 0; _k < all_funcs.count; _k++) {           \
+                            uint32_t _fa = all_funcs.addrs[_k];                  \
+                            if (_fa <= _b && _fa > _own) _own = _fa;             \
+                        }                                                        \
+                        (OUT_KIND) = (_own != 0 && _own != _b)                   \
+                                     ? "INTERIOR_UNRESOLVED"                     \
+                                     : "external_unresolved";                    \
+                    }                                                            \
+                }                                                                \
+            }                                                                    \
+        } while (0)
+
+        int n_static = 0, n_switch = 0, n_dyn_reg = 0, n_unsupp = 0;
+        int n_fb_func = 0, n_fb_bra = 0, n_fb_off = 0,
+            n_fb_interior = 0, n_fb_external = 0;
+        for (int i = 0; i < s_jmp_audit_count; i++) {
+            switch (s_jmp_audit_arr[i].kind) {
+                case JMPAUDIT_STATIC_TARGET:        n_static++; break;
+                case JMPAUDIT_IN_FUNCTION_SWITCH:   n_switch++; break;
+                case JMPAUDIT_DYNAMIC_REGISTER:     n_dyn_reg++; break;
+                case JMPAUDIT_UNSUPPORTED:          n_unsupp++; break;
+                case JMPAUDIT_FALLBACK_HYBRID: {
+                    const char *sub = "?";
+                    AUDIT_CLASSIFY_HYBRID(s_jmp_audit_arr[i].base, sub);
+                    if      (strcmp(sub, "function_entry") == 0)      n_fb_func++;
+                    else if (strcmp(sub, "bra_w_trampoline") == 0)    n_fb_bra++;
+                    else if (strcmp(sub, "offset_table") == 0)        n_fb_off++;
+                    else if (strcmp(sub, "INTERIOR_UNRESOLVED") == 0) n_fb_interior++;
+                    else                                              n_fb_external++;
+                    break;
+                }
+            }
+        }
+
+        FILE *fa = fopen(audit_path, "w");
+        if (fa) {
+            fprintf(fa, "# JMP-table dispatch audit\n");
+            fprintf(fa, "# total sites: %d\n", s_jmp_audit_count);
+            fprintf(fa, "#\n");
+            fprintf(fa, "# Summary:\n");
+            fprintf(fa, "#   static_target          %5d  (JMP with statically resolved target — safe)\n", n_static);
+            fprintf(fa, "#   in_function_switch     %5d  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)\n", n_switch);
+            fprintf(fa, "#   dynamic_register       %5d  (JMP (An)/(d,An)/(An,Xn) — runtime address from register, safe via call_by_address)\n", n_dyn_reg);
+            fprintf(fa, "#   fallback_hybrid                — JMP(PC,Dn.W) routed through hybrid_jmp_interpret; subdivided:\n");
+            fprintf(fa, "#     function_entry       %5d    (base IS a registered function — call_by_address resolves it directly)\n", n_fb_func);
+            fprintf(fa, "#     bra_w_trampoline     %5d    (base opcode = 0x6000; runtime miss feedback works)\n", n_fb_bra);
+            fprintf(fa, "#     offset_table         %5d    (base is a dc.w (target-base) table; 3+ entries decode to functions — runtime resolves it)\n", n_fb_off);
+            fprintf(fa, "#     INTERIOR_UNRESOLVED  %5d    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)\n", n_fb_interior);
+            fprintf(fa, "#     external_unresolved  %5d    (base outside any known function — investigate)\n", n_fb_external);
+            fprintf(fa, "#   unsupported            %5d  (decoder hit a JMP mode the emitter doesn't handle)\n", n_unsupp);
+            fprintf(fa, "#\n");
+            fprintf(fa, "# When `interior_unresolved` is non-zero, inspect each site — these are\n");
+            fprintf(fa, "# Sonic-2-CPZ-style silent-failure candidates. Either the recompiler's\n");
+            fprintf(fa, "# Duff's-device probe (probe_pc_idx_targets) didn't match, or the table\n");
+            fprintf(fa, "# really is a new pattern that needs new codegen support.\n");
+            fprintf(fa, "#\n");
+            fprintf(fa, "# Format: <jmp_addr>  in func <func>  base <base>  kind=<kind>[ targets=N]\n\n");
+
+            for (int i = 0; i < s_jmp_audit_count; i++) {
+                JmpAuditEntry *e = &s_jmp_audit_arr[i];
+                const char *kind = "?";
+                char sub[40] = {0};
+                switch (e->kind) {
+                    case JMPAUDIT_STATIC_TARGET:      kind = "static_target"; break;
+                    case JMPAUDIT_IN_FUNCTION_SWITCH: kind = "in_function_switch";
+                        snprintf(sub, sizeof(sub), " targets=%d", e->n_targets); break;
+                    case JMPAUDIT_DYNAMIC_REGISTER:   kind = "dynamic_register"; break;
+                    case JMPAUDIT_UNSUPPORTED:        kind = "unsupported"; break;
+                    case JMPAUDIT_FALLBACK_HYBRID: {
+                        const char *cl = "?";
+                        AUDIT_CLASSIFY_HYBRID(e->base, cl);
+                        static char kbuf[64];
+                        snprintf(kbuf, sizeof(kbuf), "fallback_hybrid/%s", cl);
+                        kind = kbuf;
+                        break;
+                    }
+                }
+                fprintf(fa, "$%06X  in func $%06X  base $%06X  kind=%s%s\n",
+                        e->jmp_addr, e->func_addr, e->base, kind, sub);
+            }
+            fclose(fa);
+            printf("[Codegen] Dispatch audit: %d sites (%d static, %d switch, %d hybrid {fn=%d, bra.w=%d, offset_table=%d, interior=%d, ext=%d}, %d dyn_reg, %d unsupp)\n",
+                   s_jmp_audit_count, n_static, n_switch,
+                   n_fb_func + n_fb_bra + n_fb_off + n_fb_interior + n_fb_external,
+                   n_fb_func, n_fb_bra, n_fb_off, n_fb_interior, n_fb_external,
+                   n_dyn_reg, n_unsupp);
+            if (n_fb_interior > 0)
+                printf("[Codegen] WARNING: %d interior_unresolved JMP-table sites — see %s\n",
+                       n_fb_interior, audit_path);
+        }
+    }
 
     addrset_free(&all_funcs);
     fclose(f_full);
