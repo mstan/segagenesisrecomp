@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" alt="Genesis Recomp" width="640" />
+</p>
+
 # Genesis 68K Static Recompiler
 
 A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries into native C code. Paired with the [SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp) runner, **Green Hill Zone (all 3 acts + boss) is fully playable** with correct jumping, audio, sprite art, and object interactions.
