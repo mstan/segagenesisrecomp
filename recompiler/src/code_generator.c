@@ -1057,11 +1057,31 @@ static int probe_pc_idx_targets(const GenesisRom *rom,
 static void scan_function(const GenesisRom *rom, uint32_t start_addr,
                           AddrSet *instrs, AddrSet *labels,
                           const uint32_t *sorted_funcs, int nfuncs,
-                          AddrSet *extern_targets) {
+                          AddrSet *extern_targets,
+                          const uint32_t *extra_seeds, int extra_seed_count) {
     /* Worklist-based CFG walk */
     AddrSet worklist;
     addrset_init(&worklist);
     addrset_insert(&worklist, start_addr);
+
+    /* Disasm-extracted interior PCs that the CFG walker would otherwise
+     * miss — e.g. local labels reached only via `JMP (PC,Dn.W)` (Sonic 2
+     * CPZ Duff's-device buffer-fill loops). Only seed entries that
+     * plausibly belong to THIS function (between start_addr and the next
+     * function's start); cross-function seeds get filtered by the
+     * `addr_belongs_to_other_function` check inside the walk anyway. */
+    if (extra_seeds && extra_seed_count > 0) {
+        uint32_t next_func_start = 0xFFFFFFFFu;
+        for (int i = 0; i < nfuncs; i++) {
+            if (sorted_funcs[i] > start_addr && sorted_funcs[i] < next_func_start)
+                next_func_start = sorted_funcs[i];
+        }
+        for (int i = 0; i < extra_seed_count; i++) {
+            uint32_t s = extra_seeds[i];
+            if (s > start_addr && s < next_func_start)
+                addrset_insert(&worklist, s);
+        }
+    }
 
     while (worklist.count > 0) {
         uint32_t pc = worklist.addrs[--worklist.count];
@@ -1114,6 +1134,26 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
             case MN_DBcc:
                 if (instr.has_target)
                     addrset_insert(&worklist, instr.target_addr);
+                break;
+
+            case MN_BSR:
+            case MN_JSR:
+                /* JSR/BSR targets are normally discovered by FunctionFinder
+                 * (separate pre-pass). But when the target is one of our
+                 * extra_seeds — i.e. a disasm local label — we promote it
+                 * to a function entry here by adding to extern_targets. The
+                 * boundary-splitter then makes it callable via
+                 * call_by_address. Without this, the JSR emit produces a
+                 * `recomp_call_func(func_XXXXXX)` that references an
+                 * undeclared identifier. */
+                if (instr.has_target && extra_seeds && extern_targets) {
+                    for (int s = 0; s < extra_seed_count; s++) {
+                        if (extra_seeds[s] == instr.target_addr) {
+                            addrset_insert(extern_targets, instr.target_addr);
+                            break;
+                        }
+                    }
+                }
                 break;
 
             default:
@@ -3255,7 +3295,6 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                   const char *out_full_path, const char *out_dispatch_path,
                   const AnnotationTable *at, const GameConfig *cfg,
                   bool reverse_debug) {
-    (void)cfg;
     s_reverse_debug = reverse_debug;
     codegen_diag_reset();
     audit_reset();
@@ -3295,7 +3334,9 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             addrset_init(&instrs);
             addrset_init(&labels);
             scan_function(rom, all_funcs.addrs[i], &instrs, &labels,
-                          all_funcs.addrs, all_funcs.count, &extern_targets);
+                          all_funcs.addrs, all_funcs.count, &extern_targets,
+                          cfg ? cfg->extra_seeds : NULL,
+                          cfg ? cfg->extra_seed_count : 0);
             addrset_free(&instrs);
             addrset_free(&labels);
         }
@@ -3347,7 +3388,9 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         addrset_init(&instrs);
         addrset_init(&labels);
         scan_function(rom, func_addr, &instrs, &labels,
-                      all_funcs.addrs, all_funcs.count, NULL);
+                      all_funcs.addrs, all_funcs.count, NULL,
+                      cfg ? cfg->extra_seeds : NULL,
+                      cfg ? cfg->extra_seed_count : 0);
 
         /* Sort instruction addresses */
         addrset_sort(&instrs);

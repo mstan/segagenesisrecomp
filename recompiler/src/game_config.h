@@ -82,6 +82,14 @@ typedef struct {
     uint32_t       *extra_funcs;
     int            extra_func_count;
     int            extra_func_cap;
+    /* Additional INTERIOR PCs to seed scan_function's CFG-walk worklist.
+     * Sourced from disasm local labels (asm68k `.foo` scoped under a
+     * parent global label). NOT promoted to function entries — they're
+     * just hints so the CFG walker discovers PCs that are reached only
+     * by `JMP (PC,Dn.W)` (e.g. the Sonic 2 CPZ Duff's-device pattern). */
+    uint32_t       *extra_seeds;
+    int            extra_seed_count;
+    int            extra_seed_cap;
     uint32_t       *blacklist;
     int            blacklist_count;
     int            blacklist_cap;

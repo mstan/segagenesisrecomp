@@ -3,13 +3,13 @@
 #
 # Summary:
 #   static_target            670  (JMP with statically resolved target — safe)
-#   in_function_switch         1  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
+#   in_function_switch         2  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
 #   dynamic_register           1  (JMP (An)/(d,An)/(An,Xn) — runtime address from register, safe via call_by_address)
 #   fallback_hybrid                — JMP(PC,Dn.W) routed through hybrid_jmp_interpret; subdivided:
 #     function_entry           4    (base IS a registered function — call_by_address resolves it directly)
 #     bra_w_trampoline         1    (base opcode = 0x6000; runtime miss feedback works)
 #     offset_table           291    (base is a dc.w (target-base) table; 3+ entries decode to functions — runtime resolves it)
-#     INTERIOR_UNRESOLVED      3    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)
+#     INTERIOR_UNRESOLVED      2    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)
 #     external_unresolved      0    (base outside any known function — investigate)
 #   unsupported                0  (decoder hit a JMP mode the emitter doesn't handle)
 #
@@ -101,7 +101,7 @@ $00BFB6  in func $00BFB6  base $036602  kind=static_target
 $00C292  in func $00C258  base $00C296  kind=fallback_hybrid/offset_table
 $00C4F8  in func $00C4D0  base $00C4FC  kind=fallback_hybrid/offset_table
 $00D30C  in func $00D27C  base $00D322  kind=in_function_switch targets=16
-$00D6B6  in func $00D69E  base $00D6BC  kind=fallback_hybrid/INTERIOR_UNRESOLVED
+$00D6B6  in func $00D69E  base $00D6BC  kind=in_function_switch targets=16
 $00E5BC  in func $00E5BC  base $00272E  kind=static_target
 $00E5C2  in func $00E5C2  base $00161E  kind=static_target
 $00E5C8  in func $00E5C8  base $00193A  kind=static_target

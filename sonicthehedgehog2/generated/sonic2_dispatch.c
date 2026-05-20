@@ -2065,6 +2065,7 @@ void func_01EA6A(void);
 void func_01EA78(void);
 void func_01EAE0(void);
 void func_01EAF0(void);
+void func_01EB46(void);
 void func_01EB84(void);
 void func_01EBDC(void);
 void func_01EBE6(void);
@@ -7472,6 +7473,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x01EA78u, func_01EA78 },
     { 0x01EAE0u, func_01EAE0 },
     { 0x01EAF0u, func_01EAF0 },
+    { 0x01EB46u, func_01EB46 },
     { 0x01EB84u, func_01EB84 },
     { 0x01EBDCu, func_01EBDC },
     { 0x01EBE6u, func_01EBE6 },
@@ -10827,9 +10829,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0u, NULL }
 };
 
-int game_dispatch_table_size(void) { return 5405; }
+int game_dispatch_table_size(void) { return 5406; }
 uint32_t game_dispatch_table_addr(int i) {
-    return (i >= 0 && i < 5405) ? s_dispatch_table[i].addr : 0;
+    return (i >= 0 && i < 5406) ? s_dispatch_table[i].addr : 0;
 }
 
 typedef struct RecompTailFrame {

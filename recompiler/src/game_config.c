@@ -63,6 +63,14 @@ static void append_extra_func(GameConfig *cfg, uint32_t addr) {
     cfg->extra_funcs[cfg->extra_func_count++] = addr;
 }
 
+static void append_extra_seed(GameConfig *cfg, uint32_t addr) {
+    cfg->extra_seeds = grow_to_fit(cfg->extra_seeds,
+                                   &cfg->extra_seed_cap,
+                                   cfg->extra_seed_count,
+                                   sizeof(uint32_t));
+    cfg->extra_seeds[cfg->extra_seed_count++] = addr;
+}
+
 static void append_blacklist(GameConfig *cfg, uint32_t addr) {
     cfg->blacklist = grow_to_fit(cfg->blacklist,
                                  &cfg->blacklist_cap,
@@ -178,6 +186,14 @@ static bool merge_toml(GameConfig *cfg, toml_table_t *root, const char *src_path
                 if (d.ok) append_extra_func(cfg, (uint32_t)d.u.i);
             }
         }
+        toml_array_t *seeds = toml_array_in(funcs, "extra_seeds");
+        if (seeds) {
+            int n = toml_array_nelem(seeds);
+            for (int i = 0; i < n; i++) {
+                toml_datum_t d = toml_int_at(seeds, i);
+                if (d.ok) append_extra_seed(cfg, (uint32_t)d.u.i);
+            }
+        }
         toml_array_t *bl = toml_array_in(funcs, "blacklist");
         if (bl) {
             int n = toml_array_nelem(bl);
@@ -231,6 +247,7 @@ void game_config_init_empty(GameConfig *cfg) {
 void game_config_free(GameConfig *cfg) {
     free(cfg->jump_tables);
     free(cfg->extra_funcs);
+    free(cfg->extra_seeds);
     free(cfg->blacklist);
     free(cfg->protected_ranges);
     memset(cfg, 0, sizeof(*cfg));

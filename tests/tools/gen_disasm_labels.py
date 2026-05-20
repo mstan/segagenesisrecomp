@@ -35,7 +35,7 @@ LABEL_RE = re.compile(
     r"^\s*\d+/\s*([0-9A-Fa-f]+)\s*:\s+"   # lineno / hex_offset :
     r"(?:\(MACRO\)\s*)?"                    # optional (MACRO) tag
     r"(?:=\$[0-9A-Fa-f]+\s+)?"              # equ-style assignments aren't labels
-    r"([A-Za-z_][A-Za-z0-9_.]*):"          # label terminated by colon
+    r"(\.?[A-Za-z_][A-Za-z0-9_.]*):"       # label terminated by colon (optional leading dot for asm68k local labels)
 )
 # A line that shows the assembler emitted bytes at this address. Two shapes:
 #   "    1234/   ABCD : 46FC 2300           \tmove ..."  (instruction)
@@ -99,21 +99,44 @@ def main() -> int:
         code_labels = {a: n for a, n in code_labels.items() if not skip_re.search(n)}
     skipped_data = sum(1 for _, is_code in labels.values() if not is_code)
 
+    # Global labels become extra_func candidates (whole-program function
+    # entries). Local labels (asm68k `.foo` style, scoped to a parent
+    # global label) are NOT separate functions — they're interior PCs of
+    # their parent function and are typically reached via `JMP (PC,Dn.W)`
+    # or fall-through. Emitting them as extra_func would split the parent
+    # function and break intra-function control flow (rts goes to the
+    # wrong place). Instead emit them under `extra_seeds`, which the
+    # recompiler feeds into scan_function's CFG-walk worklist without
+    # promoting them to function entries.
+    global_labels = {a: n for a, n in code_labels.items() if not n.startswith(".")}
+    local_labels  = {a: n for a, n in code_labels.items() if     n.startswith(".")}
+
     print("# Auto-extracted from AS .lst by gen_disasm_labels.py.")
-    print("# Every labeled CODE byte-offset in the ROM is emitted as an")
-    print("# additional function-entry candidate. Labels at addresses whose")
-    print("# first assembled line is a data directive (dc.b/w/l, ds.b/w/l,")
-    print("# binclude, etc.) are filtered - emitting those would let the")
-    print("# recompiler decode data bytes as 68K instructions and synthesize")
-    print("# calls into garbage addresses.")
+    print("# Two categories:")
+    print("#   [functions].extra        = global labels — function-entry candidates")
+    print("#   [functions].extra_seeds  = local labels (asm68k `.foo`) — interior PCs")
+    print("#                              of the parent function; seeded into")
+    print("#                              scan_function's worklist so the CFG walker")
+    print("#                              discovers JMP (PC,Dn.W) targets like the")
+    print("#                              Sonic-2 CPZ-style Duff's-device buffer fills.")
+    print("# Labels at addresses whose first assembled line is a data directive")
+    print("# (dc.b/w/l, ds.b/w/l, binclude, etc.) are filtered — emitting those")
+    print("# would let the recompiler decode data bytes as 68K instructions and")
+    print("# synthesize calls into garbage addresses.")
     print(f"# Source: {args.lst}")
-    print(f"# Code labels emitted: {len(code_labels)}")
-    print(f"# Data labels skipped: {skipped_data}")
+    print(f"# Global code labels emitted (extra):       {len(global_labels)}")
+    print(f"# Local  code labels emitted (extra_seeds): {len(local_labels)}")
+    print(f"# Data labels skipped:                      {skipped_data}")
     print()
     print("[functions]")
     print("extra = [")
-    for addr in sorted(code_labels):
-        print(f"    0x{addr:06X},   # {code_labels[addr]}")
+    for addr in sorted(global_labels):
+        print(f"    0x{addr:06X},   # {global_labels[addr]}")
+    print("]")
+    print()
+    print("extra_seeds = [")
+    for addr in sorted(local_labels):
+        print(f"    0x{addr:06X},   # {local_labels[addr]}")
     print("]")
     return 0
 
