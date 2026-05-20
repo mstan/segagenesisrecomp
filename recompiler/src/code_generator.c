@@ -918,6 +918,91 @@ static bool addr_belongs_to_other_function(uint32_t addr, uint32_t my_start,
     return sorted_funcs[best] != my_start;
 }
 
+/* =========================================================================
+ * probe_pc_idx_targets — find interior-label dispatch targets of a
+ * `JMP (d8, PC, Xn)` instruction.
+ *
+ * Pattern: code like
+ *     add.w  d2,d2
+ *     jmp    .doPartialLineBlock(pc,d2.w)
+ *   .doPartialLineBlock:
+ *     rept 16
+ *         move.l d0,(a1)+        ; 16 identical 2-byte instructions
+ *     endm
+ *     addq.b #1,d4
+ *     dbf    d1,.doFullLineBlock
+ *     rts
+ *
+ * The JMP lands at base + Dn (Dn is a byte offset). With a uniform-instruction
+ * "Duff's device" tail like the 16x move.l above, Dn picks WHICH instruction
+ * in the sequence to start at. Each landing point is an INTERIOR PC of the
+ * current function — never a function entry, so runtime call_by_address fails
+ * and the dispatch is silently dropped (see runner/glue.c interior-label
+ * silencer). The fix is to emit an in-function switch at codegen time.
+ *
+ * Heuristic for "this is a Duff's device" (vs. e.g. a bra.w jump table):
+ *  - Stop on the first probe address NOT in `instrs` (out of function).
+ *  - Stop on the first opcode that doesn't match the base instruction's
+ *    opcode + byte_length. (Bra.w tables have 4-byte entries with
+ *    non-instruction displacement words between them, so the first probe
+ *    at base+2 fails the `addrset_contains` check and we exit with n=1,
+ *    correctly signalling "not a Duff's device — caller should fall back
+ *    to hybrid_jmp_interpret + bra.w-trampoline path".)
+ *
+ * Returns the number of targets written to `out_targets[]`. Caller decides
+ * whether the result is "enough" to emit a switch (>= 2).
+ * ========================================================================= */
+static int probe_pc_idx_targets(const GenesisRom *rom,
+                                 const M68KInstr *jmp_instr,
+                                 const AddrSet *instrs,
+                                 uint32_t *out_targets,
+                                 int max_targets)
+{
+    if (max_targets <= 0) return 0;
+
+    /* Re-decode the JMP extension word for d8 and the index register.
+     * For `JMP (d8, PC, Xn)`, words[1] is the brief-format extension word:
+     *   bit 15:  0=Dn / 1=An
+     *   bits 14-12: register
+     *   bit 11:  0=W (sign-extended low word) / 1=L
+     *   bits  7-0: d8 (signed displacement)
+     * PC value used for the EA is the address of this extension word,
+     * which is `jmp_instr->addr + 2` (opcode word is at +0). */
+    if (jmp_instr->word_count < 2) return 0;
+    uint16_t ext   = jmp_instr->words[1];
+    int8_t   d8    = (int8_t)(ext & 0xFF);
+    uint32_t base  = (uint32_t)(jmp_instr->addr + 2 + (int32_t)d8);
+
+    /* Anchor: the instruction at `base` defines the uniform-sequence
+     * signature. If `base` isn't even in this function's instruction set,
+     * the dispatch isn't an interior-label one and we bail. */
+    if (!addrset_contains(instrs, base)) return 0;
+
+    M68KInstr first;
+    if (!m68k_decode(rom, base, &first)) return 0;
+    uint16_t first_op  = first.words[0];
+    int      first_len = first.byte_length;
+    if (first_len < 2) return 0;
+
+    int n = 0;
+    /* Probe at every 2-byte boundary — M68K instructions are word-aligned and
+     * `JMP (PC,Dn.W)` uses Dn as a byte offset, so Dn=0,2,4,... are the only
+     * plausible indices for a uniform sequence of 2-byte instructions. For
+     * 4-byte (bra.w) entries the second probe address falls inside the prior
+     * instruction's displacement word, fails `addrset_contains`, and we exit
+     * with n <= 1. */
+    for (int i = 0; i < max_targets; i++) {
+        uint32_t t = (uint32_t)(base + (uint32_t)i * 2u);
+        if (!addrset_contains(instrs, t)) break;
+        M68KInstr probe;
+        if (!m68k_decode(rom, t, &probe)) break;
+        if (probe.words[0] != first_op)  break;
+        if (probe.byte_length != first_len) break;
+        out_targets[n++] = t;
+    }
+    return n;
+}
+
 static void scan_function(const GenesisRom *rom, uint32_t start_addr,
                           AddrSet *instrs, AddrSet *labels,
                           const uint32_t *sorted_funcs, int nfuncs,
@@ -1456,20 +1541,52 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             emit_split_tail_call_expr(f, "  ", ae, *has_sp_adjust != 0,
                                       estimate_cycles(instr));
         } else if (mode == 7 && reg == 3) {
-            /* JMP (d8,PC,Xn) — indexed jump table.  Compute target at runtime
-             * and dispatch via hybrid_jmp_interpret (interpreter fallback). */
+            /* JMP (d8,PC,Xn) — indexed jump.  Two cases:
+             *   (a) Interior dispatch ("Duff's device"): the table lands on a
+             *       uniform sequence of in-function instructions. Emit an
+             *       in-function switch + goto so we never round-trip through
+             *       call_by_address (which would fail silently for these
+             *       interior PCs).
+             *   (b) Anything else (e.g. bra.w-trampoline jump tables, or
+             *       targets that leave this function): fall back to
+             *       hybrid_jmp_interpret. */
             uint32_t pc_addr = instr->addr + er.bp;
             uint16_t ext = er_next(&er);
             int xreg  = (ext >> 12) & 7;
             int xtype = (ext >> 15) & 1;
             int8_t d8 = (int8_t)(ext & 0xFF);
             const char *xr = xtype ? "g_cpu.A" : "g_cpu.D";
-            fprintf(f, "  /* JMP table at $%06X: interpret handler at base $%06X + %s[%d] */\n",
-                    instr->addr, pc_addr + d8, xr + 6 /* skip "g_cpu." */, xreg);
-            emit_cycle_accounting(f, "  ", estimate_cycles(instr));
-            fprintf(f, "  hybrid_jmp_interpret(0x%08Xu + (uint32_t)(int16_t)%s[%d]);\n",
-                    pc_addr + (int32_t)d8, xr, xreg);
-            fprintf(f, "  return;\n");
+            uint32_t base = pc_addr + (int32_t)d8;
+
+            uint32_t targets[32];
+            int nt = probe_pc_idx_targets(rom, instr, instrs, targets,
+                                          (int)(sizeof(targets) / sizeof(targets[0])));
+            if (nt >= 2) {
+                /* Case (a): in-function switch. */
+                fprintf(f, "  /* JMP table at $%06X: in-function dispatch — base $%06X + %s[%d], %d targets */\n",
+                        instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg, nt);
+                emit_cycle_accounting(f, "  ", estimate_cycles(instr));
+                fprintf(f, "  switch ((int16_t)%s[%d]) {\n", xr, xreg);
+                for (int t = 0; t < nt; t++) {
+                    int32_t off = (int32_t)(targets[t] - base);
+                    fprintf(f, "    case %d: goto label_%06X;\n", off, targets[t]);
+                }
+                /* Unrecognized index → fall back to hybrid dispatch. Should be
+                 * unreachable for correctly-generated Duff's-device tables, but
+                 * the existing hybrid path + interior_label_misses.log will
+                 * surface any blind spot. */
+                fprintf(f, "    default: hybrid_jmp_interpret(0x%08Xu + (uint32_t)(int16_t)%s[%d]); return;\n",
+                        base, xr, xreg);
+                fprintf(f, "  }\n");
+            } else {
+                /* Case (b): existing fallback. */
+                fprintf(f, "  /* JMP table at $%06X: interpret handler at base $%06X + %s[%d] */\n",
+                        instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg);
+                emit_cycle_accounting(f, "  ", estimate_cycles(instr));
+                fprintf(f, "  hybrid_jmp_interpret(0x%08Xu + (uint32_t)(int16_t)%s[%d]);\n",
+                        base, xr, xreg);
+                fprintf(f, "  return;\n");
+            }
         } else {
             codegen_diag_record(CGD_TODO_DYNAMIC_JMP_UNSUPPORTED, addr,
                                 instr->words[0], MN_JMP,
@@ -3172,6 +3289,28 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
 
         /* Sort instruction addresses */
         addrset_sort(&instrs);
+
+        /* Interior-dispatch pre-pass: any JMP (d8,PC,Xn) inside this function
+         * whose targets land on a uniform sequence of in-function instructions
+         * (Duff's device) needs `label_XXXXXX:;` at each landing point so the
+         * MN_JMP emitter can emit a switch + goto rather than punting to
+         * hybrid_jmp_interpret (which would silently fail at runtime — see
+         * runner/glue.c interior-label silencer). */
+        for (int j = 0; j < instrs.count; j++) {
+            uint32_t pc = instrs.addrs[j];
+            M68KInstr probe;
+            if (!m68k_decode(rom, pc, &probe)) continue;
+            if (probe.mnemonic != MN_JMP) continue;
+            int pmode = (probe.src_ea >> 3) & 7;
+            int preg  = probe.src_ea & 7;
+            if (pmode != 7 || preg != 3) continue;   /* not (d8, PC, Xn) */
+            uint32_t targets[32];
+            int nt = probe_pc_idx_targets(rom, &probe, &instrs, targets,
+                                          (int)(sizeof(targets) / sizeof(targets[0])));
+            if (nt < 2) continue;   /* leave to hybrid_jmp_interpret fallback */
+            for (int t = 0; t < nt; t++)
+                addrset_insert(&labels, targets[t]);
+        }
 
         /* If the entry address is not the first sorted instruction (e.g. because
          * the function's CFG reaches backward addresses like NemDec callbacks),
