@@ -229,6 +229,10 @@ static const char *size_read_fn(M68KSize sz) {
  * native and oracle targets). When false, emission is byte-for-byte
  * identical to the pre-Tier-1 baseline. */
 static bool s_reverse_debug = false;
+/* Set by codegen_emit so emit_instr can probe the offset-table pattern
+ * without dragging the whole GameConfig into every emit signature. */
+static const uint32_t *s_extra_seeds      = NULL;
+static int             s_extra_seed_count = 0;
 
 /*
  * Set by the per-instruction emit loop just before processing a Bcc
@@ -1054,6 +1058,67 @@ static int probe_pc_idx_targets(const GenesisRom *rom,
     return n;
 }
 
+/* =========================================================================
+ * probe_offset_table_targets — decode a `dc.w (target - base)` offset table.
+ *
+ * Sister probe to probe_pc_idx_targets. Where that one handles Duff's-device
+ * patterns (JMP into the start of a uniform instruction sequence), this one
+ * handles the standard Sonic `move.w table(pc,Dn.W),Dn / jmp table(pc,Dn.W)`
+ * dispatch where the table contains signed 16-bit offsets to interior labels
+ * of the same function (e.g. ObjB2_* in Sonic 2 at $03AD0C / $03AD2A).
+ *
+ * The audit already classifies these sites as `offset_table` based on whether
+ * the decoded targets land on registered function entries. This probe is
+ * stricter: it ONLY accepts a target if the disasm has explicitly marked it
+ * as a label (i.e. the target appears in `extra_seeds`). That avoids false
+ * positives where a word-as-offset coincidentally lands on an unrelated PC.
+ *
+ * Outputs the OFFSET VALUES used by the consumer's switch cases (since the
+ * runtime expression is `g_cpu.Dn == loaded_offset_value`, NOT byte index).
+ *
+ * Returns count; caller emits a switch with case constants = out_offsets.
+ * ========================================================================= */
+static int probe_offset_table_targets(const GenesisRom *rom,
+                                       const M68KInstr *jmp_instr,
+                                       const AddrSet *instrs,
+                                       const uint32_t *extra_seeds,
+                                       int extra_seed_count,
+                                       int32_t  *out_offsets,
+                                       uint32_t *out_targets,
+                                       int max_targets)
+{
+    if (max_targets <= 0)              return 0;
+    if (!extra_seeds || extra_seed_count <= 0) return 0;
+    if (jmp_instr->word_count < 2)     return 0;
+
+    uint16_t ext  = jmp_instr->words[1];
+    int8_t   d8   = (int8_t)(ext & 0xFF);
+    uint32_t base = (uint32_t)(jmp_instr->addr + 2 + (int32_t)d8);
+
+    int n = 0;
+    for (int i = 0; i < max_targets; i++) {
+        uint32_t a = base + (uint32_t)i * 2u;
+        if (!rom || a + 1 >= rom->rom_size) break;
+        int16_t off = (int16_t)(((uint16_t)rom->rom_data[a] << 8)
+                              | rom->rom_data[a + 1]);
+        uint32_t t = (uint32_t)((int32_t)base + (int32_t)off);
+        /* Must land on an instruction in THIS function — extra_seeds was
+         * already added to instrs by the worklist seeding, so this check
+         * is the strict membership test. */
+        if (!addrset_contains(instrs, t)) break;
+        /* AND must be explicitly marked by the disasm. */
+        int seeded = 0;
+        for (int s = 0; s < extra_seed_count; s++) {
+            if (extra_seeds[s] == t) { seeded = 1; break; }
+        }
+        if (!seeded) break;
+        out_offsets[n] = (int32_t)off;
+        out_targets[n] = t;
+        n++;
+    }
+    return n;
+}
+
 static void scan_function(const GenesisRom *rom, uint32_t start_addr,
                           AddrSet *instrs, AddrSet *labels,
                           const uint32_t *sorted_funcs, int nfuncs,
@@ -1636,15 +1701,15 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             emit_split_tail_call_expr(f, "  ", ae, *has_sp_adjust != 0,
                                       estimate_cycles(instr));
         } else if (mode == 7 && reg == 3) {
-            /* JMP (d8,PC,Xn) — indexed jump.  Two cases:
-             *   (a) Interior dispatch ("Duff's device"): the table lands on a
-             *       uniform sequence of in-function instructions. Emit an
-             *       in-function switch + goto so we never round-trip through
-             *       call_by_address (which would fail silently for these
-             *       interior PCs).
-             *   (b) Anything else (e.g. bra.w-trampoline jump tables, or
-             *       targets that leave this function): fall back to
-             *       hybrid_jmp_interpret. */
+            /* JMP (d8,PC,Xn) — indexed jump.  Three patterns we recognise:
+             *   (a) Duff's device: the table base is the first of a uniform
+             *       sequence of in-function instructions (CPZ/HPZ scroll).
+             *   (b) Offset table to interior labels: `dc.w (target - base)`
+             *       entries point to anonymous local labels of the same
+             *       function (ObjB2_* DEZ-boss state machines).
+             *   (c) Anything else (e.g. bra.w-trampoline / function-entry
+             *       tables, where the target IS a registered function):
+             *       runtime dispatch via hybrid_jmp_interpret. */
             uint32_t pc_addr = instr->addr + er.bp;
             uint16_t ext = er_next(&er);
             int xreg  = (ext >> 12) & 7;
@@ -1653,32 +1718,58 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             const char *xr = xtype ? "g_cpu.A" : "g_cpu.D";
             uint32_t base = pc_addr + (int32_t)d8;
 
-            uint32_t targets[32];
-            int nt = probe_pc_idx_targets(rom, instr, instrs, targets,
-                                          (int)(sizeof(targets) / sizeof(targets[0])));
-            if (nt >= 2) {
+            uint32_t pc_targets[32];
+            int npc = probe_pc_idx_targets(rom, instr, instrs, pc_targets,
+                                           (int)(sizeof(pc_targets) / sizeof(pc_targets[0])));
+            int32_t  ot_offsets[32];
+            uint32_t ot_targets[32];
+            int not_ = 0;
+            if (npc < 2) {
+                /* Try the offset-table pattern only if the Duff's-device
+                 * probe didn't find a uniform sequence. */
+                not_ = probe_offset_table_targets(rom, instr, instrs,
+                                                  s_extra_seeds, s_extra_seed_count,
+                                                  ot_offsets, ot_targets,
+                                                  (int)(sizeof(ot_targets) / sizeof(ot_targets[0])));
+            }
+            if (npc >= 2) {
+                /* Case (a): Duff's-device-style in-function switch. */
                 audit_record(instr->addr, func_addr, base,
-                             JMPAUDIT_IN_FUNCTION_SWITCH, nt);
-                /* Case (a): in-function switch. */
-                fprintf(f, "  /* JMP table at $%06X: in-function dispatch — base $%06X + %s[%d], %d targets */\n",
-                        instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg, nt);
+                             JMPAUDIT_IN_FUNCTION_SWITCH, npc);
+                fprintf(f, "  /* JMP table at $%06X: in-function dispatch — base $%06X + %s[%d], %d targets (Duff's device) */\n",
+                        instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg, npc);
                 emit_cycle_accounting(f, "  ", estimate_cycles(instr));
                 fprintf(f, "  switch ((int16_t)%s[%d]) {\n", xr, xreg);
-                for (int t = 0; t < nt; t++) {
-                    int32_t off = (int32_t)(targets[t] - base);
-                    fprintf(f, "    case %d: goto label_%06X;\n", off, targets[t]);
+                for (int t = 0; t < npc; t++) {
+                    int32_t off = (int32_t)(pc_targets[t] - base);
+                    fprintf(f, "    case %d: goto label_%06X;\n", off, pc_targets[t]);
                 }
-                /* Unrecognized index → fall back to hybrid dispatch. Should be
-                 * unreachable for correctly-generated Duff's-device tables, but
-                 * the existing hybrid path + interior_label_misses.log will
-                 * surface any blind spot. */
+                fprintf(f, "    default: hybrid_jmp_interpret(0x%08Xu + (uint32_t)(int16_t)%s[%d]); return;\n",
+                        base, xr, xreg);
+                fprintf(f, "  }\n");
+            } else if (not_ >= 1) {
+                /* Case (b): offset-table dispatch — `dc.w (target - base)`
+                 * rows pointing to interior labels (anonymous `+:` / `-:`
+                 * in asm68k). Only emitted when EVERY discovered target is
+                 * in the disasm's seed list (strict filter — see
+                 * probe_offset_table_targets). */
+                audit_record(instr->addr, func_addr, base,
+                             JMPAUDIT_IN_FUNCTION_SWITCH, not_);
+                fprintf(f, "  /* JMP table at $%06X: in-function dispatch — base $%06X + %s[%d], %d targets (offset table) */\n",
+                        instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg, not_);
+                emit_cycle_accounting(f, "  ", estimate_cycles(instr));
+                fprintf(f, "  switch ((int16_t)%s[%d]) {\n", xr, xreg);
+                for (int t = 0; t < not_; t++) {
+                    fprintf(f, "    case %d: goto label_%06X;\n",
+                            ot_offsets[t], ot_targets[t]);
+                }
                 fprintf(f, "    default: hybrid_jmp_interpret(0x%08Xu + (uint32_t)(int16_t)%s[%d]); return;\n",
                         base, xr, xreg);
                 fprintf(f, "  }\n");
             } else {
+                /* Case (c): nothing recognised — fall back to runtime dispatch. */
                 audit_record(instr->addr, func_addr, base,
                              JMPAUDIT_FALLBACK_HYBRID, 0);
-                /* Case (b): existing fallback. */
                 fprintf(f, "  /* JMP table at $%06X: interpret handler at base $%06X + %s[%d] */\n",
                         instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg);
                 emit_cycle_accounting(f, "  ", estimate_cycles(instr));
@@ -3296,6 +3387,8 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                   const AnnotationTable *at, const GameConfig *cfg,
                   bool reverse_debug) {
     s_reverse_debug = reverse_debug;
+    s_extra_seeds      = cfg ? cfg->extra_seeds      : NULL;
+    s_extra_seed_count = cfg ? cfg->extra_seed_count : 0;
     codegen_diag_reset();
     audit_reset();
 
@@ -3396,11 +3489,20 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         addrset_sort(&instrs);
 
         /* Interior-dispatch pre-pass: any JMP (d8,PC,Xn) inside this function
-         * whose targets land on a uniform sequence of in-function instructions
-         * (Duff's device) needs `label_XXXXXX:;` at each landing point so the
-         * MN_JMP emitter can emit a switch + goto rather than punting to
-         * hybrid_jmp_interpret (which would silently fail at runtime — see
-         * runner/glue.c interior-label silencer). */
+         * whose targets land on in-function instructions needs `label_XXXXXX:;`
+         * at each landing point so the MN_JMP emitter can emit a switch + goto
+         * rather than punting to hybrid_jmp_interpret (which would silently
+         * fail at runtime — see runner/glue.c interior-label silencer).
+         *
+         * Two patterns covered:
+         *   probe_pc_idx_targets    — Duff's device: JMP into a uniform
+         *                             sequence of in-function instructions
+         *                             (e.g. CPZ/HPZ 16x move.l d0,(a1)+).
+         *   probe_offset_table_targets — standard Sonic offset table where
+         *                             entries are `dc.w (target - base)`
+         *                             pointing to interior labels of the
+         *                             same function (e.g. ObjB2_* dispatch
+         *                             at $03AD0C / $03AD2A). */
         for (int j = 0; j < instrs.count; j++) {
             uint32_t pc = instrs.addrs[j];
             M68KInstr probe;
@@ -3409,12 +3511,25 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             int pmode = (probe.src_ea >> 3) & 7;
             int preg  = probe.src_ea & 7;
             if (pmode != 7 || preg != 3) continue;   /* not (d8, PC, Xn) */
-            uint32_t targets[32];
-            int nt = probe_pc_idx_targets(rom, &probe, &instrs, targets,
-                                          (int)(sizeof(targets) / sizeof(targets[0])));
-            if (nt < 2) continue;   /* leave to hybrid_jmp_interpret fallback */
-            for (int t = 0; t < nt; t++)
-                addrset_insert(&labels, targets[t]);
+            uint32_t pc_targets[32];
+            int npc = probe_pc_idx_targets(rom, &probe, &instrs, pc_targets,
+                                           (int)(sizeof(pc_targets) / sizeof(pc_targets[0])));
+            if (npc >= 2) {
+                for (int t = 0; t < npc; t++)
+                    addrset_insert(&labels, pc_targets[t]);
+                continue;
+            }
+            int32_t  ot_offsets[32];
+            uint32_t ot_targets[32];
+            int not_ = probe_offset_table_targets(rom, &probe, &instrs,
+                                                  cfg ? cfg->extra_seeds : NULL,
+                                                  cfg ? cfg->extra_seed_count : 0,
+                                                  ot_offsets, ot_targets,
+                                                  (int)(sizeof(ot_targets) / sizeof(ot_targets[0])));
+            if (not_ >= 1) {
+                for (int t = 0; t < not_; t++)
+                    addrset_insert(&labels, ot_targets[t]);
+            }
         }
 
         /* If the entry address is not the first sorted instruction (e.g. because

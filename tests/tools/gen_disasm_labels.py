@@ -37,6 +37,17 @@ LABEL_RE = re.compile(
     r"(?:=\$[0-9A-Fa-f]+\s+)?"              # equ-style assignments aren't labels
     r"(\.?[A-Za-z_][A-Za-z0-9_.]*):"       # label terminated by colon (optional leading dot for asm68k local labels)
 )
+# asm68k anonymous local labels: `+`, `-`, `++`, `--`, ... with no trailing
+# colon in the .lst output. These are extremely common in the Sonic disasms
+# as short-range jump targets (`bra.s +`, `beq.s -`, etc.) and as the
+# landing points of single-entry offset tables like the ObjB2_* dispatchers
+# at $03AD0C / $03AD2A. Treating them as local-label seeds lets the CFG
+# walker discover the instruction body they introduce, which means the
+# JMP-table emitter can route to them via in-function switch.
+ANON_LABEL_RE = re.compile(
+    r"^\s*\d+/\s*([0-9A-Fa-f]+)\s*:\s+"   # lineno / hex_offset :
+    r"([+\-]+)(?=\s|;|$)"                   # one or more + / - chars, no colon
+)
 # A line that shows the assembler emitted bytes at this address. Two shapes:
 #   "    1234/   ABCD : 46FC 2300           \tmove ..."  (instruction)
 #   "    1235/   ABD0 : 0008                       dc.w ..."  (data)
@@ -68,6 +79,14 @@ def scan_lst(path: str, max_addr: int):
                 addr = int(m.group(1), 16)
                 if addr < max_addr:
                     labels.setdefault(addr, m.group(2))
+                continue
+            a = ANON_LABEL_RE.match(line)
+            if a:
+                addr = int(a.group(1), 16)
+                if addr < max_addr:
+                    # Use the +/- glyph as the name; the parent function
+                    # implied by surrounding context is enough for triage.
+                    labels.setdefault(addr, a.group(2))
                 continue
             e = EMIT_RE.match(line)
             if not e: continue
@@ -108,8 +127,12 @@ def main() -> int:
     # wrong place). Instead emit them under `extra_seeds`, which the
     # recompiler feeds into scan_function's CFG-walk worklist without
     # promoting them to function entries.
-    global_labels = {a: n for a, n in code_labels.items() if not n.startswith(".")}
-    local_labels  = {a: n for a, n in code_labels.items() if     n.startswith(".")}
+    # Anonymous `+` / `-` labels are NEVER global function entries — they're
+    # scoped local jump targets. Lump them with the dotted local labels.
+    def _is_local(name: str) -> bool:
+        return name.startswith(".") or name[0] in "+-"
+    global_labels = {a: n for a, n in code_labels.items() if not _is_local(n)}
+    local_labels  = {a: n for a, n in code_labels.items() if     _is_local(n)}
 
     print("# Auto-extracted from AS .lst by gen_disasm_labels.py.")
     print("# Two categories:")

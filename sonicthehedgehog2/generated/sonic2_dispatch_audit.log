@@ -3,13 +3,13 @@
 #
 # Summary:
 #   static_target            670  (JMP with statically resolved target — safe)
-#   in_function_switch         2  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
+#   in_function_switch         4  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
 #   dynamic_register           1  (JMP (An)/(d,An)/(An,Xn) — runtime address from register, safe via call_by_address)
 #   fallback_hybrid                — JMP(PC,Dn.W) routed through hybrid_jmp_interpret; subdivided:
 #     function_entry           4    (base IS a registered function — call_by_address resolves it directly)
 #     bra_w_trampoline         1    (base opcode = 0x6000; runtime miss feedback works)
 #     offset_table           291    (base is a dc.w (target-base) table; 3+ entries decode to functions — runtime resolves it)
-#     INTERIOR_UNRESOLVED      2    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)
+#     INTERIOR_UNRESOLVED      0    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)
 #     external_unresolved      0    (base outside any known function — investigate)
 #   unsupported                0  (decoder hit a JMP mode the emitter doesn't handle)
 #
@@ -902,8 +902,8 @@ $03A402  in func $03A3F8  base $03A406  kind=fallback_hybrid/offset_table
 $03A69A  in func $03A68A  base $03A69E  kind=fallback_hybrid/offset_table
 $03A79A  in func $03A790  base $03A79E  kind=fallback_hybrid/offset_table
 $03AC74  in func $03AC6A  base $03AC78  kind=fallback_hybrid/offset_table
-$03AD16  in func $03AD0C  base $03AD1A  kind=fallback_hybrid/INTERIOR_UNRESOLVED
-$03AD34  in func $03AD2A  base $03AD38  kind=fallback_hybrid/INTERIOR_UNRESOLVED
+$03AD16  in func $03AD0C  base $03AD1A  kind=in_function_switch targets=1
+$03AD34  in func $03AD2A  base $03AD38  kind=in_function_switch targets=1
 $03AD4C  in func $03AD42  base $03AD50  kind=fallback_hybrid/offset_table
 $03B2E8  in func $03B2DE  base $03B2EC  kind=fallback_hybrid/offset_table
 $03B374  in func $03B36A  base $03B378  kind=fallback_hybrid/offset_table
