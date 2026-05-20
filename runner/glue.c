@@ -170,6 +170,11 @@ static uint32_t s_watchdog_counter = 0;
 
 #if SONIC_REVERSE_DEBUG
 extern uint32_t g_rdb_current_func;
+#else
+/* Stub so interior-label miss diagnostics in genesis_log_dispatch_miss
+ * compile in builds without reverse_debug (Sonic 1 default). The value
+ * stays 0 there — the addr + frame fields still pinpoint the failure. */
+static uint32_t g_rdb_current_func = 0;
 #endif
 
 #include "crash_report.h"
@@ -1401,16 +1406,44 @@ void genesis_log_dispatch_miss(uint32_t addr)
     g_miss_last_addr  = addr;
     g_miss_last_frame = g_frame_count;
 
-    /* Skip TRUE interior labels — these are valid JMP targets inside
-     * existing functions, NOT missing function entry points.  EXCEPT:
-     * if the bytes there are a bra.w trampoline, we almost certainly
-     * hit a jmp-table entry that silently failed dispatch (ISSUE-003
-     * class).  Fall through to log as a regular miss so the user can
-     * seed it via extra_func.  Non-bra.w interior labels remain silent
-     * — they would trigger the boundary-splitter and may need
-     * hand-blacklisting, so humans decide. */
-    if (is_interior_label(addr) && !is_bra_w_trampoline(addr))
+    /* TRUE interior labels — addresses inside an existing function but not
+     * its entry. They are NEVER valid extra_func seeds (the recompiler
+     * would split the parent function and produce broken code).  But they
+     * ARE a real runtime failure: the recompiler punted some indirect
+     * dispatch to hybrid_jmp_interpret -> call_by_address, and that
+     * looked up an interior PC that isn't in the dispatch table.  This
+     * is the JMP-into-uniform-sequence (Duff's device) class of bug.
+     *
+     * Log to a SEPARATE file + stderr so the failure is loud without
+     * polluting dispatch_misses.log (which the recompiler consumes as
+     * extra_func candidates).  bra.w trampolines fall through to the
+     * regular path — they ARE valid extra_func seeds. */
+    if (is_interior_label(addr) && !is_bra_w_trampoline(addr)) {
+        /* Per-address dedup so we don't spam: same s_miss_unique_addrs[]
+         * pool the regular-miss path uses (separate dedup would just
+         * double the bookkeeping). */
+        for (int i = 0; i < g_miss_unique_count; i++)
+            if (g_miss_unique_addrs[i] == addr)
+                return;
+        if (g_miss_unique_count < MAX_MISS_UNIQUE)
+            g_miss_unique_addrs[g_miss_unique_count++] = addr;
+
+        fprintf(stderr,
+                "[dispatch] interior-label miss: $%06X inside func $%06X "
+                "at frame %" PRIu64 " — likely JMP-table into uniform "
+                "instruction sequence (e.g. Duff's device). Recompiler "
+                "should emit an in-function switch, not call_by_address.\n",
+                addr, g_rdb_current_func, g_frame_count);
+
+        extern const char *exe_relative(const char *);
+        FILE *mf = fopen(exe_relative("interior_label_misses.log"), "a");
+        if (mf) {
+            fprintf(mf, "addr=0x%06X in_func=0x%06X frame=%" PRIu64 "\n",
+                    addr, g_rdb_current_func, g_frame_count);
+            fclose(mf);
+        }
         return;
+    }
 
     /* Skip out-of-ROM addresses */
     if (addr > 0x80000) return;
