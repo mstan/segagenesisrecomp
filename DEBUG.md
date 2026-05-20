@@ -132,6 +132,54 @@ functionality.)
 The Wave 5 plan rationalizes these into a `tools/genesis/` shared root with
 per-game subdirectories.
 
+## zone_smoke.py — visual regression harness
+
+`tools/zone_smoke.py` is the visual counterpart to `boot_smoke.py`. Where
+boot_smoke hashes WRAM at a single frame (state regression), zone_smoke
+hashes the FRAMEBUFFER at many frames during a scripted gameplay run
+(visual regression). It's the safety net for codegen / runner changes
+that could silently break what the game renders — exactly the class of
+bug the CPZ scroll fix surfaced.
+
+The runner exposes `--input-script <path>` (scripted button timeline +
+RAM assertions; see `runner/input_script.h`) and `--hash-frames N` (emits
+a `[FBHASH] frame=N w=W h=H hash=0xHEX` stderr line every N wall frames).
+zone_smoke wires these together: launches the runner, parses the FBHASH
+lines, diffs against a checked-in baseline JSON.
+
+Per-game wrappers:
+
+- Sonic 2: `_smoke.bat` at the release repo root.
+
+Manual invocation (from the submodule):
+
+```bash
+# First capture (or after an intentional change):
+python tools/zone_smoke.py --game sonic2 \
+    --input ../../SonicTheHedgehog2Recomp/tools/smoke_enter_level_run_right.input \
+    --hash-frames 60 --write-baseline
+
+# Subsequent regression check:
+python tools/zone_smoke.py --game sonic2 \
+    --input ../../SonicTheHedgehog2Recomp/tools/smoke_enter_level_run_right.input \
+    --hash-frames 60
+```
+
+Exit codes: `0` match, `1` divergence (visible behaviour changed),
+`2` environment / runner error, `3` no baseline yet.
+
+A divergence after a codegen / runner change usually means one of:
+1. The change was wrong — investigate the diff (use `--keep-log` to save
+   the runner's full stderr).
+2. The change is intentional and the baseline needs refreshing — re-run
+   with `--write-baseline` AND commit the new baseline alongside the
+   code change that justifies it (same discipline as boot_smoke
+   baselines per PRINCIPLES.md #23).
+
+Adding new zones / games: drop a new `.input` script next to the
+existing ones and capture a baseline. The harness is game-agnostic; only
+the `.input` flow and the resulting baseline JSON are per-zone.
+
 ## boot_smoke.py — Wave 0B safety net
 
 `tools/boot_smoke.py` captures a deterministic minimal-fields snapshot at
