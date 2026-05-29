@@ -2018,8 +2018,17 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
     }
 
     if (strcmp(cmd, "pause") == 0) {
-        s_paused = 1;
-        send_ok(id);
+        /* No-op by design (ported from snesrecomp). Pausing the simulation to
+         * "freeze the ring for query" is the same anti-pattern as
+         * arm-then-capture: it synchronizes the observer with the system
+         * instead of querying the always-on ring for the window of interest
+         * (PRINCIPLES #17/#22). Rings are sized to cover realistic query
+         * latency; if they aren't large enough, enlarge the ring, do not
+         * pause. Use frame_timeseries / get_frame / rdb_* on the free-running
+         * rings instead. */
+        send_err(id, "pause is disabled by policy; query the always-on rings "
+                     "(frame_timeseries / get_frame / rdb_*) for the window of "
+                     "interest. If the ring is too small, enlarge it.");
     } else if (strcmp(cmd, "continue") == 0) {
         s_paused = 0;
         send_ok(id);
