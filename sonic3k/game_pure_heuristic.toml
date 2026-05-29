@@ -1,0 +1,27 @@
+# game_pure_heuristic.toml — exercise #2 harness config.
+# Identical to game.toml EXCEPT it carries NO disasm seeds: no `annotations`,
+# no `discovery_files`, no `[functions].extra`. The recompiler therefore
+# discovers functions purely from the heuristic finder (reset/IRQ vectors +
+# CFG walk + bra-ladder auto-detect + Duff's-device/offset-table scan-time
+# seeding + boundary-split). Diffing this run's --dump-functions output (H)
+# against the full game.toml run (F_full) and the disasm label set (T) yields
+# heuristic misses (T\H) and false positives (H\T_code). Separate
+# output_prefix so it never clobbers the real generated/ TUs.
+[game]
+output_prefix = "sonic3k_pure"
+
+[ram_layout]
+game_mode      = 0xFFF600
+vint_runcount  = 0xFFFE0C
+vint_routine   = 0xFFF62A
+plc_pending    = 0x000000
+initial_ssp    = 0xFFFE00
+vbla_stack     = 0xFFFE00
+intr_stack     = 0xFFFE00
+player_object  = 0xFFB000
+level_modes    = [0x08, 0x0C]
+
+[functions]
+blacklist = [
+    0x00043A,   # Test_Checksum — same blacklist as game.toml (keep H comparable)
+]

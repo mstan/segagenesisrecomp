@@ -32,38 +32,87 @@
 
 [game]
 output_prefix = "sonic3k"
-# annotations = "annotations_from_disasm.csv"   # not yet generated
 
-# Discovery files (auto-generated; uncomment when the disasm tools are
-# ported against skdisasm). See game.toml for Sonic 1/2 for the workflow.
-# discovery_files = [
-#     "sonic3k.disasm_labels.toml",
-#     "sonic3k.disasm_jumptables.toml",
-# ]
+# Annotation CSV: 4094 (addr,name) pairs from the BYTE-PERFECT skdisasm
+# build (S&K half + S3 half @ +0x200000). Surfaces real labels in
+# generated C (EntryPoint, GameLoop, VInt, Wait_VSync, …) instead of
+# func_XXXXXX. Regenerate via:
+#   python ../tests/tools/gen_annotations_csv.py --lst skdisasm/sonic3k.lst \
+#       --max-addr 0x200000 --offset 0          -o ann_sk.csv
+#   python ../tests/tools/gen_annotations_csv.py --lst skdisasm/s3.lst \
+#       --max-addr 0x200000 --offset 0x200000   -o ann_s3.csv
+#   (then concatenate ann_sk.csv + ann_s3.csv, skipping the 2nd header)
+annotations = "annotations_from_disasm.csv"
+
+# Disasm "is this address code?" oracle (instruction-start set, both halves
+# with the S3 +0x200000 offset). Gates boundary-split promotion: a scan/seed
+# target landing on a disasm DATA address is never promoted to a function,
+# eliminating the data-as-code false-positive class (Eni_Decomp_Masks, sine
+# tables, art/mapping tables). Regenerate via:
+#   python ../tests/tools/gen_code_addrs.py skdisasm/sonic3k.lst --max-addr 0x200000 --offset 0        >  sonic3k.code_addrs.txt
+#   python ../tests/tools/gen_code_addrs.py skdisasm/s3.lst      --max-addr 0x200000 --offset 0x200000 >> sonic3k.code_addrs.txt
+code_addrs_file = "sonic3k.code_addrs.txt"
+
+# Discovery files — the disasm's own ground truth (every assembler-resolved
+# code label; data labels filtered). RESOLVED: the earlier "addresses land
+# mid-instruction" problem was a BUILD-MODE error, not a wrong ROM. The old
+# .lst came from buildS3Complete (Sonic3_Complete=1, a no-filler reconstruction
+# that recompresses the sound driver and shifts everything past $30A). These
+# files come from the BYTE-PERFECT builds (buildSK + buildS3, Sonic3_Complete=0),
+# whose output is MD5-identical to our ROM's two halves, so every label address
+# matches. The S3 half is emitted with a flat +0x200000 offset (Sonic 3 locks
+# onto S&K at $200000). Two files because the recompiler merges multiple
+# discovery_files. Regenerate via:
+#   python ../tests/tools/gen_disasm_labels.py skdisasm/sonic3k.lst \
+#       --max-addr 0x200000 --offset 0        > sonic3k.disasm_labels_sk.toml
+#   python ../tests/tools/gen_disasm_labels.py skdisasm/s3.lst \
+#       --max-addr 0x200000 --offset 0x200000 > sonic3k.disasm_labels_s3.toml
+discovery_files = [
+    "sonic3k.disasm_labels_sk.toml",       # S&K half, $000000-$1FFFFF (18946 funcs)
+    "sonic3k.disasm_labels_s3.toml",       # S3  half, $200000-$3FFFFF (10819 funcs)
+    # PC-indexed jump tables (pcrel16/abs offset tables + bra-trampoline
+    # ladders) the assembler emitted, with the case targets. Resolves the
+    # JMP(pc,Dn.W) offset-table dispatch class that the finder's bra-ladder
+    # auto-detector can't reach (dc.w/dc.l data tables aren't branch runs).
+    # Regenerate via:
+    #   python ../tests/tools/gen_disasm_jumptables.py --lst skdisasm/sonic3k.lst \
+    #       --prefix sonic3k --rom-max 0x200000 --offset 0        -o sonic3k.disasm_jumptables_sk.toml
+    #   python ../tests/tools/gen_disasm_jumptables.py --lst skdisasm/s3.lst \
+    #       --prefix sonic3k --rom-max 0x200000 --offset 0x200000 -o sonic3k.disasm_jumptables_s3.toml
+    "sonic3k.disasm_jumptables_sk.toml",   # S&K half: 418 tables, 2394 targets
+    "sonic3k.disasm_jumptables_s3.toml",   # S3  half: 272 tables, 1448 targets
+]
 
 # ---------------------------------------------------------------------------
-# Per-game RAM layout — placeholder values copied from Sonic 2's layout
-# so the build proceeds. Verify against skdisasm before trusting any of
-# these on a real S3K run.
+# Per-game RAM layout — verified against skdisasm sonic3k.constants.asm
+# (phase $FFFF0000 block).
 # ---------------------------------------------------------------------------
 [ram_layout]
-game_mode      = 0xFFF600   # TODO: verify against skdisasm
-vint_runcount  = 0xFFFE0C   # TODO
-vint_routine   = 0xFFF62A   # TODO
+game_mode      = 0xFFF600   # Game_mode (skdisasm: FFFFF600 → 24-bit $FFF600)
+vint_runcount  = 0xFFFE0C   # V_int_run_count (CrossResetRAM block)
+vint_routine   = 0xFFF62A   # V_int_routine
 plc_pending    = 0x000000
-initial_ssp    = 0xFFFE00
+initial_ssp    = 0xFFFE00   # SSP from reset vector (set by MOVE #$FE00,A7 in boot)
 vbla_stack     = 0xFFFE00
 intr_stack     = 0xFFFE00
-player_object  = 0xFFB000
+player_object  = 0xFFB000   # Player_1 = Object_RAM start
 level_modes    = [0x08, 0x0C]
 
 # ---------------------------------------------------------------------------
-# Interrupt vectors (from 68K vector table)
+# Function discovery now comes entirely from the byte-perfect discovery_files
+# above (EntryPoint $206, GameLoop $4B6, VInt $584, HInt $D10, Wait_VSync $1D18
+# and $201FA2 are all present as labels). Per the project philosophy (cf. Sonic
+# 1/2 game.toml), [functions].extra carries only IRREDUCIBLE residual — entries
+# the disasm label set + heuristic finder can't supply. It is currently empty;
+# any dispatch_misses.log entry after a run is a coverage gap to root-cause in
+# the gen_disasm pipeline, NOT to hand-add here (Principle 16).
 [functions]
+blacklist = [
+    0x00043A,   # Test_Checksum (confirmed @ $43A in byte-perfect .lst). Prior
+                # session blacklisted it for an init-time infinite loop (ROM-end
+                # check never converges). The .lst notes the checksum call is
+                # NOPed; revisit whether this blacklist is still needed once the
+                # boot path runs under the corrected disasm. Kept for now.
+]
 extra = [
-    0x000206,   # EntryPoint — initial PC ($000004)
-    # NOTE: VBlank/HBlank vectors are $FFFFFFF0 / $FFFFFFF6 — RAM, not ROM.
-    # Cannot seed those statically. Boot code must be traced to find the
-    # ROM routine that builds the RAM trampoline; that routine then
-    # becomes the entry seed for the IRQ chain.
 ]
