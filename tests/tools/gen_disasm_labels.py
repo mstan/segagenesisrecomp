@@ -106,7 +106,13 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("lst", help="path to AS-emitted .lst file")
     ap.add_argument("--max-addr", type=lambda x: int(x, 0), default=0x100000,
-                    help="cap to ROM size (default 0x100000 = 1 MB Sonic 2)")
+                    help="cap to ROM size (default 0x100000 = 1 MB Sonic 2). "
+                         "Applied to the RAW .lst offset, before --offset.")
+    ap.add_argument("--offset", type=lambda x: int(x, 0), default=0,
+                    help="absolute offset added to every emitted address "
+                         "(default 0). Use for lock-on / multi-ROM builds whose "
+                         ".lst is 0-based but maps elsewhere in the combined ROM "
+                         "(e.g. Sonic 3 locked onto S&K maps to 0x200000).")
     ap.add_argument("--name-filter", default=None,
                     help="optional regex to skip labels (e.g. '^(byte|word)_')")
     args = ap.parse_args()
@@ -147,6 +153,9 @@ def main() -> int:
     print("# would let the recompiler decode data bytes as 68K instructions and")
     print("# synthesize calls into garbage addresses.")
     print(f"# Source: {args.lst}")
+    if args.offset:
+        print(f"# Address offset applied: +0x{args.offset:X} "
+              f"(.lst is 0-based; maps to this base in the combined ROM)")
     print(f"# Global code labels emitted (extra):       {len(global_labels)}")
     print(f"# Local  code labels emitted (extra_seeds): {len(local_labels)}")
     print(f"# Data labels skipped:                      {skipped_data}")
@@ -154,12 +163,12 @@ def main() -> int:
     print("[functions]")
     print("extra = [")
     for addr in sorted(global_labels):
-        print(f"    0x{addr:06X},   # {global_labels[addr]}")
+        print(f"    0x{addr + args.offset:06X},   # {global_labels[addr]}")
     print("]")
     print()
     print("extra_seeds = [")
     for addr in sorted(local_labels):
-        print(f"    0x{addr:06X},   # {local_labels[addr]}")
+        print(f"    0x{addr + args.offset:06X},   # {local_labels[addr]}")
     print("]")
     return 0
 

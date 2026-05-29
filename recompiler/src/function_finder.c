@@ -155,6 +155,65 @@ jt_enumerate(const GenesisRom *rom, const GameConfig *cfg,
     return pushed;
 }
 
+/* Enumerate a branch-ladder jump table: a run of consecutive `bra.s`
+ * (2-byte) or `bra.w` (4-byte) trampolines that a `JMP (d8,PC,Dn.W)`
+ * dispatches into by computing base + index*stride. Each slot's ADDRESS
+ * is the dispatch landing point (the bra inside it tail-jumps to the real
+ * handler), so we add each slot as a function entry — exactly the
+ * JT_FMT_BRA_S/W semantics jt_entry_target encodes, but discovered
+ * automatically instead of via a manual game.toml [[jump_table]].
+ *
+ * Safe to run unconditionally (unlike the pcrel16 auto-walk): it only
+ * matches when every slot literally decodes as a same-width BRA whose
+ * target is even and in-ROM. A run of >=2 such slots is an extremely
+ * strong table signal — arbitrary data does not look like consecutive
+ * bra instructions with valid in-ROM targets. The stride is locked to the
+ * first slot's width, so a ladder of bra.s won't accidentally absorb a
+ * following bra.w (or vice-versa) or any non-branch code/data after it.
+ *
+ * Returns the number of slots enumerated. */
+static int
+jt_enumerate_bra_ladder(const GenesisRom *rom, const GameConfig *cfg,
+                        FunctionList *list, uint32_t base,
+                        const M68KValidatorOptions *vopts) {
+    M68KInstr first;
+    if (!m68k_decode(rom, base, &first)) return 0;
+    if (m68k_validate(&first, vopts) != M68K_LEGAL) return 0;
+    if (first.mnemonic != MN_BRA || !first.has_target) return 0;
+    uint32_t stride = first.byte_length;     /* 2 = bra.s, 4 = bra.w */
+    if (stride != 2 && stride != 4) return 0;
+
+    /* Pass 1 — count consecutive same-width BRA slots WITHOUT mutating the
+     * function list. A ladder ends at the first slot that isn't a same-width
+     * BRA with an even, in-ROM target. We only commit (pass 2) if the run is
+     * long enough to be a real table; this avoids turning a lone offset word
+     * that happens to decode as a bra into a spurious data-as-code entry. */
+    int count = 0;
+    for (int i = 0; i < JT_AUTO_MAX_ENTRIES; i++) {
+        uint32_t slot = base + (uint32_t)i * stride;
+        if (slot + (stride - 1) >= rom->rom_size) break;
+        M68KInstr e;
+        if (!m68k_decode(rom, slot, &e)) break;
+        if (m68k_validate(&e, vopts) != M68K_LEGAL) break;
+        if (e.mnemonic != MN_BRA || !e.has_target) break;
+        if (e.byte_length != stride) break;
+        if ((e.target_addr & 1) || e.target_addr >= rom->rom_size) break;
+        count++;
+    }
+    if (count < JT_AUTO_MIN_ENTRIES) return 0;
+
+    /* Pass 2 — commit each slot as a dispatch landing point. Return the
+     * recognized table length (not the post-blacklist add count) so the
+     * caller treats a fully-blacklisted ladder as resolved, not unresolved. */
+    for (int i = 0; i < count; i++) {
+        uint32_t slot = base + (uint32_t)i * stride;
+        if (cfg && game_config_is_blacklisted(cfg, slot)) continue;
+        add_function(list, slot);
+        s_jt_targets_pushed++;
+    }
+    return count;
+}
+
 static void push_addr(uint32_t addr) {
     if (addr >= 0x400000 || addr_seen[addr]) return;
     if (s_work_top >= WORK_STACK_SIZE) {
@@ -165,8 +224,19 @@ static void push_addr(uint32_t addr) {
     s_work_stack[s_work_top++] = addr;
 }
 
+/* Set at the top of function_finder_run so add_function can consult the
+ * disasm code-address oracle without threading cfg through every call site
+ * (jt_enumerate, bra-ladder, the CFG walk). NULL => no gating. */
+static const GameConfig *s_ff_cfg = NULL;
+
 static void add_function(FunctionList *list, uint32_t addr) {
     if (addr >= 0x400000) return;
+    /* Data-gate: when a code-address oracle is loaded, never register a target
+     * the disasm assembles as DATA (or a mid-instruction address). Explicit
+     * seeds — vectors and game.toml extras/discovery labels — are instruction
+     * starts and pass; this only rejects speculative jump-table / bra-ladder /
+     * walk targets that fell into data. No-op when no code_addrs_file is set. */
+    if (!game_config_is_known_code(s_ff_cfg, addr)) return;
     /* Check if already in list */
     for (int i = 0; i < list->count; i++)
         if (list->entries[i].addr == addr) return;
@@ -184,6 +254,7 @@ static void add_function(FunctionList *list, uint32_t addr) {
 }
 
 void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameConfig *cfg) {
+    s_ff_cfg = cfg;
     memset(addr_seen, 0, sizeof(addr_seen));
     s_work_top = 0;
     s_invalid_terminations = 0;
@@ -293,6 +364,14 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
                                      m->stride_bytes, m->format,
                                      max_entries, &vopts);
                         s_jt_manual_enumerated++;
+                    } else if (jt_enumerate_bra_ladder(rom, cfg, list, base,
+                                                       &vopts)
+                                   >= JT_AUTO_MIN_ENTRIES) {
+                        /* base points at a run of bra.s/bra.w trampolines —
+                         * enumerate the ladder automatically. Safe without
+                         * the autodiscovery opt-in (see the function's
+                         * comment): it only fires on actual branch runs. */
+                        s_jt_auto_enumerated++;
                     } else if (cfg && cfg->jump_table_autodiscovery) {
                         /* Conservative auto-walk: pcrel16 only. The
                          * validator gate inside jt_enumerate stops

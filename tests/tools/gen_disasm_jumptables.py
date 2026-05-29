@@ -64,11 +64,20 @@ HEADER_DEFAULT = (
 )
 
 # Match a primary listing row:
-#   "[ (1) ]   LINE_NO/  ADDR : REST"
-# Only rows that actually emit (or label) at an address concern us.
+#   "  LINE_NO/  ADDR : REST"
+# The anchor deliberately does NOT accept the `(N)` pass-prefix AS puts on
+# macro / embedded-Z80 sub-listing rows — those have their own (Z80)
+# address space and must not be mixed into 68K jump-table detection or the
+# derived code-address set. (S1/S2 dodged this via the 68K-only code-addrs
+# fixture; S3K derives code-addrs from the .lst, so the exclusion matters.)
 LINE_RE = re.compile(
-    r"^(?:\(\d+\)\s+)?\s*\d+/\s+([0-9A-Fa-f]+)\s*:\s*(.*)$"
+    r"^\s*\d+/\s+([0-9A-Fa-f]+)\s*:\s*(.*)$"
 )
+# First-emit-is-data classifier — used to derive the code-address set from
+# the .lst when no --code-addrs fixture is supplied.
+DATA_DIRECTIVE_RE = re.compile(r"^(?:dc\.[bwl]|dcb\.[bwl]|ds\.[bwl]|"
+                               r"binclude|incbin|even|align|cnop|org)\b",
+                               re.IGNORECASE)
 
 # Source patterns we recognize as jump-table entries. The optional
 # leading "Label:" (or "Label1:Label2:...") covers tables whose base
@@ -136,21 +145,22 @@ def parse_emit_row(rest: str):
     # Macro/equate markers don't emit a fresh byte run we want.
     if rest.startswith("(MACRO") or rest.startswith("="):
         return None, rest
-    # Consume leading 4-char hex tokens. Stop on first non-hex token.
-    tokens = rest.split()
+    # Consume the leading run of whitespace-delimited 4-hex-char byte
+    # tokens, tracking position so the source tail can be sliced directly.
+    # (Re-joining the tokens and calling rest.index() is fragile — it
+    # assumes single-space separators, which the skdisasm/asl listing does
+    # not always use, and raised ValueError on tab/multi-space runs.)
     bytes_hex: list[str] = []
-    for t in tokens:
-        if re.fullmatch(r"[0-9A-Fa-f]{4}", t):
-            bytes_hex.append(t)
-        else:
+    pos = 0
+    while True:
+        m = re.match(r"\s*([0-9A-Fa-f]{4})(?=\s|$)", rest[pos:])
+        if not m:
             break
+        bytes_hex.append(m.group(1))
+        pos += m.end()
     if not bytes_hex:
         return None, rest
-    # Source begins after the byte tokens. Locate by re-finding the
-    # joined run in the original string so we preserve formatting.
-    consumed = " ".join(bytes_hex)
-    idx = rest.index(consumed) + len(consumed)
-    return bytes_hex, rest[idx:].lstrip()
+    return bytes_hex, rest[pos:].lstrip()
 
 
 def load_code_addrs(path: Path) -> set[int]:
@@ -177,14 +187,24 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--lst", type=Path, default=LST_PATH,
                     help="AS .lst listing produced by the disasm build")
-    ap.add_argument("--code-addrs", type=Path, default=CODE_ADDR_PATH,
-                    help="code_addresses.txt fixture (from gen_l1_fixtures.py)")
+    ap.add_argument("--code-addrs", type=Path, default=None,
+                    help="optional code_addresses.txt fixture (from "
+                         "gen_l1_fixtures.py). If omitted, the code-address "
+                         "set is derived from the .lst itself (first-emit-is-"
+                         "instruction) — no runtime fixture needed.")
     ap.add_argument("-o", "--output", type=Path, default=OUT_PATH,
                     help="output .disasm_jumptables.txt")
     ap.add_argument("--prefix", type=str, default="sonic1",
                     help="cfg output_prefix; appears in the file header")
     ap.add_argument("--rom-max", type=lambda s: int(s, 0), default=0x400000,
-                    help="reject targets >= this address (default 0x400000)")
+                    help="reject RAW targets >= this address, before --offset "
+                         "(default 0x400000). For a 2 MB half pass 0x200000.")
+    ap.add_argument("--offset", type=lambda s: int(s, 0), default=0,
+                    help="absolute offset added to every emitted table "
+                         "start/end and target (default 0). The .lst is "
+                         "walked in raw 0-based space; --offset relocates the "
+                         "result for lock-on / multi-ROM builds (Sonic 3 "
+                         "locked onto S&K maps to 0x200000).")
     ap.add_argument("--header", type=str, default=None,
                     help="override the file's header comment")
     ap.add_argument("--min-entries", type=int, default=2,
@@ -199,18 +219,23 @@ def main() -> int:
 
     if not args.lst.exists():
         print(f"missing: {args.lst}", file=sys.stderr); return 2
-    if not args.code_addrs.exists():
-        print(f"missing: {args.code_addrs} — run gen_l1_fixtures.py first",
-              file=sys.stderr); return 2
 
-    code_addrs = load_code_addrs(args.code_addrs)
-    if not code_addrs:
-        print(f"empty: {args.code_addrs}", file=sys.stderr); return 2
+    fixture_code_addrs: set[int] | None = None
+    if args.code_addrs is not None:
+        if not args.code_addrs.exists():
+            print(f"missing: {args.code_addrs}", file=sys.stderr); return 2
+        fixture_code_addrs = load_code_addrs(args.code_addrs)
+        if not fixture_code_addrs:
+            print(f"empty: {args.code_addrs}", file=sys.stderr); return 2
 
     # ----- Pass 1: collect all labels, aliases, and emit rows ----------
     label_addr: dict[str, int] = {}
     aliases:    dict[str, str] = {}
     rows: list[tuple[int, list[str] | None, str]] = []  # (addr, bytes_or_none, source)
+    # Derived code-address set (first-emit-is-instruction per offset), used
+    # when no --code-addrs fixture is supplied.
+    derived_code: set[int] = set()
+    derived_data: set[int] = set()
 
     for raw in args.lst.read_text(encoding="utf-8", errors="replace").splitlines():
         m = LINE_RE.match(raw)
@@ -222,6 +247,12 @@ def main() -> int:
             continue
         rest = m.group(2)
         bytes_hex, source = parse_emit_row(rest)
+
+        if bytes_hex is not None and addr not in derived_code and addr not in derived_data:
+            if DATA_DIRECTIVE_RE.match(source):
+                derived_data.add(addr)
+            else:
+                derived_code.add(addr)
 
         # Capture every label form anywhere in the row. AS prints
         # equate markers as "=$NNNN  Name label *" / "=$NNNN  alias :=
@@ -246,6 +277,14 @@ def main() -> int:
             cur = aliases[cur]
         if cur in label_addr:
             label_addr[name] = label_addr[cur]
+
+    # Resolve the code-address set: explicit fixture wins, else the set
+    # derived from the .lst's first-emit classification.
+    code_addrs = fixture_code_addrs if fixture_code_addrs is not None else derived_code
+    if not code_addrs:
+        print("no code addresses (empty fixture and empty .lst derivation)",
+              file=sys.stderr)
+        return 2
 
     # ----- Pass 2: walk emitted rows looking for table runs ------------
     # Sort rows by address (stable) — rows already arrive in source
@@ -502,8 +541,8 @@ def main() -> int:
         # PCREL_W tables: emit as [[jump_table]] records.
         for t in pcrel_tables:
             f.write("[[jump_table]]\n")
-            f.write(f"start  = 0x{t['start']:06X}\n")
-            f.write(f"end    = 0x{t['end']:06X}\n")
+            f.write(f"start  = 0x{t['start'] + args.offset:06X}\n")
+            f.write(f"end    = 0x{t['end'] + args.offset:06X}\n")
             f.write(f"stride = 2\n")
             f.write(f"format = \"pcrel16\"   # {t['base']} ({len(t['entries'])} entries)\n\n")
 
@@ -511,8 +550,8 @@ def main() -> int:
         for t in abs_tables:
             first_name = t["entries"][0][1] if t["entries"] else ""
             f.write("[[jump_table]]\n")
-            f.write(f"start  = 0x{t['start']:06X}\n")
-            f.write(f"end    = 0x{t['end']:06X}\n")
+            f.write(f"start  = 0x{t['start'] + args.offset:06X}\n")
+            f.write(f"end    = 0x{t['end'] + args.offset:06X}\n")
             f.write(f"stride = 4\n")
             f.write(f"format = \"abs\"   # {len(t['entries'])} entries, first={first_name}\n\n")
 
@@ -525,8 +564,8 @@ def main() -> int:
         for t in bra_tables:
             first_name = t["entries"][0][1] if t["entries"] else ""
             f.write("[[jump_table]]\n")
-            f.write(f"start  = 0x{t['start']:06X}\n")
-            f.write(f"end    = 0x{t['end']:06X}\n")
+            f.write(f"start  = 0x{t['start'] + args.offset:06X}\n")
+            f.write(f"end    = 0x{t['end'] + args.offset:06X}\n")
             f.write(f"stride = {t['stride']}\n")
             f.write(f"format = \"{t['format']}\"   # {len(t['entries'])} entries, first={first_name}\n\n")
 
@@ -534,7 +573,7 @@ def main() -> int:
         f.write("[functions]\n")
         f.write("extra = [\n")
         for a in sorted(targets):
-            f.write(f"    0x{a:06X},   # {target_names[a]}\n")
+            f.write(f"    0x{a + args.offset:06X},   # {target_names[a]}\n")
         f.write("]\n")
 
     print(

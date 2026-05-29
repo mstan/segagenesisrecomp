@@ -1445,8 +1445,17 @@ void genesis_log_dispatch_miss(uint32_t addr)
         return;
     }
 
-    /* Skip out-of-ROM addresses */
-    if (addr > 0x80000) return;
+    /* Skip out-of-ROM addresses. Gate on the per-game ROM size (Principle 21)
+     * — NOT a literal. The old hardcode was 0x80000 (Sonic 1's 512 KB), which
+     * silently swallowed every miss past 512 KB for Sonic 2 (1 MB) and all of
+     * the S3 half for S3K (4 MB). expected_rom_size is 0x80000 / 0x100000 /
+     * 0x400000 for S1 / S2 / S3K respectively. */
+    {
+        uint32_t rom_limit = g_game_spec.expected_rom_size
+                                 ? g_game_spec.expected_rom_size
+                                 : (uint32_t)sizeof(g_rom);
+        if (addr >= rom_limit) return;
+    }
 
     /* Only process each unique address once */
     for (int i = 0; i < g_miss_unique_count; i++)

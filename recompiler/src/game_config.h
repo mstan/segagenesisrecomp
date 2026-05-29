@@ -93,6 +93,17 @@ typedef struct {
     uint32_t       *blacklist;
     int            blacklist_count;
     int            blacklist_cap;
+    /* Disasm "is this address code?" oracle (instruction-start set), loaded
+     * from game.toml `code_addrs_file` (one hex addr per line, e.g. produced
+     * by tests/tools/gen_code_addrs.py). When non-empty, boundary-split /
+     * dispatch-seed promotion is gated on membership: an extern target that
+     * lands on a known DATA address is never promoted to a function entry,
+     * killing the data-as-code false-positive class. Empty => no gating
+     * (default; preserves prior behavior for games without the file).
+     * Kept SORTED so game_config_is_known_code can binary-search. */
+    uint32_t       *code_addrs;
+    int            code_addr_count;
+    int            code_addr_cap;
     uint32_t       vblank_yield_addr;   /* 0 = not set; emit glue_yield_for_vblank() for this function */
     ProtectedRange *protected_ranges;
     int            protected_range_count;
@@ -118,6 +129,11 @@ bool game_config_is_protected(const GameConfig *cfg, uint32_t addr);
 
 /* Returns true if addr is in the blacklist */
 bool game_config_is_blacklisted(const GameConfig *cfg, uint32_t addr);
+
+/* Returns true if addr is a known instruction-start per the disasm code-addr
+ * oracle. If no code_addrs_file was loaded (code_addr_count == 0) this returns
+ * true for every address (gating disabled — prior behavior). */
+bool game_config_is_known_code(const GameConfig *cfg, uint32_t addr);
 
 void game_config_init_empty(GameConfig *cfg);
 void game_config_free(GameConfig *cfg);

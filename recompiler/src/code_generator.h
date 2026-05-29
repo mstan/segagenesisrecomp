@@ -17,3 +17,9 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                   const char *out_full_path, const char *out_dispatch_path,
                   const AnnotationTable *at, const GameConfig *cfg,
                   bool reverse_debug);
+
+/* Diagnostic: if set before codegen_emit, the final post-boundary-split
+ * function-entry set is written (one hex addr per line) to `path`. Used by
+ * the heuristic-coverage exercise (diff disasm-seeded vs pure-heuristic runs
+ * vs the disasm label set). NULL (default) disables the dump. */
+void codegen_set_dump_functions_path(const char *path);

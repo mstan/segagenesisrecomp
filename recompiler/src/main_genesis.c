@@ -32,6 +32,8 @@ int main(int argc, char *argv[]) {
         if (strcmp(argv[i], "--game") == 0 && i+1 < argc) game_path = argv[++i];
         else if (strcmp(argv[i], "--reverse-debug") == 0) reverse_debug = true;
         else if (strcmp(argv[i], "--fail-on-unsupported") == 0) fail_on_unsupported = true;
+        else if (strcmp(argv[i], "--dump-functions") == 0 && i+1 < argc)
+            codegen_set_dump_functions_path(argv[++i]);
     }
 
     if (reverse_debug)

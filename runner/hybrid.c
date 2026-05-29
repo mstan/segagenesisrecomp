@@ -267,11 +267,6 @@ static void hybrid_pre_insn(cc_u32l pc)
     /* Skip sandbox during early init — false positives from uninitialized state */
     if (g_frame_count < 1000)
         return;
-    /* Trace: log when stack-level functions are hit */
-    if (pc == 0x012E18u && g_frame_count >= 1100 && g_frame_count <= 1210) {
-        fprintf(stderr, "[STACK-HIT] PC=$%06X frame=%"PRIu64" native_pending=%d\n",
-                pc, g_frame_count, s_native_result.valid);
-    }
     for (i = 0; i < g_hybrid_table_size; i++) {
         if (g_hybrid_table[i].addr == pc) {
             m68k = &s_emu->m68k;
@@ -289,19 +284,6 @@ static void hybrid_pre_insn(cc_u32l pc)
 
             /* Step 2-3: Run native in sandbox */
             sync_to_native(m68k);
-            /* Verify sync worked */
-            if (s_total_tests < 3 && pc == 0x0133EA) {
-                fprintf(stderr, "[SYNC-CHECK] interp A5=$%08X A6=$%08X D0=$%08X\n",
-                        (uint32_t)m68k->address_registers[5],
-                        (uint32_t)m68k->address_registers[6],
-                        (uint32_t)m68k->data_registers[0]);
-                fprintf(stderr, "[SYNC-CHECK] g_cpu A5=$%08X A6=$%08X D0=$%08X\n",
-                        g_cpu.A[5], g_cpu.A[6], g_cpu.D[0]);
-                fprintf(stderr, "[SYNC-CHECK] F603=$%02X F602=$%02X A0=$%08X\n",
-                        (uint8_t)(s_emu->state.m68k.ram[(0xF603 & 0xFFFF)/2] >> 0),
-                        (uint8_t)(s_emu->state.m68k.ram[(0xF602 & 0xFFFF)/2] >> 8),
-                        g_cpu.A[0]);
-            }
             /* Redirect g_rte_pending to a dummy during sandbox execution.
              * The native function's internal RTE codegen sets g_rte_pending=1
              * which propagates up through every JSR check, causing early returns.

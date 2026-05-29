@@ -116,6 +116,35 @@ static void resolve_path(const char *base, const char *rel, char *out, int out_s
     }
 }
 
+static int cmp_u32(const void *a, const void *b) {
+    uint32_t x = *(const uint32_t *)a, y = *(const uint32_t *)b;
+    return (x > y) - (x < y);
+}
+
+/* Load a flat text file of hex instruction-start addresses (one per line, '#'
+ * comments allowed) into cfg->code_addrs, then sort for binary search. This
+ * is the disasm "is this code?" oracle used to gate boundary-split promotion.
+ * Returns the number of addresses loaded. */
+static int load_code_addrs_file(GameConfig *cfg, const char *path) {
+    FILE *fp = fopen(path, "r");
+    if (!fp) return 0;
+    char line[64];
+    while (fgets(line, sizeof(line), fp)) {
+        char *p = line;
+        while (*p == ' ' || *p == '\t') p++;
+        if (*p == '#' || *p == '\n' || *p == '\r' || *p == '\0') continue;
+        uint32_t a = (uint32_t)strtoul(p, NULL, 16);
+        cfg->code_addrs = grow_to_fit(cfg->code_addrs, &cfg->code_addr_cap,
+                                      cfg->code_addr_count, sizeof(uint32_t));
+        cfg->code_addrs[cfg->code_addr_count++] = a;
+    }
+    fclose(fp);
+    if (cfg->code_addr_count > 0)
+        qsort(cfg->code_addrs, (size_t)cfg->code_addr_count,
+              sizeof(uint32_t), cmp_u32);
+    return cfg->code_addr_count;
+}
+
 /* ------------------------------------------------------------------ */
 /* tomlc99 read helpers.                                              */
 
@@ -250,6 +279,7 @@ void game_config_free(GameConfig *cfg) {
     free(cfg->extra_seeds);
     free(cfg->blacklist);
     free(cfg->protected_ranges);
+    free(cfg->code_addrs);
     memset(cfg, 0, sizeof(*cfg));
 }
 
@@ -289,6 +319,26 @@ bool game_config_load(GameConfig *cfg, const char *path) {
         cfg->vblank_yield_addr        = toml_u32_or(game, "vblank_yield_addr", 0);
         cfg->allow_68020_branch       = toml_bool_or(game, "allow_68020_branch", false);
         cfg->jump_table_autodiscovery = toml_bool_or(game, "jump_table_autodiscovery", false);
+
+        /* code_addrs_file: flat text list (one hex instruction-start addr per
+         * line) — the disasm "is this code?" oracle that gates boundary-split
+         * promotion. Loaded into cfg->code_addrs (sorted). */
+        {
+            char caf[256] = {0};
+            toml_string_into(game, "code_addrs_file", caf, sizeof(caf));
+            if (caf[0]) {
+                char caf_path[512];
+                resolve_path(path, caf, caf_path, sizeof(caf_path));
+                int n = load_code_addrs_file(cfg, caf_path);
+                if (n > 0)
+                    fprintf(stderr, "[GameConfig] code_addrs_file '%s': %d "
+                            "code addresses (boundary-split data-gate ON)\n",
+                            caf_path, n);
+                else
+                    fprintf(stderr, "[GameConfig] WARNING: code_addrs_file "
+                            "'%s' empty/unreadable; data-gate OFF\n", caf_path);
+            }
+        }
 
         /* discovery_files: array of relative TOML paths to merge in. */
         toml_array_t *df = toml_array_in(game, "discovery_files");
@@ -364,6 +414,13 @@ bool game_config_is_blacklisted(const GameConfig *cfg, uint32_t addr) {
         if (cfg->blacklist[i] == addr)
             return true;
     return false;
+}
+
+bool game_config_is_known_code(const GameConfig *cfg, uint32_t addr) {
+    /* No oracle loaded → gating disabled, everything is "code" (prior behavior). */
+    if (!cfg || cfg->code_addr_count == 0) return true;
+    return bsearch(&addr, cfg->code_addrs, (size_t)cfg->code_addr_count,
+                   sizeof(uint32_t), cmp_u32) != NULL;
 }
 
 bool game_config_is_protected(const GameConfig *cfg, uint32_t addr) {

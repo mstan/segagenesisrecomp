@@ -145,6 +145,12 @@ typedef struct {
      * register form Dy,Dx. Source register is `src_ea & 7` (Ay), and
      * destination register is `reg` (Ax) — same shape for both forms. */
     bool         predec_mem_form;
+    /* For the shift/rotate mnemonics (MN_ASL/ASR/LSL/LSR/ROL/ROR/ROXL/ROXR):
+     * true for the MEMORY form (opcode size field == 11), which shifts a
+     * single 16-bit memory operand by 1 bit. The destination EA is in
+     * src_ea; `reg`/`imm32` are unused. False for the register forms
+     * (immediate-count or Dn-count, operand in `reg`). */
+    bool         mem_shift;
 } M68KInstr;
 
 /* EA mode constants */

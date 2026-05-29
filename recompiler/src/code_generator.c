@@ -233,6 +233,22 @@ static bool s_reverse_debug = false;
  * without dragging the whole GameConfig into every emit signature. */
 static const uint32_t *s_extra_seeds      = NULL;
 static int             s_extra_seed_count = 0;
+/* Set by codegen_emit after boundary splitting so JSR emission can verify
+ * that the target is in the function table. Targets not present fall back
+ * to recomp_call_addr() to avoid undeclared-identifier build errors. */
+static const uint32_t *s_all_func_addrs = NULL;
+static int             s_all_func_count = 0;
+
+/* Optional diagnostic: when set (via --dump-functions), codegen_emit writes
+ * the final post-boundary-split function-entry set (one hex address per line)
+ * to this path. Powers the heuristic-coverage exercise: diff the dump from a
+ * disasm-seeded run against a no-seed (pure-heuristic) run, and against the
+ * disasm label set, to read off heuristic misses (T\H) and false positives
+ * (H\T) without per-entry provenance plumbing. */
+static const char *s_dump_functions_path = NULL;
+void codegen_set_dump_functions_path(const char *path) {
+    s_dump_functions_path = path;
+}
 
 /*
  * Set by the per-instruction emit loop just before processing a Bcc
@@ -944,6 +960,19 @@ static void emit_split_tail_call_expr(FILE *f, const char *indent,
     }
 }
 
+/* func_is_known — binary search in s_all_func_addrs for a JSR target. */
+static bool func_is_known(uint32_t addr) {
+    if (!s_all_func_addrs || s_all_func_count == 0) return false;
+    int lo = 0, hi = s_all_func_count - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (s_all_func_addrs[mid] == addr) return true;
+        if (s_all_func_addrs[mid] < addr) lo = mid + 1;
+        else                              hi = mid - 1;
+    }
+    return false;
+}
+
 /* =========================================================================
  * scan_function — discover all instruction addresses and branch-target labels
  * ========================================================================= */
@@ -1583,6 +1612,87 @@ static int estimate_cycles(const M68KInstr *instr)
     return estimate_cycles_prm(instr);
 }
 
+/* emit_mem_shift — the 68K memory shift/rotate forms (opcode size field == 11,
+ * instr->mem_shift set by the decoder). These always shift a single 16-bit
+ * memory operand by exactly 1 bit; the destination EA is in src_ea. Emitted as
+ * an RMW on the EA (load word → shift/rotate by 1 → store word → set flags),
+ * mirroring the NEG/NOT <ea> RMW pattern. Count is always 1, so the
+ * register-shift count==0 exception never applies here. */
+static void emit_mem_shift(FILE *f, const M68KInstr *instr,
+                           uint32_t addr, ExtReader *er) {
+    char src_expr[256];
+    char res[64];
+    char tmp[32];
+    snprintf(res, sizeof(res), "_%06Xr", addr);
+    snprintf(tmp, sizeof(tmp), "_t%06X", addr);
+
+    ExtReader er_save = *er;
+    emit_ea_load_ex(f, instr, instr->src_ea, M68K_SIZE_W, er, tmp, src_expr, 1);
+
+    fprintf(f, "  { uint16_t _sv = (uint16_t)(%s);\n", src_expr);
+    fprintf(f, "    uint16_t %s; uint32_t _c;\n", res);
+
+    switch (instr->mnemonic) {
+    case MN_ASR:
+        fprintf(f, "    %s = (uint16_t)((int16_t)_sv >> 1);\n", res);
+        fprintf(f, "    _c = _sv & 1u;\n");
+        break;
+    case MN_ASL:
+        fprintf(f, "    %s = (uint16_t)(_sv << 1);\n", res);
+        fprintf(f, "    _c = (_sv >> 15) & 1u;\n");
+        break;
+    case MN_LSR:
+        fprintf(f, "    %s = (uint16_t)(_sv >> 1);\n", res);
+        fprintf(f, "    _c = _sv & 1u;\n");
+        break;
+    case MN_LSL:
+        fprintf(f, "    %s = (uint16_t)(_sv << 1);\n", res);
+        fprintf(f, "    _c = (_sv >> 15) & 1u;\n");
+        break;
+    case MN_ROR:
+        fprintf(f, "    %s = (uint16_t)((_sv >> 1) | (_sv << 15));\n", res);
+        fprintf(f, "    _c = _sv & 1u;\n");
+        break;
+    case MN_ROL:
+        fprintf(f, "    %s = (uint16_t)((_sv << 1) | (_sv >> 15));\n", res);
+        fprintf(f, "    _c = (_sv >> 15) & 1u;\n");
+        break;
+    case MN_ROXR:
+        fprintf(f, "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n");
+        fprintf(f, "    %s = (uint16_t)((_sv >> 1) | (_x << 15));\n", res);
+        fprintf(f, "    _c = _sv & 1u;\n");
+        break;
+    case MN_ROXL:
+        fprintf(f, "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n");
+        fprintf(f, "    %s = (uint16_t)((_sv << 1) | _x);\n", res);
+        fprintf(f, "    _c = (_sv >> 15) & 1u;\n");
+        break;
+    default:
+        break;
+    }
+
+    /* Flags. ROL/ROR do NOT affect X (clear N,Z,V,C; keep X). All others
+     * (ASd/LSd/ROXd) set X = C. ASL additionally sets V if the sign bit
+     * changed during the 1-bit shift; all other forms clear V. */
+    if (instr->mnemonic == MN_ROL || instr->mnemonic == MN_ROR) {
+        fprintf(f, "    g_cpu.SR &= ~(0x0Fu);\n");
+        fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+        fprintf(f, "    if (%s >> 15) g_cpu.SR |= (1u<<3);\n", res);
+        fprintf(f, "    if (_c) g_cpu.SR |= (1u<<0);\n");
+    } else {
+        fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
+        fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
+        fprintf(f, "    if (%s >> 15) g_cpu.SR |= (1u<<3);\n", res);
+        if (instr->mnemonic == MN_ASL)
+            fprintf(f, "    if ((uint16_t)(_sv ^ %s) >> 15) g_cpu.SR |= (1u<<1);\n", res);
+        fprintf(f, "    if (_c) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }\n");
+    }
+
+    *er = er_save;
+    emit_ea_store_ex(f, instr, instr->src_ea, M68K_SIZE_W, er, res, 1);
+    fprintf(f, "  }\n");
+}
+
 static void emit_instr(FILE *f, const GenesisRom *rom,
                         const M68KInstr *instr,
                         const AddrSet *instrs,
@@ -1739,7 +1849,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
         if (instr->has_target) {
             fprintf(f, "  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;\n");
-            fprintf(f, "    recomp_call_func(func_%06X);\n", instr->target_addr);
+            if (func_is_known(instr->target_addr))
+                fprintf(f, "    recomp_call_func(func_%06X);\n", instr->target_addr);
+            else
+                fprintf(f, "    recomp_call_addr(0x%06Xu); /* JSR target not in func table */\n",
+                        instr->target_addr);
             fprintf(f, "    g_split_sp_popped = _saved_split_sp_popped;\n");
             fprintf(f, "  }\n");
         } else if (mode == 2 || mode == 5 || mode == 6 ||
@@ -1833,10 +1947,15 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                         instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg, npc);
                 emit_cycle_accounting(f, "  ", estimate_cycles(instr));
                 fprintf(f, "  switch ((int16_t)%s[%d]) {\n", xr, xreg);
-                for (int t = 0; t < npc; t++) {
+                { int32_t seen_offsets[512]; int seen_count = 0;
+                  for (int t = 0; t < npc; t++) {
                     int32_t off = (int32_t)(pc_targets[t] - base);
+                    int dup = 0;
+                    for (int s = 0; s < seen_count; s++) if (seen_offsets[s] == off) { dup = 1; break; }
+                    if (dup) continue;
+                    seen_offsets[seen_count++] = off;
                     fprintf(f, "    case %d: goto label_%06X;\n", off, pc_targets[t]);
-                }
+                } }
                 fprintf(f, "    default: hybrid_jmp_interpret(0x%08Xu + (uint32_t)(int16_t)%s[%d]); return;\n",
                         base, xr, xreg);
                 fprintf(f, "  }\n");
@@ -1852,10 +1971,15 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                         instr->addr, base, xr + 6 /* skip "g_cpu." */, xreg, not_);
                 emit_cycle_accounting(f, "  ", estimate_cycles(instr));
                 fprintf(f, "  switch ((int16_t)%s[%d]) {\n", xr, xreg);
-                for (int t = 0; t < not_; t++) {
+                { int seen_offsets[512]; int seen_count = 0;
+                  for (int t = 0; t < not_; t++) {
+                    int dup = 0;
+                    for (int s = 0; s < seen_count; s++) if (seen_offsets[s] == ot_offsets[t]) { dup = 1; break; }
+                    if (dup) continue;
+                    seen_offsets[seen_count++] = ot_offsets[t];
                     fprintf(f, "    case %d: goto label_%06X;\n",
                             ot_offsets[t], ot_targets[t]);
-                }
+                } }
                 fprintf(f, "    default: hybrid_jmp_interpret(0x%08Xu + (uint32_t)(int16_t)%s[%d]); return;\n",
                         base, xr, xreg);
                 fprintf(f, "  }\n");
@@ -2455,6 +2579,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     /* ------------------------------------------------------------------ */
     case MN_LSL:
     case MN_LSR: {
+        if (instr->mem_shift) { emit_mem_shift(f, instr, addr, &er); break; }
         int dreg  = instr->reg;
         bool left = (instr->mnemonic == MN_LSL);
         bool reg_count = (instr->src_ea >= 0);
@@ -2516,6 +2641,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     /* ------------------------------------------------------------------ */
     case MN_ASL:
     case MN_ASR: {
+        if (instr->mem_shift) { emit_mem_shift(f, instr, addr, &er); break; }
         int dreg  = instr->reg;
         bool asr_reg_count = (instr->src_ea >= 0);
         int count = asr_reg_count ? 0 : (int)(instr->imm32 & 63);
@@ -2589,6 +2715,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     /* ------------------------------------------------------------------ */
     case MN_ROL:
     case MN_ROR: {
+        if (instr->mem_shift) { emit_mem_shift(f, instr, addr, &er); break; }
         int dreg  = instr->reg;
         bool rot_reg_count = (instr->src_ea >= 0);
         int count = rot_reg_count ? 0 : (int)(instr->imm32 & 63);
@@ -2646,6 +2773,7 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     /* ------------------------------------------------------------------ */
     case MN_ROXL:
     case MN_ROXR: {
+        if (instr->mem_shift) { emit_mem_shift(f, instr, addr, &er); break; }
         int dreg  = instr->reg;
         int count = (int)(instr->imm32 & 63);
         bool left = (instr->mnemonic == MN_ROXL);
@@ -3532,12 +3660,22 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
          * useful for data labels the disasm never marks as code that
          * boundary-split would otherwise promote into bogus function
          * entries. */
-        int added = 0, skipped_blacklist = 0;
+        int added = 0, skipped_blacklist = 0, skipped_data = 0;
         for (int i = 0; i < extern_targets.count; i++) {
             uint32_t a = extern_targets.addrs[i];
             if (addrset_contains(&all_funcs, a)) continue;
             if (game_config_is_blacklisted(cfg, a)) {
                 skipped_blacklist++;
+                continue;
+            }
+            /* Data-gate: if a disasm code-address oracle is loaded, never
+             * promote a target the disasm assembles as DATA. This kills the
+             * data-as-code false-positive class (Eni_Decomp_Masks, sine
+             * tables, art/mapping tables) that scan-time dispatch seeding and
+             * mis-decoded function over-runs would otherwise create. No-op
+             * when no code_addrs_file is configured (is_known_code => true). */
+            if (!game_config_is_known_code(cfg, a)) {
+                skipped_data++;
                 continue;
             }
             addrset_insert(&all_funcs, a);
@@ -3547,6 +3685,9 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         if (skipped_blacklist > 0)
             printf("[Codegen] Skipped %d blacklisted boundary-split entries\n",
                    skipped_blacklist);
+        if (skipped_data > 0)
+            printf("[Codegen] Data-gate: skipped %d boundary-split entries that "
+                   "land on disasm data (not code)\n", skipped_data);
 
         if (added == 0) break;
         printf("[Codegen] Function boundary split: added %d new function entries, re-scanning...\n", added);
@@ -3554,6 +3695,28 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
     }
 
     printf("[Codegen] Final function count after boundary splitting: %d\n", all_funcs.count);
+
+    if (s_dump_functions_path) {
+        FILE *df = fopen(s_dump_functions_path, "w");
+        if (df) {
+            fprintf(df, "# Final function-entry set (post-boundary-split). "
+                        "%d entries. One hex address per line.\n", all_funcs.count);
+            for (int i = 0; i < all_funcs.count; i++)
+                fprintf(df, "%06X\n", all_funcs.addrs[i]);
+            fclose(df);
+            printf("[Codegen] Dumped %d function addresses to %s\n",
+                   all_funcs.count, s_dump_functions_path);
+        } else {
+            fprintf(stderr, "[Codegen] could not open %s for --dump-functions\n",
+                    s_dump_functions_path);
+        }
+    }
+
+    /* Expose the final sorted function table to emit_instr so JSR emission
+     * can distinguish known targets (recomp_call_func) from unknown ones
+     * (recomp_call_addr fallback). */
+    s_all_func_addrs = all_funcs.addrs;
+    s_all_func_count = all_funcs.count;
 
     /* Forward declarations */
     for (int i = 0; i < all_funcs.count; i++)

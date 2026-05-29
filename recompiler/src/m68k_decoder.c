@@ -989,9 +989,10 @@ bool m68k_decode(const GenesisRom *rom, uint32_t addr, M68KInstr *out) {
             static const M68KMnemonic shift_l[4] = {
                 MN_ASL, MN_LSL, MN_ROXL, MN_ROL
             };
-            out->mnemonic = dir ? shift_l[type] : shift_r[type];
-            out->size     = M68K_SIZE_W;
-            out->src_ea   = w0 & 0x3F;
+            out->mnemonic  = dir ? shift_l[type] : shift_r[type];
+            out->size      = M68K_SIZE_W;
+            out->src_ea    = w0 & 0x3F;   /* destination memory EA */
+            out->mem_shift = true;        /* memory form: shift the EA word by 1 */
             consume_ea_ext(rom, &pc, out, ea_mode, ea_reg, M68K_SIZE_W);
             break;
         }
