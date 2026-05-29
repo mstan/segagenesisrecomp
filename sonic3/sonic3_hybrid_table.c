@@ -1,7 +1,6 @@
-/* sonic3_hybrid_table.c — hybrid table for the Sonic-3-standalone oracle build.
- * Empty at bring-up; populate after the oracle sandbox-compare confirms which
- * functions diverge (see runner/hybrid.c). Single sentinel so the array is
- * never zero-sized. */
+/* sonic3_hybrid_table.c — oracle sandbox-compare table (runner/hybrid.c).
+ * Empty by default; populate with function entry PCs to diff the recompiled
+ * version against the interpreter during a divergence investigation. */
 #include "hybrid.h"
 
 HybridEntry g_hybrid_table[] = {

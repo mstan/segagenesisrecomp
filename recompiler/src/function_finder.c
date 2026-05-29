@@ -253,6 +253,42 @@ static void add_function(FunctionList *list, uint32_t addr) {
     push_addr(addr);
 }
 
+/* True if the routine at `start` captures its caller's return address off the
+ * stack and repurposes it (the Sonic "Obj_WaitOffscreen" idiom): it pops the
+ * return longword with `move(a).l (a7)+,<ea>` and stores it as the object's
+ * code pointer, which is later reached via `jmp (An)`. For such callees the
+ * caller's RETURN ADDRESS is a live dispatch entry that no static
+ * branch/call/address-taken edge points at — so it must be registered or it
+ * becomes a dispatch miss (the badnik's on-screen body never runs).
+ *
+ * Detection: scan the prologue for a longword pop from (a7)+ that occurs
+ * BEFORE any push / link / call / branch (which would mean the pop is merely
+ * rebalancing the callee's own frame, not consuming the return address).
+ * Conservative — bails at the first such instruction or terminator. */
+static bool function_captures_return_addr(const GenesisRom *rom, uint32_t start) {
+    uint32_t pc = start;
+    for (int n = 0; n < 12 && pc + 1 < rom->rom_size; n++) {
+        M68KInstr ins;
+        if (!m68k_decode(rom, pc, &ins)) return false;
+        /* Longword pop from (a7)+ at net-zero stack depth == the return addr. */
+        if ((ins.mnemonic == MN_MOVE || ins.mnemonic == MN_MOVEA)
+                && ins.size == M68K_SIZE_L
+                && ins.src_ea == ((3 << 3) | 7))            /* (a7)+ */
+            return true;
+        /* A push / link / multi-pop / call / branch means any later pop is
+         * balancing the callee's own frame — stop looking. */
+        if (ins.dst_ea == ((4 << 3) | 7)                    /* -(a7) dest */
+                || ins.mnemonic == MN_PEA
+                || ins.mnemonic == MN_LINK
+                || ins.mnemonic == MN_MOVEM
+                || m68k_is_call(&ins)
+                || m68k_is_terminator(&ins))
+            return false;
+        pc += ins.byte_length;
+    }
+    return false;
+}
+
 void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameConfig *cfg) {
     s_ff_cfg = cfg;
     memset(addr_seen, 0, sizeof(addr_seen));
@@ -315,6 +351,38 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
             if (m68k_is_call(&instr) && instr.has_target
                     && !game_config_is_blacklisted(cfg, instr.target_addr)) {
                 add_function(list, instr.target_addr);
+                /* If the callee captures its return address off the stack and
+                 * repurposes it as a code pointer (Obj_WaitOffscreen idiom),
+                 * the return address is a live dispatch entry — register it.
+                 * add_function code-gates it, so data return addresses (e.g.
+                 * inline-parameter callees) are rejected. */
+                if (function_captures_return_addr(rom, instr.target_addr))
+                    add_function(list, pc + instr.byte_length);
+            }
+
+            /* JSR (d8,PC,Dn.W) — a computed CALL into a bra-ladder (the Sonic
+             * Animate_Raw command dispatch: `jsr table-N(pc,Dn.w)`). The
+             * finder already enumerates bra-ladders for the JMP form; do it
+             * for JSR too, so the unlabeled ladder slots become dispatch
+             * entries (otherwise the animation command dispatch-misses and the
+             * sprite's mapping frame is never updated). JSR returns — do NOT
+             * break the scan path. */
+            if (instr.mnemonic == MN_JSR && !instr.has_target) {
+                int jea_mode = (instr.src_ea >> 3) & 7;
+                int jea_reg  = instr.src_ea & 7;
+                if (jea_mode == 7 && jea_reg == 3 && instr.word_count >= 2) {
+                    int8_t   d8   = (int8_t)(instr.words[1] & 0xFF);
+                    uint32_t base = pc + 2 + (int32_t)d8;
+                    /* The `table-N(pc,Dn)` idiom places the first slot N bytes
+                     * past the computed base (N = the slot stride). Probe
+                     * base, base+2, base+4 for the ladder start; first run of
+                     * >=2 same-width BRA slots wins. */
+                    for (int off = 0; off <= 4; off += 2) {
+                        if (jt_enumerate_bra_ladder(rom, cfg, list,
+                                base + (uint32_t)off, &vopts) >= JT_AUTO_MIN_ENTRIES)
+                            break;
+                    }
+                }
             }
 
             /* Follow conditional branches (both paths) */
