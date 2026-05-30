@@ -21,6 +21,10 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+/* Cross-platform cooperative fibers (Win32 Fibers / POSIX ucontext) +
+ * the FIBER_NORETURN attribute used by the trap-die helper below. */
+#include "fiber_compat.h"
+
 /* genesis_runtime.h interface */
 #include "genesis_runtime.h"
 
@@ -110,7 +114,7 @@ PaceSnap g_pace_snap = {0};
  * loud-abort with the PC and opcode so the cause is obvious. Without
  * this Sonic 2's broader function set fails to link at every address
  * whose label-seed pulled in non-code bytes. */
-__declspec(noreturn) static void s_m68k_trap_die(unsigned vec, uint32_t pc, unsigned opcode)
+FIBER_NORETURN static void s_m68k_trap_die(unsigned vec, uint32_t pc, unsigned opcode)
 {
     fprintf(stderr, "[ILLEGAL] m68k trap vec=%u pc=%06X opcode=%04X — abort\n",
             vec, pc, opcode);
@@ -327,12 +331,10 @@ static int s_in_vblank_service = 0;
 
 #if ENABLE_RECOMPILED_CODE
 
-#include <windows.h>
-
 void glue_log_frame_state(uint64_t frame);  /* defined below */
 
-static LPVOID s_main_fiber = NULL;
-static LPVOID s_game_fiber = NULL;
+static fiber_t s_main_fiber = NULL;
+static fiber_t s_game_fiber = NULL;
 static int    s_game_running = 0;   /* 1 once the game fiber has started */
 static uint32_t s_game_fiber_resume_pc = 0;
 
@@ -375,7 +377,7 @@ static void game_stack_note(const char *reason, const void *stack_marker)
 }
 
 /* Game fiber entry point. */
-static void CALLBACK game_fiber_func(LPVOID param)
+static void game_fiber_func(void *param)
 {
     (void)param;
     char stack_top_marker;
@@ -394,7 +396,7 @@ static void CALLBACK game_fiber_func(LPVOID param)
         }
         fprintf(stderr, "[GAME] %s resume/dispatch returned unexpectedly!\n",
                 g_game_spec.short_name);
-        for (;;) SwitchToFiber(s_main_fiber);
+        for (;;) fiber_switch(s_main_fiber);
     }
 
     g_cpu.A[7] =   ((uint32_t)g_rom[0] << 24)
@@ -409,19 +411,18 @@ static void CALLBACK game_fiber_func(LPVOID param)
      * If it does, just yield back to main forever. */
     fprintf(stderr, "[GAME] %s entry point returned unexpectedly!\n",
             g_game_spec.short_name);
-    for (;;) SwitchToFiber(s_main_fiber);
+    for (;;) fiber_switch(s_main_fiber);
 }
 
 static int create_game_fiber(uint32_t resume_pc)
 {
     s_game_fiber_resume_pc = resume_pc & 0xFFFFFFu;
-    s_game_fiber = CreateFiberEx(GAME_FIBER_STACK_COMMIT,
-                                 GAME_FIBER_STACK_RESERVE,
-                                 0,
-                                 game_fiber_func,
-                                 NULL);
+    s_game_fiber = fiber_create(GAME_FIBER_STACK_COMMIT,
+                                GAME_FIBER_STACK_RESERVE,
+                                game_fiber_func,
+                                NULL);
     if (!s_game_fiber) {
-        fprintf(stderr, "glue: CreateFiber failed\n");
+        fprintf(stderr, "glue: fiber_create failed\n");
         s_game_fiber_resume_pc = 0;
         s_game_running = 0;
         return 0;
@@ -466,7 +467,7 @@ void glue_run_game_chunk(cc_u32f cycles)
     s_cycle_budget = (int32_t)cycles;
     s_interleave_active = 1;
     instruction_watchdog_reset();
-    SwitchToFiber(s_game_fiber);
+    fiber_switch(s_game_fiber);
     instruction_watchdog_reset();
     s_interleave_active = 0;
 }
@@ -484,7 +485,7 @@ static void check_cycle_budget(void)
         if (s_cycle_budget <= 0) {
             g_chunk_yield_count++;
             { char stack_marker; game_stack_note("cycle-budget", &stack_marker); }
-            SwitchToFiber(s_main_fiber);
+            fiber_switch(s_main_fiber);
         }
     }
 }
@@ -614,7 +615,7 @@ void glue_yield_for_vblank(void)
         g_cpu.A[7] = g_game_layout.initial_ssp;
     s_game_yielded_vblank = 1;
     { char stack_marker; game_stack_note("WaitForVint", &stack_marker); }
-    SwitchToFiber(s_main_fiber);
+    fiber_switch(s_main_fiber);
     /* Resumed here when next frame's DoCycles calls glue_run_game_chunk.
      *
      * Simulate WaitForVBlank polling overhead: the real 68K spins in a
@@ -674,7 +675,7 @@ void glue_yield_for_interrupt_poll(void)
 
     s_watchdog_counter = 0;
     { char stack_marker; game_stack_note("irq-poll", &stack_marker); }
-    SwitchToFiber(s_main_fiber);
+    fiber_switch(s_main_fiber);
 }
 
 /* Called from main loop: start the game frame. With interleave mode,
@@ -714,11 +715,11 @@ void glue_yield_for_break(void)
     /* Block-entry hook in the game fiber decided to park. We're at a
      * label boundary, so g_cpu and g_ram are consistent. Yield to main
      * fiber — main loop will drain cmd_server until a resume command
-     * arrives, then SwitchToFiber(s_game_fiber) re-enters here and we
+     * arrives, then fiber_switch(s_game_fiber) re-enters here and we
      * continue the interrupted function. Clear the flag on return so
      * the next yield can be detected. */
     s_game_yielded_break = 1;
-    SwitchToFiber(s_main_fiber);
+    fiber_switch(s_main_fiber);
     s_game_yielded_break = 0;
 }
 
@@ -730,7 +731,7 @@ int glue_game_yielded_for_break(void)
 void glue_resume_from_break(void)
 {
     if (!s_game_running || !s_game_fiber) return;
-    SwitchToFiber(s_game_fiber);
+    fiber_switch(s_game_fiber);
     /* Returns here when the game fiber yields again (any reason). */
 }
 #endif
@@ -791,9 +792,9 @@ void glue_init(ClownMDEmu *emu, const cc_u8l *rom_bytes, cc_u32l rom_byte_len)
 
 #if ENABLE_RECOMPILED_CODE
     g_step2_active = 1;
-    s_main_fiber = ConvertThreadToFiber(NULL);
+    s_main_fiber = fiber_convert_thread();
     if (!s_main_fiber) {
-        fprintf(stderr, "glue: ConvertThreadToFiber failed\n");
+        fprintf(stderr, "glue: fiber_convert_thread failed\n");
         return;
     }
     if (!create_game_fiber(0)) {
@@ -918,7 +919,7 @@ void glue_check_vblank(void)
              * Native-only: oracle doesn't have a game fiber. */
             g_cycle_accumulator -= NTSC_CYCLES_PER_WALL_FRAME;
             s_game_yielded_vblank = 1;
-            SwitchToFiber(s_main_fiber);
+            fiber_switch(s_main_fiber);
 #endif
         }
         return;
@@ -999,12 +1000,12 @@ void glue_shutdown(void)
 {
 #if ENABLE_RECOMPILED_CODE
     if (s_game_fiber) {
-        DeleteFiber(s_game_fiber);
+        fiber_destroy(s_game_fiber);
         s_game_fiber = NULL;
     }
-    /* s_main_fiber is the thread itself — ConvertFiberToThread to clean up. */
+    /* s_main_fiber is the thread itself — revert it to clean up. */
     if (s_main_fiber) {
-        ConvertFiberToThread();
+        fiber_revert_thread();
         s_main_fiber = NULL;
     }
     s_game_running = 0;
@@ -1039,7 +1040,7 @@ void glue_restart_game_fiber(uint32_t resume_pc)
         return;
 
     if (s_game_fiber) {
-        DeleteFiber(s_game_fiber);
+        fiber_destroy(s_game_fiber);
         s_game_fiber = NULL;
     }
 
@@ -1156,7 +1157,7 @@ static inline void spin_check(uint32_t byte_addr, int is_write)
             if (s_main_fiber)
                 { char stack_marker; game_stack_note("spin-read", &stack_marker); }
             if (s_main_fiber)
-                SwitchToFiber(s_main_fiber);
+                fiber_switch(s_main_fiber);
             s_spin_count = 0;
         }
     } else {
@@ -1221,7 +1222,7 @@ uint8_t m68k_read8(uint32_t byte_addr)
                 poll_streak    = 1;
             }
             { char stack_marker; game_stack_note("z80-poll", &stack_marker); }
-            SwitchToFiber(s_main_fiber);
+            fiber_switch(s_main_fiber);
             /* fall through to real read */
         } else {
             return 0x00u;  /* outside interleave: keep old shortcut */

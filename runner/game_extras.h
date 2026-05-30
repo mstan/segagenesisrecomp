@@ -30,3 +30,9 @@ bool game_handle_debug_cmd(int id, const char *cmd, const char *json_line);
 /* Returns the game's identifier ("Sonic1", "Sonic2", ...) for the
  * info / ping command. Static C string. */
 const char *game_extras_name(void);
+
+/* Per-game dispatch override. The generated dispatcher calls this when a
+ * target address isn't in the static dispatch table. Return nonzero if the
+ * game handled it; 0 lets the runner log a dispatch miss. Implemented in
+ * the per-game extras.c (e.g. sonicthehedgehog/extras.c). */
+int game_dispatch_override(uint32_t addr);
