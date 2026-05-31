@@ -529,6 +529,101 @@ static int runner_load_state_file(const char *path)
     return ok;
 }
 
+/* =========================================================================
+ * Battery-backed cartridge SRAM persistence (e.g. Sonic 3 save slots).
+ *
+ * ClownMDEmu holds cartridge SRAM in g_clownmdemu.state.external_ram.buffer
+ * but never writes it to disk: its save_file_* callbacks drive Mega-CD
+ * backup RAM only (bus-sub-m68k.c), not cartridge SRAM. So the runner owns
+ * SRAM persistence — load the .srm at boot, auto-flush it shortly after the
+ * game writes a save, and flush once more on exit.
+ *
+ * Fully game-agnostic: cartridges without battery SRAM report size==0 /
+ * non_volatile==false (Sonic 1 & 2), so every entry point below no-ops for
+ * them. Nothing here knows a game-specific address — the SRAM geometry comes
+ * from ClownMDEmu's parse of the ROM header (SetUpExternalRAM).
+ * ========================================================================= */
+
+static char     s_sram_path[512] = "";
+static int      s_sram_active    = 0;  /* battery SRAM present this run */
+static uint64_t s_sram_hash      = 0;  /* last-seen content hash */
+static int      s_sram_dirty     = 0;  /* content changed since last flush */
+static uint32_t s_sram_dirty_at  = 0;  /* frame the pending change was seen */
+
+static uint64_t sram_content_hash(void)
+{
+    const unsigned char *buf = g_clownmdemu.state.external_ram.buffer;
+    size_t n = (size_t)g_clownmdemu.state.external_ram.size;
+    uint64_t h = 0xCBF29CE484222325ULL;  /* FNV-1a-64, as in [FBHASH] */
+    for (size_t i = 0; i < n; i++) { h ^= buf[i]; h *= 0x100000001B3ULL; }
+    return h;
+}
+
+static void runner_sram_flush(void)
+{
+    if (!s_sram_active) return;
+    FILE *f = fopen(s_sram_path, "wb");
+    if (!f) { fprintf(stderr, "[SRAM] flush failed to open %s\n", s_sram_path); return; }
+    size_t n = (size_t)g_clownmdemu.state.external_ram.size;
+    size_t wrote = fwrite(g_clownmdemu.state.external_ram.buffer, 1, n, f);
+    fclose(f);
+    s_sram_dirty = 0;
+    fprintf(stderr, "[SRAM] flushed %zu bytes to %s\n", wrote, s_sram_path);
+}
+
+/* Resolve <rom-basename>.srm next to the exe, then load it (if present) into
+ * the cartridge SRAM buffer. Called once, right after ClownMDEmu_HardReset
+ * (which runs SetUpExternalRAM and so has populated size / non_volatile). */
+static void runner_sram_init_and_load(const char *rom_path)
+{
+    if (!g_clownmdemu.state.external_ram.non_volatile ||
+        g_clownmdemu.state.external_ram.size == 0)
+        return;  /* no battery save on this cartridge */
+    s_sram_active = 1;
+
+    const char *base = rom_path;
+    const char *s1 = strrchr(rom_path, '/');
+    const char *s2 = strrchr(rom_path, '\\');
+    const char *sep = (s2 > s1) ? s2 : s1;
+    if (sep) base = sep + 1;
+
+    char name[256];
+    snprintf(name, sizeof(name), "%s", base);
+    char *dot = strrchr(name, '.');
+    if (dot) *dot = '\0';
+    strncat(name, ".srm", sizeof(name) - strlen(name) - 1);
+    snprintf(s_sram_path, sizeof(s_sram_path), "%s", exe_relative(name));
+
+    FILE *f = fopen(s_sram_path, "rb");
+    if (f) {
+        size_t n = (size_t)g_clownmdemu.state.external_ram.size;
+        size_t got = fread(g_clownmdemu.state.external_ram.buffer, 1, n, f);
+        fclose(f);
+        fprintf(stderr, "[SRAM] loaded %zu/%zu bytes from %s\n", got, n, s_sram_path);
+    } else {
+        fprintf(stderr, "[SRAM] no save file yet (%s) — starting fresh\n", s_sram_path);
+    }
+    s_sram_hash  = sram_content_hash();
+    s_sram_dirty = 0;
+}
+
+/* Per-frame: detect a change to SRAM and flush a short while after it settles.
+ * The delay coalesces the game's multi-frame save burst into one write and
+ * still persists well before a manual taskkill (the standard relaunch path,
+ * PRINCIPLES #24). Hashing the buffer is cheap and has no per-frame I/O. */
+static void runner_sram_autosave_tick(uint32_t frame_num)
+{
+    if (!s_sram_active) return;
+    uint64_t h = sram_content_hash();
+    if (h != s_sram_hash) {
+        s_sram_hash     = h;
+        s_sram_dirty    = 1;
+        s_sram_dirty_at = frame_num;
+    }
+    if (s_sram_dirty && (frame_num - s_sram_dirty_at) >= 30)
+        runner_sram_flush();
+}
+
 static uint8_t runner_ram_byte(uint32_t addr)
 {
     uint16_t off = (uint16_t)(addr & 0xFFFFu);
@@ -889,8 +984,33 @@ int main(int argc, char *argv[])
     }
     gamepad_init();
 
+    /* Build-type-aware window title so the RECOMPILED (native) window is
+     * visually distinguishable from the INTERPRETER (oracle) window when both
+     * run side by side — otherwise both show the bare game name and can't be
+     * told apart. */
+#if defined(SONIC_ORACLE_BUILD)
+    const char *build_tag = "INTERPRETER - oracle";
+#elif ENABLE_RECOMPILED_CODE
+    const char *build_tag = "RECOMPILED - native";
+#elif HYBRID_RECOMPILED_CODE
+    const char *build_tag = "HYBRID";
+#else
+    const char *build_tag = "interpreter";
+#endif
+    char window_title[256];
+    {
+        const char *base = g_game_spec.display_name ? g_game_spec.display_name
+                                                    : "Sonic the Hedgehog";
+        if (debug_port_cli)
+            snprintf(window_title, sizeof window_title, "%s  [ %s ]  port %d",
+                     base, build_tag, debug_port_cli);
+        else
+            snprintf(window_title, sizeof window_title, "%s  [ %s ]",
+                     base, build_tag);
+    }
+
     SDL_Window *window = SDL_CreateWindow(
-        g_game_spec.display_name ? g_game_spec.display_name : "Sonic the Hedgehog",
+        window_title,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         640, 448,   /* 2× scale: 320×224 → 640×448 */
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
@@ -955,6 +1075,11 @@ int main(int argc, char *argv[])
     ClownMDEmu_Initialise(&g_clownmdemu, &config, &cbs);
     ClownMDEmu_SetCartridge(&g_clownmdemu, rom_buf, rom_words);
     ClownMDEmu_HardReset(&g_clownmdemu, cc_true, cc_false);
+
+    /* Battery-backed cartridge SRAM (Sonic 3 save slots): HardReset has run
+     * SetUpExternalRAM, so size / non_volatile are now valid. Load the .srm
+     * if one exists; a no-op for cartridges without battery save. */
+    runner_sram_init_and_load(rom_path);
 
 #if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     /* Step 2 / Hybrid: initialise glue (Step 2 also starts the game thread). */
@@ -1389,6 +1514,7 @@ int main(int argc, char *argv[])
             if (input_script_should_exit()) {
                 fprintf(stderr, "[input_script] exiting per script directive (code=%d)\n",
                         input_script_exit_code());
+                if (s_sram_dirty) runner_sram_flush();
                 return input_script_exit_code();
             }
         }
@@ -1414,6 +1540,9 @@ int main(int argc, char *argv[])
                     frame_num, s_screen_width, s_screen_height,
                     (unsigned long long)h);
         }
+
+        /* Persist battery SRAM to disk shortly after the game writes a save. */
+        runner_sram_autosave_tick(frame_num);
 
         /* Upload framebuffer to GPU texture */
         SDL_UpdateTexture(texture, NULL, s_framebuf,
@@ -1477,6 +1606,7 @@ int main(int argc, char *argv[])
 #endif
 
     /* --- Cleanup --- */
+    if (s_sram_dirty) runner_sram_flush();  /* final flush of any pending save */
     if (s_debug_enabled) cmd_server_shutdown();
     if (s_framelog_file) fclose(s_framelog_file);
     { extern int audio_wav_active(void); extern void audio_wav_stop(void);
