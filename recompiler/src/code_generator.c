@@ -1844,6 +1844,35 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         int reg  = ea & 7;
         uint32_t ret_addr = instr->addr + instr->byte_length;
 
+        /* Obj_WaitOffscreen idiom: the callee unconditionally pops our pushed
+         * return address off the stack (`move.l (sp)+,$34(a0)`) and repurposes
+         * it as an object code pointer, so its eventual rts returns to OUR
+         * caller — never to ret_addr. Emit a non-returning tail transfer: push
+         * the return (so the callee's `(sp)+` reads it), call, then return.
+         * Do NOT pop again (the callee already did — a second pop would
+         * double-adjust A7) and do NOT fall through to ret_addr (that address,
+         * when it is code, is a separate dispatch entry reached later via the
+         * object's restored code pointer, not by linear fall-through). Without
+         * this the recompiled caller runs ret_addr a frame early, corrupting
+         * the object's state machine (e.g. the AIZ MonkeyDude body). */
+        if (instr->has_target &&
+            function_finder_pops_return_unconditionally(rom, instr->target_addr)) {
+            fprintf(f, "  recomp_push_return(0x%06Xu); /* JSR push (callee captures return) */\n",
+                    ret_addr);
+            fprintf(f, "  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;\n");
+            if (func_is_known(instr->target_addr))
+                fprintf(f, "    recomp_call_func(func_%06X);\n", instr->target_addr);
+            else
+                fprintf(f, "    recomp_call_addr(0x%06Xu);\n", instr->target_addr);
+            fprintf(f, "    g_split_sp_popped = _saved_split_sp_popped;\n");
+            fprintf(f, "  }\n");
+            fprintf(f, "  g_rte_pending = 0; /* callee captured our return; handled here */\n");
+            emit_cycle_accounting(f, "  ", estimate_cycles(instr));
+            fprintf(f, "  return; /* callee captured return addr: no pop, no fall-through */\n");
+            *skip_until_label = true;
+            break;
+        }
+
         /* Simulate JSR/BSR stack: push return address onto the 68K stack. */
         fprintf(f, "  recomp_push_return(0x%06Xu); /* JSR push */\n", ret_addr);
 
@@ -3978,6 +4007,15 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                                       last_instr.mnemonic == MN_ILLEGAL ||
                                       last_instr.mnemonic == MN_JMP     ||
                                       last_instr.mnemonic == MN_BRA);
+                /* A jsr/bsr whose callee unconditionally pops our return
+                 * address (Obj_WaitOffscreen idiom) is emitted as a
+                 * non-returning tail transfer above, so it does NOT fall
+                 * through to the next instruction — treat it as a terminator
+                 * here to suppress the boundary tail call. */
+                if (!is_terminator && m68k_is_call(&last_instr) &&
+                    last_instr.has_target &&
+                    function_finder_pops_return_unconditionally(rom, last_instr.target_addr))
+                    is_terminator = true;
                 if (!is_terminator) {
                     uint32_t fall_through = last_pc + last_instr.byte_length;
                     /* Only emit the tail call if fall_through is the entry

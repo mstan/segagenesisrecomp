@@ -289,6 +289,47 @@ static bool function_captures_return_addr(const GenesisRom *rom, uint32_t start)
     return false;
 }
 
+/* Strict variant used by the code generator (NOT discovery).
+ *
+ * Returns true only if the routine UNCONDITIONALLY pops its own return
+ * address off the stack at entry — the Obj_WaitOffscreen idiom
+ * (`move.l (sp)+,$34(a0)`): the routine saves the return PC as an object
+ * code pointer and redirects control, so its eventual rts returns to the
+ * caller of the `jsr`, never to the instruction after it. The generator
+ * turns `jsr <such routine>` into a non-returning tail transfer (no second
+ * stack pop, no fall-through to the post-jsr address).
+ *
+ * Stricter than function_captures_return_addr(): it also bails on any
+ * conditional branch (Bcc/DBcc) before the pop, so a routine that only
+ * pops its return on SOME path is never mis-treated as always-redirecting.
+ * Discovery keeps the looser heuristic; only emission uses this one. */
+bool function_finder_pops_return_unconditionally(const GenesisRom *rom, uint32_t start) {
+    uint32_t pc = start;
+    for (int n = 0; n < 12 && pc + 1 < rom->rom_size; n++) {
+        M68KInstr ins;
+        if (!m68k_decode(rom, pc, &ins)) return false;
+        /* Longword pop from (a7)+ reached with no intervening control flow
+         * or stack growth == the return address being consumed. */
+        if ((ins.mnemonic == MN_MOVE || ins.mnemonic == MN_MOVEA)
+                && ins.size == M68K_SIZE_L
+                && ins.src_ea == ((3 << 3) | 7))            /* (a7)+ */
+            return true;
+        /* Anything that pushes, calls, branches (conditional or not), or
+         * terminates before the pop makes the entry pop non-guaranteed. */
+        if (ins.dst_ea == ((4 << 3) | 7)                    /* -(a7) dest */
+                || ins.mnemonic == MN_PEA
+                || ins.mnemonic == MN_LINK
+                || ins.mnemonic == MN_MOVEM
+                || ins.mnemonic == MN_Bcc
+                || ins.mnemonic == MN_DBcc
+                || m68k_is_call(&ins)
+                || m68k_is_terminator(&ins))
+            return false;
+        pc += ins.byte_length;
+    }
+    return false;
+}
+
 void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameConfig *cfg) {
     s_ff_cfg = cfg;
     memset(addr_seen, 0, sizeof(addr_seen));
