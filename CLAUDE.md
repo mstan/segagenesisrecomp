@@ -40,7 +40,6 @@ F:\Projects\segagenesisrecomp-release\
     │   ├── glue.c, cmd_server.c, oracle_trace.c, frame_snapshots.c, ...
     │   ├── main.c, audio.c, audio/, crash_report.c, hybrid*.c, ...
     │   ├── stub_clown68000.c         ← native-only (linked into native target)
-    │   ├── clownmdemu_patches.cmake  ← applied to clownmdemu-core
     │   ├── external/SDL2/            ← bundled SDL2
     │   └── include/genesis_runtime.h ← shared interface header
     ├── tools\                        ← shared genesis-agnostic tooling
@@ -177,6 +176,13 @@ already use the right one.
   confirmation.
 - **Never commit without explicit user instruction.** The user runs
   `git status` themselves and asks for commits when ready.
+- **Never publish a binary release without following `RELEASING.md`.** Shipped
+  binaries statically link clownmdemu + clownz80 (AGPL-3.0), so a binary
+  release is an AGPL combined work: it MUST be AGPL-3.0, ship the AGPL license
+  + `THIRD-PARTY-LICENSES.md`, link to public corresponding source (incl. the
+  `mstan/clownmdemu` + `mstan/clown68000` forks made PUBLIC), and contain NO
+  ROM / dumps / saves / logs. Package with `tools/package_release.py` (it
+  refuses if a ROM/junk slips in) — never zip a build folder by hand.
 
 ## Active improvement plan
 
