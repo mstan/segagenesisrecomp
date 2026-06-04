@@ -467,7 +467,7 @@ static const char *resolve_runner_path(const char *path, char *buf, size_t buf_l
     return buf;
 }
 
-static int runner_save_state_file(const char *path)
+int runner_save_state_file(const char *path)
 {
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
@@ -491,7 +491,7 @@ static int runner_save_state_file(const char *path)
     return ok;
 }
 
-static int runner_load_state_file(const char *path)
+int runner_load_state_file(const char *path)
 {
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
@@ -656,7 +656,7 @@ static int runner_dump_ram_file(const char *path)
     return ok;
 }
 
-static int runner_write_screenshot_file(const char *path)
+int runner_write_screenshot_file(const char *path)
 {
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));

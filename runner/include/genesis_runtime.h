@@ -61,6 +61,7 @@ void recomp_tail_call(uint32_t addr);
 void recomp_call_addr(uint32_t addr);
 void recomp_call_func(RecompFuncPtr fn);
 void recomp_push_return(uint32_t ret_addr);
+uint32_t recomp_resolve_ram_trampoline(uint32_t addr);
 
 /* Logging for dispatch misses */
 void genesis_log_dispatch_miss(uint32_t addr);

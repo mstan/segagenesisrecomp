@@ -22142,6 +22142,7 @@ void recomp_tail_call(uint32_t addr) {
 }
 
 static void recomp_dispatch_once(uint32_t addr) {
+    addr = recomp_resolve_ram_trampoline(addr);
     for (int i = 0; s_dispatch_table[i].fn; i++) {
         if (s_dispatch_table[i].addr == addr) {
             s_dispatch_table[i].fn();

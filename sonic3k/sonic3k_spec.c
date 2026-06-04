@@ -4,7 +4,7 @@
  * ROM layout:  S&K occupies $000000-$1FFFFF; Sonic 3 mapped at $200000-$3FFFFF.
  * VBlank/HBlank: vectors point to RAM trampolines installed at boot ($000304).
  *   VBlank ISR (VInt) = $000492 (one NOP + movem + dispatch)
- *   HBlank ISR (HInt) = $000C1E
+ *   HBlank ISR (HInt) = $000D0C (JmpTo_HInt -> RAM-installed handler)
  * Main game loop (GameLoop) = $0003C4.
  *
  * All addresses verified against skdisasm sonic3k.constants.asm and sonic3k.lst.
@@ -26,11 +26,12 @@ extern ClownMDEmu g_clownmdemu;
 /* ---- Recompiled entry points (actual World ROM addresses) ---- */
 extern void func_000206(void);  /* EntryPoint   ($000206) */
 extern void func_000584(void);  /* VInt         ($000584) */
+extern void func_000D0C(void);  /* JmpTo_HInt   ($000D0C) */
 extern void func_000D10(void);  /* HInt         ($000D10) */
 
 static void s3k_call_entry_point(void) { recomp_call_addr(0x000206u); }
 static void s3k_call_vblank(void)      { recomp_call_addr(0x000584u); }
-static void s3k_call_hblank(void)      { recomp_call_addr(0x000D10u); }
+static void s3k_call_hblank(void)      { recomp_call_addr(0x000D0Cu); }
 
 int game_dispatch_override(uint32_t addr) { (void)addr; return 0; }
 

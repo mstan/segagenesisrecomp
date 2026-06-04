@@ -7,7 +7,7 @@
  *   EntryPoint  = $000206
  *   GameLoop    = $000734   (main loop dispatched by Game_mode)
  *   VInt  (VBlank ISR) = $000802   (vector $78 -> VInt)
- *   HInt  (HBlank ISR) = $000FA2   (vector $70 -> JmpTo_HInt $F9E -> HInt)
+ *   HInt  (HBlank ISR) = $000F9E   (vector $70 -> JmpTo_HInt -> RAM H_int_addr)
  *
  * All addresses verified against skdisasm s3.lst. This is "Sonic 3 mode" —
  * the clean single-ROM target; S&K-alone and S3K-locked-on are separate specs.
@@ -29,11 +29,12 @@ extern ClownMDEmu g_clownmdemu;
 /* ---- Recompiled entry points (Sonic 3 standalone, org-0 addresses) ---- */
 extern void func_000206(void);  /* EntryPoint   ($000206) */
 extern void func_000802(void);  /* VInt         ($000802) */
+extern void func_000F9E(void);  /* JmpTo_HInt   ($000F9E) */
 extern void func_000FA2(void);  /* HInt         ($000FA2) */
 
 static void s3_call_entry_point(void) { recomp_call_addr(0x000206u); }
 static void s3_call_vblank(void)      { recomp_call_addr(0x000802u); }
-static void s3_call_hblank(void)      { recomp_call_addr(0x000FA2u); }
+static void s3_call_hblank(void)      { recomp_call_addr(0x000F9Eu); }
 
 int game_dispatch_override(uint32_t addr) { (void)addr; return 0; }
 

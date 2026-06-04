@@ -279,6 +279,47 @@ extern cc_u32f g_hybrid_cycle_counter;
 
 /* Reset bus sync state to frame start. Called at frame boundaries
  * so that cycle-based VDP/Z80/FM/PSG sync stays within one frame. */
+static uint16_t recomp_ram_read16_direct(uint32_t addr)
+{
+    uint16_t off = (uint16_t)(addr & 0xFFFFu);
+    return s_emu ? (uint16_t)s_emu->state.m68k.ram[off / 2u] : 0xFFFFu;
+}
+
+static uint32_t recomp_ram_read32_direct(uint32_t addr)
+{
+    return ((uint32_t)recomp_ram_read16_direct(addr) << 16) |
+           (uint32_t)recomp_ram_read16_direct(addr + 2u);
+}
+
+uint32_t recomp_resolve_ram_trampoline(uint32_t addr)
+{
+    uint32_t resolved = addr & 0xFFFFFFu;
+
+    for (int guard = 0; guard < 4; guard++) {
+        if (resolved < RAM_BASE)
+            break;
+
+        uint16_t opcode = recomp_ram_read16_direct(resolved);
+        uint32_t next;
+
+        if (opcode == 0x4EF9u || opcode == 0x4EB9u) {
+            next = recomp_ram_read32_direct(resolved + 2u) & 0xFFFFFFu;
+        } else if (opcode == 0x4EF8u || opcode == 0x4EB8u) {
+            uint16_t aw = recomp_ram_read16_direct(resolved + 2u);
+            next = (aw & 0x8000u) ? (0xFF0000u | (uint32_t)aw) : (uint32_t)aw;
+        } else {
+            break;
+        }
+
+        next &= 0xFFFFFFu;
+        if (next == resolved)
+            break;
+        resolved = next;
+    }
+
+    return resolved;
+}
+
 void glue_reset_frame_sync(void)
 {
     g_hybrid_cycle_counter = 0;

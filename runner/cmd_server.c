@@ -55,6 +55,9 @@ typedef int sock_t;
  * ========================================================================= */
 
 extern ClownMDEmu g_clownmdemu;       /* defined in main.c */
+int runner_save_state_file(const char *path);
+int runner_load_state_file(const char *path);
+int runner_write_screenshot_file(const char *path);
 
 #if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
 extern uint32_t   g_cycle_accumulator;
@@ -459,6 +462,65 @@ static void handle_ping(int id, uint32_t frame_num)
     snprintf(buf, sizeof(buf),
         "{\"id\":%d,\"ok\":true,\"frame\":%u}", id, frame_num);
     send_response(buf);
+}
+
+static void json_escape_copy(char *dst, size_t dst_len, const char *src)
+{
+    size_t out = 0;
+    if (!dst_len)
+        return;
+    for (size_t i = 0; src && src[i] && out + 1 < dst_len; i++) {
+        unsigned char c = (unsigned char)src[i];
+        if ((c == '\\' || c == '"') && out + 2 < dst_len) {
+            dst[out++] = '\\';
+            dst[out++] = (char)c;
+        } else if (c >= 0x20u) {
+            dst[out++] = (char)c;
+        }
+    }
+    dst[out] = '\0';
+}
+
+static void send_file_action_result(int id, const char *cmd, const char *path, int ok)
+{
+    if (!ok) {
+        char err[96];
+        snprintf(err, sizeof(err), "%s failed", cmd);
+        send_err(id, err);
+        return;
+    }
+
+    char escaped[512];
+    char buf[768];
+    json_escape_copy(escaped, sizeof(escaped), path);
+    snprintf(buf, sizeof(buf),
+             "{\"id\":%d,\"ok\":true,\"cmd\":\"%s\",\"path\":\"%s\"}",
+             id, cmd, escaped);
+    send_response(buf);
+}
+
+static void handle_save_state(int id, const char *json)
+{
+    char path[256];
+    if (!json_get_str(json, "path", path, sizeof(path)))
+        snprintf(path, sizeof(path), "tcp_save.bin");
+    send_file_action_result(id, "save_state", path, runner_save_state_file(path));
+}
+
+static void handle_load_state(int id, const char *json)
+{
+    char path[256];
+    if (!json_get_str(json, "path", path, sizeof(path)))
+        snprintf(path, sizeof(path), "tcp_save.bin");
+    send_file_action_result(id, "load_state", path, runner_load_state_file(path));
+}
+
+static void handle_screenshot(int id, const char *json)
+{
+    char path[256];
+    if (!json_get_str(json, "path", path, sizeof(path)))
+        snprintf(path, sizeof(path), "tcp_screenshot.png");
+    send_file_action_result(id, "screenshot", path, runner_write_screenshot_file(path));
 }
 
 static void handle_get_registers(int id)
@@ -2034,6 +2096,12 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         send_ok(id);
     } else if (strcmp(cmd, "ping") == 0) {
         handle_ping(id, frame_num);
+    } else if (strcmp(cmd, "save_state") == 0) {
+        handle_save_state(id, json);
+    } else if (strcmp(cmd, "load_state") == 0) {
+        handle_load_state(id, json);
+    } else if (strcmp(cmd, "screenshot") == 0) {
+        handle_screenshot(id, json);
     } else if (strcmp(cmd, "get_registers") == 0) {
         handle_get_registers(id);
     } else if (strcmp(cmd, "read_memory") == 0) {
