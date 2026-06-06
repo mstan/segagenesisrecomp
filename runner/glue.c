@@ -645,7 +645,16 @@ void glue_own_interrupt(int level, GVDP *vdp)
     uint8_t save[256];
 
     if (level == 6 && imask < 6) {
-        if (!s_game_yielded_vblank) return;
+        /* Fire V_Int once per wall frame, exactly like hardware — NOT only
+         * when the game has parked at WaitForVBlank. During multi-frame work
+         * that never yields (boot, title-screen art load, level load) the
+         * old `if (!s_game_yielded_vblank) return` dropped the V-int entirely,
+         * so v_vblank_count and every V-int-driven timer fell behind the
+         * oracle (measured: a 16-frame fcnt lag across the title load), which
+         * cascaded into a different attract demo being selected. The handler
+         * saves/restores g_cpu and runs atomically (s_in_vblank_service gates
+         * out budget yields), so it is safe to fire while the fiber is parked
+         * mid-instruction at a budget yield. */
         M68KState saved = g_cpu;
         for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
         g_cpu.A[7] = STK;
@@ -785,10 +794,21 @@ void glue_yield_for_interrupt_poll(void)
  * Without interleave, it runs until WaitForVBlank as before. */
 void glue_run_game_frame(void)
 {
+#if OWN_BACKEND
+    /* Own backend: the game fiber is woken exactly ONCE per wall frame, by the
+     * V-int at the vblank scanline (glue_own_interrupt) — like hardware, where
+     * V-int is what releases the WaitForVBlank spin. Clearing the yield flag
+     * here too would add a SECOND wake per frame (frame-start AND vblank), so a
+     * light main-loop iteration (Sega screen, "Sonic Team presents", title
+     * finger-wag) would complete ~2x per wall frame while heavy gameplay frames
+     * stayed ~1x — the "intros/finger-wag run fast, gameplay looks right"
+     * symptom. The first frame still runs: s_game_yielded_vblank starts 0. */
+#else
     s_game_yielded_vblank = 0;
     /* Don't switch to game fiber here — DoCycles will do it during Iterate.
      * But we need to handle the first frame and any code that runs before
      * the first DoCycles call. */
+#endif
 }
 
 /* Service VBlank: called from main loop AFTER Iterate.
@@ -798,7 +818,13 @@ void glue_service_vblank(void)
     /* Handlers now fire from glue_check_vblank (contextual recompiler)
      * at the exact cycle count. No handler here — just bookkeeping. */
 
+#if !OWN_BACKEND
+    /* Own backend leaves the yield flag owned solely by glue_yield_for_vblank
+     * (sets it) and glue_own_interrupt (clears it at the vblank scanline).
+     * Resetting it here would re-introduce the frame-start wake — see
+     * glue_run_game_frame(). */
     s_game_yielded_vblank = 0;
+#endif
 
     glue_reset_frame_sync();
 
@@ -1002,6 +1028,21 @@ void glue_check_vblank(void)
 {
     instruction_watchdog_check();
 
+#if OWN_BACKEND
+    /* Own backend: the scanline scheduler (machine_run_frame) is the SOLE
+     * V-int driver, via glue_own_interrupt() — which uses our g_ram for the
+     * handler stack save/restore. Per-scanline and per-frame fiber yielding
+     * is handled by check_cycle_budget() and glue_yield_for_vblank(). Firing
+     * the handler here too would run V_Int twice per wall frame (this
+     * threshold path PLUS the scheduler path), doubling everything the
+     * handler drives — music tempo, sprite-animation timers, v_vblank_count —
+     * while main-loop object physics stays 1x. That mismatch is the
+     * "some animations run too fast, some look right" symptom. It would also
+     * run V_Int against the wrong RAM buffer (fire_vblank_handler_once saves
+     * s_emu->state.m68k.ram, but recompiled code mutates g_ram here). So under
+     * the own backend this routine does watchdog bookkeeping only. */
+    return;
+#else
     if (s_in_vblank_service)
         return;  /* already servicing — don't re-enter from handler's own accumulator */
 
@@ -1038,6 +1079,7 @@ void glue_check_vblank(void)
         if (!s_vblank_fired_this_frame)
             fire_vblank_handler_once();
     }
+#endif /* OWN_BACKEND */
 }
 
 void glue_end_of_wall_frame(void)
