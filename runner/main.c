@@ -746,7 +746,18 @@ static void write_framelog(uint32_t frame)
     if (!s_framelog_file) return;
     if (frame > 9999) return;
 
-    /* Read from clownmdemu RAM (word-addressed, big-endian) */
+    /* Read work RAM as big-endian. The two backends keep WRAM in different
+     * buffers: clownmdemu in a word array (state.m68k.ram), the own backend
+     * in our byte array (g_ram). Reading the wrong one yields a stale/blank
+     * log — which is why the own-backend framelog must source g_ram so the
+     * two logs are directly diffable (clean-room A/B against the oracle). */
+#if OWN_BACKEND
+    extern uint8_t g_ram[0x010000];
+    #define EMU_BYTE(addr) ((uint8_t)g_ram[(addr) & 0xFFFF])
+    #define EMU_WORD(addr) ((uint16_t)((g_ram[(addr) & 0xFFFF] << 8) | \
+                                        g_ram[((addr) + 1) & 0xFFFF]))
+    #define EMU_LONG(addr) (((uint32_t)EMU_WORD(addr) << 16) | EMU_WORD((addr)+2))
+#else
     #define EMU_BYTE(addr) \
         ((uint8_t)(g_clownmdemu.state.m68k.ram[((addr) & 0xFFFF) / 2] >> \
                    (((addr) & 1) ? 0 : 8)))
@@ -754,6 +765,7 @@ static void write_framelog(uint32_t frame)
         ((uint16_t)(g_clownmdemu.state.m68k.ram[((addr) & 0xFFFF) / 2]))
     #define EMU_LONG(addr) \
         (((uint32_t)EMU_WORD(addr) << 16) | EMU_WORD((addr)+2))
+#endif
 
     /* Universal fields come from g_game_layout. Game-specific fields
      * (cnt $F628, scrl $F700, plc $F680, P1 ctrl mirrors, Sonic-1
@@ -1413,6 +1425,25 @@ int main(int argc, char *argv[])
           glue_reset_frame_sync();
           glue_run_game_frame();   /* prepares game fiber state */
 #if OWN_BACKEND
+          {
+              /* Own-backend input: build the P1 pad mask from the same
+               * sources clownmdemu queries (keyboard / gamepad / .input
+               * script / TCP) via input_requested_cb, and hand it to our bus
+               * before running the frame. The recompiled ReadJoypads reads it
+               * back through the controller protocol in gbus pad_read(). */
+              static const ClownMDEmu_Button own_btns[8] = {
+                  CLOWNMDEMU_BUTTON_UP,   CLOWNMDEMU_BUTTON_DOWN,
+                  CLOWNMDEMU_BUTTON_LEFT, CLOWNMDEMU_BUTTON_RIGHT,
+                  CLOWNMDEMU_BUTTON_B,    CLOWNMDEMU_BUTTON_C,
+                  CLOWNMDEMU_BUTTON_A,    CLOWNMDEMU_BUTTON_START };
+              static const uint8_t own_bits[8] = {
+                  GPAD_UP, GPAD_DOWN, GPAD_LEFT, GPAD_RIGHT,
+                  GPAD_B,  GPAD_C,    GPAD_A,    GPAD_START };
+              uint8_t pad_mask = 0;
+              for (int b = 0; b < 8; b++)
+                  if (input_requested_cb(NULL, 0, own_btns[b])) pad_mask |= own_bits[b];
+              machine_set_pad(0, pad_mask);
+          }
           machine_run_frame(own_scanline_sink, NULL);
           s_screen_width  = gvdp_screen_width(&g_machine.vdp);
           s_screen_height = gvdp_screen_height(&g_machine.vdp);
