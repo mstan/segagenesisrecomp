@@ -201,6 +201,19 @@ static void scanline_rendered_cb(void *user_data,
     }
 }
 
+#if OWN_BACKEND
+#include "genesis_machine.h"
+/* Own-backend scanline sink: copy our VDP's rendered ARGB row to the framebuf. */
+static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width)
+{
+    (void)u;
+    if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
+    uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
+    int n = width < MAX_SCREEN_WIDTH ? width : MAX_SCREEN_WIDTH;
+    for (int x = 0; x < n; x++) row[x] = argb[x];
+}
+#endif
+
 /* Scripted input: --script "start@700,right@800" */
 static uint32_t s_script_start_frame = 0;  /* frame to press Start (0=disabled) */
 static uint32_t s_script_right_frame = 0;  /* frame to start holding Right */
@@ -1096,6 +1109,9 @@ int main(int argc, char *argv[])
     ClownMDEmu_Initialise(&g_clownmdemu, &config, &cbs);
     ClownMDEmu_SetCartridge(&g_clownmdemu, rom_buf, rom_words);
     ClownMDEmu_HardReset(&g_clownmdemu, cc_true, cc_false);
+#if OWN_BACKEND
+    machine_init();   /* clean-room own backend (VDP + bus + Z80) */
+#endif
 
     /* Battery-backed cartridge SRAM (Sonic 3 save slots): HardReset has run
      * SetUpExternalRAM, so size / non_volatile are now valid. Load the .srm
@@ -1396,7 +1412,13 @@ int main(int argc, char *argv[])
           extern void glue_reset_frame_sync(void);
           glue_reset_frame_sync();
           glue_run_game_frame();   /* prepares game fiber state */
+#if OWN_BACKEND
+          machine_run_frame(own_scanline_sink, NULL);
+          s_screen_width  = gvdp_screen_width(&g_machine.vdp);
+          s_screen_height = gvdp_screen_height(&g_machine.vdp);
+#else
           ClownMDEmu_Iterate(&g_clownmdemu);  /* DoCycles interleaves game */
+#endif
           /* Audio arch overhaul: fill s_fm_accum + s_psg_accum from our
            * cycle-stamped mixer. Drain to NTSC wall-frame cycle count
            * (not g_audio_cycle_counter): the game fiber stops running

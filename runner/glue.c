@@ -613,6 +613,49 @@ void glue_handle_interrupt(cc_u16f level)
     }
 }
 
+#if OWN_BACKEND
+#include "genesis_machine.h"
+/* Own-backend interrupt delivery — the clownmdemu-free twin of
+ * glue_handle_interrupt: runs the game's V-int(6)/H-int(4) handler using OUR
+ * work RAM (g_ram) for the IRQ-stack save/restore and OUR VDP's vblank flag. */
+void glue_own_interrupt(int level, GVDP *vdp)
+{
+    if (!s_game_running) return;
+    int imask = (g_cpu.SR >> 8) & 7;
+    const uint32_t STK = g_game_layout.intr_stack;
+    uint32_t byteoff = (STK - 256u) & 0xFFFFu;
+    uint8_t save[256];
+
+    if (level == 6 && imask < 6) {
+        if (!s_game_yielded_vblank) return;
+        M68KState saved = g_cpu;
+        for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
+        g_cpu.A[7] = STK;
+        s_in_vblank_service = 1;
+        g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+        uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
+        if (g_game_spec.call_vblank) g_game_spec.call_vblank();
+        vdp->in_vblank = saved_vb;
+        g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+        s_in_vblank_service = 0;
+        for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+        g_cpu = saved;
+        s_game_yielded_vblank = 0;
+    } else if (level == 4 && imask < 4) {
+        M68KState saved = g_cpu;
+        for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
+        g_cpu.A[7] = STK;
+        s_in_vblank_service = 1;
+        g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+        if (g_game_spec.call_hblank) g_game_spec.call_hblank();
+        g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+        s_in_vblank_service = 0;
+        for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+        g_cpu = saved;
+    }
+}
+#endif /* OWN_BACKEND */
+
 /* Yield-site cycle-accumulator log.  Each line records the state of
  * g_cycle_accumulator at the moment the game fiber yields for VBlank.
  * This captures native's belief about how many 68K cycles it spent
@@ -1236,11 +1279,15 @@ uint16_t m68k_read16(uint32_t byte_addr)
     spin_check(byte_addr, 0);
 #endif
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    return gbus_read16(&g_machine.bus, byte_addr);
+#else
     uint16_t r16_result = (uint16_t)M68kReadCallback(&s_cpu_data,
                                        byte_addr >> 1,
                                        cc_true, cc_true,
                                        g_hybrid_cycle_counter);
     return r16_result;
+#endif
 }
 
 /* IO port access logging for joypad debugging */
@@ -1293,10 +1340,15 @@ uint8_t m68k_read8(uint32_t byte_addr)
     HYBRID_BUMP_CYCLES();
     cc_bool hi = (byte_addr & 1) == 0;
     cc_bool lo = !hi;
+#if OWN_BACKEND
+    cc_u16f word = gbus_read16(&g_machine.bus, byte_addr & ~1u);
+    (void)lo;
+#else
     cc_u16f word = M68kReadCallback(&s_cpu_data,
                                      byte_addr >> 1,
                                      hi, lo,
                                      g_hybrid_cycle_counter);
+#endif
     uint8_t result = hi ? (uint8_t)(word >> 8) : (uint8_t)(word & 0xFF);
     if (s_io_log_enabled && byte_addr >= 0xA10000u && byte_addr <= 0xA1001Fu) {
         if (s_io_log_count < 200) {
@@ -1319,6 +1371,10 @@ uint32_t m68k_read32(uint32_t byte_addr)
     /* Bump once for the whole 32-bit op — both halves at same cycle.
      * Prevents VDP/Z80 sync between the two 16-bit reads. */
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    uint16_t hi = gbus_read16(&g_machine.bus, byte_addr);
+    uint16_t lo = gbus_read16(&g_machine.bus, byte_addr + 2);
+#else
     uint16_t hi = (uint16_t)M68kReadCallback(&s_cpu_data,
                                               byte_addr >> 1,
                                               cc_true, cc_true,
@@ -1327,6 +1383,7 @@ uint32_t m68k_read32(uint32_t byte_addr)
                                               (byte_addr + 2) >> 1,
                                               cc_true, cc_true,
                                               g_hybrid_cycle_counter);
+#endif
     return ((uint32_t)hi << 16) | (uint32_t)lo;
 }
 
@@ -1343,10 +1400,14 @@ void m68k_write16(uint32_t byte_addr, uint16_t val)
     audio_detour_write(byte_addr, (uint8_t)val);
 #endif
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    gbus_write16(&g_machine.bus, byte_addr, val);
+#else
     M68kWriteCallback(&s_cpu_data,
                        byte_addr >> 1,
                        cc_true, cc_true,
                        g_hybrid_cycle_counter, (cc_u16f)val);
+#endif
 #if PERMISSIVE_VDP
     gvdp_on_bus_write(byte_addr, (uint16_t)val);
 #endif
@@ -1368,6 +1429,9 @@ void m68k_write8(uint32_t byte_addr, uint8_t val)
         }
     }
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    gbus_write8(&g_machine.bus, byte_addr, val);
+#else
     cc_bool hi = (byte_addr & 1) == 0;
     cc_bool lo = !hi;
     /* Replicate the byte on both halves of the word */
@@ -1376,6 +1440,7 @@ void m68k_write8(uint32_t byte_addr, uint8_t val)
                        byte_addr >> 1,
                        hi, lo,
                        g_hybrid_cycle_counter, word);
+#endif
 }
 
 void m68k_write32(uint32_t byte_addr, uint32_t val)
@@ -1395,6 +1460,10 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
      * from two consecutive 16-bit writes. If VDP sync runs between
      * them, the half-written command corrupts VDP state. */
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    gbus_write16(&g_machine.bus, byte_addr,     (uint16_t)(val >> 16));
+    gbus_write16(&g_machine.bus, byte_addr + 2, (uint16_t)(val & 0xFFFF));
+#else
     M68kWriteCallback(&s_cpu_data,
                        byte_addr >> 1,
                        cc_true, cc_true,
@@ -1403,6 +1472,7 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
                        (byte_addr + 2) >> 1,
                        cc_true, cc_true,
                        g_hybrid_cycle_counter, (cc_u16f)(val & 0xFFFF));
+#endif
 #if PERMISSIVE_VDP
     gvdp_on_bus_write(byte_addr,     (uint16_t)(val >> 16));
     gvdp_on_bus_write(byte_addr + 2, (uint16_t)(val & 0xFFFF));
