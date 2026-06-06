@@ -87,7 +87,14 @@ uint16_t gbus_read16(GenesisBus *b, uint32_t a)
             uint8_t d = b->z80_ram[a & 0x1FFFu];
             return (uint16_t)((d << 8) | d);
         }
-        return 0xFFFFu;                          /* FM status etc.: not busy   */
+        /* YM2612 status ($A04000-$A04003, mirrored to $A05FFF): bit 7 = BUSY,
+         * bits 1..0 = timer B/A overflow. We model an infinitely-fast chip
+         * that is never busy and (since the 68K SMPS driver doesn't use the
+         * FM timers) has no overflow — so the status reads back 0. Returning
+         * 0xFF here would leave bit 7 set, and the driver's WriteFMI/WriteFMII
+         * busy-wait (btst #7; bne) would spin forever. */
+        if ((a & 0xFFFFu) < 0x6000u) return 0x0000u;   /* FM status: not busy */
+        return 0xFFFFu;                          /* bank/PSG region: open bus  */
     }
     if (a >= 0xA10000u && a < 0xA10020u) return io_read(b, a);      /* I/O      */
     if (a == 0xA11100u) return (uint16_t)(b->z80_busreq ? 0x0000 : 0x0100);
