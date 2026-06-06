@@ -1080,7 +1080,12 @@ int main(int argc, char *argv[])
      * PSG never needs resampling; FM is upsampled to this rate. */
     audio_init(CLOWNMDEMU_PSG_SAMPLE_RATE_NTSC);
 
-    /* --- clownmdemu init --- */
+    /* --- clownmdemu init (debug/oracle backend only) ---
+     * The own backend uses machine_init() below and links ZERO clownmdemu
+     * code, so its entire emulator lifecycle (Constant_Initialise / Initialise
+     * / SetCartridge / HardReset) is skipped. ROM still reaches g_rom via
+     * glue_init() further down, which is backend-independent. */
+#if !OWN_BACKEND
     ClownMDEmu_Constant_Initialise();
 
     ClownMDEmu_InitialConfiguration config;
@@ -1113,6 +1118,7 @@ int main(int argc, char *argv[])
     ClownMDEmu_Initialise(&g_clownmdemu, &config, &cbs);
     ClownMDEmu_SetCartridge(&g_clownmdemu, rom_buf, rom_words);
     ClownMDEmu_HardReset(&g_clownmdemu, cc_true, cc_false);
+#endif /* !OWN_BACKEND */
 #if OWN_BACKEND
     machine_init();   /* clean-room own backend (VDP + bus + Z80) */
 #endif
@@ -1496,7 +1502,11 @@ int main(int argc, char *argv[])
                   extern void glue_reset_frame_sync(void);
                   glue_reset_frame_sync();
                   glue_run_game_frame();
+#if OWN_BACKEND
+                  machine_run_frame(own_scanline_sink, NULL);
+#else
                   ClownMDEmu_Iterate(&g_clownmdemu);
+#endif
 #if SONIC_REVERSE_DEBUG
                   rdb_record_iterate();
                   rdb_park_drain();

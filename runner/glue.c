@@ -181,6 +181,13 @@ static uint32_t g_rdb_current_func = 0;
 
 #if OWN_BACKEND
 #include "genesis_machine.h"
+/* Debug write-trace hooks (--mem-write-log, FM trace) are normally defined in
+ * the clownmdemu fork's bus / FM code. The own backend links no clownmdemu, so
+ * define them here to satisfy cmd_server's assignments. They default NULL and
+ * stay inert until gbus/ym2612 are wired to call them (own-backend trace is a
+ * follow-up; this keeps the AGPL-free link resolved). */
+void (*g_fm_write_trace_fn )(uint32_t address,      uint8_t value, uint32_t target_cycle) = NULL;
+void (*g_mem_write_trace_fn)(uint32_t byte_address, uint8_t value, uint32_t target_cycle) = NULL;
 #endif
 
 #define INSN_WATCHDOG_LIMIT 20000000ull
