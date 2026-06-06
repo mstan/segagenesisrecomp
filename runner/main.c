@@ -938,10 +938,21 @@ int main(int argc, char *argv[])
         } else if (strncmp(argv[i], "--audio-backend=", 16) == 0) {
             const char *v = argv[i] + 16;
             if      (strcmp(v, "ours")       == 0) s_audio_backend = AUDIO_BACKEND_OURS;
+#if !OWN_BACKEND
+            /* The clownmdemu audio backend is a dev/oracle-only A/B path; it is
+             * absent from the own-backend (release) build, so neither it nor its
+             * name is compiled in here. */
             else if (strcmp(v, "clownmdemu") == 0) s_audio_backend = AUDIO_BACKEND_CLOWNMDEMU;
             else fprintf(stderr, "warning: unknown --audio-backend=%s (use ours|clownmdemu)\n", v);
+#else
+            else fprintf(stderr, "warning: unknown --audio-backend=%s (only 'ours' on this build)\n", v);
+#endif
             fprintf(stderr, "[audio] backend=%s\n",
+#if OWN_BACKEND
+                    "ours");   /* only backend in the release build */
+#else
                     s_audio_backend == AUDIO_BACKEND_OURS ? "ours" : "clownmdemu");
+#endif
         } else if (argv[i][0] != '-') {
             rom_path = argv[i];
         }
