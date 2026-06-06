@@ -183,6 +183,10 @@ static uint32_t g_rdb_current_func = 0;
 
 #include "crash_report.h"
 
+#if OWN_BACKEND
+#include "genesis_machine.h"
+#endif
+
 #define INSN_WATCHDOG_LIMIT 20000000ull
 static uint64_t s_insn_watchdog_base = 0;
 
@@ -206,6 +210,20 @@ static void instruction_watchdog_check(void)
     snprintf(reason, sizeof(reason),
              "instruction watchdog: %llu native insns without yielding",
              (unsigned long long)(g_native_insn_count - s_insn_watchdog_base));
+#endif
+#if OWN_BACKEND
+    {
+        int nz_z80ram = 0;
+        for (int i = 0; i < 0x2000; i++) if (g_machine.bus.z80_ram[i]) nz_z80ram++;
+        fprintf(stderr,
+            "[OWN-DIAG] cpuPC=$%06X z80pc=$%04X z80_run=%d busreq=%d reset_off=%d "
+            "bank=$%03X nz_z80ram=%d ram_F00D=$%02X ram_F00A=$%02X%02X\n",
+            (unsigned)g_cpu.PC, (unsigned)g_machine.z80.program_counter,
+            (g_machine.bus.z80_reset_off && !g_machine.bus.z80_busreq) ? 1 : 0,
+            g_machine.bus.z80_busreq, g_machine.bus.z80_reset_off,
+            (unsigned)g_machine.bus.z80_bank, nz_z80ram,
+            g_ram[0xF00D], g_ram[0xF00A], g_ram[0xF00B]);
+    }
 #endif
     crash_report_dump_persistent(reason, &g_cpu, 0, 0, g_frame_count);
     exit(2);

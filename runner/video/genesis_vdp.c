@@ -279,6 +279,11 @@ uint16_t gvdp_read_control(GVDP *v)
     if (v->in_hblank)        s |= 0x0004;
     if (v->dma_active)       s |= 0x0002;
     v->vint_pending = 0;
+    /* Advance a phantom H-blank between status reads so 68K routines that pace
+     * on the H-blank flag (e.g. Sonic 1's SEGA-chant DAC feeder, which polls
+     * $C00004 bit 2 between samples) make progress under our per-whole-line
+     * renderer instead of spinning forever. */
+    v->in_hblank ^= 1;
     return s;
 }
 
