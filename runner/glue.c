@@ -1209,6 +1209,23 @@ static inline void spin_check(uint32_t byte_addr, int is_write)
 #endif
 }
 
+#if PERMISSIVE_VDP
+#include "vdp_integration.h"   /* clean-room VDP shadow seam (toggle build) */
+/* Authoritative word read for the shadow VDP's DMA source: ROM from g_rom,
+ * live work RAM from clownmdemu's state.m68k.ram (the word array the recompiled
+ * code actually uses — g_ram is only a non-authoritative shadow). Phase-2 will
+ * point RAM at our own memory once clownmdemu is gone. */
+uint16_t glue_bus_read_word(uint32_t addr)
+{
+    addr &= 0xFFFFFFu;
+    if (addr >= RAM_BASE)
+        return s_emu ? (uint16_t)s_emu->state.m68k.ram[(addr & 0xFFFFu) >> 1] : 0;
+    if (addr < 0x400000u)
+        return (uint16_t)((g_rom[addr] << 8) | g_rom[(addr + 1) & 0x3FFFFFu]);
+    return 0;
+}
+#endif
+
 uint16_t m68k_read16(uint32_t byte_addr)
 {
     byte_addr &= 0xFFFFFFu;
@@ -1329,6 +1346,9 @@ void m68k_write16(uint32_t byte_addr, uint16_t val)
                        byte_addr >> 1,
                        cc_true, cc_true,
                        g_hybrid_cycle_counter, (cc_u16f)val);
+#if PERMISSIVE_VDP
+    gvdp_on_bus_write(byte_addr, (uint16_t)val);
+#endif
 }
 
 void m68k_write8(uint32_t byte_addr, uint8_t val)
@@ -1382,6 +1402,10 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
                        (byte_addr + 2) >> 1,
                        cc_true, cc_true,
                        g_hybrid_cycle_counter, (cc_u16f)(val & 0xFFFF));
+#if PERMISSIVE_VDP
+    gvdp_on_bus_write(byte_addr,     (uint16_t)(val >> 16));
+    gvdp_on_bus_write(byte_addr + 2, (uint16_t)(val & 0xFFFF));
+#endif
 }
 
 /* =========================================================================

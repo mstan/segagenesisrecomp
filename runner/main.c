@@ -146,6 +146,10 @@ static uint32_t md_colour_to_argb(cc_u16f colour)
     return 0xFF000000u | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
 }
 
+#if PERMISSIVE_VDP
+#include "vdp_integration.h"   /* clean-room VDP shadow seam (toggle build) */
+#endif
+
 /* =========================================================================
  * clownmdemu callbacks
  * ========================================================================= */
@@ -176,6 +180,15 @@ static void scanline_rendered_cb(void *user_data,
         return;
 
     uint32_t *row = s_framebuf + (int)scanline * MAX_SCREEN_WIDTH;
+
+#if PERMISSIVE_VDP
+    /* Shadow VDP: substitute our clean-room renderer's output for this line. */
+    {
+        int w = gvdp_render_substitute((int)scanline, row, MAX_SCREEN_WIDTH);
+        if (w > 0) s_screen_width = w;
+        return;
+    }
+#endif
 
     /* pixels[0..count-1] are palette indices for columns
      * [left_boundary, right_boundary). */
