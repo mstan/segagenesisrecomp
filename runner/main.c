@@ -20,7 +20,8 @@
 
 #include <SDL2/SDL.h>
 
-#include "clownmdemu.h"
+#include "clownmdemu.h"   /* TODO(declown): still needed for ClownMDEmu_Button + oracle init; see LICENSING.md */
+#include "genesis_clocks.h"
 #include "audio.h"
 #include "png_write.h"
 
@@ -1097,7 +1098,7 @@ int main(int argc, char *argv[])
 
     /* Output at PSG rate (~223721 Hz NTSC) — matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
-    audio_init(CLOWNMDEMU_PSG_SAMPLE_RATE_NTSC);
+    audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
 
     /* --- clownmdemu init (debug/oracle backend only) ---
      * The own backend uses machine_init() below and links ZERO clownmdemu

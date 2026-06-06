@@ -16,7 +16,7 @@
  * are unchanged, so all downstream mixing/resampling is unaffected.
  */
 #include "sn76489.h"        /* our wrapper API */
-#include "clownmdemu.h"     /* CLOWNMDEMU_MASTER_CLOCK_NTSC (numeric constant only) */
+#include "genesis_clocks.h" /* GENESIS_MASTER_CLOCK_NTSC (our own constant) */
 #include <string.h>
 
 #define PSG_SAMPLE_DIVISOR_MASTER   240u   /* Z80_CLOCK_DIVIDER * PSG_SAMPLE_RATE_DIVIDER */
@@ -177,7 +177,7 @@ size_t psg_samples_available(void)
 
 uint32_t psg_sample_rate(void)
 {
-    return (uint32_t)(CLOWNMDEMU_MASTER_CLOCK_NTSC / PSG_SAMPLE_DIVISOR_MASTER);
+    return (uint32_t)(GENESIS_MASTER_CLOCK_NTSC / PSG_SAMPLE_DIVISOR_MASTER);
 }
 
 void psg_reset_leftover(void)
