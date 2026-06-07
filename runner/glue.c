@@ -640,6 +640,40 @@ void glue_handle_interrupt(cc_u16f level)
 
 #if OWN_BACKEND
 #include "genesis_machine.h"
+
+/* V-int raised while the 68K had IRQs masked (imask >= 6, e.g. the
+ * move #$2700,sr the game runs across screen transitions). On hardware / in the
+ * clownmdemu interpreter the VDP holds the V-int line asserted and the CPU takes
+ * it the instant the mask drops; the own backend used to DROP it outright,
+ * losing one v_vblank_count per masked transition. That one-frame skew sent the
+ * attract demo down a different branch (GM_Demo vs the oracle's GM_Level) and
+ * desynced VRAM. We now LATCH it and deliver at the next scanline whose mask
+ * permits — see glue_own_vint_service_latched(). */
+static int s_own_vint_latched = 0;
+
+/* Run the game's V_Int(6) handler atomically against OUR work RAM + VDP. Saves
+ * /restores g_cpu and gates budget yields (s_in_vblank_service), so it is safe
+ * to fire while the fiber is parked mid-instruction at a budget yield. */
+static void own_deliver_vint(GVDP *vdp)
+{
+    const uint32_t STK = g_game_layout.intr_stack;
+    uint32_t byteoff = (STK - 256u) & 0xFFFFu;
+    uint8_t save[256];
+    M68KState saved = g_cpu;
+    for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
+    g_cpu.A[7] = STK;
+    s_in_vblank_service = 1;
+    g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+    uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
+    if (g_game_spec.call_vblank) g_game_spec.call_vblank();
+    vdp->in_vblank = saved_vb;
+    g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+    s_in_vblank_service = 0;
+    for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+    g_cpu = saved;
+    s_game_yielded_vblank = 0;
+}
+
 /* Own-backend interrupt delivery — the clownmdemu-free twin of
  * glue_handle_interrupt: runs the game's V-int(6)/H-int(4) handler using OUR
  * work RAM (g_ram) for the IRQ-stack save/restore and OUR VDP's vblank flag. */
@@ -647,35 +681,17 @@ void glue_own_interrupt(int level, GVDP *vdp)
 {
     if (!s_game_running) return;
     int imask = (g_cpu.SR >> 8) & 7;
-    const uint32_t STK = g_game_layout.intr_stack;
-    uint32_t byteoff = (STK - 256u) & 0xFFFFu;
-    uint8_t save[256];
 
-    if (level == 6 && imask < 6) {
-        /* Fire V_Int once per wall frame, exactly like hardware — NOT only
-         * when the game has parked at WaitForVBlank. During multi-frame work
-         * that never yields (boot, title-screen art load, level load) the
-         * old `if (!s_game_yielded_vblank) return` dropped the V-int entirely,
-         * so v_vblank_count and every V-int-driven timer fell behind the
-         * oracle (measured: a 16-frame fcnt lag across the title load), which
-         * cascaded into a different attract demo being selected. The handler
-         * saves/restores g_cpu and runs atomically (s_in_vblank_service gates
-         * out budget yields), so it is safe to fire while the fiber is parked
-         * mid-instruction at a budget yield. */
-        M68KState saved = g_cpu;
-        for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
-        g_cpu.A[7] = STK;
-        s_in_vblank_service = 1;
-        g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
-        uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
-        if (g_game_spec.call_vblank) g_game_spec.call_vblank();
-        vdp->in_vblank = saved_vb;
-        g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
-        s_in_vblank_service = 0;
-        for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
-        g_cpu = saved;
-        s_game_yielded_vblank = 0;
+    if (level == 6) {
+        /* Fire V_Int once per wall frame, exactly like hardware — NOT only when
+         * the game has parked at WaitForVBlank. If the 68K currently has IRQs
+         * masked, latch it and deliver when the mask drops instead of losing it. */
+        if (imask < 6) { s_own_vint_latched = 0; own_deliver_vint(vdp); }
+        else           { s_own_vint_latched = 1; }
     } else if (level == 4 && imask < 4) {
+        const uint32_t STK = g_game_layout.intr_stack;
+        uint32_t byteoff = (STK - 256u) & 0xFFFFu;
+        uint8_t save[256];
         M68KState saved = g_cpu;
         for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
         g_cpu.A[7] = STK;
@@ -687,6 +703,20 @@ void glue_own_interrupt(int level, GVDP *vdp)
         for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
         g_cpu = saved;
     }
+}
+
+/* Deliver a previously-latched V-int if the 68K mask now permits. Called by the
+ * scheduler at each scanline boundary (after the 68K has advanced and may have
+ * dropped its mask). Returns 1 if it fired. Delivers at most one — matching the
+ * single level-triggered VDP V-int line (a masked span across >1 vblank still
+ * yields exactly one V-int when unmasked, same as hardware/clownmdemu). */
+int glue_own_vint_service_latched(GVDP *vdp)
+{
+    if (!s_own_vint_latched || !s_game_running) return 0;
+    if (((g_cpu.SR >> 8) & 7) >= 6) return 0;   /* still masked — keep latched */
+    s_own_vint_latched = 0;
+    own_deliver_vint(vdp);
+    return 1;
 }
 #endif /* OWN_BACKEND */
 
@@ -1361,6 +1391,8 @@ uint16_t m68k_read16(uint32_t byte_addr)
 int s_io_log_enabled = 0;  /* set via TCP command */
 int s_io_log_count   = 0;
 
+unsigned long g_z80poll_fallback_hits = 0; /* [POLL-DIAG] 256-poll bound fired */
+unsigned long g_z80poll_yields = 0;        /* [POLL-DIAG] total z80-poll yields */
 uint8_t m68k_read8(uint32_t byte_addr)
 {
     byte_addr &= 0xFFFFFFu;
@@ -1388,11 +1420,16 @@ uint8_t m68k_read8(uint32_t byte_addr)
     if (byte_addr == 0xA01FFDu || byte_addr == 0xA01FFFu || byte_addr == 0xA11100u) {
         if (s_interleave_active && !s_in_vblank_service) {
             if (byte_addr == last_poll_addr) {
-                if (++poll_streak > 256) return 0x00u;
+                if (++poll_streak > 256) {
+                    extern unsigned long g_z80poll_fallback_hits; /* [POLL-DIAG] */
+                    g_z80poll_fallback_hits++;
+                    return 0x00u;
+                }
             } else {
                 last_poll_addr = byte_addr;
                 poll_streak    = 1;
             }
+            { extern unsigned long g_z80poll_yields; g_z80poll_yields++; } /* [POLL-DIAG] */
             { char stack_marker; game_stack_note("z80-poll", &stack_marker); }
             fiber_switch(s_main_fiber);
             /* fall through to real read */

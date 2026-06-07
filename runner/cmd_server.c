@@ -1423,7 +1423,14 @@ static void handle_frame_timeseries(int id, const char *json)
 static void handle_z80_state(int id, const char *json)
 {
 #if OWN_BACKEND
-    (void)json; OWN_BACKEND_SNAPSHOT_STUB(id);
+    Z80RegSnap z; z80_snapshot(&z, (ClownMDEmu *)0);
+    bool with_ram = json_get_int(json, "include_ram", 0) != 0;
+    JBuf j; jb_init(&j);
+    jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
+    json_z80(&j, &z, with_ram);
+    jb_printf(&j, "}");
+    cmd_send_response(j.buf);
+    jb_free(&j);
 #else
     Z80RegSnap z; z80_snapshot(&z, &g_clownmdemu);
     bool with_ram = json_get_int(json, "include_ram", 0) != 0;
@@ -1438,15 +1445,21 @@ static void handle_z80_state(int id, const char *json)
 
 static void handle_read_z80_ram(int id, const char *json)
 {
-#if OWN_BACKEND
-    (void)json; OWN_BACKEND_SNAPSHOT_STUB(id);
-#else
     int addr = json_get_int(json, "addr", 0);
     int len  = json_get_int(json, "len",  16);
     if (addr < 0 || len < 0 || addr + len > 0x2000) {
         send_err(id, "addr/len out of Z80 RAM range");
         return;
     }
+#if OWN_BACKEND
+    Z80RegSnap z; z80_snapshot(&z, (ClownMDEmu *)0);
+    JBuf j; jb_init(&j);
+    jb_printf(&j, "{\"id\":%d,\"ok\":true,\"addr\":%d,\"len\":%d,\"data\":", id, addr, len);
+    jb_append_hex(&j, &z.ram[addr], len);
+    jb_printf(&j, "}");
+    cmd_send_response(j.buf);
+    jb_free(&j);
+#else
     Z80RegSnap z; z80_snapshot(&z, &g_clownmdemu);
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,\"addr\":%d,\"len\":%d,\"data\":", id, addr, len);
@@ -1490,7 +1503,15 @@ static void handle_psg_state(int id)
 static void handle_vdp_state(int id, const char *json)
 {
 #if OWN_BACKEND
-    (void)json; OWN_BACKEND_SNAPSHOT_STUB(id);
+    VdpSnap v; vdp_snapshot(&v, (ClownMDEmu *)0);
+    char include_buf[64] = {0};
+    json_get_str(json, "include", include_buf, sizeof(include_buf));
+    JBuf j; jb_init(&j);
+    jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
+    json_vdp(&j, &v, include_buf);
+    jb_printf(&j, "}");
+    cmd_send_response(j.buf);
+    jb_free(&j);
 #else
     VdpSnap v; vdp_snapshot(&v, &g_clownmdemu);
     char include_buf[64] = {0};
@@ -1506,17 +1527,20 @@ static void handle_vdp_state(int id, const char *json)
 
 static void handle_read_vsram(int id)
 {
-#if OWN_BACKEND
-    OWN_BACKEND_SNAPSHOT_STUB(id);
-#else
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,\"vsram\":[", id);
+#if OWN_BACKEND
+    const uint16_t *vs = g_machine.vdp.vsram;
+    for (int i = 0; i < 64; i++)
+        jb_printf(&j, "%s%u", i ? "," : "",
+                  i < GVDP_VSRAM_ENTRIES ? (uint32_t)vs[i] : 0u);
+#else
     const VDP_State *vs = &g_clownmdemu.vdp.state;
     for (int i = 0; i < 64; i++) jb_printf(&j, "%s%u", i ? "," : "", (uint32_t)vs->vsram[i]);
+#endif
     jb_printf(&j, "]}");
     cmd_send_response(j.buf);
     jb_free(&j);
-#endif
 }
 
 /* ---------- dispatch_miss_info ---------- */
@@ -2606,9 +2630,14 @@ void cmd_server_record_frame(uint32_t frame_num)
     /* Subsystem snapshots (see frame_snapshots.c). */
     m68k_snapshot(&r->m68k);
 #if OWN_BACKEND
-    /* Own backend: WRAM from our RAM; the Z80/VDP/FM/PSG chip snapshots read
-     * clownmdemu internals (none here) so they stay zeroed (memset above). */
-    memcpy(r->wram, g_ram, 0x10000);
+    /* Own backend: snapshot OUR state (g_machine + g_ram) into the same
+     * FrameRecord fields the oracle fills, so divergence_diff compares all
+     * subsystems cross-backend. FM/PSG internal state isn't byte-comparable
+     * to clownmdemu's (ymfm/sn76489 vs FM_State/PSG_State) so they stay zeroed
+     * (memset above) — the chip_ring register stream is the audio comparable. */
+    z80_snapshot (&r->z80, (ClownMDEmu *)0);
+    vdp_snapshot (&r->vdp, (ClownMDEmu *)0);
+    wram_snapshot(r->wram, (ClownMDEmu *)0);
 #else
     z80_snapshot (&r->z80,  &g_clownmdemu);
     vdp_snapshot (&r->vdp,  &g_clownmdemu);

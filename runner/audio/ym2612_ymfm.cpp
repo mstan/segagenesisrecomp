@@ -29,6 +29,7 @@ extern "C" {
 
 #include <cstring>
 #include <cstdint>
+#include <cstdlib>
 
 namespace {
 
@@ -60,10 +61,31 @@ size_t  s_scratch_read  = 0; /* next unread stereo-sample index */
 
 uint32_t s_master_accum = 0; /* leftover MASTER cycles below one sample */
 
+/* Hardware FM output low-pass — the real Genesis filters the FM DAC output, and
+ * clownmdemu models it (low-pass-filter.c, coefficients 6.910, 4.910) after
+ * FM_OutputSamples. ymfm emits the bare chip output (excess >8 kHz energy); this
+ * filter both matches the reference render and is hardware-correct. A cutoff
+ * sweep confirmed these coefficients minimise spectral distance to the
+ * reference (~6.7 dB; the remainder is the ymfm-vs-clownmdemu core itself).
+ *   out = ((in + prevIn)*SAMPLE_MAGIC + prevOut*OUTPUT_MAGIC) >> 16 */
+constexpr int32_t FM_LPF_SAMPLE_MAGIC = 9484;  /* round(1.000 * 65536 / 6.910) */
+constexpr int32_t FM_LPF_OUTPUT_MAGIC = 46568; /* round(4.910 * 65536 / 6.910) */
+int32_t s_fm_lpf_prev[2] = {0, 0};
+int32_t s_fm_lpf_out[2]  = {0, 0};
+
 inline int16_t clamp16(int32_t v) {
     if (v > 32767)  return 32767;
     if (v < -32768) return -32768;
     return (int16_t)v;
+}
+
+inline int32_t fm_lpf(int ch, int32_t in) {
+    int64_t o = ((int64_t)(in + s_fm_lpf_prev[ch]) * FM_LPF_SAMPLE_MAGIC
+               + (int64_t)s_fm_lpf_out[ch] * FM_LPF_OUTPUT_MAGIC) / 65536;
+    s_fm_lpf_prev[ch] = in;
+    int32_t out = clamp16((int32_t)o);
+    s_fm_lpf_out[ch] = out;
+    return out;
 }
 
 void emit_one_sample() {
@@ -76,8 +98,8 @@ void emit_one_sample() {
     s_chip->generate(&out, 1);
     int32_t l = out.data[0] * YM_GAIN_NUM / YM_GAIN_DEN;
     int32_t r = out.data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
-    s_scratch[s_scratch_write * 2 + 0] = clamp16(l);
-    s_scratch[s_scratch_write * 2 + 1] = clamp16(r);
+    s_scratch[s_scratch_write * 2 + 0] = (int16_t)fm_lpf(0, l);   /* hardware FM output LPF (matches reference; tames ymfm's excess highs) */
+    s_scratch[s_scratch_write * 2 + 1] = (int16_t)fm_lpf(1, r);
     s_scratch_write++;
 }
 
@@ -89,6 +111,8 @@ extern "C" void ym2612_init(void) {
     s_chip->reset();
     s_scratch_write = s_scratch_read = 0;
     s_master_accum = 0;
+    s_fm_lpf_prev[0] = s_fm_lpf_prev[1] = 0;
+    s_fm_lpf_out[0]  = s_fm_lpf_out[1]  = 0;
     s_inited = 1;
 }
 

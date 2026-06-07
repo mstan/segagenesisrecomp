@@ -4,13 +4,128 @@
  * Z80, and our VDP, delivering V/H interrupts. Original implementation.
  */
 #include "genesis_machine.h"
+#include "chip_trace.h"   /* [CHIP-TRACE] shared FM/PSG stream ring + g_snd_* globals */
 #include <string.h>
+#include <stdio.h>   /* [SND-TRACE] temporary sound-command lifecycle trace */
 
 GenesisMachine g_machine;
+
+/* ===================== [SND-TRACE] sound-command lifecycle =================
+ * Always-on in-memory ring (no I/O in the hot path — PRINCIPLES #17/#18).
+ * Auto-discovers the SMPS Z80 command mailbox by watching the 68K's *gameplay*
+ * writes into Z80 RAM (boot upload skipped via the frame gate), and records
+ * deposits, Z80 clears/sets, the V-int assert/accept phase, and BUSREQ windows.
+ * Z80 *reads* are intentionally NOT recorded (idle polling storms the ring and
+ * deposit+clear already tells consumed-vs-dropped). Dump via F9. Strip before
+ * commit. */
+/* g_snd_trace / g_snd_frame / g_snd_line now live in the shared chip_trace.c
+ * (so the oracle build has them too). This scheduler still owns/advances
+ * g_snd_frame + g_snd_line per scanline below. */
+uint8_t       g_sndwatch[0x2000];    /* 1 = a gameplay 68K write touched this  */
+#define SND_TRACE_START_FRAME 90u    /* skip the boot driver upload            */
+
+enum { SND_68KW = 1, SND_Z80W, SND_VASSERT, SND_VACCEPT, SND_BUS };
+typedef struct {
+    uint8_t  type, v1, v2, flags;    /* v1/v2: old/new or val or pending/iff   */
+    uint16_t addr, pcz, line, pad;
+    uint32_t frame;
+    uint64_t master;
+    const char *tag;                 /* BUS only: REQ / RESET_OFF / REQ-READack */
+} SndEvt;
+#define SND_RING_N 65536u
+static SndEvt   g_snd_ring[SND_RING_N];
+static unsigned g_snd_head = 0;
+static SndEvt *snd_evt(uint8_t type) {
+    SndEvt *e = &g_snd_ring[g_snd_head++ & (SND_RING_N - 1u)];
+    e->type = type; e->frame = (uint32_t)g_snd_frame; e->line = (uint16_t)g_snd_line;
+    e->master = g_machine.master_cycle;
+    e->pcz = (uint16_t)g_machine.z80.program_counter;
+    e->addr = 0; e->v1 = e->v2 = e->flags = 0; e->tag = 0;
+    return e;
+}
+
+void snd_trace_68k_write(uint16_t off, uint8_t oldv, uint8_t newv,
+                         int busreq, int reset_off)
+{
+    if (!g_snd_trace || g_snd_frame < SND_TRACE_START_FRAME) return;
+    off &= 0x1FFFu;
+    g_sndwatch[off] = 1;
+    SndEvt *e = snd_evt(SND_68KW);
+    e->addr = off; e->v1 = oldv; e->v2 = newv;
+    e->flags = (uint8_t)((busreq ? 1 : 0) | (reset_off ? 2 : 0));
+}
+void snd_trace_z80(uint16_t off, uint8_t val, int is_write)
+{
+    if (!g_snd_trace || !is_write) return;     /* writes only (clears/sets) */
+    SndEvt *e = snd_evt(SND_Z80W);
+    e->addr = (uint16_t)(off & 0x1FFFu); e->v1 = val;
+}
+void snd_trace_busreq(const char *what, int val)
+{
+    if (!g_snd_trace || g_snd_frame < SND_TRACE_START_FRAME) return;
+    SndEvt *e = snd_evt(SND_BUS);
+    e->v1 = (uint8_t)val; e->tag = what;
+}
+
+/* Dump the ring oldest->newest to a file (called from the F9 handler). */
+void snd_trace_dump(const char *path)
+{
+    FILE *f = fopen(path, "wb");
+    if (!f) { fprintf(stderr, "[SND] dump: cannot open %s\n", path); return; }
+    unsigned n = (g_snd_head < SND_RING_N) ? g_snd_head : SND_RING_N;
+    for (unsigned i = n; i > 0; i--) {
+        SndEvt *e = &g_snd_ring[(g_snd_head - i) & (SND_RING_N - 1u)];
+        switch (e->type) {
+        case SND_68KW:
+            fprintf(f, "f=%u sl=%u mc=%llu 68KW   z80[$%04X] $%02X->$%02X busreq=%d reset=%d\n",
+                    e->frame, e->line, (unsigned long long)e->master, e->addr, e->v1, e->v2,
+                    (e->flags & 1) ? 1 : 0, (e->flags & 2) ? 1 : 0); break;
+        case SND_Z80W:
+            fprintf(f, "f=%u sl=%u mc=%llu Z80W   pcz=$%04X z80[$%04X]=$%02X\n",
+                    e->frame, e->line, (unsigned long long)e->master, e->pcz, e->addr, e->v1); break;
+        case SND_VASSERT:
+            fprintf(f, "f=%u sl=%u mc=%llu VINT-ASSERT pcz=$%04X pending_was=%d iff1=%d\n",
+                    e->frame, e->line, (unsigned long long)e->master, e->pcz, e->v1, e->v2); break;
+        case SND_VACCEPT:
+            fprintf(f, "f=%u sl=%u mc=%llu VINT-ACCEPT pcz=$%04X\n",
+                    e->frame, e->line, (unsigned long long)e->master, e->pcz); break;
+        case SND_BUS:
+            fprintf(f, "f=%u sl=%u mc=%llu BUS    %s=%d\n",
+                    e->frame, e->line, (unsigned long long)e->master, e->tag ? e->tag : "?", e->v1); break;
+        }
+    }
+    fclose(f);
+    fprintf(stderr, "[SND] dumped %u events to %s\n", n, path);
+}
+
+/* The [CHIP-TRACE] FM/PSG register-write ring (snd_trace_chip / chip_trace_dump)
+ * moved to the shared runner/chip_trace.c so the _oracle build captures it too;
+ * genesis_bus.c still calls snd_trace_chip() at the own-backend write sites. */
+
+/* [SND-TRACE] one-shot Z80 RAM dump (the uploaded SMPS driver image) so the
+ * sync-wait loop the Z80 sits in at vblank can be disassembled. Strip with the
+ * rest of the diagnostics. */
+void z80_ram_dump(const char *path)
+{
+    FILE *f = fopen(path, "wb");
+    if (!f) { fprintf(stderr, "[SND] z80 dump: cannot open %s\n", path); return; }
+    fwrite(g_machine.bus.z80_ram, 1, sizeof(g_machine.bus.z80_ram), f);
+    fclose(f);
+    fprintf(stderr, "[SND] dumped Z80 RAM (%u bytes) to %s\n",
+            (unsigned)sizeof(g_machine.bus.z80_ram), path);
+}
 
 /* glue.c hooks (recompiled-68K fiber + own-backend interrupt delivery). */
 extern void glue_run_game_chunk(uint32_t cycles);
 extern void glue_own_interrupt(int level, GVDP *vdp);
+extern int  glue_own_vint_service_latched(GVDP *vdp);  /* deliver a V-int latched while 68K IRQs were masked */
+
+/* Audio chips, advanced in step with the machine (per scanline) so FM/PSG
+ * register writes land at ~scanline granularity instead of collapsing to one
+ * batch at frame end (which buzzed / dropped notes). main.c then drains with
+ * frame_end=0 so the mixer only collects the samples generated here. */
+extern void ym2612_advance(uint32_t cycles_master);
+extern void psg_advance(uint32_t cycles_master);
 
 /* ARGB palette cache (normal/shadow/highlight), fed by VDP CRAM writes. */
 static uint32_t s_cram_argb[GVDP_TOTAL_PALETTE];
@@ -67,14 +182,56 @@ void machine_set_pad(int port, uint8_t buttons)
 #define MASTER_PER_LINE 3420u
 #define M68K_PER_LINE   488u
 #define Z80_PER_LINE    228u
+#define MASTER_PER_Z80  (MASTER_PER_LINE / Z80_PER_LINE)   /* 3420/228 = 15 master/Z80 cyc */
+
+/* ---- Audio cadence -------------------------------------------------------
+ * Advance the FM/PSG up to each chip-write's REAL cycle position, instead of
+ * applying a whole scanline's writes then advancing ~3.4 samples in one lump
+ * (the "3b" write-collapse: SFX onsets aliased away, rendering the own backend
+ * ~10x quieter than the clownmdemu reference in the 2-6 kHz band). This mirrors
+ * clownmdemu's SyncFM/SyncPSG-before-every-write. Cycle positions are per-frame
+ * (reset each frame) so they stay well within uint32_t. */
+static uint32_t s_chip_master = 0;   /* master cycle the chips are advanced to (this frame) */
+static uint32_t s_line_base   = 0;   /* master cycle at the start of the current scanline   */
+static uint32_t s_z80_off     = 0;   /* progress within the scanline, in master cycles      */
+
+/* Advance ym2612 + PSG to the current emulation position. Called from the bus
+ * before each FM/PSG register write (genesis_bus.c) and at each scanline end.
+ * Monotonic within a frame; never rewinds. */
+void machine_chip_sync(void)
+{
+    uint32_t now = s_line_base + s_z80_off;
+    if (now > s_chip_master) {
+        uint32_t d = now - s_chip_master;
+        ym2612_advance(d);
+        psg_advance(d);
+        s_chip_master = now;
+    }
+}
 
 static void step_z80(GenesisMachine *m, uint32_t target)
 {
     if (!m->bus.z80_reset_off || m->bus.z80_busreq) return;   /* Z80 halted */
+    /* The 68K pulsed the Z80 reset line while halted — restart the core at
+     * $0000 now that it's released, so it runs the freshly-uploaded driver
+     * from its entry point (not from a stale, pre-upload PC). */
+    if (m->bus.z80_reset_pending) {
+        ClownZ80_Reset(&m->z80);
+        m->bus.z80_reset_pending = 0;
+    }
+    int pend_before = m->z80.interrupt_pending ? 1 : 0;   /* [SND-TRACE] */
     uint32_t done = m->z80_cycle_debt;
-    while (done < target)
+    while (done < target) {
+        /* Cadence: position chip writes made by this instruction at its start
+         * cycle (master), so machine_chip_sync() advances the FM/PSG to here
+         * before the write lands. */
+        s_z80_off = done * MASTER_PER_Z80;
         done += ClownZ80_DoInstruction(&m->z80, &m->z80_cb);
+    }
     m->z80_cycle_debt = done - target;
+    /* [SND-TRACE] V-int acceptance: pending fell 1->0 during this slice. */
+    if (g_snd_trace && pend_before && !m->z80.interrupt_pending && g_snd_frame >= SND_TRACE_START_FRAME)
+        snd_evt(SND_VACCEPT);
 }
 
 void machine_run_frame(GenesisScanlineSink sink, void *user)
@@ -84,11 +241,22 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
     static uint8_t  idxbuf[GVDP_MAX_WIDTH];
     static uint32_t rowbuf[GVDP_MAX_WIDTH];
 
+    s_chip_master = 0;   /* per-frame cadence cursor reset (see machine_chip_sync) */
+
     for (int line = 0; line < LINES_TOTAL; line++) {
         unsigned irq = gvdp_begin_scanline(&m->vdp, line);
+        g_snd_line = (unsigned)line;   /* [SND-TRACE] */
+        s_line_base = (uint32_t)line * MASTER_PER_LINE;
+        s_z80_off   = 0;   /* 68K writes during the chunk below land at the line start */
 
         /* Advance the recompiled 68K ~one scanline (it parks at WaitForVBlank). */
         glue_run_game_chunk(M68K_PER_LINE);
+
+        /* If a prior V-int was latched while the 68K had IRQs masked (e.g. a
+         * move #$2700,sr screen transition), deliver it now that the chunk above
+         * may have dropped the mask — keeps v_vblank_count in step with the
+         * oracle instead of losing the masked V-int. */
+        glue_own_vint_service_latched(&m->vdp);
 
         /* Step the Z80 (SMPS driver) for its share of the line. */
         step_z80(m, Z80_PER_LINE);
@@ -96,10 +264,32 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
         /* Deliver interrupts to the 68K (and the Z80 at vblank). */
         if (irq & GVDP_IRQ_HBLANK) glue_own_interrupt(4, &m->vdp);
         if (irq & GVDP_IRQ_VBLANK) {
+            /* Assert the Z80 vblank IRQ and LEAVE it pending — the Z80 takes it
+             * on a later step_z80 (when IFF1 is enabled) and superzazu clears
+             * int_pending on accept. The old code de-asserted immediately with
+             * no Z80 step in between, so the Z80 never took the interrupt: its
+             * $0038 handler never ran, the SMPS driver's main loop waited
+             * forever on the per-frame flag the handler sets (e.g. Z80 RAM
+             * $1C30), and no music played. */
+            /* [SND-TRACE] pending_was=1 means last frame's V-int was never
+             * accepted (sticky stack-up) — the suspected phase divergence. */
+            if (g_snd_trace && g_snd_frame >= SND_TRACE_START_FRAME) {
+                SndEvt *e = snd_evt(SND_VASSERT);
+                e->v1 = m->z80.interrupt_pending  ? 1 : 0;   /* pending_was */
+                e->v2 = m->z80.interrupts_enabled ? 1 : 0;   /* iff1        */
+            }
             ClownZ80_Interrupt(&m->z80, 1);
             glue_own_interrupt(6, &m->vdp);
-            ClownZ80_Interrupt(&m->z80, 0);
         }
+
+        /* Advance the FM + PSG to the END of this scanline. Intra-line writes
+         * already advanced the chips to their own cycle via machine_chip_sync()
+         * (called from the bus before each write); this catches up the tail
+         * (silence/decay past the last write). Replaces the old single
+         * MASTER_PER_LINE lump that collapsed all of a line's writes onto one
+         * sample boundary. */
+        s_z80_off = MASTER_PER_LINE;
+        machine_chip_sync();
 
         /* Render + emit active scanlines. */
         if (line < active_h && sink) {
@@ -110,4 +300,5 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
 
         m->master_cycle += MASTER_PER_LINE;
     }
+    g_snd_frame++;   /* [SND-TRACE] */
 }

@@ -40,16 +40,26 @@ typedef struct {
     uint16_t lfsr;
     uint8_t  noise_out;
     uint8_t  latch;            /* (chan<<1)|type of last LATCH byte */
-    int32_t  lpf_y;            /* one-pole low-pass state */
+    int32_t  lpf_y;            /* low-pass: previous output  */
+    int32_t  lpf_prev;         /* low-pass: previous input sample */
 } SN76489;
+
+/* First-order low-pass matching the reference (clownmdemu low-pass-filter.c
+ * with coefficients 26.044, 24.044): out = ((in + prevIn)*SAMPLE_MAGIC +
+ * prevOut*OUTPUT_MAGIC) >> 16. Replaces the old >>1 one-pole, which was too
+ * bright and let PSG energy run hotter than the reference. */
+#define SN_LPF_SAMPLE_MAGIC  2517   /* round(1.0    * 65536 / 26.044) */
+#define SN_LPF_OUTPUT_MAGIC  60504  /* round(24.044 * 65536 / 26.044) */
 static SN76489 s_sn;
 
 /* 4-bit attenuation -> linear amplitude. 2 dB/step (×10^-0.1), 0xF = silence.
- * Per-channel peak ~6000 (4 summed channels = 24000, still inside int16),
- * balanced by ear against the FM path. */
+ * Values match the reference (clownmdemu psg.c psg_volumes / known SN76489
+ * behaviour): peak 0x1FFF with a per-channel /4 headroom so 4 summed channels
+ * (4*8191 = 32764) just fit int16. Brings PSG level to parity with the
+ * clownmdemu render measured by tools/synth_replay. */
 static const int16_t SN_VOL[16] = {
-    6000, 4766, 3786, 3008, 2389, 1898, 1508, 1198,
-     952,  756,  600,  477,  379,  301,  239,    0
+    0x1FFF, 0x196A, 0x1430, 0x1009, 0x0CBD, 0x0A1E, 0x0809, 0x0662,
+    0x0512, 0x0407, 0x0333, 0x028A, 0x0204, 0x019A, 0x0146, 0x0000
 };
 
 static void sn_reset(SN76489 *p)
@@ -111,13 +121,14 @@ static int16_t sn_render_sample(SN76489 *p)
     }
     mix += p->noise_out ? SN_VOL[p->vol[3]] : -SN_VOL[p->vol[3]];
 
-    /* Gentle one-pole low-pass to round off the square/step edges. Coeff 1/2
-     * keeps the cutoff high so higher-pitched PSG content keeps its level. */
-    p->lpf_y += (mix - p->lpf_y) >> 1;
-
-    int32_t out = p->lpf_y;
+    /* First-order low-pass matching the reference (see magics above). */
+    int64_t lp = ((int64_t)(mix + p->lpf_prev) * SN_LPF_SAMPLE_MAGIC
+                + (int64_t)p->lpf_y * SN_LPF_OUTPUT_MAGIC) / 65536;
+    p->lpf_prev = mix;
+    int32_t out = (int32_t)lp;
     if (out >  32767) out =  32767;
     if (out < -32768) out = -32768;
+    p->lpf_y = out;
     return (int16_t)out;
 }
 

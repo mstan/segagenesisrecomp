@@ -2,6 +2,7 @@
  * event_queue.c — single-threaded cycle-stamped audio event ring.
  */
 #include "event_queue.h"
+#include "../chip_trace.h"   /* [CHIP-TRACE] oracle-side FM/PSG stream tap */
 #include <assert.h>
 #include <stdio.h>
 
@@ -18,6 +19,19 @@ static size_t     s_overflow_count = 0;
 
 void audio_event_push(uint32_t cycle_stamp, uint8_t port, uint8_t value)
 {
+    /* [CHIP-TRACE] Oracle-side capture: the clownmdemu fork routes EVERY FM/PSG
+     * write here (bus-z80.c FM, bus-main-m68k.c PSG). The own backend never
+     * calls this (it taps snd_trace_chip directly in genesis_bus.c), so this
+     * captures ONLY the oracle stream — into the same shared ring, in the same
+     * (kind,port,val) encoding the own backend uses, for a direct stream diff.
+     * cycle_stamp is per-frame master cycles; derive the scanline (3420 master
+     * cycles/line) to match the own backend's stamping. Strip before commit. */
+    g_snd_line = (unsigned)(cycle_stamp / 3420u);
+    if (port == AUDIO_PORT_PSG)
+        snd_trace_chip(CHIP_PSG, 0, value);
+    else                                    /* FM ports 0..3 map 1:1 to a&3 */
+        snd_trace_chip(CHIP_FM, port, value);
+
     size_t next_head = (s_head + 1) % QUEUE_CAP;
     if (next_head == s_tail) {
         s_overflow_count++;

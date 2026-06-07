@@ -863,6 +863,9 @@ int main(int argc, char *argv[])
     const char *framelog_path = NULL;
     uint32_t max_frames  = 0;   /* 0 = unlimited */
     int start_turbo      = 0;   /* --turbo: skip frame delay + audio */
+    uint32_t snd_dump_frame = 0; /* [SND-TRACE] headless auto-dump of both rings at this frame (0=off, use F12) */
+    uint32_t snd_dump_vint  = 0; /* [CHIP-TRACE] dump chip_ring when vint_runcount hits N (0=off) */
+    int      snd_dump_done  = 0;
     /* Debug-server port: precedence is --port > debug.ini "port" > compile-time
      * DEFAULT_DEBUG_PORT (4378 native, 4379 oracle). 0 here means "unset; use
      * the compile-time default unless debug.ini overrides it". */
@@ -916,6 +919,17 @@ int main(int argc, char *argv[])
             debug_port_cli = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--target-fps") == 0 && i + 1 < argc) {
             target_fps_cli = atof(argv[++i]);
+        } else if (strcmp(argv[i], "--snd-dump-frame") == 0 && i + 1 < argc) {
+            snd_dump_frame = (uint32_t)atol(argv[++i]);   /* [SND-TRACE] */
+        } else if (strcmp(argv[i], "--snd-dump-vint") == 0 && i + 1 < argc) {
+            snd_dump_vint = (uint32_t)atol(argv[++i]);    /* [CHIP-TRACE] dump when
+                vint_runcount ($FFFE0C) hits N — the cross-backend sync key, so
+                native & oracle dump at the SAME logical sound-driver state
+                (frame numbers misalign across backends). */
+        } else if (strcmp(argv[i], "--psg-vol-div") == 0 && i + 1 < argc) {
+            extern void audio_set_psg_vol_div(int);       /* [SND-TRACE] PSG balance knob */
+            int d = atoi(argv[++i]); audio_set_psg_vol_div(d);
+            fprintf(stderr, "[audio] PSG vol div = %d\n", d);
         } else if (strcmp(argv[i], "--script-start") == 0 && i + 1 < argc) {
             s_script_start_frame = (uint32_t)atol(argv[++i]);
         } else if (strcmp(argv[i], "--script-right") == 0 && i + 1 < argc) {
@@ -1391,6 +1405,16 @@ int main(int argc, char *argv[])
                     VerifyTogglePhase();
                 }
 #endif
+                /* [SND-TRACE] F12 = dump the sound-command lifecycle ring AND
+                 * the [CHIP-TRACE] FM/PSG register-write stream, coincidentally
+                 * so the two snapshots line up for native-vs-oracle A/B. */
+                if (ev.key.keysym.sym == SDLK_F12) {
+                    /* chip_ring = shared stream (both builds); snd_ring = own only. */
+                    { extern void chip_trace_dump(const char *path); chip_trace_dump("chip_ring.txt"); }
+#if OWN_BACKEND
+                    { extern void snd_trace_dump(const char *path); snd_trace_dump("snd_ring.txt"); }
+#endif
+                }
             }
         }
 
@@ -1462,6 +1486,8 @@ int main(int argc, char *argv[])
                   if (input_requested_cb(NULL, 0, own_btns[b])) pad_mask |= own_bits[b];
               machine_set_pad(0, pad_mask);
           }
+          { extern unsigned long g_snd_vint;       /* [CHIP-TRACE] cross-backend sync stamp */
+            g_snd_vint = (unsigned long)m68k_read32(0xFFFE0C); }
           machine_run_frame(own_scanline_sink, NULL);
           s_screen_width  = gvdp_screen_width(&g_machine.vdp);
           s_screen_height = gvdp_screen_height(&g_machine.vdp);
@@ -1481,7 +1507,14 @@ int main(int argc, char *argv[])
           #define NTSC_WALL_FRAME_68K_CYCLES 127856u
           if (s_audio_backend == AUDIO_BACKEND_OURS) {
               #define NTSC_WALL_FRAME_MASTER_CYCLES 895780u
+#if OWN_BACKEND
+              /* The own backend advances ymfm/PSG per scanline (genesis_machine),
+               * so the chips already hold this frame's samples — drain collects
+               * them (frame_end=0 → mixer does no further advance). */
+              audio_mixer_drain(0,
+#else
               audio_mixer_drain(NTSC_WALL_FRAME_MASTER_CYCLES,
+#endif
                                 s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
                                 s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count);
           }
@@ -1501,12 +1534,28 @@ int main(int argc, char *argv[])
           glue_end_of_wall_frame(); }
 #else
         s_current_frame_for_input = frame_num;
+        /* [CHIP-TRACE] stamp the oracle's FM/PSG write stream with the current
+         * wall frame so its chip_ring.txt aligns with the own-backend dump.
+         * (Writes happen inside Iterate; g_snd_line is set per-write in the
+         * audio_event_push tap.) */
+        { extern unsigned long g_snd_frame, g_snd_vint;
+          g_snd_frame = (unsigned long)frame_num;
+          g_snd_vint  = (unsigned long)m68k_read32(0xFFFE0C); }  /* [CHIP-TRACE] sync stamp */
         ClownMDEmu_Iterate(&g_clownmdemu);
 #if SONIC_REVERSE_DEBUG
         rdb_record_iterate();
 #endif
 #endif
         check_ramdump();
+
+        /* [POLL-DIAG] measure how often the 256-poll bounded fallback fires
+         * (own-backend vs oracle) — the suspected SFX-drop regression. Temp. */
+        {
+            extern unsigned long g_z80poll_fallback_hits, g_z80poll_yields;
+            if ((frame_num % 120u) == 0)
+                fprintf(stderr, "[POLL-DIAG] frame=%u fallback_hits=%lu yields=%lu\n",
+                        (unsigned)frame_num, g_z80poll_fallback_hits, g_z80poll_yields);
+        }
 
 #if HYBRID_RECOMPILED_CODE
         { extern void glue_log_frame_state(uint64_t);
@@ -1516,6 +1565,35 @@ int main(int argc, char *argv[])
 
         /* --framelog: works in ALL build modes */
         write_framelog(frame_num);
+
+        /* [SND-TRACE] headless auto-dump: when --snd-dump-frame N is set, dump
+         * both always-on rings once at frame N (no F12 needed for agent-driven
+         * captures). Strip with the rest of the [SND-TRACE] diagnostics. */
+        if (snd_dump_frame && frame_num == snd_dump_frame) {
+            /* chip_ring is the SHARED dev-only stream (chip_trace.c) — both the
+             * own backend and the oracle capture it, so dump in BOTH builds for
+             * the native-vs-oracle stream diff. */
+            { extern void chip_trace_dump(const char *path); chip_trace_dump("chip_ring.txt"); }
+#if OWN_BACKEND   /* snd_ring (SndEvt) + z80_ram dump are own-backend only (genesis_machine.c) */
+            { extern void snd_trace_dump(const char *path); snd_trace_dump("snd_ring.txt"); }
+            { extern void z80_ram_dump(const char *path); z80_ram_dump("z80_ram.bin"); }
+#endif
+            fprintf(stderr, "[CHIP-TRACE] auto-dumped chip_ring at frame %u\n", (unsigned)frame_num);
+        }
+
+        /* [CHIP-TRACE] vint-triggered dump: fire once when vint_runcount reaches
+         * the target. vint ($FFFE0C, big-endian longword) is the cross-backend
+         * sync key — both builds reach a given vint at the SAME logical sound
+         * state (unlike wall frame, which misaligns across native/oracle). */
+        if (snd_dump_vint && !snd_dump_done) {
+            uint32_t vint = m68k_read32(0xFFFE0C);
+            if (vint >= snd_dump_vint) {
+                { extern void chip_trace_dump(const char *path); chip_trace_dump("chip_ring.txt"); }
+                snd_dump_done = 1;
+                fprintf(stderr, "[CHIP-TRACE] auto-dumped chip_ring at vint %u (frame %u)\n",
+                        (unsigned)vint, (unsigned)frame_num);
+            }
+        }
 
         /* Record frame state into debug server ring buffer */
         if (s_debug_enabled) {

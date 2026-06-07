@@ -30,6 +30,9 @@ typedef struct GenesisBus {
     int      bank_shift;                /* serial bank-register write counter */
     uint8_t  z80_busreq;                /* 68K has requested the Z80 bus      */
     uint8_t  z80_reset_off;             /* 1 = Z80 out of reset (running)     */
+    uint8_t  z80_reset_pending;         /* reset line asserted; core reset due
+                                         * before the Z80 next runs (so it
+                                         * restarts at $0000 post-upload)     */
 
     /* Controllers / I-O. */
     uint8_t  pad[2];                    /* live button state (GPAD_* bits)    */

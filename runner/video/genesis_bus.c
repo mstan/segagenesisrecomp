@@ -12,6 +12,15 @@ extern uint8_t g_rom[0x400000];
 extern uint8_t g_ram[0x010000];
 extern void ym2612_write(uint8_t port, uint8_t value);
 extern void psg_write(uint8_t value);
+extern void machine_chip_sync(void);  /* advance FM/PSG to this write's cycle (cadence fix) */
+
+/* [SND-TRACE] sound-command lifecycle trace (defined in genesis_machine.c). */
+extern uint8_t g_sndwatch[0x2000];
+extern unsigned long g_snd_frame;
+extern void snd_trace_68k_write(uint16_t off, uint8_t oldv, uint8_t newv, int busreq, int reset_off);
+extern void snd_trace_z80(uint16_t off, uint8_t val, int is_write);
+extern void snd_trace_busreq(const char *what, int val);
+extern void snd_trace_chip(int kind, uint8_t port, uint8_t val);  /* [CHIP-TRACE] 0=FM 1=PSG */
 
 void gbus_init(GenesisBus *b, GVDP *vdp)
 {
@@ -84,8 +93,17 @@ uint16_t gbus_read16(GenesisBus *b, uint32_t a)
     }
     if (a >= 0xA00000u && a < 0xA10000u) {                          /* Z80/FM   */
         if ((a & 0xFFFFu) < 0x2000u) {
-            uint8_t d = b->z80_ram[a & 0x1FFFu];
-            return (uint16_t)((d << 8) | d);
+            /* Z80 RAM is byte-addressable. Return a byte-accurate word
+             * (high = even byte, low = odd byte) so that the byte-read paths
+             * (m68k_read8 / gbus_read8, which call gbus_read16(addr & ~1) then
+             * pick a half) recover the correct byte for BOTH parities. The old
+             * (d<<8)|d mirror made odd-address byte reads return the even
+             * neighbour, which doubled every other byte in the Saxman sound-
+             * driver decompression's back-reference copy (MOVE.B (A4,D4.W),
+             * (A5)+) — the S2 silent-audio bug. */
+            unsigned off = a & 0x1FFFu;
+            return (uint16_t)(((uint16_t)b->z80_ram[off] << 8)
+                              | b->z80_ram[(off + 1u) & 0x1FFFu]);
         }
         /* YM2612 status ($A04000-$A04003, mirrored to $A05FFF): bit 7 = BUSY,
          * bits 1..0 = timer B/A overflow. We model an infinitely-fast chip
@@ -97,7 +115,8 @@ uint16_t gbus_read16(GenesisBus *b, uint32_t a)
         return 0xFFFFu;                          /* bank/PSG region: open bus  */
     }
     if (a >= 0xA10000u && a < 0xA10020u) return io_read(b, a);      /* I/O      */
-    if (a == 0xA11100u) return (uint16_t)(b->z80_busreq ? 0x0000 : 0x0100);
+    if (a == 0xA11100u) { uint16_t ack = (uint16_t)(b->z80_busreq ? 0x0000 : 0x0100);
+        snd_trace_busreq("REQ-READack", ack ? 1 : 0); return ack; }  /* [SND-TRACE] */
     if (a == 0xA11200u) return (uint16_t)(b->z80_reset_off ? 0x0100 : 0x0000);
     return 0xFFFFu;
 }
@@ -116,19 +135,42 @@ void gbus_write16(GenesisBus *b, uint32_t a, uint16_t v)
         else if (a < 0xC00008u) gvdp_write_control(b->vdp, v);
         return;
     }
-    if (a >= 0xC00010u && a < 0xC00018u) { psg_write((uint8_t)v); return; } /* PSG */
+    if (a >= 0xC00010u && a < 0xC00018u) { machine_chip_sync(); snd_trace_chip(1, 0, (uint8_t)v); psg_write((uint8_t)v); return; } /* PSG */
     if (a >= 0xA00000u && a < 0xA10000u) {                          /* Z80/FM   */
-        if ((a & 0xFFFFu) < 0x2000u) { b->z80_ram[a & 0x1FFFu] = (uint8_t)(v >> 8); return; }
-        if (a >= 0xA04000u && a <= 0xA04003u) { ym2612_write((uint8_t)(a & 3), (uint8_t)v); return; }
+        if ((a & 0xFFFFu) < 0x2000u) { unsigned off = a & 0x1FFFu;
+            snd_trace_68k_write((uint16_t)off, b->z80_ram[off], (uint8_t)(v >> 8),
+                                b->z80_busreq, b->z80_reset_off);  /* [SND-TRACE] */
+            b->z80_ram[off] = (uint8_t)(v >> 8); return; }
+        if (a >= 0xA04000u && a <= 0xA04003u) { machine_chip_sync(); snd_trace_chip(0, (uint8_t)(a & 3), (uint8_t)v); ym2612_write((uint8_t)(a & 3), (uint8_t)v); return; }
         return;
     }
     if (a >= 0xA10000u && a < 0xA10020u) { io_write(b, a, (uint8_t)v); return; }
-    if (a == 0xA11100u) { b->z80_busreq    = (v & 0x0100) ? 1 : 0; return; }
-    if (a == 0xA11200u) { b->z80_reset_off = (v & 0x0100) ? 1 : 0; return; }
+    if (a == 0xA11100u) { b->z80_busreq = (v & 0x0100) ? 1 : 0;
+        snd_trace_busreq("REQ", b->z80_busreq); return; }                /* [SND-TRACE] */
+    if (a == 0xA11200u) { int o = b->z80_reset_off; b->z80_reset_off = (v & 0x0100) ? 1 : 0;
+        /* Asserting the reset line (1->0) resets the Z80 core: it must restart
+         * at $0000 on release. The actual core reset is deferred to step_z80
+         * (the core lives in the scheduler). Without this the Z80 resumed from
+         * a stale PC after the post-upload reset pulse and ran the driver from
+         * garbage — the S2 silent-audio bad-jump. */
+        if (o == 1 && b->z80_reset_off == 0) b->z80_reset_pending = 1;
+        snd_trace_busreq("RESET_OFF", b->z80_reset_off);  /* [SND-TRACE] */
+        return; }
 }
 
 uint8_t gbus_read8(GenesisBus *b, uint32_t a)
 {
+    /* Z80 RAM ($A00000-$A01FFF) is byte-addressable from the 68K. Reading it
+     * through the word path is wrong: gbus_read16 mirrors the addressed byte
+     * onto BOTH halves of the word, so a byte read at an ODD address returns
+     * the EVEN-neighbour byte instead of the addressed one. That corrupted the
+     * Saxman sound-driver decompression's back-reference copy
+     * (MOVE.B (A4,D4.W),(A5)+ with D4 incrementing): odd D4 read the even
+     * neighbour, so every other source byte was doubled and the rest dropped
+     * — the S2 silent-audio bug. Read Z80 RAM directly (symmetric with
+     * gbus_write8). */
+    if (a >= 0xA00000u && a < 0xA10000u && (a & 0xFFFFu) < 0x2000u)
+        return b->z80_ram[a & 0x1FFFu];
     uint16_t w = gbus_read16(b, a & ~1u);
     return (a & 1) ? (uint8_t)w : (uint8_t)(w >> 8);
 }
@@ -139,11 +181,14 @@ void gbus_write8(GenesisBus *b, uint32_t a, uint8_t v)
     /* Byte writes to RAM / Z80 RAM / PSG / FM need exact targeting. */
     if (a >= 0xFF0000u) { g_ram[a & 0xFFFFu] = v; return; }
     if (a >= 0xA00000u && a < 0xA10000u) {
-        if ((a & 0xFFFFu) < 0x2000u) { b->z80_ram[a & 0x1FFFu] = v; return; }
-        if (a >= 0xA04000u && a <= 0xA04003u) { ym2612_write((uint8_t)(a & 3), v); return; }
+        if ((a & 0xFFFFu) < 0x2000u) { unsigned off = a & 0x1FFFu;
+            snd_trace_68k_write((uint16_t)off, b->z80_ram[off], v,
+                                b->z80_busreq, b->z80_reset_off);  /* [SND-TRACE] */
+            b->z80_ram[off] = v; return; }
+        if (a >= 0xA04000u && a <= 0xA04003u) { machine_chip_sync(); snd_trace_chip(0, (uint8_t)(a & 3), v); ym2612_write((uint8_t)(a & 3), v); return; }
         return;
     }
-    if (a == 0xC00011u) { psg_write(v); return; }
+    if (a == 0xC00011u) { machine_chip_sync(); snd_trace_chip(1, 0, v); psg_write(v); return; }
     /* Word-aligned fall-through for VDP/IO byte writes (value on both halves). */
     gbus_write16(b, a & ~1u, (uint16_t)((v << 8) | v));
 }
@@ -151,8 +196,12 @@ void gbus_write8(GenesisBus *b, uint32_t a, uint8_t v)
 /* ---- Z80 bus (SMPS driver's address space) -------------------------------- */
 uint8_t gbus_z80_read(GenesisBus *b, uint16_t addr)
 {
-    if (addr < 0x4000u) return b->z80_ram[addr & 0x1FFFu];          /* RAM+mirror */
-    if (addr < 0x6000u) return 0xFFu;                               /* FM status  */
+    if (addr < 0x4000u) return b->z80_ram[addr & 0x1FFFu];         /* RAM+mirror */
+    /* YM2612 status ($4000-$5FFF): bit 7 = BUSY. Model a never-busy, no-timer-
+     * overflow chip -> 0. Returning 0xFF (bit 7 set) made the SMPS Z80 driver's
+     * busy-wait spin forever at init (PC stuck ~$0008, zero FM writes) — the
+     * same bug as the 68K-side WriteFMI; see gbus_read16. */
+    if (addr < 0x6000u) return 0x00u;                               /* FM status  */
     if (addr < 0x8000u) return 0xFFu;                               /* bank/PSG   */
     /* $8000-$FFFF: banked window into the 68K bus. */
     uint32_t a68 = ((uint32_t)b->z80_bank << 15) + (uint32_t)(addr - 0x8000u);
@@ -161,13 +210,15 @@ uint8_t gbus_z80_read(GenesisBus *b, uint16_t addr)
 
 void gbus_z80_write(GenesisBus *b, uint16_t addr, uint8_t val)
 {
-    if (addr < 0x4000u) { b->z80_ram[addr & 0x1FFFu] = val; return; } /* RAM+mirror */
-    if (addr < 0x6000u) { ym2612_write((uint8_t)(addr & 3), val); return; } /* FM   */
+    if (addr < 0x4000u) { unsigned off = addr & 0x1FFFu;
+        if (g_sndwatch[off]) snd_trace_z80((uint16_t)off, val, 1);  /* [SND-TRACE] */
+        b->z80_ram[off] = val; return; }                           /* RAM+mirror */
+    if (addr < 0x6000u) { machine_chip_sync(); snd_trace_chip(0, (uint8_t)(addr & 3), val); ym2612_write((uint8_t)(addr & 3), val); return; } /* FM */
     if (addr < 0x6100u) {                                /* $6000 bank register   */
         b->z80_bank = ((b->z80_bank >> 1) | ((val & 1) << 8)) & 0x1FF;
         return;
     }
-    if (addr == 0x7F11u) { psg_write(val); return; }                /* PSG          */
+    if (addr == 0x7F11u) { machine_chip_sync(); snd_trace_chip(1, 0, val); psg_write(val); return; }       /* PSG          */
     if (addr >= 0x8000u) {                                          /* banked window */
         uint32_t a68 = ((uint32_t)b->z80_bank << 15) + (uint32_t)(addr - 0x8000u);
         gbus_write8(b, a68, val);
