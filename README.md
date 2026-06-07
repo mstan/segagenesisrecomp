@@ -44,12 +44,30 @@ Key recompiler features:
 git clone --recursive https://github.com/mstan/segagenesisrecomp.git
 ```
 
+## Platform Support
+
+The runner builds and runs natively on **Windows (MSVC)**, **macOS (Apple
+Silicon & Intel)**, and **Linux**. The cooperative game-fiber scheduler is
+backed by Win32 Fibers on Windows and by `ucontext` on macOS/Linux via
+`runner/fiber_compat.{h,c}`; SDL2 handles windowing, rendering, audio, and
+`SDL_GameController` gamepads on all platforms. See the
+[SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp)
+README for per-platform build steps.
+
 ## Building the Recompiler
+
+The recompiler is portable C++ and builds on any platform with a C++ toolchain.
 
 ```bash
 cd recompiler
+
+# Windows (MSVC)
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release
+
+# macOS / Linux (Ninja)
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+ninja -C build
 ```
 
 ## Regenerating Output

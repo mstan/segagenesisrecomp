@@ -8,7 +8,11 @@
 #include <stdbool.h>
 
 /* ---- CPU State ---- */
-typedef struct {
+/* Tagged so headers that only need a pointer (e.g. crash_report.h) can
+ * forward-declare `struct M68KState` and have it be the SAME type as this
+ * typedef. clang treats an anonymous-struct typedef and a `struct M68KState`
+ * tag as distinct (MSVC is laxer), which broke the crash_report prototypes. */
+typedef struct M68KState {
     uint32_t D[8];   /* D0-D7 data registers */
     uint32_t A[8];   /* A0-A6 address registers, A7 = SSP (supervisor stack) */
     uint16_t SR;     /* Status register: T,S,I2,I1,I0,X,N,Z,V,C */

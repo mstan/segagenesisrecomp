@@ -1019,9 +1019,17 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    /* PRESENTVSYNC aligns each present to the display's vblank, which kills
+     * the scroll tearing visible without it (notably on macOS/Metal). The
+     * manual frame pacer still bounds the rate, so on a 60/120 Hz display the
+     * two simply settle on whichever is slower. Fall back to no-vsync if the
+     * driver can't provide it. */
     SDL_Renderer *renderer = SDL_CreateRenderer(
         window, -1,
-        SDL_RENDERER_ACCELERATED);
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!renderer) {
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    }
     if (!renderer) {
         fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
         return 1;
@@ -1280,6 +1288,25 @@ int main(int argc, char *argv[])
             if (ev.type == SDL_QUIT) running = 0;
             if (ev.type == SDL_KEYDOWN) {
                 if (ev.key.keysym.sym == SDLK_ESCAPE) running = 0;
+
+                /* Fullscreen toggle: F11, Alt+Enter, or Cmd/Ctrl+F.
+                 * FULLSCREEN_DESKTOP keeps the desktop resolution and lets
+                 * SDL_RenderSetLogicalSize letterbox the 320×224 image. */
+                {
+                    SDL_Keymod mod = ev.key.keysym.mod;
+                    int alt_enter = (ev.key.keysym.sym == SDLK_RETURN) &&
+                                    (mod & KMOD_ALT);
+                    int cmd_f = (ev.key.keysym.sym == SDLK_f) &&
+                                (mod & (KMOD_GUI | KMOD_CTRL));
+                    if (ev.key.keysym.sym == SDLK_F11 || alt_enter || cmd_f) {
+                        Uint32 is_fs = SDL_GetWindowFlags(window) &
+                                       SDL_WINDOW_FULLSCREEN_DESKTOP;
+                        SDL_SetWindowFullscreen(window,
+                            is_fs ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+                        update_render_logical_size(renderer);
+                        continue;   /* don't also treat Enter/F-key as a save slot */
+                    }
+                }
 
                 /* Save states: Shift+F1-F9 = save, F1-F9 = load */
                 {

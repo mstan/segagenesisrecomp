@@ -17,6 +17,13 @@
 #include <string.h>
 #include <ctype.h>
 
+/* Case-insensitive compare: _stricmp is the MSVC CRT spelling; on POSIX
+ * the equivalent is strcasecmp from <strings.h>. */
+#ifndef _WIN32
+#include <strings.h>
+#define _stricmp strcasecmp
+#endif
+
 /* ---- Op codes ---- */
 
 typedef enum {
