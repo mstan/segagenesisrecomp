@@ -1711,14 +1711,16 @@ int main(int argc, char *argv[])
 #endif
         check_ramdump();
 
+#ifdef GEN_DEV_TRACE
         /* [POLL-DIAG] measure how often the 256-poll bounded fallback fires
-         * (own-backend vs oracle) — the suspected SFX-drop regression. Temp. */
+         * (own-backend vs oracle). Dev builds only. */
         {
             extern unsigned long g_z80poll_fallback_hits, g_z80poll_yields;
             if ((frame_num % 120u) == 0)
                 fprintf(stderr, "[POLL-DIAG] frame=%u fallback_hits=%lu yields=%lu\n",
                         (unsigned)frame_num, g_z80poll_fallback_hits, g_z80poll_yields);
         }
+#endif
 
 #if HYBRID_RECOMPILED_CODE
         { extern void glue_log_frame_state(uint64_t);

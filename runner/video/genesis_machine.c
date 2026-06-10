@@ -22,6 +22,21 @@ GenesisMachine g_machine;
  * (so the oracle build has them too). This scheduler still owns/advances
  * g_snd_frame + g_snd_line per scanline below. */
 uint8_t       g_sndwatch[0x2000];    /* 1 = a gameplay 68K write touched this  */
+
+#ifndef GEN_DEV_TRACE
+/* Prod builds: no ring memory, no captures, dumps report "not compiled in".
+ * (g_sndwatch stays zeroed — the bus checks it and never fires.) */
+void snd_trace_68k_write(uint16_t off, uint8_t oldv, uint8_t newv,
+                         int busreq, int reset_off)
+{ (void)off; (void)oldv; (void)newv; (void)busreq; (void)reset_off; }
+void snd_trace_z80(uint16_t off, uint8_t val, int is_write)
+{ (void)off; (void)val; (void)is_write; }
+void snd_trace_busreq(const char *what, int val) { (void)what; (void)val; }
+void snd_trace_dump(const char *path)
+{ (void)path; fprintf(stderr, "[SND] trace not compiled in (build with GEN_DEV_TRACE=ON)\n"); }
+void z80_ram_dump(const char *path)
+{ (void)path; fprintf(stderr, "[SND] z80 dump not compiled in (build with GEN_DEV_TRACE=ON)\n"); }
+#else /* GEN_DEV_TRACE */
 #define SND_TRACE_START_FRAME 90u    /* skip the boot driver upload            */
 
 enum { SND_68KW = 1, SND_Z80W, SND_VASSERT, SND_VACCEPT, SND_BUS };
@@ -98,20 +113,8 @@ void snd_trace_dump(const char *path)
     fprintf(stderr, "[SND] dumped %u events to %s\n", n, path);
 }
 
-/* The [CHIP-TRACE] FM/PSG register-write ring (snd_trace_chip / chip_trace_dump)
- * lives in the shared runner/chip_trace.c; both builds are captured by the
- * audio_event_push tap in audio/event_queue.c. */
-
-/* [CHIP-TRACE] writer attribution: the Z80 PC for Z80-origin FM/PSG pushes
- * (genesis_bus.c sets g_snd_pcz from this at each push site). */
-uint32_t machine_z80_pc(void)
-{
-    return (uint32_t)g_machine.z80.pc;
-}
-
 /* [SND-TRACE] one-shot Z80 RAM dump (the uploaded SMPS driver image) so the
- * sync-wait loop the Z80 sits in at vblank can be disassembled. Strip with the
- * rest of the diagnostics. */
+ * sync-wait loop the Z80 sits in at vblank can be disassembled. */
 void z80_ram_dump(const char *path)
 {
     FILE *f = fopen(path, "wb");
@@ -120,6 +123,18 @@ void z80_ram_dump(const char *path)
     fclose(f);
     fprintf(stderr, "[SND] dumped Z80 RAM (%u bytes) to %s\n",
             (unsigned)sizeof(g_machine.bus.z80_ram), path);
+}
+#endif /* GEN_DEV_TRACE */
+
+/* The [CHIP-TRACE] FM/PSG register-write ring (snd_trace_chip / chip_trace_dump)
+ * lives in the shared runner/chip_trace.c; both builds are captured by the
+ * audio_event_push tap in audio/event_queue.c. */
+
+/* Writer attribution: the Z80 PC for Z80-origin FM/PSG pushes (genesis_bus.c
+ * sets g_snd_pcz from this at each push site; cheap scalar, all builds). */
+uint32_t machine_z80_pc(void)
+{
+    return (uint32_t)g_machine.z80.pc;
 }
 
 /* glue.c hooks (recompiled-68K fiber + own-backend interrupt delivery). */
@@ -295,9 +310,13 @@ static void step_z80(GenesisMachine *m, uint32_t target)
         done += (uint32_t)(m->z80.cyc - c0);
     }
     m->z80_cycle_debt = done - target;
+#ifdef GEN_DEV_TRACE
     /* [SND-TRACE] V-int acceptance: pending fell 1->0 during this slice. */
     if (g_snd_trace && pend_before && !m->z80.int_pending && g_snd_frame >= SND_TRACE_START_FRAME)
         snd_evt(SND_VACCEPT);
+#else
+    (void)pend_before;
+#endif
 }
 
 void machine_run_frame(GenesisScanlineSink sink, void *user)
@@ -335,6 +354,7 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
              * $0038 handler never ran, the SMPS driver's main loop waited
              * forever on the per-frame flag the handler sets (e.g. Z80 RAM
              * $1C30), and no music played. */
+#ifdef GEN_DEV_TRACE
             /* [SND-TRACE] pending_was=1 means last frame's V-int was never
              * accepted (sticky stack-up) — the suspected phase divergence. */
             if (g_snd_trace && g_snd_frame >= SND_TRACE_START_FRAME) {
@@ -342,6 +362,7 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
                 e->v1 = m->z80.int_pending ? 1 : 0;   /* pending_was */
                 e->v2 = m->z80.iff1        ? 1 : 0;   /* iff1        */
             }
+#endif
             m->z80.int_pending = 1;   /* level-triggered vblank IRQ assert */
             glue_own_interrupt(6, &m->vdp);
         }
