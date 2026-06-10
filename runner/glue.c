@@ -311,7 +311,14 @@ extern cc_u32f g_hybrid_cycle_counter;
 static uint16_t recomp_ram_read16_direct(uint32_t addr)
 {
     uint16_t off = (uint16_t)(addr & 0xFFFFu);
+#if OWN_BACKEND
+    /* Own backend: g_ram IS the authoritative work RAM (s_emu is NULL here —
+     * reading through it returned $FFFF, so RAM JMP trampolines like S3's
+     * H-int stub at $FFF608 never resolved and the handler dispatch missed). */
+    return (uint16_t)(((uint16_t)g_ram[off] << 8) | g_ram[(uint16_t)(off + 1u)]);
+#else
     return s_emu ? (uint16_t)s_emu->state.m68k.ram[off / 2u] : 0xFFFFu;
+#endif
 }
 
 static uint32_t recomp_ram_read32_direct(uint32_t addr)
