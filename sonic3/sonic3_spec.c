@@ -22,9 +22,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if OWN_BACKEND
+#include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
+#else
 #include "clownmdemu.h"
+#endif
 
+#if !OWN_BACKEND
 extern ClownMDEmu g_clownmdemu;
+#endif
 
 /* ---- Recompiled entry points (Sonic 3 standalone, org-0 addresses) ---- */
 extern void func_000206(void);  /* EntryPoint   ($000206) */
@@ -60,6 +66,17 @@ int game_dispatch_override(uint32_t addr) { (void)addr; return 0; }
 
 /* ---- 68K work-RAM accessors ---- */
 
+#if OWN_BACKEND
+extern uint8_t g_ram[0x10000];   /* authoritative own-backend WRAM */
+static uint8_t s3_read8(uint32_t addr) {
+    return g_ram[addr & 0xFFFF];
+}
+
+static uint16_t s3_read16(uint32_t addr) {
+    uint16_t off = (uint16_t)(addr & 0xFFFF);
+    return (uint16_t)(((uint16_t)g_ram[off] << 8) | g_ram[(uint16_t)(off + 1)]);
+}
+#else
 static uint8_t s3_read8(uint32_t addr) {
     uint16_t off = (uint16_t)(addr & 0xFFFF);
     uint16_t w   = g_clownmdemu.state.m68k.ram[off / 2];
@@ -70,6 +87,7 @@ static uint16_t s3_read16(uint32_t addr) {
     uint16_t off = (uint16_t)(addr & 0xFFFF);
     return g_clownmdemu.state.m68k.ram[off / 2];
 }
+#endif
 
 static uint32_t s3_read32(uint32_t addr) {
     return ((uint32_t)s3_read16(addr) << 16) | (uint32_t)s3_read16(addr + 2);

@@ -1,7 +1,11 @@
 #ifndef GLUE_H
 #define GLUE_H
 
+#if OWN_BACKEND
+#include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
+#else
 #include "clownmdemu.h"
+#endif
 #include <stdio.h>
 #include <stdint.h>
 

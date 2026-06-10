@@ -15,13 +15,13 @@
 #include <stdint.h>
 #include "genesis_vdp.h"
 #include "genesis_bus.h"
-#include "interpreter.h"   /* clownz80 ClownZ80_* API (impl = superzazu)      */
+#include "z80.h"           /* superzazu (MIT) — the Z80 core, embedded directly */
 
 typedef struct GenesisMachine {
     GVDP        vdp;
     GenesisBus  bus;
-    ClownZ80_State z80;
-    ClownZ80_ReadAndWriteCallbacks z80_cb;
+    z80         z80;                /* superzazu state incl. bus thunks (re-wired
+                                       on load by machine_wire_pointers)        */
     uint32_t    z80_cycle_debt;     /* carry of Z80 cycles across scanlines    */
     uint32_t    master_cycle;       /* running master-clock cycle (audio stamp)*/
 } GenesisMachine;

@@ -22,6 +22,21 @@ GenesisMachine g_machine;
  * (so the oracle build has them too). This scheduler still owns/advances
  * g_snd_frame + g_snd_line per scanline below. */
 uint8_t       g_sndwatch[0x2000];    /* 1 = a gameplay 68K write touched this  */
+
+#ifndef GEN_DEV_TRACE
+/* Prod builds: no ring memory, no captures, dumps report "not compiled in".
+ * (g_sndwatch stays zeroed — the bus checks it and never fires.) */
+void snd_trace_68k_write(uint16_t off, uint8_t oldv, uint8_t newv,
+                         int busreq, int reset_off)
+{ (void)off; (void)oldv; (void)newv; (void)busreq; (void)reset_off; }
+void snd_trace_z80(uint16_t off, uint8_t val, int is_write)
+{ (void)off; (void)val; (void)is_write; }
+void snd_trace_busreq(const char *what, int val) { (void)what; (void)val; }
+void snd_trace_dump(const char *path)
+{ (void)path; fprintf(stderr, "[SND] trace not compiled in (build with GEN_DEV_TRACE=ON)\n"); }
+void z80_ram_dump(const char *path)
+{ (void)path; fprintf(stderr, "[SND] z80 dump not compiled in (build with GEN_DEV_TRACE=ON)\n"); }
+#else /* GEN_DEV_TRACE */
 #define SND_TRACE_START_FRAME 90u    /* skip the boot driver upload            */
 
 enum { SND_68KW = 1, SND_Z80W, SND_VASSERT, SND_VACCEPT, SND_BUS };
@@ -39,7 +54,7 @@ static SndEvt *snd_evt(uint8_t type) {
     SndEvt *e = &g_snd_ring[g_snd_head++ & (SND_RING_N - 1u)];
     e->type = type; e->frame = (uint32_t)g_snd_frame; e->line = (uint16_t)g_snd_line;
     e->master = g_machine.master_cycle;
-    e->pcz = (uint16_t)g_machine.z80.program_counter;
+    e->pcz = (uint16_t)g_machine.z80.pc;
     e->addr = 0; e->v1 = e->v2 = e->flags = 0; e->tag = 0;
     return e;
 }
@@ -98,20 +113,8 @@ void snd_trace_dump(const char *path)
     fprintf(stderr, "[SND] dumped %u events to %s\n", n, path);
 }
 
-/* The [CHIP-TRACE] FM/PSG register-write ring (snd_trace_chip / chip_trace_dump)
- * lives in the shared runner/chip_trace.c; both builds are captured by the
- * audio_event_push tap in audio/event_queue.c. */
-
-/* [CHIP-TRACE] writer attribution: the Z80 PC for Z80-origin FM/PSG pushes
- * (genesis_bus.c sets g_snd_pcz from this at each push site). */
-uint32_t machine_z80_pc(void)
-{
-    return (uint32_t)g_machine.z80.program_counter;
-}
-
 /* [SND-TRACE] one-shot Z80 RAM dump (the uploaded SMPS driver image) so the
- * sync-wait loop the Z80 sits in at vblank can be disassembled. Strip with the
- * rest of the diagnostics. */
+ * sync-wait loop the Z80 sits in at vblank can be disassembled. */
 void z80_ram_dump(const char *path)
 {
     FILE *f = fopen(path, "wb");
@@ -120,6 +123,18 @@ void z80_ram_dump(const char *path)
     fclose(f);
     fprintf(stderr, "[SND] dumped Z80 RAM (%u bytes) to %s\n",
             (unsigned)sizeof(g_machine.bus.z80_ram), path);
+}
+#endif /* GEN_DEV_TRACE */
+
+/* The [CHIP-TRACE] FM/PSG register-write ring (snd_trace_chip / chip_trace_dump)
+ * lives in the shared runner/chip_trace.c; both builds are captured by the
+ * audio_event_push tap in audio/event_queue.c. */
+
+/* Writer attribution: the Z80 PC for Z80-origin FM/PSG pushes (genesis_bus.c
+ * sets g_snd_pcz from this at each push site; cheap scalar, all builds). */
+uint32_t machine_z80_pc(void)
+{
+    return (uint32_t)g_machine.z80.pc;
 }
 
 /* glue.c hooks (recompiled-68K fiber + own-backend interrupt delivery). */
@@ -154,9 +169,33 @@ static void colour_cb(void *u, unsigned idx, uint16_t bgr9)
 /* VDP DMA source reads come from our own bus. */
 static uint16_t vdp_bus_read(void *u, uint32_t a) { (void)u; return gbus_read16(&g_machine.bus, a); }
 
-/* Z80 core memory callbacks -> Z80-side bus. */
-static cc_u16f z80_read (void *u, cc_u16f a)            { return gbus_z80_read((GenesisBus *)u, (uint16_t)a); }
-static void    z80_write(void *u, cc_u16f a, cc_u16f v) { gbus_z80_write((GenesisBus *)u, (uint16_t)a, (uint8_t)v); }
+/* Z80 core memory callbacks -> Z80-side bus (superzazu signatures). The
+ * Genesis Z80 has no separate I/O space wired up; port IN/OUT collapse onto
+ * the memory bus using the 16-bit BC port address (no Genesis game driver
+ * executes IN/OUT). */
+static uint8_t z80_read (void *u, uint16_t a)            { return gbus_z80_read((GenesisBus *)u, a); }
+static void    z80_write(void *u, uint16_t a, uint8_t v) { gbus_z80_write((GenesisBus *)u, a, v); }
+static uint8_t z80_port_in(z80 *z, uint8_t port)
+{
+    return gbus_z80_read((GenesisBus *)z->userdata, (uint16_t)((z->b << 8) | port));
+}
+static void z80_port_out(z80 *z, uint8_t port, uint8_t value)
+{
+    gbus_z80_write((GenesisBus *)z->userdata, (uint16_t)((z->b << 8) | port), value);
+}
+
+/* Z80 reset-line pulse: restart at $0000 with interrupts disabled, leaving the
+ * general-purpose registers (hardware /RESET behaviour). */
+static void z80_own_reset(z80 *z)
+{
+    z->pc = 0;
+    z->iff1 = z->iff2 = 0;
+    z->halted = 0;
+    z->interrupt_mode = 0;
+    z->iff_delay = 0;
+    z->int_pending = z->nmi_pending = 0;
+    z->int_data = 0xFF;    /* IM1 ignores the data bus */
+}
 
 /* Pointer wiring shared by machine_init and machine_load_state (a raw struct
  * restore clobbers the function/user pointers with the saving process's). */
@@ -165,9 +204,11 @@ static void machine_wire_pointers(void)
     g_machine.vdp.bus_read       = vdp_bus_read;
     g_machine.vdp.colour_updated = colour_cb;
     g_machine.bus.vdp            = &g_machine.vdp;
-    g_machine.z80_cb.read        = z80_read;
-    g_machine.z80_cb.write       = z80_write;
-    g_machine.z80_cb.user_data   = &g_machine.bus;
+    g_machine.z80.read_byte      = z80_read;
+    g_machine.z80.write_byte     = z80_write;
+    g_machine.z80.port_in        = z80_port_in;
+    g_machine.z80.port_out       = z80_port_out;
+    g_machine.z80.userdata       = &g_machine.bus;
 }
 
 void machine_init(void)
@@ -175,29 +216,24 @@ void machine_init(void)
     memset(&g_machine, 0, sizeof(g_machine));
     gvdp_init(&g_machine.vdp);
     gbus_init(&g_machine.bus, &g_machine.vdp);
-    ClownZ80_Constant_Initialise();
-    ClownZ80_State_Initialise(&g_machine.z80);
+    z80_init(&g_machine.z80);       /* superzazu power-on defaults */
+    z80_own_reset(&g_machine.z80);
     machine_wire_pointers();
 }
 
 /* ---- Own-backend save states ----------------------------------------------
  * Snapshot/restore the whole machine (VDP incl. VRAM/CRAM/VSRAM, bus incl.
- * Z80 RAM + SRAM, Z80 core state) plus the superzazu hidden Z80 bits. The
- * format is a raw struct image, private to a build (same convention as the
- * clownmdemu-path save states). main.c owns the file container. */
-extern int z80sz_save_ext(FILE *f);
-extern int z80sz_load_ext(FILE *f);
-
+ * Z80 RAM + SRAM, full superzazu Z80 core state — the embedded struct now
+ * carries everything, no side blob). The format is a raw struct image,
+ * private to a build. main.c owns the file container. */
 int machine_save_state(FILE *f)
 {
-    if (fwrite(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
-    return z80sz_save_ext(f);
+    return fwrite(&g_machine, sizeof g_machine, 1, f) == 1;
 }
 
 int machine_load_state(FILE *f)
 {
     if (fread(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
-    if (!z80sz_load_ext(f)) return 0;
     machine_wire_pointers();
     /* Rebuild the ARGB palette cache from restored CRAM (the cache is a
      * derived file-static, not part of the snapshot). */
@@ -259,21 +295,28 @@ static void step_z80(GenesisMachine *m, uint32_t target)
      * $0000 now that it's released, so it runs the freshly-uploaded driver
      * from its entry point (not from a stale, pre-upload PC). */
     if (m->bus.z80_reset_pending) {
-        ClownZ80_Reset(&m->z80);
+        z80_own_reset(&m->z80);
         m->bus.z80_reset_pending = 0;
     }
-    int pend_before = m->z80.interrupt_pending ? 1 : 0;   /* [SND-TRACE] */
+    int pend_before = m->z80.int_pending ? 1 : 0;   /* [SND-TRACE] */
     uint32_t done = m->z80_cycle_debt;
+    m->z80.cyc = 0;            /* per-slice t-state counter (kept bounded) */
     while (done < target) {
         /* Stamp chip writes made by this instruction at its start cycle
          * (master) — machine_z80_stamp() reads this for the event queue. */
         s_z80_off = done * MASTER_PER_Z80;
-        done += ClownZ80_DoInstruction(&m->z80, &m->z80_cb);
+        unsigned long c0 = m->z80.cyc;
+        z80_step(&m->z80);     /* one instruction, then interrupt processing */
+        done += (uint32_t)(m->z80.cyc - c0);
     }
     m->z80_cycle_debt = done - target;
+#ifdef GEN_DEV_TRACE
     /* [SND-TRACE] V-int acceptance: pending fell 1->0 during this slice. */
-    if (g_snd_trace && pend_before && !m->z80.interrupt_pending && g_snd_frame >= SND_TRACE_START_FRAME)
+    if (g_snd_trace && pend_before && !m->z80.int_pending && g_snd_frame >= SND_TRACE_START_FRAME)
         snd_evt(SND_VACCEPT);
+#else
+    (void)pend_before;
+#endif
 }
 
 void machine_run_frame(GenesisScanlineSink sink, void *user)
@@ -311,14 +354,16 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
              * $0038 handler never ran, the SMPS driver's main loop waited
              * forever on the per-frame flag the handler sets (e.g. Z80 RAM
              * $1C30), and no music played. */
+#ifdef GEN_DEV_TRACE
             /* [SND-TRACE] pending_was=1 means last frame's V-int was never
              * accepted (sticky stack-up) — the suspected phase divergence. */
             if (g_snd_trace && g_snd_frame >= SND_TRACE_START_FRAME) {
                 SndEvt *e = snd_evt(SND_VASSERT);
-                e->v1 = m->z80.interrupt_pending  ? 1 : 0;   /* pending_was */
-                e->v2 = m->z80.interrupts_enabled ? 1 : 0;   /* iff1        */
+                e->v1 = m->z80.int_pending ? 1 : 0;   /* pending_was */
+                e->v2 = m->z80.iff1        ? 1 : 0;   /* iff1        */
             }
-            ClownZ80_Interrupt(&m->z80, 1);
+#endif
+            m->z80.int_pending = 1;   /* level-triggered vblank IRQ assert */
             glue_own_interrupt(6, &m->vdp);
         }
 

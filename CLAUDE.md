@@ -176,13 +176,16 @@ already use the right one.
   confirmation.
 - **Never commit without explicit user instruction.** The user runs
   `git status` themselves and asks for commits when ready.
-- **Never publish a binary release without following `RELEASING.md`.** Shipped
-  binaries statically link clownmdemu + clownz80 (AGPL-3.0), so a binary
-  release is an AGPL combined work: it MUST be AGPL-3.0, ship the AGPL license
-  + `THIRD-PARTY-LICENSES.md`, link to public corresponding source (incl. the
-  `mstan/clownmdemu` + `mstan/clown68000` forks made PUBLIC), and contain NO
-  ROM / dumps / saves / logs. Package with `tools/package_release.py` (it
-  refuses if a ROM/junk slips in) — never zip a build folder by hand.
+- **Never publish a binary release without following `RELEASING.md`.** Release
+  (native) binaries are AGPL-free — clean-room own backend, zero clownmdemu
+  objects linked AND zero clownmdemu headers compiled (native include lists
+  contain no clownmdemu-core paths). They ship under the project license
+  (PolyForm Noncommercial 1.0.0) + `THIRD-PARTY-LICENSES.md` (ymfm BSD-3,
+  superzazu MIT, clowncommon ISC, SDL2 zlib) and contain NO ROM / dumps /
+  saves / logs. NEVER ship an `_oracle` exe or `GenesisRecomp.exe` — those
+  statically link AGPL code and are dev-only. Package with
+  `tools/package_release.py` (it refuses if a ROM/junk slips in) — never zip
+  a build folder by hand.
 
 ## Active improvement plan
 

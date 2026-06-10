@@ -20,7 +20,11 @@
 
 #include <SDL2/SDL.h>
 
-#include "clownmdemu.h"   /* TODO(declown): still needed for ClownMDEmu_Button + oracle init; see LICENSING.md */
+#if OWN_BACKEND
+#include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
+#else
+#include "clownmdemu.h"
+#endif
 #include "genesis_clocks.h"
 #include "audio.h"
 #include "png_write.h"
@@ -350,6 +354,10 @@ extern uint8_t  m68k_read8 (uint32_t);
 enum { AUDIO_BACKEND_OURS = 0, AUDIO_BACKEND_CLOWNMDEMU = 1 };
 static int s_audio_backend = AUDIO_BACKEND_OURS;
 
+#if !OWN_BACKEND
+/* clownmdemu sync/CD/save callbacks — referenced only by the (gated)
+ * ClownMDEmu_Initialise callbacks table. The own backend's audio comes from
+ * audio_mixer_drain and its persistence from the bus SRAM accessors. */
 static void fm_audio_cb(void *user_data, ClownMDEmu *clownmdemu,
                          size_t total_frames,
                          void (*generate)(ClownMDEmu*, cc_s16l*, size_t))
@@ -420,6 +428,7 @@ static cc_bool save_removed_cb(void *u, const char *n)
                { (void)u; (void)n; return cc_false; }
 static cc_bool save_size_cb(void *u, const char *n, size_t *sz)
                { (void)u; (void)n; (void)sz; return cc_false; }
+#endif /* !OWN_BACKEND */
 
 /* =========================================================================
  * ROM loading
@@ -473,10 +482,12 @@ static cc_u16l *load_rom(const char *path,
 }
 
 /* =========================================================================
- * ClownMDEmu instance (static storage)
+ * ClownMDEmu instance (static storage; oracle/hybrid builds only)
  * ========================================================================= */
 
+#if !OWN_BACKEND
 ClownMDEmu g_clownmdemu;
+#endif
 
 static int path_is_absolute(const char *path)
 {
@@ -500,11 +511,13 @@ static const char *resolve_runner_path(const char *path, char *buf, size_t buf_l
 #if OWN_BACKEND
 /* Own-backend save container: versioned magic, then the glue blob (M68K regs,
  * frame count, cycle accumulators, V-int latch), WRAM, the whole machine
- * (VDP + bus incl. Z80 RAM/SRAM + Z80 core + hidden ext bits), and both audio
- * chips. Raw-struct format, private to a build — same convention as the
- * clownmdemu-path states (which dumped g_clownmdemu raw); the magic keeps the
- * two formats from being confused. */
-static const char OWN_SAVE_MAGIC[8] = "GROWNS1\0";
+ * (VDP + bus incl. Z80 RAM/SRAM + the full embedded superzazu Z80 core), and
+ * both audio chips. Raw-struct format, private to a build — same convention as
+ * the clownmdemu-path states (which dumped g_clownmdemu raw); the magic keeps
+ * the formats from being confused. GROWNS2 = the declown-headers machine
+ * layout (superzazu z80 embedded in g_machine, no side ext blob); GROWNS1
+ * saves are rejected with a clear message rather than misloaded. */
+static const char OWN_SAVE_MAGIC[8] = "GROWNS2\0";
 
 int runner_save_state_file(const char *path)
 {
@@ -833,8 +846,13 @@ static void check_ramdump(void)
     /* Align by game state: dump when in a gameplay mode (per-game
      * level_modes from g_game_layout) with the player object active
      * (obj_id byte = $01 = Sonic) and 50 frames into stable state. */
+#if OWN_BACKEND
+    extern uint8_t g_ram[0x10000];
+    #define EMU_BYTE_D(a) (g_ram[(a) & 0xFFFF])
+#else
     #define EMU_BYTE_D(a) ((uint8_t)(g_clownmdemu.state.m68k.ram[((a) & 0xFFFF) / 2] >> \
                    (((a) & 1) ? 0 : 8)))
+#endif
     uint8_t mode = EMU_BYTE_D(g_game_layout.game_mode_addr);
     uint8_t obj0 = EMU_BYTE_D(g_game_layout.player_object_addr);
     static uint32_t s_gameplay_frames = 0;
@@ -858,7 +876,11 @@ static void check_ramdump(void)
 #endif
             FILE *df = fopen(path, "wb");
             if (df) {
+#if OWN_BACKEND
+                fwrite(g_ram, 1, 0x10000, df);
+#else
                 fwrite(g_clownmdemu.state.m68k.ram, 2, 0x8000, df);
+#endif
                 fclose(df);
                 fprintf(stderr, "[RAMDUMP] Wrote %s (50 gameplay frames in)\n", path);
             }
@@ -1288,8 +1310,14 @@ int main(int argc, char *argv[])
      * geometry from g_rom, which glue_init populates.) */
 
 #if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
-    /* Step 2 / Hybrid: initialise glue (Step 2 also starts the game thread). */
+    /* Step 2 / Hybrid: initialise glue (Step 2 also starts the game thread).
+     * The own backend has no clownmdemu instance — glue keeps s_emu NULL and
+     * routes everything through g_machine. */
+#if OWN_BACKEND
+    glue_init(NULL, rom_raw, rom_raw_len);
+#else
     glue_init(&g_clownmdemu, rom_raw, rom_raw_len);
+#endif
 #endif
 
     /* Audio arch overhaul: initialise our cycle-stamped YM2612 + PSG
@@ -1445,9 +1473,12 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    /* --- Save state (quick & dirty: snapshot the entire ClownMDEmu struct) --- */
+    /* --- Save state (quick & dirty: snapshot the entire ClownMDEmu struct).
+     * Oracle/hybrid only; the own backend has the GROWNS file states. --- */
+#if !OWN_BACKEND
     static ClownMDEmu s_savestate;
     int s_savestate_valid = 0;
+#endif
 
     /* --- Main loop --- */
     int running = 1;
@@ -1680,14 +1711,16 @@ int main(int argc, char *argv[])
 #endif
         check_ramdump();
 
+#ifdef GEN_DEV_TRACE
         /* [POLL-DIAG] measure how often the 256-poll bounded fallback fires
-         * (own-backend vs oracle) — the suspected SFX-drop regression. Temp. */
+         * (own-backend vs oracle). Dev builds only. */
         {
             extern unsigned long g_z80poll_fallback_hits, g_z80poll_yields;
             if ((frame_num % 120u) == 0)
                 fprintf(stderr, "[POLL-DIAG] frame=%u fallback_hits=%lu yields=%lu\n",
                         (unsigned)frame_num, g_z80poll_fallback_hits, g_z80poll_yields);
         }
+#endif
 
 #if HYBRID_RECOMPILED_CODE
         { extern void glue_log_frame_state(uint64_t);

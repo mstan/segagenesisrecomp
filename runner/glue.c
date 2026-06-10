@@ -28,9 +28,13 @@
 /* genesis_runtime.h interface */
 #include "genesis_runtime.h"
 
-/* clownmdemu bus layer */
+/* clownmdemu bus layer (oracle/hybrid builds only — native has no
+ * clownmdemu include paths; the own backend routes the bus through
+ * genesis_bus.c instead) */
+#if !OWN_BACKEND
 #include "bus-main-m68k.h"
 #include "bus-common.h"
+#endif
 
 /* clowncommon types */
 #include "clowncommon.h"
@@ -225,7 +229,7 @@ static void instruction_watchdog_check(void)
         fprintf(stderr,
             "[OWN-DIAG] cpuPC=$%06X z80pc=$%04X z80_run=%d busreq=%d reset_off=%d "
             "bank=$%03X nz_z80ram=%d ram_F00D=$%02X ram_F00A=$%02X%02X\n",
-            (unsigned)g_cpu.PC, (unsigned)g_machine.z80.program_counter,
+            (unsigned)g_cpu.PC, (unsigned)g_machine.z80.pc,
             (g_machine.bus.z80_reset_off && !g_machine.bus.z80_busreq) ? 1 : 0,
             g_machine.bus.z80_busreq, g_machine.bus.z80_reset_off,
             (unsigned)g_machine.bus.z80_bank, nz_z80ram,
@@ -300,8 +304,10 @@ static void watchdog_check(uint32_t addr, int is_write, uint32_t val)
  * Internal glue state
  * ========================================================================= */
 
-static ClownMDEmu        *s_emu      = NULL;
+static ClownMDEmu        *s_emu      = NULL;   /* NULL on the own backend */
+#if !OWN_BACKEND
 static CPUCallbackUserData s_cpu_data;   /* passed to M68kReadCallback / M68kWriteCallback */
+#endif
 
 /* Bus cycle counter — declared in generated code or glue, used by clownmdemu sync */
 extern cc_u32f g_hybrid_cycle_counter;
@@ -359,6 +365,7 @@ uint32_t recomp_resolve_ram_trampoline(uint32_t addr)
 void glue_reset_frame_sync(void)
 {
     g_hybrid_cycle_counter = 0;
+#if !OWN_BACKEND
     s_cpu_data.sync.m68k.current_cycle = 0;
     s_cpu_data.sync.m68k.base_cycle = 0;
     /* Reset audio and IO sync states to match the cycle counter reset.
@@ -370,6 +377,7 @@ void glue_reset_frame_sync(void)
     s_cpu_data.sync.io_ports[0].current_cycle = 0;
     s_cpu_data.sync.io_ports[1].current_cycle = 0;
     s_cpu_data.sync.io_ports[2].current_cycle = 0;
+#endif
 }
 
 /* Hybrid verifier sync snapshot/restore — saves s_cpu_data sync state */
@@ -615,6 +623,9 @@ void glue_charge_68k_stall(uint32_t cycles)
 }
 
 /* Called from Clown68000_Interrupt during Iterate when VBlank/HBlank fires. */
+#if !OWN_BACKEND
+/* clownmdemu-Iterate interrupt path; the own backend delivers through
+ * glue_own_interrupt instead. */
 void glue_handle_interrupt(cc_u16f level)
 {
     if (!s_game_running)
@@ -695,6 +706,7 @@ void glue_handle_interrupt(cc_u16f level)
         g_cpu = saved;
     }
 }
+#endif /* !OWN_BACKEND */
 
 #if OWN_BACKEND
 #include "genesis_machine.h"
@@ -994,6 +1006,7 @@ void glue_init(ClownMDEmu *emu, const cc_u8l *rom_bytes, cc_u32l rom_byte_len)
 {
     s_emu = emu;
 
+#if !OWN_BACKEND
     /* Build the CPUCallbackUserData clownmdemu expects */
     memset(&s_cpu_data, 0, sizeof(s_cpu_data));
     s_cpu_data.clownmdemu = emu;
@@ -1002,6 +1015,7 @@ void glue_init(ClownMDEmu *emu, const cc_u8l *rom_bytes, cc_u32l rom_byte_len)
     s_cpu_data.sync.z80.cycle_countdown          = &emu->state.z80.cycle_countdown;
     s_cpu_data.sync.vdp_dma_transfer.cycle_countdown =
         &emu->state.vdp_dma_transfer_countdown;
+#endif
 
     /* Copy ROM bytes into g_rom so recompiled code can inspect ROM data
      * directly (e.g. tables copied from ROM to RAM at startup). */
@@ -1067,7 +1081,10 @@ uint64_t g_cvblank_fires_total = 0;
 /* Fire the VBla handler once. Caller manages g_cycle_accumulator per
  * mode (FIBER_FULL subtracts threshold per fire; CYCLE_ACCURATE leaves
  * the accumulator running until the wall-frame cap is hit). The
- * Stage-A instrumentation hook records the fire for telemetry. */
+ * Stage-A instrumentation hook records the fire for telemetry.
+ * Hybrid/oracle only: the own backend fires V-int from the scanline
+ * scheduler (glue_own_interrupt) and never takes this path. */
+#if !OWN_BACKEND
 static void fire_vblank_handler_once(void)
 {
     s_vblank_fired_this_frame = 1;
@@ -1126,6 +1143,7 @@ static void fire_vblank_handler_once(void)
 
     g_cpu = saved;
 }
+#endif /* !OWN_BACKEND */
 
 void glue_check_vblank(void)
 {
@@ -1835,6 +1853,13 @@ void glue_log_frame_state(uint64_t frame)
     }
     if (frame > 9999) return;  /* cap framelog at 10000 frames */
 
+#if OWN_BACKEND
+    /* Own backend: g_ram is the authoritative WRAM (byte array, big-endian). */
+    #define EMU_RAM_BYTE(addr) (g_ram[(addr) & 0xFFFF])
+    #define EMU_RAM_WORD(addr) \
+        ((uint16_t)(((uint16_t)g_ram[(addr) & 0xFFFF] << 8) | \
+                    g_ram[((addr) + 1) & 0xFFFF]))
+#else
     /* Read directly from clownmdemu's RAM (word-addressed, big-endian).
      * This avoids triggering SyncM68k in hybrid mode. */
     #define EMU_RAM_BYTE(addr) \
@@ -1842,6 +1867,7 @@ void glue_log_frame_state(uint64_t frame)
                    (((addr) & 1) ? 0 : 8)))
     #define EMU_RAM_WORD(addr) \
         ((uint16_t)(s_emu->state.m68k.ram[((addr) & 0xFFFF) / 2]))
+#endif
     #define EMU_RAM_LONG(addr) \
         (((uint32_t)EMU_RAM_WORD(addr) << 16) | EMU_RAM_WORD((addr)+2))
 
