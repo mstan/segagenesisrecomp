@@ -13,3 +13,6 @@ build/
 **/__pycache__/
 tests/last_run/
 **/*.unresolved_jumptables.log
+
+# Internal licensing/teardown working note — never commit
+LICENSING.md

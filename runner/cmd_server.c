@@ -54,7 +54,22 @@ typedef int sock_t;
  * External state we need to inspect
  * ========================================================================= */
 
+#if OWN_BACKEND
+/* Own backend: the debug server inspects OUR state, never clownmdemu (which is
+ * neither linked nor populated here). RAM/CPU/VRAM/CRAM map cleanly; the FM/PSG/
+ * VDP-internal *snapshots* have no own-backend equivalent yet and are stubbed
+ * (see the per-command guards below + the de-clown plan in LICENSING.md). */
+#include "genesis_machine.h"   /* g_machine (our VDP/bus), GVDP */
+extern uint8_t  g_ram[0x010000];
+extern uint8_t  g_rom[0x400000];
+extern M68KState g_cpu;
+#define DBG_VRAM (g_machine.vdp.vram)   /* raw VRAM/CRAM dumps read our VDP   */
+#define DBG_CRAM (g_machine.vdp.cram)
+#else
 extern ClownMDEmu g_clownmdemu;       /* defined in main.c */
+#define DBG_VRAM (g_clownmdemu.vdp.state.vram)
+#define DBG_CRAM (g_clownmdemu.vdp.state.cram)
+#endif
 int runner_save_state_file(const char *path);
 int runner_load_state_file(const char *path);
 int runner_write_screenshot_file(const char *path);
@@ -135,8 +150,13 @@ static uint32_t fm_trace_current_a7(void)
 static uint32_t fm_trace_stack_read32(uint32_t addr)
 {
     uint16_t offset = (uint16_t)(addr & 0xFFFF);
+#if OWN_BACKEND
+    uint16_t hi = (uint16_t)((g_ram[offset] << 8) | g_ram[(uint16_t)(offset + 1)]);
+    uint16_t lo = (uint16_t)((g_ram[(uint16_t)(offset + 2)] << 8) | g_ram[(uint16_t)(offset + 3)]);
+#else
     uint16_t hi = g_clownmdemu.state.m68k.ram[offset / 2];
     uint16_t lo = g_clownmdemu.state.m68k.ram[((offset + 2) & 0xFFFF) / 2];
+#endif
     return ((uint32_t)hi << 16) | (uint32_t)lo;
 }
 
@@ -352,14 +372,22 @@ static Watchpoint s_watchpoints[MAX_WATCHPOINTS];
 static uint8_t emu_read8(uint32_t addr)
 {
     uint16_t offset = (uint16_t)(addr & 0xFFFF);
+#if OWN_BACKEND
+    return g_ram[offset];
+#else
     uint16_t word = g_clownmdemu.state.m68k.ram[offset / 2];
     return (offset & 1) ? (uint8_t)(word & 0xFF) : (uint8_t)(word >> 8);
+#endif
 }
 
 static uint16_t emu_read16(uint32_t addr)
 {
     uint16_t offset = (uint16_t)(addr & 0xFFFF);
+#if OWN_BACKEND
+    return (uint16_t)((g_ram[offset] << 8) | g_ram[(uint16_t)(offset + 1)]);
+#else
     return g_clownmdemu.state.m68k.ram[offset / 2];
+#endif
 }
 
 static int16_t emu_read16s(uint32_t addr)
@@ -930,7 +958,7 @@ static void handle_read_vram(int id, const char *json)
 
     char *hex = (char *)malloc(size * 2 + 1);
     for (int i = 0; i < size; i++)
-        sprintf(hex + i * 2, "%02X", g_clownmdemu.vdp.state.vram[addr + i]);
+        sprintf(hex + i * 2, "%02X", DBG_VRAM[addr + i]);
     hex[size * 2] = '\0';
 
     char *resp = (char *)malloc(size * 2 + 256);
@@ -947,7 +975,7 @@ static void handle_read_cram(int id)
     /* CRAM: 64 entries × 16-bit = 128 bytes. Return as hex. */
     char hex[256 + 1];
     for (int i = 0; i < 64; i++) {
-        uint16_t c = g_clownmdemu.vdp.state.cram[i];
+        uint16_t c = DBG_CRAM[i];
         sprintf(hex + i * 4, "%04X", c);
     }
     hex[256] = '\0';
@@ -971,7 +999,7 @@ static void handle_dump_vram(int id, const char *json)
     }
     FILE *f = fopen(path, "wb");
     if (!f) { send_err(id, "cannot open file"); return; }
-    fwrite(g_clownmdemu.vdp.state.vram + offset, 1, size, f);
+    fwrite(DBG_VRAM + offset, 1, size, f);
     fclose(f);
     char buf[256];
     snprintf(buf, sizeof(buf),
@@ -1024,6 +1052,35 @@ static void handle_audio_wav(int id, const char *json)
     } else {
         send_err(id, "action must be start/stop/status");
     }
+}
+
+/* [SND-TRACE] Dump the always-on sound rings on demand over TCP (same data the
+ * F12 hotkey dumps, headless-reachable). chip_ring = FM/PSG register-write
+ * stream (both builds); snd_ring + z80_ram = own backend only. Optional
+ * "prefix" prepends to every output filename so successive captures don't
+ * clobber each other. Strip with the rest of the diagnostics. */
+static void handle_snd_dump(int id, const char *json)
+{
+    char prefix[160] = "";
+    json_get_str(json, "prefix", prefix, sizeof(prefix));
+    char chip_path[256], snd_path[256], z80_path[256];
+    snprintf(chip_path, sizeof(chip_path), "%schip_ring.txt", prefix);
+    snprintf(snd_path,  sizeof(snd_path),  "%ssnd_ring.txt",  prefix);
+    snprintf(z80_path,  sizeof(z80_path),  "%sz80_ram.bin",   prefix);
+    { extern void chip_trace_dump(const char *path); chip_trace_dump(chip_path); }
+#if OWN_BACKEND
+    { extern void snd_trace_dump(const char *path); snd_trace_dump(snd_path); }
+    { extern void z80_ram_dump(const char *path); z80_ram_dump(z80_path); }
+    char buf[1024];
+    snprintf(buf, sizeof(buf),
+        "{\"id\":%d,\"ok\":true,\"chip_ring\":\"%s\",\"snd_ring\":\"%s\",\"z80_ram\":\"%s\"}",
+        id, chip_path, snd_path, z80_path);
+#else
+    char buf[1024];
+    snprintf(buf, sizeof(buf),
+        "{\"id\":%d,\"ok\":true,\"chip_ring\":\"%s\"}", id, chip_path);
+#endif
+    send_response(buf);
 }
 
 static void handle_io_log(int id, const char *json)
@@ -1383,8 +1440,27 @@ static void handle_frame_timeseries(int id, const char *json)
 
 /* ---------- live state snapshots ---------- */
 
+/* These chip/VDP state snapshots read clownmdemu's internal emulator structs,
+ * which have no equivalent on the own backend (its FM is ymfm, Z80 is superzazu,
+ * VDP is ours). Dev/oracle-only — stubbed in the own-backend (release) build.
+ * See the de-clown plan in LICENSING.md for the own-backend snapshot TODO. */
+#if OWN_BACKEND
+#define OWN_BACKEND_SNAPSHOT_STUB(id) \
+    send_err((id), "chip-state snapshot is dev/oracle-only (not on the own backend)")
+#endif
+
 static void handle_z80_state(int id, const char *json)
 {
+#if OWN_BACKEND
+    Z80RegSnap z; z80_snapshot(&z, (ClownMDEmu *)0);
+    bool with_ram = json_get_int(json, "include_ram", 0) != 0;
+    JBuf j; jb_init(&j);
+    jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
+    json_z80(&j, &z, with_ram);
+    jb_printf(&j, "}");
+    cmd_send_response(j.buf);
+    jb_free(&j);
+#else
     Z80RegSnap z; z80_snapshot(&z, &g_clownmdemu);
     bool with_ram = json_get_int(json, "include_ram", 0) != 0;
     JBuf j; jb_init(&j);
@@ -1393,6 +1469,7 @@ static void handle_z80_state(int id, const char *json)
     jb_printf(&j, "}");
     cmd_send_response(j.buf);
     jb_free(&j);
+#endif
 }
 
 static void handle_read_z80_ram(int id, const char *json)
@@ -1403,6 +1480,15 @@ static void handle_read_z80_ram(int id, const char *json)
         send_err(id, "addr/len out of Z80 RAM range");
         return;
     }
+#if OWN_BACKEND
+    Z80RegSnap z; z80_snapshot(&z, (ClownMDEmu *)0);
+    JBuf j; jb_init(&j);
+    jb_printf(&j, "{\"id\":%d,\"ok\":true,\"addr\":%d,\"len\":%d,\"data\":", id, addr, len);
+    jb_append_hex(&j, &z.ram[addr], len);
+    jb_printf(&j, "}");
+    cmd_send_response(j.buf);
+    jb_free(&j);
+#else
     Z80RegSnap z; z80_snapshot(&z, &g_clownmdemu);
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,\"addr\":%d,\"len\":%d,\"data\":", id, addr, len);
@@ -1410,10 +1496,14 @@ static void handle_read_z80_ram(int id, const char *json)
     jb_printf(&j, "}");
     cmd_send_response(j.buf);
     jb_free(&j);
+#endif
 }
 
 static void handle_fm_state(int id)
 {
+#if OWN_BACKEND
+    OWN_BACKEND_SNAPSHOT_STUB(id);
+#else
     FmSnap fm; fm_snapshot(&fm, &g_clownmdemu);
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
@@ -1421,10 +1511,14 @@ static void handle_fm_state(int id)
     jb_printf(&j, "}");
     cmd_send_response(j.buf);
     jb_free(&j);
+#endif
 }
 
 static void handle_psg_state(int id)
 {
+#if OWN_BACKEND
+    OWN_BACKEND_SNAPSHOT_STUB(id);
+#else
     PsgSnap p; psg_snapshot(&p, &g_clownmdemu);
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
@@ -1432,10 +1526,22 @@ static void handle_psg_state(int id)
     jb_printf(&j, "}");
     cmd_send_response(j.buf);
     jb_free(&j);
+#endif
 }
 
 static void handle_vdp_state(int id, const char *json)
 {
+#if OWN_BACKEND
+    VdpSnap v; vdp_snapshot(&v, (ClownMDEmu *)0);
+    char include_buf[64] = {0};
+    json_get_str(json, "include", include_buf, sizeof(include_buf));
+    JBuf j; jb_init(&j);
+    jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
+    json_vdp(&j, &v, include_buf);
+    jb_printf(&j, "}");
+    cmd_send_response(j.buf);
+    jb_free(&j);
+#else
     VdpSnap v; vdp_snapshot(&v, &g_clownmdemu);
     char include_buf[64] = {0};
     json_get_str(json, "include", include_buf, sizeof(include_buf));
@@ -1445,14 +1551,22 @@ static void handle_vdp_state(int id, const char *json)
     jb_printf(&j, "}");
     cmd_send_response(j.buf);
     jb_free(&j);
+#endif
 }
 
 static void handle_read_vsram(int id)
 {
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,\"vsram\":[", id);
+#if OWN_BACKEND
+    const uint16_t *vs = g_machine.vdp.vsram;
+    for (int i = 0; i < 64; i++)
+        jb_printf(&j, "%s%u", i ? "," : "",
+                  i < GVDP_VSRAM_ENTRIES ? (uint32_t)vs[i] : 0u);
+#else
     const VDP_State *vs = &g_clownmdemu.vdp.state;
     for (int i = 0; i < 64; i++) jb_printf(&j, "%s%u", i ? "," : "", (uint32_t)vs->vsram[i]);
+#endif
     jb_printf(&j, "]}");
     cmd_send_response(j.buf);
     jb_free(&j);
@@ -2154,6 +2268,8 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         handle_audio_stats(id);
     } else if (strcmp(cmd, "audio_wav") == 0) {
         handle_audio_wav(id, json);
+    } else if (strcmp(cmd, "snd_dump") == 0) {
+        handle_snd_dump(id, json);
     } else if (strcmp(cmd, "io_log") == 0) {
         handle_io_log(id, json);
     } else if (strcmp(cmd, "read_joypad_port") == 0) {
@@ -2544,11 +2660,22 @@ void cmd_server_record_frame(uint32_t frame_num)
 
     /* Subsystem snapshots (see frame_snapshots.c). */
     m68k_snapshot(&r->m68k);
+#if OWN_BACKEND
+    /* Own backend: snapshot OUR state (g_machine + g_ram) into the same
+     * FrameRecord fields the oracle fills, so divergence_diff compares all
+     * subsystems cross-backend. FM/PSG internal state isn't byte-comparable
+     * to clownmdemu's (ymfm/sn76489 vs FM_State/PSG_State) so they stay zeroed
+     * (memset above) — the chip_ring register stream is the audio comparable. */
+    z80_snapshot (&r->z80, (ClownMDEmu *)0);
+    vdp_snapshot (&r->vdp, (ClownMDEmu *)0);
+    wram_snapshot(r->wram, (ClownMDEmu *)0);
+#else
     z80_snapshot (&r->z80,  &g_clownmdemu);
     vdp_snapshot (&r->vdp,  &g_clownmdemu);
     fm_snapshot  (&r->fm,   &g_clownmdemu);
     psg_snapshot (&r->psg,  &g_clownmdemu);
     wram_snapshot(r->wram,  &g_clownmdemu);
+#endif
 
     /* Per-game tail. */
     if (g_game_spec.fill_frame_record)

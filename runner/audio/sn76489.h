@@ -21,4 +21,9 @@ uint32_t psg_sample_rate(void);
  * per-Iterate sync.psg.current_cycle reset. */
 void   psg_reset_leftover(void);
 
+/* Save-state hooks (own-backend snapshots). Returns 1 on success. */
+#include <stdio.h>
+int psg_save_state(FILE *f);
+int psg_load_state(FILE *f);
+
 #endif

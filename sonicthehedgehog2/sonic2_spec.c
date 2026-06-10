@@ -42,6 +42,21 @@ static void s2_call_entry_point(void) { recomp_call_addr(0x000206u); }
 static void s2_call_vblank(void)      { recomp_call_addr(0x000408u); }
 static void s2_call_hblank(void)      { recomp_call_addr(0x000F54u); }
 
+/* Mode-aware save-state resume (s2disasm s2.asm: GameModeID_Demo $08 /
+ * GameModeID_Level $0C both run Level_MainLoop; GameModeID_SpecialStage $10
+ * runs the anonymous "-" frame loop after SpecialStage init, $51FC — added
+ * to game.toml [functions].extra so it's a dispatch entry). Unmapped modes
+ * fall back to resume_main_loop_pc. */
+static uint32_t s2_save_resume_pc(uint8_t game_mode)
+{
+    switch (game_mode) {
+        case 0x08:
+        case 0x0C: return 0x004360u;   /* Level_MainLoop      */
+        case 0x10: return 0x0051FCu;   /* SS per-frame loop   */
+        default:   return 0u;
+    }
+}
+
 /* ---- Legacy stub still required by generated sonic2_dispatch.c ---- */
 int game_dispatch_override(uint32_t addr) {
     (void)addr;
@@ -211,6 +226,7 @@ const GameSpec g_game_spec = {
     .call_vblank            = s2_call_vblank,
     .call_hblank            = s2_call_hblank,
     .resume_main_loop_pc    = 0x004360u,
+    .save_resume_pc         = s2_save_resume_pc,   /* mode -> loop top (moment-in-time) */
     .dispatch_main_loop_pc  = 0x000394u,
     .call_periodic          = NULL,
 

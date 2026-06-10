@@ -293,6 +293,7 @@ void func_004F52(void);
 void func_004F58(void);
 void func_004F5E(void);
 void func_004F64(void);
+void func_0051FC(void);
 void func_00540C(void);
 void func_00541A(void);
 void func_00543A(void);
@@ -3299,6 +3300,8 @@ void func_02C1DA(void);
 void func_02C1EC(void);
 void func_02C1EE(void);
 void func_02C20A(void);
+void func_02C224(void);
+void func_02C228(void);
 void func_02C23A(void);
 void func_02C246(void);
 void func_02C24E(void);
@@ -5701,6 +5704,7 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x004F58u, func_004F58 },
     { 0x004F5Eu, func_004F5E },
     { 0x004F64u, func_004F64 },
+    { 0x0051FCu, func_0051FC },
     { 0x00540Cu, func_00540C },
     { 0x00541Au, func_00541A },
     { 0x00543Au, func_00543A },
@@ -8707,6 +8711,8 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0x02C1ECu, func_02C1EC },
     { 0x02C1EEu, func_02C1EE },
     { 0x02C20Au, func_02C20A },
+    { 0x02C224u, func_02C224 },
+    { 0x02C228u, func_02C228 },
     { 0x02C23Au, func_02C23A },
     { 0x02C246u, func_02C246 },
     { 0x02C24Eu, func_02C24E },
@@ -10829,9 +10835,9 @@ static const DispatchEntry s_dispatch_table[] = {
     { 0u, NULL }
 };
 
-int game_dispatch_table_size(void) { return 5406; }
+int game_dispatch_table_size(void) { return 5409; }
 uint32_t game_dispatch_table_addr(int i) {
-    return (i >= 0 && i < 5406) ? s_dispatch_table[i].addr : 0;
+    return (i >= 0 && i < 5409) ? s_dispatch_table[i].addr : 0;
 }
 
 typedef struct RecompTailFrame {
@@ -10852,6 +10858,7 @@ void recomp_tail_call(uint32_t addr) {
 }
 
 static void recomp_dispatch_once(uint32_t addr) {
+    addr = recomp_resolve_ram_trampoline(addr);
     for (int i = 0; s_dispatch_table[i].fn; i++) {
         if (s_dispatch_table[i].addr == addr) {
             s_dispatch_table[i].fn();

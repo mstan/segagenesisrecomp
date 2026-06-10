@@ -183,6 +183,17 @@ static uint32_t g_rdb_current_func = 0;
 
 #include "crash_report.h"
 
+#if OWN_BACKEND
+#include "genesis_machine.h"
+/* Debug write-trace hooks (--mem-write-log, FM trace) are normally defined in
+ * the clownmdemu fork's bus / FM code. The own backend links no clownmdemu, so
+ * define them here to satisfy cmd_server's assignments. They default NULL and
+ * stay inert until gbus/ym2612 are wired to call them (own-backend trace is a
+ * follow-up; this keeps the AGPL-free link resolved). */
+void (*g_fm_write_trace_fn )(uint32_t address,      uint8_t value, uint32_t target_cycle) = NULL;
+void (*g_mem_write_trace_fn)(uint32_t byte_address, uint8_t value, uint32_t target_cycle) = NULL;
+#endif
+
 #define INSN_WATCHDOG_LIMIT 20000000ull
 static uint64_t s_insn_watchdog_base = 0;
 
@@ -206,6 +217,20 @@ static void instruction_watchdog_check(void)
     snprintf(reason, sizeof(reason),
              "instruction watchdog: %llu native insns without yielding",
              (unsigned long long)(g_native_insn_count - s_insn_watchdog_base));
+#endif
+#if OWN_BACKEND
+    {
+        int nz_z80ram = 0;
+        for (int i = 0; i < 0x2000; i++) if (g_machine.bus.z80_ram[i]) nz_z80ram++;
+        fprintf(stderr,
+            "[OWN-DIAG] cpuPC=$%06X z80pc=$%04X z80_run=%d busreq=%d reset_off=%d "
+            "bank=$%03X nz_z80ram=%d ram_F00D=$%02X ram_F00A=$%02X%02X\n",
+            (unsigned)g_cpu.PC, (unsigned)g_machine.z80.program_counter,
+            (g_machine.bus.z80_reset_off && !g_machine.bus.z80_busreq) ? 1 : 0,
+            g_machine.bus.z80_busreq, g_machine.bus.z80_reset_off,
+            (unsigned)g_machine.bus.z80_bank, nz_z80ram,
+            g_ram[0xF00D], g_ram[0xF00A], g_ram[0xF00B]);
+    }
 #endif
     crash_report_dump_persistent(reason, &g_cpu, 0, 0, g_frame_count);
     exit(2);
@@ -286,7 +311,14 @@ extern cc_u32f g_hybrid_cycle_counter;
 static uint16_t recomp_ram_read16_direct(uint32_t addr)
 {
     uint16_t off = (uint16_t)(addr & 0xFFFFu);
+#if OWN_BACKEND
+    /* Own backend: g_ram IS the authoritative work RAM (s_emu is NULL here —
+     * reading through it returned $FFFF, so RAM JMP trampolines like S3's
+     * H-int stub at $FFF608 never resolved and the handler dispatch missed). */
+    return (uint16_t)(((uint16_t)g_ram[off] << 8) | g_ram[(uint16_t)(off + 1u)]);
+#else
     return s_emu ? (uint16_t)s_emu->state.m68k.ram[off / 2u] : 0xFFFFu;
+#endif
 }
 
 static uint32_t recomp_ram_read32_direct(uint32_t addr)
@@ -476,6 +508,21 @@ static int create_game_fiber(uint32_t resume_pc)
 /* Scanline interleave state */
 static int32_t s_cycle_budget = 0;
 static int     s_game_yielded_vblank = 0;
+/* 68K cycles spent inside an interrupt handler (V-int/H-int), still owed to
+ * the raster. own_deliver_vint runs the whole handler atomically at the
+ * vblank scanline with budget yields gated (s_in_vblank_service), so without
+ * this the handler consumes ZERO raster time and the main loop resumes at
+ * line ~225 — tens of lines earlier than hardware, where the level V-int
+ * (DMA + decompression) occupies the CPU well into the next frame. That
+ * early resume put a Z80 mailbox write (Play_SFX) BEFORE a driver tick's
+ * queue-read where hardware places it AFTER, splitting sfx_EnterSS and the
+ * following cmd_Stop across two ticks and killing the S3 giant-ring entry
+ * sound. glue_run_game_chunk drains this debt at M68K_PER_LINE per scanline
+ * before resuming main-loop work. Only ever nonzero on the own backend. */
+static uint32_t s_irq_cycle_debt = 0;
+/* g_audio_cycle_counter value at the last budget drain (see
+ * check_cycle_budget — the budget drains by real elapsed 68K cycles). */
+static uint32_t s_budget_cyc_seen = 0;
 #if SONIC_REVERSE_DEBUG
 /* Tier-2 reverse debugger: set by glue_yield_for_break when the game
  * fiber parks at a block-entry hook. Main loop reads via
@@ -504,8 +551,22 @@ void glue_run_game_chunk(cc_u32f cycles)
         return;
 #endif
 
+    /* Pay down interrupt-handler raster debt first: while the 68K is
+     * (logically) still inside the V-int/H-int handler, the main loop does
+     * not advance — matching hardware, where the handler occupies the CPU
+     * for those scanlines. */
+    if (s_irq_cycle_debt) {
+        if (s_irq_cycle_debt >= cycles) {
+            s_irq_cycle_debt -= (uint32_t)cycles;
+            return;
+        }
+        cycles -= s_irq_cycle_debt;
+        s_irq_cycle_debt = 0;
+    }
+
     s_chunk_cycles = cycles;
     s_cycle_budget = (int32_t)cycles;
+    s_budget_cyc_seen = g_audio_cycle_counter;  /* drain from here (see check_cycle_budget) */
     s_interleave_active = 1;
     instruction_watchdog_reset();
     fiber_switch(s_game_fiber);
@@ -515,20 +576,42 @@ void glue_run_game_chunk(cc_u32f cycles)
 
 /* Called from bus access macro to check the interleave budget (separate
  * from g_hybrid_cycle_counter, which is now bumped per-instruction by
- * the generator). Budget drives WHEN to yield back to clownmdemu; cycle
- * counter drives WHAT cycle timestamps to report to clownmdemu. */
-#define BUDGET_COST_PER_ACCESS 10
+ * the generator). Budget drives WHEN to yield back to the scheduler; cycle
+ * counter drives WHAT cycle timestamps to report.
+ *
+ * The budget drains by REAL elapsed 68K cycles: the generated code bumps
+ * g_audio_cycle_counter per instruction with PRM-accurate costs (plus DMA
+ * freeze charges via glue_charge_68k_stall), so the delta since the last
+ * check is the true cycle cost of the code just executed. The old scheme
+ * (flat 10 per data access) ignored instruction-fetch time entirely and ran
+ * the main loop ~2.5x faster than hardware against the raster — early enough
+ * that a Play_SFX mailbox write could land BEFORE a Z80 driver tick's
+ * queue-read where hardware places it after (the S3 giant-ring entry-sound
+ * kill). */
 uint64_t g_chunk_yield_count = 0;
 static void check_cycle_budget(void)
 {
     if (s_interleave_active && !s_in_vblank_service) {
-        s_cycle_budget -= BUDGET_COST_PER_ACCESS;
+        uint32_t now = g_audio_cycle_counter;
+        if (now > s_budget_cyc_seen)
+            s_cycle_budget -= (int32_t)(now - s_budget_cyc_seen);
+        s_budget_cyc_seen = now;   /* also re-syncs after the per-frame reset */
         if (s_cycle_budget <= 0) {
             g_chunk_yield_count++;
             { char stack_marker; game_stack_note("cycle-budget", &stack_marker); }
             fiber_switch(s_main_fiber);
         }
     }
+}
+
+/* Charge 68K freeze cycles (a 68K->VDP DMA transfer) to the recompiled CPU's
+ * accounting by advancing the cycle counter: that advances the audio-stamp
+ * axis (hardware time passes during the freeze), drains the interleave budget
+ * via check_cycle_budget's delta on the next bus access (main-loop DMA), and
+ * is picked up as raster debt by the own-backend handler paths (V-int DMA). */
+void glue_charge_68k_stall(uint32_t cycles)
+{
+    g_audio_cycle_counter += cycles;
 }
 
 /* Called from Clown68000_Interrupt during Iterate when VBlank/HBlank fires. */
@@ -612,6 +695,96 @@ void glue_handle_interrupt(cc_u16f level)
         g_cpu = saved;
     }
 }
+
+#if OWN_BACKEND
+#include "genesis_machine.h"
+
+/* V-int raised while the 68K had IRQs masked (imask >= 6, e.g. the
+ * move #$2700,sr the game runs across screen transitions). On hardware / in the
+ * clownmdemu interpreter the VDP holds the V-int line asserted and the CPU takes
+ * it the instant the mask drops; the own backend used to DROP it outright,
+ * losing one v_vblank_count per masked transition. That one-frame skew sent the
+ * attract demo down a different branch (GM_Demo vs the oracle's GM_Level) and
+ * desynced VRAM. We now LATCH it and deliver at the next scanline whose mask
+ * permits — see glue_own_vint_service_latched(). */
+static int s_own_vint_latched = 0;
+
+/* Run the game's V_Int(6) handler atomically against OUR work RAM + VDP. Saves
+ * /restores g_cpu and gates budget yields (s_in_vblank_service), so it is safe
+ * to fire while the fiber is parked mid-instruction at a budget yield. */
+static void own_deliver_vint(GVDP *vdp)
+{
+    const uint32_t STK = g_game_layout.intr_stack;
+    uint32_t byteoff = (STK - 256u) & 0xFFFFu;
+    uint8_t save[256];
+    M68KState saved = g_cpu;
+    for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
+    g_cpu.A[7] = STK;
+    s_in_vblank_service = 1;
+    g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+    uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
+    /* Charge the handler's executed 68K cycles to the raster debt (the
+     * generated code bumps g_audio_cycle_counter per instruction, including
+     * through the handler). See s_irq_cycle_debt. */
+    uint32_t cyc_before = g_audio_cycle_counter;
+    if (g_game_spec.call_vblank) g_game_spec.call_vblank();
+    s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
+    vdp->in_vblank = saved_vb;
+    g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+    s_in_vblank_service = 0;
+    for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+    g_cpu = saved;
+    s_game_yielded_vblank = 0;
+}
+
+/* Own-backend interrupt delivery — the clownmdemu-free twin of
+ * glue_handle_interrupt: runs the game's V-int(6)/H-int(4) handler using OUR
+ * work RAM (g_ram) for the IRQ-stack save/restore and OUR VDP's vblank flag. */
+void glue_own_interrupt(int level, GVDP *vdp)
+{
+    if (!s_game_running) return;
+    int imask = (g_cpu.SR >> 8) & 7;
+
+    if (level == 6) {
+        /* Fire V_Int once per wall frame, exactly like hardware — NOT only when
+         * the game has parked at WaitForVBlank. If the 68K currently has IRQs
+         * masked, latch it and deliver when the mask drops instead of losing it. */
+        if (imask < 6) { s_own_vint_latched = 0; own_deliver_vint(vdp); }
+        else           { s_own_vint_latched = 1; }
+    } else if (level == 4 && imask < 4) {
+        const uint32_t STK = g_game_layout.intr_stack;
+        uint32_t byteoff = (STK - 256u) & 0xFFFFu;
+        uint8_t save[256];
+        M68KState saved = g_cpu;
+        for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
+        g_cpu.A[7] = STK;
+        s_in_vblank_service = 1;
+        g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+        /* H-int handler cycles owe raster time too (same rule as V-int). */
+        uint32_t cyc_before = g_audio_cycle_counter;
+        if (g_game_spec.call_hblank) g_game_spec.call_hblank();
+        s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
+        g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+        s_in_vblank_service = 0;
+        for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+        g_cpu = saved;
+    }
+}
+
+/* Deliver a previously-latched V-int if the 68K mask now permits. Called by the
+ * scheduler at each scanline boundary (after the 68K has advanced and may have
+ * dropped its mask). Returns 1 if it fired. Delivers at most one — matching the
+ * single level-triggered VDP V-int line (a masked span across >1 vblank still
+ * yields exactly one V-int when unmasked, same as hardware/clownmdemu). */
+int glue_own_vint_service_latched(GVDP *vdp)
+{
+    if (!s_own_vint_latched || !s_game_running) return 0;
+    if (((g_cpu.SR >> 8) & 7) >= 6) return 0;   /* still masked — keep latched */
+    s_own_vint_latched = 0;
+    own_deliver_vint(vdp);
+    return 1;
+}
+#endif /* OWN_BACKEND */
 
 /* Yield-site cycle-accumulator log.  Each line records the state of
  * g_cycle_accumulator at the moment the game fiber yields for VBlank.
@@ -724,10 +897,21 @@ void glue_yield_for_interrupt_poll(void)
  * Without interleave, it runs until WaitForVBlank as before. */
 void glue_run_game_frame(void)
 {
+#if OWN_BACKEND
+    /* Own backend: the game fiber is woken exactly ONCE per wall frame, by the
+     * V-int at the vblank scanline (glue_own_interrupt) — like hardware, where
+     * V-int is what releases the WaitForVBlank spin. Clearing the yield flag
+     * here too would add a SECOND wake per frame (frame-start AND vblank), so a
+     * light main-loop iteration (Sega screen, "Sonic Team presents", title
+     * finger-wag) would complete ~2x per wall frame while heavy gameplay frames
+     * stayed ~1x — the "intros/finger-wag run fast, gameplay looks right"
+     * symptom. The first frame still runs: s_game_yielded_vblank starts 0. */
+#else
     s_game_yielded_vblank = 0;
     /* Don't switch to game fiber here — DoCycles will do it during Iterate.
      * But we need to handle the first frame and any code that runs before
      * the first DoCycles call. */
+#endif
 }
 
 /* Service VBlank: called from main loop AFTER Iterate.
@@ -737,7 +921,13 @@ void glue_service_vblank(void)
     /* Handlers now fire from glue_check_vblank (contextual recompiler)
      * at the exact cycle count. No handler here — just bookkeeping. */
 
+#if !OWN_BACKEND
+    /* Own backend leaves the yield flag owned solely by glue_yield_for_vblank
+     * (sets it) and glue_own_interrupt (clears it at the vblank scanline).
+     * Resetting it here would re-introduce the frame-start wake — see
+     * glue_run_game_frame(). */
     s_game_yielded_vblank = 0;
+#endif
 
     glue_reset_frame_sync();
 
@@ -941,6 +1131,21 @@ void glue_check_vblank(void)
 {
     instruction_watchdog_check();
 
+#if OWN_BACKEND
+    /* Own backend: the scanline scheduler (machine_run_frame) is the SOLE
+     * V-int driver, via glue_own_interrupt() — which uses our g_ram for the
+     * handler stack save/restore. Per-scanline and per-frame fiber yielding
+     * is handled by check_cycle_budget() and glue_yield_for_vblank(). Firing
+     * the handler here too would run V_Int twice per wall frame (this
+     * threshold path PLUS the scheduler path), doubling everything the
+     * handler drives — music tempo, sprite-animation timers, v_vblank_count —
+     * while main-loop object physics stays 1x. That mismatch is the
+     * "some animations run too fast, some look right" symptom. It would also
+     * run V_Int against the wrong RAM buffer (fire_vblank_handler_once saves
+     * s_emu->state.m68k.ram, but recompiled code mutates g_ram here). So under
+     * the own backend this routine does watchdog bookkeeping only. */
+    return;
+#else
     if (s_in_vblank_service)
         return;  /* already servicing — don't re-enter from handler's own accumulator */
 
@@ -977,6 +1182,7 @@ void glue_check_vblank(void)
         if (!s_vblank_fired_this_frame)
             fire_vblank_handler_once();
     }
+#endif /* OWN_BACKEND */
 }
 
 void glue_end_of_wall_frame(void)
@@ -1064,6 +1270,12 @@ void glue_save_state(FILE *sf)
     fwrite(&g_frame_count, 1, sizeof(g_frame_count), sf);
     fwrite(&g_cycle_accumulator, 1, sizeof(g_cycle_accumulator), sf);
     fwrite(&g_vblank_threshold, 1, sizeof(g_vblank_threshold), sf);
+#if OWN_BACKEND
+    /* A V-int latched across the save point (masked transition) must survive
+     * the restore or the game loses one v_vblank_count. */
+    { uint8_t latched = (uint8_t)s_own_vint_latched;
+      fwrite(&latched, 1, 1, sf); }
+#endif
 }
 
 void glue_load_state(FILE *sf)
@@ -1072,6 +1284,11 @@ void glue_load_state(FILE *sf)
     fread(&g_frame_count, 1, sizeof(g_frame_count), sf);
     fread(&g_cycle_accumulator, 1, sizeof(g_cycle_accumulator), sf);
     fread(&g_vblank_threshold, 1, sizeof(g_vblank_threshold), sf);
+#if OWN_BACKEND
+    { uint8_t latched = 0;
+      fread(&latched, 1, 1, sf);
+      s_own_vint_latched = latched ? 1 : 0; }
+#endif
 }
 
 void glue_restart_game_fiber(uint32_t resume_pc)
@@ -1093,6 +1310,7 @@ void glue_restart_game_fiber(uint32_t resume_pc)
     s_interleave_active = 0;
     s_cycle_budget = 0;
     s_chunk_cycles = 0;
+    s_irq_cycle_debt = 0;
     s_watchdog_counter = 0;
     s_vblank_fired_this_frame = 0;
     s_vblank_executed_this_frame = 0;
@@ -1210,6 +1428,23 @@ static inline void spin_check(uint32_t byte_addr, int is_write)
 #endif
 }
 
+#if PERMISSIVE_VDP
+#include "vdp_integration.h"   /* clean-room VDP shadow seam (toggle build) */
+/* Authoritative word read for the shadow VDP's DMA source: ROM from g_rom,
+ * live work RAM from clownmdemu's state.m68k.ram (the word array the recompiled
+ * code actually uses — g_ram is only a non-authoritative shadow). Phase-2 will
+ * point RAM at our own memory once clownmdemu is gone. */
+uint16_t glue_bus_read_word(uint32_t addr)
+{
+    addr &= 0xFFFFFFu;
+    if (addr >= RAM_BASE)
+        return s_emu ? (uint16_t)s_emu->state.m68k.ram[(addr & 0xFFFFu) >> 1] : 0;
+    if (addr < 0x400000u)
+        return (uint16_t)((g_rom[addr] << 8) | g_rom[(addr + 1) & 0x3FFFFFu]);
+    return 0;
+}
+#endif
+
 uint16_t m68k_read16(uint32_t byte_addr)
 {
     byte_addr &= 0xFFFFFFu;
@@ -1219,17 +1454,23 @@ uint16_t m68k_read16(uint32_t byte_addr)
     spin_check(byte_addr, 0);
 #endif
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    return gbus_read16(&g_machine.bus, byte_addr);
+#else
     uint16_t r16_result = (uint16_t)M68kReadCallback(&s_cpu_data,
                                        byte_addr >> 1,
                                        cc_true, cc_true,
                                        g_hybrid_cycle_counter);
     return r16_result;
+#endif
 }
 
 /* IO port access logging for joypad debugging */
 int s_io_log_enabled = 0;  /* set via TCP command */
 int s_io_log_count   = 0;
 
+unsigned long g_z80poll_fallback_hits = 0; /* [POLL-DIAG] 256-poll bound fired */
+unsigned long g_z80poll_yields = 0;        /* [POLL-DIAG] total z80-poll yields */
 uint8_t m68k_read8(uint32_t byte_addr)
 {
     byte_addr &= 0xFFFFFFu;
@@ -1257,11 +1498,16 @@ uint8_t m68k_read8(uint32_t byte_addr)
     if (byte_addr == 0xA01FFDu || byte_addr == 0xA01FFFu || byte_addr == 0xA11100u) {
         if (s_interleave_active && !s_in_vblank_service) {
             if (byte_addr == last_poll_addr) {
-                if (++poll_streak > 256) return 0x00u;
+                if (++poll_streak > 256) {
+                    extern unsigned long g_z80poll_fallback_hits; /* [POLL-DIAG] */
+                    g_z80poll_fallback_hits++;
+                    return 0x00u;
+                }
             } else {
                 last_poll_addr = byte_addr;
                 poll_streak    = 1;
             }
+            { extern unsigned long g_z80poll_yields; g_z80poll_yields++; } /* [POLL-DIAG] */
             { char stack_marker; game_stack_note("z80-poll", &stack_marker); }
             fiber_switch(s_main_fiber);
             /* fall through to real read */
@@ -1276,10 +1522,15 @@ uint8_t m68k_read8(uint32_t byte_addr)
     HYBRID_BUMP_CYCLES();
     cc_bool hi = (byte_addr & 1) == 0;
     cc_bool lo = !hi;
+#if OWN_BACKEND
+    cc_u16f word = gbus_read16(&g_machine.bus, byte_addr & ~1u);
+    (void)lo;
+#else
     cc_u16f word = M68kReadCallback(&s_cpu_data,
                                      byte_addr >> 1,
                                      hi, lo,
                                      g_hybrid_cycle_counter);
+#endif
     uint8_t result = hi ? (uint8_t)(word >> 8) : (uint8_t)(word & 0xFF);
     if (s_io_log_enabled && byte_addr >= 0xA10000u && byte_addr <= 0xA1001Fu) {
         if (s_io_log_count < 200) {
@@ -1302,6 +1553,10 @@ uint32_t m68k_read32(uint32_t byte_addr)
     /* Bump once for the whole 32-bit op — both halves at same cycle.
      * Prevents VDP/Z80 sync between the two 16-bit reads. */
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    uint16_t hi = gbus_read16(&g_machine.bus, byte_addr);
+    uint16_t lo = gbus_read16(&g_machine.bus, byte_addr + 2);
+#else
     uint16_t hi = (uint16_t)M68kReadCallback(&s_cpu_data,
                                               byte_addr >> 1,
                                               cc_true, cc_true,
@@ -1310,6 +1565,7 @@ uint32_t m68k_read32(uint32_t byte_addr)
                                               (byte_addr + 2) >> 1,
                                               cc_true, cc_true,
                                               g_hybrid_cycle_counter);
+#endif
     return ((uint32_t)hi << 16) | (uint32_t)lo;
 }
 
@@ -1326,10 +1582,17 @@ void m68k_write16(uint32_t byte_addr, uint16_t val)
     audio_detour_write(byte_addr, (uint8_t)val);
 #endif
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    gbus_write16(&g_machine.bus, byte_addr, val);
+#else
     M68kWriteCallback(&s_cpu_data,
                        byte_addr >> 1,
                        cc_true, cc_true,
                        g_hybrid_cycle_counter, (cc_u16f)val);
+#endif
+#if PERMISSIVE_VDP
+    gvdp_on_bus_write(byte_addr, (uint16_t)val);
+#endif
 }
 
 void m68k_write8(uint32_t byte_addr, uint8_t val)
@@ -1348,6 +1611,9 @@ void m68k_write8(uint32_t byte_addr, uint8_t val)
         }
     }
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    gbus_write8(&g_machine.bus, byte_addr, val);
+#else
     cc_bool hi = (byte_addr & 1) == 0;
     cc_bool lo = !hi;
     /* Replicate the byte on both halves of the word */
@@ -1356,6 +1622,7 @@ void m68k_write8(uint32_t byte_addr, uint8_t val)
                        byte_addr >> 1,
                        hi, lo,
                        g_hybrid_cycle_counter, word);
+#endif
 }
 
 void m68k_write32(uint32_t byte_addr, uint32_t val)
@@ -1375,6 +1642,10 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
      * from two consecutive 16-bit writes. If VDP sync runs between
      * them, the half-written command corrupts VDP state. */
     HYBRID_BUMP_CYCLES();
+#if OWN_BACKEND
+    gbus_write16(&g_machine.bus, byte_addr,     (uint16_t)(val >> 16));
+    gbus_write16(&g_machine.bus, byte_addr + 2, (uint16_t)(val & 0xFFFF));
+#else
     M68kWriteCallback(&s_cpu_data,
                        byte_addr >> 1,
                        cc_true, cc_true,
@@ -1383,6 +1654,11 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
                        (byte_addr + 2) >> 1,
                        cc_true, cc_true,
                        g_hybrid_cycle_counter, (cc_u16f)(val & 0xFFFF));
+#endif
+#if PERMISSIVE_VDP
+    gvdp_on_bus_write(byte_addr,     (uint16_t)(val >> 16));
+    gvdp_on_bus_write(byte_addr + 2, (uint16_t)(val & 0xFFFF));
+#endif
 }
 
 /* =========================================================================

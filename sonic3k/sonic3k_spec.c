@@ -196,7 +196,7 @@ const GameSpec g_game_spec = {
     .call_entry_point       = s3k_call_entry_point,
     .call_vblank            = s3k_call_vblank,
     .call_hblank            = s3k_call_hblank,
-    .resume_main_loop_pc    = 0u,          /* save-state resume — not yet */
+    .resume_main_loop_pc    = 0x0004B6u,   /* GameLoop (S&K master, World ROM) — save-state fiber restart */
     .dispatch_main_loop_pc  = 0x0004B6u,   /* GameLoop (actual World ROM addr) */
     .call_periodic          = NULL,
 

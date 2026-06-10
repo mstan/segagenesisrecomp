@@ -36,6 +36,26 @@ static void s3_call_entry_point(void) { recomp_call_addr(0x000206u); }
 static void s3_call_vblank(void)      { recomp_call_addr(0x000802u); }
 static void s3_call_hblank(void)      { recomp_call_addr(0x000F9Eu); }
 
+/* Mode-aware save-state resume (s3.asm, addresses from s3.lst org 0):
+ *   GM $0C Level / $08 Demo -> LevelLoop  ($004B0C): the per-frame loop —
+ *     "bsr Pause_Game / Wait_VSync / Process_Sprites / ... / cmpi.b #$C,
+ *      (Game_mode) / beq LevelLoop". Re-entering here continues the level
+ *     moment-in-time from the restored RAM.
+ *   GM $34 SpecialStage (running) -> loc_77D2 ($0077D2): the SS per-frame
+ *     loop ("bsr Pause_Game / ... / cmpi.b #$34,(Game_mode) / beq loc_77D2").
+ *   Anything else (Sega/title/menus, SS init modes $2C/$30, or any mode with
+ *   the bit-7 reinit flag, e.g. $88) -> 0: fall back to GameLoop dispatch,
+ *   which re-runs the mode handler — those states WANT their init. */
+static uint32_t s3_save_resume_pc(uint8_t game_mode)
+{
+    switch (game_mode) {
+        case 0x08:
+        case 0x0C: return 0x004B0Cu;   /* LevelLoop                */
+        case 0x34: return 0x0077D2u;   /* SS per-frame loop        */
+        default:   return 0u;
+    }
+}
+
 int game_dispatch_override(uint32_t addr) { (void)addr; return 0; }
 
 /* ---- 68K work-RAM accessors ---- */
@@ -201,7 +221,8 @@ const GameSpec g_game_spec = {
     .call_entry_point       = s3_call_entry_point,
     .call_vblank            = s3_call_vblank,
     .call_hblank            = s3_call_hblank,
-    .resume_main_loop_pc    = 0u,
+    .resume_main_loop_pc    = 0x000734u,   /* GameLoop — fallback for modes without a loop map */
+    .save_resume_pc         = s3_save_resume_pc,   /* mode -> per-frame loop top (moment-in-time) */
     .dispatch_main_loop_pc  = 0x000734u,   /* GameLoop */
     .call_periodic          = NULL,
 

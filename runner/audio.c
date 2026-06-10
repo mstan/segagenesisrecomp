@@ -3,9 +3,15 @@
 #include <stdio.h>
 #include <string.h>
 
-/* Volume divisors from the reference mixer (clownmdemu-frontend-common/mixer.h) */
+/* Volume divisors from the reference mixer (clownmdemu-frontend-common/mixer.h).
+ * FM is fixed; PSG is a RUNTIME knob ([SND-TRACE] tuning, default 8 = original
+ * behaviour) so the PSG/FM balance can be dialled in by ear without rebuilds —
+ * the clownmdemu ÷8 was tuned for clownmdemu's PSG scale, not our clean-room
+ * SN76489's. Set via --psg-vol-div N. Bake the chosen value back into a
+ * #define before commit. */
 #define FM_VOL_DIV  1
-#define PSG_VOL_DIV 8
+static int s_psg_vol_div = 8;
+void audio_set_psg_vol_div(int d) { if (d >= 1 && d <= 64) s_psg_vol_div = d; }
 
 static SDL_AudioDeviceID s_dev = 0;
 
@@ -61,7 +67,7 @@ void audio_flush(const int16_t *fm_buf,  size_t fm_frames,
      * upsample FM to PSG rate via nearest-neighbour.
      * Divisors: PSG/8, FM/1 — same as clownmdemu-frontend-common/mixer.h */
     for (size_t i = 0; i < psg_frames; i++) {
-        int32_t p = (int32_t)psg_buf[i] / PSG_VOL_DIV;
+        int32_t p = (int32_t)psg_buf[i] / s_psg_vol_div;
         int32_t l = p;
         int32_t r = p;
 
