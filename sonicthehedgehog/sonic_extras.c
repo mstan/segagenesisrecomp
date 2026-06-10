@@ -19,9 +19,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#if OWN_BACKEND
+#include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
+#else
 #include "clownmdemu.h"
+#endif
 
+#if !OWN_BACKEND
 extern ClownMDEmu g_clownmdemu;
+#endif
 
 /* cmd_server's send_response is the only thing we need from there.
  * Re-declare it here rather than pulling the whole cmd_server.h surface. */
@@ -31,6 +37,19 @@ void cmd_send_err(int id, const char *msg);
 /* ---------------------------------------------------------------- */
 /* Local 68K work-RAM accessors (mirror cmd_server's). */
 
+#if OWN_BACKEND
+extern uint8_t g_ram[0x10000];   /* authoritative own-backend WRAM */
+static uint8_t emu_read8(uint32_t addr)
+{
+    return g_ram[addr & 0xFFFF];
+}
+
+static uint16_t emu_read16(uint32_t addr)
+{
+    uint16_t off = (uint16_t)(addr & 0xFFFF);
+    return (uint16_t)(((uint16_t)g_ram[off] << 8) | g_ram[(uint16_t)(off + 1)]);
+}
+#else
 static uint8_t emu_read8(uint32_t addr)
 {
     uint16_t off = (uint16_t)(addr & 0xFFFF);
@@ -43,6 +62,7 @@ static uint16_t emu_read16(uint32_t addr)
     uint16_t off = (uint16_t)(addr & 0xFFFF);
     return g_clownmdemu.state.m68k.ram[off / 2];
 }
+#endif /* OWN_BACKEND */
 
 static int16_t emu_read16s(uint32_t addr) { return (int16_t)emu_read16(addr); }
 

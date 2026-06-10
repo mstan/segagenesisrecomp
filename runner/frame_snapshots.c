@@ -11,10 +11,16 @@
 #include <string.h>
 #include <stdint.h>
 
+#if OWN_BACKEND
+#include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
+#else
 #include "clownmdemu.h"
+#endif
 #include "genesis_runtime.h"
 
+#if !OWN_BACKEND
 extern ClownMDEmu g_clownmdemu;
+#endif
 
 #if OWN_BACKEND
 /* Own-backend (AGPL-free) state lives in g_machine, not clownmdemu. The
@@ -83,10 +89,12 @@ void z80_snapshot(Z80RegSnap *out, ClownMDEmu *emu)
     memset(out, 0, sizeof(*out));
 #if OWN_BACKEND
     (void)emu;
-    /* Live Z80 regs are canonical in g_machine.z80 (superzazu store_state
-     * writes them back every instruction); RAM + bus-control in the bus. */
-    const ClownZ80_State *z = &g_machine.z80;
-    out->A = z->a; out->F = z->f;
+    /* Live Z80 regs are canonical in g_machine.z80 (the embedded superzazu
+     * core); RAM + bus-control in the bus. */
+    const z80 *z = &g_machine.z80;
+    out->A = z->a;
+    out->F = (uint8_t)((z->sf << 7) | (z->zf << 6) | (z->yf << 5) | (z->hf << 4) |
+                       (z->xf << 3) | (z->pf << 2) | (z->nf << 1) | (z->cf << 0));
     out->B = z->b; out->C = z->c;
     out->D = z->d; out->E = z->e;
     out->H = z->h; out->L = z->l;
@@ -94,13 +102,13 @@ void z80_snapshot(Z80RegSnap *out, ClownMDEmu *emu)
     out->Bp = z->b_; out->Cp = z->c_;
     out->Dp = z->d_; out->Ep = z->e_;
     out->Hp = z->h_; out->Lp = z->l_;
-    out->IXH = z->ixh; out->IXL = z->ixl;
-    out->IYH = z->iyh; out->IYL = z->iyl;
+    out->IXH = (uint8_t)(z->ix >> 8); out->IXL = (uint8_t)(z->ix & 0xFF);
+    out->IYH = (uint8_t)(z->iy >> 8); out->IYL = (uint8_t)(z->iy & 0xFF);
     out->I = z->i; out->R = z->r;
-    out->SP = (uint16_t)z->stack_pointer;
-    out->PC = (uint16_t)z->program_counter;
-    out->iff_enabled  = (uint8_t)z->interrupts_enabled;
-    out->irq_pending  = (uint8_t)z->interrupt_pending;
+    out->SP = z->sp;
+    out->PC = z->pc;
+    out->iff_enabled  = (uint8_t)z->iff1;
+    out->irq_pending  = (uint8_t)z->int_pending;
     memcpy(out->ram, g_machine.bus.z80_ram, sizeof(out->ram));
     out->bus_requested = (uint8_t)g_machine.bus.z80_busreq;
     /* clownmdemu's reset_held == "Z80 in reset"; ours tracks the inverse
@@ -238,6 +246,12 @@ void vdp_snapshot(VdpSnap *out, ClownMDEmu *emu)
 void fm_snapshot(FmSnap *out, ClownMDEmu *emu)
 {
     memset(out, 0, sizeof(*out));
+#if OWN_BACKEND
+    /* ymfm internals are not byte-comparable to clownmdemu's FM_State;
+     * the FM/PSG register WRITE STREAM (chip_ring) is the cross-backend
+     * audio comparable instead. */
+    (void)emu;
+#else
     /* Byte-copy the entire FM_State. Layout is opaque to us; differs
      * across clownmdemu versions. The TCP layer surfaces specific
      * fields by parsing this blob with knowledge of the struct. */
@@ -245,6 +259,7 @@ void fm_snapshot(FmSnap *out, ClownMDEmu *emu)
     if (len > sizeof(out->raw)) len = sizeof(out->raw);
     memcpy(out->raw, &emu->fm.state, len);
     out->raw_len = (uint16_t)len;
+#endif
 }
 
 /* ---------------------------------------------------------------- PSG */
@@ -252,10 +267,14 @@ void fm_snapshot(FmSnap *out, ClownMDEmu *emu)
 void psg_snapshot(PsgSnap *out, ClownMDEmu *emu)
 {
     memset(out, 0, sizeof(*out));
+#if OWN_BACKEND
+    (void)emu;   /* see fm_snapshot */
+#else
     size_t len = sizeof(emu->psg.state);
     if (len > sizeof(out->raw)) len = sizeof(out->raw);
     memcpy(out->raw, &emu->psg.state, len);
     out->raw_len = (uint16_t)len;
+#endif
 }
 
 /* ---------------------------------------------------------------- WRAM */

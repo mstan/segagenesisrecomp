@@ -14,7 +14,11 @@
  */
 
 #include "clowncommon.h"
+#if OWN_BACKEND
+#include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
+#else
 #include "clownmdemu.h"
+#endif
 
 /* A single dispatch table entry. Tagged so game_spec.h can forward-
  * declare it without pulling in the clownmdemu surface. */

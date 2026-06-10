@@ -1,0 +1,2 @@
+clowncommon.h vendored from clownmdemu-core/libraries/clowncommon (Clownacy, ISC-style permissive licence — see LICENCE.txt).
+Vendored so the native (release) targets need no clownmdemu-core include paths.

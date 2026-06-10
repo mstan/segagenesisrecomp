@@ -36,7 +36,11 @@ typedef int sock_t;
 #include <inttypes.h>
 
 #include "cmd_server.h"
+#if OWN_BACKEND
+#include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
+#else
 #include "clownmdemu.h"
+#endif
 #include "audio.h"
 #include "game_layout.h"
 #if SONIC_REVERSE_DEBUG
