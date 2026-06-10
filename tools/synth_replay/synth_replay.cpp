@@ -192,9 +192,57 @@ static double rms(const std::vector<int16_t> &s, size_t lo, size_t hi, int strid
     return n ? std::sqrt(acc / n) : 0.0;
 }
 
+/* --fm-channel N: keep only FM events belonging to channel N (0..5) plus the
+ * global registers (LFO $22, timers $24-$27, DAC $2A/$2B) and that channel's
+ * key-on/off events on $28. PSG events are dropped. Stateful: an address write
+ * selects the register; the following data write inherits its keep/drop fate.
+ * Lets us attribute the ours-vs-theirs FM band deficit to a single channel,
+ * since both cores replay the SAME filtered stream. */
+static std::vector<Event> filter_fm_channel(const std::vector<Event> &ev, int ch)
+{
+    std::vector<Event> out;
+    out.reserve(ev.size());
+    int keep_data[2] = {1, 1};     /* per part: does the pending data write pass? */
+    int addr_is_keyon[2] = {0, 0}; /* per part: pending data write targets $28 */
+    for (const Event &e : ev) {
+        if (e.kind != 0) continue;             /* drop PSG — FM attribution only */
+        int part = (e.port >= 2) ? 1 : 0;
+        if ((e.port & 1) == 0) {               /* address write */
+            uint8_t a = e.val;
+            int keep;
+            addr_is_keyon[part] = 0;
+            if (a < 0x30) {
+                /* globals ($22 LFO, $24-$27 timers/ch3 mode, $2A/$2B DAC) — keep.
+                 * $28 key-on: keep the address write; the DATA write decides. */
+                keep = 1;
+                if (part == 0 && a == 0x28) addr_is_keyon[part] = 1;
+            } else {
+                int cip = a & 3;               /* channel within part; 3 = invalid */
+                keep = (cip != 3) && (part * 3 + cip == ch);
+            }
+            keep_data[part] = keep;
+            if (keep) out.push_back(e);
+        } else {                               /* data write */
+            if (addr_is_keyon[part]) {
+                /* $28 data: bits 0-2 select 0,1,2 (ch0-2) / 4,5,6 (ch3-5). */
+                int sel = e.val & 7;
+                int kch = (sel >= 4) ? (sel - 4 + 3) : sel;
+                if (sel != 3 && sel != 7 && kch == ch) out.push_back(e);
+            } else if (keep_data[part]) {
+                out.push_back(e);
+            }
+        }
+    }
+    return out;
+}
+
 int main(int argc, char **argv)
 {
     const char *path = argc > 1 ? argv[1] : "chip_ring.txt";
+    int fm_channel = -1;
+    for (int i = 2; i < argc; i++)
+        if (!strcmp(argv[i], "--fm-channel") && i + 1 < argc)
+            fm_channel = atoi(argv[++i]);
     FILE *f = fopen(path, "rb");
     if (!f) { fprintf(stderr, "cannot open %s\n", path); return 1; }
 
@@ -228,6 +276,13 @@ int main(int argc, char **argv)
     fclose(f);
     fprintf(stderr, "parsed %zu chip-write events from %s\n", ev.size(), path);
     if (ev.empty()) return 1;
+
+    if (fm_channel >= 0) {
+        ev = filter_fm_channel(ev, fm_channel);
+        fprintf(stderr, "[--fm-channel %d] filtered stream: %zu events\n",
+                fm_channel, ev.size());
+        if (ev.empty()) return 1;
+    }
 
     std::vector<int16_t> fm_o, psg_o, fm_t, psg_t;
     render_ours(ev, fm_o, psg_o);

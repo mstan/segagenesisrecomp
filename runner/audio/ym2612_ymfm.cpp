@@ -30,6 +30,8 @@ extern "C" {
 #include <cstring>
 #include <cstdint>
 #include <cstdlib>
+#include <cstdio>
+#include <vector>
 
 namespace {
 
@@ -156,4 +158,38 @@ extern "C" uint32_t ym2612_sample_rate(void) {
      * matching ym2612.c so audio.c's FM->PSG resampler is unchanged. */
     if (!s_chip) return YM_CLOCK / 144u;
     return s_chip->sample_rate(YM_CLOCK);
+}
+
+/* Save-state hooks (own-backend snapshots): full ymfm chip state via
+ * ymfm_saved_state (size-prefixed blob; the size is whatever the vendored
+ * ymfm version serializes — the format is private to a build), plus this
+ * wrapper's sample-clock remainder and output-LPF state. The output scratch
+ * ring is transient (drained every frame) and is reset on load. */
+extern "C" int ym2612_save_state(FILE *f) {
+    if (!s_inited) ym2612_init();
+    std::vector<uint8_t> buf;
+    ymfm::ymfm_saved_state st(buf, true);
+    s_chip->save_restore(st);
+    uint32_t n = (uint32_t)buf.size();
+    if (fwrite(&n, sizeof n, 1, f) != 1) return 0;
+    if (n && fwrite(buf.data(), 1, n, f) != n) return 0;
+    if (fwrite(&s_master_accum, sizeof s_master_accum, 1, f) != 1) return 0;
+    if (fwrite(s_fm_lpf_prev, sizeof s_fm_lpf_prev, 1, f) != 1) return 0;
+    if (fwrite(s_fm_lpf_out,  sizeof s_fm_lpf_out,  1, f) != 1) return 0;
+    return 1;
+}
+
+extern "C" int ym2612_load_state(FILE *f) {
+    if (!s_inited) ym2612_init();
+    uint32_t n = 0;
+    if (fread(&n, sizeof n, 1, f) != 1 || n > (1u << 20)) return 0;
+    std::vector<uint8_t> buf(n);
+    if (n && fread(buf.data(), 1, n, f) != n) return 0;
+    ymfm::ymfm_saved_state st(buf, false);
+    s_chip->save_restore(st);
+    if (fread(&s_master_accum, sizeof s_master_accum, 1, f) != 1) return 0;
+    if (fread(s_fm_lpf_prev, sizeof s_fm_lpf_prev, 1, f) != 1) return 0;
+    if (fread(s_fm_lpf_out,  sizeof s_fm_lpf_out,  1, f) != 1) return 0;
+    s_scratch_read = s_scratch_write = 0;
+    return 1;
 }

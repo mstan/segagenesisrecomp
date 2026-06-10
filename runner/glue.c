@@ -501,6 +501,21 @@ static int create_game_fiber(uint32_t resume_pc)
 /* Scanline interleave state */
 static int32_t s_cycle_budget = 0;
 static int     s_game_yielded_vblank = 0;
+/* 68K cycles spent inside an interrupt handler (V-int/H-int), still owed to
+ * the raster. own_deliver_vint runs the whole handler atomically at the
+ * vblank scanline with budget yields gated (s_in_vblank_service), so without
+ * this the handler consumes ZERO raster time and the main loop resumes at
+ * line ~225 — tens of lines earlier than hardware, where the level V-int
+ * (DMA + decompression) occupies the CPU well into the next frame. That
+ * early resume put a Z80 mailbox write (Play_SFX) BEFORE a driver tick's
+ * queue-read where hardware places it AFTER, splitting sfx_EnterSS and the
+ * following cmd_Stop across two ticks and killing the S3 giant-ring entry
+ * sound. glue_run_game_chunk drains this debt at M68K_PER_LINE per scanline
+ * before resuming main-loop work. Only ever nonzero on the own backend. */
+static uint32_t s_irq_cycle_debt = 0;
+/* g_audio_cycle_counter value at the last budget drain (see
+ * check_cycle_budget — the budget drains by real elapsed 68K cycles). */
+static uint32_t s_budget_cyc_seen = 0;
 #if SONIC_REVERSE_DEBUG
 /* Tier-2 reverse debugger: set by glue_yield_for_break when the game
  * fiber parks at a block-entry hook. Main loop reads via
@@ -529,8 +544,22 @@ void glue_run_game_chunk(cc_u32f cycles)
         return;
 #endif
 
+    /* Pay down interrupt-handler raster debt first: while the 68K is
+     * (logically) still inside the V-int/H-int handler, the main loop does
+     * not advance — matching hardware, where the handler occupies the CPU
+     * for those scanlines. */
+    if (s_irq_cycle_debt) {
+        if (s_irq_cycle_debt >= cycles) {
+            s_irq_cycle_debt -= (uint32_t)cycles;
+            return;
+        }
+        cycles -= s_irq_cycle_debt;
+        s_irq_cycle_debt = 0;
+    }
+
     s_chunk_cycles = cycles;
     s_cycle_budget = (int32_t)cycles;
+    s_budget_cyc_seen = g_audio_cycle_counter;  /* drain from here (see check_cycle_budget) */
     s_interleave_active = 1;
     instruction_watchdog_reset();
     fiber_switch(s_game_fiber);
@@ -540,20 +569,42 @@ void glue_run_game_chunk(cc_u32f cycles)
 
 /* Called from bus access macro to check the interleave budget (separate
  * from g_hybrid_cycle_counter, which is now bumped per-instruction by
- * the generator). Budget drives WHEN to yield back to clownmdemu; cycle
- * counter drives WHAT cycle timestamps to report to clownmdemu. */
-#define BUDGET_COST_PER_ACCESS 10
+ * the generator). Budget drives WHEN to yield back to the scheduler; cycle
+ * counter drives WHAT cycle timestamps to report.
+ *
+ * The budget drains by REAL elapsed 68K cycles: the generated code bumps
+ * g_audio_cycle_counter per instruction with PRM-accurate costs (plus DMA
+ * freeze charges via glue_charge_68k_stall), so the delta since the last
+ * check is the true cycle cost of the code just executed. The old scheme
+ * (flat 10 per data access) ignored instruction-fetch time entirely and ran
+ * the main loop ~2.5x faster than hardware against the raster — early enough
+ * that a Play_SFX mailbox write could land BEFORE a Z80 driver tick's
+ * queue-read where hardware places it after (the S3 giant-ring entry-sound
+ * kill). */
 uint64_t g_chunk_yield_count = 0;
 static void check_cycle_budget(void)
 {
     if (s_interleave_active && !s_in_vblank_service) {
-        s_cycle_budget -= BUDGET_COST_PER_ACCESS;
+        uint32_t now = g_audio_cycle_counter;
+        if (now > s_budget_cyc_seen)
+            s_cycle_budget -= (int32_t)(now - s_budget_cyc_seen);
+        s_budget_cyc_seen = now;   /* also re-syncs after the per-frame reset */
         if (s_cycle_budget <= 0) {
             g_chunk_yield_count++;
             { char stack_marker; game_stack_note("cycle-budget", &stack_marker); }
             fiber_switch(s_main_fiber);
         }
     }
+}
+
+/* Charge 68K freeze cycles (a 68K->VDP DMA transfer) to the recompiled CPU's
+ * accounting by advancing the cycle counter: that advances the audio-stamp
+ * axis (hardware time passes during the freeze), drains the interleave budget
+ * via check_cycle_budget's delta on the next bus access (main-loop DMA), and
+ * is picked up as raster debt by the own-backend handler paths (V-int DMA). */
+void glue_charge_68k_stall(uint32_t cycles)
+{
+    g_audio_cycle_counter += cycles;
 }
 
 /* Called from Clown68000_Interrupt during Iterate when VBlank/HBlank fires. */
@@ -665,7 +716,12 @@ static void own_deliver_vint(GVDP *vdp)
     s_in_vblank_service = 1;
     g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
     uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
+    /* Charge the handler's executed 68K cycles to the raster debt (the
+     * generated code bumps g_audio_cycle_counter per instruction, including
+     * through the handler). See s_irq_cycle_debt. */
+    uint32_t cyc_before = g_audio_cycle_counter;
     if (g_game_spec.call_vblank) g_game_spec.call_vblank();
+    s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
     vdp->in_vblank = saved_vb;
     g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
     s_in_vblank_service = 0;
@@ -697,7 +753,10 @@ void glue_own_interrupt(int level, GVDP *vdp)
         g_cpu.A[7] = STK;
         s_in_vblank_service = 1;
         g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+        /* H-int handler cycles owe raster time too (same rule as V-int). */
+        uint32_t cyc_before = g_audio_cycle_counter;
         if (g_game_spec.call_hblank) g_game_spec.call_hblank();
+        s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
         g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
         s_in_vblank_service = 0;
         for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
@@ -1204,6 +1263,12 @@ void glue_save_state(FILE *sf)
     fwrite(&g_frame_count, 1, sizeof(g_frame_count), sf);
     fwrite(&g_cycle_accumulator, 1, sizeof(g_cycle_accumulator), sf);
     fwrite(&g_vblank_threshold, 1, sizeof(g_vblank_threshold), sf);
+#if OWN_BACKEND
+    /* A V-int latched across the save point (masked transition) must survive
+     * the restore or the game loses one v_vblank_count. */
+    { uint8_t latched = (uint8_t)s_own_vint_latched;
+      fwrite(&latched, 1, 1, sf); }
+#endif
 }
 
 void glue_load_state(FILE *sf)
@@ -1212,6 +1277,11 @@ void glue_load_state(FILE *sf)
     fread(&g_frame_count, 1, sizeof(g_frame_count), sf);
     fread(&g_cycle_accumulator, 1, sizeof(g_cycle_accumulator), sf);
     fread(&g_vblank_threshold, 1, sizeof(g_vblank_threshold), sf);
+#if OWN_BACKEND
+    { uint8_t latched = 0;
+      fread(&latched, 1, 1, sf);
+      s_own_vint_latched = latched ? 1 : 0; }
+#endif
 }
 
 void glue_restart_game_fiber(uint32_t resume_pc)
@@ -1233,6 +1303,7 @@ void glue_restart_game_fiber(uint32_t resume_pc)
     s_interleave_active = 0;
     s_cycle_budget = 0;
     s_chunk_cycles = 0;
+    s_irq_cycle_debt = 0;
     s_watchdog_counter = 0;
     s_vblank_fired_this_frame = 0;
     s_vblank_executed_this_frame = 0;

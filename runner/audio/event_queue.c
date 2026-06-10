@@ -19,14 +19,16 @@ static size_t     s_overflow_count = 0;
 
 void audio_event_push(uint32_t cycle_stamp, uint8_t port, uint8_t value)
 {
-    /* [CHIP-TRACE] Oracle-side capture: the clownmdemu fork routes EVERY FM/PSG
-     * write here (bus-z80.c FM, bus-main-m68k.c PSG). The own backend never
-     * calls this (it taps snd_trace_chip directly in genesis_bus.c), so this
-     * captures ONLY the oracle stream — into the same shared ring, in the same
-     * (kind,port,val) encoding the own backend uses, for a direct stream diff.
-     * cycle_stamp is per-frame master cycles; derive the scanline (3420 master
-     * cycles/line) to match the own backend's stamping. Strip before commit. */
+    /* [CHIP-TRACE] Shared capture point for BOTH builds: the clownmdemu fork
+     * routes every FM/PSG write here (bus-z80.c FM, bus-main-m68k.c PSG), and
+     * the own backend now pushes all its FM/PSG writes here too
+     * (genesis_bus.c), so one tap captures either build's stream into the
+     * shared ring for a direct diff. cycle_stamp is per-frame master cycles
+     * (own backend 68K-origin stamps use the instruction-counter axis, so the
+     * derived "line" is execution progress, not raster — fine for the dev
+     * diff). Strip before commit. */
     g_snd_line = (unsigned)(cycle_stamp / 3420u);
+    g_snd_mc   = (unsigned long)cycle_stamp;
     if (port == AUDIO_PORT_PSG)
         snd_trace_chip(CHIP_PSG, 0, value);
     else                                    /* FM ports 0..3 map 1:1 to a&3 */

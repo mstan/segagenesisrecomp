@@ -102,6 +102,14 @@ uint16_t gvdp_read_control (GVDP *v);          /* status register             */
 /* H/V counter read ($C00008). */
 uint16_t gvdp_read_hv_counter(const GVDP *v);
 
+/* Fetch-and-clear the 68K freeze cycles owed by the last 68K->VDP DMA
+ * (hardware freezes the 68K for the whole transfer; fill/copy run in
+ * background and don't stall). Kept OUTSIDE the GVDP struct: it is transient
+ * (consumed right after the triggering port write) and the save states
+ * snapshot GVDP as a raw struct image — a new field would break existing
+ * save files. */
+uint32_t gvdp_consume_68k_stall(GVDP *v);
+
 /* ---- Geometry / mode queries (from registers) ----------------------------- */
 int gvdp_screen_width (const GVDP *v);          /* 256 (H32) or 320 (H40)      */
 int gvdp_screen_height(const GVDP *v);          /* 224 (V28) or 240 (V30)      */

@@ -67,6 +67,11 @@ extra = [
     0x000206,   # EntryPoint — initial PC ($000004)
     0x000408,   # VBlank (IRQ level 6) — vector $000078
     0x000F54,   # HBlank (IRQ level 4) — vector $000070
+    0x0051FC,   # SS per-frame loop top (s2disasm s2.asm: the anonymous "-"
+                # label after SpecialStage init — "bsr PauseGame / cmpi.b
+                # #GameModeID_SpecialStage,(Game_Mode) / ... / bsr SSTrack_Draw").
+                # Needed as a dispatch entry so save-state loads can resume
+                # the special stage moment-in-time (GameSpec save_resume_pc).
 ]
 
 # ---------------------------------------------------------------------------

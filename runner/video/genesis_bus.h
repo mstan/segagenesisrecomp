@@ -39,9 +39,28 @@ typedef struct GenesisBus {
     uint8_t  io_data[3];                /* last value written to data ports   */
     uint8_t  io_ctrl[3];                /* TH direction/control per port      */
     uint8_t  version;                   /* $A10000 region/version register    */
+
+    /* Battery-backed cartridge SRAM, geometry parsed from the ROM header
+     * ($1B0 "RA", device type, start/end) at gbus_init. Mapped as raw bus
+     * bytes over [sram_start & ~1, sram_end] when the $A130F1 overlay bit is
+     * set (or always, for carts whose SRAM range lies outside ROM). Sonic 3
+     * declares $200001-$2003FF odd-byte serial FRAM; raw-byte storage covers
+     * odd/even/both layouts uniformly. (S3K lock-on declares no "RA" header —
+     * its SRAM support will need a spec-driven override when the combined
+     * target is brought up.) */
+    uint8_t  sram[0x4000];              /* raw bus bytes from sram_base       */
+    uint32_t sram_base;                 /* sram_start & ~1                    */
+    uint32_t sram_end;                  /* inclusive end address              */
+    uint32_t sram_size;                 /* bytes spanned (0 = none)           */
+    uint8_t  sram_present;              /* "RA" header found                  */
+    uint8_t  sram_enabled;              /* $A130F1 bit0 overlay state         */
 } GenesisBus;
 
 void gbus_init(GenesisBus *b, GVDP *vdp);
+
+/* Parse battery-SRAM geometry from the ROM header. Must run AFTER g_rom is
+ * populated (glue_init) — gbus_init runs before the ROM copy exists. */
+void gbus_sram_setup(GenesisBus *b);
 
 uint16_t gbus_read16 (GenesisBus *b, uint32_t addr);
 uint8_t  gbus_read8  (GenesisBus *b, uint32_t addr);
@@ -53,4 +72,10 @@ void     gbus_write8 (GenesisBus *b, uint32_t addr, uint8_t  val);
 uint8_t  gbus_z80_read (GenesisBus *b, uint16_t addr);
 void     gbus_z80_write(GenesisBus *b, uint16_t addr, uint8_t val);
 
+/* Battery SRAM persistence accessors (main.c .srm load/flush). size == 0 when
+ * the cartridge declares no battery SRAM. */
+uint8_t *gbus_sram_buffer(GenesisBus *b);
+uint32_t gbus_sram_size(const GenesisBus *b);
+
 #endif /* GENESIS_BUS_H */
+

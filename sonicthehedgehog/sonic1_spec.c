@@ -34,6 +34,24 @@ static void s1_call_vblank(void)      { recomp_call_addr(0x000B10u); }
 static void s1_call_hblank(void)      { recomp_call_addr(0x001126u); }
 static void s1_call_periodic(void)    { recomp_call_addr(0x001642u); }
 
+/* Mode-aware save-state resume (s1disasm sonic.asm; GameModeArray masks $1C:
+ * $00 Sega, $04 Title, $08 Demo->GM_Level, $0C Level, $10 Special,
+ * $14 Continue, $18 Ending, $1C Credits). Each target is that mode's
+ * per-frame loop top, so a load continues moment-in-time. Unmapped / bit-7-
+ * flagged modes fall back to resume_main_loop_pc (Level_MainLoop, whose
+ * mode-check tail RTSes to the dispatcher and reinits — old behaviour). */
+static uint32_t s1_save_resume_pc(uint8_t game_mode)
+{
+    switch (game_mode) {
+        case 0x08:
+        case 0x0C: return 0x003AE2u;   /* Level_MainLoop (handles demo)  */
+        case 0x10: return 0x00472Au;   /* SS_MainLoop                    */
+        case 0x14: return 0x004DC4u;   /* Cont_MainLoop                  */
+        case 0x04: return 0x00317Cu;   /* Tit_MainLoop                   */
+        default:   return 0u;
+    }
+}
+
 /* ---- Sonic-specific debug-server handlers (sonic_extras.c) ---- */
 extern void handle_sonic_state(int id);
 extern void handle_object_table(int id, const char *json);
@@ -98,6 +116,7 @@ const GameSpec g_game_spec = {
     .call_vblank            = s1_call_vblank,
     .call_hblank            = s1_call_hblank,
     .resume_main_loop_pc    = 0x003AE2u,
+    .save_resume_pc         = s1_save_resume_pc,   /* mode -> loop top (moment-in-time) */
     .dispatch_main_loop_pc  = 0x000388u,
     .call_periodic          = s1_call_periodic,
 

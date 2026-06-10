@@ -16,12 +16,31 @@
 #include "event_queue.h"
 #include "ym2612.h"
 #include "sn76489.h"
+#include <stdlib.h>
 #include <string.h>
 
 void audio_mixer_init(void)
 {
     ym2612_init();
     psg_init();
+}
+
+/* The own backend pushes events from two stamp axes (68K instruction counter
+ * for 68K-origin writes, raster cursor for Z80-origin writes — see
+ * genesis_machine.c "Audio write stamping"), and its scheduler runs the 68K
+ * V-int handler as one lump out of raster order. So the queue's PUSH order is
+ * not stamp order. Applying in push order with the monotonic clamp below
+ * would collapse whichever source arrives late — the write-collapse bug.
+ * Sorting by (stamp, push index) reconstructs the modeled timeline. The
+ * oracle build's stamps come from one clock already in order, so the sort is
+ * a no-op there. */
+typedef struct { AudioEvent e; uint32_t idx; } SortedEvt;
+static int evt_cmp(const void *pa, const void *pb)
+{
+    const SortedEvt *a = (const SortedEvt *)pa, *b = (const SortedEvt *)pb;
+    if (a->e.cycle_stamp != b->e.cycle_stamp)
+        return a->e.cycle_stamp < b->e.cycle_stamp ? -1 : 1;
+    return a->idx < b->idx ? -1 : (a->idx > b->idx ? 1 : 0);   /* stable */
 }
 
 void audio_mixer_drain(uint32_t frame_end_cycle,
@@ -35,9 +54,39 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * introduced PSG noise-LFSR desync with clownmdemu's reference. */
     uint32_t fm_prev  = 0;
     uint32_t psg_prev = 0;
-    AudioEvent e;
 
-    while (audio_event_pop(&e)) {
+    /* Collect the frame's events, then sort by stamp (stable). */
+    enum { DRAIN_CAP = 4096 };   /* matches event_queue.c QUEUE_CAP */
+    static SortedEvt evs[DRAIN_CAP];
+    size_t n = 0;
+    {
+        AudioEvent pe;
+        while (n < DRAIN_CAP && audio_event_pop(&pe)) {
+            evs[n].e = pe; evs[n].idx = (uint32_t)n; n++;
+        }
+    }
+
+    /* Pair guard: give each FM ADDRESS write the stamp of its matching DATA
+     * write (the next FM event on the same part, which is its adjacent push
+     * in practice). With equal stamps and the stable tiebreak, no foreign
+     * event can sort between an address write and the data write that
+     * completes it, so the synth's address latch can never be clobbered
+     * mid-pair by cross-axis interleaving. */
+    for (size_t i = 0; i < n; i++) {
+        uint8_t p = evs[i].e.port;
+        if (p == AUDIO_PORT_FM1_ADDR || p == AUDIO_PORT_FM2_ADDR) {
+            for (size_t j = i + 1; j < n; j++) {
+                uint8_t q = evs[j].e.port;
+                if (q == p + 1) { evs[i].e.cycle_stamp = evs[j].e.cycle_stamp; break; }
+                if (q == p)     break;   /* re-latched address; keep own stamp */
+            }
+        }
+    }
+
+    qsort(evs, n, sizeof(SortedEvt), evt_cmp);
+
+    for (size_t i = 0; i < n; i++) {
+        AudioEvent e = evs[i].e;
         if (e.port == AUDIO_PORT_PSG) {
             if (e.cycle_stamp < psg_prev) e.cycle_stamp = psg_prev;
             uint32_t delta = e.cycle_stamp - psg_prev;

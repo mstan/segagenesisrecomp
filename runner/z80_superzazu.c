@@ -198,3 +198,16 @@ cc_u16f ClownZ80_DoInstruction(ClownZ80_State *state,
 	state->cycles = (cc_u16l)z.cyc;
 	return (cc_u16f)z.cyc;
 }
+
+/* Save-state hooks for the five hidden Z80 bits clownz80's struct doesn't
+ * carry (IM, IFF2, halted, EI delay, WZ). The scheduler's ClownZ80_State is
+ * snapshotted by machine_save_state; these complete the Z80's state. */
+#include <stdio.h>
+int z80sz_save_ext(FILE *f)
+{
+	return fwrite(&s_ext, sizeof s_ext, 1, f) == 1;
+}
+int z80sz_load_ext(FILE *f)
+{
+	return fread(&s_ext, sizeof s_ext, 1, f) == 1;
+}

@@ -35,6 +35,13 @@ typedef void (*GenesisScanlineSink)(void *user, int line, const uint32_t *argb, 
 void machine_init(void);
 void machine_set_pad(int port, uint8_t buttons);   /* GPAD_* bits             */
 
+/* Own-backend save states: snapshot/restore the whole machine (+ hidden Z80
+ * ext bits), re-wiring internal pointers and derived caches on load. Returns
+ * 1 on success. Raw-struct format, private to a build. */
+#include <stdio.h>
+int machine_save_state(FILE *f);
+int machine_load_state(FILE *f);
+
 /* Run one full frame: per scanline, advance the 68K (fiber), step the Z80, tick
  * the VDP, deliver interrupts, and emit active scanlines via `sink`. */
 void machine_run_frame(GenesisScanlineSink sink, void *user);

@@ -6,8 +6,8 @@
 #   in_function_switch         4  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
 #   dynamic_register           1  (JMP (An)/(d,An)/(An,Xn) — runtime address from register, safe via call_by_address)
 #   fallback_hybrid                — JMP(PC,Dn.W) routed through hybrid_jmp_interpret; subdivided:
-#     function_entry           4    (base IS a registered function — call_by_address resolves it directly)
-#     bra_w_trampoline         1    (base opcode = 0x6000; runtime miss feedback works)
+#     function_entry           5    (base IS a registered function — call_by_address resolves it directly)
+#     bra_w_trampoline         0    (base opcode = 0x6000; runtime miss feedback works)
 #     offset_table           291    (base is a dc.w (target-base) table; 1+ entries decode to functions — runtime resolves it)
 #     INTERIOR_UNRESOLVED      0    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)
 #     external_unresolved      0    (base outside any known function — investigate)
@@ -623,7 +623,7 @@ $02BB76  in func $02BB6C  base $02BB7A  kind=fallback_hybrid/offset_table
 $02BBEE  in func $02BBE8  base $02BBF2  kind=fallback_hybrid/offset_table
 $02BF2E  in func $02BF24  base $02BF32  kind=fallback_hybrid/function_entry
 $02C0E2  in func $02C0A8  base $02C0E6  kind=fallback_hybrid/function_entry
-$02C220  in func $02C20A  base $02C224  kind=fallback_hybrid/bra_w_trampoline
+$02C220  in func $02C20A  base $02C224  kind=fallback_hybrid/function_entry
 $02C300  in func $02C2DE  base $02C304  kind=fallback_hybrid/function_entry
 $02C41C  in func $02C41C  base $017FDA  kind=static_target
 $02C422  in func $02C422  base $0163D2  kind=static_target

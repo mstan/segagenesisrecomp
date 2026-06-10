@@ -195,3 +195,24 @@ void psg_reset_leftover(void)
 {
     s_leftover_master_cycles = 0;
 }
+
+/* Save-state hooks (own-backend snapshots): the whole SN76489 register/
+ * counter struct + sample-clock remainder. The output scratch is transient
+ * (drained every frame) and is reset on load. */
+#include <stdio.h>
+int psg_save_state(FILE *f)
+{
+    if (!s_inited) psg_init();
+    if (fwrite(&s_sn, sizeof s_sn, 1, f) != 1) return 0;
+    if (fwrite(&s_leftover_master_cycles, sizeof s_leftover_master_cycles, 1, f) != 1) return 0;
+    return 1;
+}
+
+int psg_load_state(FILE *f)
+{
+    if (!s_inited) psg_init();
+    if (fread(&s_sn, sizeof s_sn, 1, f) != 1) return 0;
+    if (fread(&s_leftover_master_cycles, sizeof s_leftover_master_cycles, 1, f) != 1) return 0;
+    s_scratch_read = s_scratch_write = 0;
+    return 1;
+}

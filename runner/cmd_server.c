@@ -1054,6 +1054,35 @@ static void handle_audio_wav(int id, const char *json)
     }
 }
 
+/* [SND-TRACE] Dump the always-on sound rings on demand over TCP (same data the
+ * F12 hotkey dumps, headless-reachable). chip_ring = FM/PSG register-write
+ * stream (both builds); snd_ring + z80_ram = own backend only. Optional
+ * "prefix" prepends to every output filename so successive captures don't
+ * clobber each other. Strip with the rest of the diagnostics. */
+static void handle_snd_dump(int id, const char *json)
+{
+    char prefix[160] = "";
+    json_get_str(json, "prefix", prefix, sizeof(prefix));
+    char chip_path[256], snd_path[256], z80_path[256];
+    snprintf(chip_path, sizeof(chip_path), "%schip_ring.txt", prefix);
+    snprintf(snd_path,  sizeof(snd_path),  "%ssnd_ring.txt",  prefix);
+    snprintf(z80_path,  sizeof(z80_path),  "%sz80_ram.bin",   prefix);
+    { extern void chip_trace_dump(const char *path); chip_trace_dump(chip_path); }
+#if OWN_BACKEND
+    { extern void snd_trace_dump(const char *path); snd_trace_dump(snd_path); }
+    { extern void z80_ram_dump(const char *path); z80_ram_dump(z80_path); }
+    char buf[1024];
+    snprintf(buf, sizeof(buf),
+        "{\"id\":%d,\"ok\":true,\"chip_ring\":\"%s\",\"snd_ring\":\"%s\",\"z80_ram\":\"%s\"}",
+        id, chip_path, snd_path, z80_path);
+#else
+    char buf[1024];
+    snprintf(buf, sizeof(buf),
+        "{\"id\":%d,\"ok\":true,\"chip_ring\":\"%s\"}", id, chip_path);
+#endif
+    send_response(buf);
+}
+
 static void handle_io_log(int id, const char *json)
 {
 #if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
@@ -2239,6 +2268,8 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         handle_audio_stats(id);
     } else if (strcmp(cmd, "audio_wav") == 0) {
         handle_audio_wav(id, json);
+    } else if (strcmp(cmd, "snd_dump") == 0) {
+        handle_snd_dump(id, json);
     } else if (strcmp(cmd, "io_log") == 0) {
         handle_io_log(id, json);
     } else if (strcmp(cmd, "read_joypad_port") == 0) {

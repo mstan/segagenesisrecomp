@@ -1,18 +1,30 @@
 /*
  * genesis_bus.c — clean-room Genesis 68K + Z80 bus (see genesis_bus.h).
  * Original implementation from the documented memory map; no emulator code
- * copied. Audio writes are forwarded to our ym2612/psg APIs (cycle-stamped
- * event-queue routing is layered in during scheduler bring-up).
+ * copied. FM/PSG register writes are pushed onto the shared cycle-stamped
+ * audio event queue; audio_mixer_drain() applies them to the chips once per
+ * wall frame, advancing the chips between writes (see the stamping note in
+ * genesis_machine.c).
  */
 #include "genesis_bus.h"
+#include "../audio/event_queue.h"
 #include <string.h>
 
-/* Recompiled 68K memory + our audio chip APIs. */
+/* Recompiled 68K memory. */
 extern uint8_t g_rom[0x400000];
 extern uint8_t g_ram[0x010000];
-extern void ym2612_write(uint8_t port, uint8_t value);
-extern void psg_write(uint8_t value);
-extern void machine_chip_sync(void);  /* advance FM/PSG to this write's cycle (cadence fix) */
+
+/* Audio write stamps (master cycles since wall-frame start; see
+ * genesis_machine.c "Audio write stamping"). 68K-origin writes use the
+ * generated code's per-instruction cycle counter (68K cycles -> x7 master);
+ * it keeps advancing through the V-int handler, where the Sonic 1 68K SMPS
+ * driver does its whole register burst. Z80-origin writes use the raster
+ * cursor. Banked-window writes (Z80 -> 68K bus) stamp with the 68K counter;
+ * no game drives FM/PSG that way, and the mixer's sort/clamp keeps even that
+ * case safe. */
+extern uint32_t g_audio_cycle_counter;        /* glue.c, 68K cycles this wall frame */
+extern uint32_t machine_z80_stamp(void);      /* genesis_machine.c, master cycles    */
+#define STAMP_68K() (g_audio_cycle_counter * 7u)
 
 /* [SND-TRACE] sound-command lifecycle trace (defined in genesis_machine.c). */
 extern uint8_t g_sndwatch[0x2000];
@@ -20,7 +32,15 @@ extern unsigned long g_snd_frame;
 extern void snd_trace_68k_write(uint16_t off, uint8_t oldv, uint8_t newv, int busreq, int reset_off);
 extern void snd_trace_z80(uint16_t off, uint8_t val, int is_write);
 extern void snd_trace_busreq(const char *what, int val);
-extern void snd_trace_chip(int kind, uint8_t port, uint8_t val);  /* [CHIP-TRACE] 0=FM 1=PSG */
+/* [CHIP-TRACE] writer attribution for each FM/PSG push: Z80 PC for Z80-origin
+ * writes, 0xFFFF for 68K-origin. (Banked-window Z80->68K-bus PSG writes would
+ * mis-mark as 68K; no game drives FM/PSG that way.) */
+extern unsigned g_snd_pcz;
+extern uint32_t machine_z80_pc(void);
+/* glue.c: charge 68K->VDP DMA freeze cycles to the recompiled CPU. */
+extern void glue_charge_68k_stall(uint32_t cycles);
+#define CHIP_PC_68K() (g_snd_pcz = 0xFFFFu)
+#define CHIP_PC_Z80() (g_snd_pcz = (unsigned)machine_z80_pc())
 
 void gbus_init(GenesisBus *b, GVDP *vdp)
 {
@@ -30,6 +50,41 @@ void gbus_init(GenesisBus *b, GVDP *vdp)
     b->z80_reset_off = 0;       /* Z80 starts held in reset                   */
     b->z80_busreq = 0;
 }
+
+/* Battery SRAM geometry from the ROM header ($1B0 "RA" + BE start/end
+ * longwords). Called from main.c AFTER glue_init populates g_rom —
+ * machine_init/gbus_init run before the ROM copy exists. Sonic 3:
+ * "RA F8 20" start $200001 end $2003FF (odd-byte serial FRAM). */
+void gbus_sram_setup(GenesisBus *b)
+{
+    if (g_rom[0x1B0] == 'R' && g_rom[0x1B1] == 'A') {
+        uint32_t start = ((uint32_t)g_rom[0x1B4] << 24) | ((uint32_t)g_rom[0x1B5] << 16)
+                       | ((uint32_t)g_rom[0x1B6] << 8)  |  (uint32_t)g_rom[0x1B7];
+        uint32_t end   = ((uint32_t)g_rom[0x1B8] << 24) | ((uint32_t)g_rom[0x1B9] << 16)
+                       | ((uint32_t)g_rom[0x1BA] << 8)  |  (uint32_t)g_rom[0x1BB];
+        uint32_t base  = start & ~1u;
+        if (end > base && (end - base + 1u) <= sizeof(b->sram)) {
+            b->sram_present = 1;
+            b->sram_base    = base;
+            b->sram_end     = end;
+            b->sram_size    = end - base + 1u;
+        }
+    }
+}
+
+/* SRAM overlay active for this address? The $A130F1 enable bit gates the
+ * overlay when the SRAM range shadows ROM (cart < 4 MB games still toggle it;
+ * honour the bit always — games that never touch $A130F1 and expect
+ * always-mapped SRAM can be handled when one shows up). */
+static int sram_hit(const GenesisBus *b, uint32_t a)
+{
+    return b->sram_present && b->sram_enabled
+        && a >= b->sram_base && a <= b->sram_end;
+}
+
+/* Persistence accessors (main.c .srm load/flush). */
+uint8_t *gbus_sram_buffer(GenesisBus *b)        { return b->sram; }
+uint32_t gbus_sram_size(const GenesisBus *b)    { return b->sram_present ? b->sram_size : 0u; }
 
 /* ---- Controllers: standard 3-button TH-multiplexed protocol --------------- */
 static uint8_t pad_read(GenesisBus *b, int port)
@@ -80,6 +135,10 @@ static void io_write(GenesisBus *b, uint32_t a, uint8_t v)
 uint16_t gbus_read16(GenesisBus *b, uint32_t a)
 {
     a &= 0xFFFFFFu;
+    if (sram_hit(b, a)) {                                            /* SRAM    */
+        uint32_t o = a - b->sram_base;
+        return (uint16_t)((b->sram[o] << 8) | b->sram[(o + 1u) % b->sram_size]);
+    }
     if (a < 0x400000u)
         return (uint16_t)((g_rom[a] << 8) | g_rom[a + 1]);          /* ROM     */
     if (a >= 0xFF0000u) {                                            /* RAM     */
@@ -129,19 +188,29 @@ void gbus_write16(GenesisBus *b, uint32_t a, uint16_t v)
         g_ram[o] = (uint8_t)(v >> 8); g_ram[(uint16_t)(o + 1)] = (uint8_t)v;
         return;
     }
+    if (sram_hit(b, a)) {                                            /* SRAM    */
+        uint32_t o = a - b->sram_base;
+        b->sram[o] = (uint8_t)(v >> 8); b->sram[(o + 1u) % b->sram_size] = (uint8_t)v;
+        return;
+    }
+    if (a == 0xA130F0u) { b->sram_enabled = (uint8_t)(v & 1); return; } /* SRAM overlay reg (word) */
     if (a < 0x400000u) return;                   /* ROM: ignore writes         */
     if (a >= 0xC00000u && a < 0xC00010u) {                          /* VDP      */
         if (a < 0xC00004u)      gvdp_write_data(b->vdp, v);
         else if (a < 0xC00008u) gvdp_write_control(b->vdp, v);
+        /* A control write that triggered a 68K->VDP DMA froze the 68K for the
+         * transfer — charge those cycles to the recompiled CPU's accounting. */
+        { uint32_t st = gvdp_consume_68k_stall(b->vdp);
+          if (st) glue_charge_68k_stall(st); }
         return;
     }
-    if (a >= 0xC00010u && a < 0xC00018u) { machine_chip_sync(); snd_trace_chip(1, 0, (uint8_t)v); psg_write((uint8_t)v); return; } /* PSG */
+    if (a >= 0xC00010u && a < 0xC00018u) { CHIP_PC_68K(); audio_event_push(STAMP_68K(), AUDIO_PORT_PSG, (uint8_t)v); return; } /* PSG */
     if (a >= 0xA00000u && a < 0xA10000u) {                          /* Z80/FM   */
         if ((a & 0xFFFFu) < 0x2000u) { unsigned off = a & 0x1FFFu;
             snd_trace_68k_write((uint16_t)off, b->z80_ram[off], (uint8_t)(v >> 8),
                                 b->z80_busreq, b->z80_reset_off);  /* [SND-TRACE] */
             b->z80_ram[off] = (uint8_t)(v >> 8); return; }
-        if (a >= 0xA04000u && a <= 0xA04003u) { machine_chip_sync(); snd_trace_chip(0, (uint8_t)(a & 3), (uint8_t)v); ym2612_write((uint8_t)(a & 3), (uint8_t)v); return; }
+        if (a >= 0xA04000u && a <= 0xA04003u) { CHIP_PC_68K(); audio_event_push(STAMP_68K(), (uint8_t)(a & 3), (uint8_t)v); return; }
         return;
     }
     if (a >= 0xA10000u && a < 0xA10020u) { io_write(b, a, (uint8_t)v); return; }
@@ -171,6 +240,8 @@ uint8_t gbus_read8(GenesisBus *b, uint32_t a)
      * gbus_write8). */
     if (a >= 0xA00000u && a < 0xA10000u && (a & 0xFFFFu) < 0x2000u)
         return b->z80_ram[a & 0x1FFFu];
+    if (sram_hit(b, a & 0xFFFFFFu))                       /* SRAM: exact byte  */
+        return b->sram[(a & 0xFFFFFFu) - b->sram_base];
     uint16_t w = gbus_read16(b, a & ~1u);
     return (a & 1) ? (uint8_t)w : (uint8_t)(w >> 8);
 }
@@ -185,10 +256,12 @@ void gbus_write8(GenesisBus *b, uint32_t a, uint8_t v)
             snd_trace_68k_write((uint16_t)off, b->z80_ram[off], v,
                                 b->z80_busreq, b->z80_reset_off);  /* [SND-TRACE] */
             b->z80_ram[off] = v; return; }
-        if (a >= 0xA04000u && a <= 0xA04003u) { machine_chip_sync(); snd_trace_chip(0, (uint8_t)(a & 3), v); ym2612_write((uint8_t)(a & 3), v); return; }
+        if (a >= 0xA04000u && a <= 0xA04003u) { CHIP_PC_68K(); audio_event_push(STAMP_68K(), (uint8_t)(a & 3), v); return; }
         return;
     }
-    if (a == 0xC00011u) { machine_chip_sync(); snd_trace_chip(1, 0, v); psg_write(v); return; }
+    if (a == 0xC00011u) { CHIP_PC_68K(); audio_event_push(STAMP_68K(), AUDIO_PORT_PSG, v); return; }
+    if (sram_hit(b, a)) { b->sram[a - b->sram_base] = v; return; }  /* SRAM: exact byte */
+    if (a == 0xA130F1u || a == 0xA130F0u) { b->sram_enabled = (uint8_t)(v & 1); return; } /* overlay reg */
     /* Word-aligned fall-through for VDP/IO byte writes (value on both halves). */
     gbus_write16(b, a & ~1u, (uint16_t)((v << 8) | v));
 }
@@ -213,12 +286,12 @@ void gbus_z80_write(GenesisBus *b, uint16_t addr, uint8_t val)
     if (addr < 0x4000u) { unsigned off = addr & 0x1FFFu;
         if (g_sndwatch[off]) snd_trace_z80((uint16_t)off, val, 1);  /* [SND-TRACE] */
         b->z80_ram[off] = val; return; }                           /* RAM+mirror */
-    if (addr < 0x6000u) { machine_chip_sync(); snd_trace_chip(0, (uint8_t)(addr & 3), val); ym2612_write((uint8_t)(addr & 3), val); return; } /* FM */
+    if (addr < 0x6000u) { CHIP_PC_Z80(); audio_event_push(machine_z80_stamp(), (uint8_t)(addr & 3), val); return; } /* FM */
     if (addr < 0x6100u) {                                /* $6000 bank register   */
         b->z80_bank = ((b->z80_bank >> 1) | ((val & 1) << 8)) & 0x1FF;
         return;
     }
-    if (addr == 0x7F11u) { machine_chip_sync(); snd_trace_chip(1, 0, val); psg_write(val); return; }       /* PSG          */
+    if (addr == 0x7F11u) { CHIP_PC_Z80(); audio_event_push(machine_z80_stamp(), AUDIO_PORT_PSG, val); return; }       /* PSG          */
     if (addr >= 0x8000u) {                                          /* banked window */
         uint32_t a68 = ((uint32_t)b->z80_bank << 15) + (uint32_t)(addr - 0x8000u);
         gbus_write8(b, a68, val);

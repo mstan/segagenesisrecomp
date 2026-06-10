@@ -335,6 +335,9 @@ static size_t  s_psg_count = 0;
 
 #include "audio/mixer.h"          /* audio_mixer_drain */
 #include "audio/observability.h"  /* boop detector */
+#include "audio/event_queue.h"    /* audio_event_queue_reset (save-state load) */
+#include "audio/ym2612.h"         /* ym2612_save/load_state */
+#include "audio/sn76489.h"        /* psg_save/load_state */
 extern uint32_t g_audio_cycle_counter;
 extern uint64_t g_frame_count;
 extern uint32_t m68k_read32(uint32_t);
@@ -494,6 +497,95 @@ static const char *resolve_runner_path(const char *path, char *buf, size_t buf_l
     return buf;
 }
 
+#if OWN_BACKEND
+/* Own-backend save container: versioned magic, then the glue blob (M68K regs,
+ * frame count, cycle accumulators, V-int latch), WRAM, the whole machine
+ * (VDP + bus incl. Z80 RAM/SRAM + Z80 core + hidden ext bits), and both audio
+ * chips. Raw-struct format, private to a build — same convention as the
+ * clownmdemu-path states (which dumped g_clownmdemu raw); the magic keeps the
+ * two formats from being confused. */
+static const char OWN_SAVE_MAGIC[8] = "GROWNS1\0";
+
+int runner_save_state_file(const char *path)
+{
+    char full_path[512];
+    const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
+    FILE *sf = fopen(resolved, "wb");
+    if (!sf) {
+        fprintf(stderr, "[SAVE] failed to open %s\n", resolved);
+        return 0;
+    }
+
+    extern uint8_t g_ram[0x010000];
+    int ok = fwrite(OWN_SAVE_MAGIC, 1, sizeof(OWN_SAVE_MAGIC), sf) == sizeof(OWN_SAVE_MAGIC);
+    glue_save_state(sf);
+    ok = ok && fwrite(g_ram, 1, 0x10000, sf) == 0x10000;
+    ok = ok && machine_save_state(sf);
+    ok = ok && ym2612_save_state(sf);
+    ok = ok && psg_save_state(sf);
+    ok = ok && !ferror(sf);
+    fclose(sf);
+
+    if (ok)
+        fprintf(stderr, "[SAVE] saved %s\n", resolved);
+    else
+        fprintf(stderr, "[SAVE] failed while writing %s\n", resolved);
+    return ok;
+}
+
+int runner_load_state_file(const char *path)
+{
+    char full_path[512];
+    const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
+    FILE *sf = fopen(resolved, "rb");
+    if (!sf) {
+        fprintf(stderr, "[LOAD] empty/missing %s\n", resolved);
+        return 0;
+    }
+
+    char magic[8];
+    if (fread(magic, 1, sizeof(magic), sf) != sizeof(magic) ||
+        memcmp(magic, OWN_SAVE_MAGIC, sizeof(magic)) != 0) {
+        fprintf(stderr, "[LOAD] %s is not an own-backend save (old format?)\n", resolved);
+        fclose(sf);
+        return 0;
+    }
+
+    extern uint8_t g_ram[0x010000];
+    int ok = 1;
+    glue_load_state(sf);
+    ok = ok && fread(g_ram, 1, 0x10000, sf) == 0x10000;
+    ok = ok && machine_load_state(sf);
+    ok = ok && ym2612_load_state(sf);
+    ok = ok && psg_load_state(sf);
+    ok = ok && !ferror(sf);
+    fclose(sf);
+
+    /* Drop any chip writes queued by the frame the save interrupted; the
+     * restored chips already contain their effect. */
+    audio_event_queue_reset();
+
+    if (ok) {
+        /* Mode-aware resume: re-enter at the restored Game_Mode's per-frame
+         * loop top (moment-in-time) when the game maps one; otherwise fall
+         * back to the outer dispatcher (mode-handler re-entry / reload). */
+        uint32_t resume_pc = g_game_spec.resume_main_loop_pc;
+        if (g_game_spec.save_resume_pc && g_game_layout.game_mode_addr) {
+            uint32_t pc = g_game_spec.save_resume_pc(
+                m68k_read8(g_game_layout.game_mode_addr));
+            if (pc) resume_pc = pc;
+        }
+        if (resume_pc)
+            glue_restart_game_fiber(resume_pc);
+    }
+
+    if (ok)
+        fprintf(stderr, "[LOAD] loaded %s\n", resolved);
+    else
+        fprintf(stderr, "[LOAD] failed/truncated %s\n", resolved);
+    return ok;
+}
+#else /* !OWN_BACKEND — clownmdemu-path save states (unchanged) */
 int runner_save_state_file(const char *path)
 {
     char full_path[512];
@@ -545,8 +637,17 @@ int runner_load_state_file(const char *path)
     fclose(sf);
 
 #if ENABLE_RECOMPILED_CODE
-    if (ok && g_game_spec.resume_main_loop_pc)
-        glue_restart_game_fiber(g_game_spec.resume_main_loop_pc);
+    if (ok) {
+        /* Mode-aware resume (see the own-backend path above). */
+        uint32_t resume_pc = g_game_spec.resume_main_loop_pc;
+        if (g_game_spec.save_resume_pc && g_game_layout.game_mode_addr) {
+            uint32_t pc = g_game_spec.save_resume_pc(
+                m68k_read8(g_game_layout.game_mode_addr));
+            if (pc) resume_pc = pc;
+        }
+        if (resume_pc)
+            glue_restart_game_fiber(resume_pc);
+    }
 #endif
 
     if (ok)
@@ -555,6 +656,7 @@ int runner_load_state_file(const char *path)
         fprintf(stderr, "[LOAD] failed/truncated %s\n", resolved);
     return ok;
 }
+#endif /* OWN_BACKEND */
 
 /* =========================================================================
  * Battery-backed cartridge SRAM persistence (e.g. Sonic 3 save slots).
@@ -577,10 +679,28 @@ static uint64_t s_sram_hash      = 0;  /* last-seen content hash */
 static int      s_sram_dirty     = 0;  /* content changed since last flush */
 static uint32_t s_sram_dirty_at  = 0;  /* frame the pending change was seen */
 
+/* SRAM storage source: the own backend keeps cartridge SRAM in the own bus
+ * (header-parsed geometry, genesis_bus.c); the clownmdemu path keeps it in
+ * g_clownmdemu.state.external_ram. The persistence layer below is otherwise
+ * identical for both. */
+#if OWN_BACKEND
+static unsigned char *sram_buf(void)  { return gbus_sram_buffer(&g_machine.bus); }
+static size_t         sram_size(void) { return (size_t)gbus_sram_size(&g_machine.bus); }
+static int            sram_battery_present(void) { return sram_size() != 0; }
+#else
+static unsigned char *sram_buf(void)  { return g_clownmdemu.state.external_ram.buffer; }
+static size_t         sram_size(void) { return (size_t)g_clownmdemu.state.external_ram.size; }
+static int            sram_battery_present(void)
+{
+    return g_clownmdemu.state.external_ram.non_volatile &&
+           g_clownmdemu.state.external_ram.size != 0;
+}
+#endif
+
 static uint64_t sram_content_hash(void)
 {
-    const unsigned char *buf = g_clownmdemu.state.external_ram.buffer;
-    size_t n = (size_t)g_clownmdemu.state.external_ram.size;
+    const unsigned char *buf = sram_buf();
+    size_t n = sram_size();
     uint64_t h = 0xCBF29CE484222325ULL;  /* FNV-1a-64, as in [FBHASH] */
     for (size_t i = 0; i < n; i++) { h ^= buf[i]; h *= 0x100000001B3ULL; }
     return h;
@@ -591,8 +711,8 @@ static void runner_sram_flush(void)
     if (!s_sram_active) return;
     FILE *f = fopen(s_sram_path, "wb");
     if (!f) { fprintf(stderr, "[SRAM] flush failed to open %s\n", s_sram_path); return; }
-    size_t n = (size_t)g_clownmdemu.state.external_ram.size;
-    size_t wrote = fwrite(g_clownmdemu.state.external_ram.buffer, 1, n, f);
+    size_t n = sram_size();
+    size_t wrote = fwrite(sram_buf(), 1, n, f);
     fclose(f);
     s_sram_dirty = 0;
     fprintf(stderr, "[SRAM] flushed %zu bytes to %s\n", wrote, s_sram_path);
@@ -603,8 +723,7 @@ static void runner_sram_flush(void)
  * (which runs SetUpExternalRAM and so has populated size / non_volatile). */
 static void runner_sram_init_and_load(const char *rom_path)
 {
-    if (!g_clownmdemu.state.external_ram.non_volatile ||
-        g_clownmdemu.state.external_ram.size == 0)
+    if (!sram_battery_present())
         return;  /* no battery save on this cartridge */
     s_sram_active = 1;
 
@@ -623,8 +742,8 @@ static void runner_sram_init_and_load(const char *rom_path)
 
     FILE *f = fopen(s_sram_path, "rb");
     if (f) {
-        size_t n = (size_t)g_clownmdemu.state.external_ram.size;
-        size_t got = fread(g_clownmdemu.state.external_ram.buffer, 1, n, f);
+        size_t n = sram_size();
+        size_t got = fread(sram_buf(), 1, n, f);
         fclose(f);
         fprintf(stderr, "[SRAM] loaded %zu/%zu bytes from %s\n", got, n, s_sram_path);
     } else {
@@ -654,8 +773,13 @@ static void runner_sram_autosave_tick(uint32_t frame_num)
 static uint8_t runner_ram_byte(uint32_t addr)
 {
     uint16_t off = (uint16_t)(addr & 0xFFFFu);
+#if OWN_BACKEND
+    extern uint8_t g_ram[0x010000];   /* own bus's authoritative WRAM */
+    return g_ram[off];
+#else
     uint16_t word = g_clownmdemu.state.m68k.ram[off / 2u];
     return (off & 1u) ? (uint8_t)(word & 0xFFu) : (uint8_t)(word >> 8);
+#endif
 }
 
 static int runner_dump_ram_file(const char *path)
@@ -1160,7 +1284,8 @@ int main(int argc, char *argv[])
     /* Battery-backed cartridge SRAM (Sonic 3 save slots): HardReset has run
      * SetUpExternalRAM, so size / non_volatile are now valid. Load the .srm
      * if one exists; a no-op for cartridges without battery save. */
-    runner_sram_init_and_load(rom_path);
+    /* (battery-SRAM init moved below glue_init — the own backend parses SRAM
+     * geometry from g_rom, which glue_init populates.) */
 
 #if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     /* Step 2 / Hybrid: initialise glue (Step 2 also starts the game thread). */
@@ -1172,6 +1297,11 @@ int main(int argc, char *argv[])
      * no-ops if stubs). */
     audio_mixer_init();
     audio_obs_init();
+
+#if OWN_BACKEND
+    gbus_sram_setup(&g_machine.bus);   /* g_rom is populated now (glue_init) */
+#endif
+    runner_sram_init_and_load(rom_path);
 
     free(rom_raw);   /* glue_init copied what it needs */
 
@@ -1507,14 +1637,13 @@ int main(int argc, char *argv[])
           #define NTSC_WALL_FRAME_68K_CYCLES 127856u
           if (s_audio_backend == AUDIO_BACKEND_OURS) {
               #define NTSC_WALL_FRAME_MASTER_CYCLES 895780u
-#if OWN_BACKEND
-              /* The own backend advances ymfm/PSG per scanline (genesis_machine),
-               * so the chips already hold this frame's samples — drain collects
-               * them (frame_end=0 → mixer does no further advance). */
-              audio_mixer_drain(0,
-#else
+              /* Both backends now deliver chip writes through the cycle-
+               * stamped event queue; the mixer sorts by stamp, advances the
+               * chips between writes, and tail-advances to the wall-frame
+               * end. (The own backend's old per-scanline live advance is
+               * gone — it collapsed the 68K V-int handler's whole driver
+               * tick onto one chip cycle; see genesis_machine.c.) */
               audio_mixer_drain(NTSC_WALL_FRAME_MASTER_CYCLES,
-#endif
                                 s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
                                 s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count);
           }

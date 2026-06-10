@@ -99,8 +99,15 @@ void snd_trace_dump(const char *path)
 }
 
 /* The [CHIP-TRACE] FM/PSG register-write ring (snd_trace_chip / chip_trace_dump)
- * moved to the shared runner/chip_trace.c so the _oracle build captures it too;
- * genesis_bus.c still calls snd_trace_chip() at the own-backend write sites. */
+ * lives in the shared runner/chip_trace.c; both builds are captured by the
+ * audio_event_push tap in audio/event_queue.c. */
+
+/* [CHIP-TRACE] writer attribution: the Z80 PC for Z80-origin FM/PSG pushes
+ * (genesis_bus.c sets g_snd_pcz from this at each push site). */
+uint32_t machine_z80_pc(void)
+{
+    return (uint32_t)g_machine.z80.program_counter;
+}
 
 /* [SND-TRACE] one-shot Z80 RAM dump (the uploaded SMPS driver image) so the
  * sync-wait loop the Z80 sits in at vblank can be disassembled. Strip with the
@@ -119,13 +126,6 @@ void z80_ram_dump(const char *path)
 extern void glue_run_game_chunk(uint32_t cycles);
 extern void glue_own_interrupt(int level, GVDP *vdp);
 extern int  glue_own_vint_service_latched(GVDP *vdp);  /* deliver a V-int latched while 68K IRQs were masked */
-
-/* Audio chips, advanced in step with the machine (per scanline) so FM/PSG
- * register writes land at ~scanline granularity instead of collapsing to one
- * batch at frame end (which buzzed / dropped notes). main.c then drains with
- * frame_end=0 so the mixer only collects the samples generated here. */
-extern void ym2612_advance(uint32_t cycles_master);
-extern void psg_advance(uint32_t cycles_master);
 
 /* ARGB palette cache (normal/shadow/highlight), fed by VDP CRAM writes. */
 static uint32_t s_cram_argb[GVDP_TOTAL_PALETTE];
@@ -158,18 +158,52 @@ static uint16_t vdp_bus_read(void *u, uint32_t a) { (void)u; return gbus_read16(
 static cc_u16f z80_read (void *u, cc_u16f a)            { return gbus_z80_read((GenesisBus *)u, (uint16_t)a); }
 static void    z80_write(void *u, cc_u16f a, cc_u16f v) { gbus_z80_write((GenesisBus *)u, (uint16_t)a, (uint8_t)v); }
 
+/* Pointer wiring shared by machine_init and machine_load_state (a raw struct
+ * restore clobbers the function/user pointers with the saving process's). */
+static void machine_wire_pointers(void)
+{
+    g_machine.vdp.bus_read       = vdp_bus_read;
+    g_machine.vdp.colour_updated = colour_cb;
+    g_machine.bus.vdp            = &g_machine.vdp;
+    g_machine.z80_cb.read        = z80_read;
+    g_machine.z80_cb.write       = z80_write;
+    g_machine.z80_cb.user_data   = &g_machine.bus;
+}
+
 void machine_init(void)
 {
     memset(&g_machine, 0, sizeof(g_machine));
     gvdp_init(&g_machine.vdp);
-    g_machine.vdp.bus_read       = vdp_bus_read;
-    g_machine.vdp.colour_updated = colour_cb;
     gbus_init(&g_machine.bus, &g_machine.vdp);
     ClownZ80_Constant_Initialise();
     ClownZ80_State_Initialise(&g_machine.z80);
-    g_machine.z80_cb.read      = z80_read;
-    g_machine.z80_cb.write     = z80_write;
-    g_machine.z80_cb.user_data = &g_machine.bus;
+    machine_wire_pointers();
+}
+
+/* ---- Own-backend save states ----------------------------------------------
+ * Snapshot/restore the whole machine (VDP incl. VRAM/CRAM/VSRAM, bus incl.
+ * Z80 RAM + SRAM, Z80 core state) plus the superzazu hidden Z80 bits. The
+ * format is a raw struct image, private to a build (same convention as the
+ * clownmdemu-path save states). main.c owns the file container. */
+extern int z80sz_save_ext(FILE *f);
+extern int z80sz_load_ext(FILE *f);
+
+int machine_save_state(FILE *f)
+{
+    if (fwrite(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
+    return z80sz_save_ext(f);
+}
+
+int machine_load_state(FILE *f)
+{
+    if (fread(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
+    if (!z80sz_load_ext(f)) return 0;
+    machine_wire_pointers();
+    /* Rebuild the ARGB palette cache from restored CRAM (the cache is a
+     * derived file-static, not part of the snapshot). */
+    for (unsigned i = 0; i < GVDP_CRAM_ENTRIES; i++)
+        colour_cb(NULL, i, g_machine.vdp.cram[i]);
+    return 1;
 }
 
 void machine_set_pad(int port, uint8_t buttons)
@@ -184,29 +218,38 @@ void machine_set_pad(int port, uint8_t buttons)
 #define Z80_PER_LINE    228u
 #define MASTER_PER_Z80  (MASTER_PER_LINE / Z80_PER_LINE)   /* 3420/228 = 15 master/Z80 cyc */
 
-/* ---- Audio cadence -------------------------------------------------------
- * Advance the FM/PSG up to each chip-write's REAL cycle position, instead of
- * applying a whole scanline's writes then advancing ~3.4 samples in one lump
- * (the "3b" write-collapse: SFX onsets aliased away, rendering the own backend
- * ~10x quieter than the clownmdemu reference in the 2-6 kHz band). This mirrors
- * clownmdemu's SyncFM/SyncPSG-before-every-write. Cycle positions are per-frame
- * (reset each frame) so they stay well within uint32_t. */
-static uint32_t s_chip_master = 0;   /* master cycle the chips are advanced to (this frame) */
+/* ---- Audio write stamping -------------------------------------------------
+ * FM/PSG register writes are NOT applied to the chips here. They are pushed
+ * onto the shared cycle-stamped audio event queue (audio/event_queue.c) by
+ * genesis_bus.c, and audio_mixer_drain() (main.c, once per wall frame) sorts
+ * them by stamp and advances the chips BETWEEN writes — the same proven
+ * architecture the clownmdemu gold-ref uses.
+ *
+ * Why not advance the chips live at each write (the previous design): the
+ * Sonic 1 sound driver is 68K SMPS running inside the V-int handler, which
+ * this scheduler executes as one atomic lump at the vblank line. A live
+ * chip-position cursor is FROZEN for that whole driver tick, so every write
+ * of the tick (including key-off->key-on retriggers) landed at the SAME
+ * chip cycle. ymfm detects key edges at its per-sample envelope clock, so
+ * zero-sample-spaced off->on pairs never retriggered: faint / missing /
+ * tail-only notes (measured: 100% of $28 off->on pairs at gap 0, 2-6 kHz
+ * band at 0.03-0.25x the reference in SFX windows).
+ *
+ * Stamp sources (master cycles since wall-frame start):
+ *   Z80-origin writes : s_line_base + s_z80_off (raster position).
+ *   68K-origin writes : g_audio_cycle_counter * 7 (per-instruction counter
+ *                       bumped by generated code — keeps advancing through
+ *                       the V-int handler, which is what restores real
+ *                       spacing inside the driver tick).
+ * The two axes interleave arbitrarily; the mixer's stamp sort makes that
+ * safe. */
 static uint32_t s_line_base   = 0;   /* master cycle at the start of the current scanline   */
 static uint32_t s_z80_off     = 0;   /* progress within the scanline, in master cycles      */
 
-/* Advance ym2612 + PSG to the current emulation position. Called from the bus
- * before each FM/PSG register write (genesis_bus.c) and at each scanline end.
- * Monotonic within a frame; never rewinds. */
-void machine_chip_sync(void)
+/* Stamp for Z80-origin chip writes (called from genesis_bus.c). */
+uint32_t machine_z80_stamp(void)
 {
-    uint32_t now = s_line_base + s_z80_off;
-    if (now > s_chip_master) {
-        uint32_t d = now - s_chip_master;
-        ym2612_advance(d);
-        psg_advance(d);
-        s_chip_master = now;
-    }
+    return s_line_base + s_z80_off;
 }
 
 static void step_z80(GenesisMachine *m, uint32_t target)
@@ -222,9 +265,8 @@ static void step_z80(GenesisMachine *m, uint32_t target)
     int pend_before = m->z80.interrupt_pending ? 1 : 0;   /* [SND-TRACE] */
     uint32_t done = m->z80_cycle_debt;
     while (done < target) {
-        /* Cadence: position chip writes made by this instruction at its start
-         * cycle (master), so machine_chip_sync() advances the FM/PSG to here
-         * before the write lands. */
+        /* Stamp chip writes made by this instruction at its start cycle
+         * (master) — machine_z80_stamp() reads this for the event queue. */
         s_z80_off = done * MASTER_PER_Z80;
         done += ClownZ80_DoInstruction(&m->z80, &m->z80_cb);
     }
@@ -240,8 +282,6 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
     int active_h = gvdp_screen_height(&m->vdp);
     static uint8_t  idxbuf[GVDP_MAX_WIDTH];
     static uint32_t rowbuf[GVDP_MAX_WIDTH];
-
-    s_chip_master = 0;   /* per-frame cadence cursor reset (see machine_chip_sync) */
 
     for (int line = 0; line < LINES_TOTAL; line++) {
         unsigned irq = gvdp_begin_scanline(&m->vdp, line);
@@ -281,15 +321,6 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
             ClownZ80_Interrupt(&m->z80, 1);
             glue_own_interrupt(6, &m->vdp);
         }
-
-        /* Advance the FM + PSG to the END of this scanline. Intra-line writes
-         * already advanced the chips to their own cycle via machine_chip_sync()
-         * (called from the bus before each write); this catches up the tail
-         * (silence/decay past the last write). Replaces the old single
-         * MASTER_PER_LINE lump that collapsed all of a line's writes onto one
-         * sample boundary. */
-        s_z80_off = MASTER_PER_LINE;
-        machine_chip_sync();
 
         /* Render + emit active scanlines. */
         if (line < active_h && sink) {

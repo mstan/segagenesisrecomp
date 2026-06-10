@@ -57,6 +57,10 @@ enum {
 };
 #define CODE_DMA_BIT 0x20
 
+/* 68K freeze cycles owed by the last 68K->VDP DMA (see header note on why
+ * this lives outside the GVDP struct). */
+static uint32_t s_pending_68k_stall = 0;
+
 /* ---- Lifecycle ------------------------------------------------------------ */
 void gvdp_init(GVDP *v)
 {
@@ -79,6 +83,7 @@ void gvdp_reset(GVDP *v)
     v->hint_counter = 0;
     v->scanline = 0;
     v->dma_fill_pending = 0;
+    s_pending_68k_stall = 0;
     /* Sensible auto-increment default; games set it explicitly. */
     if (REG_AUTOINC(v) == 0) REG_AUTOINC(v) = 2;
 }
@@ -149,12 +154,33 @@ static void dma_run_68k_to_vdp(GVDP *v)
     uint32_t len = dma_length(v);
     uint32_t src = dma_source_68k(v);
     if (!v->bus_read) return;
+    /* Hardware freezes the 68K for the whole 68K->VDP transfer. Bandwidth is
+     * raster-gated access slots: ~205 words/line with the display blanked
+     * (vblank or display off; ~166 in H32), ~18 words/line during active
+     * display (~16 in H32). 488 68K cycles per line. Without this charge the
+     * V-int handler's big vblank DMAs (sprite table, hscroll, queued art)
+     * consume zero raster time and the main loop resumes tens of lines
+     * earlier than hardware. */
+    {
+        int blanked = v->in_vblank || !MODE2_DISPLAY_ON(v);
+        uint32_t slots = blanked ? (MODE4_H40(v) ? 205u : 166u)
+                                 : (MODE4_H40(v) ? 18u  : 16u);
+        s_pending_68k_stall += (uint32_t)(((uint64_t)len * 488u) / slots);
+    }
     while (len--) {
         uint16_t word = v->bus_read(v->bus_read_user, src);
         dma_store(v, word);
         /* Source increments within its 128KB bank (low 17 bits wrap). */
         src = (src & 0xFE0000u) | ((src + 2) & 0x01FFFFu);
     }
+}
+
+uint32_t gvdp_consume_68k_stall(GVDP *v)
+{
+    (void)v;
+    uint32_t s = s_pending_68k_stall;
+    s_pending_68k_stall = 0;
+    return s;
 }
 
 static void dma_run_vram_copy(GVDP *v)

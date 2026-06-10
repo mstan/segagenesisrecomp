@@ -82,6 +82,16 @@ typedef struct GameSpec {
      * behavior. */
     uint32_t    resume_main_loop_pc;
 
+    /* Mode-aware save-state resume (preferred over resume_main_loop_pc
+     * when present). Receives the RESTORED Game_Mode byte and returns
+     * the per-frame loop-top PC for that mode (e.g. Sonic 3's LevelLoop
+     * for GM_Level), so a load continues moment-in-time instead of
+     * re-running the mode handler's init (zone reload). Return 0 to
+     * fall back to resume_main_loop_pc (mode-handler re-entry via the
+     * outer dispatcher) — correct for transition/init modes. Addresses
+     * come from the game's disassembly. */
+    uint32_t  (*save_resume_pc)(uint8_t game_mode);
+
     /* Outer game-mode dispatcher PC. If the save-state resume loop
      * returns because the game changed modes, the restarted host fiber
      * continues here so normal mode dispatch takes over. */

@@ -5,11 +5,10 @@
  * clownmdemu reference). Strip with the rest of the [SND-TRACE] diagnostics
  * before commit (PRINCIPLES #18).
  *
- * Capture sites:
- *   own backend : genesis_bus.c snd_trace_chip() at the FM/PSG write sites.
- *   oracle      : event_queue.c audio_event_push() tap — clownmdemu's fork
- *                 already routes every FM/PSG write there, so the oracle stream
- *                 is captured with ZERO edits to the AGPL core.
+ * Capture site (both builds): event_queue.c audio_event_push() tap — the
+ * clownmdemu fork routes every FM/PSG write there, and the own backend now
+ * pushes all its FM/PSG writes there too (genesis_bus.c), so one tap covers
+ * either build with ZERO edits to the AGPL core.
  *
  * Both stamp (frame, line) the same way (frame = wall frame since boot; line =
  * scanline 0..261), so the dumps are directly comparable and parse identically
@@ -34,6 +33,15 @@ extern unsigned      g_snd_line;     /* current scanline within the frame */
  * stamps events with this so the two dumps align in chip_stream_diff. Set per
  * frame in main.c for both builds. */
 extern unsigned long g_snd_vint;
+/* The event's queue cycle stamp (master cycles within the wall frame; the
+ * sample-boundary truth for "did the EG clock between these two writes").
+ * Set by the audio_event_push tap for both builds. Dev-only. */
+extern unsigned long g_snd_mc;
+/* Writer attribution for the next pushed chip event: the Z80 PC for Z80-origin
+ * writes, 0xFFFF for 68K-origin writes (set at each push site in
+ * genesis_bus.c; the oracle build leaves it 0 = unattributed). Lets a dump
+ * answer "which driver routine emitted this write". Dev-only. */
+extern unsigned      g_snd_pcz;
 
 /* kind = CHIP_FM (port 0..3 = YM2612 addr1/data1/addr2/data2) or CHIP_PSG
  * (port ignored). Gated on g_snd_trace and the boot-upload skip frame. */

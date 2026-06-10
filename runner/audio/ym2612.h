@@ -41,4 +41,10 @@ size_t ym2612_samples_available(void);
  * upsampled — we'll match at init time. */
 uint32_t ym2612_sample_rate(void);
 
+/* Save-state hooks (own-backend snapshots). Full chip + wrapper state;
+ * returns 1 on success. Format is private to a build. */
+#include <stdio.h>
+int ym2612_save_state(FILE *f);
+int ym2612_load_state(FILE *f);
+
 #endif
