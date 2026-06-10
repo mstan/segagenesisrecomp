@@ -1620,7 +1620,10 @@ int main(int argc, char *argv[])
             g_snd_vint = (unsigned long)m68k_read32(0xFFFE0C); }
           machine_run_frame(own_scanline_sink, NULL);
           s_screen_width  = gvdp_screen_width(&g_machine.vdp);
-          s_screen_height = gvdp_screen_height(&g_machine.vdp);
+          /* Output height doubles in interlace mode 2 (S2 2P split-screen);
+           * the existing interlace display modes (tv squash / raw) take over
+           * from here, same as the clownmdemu path. */
+          s_screen_height = gvdp_output_height(&g_machine.vdp);
 #else
           ClownMDEmu_Iterate(&g_clownmdemu);  /* DoCycles interleaves game */
 #endif

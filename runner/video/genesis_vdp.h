@@ -112,8 +112,10 @@ uint32_t gvdp_consume_68k_stall(GVDP *v);
 
 /* ---- Geometry / mode queries (from registers) ----------------------------- */
 int gvdp_screen_width (const GVDP *v);          /* 256 (H32) or 320 (H40)      */
-int gvdp_screen_height(const GVDP *v);          /* 224 (V28) or 240 (V30)      */
+int gvdp_screen_height(const GVDP *v);          /* 224 (V28) or 240 (V30) — RASTER lines */
 int gvdp_display_enabled(const GVDP *v);
+int gvdp_interlace_double(const GVDP *v);       /* 1 = interlace mode 2        */
+int gvdp_output_height(const GVDP *v);          /* raster height x2 in IM2     */
 
 /* ---- Rendering ------------------------------------------------------------ */
 /* Render one active scanline into `out` as palette indices (see GVDP_PALETTE_*

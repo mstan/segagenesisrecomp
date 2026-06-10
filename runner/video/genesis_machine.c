@@ -322,11 +322,17 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
             glue_own_interrupt(6, &m->vdp);
         }
 
-        /* Render + emit active scanlines. */
+        /* Render + emit active scanlines. In interlace mode 2 each raster
+         * line yields TWO output rows (the even and odd fields' lines,
+         * rendered progressively into a 448-row frame). */
         if (line < active_h && sink) {
-            int n = gvdp_render_scanline(&m->vdp, line, idxbuf);
-            for (int x = 0; x < n; x++) rowbuf[x] = s_cram_argb[idxbuf[x]];
-            sink(user, line, rowbuf, n);
+            int dbl = gvdp_interlace_double(&m->vdp);
+            for (int sub = 0; sub <= dbl; sub++) {
+                int row = (line << dbl) + sub;
+                int n = gvdp_render_scanline(&m->vdp, row, idxbuf);
+                for (int x = 0; x < n; x++) rowbuf[x] = s_cram_argb[idxbuf[x]];
+                sink(user, row, rowbuf, n);
+            }
         }
 
         m->master_cycle += MASTER_PER_LINE;

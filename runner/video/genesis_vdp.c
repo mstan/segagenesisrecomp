@@ -45,6 +45,13 @@
 #define MODE1_HINT_ON(v)    (REG_MODE1(v) & 0x10)
 #define MODE4_H40(v)        (REG_MODE4(v) & 0x01)
 #define MODE4_SHI(v)        (REG_MODE4(v) & 0x08)   /* shadow/highlight        */
+/* Interlace select (reg $0C bits 2:1): 00/10 = none, 01 = interlace mode 1
+ * (same resolution), 11 = interlace mode 2 — DOUBLE vertical resolution:
+ * 448 output lines, 8x16-pixel cells (64 bytes each) for planes AND sprites,
+ * sprite Y/size and vertical scroll in double-res units. Sonic 2's 2P
+ * split-screen runs in this mode. */
+#define MODE4_LSM(v)        ((REG_MODE4(v) >> 1) & 0x3)
+#define MODE4_IM2(v)        (MODE4_LSM(v) == 0x3)
 
 /* Control-port code field: low nibble selects target+direction. */
 enum {
@@ -92,6 +99,12 @@ void gvdp_reset(GVDP *v)
 int gvdp_screen_width(const GVDP *v)  { return MODE4_H40(v) ? 320 : 256; }
 int gvdp_screen_height(const GVDP *v) { return MODE2_V30(v) ? 240 : 224; }
 int gvdp_display_enabled(const GVDP *v){ return MODE2_DISPLAY_ON(v) ? 1 : 0; }
+/* Output rows per frame: doubled in interlace mode 2 (two fields' worth,
+ * rendered progressively — the scheduler emits two output rows per raster
+ * line). gvdp_screen_height stays the RASTER height (raster timing, H-int,
+ * V-int are unchanged by interlace). */
+int gvdp_interlace_double(const GVDP *v){ return MODE4_IM2(v) ? 1 : 0; }
+int gvdp_output_height(const GVDP *v) { return gvdp_screen_height(v) << gvdp_interlace_double(v); }
 
 /* ---- VRAM/CRAM/VSRAM word access ------------------------------------------ */
 /* VRAM word write carries the documented byte-swap on odd addresses. */
@@ -363,7 +376,11 @@ static uint8_t s_spr_hilite_op[GVDP_MAX_WIDTH]; /* operator: highlight        */
  * (transparent, they modulate the underlying pixel) rather than drawn colours.
  *
  * Sprite cell ordering is column-major (cells go down a column, then across),
- * the tile layout the Genesis hardware uses. */
+ * the tile layout the Genesis hardware uses.
+ *
+ * `line` is an OUTPUT row: a raster line normally, a double-res row in
+ * interlace mode 2, where sprite Y/height are in double-res units (Y origin
+ * 256 instead of 128), cells are 8x16 and patterns 64 bytes. */
 static void sprite_render_line(GVDP *v, int line, int w)
 {
     memset(s_spr_op, 0, (size_t)w);
@@ -371,9 +388,12 @@ static void sprite_render_line(GVDP *v, int line, int w)
     memset(s_spr_hilite_op, 0, (size_t)w);
 
     int h40 = MODE4_H40(v);
+    int im2 = MODE4_IM2(v);
     int max_sprites   = h40 ? 80 : 64;
     int max_per_line  = h40 ? 20 : 16;
     int sh_mode       = MODE4_SHI(v) != 0;
+    int cell_h_shift  = im2 ? 4 : 3;          /* cell height 16 or 8 px        */
+    int tile_bytes    = im2 ? 64 : 32;
     uint16_t sat = (uint16_t)((REG_SPRITE_NT(v) & 0x7F) << 9);
 
     /* Tracks the first opaque sprite owner per pixel (first-wins; a second
@@ -385,11 +405,11 @@ static void sprite_render_line(GVDP *v, int line, int w)
 
     for (int n = 0; n < max_sprites; n++) {
         uint16_t e = (uint16_t)(sat + link * 8);
-        int y      = (vram_read_word(v, e) & 0x3FF) - 128;
+        int y      = (vram_read_word(v, e) & 0x3FF) - (im2 ? 256 : 128);
         uint8_t sz = v->vram[(uint16_t)(e + 2)];
         int hsz    = ((sz >> 2) & 3) + 1;     /* width  in cells (1..4)        */
         int vsz    = (sz & 3) + 1;            /* height in cells (1..4)        */
-        int height = vsz * 8;
+        int height = vsz << cell_h_shift;
         int next   = v->vram[(uint16_t)(e + 3)] & 0x7F;
 
         if (line >= y && line < y + height) {
@@ -411,7 +431,7 @@ static void sprite_render_line(GVDP *v, int line, int w)
             int width = hsz * 8;
 
             int iy = vf ? (height - 1 - (line - y)) : (line - y);
-            int celly = iy >> 3, fy = iy & 7;
+            int celly = iy >> cell_h_shift, fy = iy & ((1 << cell_h_shift) - 1);
 
             for (int lx = 0; lx < width; lx++) {
                 int sx = screen_x + lx;
@@ -419,7 +439,7 @@ static void sprite_render_line(GVDP *v, int line, int w)
                 int ix = hf ? (width - 1 - lx) : lx;
                 int cellx = ix >> 3, fx = ix & 7;
                 int tileno = (tile + cellx * vsz + celly) & 0x07FF;
-                uint16_t pa = (uint16_t)(tileno * 32 + fy * 4 + (fx >> 1));
+                uint16_t pa = (uint16_t)(tileno * tile_bytes + fy * 4 + (fx >> 1));
                 uint8_t byte = v->vram[pa & 0xFFFF];
                 int nib = (fx & 1) ? (byte & 0x0F) : (byte >> 4);
                 if (nib == 0) continue;            /* transparent             */
@@ -454,19 +474,25 @@ static int plane_tiles(unsigned code2)
 }
 
 /* Fetch one plane pixel at plane-space (px,py). Returns palette index 0..63,
- * opaque flag (pixel != 0), and the tile's priority bit. */
+ * opaque flag (pixel != 0), and the tile's priority bit.
+ * In interlace mode 2 (im2), py is in double-res lines: cells are 8x16
+ * (64-byte patterns) and the plane covers ht*16 double-res lines. */
 static void fetch_plane_pixel(const GVDP *v, uint16_t base, int wt, int ht,
-                              int px, int py, uint8_t *idx, int *opaque, int *hi)
+                              int px, int py, int im2,
+                              uint8_t *idx, int *opaque, int *hi)
 {
-    int wpx = wt * 8, hpx = ht * 8;
+    int cell_h_shift = im2 ? 4 : 3;
+    int fy_mask      = (1 << cell_h_shift) - 1;
+    int tile_bytes   = im2 ? 64 : 32;
+    int wpx = wt * 8, hpx = ht << cell_h_shift;
     px &= (wpx - 1); py &= (hpx - 1);
-    uint16_t nt = (uint16_t)(base + (uint16_t)(((py >> 3) * wt + (px >> 3)) * 2));
+    uint16_t nt = (uint16_t)(base + (uint16_t)(((py >> cell_h_shift) * wt + (px >> 3)) * 2));
     uint16_t e  = vram_read_word(v, nt);
     int ti = e & 0x07FF;
-    int fx = px & 7, fy = py & 7;
-    if (e & 0x0800) fx ^= 7;   /* H flip */
-    if (e & 0x1000) fy ^= 7;   /* V flip */
-    uint16_t pa = (uint16_t)(ti * 32 + fy * 4 + (fx >> 1));
+    int fx = px & 7, fy = py & fy_mask;
+    if (e & 0x0800) fx ^= 7;        /* H flip */
+    if (e & 0x1000) fy ^= fy_mask;  /* V flip */
+    uint16_t pa = (uint16_t)(ti * tile_bytes + fy * 4 + (fx >> 1));
     uint8_t byte = v->vram[pa & 0xFFFF];
     int nib = (fx & 1) ? (byte & 0x0F) : (byte >> 4);
     *opaque = (nib != 0);
@@ -487,9 +513,16 @@ static int in_window(const GVDP *v, int x, int line)
     return h_in || v_in;
 }
 
+/* Render one OUTPUT row. `line` is a raster line normally; in interlace
+ * mode 2 it is a double-res row (0..447) — the scheduler calls this twice
+ * per raster line. Raster-indexed lookups (hscroll table, window boundary)
+ * use the raster line; plane/sprite vertical addressing runs in double-res
+ * space with 8x16 cells. */
 int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
 {
     int w = gvdp_screen_width(v);
+    int im2 = MODE4_IM2(v);
+    int rline = im2 ? (line >> 1) : line;   /* raster line for table lookups */
     uint8_t backdrop = (uint8_t)(REG_BACKDROP(v) & 0x3F);
 
     if (!gvdp_display_enabled(v)) {
@@ -506,16 +539,20 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     uint16_t base_w = MODE4_H40(v) ? (uint16_t)((REG_WINDOW_NT(v) & 0x3E) << 10)
                                    : (uint16_t)((REG_WINDOW_NT(v) & 0x3F) << 10);
 
-    /* Horizontal scroll for this line. */
+    /* Horizontal scroll for this line (table is per RASTER line). */
     uint16_t hbase = (uint16_t)((REG_HSCROLL_NT(v) & 0x3F) << 10);
     int hmode = REG_MODE3(v) & 0x3;
-    int hidx  = (hmode == 0) ? 0 : (hmode == 2) ? (line & ~7) : line; /* 3=line */
+    int hidx  = (hmode == 0) ? 0 : (hmode == 2) ? (rline & ~7) : rline; /* 3=line */
     int hs_a = vram_read_word(v, (uint16_t)(hbase + hidx * 4 + 0)) & 0x3FF;
     int hs_b = vram_read_word(v, (uint16_t)(hbase + hidx * 4 + 2)) & 0x3FF;
 
     int vmode_2cell = (REG_MODE3(v) & 0x4) != 0;
+    /* Vertical scroll: 10 bits normally; 11 bits in interlace mode 2, in
+     * double-res units (the game scrolls each split-screen viewport with
+     * these). */
+    int vs_mask = im2 ? 0x7FF : 0x3FF;
 
-    /* Sprite layer for this line. */
+    /* Sprite layer for this output row. */
     sprite_render_line(v, line, w);
 
     for (int x = 0; x < w; x++) {
@@ -523,25 +560,27 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         int vs_a, vs_b;
         if (vmode_2cell) {
             int col = (x >> 4) * 2;
-            vs_a = v->vsram[(col + 0) % GVDP_VSRAM_ENTRIES] & 0x3FF;
-            vs_b = v->vsram[(col + 1) % GVDP_VSRAM_ENTRIES] & 0x3FF;
+            vs_a = v->vsram[(col + 0) % GVDP_VSRAM_ENTRIES] & vs_mask;
+            vs_b = v->vsram[(col + 1) % GVDP_VSRAM_ENTRIES] & vs_mask;
         } else {
-            vs_a = v->vsram[0] & 0x3FF;
-            vs_b = v->vsram[1] & 0x3FF;
+            vs_a = v->vsram[0] & vs_mask;
+            vs_b = v->vsram[1] & vs_mask;
         }
 
         uint8_t a_idx, b_idx; int a_op, a_hi, b_op, b_hi;
 
-        /* Plane A — or the window plane (unscrolled) where the window covers. */
-        if (in_window(v, x, line)) {
-            fetch_plane_pixel(v, base_w, win_wt, ht, x, line, &a_idx, &a_op, &a_hi);
+        /* Plane A — or the window plane (unscrolled) where the window covers.
+         * The window is unscrolled and cell-addressed: in IM2 its vertical
+         * addressing is still double-res (8x16 cells over the output rows). */
+        if (in_window(v, x, rline)) {
+            fetch_plane_pixel(v, base_w, win_wt, ht, x, line, im2, &a_idx, &a_op, &a_hi);
         } else {
             fetch_plane_pixel(v, base_a, wt, ht,
-                              (x - hs_a), (line + vs_a), &a_idx, &a_op, &a_hi);
+                              (x - hs_a), (line + vs_a), im2, &a_idx, &a_op, &a_hi);
         }
         /* Plane B. */
         fetch_plane_pixel(v, base_b, wt, ht,
-                          (x - hs_b), (line + vs_b), &b_idx, &b_op, &b_hi);
+                          (x - hs_b), (line + vs_b), im2, &b_idx, &b_op, &b_hi);
 
         /* Sprite layer. */
         int s_op = s_spr_op[x], s_hi = s_spr_hi[x];
