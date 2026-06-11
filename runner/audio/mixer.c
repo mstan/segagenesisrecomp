@@ -56,7 +56,7 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
     uint32_t psg_prev = 0;
 
     /* Collect the frame's events, then sort by stamp (stable). */
-    enum { DRAIN_CAP = 4096 };   /* matches event_queue.c QUEUE_CAP */
+    enum { DRAIN_CAP = 262144 };   /* matches event_queue.c QUEUE_CAP */
     static SortedEvt evs[DRAIN_CAP];
     size_t n = 0;
     {
@@ -85,7 +85,37 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 
     qsort(evs, n, sizeof(SortedEvt), evt_cmp);
 
-    for (size_t i = 0; i < n; i++) {
+    /* Multi-frame spreading: a handler that runs long (the Sega-scream PCM
+     * V-int feeds ~118k DAC writes whose stamps span ~129 frames of machine
+     * time) queues events far beyond this wall frame. Apply only events
+     * stamped within the frame; DEFER the rest to subsequent drains with
+     * the frame's span subtracted — the burst then plays at its real pace
+     * across the debt-repayment frames, exactly as on hardware, instead of
+     * collapsing into one frame (or, pre-clamp, stretching the sample
+     * budget). The split point backs up over a trailing incomplete FM
+     * (address, data) pair so a pair never straddles the boundary with a
+     * foreign write able to sort between its halves next frame. */
+    size_t n_apply = n;
+    while (n_apply > 0 && evs[n_apply - 1].e.cycle_stamp > frame_end_cycle)
+        n_apply--;
+    if (n_apply > 0) {
+        uint8_t lastp = evs[n_apply - 1].e.port;
+        if (lastp == AUDIO_PORT_FM1_ADDR || lastp == AUDIO_PORT_FM2_ADDR)
+            n_apply--;   /* keep the orphan address with its deferred data */
+    }
+    if (n_apply < n) {
+        static AudioEvent defer[DRAIN_CAP];
+        size_t d = 0;
+        for (size_t i = n_apply; i < n; i++) {
+            AudioEvent e = evs[i].e;
+            e.cycle_stamp = e.cycle_stamp > frame_end_cycle
+                            ? e.cycle_stamp - frame_end_cycle : 0;
+            defer[d++] = e;
+        }
+        audio_event_requeue(defer, d);
+    }
+
+    for (size_t i = 0; i < n_apply; i++) {
         AudioEvent e = evs[i].e;
         if (e.port == AUDIO_PORT_PSG) {
             if (e.cycle_stamp < psg_prev) e.cycle_stamp = psg_prev;

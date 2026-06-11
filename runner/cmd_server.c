@@ -1016,17 +1016,38 @@ static void handle_audio_stats(int id)
 {
     AudioStats st;
     audio_get_stats(&st);
-    char buf[512];
+    char buf[768];
     snprintf(buf, sizeof(buf),
         "{\"id\":%d,\"ok\":true,"
         "\"last_fm_frames\":%zu,\"last_psg_frames\":%zu,"
         "\"total_fm_frames\":%zu,\"total_psg_frames\":%zu,"
         "\"total_flushes\":%u,\"dropped_flushes\":%u,"
+        "\"turbo_dropped_flushes\":%u,\"underrun_flushes\":%u,"
+        "\"min_queued_bytes\":%u,\"queued_bytes\":%u,"
         "\"wav_active\":%d}",
         id, st.last_fm_frames, st.last_psg_frames,
         st.total_fm_frames, st.total_psg_frames,
         st.total_flushes, st.dropped_flushes,
+        st.turbo_dropped_flushes, st.underrun_flushes,
+        st.min_queued_bytes, audio_queued_bytes(),
         audio_wav_active());
+    send_response(buf);
+}
+
+/* Dump the always-on delivery rings (queue depth per flush + drop/underrun
+ * events) to a file — the post-hoc probe for "I just heard a boop". */
+static void handle_audio_delivery_dump(int id, const char *json)
+{
+    char path[260];
+    if (!json_get_str(json, "path", path, sizeof(path)))
+        strcpy(path, "audio_delivery_ring.txt");
+    if (audio_delivery_dump(path) != 0) {
+        send_err(id, "cannot open dump file");
+        return;
+    }
+    char buf[320];
+    snprintf(buf, sizeof(buf),
+        "{\"id\":%d,\"ok\":true,\"path\":\"%s\"}", id, path);
     send_response(buf);
 }
 
@@ -2270,6 +2291,8 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         handle_dump_vram(id, json);
     } else if (strcmp(cmd, "audio_stats") == 0) {
         handle_audio_stats(id);
+    } else if (strcmp(cmd, "audio_delivery_dump") == 0) {
+        handle_audio_delivery_dump(id, json);
     } else if (strcmp(cmd, "audio_wav") == 0) {
         handle_audio_wav(id, json);
     } else if (strcmp(cmd, "snd_dump") == 0) {

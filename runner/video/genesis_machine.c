@@ -276,9 +276,17 @@ void machine_set_pad(int port, uint8_t buttons)
  *   68K-origin writes : g_audio_cycle_counter * 7 (per-instruction counter
  *                       bumped by generated code — keeps advancing through
  *                       the V-int handler, which is what restores real
- *                       spacing inside the driver tick).
- * The two axes interleave arbitrarily; the mixer's stamp sort makes that
- * safe. */
+ *                       spacing inside the driver tick), PLUS
+ *                       g_68k_stamp_rebase (glue.c): during interrupt
+ *                       handlers the counter sits wherever the main loop
+ *                       parked, so the handler's writes are re-based to
+ *                       start at the raster cursor of delivery — the 68K
+ *                       SMPS driver tick lands at the vblank line on the
+ *                       frame timeline, as on hardware, instead of 100+
+ *                       lines early amid the Z80's DAC byte stream.
+ * The two axes interleave; the mixer's stable stamp sort plus its FM
+ * address/data pair guard (mixer.c) keep cross-axis interleaving safe —
+ * a foreign write can never split a (latch, data) pair. */
 static uint32_t s_line_base   = 0;   /* master cycle at the start of the current scanline   */
 static uint32_t s_z80_off     = 0;   /* progress within the scanline, in master cycles      */
 

@@ -20,6 +20,7 @@ keyed to the `id` field of the request.
 | **oracle snap ring** | `oracle_trace.c:136` | 64 snapshots | Oracle build only | Periodic full-state oracle snapshots for `rdb_oracle_step_back`. |
 | **crash_report block ring** | `crash_report.c:30` | 64 entries | Yes | Recent function entries; dumped on watchdog timeout / fatal trap. |
 | **audio event queue** | `audio/event_queue.c:12` | 4096 events | Yes | YM2612 / SN76489 register writes for audio probes. |
+| **audio delivery rings** | `audio.c` (`s_depth_ring` / `s_evt_ring`) | 4096 depths (~68 s) + 256 events | Yes | SDL queue depth at every realtime flush + drop/underrun anomaly events. The WAV and [BOOP] detector tap the *generated* stream; these rings are the only view of what the *speaker* got. Dump via `audio_delivery_dump`. |
 
 **Capacity gaps to fix in Wave 2** (see `humming-wibbling-hammock.md`):
 - No Tier-2 *block* ring — frame_record is per-*frame*, not per-block.
@@ -50,7 +51,14 @@ Reference for probe authors. All commands take a JSON request like
 - `read_z80_ram <off> <len>` — Z80 internal RAM.
 - `vdp_state`, `fm_state`, `psg_state`, `z80_state` — subsystem snapshots.
 - `dump_vram` — full VRAM bin.
-- `audio_stats`, `audio_wav` — audio subsystem state.
+- `audio_stats`, `audio_wav` — audio subsystem state. `audio_stats` includes
+  delivery health: `dropped_flushes` / `underrun_flushes` (realtime splices
+  the speaker heard but the WAV never shows), `turbo_dropped_flushes`
+  (expected, not an anomaly), `min_queued_bytes` low-water, live
+  `queued_bytes`.
+- `audio_delivery_dump {"path":"x.txt"}` — dump the always-on delivery
+  rings: per-flush SDL queue depth (last ~68 s) + drop/underrun events
+  with wall-frame stamps. The post-hoc probe for "I just heard a boop".
 - `read_joypad_port` — current port latch.
 
 ### Frame ring (Tier-2 frame)

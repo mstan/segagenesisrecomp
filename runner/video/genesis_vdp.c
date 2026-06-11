@@ -13,6 +13,9 @@
  */
 #include "genesis_vdp.h"
 #include <string.h>
+#ifdef GEN_DEV_TRACE
+#include <stdio.h>   /* [DMA-STALL] rare-event dev print */
+#endif
 
 /* ---- Register accessors (named for readability; all clean-room) ----------- */
 #define R(v, n)            ((v)->reg[(n)])
@@ -178,7 +181,21 @@ static void dma_run_68k_to_vdp(GVDP *v)
         int blanked = v->in_vblank || !MODE2_DISPLAY_ON(v);
         uint32_t slots = blanked ? (MODE4_H40(v) ? 205u : 166u)
                                  : (MODE4_H40(v) ? 18u  : 16u);
-        s_pending_68k_stall += (uint32_t)(((uint64_t)len * 488u) / slots);
+        uint32_t charge = (uint32_t)(((uint64_t)len * 488u) / slots);
+        s_pending_68k_stall += charge;
+#ifdef GEN_DEV_TRACE
+        /* [DMA-STALL] any single 68K->VDP transfer charging more than ~half a
+         * frame of 68K freeze is wildly outside S1's real DMA sizes — dump the
+         * transfer so a corrupt length/slot-rate is visible. Rare-event print. */
+        if (charge > 60000u) {
+            extern unsigned long g_snd_frame;
+            fprintf(stderr, "[DMA-STALL] wf=%lu len=%u words src=%06X dst=%04X "
+                            "code=%X blanked=%d charge=%u (pending=%u)\n",
+                    g_snd_frame, (unsigned)len, (unsigned)dma_source_68k(v),
+                    (unsigned)v->address, (unsigned)(v->code & 0x0F),
+                    blanked, (unsigned)charge, (unsigned)s_pending_68k_stall);
+        }
+#endif
     }
     while (len--) {
         uint16_t word = v->bus_read(v->bus_read_user, src);

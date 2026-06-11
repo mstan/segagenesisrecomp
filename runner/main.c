@@ -1813,7 +1813,8 @@ int main(int argc, char *argv[])
          * paired captures. */
         { extern int audio_wav_active(void);
           if (!turbo || audio_wav_active())
-            audio_flush((const int16_t *)s_fm_accum, s_fm_count,
+            audio_flush(frame_num, !turbo,
+                        (const int16_t *)s_fm_accum, s_fm_count,
                         (const int16_t *)s_psg_accum, s_psg_count); }
 
         /* Audio queue drift monitor — log every 300 frames (~5 seconds) */

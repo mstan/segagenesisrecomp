@@ -24,7 +24,15 @@ extern uint8_t g_ram[0x010000];
  * case safe. */
 extern uint32_t g_audio_cycle_counter;        /* glue.c, 68K cycles this wall frame */
 extern uint32_t machine_z80_stamp(void);      /* genesis_machine.c, master cycles    */
-#define STAMP_68K() (g_audio_cycle_counter * 7u)
+/* Handler stamp re-base (glue.c): the V-int/H-int handler executes at its
+ * delivery raster line, but g_audio_cycle_counter sits wherever the main
+ * loop parked (or mid-frame on a lag frame). Without the re-base the
+ * handler's writes sort 100+ lines away from their true raster position,
+ * interleaving the 68K driver tick into the middle of the Z80's DAC byte
+ * stream in stamp space. glue.c sets this to (delivery_raster -
+ * counter*7) for the duration of the handler, 0 otherwise. */
+extern uint32_t g_68k_stamp_rebase;
+#define STAMP_68K() (g_audio_cycle_counter * 7u + g_68k_stamp_rebase)
 
 /* [SND-TRACE] sound-command lifecycle trace (defined in genesis_machine.c). */
 extern uint8_t g_sndwatch[0x2000];

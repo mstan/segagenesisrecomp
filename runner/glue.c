@@ -724,6 +724,18 @@ static int s_own_vint_latched = 0;
 /* Run the game's V_Int(6) handler atomically against OUR work RAM + VDP. Saves
  * /restores g_cpu and gates budget yields (s_in_vblank_service), so it is safe
  * to fire while the fiber is parked mid-instruction at a budget yield. */
+/* Audio-stamp re-base for interrupt handlers (see genesis_bus.c STAMP_68K):
+ * the handler runs at its delivery raster line, but the 68K instruction
+ * counter sits wherever the main loop parked (typically ~line 60) or
+ * mid-frame on a lag frame. Stamping handler chip writes from the raw
+ * counter placed the whole 68K SMPS driver tick 100+ lines away from its
+ * true raster position — same VALUES, wrong position on the frame's
+ * timeline relative to the Z80 DAC stream. Re-base so the handler's first
+ * write stamps at the raster cursor of delivery, advancing per-instruction
+ * from there, exactly like hardware. */
+uint32_t g_68k_stamp_rebase = 0;
+extern uint32_t machine_z80_stamp(void);   /* raster cursor, master cycles */
+
 static void own_deliver_vint(GVDP *vdp)
 {
     const uint32_t STK = g_game_layout.intr_stack;
@@ -733,14 +745,50 @@ static void own_deliver_vint(GVDP *vdp)
     for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
     g_cpu.A[7] = STK;
     s_in_vblank_service = 1;
+    uint32_t saved_rebase = g_68k_stamp_rebase;
+    g_68k_stamp_rebase = machine_z80_stamp() - g_audio_cycle_counter * 7u;
     g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
     uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
     /* Charge the handler's executed 68K cycles to the raster debt (the
      * generated code bumps g_audio_cycle_counter per instruction, including
      * through the handler). See s_irq_cycle_debt. */
     uint32_t cyc_before = g_audio_cycle_counter;
+#ifdef GEN_DEV_TRACE
+    /* Snapshot the VBlank routine byte BEFORE the handler consumes it — the
+     * giant-spin probe needs to know whether the dispatch input was valid. */
+    uint8_t vbla_routine_at_entry =
+        m68k_read8(g_game_layout.vint_routine_addr & 0xFFFFFF);
+#endif
     if (g_game_spec.call_vblank) g_game_spec.call_vblank();
     s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
+#ifdef GEN_DEV_TRACE
+    /* [IRQ-DEBT] a V-int handler owing more than one full frame of raster
+     * debt freezes the main loop for multiple wall frames (and with it the
+     * SMPS driver if the next V-ints get latched away) — dump it. For the
+     * multi-million-cycle pathological case, also dump the crash-report
+     * block ring: the recent recompiled function entries localize WHERE
+     * the handler spun. */
+    if (s_irq_cycle_debt > 127856u) {
+        extern unsigned long g_snd_frame;
+        uint32_t hc = (uint32_t)(g_audio_cycle_counter - cyc_before);
+        fprintf(stderr, "[IRQ-DEBT] wf=%lu handler_cycles=%u debt=%u (~%u frames) vbla_routine=$%02X gmode=$%02X\n",
+                g_snd_frame, hc,
+                (unsigned)s_irq_cycle_debt, (unsigned)(s_irq_cycle_debt / 127856u),
+                vbla_routine_at_entry,
+                m68k_read8(g_game_layout.game_mode_addr & 0xFFFFFF));
+        /* The one KNOWN legit multi-million-cycle handler is the Sega-screen
+         * PCM scream (routine $14) — real hardware busy-feeds the DAC for
+         * ~2s inside the V-int with everything else frozen. Only dump the
+         * block ring for giants that are NOT that. */
+        if (hc > 1000000u && vbla_routine_at_entry != 0x14u) {
+            extern void crash_report_dump(FILE *, const char *, const M68KState *,
+                                          uint32_t, int, uint64_t);
+            crash_report_dump(stderr, "giant V-int handler (IRQ-DEBT probe)",
+                              &g_cpu, 0, 0, g_frame_count);
+        }
+    }
+#endif
+    g_68k_stamp_rebase = saved_rebase;
     vdp->in_vblank = saved_vb;
     g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
     s_in_vblank_service = 0;
@@ -762,7 +810,20 @@ void glue_own_interrupt(int level, GVDP *vdp)
          * the game has parked at WaitForVBlank. If the 68K currently has IRQs
          * masked, latch it and deliver when the mask drops instead of losing it. */
         if (imask < 6) { s_own_vint_latched = 0; own_deliver_vint(vdp); }
-        else           { s_own_vint_latched = 1; }
+        else           {
+#ifdef GEN_DEV_TRACE
+            /* [VINT-MASK] V-int latched because the main-context 68K has IRQs
+             * masked at the vblank line. Consecutive masked frames merge into
+             * ONE delivery (hardware semantics) — so long masked spans are
+             * where v_vblank_count freezes and the SMPS driver stalls. Rare
+             * event print: each occurrence is one lost-or-merged V-int. */
+            { extern unsigned long g_snd_frame;
+              fprintf(stderr, "[VINT-MASK] wf=%lu SR=%04X PC=%08X latched=%d\n",
+                      g_snd_frame, (unsigned)g_cpu.SR, (unsigned)g_cpu.PC,
+                      s_own_vint_latched); }
+#endif
+            s_own_vint_latched = 1;
+        }
     } else if (level == 4 && imask < 4) {
         const uint32_t STK = g_game_layout.intr_stack;
         uint32_t byteoff = (STK - 256u) & 0xFFFFu;
@@ -771,12 +832,17 @@ void glue_own_interrupt(int level, GVDP *vdp)
         for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
         g_cpu.A[7] = STK;
         s_in_vblank_service = 1;
+        /* Same audio-stamp re-base as own_deliver_vint: H-int handler chip
+         * writes stamp at the delivery raster, not the parked counter. */
+        uint32_t saved_rebase = g_68k_stamp_rebase;
+        g_68k_stamp_rebase = machine_z80_stamp() - g_audio_cycle_counter * 7u;
         g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
         /* H-int handler cycles owe raster time too (same rule as V-int). */
         uint32_t cyc_before = g_audio_cycle_counter;
         if (g_game_spec.call_hblank) g_game_spec.call_hblank();
         s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
         g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+        g_68k_stamp_rebase = saved_rebase;
         s_in_vblank_service = 0;
         for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
         g_cpu = saved;
@@ -1238,9 +1304,12 @@ void glue_end_of_wall_frame(void)
     s_vblank_fired_this_frame    = 0;
     s_vblank_executed_this_frame = 0;
 
-    /* audio_mixer_drain in main.c (called right after Iterate) consumes
-     * all events; this reset is a sanity invariant. */
-    audio_event_queue_reset();
+    /* audio_mixer_drain consumes events stamped within the frame and now
+     * legitimately LEAVES deferred events queued (multi-frame spreading of
+     * giant-handler bursts like the Sega scream — see mixer.c). The old
+     * "sanity" reset here would wipe them; the only remaining full reset
+     * is save-state load (main.c), which really does want to drop the
+     * interrupted frame's writes. */
 
     /* Reset audio cycle stamp for next wall frame. After Phase 5 switchover,
      * audio_mixer_drain() is called right before this so the queue has

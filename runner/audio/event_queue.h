@@ -41,6 +41,11 @@ int  audio_event_pop(AudioEvent *out);
  * on lifecycle init. */
 void audio_event_queue_reset(void);
 
+/* Re-queue events deferred past the drained frame (mixer.c multi-frame
+ * spreading — see the giant-handler note there). Caller has already
+ * subtracted the drained frame's span from each stamp. */
+void audio_event_requeue(const AudioEvent *evs, size_t n);
+
 /* Diagnostic: current fill level. */
 size_t audio_event_queue_count(void);
 
