@@ -80,6 +80,26 @@ void gbus_sram_setup(GenesisBus *b)
     }
 }
 
+/* Explicit SRAM geometry for carts that don't self-describe via the header
+ * (S3&K lock-on, standalone S&K). Header detection wins: if gbus_sram_setup
+ * already mapped SRAM ("RA" present), this is a no-op so a self-describing
+ * cart is never overridden. Otherwise map [start & ~1, end] if it fits the
+ * buffer. The $A130F1 overlay gate (sram_hit) is unchanged, so when the game
+ * disables SRAM the same addresses read back as ROM — exactly the lock-on
+ * behaviour where this range overlaps the locked-on Sonic 3 bank. */
+void gbus_sram_set_geometry(GenesisBus *b, uint32_t start, uint32_t end)
+{
+    if (b->sram_present) return;                 /* header already mapped it */
+    if (start == 0u) return;                     /* not requested            */
+    uint32_t base = start & ~1u;
+    if (end > base && (end - base + 1u) <= sizeof(b->sram)) {
+        b->sram_present = 1;
+        b->sram_base    = base;
+        b->sram_end     = end;
+        b->sram_size    = end - base + 1u;
+    }
+}
+
 /* SRAM overlay active for this address? The $A130F1 enable bit gates the
  * overlay when the SRAM range shadows ROM (cart < 4 MB games still toggle it;
  * honour the bit always — games that never touch $A130F1 and expect

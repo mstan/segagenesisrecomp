@@ -1,0 +1,65 @@
+# game.toml — Sonic & Knuckles (USA/World, 1994), STANDALONE (no lock-on).
+# 68000, 2 MB ROM, flat at $000000-$1FFFFF. Identity-mapped (no banks).
+#
+# This is "Sonic & Knuckles mode" — the second of three lock-on family modes
+# (Sonic 3 alone, Sonic & Knuckles alone, Sonic 3 & Knuckles locked-on). Like
+# standalone Sonic 3, S&K-alone is a single 2 MB ROM whose code runs at its own
+# org-0 addresses, so file offset == runtime address == disasm address. NO
+# +$200000 offset and no cross-half lock-on calls — when nothing is locked on at
+# $200000, the upper bank reads back as 0 (unmapped) and S&K's lock-on detector
+# takes the standalone path (Knuckles in S&K + S&K attract/levels).
+#
+# ROM identity (verified): MD5 4ea493ea4e9f6c9ebfccbdb15110367e, byte-identical
+# to the low 2 MB ($000000-$1FFFFF) of our canonical 4 MB sonic3k.bin AND to
+# skdisasm's buildSK output (skbuilt.bin, Sonic3_Complete=0). Header: "SONIC &
+# KNUCKLES", serial GM MK-1563-00, region JUE. See memory project_canonical_s3k_rom.
+#
+# Boot/dispatch addresses (verified against the byte-perfect sonic3k.lst, org 0):
+#   Reset vector: SSP $00000000 / PC $000206 (EntryPoint sets sp itself).
+#   EntryPoint $000206, GameLoop $0004B6, VInt (VBlank) $000584,
+#   JmpTo_HInt $000D0C -> HInt $000D10.
+
+[game]
+output_prefix = "sandk"
+
+# Real labels from the byte-perfect S&K disasm (skdisasm sonic3k.lst — the S&K
+# master half), emitted at OFFSET 0 (standalone S&K runs at $000000). The same
+# .lst the combined sonic3k mode consumes for its $000000-$1FFFFF half, just
+# without the paired S3 +$200000 file. Regenerate via (skdisasm built with
+# buildSK.lua, Sonic3_Complete=0 -> bit-perfect skbuilt.bin + sonic3k.lst):
+#   python ../tests/tools/gen_disasm_labels.py     ../sonic3k/skdisasm/sonic3k.lst --max-addr 0x200000 --offset 0 > sandk.disasm_labels.toml
+#   python ../tests/tools/gen_disasm_jumptables.py --lst ../sonic3k/skdisasm/sonic3k.lst --prefix sandk --rom-max 0x200000 --offset 0 -o sandk.disasm_jumptables.toml
+#   python ../tests/tools/gen_code_addrs.py        ../sonic3k/skdisasm/sonic3k.lst --max-addr 0x200000 --offset 0 > sandk.code_addrs.txt
+#   python ../tests/tools/gen_annotations_csv.py   --lst ../sonic3k/skdisasm/sonic3k.lst --max-addr 0x200000 --offset 0 -o annotations_from_disasm.csv
+annotations     = "annotations_from_disasm.csv"
+code_addrs_file = "sandk.code_addrs.txt"
+discovery_files = [
+    "sandk.disasm_labels.toml",       # 18,946 code labels + 394 interior seeds
+    "sandk.disasm_jumptables.toml",   # 418 tables / 2,394 targets
+]
+
+# ---------------------------------------------------------------------------
+# Per-game RAM layout — S&K uses the shared Sonic 3-family WRAM map (verified
+# against skdisasm sonic3k.constants.asm; identical offsets to the S3K combined
+# and standalone Sonic 3).
+# ---------------------------------------------------------------------------
+[ram_layout]
+game_mode      = 0xFFF600   # Game_mode
+vint_runcount  = 0xFFFE0C   # V_int_run_count (longword)
+vint_routine   = 0xFFF62A   # V_int_routine
+plc_pending    = 0x000000
+initial_ssp    = 0xFFFE00   # System_stack — set by `lea (System_stack).w,sp` at EntryPoint
+vbla_stack     = 0xFFFE00
+intr_stack     = 0xFFFE00
+player_object  = 0xFFB000   # Player_1 / Object_RAM start
+level_modes    = [0x08, 0x0C]
+
+# Discovery comes entirely from the byte-perfect sonic3k.lst label set + the
+# heuristic finder. extra/blacklist are IRREDUCIBLE residual only (Principle 16);
+# a dispatch_misses.log entry after a run is a coverage gap to root-cause in the
+# gen_disasm pipeline, NOT to hand-add here.
+[functions]
+blacklist = [
+]
+extra = [
+]

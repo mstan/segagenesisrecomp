@@ -1328,6 +1328,11 @@ int main(int argc, char *argv[])
 
 #if OWN_BACKEND
     gbus_sram_setup(&g_machine.bus);   /* g_rom is populated now (glue_init) */
+    /* Per-game SRAM override for lock-on carts whose header carries no "RA"
+     * marker (S3&K combined, standalone S&K). No-op when the header already
+     * declared SRAM or the spec leaves sram_start at 0. */
+    gbus_sram_set_geometry(&g_machine.bus,
+                           g_game_spec.sram_start, g_game_spec.sram_end);
 #endif
     runner_sram_init_and_load(rom_path);
 

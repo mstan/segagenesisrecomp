@@ -211,6 +211,13 @@ const GameSpec g_game_spec = {
     .expected_rom_crc32     = 0u,
     .expected_rom_size      = 0x400000u,   /* 4 MB combined cart */
 
+    /* Battery SRAM is a lock-on feature: the combined cart's header is S&K's
+     * (CartRAM_Type = "No SRAM"), but the board saves at $200001-$203FFF (odd
+     * bytes, gated by $A130F1), overlapping the locked-on Sonic 3 bank.
+     * sonic3k.constants.asm: SRAM_access_flag=$A130F1, phase $200001. */
+    .sram_start             = 0x200001u,
+    .sram_end               = 0x203FFFu,
+
     .call_entry_point       = s3k_call_entry_point,
     .call_vblank            = s3k_call_vblank,
     .call_hblank            = s3k_call_hblank,

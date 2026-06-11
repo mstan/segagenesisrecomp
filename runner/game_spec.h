@@ -62,6 +62,24 @@ typedef struct GameSpec {
      * 0x80000, Sonic 2 is 0x100000, Sonic 3K is 0x400000. */
     uint32_t    expected_rom_size;
 
+    /* ---- Battery SRAM override ---- */
+    /* Explicit SRAM geometry for carts whose standard header ($1B0 "RA"
+     * + BE start/end longwords) does NOT declare it. The Sonic 3 &
+     * Knuckles lock-on cart is the case: its main header is S&K's, whose
+     * CartRAM_Type reads "No SRAM", yet the board carries battery SRAM at
+     * $200001-$203FFF (odd bytes), gated by the $A130F1 overlay bit and
+     * overlapping the locked-on Sonic 3 ROM bank. Standalone S&K is the
+     * same (blank header, but saves the lock-on Knuckles game).
+     *
+     * 0/0 = rely on the ROM header (the normal path — standalone Sonic 3
+     * declares "RA" $200001-$2003FF there and needs no override). When
+     * sram_start is non-zero AND the header carries no "RA", the runtime
+     * maps SRAM over this inclusive byte range [sram_start & ~1, sram_end].
+     * A header "RA" marker always wins (never override a self-describing
+     * cart). */
+    uint32_t    sram_start;
+    uint32_t    sram_end;
+
     /* ---- Entry points (recompiled C) ---- */
     /* Called once on the game thread. Must contain the game's main
      * loop and not return — typically wraps func_NNNNNN(). NULL means

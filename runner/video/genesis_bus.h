@@ -62,6 +62,13 @@ void gbus_init(GenesisBus *b, GVDP *vdp);
  * populated (glue_init) — gbus_init runs before the ROM copy exists. */
 void gbus_sram_setup(GenesisBus *b);
 
+/* Map battery SRAM over the inclusive byte range [start & ~1, end] when the
+ * cart's standard header does NOT declare it (the Sonic 3 & Knuckles lock-on
+ * cart and standalone S&K — see GameSpec.sram_start). No-op if a header "RA"
+ * marker already mapped SRAM (gbus_sram_setup wins) or the range is invalid /
+ * larger than the SRAM buffer. Must run AFTER gbus_sram_setup. */
+void gbus_sram_set_geometry(GenesisBus *b, uint32_t start, uint32_t end);
+
 uint16_t gbus_read16 (GenesisBus *b, uint32_t addr);
 uint8_t  gbus_read8  (GenesisBus *b, uint32_t addr);
 void     gbus_write16(GenesisBus *b, uint32_t addr, uint16_t val);
