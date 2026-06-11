@@ -7,8 +7,11 @@ Genesis static recompiler. It assumes you've also read `PRINCIPLES.md` and
 ## What this repo is
 
 A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROMs
-into native C, paired with a runner that links the generated C against
-clownmdemu-core for VDP/audio/Z80 emulation. Currently used by:
+into native C, paired with a runner whose NATIVE (release) targets run the
+generated C on a clean-room backend (own VDP/bus/Z80 scheduling, ymfm FM,
+superzazu z80) — zero clownmdemu code compiled or linked. clownmdemu-core
+is a pinned submodule used ONLY by the unshipped `_oracle` builds as a
+conformance reference (AGPL, dev-only). Currently used by:
 
 - **SonicTheHedgehogRecomp** — Sonic 1 release; Green Hill Zone fully
   playable.

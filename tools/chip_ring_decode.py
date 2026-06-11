@@ -308,6 +308,79 @@ def cmd_events(args):
             break
 
 
+MASTER_PER_FRAME = 3420 * 262  # 896040, must match genesis_machine.c
+MASTER_PER_LINE = 3420
+
+
+def cmd_psgpairs(args):
+    """Tone-frequency LATCH->DATA pair-gap audit (SN76489 protocol).
+
+    A 10-bit tone-frequency update is two writes: LATCH (bit7=1, t=0: new low
+    nibble) then DATA (bit7=0: new high 6 bits). Between them the channel
+    sounds at new-low + OLD-high — a wrong pitch. On hardware the two writes
+    are microseconds apart; in the event-queue pipeline they are rendered
+    [stamp_latch, stamp_data) apart, so a stamp gap or a frame-end straddle
+    renders the wrong pitch audibly (the jump-SFX "boop" hypothesis).
+
+    Reports every tone-freq latch->data pair whose RENDER gap exceeds
+    --gap-lines scanlines, with the intermediate vs final frequency, using the
+    same absolute timeline the mixer renders (wf*FRAME + mc, monotonic)."""
+    evs = mixer_order(parse(args.ring))
+    psg = [e for e in evs if e["kind"] == "PSG"]
+    # absolute render timeline, monotonic (mirrors mixer apply + deferral)
+    prev_abs = 0
+    for e in psg:
+        a = e["wf"] * MASTER_PER_FRAME + e["mc"]
+        if a < prev_abs:
+            a = prev_abs
+        e["abs"] = a
+        prev_abs = a
+    # SN76489 register file: tone freq per channel (10-bit), latched register
+    freq = [0, 0, 0]
+    latched = None          # (ch, kind); kind: 'tone' | 'vol' | 'noise'
+    pend = None             # pending tone latch: (event, ch, old_freq, new_low)
+    gap_thresh = args.gap_lines * MASTER_PER_LINE
+    tot = flagged = 0
+    rows = []
+    for e in psg:
+        v = e["val"]
+        if v & 0x80:
+            ch = (v >> 5) & 3
+            is_vol = bool(v & 0x10)
+            if pend is not None:
+                pend = None     # tone latch never completed by a data byte
+            if not is_vol and ch < 3:
+                old = freq[ch]
+                freq[ch] = (freq[ch] & 0x3F0) | (v & 0x0F)
+                latched = (ch, "tone")
+                pend = (e, ch, old, freq[ch])
+                tot += 1
+            else:
+                latched = (ch, "vol" if is_vol else "noise")
+        else:
+            if latched and latched[1] == "tone":
+                ch = latched[0]
+                freq[ch] = (freq[ch] & 0x00F) | ((v & 0x3F) << 4)
+                if pend is not None and pend[1] == ch:
+                    le, _, old, mid = pend
+                    gap = e["abs"] - le["abs"]
+                    if gap > gap_thresh:
+                        flagged += 1
+                        def hz(f):
+                            return 3579545 / (32.0 * f) if f else 0.0
+                        rows.append((le, e, gap, mid, freq[ch], hz(mid), hz(freq[ch])))
+                    pend = None
+            # data after vol/noise latch: atomic, ignore
+    for le, de, gap, mid, fin, hmid, hfin in rows:
+        straddle = " FRAME-STRADDLE" if de["wf"] != le["wf"] else ""
+        print(f"latch wf={le['wf']} mc={le['mc']:>7} -> data wf={de['wf']} "
+              f"mc={de['mc']:>7}  gap={gap} cyc ({gap/MASTER_PER_LINE:.1f} lines, "
+              f"{gap/896040*16.7:.2f} ms)  intermediate={mid} (~{hmid:.0f} Hz) "
+              f"final={fin} (~{hfin:.0f} Hz){straddle}")
+    print(f"\n{tot} tone-freq latch->data pairs; {flagged} with render gap > "
+          f"{args.gap_lines} lines")
+
+
 def cmd_summary(args):
     evs = mixer_order(parse(args.ring))
     st = Ym2612State()
@@ -369,6 +442,12 @@ def main():
     ev.add_argument("--reg", type=lambda x: int(x, 16))
     ev.add_argument("--limit", type=int, default=400)
     ev.set_defaults(fn=cmd_events)
+
+    pp = sub.add_parser("psgpairs")
+    pp.add_argument("ring")
+    pp.add_argument("--gap-lines", type=float, default=1.0,
+                    help="flag pairs whose render gap exceeds this many scanlines")
+    pp.set_defaults(fn=cmd_psgpairs)
 
     sm = sub.add_parser("summary")
     sm.add_argument("ring")

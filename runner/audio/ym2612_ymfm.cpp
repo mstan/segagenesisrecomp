@@ -40,13 +40,16 @@ constexpr uint32_t YM_CLOCK = 7670453u;
 /* MASTER cycles per emitted stereo sample: 144 chip clocks * 7 (master/68K). */
 constexpr uint32_t MASTER_PER_SAMPLE = 144u * 7u; /* = 1008 */
 
-/* Output gain knob (tune by ear vs the permissive PSG). ymfm's ym2612 self-
- * scales to roughly +/-32k full-scale; the old clownmdemu path divided 6
- * channels by FM_VOLUME_DIVISOR=8. audio.c mixes FM at FM_VOL_DIV=1, so any
- * level match happens here. Start at unity; adjust YM_GAIN_NUM/DEN if the FM
- * sits too hot or too quiet against the PSG. */
-constexpr int32_t YM_GAIN_NUM = 1;
-constexpr int32_t YM_GAIN_DEN = 1;
+/* Output gain (level match vs the reference render — audio.c mixes FM at
+ * FM_VOL_DIV=1, so the match happens here). The reference scales each 9-bit
+ * channel sample by 128/8 = x16; ymfm::ym2612 scales the 6-channel sum by
+ * 128*64/(6*65) = x21.005 effective per channel (ymfm_opn.cpp generate()).
+ * At unity gain that left every FM+DAC voice a flat +2.3 dB over the
+ * correctly-leveled PSG — measured as a uniform 1.30-1.32x in all bands with
+ * envelope correlation 1.000 (tools/synth_replay), heard as the GHZ bass
+ * "boop". Correction: 16 / (8192/390) = 6240/8192 = 195/256 exactly. */
+constexpr int32_t YM_GAIN_NUM = 195;
+constexpr int32_t YM_GAIN_DEN = 256;
 
 /* Minimal interface: all-default (no timers, no busy, no external memory). */
 struct YmfmIface : public ymfm::ymfm_interface {};

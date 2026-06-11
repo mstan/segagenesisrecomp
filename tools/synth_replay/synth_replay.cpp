@@ -58,6 +58,70 @@ static const int PSG_VOL_DIV  = 8;
 
 struct Event { uint64_t mc; uint8_t kind; uint8_t port; uint8_t val; }; /* kind 0=FM 1=PSG */
 
+/* Raw ring line before mixer-order reconstruction. */
+struct RawEvent {
+    uint32_t wf;     /* wall frame — the mixer's drain unit */
+    uint32_t mc;     /* within-frame cycle stamp the mixer sorts by */
+    uint32_t idx;    /* capture order — stable-sort tiebreak */
+    uint8_t  kind;   /* 0=FM 1=PSG */
+    uint8_t  port;
+    uint8_t  val;
+};
+
+/* Reorder capture-order events into mixer apply order and assign absolute
+ * master-cycle times. Mirrors runner/audio/mixer.c (the synth's authority;
+ * same algorithm as tools/chip_ring_decode.py — capture order is NOT stamp
+ * order because the own backend pushes events from two stamp axes):
+ *   1. Group per wall frame (wf), the mixer's drain unit.
+ *   2. FM pair guard: each FM ADDRESS write (p0/p2) inherits the stamp of its
+ *      matching DATA write so no foreign event sorts between the pair.
+ *   3. Stable sort by (mc, capture idx) within the frame.
+ *   4. Absolute time = wf * MASTER_PER_FRAME + mc, clamped monotonic across
+ *      the ordered stream (the mixer clamps per chip; a single non-decreasing
+ *      timeline yields the identical per-chip advance deltas). Events stamped
+ *      past the frame end land at their real later-frame time, which is
+ *      exactly where mixer.c's multi-frame deferral replays them. */
+static std::vector<Event> mixer_order(std::vector<RawEvent> &raw)
+{
+    std::stable_sort(raw.begin(), raw.end(), [](const RawEvent &a, const RawEvent &b) {
+        return a.wf < b.wf;
+    });
+    std::vector<Event> out;
+    out.reserve(raw.size());
+    uint64_t prev_abs = 0;
+    for (size_t lo = 0; lo < raw.size(); ) {
+        size_t hi = lo;
+        while (hi < raw.size() && raw[hi].wf == raw[lo].wf) hi++;
+        /* Pair guard within the frame. */
+        std::vector<uint32_t> stamp(hi - lo);
+        for (size_t i = lo; i < hi; i++) stamp[i - lo] = raw[i].mc;
+        for (size_t i = lo; i < hi; i++) {
+            if (raw[i].kind != 0 || (raw[i].port != 0 && raw[i].port != 2)) continue;
+            for (size_t j = i + 1; j < hi; j++) {
+                if (raw[j].kind != 0) continue;
+                if (raw[j].port == raw[i].port + 1) { stamp[i - lo] = raw[j].mc; break; }
+                if (raw[j].port == raw[i].port)     break; /* re-latched address */
+            }
+        }
+        std::vector<size_t> order(hi - lo);
+        for (size_t i = 0; i < order.size(); i++) order[i] = i;
+        std::stable_sort(order.begin(), order.end(), [&](size_t a, size_t b) {
+            if (stamp[a] != stamp[b]) return stamp[a] < stamp[b];
+            return raw[lo + a].idx < raw[lo + b].idx;
+        });
+        for (size_t k : order) {
+            const RawEvent &r = raw[lo + k];
+            uint64_t abs_mc = (uint64_t)r.wf * MASTER_PER_FRAME + stamp[k];
+            if (abs_mc < prev_abs) abs_mc = prev_abs;
+            prev_abs = abs_mc;
+            Event e; e.mc = abs_mc; e.kind = r.kind; e.port = r.port; e.val = r.val;
+            out.push_back(e);
+        }
+        lo = hi;
+    }
+    return out;
+}
+
 static int16_t clamp16(int32_t v) { return v > 32767 ? 32767 : (v < -32768 ? -32768 : (int16_t)v); }
 
 /* audio.c's mixer: iterate at PSG rate, upsample FM nearest-neighbour. */
@@ -261,20 +325,37 @@ int main(int argc, char **argv)
         fprintf(stderr, "[selftest] clownmdemu PSG RMS over 2000 frames = %.0f\n", std::sqrt(s / b.size()));
     }
 
-    std::vector<Event> ev; ev.reserve(300000);
+    /* Parse the ring (chip_trace.c format):
+     *   f=<vint> sl=<line> FM  p<0..3> $VV mc=<cycle> wf=<wall> pcz=$ZZZZ
+     *   f=<vint> sl=<line> PSG $VV mc=<cycle> wf=<wall> pcz=$ZZZZ
+     * mc is the WITHIN-FRAME stamp the mixer sorts by; wf is the wall frame
+     * it drains in. Capture order is not stamp order — mixer_order() below
+     * reconstructs the order the synth actually saw (mandatory; see
+     * chip_ring_decode.py). Old-format lines without mc=/wf= fall back to the
+     * legacy (f, sl)-derived timeline in capture order. */
+    std::vector<RawEvent> raw; raw.reserve(300000);
+    std::vector<Event> legacy; legacy.reserve(300000);
     char line[256];
     while (fgets(line, sizeof line, f)) {
-        unsigned fr, sl, port, val;
-        if (sscanf(line, "f=%u sl=%u FM p%u $%x", &fr, &sl, &port, &val) == 4) {
+        unsigned fr, sl, port, val, mc, wf;
+        if (sscanf(line, "f=%u sl=%u FM p%u $%x mc=%u wf=%u", &fr, &sl, &port, &val, &mc, &wf) == 6) {
+            RawEvent r; r.wf = wf; r.mc = mc; r.idx = (uint32_t)raw.size();
+            r.kind = 0; r.port = (uint8_t)port; r.val = (uint8_t)val; raw.push_back(r);
+        } else if (sscanf(line, "f=%u sl=%u PSG $%x mc=%u wf=%u", &fr, &sl, &val, &mc, &wf) == 5) {
+            RawEvent r; r.wf = wf; r.mc = mc; r.idx = (uint32_t)raw.size();
+            r.kind = 1; r.port = 0; r.val = (uint8_t)val; raw.push_back(r);
+        } else if (sscanf(line, "f=%u sl=%u FM p%u $%x", &fr, &sl, &port, &val) == 4) {
             Event e; e.mc = (uint64_t)fr * MASTER_PER_FRAME + (uint64_t)sl * MASTER_PER_LINE;
-            e.kind = 0; e.port = (uint8_t)port; e.val = (uint8_t)val; ev.push_back(e);
+            e.kind = 0; e.port = (uint8_t)port; e.val = (uint8_t)val; legacy.push_back(e);
         } else if (sscanf(line, "f=%u sl=%u PSG $%x", &fr, &sl, &val) == 3) {
             Event e; e.mc = (uint64_t)fr * MASTER_PER_FRAME + (uint64_t)sl * MASTER_PER_LINE;
-            e.kind = 1; e.port = 0; e.val = (uint8_t)val; ev.push_back(e);
+            e.kind = 1; e.port = 0; e.val = (uint8_t)val; legacy.push_back(e);
         }
     }
     fclose(f);
-    fprintf(stderr, "parsed %zu chip-write events from %s\n", ev.size(), path);
+    std::vector<Event> ev = raw.empty() ? legacy : mixer_order(raw);
+    fprintf(stderr, "parsed %zu chip-write events from %s (%s order)\n",
+            ev.size(), path, raw.empty() ? "legacy capture" : "mixer");
     if (ev.empty()) return 1;
 
     if (fm_channel >= 0) {

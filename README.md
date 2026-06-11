@@ -25,7 +25,7 @@ A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries
 |-----------|---------|
 | `recompiler/src/` | The recompiler tool — analyzes ROM binary, emits native C |
 | `runner/include/` | Shared runtime headers (`genesis_runtime.h`) |
-| `clownmdemu-core/` | [clownmdemu](https://github.com/Clownacy/clownmdemu) emulator core (submodule) |
+| `clownmdemu-core/` | [clownmdemu](https://github.com/Clownacy/clownmdemu) emulator core — **pinned submodule, development only**. Conformance oracle for the unshipped `_oracle` builds; AGPL-3.0. Native (release) targets compile and link **zero** code from it — enforced by the CMake include lists; see `RELEASING.md` / `LICENSING.md` |
 | `sonicthehedgehog/generated/` | Generated output for Sonic 1 — 530+ native C functions (**READ-ONLY**) |
 | `sonicthehedgehog/game.cfg` | Recompiler config — 530 extra_func entries |
 
