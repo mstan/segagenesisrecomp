@@ -2,13 +2,16 @@
 """
 package_release.py — build a compliance-checked release zip.
 
-WHY: every binary we ship statically links clownmdemu + clownz80 (AGPL-3.0),
-so a shipped binary is an AGPL combined work. It MUST carry the AGPL license
-and MUST NOT contain the ROM (copyright), RAM dumps, saves, or build junk.
+WHY: release (native) binaries are AGPL-FREE (own backend; see RELEASING.md)
+and ship under PolyForm Noncommercial 1.0.0 + permissive third-party notices.
+The zip MUST NOT contain the ROM (copyright), RAM dumps, saves, build junk,
+an `_oracle` exe, or `GenesisRecomp.exe` (those statically link AGPL code and
+are dev-only).
 
 This packager builds the zip from an explicit ALLOWLIST (so a ROM can never be
-swept in), verifies the AGPL license is present, warns if a ROM is sitting next
-to the exe, and refuses to produce a zip if anything forbidden slips through.
+swept in), verifies the license is PolyForm Noncommercial (and NOT AGPL), warns
+if a ROM is sitting next to the exe, and refuses to produce a zip if anything
+forbidden slips through.
 
 See RELEASING.md. Exit code is non-zero on any compliance failure.
 """
@@ -41,7 +44,8 @@ def main():
     ap = argparse.ArgumentParser(description="Build a compliance-checked release zip.")
     ap.add_argument("--exe", required=True, help="the game .exe")
     ap.add_argument("--out", required=True, help="output .zip path")
-    ap.add_argument("--license", required=True, help="AGPL-3.0 LICENSE file")
+    ap.add_argument("--license", required=True,
+                    help="project LICENSE file (PolyForm Noncommercial 1.0.0)")
     ap.add_argument("--notices", required=True, help="THIRD-PARTY-LICENSES.md")
     ap.add_argument("--readme", required=True, help="README for the zip")
     ap.add_argument("--extra", nargs="*", default=[],
@@ -60,12 +64,24 @@ def main():
     if bad:
         fail("forbidden file in the allowlist (ROM/dump/junk?):\n  " + "\n  ".join(bad))
 
-    # 3) the LICENSE must actually be AGPL
-    with open(args.license, "r", encoding="utf-8", errors="ignore") as fh:
-        if "AFFERO GENERAL PUBLIC LICENSE" not in fh.read().upper():
-            fail("--license is not AGPL. Binary releases must be AGPL-3.0 (see RELEASING.md).")
+    # 3) the exe must be a NATIVE release target — never the oracle or the
+    #    recompiler tool (both statically link AGPL code; dev-only)
+    exe_base = os.path.basename(args.exe).lower()
+    if "_oracle" in exe_base or exe_base == "genesisrecomp.exe":
+        fail("refusing to package a dev-only AGPL-linked exe (%s); release the "
+             "native target (see RELEASING.md)." % exe_base)
 
-    # 4) warn loudly if a ROM/junk file is sitting next to the exe (not packaged,
+    # 4) the LICENSE must be PolyForm Noncommercial — and must NOT be AGPL
+    #    (release binaries are AGPL-free; see RELEASING.md)
+    with open(args.license, "r", encoding="utf-8", errors="ignore") as fh:
+        lic = fh.read().upper()
+    if "AFFERO GENERAL PUBLIC LICENSE" in lic:
+        fail("--license is AGPL, but release binaries are AGPL-free and ship "
+             "under PolyForm Noncommercial 1.0.0 (see RELEASING.md).")
+    if "POLYFORM NONCOMMERCIAL" not in lic:
+        fail("--license is not PolyForm Noncommercial 1.0.0 (see RELEASING.md).")
+
+    # 5) warn loudly if a ROM/junk file is sitting next to the exe (not packaged,
     #    but a sign someone might zip the folder by hand)
     build_dir = os.path.dirname(os.path.abspath(args.exe))
     strays = sorted(n for n in os.listdir(build_dir) if is_forbidden(n))
@@ -74,15 +90,17 @@ def main():
             "WARNING: forbidden files exist next to the exe (NOT packaged, but "
             "never zip this folder directly):\n  " + "\n  ".join(strays) + "\n")
 
-    # 5) build the zip from the allowlist ONLY
+    # 6) build the zip from the allowlist ONLY. The license lands as "LICENSE"
+    #    regardless of its on-disk name (RELEASING.md checklist item 2).
     out_dir = os.path.dirname(os.path.abspath(args.out))
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
     with zipfile.ZipFile(args.out, "w", zipfile.ZIP_DEFLATED) as z:
         for p in allow:
-            z.write(p, os.path.basename(p))
+            arc = "LICENSE" if p == args.license else os.path.basename(p)
+            z.write(p, arc)
 
-    # 6) final audit of the produced zip; delete + fail if anything leaked
+    # 7) final audit of the produced zip; delete + fail if anything leaked
     with zipfile.ZipFile(args.out) as z:
         names = z.namelist()
     leaked = [n for n in names if is_forbidden(n)]
