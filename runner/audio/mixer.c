@@ -16,6 +16,7 @@
 #include "event_queue.h"
 #include "ym2612.h"
 #include "sn76489.h"
+#include "fm_shadow.h"   /* verified-enhancement FM shadow (default OFF) */
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,6 +24,10 @@ void audio_mixer_init(void)
 {
     ym2612_init();
     psg_init();
+    /* Arm the FM shadow if opted in (GENESIS_AUDIO_SHADOW). Default OFF ⇒
+     * every fm_shadow_* call below is a cheap no-op and audio is
+     * byte-identical to the canon path. */
+    fm_shadow_init();
 }
 
 /* The own backend pushes events from two stamp axes (68K instruction counter
@@ -127,12 +132,15 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
             /* FM ports 0..3 */
             if (e.cycle_stamp < fm_prev) e.cycle_stamp = fm_prev;
             uint32_t delta = e.cycle_stamp - fm_prev;
-            if (delta > 0) ym2612_advance(delta);
+            if (delta > 0) { ym2612_advance(delta); fm_shadow_advance(delta); }
+            /* Mirror the identical port/value into the shadow chip (no-op
+             * unless GENESIS_AUDIO_SHADOW is on) so it tracks the same
+             * register-write timeline as canon. */
             switch (e.port) {
-                case AUDIO_PORT_FM1_ADDR: ym2612_write(0, e.value); break;
-                case AUDIO_PORT_FM1_DATA: ym2612_write(1, e.value); break;
-                case AUDIO_PORT_FM2_ADDR: ym2612_write(2, e.value); break;
-                case AUDIO_PORT_FM2_DATA: ym2612_write(3, e.value); break;
+                case AUDIO_PORT_FM1_ADDR: ym2612_write(0, e.value); fm_shadow_write(0, e.value); break;
+                case AUDIO_PORT_FM1_DATA: ym2612_write(1, e.value); fm_shadow_write(1, e.value); break;
+                case AUDIO_PORT_FM2_ADDR: ym2612_write(2, e.value); fm_shadow_write(2, e.value); break;
+                case AUDIO_PORT_FM2_DATA: ym2612_write(3, e.value); fm_shadow_write(3, e.value); break;
                 default: break;
             }
             fm_prev = e.cycle_stamp;
@@ -140,7 +148,10 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
     }
 
     /* Tail-advance each chip to end of wall frame. */
-    if (frame_end_cycle > fm_prev)  ym2612_advance(frame_end_cycle - fm_prev);
+    if (frame_end_cycle > fm_prev) {
+        ym2612_advance(frame_end_cycle - fm_prev);
+        fm_shadow_advance(frame_end_cycle - fm_prev);
+    }
     if (frame_end_cycle > psg_prev) psg_advance (frame_end_cycle - psg_prev);
 
     /* Match clownmdemu's per-Iterate sync-state reset: the sub-sample
@@ -158,6 +169,13 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 
     if (fm_stereo_out && fm_n > 0)  ym2612_render(fm_stereo_out,  fm_n);
     if (psg_mono_out  && psg_n > 0) psg_render(psg_mono_out,   psg_n);
+
+    /* Verified-enhancement FM shadow: feed (canon, shadow) to the verifier and
+     * substitute the shadow FM samples into fm_stereo_out only when proven;
+     * revert loudly (DEGRADED) on divergence. No-op unless GENESIS_AUDIO_SHADOW
+     * is on, so this keeps fm_stereo_out byte-identical by default. Canon FM
+     * (just rendered above) remains the authoritative stream and the oracle. */
+    if (fm_stereo_out && fm_n > 0) fm_shadow_verify_and_substitute(fm_stereo_out, fm_n);
 
     if (fm_written)  *fm_written  = fm_n;
     if (psg_written) *psg_written = psg_n;

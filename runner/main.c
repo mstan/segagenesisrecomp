@@ -90,6 +90,33 @@ const char *exe_relative(const char *filename)
 
 static uint32_t s_framebuf[MAX_SCREEN_WIDTH * MAX_SCREEN_HEIGHT]; /* ARGB8888 */
 
+/* ── Present-time screen-color LUT (verified-enhancement video) ──────────
+ * Opt-in via GENESIS_SCREEN={raw,crt,trinitron,composite,linear}; default
+ * raw=passthrough. Applied to a COPY of s_framebuf at SDL-upload time only —
+ * NEVER to s_framebuf itself, so [FBHASH], PNG dumps, and any verify path stay
+ * defined on the raw VDP output and remain byte-identical with the screen off.
+ * See video/color_lut.h. */
+#include "video/color_lut.h"
+static uint32_t s_present_buf[MAX_SCREEN_WIDTH * MAX_SCREEN_HEIGHT]; /* present copy */
+static ColorLut s_color_lut;
+static int      s_color_lut_on = 0;   /* 0 = raw passthrough (default) */
+
+static void color_lut_setup(void)
+{
+    ScreenKind k = SCREEN_RAW;
+    const char *env = getenv("GENESIS_SCREEN");
+    if (env && env[0] && screen_kind_from_name(env, &k) && k != SCREEN_RAW) {
+        color_lut_build(&s_color_lut, k, -1.0);
+        s_color_lut_on = 1;
+        fprintf(stderr, "[VIDEO-SCREEN] present-time color model '%s' ENABLED "
+                "(present-only; raw VDP output unchanged + still the oracle)\n",
+                env);
+    } else {
+        color_lut_build(&s_color_lut, SCREEN_RAW, -1.0);  /* passthrough */
+        s_color_lut_on = 0;
+    }
+}
+
 /* Expanded palette: 192 entries (64 CRAM × 3 brightness levels).
  * colour_updated_cb converts each entry from Genesis format to ARGB8888. */
 static uint32_t s_cram[192];
@@ -1325,6 +1352,7 @@ int main(int argc, char *argv[])
      * no-ops if stubs). */
     audio_mixer_init();
     audio_obs_init();
+    color_lut_setup();   /* present-time screen-color LUT (default raw passthrough) */
 
 #if OWN_BACKEND
     gbus_sram_setup(&g_machine.bus);   /* g_rom is populated now (glue_init) */
@@ -1908,8 +1936,17 @@ int main(int argc, char *argv[])
         /* Persist battery SRAM to disk shortly after the game writes a save. */
         runner_sram_autosave_tick(frame_num);
 
-        /* Upload framebuffer to GPU texture */
-        SDL_UpdateTexture(texture, NULL, s_framebuf,
+        /* Upload framebuffer to GPU texture. When a present-time color model
+         * is enabled, transform a COPY into s_present_buf and upload that —
+         * s_framebuf (the verified/hashed raw VDP output) is never modified. */
+        const uint32_t *present_src = s_framebuf;
+        if (s_color_lut_on) {
+            color_lut_map_frame(&s_color_lut, s_framebuf, s_present_buf,
+                                s_screen_width, s_screen_height,
+                                MAX_SCREEN_WIDTH);
+            present_src = s_present_buf;
+        }
+        SDL_UpdateTexture(texture, NULL, present_src,
                           MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
 
         update_render_logical_size(renderer);

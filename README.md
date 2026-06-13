@@ -83,6 +83,48 @@ This overwrites `generated/sonic_full.c` and `sonic_dispatch.c`. After regenerat
 
 See **[SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp)** for build instructions, controls, and known issues.
 
+## Audio & Video Enhancements (opt-in)
+
+The runner ships an optional **verified-enhancement shadow** layer: quality-of-life
+audio/video improvements that run *alongside* the authentic hardware emulation
+without ever replacing it as ground truth. The governing rule (see
+[`docs/SHADOW_ENHANCEMENTS.md`](docs/SHADOW_ENHANCEMENTS.md)):
+
+- The authentic (canon) path stays the authoritative output **and** the verify
+  oracle — the shadow is never ground truth.
+- The shadow is continuously diff-checked against canon and substitutes **only
+  after a proven correlation window**.
+- It **reverts loudly** (logs `[AUDIO-SHADOW] DEGRADED …`) the instant it stops
+  matching.
+- It is **off by default**. With it off, output is byte-identical to the raw
+  hardware emulation (the `[FBHASH]` framebuffer hash, PNG dumps, and WAV capture
+  all stay on the raw canon). Worst case when on is "you see/hear authentic
+  hardware output," and it cannot mask a recompiler bug because the canon path it
+  shadows is still the thing being diffed.
+
+All options are environment variables, default OFF:
+
+| Variable | Values | Effect |
+|----------|--------|--------|
+| `GENESIS_SCREEN` | `raw` (default), `crt`, `trinitron`, `composite`, `linear` | Present-time color model. `raw` reproduces the existing 9-bit→ARGB8888 expansion bit-identically. The others map the Genesis 9-bit (BGR 3-3-3) gamut through a CIE color core (panel primaries → sRGB via Bradford + sRGB OETF): `crt` = generic SMPTE-C phosphor + γ≈2.4 + lifted black, `trinitron` = Sony P22-ish primaries, `composite` = gentler γ + higher black floor, `linear` = clean linear-light reference. Per-pixel color only — it does **not** synthesize composite/RF spatial artifacts (dot crawl, cross-color, NTSC blur). |
+| `GENESIS_AUDIO_SHADOW` | `0` (default) / `1` | Arms the YM2612 FM shadow. A second `ymfm` chip is fed the identical register-write stream as the canon chip but rendered with a **relaxed output low-pass** (near-passthrough) instead of the aggressive filter canon uses to match the reference — preserving the cleaner, less-aliased high end. Gain is identical; the verifier substitutes the FM stereo samples only once proven. The SN76489 (PSG) path is untouched. |
+| `GENESIS_FM_LADDER` | unset (default) / `off` | When `off`, the FM shadow renders through ymfm's **`ym3438`** chip — the same FM engine without the YM2612's DAC "ladder" discontinuity (the ~7-LSB crossover gap around zero, i.e. the audible low-level crunch). This is the later CMOS Genesis FM revision that fixed it; no hand-rolled correction curve. Requires `GENESIS_AUDIO_SHADOW=1`. Verifier-policed like any other enhancement. |
+
+Example (all on):
+
+```bash
+GENESIS_AUDIO_SHADOW=1 GENESIS_FM_LADDER=off GENESIS_SCREEN=crt \
+    ./Sonic3KRecomp sonic3k.bin
+```
+
+These are present-time/runtime only and link no clownmdemu — they are part of
+the AGPL-free native runtime and safe to ship. To wire them into a game build,
+add `runner/audio/audio_shadow.c`, `runner/audio/fm_shadow.cpp`, and
+`runner/video/color_lut.c` to that game's source list (the `video/` and
+`external/ymfm/src` include dirs are already present). See
+[`docs/SHADOW_ENHANCEMENTS.md`](docs/SHADOW_ENHANCEMENTS.md) for the full design,
+verifier algorithm, and integration points.
+
 ## Key Files
 
 | File | Purpose |
