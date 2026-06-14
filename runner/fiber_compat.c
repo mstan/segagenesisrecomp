@@ -57,6 +57,15 @@ void fiber_revert_thread(void)
 #include <ucontext.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <signal.h>     /* SIGSTKSZ — minimum fiber stack floor */
+
+/* glibc >= 2.34 no longer exposes SIGSTKSZ as a compile-time constant under
+ * _XOPEN_SOURCE (it becomes sysconf(_SC_SIGSTKSZ), or is hidden entirely),
+ * which breaks the build on modern Linux. It is only used below as a sane
+ * lower bound on the fiber stack size, so provide a portable fallback. */
+#ifndef SIGSTKSZ
+#  define SIGSTKSZ 16384
+#endif
 
 #if defined(__clang__) || defined(__GNUC__)
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"

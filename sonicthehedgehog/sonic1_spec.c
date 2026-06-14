@@ -22,6 +22,7 @@
 #include "hybrid.h"
 
 #include <stdint.h>
+#include <stddef.h>   /* NULL — not pulled in transitively under gcc/glibc */
 
 /* ---- 68K RAM shadow (defined in glue.c) ---- */
 extern uint8_t g_ram[0x10000];

@@ -15,8 +15,10 @@ conformance reference (AGPL, dev-only). Currently used by:
 
 - **SonicTheHedgehogRecomp** — Sonic 1 release; Green Hill Zone fully
   playable.
-- **SonicTheHedgehog2Recomp** — Sonic 2 release; bring-up in progress.
-- **sonic3k/** — placeholder, awaiting skdisasm wiring.
+- **SonicTheHedgehog2Recomp** — Sonic 2 release; playable bring-up (ships a
+  `v0.1.0-linux` AppImage).
+- **sonic3k/** — Sonic 3 & Knuckles; builds as a native release target
+  (ships a `v0.1.0-linux` AppImage).
 
 ## Repo topology (read this first)
 
@@ -50,7 +52,7 @@ F:\Projects\segagenesisrecomp-release\
     │                                   + sonic1_hybrid_table.c + sonic_extras.{c,h}
     ├── sonicthehedgehog2\            ← Sonic 2 game.toml + generated/ + sonic2_spec.c
     │                                   + sonic2_hybrid_table.c
-    ├── sonic3k\                      ← placeholder
+    ├── sonic3k\                      ← Sonic 3 & Knuckles game files
     ├── tests\
     │   └── tools\                    ← gen_disasm_*, recompiler-side
     └── clownmdemu-core\              ← embedded emulator
