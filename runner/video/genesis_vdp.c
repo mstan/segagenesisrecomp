@@ -387,6 +387,44 @@ static uint8_t s_spr_hi [GVDP_MAX_WIDTH];   /* sprite priority bit            */
 static uint8_t s_spr_shadow_op[GVDP_MAX_WIDTH]; /* operator: force shadow     */
 static uint8_t s_spr_hilite_op[GVDP_MAX_WIDTH]; /* operator: highlight        */
 
+/* ---- Widescreen (16:9) opt-in --------------------------------------------
+ * Extra pixels rendered on EACH side of the authentic active window. 0 =
+ * authentic 4:3 (byte-identical output). Kept OUTSIDE the GVDP struct on
+ * purpose: it is a present-time render parameter, not VDP hardware state, so
+ * it must not enter the raw-struct save-state image (see gvdp_consume_68k_stall
+ * note in the header). The engine sets it per frame from per-game config; the
+ * recompiled 68K independently widens its own object-cull / tile-load bounds
+ * via a game-RAM word the engine writes (see runner/main.c). */
+static int s_ws_extra = 0;
+
+/* Clamp the requested extra to what the output buffer can hold for width `w`
+ * (the per-side margin can never push total past GVDP_MAX_WIDTH). */
+static int clamp_ws_extra(int w)
+{
+    int e = s_ws_extra;
+    int max_e = (GVDP_MAX_WIDTH - w) / 2;
+    if (e < 0) e = 0;
+    if (e > max_e) e = max_e;
+    return e;
+}
+
+void gvdp_set_ws_extra(int extra_px) { s_ws_extra = extra_px; }
+
+/* Widescreen Plane-B diagnostic (GENESIS_WS_BGDIAG): force Plane B's horizontal
+ * scroll to a single constant (line-0) value on every scanline — removing the
+ * per-line parallax — while keeping the widened (448) render. If the EHZ
+ * background diagonal vanishes with this on, the cause is the per-line-hscroll
+ * (parallax) interaction, not the game-side tile redraw. Also marks the output
+ * column where Plane B sampling wraps (511->0) with a shadowed vertical line. */
+static int s_ws_bgdiag = 0;
+void gvdp_set_bgdiag(int on) { s_ws_bgdiag = on; }
+
+int gvdp_active_width(const GVDP *v)
+{
+    int w = gvdp_screen_width(v);
+    return w + 2 * clamp_ws_extra(w);
+}
+
 /* Sprite engine: evaluate the sprite attribute table in link-list order for
  * `line`, fill the per-pixel sprite layer, and update overflow/collision. In
  * shadow/highlight mode, palette-line-3 colours 14/15 are operator pixels
@@ -398,11 +436,12 @@ static uint8_t s_spr_hilite_op[GVDP_MAX_WIDTH]; /* operator: highlight        */
  * `line` is an OUTPUT row: a raster line normally, a double-res row in
  * interlace mode 2, where sprite Y/height are in double-res units (Y origin
  * 256 instead of 128), cells are 8x16 and patterns 64 bytes. */
-static void sprite_render_line(GVDP *v, int line, int w)
+static void sprite_render_line(GVDP *v, int line, int w, int extra)
 {
-    memset(s_spr_op, 0, (size_t)w);
-    memset(s_spr_shadow_op, 0, (size_t)w);
-    memset(s_spr_hilite_op, 0, (size_t)w);
+    int total = w + 2 * extra;          /* output columns incl. widescreen margins */
+    memset(s_spr_op, 0, (size_t)total);
+    memset(s_spr_shadow_op, 0, (size_t)total);
+    memset(s_spr_hilite_op, 0, (size_t)total);
 
     int h40 = MODE4_H40(v);
     int im2 = MODE4_IM2(v);
@@ -416,9 +455,9 @@ static void sprite_render_line(GVDP *v, int line, int w)
     /* Tracks the first opaque sprite owner per pixel (first-wins; a second
      * opaque hit raises the collision flag). */
     static uint8_t drawn[GVDP_MAX_WIDTH];
-    memset(drawn, 0, (size_t)w);
+    memset(drawn, 0, (size_t)total);
 
-    int link = 0, on_line = 0, pixels_budget = w;
+    int link = 0, on_line = 0, pixels_budget = total;
 
     for (int n = 0; n < max_sprites; n++) {
         uint16_t e = (uint16_t)(sat + link * 8);
@@ -434,7 +473,7 @@ static void sprite_render_line(GVDP *v, int line, int w)
 
             uint16_t attr = vram_read_word(v, (uint16_t)(e + 4));
             int xword     = vram_read_word(v, (uint16_t)(e + 6)) & 0x1FF;
-            int screen_x  = xword - 128;
+            int screen_x  = xword - 128 + extra;   /* +extra: center in widescreen output */
 
             /* Sprite masking: an x==0 sprite after another on-line sprite
              * masks the rest of the line. */
@@ -452,7 +491,7 @@ static void sprite_render_line(GVDP *v, int line, int w)
 
             for (int lx = 0; lx < width; lx++) {
                 int sx = screen_x + lx;
-                if (sx < 0 || sx >= w) continue;
+                if (sx < 0 || sx >= total) continue;
                 int ix = hf ? (width - 1 - lx) : lx;
                 int cellx = ix >> 3, fx = ix & 7;
                 int tileno = (tile + cellx * vsz + celly) & 0x07FF;
@@ -538,13 +577,15 @@ static int in_window(const GVDP *v, int x, int line)
 int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
 {
     int w = gvdp_screen_width(v);
+    int extra = clamp_ws_extra(w);          /* widescreen margin per side; 0 = authentic */
+    int total = w + 2 * extra;              /* output columns emitted this line */
     int im2 = MODE4_IM2(v);
     int rline = im2 ? (line >> 1) : line;   /* raster line for table lookups */
     uint8_t backdrop = (uint8_t)(REG_BACKDROP(v) & 0x3F);
 
     if (!gvdp_display_enabled(v)) {
-        for (int x = 0; x < w; x++) out[x] = backdrop;
-        return w;
+        for (int x = 0; x < total; x++) out[x] = backdrop;
+        return total;
     }
 
     /* Plane geometry. */
@@ -561,7 +602,8 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     int hmode = REG_MODE3(v) & 0x3;
     int hidx  = (hmode == 0) ? 0 : (hmode == 2) ? (rline & ~7) : rline; /* 3=line */
     int hs_a = vram_read_word(v, (uint16_t)(hbase + hidx * 4 + 0)) & 0x3FF;
-    int hs_b = vram_read_word(v, (uint16_t)(hbase + hidx * 4 + 2)) & 0x3FF;
+    int hidx_b = s_ws_bgdiag ? 0 : hidx;   /* diag: force Plane B hscroll constant (line 0) */
+    int hs_b = vram_read_word(v, (uint16_t)(hbase + hidx_b * 4 + 2)) & 0x3FF;
 
     int vmode_2cell = (REG_MODE3(v) & 0x4) != 0;
     /* Vertical scroll: 10 bits normally; 11 bits in interlace mode 2, in
@@ -569,14 +611,23 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
      * these). */
     int vs_mask = im2 ? 0x7FF : 0x3FF;
 
-    /* Sprite layer for this output row. */
-    sprite_render_line(v, line, w);
+    /* Sprite layer for this output row (placed in centered output-column space). */
+    sprite_render_line(v, line, w, extra);
 
-    for (int x = 0; x < w; x++) {
+    for (int xo = 0; xo < total; xo++) {
+        /* xo is the output column; x is the original-screen column. With
+         * widescreen the view is centered, so columns [0,extra) and
+         * [w+extra,total) are the revealed margins (x < 0 or x >= w). The
+         * planes wrap-sample naturally for those (fetch_plane_pixel masks). */
+        int x = xo - extra;
         /* Vertical scroll per plane (full, or per-16px-column 2-cell). */
         int vs_a, vs_b;
         if (vmode_2cell) {
-            int col = (x >> 4) * 2;
+            /* The 2-cell VSRAM table is defined only across the active window;
+             * clamp margin columns to the nearest edge column to avoid a
+             * negative/out-of-range index. */
+            int xc = x < 0 ? 0 : (x >= w ? w - 1 : x);
+            int col = (xc >> 4) * 2;
             vs_a = v->vsram[(col + 0) % GVDP_VSRAM_ENTRIES] & vs_mask;
             vs_b = v->vsram[(col + 1) % GVDP_VSRAM_ENTRIES] & vs_mask;
         } else {
@@ -589,7 +640,7 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         /* Plane A — or the window plane (unscrolled) where the window covers.
          * The window is unscrolled and cell-addressed: in IM2 its vertical
          * addressing is still double-res (8x16 cells over the output rows). */
-        if (in_window(v, x, rline)) {
+        if (x >= 0 && x < w && in_window(v, x, rline)) {
             fetch_plane_pixel(v, base_w, win_wt, ht, x, line, im2, &a_idx, &a_op, &a_hi);
         } else {
             fetch_plane_pixel(v, base_a, wt, ht,
@@ -599,9 +650,9 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         fetch_plane_pixel(v, base_b, wt, ht,
                           (x - hs_b), (line + vs_b), im2, &b_idx, &b_op, &b_hi);
 
-        /* Sprite layer. */
-        int s_op = s_spr_op[x], s_hi = s_spr_hi[x];
-        uint8_t s_idx = s_spr_idx[x];
+        /* Sprite layer (indexed in output-column space). */
+        int s_op = s_spr_op[xo], s_hi = s_spr_hi[xo];
+        uint8_t s_idx = s_spr_idx[xo];
 
         /* Genesis priority order: S-hi > A-hi > B-hi > S-lo > A-lo > B-lo > bg. */
         uint8_t px;
@@ -620,13 +671,18 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
             int hi_present = (s_op && s_hi) || (a_op && a_hi) || (b_op && b_hi);
             int sh = !hi_present;
             int hl = 0;
-            if (s_spr_shadow_op[x]) sh = 1;
-            if (s_spr_hilite_op[x]) { if (sh) sh = 0; else hl = 1; }
+            if (s_spr_shadow_op[xo]) sh = 1;
+            if (s_spr_hilite_op[xo]) { if (sh) sh = 0; else hl = 1; }
             if (hl)      px += GVDP_PALETTE_HIGHLIGHT;
             else if (sh) px += GVDP_PALETTE_SHADOW;
         }
 
-        out[x] = px;
+        out[xo] = px;
+        if (s_ws_bgdiag) {
+            int wpx = wt * 8;               /* Plane B wraps every plane-width px */
+            if (((x - hs_b) & (wpx - 1)) == 0)   /* output column where B sampling hits 0 */
+                out[xo] = (uint8_t)((px & 0x3F) + GVDP_PALETTE_SHADOW);
+        }
     }
-    return w;
+    return total;
 }

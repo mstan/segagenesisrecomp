@@ -396,6 +396,31 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                L->game_mode_addr, L->vint_runcount_addr, L->vint_routine_addr,
                L->plc_pending_addr, L->initial_ssp, L->vbla_stack, L->intr_stack,
                L->player_object_addr, L->level_mode_count);
+
+        /* [widescreen] — optional 16:9 opt-in. Absent => not capable. The
+         * fields ride the same emitted layout TU as [ram_layout]. */
+        toml_table_t *ws = toml_table_in(root, "widescreen");
+        if (ws) {
+            toml_datum_t cap = toml_bool_in(ws, "capable");
+            L->ws_capable          = cap.ok ? cap.u.b : false;
+            L->ws_extra_ram_addr   = toml_u32_or(ws, "extra_ram_addr", 0);
+            L->ws_max_extra_cells  = (int)toml_u32_or(ws, "max_extra_cells", 0);
+            L->ws_level_started_addr = toml_u32_or(ws, "level_started_addr", 0);
+            L->ws_two_player_addr    = toml_u32_or(ws, "two_player_addr", 0);
+            toml_array_t *em = toml_array_in(ws, "eligible_modes");
+            if (em) {
+                int n = toml_array_nelem(em);
+                if (n > GAMECFG_LEVEL_MODES_MAX) n = GAMECFG_LEVEL_MODES_MAX;
+                for (int i = 0; i < n; i++) {
+                    toml_datum_t d = toml_int_at(em, i);
+                    if (d.ok) L->ws_eligible_modes[L->ws_eligible_mode_count++] = (uint8_t)d.u.i;
+                }
+            }
+            printf("[GameConfig] [widescreen] loaded: capable=%d extra_ram=$%06X "
+                   "max_extra_cells=%d eligible_modes=%d\n",
+                   L->ws_capable, L->ws_extra_ram_addr, L->ws_max_extra_cells,
+                   L->ws_eligible_mode_count);
+        }
     }
 
     /* Inline [functions] / [[jump_table]] / [[protected_range]] from
@@ -466,8 +491,25 @@ bool game_config_emit_layout(const GameConfig *cfg, const char *output_path) {
     for (int i = 0; i < L->level_mode_count; i++)
         fprintf(f, "%s 0x%02Xu", i ? "," : "", L->level_modes[i]);
     fprintf(f, " },\n"
-        "    .level_mode_count   = %d,\n"
-        "};\n", L->level_mode_count);
+        "    .level_mode_count   = %d,\n", L->level_mode_count);
+
+    /* Widescreen (16:9) opt-in. */
+    fprintf(f,
+        "    .ws_capable         = %d,\n"
+        "    .ws_extra_ram_addr  = 0x%08Xu,\n"
+        "    .ws_max_extra_cells = %d,\n"
+        "    .ws_eligible_modes  = {",
+        L->ws_capable ? 1 : 0, L->ws_extra_ram_addr, L->ws_max_extra_cells);
+    if (L->ws_eligible_mode_count == 0)
+        fprintf(f, " 0");                 /* empty {} is not portable C; emit {0} */
+    for (int i = 0; i < L->ws_eligible_mode_count; i++)
+        fprintf(f, "%s 0x%02Xu", i ? "," : "", L->ws_eligible_modes[i]);
+    fprintf(f, " },\n"
+        "    .ws_eligible_mode_count = %d,\n"
+        "    .ws_level_started_addr  = 0x%08Xu,\n"
+        "    .ws_two_player_addr     = 0x%08Xu,\n"
+        "};\n", L->ws_eligible_mode_count,
+        L->ws_level_started_addr, L->ws_two_player_addr);
 
     fclose(f);
     printf("[GenesisRecomp] Emitted %s\n", output_path);

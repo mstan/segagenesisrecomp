@@ -29,7 +29,7 @@
 #define GVDP_CRAM_ENTRIES   64                 /* 4 palette lines * 16 colours */
 #define GVDP_VSRAM_ENTRIES  40                 /* 40 scroll words (16-bit MD)  */
 #define GVDP_NUM_REGISTERS  24                 /* $00..$17                     */
-#define GVDP_MAX_WIDTH      320                /* H40 active pixels            */
+#define GVDP_MAX_WIDTH      512                /* H40 320 + up to 96px widescreen margin/side */
 #define GVDP_MAX_HEIGHT     240                /* V30 active lines (PAL)       */
 #define GVDP_SPRITES_MAX    80                 /* H40 sprite table entries     */
 
@@ -113,6 +113,16 @@ uint32_t gvdp_consume_68k_stall(GVDP *v);
 /* ---- Geometry / mode queries (from registers) ----------------------------- */
 int gvdp_screen_width (const GVDP *v);          /* 256 (H32) or 320 (H40)      */
 int gvdp_screen_height(const GVDP *v);          /* 224 (V28) or 240 (V30) — RASTER lines */
+
+/* ---- Widescreen (16:9) opt-in --------------------------------------------- */
+/* Set the per-side extra pixels rendered around the authentic active window.
+ * 0 (default) = authentic 4:3; the value is clamped to the output buffer.
+ * NOT part of VDP state (excluded from raw-struct save images). */
+void gvdp_set_ws_extra(int extra_px);
+/* Active output width including widescreen margins (screen_width + 2*extra). */
+int  gvdp_active_width(const GVDP *v);
+/* Diagnostic: force Plane B hscroll constant (line 0) + mark its wrap column. */
+void gvdp_set_bgdiag(int on);
 int gvdp_display_enabled(const GVDP *v);
 int gvdp_interlace_double(const GVDP *v);       /* 1 = interlace mode 2        */
 int gvdp_output_height(const GVDP *v);          /* raster height x2 in IM2     */

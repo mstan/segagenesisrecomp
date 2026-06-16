@@ -63,6 +63,17 @@ typedef struct {
     uint32_t player_object_addr;
     uint8_t  level_modes[GAMECFG_LEVEL_MODES_MAX];
     int      level_mode_count;
+
+    /* ---- Widescreen (16:9) opt-in, from the [widescreen] table ----
+     * Absent table => ws_capable=false => engine never widens this game
+     * (authentic 4:3). See runner/game_layout.h for field semantics. */
+    bool     ws_capable;
+    uint32_t ws_extra_ram_addr;     /* free-RAM word: engine writes, recompiled 68K reads (0 = none) */
+    int      ws_max_extra_cells;    /* per-side cap in 8px cells (clamped further by output buffer) */
+    uint8_t  ws_eligible_modes[GAMECFG_LEVEL_MODES_MAX]; /* modes that render wide (EXACT match); empty => use level_modes */
+    int      ws_eligible_mode_count;
+    uint32_t ws_level_started_addr; /* byte: require != 0 to widen (0 = gate disabled) */
+    uint32_t ws_two_player_addr;    /* word: require == 0 to widen (0 = gate disabled) */
 } GameRamLayoutCfg;
 
 /*
