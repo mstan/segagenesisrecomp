@@ -104,6 +104,26 @@ typedef struct {
      * during transitions. count==0 means "always allow ramdump". */
     uint8_t  level_modes[GAME_LAYOUT_LEVEL_MODES_MAX];
     int      level_mode_count;
+
+    /* ---- Widescreen (16:9) opt-in ----
+     * From the per-game [widescreen] table. ws_capable=0 (default when the
+     * table is absent) means the engine never widens this game — authentic
+     * 4:3 always. When enabled, the engine renders ws margins ONLY while
+     * Game_Mode is in ws_eligible_modes (or level_modes if that list is
+     * empty); all other screens (title/menus/special stages) pillarbox at
+     * 4:3. The engine writes the active per-side margin (in pixels, 0 when
+     * not widening) to ws_extra_ram_addr each frame; the recompiled 68K
+     * reads that word to widen its own object-cull / tile-load bounds so the
+     * revealed columns show live content. word==0 ⇒ vanilla behavior. */
+    uint8_t  ws_capable;
+    uint32_t ws_extra_ram_addr;     /* free-RAM word engine writes / 68K reads (0 = none) */
+    int      ws_max_extra_cells;    /* per-side cap in 8px cells */
+    uint8_t  ws_eligible_modes[GAME_LAYOUT_LEVEL_MODES_MAX]; /* EXACT game-mode match (no masking) */
+    int      ws_eligible_mode_count;
+    uint32_t ws_level_started_addr; /* byte: require != 0 to widen (0 = gate disabled) */
+    uint32_t ws_two_player_addr;    /* word: require == 0 to widen (0 = gate disabled) */
+    uint32_t ws_redraw_flag_addr;   /* byte: engine writes 1 on widescreen-on edge to
+                                     * force a full margin-filling tile redraw (0 = off) */
 } GameRamLayout;
 
 /* Defined in <prefix>_layout.c (auto-generated from game.toml). */

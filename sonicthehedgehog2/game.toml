@@ -61,6 +61,29 @@ player_object  = 0xFFB000   # MainCharacter (Reserved_Object_RAM start)
 level_modes    = [0x08, 0x0C]   # GM_Demo, GM_Level (high bit may set on transition)
 
 # ---------------------------------------------------------------------------
+# Widescreen (16:9) opt-in — engine renders extra centered columns and the
+# recompiled 68K (patched disasm) widens its object-cull / tile-load bounds
+# by reading the word the engine writes to extra_ram_addr each frame. 4:3
+# stays the authentic default (engine writes 0 unless the user opts in AND
+# the game is in a gameplay mode). eligible_modes omitted => falls back to
+# level_modes above (widen demo + level; pillarbox title/menus/special).
+# extra_ram_addr = $FFFFF100: first word of the $FFFFF100-$FFFFF5FF region
+# the S2 RAM map marks unused (S1 sound-driver leftover); see s2.constants.asm.
+[widescreen]
+capable         = true
+extra_ram_addr  = 0xFFFFF100
+max_extra_cells = 8         # 8 cells (64px)/side -> 448px (16:9). Capped so the
+                           # widened tile-row redraw stays within Block_cache (32
+                           # blocks): base 22 + 2*cells <= 32.
+eligible_modes     = [0x08, 0x0C]  # EXACT match (no 0x7F mask): GM_Demo, GM_Level
+level_started_addr = 0xFFF711       # Level_started_flag (byte): require != 0 to widen
+two_player_addr    = 0xFFFFD8       # Two_player_mode (word): require == 0 to widen
+redraw_flag_addr   = 0xFFF72C       # Screen_redraw_flag (byte): engine writes 1 when
+                                   # widescreen turns on, forcing a full tile redraw so
+                                   # the revealed margins are filled (initial fill ran
+                                   # earlier while still gated to 4:3)
+
+# ---------------------------------------------------------------------------
 # Interrupt vectors (from 68K vector table)
 [functions]
 extra = [

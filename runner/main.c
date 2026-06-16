@@ -84,8 +84,11 @@ const char *exe_relative(const char *filename)
  * ========================================================================= */
 
 /* Maximum output dimensions we support. 2P Sonic 2 uses interlace
- * double-resolution mode, which reports 320x448 active pixels. */
-#define MAX_SCREEN_WIDTH  320
+ * double-resolution mode, which reports 320x448 active pixels. The width
+ * ceiling is 512 (= H40 320 + up to 96px of widescreen margin per side) so
+ * the opt-in 16:9 path fits the same buffers; authentic 4:3 only ever fills
+ * the leftmost 320/256 columns. Must match GVDP_MAX_WIDTH. */
+#define MAX_SCREEN_WIDTH  512
 #define MAX_SCREEN_HEIGHT 480
 
 static uint32_t s_framebuf[MAX_SCREEN_WIDTH * MAX_SCREEN_HEIGHT]; /* ARGB8888 */
@@ -115,6 +118,38 @@ static void color_lut_setup(void)
         color_lut_build(&s_color_lut, SCREEN_RAW, -1.0);  /* passthrough */
         s_color_lut_on = 0;
     }
+}
+
+/* ── Widescreen (16:9) opt-in ────────────────────────────────────────────
+ * User toggle via GENESIS_WIDESCREEN={1,on,yes,true} (default off) and
+ * GENESIS_WIDESCREEN_COLUMNS=<cells/side> (default 8). The toggle only
+ * ARMS widescreen; whether a given frame actually renders wide is decided
+ * per frame in widescreen_update_for_frame() — it requires the game to be
+ * ws_capable (per-game [widescreen] config) AND in an eligible game mode,
+ * otherwise the authentic 4:3 view is pillarboxed inside the wider buffer.
+ * With the toggle off, ws_extra stays 0 and output is byte-identical 4:3. */
+static int s_ws_user_on    = 0;   /* user requested widescreen */
+static int s_ws_user_cells = 8;   /* requested extra 8px cells per side */
+static int s_ws_bgdiag_on  = 0;   /* GENESIS_WS_BGDIAG: Plane B parallax diagnostic */
+
+static void widescreen_setup(void)
+{
+    const char *env = getenv("GENESIS_WIDESCREEN");
+    if (env && (env[0] == '1' || env[0] == 'y' || env[0] == 'Y' ||
+                env[0] == 't' || env[0] == 'T' ||
+                ((env[0] == 'o' || env[0] == 'O') &&
+                 (env[1] == 'n' || env[1] == 'N'))))
+        s_ws_user_on = 1;
+    const char *cols = getenv("GENESIS_WIDESCREEN_COLUMNS");
+    if (cols && cols[0]) { int c = atoi(cols); if (c > 0) s_ws_user_cells = c; }
+    const char *bg = getenv("GENESIS_WS_BGDIAG");
+    s_ws_bgdiag_on = (bg && bg[0] && bg[0] != '0');
+    if (s_ws_bgdiag_on)
+        fprintf(stderr, "[VIDEO-WIDESCREEN] Plane B diagnostic ON (constant hscroll + wrap marker)\n");
+    if (s_ws_user_on)
+        fprintf(stderr, "[VIDEO-WIDESCREEN] requested ON (%d cells/side); "
+                "active only for widescreen-capable games in gameplay modes\n",
+                s_ws_user_cells);
 }
 
 /* Expanded palette: 192 entries (64 CRAM × 3 brightness levels).
@@ -239,10 +274,80 @@ static void scanline_rendered_cb(void *user_data,
 static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width)
 {
     (void)u;
+    /* `width` already includes any widescreen margins (gvdp_render_scanline
+     * returns w + 2*extra). Track it so the present path scales to the wider
+     * image, mirroring the clownmdemu scanline_rendered_cb. */
+    s_screen_width = width;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
     int n = width < MAX_SCREEN_WIDTH ? width : MAX_SCREEN_WIDTH;
     for (int x = 0; x < n; x++) row[x] = argb[x];
+}
+
+/* Decide the widescreen margin for the frame about to run, then (a) tell the
+ * VDP how many extra columns to render and (b) write the same per-side margin
+ * (in pixels) to the per-game RAM word so the recompiled 68K widens its own
+ * object-cull / tile-load bounds to match. extra==0 ⇒ authentic 4:3 and a
+ * vanilla game frame. Called immediately before machine_run_frame(), where the
+ * game executes (scanline-interleaved) and the VDP renders. */
+static void widescreen_update_for_frame(void)
+{
+    extern uint8_t  m68k_read8 (uint32_t);
+    extern uint16_t m68k_read16(uint32_t);
+    extern void     m68k_write16(uint32_t, uint16_t);
+    int extra_px = 0;
+    if (s_ws_user_on && g_game_layout.ws_capable) {
+        int cells = s_ws_user_cells;
+        if (g_game_layout.ws_max_extra_cells > 0 &&
+            cells > g_game_layout.ws_max_extra_cells)
+            cells = g_game_layout.ws_max_extra_cells;
+
+        /* Eligible-mode gate: EXACT game-mode match (NO masking). Prefer the
+         * [widescreen] eligible_modes list, else the gameplay level_modes. */
+        int eligible = 1;
+        if (g_game_layout.game_mode_addr) {
+            const uint8_t *modes = g_game_layout.ws_eligible_mode_count
+                ? g_game_layout.ws_eligible_modes : g_game_layout.level_modes;
+            int n = g_game_layout.ws_eligible_mode_count
+                ? g_game_layout.ws_eligible_mode_count : g_game_layout.level_mode_count;
+            if (n > 0) {
+                uint8_t mode = m68k_read8(g_game_layout.game_mode_addr);
+                eligible = 0;
+                for (int i = 0; i < n; i++)
+                    if (modes[i] == mode) { eligible = 1; break; }
+            }
+        }
+        /* Require the level to have actually started (excludes the title card /
+         * act transitions that share the gameplay game-mode). */
+        if (eligible && g_game_layout.ws_level_started_addr &&
+            m68k_read8(g_game_layout.ws_level_started_addr) == 0)
+            eligible = 0;
+        /* Never widen 2-player split-screen. */
+        if (eligible && g_game_layout.ws_two_player_addr &&
+            m68k_read16(g_game_layout.ws_two_player_addr) != 0)
+            eligible = 0;
+
+        if (eligible) extra_px = cells * 8;
+    }
+
+    gvdp_set_ws_extra(extra_px);
+    gvdp_set_bgdiag(s_ws_bgdiag_on);
+
+    if (g_game_layout.ws_extra_ram_addr)
+        m68k_write16(g_game_layout.ws_extra_ram_addr, (uint16_t)extra_px);
+
+    /* On the frame widescreen first turns on (extra 0 -> nonzero), force one
+     * full-screen tile redraw so the just-revealed side margins are filled.
+     * The level's own initial fill ran earlier (during the title card / load)
+     * while extra was still gated to 0, so it only covered the 4:3 area. */
+    {
+        static int s_prev_ws_extra = 0;
+        if (extra_px > 0 && s_prev_ws_extra == 0 && g_game_layout.ws_redraw_flag_addr) {
+            extern void m68k_write8(uint32_t, uint8_t);
+            m68k_write8(g_game_layout.ws_redraw_flag_addr, 1);
+        }
+        s_prev_ws_extra = extra_px;
+    }
 }
 #endif
 
@@ -1246,10 +1351,16 @@ int main(int argc, char *argv[])
                      base, build_tag);
     }
 
+    /* 2× scale: 320×224 → 640×448. When widescreen is armed, open a wider
+     * window sized to the requested margin so the revealed columns are visible
+     * without a manual resize (the window stays resizable either way; the
+     * present path letterboxes/pillarboxes to whatever the frame reports). */
+    int win_w = 640, win_h = 448;
+    if (s_ws_user_on) win_w = (320 + 2 * s_ws_user_cells * 8) * 2;
     SDL_Window *window = SDL_CreateWindow(
         window_title,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        640, 448,   /* 2× scale: 320×224 → 640×448 */
+        win_w, win_h,
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (!window) {
         fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
@@ -1353,6 +1464,7 @@ int main(int argc, char *argv[])
     audio_mixer_init();
     audio_obs_init();
     color_lut_setup();   /* present-time screen-color LUT (default raw passthrough) */
+    widescreen_setup();  /* 16:9 opt-in (default off; per-game + gameplay-gated) */
 
 #if OWN_BACKEND
     gbus_sram_setup(&g_machine.bus);   /* g_rom is populated now (glue_init) */
@@ -1682,8 +1794,9 @@ int main(int argc, char *argv[])
           }
           { extern unsigned long g_snd_vint;       /* [CHIP-TRACE] cross-backend sync stamp */
             g_snd_vint = (unsigned long)m68k_read32(0xFFFE0C); }
+          widescreen_update_for_frame();   /* set VDP margin + game RAM word */
           machine_run_frame(own_scanline_sink, NULL);
-          s_screen_width  = gvdp_screen_width(&g_machine.vdp);
+          s_screen_width  = gvdp_active_width(&g_machine.vdp);
           /* Output height doubles in interlace mode 2 (S2 2P split-screen);
            * the existing interlace display modes (tv squash / raw) take over
            * from here, same as the clownmdemu path. */
@@ -1818,6 +1931,7 @@ int main(int argc, char *argv[])
                   glue_reset_frame_sync();
                   glue_run_game_frame();
 #if OWN_BACKEND
+                  widescreen_update_for_frame();   /* set VDP margin + game RAM word */
                   machine_run_frame(own_scanline_sink, NULL);
 #else
                   ClownMDEmu_Iterate(&g_clownmdemu);
@@ -1860,24 +1974,6 @@ int main(int argc, char *argv[])
                     s_psg_count, s_fm_count);
         }
 
-        /* --- Screenshot capture (PNG) --- */
-        {
-            /* Save PNG screenshots at key frames for comparison.
-             * Frames: every 30 frames for first 300, then every 60 up to 900. */
-            int should_save = (frame_num < 300 && (frame_num % 30) == 0) ||
-                              (frame_num >= 300 && frame_num <= 900 && (frame_num % 60) == 0);
-            if (should_save && s_screen_width > 0 && s_screen_height > 0) {
-                char path[256];
-#if ENABLE_RECOMPILED_CODE
-                snprintf(path, sizeof(path), "screenshots/step2_f%04u.png", frame_num);
-#else
-                snprintf(path, sizeof(path), "screenshots/interp_f%04u.png", frame_num);
-#endif
-                png_write_argb(path, s_framebuf,
-                               s_screen_width, s_screen_height,
-                               MAX_SCREEN_WIDTH);
-            }
-        }
         frame_num++;
 
         /* Tick the input script (if loaded). RAM read helpers route
