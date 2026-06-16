@@ -335,6 +335,19 @@ static void widescreen_update_for_frame(void)
 
     if (g_game_layout.ws_extra_ram_addr)
         m68k_write16(g_game_layout.ws_extra_ram_addr, (uint16_t)extra_px);
+
+    /* On the frame widescreen first turns on (extra 0 -> nonzero), force one
+     * full-screen tile redraw so the just-revealed side margins are filled.
+     * The level's own initial fill ran earlier (during the title card / load)
+     * while extra was still gated to 0, so it only covered the 4:3 area. */
+    {
+        static int s_prev_ws_extra = 0;
+        if (extra_px > 0 && s_prev_ws_extra == 0 && g_game_layout.ws_redraw_flag_addr) {
+            extern void m68k_write8(uint32_t, uint8_t);
+            m68k_write8(g_game_layout.ws_redraw_flag_addr, 1);
+        }
+        s_prev_ws_extra = extra_px;
+    }
 }
 #endif
 

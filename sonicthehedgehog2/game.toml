@@ -78,6 +78,10 @@ max_extra_cells = 8         # 8 cells (64px)/side -> 448px (16:9). Capped so the
 eligible_modes     = [0x08, 0x0C]  # EXACT match (no 0x7F mask): GM_Demo, GM_Level
 level_started_addr = 0xFFF711       # Level_started_flag (byte): require != 0 to widen
 two_player_addr    = 0xFFFFD8       # Two_player_mode (word): require == 0 to widen
+redraw_flag_addr   = 0xFFF72C       # Screen_redraw_flag (byte): engine writes 1 when
+                                   # widescreen turns on, forcing a full tile redraw so
+                                   # the revealed margins are filled (initial fill ran
+                                   # earlier while still gated to 4:3)
 
 # ---------------------------------------------------------------------------
 # Interrupt vectors (from 68K vector table)

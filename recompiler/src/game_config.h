@@ -74,6 +74,8 @@ typedef struct {
     int      ws_eligible_mode_count;
     uint32_t ws_level_started_addr; /* byte: require != 0 to widen (0 = gate disabled) */
     uint32_t ws_two_player_addr;    /* word: require == 0 to widen (0 = gate disabled) */
+    uint32_t ws_redraw_flag_addr;   /* byte: engine writes 1 when widescreen turns on, to
+                                     * force a full tile redraw filling the margins (0 = off) */
 } GameRamLayoutCfg;
 
 /*

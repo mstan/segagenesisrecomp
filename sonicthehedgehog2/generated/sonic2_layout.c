@@ -19,4 +19,5 @@ const GameRamLayout g_game_layout = {
     .ws_eligible_mode_count = 2,
     .ws_level_started_addr  = 0x00FFF711u,
     .ws_two_player_addr     = 0x00FFFFD8u,
+    .ws_redraw_flag_addr    = 0x00FFF72Cu,
 };

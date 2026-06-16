@@ -407,6 +407,7 @@ bool game_config_load(GameConfig *cfg, const char *path) {
             L->ws_max_extra_cells  = (int)toml_u32_or(ws, "max_extra_cells", 0);
             L->ws_level_started_addr = toml_u32_or(ws, "level_started_addr", 0);
             L->ws_two_player_addr    = toml_u32_or(ws, "two_player_addr", 0);
+            L->ws_redraw_flag_addr   = toml_u32_or(ws, "redraw_flag_addr", 0);
             toml_array_t *em = toml_array_in(ws, "eligible_modes");
             if (em) {
                 int n = toml_array_nelem(em);
@@ -508,8 +509,9 @@ bool game_config_emit_layout(const GameConfig *cfg, const char *output_path) {
         "    .ws_eligible_mode_count = %d,\n"
         "    .ws_level_started_addr  = 0x%08Xu,\n"
         "    .ws_two_player_addr     = 0x%08Xu,\n"
+        "    .ws_redraw_flag_addr    = 0x%08Xu,\n"
         "};\n", L->ws_eligible_mode_count,
-        L->ws_level_started_addr, L->ws_two_player_addr);
+        L->ws_level_started_addr, L->ws_two_player_addr, L->ws_redraw_flag_addr);
 
     fclose(f);
     printf("[GenesisRecomp] Emitted %s\n", output_path);
