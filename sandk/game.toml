@@ -54,6 +54,20 @@ intr_stack     = 0xFFFE00
 player_object  = 0xFFB000   # Player_1 / Object_RAM start
 level_modes    = [0x08, 0x0C]
 
+# ---------------------------------------------------------------------------
+# Widescreen (16:9) opt-in. Engine renders extra centered columns; the patched
+# skdisasm widens object cull / tile-load bounds via the Widescreen_extra RAM
+# word the engine writes each frame (0 = authentic 4:3). Shared skdisasm macros
+# gate every widening on that word.
+[widescreen]
+capable          = true
+extra_ram_addr   = 0xFFCFCC      # Widescreen_extra (carved from the ds.b $14 unused block after Object_RAM_end)
+max_extra_cells  = 8             # 8 cells (64px)/side -> 448px (16:9)
+eligible_modes   = [0x08, 0x0C]  # EXACT: GM_Level
+level_started_addr = 0xFFF711    # Level_started_flag (byte): require != 0 to widen
+two_player_addr    = 0xFFFFE8    # Competition_mode (S&K-alone map): require == 0 to widen
+redraw_flag_addr   = 0xFFCFCE    # Widescreen_redraw (byte): engine writes 1 when 16:9 turns on
+
 # Discovery comes entirely from the byte-perfect sonic3k.lst label set + the
 # heuristic finder. extra/blacklist are IRREDUCIBLE residual only (Principle 16);
 # a dispatch_misses.log entry after a run is a coverage gap to root-cause in the

@@ -64,14 +64,28 @@ HEADER_DEFAULT = (
 )
 
 # Match a primary listing row:
-#   "  LINE_NO/  ADDR : REST"
-# The anchor deliberately does NOT accept the `(N)` pass-prefix AS puts on
-# macro / embedded-Z80 sub-listing rows — those have their own (Z80)
-# address space and must not be mixed into 68K jump-table detection or the
-# derived code-address set. (S1/S2 dodged this via the 68K-only code-addrs
-# fixture; S3K derives code-addrs from the .lst, so the exclusion matters.)
+#   "[ (N) ]  LINE_NO/  ADDR : REST"
+# The optional leading `(N)` is AS's include-nesting / sub-pass prefix. Whether
+# we CONSUME `(N)` rows depends on the discovery mode (set in main):
+#
+#  * Fixture mode (--code-addrs given; S1/S2): `(N)` rows ARE consumed. S1/S2
+#    keep almost all code — and therefore almost all jump tables — in `include`d
+#    files, so those rows are ALL `(N)`-prefixed; rejecting them made the
+#    extractor find 42 targets instead of 1010 (the regression this guards).
+#    Their targets are validated against a 68K-only fixture, so the macro/Z80
+#    re-listings can't contaminate.
+#
+#  * Derived mode (no --code-addrs; S3/S&K): `(N)` rows are SKIPPED entirely.
+#    skdisasm re-lists the same address under both a `(N)` macro/include pass
+#    AND its real non-prefixed pass, and embeds a Z80 driver in `(N)` rows with
+#    its own address space. Consuming `(N)` rows here mis-bounds tables over
+#    real code (data-izing functions -> "JSR target not in func table" ->
+#    dispatch misses). S3's jump tables all live in non-`(N)` code, so skipping
+#    `(N)` is both correct and the original (pre-regression) behavior.
+#
+# The prefix is captured as group 1 so main() can apply the mode gate.
 LINE_RE = re.compile(
-    r"^\s*\d+/\s+([0-9A-Fa-f]+)\s*:\s*(.*)$"
+    r"^(\(\d+\)\s+)?\s*\d+/\s+([0-9A-Fa-f]+)\s*:\s*(.*)$"
 )
 # First-emit-is-data classifier — used to derive the code-address set from
 # the .lst when no --code-addrs fixture is supplied.
@@ -228,6 +242,10 @@ def main() -> int:
         if not fixture_code_addrs:
             print(f"empty: {args.code_addrs}", file=sys.stderr); return 2
 
+    # Consume AS `(N)` sub-pass rows only in fixture mode (S1/S2, whose tables
+    # live in include files). In derived mode (S3/S&K) skip them — see LINE_RE.
+    consume_subpass = fixture_code_addrs is not None
+
     # ----- Pass 1: collect all labels, aliases, and emit rows ----------
     label_addr: dict[str, int] = {}
     aliases:    dict[str, str] = {}
@@ -242,13 +260,24 @@ def main() -> int:
         if not m:
             continue
         try:
-            addr = int(m.group(1), 16)
+            addr = int(m.group(2), 16)
         except ValueError:
             continue
-        rest = m.group(2)
+        is_subpass = m.group(1) is not None
+        # Derived mode (no fixture, S3/S&K): skip `(N)` rows entirely so macro/
+        # include re-listings and the embedded Z80 driver can't be scanned for
+        # tables or pollute the derived code set (see LINE_RE comment). Fixture
+        # mode (S1/S2) consumes them — their tables live in includes.
+        if is_subpass and not consume_subpass:
+            continue
+        rest = m.group(3)
         bytes_hex, source = parse_emit_row(rest)
 
-        if bytes_hex is not None and addr not in derived_code and addr not in derived_data:
+        # Build the DERIVED code-address set (used only when no --code-addrs
+        # fixture is supplied). In derived mode `(N)` rows were already skipped
+        # above, so everything here is a real non-prefixed 68K emit.
+        if (bytes_hex is not None
+                and addr not in derived_code and addr not in derived_data):
             if DATA_DIRECTIVE_RE.match(source):
                 derived_data.add(addr)
             else:

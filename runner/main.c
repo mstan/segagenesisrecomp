@@ -1974,24 +1974,6 @@ int main(int argc, char *argv[])
                     s_psg_count, s_fm_count);
         }
 
-        /* --- Screenshot capture (PNG) --- */
-        {
-            /* Save PNG screenshots at key frames for comparison.
-             * Frames: every 30 frames for first 300, then every 60 up to 900. */
-            int should_save = (frame_num < 300 && (frame_num % 30) == 0) ||
-                              (frame_num >= 300 && frame_num <= 900 && (frame_num % 60) == 0);
-            if (should_save && s_screen_width > 0 && s_screen_height > 0) {
-                char path[256];
-#if ENABLE_RECOMPILED_CODE
-                snprintf(path, sizeof(path), "screenshots/step2_f%04u.png", frame_num);
-#else
-                snprintf(path, sizeof(path), "screenshots/interp_f%04u.png", frame_num);
-#endif
-                png_write_argb(path, s_framebuf,
-                               s_screen_width, s_screen_height,
-                               MAX_SCREEN_WIDTH);
-            }
-        }
         frame_num++;
 
         /* Tick the input script (if loaded). RAM read helpers route

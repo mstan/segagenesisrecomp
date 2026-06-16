@@ -472,7 +472,15 @@ static void sprite_render_line(GVDP *v, int line, int w, int extra)
             if (++on_line > max_per_line) { v->sprite_overflow = 1; break; }
 
             uint16_t attr = vram_read_word(v, (uint16_t)(e + 4));
-            int xword     = vram_read_word(v, (uint16_t)(e + 6)) & 0x1FF;
+            /* 10-bit sprite X (was 0x1FF). The centered widescreen view needs
+             * sprite X up to ~512 at the right edge; with a 9-bit mask that
+             * wraps to ~0 and renders off the left, leaving wide objects drawn
+             * partially as they scroll in. Reading 10 bits lets off-edge pieces
+             * clip cleanly (screen_x >= total below). Authentic 4:3 never sets
+             * bit 9 (max sprite X ~480), so this is identical there. The game's
+             * BuildSprites/Render_Sprites must likewise mask to $3FF in
+             * widescreen so the high bit survives to the sprite table. */
+            int xword     = vram_read_word(v, (uint16_t)(e + 6)) & 0x3FF;
             int screen_x  = xword - 128 + extra;   /* +extra: center in widescreen output */
 
             /* Sprite masking: an x==0 sprite after another on-line sprite

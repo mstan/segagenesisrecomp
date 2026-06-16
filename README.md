@@ -125,6 +125,35 @@ add `runner/audio/audio_shadow.c`, `runner/audio/fm_shadow.cpp`, and
 [`docs/SHADOW_ENHANCEMENTS.md`](docs/SHADOW_ENHANCEMENTS.md) for the full design,
 verifier algorithm, and integration points.
 
+### Widescreen (16:9, opt-in)
+
+`GENESIS_WIDESCREEN=1` renders a 16:9 viewport (default 448px wide, configurable
+via `GENESIS_WIDESCREEN_COLUMNS=<cells/side>`) in place of the authentic 4:3
+320px. The clean-room VDP draws extra **centered** columns; the recompiled 68K
+reads a per-frame `Widescreen_extra` RAM word (written by the runner) to widen
+its own tile-load, object-cull, ring-window, and sprite bounds. The word is `0`
+when the toggle is off, so **the authentic 4:3 output stays byte-identical**. It
+is per-game and gameplay-gated — authentic 4:3 on menus, title cards, and
+2-player split-screen. Supported in Sonic 1, Sonic 2, and the Sonic 3 family
+(S3-alone and S&K-alone; the combined S3&K build is bring-up). See the
+`[widescreen]` block in each `game.toml`.
+
+The widening lives in the **game's 68K source**, so a widescreen build
+reassembles a community disassembly into a patched ROM and recompiles that. With
+widescreen off, that reassembly is byte-identical to the original ROM.
+
+#### Disassembly sources
+
+The optional widescreen builds are produced from these community Sega Genesis
+disassemblies (build-time sources only — the shipped binaries are recompiled C,
+and the 4:3 path reassembles byte-identically to the canonical ROMs):
+
+- **Sonic the Hedgehog** — [Sonic Retro `s1disasm`](https://github.com/sonicretro/s1disasm)
+- **Sonic the Hedgehog 2** — [Sonic Retro `s2disasm`](https://github.com/sonicretro/s2disasm)
+- **Sonic 3 & Knuckles** — [Sonic Retro `skdisasm`](https://github.com/sonicretro/skdisasm)
+
+With thanks to the Sonic Retro community for maintaining these disassemblies.
+
 ## Key Files
 
 | File | Purpose |

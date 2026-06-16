@@ -99,6 +99,23 @@ player_object  = 0xFFB000   # Player_1 = Object_RAM start
 level_modes    = [0x08, 0x0C]
 
 # ---------------------------------------------------------------------------
+# Widescreen (16:9) opt-in. Combined S3&K (4MB): the same skdisasm widening
+# (gated on the Widescreen_extra RAM word the engine writes each frame, 0 =
+# authentic 4:3) lives in BOTH ROM halves (S&K low / S3 high). RAM addresses
+# are shared across halves, so Widescreen_extra/redraw + Level_started_flag
+# resolve identically. two_player_addr is OMITTED: Competition_mode sits at a
+# different RAM address in each half ($FFFFD8 S3 vs $FFFFE8 S&K), and $FFD8 is
+# Graphics_flags (busy) in the S&K map — so no single address gates both halves.
+# Competition (2P split-screen) is a cosmetic edge case left ungated here.
+[widescreen]
+capable          = true
+extra_ram_addr   = 0xFFCFCC      # Widescreen_extra (carved from the ds.b $14 unused block after Object_RAM_end)
+max_extra_cells  = 8             # 8 cells (64px)/side -> 448px (16:9)
+eligible_modes   = [0x08, 0x0C]  # EXACT: GM_Level
+level_started_addr = 0xFFF711    # Level_started_flag (byte, same in both halves): require != 0 to widen
+redraw_flag_addr   = 0xFFCFCE    # Widescreen_redraw (byte): engine writes 1 when 16:9 turns on
+
+# ---------------------------------------------------------------------------
 # Function discovery now comes entirely from the byte-perfect discovery_files
 # above (EntryPoint $206, GameLoop $4B6, VInt $584, HInt $D10, Wait_VSync $1D18
 # and $201FA2 are all present as labels). Per the project philosophy (cf. Sonic

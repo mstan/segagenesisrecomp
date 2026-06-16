@@ -37,1382 +37,1382 @@ stride = 2
 format = "pcrel16"   # Load_Rings_Index (2 entries)
 
 [[jump_table]]
-start  = 0x00F8CC
-end    = 0x00F8D0
+start  = 0x00F8D8
+end    = 0x00F8DC
 stride = 2
 format = "pcrel16"   # SpecialCNZBumpers_Index (2 entries)
 
 [[jump_table]]
-start  = 0x00FA7C
-end    = 0x00FA88
+start  = 0x00FA88
+end    = 0x00FA94
 stride = 2
 format = "pcrel16"   # off_FA7C (6 entries)
 
 [[jump_table]]
-start  = 0x011734
-end    = 0x011740
+start  = 0x011740
+end    = 0x01174C
 stride = 2
 format = "pcrel16"   # Sonic2P_Index (6 entries)
 
 [[jump_table]]
-start  = 0x011906
-end    = 0x01190E
+start  = 0x011912
+end    = 0x01191A
 stride = 2
 format = "pcrel16"   # off_11906 (4 entries)
 
 [[jump_table]]
-start  = 0x011C10
-end    = 0x011C1E
+start  = 0x011C1C
+end    = 0x011C2A
 stride = 2
 format = "pcrel16"   # Sonic_Index (7 entries)
 
 [[jump_table]]
-start  = 0x011D9A
-end    = 0x011DA2
+start  = 0x011DA6
+end    = 0x011DAE
 stride = 2
 format = "pcrel16"   # Sonic_Modes (4 entries)
 
 [[jump_table]]
-start  = 0x013EB0
-end    = 0x013EBC
+start  = 0x013EBC
+end    = 0x013EC8
 stride = 2
 format = "pcrel16"   # Tails2P_Index (6 entries)
 
 [[jump_table]]
-start  = 0x014084
-end    = 0x01408C
+start  = 0x014090
+end    = 0x014098
 stride = 2
 format = "pcrel16"   # off_14084 (4 entries)
 
 [[jump_table]]
-start  = 0x014412
-end    = 0x014420
+start  = 0x01441E
+end    = 0x01442C
 stride = 2
 format = "pcrel16"   # Tails_Index (7 entries)
 
 [[jump_table]]
-start  = 0x01461E
-end    = 0x014626
+start  = 0x01462A
+end    = 0x014632
 stride = 2
 format = "pcrel16"   # Tails_Modes (4 entries)
 
 [[jump_table]]
-start  = 0x0146FE
-end    = 0x014722
+start  = 0x01470A
+end    = 0x01472E
 stride = 2
 format = "pcrel16"   # Tails_CPU_Control_Index (18 entries)
 
 [[jump_table]]
-start  = 0x016F0A
-end    = 0x016F1C
+start  = 0x016F16
+end    = 0x016F28
 stride = 2
 format = "pcrel16"   # AirCountdown_Index (9 entries)
 
 [[jump_table]]
-start  = 0x0174F4
-end    = 0x0174F8
+start  = 0x017500
+end    = 0x017504
 stride = 2
 format = "pcrel16"   # Obj_S2Shield_Index (2 entries)
 
 [[jump_table]]
-start  = 0x0178CC
-end    = 0x0178D4
+start  = 0x0178D8
+end    = 0x0178E0
 stride = 2
 format = "pcrel16"   # DashDust_Index (4 entries)
 
 [[jump_table]]
-start  = 0x01793E
-end    = 0x017948
+start  = 0x01794A
+end    = 0x017954
 stride = 2
 format = "pcrel16"   # off_1793E (5 entries)
 
 [[jump_table]]
-start  = 0x017CE0
-end    = 0x017CE8
+start  = 0x017CEC
+end    = 0x017CF4
 stride = 2
 format = "pcrel16"   # DashDust2P_Index (4 entries)
 
 [[jump_table]]
-start  = 0x017D32
-end    = 0x017D3A
+start  = 0x017D3E
+end    = 0x017D46
 stride = 2
 format = "pcrel16"   # off_17D32 (4 entries)
 
 [[jump_table]]
-start  = 0x018D04
-end    = 0x018D0E
+start  = 0x018D10
+end    = 0x018D1A
 stride = 2
 format = "pcrel16"   # Ring_Index (5 entries)
 
 [[jump_table]]
-start  = 0x018E34
-end    = 0x018E3E
+start  = 0x018E40
+end    = 0x018E4A
 stride = 2
 format = "pcrel16"   # Bouncing_Ring_Index (5 entries)
 
 [[jump_table]]
-start  = 0x01A8A8
-end    = 0x01A908
+start  = 0x01A8D0
+end    = 0x01A930
 stride = 2
 format = "pcrel16"   # LevelResizeArray (48 entries)
 
 [[jump_table]]
-start  = 0x01A916
-end    = 0x01A920
+start  = 0x01A93E
+end    = 0x01A948
 stride = 2
 format = "pcrel16"   # AIZ1_Resize_Index (5 entries)
 
 [[jump_table]]
-start  = 0x01AAAA
-end    = 0x01AABC
+start  = 0x01AAD2
+end    = 0x01AAE4
 stride = 2
 format = "pcrel16"   # AIZ2_Resize_Index (9 entries)
 
 [[jump_table]]
-start  = 0x01AC48
-end    = 0x01AC4E
+start  = 0x01AC70
+end    = 0x01AC76
 stride = 2
 format = "pcrel16"   # HCZ1_Resize_Index (3 entries)
 
 [[jump_table]]
-start  = 0x01ACC0
-end    = 0x01ACC4
+start  = 0x01ACE8
+end    = 0x01ACEC
 stride = 2
 format = "pcrel16"   # HCZ2_Resize_Index (2 entries)
 
 [[jump_table]]
-start  = 0x01ACE6
-end    = 0x01ACEC
+start  = 0x01AD0E
+end    = 0x01AD14
 stride = 2
 format = "pcrel16"   # MGZ2_Resize_Index (3 entries)
 
 [[jump_table]]
-start  = 0x01AD96
-end    = 0x01AD9C
+start  = 0x01ADBE
+end    = 0x01ADC4
 stride = 2
 format = "pcrel16"   # ICZ1_Resize_Index (3 entries)
 
 [[jump_table]]
-start  = 0x01ADD8
-end    = 0x01ADDC
+start  = 0x01AE00
+end    = 0x01AE04
 stride = 2
 format = "pcrel16"   # ICZ2_Resize_Index (2 entries)
 
 [[jump_table]]
-start  = 0x01AE0A
-end    = 0x01AE0E
+start  = 0x01AE32
+end    = 0x01AE36
 stride = 2
 format = "pcrel16"   # LBZ2_Resize_Index (2 entries)
 
 [[jump_table]]
-start  = 0x01AE98
-end    = 0x01AE9C
+start  = 0x01AEC0
+end    = 0x01AEC4
 stride = 2
 format = "pcrel16"   # Draw_LRZ_Special_Rock_Sprites_Index (2 entries)
 
 [[jump_table]]
-start  = 0x01B42C
-end    = 0x01B436
+start  = 0x01B454
+end    = 0x01B45E
 stride = 2
 format = "pcrel16"   # Monitor_Index (5 entries)
 
 [[jump_table]]
-start  = 0x01B610
-end    = 0x01B616
+start  = 0x01B638
+end    = 0x01B63E
 stride = 2
 format = "pcrel16"   # MonitorContents_Index (3 entries)
 
 [[jump_table]]
-start  = 0x01B69C
-end    = 0x01B6B0
+start  = 0x01B6C4
+end    = 0x01B6D8
 stride = 2
 format = "pcrel16"   # off_1B69C (10 entries)
 
 [[jump_table]]
-start  = 0x01C222
-end    = 0x01C228
+start  = 0x01C24A
+end    = 0x01C250
 stride = 2
 format = "pcrel16"   # Explosion_Index (3 entries)
 
 [[jump_table]]
-start  = 0x02141C
-end    = 0x021426
+start  = 0x021444
+end    = 0x02144E
 stride = 2
 format = "pcrel16"   # Spring_Index (5 entries)
 
 [[jump_table]]
-start  = 0x021472
-end    = 0x021482
+start  = 0x02149A
+end    = 0x0214AA
 stride = 2
 format = "pcrel16"   # off_21472 (8 entries)
 
 [[jump_table]]
-start  = 0x022088
-end    = 0x022092
+start  = 0x0220B0
+end    = 0x0220BA
 stride = 2
 format = "pcrel16"   # RetractingSpring_Index (5 entries)
 
 [[jump_table]]
-start  = 0x0222B2
-end    = 0x0222C2
+start  = 0x0222DA
+end    = 0x0222EA
 stride = 2
 format = "pcrel16"   # off_222B2 (8 entries)
 
 [[jump_table]]
-start  = 0x022930
-end    = 0x022936
+start  = 0x022958
+end    = 0x02295E
 stride = 2
 format = "pcrel16"   # off_22930 (3 entries)
 
 [[jump_table]]
-start  = 0x0229CE
-end    = 0x0229D4
+start  = 0x0229F6
+end    = 0x0229FC
 stride = 2
 format = "pcrel16"   # off_229CE (3 entries)
 
 [[jump_table]]
-start  = 0x023E4E
-end    = 0x023E6C
+start  = 0x023E76
+end    = 0x023E94
 stride = 2
 format = "pcrel16"   # LBZMovingPlatformIndex (15 entries)
 
 [[jump_table]]
-start  = 0x023E6C
-end    = 0x023E86
+start  = 0x023E94
+end    = 0x023EAE
 stride = 2
 format = "pcrel16"   # FloatingPlatformIndex (13 entries)
 
 [[jump_table]]
-start  = 0x0247BE
-end    = 0x0247C6
+start  = 0x0247E6
+end    = 0x0247EE
 stride = 2
 format = "pcrel16"   # off_247BE (4 entries)
 
 [[jump_table]]
-start  = 0x024CF2
-end    = 0x024CFE
+start  = 0x024D1A
+end    = 0x024D26
 stride = 2
 format = "pcrel16"   # off_24CF2 (6 entries)
 
 [[jump_table]]
-start  = 0x0252A4
-end    = 0x0252A8
+start  = 0x0252CC
+end    = 0x0252D0
 stride = 2
 format = "pcrel16"   # off_252A4 (2 entries)
 
 [[jump_table]]
-start  = 0x025BCC
-end    = 0x025BE2
+start  = 0x025BF4
+end    = 0x025C0A
 stride = 2
 format = "pcrel16"   # LBZCupElevator_Action_Index (11 entries)
 
 [[jump_table]]
-start  = 0x026B06
-end    = 0x026B34
+start  = 0x026B2E
+end    = 0x026B5C
 stride = 2
 format = "pcrel16"   # Offs_AniFunc (23 entries)
 
 [[jump_table]]
-start  = 0x026B36
-end    = 0x026B3A
+start  = 0x026B5E
+end    = 0x026B62
 stride = 2
 format = "pcrel16"   # Offs_AniFunc (2 entries)
 
 [[jump_table]]
-start  = 0x026B3A
-end    = 0x026B72
+start  = 0x026B62
+end    = 0x026B9A
 stride = 2
 format = "pcrel16"   # Offs_AniFunc (28 entries)
 
 [[jump_table]]
-start  = 0x02858C
-end    = 0x028592
+start  = 0x0285B4
+end    = 0x0285BA
 stride = 2
 format = "pcrel16"   # AutoTunnel_Index (3 entries)
 
 [[jump_table]]
-start  = 0x028DA6
-end    = 0x028DB4
+start  = 0x028DCE
+end    = 0x028DDC
 stride = 2
 format = "pcrel16"   # LBZTubeElevator_Index (7 entries)
 
 [[jump_table]]
-start  = 0x02BDA6
-end    = 0x02BDDA
+start  = 0x02BDCE
+end    = 0x02BE02
 stride = 2
 format = "pcrel16"   # Animal_Index (26 entries)
 
 [[jump_table]]
-start  = 0x02C42C
-end    = 0x02C436
+start  = 0x02C454
+end    = 0x02C45E
 stride = 2
 format = "pcrel16"   # StarPost_Index (5 entries)
 
 [[jump_table]]
-start  = 0x02CA74
-end    = 0x02CA7C
+start  = 0x02CA9C
+end    = 0x02CAA4
 stride = 2
 format = "pcrel16"   # TitleCard_Index (4 entries)
 
 [[jump_table]]
-start  = 0x02CDEA
-end    = 0x02CDF2
+start  = 0x02CE12
+end    = 0x02CE1A
 stride = 2
 format = "pcrel16"   # LevelResults_Index (4 entries)
 
 [[jump_table]]
-start  = 0x02D42C
-end    = 0x02D438
+start  = 0x02D454
+end    = 0x02D460
 stride = 2
 format = "pcrel16"   # SpecialStage_Results_Index (6 entries)
 
 [[jump_table]]
-start  = 0x02DF7A
-end    = 0x02DF94
+start  = 0x02DFA2
+end    = 0x02DFBC
 stride = 2
 format = "pcrel16"   # Offs_LoadEnemyArt (13 entries)
 
 [[jump_table]]
-start  = 0x02E05C
-end    = 0x02E068
+start  = 0x02E084
+end    = 0x02E090
 stride = 2
 format = "pcrel16"   # Bubbler_Index (6 entries)
 
 [[jump_table]]
-start  = 0x031348
-end    = 0x031362
+start  = 0x031370
+end    = 0x03138A
 stride = 2
 format = "pcrel16"   # off_31348 (13 entries)
 
 [[jump_table]]
-start  = 0x031948
-end    = 0x03194E
+start  = 0x031970
+end    = 0x031976
 stride = 2
 format = "pcrel16"   # off_31948 (3 entries)
 
 [[jump_table]]
-start  = 0x032334
-end    = 0x03233C
+start  = 0x03235C
+end    = 0x032364
 stride = 2
 format = "pcrel16"   # off_32334 (4 entries)
 
 [[jump_table]]
-start  = 0x03255A
-end    = 0x032562
+start  = 0x032582
+end    = 0x03258A
 stride = 2
 format = "pcrel16"   # off_3255A (4 entries)
 
 [[jump_table]]
-start  = 0x034490
-end    = 0x034498
+start  = 0x0344B8
+end    = 0x0344C0
 stride = 2
 format = "pcrel16"   # off_34490 (4 entries)
 
 [[jump_table]]
-start  = 0x035A08
-end    = 0x035A18
+start  = 0x035A30
+end    = 0x035A40
 stride = 2
 format = "pcrel16"   # off_35A08 (8 entries)
 
 [[jump_table]]
-start  = 0x0386F0
-end    = 0x038700
+start  = 0x038718
+end    = 0x038728
 stride = 2
 format = "pcrel16"   # off_386F0 (8 entries)
 
 [[jump_table]]
-start  = 0x03F2A0
-end    = 0x03F2AA
+start  = 0x03F2E4
+end    = 0x03F2EE
 stride = 2
 format = "pcrel16"   # off_3F2A0 (5 entries)
 
 [[jump_table]]
-start  = 0x03F3F0
-end    = 0x03F3F8
+start  = 0x03F434
+end    = 0x03F43C
 stride = 2
 format = "pcrel16"   # off_3F3F0 (4 entries)
 
 [[jump_table]]
-start  = 0x03F49E
-end    = 0x03F4A6
+start  = 0x03F4E2
+end    = 0x03F4EA
 stride = 2
 format = "pcrel16"   # off_3F49E (4 entries)
 
 [[jump_table]]
-start  = 0x04052A
-end    = 0x040530
+start  = 0x04056E
+end    = 0x040574
 stride = 2
 format = "pcrel16"   # off_4052A (3 entries)
 
 [[jump_table]]
-start  = 0x040B2C
-end    = 0x040B7A
+start  = 0x040B70
+end    = 0x040BBE
 stride = 2
 format = "pcrel16"   # S3CreditsText_Main (39 entries)
 
 [[jump_table]]
-start  = 0x04137E
-end    = 0x04138A
+start  = 0x0413C2
+end    = 0x0413CE
 stride = 2
 format = "pcrel16"   # S3CreditsText_Dummy (6 entries)
 
 [[jump_table]]
-start  = 0x041430
-end    = 0x04146C
+start  = 0x041474
+end    = 0x0414B0
 stride = 2
 format = "pcrel16"   # S3Credits_PlaneMapLarge (30 entries)
 
 [[jump_table]]
-start  = 0x04316C
-end    = 0x043178
+start  = 0x0431B0
+end    = 0x0431BC
 stride = 2
 format = "pcrel16"   # SonicOnSegaScr_Index (6 entries)
 
 [[jump_table]]
-start  = 0x043350
-end    = 0x043354
+start  = 0x043394
+end    = 0x043398
 stride = 2
 format = "pcrel16"   # ObjB1_Index (2 entries)
 
 [[jump_table]]
-start  = 0x0435C0
-end    = 0x0435C4
+start  = 0x043604
+end    = 0x043608
 stride = 2
 format = "pcrel16"   # SegaScr_VInt_Index (2 entries)
 
 [[jump_table]]
-start  = 0x043CD2
-end    = 0x043CE4
+start  = 0x043D16
+end    = 0x043D28
 stride = 2
 format = "pcrel16"   # off_43CD2 (9 entries)
 
 [[jump_table]]
-start  = 0x044260
-end    = 0x044266
+start  = 0x0442A4
+end    = 0x0442AA
 stride = 2
 format = "pcrel16"   # SSEntryRing_Index (3 entries)
 
 [[jump_table]]
-start  = 0x044346
-end    = 0x04434A
+start  = 0x04438A
+end    = 0x04438E
 stride = 2
 format = "pcrel16"   # SSEntryFlash_Index (2 entries)
 
 [[jump_table]]
-start  = 0x04473E
-end    = 0x04474C
+start  = 0x044782
+end    = 0x044790
 stride = 2
 format = "pcrel16"   # CutsceneKnux_AIZ1_Index (7 entries)
 
 [[jump_table]]
-start  = 0x044944
-end    = 0x044950
+start  = 0x044988
+end    = 0x044994
 stride = 2
 format = "pcrel16"   # CutsceneKnux_AIZ2_Index (6 entries)
 
 [[jump_table]]
-start  = 0x044ACC
-end    = 0x044ADA
+start  = 0x044B10
+end    = 0x044B1E
 stride = 2
 format = "pcrel16"   # CutsceneKnux_HCZ2_Index (7 entries)
 
 [[jump_table]]
-start  = 0x044C22
-end    = 0x044C2E
+start  = 0x044C66
+end    = 0x044C72
 stride = 2
 format = "pcrel16"   # CutsceneKnux_CNZ2A_Index (6 entries)
 
 [[jump_table]]
-start  = 0x044E8A
-end    = 0x044E9A
+start  = 0x044ECE
+end    = 0x044EDE
 stride = 2
 format = "pcrel16"   # CutsceneKnux_CNZ2B_Index (8 entries)
 
 [[jump_table]]
-start  = 0x044FD8
-end    = 0x044FE8
+start  = 0x04501C
+end    = 0x04502C
 stride = 2
 format = "pcrel16"   # CutsceneKnux_LBZ1_Index (8 entries)
 
 [[jump_table]]
-start  = 0x045234
-end    = 0x045242
+start  = 0x045278
+end    = 0x045286
 stride = 2
 format = "pcrel16"   # CutsceneKnux_LBZ2_Index (7 entries)
 
 [[jump_table]]
-start  = 0x045526
-end    = 0x04552E
+start  = 0x04556A
+end    = 0x045572
 stride = 2
 format = "pcrel16"   # off_45526 (4 entries)
 
 [[jump_table]]
-start  = 0x04586C
-end    = 0x045888
+start  = 0x0458B0
+end    = 0x0458CC
 stride = 2
 format = "pcrel16"   # AIZPlaneIntro_Index (14 entries)
 
 [[jump_table]]
-start  = 0x045EC0
-end    = 0x045EC6
+start  = 0x045F04
+end    = 0x045F0A
 stride = 2
 format = "pcrel16"   # RobotnikHead_Index (3 entries)
 
 [[jump_table]]
-start  = 0x045F42
-end    = 0x045F48
+start  = 0x045F86
+end    = 0x045F8C
 stride = 2
 format = "pcrel16"   # RobotnikHead2_Index (3 entries)
 
 [[jump_table]]
-start  = 0x045F68
-end    = 0x045F6E
+start  = 0x045FAC
+end    = 0x045FB2
 stride = 2
 format = "pcrel16"   # FBZRobotnikHead_Index (3 entries)
 
 [[jump_table]]
-start  = 0x045FF0
-end    = 0x045FF6
+start  = 0x046034
+end    = 0x04603A
 stride = 2
 format = "pcrel16"   # RobotnikHead3_Index (3 entries)
 
 [[jump_table]]
-start  = 0x04607A
-end    = 0x046080
+start  = 0x0460BE
+end    = 0x0460C4
 stride = 2
 format = "pcrel16"   # RobotnikHead4_Index (3 entries)
 
 [[jump_table]]
-start  = 0x04609E
-end    = 0x0460A6
+start  = 0x0460E2
+end    = 0x0460EA
 stride = 2
 format = "pcrel16"   # RobotnikShip_Index (4 entries)
 
 [[jump_table]]
-start  = 0x04615C
-end    = 0x046166
+start  = 0x0461A0
+end    = 0x0461AA
 stride = 2
 format = "pcrel16"   # RobotnikShip2_Index (5 entries)
 
 [[jump_table]]
-start  = 0x0461A2
-end    = 0x0461AC
+start  = 0x0461E6
+end    = 0x0461F0
 stride = 2
 format = "pcrel16"   # RobotnikShip3_Index (5 entries)
 
 [[jump_table]]
-start  = 0x046290
-end    = 0x04629A
+start  = 0x0462D4
+end    = 0x0462DE
 stride = 2
 format = "pcrel16"   # RobotnikShip4_Index (5 entries)
 
 [[jump_table]]
-start  = 0x0462AE
-end    = 0x0462BA
+start  = 0x0462F2
+end    = 0x0462FE
 stride = 2
 format = "pcrel16"   # FBZRobotnikShip_Index (6 entries)
 
 [[jump_table]]
-start  = 0x046454
-end    = 0x04645E
+start  = 0x046498
+end    = 0x0464A2
 stride = 2
 format = "pcrel16"   # AIZMinibossCutscene_Index (5 entries)
 
 [[jump_table]]
-start  = 0x046696
-end    = 0x0466A4
+start  = 0x0466DA
+end    = 0x0466E8
 stride = 2
 format = "pcrel16"   # off_46696 (7 entries)
 
 [[jump_table]]
-start  = 0x046774
-end    = 0x046778
+start  = 0x0467B8
+end    = 0x0467BC
 stride = 2
 format = "pcrel16"   # off_46774 (2 entries)
 
 [[jump_table]]
-start  = 0x0467A2
-end    = 0x0467AA
+start  = 0x0467E6
+end    = 0x0467EE
 stride = 2
 format = "pcrel16"   # off_467A2 (4 entries)
 
 [[jump_table]]
-start  = 0x046858
-end    = 0x04685E
+start  = 0x04689C
+end    = 0x0468A2
 stride = 2
 format = "pcrel16"   # AIZMiniboss_Flame_Index (3 entries)
 
 [[jump_table]]
-start  = 0x0468F8
-end    = 0x0468FC
+start  = 0x04693C
+end    = 0x046940
 stride = 2
 format = "pcrel16"   # off_468F8 (2 entries)
 
 [[jump_table]]
-start  = 0x046986
-end    = 0x046996
+start  = 0x0469CA
+end    = 0x0469DA
 stride = 2
 format = "pcrel16"   # AIZMiniboss_Index (8 entries)
 
 [[jump_table]]
-start  = 0x046B6E
-end    = 0x046B7A
+start  = 0x046BB2
+end    = 0x046BBE
 stride = 2
 format = "pcrel16"   # off_46B6E (6 entries)
 
 [[jump_table]]
-start  = 0x046BEC
-end    = 0x046BF6
+start  = 0x046C30
+end    = 0x046C3A
 stride = 2
 format = "pcrel16"   # off_46BEC (5 entries)
 
 [[jump_table]]
-start  = 0x046CBC
-end    = 0x046CC2
+start  = 0x046D00
+end    = 0x046D06
 stride = 2
 format = "pcrel16"   # off_46CBC (3 entries)
 
 [[jump_table]]
-start  = 0x04713C
-end    = 0x04714C
+start  = 0x047180
+end    = 0x047190
 stride = 2
 format = "pcrel16"   # AIZ_EndBossIndex (8 entries)
 
 [[jump_table]]
-start  = 0x0474B2
-end    = 0x0474BE
+start  = 0x0474F6
+end    = 0x047502
 stride = 2
 format = "pcrel16"   # off_474B2 (6 entries)
 
 [[jump_table]]
-start  = 0x0475C4
-end    = 0x0475CC
+start  = 0x047608
+end    = 0x047610
 stride = 2
 format = "pcrel16"   # off_475C4 (4 entries)
 
 [[jump_table]]
-start  = 0x047DE2
-end    = 0x047DFA
+start  = 0x047E26
+end    = 0x047E3E
 stride = 2
 format = "pcrel16"   # HCZ_MinibossLoop_Index (12 entries)
 
 [[jump_table]]
-start  = 0x048120
-end    = 0x04812E
+start  = 0x048164
+end    = 0x048172
 stride = 2
 format = "pcrel16"   # HCZMiniboss_Rockets_Index (7 entries)
 
 [[jump_table]]
-start  = 0x04837A
-end    = 0x048386
+start  = 0x0483BE
+end    = 0x0483CA
 stride = 2
 format = "pcrel16"   # off_4837A (6 entries)
 
 [[jump_table]]
-start  = 0x048D54
-end    = 0x048D62
+start  = 0x048D98
+end    = 0x048DA6
 stride = 2
 format = "pcrel16"   # off_48D54 (7 entries)
 
 [[jump_table]]
-start  = 0x048FCE
-end    = 0x048FD8
+start  = 0x049012
+end    = 0x04901C
 stride = 2
 format = "pcrel16"   # off_48FCE (5 entries)
 
 [[jump_table]]
-start  = 0x0490A8
-end    = 0x0490B4
+start  = 0x0490EC
+end    = 0x0490F8
 stride = 2
 format = "pcrel16"   # off_490A8 (6 entries)
 
 [[jump_table]]
-start  = 0x049200
-end    = 0x049206
+start  = 0x049244
+end    = 0x04924A
 stride = 2
 format = "pcrel16"   # off_49200 (3 entries)
 
 [[jump_table]]
-start  = 0x0493E2
-end    = 0x0493F0
+start  = 0x049426
+end    = 0x049434
 stride = 2
 format = "pcrel16"   # off_493E2 (7 entries)
 
 [[jump_table]]
-start  = 0x049DF2
-end    = 0x049E0C
+start  = 0x049E36
+end    = 0x049E50
 stride = 2
 format = "pcrel16"   # MGZ2DrillingRobotnik_Index (13 entries)
 
 [[jump_table]]
-start  = 0x04A110
-end    = 0x04A132
+start  = 0x04A154
+end    = 0x04A176
 stride = 2
 format = "pcrel16"   # MGZEndBoss_Index (17 entries)
 
 [[jump_table]]
-start  = 0x04A476
-end    = 0x04A488
+start  = 0x04A4BA
+end    = 0x04A4CC
 stride = 2
 format = "pcrel16"   # MGZEndBossKnux_Index (9 entries)
 
 [[jump_table]]
-start  = 0x04A612
-end    = 0x04A616
+start  = 0x04A656
+end    = 0x04A65A
 stride = 2
 format = "pcrel16"   # off_4A612 (2 entries)
 
 [[jump_table]]
-start  = 0x04A6B2
-end    = 0x04A6C6
+start  = 0x04A6F6
+end    = 0x04A70A
 stride = 2
 format = "pcrel16"   # off_4A6B2 (10 entries)
 
 [[jump_table]]
-start  = 0x04B650
-end    = 0x04B660
+start  = 0x04B694
+end    = 0x04B6A4
 stride = 2
 format = "pcrel16"   # CNZMiniboss_Index (8 entries)
 
 [[jump_table]]
-start  = 0x04B7FC
-end    = 0x04B804
+start  = 0x04B840
+end    = 0x04B848
 stride = 2
 format = "pcrel16"   # CNZMinibossTop_Index (4 entries)
 
 [[jump_table]]
-start  = 0x04C01C
-end    = 0x04C02C
+start  = 0x04C060
+end    = 0x04C070
 stride = 2
 format = "pcrel16"   # off_4C01C (8 entries)
 
 [[jump_table]]
-start  = 0x04C352
-end    = 0x04C35E
+start  = 0x04C396
+end    = 0x04C3A2
 stride = 2
 format = "pcrel16"   # off_4C352 (6 entries)
 
 [[jump_table]]
-start  = 0x04C484
-end    = 0x04C492
+start  = 0x04C4C8
+end    = 0x04C4D6
 stride = 2
 format = "pcrel16"   # off_4C484 (7 entries)
 
 [[jump_table]]
-start  = 0x04C964
-end    = 0x04C96E
+start  = 0x04C9A8
+end    = 0x04C9B2
 stride = 2
 format = "pcrel16"   # FBZMiniboss_Index (5 entries)
 
 [[jump_table]]
-start  = 0x04CA68
-end    = 0x04CA6C
+start  = 0x04CAAC
+end    = 0x04CAB0
 stride = 2
 format = "pcrel16"   # off_4CA68 (2 entries)
 
 [[jump_table]]
-start  = 0x04CAF2
-end    = 0x04CAFA
+start  = 0x04CB36
+end    = 0x04CB3E
 stride = 2
 format = "pcrel16"   # off_4CAF2 (4 entries)
 
 [[jump_table]]
-start  = 0x04CB96
-end    = 0x04CB9E
+start  = 0x04CBDA
+end    = 0x04CBE2
 stride = 2
 format = "pcrel16"   # off_4CB96 (4 entries)
 
 [[jump_table]]
-start  = 0x04CC00
-end    = 0x04CC16
+start  = 0x04CC44
+end    = 0x04CC5A
 stride = 2
 format = "pcrel16"   # off_4CC00 (11 entries)
 
 [[jump_table]]
-start  = 0x04CE5A
-end    = 0x04CE7A
+start  = 0x04CE9E
+end    = 0x04CEBE
 stride = 2
 format = "pcrel16"   # off_4CE5A (16 entries)
 
 [[jump_table]]
-start  = 0x04D56E
-end    = 0x04D57A
+start  = 0x04D5B2
+end    = 0x04D5BE
 stride = 2
 format = "pcrel16"   # FBZ2Subboss_Index (6 entries)
 
 [[jump_table]]
-start  = 0x04DBB6
-end    = 0x04DBC0
+start  = 0x04DBFA
+end    = 0x04DC04
 stride = 2
 format = "pcrel16"   # FBZEndBoss_Index (5 entries)
 
 [[jump_table]]
-start  = 0x04DDEE
-end    = 0x04DDF6
+start  = 0x04DE32
+end    = 0x04DE3A
 stride = 2
 format = "pcrel16"   # off_4DDEE (4 entries)
 
 [[jump_table]]
-start  = 0x04DEC6
-end    = 0x04DECC
+start  = 0x04DF0A
+end    = 0x04DF10
 stride = 2
 format = "pcrel16"   # off_4DEC6 (3 entries)
 
 [[jump_table]]
-start  = 0x04DF58
-end    = 0x04DF5C
+start  = 0x04DF9C
+end    = 0x04DFA0
 stride = 2
 format = "pcrel16"   # off_4DF58 (2 entries)
 
 [[jump_table]]
-start  = 0x04E0E0
-end    = 0x04E0E8
+start  = 0x04E124
+end    = 0x04E12C
 stride = 2
 format = "pcrel16"   # off_4E0E0 (4 entries)
 
 [[jump_table]]
-start  = 0x04E418
-end    = 0x04E42E
+start  = 0x04E45C
+end    = 0x04E472
 stride = 2
 format = "pcrel16"   # off_4E418 (11 entries)
 
 [[jump_table]]
-start  = 0x04E670
-end    = 0x04E678
+start  = 0x04E6B4
+end    = 0x04E6BC
 stride = 2
 format = "pcrel16"   # off_4E670 (4 entries)
 
 [[jump_table]]
-start  = 0x04E6D6
-end    = 0x04E6EE
+start  = 0x04E71A
+end    = 0x04E732
 stride = 2
 format = "pcrel16"   # off_4E6D6 (12 entries)
 
 [[jump_table]]
-start  = 0x04ED52
-end    = 0x04ED5A
+start  = 0x04ED96
+end    = 0x04ED9E
 stride = 2
 format = "pcrel16"   # off_4ED52 (4 entries)
 
 [[jump_table]]
-start  = 0x04EF22
-end    = 0x04EF28
+start  = 0x04EF66
+end    = 0x04EF6C
 stride = 2
 format = "pcrel16"   # off_4EF22 (3 entries)
 
 [[jump_table]]
-start  = 0x04EF96
-end    = 0x04EFA0
+start  = 0x04EFDA
+end    = 0x04EFE4
 stride = 2
 format = "pcrel16"   # off_4EF96 (5 entries)
 
 [[jump_table]]
-start  = 0x04F04E
-end    = 0x04F058
+start  = 0x04F092
+end    = 0x04F09C
 stride = 2
 format = "pcrel16"   # off_4F04E (5 entries)
 
 [[jump_table]]
-start  = 0x04F48A
-end    = 0x04F496
+start  = 0x04F4CE
+end    = 0x04F4DA
 stride = 2
 format = "pcrel16"   # LBZMiniboss_Index (6 entries)
 
 [[jump_table]]
-start  = 0x04F5D6
-end    = 0x04F5DC
+start  = 0x04F61A
+end    = 0x04F620
 stride = 2
 format = "pcrel16"   # off_4F5D6 (3 entries)
 
 [[jump_table]]
-start  = 0x04F632
-end    = 0x04F63E
+start  = 0x04F676
+end    = 0x04F682
 stride = 2
 format = "pcrel16"   # off_4F632 (6 entries)
 
 [[jump_table]]
-start  = 0x04F9C2
-end    = 0x04F9CE
+start  = 0x04FA06
+end    = 0x04FA12
 stride = 2
 format = "pcrel16"   # LBZFinalBoss1_Index (6 entries)
 
 [[jump_table]]
-start  = 0x04FF1C
-end    = 0x04FF22
+start  = 0x04FF60
+end    = 0x04FF66
 stride = 2
 format = "pcrel16"   # off_4FF1C (3 entries)
 
 [[jump_table]]
-start  = 0x05042E
-end    = 0x05043C
+start  = 0x050472
+end    = 0x050480
 stride = 2
 format = "pcrel16"   # LBZEndBoss_Index (7 entries)
 
 [[jump_table]]
-start  = 0x0505E8
-end    = 0x0505F0
+start  = 0x05062C
+end    = 0x050634
 stride = 2
 format = "pcrel16"   # off_505E8 (4 entries)
 
 [[jump_table]]
-start  = 0x050726
-end    = 0x05072C
+start  = 0x05076A
+end    = 0x050770
 stride = 2
 format = "pcrel16"   # off_50726 (3 entries)
 
 [[jump_table]]
-start  = 0x0507CA
-end    = 0x0507D4
+start  = 0x05080E
+end    = 0x050818
 stride = 2
 format = "pcrel16"   # off_507CA (5 entries)
 
 [[jump_table]]
-start  = 0x05087E
-end    = 0x050884
+start  = 0x0508C2
+end    = 0x0508C8
 stride = 2
 format = "pcrel16"   # off_5087E (3 entries)
 
 [[jump_table]]
-start  = 0x050904
-end    = 0x05090C
+start  = 0x050948
+end    = 0x050950
 stride = 2
 format = "pcrel16"   # off_50904 (4 entries)
 
 [[jump_table]]
-start  = 0x050CC2
-end    = 0x050CEE
+start  = 0x050D06
+end    = 0x050D32
 stride = 2
 format = "pcrel16"   # LBZFinalBoss2_Index (22 entries)
 
 [[jump_table]]
-start  = 0x050E42
-end    = 0x050E4C
+start  = 0x050E86
+end    = 0x050E90
 stride = 2
 format = "pcrel16"   # off_50E42 (5 entries)
 
 [[jump_table]]
-start  = 0x0511FC
-end    = 0x051202
+start  = 0x051240
+end    = 0x051246
 stride = 2
 format = "pcrel16"   # off_511FC (3 entries)
 
 [[jump_table]]
-start  = 0x0523C2
-end    = 0x0523CC
+start  = 0x052406
+end    = 0x052410
 stride = 2
 format = "pcrel16"   # EndSign_Index (5 entries)
 
 [[jump_table]]
-start  = 0x0526CE
-end    = 0x0526EA
+start  = 0x052712
+end    = 0x05272E
 stride = 2
 format = "pcrel16"   # AfterBoss_Index (14 entries)
 
 [[jump_table]]
-start  = 0x0527EC
-end    = 0x0527F2
+start  = 0x052830
+end    = 0x052836
 stride = 2
 format = "pcrel16"   # CreateBossExplosion_Index (3 entries)
 
 [[jump_table]]
-start  = 0x0528DA
-end    = 0x0528E8
+start  = 0x05291E
+end    = 0x05292C
 stride = 2
 format = "pcrel16"   # CreateBossExpParameterIndex (7 entries)
 
 [[jump_table]]
-start  = 0x052912
-end    = 0x052916
+start  = 0x052956
+end    = 0x05295A
 stride = 2
 format = "pcrel16"   # BossExplosionSpecial_Index (2 entries)
 
 [[jump_table]]
-start  = 0x0533CE
-end    = 0x0533D6
+start  = 0x053412
+end    = 0x05341A
 stride = 2
 format = "pcrel16"   # AtAngle_LookupIndex (4 entries)
 
 [[jump_table]]
-start  = 0x0534AC
-end    = 0x0534B4
+start  = 0x0534F0
+end    = 0x0534F8
 stride = 2
 format = "pcrel16"   # AngleY_LookupIndex (4 entries)
 
 [[jump_table]]
-start  = 0x0534EE
-end    = 0x0534F6
+start  = 0x053532
+end    = 0x05353A
 stride = 2
 format = "pcrel16"   # AngleX_LookupIndex (4 entries)
 
 [[jump_table]]
-start  = 0x053568
-end    = 0x053570
+start  = 0x0535AC
+end    = 0x0535B4
 stride = 2
 format = "pcrel16"   # off_53568 (4 entries)
 
 [[jump_table]]
-start  = 0x054504
-end    = 0x054514
+start  = 0x054548
+end    = 0x054558
 stride = 2
 format = "pcrel16"   # EggCapsule_Index (8 entries)
 
 [[jump_table]]
-start  = 0x054B80
-end    = 0x054B86
+start  = 0x054BC4
+end    = 0x054BCA
 stride = 2
 format = "pcrel16"   # Bloominator_Index (3 entries)
 
 [[jump_table]]
-start  = 0x054C72
-end    = 0x054C7A
+start  = 0x054CB6
+end    = 0x054CBE
 stride = 2
 format = "pcrel16"   # Rhinobot_Index (4 entries)
 
 [[jump_table]]
-start  = 0x054D1E
-end    = 0x054D22
+start  = 0x054D62
+end    = 0x054D66
 stride = 2
 format = "pcrel16"   # off_54D1E (2 entries)
 
 [[jump_table]]
-start  = 0x054F68
-end    = 0x054F6E
+start  = 0x054FAC
+end    = 0x054FB2
 stride = 2
 format = "pcrel16"   # MonkeyDude_Index (3 entries)
 
 [[jump_table]]
-start  = 0x0550DE
-end    = 0x0550EA
+start  = 0x055122
+end    = 0x05512E
 stride = 2
 format = "pcrel16"   # off_550DE (6 entries)
 
 [[jump_table]]
-start  = 0x05522E
-end    = 0x055234
+start  = 0x055272
+end    = 0x055278
 stride = 2
 format = "pcrel16"   # off_5522E (3 entries)
 
 [[jump_table]]
-start  = 0x05525E
-end    = 0x055264
+start  = 0x0552A2
+end    = 0x0552A8
 stride = 2
 format = "pcrel16"   # off_5525E (3 entries)
 
 [[jump_table]]
-start  = 0x0554DE
-end    = 0x0554E8
+start  = 0x055522
+end    = 0x05552C
 stride = 2
 format = "pcrel16"   # CaterKillerJr_Index (5 entries)
 
 [[jump_table]]
-start  = 0x05559E
-end    = 0x0555A8
+start  = 0x0555E2
+end    = 0x0555EC
 stride = 2
 format = "pcrel16"   # off_5559E (5 entries)
 
 [[jump_table]]
-start  = 0x055742
-end    = 0x055748
+start  = 0x055786
+end    = 0x05578C
 stride = 2
 format = "pcrel16"   # Blastoid_Index (3 entries)
 
 [[jump_table]]
-start  = 0x055822
-end    = 0x055828
+start  = 0x055866
+end    = 0x05586C
 stride = 2
 format = "pcrel16"   # Buggernaut_Index (3 entries)
 
 [[jump_table]]
-start  = 0x0558B4
-end    = 0x0558BA
+start  = 0x0558F8
+end    = 0x0558FE
 stride = 2
 format = "pcrel16"   # Buggernaught_Baby_Index (3 entries)
 
 [[jump_table]]
-start  = 0x0559C2
-end    = 0x0559D2
+start  = 0x055A06
+end    = 0x055A16
 stride = 2
 format = "pcrel16"   # TurboSpiker_Index (8 entries)
 
 [[jump_table]]
-start  = 0x055D5E
-end    = 0x055D66
+start  = 0x055DA2
+end    = 0x055DAA
 stride = 2
 format = "pcrel16"   # MegaChopper_Index (4 entries)
 
 [[jump_table]]
-start  = 0x056080
-end    = 0x056084
+start  = 0x0560C4
+end    = 0x0560C8
 stride = 2
 format = "pcrel16"   # Poindexter_Index (2 entries)
 
 [[jump_table]]
-start  = 0x056156
-end    = 0x05615C
+start  = 0x05619A
+end    = 0x0561A0
 stride = 2
 format = "pcrel16"   # BubblesBadnik_Index (3 entries)
 
 [[jump_table]]
-start  = 0x056262
-end    = 0x05626C
+start  = 0x0562A6
+end    = 0x0562B0
 stride = 2
 format = "pcrel16"   # Tunnelbot_Index (5 entries)
 
 [[jump_table]]
-start  = 0x056374
-end    = 0x056388
+start  = 0x0563B8
+end    = 0x0563CC
 stride = 2
 format = "pcrel16"   # MGZMiniboss_Index (10 entries)
 
 [[jump_table]]
-start  = 0x056750
-end    = 0x05675A
+start  = 0x056794
+end    = 0x05679E
 stride = 2
 format = "pcrel16"   # off_56750 (5 entries)
 
 [[jump_table]]
-start  = 0x056972
-end    = 0x05697E
+start  = 0x0569B6
+end    = 0x0569C2
 stride = 2
 format = "pcrel16"   # Spiker_Index (6 entries)
 
 [[jump_table]]
-start  = 0x056A50
-end    = 0x056A58
+start  = 0x056A94
+end    = 0x056A9C
 stride = 2
 format = "pcrel16"   # off_56A50 (4 entries)
 
 [[jump_table]]
-start  = 0x056B04
-end    = 0x056B0A
+start  = 0x056B48
+end    = 0x056B4E
 stride = 2
 format = "pcrel16"   # off_56B04 (3 entries)
 
 [[jump_table]]
-start  = 0x056C36
-end    = 0x056C40
+start  = 0x056C7A
+end    = 0x056C84
 stride = 2
 format = "pcrel16"   # Mantis_Index (5 entries)
 
 [[jump_table]]
-start  = 0x056D24
-end    = 0x056D28
+start  = 0x056D68
+end    = 0x056D6C
 stride = 2
 format = "pcrel16"   # off_56D24 (2 entries)
 
 [[jump_table]]
-start  = 0x056D92
-end    = 0x056D9A
+start  = 0x056DD6
+end    = 0x056DDE
 stride = 2
 format = "pcrel16"   # Clamer_Index (4 entries)
 
 [[jump_table]]
-start  = 0x056F64
-end    = 0x056F6E
+start  = 0x056FA8
+end    = 0x056FB2
 stride = 2
 format = "pcrel16"   # Sparkle_Index (5 entries)
 
 [[jump_table]]
-start  = 0x05701C
-end    = 0x057020
+start  = 0x057060
+end    = 0x057064
 stride = 2
 format = "pcrel16"   # off_5701C (2 entries)
 
 [[jump_table]]
-start  = 0x057066
-end    = 0x05706C
+start  = 0x0570AA
+end    = 0x0570B0
 stride = 2
 format = "pcrel16"   # off_57066 (3 entries)
 
 [[jump_table]]
-start  = 0x057142
-end    = 0x057148
+start  = 0x057186
+end    = 0x05718C
 stride = 2
 format = "pcrel16"   # Batbot_Index (3 entries)
 
 [[jump_table]]
-start  = 0x0571B2
-end    = 0x0571B8
+start  = 0x0571F6
+end    = 0x0571FC
 stride = 2
 format = "pcrel16"   # off_571B2 (3 entries)
 
 [[jump_table]]
-start  = 0x0571F8
-end    = 0x0571FE
+start  = 0x05723C
+end    = 0x057242
 stride = 2
 format = "pcrel16"   # off_571F8 (3 entries)
 
 [[jump_table]]
-start  = 0x05725A
-end    = 0x05726A
+start  = 0x05729E
+end    = 0x0572AE
 stride = 2
 format = "pcrel16"   # Blaster_Index (8 entries)
 
 [[jump_table]]
-start  = 0x0574D0
-end    = 0x0574DA
+start  = 0x057514
+end    = 0x05751E
 stride = 2
 format = "pcrel16"   # Technosqueek_Index (5 entries)
 
 [[jump_table]]
-start  = 0x05765E
-end    = 0x057664
+start  = 0x0576A2
+end    = 0x0576A8
 stride = 2
 format = "pcrel16"   # off_5765E (3 entries)
 
 [[jump_table]]
-start  = 0x05779C
-end    = 0x0577B0
+start  = 0x0577E0
+end    = 0x0577F4
 stride = 2
 format = "pcrel16"   # ICZPathFollowPlatform_Index (10 entries)
 
 [[jump_table]]
-start  = 0x057BB6
-end    = 0x057BC6
+start  = 0x057BFA
+end    = 0x057C0A
 stride = 2
 format = "pcrel16"   # off_57BB6 (8 entries)
 
 [[jump_table]]
-start  = 0x057C78
-end    = 0x057C90
+start  = 0x057CBC
+end    = 0x057CD4
 stride = 2
 format = "pcrel16"   # ICZCrushingColumn_Index (12 entries)
 
 [[jump_table]]
-start  = 0x057EDA
-end    = 0x057EDE
+start  = 0x057F1E
+end    = 0x057F22
 stride = 2
 format = "pcrel16"   # off_57EDA (2 entries)
 
 [[jump_table]]
-start  = 0x058798
-end    = 0x0587A8
+start  = 0x0587DC
+end    = 0x0587EC
 stride = 2
 format = "pcrel16"   # off_58798 (8 entries)
 
 [[jump_table]]
-start  = 0x059296
-end    = 0x0592A6
+start  = 0x0592DA
+end    = 0x0592EA
 stride = 2
 format = "pcrel16"   # Penguinator_Index (8 entries)
 
 [[jump_table]]
-start  = 0x05975E
-end    = 0x05976C
+start  = 0x0597A2
+end    = 0x0597B0
 stride = 2
 format = "pcrel16"   # SnaleBlaster_Index (7 entries)
 
 [[jump_table]]
-start  = 0x0598CC
-end    = 0x0598D2
+start  = 0x059910
+end    = 0x059916
 stride = 2
 format = "pcrel16"   # off_598CC (3 entries)
 
 [[jump_table]]
-start  = 0x059928
-end    = 0x059930
+start  = 0x05996C
+end    = 0x059974
 stride = 2
 format = "pcrel16"   # off_59928 (4 entries)
 
 [[jump_table]]
-start  = 0x059A8C
-end    = 0x059A90
+start  = 0x059AD0
+end    = 0x059AD4
 stride = 2
 format = "pcrel16"   # Ribot_Index (2 entries)
 
 [[jump_table]]
-start  = 0x059B16
-end    = 0x059B20
+start  = 0x059B5A
+end    = 0x059B64
 stride = 2
 format = "pcrel16"   # off_59B16 (5 entries)
 
 [[jump_table]]
-start  = 0x059B4C
-end    = 0x059B52
+start  = 0x059B90
+end    = 0x059B96
 stride = 2
 format = "pcrel16"   # off_59B4C (3 entries)
 
 [[jump_table]]
-start  = 0x059BB8
-end    = 0x059BBE
+start  = 0x059BFC
+end    = 0x059C02
 stride = 2
 format = "pcrel16"   # off_59BB8 (3 entries)
 
 [[jump_table]]
-start  = 0x059C1E
-end    = 0x059C24
+start  = 0x059C62
+end    = 0x059C68
 stride = 2
 format = "pcrel16"   # off_59C1E (3 entries)
 
 [[jump_table]]
-start  = 0x059C4A
-end    = 0x059C50
+start  = 0x059C8E
+end    = 0x059C94
 stride = 2
 format = "pcrel16"   # off_59C4A (3 entries)
 
 [[jump_table]]
-start  = 0x059CCE
-end    = 0x059CD4
+start  = 0x059D12
+end    = 0x059D18
 stride = 2
 format = "pcrel16"   # off_59CCE (3 entries)
 
 [[jump_table]]
-start  = 0x059DCA
-end    = 0x059DCE
+start  = 0x059E0E
+end    = 0x059E12
 stride = 2
 format = "pcrel16"   # Orbinaut_Index (2 entries)
 
 [[jump_table]]
-start  = 0x059EBC
-end    = 0x059EC2
+start  = 0x059F00
+end    = 0x059F06
 stride = 2
 format = "pcrel16"   # Corkey_Index (3 entries)
 
 [[jump_table]]
-start  = 0x059F6C
-end    = 0x059F74
+start  = 0x059FB0
+end    = 0x059FB8
 stride = 2
 format = "pcrel16"   # off_59F6C (4 entries)
 
 [[jump_table]]
-start  = 0x05A0FC
-end    = 0x05A108
+start  = 0x05A140
+end    = 0x05A14C
 stride = 2
 format = "pcrel16"   # Flybot767_Index (6 entries)
 
 [[jump_table]]
-start  = 0x05A2E0
-end    = 0x05A2F0
+start  = 0x05A324
+end    = 0x05A334
 stride = 2
 format = "pcrel16"   # LBZ1Robotnik_Index (8 entries)
 
 [[jump_table]]
-start  = 0x05A5E0
-end    = 0x05A5EC
+start  = 0x05A624
+end    = 0x05A630
 stride = 2
 format = "pcrel16"   # off_5A5E0 (6 entries)
 
 [[jump_table]]
-start  = 0x05B068
-end    = 0x05B06C
+start  = 0x05B0AC
+end    = 0x05B0B0
 stride = 2
 format = "pcrel16"   # Offs_PLC (2 entries)
 
 [[jump_table]]
-start  = 0x05B06E
-end    = 0x05B07C
+start  = 0x05B0B2
+end    = 0x05B0C0
 stride = 2
 format = "pcrel16"   # Offs_PLC (7 entries)
 
 [[jump_table]]
-start  = 0x05B07E
-end    = 0x05B084
+start  = 0x05B0C2
+end    = 0x05B0C8
 stride = 2
 format = "pcrel16"   # Offs_PLC (3 entries)
 
 [[jump_table]]
-start  = 0x05B52E
-end    = 0x05B532
+start  = 0x05B572
+end    = 0x05B576
 stride = 2
 format = "pcrel16"   # DebugMode_Index (2 entries)
 
@@ -1429,62 +1429,62 @@ stride = 4
 format = "abs"   # 2 entries, first=Touch_SSSprites_Ring
 
 [[jump_table]]
-start  = 0x02B78C
-end    = 0x02B7A8
+start  = 0x02B7B4
+end    = 0x02B7D0
 stride = 4
 format = "abs"   # 7 entries, first=loc_2B7A8
 
 [[jump_table]]
-start  = 0x03A076
-end    = 0x03A07E
+start  = 0x03A0BA
+end    = 0x03A0C2
 stride = 4
 format = "abs"   # 2 entries, first=locret_3A07E
 
 [[jump_table]]
-start  = 0x040686
-end    = 0x040692
+start  = 0x0406CA
+end    = 0x0406D6
 stride = 4
 format = "abs"   # 3 entries, first=loc_4069E
 
 [[jump_table]]
-start  = 0x040694
-end    = 0x04069C
+start  = 0x0406D8
+end    = 0x0406E0
 stride = 4
 format = "abs"   # 2 entries, first=loc_40896
 
 [[jump_table]]
-start  = 0x044704
-end    = 0x044720
+start  = 0x044748
+end    = 0x044764
 stride = 4
 format = "abs"   # 7 entries, first=CutsceneKnux_AIZ1
 
 [[jump_table]]
-start  = 0x05192C
-end    = 0x05193C
+start  = 0x051970
+end    = 0x051980
 stride = 4
 format = "abs"   # 4 entries, first=loc_5193C
 
 [[jump_table]]
-start  = 0x0543EC
-end    = 0x0543F4
+start  = 0x054430
+end    = 0x054438
 stride = 4
 format = "abs"   # 2 entries, first=Sonic_Load_PLC
 
 [[jump_table]]
-start  = 0x05A65A
-end    = 0x05A662
+start  = 0x05A69E
+end    = 0x05A6A6
 stride = 4
 format = "abs"   # 2 entries, first=byte_5A822
 
 [[jump_table]]
-start  = 0x05A73C
-end    = 0x05A744
+start  = 0x05A780
+end    = 0x05A788
 stride = 4
 format = "abs"   # 2 entries, first=byte_5A818
 
 [[jump_table]]
-start  = 0x05A764
-end    = 0x05A78C
+start  = 0x05A7A8
+end    = 0x05A7D0
 stride = 4
 format = "abs"   # 10 entries, first=Go_Delete_Sprite
 
@@ -1501,146 +1501,146 @@ stride = 4
 format = "bra_w"   # 6 entries, first=loc_C58E
 
 [[jump_table]]
-start  = 0x019CFC
-end    = 0x019D08
+start  = 0x019D24
+end    = 0x019D30
 stride = 4
 format = "bra_w"   # 3 entries, first=loc_19D0A
 
 [[jump_table]]
-start  = 0x03AD14
-end    = 0x03AD2C
+start  = 0x03AD58
+end    = 0x03AD70
 stride = 4
 format = "bra_w"   # 6 entries, first=AIZ1BGE_Intro
 
 [[jump_table]]
-start  = 0x03B29C
-end    = 0x03B2B0
+start  = 0x03B2E0
+end    = 0x03B2F4
 stride = 4
 format = "bra_w"   # 5 entries, first=AIZ2SE_Normal
 
 [[jump_table]]
-start  = 0x03B446
-end    = 0x03B45E
+start  = 0x03B48A
+end    = 0x03B4A2
 stride = 4
 format = "bra_w"   # 6 entries, first=AIZ2BGE_FireRedraw
 
 [[jump_table]]
-start  = 0x03B94C
-end    = 0x03B958
+start  = 0x03B990
+end    = 0x03B99C
 stride = 4
 format = "bra_w"   # 3 entries, first=AIZShipBomb_ReadyDrop
 
 [[jump_table]]
-start  = 0x03C2D2
-end    = 0x03C2DA
+start  = 0x03C316
+end    = 0x03C31E
 stride = 4
 format = "bra_w"   # 2 entries, first=HCZ1BGE_Normal
 
 [[jump_table]]
-start  = 0x03C610
-end    = 0x03C624
+start  = 0x03C654
+end    = 0x03C668
 stride = 4
 format = "bra_w"   # 5 entries, first=HCZ2BGE_WallMoveInit
 
 [[jump_table]]
-start  = 0x03C85C
-end    = 0x03C864
+start  = 0x03C8A0
+end    = 0x03C8A8
 stride = 4
 format = "bra_w"   # 2 entries, first=MGZ1BGE_Normal
 
 [[jump_table]]
-start  = 0x03CA38
-end    = 0x03CA44
+start  = 0x03CA7C
+end    = 0x03CA88
 stride = 4
 format = "bra_w"   # 3 entries, first=MGZ2SE_Normal
 
 [[jump_table]]
-start  = 0x03CC12
-end    = 0x03CC2E
+start  = 0x03CC56
+end    = 0x03CC72
 stride = 4
 format = "bra_w"   # 7 entries, first=MGZ2_QuakeEventCheck
 
 [[jump_table]]
-start  = 0x03CDD4
-end    = 0x03CDE8
+start  = 0x03CE18
+end    = 0x03CE2C
 stride = 4
 format = "bra_w"   # 5 entries, first=MGZ2_ChunkEventCheck
 
 [[jump_table]]
-start  = 0x03D13C
-end    = 0x03D148
+start  = 0x03D180
+end    = 0x03D18C
 stride = 4
 format = "bra_w"   # 3 entries, first=MGZ2BGE_GoRefresh
 
 [[jump_table]]
-start  = 0x03D1D8
-end    = 0x03D1E4
+start  = 0x03D21C
+end    = 0x03D228
 stride = 4
 format = "bra_w"   # 3 entries, first=loc_3D21E
 
 [[jump_table]]
-start  = 0x03D2E8
-end    = 0x03D2F4
+start  = 0x03D32C
+end    = 0x03D338
 stride = 4
 format = "bra_w"   # 3 entries, first=loc_3D376
 
 [[jump_table]]
-start  = 0x03D60E
-end    = 0x03D62A
+start  = 0x03D652
+end    = 0x03D66E
 stride = 4
 format = "bra_w"   # 7 entries, first=CNZ1BGE_Normal
 
 [[jump_table]]
-start  = 0x03D918
-end    = 0x03D930
+start  = 0x03D95C
+end    = 0x03D974
 stride = 4
 format = "bra_w"   # 6 entries, first=Obj_CNZMinibossScrollInit
 
 [[jump_table]]
-start  = 0x03DA7C
-end    = 0x03DA88
+start  = 0x03DAC0
+end    = 0x03DACC
 stride = 4
 format = "bra_w"   # 3 entries, first=loc_3DA88
 
 [[jump_table]]
-start  = 0x03DB12
-end    = 0x03DB2A
+start  = 0x03DB56
+end    = 0x03DB6E
 stride = 4
 format = "bra_w"   # 6 entries, first=ICZ1SE_Init
 
 [[jump_table]]
-start  = 0x03DBC2
-end    = 0x03DBDA
+start  = 0x03DC06
+end    = 0x03DC1E
 stride = 4
 format = "bra_w"   # 6 entries, first=ICZ1BGE_Intro
 
 [[jump_table]]
-start  = 0x03DFA0
-end    = 0x03DFAC
+start  = 0x03DFE4
+end    = 0x03DFF0
 stride = 4
 format = "bra_w"   # 3 entries, first=ICZ2BGE_FromICZ1
 
 [[jump_table]]
-start  = 0x03E496
-end    = 0x03E49E
+start  = 0x03E4DA
+end    = 0x03E4E2
 stride = 2
 format = "bra_s"   # 4 entries, first=LBZ1_LayoutMod1
 
 [[jump_table]]
-start  = 0x03E620
-end    = 0x03E628
+start  = 0x03E664
+end    = 0x03E66C
 stride = 4
 format = "bra_w"   # 2 entries, first=LBZ1BGE_Normal
 
 [[jump_table]]
-start  = 0x03E7FE
-end    = 0x03E806
+start  = 0x03E842
+end    = 0x03E84A
 stride = 4
 format = "bra_w"   # 2 entries, first=LBZ2SE_FromTransition
 
 [[jump_table]]
-start  = 0x03E88A
-end    = 0x03E8A2
+start  = 0x03E8CE
+end    = 0x03E8E6
 stride = 4
 format = "bra_w"   # 6 entries, first=LBZ2BGE_FromTransition
 
@@ -1726,1372 +1726,1372 @@ extra = [
     0x00C6AC,   # loc_C6AC
     0x00F604,   # loc_F604
     0x00F642,   # loc_F642
-    0x00F8D0,   # SpecialCNZBumpers_Init
-    0x00F924,   # SpecialCNZBumpers_Main
-    0x00FA88,   # loc_FA88
-    0x00FB3A,   # loc_FB3A
-    0x00FBA0,   # loc_FBA0
-    0x00FBF8,   # loc_FBF8
-    0x00FC4E,   # loc_FC4E
-    0x00FCA6,   # loc_FCA6
-    0x011740,   # loc_11740
-    0x011858,   # loc_11858
-    0x01190E,   # loc_1190E
-    0x011980,   # loc_11980
-    0x0119AE,   # loc_119AE
-    0x0119D0,   # loc_119D0
-    0x011C1E,   # Sonic_Init
-    0x011CDE,   # Sonic_Control
-    0x012032,   # Sonic_MdNormal
-    0x01207E,   # Sonic_MdAir
-    0x0120A8,   # Sonic_MdRoll
-    0x0120F2,   # Sonic_MdJump
-    0x013142,   # loc_13142
-    0x0131FE,   # loc_131FE
-    0x0133D4,   # loc_133D4
-    0x0133E8,   # loc_133E8
-    0x013404,   # loc_13404
-    0x013A22,   # Sonic_Load_PLC
-    0x013EBC,   # loc_13EBC
-    0x013FCA,   # loc_13FCA
-    0x01408C,   # loc_1408C
-    0x0140B0,   # loc_140B0
-    0x0141C0,   # loc_141C0
-    0x0141E2,   # loc_141E2
-    0x014420,   # Tails_Init
-    0x014514,   # Tails_Control
-    0x014722,   # loc_14722
-    0x0147DA,   # Tails_Catch_Up_Flying
-    0x0148A2,   # Tails_FlySwim_Unknown
-    0x0149E8,   # loc_149E8
-    0x014BC6,   # loc_14BC6
-    0x014C46,   # locret_14C46
-    0x014C48,   # loc_14C48
-    0x014C80,   # loc_14C80
-    0x014D10,   # loc_14D10
-    0x014D4C,   # loc_14D4C
-    0x014D54,   # loc_14D54
-    0x014D8C,   # loc_14D8C
-    0x014DD2,   # loc_14DD2
-    0x014E78,   # loc_14E78
-    0x014EA2,   # loc_14EA2
-    0x014EDA,   # loc_14EDA
-    0x014EE2,   # loc_14EE2
-    0x014F0C,   # loc_14F0C
-    0x01536C,   # Tails_Stand_Path
-    0x0153D0,   # Tails_Stand_Freespace
-    0x01554C,   # Tails_Spin_Path
-    0x0155AE,   # Tails_Spin_Freespace
-    0x01620A,   # loc_1620A
-    0x0162C4,   # loc_162C4
-    0x0162F4,   # loc_162F4
-    0x016308,   # loc_16308
-    0x016324,   # loc_16324
-    0x016756,   # Tails_Load_PLC
-    0x016F1C,   # AirCountdown_Init
-    0x016F74,   # AirCountdown_Animate
-    0x016F80,   # AirCountdown_ChkWater
-    0x016FEC,   # AirCountdown_Display
-    0x017004,   # AirCountdown_Delete
-    0x01700A,   # AirCountdown_AirLeft
-    0x01704A,   # AirCountdown_DisplayNumber
-    0x0171FE,   # AirCountdown_Countdown
-    0x0174F8,   # Obj_S2Shield_Init
-    0x01751C,   # Obj_S2Shield_Main
-    0x0178D4,   # loc_178D4
-    0x01792A,   # loc_1792A
-    0x017948,   # loc_17948
-    0x01796C,   # loc_1796C
-    0x0179A0,   # loc_179A0
-    0x0179F6,   # loc_179F6
-    0x0179FE,   # loc_179FE
-    0x017A1C,   # loc_17A1C
-    0x017A20,   # loc_17A20
-    0x017CE8,   # loc_17CE8
-    0x017D1E,   # loc_17D1E
-    0x017D3A,   # loc_17D3A
-    0x017D42,   # loc_17D42
-    0x017D8A,   # loc_17D8A
-    0x017DAC,   # loc_17DAC
-    0x017DB0,   # loc_17DB0
-    0x018D0E,   # Obj_RingInit
-    0x018D44,   # Obj_RingAnimate
-    0x018D4E,   # Obj_RingCollect
-    0x018D60,   # Obj_RingSparkle
-    0x018D6E,   # Obj_RingDelete
-    0x018E3E,   # loc_18E3E
-    0x018F0A,   # loc_18F0A
-    0x018F6E,   # loc_18F6E
-    0x018F82,   # loc_18F82
-    0x018F90,   # loc_18F90
-    0x019CFC,   # loc_19D0A
-    0x019D00,   # loc_19DD0
-    0x019D04,   # loc_19DD0
-    0x019D0A,   # loc_19D0A
-    0x019DD0,   # loc_19DD0
-    0x01A908,   # AIZ1_Resize
-    0x01A920,   # loc_1A920
-    0x01A96C,   # loc_1A96C
-    0x01A9EC,   # loc_1A9EC
-    0x01AA40,   # loc_1AA40
-    0x01AA7C,   # loc_1AA7C
-    0x01AA9C,   # AIZ2_Resize
-    0x01AABC,   # AIZ2_Resize1
-    0x01AAF4,   # AIZ2_Resize2
-    0x01AB7A,   # AIZ2_Resize3
-    0x01AB94,   # AIZ2_Resize4
-    0x01ABE4,   # AIZ2_Resize5
-    0x01ABFE,   # AIZ2_Resize6
-    0x01AC18,   # AIZ2_Resize7
-    0x01AC2A,   # AIZ2_Resize8
-    0x01AC38,   # AIZ2_ResizeEnd
-    0x01AC3A,   # HCZ1_Resize
-    0x01AC4E,   # loc_1AC4E
-    0x01AC74,   # loc_1AC74
-    0x01ACB0,   # locret_1ACB0
-    0x01ACB2,   # HCZ2_Resize
-    0x01ACC4,   # loc_1ACC4
-    0x01ACD6,   # locret_1ACD6
-    0x01ACD8,   # MGZ1_Resize
-    0x01ACEC,   # loc_1ACEC
-    0x01AD2A,   # loc_1AD2A
-    0x01AD84,   # locret_1AD84
-    0x01AD86,   # CNZ1_Resize
-    0x01AD88,   # ICZ1_Resize
-    0x01AD9C,   # loc_1AD9C
-    0x01ADB6,   # loc_1ADB6
-    0x01ADC8,   # locret_1ADC8
-    0x01ADCA,   # ICZ2_Resize
-    0x01ADDC,   # loc_1ADDC
-    0x01ADF8,   # locret_1ADF8
-    0x01ADFA,   # LBZ1_Resize
-    0x01ADFC,   # LBZ2_Resize
-    0x01AE0E,   # loc_1AE0E
-    0x01AE66,   # locret_1AE66
-    0x01AE68,   # No_Resize
-    0x01AE9C,   # loc_1AE9C
-    0x01AECC,   # loc_1AECC
-    0x01B436,   # Obj_MonitorInit
-    0x01B4A0,   # Obj_MonitorMain
-    0x01B4FA,   # Obj_MonitorAnimate
-    0x01B504,   # loc_1B504
-    0x01B56E,   # Obj_MonitorBreak
-    0x01B616,   # loc_1B616
-    0x01B656,   # loc_1B656
-    0x01B6B0,   # Monitor_Give_Eggman
-    0x01B6B6,   # Monitor_Give_1up
-    0x01B6CA,   # Monitor_Give_Rings
-    0x01B728,   # Monitor_Give_SpeedShoes
-    0x01B772,   # Monitor_Give_FireShield
-    0x01B7B0,   # Monitor_Give_LightningShield
-    0x01B7EE,   # Monitor_Give_BubbleShield
-    0x01B82C,   # Monitor_Give_Invincibility
-    0x01B878,   # Monitor_Give_SuperSonic
-    0x01B8E4,   # loc_1B8E4
-    0x01C228,   # loc_1C228
-    0x01C24C,   # loc_1C24C
-    0x01C2A0,   # loc_1C2A0
-    0x021482,   # Spring_Horizontal
-    0x0214C0,   # Spring_Down
-    0x0214F2,   # Spring_UpDiag
-    0x02151A,   # Spring_DownDiag
-    0x021548,   # Spring_Up
-    0x022092,   # loc_22092
-    0x0220AE,   # loc_220AE
-    0x0220CA,   # loc_220CA
-    0x0220E6,   # loc_220E6
-    0x022116,   # loc_22116
-    0x0222C2,   # loc_222C2
-    0x0222DE,   # loc_222DE
-    0x0222FA,   # loc_222FA
-    0x022316,   # loc_22316
-    0x022332,   # loc_22332
-    0x02234E,   # loc_2234E
-    0x022936,   # locret_22936
-    0x022938,   # loc_22938
-    0x02294C,   # loc_2294C
-    0x0229D4,   # loc_229D4
-    0x0229E8,   # loc_229E8
-    0x023E86,   # Platform_Stationary
-    0x023EBE,   # Platform_Horizontal64
-    0x023ECA,   # Platform_Horizontal128
-    0x023EEC,   # Platform_Vertical64
-    0x023EF8,   # Platform_Vertical128
-    0x023F1A,   # Platform_DiagonalUp
-    0x023F34,   # Platform_DiagonalDown
-    0x023F52,   # Platform_DiagonalLift
-    0x023FA2,   # Platform_Horizontal256
-    0x023FFE,   # Platform_FallingDelayed
-    0x024028,   # Platform_Falling
-    0x0240DA,   # Platform_Rising
-    0x02416E,   # Platform_Square32
-    0x024180,   # Platform_Square96
-    0x024190,   # Platform_Square160
-    0x0241A0,   # Platform_Square224
-    0x0247C6,   # loc_247C6
-    0x0247E4,   # loc_247E4
-    0x024810,   # loc_24810
-    0x02482E,   # loc_2482E
-    0x024CFE,   # loc_24CFE
-    0x024D58,   # loc_24D58
-    0x024D6A,   # loc_24D6A
-    0x024D7A,   # loc_24D7A
-    0x024D8C,   # loc_24D8C
-    0x0252A8,   # loc_252A8
-    0x0252C4,   # loc_252C4
-    0x025BE2,   # LBZCupElev_WaitEnter
-    0x025BF4,   # LBZCupElev_MoveUp
-    0x025C7C,   # LBZCupElev_WaitExit1
-    0x025C88,   # LBZCupElev_MoveDown
-    0x025D0C,   # LBZCupElev_WaitExit2
-    0x025D1A,   # LBZCupElev_Spin1
-    0x025DB4,   # LBZCupElev_Spin2
-    0x025E22,   # LBZCupElev_Fling1
-    0x025E46,   # LBZCupElev_Fling2
-    0x025E6A,   # LBZCupElev_Fling3
-    0x026BC6,   # AnimateTiles_NULL
-    0x026BFA,   # AnimateTiles_NULL
-    0x027524,   # AnimateTiles_DPZ
-    0x027554,   # AnimateTiles_DPZ
-    0x02763E,   # AnimateTiles_Gumball
-    0x027640,   # AnimateTiles_DoAniPLC
-    0x0278B6,   # AniPLC_ALZ
-    0x0278C4,   # AniPLC_BPZ
-    0x02792A,   # AniPLC_DPZ
-    0x02793E,   # AnimateTiles_NULL3
-    0x028592,   # Obj_AutoTunnelInit
-    0x028646,   # Obj_AutoTunnelRun
-    0x028700,   # Obj_AutoTunnelLastMove
-    0x028DB4,   # LBZTubeElevator_WaitPlayer
-    0x028E24,   # LBZTubeElevator_StartSpin
-    0x028EA6,   # LBZTubeElevator_MovePath
-    0x028F3E,   # LBZTubeElevator_SlowSpin
-    0x028F8A,   # LBZTubeElevator_WaitExit
-    0x028FF0,   # LBZTubeElevator_EndSpin
-    0x029022,   # LBZTubeElevator_Closed
-    0x02B7A8,   # loc_2B7A8
-    0x02B7AE,   # loc_2B7AE
-    0x02B7E4,   # loc_2B7E4
-    0x02B81A,   # loc_2B81A
-    0x02B850,   # loc_2B850
-    0x02B886,   # loc_2B886
-    0x02B8B8,   # loc_2B8B8
-    0x02BEC2,   # loc_2BEC2
-    0x02BFEA,   # loc_2BFEA
-    0x02C046,   # loc_2C046
-    0x02C086,   # loc_2C086
-    0x02C10C,   # loc_2C10C
-    0x02C12E,   # loc_2C12E
-    0x02C14E,   # loc_2C14E
-    0x02C18A,   # loc_2C18A
-    0x02C1A6,   # loc_2C1A6
-    0x02C1E6,   # loc_2C1E6
-    0x02C206,   # loc_2C206
-    0x02C246,   # loc_2C246
-    0x02C436,   # loc_2C436
-    0x02C488,   # loc_2C488
-    0x02C56E,   # loc_2C56E
-    0x02C580,   # loc_2C580
-    0x02C8AE,   # loc_2C8AE
-    0x02CA7C,   # Obj_TitleCardInit
-    0x02CAF0,   # Obj_TitleCardCreate
-    0x02CB78,   # Obj_TitleCardWait
-    0x02CBCA,   # Obj_TitleCardWait2
-    0x02CDF2,   # Obj_LevelResultsInit
-    0x02CEBA,   # Obj_LevelResultsCreate
-    0x02CF26,   # Obj_LevelResultsWait
-    0x02CFA8,   # Obj_LevelResultsWait2
-    0x02D218,   # SpecialStage_Results
-    0x02D438,   # loc_2D438
-    0x02D49A,   # loc_2D49A
-    0x02D506,   # loc_2D506
-    0x02D53A,   # loc_2D53A
-    0x02D590,   # loc_2D590
-    0x02D5DC,   # loc_2D5DC
-    0x02E04E,   # PLCKosM_LBZ
-    0x02E068,   # loc_2E068
-    0x02E0C6,   # loc_2E0C6
-    0x02E0E0,   # loc_2E0E0
-    0x02E142,   # loc_2E142
-    0x02E160,   # loc_2E160
-    0x02E166,   # loc_2E166
-    0x031362,   # loc_31362
-    0x03144A,   # loc_3144A
-    0x031468,   # loc_31468
-    0x031486,   # loc_31486
-    0x0314AA,   # loc_314AA
-    0x0314C8,   # loc_314C8
-    0x0314E6,   # loc_314E6
-    0x031504,   # loc_31504
-    0x031528,   # loc_31528
-    0x031546,   # loc_31546
-    0x03194E,   # locret_3194E
-    0x031950,   # loc_31950
-    0x031990,   # loc_31990
-    0x03233C,   # loc_3233C
-    0x0323C8,   # loc_323C8
-    0x032404,   # loc_32404
-    0x032448,   # loc_32448
-    0x032562,   # word_32562
-    0x032570,   # word_32570
-    0x03257E,   # word_3257E
-    0x03258C,   # word_3258C
-    0x034498,   # loc_34498
-    0x03449C,   # loc_3449C
-    0x0344E4,   # loc_344E4
-    0x034554,   # loc_34554
-    0x035A18,   # loc_35A18
-    0x035A6A,   # loc_35A6A
-    0x035ABC,   # loc_35ABC
-    0x035B7A,   # loc_35B7A
-    0x035BA4,   # loc_35BA4
-    0x035BE4,   # loc_35BE4
-    0x035C08,   # loc_35C08
-    0x035C2C,   # locret_35C2C
-    0x038700,   # loc_38700
-    0x03885A,   # loc_3885A
-    0x0388B4,   # loc_388B4
-    0x0388EC,   # loc_388EC
-    0x03891C,   # loc_3891C
-    0x03895C,   # loc_3895C
-    0x03898C,   # loc_3898C
-    0x0389BC,   # loc_389BC
-    0x03A07E,   # locret_3A07E
-    0x03AD14,   # AIZ1BGE_Intro
-    0x03AD18,   # AIZ1BGE_NormalRefresh
-    0x03AD1C,   # AIZ1BGE_Normal
-    0x03AD20,   # AIZ1BGE_FireTransition
-    0x03AD24,   # AIZ1BGE_FireRefresh
-    0x03AD28,   # AIZ1BGE_Finish
-    0x03AD2C,   # AIZ1BGE_Intro
-    0x03AD86,   # AIZ1BGE_NormalRefresh
-    0x03ADA2,   # AIZ1BGE_Normal
-    0x03ADF8,   # AIZ1BGE_FireTransition
-    0x03AED2,   # AIZ1BGE_FireRefresh
-    0x03AEFE,   # AIZ1BGE_Finish
-    0x03B29C,   # AIZ2SE_Normal
-    0x03B2A0,   # AIZ2SE_ShipRefresh
-    0x03B2A4,   # AIZ2SE_ShipDraw
-    0x03B2A8,   # AIZ2SE_EndRefresh
-    0x03B2AC,   # AIZ2SE_End
-    0x03B2B0,   # AIZ2SE_Normal
-    0x03B2EC,   # AIZ2SE_ShipRefresh
-    0x03B34C,   # AIZ2SE_ShipDraw
-    0x03B394,   # AIZ2SE_EndRefresh
-    0x03B3CA,   # AIZ2SE_End
-    0x03B446,   # AIZ2BGE_FireRedraw
-    0x03B44A,   # AIZ2BGE_WaitFire
-    0x03B44E,   # AIZ2BGE_BGRedraw
-    0x03B452,   # AIZ2BGE_Normal
-    0x03B456,   # AIZ2BGE_ShipRefresh
-    0x03B45A,   # AIZ2BGE_ShipMove
-    0x03B45E,   # AIZ2BGE_FireRedraw
+    0x00F8DC,   # SpecialCNZBumpers_Init
+    0x00F930,   # SpecialCNZBumpers_Main
+    0x00FA94,   # loc_FA88
+    0x00FB46,   # loc_FB3A
+    0x00FBAC,   # loc_FBA0
+    0x00FC04,   # loc_FBF8
+    0x00FC5A,   # loc_FC4E
+    0x00FCB2,   # loc_FCA6
+    0x01174C,   # loc_11740
+    0x011864,   # loc_11858
+    0x01191A,   # loc_1190E
+    0x01198C,   # loc_11980
+    0x0119BA,   # loc_119AE
+    0x0119DC,   # loc_119D0
+    0x011C2A,   # Sonic_Init
+    0x011CEA,   # Sonic_Control
+    0x01203E,   # Sonic_MdNormal
+    0x01208A,   # Sonic_MdAir
+    0x0120B4,   # Sonic_MdRoll
+    0x0120FE,   # Sonic_MdJump
+    0x01314E,   # loc_13142
+    0x01320A,   # loc_131FE
+    0x0133E0,   # loc_133D4
+    0x0133F4,   # loc_133E8
+    0x013410,   # loc_13404
+    0x013A2E,   # Sonic_Load_PLC
+    0x013EC8,   # loc_13EBC
+    0x013FD6,   # loc_13FCA
+    0x014098,   # loc_1408C
+    0x0140BC,   # loc_140B0
+    0x0141CC,   # loc_141C0
+    0x0141EE,   # loc_141E2
+    0x01442C,   # Tails_Init
+    0x014520,   # Tails_Control
+    0x01472E,   # loc_14722
+    0x0147E6,   # Tails_Catch_Up_Flying
+    0x0148AE,   # Tails_FlySwim_Unknown
+    0x0149F4,   # loc_149E8
+    0x014BD2,   # loc_14BC6
+    0x014C52,   # locret_14C46
+    0x014C54,   # loc_14C48
+    0x014C8C,   # loc_14C80
+    0x014D1C,   # loc_14D10
+    0x014D58,   # loc_14D4C
+    0x014D60,   # loc_14D54
+    0x014D98,   # loc_14D8C
+    0x014DDE,   # loc_14DD2
+    0x014E84,   # loc_14E78
+    0x014EAE,   # loc_14EA2
+    0x014EE6,   # loc_14EDA
+    0x014EEE,   # loc_14EE2
+    0x014F18,   # loc_14F0C
+    0x015378,   # Tails_Stand_Path
+    0x0153DC,   # Tails_Stand_Freespace
+    0x015558,   # Tails_Spin_Path
+    0x0155BA,   # Tails_Spin_Freespace
+    0x016216,   # loc_1620A
+    0x0162D0,   # loc_162C4
+    0x016300,   # loc_162F4
+    0x016314,   # loc_16308
+    0x016330,   # loc_16324
+    0x016762,   # Tails_Load_PLC
+    0x016F28,   # AirCountdown_Init
+    0x016F80,   # AirCountdown_Animate
+    0x016F8C,   # AirCountdown_ChkWater
+    0x016FF8,   # AirCountdown_Display
+    0x017010,   # AirCountdown_Delete
+    0x017016,   # AirCountdown_AirLeft
+    0x017056,   # AirCountdown_DisplayNumber
+    0x01720A,   # AirCountdown_Countdown
+    0x017504,   # Obj_S2Shield_Init
+    0x017528,   # Obj_S2Shield_Main
+    0x0178E0,   # loc_178D4
+    0x017936,   # loc_1792A
+    0x017954,   # loc_17948
+    0x017978,   # loc_1796C
+    0x0179AC,   # loc_179A0
+    0x017A02,   # loc_179F6
+    0x017A0A,   # loc_179FE
+    0x017A28,   # loc_17A1C
+    0x017A2C,   # loc_17A20
+    0x017CF4,   # loc_17CE8
+    0x017D2A,   # loc_17D1E
+    0x017D46,   # loc_17D3A
+    0x017D4E,   # loc_17D42
+    0x017D96,   # loc_17D8A
+    0x017DB8,   # loc_17DAC
+    0x017DBC,   # loc_17DB0
+    0x018D1A,   # Obj_RingInit
+    0x018D50,   # Obj_RingAnimate
+    0x018D5A,   # Obj_RingCollect
+    0x018D6C,   # Obj_RingSparkle
+    0x018D7A,   # Obj_RingDelete
+    0x018E4A,   # loc_18E3E
+    0x018F16,   # loc_18F0A
+    0x018F7A,   # loc_18F6E
+    0x018F8E,   # loc_18F82
+    0x018F9C,   # loc_18F90
+    0x019D24,   # loc_19D0A
+    0x019D28,   # loc_19DD0
+    0x019D2C,   # loc_19DD0
+    0x019D32,   # loc_19D0A
+    0x019DF8,   # loc_19DD0
+    0x01A930,   # AIZ1_Resize
+    0x01A948,   # loc_1A920
+    0x01A994,   # loc_1A96C
+    0x01AA14,   # loc_1A9EC
+    0x01AA68,   # loc_1AA40
+    0x01AAA4,   # loc_1AA7C
+    0x01AAC4,   # AIZ2_Resize
+    0x01AAE4,   # AIZ2_Resize1
+    0x01AB1C,   # AIZ2_Resize2
+    0x01ABA2,   # AIZ2_Resize3
+    0x01ABBC,   # AIZ2_Resize4
+    0x01AC0C,   # AIZ2_Resize5
+    0x01AC26,   # AIZ2_Resize6
+    0x01AC40,   # AIZ2_Resize7
+    0x01AC52,   # AIZ2_Resize8
+    0x01AC60,   # AIZ2_ResizeEnd
+    0x01AC62,   # HCZ1_Resize
+    0x01AC76,   # loc_1AC4E
+    0x01AC9C,   # loc_1AC74
+    0x01ACD8,   # locret_1ACB0
+    0x01ACDA,   # HCZ2_Resize
+    0x01ACEC,   # loc_1ACC4
+    0x01ACFE,   # locret_1ACD6
+    0x01AD00,   # MGZ1_Resize
+    0x01AD14,   # loc_1ACEC
+    0x01AD52,   # loc_1AD2A
+    0x01ADAC,   # locret_1AD84
+    0x01ADAE,   # CNZ1_Resize
+    0x01ADB0,   # ICZ1_Resize
+    0x01ADC4,   # loc_1AD9C
+    0x01ADDE,   # loc_1ADB6
+    0x01ADF0,   # locret_1ADC8
+    0x01ADF2,   # ICZ2_Resize
+    0x01AE04,   # loc_1ADDC
+    0x01AE20,   # locret_1ADF8
+    0x01AE22,   # LBZ1_Resize
+    0x01AE24,   # LBZ2_Resize
+    0x01AE36,   # loc_1AE0E
+    0x01AE8E,   # locret_1AE66
+    0x01AE90,   # No_Resize
+    0x01AEC4,   # loc_1AE9C
+    0x01AEF4,   # loc_1AECC
+    0x01B45E,   # Obj_MonitorInit
+    0x01B4C8,   # Obj_MonitorMain
+    0x01B522,   # Obj_MonitorAnimate
+    0x01B52C,   # loc_1B504
+    0x01B596,   # Obj_MonitorBreak
+    0x01B63E,   # loc_1B616
+    0x01B67E,   # loc_1B656
+    0x01B6D8,   # Monitor_Give_Eggman
+    0x01B6DE,   # Monitor_Give_1up
+    0x01B6F2,   # Monitor_Give_Rings
+    0x01B750,   # Monitor_Give_SpeedShoes
+    0x01B79A,   # Monitor_Give_FireShield
+    0x01B7D8,   # Monitor_Give_LightningShield
+    0x01B816,   # Monitor_Give_BubbleShield
+    0x01B854,   # Monitor_Give_Invincibility
+    0x01B8A0,   # Monitor_Give_SuperSonic
+    0x01B90C,   # loc_1B8E4
+    0x01C250,   # loc_1C228
+    0x01C274,   # loc_1C24C
+    0x01C2C8,   # loc_1C2A0
+    0x0214AA,   # Spring_Horizontal
+    0x0214E8,   # Spring_Down
+    0x02151A,   # Spring_UpDiag
+    0x021542,   # Spring_DownDiag
+    0x021570,   # Spring_Up
+    0x0220BA,   # loc_22092
+    0x0220D6,   # loc_220AE
+    0x0220F2,   # loc_220CA
+    0x02210E,   # loc_220E6
+    0x02213E,   # loc_22116
+    0x0222EA,   # loc_222C2
+    0x022306,   # loc_222DE
+    0x022322,   # loc_222FA
+    0x02233E,   # loc_22316
+    0x02235A,   # loc_22332
+    0x022376,   # loc_2234E
+    0x02295E,   # locret_22936
+    0x022960,   # loc_22938
+    0x022974,   # loc_2294C
+    0x0229FC,   # loc_229D4
+    0x022A10,   # loc_229E8
+    0x023EAE,   # Platform_Stationary
+    0x023EE6,   # Platform_Horizontal64
+    0x023EF2,   # Platform_Horizontal128
+    0x023F14,   # Platform_Vertical64
+    0x023F20,   # Platform_Vertical128
+    0x023F42,   # Platform_DiagonalUp
+    0x023F5C,   # Platform_DiagonalDown
+    0x023F7A,   # Platform_DiagonalLift
+    0x023FCA,   # Platform_Horizontal256
+    0x024026,   # Platform_FallingDelayed
+    0x024050,   # Platform_Falling
+    0x024102,   # Platform_Rising
+    0x024196,   # Platform_Square32
+    0x0241A8,   # Platform_Square96
+    0x0241B8,   # Platform_Square160
+    0x0241C8,   # Platform_Square224
+    0x0247EE,   # loc_247C6
+    0x02480C,   # loc_247E4
+    0x024838,   # loc_24810
+    0x024856,   # loc_2482E
+    0x024D26,   # loc_24CFE
+    0x024D80,   # loc_24D58
+    0x024D92,   # loc_24D6A
+    0x024DA2,   # loc_24D7A
+    0x024DB4,   # loc_24D8C
+    0x0252D0,   # loc_252A8
+    0x0252EC,   # loc_252C4
+    0x025C0A,   # LBZCupElev_WaitEnter
+    0x025C1C,   # LBZCupElev_MoveUp
+    0x025CA4,   # LBZCupElev_WaitExit1
+    0x025CB0,   # LBZCupElev_MoveDown
+    0x025D34,   # LBZCupElev_WaitExit2
+    0x025D42,   # LBZCupElev_Spin1
+    0x025DDC,   # LBZCupElev_Spin2
+    0x025E4A,   # LBZCupElev_Fling1
+    0x025E6E,   # LBZCupElev_Fling2
+    0x025E92,   # LBZCupElev_Fling3
+    0x026BEE,   # AnimateTiles_NULL
+    0x026C22,   # AnimateTiles_NULL
+    0x02754C,   # AnimateTiles_DPZ
+    0x02757C,   # AnimateTiles_DPZ
+    0x027666,   # AnimateTiles_Gumball
+    0x027668,   # AnimateTiles_DoAniPLC
+    0x0278DE,   # AniPLC_ALZ
+    0x0278EC,   # AniPLC_BPZ
+    0x027952,   # AniPLC_DPZ
+    0x027966,   # AnimateTiles_NULL3
+    0x0285BA,   # Obj_AutoTunnelInit
+    0x02866E,   # Obj_AutoTunnelRun
+    0x028728,   # Obj_AutoTunnelLastMove
+    0x028DDC,   # LBZTubeElevator_WaitPlayer
+    0x028E4C,   # LBZTubeElevator_StartSpin
+    0x028ECE,   # LBZTubeElevator_MovePath
+    0x028F66,   # LBZTubeElevator_SlowSpin
+    0x028FB2,   # LBZTubeElevator_WaitExit
+    0x029018,   # LBZTubeElevator_EndSpin
+    0x02904A,   # LBZTubeElevator_Closed
+    0x02B7D0,   # loc_2B7A8
+    0x02B7D6,   # loc_2B7AE
+    0x02B80C,   # loc_2B7E4
+    0x02B842,   # loc_2B81A
+    0x02B878,   # loc_2B850
+    0x02B8AE,   # loc_2B886
+    0x02B8E0,   # loc_2B8B8
+    0x02BEEA,   # loc_2BEC2
+    0x02C012,   # loc_2BFEA
+    0x02C06E,   # loc_2C046
+    0x02C0AE,   # loc_2C086
+    0x02C134,   # loc_2C10C
+    0x02C156,   # loc_2C12E
+    0x02C176,   # loc_2C14E
+    0x02C1B2,   # loc_2C18A
+    0x02C1CE,   # loc_2C1A6
+    0x02C20E,   # loc_2C1E6
+    0x02C22E,   # loc_2C206
+    0x02C26E,   # loc_2C246
+    0x02C45E,   # loc_2C436
+    0x02C4B0,   # loc_2C488
+    0x02C596,   # loc_2C56E
+    0x02C5A8,   # loc_2C580
+    0x02C8D6,   # loc_2C8AE
+    0x02CAA4,   # Obj_TitleCardInit
+    0x02CB18,   # Obj_TitleCardCreate
+    0x02CBA0,   # Obj_TitleCardWait
+    0x02CBF2,   # Obj_TitleCardWait2
+    0x02CE1A,   # Obj_LevelResultsInit
+    0x02CEE2,   # Obj_LevelResultsCreate
+    0x02CF4E,   # Obj_LevelResultsWait
+    0x02CFD0,   # Obj_LevelResultsWait2
+    0x02D240,   # SpecialStage_Results
+    0x02D460,   # loc_2D438
+    0x02D4C2,   # loc_2D49A
+    0x02D52E,   # loc_2D506
+    0x02D562,   # loc_2D53A
+    0x02D5B8,   # loc_2D590
+    0x02D604,   # loc_2D5DC
+    0x02E076,   # PLCKosM_LBZ
+    0x02E090,   # loc_2E068
+    0x02E0EE,   # loc_2E0C6
+    0x02E108,   # loc_2E0E0
+    0x02E16A,   # loc_2E142
+    0x02E188,   # loc_2E160
+    0x02E18E,   # loc_2E166
+    0x03138A,   # loc_31362
+    0x031472,   # loc_3144A
+    0x031490,   # loc_31468
+    0x0314AE,   # loc_31486
+    0x0314D2,   # loc_314AA
+    0x0314F0,   # loc_314C8
+    0x03150E,   # loc_314E6
+    0x03152C,   # loc_31504
+    0x031550,   # loc_31528
+    0x03156E,   # loc_31546
+    0x031976,   # locret_3194E
+    0x031978,   # loc_31950
+    0x0319B8,   # loc_31990
+    0x032364,   # loc_3233C
+    0x0323F0,   # loc_323C8
+    0x03242C,   # loc_32404
+    0x032470,   # loc_32448
+    0x03258A,   # word_32562
+    0x032598,   # word_32570
+    0x0325A6,   # word_3257E
+    0x0325B4,   # word_3258C
+    0x0344C0,   # loc_34498
+    0x0344C4,   # loc_3449C
+    0x03450C,   # loc_344E4
+    0x03457C,   # loc_34554
+    0x035A40,   # loc_35A18
+    0x035A92,   # loc_35A6A
+    0x035AE4,   # loc_35ABC
+    0x035BA2,   # loc_35B7A
+    0x035BCC,   # loc_35BA4
+    0x035C0C,   # loc_35BE4
+    0x035C30,   # loc_35C08
+    0x035C54,   # locret_35C2C
+    0x038728,   # loc_38700
+    0x038882,   # loc_3885A
+    0x0388DC,   # loc_388B4
+    0x038914,   # loc_388EC
+    0x038944,   # loc_3891C
+    0x038984,   # loc_3895C
+    0x0389B4,   # loc_3898C
+    0x0389E4,   # loc_389BC
+    0x03A0C2,   # locret_3A07E
+    0x03AD58,   # AIZ1BGE_Intro
+    0x03AD5C,   # AIZ1BGE_NormalRefresh
+    0x03AD60,   # AIZ1BGE_Normal
+    0x03AD64,   # AIZ1BGE_FireTransition
+    0x03AD68,   # AIZ1BGE_FireRefresh
+    0x03AD6C,   # AIZ1BGE_Finish
+    0x03AD70,   # AIZ1BGE_Intro
+    0x03ADCA,   # AIZ1BGE_NormalRefresh
+    0x03ADE6,   # AIZ1BGE_Normal
+    0x03AE3C,   # AIZ1BGE_FireTransition
+    0x03AF16,   # AIZ1BGE_FireRefresh
+    0x03AF42,   # AIZ1BGE_Finish
+    0x03B2E0,   # AIZ2SE_Normal
+    0x03B2E4,   # AIZ2SE_ShipRefresh
+    0x03B2E8,   # AIZ2SE_ShipDraw
+    0x03B2EC,   # AIZ2SE_EndRefresh
+    0x03B2F0,   # AIZ2SE_End
+    0x03B2F4,   # AIZ2SE_Normal
+    0x03B330,   # AIZ2SE_ShipRefresh
+    0x03B390,   # AIZ2SE_ShipDraw
+    0x03B3D8,   # AIZ2SE_EndRefresh
+    0x03B40E,   # AIZ2SE_End
+    0x03B48A,   # AIZ2BGE_FireRedraw
     0x03B48E,   # AIZ2BGE_WaitFire
-    0x03B56A,   # AIZ2BGE_BGRedraw
-    0x03B580,   # AIZ2BGE_Normal
-    0x03B5E0,   # AIZ2BGE_ShipRefresh
-    0x03B5F6,   # AIZ2BGE_ShipMove
-    0x03B774,   # AIZ2_DoShipLoop
-    0x03B94C,   # AIZShipBomb_ReadyDrop
-    0x03B950,   # AIZShipBomb_Delay
-    0x03B954,   # AIZShipBomb_Drop
-    0x03B958,   # AIZShipBomb_ReadyDrop
-    0x03B96A,   # AIZShipBomb_Delay
-    0x03B986,   # AIZShipBomb_Drop
-    0x03C2D2,   # HCZ1BGE_Normal
-    0x03C2D6,   # HCZ1BGE_DoTransition
-    0x03C2DA,   # HCZ1BGE_Normal
-    0x03C356,   # HCZ1BGE_DoTransition
-    0x03C610,   # HCZ2BGE_WallMoveInit
-    0x03C614,   # HCZ2BGE_WallMove
-    0x03C618,   # HCZ2BGE_NormalTransition
-    0x03C61C,   # HCZ2BGE_NormalRefresh
-    0x03C620,   # HCZ2BGE_Normal
-    0x03C624,   # HCZ2BGE_WallMoveInit
-    0x03C628,   # HCZ2BGE_WallMove
-    0x03C68E,   # HCZ2BGE_NormalTransition
-    0x03C6BC,   # HCZ2BGE_NormalRefresh
-    0x03C6D2,   # HCZ2BGE_Normal
-    0x03C85C,   # MGZ1BGE_Normal
-    0x03C860,   # MGZ1BGE_Transition
-    0x03C864,   # MGZ1BGE_Normal
-    0x03C8C8,   # MGZ1BGE_Transition
-    0x03CA38,   # MGZ2SE_Normal
-    0x03CA3C,   # MGZ2SE_Collapse
-    0x03CA40,   # MGZ2SE_MoveBG
-    0x03CA44,   # MGZ2SE_Normal
-    0x03CA68,   # MGZ2SE_Collapse
-    0x03CA86,   # MGZ2SE_MoveBG
-    0x03CC12,   # MGZ2_QuakeEventCheck
-    0x03CC16,   # MGZ2_QuakeEvent1
-    0x03CC1A,   # MGZ2_QuakeEvent2
-    0x03CC1E,   # MGZ2_QuakeEvent3
-    0x03CC22,   # MGZ2_QuakeEvent1Cont
-    0x03CC26,   # MGZ2_QuakeEvent2Cont
-    0x03CC2A,   # MGZ2_QuakeEvent3Cont
-    0x03CC2E,   # MGZ2_QuakeEventCheck
-    0x03CC90,   # MGZ2_QuakeEvent1
-    0x03CCD4,   # MGZ2_QuakeEvent2
-    0x03CD1E,   # MGZ2_QuakeEvent3
-    0x03CD86,   # MGZ2_QuakeEvent1Cont
-    0x03CD90,   # MGZ2_QuakeEvent2Cont
-    0x03CDB0,   # MGZ2_QuakeEvent3Cont
-    0x03CDD4,   # MGZ2_ChunkEventCheck
-    0x03CDD8,   # MGZ2_ChunkEvent1
-    0x03CDDC,   # MGZ2_ChunkEvent2_3
-    0x03CDE0,   # MGZ2_ChunkEvent2_3
-    0x03CDE4,   # MGZ2_ChunkEventReset
-    0x03CDEA,   # MGZ2_ChunkEventCheck
-    0x03CE40,   # MGZ2_ChunkEvent1
-    0x03CE5E,   # MGZ2_ChunkEvent2_3
-    0x03CEDC,   # MGZ2_ChunkEventReset
-    0x03D13C,   # MGZ2BGE_GoRefresh
-    0x03D140,   # MGZ2BGE_Normal
-    0x03D144,   # MGZ2BGE_Refresh
-    0x03D148,   # MGZ2BGE_GoRefresh
-    0x03D156,   # MGZ2BGE_Normal
-    0x03D1B4,   # MGZ2BGE_Refresh
-    0x03D1D8,   # loc_3D21E
-    0x03D1DC,   # loc_3D1F4
-    0x03D1E0,   # loc_3D1EA
-    0x03D1EA,   # loc_3D1EA
-    0x03D1F4,   # loc_3D1F4
-    0x03D21E,   # loc_3D21E
-    0x03D2E8,   # loc_3D376
-    0x03D2EC,   # loc_3D348
-    0x03D2F0,   # loc_3D310
-    0x03D310,   # loc_3D310
-    0x03D348,   # loc_3D348
-    0x03D376,   # loc_3D376
-    0x03D60E,   # CNZ1BGE_Normal
-    0x03D612,   # CNZ1BGE_BossStart
-    0x03D616,   # CNZ1BGE_Boss
-    0x03D61A,   # CNZ1BGE_AfterBoss
-    0x03D61E,   # CNZ1BGE_FGRefresh
-    0x03D622,   # CNZ1BGE_FGRefresh2
-    0x03D626,   # CNZ1BGE_DoTransition
-    0x03D62A,   # CNZ1BGE_Normal
-    0x03D698,   # CNZ1BGE_BossStart
-    0x03D6A4,   # CNZ1BGE_Boss
-    0x03D6BE,   # CNZ1BGE_AfterBoss
-    0x03D6E8,   # CNZ1BGE_FGRefresh
-    0x03D770,   # CNZ1BGE_FGRefresh2
-    0x03D7B6,   # CNZ1BGE_DoTransition
-    0x03D918,   # Obj_CNZMinibossScrollInit
-    0x03D91C,   # Obj_CNZMinibossScrollMain
-    0x03D920,   # Obj_CNZMinibossScrollWait
-    0x03D924,   # Obj_CNZMinibossScrollSlow
-    0x03D928,   # Obj_CNZMinibossScrollWait2
-    0x03D92C,   # Obj_CNZMinibossScrollWait3
-    0x03D930,   # Obj_CNZMinibossScrollInit
+    0x03B492,   # AIZ2BGE_BGRedraw
+    0x03B496,   # AIZ2BGE_Normal
+    0x03B49A,   # AIZ2BGE_ShipRefresh
+    0x03B49E,   # AIZ2BGE_ShipMove
+    0x03B4A2,   # AIZ2BGE_FireRedraw
+    0x03B4D2,   # AIZ2BGE_WaitFire
+    0x03B5AE,   # AIZ2BGE_BGRedraw
+    0x03B5C4,   # AIZ2BGE_Normal
+    0x03B624,   # AIZ2BGE_ShipRefresh
+    0x03B63A,   # AIZ2BGE_ShipMove
+    0x03B7B8,   # AIZ2_DoShipLoop
+    0x03B990,   # AIZShipBomb_ReadyDrop
+    0x03B994,   # AIZShipBomb_Delay
+    0x03B998,   # AIZShipBomb_Drop
+    0x03B99C,   # AIZShipBomb_ReadyDrop
+    0x03B9AE,   # AIZShipBomb_Delay
+    0x03B9CA,   # AIZShipBomb_Drop
+    0x03C316,   # HCZ1BGE_Normal
+    0x03C31A,   # HCZ1BGE_DoTransition
+    0x03C31E,   # HCZ1BGE_Normal
+    0x03C39A,   # HCZ1BGE_DoTransition
+    0x03C654,   # HCZ2BGE_WallMoveInit
+    0x03C658,   # HCZ2BGE_WallMove
+    0x03C65C,   # HCZ2BGE_NormalTransition
+    0x03C660,   # HCZ2BGE_NormalRefresh
+    0x03C664,   # HCZ2BGE_Normal
+    0x03C668,   # HCZ2BGE_WallMoveInit
+    0x03C66C,   # HCZ2BGE_WallMove
+    0x03C6D2,   # HCZ2BGE_NormalTransition
+    0x03C700,   # HCZ2BGE_NormalRefresh
+    0x03C716,   # HCZ2BGE_Normal
+    0x03C8A0,   # MGZ1BGE_Normal
+    0x03C8A4,   # MGZ1BGE_Transition
+    0x03C8A8,   # MGZ1BGE_Normal
+    0x03C90C,   # MGZ1BGE_Transition
+    0x03CA7C,   # MGZ2SE_Normal
+    0x03CA80,   # MGZ2SE_Collapse
+    0x03CA84,   # MGZ2SE_MoveBG
+    0x03CA88,   # MGZ2SE_Normal
+    0x03CAAC,   # MGZ2SE_Collapse
+    0x03CACA,   # MGZ2SE_MoveBG
+    0x03CC56,   # MGZ2_QuakeEventCheck
+    0x03CC5A,   # MGZ2_QuakeEvent1
+    0x03CC5E,   # MGZ2_QuakeEvent2
+    0x03CC62,   # MGZ2_QuakeEvent3
+    0x03CC66,   # MGZ2_QuakeEvent1Cont
+    0x03CC6A,   # MGZ2_QuakeEvent2Cont
+    0x03CC6E,   # MGZ2_QuakeEvent3Cont
+    0x03CC72,   # MGZ2_QuakeEventCheck
+    0x03CCD4,   # MGZ2_QuakeEvent1
+    0x03CD18,   # MGZ2_QuakeEvent2
+    0x03CD62,   # MGZ2_QuakeEvent3
+    0x03CDCA,   # MGZ2_QuakeEvent1Cont
+    0x03CDD4,   # MGZ2_QuakeEvent2Cont
+    0x03CDF4,   # MGZ2_QuakeEvent3Cont
+    0x03CE18,   # MGZ2_ChunkEventCheck
+    0x03CE1C,   # MGZ2_ChunkEvent1
+    0x03CE20,   # MGZ2_ChunkEvent2_3
+    0x03CE24,   # MGZ2_ChunkEvent2_3
+    0x03CE28,   # MGZ2_ChunkEventReset
+    0x03CE2E,   # MGZ2_ChunkEventCheck
+    0x03CE84,   # MGZ2_ChunkEvent1
+    0x03CEA2,   # MGZ2_ChunkEvent2_3
+    0x03CF20,   # MGZ2_ChunkEventReset
+    0x03D180,   # MGZ2BGE_GoRefresh
+    0x03D184,   # MGZ2BGE_Normal
+    0x03D188,   # MGZ2BGE_Refresh
+    0x03D18C,   # MGZ2BGE_GoRefresh
+    0x03D19A,   # MGZ2BGE_Normal
+    0x03D1F8,   # MGZ2BGE_Refresh
+    0x03D21C,   # loc_3D21E
+    0x03D220,   # loc_3D1F4
+    0x03D224,   # loc_3D1EA
+    0x03D22E,   # loc_3D1EA
+    0x03D238,   # loc_3D1F4
+    0x03D262,   # loc_3D21E
+    0x03D32C,   # loc_3D376
+    0x03D330,   # loc_3D348
+    0x03D334,   # loc_3D310
+    0x03D354,   # loc_3D310
+    0x03D38C,   # loc_3D348
+    0x03D3BA,   # loc_3D376
+    0x03D652,   # CNZ1BGE_Normal
+    0x03D656,   # CNZ1BGE_BossStart
+    0x03D65A,   # CNZ1BGE_Boss
+    0x03D65E,   # CNZ1BGE_AfterBoss
+    0x03D662,   # CNZ1BGE_FGRefresh
+    0x03D666,   # CNZ1BGE_FGRefresh2
+    0x03D66A,   # CNZ1BGE_DoTransition
+    0x03D66E,   # CNZ1BGE_Normal
+    0x03D6DC,   # CNZ1BGE_BossStart
+    0x03D6E8,   # CNZ1BGE_Boss
+    0x03D702,   # CNZ1BGE_AfterBoss
+    0x03D72C,   # CNZ1BGE_FGRefresh
+    0x03D7B4,   # CNZ1BGE_FGRefresh2
+    0x03D7FA,   # CNZ1BGE_DoTransition
+    0x03D95C,   # Obj_CNZMinibossScrollInit
     0x03D960,   # Obj_CNZMinibossScrollMain
-    0x03D98A,   # Obj_CNZMinibossScrollWait
-    0x03D9A6,   # Obj_CNZMinibossScrollSlow
-    0x03D9C6,   # Obj_CNZMinibossScrollWait2
-    0x03DA0C,   # Obj_CNZMinibossScrollWait3
-    0x03DA7C,   # loc_3DA88
-    0x03DA80,   # loc_3DAB6
-    0x03DA84,   # loc_3DACC
-    0x03DA88,   # loc_3DA88
-    0x03DAB6,   # loc_3DAB6
-    0x03DACC,   # loc_3DACC
-    0x03DB12,   # ICZ1SE_Init
-    0x03DB16,   # ICZ1SE_WaitQuake
-    0x03DB1A,   # ICZ1SE_Normal
-    0x03DB1E,   # ICZ1SE_Normal
-    0x03DB22,   # ICZ1SE_Normal
-    0x03DB26,   # ICZ1SE_Normal
-    0x03DB2A,   # ICZ1SE_Init
-    0x03DB34,   # ICZ1SE_WaitQuake
-    0x03DB3C,   # ICZ1SE_Normal
-    0x03DBC2,   # ICZ1BGE_Intro
-    0x03DBC6,   # ICZ1BGE_SnowFall
-    0x03DBCA,   # ICZ1BGE_Refresh
-    0x03DBCE,   # ICZ1BGE_Refresh2
-    0x03DBD2,   # ICZ1BGE_Normal
-    0x03DBD6,   # ICZ1BGE_Transition
-    0x03DBDA,   # ICZ1BGE_Intro
-    0x03DC20,   # ICZ1BGE_SnowFall
-    0x03DC4A,   # ICZ1BGE_Refresh
-    0x03DC7A,   # ICZ1BGE_Refresh2
-    0x03DC9A,   # ICZ1BGE_Normal
-    0x03DCF4,   # ICZ1BGE_Transition
-    0x03DFA0,   # ICZ2BGE_FromICZ1
-    0x03DFA4,   # ICZ2BGE_Normal
-    0x03DFA8,   # ICZ2BGE_Refresh
-    0x03DFAC,   # ICZ2BGE_FromICZ1
-    0x03DFBA,   # ICZ2BGE_Normal
-    0x03E08C,   # ICZ2BGE_Refresh
-    0x03E496,   # LBZ1_LayoutMod1
-    0x03E498,   # LBZ1_LayoutMod2
-    0x03E49A,   # LBZ1_LayoutMod3
-    0x03E49C,   # LBZ1_LayoutMod4
-    0x03E49E,   # LBZ1_LayoutMod1
-    0x03E4A8,   # LBZ1_LayoutMod2
-    0x03E4B2,   # LBZ1_LayoutMod3
-    0x03E4C8,   # LBZ1_LayoutMod4
-    0x03E620,   # LBZ1BGE_Normal
-    0x03E624,   # LBZ1BGE_DoTransition
-    0x03E628,   # LBZ1BGE_Normal
-    0x03E6A0,   # LBZ1BGE_DoTransition
-    0x03E7FE,   # LBZ2SE_FromTransition
-    0x03E802,   # LBZ2SE_Normal
-    0x03E806,   # LBZ2SE_FromTransition
-    0x03E84A,   # LBZ2SE_Normal
-    0x03E88A,   # LBZ2BGE_FromTransition
-    0x03E88E,   # LBZ2BGE_Refresh
-    0x03E892,   # LBZ2BGE_Normal
-    0x03E896,   # LBZ2BGE_DeathEgg
-    0x03E89A,   # LBZ2BGE_PlatformDetach
-    0x03E89E,   # LBZ2BGE_Falling
-    0x03E8A2,   # LBZ2BGE_FromTransition
-    0x03E8C2,   # LBZ2BGE_Refresh
-    0x03E8D8,   # LBZ2BGE_Normal
-    0x03E948,   # LBZ2BGE_DeathEgg
-    0x03E99A,   # LBZ2BGE_PlatformDetach
-    0x03EA00,   # LBZ2BGE_Falling
-    0x03F02A,   # ContinueScreen
-    0x03F2AA,   # loc_3F2AA
-    0x03F2CE,   # loc_3F2CE
-    0x03F32A,   # loc_3F32A
-    0x03F340,   # loc_3F340
-    0x03F35C,   # locret_3F35C
-    0x03F3F8,   # loc_3F3F8
-    0x03F428,   # loc_3F428
-    0x03F448,   # loc_3F448
-    0x03F45A,   # loc_3F45A
-    0x03F4A6,   # loc_3F4A6
-    0x03F4CA,   # loc_3F4CA
-    0x03F4DE,   # loc_3F4DE
-    0x03F4FE,   # locret_3F4FE
-    0x040348,   # S3Credits
-    0x040530,   # loc_40530
-    0x0405AE,   # loc_405AE
-    0x04069C,   # locret_4069C
-    0x04069E,   # loc_4069E
-    0x04078C,   # loc_4078C
-    0x0407FC,   # loc_407FC
-    0x040896,   # loc_40896
-    0x0409A2,   # loc_409A2
-    0x040B7C,   # word_40B7C
-    0x040B94,   # word_40B94
-    0x040BC2,   # word_40BC2
-    0x040BEC,   # word_40BEC
-    0x040C16,   # word_40C16
-    0x040C42,   # word_40C42
-    0x040C5E,   # word_40C5E
-    0x040C86,   # word_40C86
-    0x040CB8,   # word_40CB8
-    0x040CFC,   # word_40CFC
-    0x040D1E,   # word_40D1E
-    0x040D62,   # word_40D62
-    0x040D90,   # word_40D90
-    0x040DB6,   # word_40DB6
-    0x040DDA,   # word_40DDA
-    0x040E00,   # word_40E00
-    0x040E34,   # word_40E34
-    0x040E68,   # word_40E68
-    0x040EA4,   # word_40EA4
-    0x040EC6,   # word_40EC6
-    0x040EF8,   # word_40EF8
-    0x040F2A,   # word_40F2A
-    0x040F5E,   # word_40F5E
-    0x040F88,   # word_40F88
-    0x040FB8,   # word_40FB8
-    0x040FF4,   # word_40FF4
-    0x041028,   # word_41028
-    0x04105C,   # word_4105C
-    0x04108C,   # word_4108C
-    0x0410D8,   # word_410D8
-    0x041124,   # word_41124
-    0x04117C,   # word_4117C
-    0x0411B0,   # word_411B0
-    0x0411F4,   # word_411F4
-    0x041244,   # word_41244
-    0x041290,   # word_41290
-    0x0412C4,   # word_412C4
-    0x041314,   # word_41314
-    0x04134C,   # word_4134C
-    0x04138C,   # word_4138C
-    0x041396,   # word_41396
-    0x0413A0,   # word_413A0
-    0x0413AA,   # word_413AA
-    0x0413B4,   # word_413B4
-    0x0413BE,   # word_413BE
-    0x04146C,   # word_4146C
-    0x04147A,   # word_4147A
-    0x041488,   # word_41488
-    0x041496,   # word_41496
-    0x0414A4,   # word_414A4
-    0x0414B2,   # word_414B2
-    0x0414C0,   # word_414C0
-    0x0414CE,   # word_414CE
-    0x0414DC,   # word_414DC
-    0x0414E4,   # word_414E4
-    0x0414EC,   # word_414EC
-    0x0414FA,   # word_414FA
-    0x041502,   # word_41502
-    0x041516,   # word_41516
-    0x041524,   # word_41524
-    0x041538,   # word_41538
-    0x041546,   # word_41546
-    0x04155A,   # word_4155A
-    0x041568,   # word_41568
-    0x041576,   # word_41576
-    0x041584,   # word_41584
-    0x041592,   # word_41592
-    0x0415A0,   # word_415A0
-    0x0415B4,   # word_415B4
-    0x0415C2,   # word_415C2
-    0x0415D0,   # word_415D0
-    0x0415DE,   # word_415DE
-    0x0415E6,   # word_415E6
-    0x0415F4,   # word_415F4
-    0x041602,   # word_41602
-    0x043178,   # SonicOnSegaScr_Init
-    0x043232,   # SonicOnSegaScr_RunLeft
-    0x043270,   # SonicOnSegaScr_MidWipe
-    0x0432DA,   # SonicOnSegaScr_RunRight
-    0x043314,   # SonicOnSegaScr_EndWipe
-    0x043340,   # locret_43340
-    0x043354,   # ObjB1_Init
-    0x043378,   # ObjB1_Main
-    0x0435C4,   # loc_435C4
-    0x0435F6,   # loc_435F6
-    0x043CEC,   # loc_43CEC
-    0x043CFC,   # loc_43CFC
-    0x043D18,   # locret_43D18
-    0x043D1A,   # loc_43D1A
-    0x043D28,   # loc_43D28
-    0x043DA2,   # loc_43DA2
-    0x043DCC,   # loc_43DCC
-    0x043DF6,   # loc_43DF6
-    0x043E30,   # loc_43E30
-    0x044266,   # SSEntryRing_Init
-    0x044278,   # SSEntryRing_Main
-    0x044322,   # SSEntryRing_Animate
-    0x04434A,   # SSEntryFlash_Init
-    0x04436E,   # SSEntryFlash_Main
-    0x044720,   # CutsceneKnux_AIZ1
-    0x04474C,   # loc_4474C
-    0x044782,   # loc_44782
-    0x0447B2,   # loc_447B2
-    0x0447F2,   # loc_447F2
-    0x044824,   # loc_44824
-    0x04486E,   # loc_4486E
-    0x04489E,   # loc_4489E
-    0x044926,   # CutsceneKnux_AIZ2
-    0x044950,   # loc_44950
-    0x0449A2,   # loc_449A2
-    0x0449B0,   # loc_449B0
-    0x0449FC,   # loc_449FC
-    0x044A38,   # loc_44A38
-    0x044A72,   # loc_44A72
-    0x044AA4,   # CutsceneKnux_HCZ2
-    0x044AE2,   # loc_44AE2
-    0x044B00,   # loc_44B00
-    0x044B6C,   # loc_44B6C
-    0x044BAE,   # loc_44BAE
-    0x044BFA,   # CutsceneKnux_CNZ2A
-    0x044C36,   # loc_44C36
-    0x044CA2,   # loc_44CA2
-    0x044CC4,   # loc_44CC4
-    0x044CEC,   # loc_44CEC
-    0x044D6E,   # loc_44D6E
-    0x044E62,   # CutsceneKnux_CNZ2B
-    0x044EA2,   # loc_44EA2
-    0x044EC8,   # loc_44EC8
-    0x044EE6,   # loc_44EE6
-    0x044F38,   # loc_44F38
-    0x044F5C,   # loc_44F5C
-    0x044F94,   # loc_44F94
-    0x044FBA,   # CutsceneKnux_LBZ1
-    0x044FE8,   # loc_44FE8
-    0x045022,   # loc_45022
-    0x04505E,   # loc_4505E
-    0x0450E8,   # loc_450E8
-    0x045216,   # CutsceneKnux_LBZ2
-    0x045242,   # loc_45242
-    0x045270,   # loc_45270
-    0x04528A,   # loc_4528A
-    0x0452A4,   # loc_452A4
-    0x0452C6,   # loc_452C6
-    0x04530A,   # loc_4530A
-    0x045322,   # loc_45322
-    0x045534,   # loc_45534
-    0x045550,   # loc_45550
-    0x045556,   # loc_45556
-    0x04558A,   # loc_4558A
-    0x045888,   # loc_45888
-    0x0458F0,   # loc_458F0
-    0x045912,   # loc_45912
-    0x04593C,   # loc_4593C
-    0x045970,   # loc_45970
-    0x04599C,   # loc_4599C
-    0x0459F0,   # loc_459F0
-    0x045A00,   # loc_45A00
-    0x045A2A,   # loc_45A2A
-    0x045A50,   # loc_45A50
-    0x045A88,   # loc_45A88
-    0x045AA2,   # loc_45AA2
-    0x045AC4,   # loc_45AC4
-    0x045AE0,   # loc_45AE0
-    0x045EC6,   # Obj_RobotnikHeadInit
-    0x045EE2,   # Obj_RobotnikHeadMain
-    0x045F16,   # Obj_RobotnikHeadEnd
-    0x045F6E,   # Obj_FBZRobotnikHeadInit
-    0x045F84,   # Obj_FBZRobotnikHeadMain
-    0x045FF6,   # Obj_RobotnikHead3Init
-    0x046014,   # Obj_RobotnikHead3Main
-    0x0460A6,   # loc_460A6
-    0x0460C2,   # loc_460C2
-    0x0460F8,   # loc_460F8
-    0x04612A,   # loc_4612A
-    0x046166,   # Obj_RobotnikShip2Wait
-    0x0461B2,   # Obj_RobotnikShipInit
-    0x0461D4,   # Obj_RobotnikShipMain
-    0x046204,   # Obj_RobotnikShipWait
-    0x046224,   # Obj_RobotnikShipReady
-    0x04625E,   # Obj_RobotnikShipEscape
-    0x0462BA,   # Obj_FBZRobotnikShipInit
-    0x0462D6,   # Obj_FBZRobotnikShipMain
-    0x04630C,   # Obj_FBZRobotnikShipWait
-    0x04634A,   # Obj_FBZRobotnikShipFall
-    0x046364,   # Obj_FBZRobotnikShipRise
-    0x04645E,   # loc_4645E
-    0x046482,   # loc_46482
-    0x0464C8,   # locret_464C8
-    0x0464CA,   # loc_464CA
-    0x046508,   # loc_46508
-    0x04654C,   # loc_4654C
-    0x0466A4,   # loc_466A4
-    0x0466AE,   # loc_466AE
-    0x0466CE,   # loc_466CE
-    0x0466EC,   # loc_466EC
-    0x04672C,   # loc_4672C
-    0x046778,   # loc_46778
-    0x0467AA,   # sub_467AA
-    0x0467DE,   # loc_467DE
-    0x04685E,   # sub_4685E
-    0x0468A6,   # loc_468A6
-    0x0468FC,   # loc_468FC
-    0x046948,   # loc_46948
-    0x046996,   # loc_46996
-    0x0469BE,   # loc_469BE
-    0x0469FE,   # loc_469FE
-    0x046A5E,   # loc_46A5E
-    0x046AAA,   # loc_46AAA
-    0x046AFE,   # loc_46AFE
-    0x046B7A,   # loc_46B7A
-    0x046BF6,   # loc_46BF6
-    0x046C1A,   # loc_46C1A
-    0x046C68,   # loc_46C68
-    0x046C84,   # loc_46C84
-    0x046CC2,   # loc_46CC2
-    0x046D00,   # loc_46D00
-    0x04714C,   # Obj_AIZEndBossInit
-    0x0471C2,   # loc_471C2
-    0x04720C,   # loc_4720C
-    0x047248,   # loc_47248
-    0x0472C2,   # loc_472C2
-    0x047328,   # loc_47328
-    0x047348,   # loc_47348
-    0x0474BE,   # loc_474BE
-    0x0474E6,   # loc_474E6
-    0x047518,   # loc_47518
-    0x04752E,   # loc_4752E
-    0x047546,   # loc_47546
-    0x047568,   # loc_47568
-    0x0475CC,   # loc_475CC
-    0x0475D8,   # loc_475D8
-    0x047618,   # loc_47618
-    0x047664,   # loc_47664
-    0x047DFA,   # loc_47DFA
-    0x047E34,   # loc_47E34
-    0x047E5A,   # loc_47E5A
-    0x047EC6,   # loc_47EC6
-    0x047F12,   # loc_47F12
-    0x047F48,   # loc_47F48
-    0x047F60,   # loc_47F60
-    0x047FAA,   # loc_47FAA
-    0x048066,   # loc_48066
-    0x04812E,   # loc_4812E
-    0x048148,   # loc_48148
-    0x04819C,   # loc_4819C
-    0x0481BC,   # loc_481BC
-    0x0481CA,   # loc_481CA
-    0x048254,   # loc_48254
-    0x04826E,   # loc_4826E
-    0x048386,   # loc_48386
-    0x0483A0,   # loc_483A0
-    0x0483C0,   # loc_483C0
-    0x0483F6,   # loc_483F6
-    0x04841C,   # loc_4841C
-    0x04845C,   # loc_4845C
-    0x048D62,   # loc_48D62
-    0x048DBC,   # loc_48DBC
-    0x048DFE,   # loc_48DFE
-    0x048EAA,   # loc_48EAA
-    0x048FD8,   # loc_48FD8
-    0x048FE2,   # loc_48FE2
-    0x04900E,   # loc_4900E
-    0x049034,   # loc_49034
-    0x049066,   # loc_49066
-    0x0490B4,   # loc_490B4
-    0x0490FC,   # loc_490FC
-    0x049128,   # loc_49128
-    0x049140,   # loc_49140
-    0x04919E,   # loc_4919E
-    0x049206,   # loc_49206
-    0x04921A,   # loc_4921A
-    0x04924A,   # loc_4924A
-    0x0493F0,   # loc_493F0
-    0x04940A,   # loc_4940A
-    0x04944E,   # loc_4944E
-    0x049482,   # loc_49482
-    0x0494F0,   # loc_494F0
-    0x049518,   # loc_49518
-    0x04953E,   # loc_4953E
-    0x049E0C,   # loc_49E0C
-    0x049E56,   # loc_49E56
-    0x049E6E,   # loc_49E6E
-    0x049EC8,   # loc_49EC8
-    0x049EFC,   # loc_49EFC
-    0x049F2E,   # loc_49F2E
-    0x049F6C,   # loc_49F6C
-    0x049F80,   # loc_49F80
-    0x049FB4,   # loc_49FB4
-    0x04A01E,   # loc_4A01E
-    0x04A0EC,   # loc_4A0EC
-    0x04A132,   # loc_4A132
-    0x04A1C2,   # loc_4A1C2
-    0x04A1EC,   # loc_4A1EC
-    0x04A210,   # loc_4A210
-    0x04A230,   # loc_4A230
-    0x04A288,   # loc_4A288
-    0x04A2C8,   # loc_4A2C8
-    0x04A2EA,   # loc_4A2EA
-    0x04A31C,   # loc_4A31C
-    0x04A39A,   # loc_4A39A
-    0x04A3D4,   # loc_4A3D4
-    0x04A488,   # loc_4A488
-    0x04A4C2,   # loc_4A4C2
-    0x04A4DE,   # loc_4A4DE
-    0x04A520,   # loc_4A520
-    0x04A542,   # loc_4A542
-    0x04A616,   # loc_4A616
-    0x04A63C,   # loc_4A63C
-    0x04A6C6,   # loc_4A6C6
-    0x04A6E2,   # loc_4A6E2
-    0x04A716,   # loc_4A716
-    0x04A7B6,   # loc_4A7B6
-    0x04A7DA,   # loc_4A7DA
-    0x04A80C,   # loc_4A80C
-    0x04A8C2,   # loc_4A8C2
-    0x04B660,   # Obj_CNZMinibossInit
-    0x04B69A,   # Obj_CNZMinibossLower
-    0x04B6C8,   # Obj_CNZMinibossMove
-    0x04B720,   # Obj_CNZMinibossOpening
-    0x04B74A,   # Obj_CNZMinibossWaitHit
-    0x04B772,   # Obj_CNZMinibossClosing
-    0x04B778,   # Obj_CNZMinibossLower2
-    0x04B804,   # Obj_CNZMinibossTopInit
-    0x04B81A,   # Obj_CNZMinibossTopWait
-    0x04B844,   # Obj_CNZMinibossTopWait2
-    0x04B86C,   # Obj_CNZMinibossTopMain
-    0x04C02C,   # loc_4C02C
-    0x04C07A,   # loc_4C07A
-    0x04C0A2,   # loc_4C0A2
-    0x04C0E2,   # loc_4C0E2
-    0x04C102,   # loc_4C102
-    0x04C154,   # loc_4C154
-    0x04C1A4,   # loc_4C1A4
-    0x04C1CE,   # loc_4C1CE
-    0x04C35E,   # loc_4C35E
-    0x04C376,   # loc_4C376
-    0x04C3AA,   # loc_4C3AA
-    0x04C3EE,   # loc_4C3EE
-    0x04C404,   # loc_4C404
-    0x04C424,   # loc_4C424
-    0x04C492,   # loc_4C492
-    0x04C4AE,   # loc_4C4AE
-    0x04C4DE,   # loc_4C4DE
-    0x04C51C,   # loc_4C51C
-    0x04C550,   # loc_4C550
-    0x04C582,   # loc_4C582
-    0x04C5A0,   # loc_4C5A0
-    0x04C976,   # loc_4C976
-    0x04C9C4,   # loc_4C9C4
-    0x04C9E4,   # loc_4C9E4
-    0x04CA0C,   # loc_4CA0C
-    0x04CA20,   # loc_4CA20
-    0x04CA6C,   # loc_4CA6C
-    0x04CA7C,   # loc_4CA7C
-    0x04CAFA,   # loc_4CAFA
-    0x04CB02,   # loc_4CB02
-    0x04CB26,   # loc_4CB26
-    0x04CB32,   # loc_4CB32
-    0x04CB9E,   # loc_4CB9E
-    0x04CBB4,   # loc_4CBB4
-    0x04CBD4,   # loc_4CBD4
-    0x04CBE6,   # locret_4CBE6
-    0x04CC16,   # loc_4CC16
-    0x04CC44,   # loc_4CC44
-    0x04CC62,   # loc_4CC62
-    0x04CC84,   # loc_4CC84
-    0x04CD08,   # loc_4CD08
-    0x04CDA0,   # loc_4CDA0
-    0x04CDE0,   # loc_4CDE0
-    0x04CDEC,   # loc_4CDEC
-    0x04CE7A,   # loc_4CE7A
-    0x04CECA,   # loc_4CECA
-    0x04CF1E,   # loc_4CF1E
-    0x04CF52,   # loc_4CF52
-    0x04CF9A,   # loc_4CF9A
-    0x04CFAE,   # loc_4CFAE
-    0x04D010,   # loc_4D010
-    0x04D036,   # loc_4D036
-    0x04D066,   # loc_4D066
-    0x04D072,   # loc_4D072
-    0x04D082,   # loc_4D082
-    0x04D09E,   # loc_4D09E
-    0x04D0CC,   # loc_4D0CC
-    0x04D0F2,   # loc_4D0F2
-    0x04D12E,   # loc_4D12E
-    0x04D166,   # loc_4D166
-    0x04D57A,   # loc_4D57A
-    0x04D5D6,   # loc_4D5D6
-    0x04D602,   # loc_4D602
-    0x04D644,   # loc_4D644
-    0x04D664,   # loc_4D664
-    0x04D6C8,   # loc_4D6C8
-    0x04DBC0,   # loc_4DBC0
-    0x04DC26,   # loc_4DC26
-    0x04DC40,   # loc_4DC40
-    0x04DC6A,   # loc_4DC6A
-    0x04DCDA,   # loc_4DCDA
-    0x04DDF6,   # loc_4DDF6
-    0x04DE1C,   # loc_4DE1C
-    0x04DE7C,   # loc_4DE7C
-    0x04DE96,   # loc_4DE96
-    0x04DECC,   # loc_4DECC
-    0x04DEF2,   # loc_4DEF2
-    0x04DF20,   # loc_4DF20
-    0x04DF5C,   # loc_4DF5C
-    0x04DF90,   # loc_4DF90
-    0x04E0E8,   # loc_4E0E8
-    0x04E0EE,   # loc_4E0EE
-    0x04E0F4,   # loc_4E0F4
-    0x04E0FC,   # loc_4E0FC
-    0x04E42E,   # loc_4E42E
-    0x04E466,   # loc_4E466
-    0x04E48C,   # loc_4E48C
-    0x04E4B6,   # loc_4E4B6
-    0x04E4F8,   # loc_4E4F8
-    0x04E530,   # loc_4E530
-    0x04E582,   # loc_4E582
-    0x04E5AC,   # loc_4E5AC
-    0x04E5CC,   # loc_4E5CC
-    0x04E678,   # loc_4E678
-    0x04E684,   # loc_4E684
-    0x04E6A4,   # loc_4E6A4
-    0x04E6C0,   # locret_4E6C0
-    0x04E6EE,   # loc_4E6EE
-    0x04E6FA,   # loc_4E6FA
-    0x04E724,   # loc_4E724
-    0x04E75E,   # loc_4E75E
-    0x04E77E,   # loc_4E77E
-    0x04E796,   # loc_4E796
-    0x04E7B6,   # loc_4E7B6
-    0x04E800,   # loc_4E800
-    0x04E84C,   # loc_4E84C
-    0x04E884,   # locret_4E884
-    0x04ED5A,   # loc_4ED5A
-    0x04ED96,   # loc_4ED96
-    0x04EDC0,   # loc_4EDC0
-    0x04EE5A,   # loc_4EE5A
-    0x04EF28,   # loc_4EF28
-    0x04EF30,   # loc_4EF30
-    0x04EF58,   # loc_4EF58
-    0x04EFA0,   # loc_4EFA0
-    0x04EFA8,   # loc_4EFA8
-    0x04EFCC,   # loc_4EFCC
-    0x04EFDC,   # loc_4EFDC
-    0x04F000,   # loc_4F000
-    0x04F058,   # loc_4F058
-    0x04F068,   # loc_4F068
-    0x04F08C,   # loc_4F08C
-    0x04F496,   # loc_4F496
-    0x04F4D8,   # loc_4F4D8
-    0x04F4F8,   # loc_4F4F8
-    0x04F53E,   # loc_4F53E
-    0x04F55A,   # loc_4F55A
-    0x04F5B4,   # loc_4F5B4
-    0x04F5DC,   # loc_4F5DC
-    0x04F5EE,   # loc_4F5EE
-    0x04F60C,   # loc_4F60C
-    0x04F63E,   # loc_4F63E
-    0x04F678,   # loc_4F678
-    0x04F6A2,   # loc_4F6A2
-    0x04F6FC,   # loc_4F6FC
-    0x04F726,   # loc_4F726
-    0x04F7A2,   # loc_4F7A2
-    0x04F9CE,   # loc_4F9CE
-    0x04FA2E,   # loc_4FA2E
-    0x04FA46,   # loc_4FA46
-    0x04FAC2,   # locret_4FAC2
-    0x04FAC4,   # loc_4FAC4
-    0x04FADA,   # loc_4FADA
-    0x04FF22,   # loc_4FF22
-    0x04FF3A,   # loc_4FF3A
-    0x04FF7A,   # loc_4FF7A
-    0x050444,   # loc_50444
-    0x0504AE,   # loc_504AE
-    0x0504CA,   # loc_504CA
-    0x0504DC,   # loc_504DC
-    0x05051C,   # loc_5051C
-    0x050548,   # loc_50548
-    0x050574,   # loc_50574
-    0x0505F0,   # loc_505F0
-    0x050628,   # loc_50628
-    0x050650,   # loc_50650
-    0x05072C,   # loc_5072C
-    0x050744,   # loc_50744
-    0x05076A,   # loc_5076A
-    0x0507D4,   # loc_507D4
-    0x0507F6,   # loc_507F6
-    0x050808,   # loc_50808
-    0x05082C,   # loc_5082C
-    0x050838,   # loc_50838
-    0x050884,   # loc_50884
-    0x0508CC,   # loc_508CC
-    0x05090C,   # loc_5090C
-    0x050914,   # loc_50914
-    0x050938,   # loc_50938
-    0x050966,   # loc_50966
-    0x050CEE,   # loc_50CEE
-    0x050D28,   # loc_50D28
-    0x050D74,   # loc_50D74
-    0x050D8C,   # loc_50D8C
-    0x050E2C,   # loc_50E2C
-    0x050E4C,   # loc_50E4C
-    0x050E50,   # locret_50E50
-    0x050E52,   # loc_50E52
-    0x050E68,   # loc_50E68
-    0x050E6E,   # loc_50E6E
-    0x050E9C,   # loc_50E9C
-    0x050EAE,   # loc_50EAE
-    0x050ED0,   # loc_50ED0
-    0x050EFA,   # loc_50EFA
-    0x050F3A,   # loc_50F3A
-    0x050F50,   # loc_50F50
-    0x050F7A,   # loc_50F7A
-    0x050F92,   # loc_50F92
-    0x050FAC,   # loc_50FAC
-    0x050FC4,   # loc_50FC4
-    0x050FF0,   # loc_50FF0
-    0x05102E,   # loc_5102E
-    0x051064,   # loc_51064
-    0x051086,   # loc_51086
-    0x0510CE,   # loc_510CE
-    0x051202,   # loc_51202
-    0x051226,   # loc_51226
-    0x05124E,   # loc_5124E
-    0x05193C,   # loc_5193C
-    0x051994,   # loc_51994
-    0x0519B8,   # loc_519B8
-    0x051A62,   # loc_51A62
-    0x0523CC,   # Obj_EndSignInit
-    0x052416,   # Obj_EndSignFall
-    0x05247E,   # Obj_EndSignLanded
-    0x0524C2,   # Obj_EndSignResults
-    0x0524E8,   # Obj_EndSignAfter
-    0x0526EA,   # AfterBoss_AIZ1
-    0x0526FE,   # AfterBoss_AIZ2
-    0x052714,   # AfterBoss_HCZ
-    0x052716,   # AfterBoss_MGZ
-    0x052720,   # AfterBoss_CNZ
-    0x052722,   # AfterBoss_ICZ2
-    0x05272E,   # AfterBoss_LBZ
-    0x0527F2,   # Obj_BossExpControl
-    0x05281C,   # loc_5281C
-    0x052820,   # Obj_WaitForParent
-    0x0528E8,   # CreateBossExp00
-    0x0528EC,   # CreateBossExp02
-    0x0528F0,   # CreateBossExp04
-    0x0528F4,   # CreateBossExp06
-    0x0528F8,   # CreateBossExp08
-    0x0528FC,   # CreateBossExp0A
-    0x052900,   # CreateBossExp0C
-    0x052916,   # loc_52916
-    0x052D92,   # Animate_RawMultiDelay
-    0x0533D6,   # AtAngle_00_3F
-    0x0533E4,   # AtAngle_40_7F
-    0x0533F4,   # AtAngle_80_BF
-    0x053406,   # AtAngle_C0_FF
-    0x0534B4,   # loc_534B4
-    0x0534BC,   # loc_534BC
-    0x0534C6,   # loc_534C6
-    0x0534D0,   # loc_534D0
-    0x0534F6,   # loc_534F6
-    0x0534FE,   # loc_534FE
-    0x05350A,   # loc_5350A
-    0x05351A,   # loc_5351A
-    0x053570,   # loc_53570
-    0x053578,   # loc_53578
-    0x053584,   # loc_53584
-    0x053594,   # loc_53594
-    0x0539DE,   # Go_Delete_Sprite
-    0x053CD0,   # Move_AnimateRaw_Wait
-    0x053D22,   # Move_WaitNoFall
-    0x054514,   # loc_54514
-    0x05456A,   # loc_5456A
-    0x0545B4,   # loc_545B4
-    0x0545BC,   # loc_545BC
-    0x0545C0,   # loc_545C0
-    0x054640,   # loc_54640
-    0x054652,   # loc_54652
-    0x054660,   # loc_54660
-    0x054B86,   # loc_54B86
-    0x054B9E,   # loc_54B9E
-    0x054BC2,   # loc_54BC2
-    0x054C7A,   # loc_54C7A
-    0x054CC0,   # loc_54CC0
-    0x054CE6,   # loc_54CE6
-    0x054CEA,   # loc_54CEA
-    0x054D28,   # loc_54D28
-    0x054D38,   # loc_54D38
-    0x054F6E,   # loc_54F6E
-    0x054FB8,   # loc_54FB8
-    0x054FD6,   # loc_54FD6
-    0x0550EA,   # loc_550EA
-    0x055126,   # loc_55126
-    0x05512C,   # loc_5512C
-    0x05517E,   # loc_5517E
-    0x0551B0,   # loc_551B0
-    0x0551E6,   # loc_551E6
-    0x055234,   # loc_55234
-    0x05523A,   # loc_5523A
-    0x05523E,   # loc_5523E
-    0x055264,   # loc_55264
-    0x05526A,   # loc_5526A
-    0x05526E,   # loc_5526E
-    0x0554E8,   # loc_554E8
-    0x055524,   # loc_55524
-    0x055554,   # loc_55554
-    0x055576,   # loc_55576
-    0x0555A8,   # loc_555A8
-    0x0555D4,   # loc_555D4
-    0x055748,   # loc_55748
-    0x055750,   # loc_55750
-    0x055774,   # loc_55774
-    0x055828,   # loc_55828
-    0x05585A,   # loc_5585A
-    0x055878,   # loc_55878
-    0x0558BA,   # loc_558BA
-    0x0558CC,   # loc_558CC
-    0x055932,   # loc_55932
-    0x0559D2,   # loc_559D2
-    0x055A2E,   # loc_55A2E
-    0x055A94,   # loc_55A94
-    0x055AB4,   # loc_55AB4
-    0x055AD2,   # loc_55AD2
-    0x055AE0,   # loc_55AE0
-    0x055B06,   # loc_55B06
-    0x055B22,   # loc_55B22
-    0x055D66,   # loc_55D66
-    0x055D8A,   # loc_55D8A
-    0x055E02,   # loc_55E02
-    0x055E40,   # loc_55E40
-    0x056084,   # loc_56084
-    0x0560D2,   # loc_560D2
-    0x05615C,   # loc_5615C
-    0x056198,   # loc_56198
-    0x0561D2,   # loc_561D2
-    0x05626C,   # loc_5626C
-    0x05628E,   # loc_5628E
-    0x0562BE,   # loc_562BE
-    0x0562E6,   # loc_562E6
-    0x05631A,   # loc_5631A
-    0x056390,   # loc_56390
-    0x0563F0,   # loc_563F0
-    0x056466,   # loc_56466
-    0x0564D4,   # loc_564D4
-    0x056530,   # loc_56530
-    0x056552,   # loc_56552
-    0x056578,   # loc_56578
-    0x05675A,   # loc_5675A
-    0x056774,   # loc_56774
-    0x0567B4,   # loc_567B4
-    0x0567D4,   # loc_567D4
-    0x0567E4,   # loc_567E4
-    0x05697E,   # loc_5697E
-    0x05698E,   # loc_5698E
-    0x0569A8,   # loc_569A8
-    0x0569C2,   # loc_569C2
-    0x0569E2,   # loc_569E2
-    0x0569F6,   # loc_569F6
-    0x056A58,   # loc_56A58
-    0x056A6E,   # loc_56A6E
-    0x056A84,   # loc_56A84
-    0x056AC0,   # loc_56AC0
-    0x056B0A,   # loc_56B0A
-    0x056B12,   # loc_56B12
-    0x056B52,   # loc_56B52
-    0x056C40,   # loc_56C40
-    0x056C56,   # loc_56C56
-    0x056C82,   # loc_56C82
-    0x056CBC,   # loc_56CBC
-    0x056CE0,   # loc_56CE0
-    0x056D28,   # loc_56D28
-    0x056D30,   # loc_56D30
-    0x056D9A,   # loc_56D9A
-    0x056DAA,   # loc_56DAA
-    0x056E0C,   # loc_56E0C
-    0x056E22,   # loc_56E22
-    0x056F6E,   # loc_56F6E
-    0x056F76,   # loc_56F76
-    0x056FA2,   # loc_56FA2
-    0x056FC2,   # loc_56FC2
-    0x057020,   # loc_57020
-    0x05704C,   # loc_5704C
-    0x05706C,   # loc_5706C
-    0x0570A2,   # loc_570A2
-    0x0570E8,   # loc_570E8
-    0x057148,   # loc_57148
-    0x057158,   # loc_57158
-    0x057180,   # loc_57180
-    0x0571B8,   # loc_571B8
-    0x0571C0,   # loc_571C0
-    0x0571DA,   # loc_571DA
-    0x0571FE,   # loc_571FE
-    0x057206,   # locret_57206
-    0x05726A,   # loc_5726A
-    0x0572B2,   # loc_572B2
-    0x05731C,   # loc_5731C
-    0x057362,   # loc_57362
-    0x057384,   # loc_57384
-    0x0573AC,   # loc_573AC
-    0x0573BC,   # loc_573BC
-    0x0574DA,   # loc_574DA
-    0x057574,   # loc_57574
-    0x0575C6,   # loc_575C6
-    0x0575F4,   # loc_575F4
-    0x057638,   # loc_57638
-    0x057664,   # loc_57664
-    0x057680,   # loc_57680
-    0x0576B8,   # loc_576B8
-    0x0577B0,   # loc_577B0
-    0x0577E8,   # loc_577E8
-    0x057808,   # loc_57808
-    0x057824,   # loc_57824
-    0x057868,   # loc_57868
-    0x057942,   # loc_57942
-    0x05799C,   # locret_5799C
-    0x05799E,   # loc_5799E
-    0x0579B8,   # loc_579B8
-    0x0579D4,   # loc_579D4
-    0x057BC6,   # loc_57BC6
-    0x057BCC,   # loc_57BCC
-    0x057BD4,   # loc_57BD4
-    0x057C90,   # loc_57C90
-    0x057CCC,   # loc_57CCC
-    0x057CDE,   # loc_57CDE
-    0x057CE6,   # loc_57CE6
-    0x057D0C,   # loc_57D0C
-    0x057D14,   # loc_57D14
-    0x057D5A,   # loc_57D5A
-    0x057D7E,   # loc_57D7E
-    0x057D8E,   # loc_57D8E
-    0x057DA4,   # loc_57DA4
-    0x057DC0,   # loc_57DC0
-    0x057DDC,   # loc_57DDC
-    0x057EDE,   # loc_57EDE
-    0x057EE6,   # loc_57EE6
-    0x0587A8,   # loc_587A8
-    0x0587B0,   # loc_587B0
-    0x0587B8,   # loc_587B8
-    0x0587CC,   # loc_587CC
-    0x0587D4,   # loc_587D4
-    0x0587E8,   # loc_587E8
-    0x0587FC,   # loc_587FC
-    0x05880A,   # locret_5880A
-    0x0592A6,   # loc_592A6
-    0x059302,   # loc_59302
-    0x05939C,   # loc_5939C
-    0x0593B6,   # loc_593B6
-    0x059404,   # loc_59404
-    0x059452,   # loc_59452
-    0x05948C,   # loc_5948C
-    0x0594D4,   # loc_594D4
-    0x05976C,   # loc_5976C
-    0x05978A,   # loc_5978A
-    0x0597BE,   # loc_597BE
-    0x0597EA,   # loc_597EA
-    0x059842,   # loc_59842
-    0x05986C,   # loc_5986C
-    0x05988C,   # loc_5988C
-    0x0598D2,   # loc_598D2
-    0x0598DA,   # loc_598DA
-    0x059930,   # loc_59930
-    0x059938,   # loc_59938
-    0x05996C,   # loc_5996C
-    0x0599B8,   # loc_599B8
-    0x059A90,   # loc_59A90
-    0x059AD8,   # loc_59AD8
-    0x059B20,   # loc_59B20
-    0x059B44,   # loc_59B44
-    0x059B52,   # loc_59B52
-    0x059B74,   # loc_59B74
-    0x059BA6,   # loc_59BA6
-    0x059BB0,   # loc_59BB0
-    0x059BBE,   # loc_59BBE
-    0x059C0C,   # loc_59C0C
-    0x059C16,   # loc_59C16
-    0x059C24,   # loc_59C24
-    0x059C42,   # loc_59C42
-    0x059C50,   # loc_59C50
-    0x059C80,   # loc_59C80
-    0x059CD4,   # loc_59CD4
-    0x059CEE,   # loc_59CEE
-    0x059D04,   # loc_59D04
-    0x059DCE,   # loc_59DCE
-    0x059DE0,   # loc_59DE0
-    0x059EC2,   # loc_59EC2
-    0x059F18,   # loc_59F18
-    0x059F48,   # loc_59F48
-    0x059F74,   # loc_59F74
-    0x059F7E,   # loc_59F7E
-    0x059FA6,   # loc_59FA6
-    0x05A020,   # loc_5A020
-    0x05A108,   # loc_5A108
-    0x05A126,   # loc_5A126
-    0x05A188,   # loc_5A188
-    0x05A1D0,   # loc_5A1D0
-    0x05A204,   # loc_5A204
-    0x05A248,   # loc_5A248
-    0x05A2F8,   # loc_5A2F8
-    0x05A348,   # loc_5A348
-    0x05A380,   # loc_5A380
-    0x05A3AC,   # loc_5A3AC
-    0x05A3D6,   # loc_5A3D6
-    0x05A406,   # loc_5A406
-    0x05A436,   # loc_5A436
-    0x05A47E,   # loc_5A47E
-    0x05A5EC,   # loc_5A5EC
-    0x05A5FA,   # loc_5A5FA
-    0x05A618,   # loc_5A618
-    0x05A626,   # loc_5A626
-    0x05A62C,   # loc_5A62C
-    0x05A672,   # loc_5A672
-    0x05A688,   # loc_5A688
-    0x05A818,   # byte_5A818
-    0x05A822,   # byte_5A822
-    0x05B532,   # loc_5B532
-    0x05B572,   # PLC_6E
-    0x05B58C,   # PLC_6F
-    0x05B5BA,   # loc_5B5BA
-    0x05B5D2,   # PLC_71
-    0x05B5E0,   # PLC_72_73_74_75_76_77
-    0x05B604,   # PLC_78_79_7A_7B
+    0x03D964,   # Obj_CNZMinibossScrollWait
+    0x03D968,   # Obj_CNZMinibossScrollSlow
+    0x03D96C,   # Obj_CNZMinibossScrollWait2
+    0x03D970,   # Obj_CNZMinibossScrollWait3
+    0x03D974,   # Obj_CNZMinibossScrollInit
+    0x03D9A4,   # Obj_CNZMinibossScrollMain
+    0x03D9CE,   # Obj_CNZMinibossScrollWait
+    0x03D9EA,   # Obj_CNZMinibossScrollSlow
+    0x03DA0A,   # Obj_CNZMinibossScrollWait2
+    0x03DA50,   # Obj_CNZMinibossScrollWait3
+    0x03DAC0,   # loc_3DA88
+    0x03DAC4,   # loc_3DAB6
+    0x03DAC8,   # loc_3DACC
+    0x03DACC,   # loc_3DA88
+    0x03DAFA,   # loc_3DAB6
+    0x03DB10,   # loc_3DACC
+    0x03DB56,   # ICZ1SE_Init
+    0x03DB5A,   # ICZ1SE_WaitQuake
+    0x03DB5E,   # ICZ1SE_Normal
+    0x03DB62,   # ICZ1SE_Normal
+    0x03DB66,   # ICZ1SE_Normal
+    0x03DB6A,   # ICZ1SE_Normal
+    0x03DB6E,   # ICZ1SE_Init
+    0x03DB78,   # ICZ1SE_WaitQuake
+    0x03DB80,   # ICZ1SE_Normal
+    0x03DC06,   # ICZ1BGE_Intro
+    0x03DC0A,   # ICZ1BGE_SnowFall
+    0x03DC0E,   # ICZ1BGE_Refresh
+    0x03DC12,   # ICZ1BGE_Refresh2
+    0x03DC16,   # ICZ1BGE_Normal
+    0x03DC1A,   # ICZ1BGE_Transition
+    0x03DC1E,   # ICZ1BGE_Intro
+    0x03DC64,   # ICZ1BGE_SnowFall
+    0x03DC8E,   # ICZ1BGE_Refresh
+    0x03DCBE,   # ICZ1BGE_Refresh2
+    0x03DCDE,   # ICZ1BGE_Normal
+    0x03DD38,   # ICZ1BGE_Transition
+    0x03DFE4,   # ICZ2BGE_FromICZ1
+    0x03DFE8,   # ICZ2BGE_Normal
+    0x03DFEC,   # ICZ2BGE_Refresh
+    0x03DFF0,   # ICZ2BGE_FromICZ1
+    0x03DFFE,   # ICZ2BGE_Normal
+    0x03E0D0,   # ICZ2BGE_Refresh
+    0x03E4DA,   # LBZ1_LayoutMod1
+    0x03E4DC,   # LBZ1_LayoutMod2
+    0x03E4DE,   # LBZ1_LayoutMod3
+    0x03E4E0,   # LBZ1_LayoutMod4
+    0x03E4E2,   # LBZ1_LayoutMod1
+    0x03E4EC,   # LBZ1_LayoutMod2
+    0x03E4F6,   # LBZ1_LayoutMod3
+    0x03E50C,   # LBZ1_LayoutMod4
+    0x03E664,   # LBZ1BGE_Normal
+    0x03E668,   # LBZ1BGE_DoTransition
+    0x03E66C,   # LBZ1BGE_Normal
+    0x03E6E4,   # LBZ1BGE_DoTransition
+    0x03E842,   # LBZ2SE_FromTransition
+    0x03E846,   # LBZ2SE_Normal
+    0x03E84A,   # LBZ2SE_FromTransition
+    0x03E88E,   # LBZ2SE_Normal
+    0x03E8CE,   # LBZ2BGE_FromTransition
+    0x03E8D2,   # LBZ2BGE_Refresh
+    0x03E8D6,   # LBZ2BGE_Normal
+    0x03E8DA,   # LBZ2BGE_DeathEgg
+    0x03E8DE,   # LBZ2BGE_PlatformDetach
+    0x03E8E2,   # LBZ2BGE_Falling
+    0x03E8E6,   # LBZ2BGE_FromTransition
+    0x03E906,   # LBZ2BGE_Refresh
+    0x03E91C,   # LBZ2BGE_Normal
+    0x03E98C,   # LBZ2BGE_DeathEgg
+    0x03E9DE,   # LBZ2BGE_PlatformDetach
+    0x03EA44,   # LBZ2BGE_Falling
+    0x03F06E,   # ContinueScreen
+    0x03F2EE,   # loc_3F2AA
+    0x03F312,   # loc_3F2CE
+    0x03F36E,   # loc_3F32A
+    0x03F384,   # loc_3F340
+    0x03F3A0,   # locret_3F35C
+    0x03F43C,   # loc_3F3F8
+    0x03F46C,   # loc_3F428
+    0x03F48C,   # loc_3F448
+    0x03F49E,   # loc_3F45A
+    0x03F4EA,   # loc_3F4A6
+    0x03F50E,   # loc_3F4CA
+    0x03F522,   # loc_3F4DE
+    0x03F542,   # locret_3F4FE
+    0x04038C,   # S3Credits
+    0x040574,   # loc_40530
+    0x0405F2,   # loc_405AE
+    0x0406E0,   # locret_4069C
+    0x0406E2,   # loc_4069E
+    0x0407D0,   # loc_4078C
+    0x040840,   # loc_407FC
+    0x0408DA,   # loc_40896
+    0x0409E6,   # loc_409A2
+    0x040BC0,   # word_40B7C
+    0x040BD8,   # word_40B94
+    0x040C06,   # word_40BC2
+    0x040C30,   # word_40BEC
+    0x040C5A,   # word_40C16
+    0x040C86,   # word_40C42
+    0x040CA2,   # word_40C5E
+    0x040CCA,   # word_40C86
+    0x040CFC,   # word_40CB8
+    0x040D40,   # word_40CFC
+    0x040D62,   # word_40D1E
+    0x040DA6,   # word_40D62
+    0x040DD4,   # word_40D90
+    0x040DFA,   # word_40DB6
+    0x040E1E,   # word_40DDA
+    0x040E44,   # word_40E00
+    0x040E78,   # word_40E34
+    0x040EAC,   # word_40E68
+    0x040EE8,   # word_40EA4
+    0x040F0A,   # word_40EC6
+    0x040F3C,   # word_40EF8
+    0x040F6E,   # word_40F2A
+    0x040FA2,   # word_40F5E
+    0x040FCC,   # word_40F88
+    0x040FFC,   # word_40FB8
+    0x041038,   # word_40FF4
+    0x04106C,   # word_41028
+    0x0410A0,   # word_4105C
+    0x0410D0,   # word_4108C
+    0x04111C,   # word_410D8
+    0x041168,   # word_41124
+    0x0411C0,   # word_4117C
+    0x0411F4,   # word_411B0
+    0x041238,   # word_411F4
+    0x041288,   # word_41244
+    0x0412D4,   # word_41290
+    0x041308,   # word_412C4
+    0x041358,   # word_41314
+    0x041390,   # word_4134C
+    0x0413D0,   # word_4138C
+    0x0413DA,   # word_41396
+    0x0413E4,   # word_413A0
+    0x0413EE,   # word_413AA
+    0x0413F8,   # word_413B4
+    0x041402,   # word_413BE
+    0x0414B0,   # word_4146C
+    0x0414BE,   # word_4147A
+    0x0414CC,   # word_41488
+    0x0414DA,   # word_41496
+    0x0414E8,   # word_414A4
+    0x0414F6,   # word_414B2
+    0x041504,   # word_414C0
+    0x041512,   # word_414CE
+    0x041520,   # word_414DC
+    0x041528,   # word_414E4
+    0x041530,   # word_414EC
+    0x04153E,   # word_414FA
+    0x041546,   # word_41502
+    0x04155A,   # word_41516
+    0x041568,   # word_41524
+    0x04157C,   # word_41538
+    0x04158A,   # word_41546
+    0x04159E,   # word_4155A
+    0x0415AC,   # word_41568
+    0x0415BA,   # word_41576
+    0x0415C8,   # word_41584
+    0x0415D6,   # word_41592
+    0x0415E4,   # word_415A0
+    0x0415F8,   # word_415B4
+    0x041606,   # word_415C2
+    0x041614,   # word_415D0
+    0x041622,   # word_415DE
+    0x04162A,   # word_415E6
+    0x041638,   # word_415F4
+    0x041646,   # word_41602
+    0x0431BC,   # SonicOnSegaScr_Init
+    0x043276,   # SonicOnSegaScr_RunLeft
+    0x0432B4,   # SonicOnSegaScr_MidWipe
+    0x04331E,   # SonicOnSegaScr_RunRight
+    0x043358,   # SonicOnSegaScr_EndWipe
+    0x043384,   # locret_43340
+    0x043398,   # ObjB1_Init
+    0x0433BC,   # ObjB1_Main
+    0x043608,   # loc_435C4
+    0x04363A,   # loc_435F6
+    0x043D30,   # loc_43CEC
+    0x043D40,   # loc_43CFC
+    0x043D5C,   # locret_43D18
+    0x043D5E,   # loc_43D1A
+    0x043D6C,   # loc_43D28
+    0x043DE6,   # loc_43DA2
+    0x043E10,   # loc_43DCC
+    0x043E3A,   # loc_43DF6
+    0x043E74,   # loc_43E30
+    0x0442AA,   # SSEntryRing_Init
+    0x0442BC,   # SSEntryRing_Main
+    0x044366,   # SSEntryRing_Animate
+    0x04438E,   # SSEntryFlash_Init
+    0x0443B2,   # SSEntryFlash_Main
+    0x044764,   # CutsceneKnux_AIZ1
+    0x044790,   # loc_4474C
+    0x0447C6,   # loc_44782
+    0x0447F6,   # loc_447B2
+    0x044836,   # loc_447F2
+    0x044868,   # loc_44824
+    0x0448B2,   # loc_4486E
+    0x0448E2,   # loc_4489E
+    0x04496A,   # CutsceneKnux_AIZ2
+    0x044994,   # loc_44950
+    0x0449E6,   # loc_449A2
+    0x0449F4,   # loc_449B0
+    0x044A40,   # loc_449FC
+    0x044A7C,   # loc_44A38
+    0x044AB6,   # loc_44A72
+    0x044AE8,   # CutsceneKnux_HCZ2
+    0x044B26,   # loc_44AE2
+    0x044B44,   # loc_44B00
+    0x044BB0,   # loc_44B6C
+    0x044BF2,   # loc_44BAE
+    0x044C3E,   # CutsceneKnux_CNZ2A
+    0x044C7A,   # loc_44C36
+    0x044CE6,   # loc_44CA2
+    0x044D08,   # loc_44CC4
+    0x044D30,   # loc_44CEC
+    0x044DB2,   # loc_44D6E
+    0x044EA6,   # CutsceneKnux_CNZ2B
+    0x044EE6,   # loc_44EA2
+    0x044F0C,   # loc_44EC8
+    0x044F2A,   # loc_44EE6
+    0x044F7C,   # loc_44F38
+    0x044FA0,   # loc_44F5C
+    0x044FD8,   # loc_44F94
+    0x044FFE,   # CutsceneKnux_LBZ1
+    0x04502C,   # loc_44FE8
+    0x045066,   # loc_45022
+    0x0450A2,   # loc_4505E
+    0x04512C,   # loc_450E8
+    0x04525A,   # CutsceneKnux_LBZ2
+    0x045286,   # loc_45242
+    0x0452B4,   # loc_45270
+    0x0452CE,   # loc_4528A
+    0x0452E8,   # loc_452A4
+    0x04530A,   # loc_452C6
+    0x04534E,   # loc_4530A
+    0x045366,   # loc_45322
+    0x045578,   # loc_45534
+    0x045594,   # loc_45550
+    0x04559A,   # loc_45556
+    0x0455CE,   # loc_4558A
+    0x0458CC,   # loc_45888
+    0x045934,   # loc_458F0
+    0x045956,   # loc_45912
+    0x045980,   # loc_4593C
+    0x0459B4,   # loc_45970
+    0x0459E0,   # loc_4599C
+    0x045A34,   # loc_459F0
+    0x045A44,   # loc_45A00
+    0x045A6E,   # loc_45A2A
+    0x045A94,   # loc_45A50
+    0x045ACC,   # loc_45A88
+    0x045AE6,   # loc_45AA2
+    0x045B08,   # loc_45AC4
+    0x045B24,   # loc_45AE0
+    0x045F0A,   # Obj_RobotnikHeadInit
+    0x045F26,   # Obj_RobotnikHeadMain
+    0x045F5A,   # Obj_RobotnikHeadEnd
+    0x045FB2,   # Obj_FBZRobotnikHeadInit
+    0x045FC8,   # Obj_FBZRobotnikHeadMain
+    0x04603A,   # Obj_RobotnikHead3Init
+    0x046058,   # Obj_RobotnikHead3Main
+    0x0460EA,   # loc_460A6
+    0x046106,   # loc_460C2
+    0x04613C,   # loc_460F8
+    0x04616E,   # loc_4612A
+    0x0461AA,   # Obj_RobotnikShip2Wait
+    0x0461F6,   # Obj_RobotnikShipInit
+    0x046218,   # Obj_RobotnikShipMain
+    0x046248,   # Obj_RobotnikShipWait
+    0x046268,   # Obj_RobotnikShipReady
+    0x0462A2,   # Obj_RobotnikShipEscape
+    0x0462FE,   # Obj_FBZRobotnikShipInit
+    0x04631A,   # Obj_FBZRobotnikShipMain
+    0x046350,   # Obj_FBZRobotnikShipWait
+    0x04638E,   # Obj_FBZRobotnikShipFall
+    0x0463A8,   # Obj_FBZRobotnikShipRise
+    0x0464A2,   # loc_4645E
+    0x0464C6,   # loc_46482
+    0x04650C,   # locret_464C8
+    0x04650E,   # loc_464CA
+    0x04654C,   # loc_46508
+    0x046590,   # loc_4654C
+    0x0466E8,   # loc_466A4
+    0x0466F2,   # loc_466AE
+    0x046712,   # loc_466CE
+    0x046730,   # loc_466EC
+    0x046770,   # loc_4672C
+    0x0467BC,   # loc_46778
+    0x0467EE,   # sub_467AA
+    0x046822,   # loc_467DE
+    0x0468A2,   # sub_4685E
+    0x0468EA,   # loc_468A6
+    0x046940,   # loc_468FC
+    0x04698C,   # loc_46948
+    0x0469DA,   # loc_46996
+    0x046A02,   # loc_469BE
+    0x046A42,   # loc_469FE
+    0x046AA2,   # loc_46A5E
+    0x046AEE,   # loc_46AAA
+    0x046B42,   # loc_46AFE
+    0x046BBE,   # loc_46B7A
+    0x046C3A,   # loc_46BF6
+    0x046C5E,   # loc_46C1A
+    0x046CAC,   # loc_46C68
+    0x046CC8,   # loc_46C84
+    0x046D06,   # loc_46CC2
+    0x046D44,   # loc_46D00
+    0x047190,   # Obj_AIZEndBossInit
+    0x047206,   # loc_471C2
+    0x047250,   # loc_4720C
+    0x04728C,   # loc_47248
+    0x047306,   # loc_472C2
+    0x04736C,   # loc_47328
+    0x04738C,   # loc_47348
+    0x047502,   # loc_474BE
+    0x04752A,   # loc_474E6
+    0x04755C,   # loc_47518
+    0x047572,   # loc_4752E
+    0x04758A,   # loc_47546
+    0x0475AC,   # loc_47568
+    0x047610,   # loc_475CC
+    0x04761C,   # loc_475D8
+    0x04765C,   # loc_47618
+    0x0476A8,   # loc_47664
+    0x047E3E,   # loc_47DFA
+    0x047E78,   # loc_47E34
+    0x047E9E,   # loc_47E5A
+    0x047F0A,   # loc_47EC6
+    0x047F56,   # loc_47F12
+    0x047F8C,   # loc_47F48
+    0x047FA4,   # loc_47F60
+    0x047FEE,   # loc_47FAA
+    0x0480AA,   # loc_48066
+    0x048172,   # loc_4812E
+    0x04818C,   # loc_48148
+    0x0481E0,   # loc_4819C
+    0x048200,   # loc_481BC
+    0x04820E,   # loc_481CA
+    0x048298,   # loc_48254
+    0x0482B2,   # loc_4826E
+    0x0483CA,   # loc_48386
+    0x0483E4,   # loc_483A0
+    0x048404,   # loc_483C0
+    0x04843A,   # loc_483F6
+    0x048460,   # loc_4841C
+    0x0484A0,   # loc_4845C
+    0x048DA6,   # loc_48D62
+    0x048E00,   # loc_48DBC
+    0x048E42,   # loc_48DFE
+    0x048EEE,   # loc_48EAA
+    0x04901C,   # loc_48FD8
+    0x049026,   # loc_48FE2
+    0x049052,   # loc_4900E
+    0x049078,   # loc_49034
+    0x0490AA,   # loc_49066
+    0x0490F8,   # loc_490B4
+    0x049140,   # loc_490FC
+    0x04916C,   # loc_49128
+    0x049184,   # loc_49140
+    0x0491E2,   # loc_4919E
+    0x04924A,   # loc_49206
+    0x04925E,   # loc_4921A
+    0x04928E,   # loc_4924A
+    0x049434,   # loc_493F0
+    0x04944E,   # loc_4940A
+    0x049492,   # loc_4944E
+    0x0494C6,   # loc_49482
+    0x049534,   # loc_494F0
+    0x04955C,   # loc_49518
+    0x049582,   # loc_4953E
+    0x049E50,   # loc_49E0C
+    0x049E9A,   # loc_49E56
+    0x049EB2,   # loc_49E6E
+    0x049F0C,   # loc_49EC8
+    0x049F40,   # loc_49EFC
+    0x049F72,   # loc_49F2E
+    0x049FB0,   # loc_49F6C
+    0x049FC4,   # loc_49F80
+    0x049FF8,   # loc_49FB4
+    0x04A062,   # loc_4A01E
+    0x04A130,   # loc_4A0EC
+    0x04A176,   # loc_4A132
+    0x04A206,   # loc_4A1C2
+    0x04A230,   # loc_4A1EC
+    0x04A254,   # loc_4A210
+    0x04A274,   # loc_4A230
+    0x04A2CC,   # loc_4A288
+    0x04A30C,   # loc_4A2C8
+    0x04A32E,   # loc_4A2EA
+    0x04A360,   # loc_4A31C
+    0x04A3DE,   # loc_4A39A
+    0x04A418,   # loc_4A3D4
+    0x04A4CC,   # loc_4A488
+    0x04A506,   # loc_4A4C2
+    0x04A522,   # loc_4A4DE
+    0x04A564,   # loc_4A520
+    0x04A586,   # loc_4A542
+    0x04A65A,   # loc_4A616
+    0x04A680,   # loc_4A63C
+    0x04A70A,   # loc_4A6C6
+    0x04A726,   # loc_4A6E2
+    0x04A75A,   # loc_4A716
+    0x04A7FA,   # loc_4A7B6
+    0x04A81E,   # loc_4A7DA
+    0x04A850,   # loc_4A80C
+    0x04A906,   # loc_4A8C2
+    0x04B6A4,   # Obj_CNZMinibossInit
+    0x04B6DE,   # Obj_CNZMinibossLower
+    0x04B70C,   # Obj_CNZMinibossMove
+    0x04B764,   # Obj_CNZMinibossOpening
+    0x04B78E,   # Obj_CNZMinibossWaitHit
+    0x04B7B6,   # Obj_CNZMinibossClosing
+    0x04B7BC,   # Obj_CNZMinibossLower2
+    0x04B848,   # Obj_CNZMinibossTopInit
+    0x04B85E,   # Obj_CNZMinibossTopWait
+    0x04B888,   # Obj_CNZMinibossTopWait2
+    0x04B8B0,   # Obj_CNZMinibossTopMain
+    0x04C070,   # loc_4C02C
+    0x04C0BE,   # loc_4C07A
+    0x04C0E6,   # loc_4C0A2
+    0x04C126,   # loc_4C0E2
+    0x04C146,   # loc_4C102
+    0x04C198,   # loc_4C154
+    0x04C1E8,   # loc_4C1A4
+    0x04C212,   # loc_4C1CE
+    0x04C3A2,   # loc_4C35E
+    0x04C3BA,   # loc_4C376
+    0x04C3EE,   # loc_4C3AA
+    0x04C432,   # loc_4C3EE
+    0x04C448,   # loc_4C404
+    0x04C468,   # loc_4C424
+    0x04C4D6,   # loc_4C492
+    0x04C4F2,   # loc_4C4AE
+    0x04C522,   # loc_4C4DE
+    0x04C560,   # loc_4C51C
+    0x04C594,   # loc_4C550
+    0x04C5C6,   # loc_4C582
+    0x04C5E4,   # loc_4C5A0
+    0x04C9BA,   # loc_4C976
+    0x04CA08,   # loc_4C9C4
+    0x04CA28,   # loc_4C9E4
+    0x04CA50,   # loc_4CA0C
+    0x04CA64,   # loc_4CA20
+    0x04CAB0,   # loc_4CA6C
+    0x04CAC0,   # loc_4CA7C
+    0x04CB3E,   # loc_4CAFA
+    0x04CB46,   # loc_4CB02
+    0x04CB6A,   # loc_4CB26
+    0x04CB76,   # loc_4CB32
+    0x04CBE2,   # loc_4CB9E
+    0x04CBF8,   # loc_4CBB4
+    0x04CC18,   # loc_4CBD4
+    0x04CC2A,   # locret_4CBE6
+    0x04CC5A,   # loc_4CC16
+    0x04CC88,   # loc_4CC44
+    0x04CCA6,   # loc_4CC62
+    0x04CCC8,   # loc_4CC84
+    0x04CD4C,   # loc_4CD08
+    0x04CDE4,   # loc_4CDA0
+    0x04CE24,   # loc_4CDE0
+    0x04CE30,   # loc_4CDEC
+    0x04CEBE,   # loc_4CE7A
+    0x04CF0E,   # loc_4CECA
+    0x04CF62,   # loc_4CF1E
+    0x04CF96,   # loc_4CF52
+    0x04CFDE,   # loc_4CF9A
+    0x04CFF2,   # loc_4CFAE
+    0x04D054,   # loc_4D010
+    0x04D07A,   # loc_4D036
+    0x04D0AA,   # loc_4D066
+    0x04D0B6,   # loc_4D072
+    0x04D0C6,   # loc_4D082
+    0x04D0E2,   # loc_4D09E
+    0x04D110,   # loc_4D0CC
+    0x04D136,   # loc_4D0F2
+    0x04D172,   # loc_4D12E
+    0x04D1AA,   # loc_4D166
+    0x04D5BE,   # loc_4D57A
+    0x04D61A,   # loc_4D5D6
+    0x04D646,   # loc_4D602
+    0x04D688,   # loc_4D644
+    0x04D6A8,   # loc_4D664
+    0x04D70C,   # loc_4D6C8
+    0x04DC04,   # loc_4DBC0
+    0x04DC6A,   # loc_4DC26
+    0x04DC84,   # loc_4DC40
+    0x04DCAE,   # loc_4DC6A
+    0x04DD1E,   # loc_4DCDA
+    0x04DE3A,   # loc_4DDF6
+    0x04DE60,   # loc_4DE1C
+    0x04DEC0,   # loc_4DE7C
+    0x04DEDA,   # loc_4DE96
+    0x04DF10,   # loc_4DECC
+    0x04DF36,   # loc_4DEF2
+    0x04DF64,   # loc_4DF20
+    0x04DFA0,   # loc_4DF5C
+    0x04DFD4,   # loc_4DF90
+    0x04E12C,   # loc_4E0E8
+    0x04E132,   # loc_4E0EE
+    0x04E138,   # loc_4E0F4
+    0x04E140,   # loc_4E0FC
+    0x04E472,   # loc_4E42E
+    0x04E4AA,   # loc_4E466
+    0x04E4D0,   # loc_4E48C
+    0x04E4FA,   # loc_4E4B6
+    0x04E53C,   # loc_4E4F8
+    0x04E574,   # loc_4E530
+    0x04E5C6,   # loc_4E582
+    0x04E5F0,   # loc_4E5AC
+    0x04E610,   # loc_4E5CC
+    0x04E6BC,   # loc_4E678
+    0x04E6C8,   # loc_4E684
+    0x04E6E8,   # loc_4E6A4
+    0x04E704,   # locret_4E6C0
+    0x04E732,   # loc_4E6EE
+    0x04E73E,   # loc_4E6FA
+    0x04E768,   # loc_4E724
+    0x04E7A2,   # loc_4E75E
+    0x04E7C2,   # loc_4E77E
+    0x04E7DA,   # loc_4E796
+    0x04E7FA,   # loc_4E7B6
+    0x04E844,   # loc_4E800
+    0x04E890,   # loc_4E84C
+    0x04E8C8,   # locret_4E884
+    0x04ED9E,   # loc_4ED5A
+    0x04EDDA,   # loc_4ED96
+    0x04EE04,   # loc_4EDC0
+    0x04EE9E,   # loc_4EE5A
+    0x04EF6C,   # loc_4EF28
+    0x04EF74,   # loc_4EF30
+    0x04EF9C,   # loc_4EF58
+    0x04EFE4,   # loc_4EFA0
+    0x04EFEC,   # loc_4EFA8
+    0x04F010,   # loc_4EFCC
+    0x04F020,   # loc_4EFDC
+    0x04F044,   # loc_4F000
+    0x04F09C,   # loc_4F058
+    0x04F0AC,   # loc_4F068
+    0x04F0D0,   # loc_4F08C
+    0x04F4DA,   # loc_4F496
+    0x04F51C,   # loc_4F4D8
+    0x04F53C,   # loc_4F4F8
+    0x04F582,   # loc_4F53E
+    0x04F59E,   # loc_4F55A
+    0x04F5F8,   # loc_4F5B4
+    0x04F620,   # loc_4F5DC
+    0x04F632,   # loc_4F5EE
+    0x04F650,   # loc_4F60C
+    0x04F682,   # loc_4F63E
+    0x04F6BC,   # loc_4F678
+    0x04F6E6,   # loc_4F6A2
+    0x04F740,   # loc_4F6FC
+    0x04F76A,   # loc_4F726
+    0x04F7E6,   # loc_4F7A2
+    0x04FA12,   # loc_4F9CE
+    0x04FA72,   # loc_4FA2E
+    0x04FA8A,   # loc_4FA46
+    0x04FB06,   # locret_4FAC2
+    0x04FB08,   # loc_4FAC4
+    0x04FB1E,   # loc_4FADA
+    0x04FF66,   # loc_4FF22
+    0x04FF7E,   # loc_4FF3A
+    0x04FFBE,   # loc_4FF7A
+    0x050488,   # loc_50444
+    0x0504F2,   # loc_504AE
+    0x05050E,   # loc_504CA
+    0x050520,   # loc_504DC
+    0x050560,   # loc_5051C
+    0x05058C,   # loc_50548
+    0x0505B8,   # loc_50574
+    0x050634,   # loc_505F0
+    0x05066C,   # loc_50628
+    0x050694,   # loc_50650
+    0x050770,   # loc_5072C
+    0x050788,   # loc_50744
+    0x0507AE,   # loc_5076A
+    0x050818,   # loc_507D4
+    0x05083A,   # loc_507F6
+    0x05084C,   # loc_50808
+    0x050870,   # loc_5082C
+    0x05087C,   # loc_50838
+    0x0508C8,   # loc_50884
+    0x050910,   # loc_508CC
+    0x050950,   # loc_5090C
+    0x050958,   # loc_50914
+    0x05097C,   # loc_50938
+    0x0509AA,   # loc_50966
+    0x050D32,   # loc_50CEE
+    0x050D6C,   # loc_50D28
+    0x050DB8,   # loc_50D74
+    0x050DD0,   # loc_50D8C
+    0x050E70,   # loc_50E2C
+    0x050E90,   # loc_50E4C
+    0x050E94,   # locret_50E50
+    0x050E96,   # loc_50E52
+    0x050EAC,   # loc_50E68
+    0x050EB2,   # loc_50E6E
+    0x050EE0,   # loc_50E9C
+    0x050EF2,   # loc_50EAE
+    0x050F14,   # loc_50ED0
+    0x050F3E,   # loc_50EFA
+    0x050F7E,   # loc_50F3A
+    0x050F94,   # loc_50F50
+    0x050FBE,   # loc_50F7A
+    0x050FD6,   # loc_50F92
+    0x050FF0,   # loc_50FAC
+    0x051008,   # loc_50FC4
+    0x051034,   # loc_50FF0
+    0x051072,   # loc_5102E
+    0x0510A8,   # loc_51064
+    0x0510CA,   # loc_51086
+    0x051112,   # loc_510CE
+    0x051246,   # loc_51202
+    0x05126A,   # loc_51226
+    0x051292,   # loc_5124E
+    0x051980,   # loc_5193C
+    0x0519D8,   # loc_51994
+    0x0519FC,   # loc_519B8
+    0x051AA6,   # loc_51A62
+    0x052410,   # Obj_EndSignInit
+    0x05245A,   # Obj_EndSignFall
+    0x0524C2,   # Obj_EndSignLanded
+    0x052506,   # Obj_EndSignResults
+    0x05252C,   # Obj_EndSignAfter
+    0x05272E,   # AfterBoss_AIZ1
+    0x052742,   # AfterBoss_AIZ2
+    0x052758,   # AfterBoss_HCZ
+    0x05275A,   # AfterBoss_MGZ
+    0x052764,   # AfterBoss_CNZ
+    0x052766,   # AfterBoss_ICZ2
+    0x052772,   # AfterBoss_LBZ
+    0x052836,   # Obj_BossExpControl
+    0x052860,   # loc_5281C
+    0x052864,   # Obj_WaitForParent
+    0x05292C,   # CreateBossExp00
+    0x052930,   # CreateBossExp02
+    0x052934,   # CreateBossExp04
+    0x052938,   # CreateBossExp06
+    0x05293C,   # CreateBossExp08
+    0x052940,   # CreateBossExp0A
+    0x052944,   # CreateBossExp0C
+    0x05295A,   # loc_52916
+    0x052DD6,   # Animate_RawMultiDelay
+    0x05341A,   # AtAngle_00_3F
+    0x053428,   # AtAngle_40_7F
+    0x053438,   # AtAngle_80_BF
+    0x05344A,   # AtAngle_C0_FF
+    0x0534F8,   # loc_534B4
+    0x053500,   # loc_534BC
+    0x05350A,   # loc_534C6
+    0x053514,   # loc_534D0
+    0x05353A,   # loc_534F6
+    0x053542,   # loc_534FE
+    0x05354E,   # loc_5350A
+    0x05355E,   # loc_5351A
+    0x0535B4,   # loc_53570
+    0x0535BC,   # loc_53578
+    0x0535C8,   # loc_53584
+    0x0535D8,   # loc_53594
+    0x053A22,   # Go_Delete_Sprite
+    0x053D14,   # Move_AnimateRaw_Wait
+    0x053D66,   # Move_WaitNoFall
+    0x054558,   # loc_54514
+    0x0545AE,   # loc_5456A
+    0x0545F8,   # loc_545B4
+    0x054600,   # loc_545BC
+    0x054604,   # loc_545C0
+    0x054684,   # loc_54640
+    0x054696,   # loc_54652
+    0x0546A4,   # loc_54660
+    0x054BCA,   # loc_54B86
+    0x054BE2,   # loc_54B9E
+    0x054C06,   # loc_54BC2
+    0x054CBE,   # loc_54C7A
+    0x054D04,   # loc_54CC0
+    0x054D2A,   # loc_54CE6
+    0x054D2E,   # loc_54CEA
+    0x054D6C,   # loc_54D28
+    0x054D7C,   # loc_54D38
+    0x054FB2,   # loc_54F6E
+    0x054FFC,   # loc_54FB8
+    0x05501A,   # loc_54FD6
+    0x05512E,   # loc_550EA
+    0x05516A,   # loc_55126
+    0x055170,   # loc_5512C
+    0x0551C2,   # loc_5517E
+    0x0551F4,   # loc_551B0
+    0x05522A,   # loc_551E6
+    0x055278,   # loc_55234
+    0x05527E,   # loc_5523A
+    0x055282,   # loc_5523E
+    0x0552A8,   # loc_55264
+    0x0552AE,   # loc_5526A
+    0x0552B2,   # loc_5526E
+    0x05552C,   # loc_554E8
+    0x055568,   # loc_55524
+    0x055598,   # loc_55554
+    0x0555BA,   # loc_55576
+    0x0555EC,   # loc_555A8
+    0x055618,   # loc_555D4
+    0x05578C,   # loc_55748
+    0x055794,   # loc_55750
+    0x0557B8,   # loc_55774
+    0x05586C,   # loc_55828
+    0x05589E,   # loc_5585A
+    0x0558BC,   # loc_55878
+    0x0558FE,   # loc_558BA
+    0x055910,   # loc_558CC
+    0x055976,   # loc_55932
+    0x055A16,   # loc_559D2
+    0x055A72,   # loc_55A2E
+    0x055AD8,   # loc_55A94
+    0x055AF8,   # loc_55AB4
+    0x055B16,   # loc_55AD2
+    0x055B24,   # loc_55AE0
+    0x055B4A,   # loc_55B06
+    0x055B66,   # loc_55B22
+    0x055DAA,   # loc_55D66
+    0x055DCE,   # loc_55D8A
+    0x055E46,   # loc_55E02
+    0x055E84,   # loc_55E40
+    0x0560C8,   # loc_56084
+    0x056116,   # loc_560D2
+    0x0561A0,   # loc_5615C
+    0x0561DC,   # loc_56198
+    0x056216,   # loc_561D2
+    0x0562B0,   # loc_5626C
+    0x0562D2,   # loc_5628E
+    0x056302,   # loc_562BE
+    0x05632A,   # loc_562E6
+    0x05635E,   # loc_5631A
+    0x0563D4,   # loc_56390
+    0x056434,   # loc_563F0
+    0x0564AA,   # loc_56466
+    0x056518,   # loc_564D4
+    0x056574,   # loc_56530
+    0x056596,   # loc_56552
+    0x0565BC,   # loc_56578
+    0x05679E,   # loc_5675A
+    0x0567B8,   # loc_56774
+    0x0567F8,   # loc_567B4
+    0x056818,   # loc_567D4
+    0x056828,   # loc_567E4
+    0x0569C2,   # loc_5697E
+    0x0569D2,   # loc_5698E
+    0x0569EC,   # loc_569A8
+    0x056A06,   # loc_569C2
+    0x056A26,   # loc_569E2
+    0x056A3A,   # loc_569F6
+    0x056A9C,   # loc_56A58
+    0x056AB2,   # loc_56A6E
+    0x056AC8,   # loc_56A84
+    0x056B04,   # loc_56AC0
+    0x056B4E,   # loc_56B0A
+    0x056B56,   # loc_56B12
+    0x056B96,   # loc_56B52
+    0x056C84,   # loc_56C40
+    0x056C9A,   # loc_56C56
+    0x056CC6,   # loc_56C82
+    0x056D00,   # loc_56CBC
+    0x056D24,   # loc_56CE0
+    0x056D6C,   # loc_56D28
+    0x056D74,   # loc_56D30
+    0x056DDE,   # loc_56D9A
+    0x056DEE,   # loc_56DAA
+    0x056E50,   # loc_56E0C
+    0x056E66,   # loc_56E22
+    0x056FB2,   # loc_56F6E
+    0x056FBA,   # loc_56F76
+    0x056FE6,   # loc_56FA2
+    0x057006,   # loc_56FC2
+    0x057064,   # loc_57020
+    0x057090,   # loc_5704C
+    0x0570B0,   # loc_5706C
+    0x0570E6,   # loc_570A2
+    0x05712C,   # loc_570E8
+    0x05718C,   # loc_57148
+    0x05719C,   # loc_57158
+    0x0571C4,   # loc_57180
+    0x0571FC,   # loc_571B8
+    0x057204,   # loc_571C0
+    0x05721E,   # loc_571DA
+    0x057242,   # loc_571FE
+    0x05724A,   # locret_57206
+    0x0572AE,   # loc_5726A
+    0x0572F6,   # loc_572B2
+    0x057360,   # loc_5731C
+    0x0573A6,   # loc_57362
+    0x0573C8,   # loc_57384
+    0x0573F0,   # loc_573AC
+    0x057400,   # loc_573BC
+    0x05751E,   # loc_574DA
+    0x0575B8,   # loc_57574
+    0x05760A,   # loc_575C6
+    0x057638,   # loc_575F4
+    0x05767C,   # loc_57638
+    0x0576A8,   # loc_57664
+    0x0576C4,   # loc_57680
+    0x0576FC,   # loc_576B8
+    0x0577F4,   # loc_577B0
+    0x05782C,   # loc_577E8
+    0x05784C,   # loc_57808
+    0x057868,   # loc_57824
+    0x0578AC,   # loc_57868
+    0x057986,   # loc_57942
+    0x0579E0,   # locret_5799C
+    0x0579E2,   # loc_5799E
+    0x0579FC,   # loc_579B8
+    0x057A18,   # loc_579D4
+    0x057C0A,   # loc_57BC6
+    0x057C10,   # loc_57BCC
+    0x057C18,   # loc_57BD4
+    0x057CD4,   # loc_57C90
+    0x057D10,   # loc_57CCC
+    0x057D22,   # loc_57CDE
+    0x057D2A,   # loc_57CE6
+    0x057D50,   # loc_57D0C
+    0x057D58,   # loc_57D14
+    0x057D9E,   # loc_57D5A
+    0x057DC2,   # loc_57D7E
+    0x057DD2,   # loc_57D8E
+    0x057DE8,   # loc_57DA4
+    0x057E04,   # loc_57DC0
+    0x057E20,   # loc_57DDC
+    0x057F22,   # loc_57EDE
+    0x057F2A,   # loc_57EE6
+    0x0587EC,   # loc_587A8
+    0x0587F4,   # loc_587B0
+    0x0587FC,   # loc_587B8
+    0x058810,   # loc_587CC
+    0x058818,   # loc_587D4
+    0x05882C,   # loc_587E8
+    0x058840,   # loc_587FC
+    0x05884E,   # locret_5880A
+    0x0592EA,   # loc_592A6
+    0x059346,   # loc_59302
+    0x0593E0,   # loc_5939C
+    0x0593FA,   # loc_593B6
+    0x059448,   # loc_59404
+    0x059496,   # loc_59452
+    0x0594D0,   # loc_5948C
+    0x059518,   # loc_594D4
+    0x0597B0,   # loc_5976C
+    0x0597CE,   # loc_5978A
+    0x059802,   # loc_597BE
+    0x05982E,   # loc_597EA
+    0x059886,   # loc_59842
+    0x0598B0,   # loc_5986C
+    0x0598D0,   # loc_5988C
+    0x059916,   # loc_598D2
+    0x05991E,   # loc_598DA
+    0x059974,   # loc_59930
+    0x05997C,   # loc_59938
+    0x0599B0,   # loc_5996C
+    0x0599FC,   # loc_599B8
+    0x059AD4,   # loc_59A90
+    0x059B1C,   # loc_59AD8
+    0x059B64,   # loc_59B20
+    0x059B88,   # loc_59B44
+    0x059B96,   # loc_59B52
+    0x059BB8,   # loc_59B74
+    0x059BEA,   # loc_59BA6
+    0x059BF4,   # loc_59BB0
+    0x059C02,   # loc_59BBE
+    0x059C50,   # loc_59C0C
+    0x059C5A,   # loc_59C16
+    0x059C68,   # loc_59C24
+    0x059C86,   # loc_59C42
+    0x059C94,   # loc_59C50
+    0x059CC4,   # loc_59C80
+    0x059D18,   # loc_59CD4
+    0x059D32,   # loc_59CEE
+    0x059D48,   # loc_59D04
+    0x059E12,   # loc_59DCE
+    0x059E24,   # loc_59DE0
+    0x059F06,   # loc_59EC2
+    0x059F5C,   # loc_59F18
+    0x059F8C,   # loc_59F48
+    0x059FB8,   # loc_59F74
+    0x059FC2,   # loc_59F7E
+    0x059FEA,   # loc_59FA6
+    0x05A064,   # loc_5A020
+    0x05A14C,   # loc_5A108
+    0x05A16A,   # loc_5A126
+    0x05A1CC,   # loc_5A188
+    0x05A214,   # loc_5A1D0
+    0x05A248,   # loc_5A204
+    0x05A28C,   # loc_5A248
+    0x05A33C,   # loc_5A2F8
+    0x05A38C,   # loc_5A348
+    0x05A3C4,   # loc_5A380
+    0x05A3F0,   # loc_5A3AC
+    0x05A41A,   # loc_5A3D6
+    0x05A44A,   # loc_5A406
+    0x05A47A,   # loc_5A436
+    0x05A4C2,   # loc_5A47E
+    0x05A630,   # loc_5A5EC
+    0x05A63E,   # loc_5A5FA
+    0x05A65C,   # loc_5A618
+    0x05A66A,   # loc_5A626
+    0x05A670,   # loc_5A62C
+    0x05A6B6,   # loc_5A672
+    0x05A6CC,   # loc_5A688
+    0x05A85C,   # byte_5A818
+    0x05A866,   # byte_5A822
+    0x05B576,   # loc_5B532
+    0x05B5B6,   # PLC_6E
+    0x05B5D0,   # PLC_6F
+    0x05B5FE,   # loc_5B5BA
+    0x05B616,   # PLC_71
+    0x05B624,   # PLC_72_73_74_75_76_77
+    0x05B648,   # PLC_78_79_7A_7B
 ]
