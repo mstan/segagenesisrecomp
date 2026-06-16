@@ -37,6 +37,17 @@ player_object  = 0xFFD000   # Sonic's object slot ($D000 in S1)
 level_modes    = [0x08, 0x0C]   # GM_Demo, GM_Level — gameplay states
 
 # ---------------------------------------------------------------------------
+# Widescreen (16:9) opt-in. Engine renders extra centered columns; the patched
+# disasm widens tile-load / object-cull bounds via the Widescreen_extra RAM
+# word the engine writes each frame (0 = authentic 4:3). Sonic 1 has no
+# 2-player mode, so two_player_addr is omitted (gate disabled).
+[widescreen]
+capable         = true
+extra_ram_addr  = 0xFFFF38       # Widescreen_extra (carved from v_timingandscreenvariables)
+max_extra_cells = 8              # 8 cells (64px)/side -> 448px (16:9)
+eligible_modes  = [0x08, 0x0C]   # EXACT: GM_Demo, GM_Level
+
+# ---------------------------------------------------------------------------
 # Residual extras — dispatch targets the auto-extractors don't yet identify.
 # Each is a coverage gap; ideally this list shrinks to zero as extractors
 # improve. Names are from s1disasm where known.
