@@ -1,36 +1,40 @@
 /*
  * gamepad.c — SDL_GameController integration for the shared runner.
  *
- * See gamepad.h for the public API + mapping rationale. We use
- * SDL_GameController so a single code path covers XInput (Xbox pads on
- * Windows), HID (PS / Switch Pro), and SDL's controller database.
+ * See gamepad.h for the public API. We use SDL_GameController so a single code
+ * path covers XInput (Xbox pads on Windows), HID (PS / Switch Pro), and SDL's
+ * controller database.
  *
- * Held state (face buttons, D-pad, sticks) is read on demand via
- * SDL_GameControllerGet*; only the edge-triggered shoulder taps for
- * quicksave/quickload are latched via event-driven flags.
+ * Up to two controllers are opened and assigned to player 0 / player 1 in plug
+ * order. Each player's button mask is resolved through g_input_map's rebindable
+ * per-player bindings (set in the launcher), plus an always-on left-analog-stick
+ * -> d-pad convenience. The quicksave / quickload / turbo shortcuts live on
+ * player 0's shoulder / Back buttons, but only while player 0 is a 3-button pad
+ * (6-button mode hands those buttons to Y / Z / Mode).
  */
 
 #include "gamepad.h"
+#include "input_map.h"
 
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
-/* Open at most one controller — P1. Future 2P support can index this. */
-static SDL_GameController *s_pad      = NULL;
-static SDL_JoystickID      s_pad_jid  = -1;
+/* Up to two controllers, indexed by player. */
+static SDL_GameController *s_pad[2]     = { NULL, NULL };
+static SDL_JoystickID      s_pad_jid[2] = { -1, -1 };
 
 /* Edge-triggered shoulder latches (consumed by main loop once per press). */
 static int s_pending_save = 0;
 static int s_pending_load = 0;
 
-/* Analog deadzone for the left stick. SDL axis values are int16
- * (-32768..32767). 8000 is roughly 25%, the common emulator default. */
-#define GAMEPAD_STICK_DEADZONE 8000
-
 static void open_pad_index(int joystick_index)
 {
-    if (s_pad) return;                       /* already have one */
     if (!SDL_IsGameController(joystick_index)) return;
+
+    /* Find a free player slot (0 then 1). */
+    int slot = -1;
+    for (int i = 0; i < 2; i++) if (!s_pad[i]) { slot = i; break; }
+    if (slot < 0) return;                    /* both players already have a pad */
 
     SDL_GameController *c = SDL_GameControllerOpen(joystick_index);
     if (!c) {
@@ -38,37 +42,44 @@ static void open_pad_index(int joystick_index)
                 joystick_index, SDL_GetError());
         return;
     }
-    s_pad     = c;
-    s_pad_jid = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(c));
-    fprintf(stderr, "[gamepad] opened: %s\n", SDL_GameControllerName(c));
+    /* Don't open the same physical device twice (event + initial scan race). */
+    SDL_JoystickID jid = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(c));
+    for (int i = 0; i < 2; i++) {
+        if (s_pad[i] && s_pad_jid[i] == jid) { SDL_GameControllerClose(c); return; }
+    }
+    s_pad[slot]     = c;
+    s_pad_jid[slot] = jid;
+    fprintf(stderr, "[gamepad] P%d: %s\n", slot + 1, SDL_GameControllerName(c));
 }
 
 static void close_pad_by_jid(SDL_JoystickID jid)
 {
-    if (!s_pad || jid != s_pad_jid) return;
-    fprintf(stderr, "[gamepad] removed: %s\n",
-            SDL_GameControllerName(s_pad));
-    SDL_GameControllerClose(s_pad);
-    s_pad     = NULL;
-    s_pad_jid = -1;
+    for (int i = 0; i < 2; i++) {
+        if (s_pad[i] && s_pad_jid[i] == jid) {
+            fprintf(stderr, "[gamepad] P%d removed: %s\n", i + 1,
+                    SDL_GameControllerName(s_pad[i]));
+            SDL_GameControllerClose(s_pad[i]);
+            s_pad[i]     = NULL;
+            s_pad_jid[i] = -1;
+        }
+    }
 }
 
 void gamepad_init(void)
 {
-    /* Walk the already-attached joysticks so a pad plugged in before
-     * the window opened still works without waiting for a re-plug. */
+    /* Walk the already-attached joysticks so pads plugged in before the window
+     * opened still work without waiting for a re-plug. */
     int n = SDL_NumJoysticks();
-    for (int i = 0; i < n && !s_pad; i++)
-        open_pad_index(i);
+    for (int i = 0; i < n; i++) open_pad_index(i);
 }
 
 void gamepad_shutdown(void)
 {
-    if (s_pad) {
-        SDL_GameControllerClose(s_pad);
-        s_pad = NULL;
+    for (int i = 0; i < 2; i++) {
+        if (s_pad[i]) SDL_GameControllerClose(s_pad[i]);
+        s_pad[i]     = NULL;
+        s_pad_jid[i] = -1;
     }
-    s_pad_jid = -1;
     s_pending_save = 0;
     s_pending_load = 0;
 }
@@ -86,9 +97,10 @@ void gamepad_handle_event(const SDL_Event *ev)
             close_pad_by_jid((SDL_JoystickID)ev->cdevice.which);
             break;
         case SDL_CONTROLLERBUTTONDOWN:
-            /* Edge-trigger shoulders so a single press fires once even
-             * though the frame loop polls every tick. */
-            if (s_pad && ev->cbutton.which == s_pad_jid) {
+            /* Quicksave / quickload taps from player 1's shoulders — only when
+             * P1 is a 3-button pad (6-button uses LB/RB for Y/Z). */
+            if (s_pad[0] && ev->cbutton.which == s_pad_jid[0] &&
+                g_input_map.p[0].pad_type != PAD_6BUTTON) {
                 if (ev->cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER)
                     s_pending_save = 1;
                 else if (ev->cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)
@@ -100,62 +112,60 @@ void gamepad_handle_event(const SDL_Event *ev)
     }
 }
 
-/* Held-state helpers. Returning cc_false when no pad is attached makes
- * the OR-with-keyboard fallback in main.c a no-op for keyboard-only users. */
-
-static int btn_held(SDL_GameControllerButton b)
+/* Deadzone (SDL axis units) for a player's analog sticks, from the launcher. */
+static int player_deadzone(int player)
 {
-    return s_pad ? SDL_GameControllerGetButton(s_pad, b) : 0;
+    int pct = g_input_map.p[player].deadzone_pct;
+    if (pct < 0) pct = 0; else if (pct > 100) pct = 100;
+    return pct * 32767 / 100;
 }
 
-static int axis_neg(SDL_GameControllerAxis a)
+static int bind_held(SDL_GameController *c, const GamepadBind *bind, int deadzone)
 {
-    if (!s_pad) return 0;
-    return SDL_GameControllerGetAxis(s_pad, a) < -GAMEPAD_STICK_DEADZONE;
-}
-
-static int axis_pos(SDL_GameControllerAxis a)
-{
-    if (!s_pad) return 0;
-    return SDL_GameControllerGetAxis(s_pad, a) >  GAMEPAD_STICK_DEADZONE;
-}
-
-cc_bool gamepad_button_pressed(ClownMDEmu_Button btn)
-{
-    if (!s_pad) return cc_false;
-
-    switch (btn) {
-        case CLOWNMDEMU_BUTTON_UP:
-            return (btn_held(SDL_CONTROLLER_BUTTON_DPAD_UP)
-                 || axis_neg(SDL_CONTROLLER_AXIS_LEFTY)) ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_DOWN:
-            return (btn_held(SDL_CONTROLLER_BUTTON_DPAD_DOWN)
-                 || axis_pos(SDL_CONTROLLER_AXIS_LEFTY)) ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_LEFT:
-            return (btn_held(SDL_CONTROLLER_BUTTON_DPAD_LEFT)
-                 || axis_neg(SDL_CONTROLLER_AXIS_LEFTX)) ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_RIGHT:
-            return (btn_held(SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
-                 || axis_pos(SDL_CONTROLLER_AXIS_LEFTX)) ? cc_true : cc_false;
-        /* Xbox A (south) and Y (north) both map to Genesis A so any face
-         * button jumps comfortably; B → B, X → C. */
-        case CLOWNMDEMU_BUTTON_A:
-            return (btn_held(SDL_CONTROLLER_BUTTON_A)
-                 || btn_held(SDL_CONTROLLER_BUTTON_Y)) ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_B:
-            return btn_held(SDL_CONTROLLER_BUTTON_B) ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_C:
-            return btn_held(SDL_CONTROLLER_BUTTON_X) ? cc_true : cc_false;
-        case CLOWNMDEMU_BUTTON_START:
-            return btn_held(SDL_CONTROLLER_BUTTON_START) ? cc_true : cc_false;
-        default:
-            return cc_false;
+    if (!c) return 0;
+    if (bind->kind == GP_BIND_BUTTON) {
+        return SDL_GameControllerGetButton(c, (SDL_GameControllerButton)bind->code) ? 1 : 0;
     }
+    if (bind->kind == GP_BIND_AXIS) {
+        int v = SDL_GameControllerGetAxis(c, (SDL_GameControllerAxis)bind->code);
+        return bind->axis_dir < 0 ? (v < -deadzone) : (v > deadzone);
+    }
+    return 0;
+}
+
+uint16_t gamepad_player_mask(int player)
+{
+    if (player < 0 || player > 1) return 0;
+    SDL_GameController *c = s_pad[player];
+    if (!c) return 0;
+
+    const PlayerInput *pi = &g_input_map.p[player];
+    const int dz = player_deadzone(player);
+    uint16_t m = 0;
+
+    for (int b = 0; b < GB_COUNT; b++) {
+        /* In 3-button mode the X/Y/Z/Mode binds are inert. */
+        if (pi->pad_type != PAD_6BUTTON && b >= GB_X) continue;
+        if (bind_held(c, &pi->pad[b], dz))
+            m |= input_button_bit((GenesisButton)b);
+    }
+
+    /* Always-on convenience: left analog stick -> d-pad directions. */
+    int lx = SDL_GameControllerGetAxis(c, SDL_CONTROLLER_AXIS_LEFTX);
+    int ly = SDL_GameControllerGetAxis(c, SDL_CONTROLLER_AXIS_LEFTY);
+    if (lx < -dz) m |= input_button_bit(GB_LEFT);
+    if (lx >  dz) m |= input_button_bit(GB_RIGHT);
+    if (ly < -dz) m |= input_button_bit(GB_UP);
+    if (ly >  dz) m |= input_button_bit(GB_DOWN);
+
+    return m;
 }
 
 int gamepad_turbo_held(void)
 {
-    return btn_held(SDL_CONTROLLER_BUTTON_BACK);
+    /* Player 1's Back/View button, 3-button mode only (6-button uses it for Mode). */
+    if (!s_pad[0] || g_input_map.p[0].pad_type == PAD_6BUTTON) return 0;
+    return SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_BACK);
 }
 
 int gamepad_consume_quicksave(void)

@@ -12,6 +12,10 @@
 int  audio_init(int psg_sample_rate);
 void audio_close(void);
 
+/* Master output volume, 0..100 (settings.ini / launcher). Speaker stream only;
+ * the WAV capture tap stays bit-exact. */
+void audio_set_master_volume(int pct);
+
 /*
  * Mix one video frame and push to the SDL ring buffer.
  *

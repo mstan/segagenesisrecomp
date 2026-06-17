@@ -11,7 +11,9 @@
  *                              SDL_INIT_GAMECONTROLLER added.
  *   gamepad_handle_event(ev) — call for every SDL_Event the runner polls.
  *                              Handles add/remove and shoulder-edge taps.
- *   gamepad_button_pressed(btn)   — held state for a Genesis button.
+ *   gamepad_player_mask(p)        — GPAD_* bit mask of held buttons for player
+ *                                   p (0/1), resolved through g_input_map's
+ *                                   per-player bindings + deadzone + pad type.
  *   gamepad_turbo_held()          — 1 while Back/View is held.
  *   gamepad_consume_quicksave()   — returns slot 1..9 once per LB press,
  *                                   0 otherwise. (Currently always 1.)
@@ -24,6 +26,7 @@
 #ifndef RUNNER_GAMEPAD_H
 #define RUNNER_GAMEPAD_H
 
+#include <stdint.h>
 #include "clowncommon.h"
 #if OWN_BACKEND
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
@@ -38,7 +41,11 @@ void gamepad_init(void);
 void gamepad_shutdown(void);
 void gamepad_handle_event(const SDL_Event *ev);
 
-cc_bool gamepad_button_pressed(ClownMDEmu_Button btn);
+/* GPAD_* (genesis_bus.h) bit mask of currently-held buttons for player 0/1,
+ * resolved via that player's bindings in g_input_map. Returns 0 when no
+ * controller is assigned to that player. */
+uint16_t gamepad_player_mask(int player);
+
 int     gamepad_turbo_held(void);
 int     gamepad_consume_quicksave(void);
 int     gamepad_consume_quickload(void);

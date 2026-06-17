@@ -75,6 +75,11 @@ const char *exe_relative(const char *filename)
 #include "game_spec.h"
 #include "game_layout.h"
 #include "gamepad.h"
+#include "input_map.h"
+#include "app_config.h"
+#if GENESIS_LAUNCHER
+#include "launcher_capi.h"
+#endif
 #if SONIC_REVERSE_DEBUG
 #include "reverse_debug.h"
 #endif
@@ -135,6 +140,11 @@ static int s_ws_bar_black  = 1;   /* pillarbox bars: black (default); GENESIS_WS
 
 static void widescreen_setup(void)
 {
+    /* Seed from persisted settings (launcher / settings.ini). The env vars
+     * below still override, so dev/CI can force widescreen without a config. */
+    if (g_app_config.widescreen) s_ws_user_on = 1;
+    if (g_app_config.widescreen_cells > 0) s_ws_user_cells = g_app_config.widescreen_cells;
+
     const char *env = getenv("GENESIS_WIDESCREEN");
     if (env && (env[0] == '1' || env[0] == 'y' || env[0] == 'Y' ||
                 env[0] == 't' || env[0] == 'T' ||
@@ -423,13 +433,13 @@ static cc_bool input_requested_cb(void *user_data,
                                    ClownMDEmu_Button button_id)
 {
     (void)user_data;
-    if (player_id != 0)
-        return cc_false;    /* only P1 */
+    if (player_id > 1)
+        return cc_false;    /* P1 + P2 */
 
     /* Scripted-script (.input file) override — fully takes priority
      * over SDL/TCP/legacy script when active. Held-button mask is
-     * already in Genesis bit order. */
-    if (input_script_active()) {
+     * already in Genesis bit order. P1-only (dev/regression tooling). */
+    if (player_id == 0 && input_script_active()) {
         uint8_t mask = input_script_held_mask();
         switch (button_id) {
             case CLOWNMDEMU_BUTTON_UP:    return (mask & 0x01) ? cc_true : cc_false;
@@ -444,8 +454,8 @@ static cc_bool input_requested_cb(void *user_data,
         }
     }
 
-    /* Scripted inputs override keyboard when active */
-    if (s_script_start_frame || s_script_right_frame) {
+    /* Scripted inputs override keyboard when active (P1 only) */
+    if (player_id == 0 && (s_script_start_frame || s_script_right_frame)) {
         uint32_t f = s_current_frame_for_input;
         if (button_id == CLOWNMDEMU_BUTTON_START) {
             /* Press Start for exactly 2 frames at the target frame */
@@ -469,9 +479,9 @@ static cc_bool input_requested_cb(void *user_data,
         }
     }
 
-    /* TCP debug server input override (set_input command).
+    /* TCP debug server input override (set_input command). P1 only.
      * Bit mapping matches Genesis: Up=0,Down=1,Left=2,Right=3,B=4,C=5,A=6,Start=7 */
-    if (s_tcp_input_active) {
+    if (player_id == 0 && s_tcp_input_active) {
         cc_bool result = cc_false;
         switch (button_id) {
             case CLOWNMDEMU_BUTTON_UP:    result = (s_tcp_input_keys & 0x01) ? cc_true : cc_false; break;
@@ -487,24 +497,25 @@ static cc_bool input_requested_cb(void *user_data,
         return result;
     }
 
-    /* Keyboard OR gamepad — either source can drive a button so both
-     * inputs work simultaneously (e.g., D-pad on the controller while a
-     * second player presses keys, or one user mixing the two). */
-    const Uint8 *keys = SDL_GetKeyboardState(NULL);
-    int kb = 0;
+    /* Live input via the rebindable per-player map (keyboard + that player's
+     * gamepad, device-gated; see input_map.c). Both players resolve here. The
+     * 8 standard buttons map 1:1 onto GenesisButton; 6-button extras (X/Y/Z/
+     * Mode) are not expressible through the ClownMDEmu_Button callback and are
+     * OR'd in directly by the own-backend pad push. */
+    uint16_t mask = input_current_mask((int)player_id);
+    GenesisButton gb;
     switch (button_id) {
-        case CLOWNMDEMU_BUTTON_UP:    kb = keys[SDL_SCANCODE_UP];     break;
-        case CLOWNMDEMU_BUTTON_DOWN:  kb = keys[SDL_SCANCODE_DOWN];   break;
-        case CLOWNMDEMU_BUTTON_LEFT:  kb = keys[SDL_SCANCODE_LEFT];   break;
-        case CLOWNMDEMU_BUTTON_RIGHT: kb = keys[SDL_SCANCODE_RIGHT];  break;
-        case CLOWNMDEMU_BUTTON_A:     kb = keys[SDL_SCANCODE_Z];      break;
-        case CLOWNMDEMU_BUTTON_B:     kb = keys[SDL_SCANCODE_X];      break;
-        case CLOWNMDEMU_BUTTON_C:     kb = keys[SDL_SCANCODE_C];      break;
-        case CLOWNMDEMU_BUTTON_START: kb = keys[SDL_SCANCODE_RETURN]; break;
-        default:                      break;
+        case CLOWNMDEMU_BUTTON_UP:    gb = GB_UP;    break;
+        case CLOWNMDEMU_BUTTON_DOWN:  gb = GB_DOWN;  break;
+        case CLOWNMDEMU_BUTTON_LEFT:  gb = GB_LEFT;  break;
+        case CLOWNMDEMU_BUTTON_RIGHT: gb = GB_RIGHT; break;
+        case CLOWNMDEMU_BUTTON_A:     gb = GB_A;     break;
+        case CLOWNMDEMU_BUTTON_B:     gb = GB_B;     break;
+        case CLOWNMDEMU_BUTTON_C:     gb = GB_C;     break;
+        case CLOWNMDEMU_BUTTON_START: gb = GB_START; break;
+        default:                      return cc_false;
     }
-    if (kb) return cc_true;
-    return gamepad_button_pressed(button_id);
+    return (mask & input_button_bit(gb)) ? cc_true : cc_false;
 }
 
 /*
@@ -1191,6 +1202,7 @@ static void rdb_park_drain(void)
 int main(int argc, char *argv[])
 {
     init_exe_dir(argv[0]);
+    input_map_init_defaults();   /* today's mapping; app_config_load may override */
 
     /* --- Parse arguments --- */
     const char *rom_path = NULL;
@@ -1207,6 +1219,11 @@ int main(int argc, char *argv[])
 #  define DEFAULT_DEBUG_PORT 4378
 #endif
     int debug_port_cli = 0;
+
+    /* Launcher gate: --launcher forces the GUI on (even if skip_launcher is
+     * set), --no-launcher / GENESIS_NO_LAUNCHER forces it off (headless). */
+    int force_launcher = 0;
+    int no_launcher    = 0;
 
     /* --- Paced-native spike (option 2) ---
      * --target-fps N artificially throttles the wall-clock frame rate.
@@ -1249,6 +1266,10 @@ int main(int argc, char *argv[])
             framelog_path = argv[++i];
         } else if (strcmp(argv[i], "--turbo") == 0) {
             start_turbo = 1;
+        } else if (strcmp(argv[i], "--launcher") == 0) {
+            force_launcher = 1;
+        } else if (strcmp(argv[i], "--no-launcher") == 0) {
+            no_launcher = 1;
         } else if (strcmp(argv[i], "--port") == 0 && i + 1 < argc) {
             debug_port_cli = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--target-fps") == 0 && i + 1 < argc) {
@@ -1306,6 +1327,97 @@ int main(int argc, char *argv[])
             rom_path = argv[i];
         }
     }
+
+    /* ---- Settings + pre-boot launcher ------------------------------------
+     * settings.ini (display/audio/launcher + controller bindings) and rom.cfg
+     * (last ROM) live next to the exe. Loaded unconditionally so the persisted
+     * knobs apply even when the launcher is skipped. */
+    char settings_ini[600], rom_cfg_path[600];
+    snprintf(settings_ini, sizeof settings_ini, "%s", exe_relative("settings.ini"));
+    /* rom.cfg is per-game (keyed by short_name) so multiple game exes sharing one
+     * output directory — the Sonic3AndKnucklesRecomp repo's 3 modes — each
+     * remember their own last ROM. settings.ini stays shared (one set of
+     * controls/video for the repo). */
+    {
+        char rc[80];
+        snprintf(rc, sizeof rc, "rom-%s.cfg",
+                 g_game_spec.short_name ? g_game_spec.short_name : "game");
+        snprintf(rom_cfg_path, sizeof rom_cfg_path, "%s", exe_relative(rc));
+    }
+    app_config_defaults();
+    app_config_load(settings_ini);   /* also seeds g_input_map controller bindings */
+
+    {
+        /* The GUI launcher only runs for a plain double-click: no positional
+         * ROM and no automation/headless flag (preserves every scripted dev /
+         * CI invocation in CLAUDE.md). */
+        int positional_rom = (rom_path != NULL);
+        int automation = (max_frames || hash_frames || input_script_path ||
+                          snd_dump_frame || snd_dump_vint || target_fps_cli != 0.0 ||
+                          mem_write_log_spec || wav_path || s_script_start_frame ||
+                          s_script_right_frame || debug_port_cli || start_turbo ||
+                          no_launcher || getenv("GENESIS_NO_LAUNCHER") != NULL);
+#if GENESIS_LAUNCHER
+        if (!positional_rom && !automation) {
+            static char cached_rom[600];
+            int booted_cached = 0;
+            if (g_app_config.skip_launcher && !force_launcher &&
+                rom_cfg_read(rom_cfg_path, cached_rom, sizeof cached_rom)) {
+                FILE *probe = fopen(cached_rom, "rb");
+                if (probe) { fclose(probe); rom_path = cached_rom; booted_cached = 1; }
+            }
+            if (!booted_cached) {
+                char initial_rom[600] = "";
+                rom_cfg_read(rom_cfg_path, initial_rom, sizeof initial_rom);
+
+                GenesisLauncherCSettings ls;
+                ls.window_scale     = g_app_config.window_scale;
+                ls.fullscreen       = g_app_config.fullscreen;
+                ls.linear_filter    = g_app_config.linear_filter;
+                ls.widescreen       = g_app_config.widescreen;
+                ls.widescreen_cells = g_app_config.widescreen_cells;
+                ls.volume           = g_app_config.volume;
+                ls.skip_launcher    = g_app_config.skip_launcher;
+
+                GenesisLauncherCGameInfo gi;
+                memset(&gi, 0, sizeof gi);
+                gi.name                 = g_game_spec.display_name;
+                gi.short_name           = g_game_spec.short_name;
+                gi.region               = "NTSC-U (USA)";
+                gi.expected_crc         = g_game_spec.expected_rom_crc32;
+                gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
+                gi.expected_size        = g_game_spec.expected_rom_size;
+                gi.uses_sram            = g_game_spec.sram_start != 0;
+                gi.widescreen_supported = g_game_layout.ws_capable;
+
+                char assets_dir[600], ltitle[200];
+                snprintf(assets_dir, sizeof assets_dir, "%slauncher", s_exe_dir);
+                snprintf(ltitle, sizeof ltitle, "%s — Sega Genesis Launcher",
+                         g_game_spec.display_name ? g_game_spec.display_name : "Genesis");
+                static char picked[600] = "";
+                int lr = genesis_launcher_run_window(ltitle, &ls, &gi, assets_dir,
+                                                     initial_rom, picked, sizeof picked);
+                if (lr == 1) return 0;          /* user closed the launcher */
+                if (lr == 0) {                  /* PLAY */
+                    if (picked[0]) rom_path = picked;
+                    g_app_config.window_scale     = ls.window_scale;
+                    g_app_config.fullscreen       = ls.fullscreen;
+                    g_app_config.linear_filter    = ls.linear_filter;
+                    g_app_config.widescreen       = ls.widescreen;
+                    g_app_config.widescreen_cells = ls.widescreen_cells;
+                    g_app_config.volume           = ls.volume;
+                    g_app_config.skip_launcher    = ls.skip_launcher;
+                    app_config_save(settings_ini);    /* persists g_input_map too */
+                    if (rom_path) rom_cfg_write(rom_cfg_path, rom_path);
+                }
+                /* lr == 2 (unavailable) -> fall through to the legacy picker. */
+            }
+        }
+#else
+        (void)positional_rom; (void)automation; (void)force_launcher;
+#endif
+    }
+
     if (!rom_path) {
 #ifdef _WIN32
         static char picked_path[512] = {0};
@@ -1419,22 +1531,29 @@ int main(int argc, char *argv[])
      * logical size (see update_render_logical_size) makes the content fill it —
      * gameplay full-bleed, menus pillarboxed inside. ws_armed() requires
      * widescreen_setup() to have run, so that call is hoisted above this. */
-    int win_w = 640, win_h = 448;
+    int win_scale = g_app_config.window_scale;
+    if (win_scale < 1) win_scale = 1; else if (win_scale > 8) win_scale = 8;
+    int win_w = 320 * win_scale, win_h = 224 * win_scale;   /* scale 2 = 640x448 (4:3) */
     if (ws_armed()) {
-        win_w = ws_canvas_w() * 2;          /* e.g. 448 * 2 = 896 */
-        win_h = win_w * WS_ASPECT_H / WS_ASPECT_W;   /* 896 * 9/16 = 504 -> 16:9 */
+        win_w = ws_canvas_w() * win_scale;
+        win_h = win_w * WS_ASPECT_H / WS_ASPECT_W;   /* true 16:9 */
     }
+    Uint32 win_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+    if (g_app_config.fullscreen) win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     SDL_Window *window = SDL_CreateWindow(
         window_title,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         win_w, win_h,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+        win_flags);
     if (!window) {
         fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
         return 1;
     }
     fprintf(stderr, "[VIDEO] window %dx%d (%s)\n", win_w, win_h,
             ws_armed() ? "16:9 widescreen" : "4:3");
+
+    /* Texture scaling filter (settings.ini / launcher): nearest vs bilinear. */
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, g_app_config.linear_filter ? "1" : "0");
 
     /* PRESENTVSYNC aligns each present to the display's vblank, which kills
      * the scroll tearing visible without it (notably on macOS/Metal). The
@@ -1466,6 +1585,7 @@ int main(int argc, char *argv[])
     /* Output at PSG rate (~223721 Hz NTSC) — matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
     audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
+    audio_set_master_volume(g_app_config.volume);   /* settings.ini / launcher */
 
     /* --- clownmdemu init (debug/oracle backend only) ---
      * The own backend uses machine_init() below and links ZERO clownmdemu
@@ -1844,23 +1964,35 @@ int main(int argc, char *argv[])
           glue_run_game_frame();   /* prepares game fiber state */
 #if OWN_BACKEND
           {
-              /* Own-backend input: build the P1 pad mask from the same
+              /* Own-backend input: build each port's pad mask from the same
                * sources clownmdemu queries (keyboard / gamepad / .input
                * script / TCP) via input_requested_cb, and hand it to our bus
                * before running the frame. The recompiled ReadJoypads reads it
-               * back through the controller protocol in gbus pad_read(). */
+               * back through the controller protocol in gbus pad_read().
+               *
+               * The 8 standard buttons route through input_requested_cb so the
+               * P1 dev overrides (.input / TCP / scripted) still drive the game;
+               * 6-button extras (X/Y/Z/Mode) — which the 8-button callback can't
+               * express — are OR'd straight from the per-player input map. */
               static const ClownMDEmu_Button own_btns[8] = {
                   CLOWNMDEMU_BUTTON_UP,   CLOWNMDEMU_BUTTON_DOWN,
                   CLOWNMDEMU_BUTTON_LEFT, CLOWNMDEMU_BUTTON_RIGHT,
                   CLOWNMDEMU_BUTTON_B,    CLOWNMDEMU_BUTTON_C,
                   CLOWNMDEMU_BUTTON_A,    CLOWNMDEMU_BUTTON_START };
-              static const uint8_t own_bits[8] = {
+              static const uint16_t own_bits[8] = {
                   GPAD_UP, GPAD_DOWN, GPAD_LEFT, GPAD_RIGHT,
                   GPAD_B,  GPAD_C,    GPAD_A,    GPAD_START };
-              uint8_t pad_mask = 0;
-              for (int b = 0; b < 8; b++)
-                  if (input_requested_cb(NULL, 0, own_btns[b])) pad_mask |= own_bits[b];
-              machine_set_pad(0, pad_mask);
+              for (int port = 0; port < 2; port++) {
+                  machine_set_pad_type(port, g_input_map.p[port].pad_type);
+                  uint16_t pad_mask = 0;
+                  for (int b = 0; b < 8; b++)
+                      if (input_requested_cb(NULL, (cc_u8f)port, own_btns[b]))
+                          pad_mask |= own_bits[b];
+                  if (g_input_map.p[port].pad_type == PAD_6BUTTON)
+                      pad_mask |= input_current_mask(port) &
+                                  (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
+                  machine_set_pad(port, pad_mask);
+              }
           }
           { extern unsigned long g_snd_vint;       /* [CHIP-TRACE] cross-backend sync stamp */
             g_snd_vint = (unsigned long)m68k_read32(0xFFFE0C); }

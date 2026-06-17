@@ -114,12 +114,51 @@ static int sram_hit(const GenesisBus *b, uint32_t a)
 uint8_t *gbus_sram_buffer(GenesisBus *b)        { return b->sram; }
 uint32_t gbus_sram_size(const GenesisBus *b)    { return b->sram_present ? b->sram_size : 0u; }
 
-/* ---- Controllers: standard 3-button TH-multiplexed protocol --------------- */
+/* ---- Controllers: 3-button (default) + 6-button TH-multiplexed protocol ----
+ *
+ * 3-button: TH=1 -> ?1CBRLDU, TH=0 -> ?0SA00DU (unchanged from the original).
+ *
+ * 6-button: the pad maintains a counter incremented on each TH 1->0 edge (see
+ * io_write), reset between read bursts (machine_set_pad zeroes it per frame, the
+ * ~1.5ms hardware timeout). After the 3rd falling edge the controller reveals
+ * the extra buttons:
+ *   c<3, TH=1 -> ?1CBRLDU      c<3,  TH=0 -> ?0SA00DU      (as 3-button)
+ *   c==3,TH=0 -> ?0SA0000      (low nibble 0 = "6-button present" signature)
+ *   c>=3,TH=1 -> ?1CB MXYZ     (Mode, X, Y, Z in the low nibble)
+ *   c>=4,TH=0 -> ?0SA1111      (sequence terminator)
+ */
 static uint8_t pad_read(GenesisBus *b, int port)
 {
-    uint8_t p  = b->pad[port];                 /* GPAD_* bits, 1 = pressed     */
-    uint8_t th = b->io_data[port] & 0x40;      /* TH select line               */
+    uint16_t p  = b->pad[port];                /* GPAD_* bits, 1 = pressed     */
+    uint8_t  th = b->io_data[port] & 0x40;     /* TH select line               */
     /* Buttons are active-low (0 = pressed). */
+
+    if (b->pad_type[port] == 1) {              /* 6-button extended protocol   */
+        uint8_t c = b->pad_th_count[port];
+        if (th) {                              /* TH = 1 */
+            if (c >= 3)                        /* ?1CB MXYZ (extras)           */
+                return (uint8_t)(0x40
+                    | ((p & GPAD_C)    ? 0 : 0x20) | ((p & GPAD_B) ? 0 : 0x10)
+                    | ((p & GPAD_MODE) ? 0 : 0x08) | ((p & GPAD_X) ? 0 : 0x04)
+                    | ((p & GPAD_Y)    ? 0 : 0x02) | ((p & GPAD_Z) ? 0 : 0x01));
+            return (uint8_t)(0x40              /* ?1CBRLDU                     */
+                | ((p & GPAD_C)     ? 0 : 0x20) | ((p & GPAD_B)    ? 0 : 0x10)
+                | ((p & GPAD_RIGHT) ? 0 : 0x08) | ((p & GPAD_LEFT) ? 0 : 0x04)
+                | ((p & GPAD_DOWN)  ? 0 : 0x02) | ((p & GPAD_UP)   ? 0 : 0x01));
+        }
+        /* TH = 0 */
+        if (c >= 4)                            /* ?0SA1111 (terminator)        */
+            return (uint8_t)(0x0F
+                | ((p & GPAD_START) ? 0 : 0x20) | ((p & GPAD_A) ? 0 : 0x10));
+        if (c == 3)                            /* ?0SA0000 (signature)         */
+            return (uint8_t)(0x00
+                | ((p & GPAD_START) ? 0 : 0x20) | ((p & GPAD_A) ? 0 : 0x10));
+        return (uint8_t)(0x00                  /* ?0SA00DU                     */
+            | ((p & GPAD_START) ? 0 : 0x20) | ((p & GPAD_A) ? 0 : 0x10)
+            | ((p & GPAD_DOWN)  ? 0 : 0x02) | ((p & GPAD_UP) ? 0 : 0x01));
+    }
+
+    /* 3-button (default). */
     if (th) {                                  /* TH=1: --CBRLDU              */
         return (uint8_t)(0x40
             | ((p & GPAD_C)     ? 0 : 0x20) | ((p & GPAD_B)    ? 0 : 0x10)
@@ -146,11 +185,24 @@ static uint16_t io_read(GenesisBus *b, uint32_t a)
     }
 }
 
+/* Advance the 6-button TH edge counter on a 1->0 transition of the port's TH
+ * line. No-op for 3-button pads. The counter is zeroed once per frame by
+ * machine_set_pad (modeling the ~1.5ms read-burst timeout). */
+static void pad_io_tick(GenesisBus *b, int port, uint8_t new_data)
+{
+    if (b->pad_type[port] != 1) { b->pad_th_prev[port] = new_data & 0x40; return; }
+    uint8_t th = new_data & 0x40;
+    if (b->pad_th_prev[port] && !th) {           /* falling edge 1 -> 0 */
+        if (b->pad_th_count[port] < 0xFF) b->pad_th_count[port]++;
+    }
+    b->pad_th_prev[port] = th;
+}
+
 static void io_write(GenesisBus *b, uint32_t a, uint8_t v)
 {
     switch (a & 0x1E) {
-        case 0x02: b->io_data[0] = v; break;
-        case 0x04: b->io_data[1] = v; break;
+        case 0x02: pad_io_tick(b, 0, v); b->io_data[0] = v; break;
+        case 0x04: pad_io_tick(b, 1, v); b->io_data[1] = v; break;
         case 0x06: b->io_data[2] = v; break;
         case 0x08: b->io_ctrl[0] = v; break;
         case 0x0A: b->io_ctrl[1] = v; break;

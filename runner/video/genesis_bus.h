@@ -14,10 +14,14 @@
 #include <stdint.h>
 #include "genesis_vdp.h"
 
-/* 3-button pad button bits (1 = pressed) in our internal representation. */
+/* Pad button bits (1 = pressed) in our internal representation. Low byte is the
+ * 3-button set; the high nibble is the 6-button extension (X/Y/Z/Mode), surfaced
+ * by pad_read() only when the port is configured PAD_6BUTTON. MUST stay in sync
+ * with k_btn_bit[] in input_map.c. */
 enum {
     GPAD_UP = 0x01, GPAD_DOWN = 0x02, GPAD_LEFT = 0x04, GPAD_RIGHT = 0x08,
-    GPAD_B  = 0x10, GPAD_C    = 0x20, GPAD_A    = 0x40, GPAD_START = 0x80
+    GPAD_B  = 0x10, GPAD_C    = 0x20, GPAD_A    = 0x40, GPAD_START = 0x80,
+    GPAD_X  = 0x100, GPAD_Y   = 0x200, GPAD_Z   = 0x400, GPAD_MODE  = 0x800
 };
 
 typedef struct GenesisBus {
@@ -35,7 +39,10 @@ typedef struct GenesisBus {
                                          * restarts at $0000 post-upload)     */
 
     /* Controllers / I-O. */
-    uint8_t  pad[2];                    /* live button state (GPAD_* bits)    */
+    uint16_t pad[2];                    /* live button state (GPAD_* bits, 12) */
+    uint8_t  pad_type[2];               /* 0 = 3-button, 1 = 6-button          */
+    uint8_t  pad_th_count[2];           /* 6-button TH 1->0 edge counter       */
+    uint8_t  pad_th_prev[2];            /* previous TH level (edge detect)     */
     uint8_t  io_data[3];                /* last value written to data ports   */
     uint8_t  io_ctrl[3];                /* TH direction/control per port      */
     uint8_t  version;                   /* $A10000 region/version register    */

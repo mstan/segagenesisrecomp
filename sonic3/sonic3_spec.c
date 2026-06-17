@@ -230,10 +230,10 @@ const GameSpec g_game_spec = {
     .display_name           = "Sonic 3",
     .short_name             = "Sonic3",
 
-    /* Sonic 3 USA standalone — CRC check skipped for now (runner CRC calc vs
-     * file byteswap unverified); ROM identity is gated by size + external
-     * hash check. Expected CRC32 of the file is 0x9BC192CE. */
-    .expected_rom_crc32     = 0u,
+    /* Sonic 3 USA standalone. The launcher computes CRC32 over the RAW ROM file
+     * (No-Intro CRC = 0x9BC192CE) and shows a MATCH badge — this is independent
+     * of the runner's internal byteswapped-buffer CRC path. */
+    .expected_rom_crc32     = 0x9BC192CEu,
     .expected_rom_size      = 0x200000u,   /* 2 MB standalone cart */
 
     .call_entry_point       = s3_call_entry_point,

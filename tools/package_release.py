@@ -50,6 +50,10 @@ def main():
     ap.add_argument("--readme", required=True, help="README for the zip")
     ap.add_argument("--extra", nargs="*", default=[],
                     help="additional allowlisted files (e.g. SDL2.dll)")
+    ap.add_argument("--asset-dir", nargs="*", default=[],
+                    help="directories staged recursively into the zip preserving "
+                         "their top folder name (e.g. build/Release/launcher -> "
+                         "launcher/...). Used for the pre-boot launcher UI assets.")
     args = ap.parse_args()
 
     allow = [args.exe, args.license, args.notices, args.readme] + list(args.extra)
@@ -58,6 +62,25 @@ def main():
     missing = [p for p in allow if not os.path.isfile(p)]
     if missing:
         fail("missing required files:\n  " + "\n  ".join(missing))
+
+    # 1b) gather asset-dir files as (abspath, arcname), preserving each dir's own
+    #     top folder name -> launcher/launcher.rml, launcher/fonts/*, launcher/img/*
+    asset_files = []  # (src_path, arcname)
+    for d in args.asset_dir:
+        if not os.path.isdir(d):
+            fail("missing --asset-dir: " + d)
+        d = os.path.abspath(d.rstrip("/\\"))
+        top = os.path.basename(d)
+        for root, _dirs, files in os.walk(d):
+            for fn in files:
+                src = os.path.join(root, fn)
+                rel = os.path.relpath(src, d).replace(os.sep, "/")
+                asset_files.append((src, top + "/" + rel))
+    # asset files face the same forbidden-type screen as everything else
+    bad_assets = [a for (s, a) in asset_files if is_forbidden(a)]
+    if bad_assets:
+        fail("forbidden file under --asset-dir (ROM/dump/junk?):\n  "
+             + "\n  ".join(bad_assets))
 
     # 2) no allowlisted file may itself be a forbidden type (defensive)
     bad = [p for p in allow if is_forbidden(p)]
@@ -99,6 +122,8 @@ def main():
         for p in allow:
             arc = "LICENSE" if p == args.license else os.path.basename(p)
             z.write(p, arc)
+        for src, arc in asset_files:
+            z.write(src, arc)
 
     # 7) final audit of the produced zip; delete + fail if anything leaked
     with zipfile.ZipFile(args.out) as z:

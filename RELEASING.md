@@ -3,7 +3,9 @@
 **Release (native) binaries are AGPL-free.** They run the clean-room own
 backend: recompiled 68K, own VDP/bus/machine scheduler, ymfm FM (BSD-3),
 superzazu Z80 (MIT), clean-room SN76489, SDL2 (zlib), clowncommon helpers
-(ISC, vendored). They link **zero** clownmdemu/clown68000/clownz80 objects
+(ISC, vendored). The native target also bundles the pre-boot launcher UI —
+RmlUi (MIT), FreeType (FTL), stb_image (public domain), Lato font (OFL-1.1),
+all permissive. They link **zero** clownmdemu/clown68000/clownz80 objects
 AND compile **zero** AGPL headers — the native targets build with no
 `clownmdemu-core` include paths at all (enforced in each game repo's
 CMakeLists; any reintroduced AGPL include is a compile error).
@@ -29,8 +31,10 @@ third-party notices — NOT under AGPL.
 2. **License.** The project license (`LICENSE.md`, PolyForm Noncommercial
    1.0.0) is inside the zip as `LICENSE`.
 3. **Attribution.** `THIRD-PARTY-LICENSES.md` is in the zip (ymfm BSD-3,
-   superzazu MIT, clowncommon ISC, SDL2 zlib — full texts ship with the
-   vendored components).
+   superzazu MIT, clowncommon ISC, SDL2 zlib, plus the launcher deps —
+   RmlUi MIT, FreeType FTL, stb_image public-domain, Lato OFL-1.1 — full
+   texts ship with the vendored components). The `launcher/` assets folder
+   (launcher.rml + fonts/ + img/) ships next to the exe so the GUI can load.
 4. **No ROM, no dumps, no junk.** The zip contains **no** `*.bin/*.gen/*.smd`
    (ROM), `ramdump*`, `*_save_*.bin` / `savestate*` / `*.srm` (saves),
    `*.log`, or `*.map`. Users bring their own ROM.

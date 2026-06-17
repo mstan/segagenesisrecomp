@@ -13,6 +13,15 @@
 static int s_psg_vol_div = 8;
 void audio_set_psg_vol_div(int d) { if (d >= 1 && d <= 64) s_psg_vol_div = d; }
 
+/* Master output volume (launcher / settings.ini). 0..256 fixed-point gain
+ * applied to the SPEAKER stream only — the WAV capture tap stays bit-exact. */
+static int s_master_vol = 256;
+void audio_set_master_volume(int pct)
+{
+    if (pct < 0) pct = 0; else if (pct > 100) pct = 100;
+    s_master_vol = pct * 256 / 100;
+}
+
 static SDL_AudioDeviceID s_dev = 0;
 
 /* Audio stats */
@@ -220,6 +229,13 @@ void audio_flush(uint32_t wall_frame, int realtime,
         if (out_n < 1) out_n = 1;
     }
     MIX_INTO(out_n);
+
+    /* Master volume — speaker output only (the WAV tap above is untouched, so
+     * paired captures stay bit-deterministic regardless of this setting). */
+    if (s_master_vol != 256) {
+        for (size_t i = 0; i < out_n * 2; i++)
+            s_out[i] = (int16_t)((int32_t)s_out[i] * s_master_vol / 256);
+    }
 
     /* Hard cap on queue depth — safety net only now that the servo holds
      * depth near target. If the queue is somehow above ~8 frames worth,

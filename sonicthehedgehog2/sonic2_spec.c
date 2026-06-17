@@ -236,8 +236,9 @@ const GameSpec g_game_spec = {
     .display_name           = "Sonic the Hedgehog 2",
     .short_name             = "Sonic2",
 
-    /* JUE REV01 — verified against s2disasm reference build */
-    .expected_rom_crc32     = 0u,           /* skip CRC verification (set when measured) */
+    /* JUE REV01 (No-Intro "Sonic The Hedgehog 2 (World) (Rev A)"). The launcher
+     * verifies this CRC32 of the raw ROM file and shows a MATCH badge. */
+    .expected_rom_crc32     = 0x7B905383u,
     .expected_rom_size      = 0x100000u,    /* 1 MB cart */
 
     .call_entry_point       = s2_call_entry_point,

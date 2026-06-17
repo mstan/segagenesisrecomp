@@ -248,9 +248,21 @@ int machine_load_state(FILE *f)
     return 1;
 }
 
-void machine_set_pad(int port, uint8_t buttons)
+void machine_set_pad(int port, uint16_t buttons)
 {
-    if (port >= 0 && port < 2) g_machine.bus.pad[port] = buttons;
+    if (port >= 0 && port < 2) {
+        g_machine.bus.pad[port] = buttons;
+        /* New read burst this frame: clear the 6-button TH edge counter so the
+         * controller protocol restarts from the 3-button reads (models the
+         * ~1.5ms hardware timeout between bursts). */
+        g_machine.bus.pad_th_count[port] = 0;
+        g_machine.bus.pad_th_prev[port]  = g_machine.bus.io_data[port] & 0x40;
+    }
+}
+
+void machine_set_pad_type(int port, int six_button)
+{
+    if (port >= 0 && port < 2) g_machine.bus.pad_type[port] = six_button ? 1 : 0;
 }
 
 /* NTSC raster timing. */

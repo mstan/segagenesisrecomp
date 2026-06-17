@@ -33,7 +33,8 @@ extern GenesisMachine g_machine;
 typedef void (*GenesisScanlineSink)(void *user, int line, const uint32_t *argb, int width);
 
 void machine_init(void);
-void machine_set_pad(int port, uint8_t buttons);   /* GPAD_* bits             */
+void machine_set_pad(int port, uint16_t buttons);  /* GPAD_* bits (12)         */
+void machine_set_pad_type(int port, int six_button); /* 0 = 3-btn, 1 = 6-btn  */
 
 /* Own-backend save states: snapshot/restore the whole machine (+ hidden Z80
  * ext bits), re-wiring internal pointers and derived caches on load. Returns
