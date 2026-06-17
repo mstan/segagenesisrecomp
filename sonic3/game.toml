@@ -52,13 +52,112 @@ level_modes    = [0x08, 0x0C]
 # (sonic3k.macros.asm) gate every widening on that word.
 [widescreen]
 capable          = true
-extra_ram_addr   = 0xFFCFCC      # Widescreen_extra (carved from the ds.b $14 unused block after Object_RAM_end)
 max_extra_cells  = 8             # 8 cells (64px)/side -> 448px (16:9)
 eligible_modes   = [0x08, 0x0C]  # EXACT: GM_Level (GameModesArray $08/$0C both -> Level)
-level_started_addr = 0xFFF711    # Level_started_flag (byte): require != 0 to widen
-two_player_addr    = 0xFFFFD8    # Competition_mode (S3-alone map): require == 0 to widen
-redraw_flag_addr   = 0xFFCFCE    # Widescreen_redraw (byte): engine writes 1 when 16:9 turns on
+level_started_addr = 0xFFF711    # Level_started_flag (byte): require != 0 to widen (read-only gate)
+two_player_addr    = 0xFFFFD8    # Competition_mode (S3-alone map): require == 0 to widen (read-only gate)
+# NO extra_ram_addr / redraw_flag_addr: those were the LEGACY disasm carved bytes
+# (Widescreen_extra/Widescreen_redraw in the ds.b $14 block) which the CANONICAL ROM
+# does NOT read. Content widening = the [[widescreen_site]] injection below (g_ws_margin).
+# Margin-fill-on-arm (if S3 needs it like S2) is handled separately — TBD after baseline.
 
+# ---------------------------------------------------------------------------
+# [[widescreen_site]] — PSX-style post-patch injection (canonical s3_canonical.lst).
+# Render_Sprites culls + sprite-X masks + DrawTilesAsYouMove tile row/columns +
+# Render_Rings window. Addresses verified against s3_canonical.lst.
+# ---------------------------------------------------------------------------
+
+# Sprite-X 10-bit mask (Render_Sprites / sprite writer): andi.w #$1FF,d2 -> #$3FF
+[[widescreen_site]]
+addr = 0x195EE
+kind = "mask10"
+[[widescreen_site]]
+addr = 0x19628
+kind = "mask10"
+[[widescreen_site]]
+addr = 0x19678
+kind = "mask10"
+[[widescreen_site]]
+addr = 0x196C0
+kind = "mask10"
+
+# Render_Sprites object cull (d3, reloaded between edges): left bmi (cull_left),
+# right cmpi #320 (subreg). 3 blocks.
+[[widescreen_site]]
+addr = 0x193F0
+kind = "cull_left"
+reg  = 3
+[[widescreen_site]]
+addr = 0x193F6
+kind = "subreg"
+reg  = 3
+[[widescreen_site]]
+addr = 0x194CE
+kind = "cull_left"
+reg  = 3
+[[widescreen_site]]
+addr = 0x194D6
+kind = "subreg"
+reg  = 3
+[[widescreen_site]]
+addr = 0x19510
+kind = "cull_left"
+reg  = 3
+[[widescreen_site]]
+addr = 0x19518
+kind = "subreg"
+reg  = 3
+
+# Tile-load columns (Draw_TileColumn / Draw_TileColumn2, on d0). LEFT subreg at the
+# tst.b d2 (after the beq) — applies to both paths but the RIGHT path reloads d0
+# (move.w d3,d0), so it nets to the LEFT column only. RIGHT addreg BEFORE the
+# addi #$150,d0 — this is RIGHT-PATH-ONLY because the `bpl` (moved-left) branched
+# past it to loc_*. (Injecting at the post-addi merge label instead would cancel the
+# LEFT subreg on the left path -> stale left-scroll tiles.)
+[[widescreen_site]]
+addr = 0x397F2
+kind = "subreg"
+reg  = 0
+[[widescreen_site]]
+addr = 0x397FA
+kind = "addreg"
+reg  = 0
+[[widescreen_site]]
+addr = 0x39834
+kind = "subreg"
+reg  = 0
+[[widescreen_site]]
+addr = 0x3983C
+kind = "addreg"
+reg  = 0
+
+# FG tile-row (DrawTilesAsYouMove @ 39C3C = moveq #$15,d6 right after move.w
+# Camera_X,d1): TWO transforms at one addr — subreg d1 (X-start, left) + addimm d6
+# (count = 21 + margin/8, both sides). Draw_TileRow uses the caller's d6, so this
+# widens ONLY the FG row (the BG twin moveq @ 39C60 is untouched).
+[[widescreen_site]]
+addr = 0x39C3C
+kind = "subreg"
+reg  = 1
+[[widescreen_site]]
+addr  = 0x39C3C
+kind  = "addimm"
+reg   = 6
+shift = 3
+
+# Render_Rings visible-window cull: LEFT subreg d4 BEFORE subq #8,d4 (keeps the
+# subq's flags so bhi is unchanged); RIGHT addreg d4 scale=2 BEFORE addi #$150,d4.
+[[widescreen_site]]
+addr = 0xF682
+kind = "subreg"
+reg  = 4
+[[widescreen_site]]
+addr  = 0xF6AA
+kind  = "addreg"
+reg   = 4
+scale = 2
+
+# ---------------------------------------------------------------------------
 # Discovery comes entirely from the byte-perfect s3.lst label set + heuristic
 # finder. extra/blacklist are IRREDUCIBLE residual only (Principle 16); a
 # dispatch_misses.log entry after a run is a coverage gap to root-cause in the

@@ -9,8 +9,8 @@
 #   [game]
 #   discovery_files = ["sonic2.disasm_jumptables.toml"]
 
-# Tables found: 407 pcrel16, 2 abs, 5 bra-trampoline
-# Unique targets: 1922
+# Tables found: 383 pcrel16, 2 abs, 5 bra-trampoline
+# Unique targets: 1823
 
 [[jump_table]]
 start  = 0x000468
@@ -199,12 +199,6 @@ stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x00AD82
-end    = 0x00AD88
-stride = 2
-format = "pcrel16"   # current_offset_table (3 entries)
-
-[[jump_table]]
 start  = 0x00C296
 end    = 0x00C2B8
 stride = 2
@@ -217,2240 +211,2102 @@ stride = 2
 format = "pcrel16"   # .current_offset_table (17 entries)
 
 [[jump_table]]
-start  = 0x00E6BA
-end    = 0x00E6DC
+start  = 0x00E636
+end    = 0x00E658
 stride = 2
 format = "pcrel16"   # .current_offset_table (17 entries)
 
 [[jump_table]]
-start  = 0x00E6F2
-end    = 0x00E6FA
+start  = 0x00E66E
+end    = 0x00E676
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x00E7EC
-end    = 0x00E7F6
+start  = 0x00E768
+end    = 0x00E772
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x00E8E0
-end    = 0x00E8E6
+start  = 0x00E85C
+end    = 0x00E862
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x00E8E6
-end    = 0x00E8EE
+start  = 0x00E862
+end    = 0x00E86A
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x00EA20
-end    = 0x00EA26
+start  = 0x00E99C
+end    = 0x00E9A2
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x00EC80
-end    = 0x00EC92
+start  = 0x00EBFC
+end    = 0x00EC0E
 stride = 2
 format = "pcrel16"   # current_offset_table (9 entries)
 
 [[jump_table]]
-start  = 0x00F0F8
-end    = 0x00F100
+start  = 0x00F074
+end    = 0x00F07C
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x00F1D8
-end    = 0x00F1E0
+start  = 0x00F154
+end    = 0x00F15C
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x00F30A
-end    = 0x00F312
+start  = 0x00F286
+end    = 0x00F28E
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x00F412
-end    = 0x00F41A
+start  = 0x00F38E
+end    = 0x00F396
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x00F4D8
-end    = 0x00F4E2
+start  = 0x00F454
+end    = 0x00F45E
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x00F56A
-end    = 0x00F572
+start  = 0x00F4E6
+end    = 0x00F4EE
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x00F638
-end    = 0x00F642
+start  = 0x00F5B4
+end    = 0x00F5BE
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x00F710
-end    = 0x00F718
+start  = 0x00F68C
+end    = 0x00F694
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x00FD40
-end    = 0x00FD4E
+start  = 0x00FCBC
+end    = 0x00FCCA
 stride = 2
 format = "pcrel16"   # current_offset_table (7 entries)
 
 [[jump_table]]
-start  = 0x0103A2
-end    = 0x0103A8
+start  = 0x01031E
+end    = 0x010324
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x01053E
-end    = 0x010548
+start  = 0x0104BA
+end    = 0x0104C4
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x0106D0
-end    = 0x0106EC
+start  = 0x01064C
+end    = 0x010668
 stride = 2
 format = "pcrel16"   # current_offset_table (14 entries)
 
 [[jump_table]]
-start  = 0x01094E
-end    = 0x010954
+start  = 0x0108CA
+end    = 0x0108D0
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x010A9A
-end    = 0x010AA0
+start  = 0x010A16
+end    = 0x010A1C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x011266
-end    = 0x01126A
+start  = 0x0111E2
+end    = 0x0111E6
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x011382
-end    = 0x011386
+start  = 0x0112FE
+end    = 0x011302
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0113EE
-end    = 0x0113F2
+start  = 0x0115D2
+end    = 0x0115D6
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x011656
-end    = 0x01165A
+start  = 0x0116A8
+end    = 0x0116AC
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x01172C
-end    = 0x011730
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x01191E
-end    = 0x011952
+start  = 0x01189A
+end    = 0x0118CE
 stride = 2
 format = "pcrel16"   # current_offset_table (26 entries)
 
 [[jump_table]]
-start  = 0x011E58
-end    = 0x011E5C
+start  = 0x011DD4
+end    = 0x011DD8
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x011FD6
-end    = 0x011FE0
+start  = 0x011F52
+end    = 0x011F5C
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x01210A
-end    = 0x012114
+start  = 0x012086
+end    = 0x012090
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x012292
-end    = 0x01229A
+start  = 0x01220E
+end    = 0x012216
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x012356
-end    = 0x01235C
+start  = 0x0122D2
+end    = 0x0122D8
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x012678
-end    = 0x01267E
+start  = 0x0125F4
+end    = 0x0125FA
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x012702
-end    = 0x01270C
+start  = 0x01267E
+end    = 0x012688
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x0128E6
-end    = 0x0128EC
+start  = 0x012862
+end    = 0x012868
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0129A8
-end    = 0x0129BC
+start  = 0x012924
+end    = 0x012938
 stride = 2
 format = "pcrel16"   # current_offset_table (10 entries)
 
 [[jump_table]]
-start  = 0x012EAA
-end    = 0x012EBC
+start  = 0x012E26
+end    = 0x012E38
 stride = 2
 format = "pcrel16"   # current_offset_table (9 entries)
 
 [[jump_table]]
-start  = 0x012EFA
-end    = 0x012F0E
+start  = 0x012E76
+end    = 0x012E8A
 stride = 2
 format = "pcrel16"   # current_offset_table (10 entries)
 
 [[jump_table]]
-start  = 0x0130F8
-end    = 0x013102
+start  = 0x013074
+end    = 0x01307E
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x013166
-end    = 0x01316A
+start  = 0x0130E2
+end    = 0x0130E6
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0131A4
-end    = 0x0131A8
+start  = 0x013120
+end    = 0x013124
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0131DC
-end    = 0x0131E4
+start  = 0x013158
+end    = 0x013160
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x013292
-end    = 0x013298
+start  = 0x01320E
+end    = 0x013214
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0132DE
-end    = 0x0132E4
+start  = 0x01325A
+end    = 0x013260
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x013326
-end    = 0x01332A
+start  = 0x0132A2
+end    = 0x0132A6
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x013382
-end    = 0x013386
+start  = 0x0132FE
+end    = 0x013302
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x013696
-end    = 0x01369A
+start  = 0x013612
+end    = 0x013616
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x013CDA
-end    = 0x013CF2
+start  = 0x013C56
+end    = 0x013C6E
 stride = 2
 format = "pcrel16"   # current_offset_table (12 entries)
 
 [[jump_table]]
-start  = 0x014006
-end    = 0x01400C
+start  = 0x013F82
+end    = 0x013F88
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x014118
-end    = 0x014130
+start  = 0x014094
+end    = 0x0140AC
 stride = 2
 format = "pcrel16"   # current_offset_table (12 entries)
 
 [[jump_table]]
-start  = 0x014454
-end    = 0x01448A
+start  = 0x0143D0
+end    = 0x014406
 stride = 2
 format = "pcrel16"   # current_offset_table (27 entries)
 
 [[jump_table]]
-start  = 0x015992
-end    = 0x01599A
+start  = 0x01590E
+end    = 0x015916
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x015B5A
-end    = 0x015B60
+start  = 0x015AD6
+end    = 0x015ADC
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x015D5A
-end    = 0x015D5E
+start  = 0x015CD6
+end    = 0x015CDA
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x015DDA
-end    = 0x015DE0
+start  = 0x015D56
+end    = 0x015D5C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x01702A
-end    = 0x01702E
+start  = 0x016F96
+end    = 0x016F9A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x017476
-end    = 0x01747A
+start  = 0x0173CA
+end    = 0x0173CE
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x017626
-end    = 0x017632
+start  = 0x01757A
+end    = 0x017586
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x017B5E
-end    = 0x017B64
+start  = 0x017AB2
+end    = 0x017AB8
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x018948
-end    = 0x018954
+start  = 0x01889C
+end    = 0x0188A8
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x01898A
-end    = 0x018994
+start  = 0x0188DE
+end    = 0x0188E8
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x019284
-end    = 0x019288
+start  = 0x0191D8
+end    = 0x0191DC
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x01940A
-end    = 0x019412
+start  = 0x01935E
+end    = 0x019366
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x01A016
-end    = 0x01A022
+start  = 0x019F6A
+end    = 0x019F76
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x01A16A
-end    = 0x01A172
+start  = 0x01A0BE
+end    = 0x01A0C6
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x01B6C4
-end    = 0x01B6CE
-stride = 2
-format = "pcrel16"   # current_offset_table (5 entries)
-
-[[jump_table]]
-start  = 0x01B872
-end    = 0x01B88E
-stride = 2
-format = "pcrel16"   # current_offset_table (14 entries)
-
-[[jump_table]]
-start  = 0x01B978
-end    = 0x01B984
+start  = 0x01B8CC
+end    = 0x01B8D8
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x01BAFA
-end    = 0x01BB02
+start  = 0x01BA4E
+end    = 0x01BA56
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x01BBA0
-end    = 0x01BBAA
+start  = 0x01BAF4
+end    = 0x01BAFE
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x01D0E4
-end    = 0x01D0EA
-stride = 2
-format = "pcrel16"   # current_offset_table (3 entries)
-
-[[jump_table]]
-start  = 0x01D11A
-end    = 0x01D11E
+start  = 0x01D06E
+end    = 0x01D072
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x01D11E
-end    = 0x01D122
+start  = 0x01D072
+end    = 0x01D076
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x01D2BA
-end    = 0x01D2BE
+start  = 0x01D20E
+end    = 0x01D212
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x01D372
-end    = 0x01D382
-stride = 2
-format = "pcrel16"   # current_offset_table (8 entries)
-
-[[jump_table]]
-start  = 0x01D3DA
-end    = 0x01D3EC
+start  = 0x01D32E
+end    = 0x01D340
 stride = 2
 format = "pcrel16"   # current_offset_table (9 entries)
 
 [[jump_table]]
-start  = 0x01D9AC
-end    = 0x01D9B0
+start  = 0x01D900
+end    = 0x01D904
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x01DA38
-end    = 0x01DA3E
+start  = 0x01D98C
+end    = 0x01D992
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x01DDDA
-end    = 0x01DDE2
+start  = 0x01DD2E
+end    = 0x01DD36
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x01DE50
-end    = 0x01DE58
+start  = 0x01DDA4
+end    = 0x01DDAC
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x01E1AA
-end    = 0x01E1AE
+start  = 0x01E098
+end    = 0x01E09E
+stride = 2
+format = "pcrel16"   # .current_mappings_table (3 entries)
+
+[[jump_table]]
+start  = 0x01E0FE
+end    = 0x01E102
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x01F16E
-end    = 0x01F178
+start  = 0x01F0C2
+end    = 0x01F0CC
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x01F6DE
-end    = 0x01F6E2
+start  = 0x01F632
+end    = 0x01F636
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x01F7EA
-end    = 0x01F7EE
+start  = 0x01F73E
+end    = 0x01F742
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x01F962
-end    = 0x01F96E
+start  = 0x01F8B6
+end    = 0x01F8C2
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x01FC7E
-end    = 0x01FC82
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x01FCD6
-end    = 0x01FCE0
+start  = 0x01FC2A
+end    = 0x01FC34
 stride = 2
 format = "pcrel16"   # .current_mappings_table (5 entries)
 
 [[jump_table]]
-start  = 0x01FD9C
-end    = 0x01FDA2
+start  = 0x01FCF0
+end    = 0x01FCF6
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x020156
-end    = 0x02015C
+start  = 0x0200AA
+end    = 0x0200B0
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0202CA
-end    = 0x0202CE
+start  = 0x02021E
+end    = 0x020222
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0203D6
-end    = 0x0203DA
+start  = 0x02032A
+end    = 0x02032E
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x020466
-end    = 0x02046C
+start  = 0x0203BA
+end    = 0x0203C0
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x020996
-end    = 0x02099C
+start  = 0x0208EA
+end    = 0x0208F0
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x020C58
-end    = 0x020C5C
+start  = 0x020BAC
+end    = 0x020BB0
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x020EA6
-end    = 0x020EAA
+start  = 0x020DFA
+end    = 0x020DFE
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x020F9A
-end    = 0x020F9E
+start  = 0x020EEE
+end    = 0x020EF2
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02108C
-end    = 0x021090
+start  = 0x020FE0
+end    = 0x020FE4
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x021142
-end    = 0x021148
+start  = 0x021096
+end    = 0x02109C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02121C
-end    = 0x021222
+start  = 0x021170
+end    = 0x021176
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x021452
-end    = 0x021456
+start  = 0x0213A6
+end    = 0x0213AA
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0215A0
-end    = 0x0215A6
+start  = 0x0214F4
+end    = 0x0214FA
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0219EA
-end    = 0x0219F6
+start  = 0x02193E
+end    = 0x02194A
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x021E66
-end    = 0x021E6A
+start  = 0x021DBA
+end    = 0x021DBE
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x021EE6
-end    = 0x021EEC
+start  = 0x021E3A
+end    = 0x021E40
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0220D2
-end    = 0x0220D6
+start  = 0x022026
+end    = 0x02202A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0221A8
-end    = 0x0221C8
+start  = 0x0220FC
+end    = 0x02211C
 stride = 2
 format = "pcrel16"   # current_offset_table (16 entries)
 
 [[jump_table]]
-start  = 0x022366
-end    = 0x02236A
+start  = 0x0222BA
+end    = 0x0222BE
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0224C2
-end    = 0x0224CC
+start  = 0x022416
+end    = 0x022420
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x022664
-end    = 0x022668
+start  = 0x0225B8
+end    = 0x0225BC
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0226A0
-end    = 0x0226A8
+start  = 0x0225F4
+end    = 0x0225FC
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0230B2
-end    = 0x0230C0
+start  = 0x023006
+end    = 0x023014
 stride = 2
 format = "pcrel16"   # current_offset_table (7 entries)
 
 [[jump_table]]
-start  = 0x0233BA
-end    = 0x0233C0
+start  = 0x02330E
+end    = 0x023314
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0235D4
-end    = 0x0235DA
+start  = 0x023528
+end    = 0x02352E
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x023996
-end    = 0x02399A
+start  = 0x0238EA
+end    = 0x0238EE
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x023A14
-end    = 0x023A1E
+start  = 0x023968
+end    = 0x023972
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x023BAE
-end    = 0x023BB4
+start  = 0x023B02
+end    = 0x023B08
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x023C68
-end    = 0x023C72
+start  = 0x023BBC
+end    = 0x023BC6
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x023EFA
-end    = 0x023F00
+start  = 0x023E4E
+end    = 0x023E54
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0240DA
-end    = 0x0240DE
+start  = 0x02402E
+end    = 0x024032
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0241B6
-end    = 0x0241BC
+start  = 0x02410A
+end    = 0x024110
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0241F2
-end    = 0x0241F6
+start  = 0x024146
+end    = 0x02414A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x024AD0
-end    = 0x024AD8
+start  = 0x024A24
+end    = 0x024A2C
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x024DAE
-end    = 0x024DB2
+start  = 0x024D02
+end    = 0x024D06
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x024E8A
-end    = 0x024E92
+start  = 0x024DDE
+end    = 0x024DE6
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x02502C
-end    = 0x025030
+start  = 0x024F80
+end    = 0x024F84
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02530E
-end    = 0x025312
+start  = 0x025262
+end    = 0x025266
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x025394
-end    = 0x02539C
+start  = 0x0252E8
+end    = 0x0252F0
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x02574E
-end    = 0x025758
+start  = 0x0256A2
+end    = 0x0256AC
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x025946
-end    = 0x02594A
+start  = 0x02589A
+end    = 0x02589E
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x025A02
-end    = 0x025A0A
+start  = 0x025956
+end    = 0x02595E
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x025B14
-end    = 0x025B1A
+start  = 0x025A68
+end    = 0x025A6E
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x025BE2
-end    = 0x025BE8
+start  = 0x025B36
+end    = 0x025B3C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0261BE
-end    = 0x0261C4
+start  = 0x026112
+end    = 0x026118
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02642E
-end    = 0x026432
+start  = 0x026382
+end    = 0x026386
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0266EE
-end    = 0x0266F4
+start  = 0x026642
+end    = 0x026648
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0269DA
-end    = 0x0269DE
+start  = 0x02692E
+end    = 0x026932
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x026AA0
-end    = 0x026AA4
+start  = 0x0269F4
+end    = 0x0269F8
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x026B9A
-end    = 0x026BA2
+start  = 0x026AEE
+end    = 0x026AF6
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x026D2A
-end    = 0x026D3A
+start  = 0x026C7E
+end    = 0x026C8E
 stride = 2
 format = "pcrel16"   # current_offset_table (8 entries)
 
 [[jump_table]]
-start  = 0x027012
-end    = 0x027016
+start  = 0x026F66
+end    = 0x026F6A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x027230
-end    = 0x027234
+start  = 0x027184
+end    = 0x027188
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x027276
-end    = 0x02727C
+start  = 0x0271CA
+end    = 0x0271D0
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02764E
-end    = 0x027654
+start  = 0x0275A2
+end    = 0x0275A8
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02772A
-end    = 0x027732
+start  = 0x02767E
+end    = 0x027686
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x02784E
-end    = 0x027852
+start  = 0x0277A2
+end    = 0x0277A6
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02793E
-end    = 0x027946
+start  = 0x027892
+end    = 0x02789A
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0279D2
-end    = 0x0279D8
+start  = 0x027926
+end    = 0x02792C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x027B6A
-end    = 0x027B70
+start  = 0x027ABE
+end    = 0x027AC4
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x027E26
-end    = 0x027E2A
+start  = 0x027D7A
+end    = 0x027D7E
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x027EFA
-end    = 0x027F12
+start  = 0x027E4E
+end    = 0x027E66
 stride = 2
 format = "pcrel16"   # current_offset_table (12 entries)
 
 [[jump_table]]
-start  = 0x028108
-end    = 0x02810C
+start  = 0x02805C
+end    = 0x028060
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x028466
-end    = 0x02846C
+start  = 0x0283BA
+end    = 0x0283C0
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02867A
-end    = 0x02867E
+start  = 0x0285CE
+end    = 0x0285D2
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0289F6
-end    = 0x0289FA
+start  = 0x0287C2
+end    = 0x0287C6
+stride = 2
+format = "pcrel16"   # .current_mappings_table (2 entries)
+
+[[jump_table]]
+start  = 0x02894A
+end    = 0x02894E
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x028A8E
-end    = 0x028A94
+start  = 0x0289E2
+end    = 0x0289E8
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x028C94
-end    = 0x028C9A
+start  = 0x028BE8
+end    = 0x028BEE
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x028EB2
-end    = 0x028EB6
+start  = 0x028E06
+end    = 0x028E0A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x028F76
-end    = 0x028F7A
+start  = 0x028ECA
+end    = 0x028ECE
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x029042
-end    = 0x029046
+start  = 0x028F96
+end    = 0x028F9A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02928E
-end    = 0x029294
+start  = 0x0291E2
+end    = 0x0291E8
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x029364
-end    = 0x029374
+start  = 0x0292B8
+end    = 0x0292C8
 stride = 2
 format = "pcrel16"   # current_offset_table (8 entries)
 
 [[jump_table]]
-start  = 0x02945A
-end    = 0x029460
+start  = 0x0293AE
+end    = 0x0293B4
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02966C
-end    = 0x029670
+start  = 0x0295C0
+end    = 0x0295C4
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02989E
-end    = 0x0298A2
+start  = 0x0297F2
+end    = 0x0297F6
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x029A36
-end    = 0x029A3C
+start  = 0x02998A
+end    = 0x029990
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02A0CC
-end    = 0x02A0D2
+start  = 0x02A020
+end    = 0x02A026
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02A34A
-end    = 0x02A34E
+start  = 0x02A29E
+end    = 0x02A2A2
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02A404
-end    = 0x02A414
+start  = 0x02A358
+end    = 0x02A368
 stride = 2
 format = "pcrel16"   # current_offset_table (8 entries)
 
 [[jump_table]]
-start  = 0x02A5C8
-end    = 0x02A5CE
+start  = 0x02A51C
+end    = 0x02A522
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02A86A
-end    = 0x02A870
+start  = 0x02A7BE
+end    = 0x02A7C4
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02AC7A
-end    = 0x02AC80
+start  = 0x02ABCE
+end    = 0x02ABD4
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02B1FE
-end    = 0x02B204
+start  = 0x02B152
+end    = 0x02B158
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02B5E2
-end    = 0x02B5E6
+start  = 0x02B536
+end    = 0x02B53A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02B9A6
-end    = 0x02B9AA
+start  = 0x02B8FA
+end    = 0x02B8FE
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02BA4A
-end    = 0x02BA4E
+start  = 0x02B99E
+end    = 0x02B9A2
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02BAC2
-end    = 0x02BAC6
+start  = 0x02BA16
+end    = 0x02BA1A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02BB40
-end    = 0x02BB48
+start  = 0x02BA94
+end    = 0x02BA9C
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x02BC26
-end    = 0x02BC2A
+start  = 0x02BB7A
+end    = 0x02BB7E
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02BC9E
-end    = 0x02BCA4
+start  = 0x02BBF2
+end    = 0x02BBF8
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02C502
-end    = 0x02C506
+start  = 0x02C456
+end    = 0x02C45A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02C766
-end    = 0x02C76C
+start  = 0x02C6BA
+end    = 0x02C6C0
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02C9E6
-end    = 0x02C9EA
+start  = 0x02C93A
+end    = 0x02C93E
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02CACE
-end    = 0x02CAD6
+start  = 0x02CA22
+end    = 0x02CA2A
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x02CB80
-end    = 0x02CB8A
+start  = 0x02CAD4
+end    = 0x02CADE
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x02CC88
-end    = 0x02CC8C
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x02CD82
-end    = 0x02CD8A
+start  = 0x02CCD6
+end    = 0x02CCDE
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x02CE6E
-end    = 0x02CE76
+start  = 0x02CDC2
+end    = 0x02CDCA
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x02D122
-end    = 0x02D12A
+start  = 0x02D076
+end    = 0x02D07E
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x02D23C
-end    = 0x02D240
+start  = 0x02D190
+end    = 0x02D194
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02D452
-end    = 0x02D456
+start  = 0x02D3A6
+end    = 0x02D3AA
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02D4DC
-end    = 0x02D4E2
-stride = 2
-format = "pcrel16"   # current_offset_table (3 entries)
-
-[[jump_table]]
-start  = 0x02D54E
-end    = 0x02D552
+start  = 0x02D4A2
+end    = 0x02D4A6
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02D7EE
-end    = 0x02D80A
+start  = 0x02D742
+end    = 0x02D75E
 stride = 2
 format = "pcrel16"   # current_offset_table (14 entries)
 
 [[jump_table]]
-start  = 0x02DA30
-end    = 0x02DA3E
+start  = 0x02D984
+end    = 0x02D992
 stride = 2
 format = "pcrel16"   # current_offset_table (7 entries)
 
 [[jump_table]]
-start  = 0x02DE5C
-end    = 0x02DE60
+start  = 0x02DDB0
+end    = 0x02DDB4
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02DF20
-end    = 0x02DF26
+start  = 0x02DE74
+end    = 0x02DE7A
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02E13E
-end    = 0x02E144
+start  = 0x02E092
+end    = 0x02E098
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02E24C
-end    = 0x02E258
+start  = 0x02E1A0
+end    = 0x02E1AC
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x02E734
-end    = 0x02E73E
+start  = 0x02E688
+end    = 0x02E692
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x02EFD2
-end    = 0x02EFE2
+start  = 0x02EF26
+end    = 0x02EF36
 stride = 2
 format = "pcrel16"   # current_offset_table (8 entries)
 
 [[jump_table]]
-start  = 0x02F31C
-end    = 0x02F328
+start  = 0x02F270
+end    = 0x02F27C
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x02F362
-end    = 0x02F366
+start  = 0x02F2B6
+end    = 0x02F2BA
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02F448
-end    = 0x02F44E
+start  = 0x02F39C
+end    = 0x02F3A2
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x02F608
-end    = 0x02F60C
+start  = 0x02F55C
+end    = 0x02F560
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x02F71E
-end    = 0x02F728
+start  = 0x02F672
+end    = 0x02F67C
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x02FD0A
-end    = 0x02FD14
+start  = 0x02FC5E
+end    = 0x02FC68
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x02FDBA
-end    = 0x02FDC4
+start  = 0x02FD0E
+end    = 0x02FD18
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x02FFAA
-end    = 0x02FFAE
+start  = 0x02FEFE
+end    = 0x02FF02
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x030020
-end    = 0x030024
+start  = 0x02FF74
+end    = 0x02FF78
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03053A
-end    = 0x030540
+start  = 0x03048E
+end    = 0x030494
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0306DA
-end    = 0x0306E8
+start  = 0x03062E
+end    = 0x03063C
 stride = 2
 format = "pcrel16"   # current_offset_table (7 entries)
 
 [[jump_table]]
-start  = 0x030A74
-end    = 0x030A7E
+start  = 0x0309C8
+end    = 0x0309D2
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x030C6A
-end    = 0x030C74
+start  = 0x030BBE
+end    = 0x030BC8
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x030E74
-end    = 0x030E7A
+start  = 0x030FB2
+end    = 0x030FB8
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03105E
-end    = 0x031064
-stride = 2
-format = "pcrel16"   # current_offset_table (3 entries)
-
-[[jump_table]]
-start  = 0x031178
-end    = 0x031186
+start  = 0x0310CC
+end    = 0x0310DA
 stride = 2
 format = "pcrel16"   # current_offset_table (7 entries)
 
 [[jump_table]]
-start  = 0x0316B6
-end    = 0x0316BA
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x0319AA
-end    = 0x0319B0
+start  = 0x0318FE
+end    = 0x031904
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x031AD6
-end    = 0x031AE2
+start  = 0x031A2A
+end    = 0x031A36
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x031AF0
-end    = 0x031AF4
+start  = 0x031A44
+end    = 0x031A48
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x031FEC
-end    = 0x031FF4
+start  = 0x031F40
+end    = 0x031F48
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x032342
-end    = 0x03234A
+start  = 0x032296
+end    = 0x03229E
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x032474
-end    = 0x032488
+start  = 0x0323C8
+end    = 0x0323DC
 stride = 2
 format = "pcrel16"   # current_offset_table (10 entries)
 
 [[jump_table]]
-start  = 0x0326F6
-end    = 0x0326FC
+start  = 0x03264A
+end    = 0x032650
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0329FA
-end    = 0x032A04
+start  = 0x03294E
+end    = 0x032958
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x032D68
-end    = 0x032D6C
+start  = 0x032CBC
+end    = 0x032CC0
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03304A
-end    = 0x033054
+start  = 0x032F9E
+end    = 0x032FA8
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x0330A0
-end    = 0x0330AA
+start  = 0x032FF4
+end    = 0x032FFE
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x0332C4
-end    = 0x0332CE
+start  = 0x033218
+end    = 0x033222
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x033510
-end    = 0x033514
+start  = 0x033464
+end    = 0x033468
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03362A
-end    = 0x033632
+start  = 0x03357E
+end    = 0x033586
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0339AA
-end    = 0x0339B0
+start  = 0x0338FE
+end    = 0x033904
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0346E6
-end    = 0x0346F0
+start  = 0x03463A
+end    = 0x034644
 stride = 2
 format = "pcrel16"   # .current_mappings_table (5 entries)
 
 [[jump_table]]
-start  = 0x0348A6
-end    = 0x0348AC
+start  = 0x0347FA
+end    = 0x034800
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x034F6A
-end    = 0x034F72
+start  = 0x034EBE
+end    = 0x034EC6
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03505A
-end    = 0x035062
+start  = 0x034FAE
+end    = 0x034FB6
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0354B8
-end    = 0x0354BC
+start  = 0x03540C
+end    = 0x035410
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03560E
-end    = 0x035624
+start  = 0x035562
+end    = 0x035578
 stride = 2
 format = "pcrel16"   # current_offset_table (11 entries)
 
 [[jump_table]]
-start  = 0x036076
-end    = 0x036080
+start  = 0x035FCA
+end    = 0x035FD4
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03637E
-end    = 0x036394
-stride = 2
-format = "pcrel16"   # current_offset_table (11 entries)
-
-[[jump_table]]
-start  = 0x036732
-end    = 0x036738
+start  = 0x036686
+end    = 0x03668C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03673A
-end    = 0x03673E
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x036752
-end    = 0x03675A
+start  = 0x0366A6
+end    = 0x0366AE
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0369DE
-end    = 0x0369E8
+start  = 0x036932
+end    = 0x03693C
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x036B30
-end    = 0x036B3C
+start  = 0x036A84
+end    = 0x036A90
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x036C42
-end    = 0x036C48
+start  = 0x036B96
+end    = 0x036B9C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x036C8E
-end    = 0x036C92
+start  = 0x036BE2
+end    = 0x036BE6
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x036E66
-end    = 0x036E6E
+start  = 0x036DBA
+end    = 0x036DC2
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x036FC8
-end    = 0x036FD0
+start  = 0x036F1C
+end    = 0x036F24
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0370A0
-end    = 0x0370A4
+start  = 0x036FF4
+end    = 0x036FF8
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x037132
-end    = 0x037136
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x0371B8
-end    = 0x0371C2
+start  = 0x03710C
+end    = 0x037116
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03737E
-end    = 0x037382
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x0373DC
-end    = 0x0373E4
+start  = 0x037330
+end    = 0x037338
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03748A
-end    = 0x037494
+start  = 0x0373DE
+end    = 0x0373E8
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x0376FE
-end    = 0x037706
+start  = 0x037652
+end    = 0x03765A
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0377A2
-end    = 0x0377A6
+start  = 0x0376F6
+end    = 0x0376FA
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x037882
-end    = 0x037888
+start  = 0x0377D6
+end    = 0x0377DC
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0379F0
-end    = 0x0379F4
+start  = 0x037944
+end    = 0x037948
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x037A26
-end    = 0x037A2E
+start  = 0x03797A
+end    = 0x037982
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x037AC0
-end    = 0x037AC4
+start  = 0x037A14
+end    = 0x037A18
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x037B3C
-end    = 0x037B40
+start  = 0x037A90
+end    = 0x037A94
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x037CB4
-end    = 0x037CBC
+start  = 0x037C08
+end    = 0x037C10
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x037D92
-end    = 0x037D96
+start  = 0x037CE6
+end    = 0x037CEA
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x037E34
-end    = 0x037E38
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x037ED0
-end    = 0x037EDC
+start  = 0x037E24
+end    = 0x037E30
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x0380C6
-end    = 0x0380CE
+start  = 0x03801A
+end    = 0x038022
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0381BA
-end    = 0x0381C0
+start  = 0x03810E
+end    = 0x038114
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x038216
-end    = 0x03821C
+start  = 0x03816A
+end    = 0x038170
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x038274
-end    = 0x03827C
+start  = 0x0381C8
+end    = 0x0381D0
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0383B0
-end    = 0x0383B4
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x03846E
-end    = 0x038478
+start  = 0x0383C2
+end    = 0x0383CC
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03855C
-end    = 0x038562
+start  = 0x0384B0
+end    = 0x0384B6
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0387F8
-end    = 0x038806
+start  = 0x03874C
+end    = 0x03875A
 stride = 2
 format = "pcrel16"   # current_offset_table (7 entries)
 
 [[jump_table]]
-start  = 0x038A56
-end    = 0x038A5E
+start  = 0x0389AA
+end    = 0x0389B2
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x038BA4
-end    = 0x038BAA
+start  = 0x038AF8
+end    = 0x038AFE
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x038C40
-end    = 0x038C46
+start  = 0x038B94
+end    = 0x038B9A
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x038E74
-end    = 0x038E78
+start  = 0x038DC8
+end    = 0x038DCC
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x038EF2
-end    = 0x038EFE
+start  = 0x038E46
+end    = 0x038E52
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x039020
-end    = 0x039028
+start  = 0x038F74
+end    = 0x038F7C
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x0390EC
-end    = 0x0390F0
+start  = 0x039040
+end    = 0x039044
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x039120
-end    = 0x039124
+start  = 0x039074
+end    = 0x039078
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03915C
-end    = 0x039160
+start  = 0x0390B0
+end    = 0x0390B4
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x039434
-end    = 0x039438
+start  = 0x039388
+end    = 0x03938C
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x0394D6
-end    = 0x0394DA
+start  = 0x03942A
+end    = 0x03942E
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03950C
-end    = 0x03951A
+start  = 0x039460
+end    = 0x03946E
 stride = 2
 format = "pcrel16"   # current_offset_table (7 entries)
 
 [[jump_table]]
-start  = 0x0397E6
-end    = 0x03980A
+start  = 0x03973A
+end    = 0x03975E
 stride = 2
 format = "pcrel16"   # current_offset_table (18 entries)
 
 [[jump_table]]
-start  = 0x03999E
-end    = 0x0399CA
+start  = 0x0398F2
+end    = 0x03991E
 stride = 2
 format = "pcrel16"   # current_offset_table (22 entries)
 
 [[jump_table]]
-start  = 0x039EEE
-end    = 0x039EF8
-stride = 2
-format = "pcrel16"   # current_offset_table (5 entries)
-
-[[jump_table]]
-start  = 0x03A296
-end    = 0x03A2A2
+start  = 0x03A1EA
+end    = 0x03A1F6
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x03A4B2
-end    = 0x03A4B6
+start  = 0x03A406
+end    = 0x03A40A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03A74A
-end    = 0x03A74E
+start  = 0x03A69E
+end    = 0x03A6A2
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03A84A
-end    = 0x03A85A
+start  = 0x03A79E
+end    = 0x03A7AE
 stride = 2
 format = "pcrel16"   # current_offset_table (8 entries)
 
 [[jump_table]]
-start  = 0x03A966
-end    = 0x03A96E
+start  = 0x03A8BA
+end    = 0x03A8C2
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03AA1C
-end    = 0x03AA2E
+start  = 0x03A970
+end    = 0x03A982
 stride = 2
 format = "pcrel16"   # current_offset_table (9 entries)
 
 [[jump_table]]
-start  = 0x03AD24
-end    = 0x03AD2A
+start  = 0x03AC78
+end    = 0x03AC7E
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03ADFC
-end    = 0x03AE00
+start  = 0x03AD50
+end    = 0x03AD54
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03B088
-end    = 0x03B08C
+start  = 0x03B2EC
+end    = 0x03B2F0
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03B398
-end    = 0x03B39C
+start  = 0x03B378
+end    = 0x03B37C
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03B424
-end    = 0x03B428
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x03B4B4
-end    = 0x03B4BA
+start  = 0x03B408
+end    = 0x03B40E
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03B594
-end    = 0x03B5A8
-stride = 2
-format = "pcrel16"   # current_offset_table (10 entries)
-
-[[jump_table]]
-start  = 0x03B68A
-end    = 0x03B694
+start  = 0x03B5DE
+end    = 0x03B5E8
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03B6C0
-end    = 0x03B6C8
+start  = 0x03B614
+end    = 0x03B61C
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03B71A
-end    = 0x03B720
+start  = 0x03B66E
+end    = 0x03B674
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03B786
-end    = 0x03B78E
+start  = 0x03B6DA
+end    = 0x03B6E2
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03B7FA
-end    = 0x03B802
+start  = 0x03B74E
+end    = 0x03B756
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03B8CE
-end    = 0x03B8DC
-stride = 2
-format = "pcrel16"   # current_offset_table (7 entries)
-
-[[jump_table]]
-start  = 0x03B960
-end    = 0x03B964
+start  = 0x03B8B4
+end    = 0x03B8B8
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03BA22
-end    = 0x03BA28
+start  = 0x03B976
+end    = 0x03B97C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03BB74
-end    = 0x03BB7A
+start  = 0x03BAC8
+end    = 0x03BACE
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03BC06
-end    = 0x03BC0A
+start  = 0x03BB5A
+end    = 0x03BB5E
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03BC36
-end    = 0x03BC3A
+start  = 0x03BB8A
+end    = 0x03BB8E
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03BC76
-end    = 0x03BC7A
+start  = 0x03BBCA
+end    = 0x03BBCE
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03BCD6
-end    = 0x03BCDC
+start  = 0x03BC2A
+end    = 0x03BC30
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03BD0E
-end    = 0x03BD18
+start  = 0x03BC62
+end    = 0x03BC6C
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03BDDA
-end    = 0x03BDDE
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x03BE34
-end    = 0x03BE40
+start  = 0x03BD88
+end    = 0x03BD94
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x03BEE2
-end    = 0x03BEE6
+start  = 0x03BEB8
+end    = 0x03BEBC
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03BF64
-end    = 0x03BF68
+start  = 0x03BF12
+end    = 0x03BF16
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03BFBE
-end    = 0x03BFC2
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x03C00C
-end    = 0x03C012
+start  = 0x03BF60
+end    = 0x03BF66
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03C166
-end    = 0x03C16C
+start  = 0x03C0BA
+end    = 0x03C0C0
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03C3E2
-end    = 0x03C3E6
+start  = 0x03C336
+end    = 0x03C33A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03C490
-end    = 0x03C494
+start  = 0x03C3E4
+end    = 0x03C3E8
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03C4FC
-end    = 0x03C510
+start  = 0x03C450
+end    = 0x03C464
 stride = 2
 format = "pcrel16"   # current_offset_table (10 entries)
 
 [[jump_table]]
-start  = 0x03C534
-end    = 0x03C554
+start  = 0x03C488
+end    = 0x03C4A8
 stride = 2
 format = "pcrel16"   # current_offset_table (16 entries)
 
 [[jump_table]]
-start  = 0x03C81E
-end    = 0x03C824
+start  = 0x03C772
+end    = 0x03C778
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03C8A8
-end    = 0x03C8B2
+start  = 0x03C7FC
+end    = 0x03C806
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03C996
-end    = 0x03C99C
+start  = 0x03C8EA
+end    = 0x03C8F0
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03CA64
-end    = 0x03CA68
+start  = 0x03C9B8
+end    = 0x03C9BC
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03CAB2
-end    = 0x03CAB8
+start  = 0x03CA06
+end    = 0x03CA0C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03CB12
-end    = 0x03CB1C
+start  = 0x03CA66
+end    = 0x03CA70
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03CBF8
-end    = 0x03CBFE
+start  = 0x03CB4C
+end    = 0x03CB52
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03CD5E
-end    = 0x03CD66
+start  = 0x03CEDE
+end    = 0x03CEE6
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03CF8A
-end    = 0x03CF92
-stride = 2
-format = "pcrel16"   # current_offset_table (4 entries)
-
-[[jump_table]]
-start  = 0x03CFB2
-end    = 0x03CFBC
+start  = 0x03CF06
+end    = 0x03CF10
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03D0F0
-end    = 0x03D0F6
+start  = 0x03D044
+end    = 0x03D04A
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03D184
-end    = 0x03D188
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x03D2F8
-end    = 0x03D300
+start  = 0x03D24C
+end    = 0x03D254
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03D582
-end    = 0x03D5A4
+start  = 0x03D4D6
+end    = 0x03D4F8
 stride = 2
 format = "pcrel16"   # current_offset_table (17 entries)
 
 [[jump_table]]
-start  = 0x03D5C6
-end    = 0x03D5D6
+start  = 0x03D51A
+end    = 0x03D52A
 stride = 2
 format = "pcrel16"   # current_offset_table (8 entries)
 
 [[jump_table]]
-start  = 0x03D742
-end    = 0x03D748
+start  = 0x03D696
+end    = 0x03D69C
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03D764
-end    = 0x03D76C
+start  = 0x03D6B8
+end    = 0x03D6C0
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03D7BC
-end    = 0x03D7CC
+start  = 0x03D710
+end    = 0x03D720
 stride = 2
 format = "pcrel16"   # current_offset_table (8 entries)
 
 [[jump_table]]
-start  = 0x03D8F6
-end    = 0x03D902
+start  = 0x03D84A
+end    = 0x03D856
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x03D98C
-end    = 0x03D992
+start  = 0x03D8E0
+end    = 0x03D8E6
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03DA58
-end    = 0x03DA5C
+start  = 0x03D9AC
+end    = 0x03D9B0
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03DAE0
-end    = 0x03DAE4
+start  = 0x03DA34
+end    = 0x03DA38
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03DB0E
-end    = 0x03DB12
+start  = 0x03DA62
+end    = 0x03DA66
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03DB42
-end    = 0x03DB4C
+start  = 0x03DA96
+end    = 0x03DAA0
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03DC38
-end    = 0x03DC3C
+start  = 0x03DB8C
+end    = 0x03DB90
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03DC62
-end    = 0x03DC66
+start  = 0x03DBB6
+end    = 0x03DBBA
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03DC94
-end    = 0x03DC9E
+start  = 0x03DBE8
+end    = 0x03DBF2
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03DD12
-end    = 0x03DD1C
+start  = 0x03DC66
+end    = 0x03DC70
 stride = 2
 format = "pcrel16"   # current_offset_table (5 entries)
 
 [[jump_table]]
-start  = 0x03DD60
+start  = 0x03DCB4
+end    = 0x03DCB8
+stride = 2
+format = "pcrel16"   # current_offset_table (2 entries)
+
+[[jump_table]]
+start  = 0x03DCE4
+end    = 0x03DCEE
+stride = 2
+format = "pcrel16"   # current_offset_table (5 entries)
+
+[[jump_table]]
+start  = 0x03DD38
+end    = 0x03DD3C
+stride = 2
+format = "pcrel16"   # current_offset_table (2 entries)
+
+[[jump_table]]
+start  = 0x03DD5E
 end    = 0x03DD64
 stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x03DD90
-end    = 0x03DD9A
-stride = 2
-format = "pcrel16"   # current_offset_table (5 entries)
-
-[[jump_table]]
-start  = 0x03DDE4
-end    = 0x03DDE8
-stride = 2
-format = "pcrel16"   # current_offset_table (2 entries)
-
-[[jump_table]]
-start  = 0x03DE0A
-end    = 0x03DE10
-stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03DF2A
-end    = 0x03DF2E
+start  = 0x03DE7E
+end    = 0x03DE82
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03DF7C
-end    = 0x03DF84
+start  = 0x03DED0
+end    = 0x03DED8
 stride = 2
 format = "pcrel16"   # current_offset_table (4 entries)
 
 [[jump_table]]
-start  = 0x03E2F8
-end    = 0x03E2FE
+start  = 0x03E24C
+end    = 0x03E252
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03E656
-end    = 0x03E65E
-stride = 2
-format = "pcrel16"   # current_offset_table (4 entries)
-
-[[jump_table]]
-start  = 0x03EB82
-end    = 0x03EB86
+start  = 0x03EAD6
+end    = 0x03EADA
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03F29E
-end    = 0x03F2AA
+start  = 0x03F1F2
+end    = 0x03F1FE
 stride = 2
 format = "pcrel16"   # current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x03F35A
-end    = 0x03F360
+start  = 0x03F2AE
+end    = 0x03F2B4
 stride = 2
 format = "pcrel16"   # current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x03FAF4
-end    = 0x03FB06
+start  = 0x03FA48
+end    = 0x03FA5A
 stride = 2
 format = "pcrel16"   # current_offset_table (9 entries)
 
 [[jump_table]]
-start  = 0x03FD92
-end    = 0x03FD9E
+start  = 0x03FCE6
+end    = 0x03FCF2
 stride = 2
 format = "pcrel16"   # .current_offset_table (6 entries)
 
 [[jump_table]]
-start  = 0x03FDA4
-end    = 0x03FDA8
+start  = 0x03FCF8
+end    = 0x03FCFC
 stride = 2
 format = "pcrel16"   # .current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03FDB2
-end    = 0x03FDB6
+start  = 0x03FD06
+end    = 0x03FD0A
 stride = 2
 format = "pcrel16"   # .current_offset_table (2 entries)
 
 [[jump_table]]
-start  = 0x03FDC8
-end    = 0x03FDCE
+start  = 0x03FD1C
+end    = 0x03FD22
 stride = 2
 format = "pcrel16"   # .current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x0403FE
-end    = 0x040404
+start  = 0x040352
+end    = 0x040358
 stride = 2
 format = "pcrel16"   # .current_offset_table (3 entries)
 
 [[jump_table]]
-start  = 0x041B32
-end    = 0x041B36
+start  = 0x041A86
+end    = 0x041A8A
 stride = 2
 format = "pcrel16"   # current_offset_table (2 entries)
 
@@ -2461,8 +2317,8 @@ stride = 4
 format = "abs"   # 63 entries, first=EntryPoint
 
 [[jump_table]]
-start  = 0x016090
-end    = 0x016400
+start  = 0x01600C
+end    = 0x01637C
 stride = 4
 format = "abs"   # 220 entries, first=Obj01
 
@@ -2479,20 +2335,20 @@ stride = 2
 format = "bra_s"   # 8 entries, first=EniDec_Sub0
 
 [[jump_table]]
-start  = 0x02BFDE
-end    = 0x02BFF6
+start  = 0x02BF32
+end    = 0x02BF4A
 stride = 4
 format = "bra_w"   # 6 entries, first=SlotMachine_Routine1
 
 [[jump_table]]
-start  = 0x02C192
-end    = 0x02C1A2
+start  = 0x02C0E6
+end    = 0x02C0F6
 stride = 4
 format = "bra_w"   # 4 entries, first=SlotMachine_Routine5_1
 
 [[jump_table]]
-start  = 0x02C3B0
-end    = 0x02C3BC
+start  = 0x02C304
+end    = 0x02C310
 stride = 4
 format = "bra_w"   # 3 entries, first=SlotMachine_Unmatched1
 
@@ -2718,9 +2574,6 @@ extra = [
     0x00AC42,   # EndingSequence_LoadFlickyArt_Flicky
     0x00AC56,   # EndingSequence_LoadFlickyArt_Eagle
     0x00AC6A,   # EndingSequence_LoadFlickyArt_Chicken
-    0x00AD88,   # byte_AD88
-    0x00AD8E,   # byte_AD8E
-    0x00AD9E,   # byte_AD9E
     0x00C2B8,   # InitCam_EHZ
     0x00C2E4,   # InitCam_Null0
     0x00C2F2,   # InitCam_Null1
@@ -2747,1677 +2600,1581 @@ extra = [
     0x00D4AE,   # SwScrl_ARZ
     0x00D5DE,   # SwScrl_SCZ
     0x00D666,   # SwScrl_Minimal
-    0x00E6DC,   # LevEvents_EHZ
-    0x00E6FA,   # LevEvents_EHZ2_Routine1
-    0x00E734,   # LevEvents_EHZ2_Routine2
-    0x00E772,   # LevEvents_EHZ2_Routine3
-    0x00E7BC,   # LevEvents_EHZ2_Routine4
-    0x00E7D6,   # LevEvents_001
-    0x00E7D8,   # LevEvents_WZ
-    0x00E7DA,   # LevEvents_003
-    0x00E7DC,   # LevEvents_MTZ
-    0x00E7DE,   # LevEvents_MTZ3
-    0x00E7F6,   # LevEvents_MTZ3_Routine1
-    0x00E816,   # LevEvents_MTZ3_Routine2
-    0x00E83C,   # LevEvents_MTZ3_Routine3
-    0x00E87A,   # LevEvents_MTZ3_Routine4
-    0x00E8B2,   # LevEvents_MTZ3_Routine5
-    0x00E8C6,   # LevEvents_WFZ
-    0x00E8EE,   # LevEvents_WFZ_Routine1
-    0x00E912,   # LevEvents_WFZ_Routine2
-    0x00E944,   # LevEvents_WFZ_Routine3
-    0x00E988,   # LevEvents_WFZ_Routine4
-    0x00E9CE,   # LevEvents_WFZ_Routine5
-    0x00E9F0,   # LevEvents_WFZ_Routine6
-    0x00EA08,   # LevEvents_WFZ_RoutineNull
-    0x00EA0A,   # LevEvents_HTZ
-    0x00EA26,   # LevEvents_HTZ_Routine1
-    0x00EA92,   # LevEvents_HTZ_Routine2
-    0x00EB98,   # LevEvents_HTZ_Routine3
-    0x00EC92,   # LevEvents_HTZ2_Routine1
-    0x00ED14,   # LevEvents_HTZ2_Routine2
-    0x00EE1A,   # LevEvents_HTZ2_Routine3
-    0x00EE7E,   # LevEvents_HTZ2_Routine4
-    0x00EF7C,   # LevEvents_HTZ2_Routine5
-    0x00F008,   # LevEvents_HTZ2_Routine6
-    0x00F02E,   # LevEvents_HTZ2_Routine7
-    0x00F06C,   # LevEvents_HTZ2_Routine8
-    0x00F0A4,   # LevEvents_HTZ2_Routine9
-    0x00F0DE,   # LevEvents_HPZ
-    0x00F0E0,   # LevEvents_009
-    0x00F0E2,   # LevEvents_OOZ
-    0x00F100,   # LevEvents_OOZ2_Routine1
-    0x00F12C,   # LevEvents_OOZ2_Routine2
-    0x00F170,   # LevEvents_OOZ2_Routine3
-    0x00F1A8,   # LevEvents_OOZ2_Routine4
-    0x00F1C2,   # LevEvents_MCZ
-    0x00F1E0,   # LevEvents_MCZ2_Routine1
-    0x00F21A,   # LevEvents_MCZ2_Routine2
-    0x00F28A,   # LevEvents_MCZ2_Routine3
-    0x00F2C2,   # LevEvents_MCZ2_Routine4
-    0x00F2EE,   # LevEvents_CNZ
-    0x00F312,   # LevEvents_CNZ2_Routine1
-    0x00F352,   # LevEvents_CNZ2_Routine2
-    0x00F39C,   # LevEvents_CNZ2_Routine3
-    0x00F3D4,   # LevEvents_CNZ2_Routine4
-    0x00F3FC,   # LevEvents_CPZ
-    0x00F41A,   # LevEvents_CPZ2_Routine1
-    0x00F440,   # LevEvents_CPZ2_Routine2
-    0x00F47E,   # LevEvents_CPZ2_Routine3
-    0x00F4B6,   # LevEvents_CPZ2_Routine4
-    0x00F4CA,   # LevEvents_DEZ
-    0x00F4E2,   # LevEvents_DEZ_Routine1
-    0x00F514,   # LevEvents_DEZ_Routine2
-    0x00F516,   # LevEvents_DEZ_Routine3
-    0x00F530,   # LevEvents_DEZ_Routine4
-    0x00F552,   # LevEvents_DEZ_Routine5
-    0x00F554,   # LevEvents_ARZ
-    0x00F572,   # LevEvents_ARZ2_Routine1
-    0x00F5A4,   # LevEvents_ARZ2_Routine2
-    0x00F5E0,   # LevEvents_ARZ2_Routine3
-    0x00F60E,   # LevEvents_ARZ2_Routine4
-    0x00F622,   # LevEvents_SCZ
-    0x00F642,   # LevEvents_SCZ_Routine1
-    0x00F654,   # LevEvents_SCZ_Routine2
-    0x00F674,   # LevEvents_SCZ_Routine3
-    0x00F68E,   # LevEvents_SCZ_Routine4
-    0x00F6A6,   # LevEvents_SCZ_RoutineNull
-    0x00F6F0,   # Obj11
-    0x00F718,   # Obj11_Init
-    0x00F7FE,   # Obj11_EHZ
-    0x00F890,   # Obj11_Display
-    0x00F894,   # Obj11_HPZ
-    0x00FD20,   # Obj15
-    0x00FD4E,   # Obj15_Init
-    0x00FED4,   # Obj15_State2
-    0x0100BE,   # Obj15_Display
-    0x0100C2,   # Obj15_State4
-    0x01017C,   # Obj15_State5
-    0x010184,   # Obj15_State6
-    0x0101EA,   # Obj15_State7
-    0x010394,   # Obj17
-    0x0103A8,   # Obj17_Init
-    0x01046C,   # Obj17_Main
-    0x0104CE,   # Obj17_Display
-    0x010530,   # Obj18
-    0x010552,   # Obj18_Init
-    0x0105EE,   # Obj18_TopSolid
-    0x01062C,   # Obj18_NonSolid
-    0x010654,   # Obj18_Delete
-    0x010658,   # Obj18_FullSolid
-    0x0106EC,   # Obj18_Stationary
-    0x0106EE,   # Obj18_Horizontal.reversed
-    0x0106FE,   # Obj18_Horizontal.normal
-    0x010716,   # Obj18_Vertical.altReversed
-    0x010726,   # Obj18_Vertical.altNormal
-    0x010734,   # Obj18_Vertical.reversed
-    0x010744,   # Obj18_Vertical.normal
-    0x01075C,   # Obj18_Falling
-    0x010786,   # Obj18_Fall
-    0x0107FC,   # Obj18_ButtonTrigger
-    0x010828,   # Obj18_Rise
-    0x010840,   # Obj18_ShortVertical.reversed
-    0x01085A,   # Obj18_ShortVertical.normal
-    0x010940,   # Obj1A
-    0x010954,   # Obj1A_Init
-    0x010A00,   # Obj1A_Main
-    0x010A38,   # Obj1A_Fragment
-    0x010A8C,   # Obj1F
-    0x010AA0,   # Obj1F_Init
-    0x010B5A,   # Obj1F_Main
-    0x010B92,   # Obj1F_Fragment
-    0x011258,   # Obj1C
-    0x011328,   # Obj1C_Init
-    0x011370,   # BranchTo_MarkObjGone
-    0x011374,   # Obj71
-    0x01139E,   # Obj71_Init
-    0x0113E0,   # Obj71_Main
-    0x0113F6,   # byte_11372
-    0x0113FE,   # byte_1137A
-    0x011648,   # Obj2A
-    0x01165A,   # Obj2A_Init
-    0x011694,   # Obj2A_Main
-    0x01171E,   # Obj2D
-    0x011730,   # Obj2D_Init
-    0x0117E2,   # Obj2D_Main
-    0x011910,   # Obj28
-    0x011A42,   # Obj28_Init
-    0x011B62,   # Obj28_Main
-    0x011BBC,   # Obj28_Walk
-    0x011BF8,   # Obj28_Fly
-    0x011C78,   # Obj28_Prison
-    0x011C98,   # Obj28_FlickyWait
-    0x011CB8,   # Obj28_FlickyJump
-    0x011CF2,   # Obj28_RabbitWait
-    0x011D0E,   # Obj28_DoubleBounce
-    0x011D4C,   # Obj28_LandJump
-    0x011D6A,   # Obj28_SingleBounce
-    0x011DA8,   # Obj28_FlyBounce
-    0x011E4A,   # Obj29
-    0x011E5C,   # Obj29_Init
-    0x011E8A,   # Obj29_Main
-    0x011FC8,   # Obj25
-    0x011FE0,   # Obj25_Init
-    0x012014,   # Obj25_Animate
-    0x012022,   # Obj25_Collect
-    0x012034,   # Obj25_Sparkle
-    0x012042,   # Obj25_Delete
-    0x0120FC,   # Obj37
-    0x012114,   # Obj37_Init
-    0x0121FC,   # Obj37_Main
-    0x01225E,   # Obj37_Collect
-    0x012272,   # Obj37_Sparkle
-    0x012280,   # Obj37_Delete
-    0x01229A,   # BigRing_Init
-    0x0122E8,   # BigRing_Main
-    0x012306,   # BigRing_Enter
-    0x012344,   # BigRing_Delete
-    0x01235C,   # BigRingFlash_Init
-    0x01238A,   # BigRingFlash_Main
-    0x0123FA,   # BigRingFlash_Delete
-    0x01266A,   # ObjDC
-    0x01267E,   # ObjDC_Main
-    0x0126D2,   # ObjDC_Animate
-    0x0126DE,   # ObjDC_Delete
-    0x0126F4,   # Obj26
-    0x01270C,   # Obj26_Init
-    0x01277E,   # Obj26_Main
-    0x0127CC,   # Obj26_Animate
-    0x0127D6,   # BranchTo2_MarkObjGone
-    0x012840,   # Obj26_Break
-    0x0128D8,   # Obj2E
-    0x0128EC,   # Obj2E_Init
-    0x012962,   # Obj2E_Raise
-    0x0129BC,   # robotnik_monitor
-    0x0129C2,   # sonic_1up
-    0x0129D8,   # tails_1up
-    0x0129EE,   # super_ring
-    0x012A64,   # super_shoes
-    0x012AB0,   # shield_monitor
-    0x012AE0,   # invincible_monitor
-    0x012B2A,   # teleport_monitor
-    0x012D42,   # qmark_monitor
-    0x012D46,   # Obj2E_Wait
-    0x012E9C,   # Obj0E
-    0x012EBC,   # Obj0E_Init
-    0x012EDC,   # Obj0E_Sonic
-    0x012F0E,   # Obj0E_Sonic_Init
-    0x012F46,   # Obj0E_Sonic_FadeInAndPlayMusic
-    0x012F6C,   # Obj0E_Sonic_LoadPalette
-    0x012F9C,   # Obj0E_Sonic_Move
-    0x012FD6,   # Obj0E_Animate
-    0x012FE4,   # Obj0E_Sonic_AnimationFinished
-    0x013000,   # Obj0E_Sonic_SpawnTails
-    0x01301E,   # Obj0E_Sonic_FlashBackground
-    0x01305A,   # Obj0E_Sonic_SpawnFallingStar
-    0x013098,   # Obj0E_Sonic_MakeStarSparkle
-    0x0130EA,   # Obj0E_Tails
-    0x013102,   # Obj0E_Tails_Init
-    0x01311A,   # Obj0E_Tails_Move
-    0x013126,   # Obj0E_Tails_AnimationFinished
-    0x013138,   # BranchTo10_DisplaySprite
-    0x013158,   # Obj0E_LogoTop
-    0x01316A,   # Obj0E_LogoTop_Init
-    0x013192,   # BranchTo11_DisplaySprite
-    0x013196,   # Obj0E_MaskingSprite
-    0x0131A8,   # Obj0E_MaskingSprite_Init
-    0x0131CA,   # BranchTo12_DisplaySprite
-    0x0131CE,   # Obj0E_FlashingStar
-    0x0131E4,   # Obj0E_FlashingStar_Init
-    0x013214,   # Obj0E_FlashingStar_Wait
-    0x013222,   # Obj0E_FlashingStar_Move
-    0x013284,   # Obj0E_SonicHand
-    0x013298,   # Obj0E_SonicHand_Init
-    0x0132B4,   # BranchTo13_DisplaySprite
-    0x0132B8,   # Obj0E_SonicHand_Move
-    0x0132D0,   # Obj0E_TailsHand
-    0x0132E4,   # Obj0E_TailsHand_Init
-    0x013300,   # BranchTo14_DisplaySprite
-    0x013304,   # Obj0E_TailsHand_Move
-    0x013318,   # Obj0E_FallingStar
-    0x01332A,   # Obj0E_FallingStar_Init
-    0x013356,   # Obj0E_FallingStar_Main
-    0x013374,   # ObjC9
-    0x013386,   # ObjC9_Init
-    0x0133C8,   # ObjC9_Main
-    0x013684,   # Obj0F
-    0x01369A,   # Obj0F_Init
-    0x0136C8,   # Obj0F_Main
-    0x013CCC,   # Obj34
-    0x013CF2,   # Obj34_Init
-    0x013DA6,   # Obj34_BackgroundIn
-    0x013DDC,   # Obj34_BottomPartIn
-    0x013E2A,   # Obj34_LeftPartIn
-    0x013E60,   # Obj34_ZoneName
-    0x013E6C,   # Obj34_Zone
-    0x013E72,   # Obj34_ActNumber
-    0x013EC6,   # Obj34_LeftPartOut
-    0x013F08,   # Obj34_BottomPartOut
-    0x013F6A,   # Obj34_BackgroundOutInit
-    0x013F82,   # Obj34_BackgroundOut
-    0x013F9C,   # Obj34_WaitAndGoAway
-    0x013FF8,   # Obj39
-    0x01400C,   # Obj39_Init
-    0x014050,   # Obj39_SlideIn
-    0x014072,   # Obj39_Wait
-    0x01410A,   # Obj3A
-    0x014130,   # loc_140AC
-    0x014186,   # loc_14102
-    0x0141BE,   # loc_1413A
-    0x0141C6,   # BranchTo_Obj34_MoveTowardsTargetPosition
-    0x0141CA,   # loc_14146
-    0x0141EC,   # loc_14168
-    0x014220,   # loc_1419C
-    0x01422E,   # loc_141AA
-    0x0142F4,   # loc_14270
-    0x014334,   # loc_142B0
-    0x014350,   # loc_142CC
-    0x014444,   # Obj6F
-    0x01448A,   # Obj6F_Init
-    0x0144D4,   # Obj6F_InitEmeraldText
-    0x014508,   # Obj6F_InitResultTitle
-    0x01453A,   # Obj6F_Emerald6
-    0x01453C,   # Obj6F_Emerald5
-    0x01453E,   # Obj6F_Emerald4
-    0x014540,   # Obj6F_Emerald3
-    0x014542,   # Obj6F_Emerald2
-    0x014544,   # Obj6F_Emerald1
-    0x014546,   # Obj6F_Emerald0
-    0x014560,   # Obj6F_P2Rings
-    0x014584,   # Obj6F_P1Rings
-    0x0145E8,   # BranchTo3_Obj34_MoveTowardsTargetPosition
-    0x0145EC,   # Obj6F_DeleteIfNotEmerald
-    0x0145F6,   # Obj6F_TimedDisplay
-    0x014604,   # Obj6F_TallyScore
-    0x0146A0,   # Obj6F_DisplayOnly
-    0x0146AA,   # Obj6F_TallyPerfect
-    0x014716,   # Obj6F_PerfectBonus
-    0x01472A,   # Obj6F_InitAndMoveSuperMsg
-    0x014798,   # Obj6F_MoveTowardsSourcePosition
-    0x0147BA,   # Obj6F_MoveAndDisplay
-    0x015984,   # Obj36
-    0x0159AA,   # Obj36_Init
-    0x015A1A,   # Obj36_Upright
-    0x015A6A,   # Obj36_Sideways
-    0x015AC6,   # Obj36_Upsidedown
-    0x015B60,   # MoveSpikes_Still
-    0x015B62,   # MoveSpikes_Vertical
-    0x015B76,   # MoveSpikes_Horizontal
-    0x015D4C,   # Obj3B
-    0x015D5E,   # Obj3B_Init
-    0x015D86,   # Obj3B_Main
-    0x015DC8,   # Obj3C
-    0x015DE0,   # Obj3C_Init
-    0x015E0E,   # Obj3C_Main
-    0x015E86,   # Obj3C_Fragment
-    0x016400,   # ObjNull
-    0x01702E,   # RingsManager_Init
-    0x01707E,   # RingsManager_Main
-    0x01747A,   # SpecialCNZBumpers_Init
-    0x0174CE,   # SpecialCNZBumpers_Main
-    0x017632,   # loc_17586
-    0x0176E4,   # loc_17638
-    0x01774A,   # loc_1769E
-    0x0177A2,   # loc_176F6
-    0x0177F8,   # loc_1774C
-    0x017850,   # loc_177A4
-    0x017B64,   # ObjectsManager_Init
-    0x017C30,   # ObjectsManager_Main
-    0x017D78,   # ObjectsManager_2P_Main
-    0x018934,   # Obj41
-    0x018954,   # Obj41_Init
-    0x018994,   # Obj41_Init_Horizontal
-    0x0189B4,   # Obj41_Init_Down
-    0x0189C8,   # Obj41_Init_DiagonallyUp
-    0x0189E2,   # Obj41_Init_DiagonallyDown
-    0x018A00,   # Obj41_Init_Up
-    0x018A2C,   # Obj41_Up
-    0x018B1C,   # Obj41_Horizontal
-    0x018D2C,   # Obj41_Down
-    0x018E16,   # Obj41_DiagonallyUp
-    0x018F4A,   # Obj41_DiagonallyDown
-    0x019264,   # Obj0D
-    0x019288,   # Obj0D_Init
-    0x0192F8,   # Obj0D_Main
-    0x019412,   # Obj0D_Main_StateNull
-    0x019414,   # Obj0D_Main_State2
-    0x0194C4,   # Obj0D_Main_State3
-    0x0195A8,   # Obj0D_Main_State4
-    0x019FFC,   # Obj01
-    0x01A022,   # Obj01_Init
-    0x01A0DC,   # Obj01_Control
-    0x01A31A,   # Obj01_MdNormal_Checks
-    0x01A38C,   # Obj01_MdAir
-    0x01A3B6,   # Obj01_MdRoll
-    0x01A3DC,   # Obj01_MdJump
-    0x01B1CC,   # Obj01_Hurt
-    0x01B292,   # Obj01_Dead
-    0x01B3C8,   # Obj01_Gone
-    0x01B3DC,   # Obj01_Respawning
-    0x01B708,   # SonAni_Walk
-    0x01B712,   # SonAni_Run
-    0x01B71C,   # SonAni_Roll
-    0x01B726,   # SonAni_Roll2
-    0x01B730,   # SonAni_Push
-    0x01B7F6,   # SonAni_LookUp
-    0x01B800,   # SonAni_Spindash
-    0x01B80C,   # SonAni_Blink
-    0x01B810,   # SonAni_GetUp
-    0x01B814,   # SonAni_Balance2
-    0x01B81A,   # SonAni_Stop
-    0x01B8B2,   # SupSonAni_Walk
-    0x01B8BC,   # SupSonAni_Run
-    0x01B8C6,   # SupSonAni_Push
-    0x01B8D0,   # SupSonAni_Stand
-    0x01B8D6,   # SupSonAni_Balance
-    0x01B8E0,   # SupSonAni_Duck
-    0x01B950,   # Obj02
-    0x01B984,   # Obj02_Init
-    0x01BA60,   # Obj02_Control
-    0x01BBAA,   # TailsCPU_Init
-    0x01BBDC,   # TailsCPU_Spawning
-    0x01BC36,   # TailsCPU_Flying
-    0x01BD8C,   # TailsCPU_Normal
-    0x01BF64,   # TailsCPU_Panic
-    0x01C0B6,   # Obj02_MdNormal
-    0x01C0DE,   # Obj02_MdAir
-    0x01C108,   # Obj02_MdRoll
-    0x01C12E,   # Obj02_MdJump
-    0x01CC72,   # Obj02_Hurt
-    0x01CCFC,   # Obj02_Dead
-    0x01CE3C,   # Obj02_Gone
-    0x01CE50,   # Obj02_Respawning
-    0x01D126,   # TailsAni_Walk
-    0x01D130,   # TailsAni_Run
-    0x01D13A,   # TailsAni_Roll
-    0x01D23C,   # TailsAni_Slide
-    0x01D240,   # TailsAni_Blank
-    0x01D248,   # TailsAni_Dummy4
-    0x01D252,   # TailsAni_Dummy5
-    0x01D2AC,   # Obj05
-    0x01D2BE,   # Obj05_Init
-    0x01D2E6,   # Obj05_Main
-    0x01D39A,   # Obj05Ani_Directional
-    0x01D3A0,   # Obj05Ani_DownLeft
-    0x01D3A6,   # Obj05Ani_Down
-    0x01D3AC,   # Obj05Ani_DownRight
-    0x01D3B2,   # Obj05Ani_Spindash
-    0x01D3B8,   # Obj05Ani_Skidding
-    0x01D3BE,   # Obj05Ani_Pushing
-    0x01D3C4,   # Obj05Ani_Hanging
-    0x01D3CC,   # Obj0A
-    0x01D3EC,   # Obj0A_Init
-    0x01D444,   # Obj0A_Animate
-    0x01D450,   # Obj0A_ChkWater
-    0x01D4BA,   # Obj0A_DisplayNumber
-    0x01D4C6,   # Obj0A_Display
-    0x01D4DA,   # JmpTo5_DeleteObject
-    0x01D4E0,   # Obj0A_AirLeft
-    0x01D6B2,   # Obj0A_Countdown
-    0x01D99E,   # Obj38
-    0x01D9B0,   # Obj38_Main
-    0x01D9D8,   # Obj38_Shield
-    0x01DA2A,   # Obj35
-    0x01DA50,   # loc_1D9A4
-    0x01DAB8,   # loc_1DA0C
-    0x01DB2C,   # loc_1DA80
-    0x01DDCC,   # Obj08
-    0x01DDE2,   # Obj08_Init
-    0x01DE3C,   # Obj08_Main
-    0x01DE58,   # Obj08_MdSplash
-    0x01DE78,   # Obj08_MdSpindashDust
-    0x01DECC,   # Obj08_MdSkidDust
-    0x01DED4,   # Obj08_Display
-    0x01DEF2,   # BranchTo16_DeleteObject
-    0x01DEF6,   # Obj08_CheckSkid
-    0x01E19C,   # Obj7E
-    0x01E1AE,   # Obj7E_Init
-    0x01E1E4,   # Obj7E_Main
-    0x01F160,   # Obj79
-    0x01F178,   # Obj79_Init
-    0x01F1D8,   # Obj79_Main
-    0x01F2DC,   # Obj79_Animate
-    0x01F2EC,   # Obj79_Dongle
-    0x01F5E2,   # Obj79_Star
-    0x01F6D0,   # Obj7D
-    0x01F6E2,   # Obj7D_Init
-    0x01F786,   # Obj7D_Main
-    0x01F7DC,   # Obj44
-    0x01F7EE,   # Obj44_Init
-    0x01F81C,   # Obj44_Main
-    0x01F954,   # Obj24
-    0x01F96E,   # Obj24_Init
-    0x01F9D0,   # loc_1F924
-    0x01F9EA,   # loc_1F93E
-    0x01FA4A,   # loc_1F99E
-    0x01FA68,   # BranchTo_JmpTo15_DeleteObject
-    0x01FA6C,   # loc_1F9C0
-    0x01FC9E,   # byte_1FBEC
-    0x01FD76,   # word_1FCB8
-    0x01FD88,   # Obj03
-    0x01FDA2,   # Obj03_Init
-    0x01FE50,   # Obj03_MainX
-    0x01FF5A,   # Obj03_MainY
-    0x020148,   # Obj0B
-    0x02015C,   # Obj0B_Init
-    0x0201B0,   # loc_20104
-    0x0201BE,   # loc_20112
-    0x0202BC,   # Obj0C
-    0x0202CE,   # Obj0C_Init
-    0x02032E,   # Obj0C_Main
-    0x0203C8,   # Obj12
-    0x0203DA,   # Obj12_Init
-    0x020402,   # Obj12_Main
-    0x020458,   # Obj13
-    0x02046C,   # Obj13_Init
-    0x020532,   # Obj13_Main
-    0x0205BC,   # Obj13_ChkDel
-    0x020988,   # Obj04
-    0x02099C,   # Obj04_Init
-    0x0209DC,   # Obj04_Action
-    0x020A6E,   # Obj04_Action2
-    0x020C4A,   # Obj49
-    0x020C5C,   # Obj49_Init
-    0x020C96,   # Obj49_ChkDel
-    0x020E98,   # Obj31
-    0x020EAE,   # Obj31_Init
-    0x020EF2,   # Obj31_Main
-    0x020F8C,   # Obj74
-    0x020F9E,   # Obj74_Init
-    0x020FDA,   # Obj74_Main
-    0x02107E,   # Obj7C
-    0x021090,   # Obj7C_Init
-    0x0210B2,   # Obj7C_Main
-    0x021134,   # Obj27
-    0x021148,   # Obj27_InitWithAnimal
-    0x02116A,   # Obj27_Init
-    0x0211AE,   # Obj27_Main
-    0x021208,   # Obj84
-    0x021222,   # Obj84_Init
-    0x0212D0,   # Obj84_MainX
-    0x0213A2,   # Obj84_MainY
-    0x02143E,   # Obj8B
-    0x02145E,   # Obj8B_Init
-    0x0214BE,   # Obj8B_Main
-    0x021570,   # Obj06
-    0x0215A6,   # Obj06_Init
-    0x0215BE,   # Obj06_Spiral
-    0x0218B4,   # Obj06_Cylinder
-    0x0219D4,   # Obj14
-    0x0219F6,   # Obj14_Init
-    0x021A64,   # Obj14_Main
-    0x021B20,   # return_21A74
-    0x021B4E,   # Obj14_Ball_Init
-    0x021BA8,   # Obj14_Ball_Main
-    0x021C40,   # Obj14_Ball_Fly
-    0x021E58,   # Obj16
-    0x021E6A,   # Obj16_Init
-    0x021EBC,   # Obj16_Main
-    0x021EEC,   # Obj16_Wait
-    0x021F14,   # Obj16_Slide
-    0x021F6E,   # Obj16_Fall
-    0x0220C4,   # Obj19
-    0x0220DE,   # Obj19_Init
-    0x022164,   # Obj19_Main
-    0x0221C8,   # Obj19_MoveRoutine1
-    0x0221D2,   # Obj19_MoveRoutine2
-    0x0221F2,   # Obj19_MoveRoutine3
-    0x022212,   # Obj19_MoveRoutine4
-    0x022222,   # Obj19_MoveRoutine5
-    0x022242,   # Obj19_MoveRoutineNull
-    0x022244,   # Obj19_MoveRoutine6
-    0x022260,   # Obj19_MoveRoutine7
-    0x02229A,   # Obj19_MoveRoutine8
-    0x022358,   # Obj1B
-    0x02236E,   # Obj1B_Init
-    0x0223A4,   # Obj1B_Main
-    0x0224B4,   # Obj1D
-    0x0224D4,   # Obj1D_Init
-    0x022582,   # Obj1D_Wait
-    0x0225A0,   # Obj1D_MoveArc
-    0x0225D4,   # Obj1D_MoveStraight
-    0x022648,   # Obj1E
-    0x02266E,   # Obj1E_Init
-    0x022682,   # Obj1E_Main
-    0x0226A8,   # loc_225FC
-    0x0227C6,   # loc_2271A
-    0x0228AA,   # loc_227FE
-    0x022916,   # loc_2286A
-    0x0230A4,   # Obj20
-    0x0230C0,   # Obj20_Init
-    0x023122,   # loc_23076
-    0x023130,   # loc_23084
-    0x0231CA,   # loc_2311E
-    0x0231F0,   # loc_23144
-    0x02327E,   # loc_231D2
-    0x0232DE,   # BranchTo_JmpTo21_DeleteObject
-    0x0233AC,   # Obj2F
-    0x0233CA,   # Obj2F_Init
-    0x023414,   # Obj2F_Main
-    0x023588,   # Obj2F_Fragment
-    0x0235C6,   # Obj32
-    0x0235DA,   # Obj32_Init
-    0x02362E,   # Obj32_Main
-    0x023716,   # Obj32_Fragment
-    0x023988,   # Obj30
-    0x0239A4,   # Obj30_Init
-    0x0239F0,   # Obj30_Main
-    0x023A1E,   # loc_23972
-    0x023A36,   # loc_2398A
-    0x023A7C,   # loc_239D0
-    0x023A96,   # loc_239EA
-    0x023BA0,   # Obj33
-    0x023BB4,   # Obj33_Init
-    0x023C3C,   # Obj33_Main
-    0x023C72,   # loc_23BC6
-    0x023C96,   # loc_23BEA
-    0x023CD2,   # loc_23C26
-    0x023DCC,   # loc_23D20
-    0x023E44,   # return_23D98
-    0x023E46,   # Obj33_Flame
-    0x023EEC,   # Obj43
-    0x023F12,   # Obj43_Init
-    0x023FB6,   # loc_23F0A
-    0x024008,   # loc_23F5C
-    0x0240CC,   # Obj07
-    0x0240DE,   # Obj07_Init
-    0x024100,   # Obj07_Main
-    0x0241A4,   # Obj45
-    0x0241BC,   # Obj45_Init
-    0x0241F6,   # Obj45_InitHorizontal
-    0x02421A,   # Obj45_InitVertical
-    0x024232,   # Obj45_Vertical
-    0x024326,   # Obj45_Horizontal
-    0x024AC2,   # Obj46
-    0x024AD8,   # Obj46_Init
-    0x024B96,   # Obj46_Inactive
-    0x024BE4,   # Obj46_Moving
-    0x024C88,   # Obj46_PressureSpring
-    0x024DA0,   # Obj47
-    0x024DB2,   # Obj47_Init
-    0x024DDE,   # Obj47_Main
-    0x024E7C,   # Obj3D
-    0x024E92,   # Obj3D_Init
-    0x024ED2,   # Obj3D_Main
-    0x024FE8,   # Obj3D_Fragment
-    0x024FFE,   # Obj3D_InvisibleLauncher
-    0x025030,   # loc_24F84
-    0x0250E2,   # loc_25036
-    0x0252F0,   # Obj48
-    0x025322,   # Obj48_Init
-    0x025372,   # Obj48_Main
-    0x02539C,   # loc_252F0
-    0x025472,   # loc_253C6
-    0x025520,   # loc_25474
-    0x02559E,   # loc_254F2
-    0x025740,   # Obj22
-    0x025758,   # Obj22_Init
-    0x02578C,   # Obj22_Main
-    0x0257D6,   # Obj22_ShootArrow
-    0x025826,   # Obj22_Arrow_Init
-    0x02586A,   # Obj22_Arrow
-    0x025938,   # Obj23
-    0x02594A,   # Obj23_Init
-    0x0259CE,   # Obj23_Main
-    0x025A0A,   # loc_2595E
-    0x025A38,   # return_2598C
-    0x025A3A,   # loc_2598E
-    0x025A64,   # loc_259B8
-    0x025B06,   # Obj2B
-    0x025B1A,   # Obj2B_Init
-    0x025B48,   # Obj2B_Main
-    0x025BE8,   # loc_25B3C
-    0x025C10,   # return_25B64
-    0x025C12,   # loc_25B66
-    0x025C3A,   # loc_25B8E
-    0x0261B0,   # Obj2C
-    0x0261C8,   # Obj2C_Init
-    0x0261FE,   # Obj2C_Main
-    0x026342,   # Obj2C_Leaf
-    0x02641C,   # Obj40
-    0x026438,   # Obj40_Init
-    0x026474,   # Obj40_Main
-    0x0266E0,   # Obj42
-    0x0266F4,   # Obj42_Init
-    0x026734,   # loc_26688
-    0x0268E6,   # loc_2683A
-    0x0269CC,   # Obj64
-    0x0269E6,   # Obj64_Init
-    0x026A4E,   # Obj64_Main
-    0x026AA4,   # return_269F8
-    0x026AA6,   # loc_269FA
-    0x026B8C,   # Obj65
-    0x026BB2,   # Obj65_Init
-    0x026CC8,   # loc_26C1C
-    0x026D3A,   # return_26C8E
-    0x026D3C,   # loc_26C90
-    0x026D50,   # loc_26CA4
-    0x026DC0,   # loc_26D14
-    0x026DE0,   # loc_26D34
-    0x026E40,   # loc_26D94
-    0x026EE8,   # loc_26E3C
-    0x026EF6,   # loc_26E4A
-    0x026F50,   # loc_26EA4
-    0x026F6E,   # loc_26EC2
-    0x027004,   # Obj66
-    0x027016,   # Obj66_Init
-    0x02705A,   # Obj66_Main
-    0x027208,   # Obj67
-    0x027234,   # Obj67_Init
-    0x027258,   # Obj67_Main
-    0x02727C,   # loc_271D0
-    0x02730C,   # loc_27260
-    0x027340,   # loc_27294
-    0x027640,   # Obj68
-    0x027654,   # Obj68_Init
-    0x0276F6,   # Obj68_Block
-    0x02770E,   # Obj68_Spike
-    0x027732,   # Obj68_Spike_Up
-    0x027744,   # Obj68_Spike_Right
-    0x027754,   # Obj68_Spike_Down
-    0x027764,   # Obj68_Spike_Left
-    0x027840,   # Obj6D
-    0x027852,   # Obj6D_Init
-    0x02788C,   # Obj6D_Main
-    0x027930,   # Obj69
-    0x027946,   # Obj69_Init
-    0x027988,   # Obj69_Main
-    0x0279A0,   # loc_278F4
-    0x0279D8,   # loc_2792C
-    0x0279F8,   # loc_2794C
-    0x027A1A,   # loc_2796E
-    0x027AA8,   # loc_279FC
-    0x027B5C,   # Obj6A
-    0x027B70,   # Obj6A_Init
-    0x027C8A,   # loc_27BDE
-    0x027D12,   # loc_27C66
-    0x027E18,   # Obj6B
-    0x027E32,   # Obj6B_Init
-    0x027EBA,   # Obj6B_Main
-    0x027F12,   # Obj6B_Type_Immobile
-    0x027F14,   # loc_27E68
-    0x027F20,   # loc_27E74
-    0x027F42,   # loc_27E96
-    0x027F4E,   # loc_27EA2
-    0x027F70,   # loc_27EC4
-    0x027F8E,   # loc_27EE2
-    0x027FBC,   # loc_27F10
-    0x027FFA,   # loc_27F4E
-    0x02800C,   # loc_27F60
-    0x02801C,   # loc_27F70
-    0x02802C,   # loc_27F80
-    0x0280E0,   # Obj6C
-    0x02810C,   # Obj6C_Init
-    0x028214,   # Obj6C_Main
-    0x028458,   # Obj6E
-    0x028474,   # Obj6E_Init
-    0x0284DE,   # loc_28432
-    0x028568,   # loc_284BC
-    0x02866C,   # Obj70
-    0x02867E,   # Obj70_Init
-    0x0286FE,   # Obj70_Main
-    0x0289E8,   # Obj72
-    0x0289FA,   # Obj72_Init
-    0x028A2C,   # Obj72_Main
-    0x028A80,   # Obj73
-    0x028A94,   # Obj73_Init
-    0x028B82,   # Obj73_Main
-    0x028C2A,   # Obj73_SubObject
-    0x028C74,   # Obj75
-    0x028C9A,   # Obj75_Init
-    0x028D76,   # Obj75_Main
-    0x028E18,   # loc_28D6C
-    0x028EA4,   # Obj76
-    0x028EBA,   # Obj76_Init
-    0x028F0A,   # Obj76_Main
-    0x028F7A,   # Obj76_CheckPlayers
-    0x028FCA,   # Obj76_SlideOut
-    0x029034,   # Obj77
-    0x029046,   # Obj77_Init
-    0x029068,   # Obj77_Main
-    0x029278,   # Obj78
-    0x029294,   # Obj78_Init
-    0x029318,   # Obj78_Main
-    0x02932C,   # loc_29280
-    0x029374,   # loc_292C8
-    0x029398,   # loc_292EC
-    0x0293E0,   # loc_29334
-    0x02940A,   # loc_2935E
-    0x02944C,   # Obj7A
-    0x029478,   # Obj7A_Init
-    0x02953A,   # Obj7A_Main
-    0x029596,   # Obj7A_SubObject
-    0x02963C,   # Obj7B
-    0x029674,   # Obj7B_Init
-    0x0296AA,   # Obj7B_Main
-    0x029890,   # Obj7F
-    0x0298A2,   # Obj7F_Init
-    0x0298CA,   # Obj7F_Main
-    0x029A28,   # Obj80
-    0x029A3C,   # Obj80_Init
-    0x029B12,   # Obj80_MCZ_Main
-    0x029CA6,   # Obj80_WFZ_Main
-    0x02A0AC,   # Obj81
-    0x02A0D2,   # Obj81_Init
-    0x02A1AA,   # Obj81_BridgeUp
-    0x02A236,   # loc_2A18A
-    0x02A33C,   # Obj82
-    0x02A356,   # Obj82_Init
-    0x02A3BE,   # Obj82_Main
-    0x02A414,   # return_2A368
-    0x02A416,   # loc_2A36A
-    0x02A43E,   # loc_2A392
-    0x02A462,   # loc_2A3B6
-    0x02A484,   # loc_2A3D8
-    0x02A498,   # loc_2A3EC
-    0x02A5A8,   # Obj83
-    0x02A5CE,   # Obj83_Init
-    0x02A6CC,   # Obj83_Main
-    0x02A7FA,   # Obj83_PlatformSubObject
-    0x02A85C,   # Obj3F
-    0x02A870,   # Obj3F_Init
-    0x02A8AE,   # Obj3F_Horizontal
-    0x02A9AA,   # Obj3F_Vertical
-    0x02AC30,   # Obj85
-    0x02AC80,   # Obj85_Init
-    0x02AD30,   # Obj85_Up
-    0x02AF02,   # Obj85_Diagonal
-    0x02B1EC,   # Obj86
-    0x02B204,   # Obj86_Init
-    0x02B240,   # Obj86_UpwardsType
-    0x02B3BE,   # Obj86_HorizontalType
-    0x02B5D4,   # ObjD2
-    0x02B5E6,   # ObjD2_Init
-    0x02B62A,   # ObjD2_Main
-    0x02B8F8,   # ObjD3
-    0x02B998,   # ObjD4
-    0x02B9AA,   # ObjD4_Init
-    0x02BA1A,   # ObjD4_Main
-    0x02BA4E,   # ObjD4_Horizontal
-    0x02BA62,   # ObjD4_Vertical
-    0x02BAB4,   # ObjD5
-    0x02BAC6,   # ObjD5_Init
-    0x02BB14,   # ObjD5_Main
-    0x02BB48,   # loc_2BA9C
-    0x02BB62,   # loc_2BAB6
-    0x02BB9A,   # loc_2BAEE
-    0x02BBB4,   # loc_2BB08
-    0x02BC18,   # ObjD6
-    0x02BC2A,   # ObjD6_Init
-    0x02BC52,   # ObjD6_Main
-    0x02BCA4,   # loc_2BBF8
-    0x02BEA4,   # loc_2BDF8
-    0x02BF48,   # loc_2BE9C
-    0x02BFDE,   # SlotMachine_Routine1
-    0x02BFE2,   # SlotMachine_Routine2
-    0x02BFE6,   # SlotMachine_Routine3
-    0x02BFEA,   # SlotMachine_Routine4
-    0x02BFEE,   # SlotMachine_Routine5
-    0x02BFF2,   # SlotMachine_Routine6
-    0x02BFF8,   # SlotMachine_Routine1
-    0x02C046,   # SlotMachine_Routine2
-    0x02C066,   # SlotMachine_Routine3
-    0x02C11C,   # SlotMachine_Routine4
-    0x02C154,   # SlotMachine_Routine5
-    0x02C192,   # SlotMachine_Routine5_1
-    0x02C196,   # SlotMachine_Routine5_2
-    0x02C19A,   # SlotMachine_Routine5_3
-    0x02C19E,   # SlotMachine_Routine5_4
-    0x02C1E0,   # SlotMachine_Routine5_1
-    0x02C21C,   # SlotMachine_Routine5_2
-    0x02C286,   # SlotMachine_Routine5_3
-    0x02C298,   # SlotMachine_Routine5_4
-    0x02C29A,   # SlotMachine_Routine6
-    0x02C3B0,   # SlotMachine_Unmatched1
-    0x02C3B4,   # SlotMachine_Match12
-    0x02C3B8,   # SlotMachine_Match13
-    0x02C3C8,   # SlotMachine_Match13
-    0x02C3F6,   # SlotMachine_Match12
-    0x02C420,   # SlotMachine_Unmatched1
-    0x02C4F4,   # ObjD7
-    0x02C506,   # ObjD7_Init
-    0x02C558,   # ObjD7_Main
-    0x02C758,   # ObjD8
-    0x02C76C,   # ObjD8_Init
-    0x02C7A8,   # loc_2C6FC
-    0x02C930,   # loc_2C884
-    0x02C9D8,   # ObjD9
-    0x02C9EA,   # ObjD9_Init
-    0x02CA00,   # ObjD9_Main
-    0x02CAC0,   # Obj4A
-    0x02CAD6,   # Obj4A_Bullet
-    0x02CAF2,   # Obj4A_Angry
-    0x02CAFE,   # Obj4A_Init
-    0x02CB64,   # Obj4A_Main
-    0x02CB8A,   # Obj4A_WaitForCharacter
-    0x02CBB0,   # Obj4A_DelayBeforeMoveUp
-    0x02CBCC,   # Obj4A_MoveUp
-    0x02CBE6,   # Obj4A_Hover
-    0x02CBF4,   # Obj4A_MoveDown
-    0x02CC92,   # byte_2CBE6
-    0x02CC96,   # byte_2CBEA
-    0x02CD74,   # Obj50
-    0x02CD8A,   # Obj50_Init
-    0x02CE4E,   # Obj50_Main
-    0x02CE76,   # Obj50_Wing
-    0x02CEA0,   # Obj50_Bullet
-    0x02CEB2,   # Obj50_CheckIfOnScreen
-    0x02CEC0,   # Obj50_Chase
-    0x02CEC6,   # Obj50_Shooting
-    0x02CFDA,   # BranchTo_JmpTo20_ObjectMove
-    0x02D114,   # Obj4B
-    0x02D12A,   # Obj4B_Projectile
-    0x02D13C,   # Obj4B_Flame
-    0x02D174,   # Obj4B_Init
-    0x02D220,   # Obj4B_Main
-    0x02D240,   # Obj4B_Roaming
-    0x02D2E0,   # Obj4B_Shooting
-    0x02D440,   # Obj5C
-    0x02D456,   # Obj5C_Init
-    0x02D490,   # Obj5C_Main
-    0x02D4E2,   # byte_2D436
-    0x02D4E6,   # byte_2D43A
-    0x02D4EA,   # byte_2D43E
-    0x02D540,   # Obj58
-    0x02D552,   # Obj58_Init
-    0x02D598,   # Obj58_Main
-    0x02D7E0,   # Obj5D
-    0x02D80A,   # Obj5D_Init
-    0x02D9FA,   # Obj5D_Main
-    0x02DA60,   # Obj5D_Main_Explode
-    0x02DA84,   # Obj5D_Main_StopExploding
-    0x02DACE,   # Obj5D_Main_Retreat
-    0x02DB0E,   # Obj5D_Main_Descend
-    0x02DC44,   # Obj5D_Main_MoveTowardTarget
-    0x02DCAC,   # Obj5D_Main_Wait
-    0x02DCC0,   # Obj5D_Main_FollowPlayer
-    0x02DD0A,   # Obj5D_FallingParts
-    0x02DD62,   # Obj5D_Pump
-    0x02DE4E,   # Obj5D_Pipe
-    0x02DE60,   # Obj5D_Pipe_Wait
-    0x02DE8E,   # Obj5D_Pipe_Extend
-    0x02DF12,   # Obj5D_Pipe_Pump
-    0x02DF26,   # Obj5D_Pipe_Pump_0
-    0x02DFB4,   # Obj5D_Pipe_Pump_2
-    0x02E022,   # Obj5D_Pipe_Pump_4
-    0x02E05E,   # Obj5D_Pipe_Retract
-    0x02E0AA,   # Obj5D_PipeSegment
-    0x02E126,   # Obj5D_Dripper
-    0x02E144,   # Obj5D_Dripper_0
-    0x02E18A,   # Obj5D_Dripper_2
-    0x02E1DC,   # Obj5D_Dripper_4
-    0x02E23E,   # Obj5D_Container
-    0x02E258,   # Obj5D_Container_Init
-    0x02E308,   # Obj5D_Container_Main
-    0x02E394,   # Obj5D_Container_FallOff
-    0x02E650,   # Obj5D_Container_Extend
-    0x02E6BC,   # Obj5D_Container_Floor
-    0x02E712,   # Obj5D_Container_Floor2
-    0x02E726,   # Obj5D_Gunk
-    0x02E73E,   # Obj5D_Gunk_Init
-    0x02E776,   # Obj5D_Gunk_Main
-    0x02E7F2,   # Obj5D_Gunk_6
-    0x02E83C,   # Obj5D_Gunk_8
-    0x02E87C,   # Obj5D_Gunk_Droplets
-    0x02E9A2,   # Obj5D_Robotnik
-    0x02E9FA,   # Obj5D_Flame
-    0x02EAA2,   # Obj5D_Smoke_Puff
-    0x02EFC4,   # Obj56
-    0x02EFE2,   # Obj56_Init
-    0x02F30E,   # loc_2F262
-    0x02F328,   # loc_2F27C
-    0x02F354,   # loc_2F2A8
-    0x02F366,   # loc_2F2BA
-    0x02F38C,   # loc_2F2E0
-    0x02F3B0,   # loc_2F304
-    0x02F3E2,   # loc_2F336
-    0x02F420,   # loc_2F374
-    0x02F436,   # loc_2F38A
-    0x02F44E,   # loc_2F3A2
-    0x02F4D0,   # loc_2F424
-    0x02F4EE,   # loc_2F442
-    0x02F5D6,   # loc_2F52A
-    0x02F5FA,   # loc_2F54E
-    0x02F60C,   # loc_2F560
-    0x02F672,   # loc_2F5C6
-    0x02F6A2,   # loc_2F5F6
-    0x02F710,   # loc_2F664
-    0x02F728,   # loc_2F67C
-    0x02F7C0,   # loc_2F714
-    0x02F7F2,   # loc_2F746
-    0x02F852,   # loc_2F7A6
-    0x02F87E,   # loc_2F7D2
-    0x02F8A0,   # loc_2F7F4
-    0x02F986,   # loc_2F8DA
-    0x02FCFC,   # Obj52
-    0x02FD14,   # Obj52_Init
-    0x02FDAC,   # Obj52_Mobile
-    0x02FDC4,   # Obj52_Mobile_Raise
-    0x02FE0A,   # Obj52_Mobile_Flamethrower
-    0x02FE86,   # Obj52_Mobile_BeginLower
-    0x02FEBA,   # Obj52_Mobile_Lower
-    0x02FF9C,   # Obj52_FlameThrower
-    0x02FFAE,   # loc_2FF02
-    0x02FFFC,   # loc_2FF50
-    0x030012,   # Obj52_LavaBall
-    0x030024,   # loc_2FF78
-    0x0300B4,   # loc_30008
-    0x0301B2,   # Obj52_Mobile_Defeated
-    0x0302BC,   # loc_30210
-    0x03052C,   # Obj89
-    0x030540,   # Obj89_Init
-    0x0306CC,   # Obj89_Main
-    0x0306E8,   # Obj89_Main_Sub0
-    0x030726,   # Obj89_Main_Sub2
-    0x030764,   # Obj89_Main_Sub4
-    0x0307B2,   # Obj89_Main_Sub6
-    0x030938,   # Obj89_Main_Sub8
-    0x0309A0,   # Obj89_Main_SubA
-    0x030A08,   # Obj89_Main_SubC
-    0x030A54,   # Obj89_Pillar
-    0x030A7E,   # Obj89_Pillar_Sub0
-    0x030AB0,   # Obj89_Pillar_Sub2
-    0x030BF6,   # Obj89_Pillar_Sub4
-    0x030C18,   # Obj89_Pillar_BulgingEyes
-    0x030C4A,   # Obj89_Arrow
-    0x030C74,   # Obj89_Arrow_Init
-    0x030CE2,   # Obj89_Arrow_Sub2
-    0x030D32,   # Obj89_Arrow_Sub4
-    0x030D58,   # Obj89_Arrow_Sub6
-    0x030D74,   # BranchTo_JmpTo55_DeleteObject
-    0x030E80,   # byte_30DD4
-    0x030E96,   # byte_30DEA
-    0x030E9A,   # byte_30DEE
-    0x031050,   # Obj57
-    0x031064,   # Obj57_Init
-    0x03116A,   # Obj57_Main
-    0x031186,   # Obj57_Main_Sub0
-    0x03121A,   # Obj57_Main_Sub2
-    0x031256,   # Obj57_Main_Sub4
-    0x0312F6,   # Obj57_Main_Sub6
-    0x03157E,   # Obj57_Main_Sub8
-    0x0315D2,   # Obj57_Main_SubA
-    0x031652,   # Obj57_Main_SubC
-    0x03169E,   # Obj57_FallingStuff
-    0x0316D4,   # byte_31628
-    0x0316DA,   # byte_3162E
-    0x03199C,   # Obj51
-    0x0319B0,   # Obj51_Init
-    0x031AB0,   # loc_31A04
-    0x031AE2,   # loc_31A36
-    0x031AF4,   # loc_31A48
-    0x031B24,   # loc_31A78
-    0x031C54,   # loc_31BA8
-    0x031CCE,   # loc_31C22
-    0x031E08,   # loc_31D5C
-    0x031E78,   # loc_31DCC
-    0x031ED6,   # loc_31E2A
-    0x031FD0,   # loc_31F24
-    0x031FF4,   # loc_31F48
-    0x032042,   # loc_31F96
-    0x032088,   # loc_31FDC
-    0x03212C,   # loc_32080
-    0x032334,   # Obj54
-    0x03234A,   # Obj54_Init
-    0x032466,   # Obj54_Main
-    0x032488,   # Obj54_MainSub0
-    0x032502,   # Obj54_MainSub2
-    0x032588,   # Obj54_MainSub4
-    0x0325D0,   # Obj54_MainSub6
-    0x0325F0,   # Obj54_MainSub8
-    0x032620,   # Obj54_MainSubA
-    0x03266A,   # Obj54_MainSubC
-    0x0326DA,   # Obj54_MainSubE
-    0x0326FC,   # loc_32650
-    0x032764,   # loc_326B8
-    0x0327B0,   # loc_32704
-    0x0328AE,   # Obj54_MainSub10
-    0x032910,   # Obj54_MainSub12
-    0x0329EC,   # Obj53
-    0x032A04,   # Obj53_Init
-    0x032A86,   # Obj53_Main
-    0x032C10,   # Obj53_BreakAway
-    0x032C88,   # Obj53_BounceAround
-    0x032D44,   # Obj53_Burst
-    0x032D5A,   # Obj54_Laser
-    0x032D6C,   # Obj54_Laser_Init
-    0x032DD8,   # Obj54_Laser_Main
-    0x032DF4,   # Obj54_LaserShooter
-    0x03303C,   # Obj55
-    0x033054,   # Obj55_Init
-    0x033092,   # Obj55_Main
-    0x0330AA,   # Obj55_Main_Init
-    0x033124,   # Obj55_Main_Surface
-    0x033166,   # Obj55_Main_Wait
-    0x0331B0,   # Obj55_Main_Dive
-    0x033252,   # Obj55_Main_Defeated
-    0x0332B6,   # Obj55_LaserShooter
-    0x0332CE,   # Obj55_LaserShooter_Init
-    0x033342,   # Obj55_LaserShooter_Rise
-    0x033372,   # Obj55_LaserShooter_ChooseTarget
-    0x0333D0,   # Obj55_LaserShooter_Aim
-    0x033434,   # Obj55_LaserShooter_Lower
-    0x033502,   # Obj55_SpikeChain
-    0x033514,   # Obj55_SpikeChain_Init
-    0x033578,   # Obj55_SpikeChain_Main
-    0x03361C,   # Obj55_Laser
-    0x033632,   # Obj55_Laser_Init
-    0x03368A,   # Obj55_Laser_Main
-    0x03375E,   # Obj55_Wave
-    0x0337BA,   # BranchTo2_JmpTo62_DeleteObject
-    0x033998,   # Obj09
-    0x0339C8,   # Obj09_Init
-    0x033A82,   # Obj09_MdNormal
-    0x033C5A,   # Obj09_MdJump
-    0x034150,   # Obj63
-    0x03488C,   # .tails_14
-    0x034892,   # .tails_15
-    0x034898,   # Obj10
-    0x03489A,   # .tails_16
-    0x03489E,   # .tails_17
-    0x0348A2,   # .tails_tails_0
-    0x0348B0,   # Obj10_Init
-    0x0349B4,   # Obj10_MdNormal
-    0x034A9E,   # Obj10_MdJump
-    0x034B08,   # Obj88
-    0x034F5C,   # Obj61
-    0x034F72,   # Obj61_Init
-    0x034FB2,   # loc_34F06
-    0x035016,   # loc_34F6A
-    0x03504C,   # Obj60
-    0x035062,   # Obj60_Init
-    0x03509C,   # loc_34FF0
-    0x0350BC,   # loc_35010
-    0x0353E6,   # loc_3533A
-    0x0354AA,   # Obj5B
-    0x0354BC,   # Obj5B_Init
-    0x035590,   # Obj5B_Main
-    0x035600,   # Obj5A
-    0x035624,   # Obj5A_Init
-    0x0357B2,   # Obj5A_RingsNeeded
-    0x03585E,   # Obj5A_FlashMessage
-    0x03587E,   # Obj5A_MoveAndFlash
-    0x035894,   # Obj5A_FlashOnly
-    0x0358AA,   # Obj5A_CheckpointRainbow
-    0x035A52,   # Obj5A_MostRingsWin
-    0x035A68,   # Obj5A_RingCheckTrigger
-    0x035A7A,   # Obj5A_Handshake
-    0x035C06,   # Obj5A_TextFlyoutInit
-    0x035C42,   # Obj5A_TextFlyout
-    0x036068,   # Obj59
-    0x036080,   # Obj59_Init
-    0x0360CE,   # loc_36022
-    0x03620C,   # loc_36160
-    0x03621E,   # loc_36172
-    0x036394,   # byte_362E8
-    0x03639A,   # byte_362EE
-    0x0363A0,   # byte_362F4
-    0x0363A6,   # byte_362FA
-    0x0363AC,   # byte_36300
-    0x0363B2,   # byte_36306
-    0x0363B8,   # byte_3630C
-    0x0363BE,   # byte_36312
-    0x0363C4,   # byte_36318
-    0x0363CA,   # byte_3631E
-    0x0363D0,   # byte_36324
-    0x0369D0,   # Obj8C
-    0x0369E8,   # Obj8C_Init
-    0x0369FA,   # Obj8C_WaitUntilOnscreen
-    0x036A04,   # Obj8C_WaitUntilTimerExpires
-    0x036A54,   # Obj8C_ChasePlayer
-    0x036AD2,   # Obj8C_FlyAway
-    0x036B22,   # Obj8D
-    0x036B3C,   # Obj8D_Init
-    0x036B88,   # loc_36ADC
-    0x036BAC,   # Obj8D_Animate
-    0x036BBA,   # loc_36B0E
-    0x036BE0,   # loc_36B34
-    0x036C16,   # loc_36B6A
-    0x036C34,   # Obj8F
-    0x036C48,   # Obj8F_Init
-    0x036C52,   # loc_36BA6
-    0x036C80,   # Obj90
-    0x036C92,   # Obj90_Init
-    0x036CC8,   # Obj8F_Move
-    0x036E58,   # Obj91
-    0x036E6E,   # Obj91_Init
-    0x036E90,   # Obj91_Main
-    0x036EDE,   # Obj91_Waiting
-    0x036F12,   # Obj91_Charge
-    0x036FBA,   # Obj92
-    0x036FD0,   # Obj92_Init
-    0x036FE8,   # loc_36F3C
-    0x037014,   # loc_36F68
-    0x03703C,   # loc_36F90
-    0x037092,   # Obj93
-    0x0370A4,   # Obj93_Init
-    0x0370D4,   # loc_37028
-    0x037136,   # byte_3708A
-    0x03713A,   # byte_3708E
-    0x0371AA,   # Obj95
-    0x0371C2,   # Obj95_Init
-    0x037288,   # Obj95_WaitForPlayer
-    0x0372D0,   # loc_37224
-    0x0372E8,   # Obj95_FireballUpdate
-    0x037364,   # loc_372B8
-    0x037382,   # byte_372D6
-    0x037386,   # byte_372DA
-    0x0373CE,   # Obj94
-    0x0373E4,   # Obj94_Init
-    0x0373FC,   # Obj94_WaitForPlayer
-    0x037448,   # Obj94_ReadyToCreateHead
-    0x037476,   # Obj94_PostCreateHead
-    0x03747C,   # Obj97
-    0x037494,   # Obj97_Init
-    0x037500,   # Obj97_InitialWait
-    0x037534,   # Obj97_RaiseHead
-    0x03756E,   # Obj97_Normal
-    0x0375A0,   # Obj97_DeathDrop
-    0x037706,   # return_3765A
-    0x037708,   # loc_3765C
-    0x03770E,   # loc_37662
-    0x037714,   # loc_37668
-    0x037794,   # Obj98
-    0x0377A6,   # Obj98_Init
-    0x0377AA,   # Obj98_Main
-    0x037874,   # Obj99
-    0x037888,   # Obj99_Init
-    0x037894,   # loc_377E8
-    0x0378C8,   # loc_3781C
-    0x0379E2,   # Obj9A
-    0x0379F4,   # Obj9A_Init
-    0x037A10,   # Obj9A_Main
-    0x037A4C,   # loc_379A0
-    0x037A76,   # loc_379CA
-    0x037A96,   # loc_379EA
-    0x037AB0,   # return_37A04
-    0x037AB2,   # Obj9B
-    0x037AC4,   # Obj9B_Init
-    0x037AC8,   # Obj9B_Main
-    0x037B2E,   # Obj9C
-    0x037B40,   # Obj9C_Init
-    0x037B44,   # Obj9C_Main
-    0x037CA6,   # Obj9D
-    0x037CBC,   # Obj9D_Init
-    0x037CC8,   # Obj9D_Idle
-    0x037D5A,   # Obj9D_Climbing
-    0x037D80,   # Obj9D_Throwing
-    0x037D96,   # Obj9D_ThrowingHandRaised
-    0x037DB2,   # Obj9D_ThrowingHandLowered
-    0x037E38,   # byte_37D8C
-    0x037E3C,   # byte_37D90
-    0x037EC2,   # Obj9E
-    0x037EDC,   # Obj9E_Init
-    0x037EEE,   # loc_37E42
-    0x037F44,   # loc_37E98
-    0x037F62,   # loc_37EB6
-    0x037F80,   # loc_37ED4
-    0x037FA8,   # loc_37EFC
-    0x0380B8,   # Obj9F
-    0x0380CE,   # Obj9F_Init
-    0x0380FA,   # loc_3804E
-    0x038170,   # loc_380C4
-    0x0381A8,   # loc_380FC
-    0x0381C0,   # loc_38114
-    0x0381D6,   # loc_3812A
-    0x0381EA,   # loc_3813E
-    0x038208,   # ObjA0
-    0x03821C,   # ObjA0_Init
-    0x038258,   # loc_381AC
-    0x03828C,   # loc_381E0
-    0x0382D6,   # loc_3822A
-    0x0382F0,   # loc_38244
-    0x038304,   # loc_38258
-    0x03832C,   # loc_38280
-    0x0383B4,   # byte_38308
-    0x0383BA,   # byte_3830E
-    0x038460,   # ObjA1
-    0x038478,   # ObjA1_Init
-    0x03849C,   # ObjA1_Main
-    0x038512,   # loc_38466
-    0x03852E,   # loc_38482
-    0x03854A,   # BranchTo5_JmpTo39_MarkObjGone
-    0x03854E,   # ObjA2
-    0x038562,   # ObjA2_Init
-    0x03856A,   # ObjA2_Main
-    0x0385D0,   # ObjA2_Main2
-    0x0387EA,   # ObjA3
-    0x038806,   # loc_3875A
-    0x038812,   # loc_38766
-    0x038840,   # loc_38794
-    0x0388DE,   # loc_38832
-    0x038908,   # loc_3885C
-    0x03892C,   # loc_38880
-    0x03893A,   # loc_3888E
-    0x038A48,   # ObjA4
-    0x038A5E,   # ObjA4_Init
-    0x038A62,   # loc_389B6
-    0x038A86,   # loc_389DA
-    0x038AD8,   # loc_38A2C
-    0x038B96,   # ObjA5
-    0x038BAA,   # ObjA5_Init
-    0x038BBC,   # loc_38B10
-    0x038C0E,   # loc_38B62
-    0x038C32,   # ObjA6
-    0x038C46,   # ObjA6_Init
-    0x038C58,   # loc_38BAC
-    0x038CAA,   # loc_38BFE
-    0x038E66,   # ObjA7
-    0x038E78,   # ObjA7_Init
-    0x038EB8,   # ObjA7_Main
-    0x038EFE,   # loc_38E52
-    0x038F46,   # loc_38E9A
-    0x038F60,   # loc_38EB4
-    0x038FEA,   # loc_38F3E
-    0x039004,   # loc_38F58
-    0x03900E,   # BranchTo_ObjA7_CheckExplode
-    0x039012,   # ObjA8
-    0x039028,   # ObjA8_Init
-    0x039034,   # loc_38F88
-    0x039094,   # loc_38FE8
-    0x0390CE,   # loc_39022
-    0x0390DE,   # ObjA9
-    0x0390F0,   # ObjA9_Init
-    0x039102,   # ObjA9_Main
-    0x039112,   # ObjAA
-    0x039124,   # ObjAA_Init
-    0x03912E,   # ObjAA_Main
-    0x03914E,   # ObjAB
-    0x039160,   # ObjAB_Init
-    0x039164,   # ObjAB_Main
-    0x039426,   # ObjAC
-    0x039438,   # ObjAC_Init
-    0x039462,   # ObjAC_Main
-    0x0394C8,   # ObjAD
-    0x0394DA,   # ObjAD_Init
-    0x0394E6,   # ObjAD_Main
-    0x0394FE,   # ObjAE
-    0x03951A,   # ObjAE_Init
-    0x039534,   # loc_39488
-    0x03954E,   # loc_394A2
-    0x03957E,   # loc_394D2
-    0x03958C,   # loc_394E0
-    0x0395B4,   # loc_39508
-    0x0395C2,   # loc_39516
-    0x0397D8,   # ObjAF
-    0x03980A,   # ObjAF_Init
-    0x039858,   # loc_397AC
-    0x039892,   # loc_397E6
-    0x0398AA,   # loc_397FE
-    0x0398F6,   # loc_3984A
-    0x03996C,   # loc_398C0
-    0x0399CA,   # loc_3991E
-    0x0399F2,   # loc_39946
-    0x039A22,   # loc_39976
-    0x039AB6,   # loc_39A0A
-    0x039AC8,   # loc_39A1C
-    0x039AF0,   # loc_39A44
-    0x039B14,   # loc_39A68
-    0x039B42,   # loc_39A96
-    0x039B56,   # loc_39AAA
-    0x039B7A,   # loc_39ACE
-    0x039BA0,   # loc_39AF4
-    0x039BD4,   # loc_39B28
-    0x039BF0,   # loc_39B44
-    0x039C3E,   # loc_39B92
-    0x039C66,   # loc_39BBA
-    0x039C78,   # loc_39BCC
-    0x039C8E,   # loc_39BE2
-    0x039C96,   # loc_39BEA
-    0x039CAE,   # loc_39C02
-    0x039CB6,   # loc_39C0A
-    0x039CBE,   # loc_39C12
-    0x039CD6,   # loc_39C2A
-    0x039CEE,   # loc_39C42
-    0x039CFC,   # loc_39C50
-    0x039D4C,   # loc_39CA0
-    0x039EF8,   # byte_39E4C
-    0x039F00,   # byte_39E54
-    0x039F08,   # byte_39E5C
-    0x039F0C,   # byte_39E60
-    0x039F10,   # byte_39E64
-    0x03A288,   # ObjB0
-    0x03A2A2,   # ObjB0_Init
-    0x03A3A0,   # ObjB0_RunLeft
-    0x03A3D8,   # ObjB0_MidWipe
-    0x03A442,   # ObjB0_RunRight
-    0x03A478,   # ObjB0_EndWipe
-    0x03A4A2,   # return_3A3F6
-    0x03A4A4,   # ObjB1
-    0x03A4B6,   # ObjB1_Init
-    0x03A4CE,   # ObjB1_Main
-    0x03A74E,   # loc_3A6A2
-    0x03A780,   # loc_3A6D4
-    0x03A83C,   # ObjB2
-    0x03A85A,   # ObjB2_Init
-    0x03A88A,   # ObjB2_Main_SCZ
-    0x03A946,   # ObjB2_Main_WFZ_Start
-    0x03A96E,   # ObjB2_Main_WFZ_Start_init
-    0x03A980,   # ObjB2_Main_WFZ_Start_main
-    0x03A9C6,   # ObjB2_Main_WFZ_Start_shot_down
-    0x03A9FA,   # ObjB2_Main_WFZ_Start_fall_down
-    0x03AA00,   # ObjB2_Main_WFZ_End
-    0x03AA2E,   # ObjB2_Wait_Leader_position
-    0x03AABA,   # ObjB2_Move_Leader_edge
-    0x03AAF8,   # ObjB2_Wait_for_plane
-    0x03AB20,   # ObjB2_Prepare_to_jump
-    0x03AB54,   # ObjB2_Jump_to_plane
-    0x03ABAA,   # ObjB2_Landed_on_plane
-    0x03AC14,   # ObjB2_Approaching_ship
-    0x03AC28,   # ObjB2_Jump_to_ship
-    0x03AC8A,   # ObjB2_Dock_on_DEZ
-    0x03AD16,   # ObjB2_Invisible_grabber
-    0x03AD2A,   # loc_3AC7E
-    0x03AD30,   # loc_3AC84
-    0x03AD9E,   # loc_3ACF2
-    0x03ADB8,   # loc_3AD0C
-    0x03ADD6,   # loc_3AD2A
-    0x03ADEE,   # loc_3AD42
-    0x03AE00,   # loc_3AD54
-    0x03AE08,   # loc_3AD5C
-    0x03B08C,   # byte_3AFE0
-    0x03B092,   # byte_3AFE6
-    0x03B38A,   # ObjB3
-    0x03B39C,   # ObjB3_Init
-    0x03B3BE,   # ObjB3_Main
-    0x03B416,   # ObjB4
-    0x03B428,   # ObjB4_Init
-    0x03B42C,   # ObjB3_SubObjData
-    0x03B43A,   # ObjB4_Main
-    0x03B4A6,   # ObjB5
-    0x03B4BA,   # ObjB5_Init
-    0x03B4D2,   # ObjB5_Main
-    0x03B4F4,   # ObjB5_Animate
-    0x03B5A8,   # byte_3B4FC
-    0x03B5B2,   # byte_3B506
-    0x03B5BA,   # byte_3B50E
-    0x03B5C2,   # byte_3B516
-    0x03B5C8,   # byte_3B51C
-    0x03B5D0,   # byte_3B524
-    0x03B5D6,   # byte_3B52A
-    0x03B5DE,   # byte_3B532
-    0x03B5E6,   # byte_3B53A
-    0x03B5F0,   # ObjB5_SubObjData
-    0x03B67C,   # ObjB6
-    0x03B694,   # ObjB6_Init
-    0x03B6AE,   # loc_3B602
-    0x03B6C8,   # loc_3B61C
-    0x03B6D0,   # loc_3B624
-    0x03B6F0,   # loc_3B644
-    0x03B6FA,   # loc_3B64E
-    0x03B708,   # loc_3B65C
-    0x03B720,   # loc_3B674
-    0x03B752,   # loc_3B6A6
-    0x03B774,   # loc_3B6C8
-    0x03B78E,   # loc_3B6E2
-    0x03B7AA,   # loc_3B6FE
-    0x03B7D8,   # loc_3B72C
-    0x03B7E2,   # loc_3B736
-    0x03B7E8,   # loc_3B73C
-    0x03B802,   # loc_3B756
-    0x03B810,   # loc_3B764
-    0x03B8DC,   # byte_3B830
-    0x03B8E2,   # byte_3B836
-    0x03B8E6,   # byte_3B83A
-    0x03B8EC,   # byte_3B840
-    0x03B8F2,   # byte_3B846
-    0x03B8F8,   # byte_3B84C
-    0x03B8FC,   # byte_3B850
-    0x03B952,   # ObjB7
-    0x03B964,   # ObjB7_Init
-    0x03B970,   # ObjB7_Main
-    0x03BA14,   # ObjB8
-    0x03BA28,   # ObjB8_Init
-    0x03BA2C,   # loc_3B980
-    0x03BA56,   # loc_3B9AA
-    0x03BB66,   # ObjB9
-    0x03BB7A,   # ObjB9_Init
-    0x03BB7E,   # loc_3BAD2
-    0x03BB9C,   # loc_3BAF0
-    0x03BBF8,   # ObjBA
-    0x03BC0A,   # ObjBA_Init
-    0x03BC0E,   # ObjBA_Main
-    0x03BC28,   # ObjBB
-    0x03BC3A,   # ObjBB_Init
-    0x03BC3E,   # ObjBB_Main
-    0x03BC68,   # ObjBC
-    0x03BC7A,   # ObjBC_Init
-    0x03BC86,   # ObjBC_Main
-    0x03BCC8,   # ObjBD
-    0x03BCDC,   # ObjBD_Init
-    0x03BCE8,   # loc_3BC3C
-    0x03BCFC,   # loc_3BC50
-    0x03BD18,   # loc_3BC6C
-    0x03BD58,   # loc_3BCAC
-    0x03BD62,   # loc_3BCB6
-    0x03BD78,   # loc_3BCCC
-    0x03BD82,   # loc_3BCD6
-    0x03BDDE,   # byte_3BD32
-    0x03BDE4,   # byte_3BD38
-    0x03BE26,   # ObjBE
-    0x03BE40,   # ObjBE_Init
-    0x03BE4E,   # ObjBD_SubObjData
-    0x03BE72,   # loc_3BDC6
-    0x03BE80,   # loc_3BDD4
-    0x03BEA0,   # loc_3BDF4
-    0x03BEE6,   # byte_3BE3A
-    0x03BEEC,   # byte_3BE40
-    0x03BF56,   # ObjBE_SubObjData
-    0x03BF68,   # ObjBF_Init
-    0x03BF6C,   # ObjBF_Animate
-    0x03BFB0,   # ObjC0
-    0x03BFC2,   # ObjC0_Init
-    0x03BFEA,   # ObjC0_Main
-    0x03BFF8,   # ObjBE_SubObjData2
-    0x03C012,   # loc_3BF66
-    0x03C084,   # loc_3BFD8
-    0x03C10E,   # loc_3C062
-    0x03C158,   # ObjC1
-    0x03C16C,   # ObjC1_Init
-    0x03C182,   # ObjC1_Main
-    0x03C256,   # ObjC1_FallOff
-    0x03C3D4,   # ObjC2
-    0x03C3E6,   # ObjC2_Init
-    0x03C3EA,   # ObjC2_Main
-    0x03C482,   # ObjC3
-    0x03C494,   # ObjC3_Init
-    0x03C4C2,   # ObjC3_Main
-    0x03C4EE,   # ObjC5
-    0x03C510,   # ObjC5_Init
-    0x03C522,   # ObjC5_LaserCase
-    0x03C554,   # ObjC5_CaseBoundary
-    0x03C588,   # ObjC5_CaseWaitStart
-    0x03C5FE,   # ObjC5_CaseWaitDown
-    0x03C61C,   # ObjC5_CaseDown
-    0x03C636,   # ObjC5_CaseXSpeed
-    0x03C65C,   # ObjC5_CaseBoundaryChk
-    0x03C694,   # ObjC5_CaseAnimate
-    0x03C6A2,   # ObjC5_CaseLSLoad
-    0x03C6BA,   # ObjC5_CaseLSDown
-    0x03C6EC,   # ObjC5_CaseWaitLoadLaser
-    0x03C708,   # ObjC5_CaseWaitMove
-    0x03C738,   # ObjC5_CaseBoundaryLaserChk
-    0x03C790,   # ObjC5_CaseLSUp
-    0x03C7B0,   # ObjC5_CaseStartOver
-    0x03C7BE,   # ObjC5_CaseDefeated
-    0x03C7F4,   # ObjC5_LaserWall
-    0x03C824,   # ObjC5_LaserWallMappings
-    0x03C832,   # ObjC5_LaserWallWaitDelete
-    0x03C85A,   # ObjC5_LaserWallDelete
-    0x03C89A,   # ObjC5_PlatformReleaser
-    0x03C8B2,   # ObjC5_PlatformReleaserInit
-    0x03C8C4,   # ObjC5_PlatformReleaserWaitDown
-    0x03C8E8,   # ObjC5_PlatformReleaserDown
-    0x03C908,   # ObjC5_PlatformReleaserLoadWait
-    0x03C960,   # ObjC5_PlatformReleaserDelete
-    0x03C974,   # ObjC5_Platform
-    0x03C99C,   # ObjC5_PlatformInit
-    0x03C9C2,   # ObjC5_PlatformDownWait
-    0x03C9EA,   # ObjC5_PlatformTestChangeDirection
-    0x03CA56,   # ObjC5_PlatformHurt
-    0x03CA68,   # ObjC5_PlatformHurtCollision
-    0x03CA74,   # ObjC5_PlatformHurtFollowPlatform
-    0x03CA96,   # ObjC5_LaserShooter
-    0x03CAB8,   # ObjC5_LaserShooterInit
-    0x03CAC6,   # ObjC5_LaserShooterFollow
-    0x03CADA,   # ObjC5_LaserShooterDown
-    0x03CAE8,   # ObjC5_Laser
-    0x03CB1C,   # ObjC5_LaserInit
-    0x03CB44,   # ObjC5_LaserFlash
-    0x03CB7C,   # ObjC5_LaseWaitShoot
-    0x03CB90,   # ObjC5_LaserShoot
-    0x03CBDE,   # ObjC5_LaserMove
-    0x03CBEA,   # ObjC5_Robotnik
-    0x03CBFE,   # ObjC5_RobotnikInit
-    0x03CC28,   # ObjC5_RobotnikAnimate
-    0x03CC50,   # ObjC5_RobotnikDown
-    0x03CC6A,   # ObjC5_RobotnikPlatform
-    0x03CD66,   # byte_3CCBA
-    0x03CD70,   # byte_3CCC4
-    0x03CD78,   # byte_3CCCC
-    0x03CD7C,   # byte_3CCD0
-    0x03CF7C,   # ObjC6
-    0x03CF92,   # ObjC6_Init
-    0x03CFA4,   # ObjC6_State2
-    0x03CFBC,   # ObjC6_State2_State1
-    0x03CFDE,   # ObjC6_State2_State2
-    0x03D004,   # ObjC6_State2_State3
-    0x03D028,   # ObjC6_State2_State4
-    0x03D0A2,   # ObjC6_State2_State5
-    0x03D0E2,   # ObjC6_State3
-    0x03D0F6,   # ObjC6_State3_State1
-    0x03D112,   # ObjC6_State3_State2
-    0x03D124,   # ObjC6_State3_State3
-    0x03D148,   # ObjC6_State4
-    0x03D188,   # byte_3D0DC
-    0x03D18E,   # byte_3D0E2
-    0x03D2EA,   # ObjC8
-    0x03D300,   # ObjC8_Init
-    0x03D328,   # loc_3D27C
-    0x03D352,   # loc_3D2A6
-    0x03D380,   # loc_3D2D4
-    0x03D574,   # ObjC7
-    0x03D5A4,   # ObjC7_Init
-    0x03D5B4,   # ObjC7_Body
-    0x03D5D6,   # loc_3D52A
-    0x03D654,   # loc_3D5A8
-    0x03D66E,   # loc_3D5C2
-    0x03D696,   # loc_3D5EA
-    0x03D6DA,   # loc_3D62E
-    0x03D6EC,   # loc_3D640
-    0x03D730,   # loc_3D684
-    0x03D756,   # loc_3D6AA
-    0x03D76C,   # loc_3D6C0
-    0x03D77A,   # loc_3D6CE
-    0x03D794,   # loc_3D6E8
-    0x03D7AE,   # loc_3D702
-    0x03D7CC,   # loc_3D720
-    0x03D7F0,   # loc_3D744
-    0x03D830,   # loc_3D784
-    0x03D864,   # loc_3D7B8
-    0x03D89C,   # loc_3D7F0
-    0x03D8DA,   # loc_3D82E
-    0x03D8E8,   # loc_3D83C
-    0x03D902,   # loc_3D856
-    0x03D94A,   # loc_3D89E
-    0x03D964,   # loc_3D8B8
-    0x03D97E,   # loc_3D8D2
-    0x03D992,   # loc_3D8E6
-    0x03D9CE,   # loc_3D922
-    0x03D9E8,   # loc_3D93C
-    0x03DA1C,   # ObjC7_SetupEnding
-    0x03DA5C,   # loc_3D9B0
-    0x03DA82,   # loc_3D9D6
-    0x03DAC0,   # ObjC7_Shoulder
-    0x03DAE8,   # loc_3DA3C
-    0x03DAF4,   # return_3DA48
-    0x03DAF6,   # ObjC7_FrontLowerLeg
-    0x03DB12,   # loc_3DA66
-    0x03DB1E,   # return_3DA72
-    0x03DB20,   # ObjC7_FrontForearm
-    0x03DB4C,   # loc_3DAA0
-    0x03DB58,   # loc_3DAAC
-    0x03DB78,   # loc_3DACC
-    0x03DBDE,   # loc_3DB32
-    0x03DC06,   # loc_3DB5A
-    0x03DC20,   # ObjC7_Arm
-    0x03DC3C,   # loc_3DB90
-    0x03DC48,   # return_3DB9C
-    0x03DC4A,   # ObjC7_FrontThigh
-    0x03DC66,   # loc_3DBBA
-    0x03DC72,   # return_3DBC6
-    0x03DC74,   # ObjC7_Head
-    0x03DCA2,   # loc_3DBF6
-    0x03DCAE,   # loc_3DC02
-    0x03DCC8,   # loc_3DC1C
-    0x03DCD6,   # loc_3DC2A
-    0x03DCF2,   # loc_3DC46
-    0x03DCFC,   # ObjC7_Jet
-    0x03DD20,   # loc_3DC74
-    0x03DD2C,   # loc_3DC80
-    0x03DD32,   # loc_3DC86
-    0x03DD40,   # loc_3DC94
-    0x03DD48,   # ObjC7_BackLowerLeg
-    0x03DD64,   # loc_3DCB8
-    0x03DD76,   # return_3DCCA
-    0x03DD78,   # ObjC7_BackForearm
-    0x03DD9A,   # loc_3DCEE
-    0x03DDAC,   # loc_3DD00
-    0x03DDCC,   # ObjC7_BackThigh
-    0x03DDE8,   # loc_3DD3C
-    0x03DDFA,   # return_3DD4E
-    0x03DDFC,   # ObjC7_TargettingSensor
-    0x03DE10,   # loc_3DD64
-    0x03DE52,   # loc_3DDA6
-    0x03DEE8,   # loc_3DE3C
-    0x03DF1C,   # ObjC7_TargettingLock
-    0x03DF2E,   # loc_3DE82
-    0x03DF4E,   # loc_3DEA2
-    0x03DF6E,   # ObjC7_EggmanBomb
-    0x03DF84,   # loc_3DED8
-    0x03DFB0,   # loc_3DF04
-    0x03DFE2,   # loc_3DF36
-    0x03E02C,   # loc_3DF80
-    0x03E056,   # ObjC7_FallingPieces
-    0x03E2FE,   # loc_3E252
-    0x03E326,   # loc_3E27A
-    0x03E32A,   # loc_3E27E
-    0x03E65E,   # byte_3E5B2
-    0x03E662,   # byte_3E5B6
-    0x03E67C,   # byte_3E5D0
-    0x03E696,   # byte_3E5EA
-    0x03EB74,   # Obj8A
-    0x03EB86,   # Obj8A_Init
-    0x03EBF4,   # Obj8A_Display
-    0x03F290,   # Obj3E
-    0x03F2BE,   # loc_3F212
-    0x03F324,   # loc_3F278
-    0x03F360,   # loc_3F2B4
-    0x03F3A8,   # loc_3F2FC
-    0x03F3FE,   # return_3F352
-    0x03F400,   # loc_3F354
-    0x03F43A,   # loc_3F38E
-    0x03F454,   # loc_3F3A8
-    0x03F4B2,   # loc_3F406
-    0x03FB06,   # BossCollision_EHZ_CPZ
-    0x03FB0A,   # return_3FA5E
-    0x03FB0C,   # BossCollision_HTZ
-    0x03FB74,   # BossCollision_ARZ
-    0x03FBAA,   # BossCollision_MCZ
-    0x03FC36,   # BossCollision_CNZ
-    0x03FC70,   # BossCollision_MTZ
-    0x03FC76,   # BossCollision_OOZ
-    0x03FDD6,   # Dynamic_Null
-    0x03FDE8,   # Dynamic_Null
-    0x03FE0C,   # Dynamic_Null
-    0x03FFDE,   # Dynamic_Normal
-    0x03FFFE,   # Dynamic_Normal
-    0x04000C,   # Dynamic_ARZ
-    0x0402B2,   # Animated_Null
-    0x0402BE,   # Animated_ARZ
-    0x0402C4,   # Animated_Null
-    0x0402D2,   # Animated_Null
-    0x04086C,   # APM_Null
-    0x041B36,   # Debug_Init
-    0x041BB8,   # Debug_Main
+    0x00E658,   # LevEvents_EHZ
+    0x00E676,   # LevEvents_EHZ2_Routine1
+    0x00E6B0,   # LevEvents_EHZ2_Routine2
+    0x00E6EE,   # LevEvents_EHZ2_Routine3
+    0x00E738,   # LevEvents_EHZ2_Routine4
+    0x00E752,   # LevEvents_001
+    0x00E754,   # LevEvents_WZ
+    0x00E756,   # LevEvents_003
+    0x00E758,   # LevEvents_MTZ
+    0x00E75A,   # LevEvents_MTZ3
+    0x00E772,   # LevEvents_MTZ3_Routine1
+    0x00E792,   # LevEvents_MTZ3_Routine2
+    0x00E7B8,   # LevEvents_MTZ3_Routine3
+    0x00E7F6,   # LevEvents_MTZ3_Routine4
+    0x00E82E,   # LevEvents_MTZ3_Routine5
+    0x00E842,   # LevEvents_WFZ
+    0x00E86A,   # LevEvents_WFZ_Routine1
+    0x00E88E,   # LevEvents_WFZ_Routine2
+    0x00E8C0,   # LevEvents_WFZ_Routine3
+    0x00E904,   # LevEvents_WFZ_Routine4
+    0x00E94A,   # LevEvents_WFZ_Routine5
+    0x00E96C,   # LevEvents_WFZ_Routine6
+    0x00E984,   # LevEvents_WFZ_RoutineNull
+    0x00E986,   # LevEvents_HTZ
+    0x00E9A2,   # LevEvents_HTZ_Routine1
+    0x00EA0E,   # LevEvents_HTZ_Routine2
+    0x00EB14,   # LevEvents_HTZ_Routine3
+    0x00EC0E,   # LevEvents_HTZ2_Routine1
+    0x00EC90,   # LevEvents_HTZ2_Routine2
+    0x00ED96,   # LevEvents_HTZ2_Routine3
+    0x00EDFA,   # LevEvents_HTZ2_Routine4
+    0x00EEF8,   # LevEvents_HTZ2_Routine5
+    0x00EF84,   # LevEvents_HTZ2_Routine6
+    0x00EFAA,   # LevEvents_HTZ2_Routine7
+    0x00EFE8,   # LevEvents_HTZ2_Routine8
+    0x00F020,   # LevEvents_HTZ2_Routine9
+    0x00F05A,   # LevEvents_HPZ
+    0x00F05C,   # LevEvents_009
+    0x00F05E,   # LevEvents_OOZ
+    0x00F07C,   # LevEvents_OOZ2_Routine1
+    0x00F0A8,   # LevEvents_OOZ2_Routine2
+    0x00F0EC,   # LevEvents_OOZ2_Routine3
+    0x00F124,   # LevEvents_OOZ2_Routine4
+    0x00F13E,   # LevEvents_MCZ
+    0x00F15C,   # LevEvents_MCZ2_Routine1
+    0x00F196,   # LevEvents_MCZ2_Routine2
+    0x00F206,   # LevEvents_MCZ2_Routine3
+    0x00F23E,   # LevEvents_MCZ2_Routine4
+    0x00F26A,   # LevEvents_CNZ
+    0x00F28E,   # LevEvents_CNZ2_Routine1
+    0x00F2CE,   # LevEvents_CNZ2_Routine2
+    0x00F318,   # LevEvents_CNZ2_Routine3
+    0x00F350,   # LevEvents_CNZ2_Routine4
+    0x00F378,   # LevEvents_CPZ
+    0x00F396,   # LevEvents_CPZ2_Routine1
+    0x00F3BC,   # LevEvents_CPZ2_Routine2
+    0x00F3FA,   # LevEvents_CPZ2_Routine3
+    0x00F432,   # LevEvents_CPZ2_Routine4
+    0x00F446,   # LevEvents_DEZ
+    0x00F45E,   # LevEvents_DEZ_Routine1
+    0x00F490,   # LevEvents_DEZ_Routine2
+    0x00F492,   # LevEvents_DEZ_Routine3
+    0x00F4AC,   # LevEvents_DEZ_Routine4
+    0x00F4CE,   # LevEvents_DEZ_Routine5
+    0x00F4D0,   # LevEvents_ARZ
+    0x00F4EE,   # LevEvents_ARZ2_Routine1
+    0x00F520,   # LevEvents_ARZ2_Routine2
+    0x00F55C,   # LevEvents_ARZ2_Routine3
+    0x00F58A,   # LevEvents_ARZ2_Routine4
+    0x00F59E,   # LevEvents_SCZ
+    0x00F5BE,   # LevEvents_SCZ_Routine1
+    0x00F5D0,   # LevEvents_SCZ_Routine2
+    0x00F5F0,   # LevEvents_SCZ_Routine3
+    0x00F60A,   # LevEvents_SCZ_Routine4
+    0x00F622,   # LevEvents_SCZ_RoutineNull
+    0x00F66C,   # Obj11
+    0x00F694,   # Obj11_Init
+    0x00F77A,   # Obj11_EHZ
+    0x00F80C,   # Obj11_Display
+    0x00F810,   # Obj11_HPZ
+    0x00FC9C,   # Obj15
+    0x00FCCA,   # Obj15_Init
+    0x00FE50,   # Obj15_State2
+    0x01003A,   # Obj15_Display
+    0x01003E,   # Obj15_State4
+    0x0100F8,   # Obj15_State5
+    0x010100,   # Obj15_State6
+    0x010166,   # Obj15_State7
+    0x010310,   # Obj17
+    0x010324,   # Obj17_Init
+    0x0103E8,   # Obj17_Main
+    0x01044A,   # Obj17_Display
+    0x0104AC,   # Obj18
+    0x0104CE,   # Obj18_Init
+    0x01056A,   # loc_1056A
+    0x0105A8,   # loc_105A8
+    0x0105D0,   # BranchTo3_DeleteObject
+    0x0105D4,   # loc_105D4
+    0x010668,   # return_10668
+    0x01066A,   # loc_1066A
+    0x01067A,   # loc_1067A
+    0x010692,   # loc_10692
+    0x0106A2,   # loc_106A2
+    0x0106B0,   # loc_106B0
+    0x0106C0,   # loc_106C0
+    0x0106D8,   # loc_106D8
+    0x010702,   # loc_10702
+    0x010778,   # loc_10778
+    0x0107A4,   # loc_107A4
+    0x0107BC,   # loc_107BC
+    0x0107D6,   # loc_107D6
+    0x0108BC,   # Obj1A
+    0x0108D0,   # Obj1A_Init
+    0x01097C,   # Obj1A_Main
+    0x0109B4,   # Obj1A_Fragment
+    0x010A08,   # Obj1F
+    0x010A1C,   # Obj1F_Init
+    0x010AD6,   # Obj1F_Main
+    0x010B0E,   # Obj1F_Fragment
+    0x0111D4,   # Obj1C
+    0x0112A4,   # Obj1C_Init
+    0x0112EC,   # BranchTo_MarkObjGone
+    0x0112F0,   # Obj71
+    0x01131A,   # Obj71_Init
+    0x01135C,   # Obj71_Main
+    0x0115C4,   # Obj2A
+    0x0115D6,   # Obj2A_Init
+    0x011610,   # Obj2A_Main
+    0x01169A,   # Obj2D
+    0x0116AC,   # Obj2D_Init
+    0x01175E,   # Obj2D_Main
+    0x01188C,   # Obj28
+    0x0119BE,   # Obj28_Init
+    0x011ADE,   # Obj28_Main
+    0x011B38,   # Obj28_Walk
+    0x011B74,   # Obj28_Fly
+    0x011BF4,   # Obj28_Prison
+    0x011C14,   # Obj28_FlickyWait
+    0x011C34,   # Obj28_FlickyJump
+    0x011C6E,   # Obj28_RabbitWait
+    0x011C8A,   # Obj28_DoubleBounce
+    0x011CC8,   # Obj28_LandJump
+    0x011CE6,   # Obj28_SingleBounce
+    0x011D24,   # Obj28_FlyBounce
+    0x011DC6,   # Obj29
+    0x011DD8,   # Obj29_Init
+    0x011E06,   # Obj29_Main
+    0x011F44,   # Obj25
+    0x011F5C,   # Obj25_Init
+    0x011F90,   # Obj25_Animate
+    0x011F9E,   # Obj25_Collect
+    0x011FB0,   # Obj25_Sparkle
+    0x011FBE,   # Obj25_Delete
+    0x012078,   # Obj37
+    0x012090,   # Obj37_Init
+    0x012178,   # Obj37_Main
+    0x0121DA,   # Obj37_Collect
+    0x0121EE,   # Obj37_Sparkle
+    0x0121FC,   # Obj37_Delete
+    0x012216,   # BigRing_Init
+    0x012264,   # BigRing_Main
+    0x012282,   # BigRing_Enter
+    0x0122C0,   # BigRing_Delete
+    0x0122D8,   # BigRingFlash_Init
+    0x012306,   # BigRingFlash_Main
+    0x012376,   # BigRingFlash_Delete
+    0x0125E6,   # ObjDC
+    0x0125FA,   # ObjDC_Main
+    0x01264E,   # ObjDC_Animate
+    0x01265A,   # ObjDC_Delete
+    0x012670,   # Obj26
+    0x012688,   # Obj26_Init
+    0x0126FA,   # Obj26_Main
+    0x012748,   # Obj26_Animate
+    0x012752,   # BranchTo2_MarkObjGone
+    0x0127BC,   # Obj26_Break
+    0x012854,   # Obj2E
+    0x012868,   # Obj2E_Init
+    0x0128DE,   # Obj2E_Raise
+    0x012938,   # robotnik_monitor
+    0x01293E,   # sonic_1up
+    0x012954,   # tails_1up
+    0x01296A,   # super_ring
+    0x0129E0,   # super_shoes
+    0x012A2C,   # shield_monitor
+    0x012A5C,   # invincible_monitor
+    0x012AA6,   # teleport_monitor
+    0x012CBE,   # qmark_monitor
+    0x012CC2,   # Obj2E_Wait
+    0x012E18,   # Obj0E
+    0x012E38,   # Obj0E_Init
+    0x012E58,   # Obj0E_Sonic
+    0x012E8A,   # Obj0E_Sonic_Init
+    0x012EC2,   # Obj0E_Sonic_FadeInAndPlayMusic
+    0x012EE8,   # Obj0E_Sonic_LoadPalette
+    0x012F18,   # Obj0E_Sonic_Move
+    0x012F52,   # Obj0E_Animate
+    0x012F60,   # Obj0E_Sonic_AnimationFinished
+    0x012F7C,   # Obj0E_Sonic_SpawnTails
+    0x012F9A,   # Obj0E_Sonic_FlashBackground
+    0x012FD6,   # Obj0E_Sonic_SpawnFallingStar
+    0x013014,   # Obj0E_Sonic_MakeStarSparkle
+    0x013066,   # Obj0E_Tails
+    0x01307E,   # Obj0E_Tails_Init
+    0x013096,   # Obj0E_Tails_Move
+    0x0130A2,   # Obj0E_Tails_AnimationFinished
+    0x0130B4,   # BranchTo10_DisplaySprite
+    0x0130D4,   # Obj0E_LogoTop
+    0x0130E6,   # Obj0E_LogoTop_Init
+    0x01310E,   # BranchTo11_DisplaySprite
+    0x013112,   # Obj0E_MaskingSprite
+    0x013124,   # Obj0E_MaskingSprite_Init
+    0x013146,   # BranchTo12_DisplaySprite
+    0x01314A,   # Obj0E_FlashingStar
+    0x013160,   # Obj0E_FlashingStar_Init
+    0x013190,   # Obj0E_FlashingStar_Wait
+    0x01319E,   # Obj0E_FlashingStar_Move
+    0x013200,   # Obj0E_SonicHand
+    0x013214,   # Obj0E_SonicHand_Init
+    0x013230,   # BranchTo13_DisplaySprite
+    0x013234,   # Obj0E_SonicHand_Move
+    0x01324C,   # Obj0E_TailsHand
+    0x013260,   # Obj0E_TailsHand_Init
+    0x01327C,   # BranchTo14_DisplaySprite
+    0x013280,   # Obj0E_TailsHand_Move
+    0x013294,   # Obj0E_FallingStar
+    0x0132A6,   # Obj0E_FallingStar_Init
+    0x0132D2,   # Obj0E_FallingStar_Main
+    0x0132F0,   # ObjC9
+    0x013302,   # ObjC9_Init
+    0x013344,   # ObjC9_Main
+    0x013600,   # Obj0F
+    0x013616,   # Obj0F_Init
+    0x013644,   # Obj0F_Main
+    0x013C48,   # Obj34
+    0x013C6E,   # Obj34_Init
+    0x013D22,   # Obj34_BackgroundIn
+    0x013D58,   # Obj34_BottomPartIn
+    0x013DA6,   # Obj34_LeftPartIn
+    0x013DDC,   # Obj34_ZoneName
+    0x013DE8,   # Obj34_Zone
+    0x013DEE,   # Obj34_ActNumber
+    0x013E42,   # Obj34_LeftPartOut
+    0x013E84,   # Obj34_BottomPartOut
+    0x013EE6,   # Obj34_BackgroundOutInit
+    0x013EFE,   # Obj34_BackgroundOut
+    0x013F18,   # Obj34_WaitAndGoAway
+    0x013F74,   # Obj39
+    0x013F88,   # Obj39_Init
+    0x013FCC,   # Obj39_SlideIn
+    0x013FEE,   # Obj39_Wait
+    0x014086,   # Obj3A
+    0x0140AC,   # loc_140AC
+    0x014102,   # loc_14102
+    0x01413A,   # loc_1413A
+    0x014142,   # BranchTo_Obj34_MoveTowardsTargetPosition
+    0x014146,   # loc_14146
+    0x014168,   # loc_14168
+    0x01419C,   # loc_1419C
+    0x0141AA,   # loc_141AA
+    0x014270,   # loc_14270
+    0x0142B0,   # loc_142B0
+    0x0142CC,   # loc_142CC
+    0x0143C0,   # Obj6F
+    0x014406,   # Obj6F_Init
+    0x014450,   # Obj6F_InitEmeraldText
+    0x014484,   # Obj6F_InitResultTitle
+    0x0144B6,   # Obj6F_Emerald6
+    0x0144B8,   # Obj6F_Emerald5
+    0x0144BA,   # Obj6F_Emerald4
+    0x0144BC,   # Obj6F_Emerald3
+    0x0144BE,   # Obj6F_Emerald2
+    0x0144C0,   # Obj6F_Emerald1
+    0x0144C2,   # Obj6F_Emerald0
+    0x0144DC,   # Obj6F_P2Rings
+    0x014500,   # Obj6F_P1Rings
+    0x014564,   # BranchTo3_Obj34_MoveTowardsTargetPosition
+    0x014568,   # Obj6F_DeleteIfNotEmerald
+    0x014572,   # Obj6F_TimedDisplay
+    0x014580,   # Obj6F_TallyScore
+    0x01461C,   # Obj6F_DisplayOnly
+    0x014626,   # Obj6F_TallyPerfect
+    0x014692,   # Obj6F_PerfectBonus
+    0x0146A6,   # Obj6F_InitAndMoveSuperMsg
+    0x014714,   # Obj6F_MoveTowardsSourcePosition
+    0x014736,   # Obj6F_MoveAndDisplay
+    0x015900,   # Obj36
+    0x015926,   # Obj36_Init
+    0x015996,   # Obj36_Upright
+    0x0159E6,   # Obj36_Sideways
+    0x015A42,   # Obj36_Upsidedown
+    0x015ADC,   # MoveSpikes_Still
+    0x015ADE,   # MoveSpikes_Vertical
+    0x015AF2,   # MoveSpikes_Horizontal
+    0x015CC8,   # Obj3B
+    0x015CDA,   # Obj3B_Init
+    0x015D02,   # Obj3B_Main
+    0x015D44,   # Obj3C
+    0x015D5C,   # Obj3C_Init
+    0x015D8A,   # Obj3C_Main
+    0x015E02,   # Obj3C_Fragment
+    0x01637C,   # ObjNull
+    0x016F9A,   # RingsManager_Init
+    0x016FDE,   # RingsManager_Main
+    0x0173CE,   # SpecialCNZBumpers_Init
+    0x017422,   # SpecialCNZBumpers_Main
+    0x017586,   # loc_17586
+    0x017638,   # loc_17638
+    0x01769E,   # loc_1769E
+    0x0176F6,   # loc_176F6
+    0x01774C,   # loc_1774C
+    0x0177A4,   # loc_177A4
+    0x017AB8,   # ObjectsManager_Init
+    0x017B84,   # ObjectsManager_Main
+    0x017CCC,   # ObjectsManager_2P_Main
+    0x018888,   # Obj41
+    0x0188A8,   # Obj41_Init
+    0x0188E8,   # Obj41_Init_Horizontal
+    0x018908,   # Obj41_Init_Down
+    0x01891C,   # Obj41_Init_DiagonallyUp
+    0x018936,   # Obj41_Init_DiagonallyDown
+    0x018954,   # Obj41_Init_Up
+    0x018980,   # Obj41_Up
+    0x018A70,   # Obj41_Horizontal
+    0x018C80,   # Obj41_Down
+    0x018D6A,   # Obj41_DiagonallyUp
+    0x018E9E,   # Obj41_DiagonallyDown
+    0x0191B8,   # Obj0D
+    0x0191DC,   # Obj0D_Init
+    0x01924C,   # Obj0D_Main
+    0x019366,   # Obj0D_Main_StateNull
+    0x019368,   # Obj0D_Main_State2
+    0x019418,   # Obj0D_Main_State3
+    0x0194FC,   # Obj0D_Main_State4
+    0x019F50,   # Obj01
+    0x019F76,   # Obj01_Init
+    0x01A030,   # Obj01_Control
+    0x01A26E,   # Obj01_MdNormal_Checks
+    0x01A2E0,   # Obj01_MdAir
+    0x01A30A,   # Obj01_MdRoll
+    0x01A330,   # Obj01_MdJump
+    0x01B120,   # Obj01_Hurt
+    0x01B1E6,   # Obj01_Dead
+    0x01B31C,   # Obj01_Gone
+    0x01B330,   # Obj01_Respawning
+    0x01B8A4,   # Obj02
+    0x01B8D8,   # Obj02_Init
+    0x01B9B4,   # Obj02_Control
+    0x01BAFE,   # TailsCPU_Init
+    0x01BB30,   # TailsCPU_Spawning
+    0x01BB8A,   # TailsCPU_Flying
+    0x01BCE0,   # TailsCPU_Normal
+    0x01BEB8,   # TailsCPU_Panic
+    0x01C00A,   # Obj02_MdNormal
+    0x01C032,   # Obj02_MdAir
+    0x01C05C,   # Obj02_MdRoll
+    0x01C082,   # Obj02_MdJump
+    0x01CBC6,   # Obj02_Hurt
+    0x01CC50,   # Obj02_Dead
+    0x01CD90,   # Obj02_Gone
+    0x01CDA4,   # Obj02_Respawning
+    0x01D190,   # TailsAni_Slide
+    0x01D194,   # TailsAni_Blank
+    0x01D19C,   # TailsAni_Dummy4
+    0x01D1A6,   # TailsAni_Dummy5
+    0x01D200,   # Obj05
+    0x01D212,   # Obj05_Init
+    0x01D23A,   # Obj05_Main
+    0x01D320,   # Obj0A
+    0x01D340,   # Obj0A_Init
+    0x01D398,   # Obj0A_Animate
+    0x01D3A4,   # Obj0A_ChkWater
+    0x01D40E,   # Obj0A_DisplayNumber
+    0x01D41A,   # Obj0A_Display
+    0x01D42E,   # JmpTo5_DeleteObject
+    0x01D434,   # Obj0A_AirLeft
+    0x01D606,   # Obj0A_Countdown
+    0x01D8F2,   # Obj38
+    0x01D904,   # Obj38_Main
+    0x01D92C,   # Obj38_Shield
+    0x01D97E,   # Obj35
+    0x01D9A4,   # loc_1D9A4
+    0x01DA0C,   # loc_1DA0C
+    0x01DA80,   # loc_1DA80
+    0x01DD20,   # Obj08
+    0x01DD36,   # Obj08_Init
+    0x01DD90,   # Obj08_Main
+    0x01DDAC,   # Obj08_MdSplash
+    0x01DDCC,   # Obj08_MdSpindashDust
+    0x01DE20,   # Obj08_MdSkidDust
+    0x01DE28,   # Obj08_Display
+    0x01DE46,   # BranchTo16_DeleteObject
+    0x01DE4A,   # Obj08_CheckSkid
+    0x01E0F0,   # Obj7E
+    0x01E102,   # Obj7E_Init
+    0x01E10E,   # DPLC_obj08_0076
+    0x01E138,   # Obj7E_Main
+    0x01F0B4,   # Obj79
+    0x01F0CC,   # Obj79_Init
+    0x01F12C,   # Obj79_Main
+    0x01F230,   # Obj79_Animate
+    0x01F240,   # Obj79_Dongle
+    0x01F536,   # Obj79_Star
+    0x01F624,   # Obj7D
+    0x01F636,   # Obj7D_Init
+    0x01F6DA,   # Obj7D_Main
+    0x01F730,   # Obj44
+    0x01F742,   # Obj44_Init
+    0x01F770,   # Obj44_Main
+    0x01F8A8,   # Obj24
+    0x01F8C2,   # Obj24_Init
+    0x01F924,   # loc_1F924
+    0x01F93E,   # loc_1F93E
+    0x01F99E,   # loc_1F99E
+    0x01F9BC,   # BranchTo_JmpTo15_DeleteObject
+    0x01F9C0,   # loc_1F9C0
+    0x01FCCA,   # word_1FCB8
+    0x01FCDC,   # Obj03
+    0x01FCF6,   # Obj03_Init
+    0x01FDA4,   # Obj03_MainX
+    0x01FEAE,   # Obj03_MainY
+    0x02009C,   # Obj0B
+    0x0200B0,   # Obj0B_Init
+    0x020104,   # loc_20104
+    0x020112,   # loc_20112
+    0x020210,   # Obj0C
+    0x020222,   # Obj0C_Init
+    0x020282,   # Obj0C_Main
+    0x02031C,   # Obj12
+    0x02032E,   # Obj12_Init
+    0x020356,   # Obj12_Main
+    0x0203AC,   # Obj13
+    0x0203C0,   # Obj13_Init
+    0x020486,   # Obj13_Main
+    0x020510,   # Obj13_ChkDel
+    0x0208DC,   # Obj04
+    0x0208F0,   # Obj04_Init
+    0x020930,   # Obj04_Action
+    0x0209C2,   # Obj04_Action2
+    0x020B9E,   # Obj49
+    0x020BB0,   # Obj49_Init
+    0x020BEA,   # Obj49_ChkDel
+    0x020DEC,   # Obj31
+    0x020E02,   # Obj31_Init
+    0x020E46,   # Obj31_Main
+    0x020EE0,   # Obj74
+    0x020EF2,   # Obj74_Init
+    0x020F2E,   # Obj74_Main
+    0x020FD2,   # Obj7C
+    0x020FE4,   # Obj7C_Init
+    0x021006,   # Obj7C_Main
+    0x021088,   # Obj27
+    0x02109C,   # Obj27_InitWithAnimal
+    0x0210BE,   # Obj27_Init
+    0x021102,   # Obj27_Main
+    0x02115C,   # Obj84
+    0x021176,   # Obj84_Init
+    0x021224,   # Obj84_MainX
+    0x0212F6,   # Obj84_MainY
+    0x021392,   # Obj8B
+    0x0213B2,   # Obj8B_Init
+    0x021412,   # Obj8B_Main
+    0x0214C4,   # Obj06
+    0x0214FA,   # Obj06_Init
+    0x021512,   # Obj06_Spiral
+    0x021808,   # Obj06_Cylinder
+    0x021928,   # Obj14
+    0x02194A,   # Obj14_Init
+    0x0219B8,   # Obj14_Main
+    0x021A74,   # return_21A74
+    0x021AA2,   # Obj14_Ball_Init
+    0x021AFC,   # Obj14_Ball_Main
+    0x021B94,   # Obj14_Ball_Fly
+    0x021DAC,   # Obj16
+    0x021DBE,   # Obj16_Init
+    0x021E10,   # Obj16_Main
+    0x021E40,   # Obj16_Wait
+    0x021E68,   # Obj16_Slide
+    0x021EC2,   # Obj16_Fall
+    0x022018,   # Obj19
+    0x022032,   # Obj19_Init
+    0x0220B8,   # Obj19_Main
+    0x02211C,   # Obj19_MoveRoutine1
+    0x022126,   # Obj19_MoveRoutine2
+    0x022146,   # Obj19_MoveRoutine3
+    0x022166,   # Obj19_MoveRoutine4
+    0x022176,   # Obj19_MoveRoutine5
+    0x022196,   # Obj19_MoveRoutineNull
+    0x022198,   # Obj19_MoveRoutine6
+    0x0221B4,   # Obj19_MoveRoutine7
+    0x0221EE,   # Obj19_MoveRoutine8
+    0x0222AC,   # Obj1B
+    0x0222C2,   # Obj1B_Init
+    0x0222F8,   # Obj1B_Main
+    0x022408,   # Obj1D
+    0x022428,   # Obj1D_Init
+    0x0224D6,   # Obj1D_Wait
+    0x0224F4,   # Obj1D_MoveArc
+    0x022528,   # Obj1D_MoveStraight
+    0x02259C,   # Obj1E
+    0x0225C2,   # Obj1E_Init
+    0x0225D6,   # Obj1E_Main
+    0x0225FC,   # loc_225FC
+    0x02271A,   # loc_2271A
+    0x0227FE,   # loc_227FE
+    0x02286A,   # loc_2286A
+    0x022FF8,   # Obj20
+    0x023014,   # Obj20_Init
+    0x023076,   # loc_23076
+    0x023084,   # loc_23084
+    0x02311E,   # loc_2311E
+    0x023144,   # loc_23144
+    0x0231D2,   # loc_231D2
+    0x023232,   # BranchTo_JmpTo21_DeleteObject
+    0x023300,   # Obj2F
+    0x02331E,   # Obj2F_Init
+    0x023368,   # Obj2F_Main
+    0x0234DC,   # Obj2F_Fragment
+    0x02351A,   # Obj32
+    0x02352E,   # Obj32_Init
+    0x023582,   # Obj32_Main
+    0x02366A,   # Obj32_Fragment
+    0x0238DC,   # Obj30
+    0x0238F8,   # Obj30_Init
+    0x023944,   # Obj30_Main
+    0x023972,   # loc_23972
+    0x02398A,   # loc_2398A
+    0x0239D0,   # loc_239D0
+    0x0239EA,   # loc_239EA
+    0x023AF4,   # Obj33
+    0x023B08,   # Obj33_Init
+    0x023B90,   # Obj33_Main
+    0x023BC6,   # loc_23BC6
+    0x023BEA,   # loc_23BEA
+    0x023C26,   # loc_23C26
+    0x023D20,   # loc_23D20
+    0x023D98,   # return_23D98
+    0x023D9A,   # Obj33_Flame
+    0x023E40,   # Obj43
+    0x023E66,   # Obj43_Init
+    0x023F0A,   # loc_23F0A
+    0x023F5C,   # loc_23F5C
+    0x024020,   # Obj07
+    0x024032,   # Obj07_Init
+    0x024054,   # Obj07_Main
+    0x0240F8,   # Obj45
+    0x024110,   # Obj45_Init
+    0x02414A,   # Obj45_InitHorizontal
+    0x02416E,   # Obj45_InitVertical
+    0x024186,   # Obj45_Vertical
+    0x02427A,   # Obj45_Horizontal
+    0x024A16,   # Obj46
+    0x024A2C,   # Obj46_Init
+    0x024AEA,   # Obj46_Inactive
+    0x024B38,   # Obj46_Moving
+    0x024BDC,   # Obj46_PressureSpring
+    0x024CF4,   # Obj47
+    0x024D06,   # Obj47_Init
+    0x024D32,   # Obj47_Main
+    0x024DD0,   # Obj3D
+    0x024DE6,   # Obj3D_Init
+    0x024E26,   # Obj3D_Main
+    0x024F3C,   # Obj3D_Fragment
+    0x024F52,   # Obj3D_InvisibleLauncher
+    0x024F84,   # loc_24F84
+    0x025036,   # loc_25036
+    0x025244,   # Obj48
+    0x025276,   # Obj48_Init
+    0x0252C6,   # Obj48_Main
+    0x0252F0,   # loc_252F0
+    0x0253C6,   # loc_253C6
+    0x025474,   # loc_25474
+    0x0254F2,   # loc_254F2
+    0x025694,   # Obj22
+    0x0256AC,   # Obj22_Init
+    0x0256E0,   # Obj22_Main
+    0x02572A,   # Obj22_ShootArrow
+    0x02577A,   # Obj22_Arrow_Init
+    0x0257BE,   # Obj22_Arrow
+    0x02588C,   # Obj23
+    0x02589E,   # Obj23_Init
+    0x025922,   # Obj23_Main
+    0x02595E,   # loc_2595E
+    0x02598C,   # return_2598C
+    0x02598E,   # loc_2598E
+    0x0259B8,   # loc_259B8
+    0x025A5A,   # Obj2B
+    0x025A6E,   # Obj2B_Init
+    0x025A9C,   # Obj2B_Main
+    0x025B3C,   # loc_25B3C
+    0x025B64,   # return_25B64
+    0x025B66,   # loc_25B66
+    0x025B8E,   # loc_25B8E
+    0x026104,   # Obj2C
+    0x02611C,   # Obj2C_Init
+    0x026152,   # Obj2C_Main
+    0x026296,   # Obj2C_Leaf
+    0x026370,   # Obj40
+    0x02638C,   # Obj40_Init
+    0x0263C8,   # Obj40_Main
+    0x026634,   # Obj42
+    0x026648,   # Obj42_Init
+    0x026688,   # loc_26688
+    0x02683A,   # loc_2683A
+    0x026920,   # Obj64
+    0x02693A,   # Obj64_Init
+    0x0269A2,   # Obj64_Main
+    0x0269F8,   # return_269F8
+    0x0269FA,   # loc_269FA
+    0x026AE0,   # Obj65
+    0x026B06,   # Obj65_Init
+    0x026C1C,   # loc_26C1C
+    0x026C8E,   # return_26C8E
+    0x026C90,   # loc_26C90
+    0x026CA4,   # loc_26CA4
+    0x026D14,   # loc_26D14
+    0x026D34,   # loc_26D34
+    0x026D94,   # loc_26D94
+    0x026E3C,   # loc_26E3C
+    0x026E4A,   # loc_26E4A
+    0x026EA4,   # loc_26EA4
+    0x026EC2,   # loc_26EC2
+    0x026F58,   # Obj66
+    0x026F6A,   # Obj66_Init
+    0x026FAE,   # Obj66_Main
+    0x02715C,   # Obj67
+    0x027188,   # Obj67_Init
+    0x0271AC,   # Obj67_Main
+    0x0271D0,   # loc_271D0
+    0x027260,   # loc_27260
+    0x027294,   # loc_27294
+    0x027594,   # Obj68
+    0x0275A8,   # Obj68_Init
+    0x02764A,   # Obj68_Block
+    0x027662,   # Obj68_Spike
+    0x027686,   # Obj68_Spike_Up
+    0x027698,   # Obj68_Spike_Right
+    0x0276A8,   # Obj68_Spike_Down
+    0x0276B8,   # Obj68_Spike_Left
+    0x027794,   # Obj6D
+    0x0277A6,   # Obj6D_Init
+    0x0277E0,   # Obj6D_Main
+    0x027884,   # Obj69
+    0x02789A,   # Obj69_Init
+    0x0278DC,   # Obj69_Main
+    0x0278F4,   # loc_278F4
+    0x02792C,   # loc_2792C
+    0x02794C,   # loc_2794C
+    0x02796E,   # loc_2796E
+    0x0279FC,   # loc_279FC
+    0x027AB0,   # Obj6A
+    0x027AC4,   # Obj6A_Init
+    0x027BDE,   # loc_27BDE
+    0x027C66,   # loc_27C66
+    0x027D6C,   # Obj6B
+    0x027D86,   # Obj6B_Init
+    0x027E0E,   # Obj6B_Main
+    0x027E66,   # Obj6B_Type_Immobile
+    0x027E68,   # loc_27E68
+    0x027E74,   # loc_27E74
+    0x027E96,   # loc_27E96
+    0x027EA2,   # loc_27EA2
+    0x027EC4,   # loc_27EC4
+    0x027EE2,   # loc_27EE2
+    0x027F10,   # loc_27F10
+    0x027F4E,   # loc_27F4E
+    0x027F60,   # loc_27F60
+    0x027F70,   # loc_27F70
+    0x027F80,   # loc_27F80
+    0x028034,   # Obj6C
+    0x028060,   # Obj6C_Init
+    0x028168,   # Obj6C_Main
+    0x0283AC,   # Obj6E
+    0x0283C8,   # Obj6E_Init
+    0x028432,   # loc_28432
+    0x0284BC,   # loc_284BC
+    0x0285C0,   # Obj70
+    0x0285D2,   # Obj70_Init
+    0x028652,   # Obj70_Main
+    0x02893C,   # Obj72
+    0x02894E,   # Map_obj70_018C
+    0x028958,   # Map_obj70_0196
+    0x028980,   # Obj72_Main
+    0x0289D4,   # Obj73
+    0x0289E8,   # Obj73_Init
+    0x028AD6,   # Obj73_Main
+    0x028B7E,   # Obj73_SubObject
+    0x028BC8,   # Obj75
+    0x028BEE,   # Obj75_Init
+    0x028CCA,   # Obj75_Main
+    0x028D6C,   # loc_28D6C
+    0x028DF8,   # Obj76
+    0x028E0E,   # Obj76_Init
+    0x028E5E,   # Obj76_Main
+    0x028ECE,   # Obj76_CheckPlayers
+    0x028F1E,   # Obj76_SlideOut
+    0x028F88,   # Obj77
+    0x028F9A,   # Obj77_Init
+    0x028FBC,   # Obj77_Main
+    0x0291CC,   # Obj78
+    0x0291E8,   # Obj78_Init
+    0x02926C,   # Obj78_Main
+    0x029280,   # loc_29280
+    0x0292C8,   # loc_292C8
+    0x0292EC,   # loc_292EC
+    0x029334,   # loc_29334
+    0x02935E,   # loc_2935E
+    0x0293A0,   # Obj7A
+    0x0293CC,   # Obj7A_Init
+    0x02948E,   # Obj7A_Main
+    0x0294EA,   # Obj7A_SubObject
+    0x029590,   # Obj7B
+    0x0295C8,   # Obj7B_Init
+    0x0295FE,   # Obj7B_Main
+    0x0297E4,   # Obj7F
+    0x0297F6,   # Obj7F_Init
+    0x02981E,   # Obj7F_Main
+    0x02997C,   # Obj80
+    0x029990,   # Obj80_Init
+    0x029A66,   # Obj80_MCZ_Main
+    0x029BFA,   # Obj80_WFZ_Main
+    0x02A000,   # Obj81
+    0x02A026,   # Obj81_Init
+    0x02A0FE,   # Obj81_BridgeUp
+    0x02A18A,   # loc_2A18A
+    0x02A290,   # Obj82
+    0x02A2AA,   # Obj82_Init
+    0x02A312,   # Obj82_Main
+    0x02A368,   # return_2A368
+    0x02A36A,   # loc_2A36A
+    0x02A392,   # loc_2A392
+    0x02A3B6,   # loc_2A3B6
+    0x02A3D8,   # loc_2A3D8
+    0x02A3EC,   # loc_2A3EC
+    0x02A4FC,   # Obj83
+    0x02A522,   # Obj83_Init
+    0x02A620,   # Obj83_Main
+    0x02A74E,   # Obj83_PlatformSubObject
+    0x02A7B0,   # Obj3F
+    0x02A7C4,   # Obj3F_Init
+    0x02A802,   # Obj3F_Horizontal
+    0x02A8FE,   # Obj3F_Vertical
+    0x02AB84,   # Obj85
+    0x02ABD4,   # Obj85_Init
+    0x02AC84,   # Obj85_Up
+    0x02AE56,   # Obj85_Diagonal
+    0x02B140,   # Obj86
+    0x02B158,   # Obj86_Init
+    0x02B194,   # Obj86_UpwardsType
+    0x02B312,   # Obj86_HorizontalType
+    0x02B528,   # ObjD2
+    0x02B53A,   # ObjD2_Init
+    0x02B57E,   # ObjD2_Main
+    0x02B84C,   # ObjD3
+    0x02B8EC,   # ObjD4
+    0x02B8FE,   # ObjD4_Init
+    0x02B96E,   # ObjD4_Main
+    0x02B9A2,   # ObjD4_Horizontal
+    0x02B9B6,   # ObjD4_Vertical
+    0x02BA08,   # ObjD5
+    0x02BA1A,   # ObjD5_Init
+    0x02BA68,   # ObjD5_Main
+    0x02BA9C,   # loc_2BA9C
+    0x02BAB6,   # loc_2BAB6
+    0x02BAEE,   # loc_2BAEE
+    0x02BB08,   # loc_2BB08
+    0x02BB6C,   # ObjD6
+    0x02BB7E,   # ObjD6_Init
+    0x02BBA6,   # ObjD6_Main
+    0x02BBF8,   # loc_2BBF8
+    0x02BDF8,   # loc_2BDF8
+    0x02BE9C,   # loc_2BE9C
+    0x02BF32,   # SlotMachine_Routine1
+    0x02BF36,   # SlotMachine_Routine2
+    0x02BF3A,   # SlotMachine_Routine3
+    0x02BF3E,   # SlotMachine_Routine4
+    0x02BF42,   # SlotMachine_Routine5
+    0x02BF46,   # SlotMachine_Routine6
+    0x02BF4C,   # SlotMachine_Routine1
+    0x02BF9A,   # SlotMachine_Routine2
+    0x02BFBA,   # SlotMachine_Routine3
+    0x02C070,   # SlotMachine_Routine4
+    0x02C0A8,   # SlotMachine_Routine5
+    0x02C0E6,   # SlotMachine_Routine5_1
+    0x02C0EA,   # SlotMachine_Routine5_2
+    0x02C0EE,   # SlotMachine_Routine5_3
+    0x02C0F2,   # SlotMachine_Routine5_4
+    0x02C134,   # SlotMachine_Routine5_1
+    0x02C170,   # SlotMachine_Routine5_2
+    0x02C1DA,   # SlotMachine_Routine5_3
+    0x02C1EC,   # SlotMachine_Routine5_4
+    0x02C1EE,   # SlotMachine_Routine6
+    0x02C304,   # SlotMachine_Unmatched1
+    0x02C308,   # SlotMachine_Match12
+    0x02C30C,   # SlotMachine_Match13
+    0x02C31C,   # SlotMachine_Match13
+    0x02C34A,   # SlotMachine_Match12
+    0x02C374,   # SlotMachine_Unmatched1
+    0x02C448,   # ObjD7
+    0x02C45A,   # ObjD7_Init
+    0x02C4AC,   # ObjD7_Main
+    0x02C6AC,   # ObjD8
+    0x02C6C0,   # ObjD8_Init
+    0x02C6FC,   # loc_2C6FC
+    0x02C884,   # loc_2C884
+    0x02C92C,   # ObjD9
+    0x02C93E,   # ObjD9_Init
+    0x02C954,   # ObjD9_Main
+    0x02CA14,   # Obj4A
+    0x02CA2A,   # Obj4A_Bullet
+    0x02CA46,   # Obj4A_Angry
+    0x02CA52,   # Obj4A_Init
+    0x02CAB8,   # Obj4A_Main
+    0x02CADE,   # Obj4A_WaitForCharacter
+    0x02CB04,   # Obj4A_DelayBeforeMoveUp
+    0x02CB20,   # Obj4A_MoveUp
+    0x02CB3A,   # Obj4A_Hover
+    0x02CB48,   # Obj4A_MoveDown
+    0x02CCC8,   # Obj50
+    0x02CCDE,   # Obj50_Init
+    0x02CDA2,   # Obj50_Main
+    0x02CDCA,   # Obj50_Wing
+    0x02CDF4,   # Obj50_Bullet
+    0x02CE06,   # Obj50_CheckIfOnScreen
+    0x02CE14,   # Obj50_Chase
+    0x02CE1A,   # Obj50_Shooting
+    0x02CF2E,   # BranchTo_JmpTo20_ObjectMove
+    0x02D068,   # Obj4B
+    0x02D07E,   # Obj4B_Projectile
+    0x02D090,   # Obj4B_Flame
+    0x02D0C8,   # Obj4B_Init
+    0x02D174,   # Obj4B_Main
+    0x02D194,   # Obj4B_Roaming
+    0x02D234,   # Obj4B_Shooting
+    0x02D394,   # Obj5C
+    0x02D3AA,   # Obj5C_Init
+    0x02D3E4,   # Obj5C_Main
+    0x02D494,   # Obj58
+    0x02D4A6,   # Obj58_Init
+    0x02D4EC,   # Obj58_Main
+    0x02D734,   # Obj5D
+    0x02D75E,   # Obj5D_Init
+    0x02D94E,   # Obj5D_Main
+    0x02D9B4,   # Obj5D_Main_Explode
+    0x02D9D8,   # Obj5D_Main_StopExploding
+    0x02DA22,   # Obj5D_Main_Retreat
+    0x02DA62,   # Obj5D_Main_Descend
+    0x02DB98,   # Obj5D_Main_MoveTowardTarget
+    0x02DC00,   # Obj5D_Main_Wait
+    0x02DC14,   # Obj5D_Main_FollowPlayer
+    0x02DC5E,   # Obj5D_FallingParts
+    0x02DCB6,   # Obj5D_Pump
+    0x02DDA2,   # Obj5D_Pipe
+    0x02DDB4,   # Obj5D_Pipe_Wait
+    0x02DDE2,   # Obj5D_Pipe_Extend
+    0x02DE66,   # Obj5D_Pipe_Pump
+    0x02DE7A,   # Obj5D_Pipe_Pump_0
+    0x02DF08,   # Obj5D_Pipe_Pump_2
+    0x02DF76,   # Obj5D_Pipe_Pump_4
+    0x02DFB2,   # Obj5D_Pipe_Retract
+    0x02DFFE,   # Obj5D_PipeSegment
+    0x02E07A,   # Obj5D_Dripper
+    0x02E098,   # Obj5D_Dripper_0
+    0x02E0DE,   # Obj5D_Dripper_2
+    0x02E130,   # Obj5D_Dripper_4
+    0x02E192,   # Obj5D_Container
+    0x02E1AC,   # Obj5D_Container_Init
+    0x02E25C,   # Obj5D_Container_Main
+    0x02E2E8,   # Obj5D_Container_FallOff
+    0x02E5A4,   # Obj5D_Container_Extend
+    0x02E610,   # Obj5D_Container_Floor
+    0x02E666,   # Obj5D_Container_Floor2
+    0x02E67A,   # Obj5D_Gunk
+    0x02E692,   # Obj5D_Gunk_Init
+    0x02E6CA,   # Obj5D_Gunk_Main
+    0x02E746,   # Obj5D_Gunk_6
+    0x02E790,   # Obj5D_Gunk_8
+    0x02E7D0,   # Obj5D_Gunk_Droplets
+    0x02E8F6,   # Obj5D_Robotnik
+    0x02E94E,   # Obj5D_Flame
+    0x02E9F6,   # Obj5D_Smoke_Puff
+    0x02EF18,   # Obj56
+    0x02EF36,   # Obj56_Init
+    0x02F262,   # loc_2F262
+    0x02F27C,   # loc_2F27C
+    0x02F2A8,   # loc_2F2A8
+    0x02F2BA,   # loc_2F2BA
+    0x02F2E0,   # loc_2F2E0
+    0x02F304,   # loc_2F304
+    0x02F336,   # loc_2F336
+    0x02F374,   # loc_2F374
+    0x02F38A,   # loc_2F38A
+    0x02F3A2,   # loc_2F3A2
+    0x02F424,   # loc_2F424
+    0x02F442,   # loc_2F442
+    0x02F52A,   # loc_2F52A
+    0x02F54E,   # loc_2F54E
+    0x02F560,   # loc_2F560
+    0x02F5C6,   # loc_2F5C6
+    0x02F5F6,   # loc_2F5F6
+    0x02F664,   # loc_2F664
+    0x02F67C,   # loc_2F67C
+    0x02F714,   # loc_2F714
+    0x02F746,   # loc_2F746
+    0x02F7A6,   # loc_2F7A6
+    0x02F7D2,   # loc_2F7D2
+    0x02F7F4,   # loc_2F7F4
+    0x02F8DA,   # loc_2F8DA
+    0x02FC50,   # Obj52
+    0x02FC68,   # Obj52_Init
+    0x02FD00,   # Obj52_Mobile
+    0x02FD18,   # Obj52_Mobile_Raise
+    0x02FD5E,   # Obj52_Mobile_Flamethrower
+    0x02FDDA,   # Obj52_Mobile_BeginLower
+    0x02FE0E,   # Obj52_Mobile_Lower
+    0x02FEF0,   # Obj52_FlameThrower
+    0x02FF02,   # loc_2FF02
+    0x02FF50,   # loc_2FF50
+    0x02FF66,   # Obj52_LavaBall
+    0x02FF78,   # loc_2FF78
+    0x030008,   # loc_30008
+    0x030106,   # Obj52_Mobile_Defeated
+    0x030210,   # loc_30210
+    0x030480,   # Obj89
+    0x030494,   # Obj89_Init
+    0x030620,   # Obj89_Main
+    0x03063C,   # Obj89_Main_Sub0
+    0x03067A,   # Obj89_Main_Sub2
+    0x0306B8,   # Obj89_Main_Sub4
+    0x030706,   # Obj89_Main_Sub6
+    0x03088C,   # Obj89_Main_Sub8
+    0x0308F4,   # Obj89_Main_SubA
+    0x03095C,   # Obj89_Main_SubC
+    0x0309A8,   # Obj89_Pillar
+    0x0309D2,   # Obj89_Pillar_Sub0
+    0x030A04,   # Obj89_Pillar_Sub2
+    0x030B4A,   # Obj89_Pillar_Sub4
+    0x030B6C,   # Obj89_Pillar_BulgingEyes
+    0x030B9E,   # Obj89_Arrow
+    0x030BC8,   # Obj89_Arrow_Init
+    0x030C36,   # Obj89_Arrow_Sub2
+    0x030C86,   # Obj89_Arrow_Sub4
+    0x030CAC,   # Obj89_Arrow_Sub6
+    0x030CC8,   # BranchTo_JmpTo55_DeleteObject
+    0x030FA4,   # Obj57
+    0x030FB8,   # Obj57_Init
+    0x0310BE,   # Obj57_Main
+    0x0310DA,   # Obj57_Main_Sub0
+    0x03116E,   # Obj57_Main_Sub2
+    0x0311AA,   # Obj57_Main_Sub4
+    0x03124A,   # Obj57_Main_Sub6
+    0x0314D2,   # Obj57_Main_Sub8
+    0x031526,   # Obj57_Main_SubA
+    0x0315A6,   # Obj57_Main_SubC
+    0x0315F2,   # Obj57_FallingStuff
+    0x0318F0,   # Obj51
+    0x031904,   # Obj51_Init
+    0x031A04,   # loc_31A04
+    0x031A36,   # loc_31A36
+    0x031A48,   # loc_31A48
+    0x031A78,   # loc_31A78
+    0x031BA8,   # loc_31BA8
+    0x031C22,   # loc_31C22
+    0x031D5C,   # loc_31D5C
+    0x031DCC,   # loc_31DCC
+    0x031E2A,   # loc_31E2A
+    0x031F24,   # loc_31F24
+    0x031F48,   # loc_31F48
+    0x031F96,   # loc_31F96
+    0x031FDC,   # loc_31FDC
+    0x032080,   # loc_32080
+    0x032288,   # Obj54
+    0x03229E,   # Obj54_Init
+    0x0323BA,   # Obj54_Main
+    0x0323DC,   # Obj54_MainSub0
+    0x032456,   # Obj54_MainSub2
+    0x0324DC,   # Obj54_MainSub4
+    0x032524,   # Obj54_MainSub6
+    0x032544,   # Obj54_MainSub8
+    0x032574,   # Obj54_MainSubA
+    0x0325BE,   # Obj54_MainSubC
+    0x03262E,   # Obj54_MainSubE
+    0x032650,   # loc_32650
+    0x0326B8,   # loc_326B8
+    0x032704,   # loc_32704
+    0x032802,   # Obj54_MainSub10
+    0x032864,   # Obj54_MainSub12
+    0x032940,   # Obj53
+    0x032958,   # Obj53_Init
+    0x0329DA,   # Obj53_Main
+    0x032B64,   # Obj53_BreakAway
+    0x032BDC,   # Obj53_BounceAround
+    0x032C98,   # Obj53_Burst
+    0x032CAE,   # Obj54_Laser
+    0x032CC0,   # Obj54_Laser_Init
+    0x032D2C,   # Obj54_Laser_Main
+    0x032D48,   # Obj54_LaserShooter
+    0x032F90,   # Obj55
+    0x032FA8,   # Obj55_Init
+    0x032FE6,   # Obj55_Main
+    0x032FFE,   # Obj55_Main_Init
+    0x033078,   # Obj55_Main_Surface
+    0x0330BA,   # Obj55_Main_Wait
+    0x033104,   # Obj55_Main_Dive
+    0x0331A6,   # Obj55_Main_Defeated
+    0x03320A,   # Obj55_LaserShooter
+    0x033222,   # Obj55_LaserShooter_Init
+    0x033296,   # Obj55_LaserShooter_Rise
+    0x0332C6,   # Obj55_LaserShooter_ChooseTarget
+    0x033324,   # Obj55_LaserShooter_Aim
+    0x033388,   # Obj55_LaserShooter_Lower
+    0x033456,   # Obj55_SpikeChain
+    0x033468,   # Obj55_SpikeChain_Init
+    0x0334CC,   # Obj55_SpikeChain_Main
+    0x033570,   # Obj55_Laser
+    0x033586,   # Obj55_Laser_Init
+    0x0335DE,   # Obj55_Laser_Main
+    0x0336B2,   # Obj55_Wave
+    0x03370E,   # BranchTo2_JmpTo62_DeleteObject
+    0x0338EC,   # Obj09
+    0x03391C,   # Obj09_Init
+    0x0339D6,   # Obj09_MdNormal
+    0x033BAE,   # Obj09_MdJump
+    0x0340A4,   # Obj63
+    0x0347E0,   # .tails_14
+    0x0347E6,   # .tails_15
+    0x0347EC,   # Obj10
+    0x0347EE,   # .tails_16
+    0x0347F2,   # .tails_17
+    0x0347F6,   # .tails_tails_0
+    0x034804,   # Obj10_Init
+    0x034908,   # Obj10_MdNormal
+    0x0349F2,   # Obj10_MdJump
+    0x034A5C,   # Obj88
+    0x034EB0,   # Obj61
+    0x034EC6,   # Obj61_Init
+    0x034F06,   # loc_34F06
+    0x034F6A,   # loc_34F6A
+    0x034FA0,   # Obj60
+    0x034FB6,   # Obj60_Init
+    0x034FF0,   # loc_34FF0
+    0x035010,   # loc_35010
+    0x03533A,   # loc_3533A
+    0x0353FE,   # Obj5B
+    0x035410,   # Obj5B_Init
+    0x0354E4,   # Obj5B_Main
+    0x035554,   # Obj5A
+    0x035578,   # Obj5A_Init
+    0x035706,   # Obj5A_RingsNeeded
+    0x0357B2,   # Obj5A_FlashMessage
+    0x0357D2,   # Obj5A_MoveAndFlash
+    0x0357E8,   # Obj5A_FlashOnly
+    0x0357FE,   # Obj5A_CheckpointRainbow
+    0x0359A6,   # Obj5A_MostRingsWin
+    0x0359BC,   # Obj5A_RingCheckTrigger
+    0x0359CE,   # Obj5A_Handshake
+    0x035B5A,   # Obj5A_TextFlyoutInit
+    0x035B96,   # Obj5A_TextFlyout
+    0x035FBC,   # Obj59
+    0x035FD4,   # Obj59_Init
+    0x036022,   # loc_36022
+    0x036160,   # loc_36160
+    0x036172,   # loc_36172
+    0x036924,   # Obj8C
+    0x03693C,   # Obj8C_Init
+    0x03694E,   # Obj8C_WaitUntilOnscreen
+    0x036958,   # Obj8C_WaitUntilTimerExpires
+    0x0369A8,   # Obj8C_ChasePlayer
+    0x036A26,   # Obj8C_FlyAway
+    0x036A76,   # Obj8D
+    0x036A90,   # Obj8D_Init
+    0x036ADC,   # loc_36ADC
+    0x036B00,   # Obj8D_Animate
+    0x036B0E,   # loc_36B0E
+    0x036B34,   # loc_36B34
+    0x036B6A,   # loc_36B6A
+    0x036B88,   # Obj8F
+    0x036B9C,   # Obj8F_Init
+    0x036BA6,   # loc_36BA6
+    0x036BD4,   # Obj90
+    0x036BE6,   # Obj90_Init
+    0x036C1C,   # Obj8F_Move
+    0x036DAC,   # Obj91
+    0x036DC2,   # Obj91_Init
+    0x036DE4,   # Obj91_Main
+    0x036E32,   # Obj91_Waiting
+    0x036E66,   # Obj91_Charge
+    0x036F0E,   # Obj92
+    0x036F24,   # Obj92_Init
+    0x036F3C,   # loc_36F3C
+    0x036F68,   # loc_36F68
+    0x036F90,   # loc_36F90
+    0x036FE6,   # Obj93
+    0x036FF8,   # Obj93_Init
+    0x037028,   # loc_37028
+    0x0370FE,   # Obj95
+    0x037116,   # Obj95_Init
+    0x0371DC,   # Obj95_WaitForPlayer
+    0x037224,   # loc_37224
+    0x03723C,   # Obj95_FireballUpdate
+    0x0372B8,   # loc_372B8
+    0x037322,   # Obj94
+    0x037338,   # Obj94_Init
+    0x037350,   # Obj94_WaitForPlayer
+    0x03739C,   # Obj94_ReadyToCreateHead
+    0x0373CA,   # Obj94_PostCreateHead
+    0x0373D0,   # Obj97
+    0x0373E8,   # Obj97_Init
+    0x037454,   # Obj97_InitialWait
+    0x037488,   # Obj97_RaiseHead
+    0x0374C2,   # Obj97_Normal
+    0x0374F4,   # Obj97_DeathDrop
+    0x03765A,   # return_3765A
+    0x03765C,   # loc_3765C
+    0x037662,   # loc_37662
+    0x037668,   # loc_37668
+    0x0376E8,   # Obj98
+    0x0376FA,   # Obj98_Init
+    0x0376FE,   # Obj98_Main
+    0x0377C8,   # Obj99
+    0x0377DC,   # Obj99_Init
+    0x0377E8,   # loc_377E8
+    0x03781C,   # loc_3781C
+    0x037936,   # Obj9A
+    0x037948,   # Obj9A_Init
+    0x037964,   # Obj9A_Main
+    0x0379A0,   # loc_379A0
+    0x0379CA,   # loc_379CA
+    0x0379EA,   # loc_379EA
+    0x037A04,   # return_37A04
+    0x037A06,   # Obj9B
+    0x037A18,   # Obj9B_Init
+    0x037A1C,   # Obj9B_Main
+    0x037A82,   # Obj9C
+    0x037A94,   # Obj9C_Init
+    0x037A98,   # Obj9C_Main
+    0x037BFA,   # Obj9D
+    0x037C10,   # Obj9D_Init
+    0x037C1C,   # Obj9D_Idle
+    0x037CAE,   # Obj9D_Climbing
+    0x037CD4,   # Obj9D_Throwing
+    0x037CEA,   # Obj9D_ThrowingHandRaised
+    0x037D06,   # Obj9D_ThrowingHandLowered
+    0x037E16,   # Obj9E
+    0x037E30,   # Obj9E_Init
+    0x037E42,   # loc_37E42
+    0x037E98,   # loc_37E98
+    0x037EB6,   # loc_37EB6
+    0x037ED4,   # loc_37ED4
+    0x037EFC,   # loc_37EFC
+    0x03800C,   # Obj9F
+    0x038022,   # Obj9F_Init
+    0x03804E,   # loc_3804E
+    0x0380C4,   # loc_380C4
+    0x0380FC,   # loc_380FC
+    0x038114,   # loc_38114
+    0x03812A,   # loc_3812A
+    0x03813E,   # loc_3813E
+    0x03815C,   # ObjA0
+    0x038170,   # ObjA0_Init
+    0x0381AC,   # loc_381AC
+    0x0381E0,   # loc_381E0
+    0x03822A,   # loc_3822A
+    0x038244,   # loc_38244
+    0x038258,   # loc_38258
+    0x038280,   # loc_38280
+    0x0383B4,   # ObjA1
+    0x0383CC,   # ObjA1_Init
+    0x0383F0,   # ObjA1_Main
+    0x038466,   # loc_38466
+    0x038482,   # loc_38482
+    0x03849E,   # BranchTo5_JmpTo39_MarkObjGone
+    0x0384A2,   # ObjA2
+    0x0384B6,   # ObjA2_Init
+    0x0384BE,   # ObjA2_Main
+    0x038524,   # ObjA2_Main2
+    0x03873E,   # ObjA3
+    0x03875A,   # loc_3875A
+    0x038766,   # loc_38766
+    0x038794,   # loc_38794
+    0x038832,   # loc_38832
+    0x03885C,   # loc_3885C
+    0x038880,   # loc_38880
+    0x03888E,   # loc_3888E
+    0x03899C,   # ObjA4
+    0x0389B2,   # ObjA4_Init
+    0x0389B6,   # loc_389B6
+    0x0389DA,   # loc_389DA
+    0x038A2C,   # loc_38A2C
+    0x038AEA,   # ObjA5
+    0x038AFE,   # ObjA5_Init
+    0x038B10,   # loc_38B10
+    0x038B62,   # loc_38B62
+    0x038B86,   # ObjA6
+    0x038B9A,   # ObjA6_Init
+    0x038BAC,   # loc_38BAC
+    0x038BFE,   # loc_38BFE
+    0x038DBA,   # ObjA7
+    0x038DCC,   # ObjA7_Init
+    0x038E0C,   # ObjA7_Main
+    0x038E52,   # loc_38E52
+    0x038E9A,   # loc_38E9A
+    0x038EB4,   # loc_38EB4
+    0x038F3E,   # loc_38F3E
+    0x038F58,   # loc_38F58
+    0x038F62,   # BranchTo_ObjA7_CheckExplode
+    0x038F66,   # ObjA8
+    0x038F7C,   # ObjA8_Init
+    0x038F88,   # loc_38F88
+    0x038FE8,   # loc_38FE8
+    0x039022,   # loc_39022
+    0x039032,   # ObjA9
+    0x039044,   # ObjA9_Init
+    0x039056,   # ObjA9_Main
+    0x039066,   # ObjAA
+    0x039078,   # ObjAA_Init
+    0x039082,   # ObjAA_Main
+    0x0390A2,   # ObjAB
+    0x0390B4,   # ObjAB_Init
+    0x0390B8,   # ObjAB_Main
+    0x03937A,   # ObjAC
+    0x03938C,   # ObjAC_Init
+    0x0393B6,   # ObjAC_Main
+    0x03941C,   # ObjAD
+    0x03942E,   # ObjAD_Init
+    0x03943A,   # ObjAD_Main
+    0x039452,   # ObjAE
+    0x03946E,   # ObjAE_Init
+    0x039488,   # loc_39488
+    0x0394A2,   # loc_394A2
+    0x0394D2,   # loc_394D2
+    0x0394E0,   # loc_394E0
+    0x039508,   # loc_39508
+    0x039516,   # loc_39516
+    0x03972C,   # ObjAF
+    0x03975E,   # ObjAF_Init
+    0x0397AC,   # loc_397AC
+    0x0397E6,   # loc_397E6
+    0x0397FE,   # loc_397FE
+    0x03984A,   # loc_3984A
+    0x0398C0,   # loc_398C0
+    0x03991E,   # loc_3991E
+    0x039946,   # loc_39946
+    0x039976,   # loc_39976
+    0x039A0A,   # loc_39A0A
+    0x039A1C,   # loc_39A1C
+    0x039A44,   # loc_39A44
+    0x039A68,   # loc_39A68
+    0x039A96,   # loc_39A96
+    0x039AAA,   # loc_39AAA
+    0x039ACE,   # loc_39ACE
+    0x039AF4,   # loc_39AF4
+    0x039B28,   # loc_39B28
+    0x039B44,   # loc_39B44
+    0x039B92,   # loc_39B92
+    0x039BBA,   # loc_39BBA
+    0x039BCC,   # loc_39BCC
+    0x039BE2,   # loc_39BE2
+    0x039BEA,   # loc_39BEA
+    0x039C02,   # loc_39C02
+    0x039C0A,   # loc_39C0A
+    0x039C12,   # loc_39C12
+    0x039C2A,   # loc_39C2A
+    0x039C42,   # loc_39C42
+    0x039C50,   # loc_39C50
+    0x039CA0,   # loc_39CA0
+    0x03A1DC,   # ObjB0
+    0x03A1F6,   # ObjB0_Init
+    0x03A2F4,   # ObjB0_RunLeft
+    0x03A32C,   # ObjB0_MidWipe
+    0x03A396,   # ObjB0_RunRight
+    0x03A3CC,   # ObjB0_EndWipe
+    0x03A3F6,   # return_3A3F6
+    0x03A3F8,   # ObjB1
+    0x03A40A,   # ObjB1_Init
+    0x03A422,   # ObjB1_Main
+    0x03A6A2,   # loc_3A6A2
+    0x03A6D4,   # loc_3A6D4
+    0x03A790,   # ObjB2
+    0x03A7AE,   # ObjB2_Init
+    0x03A7DE,   # ObjB2_Main_SCZ
+    0x03A89A,   # ObjB2_Main_WFZ_Start
+    0x03A8C2,   # ObjB2_Main_WFZ_Start_init
+    0x03A8D4,   # ObjB2_Main_WFZ_Start_main
+    0x03A91A,   # ObjB2_Main_WFZ_Start_shot_down
+    0x03A94E,   # ObjB2_Main_WFZ_Start_fall_down
+    0x03A954,   # ObjB2_Main_WFZ_End
+    0x03A982,   # ObjB2_Wait_Leader_position
+    0x03AA0E,   # ObjB2_Move_Leader_edge
+    0x03AA4C,   # ObjB2_Wait_for_plane
+    0x03AA74,   # ObjB2_Prepare_to_jump
+    0x03AAA8,   # ObjB2_Jump_to_plane
+    0x03AAFE,   # ObjB2_Landed_on_plane
+    0x03AB68,   # ObjB2_Approaching_ship
+    0x03AB7C,   # ObjB2_Jump_to_ship
+    0x03ABDE,   # ObjB2_Dock_on_DEZ
+    0x03AC6A,   # ObjB2_Invisible_grabber
+    0x03AC7E,   # loc_3AC7E
+    0x03AC84,   # loc_3AC84
+    0x03ACF2,   # loc_3ACF2
+    0x03AD0C,   # loc_3AD0C
+    0x03AD2A,   # loc_3AD2A
+    0x03AD42,   # loc_3AD42
+    0x03AD54,   # loc_3AD54
+    0x03AD5C,   # loc_3AD5C
+    0x03B2DE,   # ObjB3
+    0x03B2F0,   # ObjB3_Init
+    0x03B312,   # ObjB3_Main
+    0x03B36A,   # ObjB4
+    0x03B37C,   # ObjB4_Init
+    0x03B380,   # ObjB3_SubObjData
+    0x03B38E,   # ObjB4_Main
+    0x03B3FA,   # ObjB5
+    0x03B40E,   # ObjB5_Init
+    0x03B426,   # ObjB5_Main
+    0x03B448,   # ObjB5_Animate
+    0x03B5D0,   # ObjB6
+    0x03B5E8,   # ObjB6_Init
+    0x03B602,   # loc_3B602
+    0x03B61C,   # loc_3B61C
+    0x03B624,   # loc_3B624
+    0x03B644,   # loc_3B644
+    0x03B64E,   # loc_3B64E
+    0x03B65C,   # loc_3B65C
+    0x03B674,   # loc_3B674
+    0x03B6A6,   # loc_3B6A6
+    0x03B6C8,   # loc_3B6C8
+    0x03B6E2,   # loc_3B6E2
+    0x03B6FE,   # loc_3B6FE
+    0x03B72C,   # loc_3B72C
+    0x03B736,   # loc_3B736
+    0x03B73C,   # loc_3B73C
+    0x03B756,   # loc_3B756
+    0x03B764,   # loc_3B764
+    0x03B8A6,   # ObjB7
+    0x03B8B8,   # ObjB7_Init
+    0x03B8C4,   # ObjB7_Main
+    0x03B968,   # ObjB8
+    0x03B97C,   # ObjB8_Init
+    0x03B980,   # loc_3B980
+    0x03B9AA,   # loc_3B9AA
+    0x03BABA,   # ObjB9
+    0x03BACE,   # ObjB9_Init
+    0x03BAD2,   # loc_3BAD2
+    0x03BAF0,   # loc_3BAF0
+    0x03BB4C,   # ObjBA
+    0x03BB5E,   # ObjBA_Init
+    0x03BB62,   # ObjBA_Main
+    0x03BB7C,   # ObjBB
+    0x03BB8E,   # ObjBB_Init
+    0x03BB92,   # ObjBB_Main
+    0x03BBBC,   # ObjBC
+    0x03BBCE,   # ObjBC_Init
+    0x03BBDA,   # ObjBC_Main
+    0x03BC1C,   # ObjBD
+    0x03BC30,   # ObjBD_Init
+    0x03BC3C,   # loc_3BC3C
+    0x03BC50,   # loc_3BC50
+    0x03BC6C,   # loc_3BC6C
+    0x03BCAC,   # loc_3BCAC
+    0x03BCB6,   # loc_3BCB6
+    0x03BCCC,   # loc_3BCCC
+    0x03BCD6,   # loc_3BCD6
+    0x03BD7A,   # ObjBE
+    0x03BD94,   # ObjBE_Init
+    0x03BDA2,   # ObjBD_SubObjData
+    0x03BDC6,   # loc_3BDC6
+    0x03BDD4,   # loc_3BDD4
+    0x03BDF4,   # loc_3BDF4
+    0x03BEAA,   # ObjBE_SubObjData
+    0x03BEBC,   # ObjBF_Init
+    0x03BEC0,   # ObjBF_Animate
+    0x03BF04,   # ObjC0
+    0x03BF16,   # ObjC0_Init
+    0x03BF3E,   # ObjC0_Main
+    0x03BF4C,   # ObjBE_SubObjData2
+    0x03BF66,   # loc_3BF66
+    0x03BFD8,   # loc_3BFD8
+    0x03C062,   # loc_3C062
+    0x03C0AC,   # ObjC1
+    0x03C0C0,   # ObjC1_Init
+    0x03C0D6,   # ObjC1_Main
+    0x03C1AA,   # ObjC1_FallOff
+    0x03C328,   # ObjC2
+    0x03C33A,   # ObjC2_Init
+    0x03C33E,   # ObjC2_Main
+    0x03C3D6,   # ObjC3
+    0x03C3E8,   # ObjC3_Init
+    0x03C416,   # ObjC3_Main
+    0x03C442,   # ObjC5
+    0x03C464,   # ObjC5_Init
+    0x03C476,   # ObjC5_LaserCase
+    0x03C4A8,   # ObjC5_CaseBoundary
+    0x03C4DC,   # ObjC5_CaseWaitStart
+    0x03C552,   # ObjC5_CaseWaitDown
+    0x03C570,   # ObjC5_CaseDown
+    0x03C58A,   # ObjC5_CaseXSpeed
+    0x03C5B0,   # ObjC5_CaseBoundaryChk
+    0x03C5E8,   # ObjC5_CaseAnimate
+    0x03C5F6,   # ObjC5_CaseLSLoad
+    0x03C60E,   # ObjC5_CaseLSDown
+    0x03C640,   # ObjC5_CaseWaitLoadLaser
+    0x03C65C,   # ObjC5_CaseWaitMove
+    0x03C68C,   # ObjC5_CaseBoundaryLaserChk
+    0x03C6E4,   # ObjC5_CaseLSUp
+    0x03C704,   # ObjC5_CaseStartOver
+    0x03C712,   # ObjC5_CaseDefeated
+    0x03C748,   # ObjC5_LaserWall
+    0x03C778,   # ObjC5_LaserWallMappings
+    0x03C786,   # ObjC5_LaserWallWaitDelete
+    0x03C7AE,   # ObjC5_LaserWallDelete
+    0x03C7EE,   # ObjC5_PlatformReleaser
+    0x03C806,   # ObjC5_PlatformReleaserInit
+    0x03C818,   # ObjC5_PlatformReleaserWaitDown
+    0x03C83C,   # ObjC5_PlatformReleaserDown
+    0x03C85C,   # ObjC5_PlatformReleaserLoadWait
+    0x03C8B4,   # ObjC5_PlatformReleaserDelete
+    0x03C8C8,   # ObjC5_Platform
+    0x03C8F0,   # ObjC5_PlatformInit
+    0x03C916,   # ObjC5_PlatformDownWait
+    0x03C93E,   # ObjC5_PlatformTestChangeDirection
+    0x03C9AA,   # ObjC5_PlatformHurt
+    0x03C9BC,   # ObjC5_PlatformHurtCollision
+    0x03C9C8,   # ObjC5_PlatformHurtFollowPlatform
+    0x03C9EA,   # ObjC5_LaserShooter
+    0x03CA0C,   # ObjC5_LaserShooterInit
+    0x03CA1A,   # ObjC5_LaserShooterFollow
+    0x03CA2E,   # ObjC5_LaserShooterDown
+    0x03CA3C,   # ObjC5_Laser
+    0x03CA70,   # ObjC5_LaserInit
+    0x03CA98,   # ObjC5_LaserFlash
+    0x03CAD0,   # ObjC5_LaseWaitShoot
+    0x03CAE4,   # ObjC5_LaserShoot
+    0x03CB32,   # ObjC5_LaserMove
+    0x03CB3E,   # ObjC5_Robotnik
+    0x03CB52,   # ObjC5_RobotnikInit
+    0x03CB7C,   # ObjC5_RobotnikAnimate
+    0x03CBA4,   # ObjC5_RobotnikDown
+    0x03CBBE,   # ObjC5_RobotnikPlatform
+    0x03CED0,   # ObjC6
+    0x03CEE6,   # ObjC6_Init
+    0x03CEF8,   # ObjC6_State2
+    0x03CF10,   # ObjC6_State2_State1
+    0x03CF32,   # ObjC6_State2_State2
+    0x03CF58,   # ObjC6_State2_State3
+    0x03CF7C,   # ObjC6_State2_State4
+    0x03CFF6,   # ObjC6_State2_State5
+    0x03D036,   # ObjC6_State3
+    0x03D04A,   # ObjC6_State3_State1
+    0x03D066,   # ObjC6_State3_State2
+    0x03D078,   # ObjC6_State3_State3
+    0x03D09C,   # ObjC6_State4
+    0x03D23E,   # ObjC8
+    0x03D254,   # ObjC8_Init
+    0x03D27C,   # loc_3D27C
+    0x03D2A6,   # loc_3D2A6
+    0x03D2D4,   # loc_3D2D4
+    0x03D4C8,   # ObjC7
+    0x03D4F8,   # ObjC7_Init
+    0x03D508,   # ObjC7_Body
+    0x03D52A,   # loc_3D52A
+    0x03D5A8,   # loc_3D5A8
+    0x03D5C2,   # loc_3D5C2
+    0x03D5EA,   # loc_3D5EA
+    0x03D62E,   # loc_3D62E
+    0x03D640,   # loc_3D640
+    0x03D684,   # loc_3D684
+    0x03D6AA,   # loc_3D6AA
+    0x03D6C0,   # loc_3D6C0
+    0x03D6CE,   # loc_3D6CE
+    0x03D6E8,   # loc_3D6E8
+    0x03D702,   # loc_3D702
+    0x03D720,   # loc_3D720
+    0x03D744,   # loc_3D744
+    0x03D784,   # loc_3D784
+    0x03D7B8,   # loc_3D7B8
+    0x03D7F0,   # loc_3D7F0
+    0x03D82E,   # loc_3D82E
+    0x03D83C,   # loc_3D83C
+    0x03D856,   # loc_3D856
+    0x03D89E,   # loc_3D89E
+    0x03D8B8,   # loc_3D8B8
+    0x03D8D2,   # loc_3D8D2
+    0x03D8E6,   # loc_3D8E6
+    0x03D922,   # loc_3D922
+    0x03D93C,   # loc_3D93C
+    0x03D970,   # ObjC7_SetupEnding
+    0x03D9B0,   # loc_3D9B0
+    0x03D9D6,   # loc_3D9D6
+    0x03DA14,   # ObjC7_Shoulder
+    0x03DA3C,   # loc_3DA3C
+    0x03DA48,   # return_3DA48
+    0x03DA4A,   # ObjC7_FrontLowerLeg
+    0x03DA66,   # loc_3DA66
+    0x03DA72,   # return_3DA72
+    0x03DA74,   # ObjC7_FrontForearm
+    0x03DAA0,   # loc_3DAA0
+    0x03DAAC,   # loc_3DAAC
+    0x03DACC,   # loc_3DACC
+    0x03DB32,   # loc_3DB32
+    0x03DB5A,   # loc_3DB5A
+    0x03DB74,   # ObjC7_Arm
+    0x03DB90,   # loc_3DB90
+    0x03DB9C,   # return_3DB9C
+    0x03DB9E,   # ObjC7_FrontThigh
+    0x03DBBA,   # loc_3DBBA
+    0x03DBC6,   # return_3DBC6
+    0x03DBC8,   # ObjC7_Head
+    0x03DBF6,   # loc_3DBF6
+    0x03DC02,   # loc_3DC02
+    0x03DC1C,   # loc_3DC1C
+    0x03DC2A,   # loc_3DC2A
+    0x03DC46,   # loc_3DC46
+    0x03DC50,   # ObjC7_Jet
+    0x03DC74,   # loc_3DC74
+    0x03DC80,   # loc_3DC80
+    0x03DC86,   # loc_3DC86
+    0x03DC94,   # loc_3DC94
+    0x03DC9C,   # ObjC7_BackLowerLeg
+    0x03DCB8,   # loc_3DCB8
+    0x03DCCA,   # return_3DCCA
+    0x03DCCC,   # ObjC7_BackForearm
+    0x03DCEE,   # loc_3DCEE
+    0x03DD00,   # loc_3DD00
+    0x03DD20,   # ObjC7_BackThigh
+    0x03DD3C,   # loc_3DD3C
+    0x03DD4E,   # return_3DD4E
+    0x03DD50,   # ObjC7_TargettingSensor
+    0x03DD64,   # loc_3DD64
+    0x03DDA6,   # loc_3DDA6
+    0x03DE3C,   # loc_3DE3C
+    0x03DE70,   # ObjC7_TargettingLock
+    0x03DE82,   # loc_3DE82
+    0x03DEA2,   # loc_3DEA2
+    0x03DEC2,   # ObjC7_EggmanBomb
+    0x03DED8,   # loc_3DED8
+    0x03DF04,   # loc_3DF04
+    0x03DF36,   # loc_3DF36
+    0x03DF80,   # loc_3DF80
+    0x03DFAA,   # ObjC7_FallingPieces
+    0x03E252,   # loc_3E252
+    0x03E27A,   # loc_3E27A
+    0x03E27E,   # loc_3E27E
+    0x03EAC8,   # Obj8A
+    0x03EADA,   # Obj8A_Init
+    0x03EB48,   # Obj8A_Display
+    0x03F1E4,   # Obj3E
+    0x03F212,   # loc_3F212
+    0x03F278,   # loc_3F278
+    0x03F2B4,   # loc_3F2B4
+    0x03F2FC,   # loc_3F2FC
+    0x03F352,   # return_3F352
+    0x03F354,   # loc_3F354
+    0x03F38E,   # loc_3F38E
+    0x03F3A8,   # loc_3F3A8
+    0x03F406,   # loc_3F406
+    0x03FA5A,   # BossCollision_EHZ_CPZ
+    0x03FA5E,   # return_3FA5E
+    0x03FA60,   # BossCollision_HTZ
+    0x03FAC8,   # BossCollision_ARZ
+    0x03FAFE,   # BossCollision_MCZ
+    0x03FB8A,   # BossCollision_CNZ
+    0x03FBC4,   # BossCollision_MTZ
+    0x03FBCA,   # BossCollision_OOZ
+    0x03FD2A,   # Dynamic_Null
+    0x03FD3C,   # Dynamic_Null
+    0x03FD60,   # Dynamic_Null
+    0x03FF32,   # Dynamic_Normal
+    0x03FF52,   # Dynamic_Normal
+    0x03FF60,   # Dynamic_ARZ
+    0x040206,   # Animated_Null
+    0x040212,   # Animated_ARZ
+    0x040218,   # Animated_Null
+    0x040226,   # Animated_Null
+    0x0407C0,   # APM_Null
+    0x041A8A,   # Debug_Init
+    0x041B0C,   # Debug_Main
 ]

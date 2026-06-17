@@ -43,12 +43,147 @@ level_modes    = [0x08, 0x0C]   # GM_Demo, GM_Level — gameplay states
 # 2-player mode, so two_player_addr is omitted (gate disabled).
 [widescreen]
 capable          = true
-extra_ram_addr   = 0xFFFF38      # Widescreen_extra (carved from v_timingandscreenvariables)
 max_extra_cells  = 8             # 8 cells (64px)/side -> 448px (16:9)
 eligible_modes   = [0x08, 0x0C]  # EXACT: GM_Demo, GM_Level
-redraw_flag_addr = 0xFFFF3A      # Widescreen_redraw (byte after Widescreen_extra): runner writes 1
-                                 # when 16:9 turns on so LoadTilesAsYouMove does a full refill of the
-                                 # revealed margins (the initial fill ran earlier while still gated to 4:3)
+# NO extra_ram_addr / redraw_flag_addr: those were the LEGACY disasm RAM-word path
+# (Widescreen_extra carved from v_timingandscreenvariables). This build recompiles
+# the ORIGINAL unmodified ROM where 0xFFFF38 is LIVE game state — writing it would
+# corrupt RAM. Widening is done entirely by the [[widescreen_site]] injection below
+# (reads g_ws_margin; 0 => byte-identical 4:3). PSX-style post-patch layer.
+
+# ---------------------------------------------------------------------------
+# [[widescreen_site]] — post-patch widening injection (recompile-original-ROM,
+# PSX-style). Each entry widens ONE canonical-ROM instruction by the runtime
+# g_ws_margin (extra px/side; 0 => no-op). Addresses verified against
+# _s1disasm/sonic_canonical.lst; the set mirrors exactly what the shipped disasm
+# widescreen widened (incl. leaving DrawBGScrollBlock1 top/bottom vanilla).
+# ---------------------------------------------------------------------------
+
+# Sprite-X 10-bit mask (BuildSpr_Normal/FlipX/FlipY/FlipXY): andi #$1FF -> #$3FF
+[[widescreen_site]]
+addr = 0xD786
+kind = "mask10"
+[[widescreen_site]]
+addr = 0xD7D4
+kind = "mask10"
+[[widescreen_site]]
+addr = 0xD81A
+kind = "mask10"
+[[widescreen_site]]
+addr = 0xD86E
+kind = "mask10"
+
+# Object cull — left edge widened via cull_left (bmi), right via subreg before cmpi #320.
+# BuildSprites (d1):
+[[widescreen_site]]
+addr = 0xD6A2
+kind = "cull_left"
+reg  = 1
+[[widescreen_site]]
+addr = 0xD6AA
+kind = "subreg"
+reg  = 1
+# ChkObjectVisible (d0, shared across both edges — cull_left is non-mutating):
+[[widescreen_site]]
+addr = 0xD886
+kind = "cull_left"
+reg  = 0
+[[widescreen_site]]
+addr = 0xD888
+kind = "subreg"
+reg  = 0
+# ChkPartiallyVisible (d0):
+[[widescreen_site]]
+addr = 0xD8B6
+kind = "cull_left"
+reg  = 0
+[[widescreen_site]]
+addr = 0xD8BC
+kind = "subreg"
+reg  = 0
+
+# Tile-load FG column seeds: moveq #-16,d5 left start -> -margin (subimm reg=5)
+[[widescreen_site]]
+addr = 0x68FA
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x6902
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x6912
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x691C
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x692A
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x6932
+kind = "subimm"
+reg  = 5
+# FG right column seeds: move.w #320,d5 -> +margin (addimm reg=5)
+[[widescreen_site]]
+addr = 0x6940
+kind = "addimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x694A
+kind = "addimm"
+reg  = 5
+# BG scroll-block edge column seeds (loc_698E left, loc_69BE right, DrawBGScrollBlock2 left, loc_6A3E right)
+[[widescreen_site]]
+addr = 0x6996
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x699E
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x69C6
+kind = "addimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x69D0
+kind = "addimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x6A16
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x6A1E
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x6A54
+kind = "addimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x6A5E
+kind = "addimm"
+reg  = 5
+# DrawChunks (initial full-screen fill) left start: moveq #0,d5 -> -margin
+[[widescreen_site]]
+addr = 0x6C86
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x6C90
+kind = "subimm"
+reg  = 5
+# FG row-block count (DrawBlocks_LR internal moveq #21,d6 -> +margin/8 blocks; FG-only entry)
+[[widescreen_site]]
+addr = 0x6AD8
+kind = "addimm"
+reg  = 6
+shift = 3
 
 # ---------------------------------------------------------------------------
 # Residual extras — dispatch targets the auto-extractors don't yet identify.
@@ -59,12 +194,12 @@ redraw_flag_addr = 0xFFFF3A      # Widescreen_redraw (byte after Widescreen_extr
 [functions]
 extra = [
     # VBlank handler sub-routines (entered via the V-int dispatch but
-    # their specific shape — a per-mode JSR chain — isn't a single jump
+    # their specific shape â€” a per-mode JSR chain â€” isn't a single jump
     # table).
     0x000B5E,   # VBla_Music
     0x000B64,   # VBla_Exit
 
-    # Nemesis decompressor sub-handlers — reached via RAM-loaded function
+    # Nemesis decompressor sub-handlers â€” reached via RAM-loaded function
     # pointers (NemDec_TableSelect's jmp (a3) form), not a static table.
     0x00145C,   # NemDecMain
     0x0014C0,   # NemPCD_ProcessCompressedData
@@ -75,60 +210,60 @@ extra = [
     0x001518,   # NemPCD_WriteRowToRAM
     0x001522,   # NemPCD_WriteRowToRAM_XOR
 
-    # Sonic_Find* helper chain — interior labels reached via fall-through
+    # Sonic_Find* helper chain â€” interior labels reached via fall-through
     # the function_finder doesn't promote.
-    0x014CD6,   # loc_14C26
-    0x014E8E,   # loc_14DDE
-    0x014E98,   # Sonic_FindFloor_Quick_UsePos
-    0x015024,   # Sonic_FindCeiling_Quick_UsePos
+    0x014C26,   # loc_14C26
+    0x014DDE,   # loc_14DDE
+    0x014DE8,   # Sonic_FindFloor_Quick_UsePos
+    0x014F74,   # Sonic_FindCeiling_Quick_UsePos
 
-    # Animated-art sub-handlers (AniArt_*) — reached via
+    # Animated-art sub-handlers (AniArt_*) â€” reached via
     # LoadTilesAsYouMove data-driven dispatch.
-    0x01C13A,   # AniArt_GHZ_Bigflower
-    0x01C170,   # AniArt_GHZ_Smallflower
-    0x01C200,   # AniArt_MZ_Magma
-    0x01C25E,   # AniArt_MZ_Torch
-    0x01C3A4,   # AniArt_Ending_SmallFlower
-    0x01C3EC,   # AniArt_Ending_Flower3
-    0x01C42A,   # AniArt_Ending_Flower4
+    0x01C08A,   # AniArt_GHZ_Bigflower
+    0x01C0C0,   # AniArt_GHZ_Smallflower
+    0x01C150,   # AniArt_MZ_Magma
+    0x01C1AE,   # AniArt_MZ_Torch
+    0x01C2F4,   # AniArt_Ending_SmallFlower
+    0x01C33C,   # AniArt_Ending_Flower3
+    0x01C37A,   # AniArt_Ending_Flower4
 
     # Misc object/handler entries that runtime dispatch_misses.log
     # surfaced but no extractor catches statically. Most likely indexed
     # via a table shape we don't yet recognize (RAM-pointer-driven
     # dispatch, dc.b stride-1 tables, etc.).
     0x005328,
-    0x006308,
-    0x006494,
-    0x006496,
-    0x00649E,
-    0x0064A0,
-    0x006E3A,
-    0x007160,
-    0x007AD8,   # level/object sub-handler (frame 187)
-    0x008004,
-    0x008006,
-    0x00802E,
-    0x00804C,
-    0x00805C,
-    0x008074,
-    0x008106,
-    0x00814A,
-    0x0085FE,
-    0x00960C,
-    0x0096AA,
-    0x0098CC,
-    0x009962,
-    0x00DE82,
-    0x00DEC4,
-    0x00DF38,
-    0x00DF58,
-    0x00DF5E,
-    0x0101BE,
-    0x0104A2,
-    0x0104D2,
-    0x0123C0,   # Gargoyle object mapping
+    0x006304,
+    0x006490,
+    0x006492,
+    0x00649A,
+    0x00649C,
+    0x006DAA,
+    0x0070D0,
+    0x007A48,   # level/object sub-handler (frame 187)
+    0x007F74,
+    0x007F76,
+    0x007F9E,
+    0x007FBC,
+    0x007FCC,
+    0x007FE4,
+    0x008076,
+    0x0080BA,
+    0x00856E,
+    0x00957C,
+    0x00961A,
+    0x00983C,
+    0x0098D2,
+    0x00DDD2,
+    0x00DE14,
+    0x00DE88,
+    0x00DEA8,
+    0x00DEAE,
+    0x01010E,
+    0x0103F2,
+    0x010422,
+    0x012310,   # Gargoyle object mapping
 
-    # Sound driver — CoordFlag sub-handlers not in the dispatched table.
+    # Sound driver â€” CoordFlag sub-handlers not in the dispatched table.
     0x072AD4,   # cfFlag sub-handler
     0x072AD8,   # cfFlag sub-handler
 ]
@@ -137,9 +272,9 @@ extra = [
 # entries but the disasm marks as data. Keeps func_XXXXXX bodies from
 # being emitted for non-code addresses (verified against L1 fixture).
 blacklist = [
-    0x007EBA,
-    0x00A0D6,
-    # .convertArray — interior label of ConvertCollisionArray that
+    0x007E2A,
+    0x00A046,
+    # .convertArray â€” interior label of ConvertCollisionArray that
     # boundary-split promoted but nothing actually calls.
-    0x014D52,
+    0x014CA2,
 ]

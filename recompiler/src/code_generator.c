@@ -239,6 +239,31 @@ static int             s_extra_seed_count = 0;
 static const uint32_t *s_all_func_addrs = NULL;
 static int             s_all_func_count = 0;
 
+/* Widescreen (16:9) injection sites — set by codegen_emit from the GameConfig.
+ * emit_instr looks each instruction's address up here and, when matched, emits
+ * a margin-widened variant (reading the runtime g_ws_margin global; 0 =>
+ * byte-identical vanilla). See game_config.h WsSite / the [[widescreen_site]]
+ * TOML. This is the post-patch widening layer: the ROM is recompiled
+ * unmodified and the widening lives entirely in the emitted C. */
+static const WsSite *s_ws_sites = NULL;
+static int           s_ws_site_count = 0;
+static const WsSite *ws_site_for(uint32_t addr) {
+    for (int i = 0; i < s_ws_site_count; i++)
+        if (s_ws_sites[i].addr == addr) return &s_ws_sites[i];
+    return NULL;
+}
+/* Kind-aware lookup: return the first site at `addr` whose kind is k0 or k1.
+ * Lets MULTIPLE transforms of different kinds share one instruction address —
+ * each codegen spot fetches the site of ITS OWN kind (e.g. a `subreg` register
+ * adjust AND an `addimm` moveq-immediate widen both at the same moveq). */
+static const WsSite *ws_site_for_kind(uint32_t addr, WsSiteKind k0, WsSiteKind k1) {
+    for (int i = 0; i < s_ws_site_count; i++)
+        if (s_ws_sites[i].addr == addr &&
+            (s_ws_sites[i].kind == k0 || s_ws_sites[i].kind == k1))
+            return &s_ws_sites[i];
+    return NULL;
+}
+
 /* Optional diagnostic: when set (via --dump-functions), codegen_emit writes
  * the final post-boundary-split function-entry set (one hex address per line)
  * to this path. Powers the heuristic-coverage exercise: diff the dump from a
@@ -1715,6 +1740,25 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
     char src_expr[256], dst_expr[256], addr_expr[256];
 
+    /* [widescreen] post-patch widening: when this instruction's address is a
+     * configured add/sub-margin site, emit a word-sized adjustment of the named
+     * data register by (g_ws_margin >> shift) BEFORE the instruction's own C.
+     * g_ws_margin is 0 unless the runner has armed widescreen for this frame, so
+     * the adjustment is a no-op (byte-identical 4:3) when off. (mask10 sites are
+     * handled in the MN_ANDI case — they widen the mask immediate directly.) */
+    {
+        const WsSite *_ws = ws_site_for_kind(addr, WS_SITE_ADDREG, WS_SITE_SUBREG);
+        if (_ws && (_ws->kind == WS_SITE_ADDREG || _ws->kind == WS_SITE_SUBREG)) {
+            const char *op = (_ws->kind == WS_SITE_ADDREG) ? "+" : "-";
+            unsigned sc = _ws->scale ? _ws->scale : 1;
+            fprintf(f, "  /* [widescreen] D%u %s= %u*(g_ws_margin>>%u) */\n",
+                    _ws->reg, op, sc, _ws->shift);
+            fprintf(f, "  g_cpu.D[%u] = (g_cpu.D[%u] & 0xFFFF0000u) | "
+                       "(uint16_t)((int16_t)g_cpu.D[%u] %s (int16_t)((g_ws_margin >> %u) * %u));\n",
+                    _ws->reg, _ws->reg, _ws->reg, op, _ws->shift, sc);
+        }
+    }
+
     switch (instr->mnemonic) {
 
     /* ------------------------------------------------------------------ */
@@ -1844,6 +1888,24 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         int reg  = ea & 7;
         uint32_t ret_addr = instr->addr + instr->byte_length;
 
+        /* [widescreen] call_widen: preset the row-block count and retarget the
+         * call to a sibling entry that skips the callee's own count reset, so
+         * only THIS caller widens (not every caller of the shared callee). The
+         * ret-address push/pop below is unchanged. margin 0 => preset == base,
+         * target gets the same count it would have set => byte-identical 4:3. */
+        uint32_t bsr_target = instr->target_addr;
+        {
+            const WsSite *_wsc = ws_site_for_kind(addr, WS_SITE_CALL_WIDEN, WS_SITE_CALL_WIDEN);
+            if (instr->has_target && _wsc && _wsc->kind == WS_SITE_CALL_WIDEN) {
+                fprintf(f, "  /* [widescreen] call_widen: D%u = %u + (g_ws_margin>>%u); "
+                           "retarget 0x%06X -> 0x%06X */\n",
+                        _wsc->reg, _wsc->base, _wsc->shift, instr->target_addr, _wsc->target);
+                fprintf(f, "  g_cpu.D[%u] = (uint32_t)((int32_t)%u + (int32_t)(g_ws_margin >> %u));\n",
+                        _wsc->reg, _wsc->base, _wsc->shift);
+                bsr_target = _wsc->target;
+            }
+        }
+
         /* Obj_WaitOffscreen idiom: the callee unconditionally pops our pushed
          * return address off the stack (`move.l (sp)+,$34(a0)`) and repurposes
          * it as an object code pointer, so its eventual rts returns to OUR
@@ -1878,11 +1940,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
 
         if (instr->has_target) {
             fprintf(f, "  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;\n");
-            if (func_is_known(instr->target_addr))
-                fprintf(f, "    recomp_call_func(func_%06X);\n", instr->target_addr);
+            if (func_is_known(bsr_target))
+                fprintf(f, "    recomp_call_func(func_%06X);\n", bsr_target);
             else
                 fprintf(f, "    recomp_call_addr(0x%06Xu); /* JSR target not in func table */\n",
-                        instr->target_addr);
+                        bsr_target);
             fprintf(f, "    g_split_sp_popped = _saved_split_sp_popped;\n");
             fprintf(f, "  }\n");
         } else if (mode == 2 || mode == 5 || mode == 6 ||
@@ -2060,6 +2122,46 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     case MN_Bcc: {
         int cond = (instr->words[0] >> 8) & 0xF;
         const char *ce = bcc_cond_expr(cond);
+        /* [widescreen] cull_left: widen a left-edge `bmi` so it fires at
+         * (int16)D[reg] < -(g_ws_margin>>shift) instead of < 0. D[reg] still
+         * holds the value the bmi's flags reflect (set by the preceding
+         * add.w/sub.w), so at margin 0 this is byte-identical to the original
+         * bmi (N flag). Non-mutating, so a right-edge cmpi sharing the register
+         * still sees the unmodified value. Only valid on `bmi` (MI == 11). */
+        char ws_cull_cond[200];
+        {
+            const WsSite *_wsc = ws_site_for_kind(addr, WS_SITE_CULL_LEFT, WS_SITE_CULL_WINDOW_LEFT);
+            if (_wsc && _wsc->kind == WS_SITE_CULL_LEFT) {
+                if (cond == 0xB) {   /* MI */
+                    snprintf(ws_cull_cond, sizeof ws_cull_cond,
+                             "((int16_t)g_cpu.D[%u] < -(int16_t)(g_ws_margin >> %u))",
+                             _wsc->reg, _wsc->shift);
+                    ce = ws_cull_cond;
+                } else {
+                    fprintf(f, "  /* [widescreen] cull_left @%06X ignored: "
+                               "Bcc cond %d is not bmi(MI) */\n", addr, cond);
+                }
+            } else if (_wsc && _wsc->kind == WS_SITE_CULL_WINDOW_LEFT) {
+                /* [widescreen] cull_window_left: extend a left-window clamp. MUTATE
+                 * D[reg] -= (margin>>shift) (the rest of the routine uses the
+                 * widened edge) and REPLACE the `bhi` with a SIGNED `> 0` test
+                 * (the mutate destroys the borrow `bhi` used; `bgt` is the correct
+                 * equivalent — matches the disasm). margin 0 => unchanged + bgt==bhi. */
+                if (cond == 0x2) {   /* HI */
+                    fprintf(f, "  /* [widescreen] cull_window_left: D%u -= (g_ws_margin>>%u); bhi->bgt */\n",
+                            _wsc->reg, _wsc->shift);
+                    fprintf(f, "  g_cpu.D[%u] = (g_cpu.D[%u] & 0xFFFF0000u) | "
+                               "(uint16_t)((int16_t)g_cpu.D[%u] - (int16_t)(g_ws_margin >> %u));\n",
+                            _wsc->reg, _wsc->reg, _wsc->reg, _wsc->shift);
+                    snprintf(ws_cull_cond, sizeof ws_cull_cond,
+                             "((int16_t)g_cpu.D[%u] > 0)", _wsc->reg);
+                    ce = ws_cull_cond;
+                } else {
+                    fprintf(f, "  /* [widescreen] cull_window_left @%06X ignored: "
+                               "Bcc cond %d is not bhi(HI) */\n", addr, cond);
+                }
+            }
+        }
         if (instr->has_target) {
             if (g_yield_in_next_bne) {
                 /* IRQ-flag-spin loop-back path: the previous tst set
@@ -2130,10 +2232,26 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     case MN_MOVEQ: {
         uint32_t imm = instr->imm32; /* pre-sign-extended to 32 */
         int dreg = instr->reg;
-        fprintf(f, "  g_cpu.D[%d] = 0x%08Xu;\n", dreg, imm);
+        char expr[96];
+        /* [widescreen] addimm/subimm: widen the loaded immediate by
+         * +/-(g_ws_margin>>shift) in place (tile-load column seed / row-block
+         * count). margin 0 => identical. */
+        const WsSite *_wsi = ws_site_for_kind(addr, WS_SITE_ADDIMM, WS_SITE_SUBIMM);
+        if (_wsi && (_wsi->kind == WS_SITE_ADDIMM || _wsi->kind == WS_SITE_SUBIMM)) {
+            const char *op = (_wsi->kind == WS_SITE_ADDIMM) ? "+" : "-";
+            fprintf(f, "  /* [widescreen] moveq #imm %s (g_ws_margin>>%u) */\n",
+                    op, _wsi->shift);
+            fprintf(f, "  g_cpu.D[%d] = (uint32_t)((int32_t)0x%08Xu %s "
+                       "(int32_t)(g_ws_margin >> %u));\n",
+                    dreg, imm, op, _wsi->shift);
+            snprintf(expr, sizeof(expr),
+                     "(uint32_t)((int32_t)0x%08Xu %s (int32_t)(g_ws_margin >> %u))",
+                     imm, op, _wsi->shift);
+        } else {
+            fprintf(f, "  g_cpu.D[%d] = 0x%08Xu;\n", dreg, imm);
+            snprintf(expr, sizeof(expr), "(uint32_t)0x%08Xu", imm);
+        }
         /* flags: N,Z; clear V,C */
-        char expr[64];
-        snprintf(expr, sizeof(expr), "(uint32_t)0x%08Xu", imm);
         emit_flags_logic(f, expr, M68K_SIZE_L);
         break;
     }
@@ -2159,10 +2277,26 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         snprintf(stmp, sizeof(stmp), "_ts%06X", addr);
 
         emit_ea_load(f, instr, src_ea, sz, &er_src, stmp, src_expr);
-        emit_ea_store(f, instr, dst_ea, sz, &er_dst, src_expr);
 
-        /* Update N,Z; clear V,C */
-        emit_flags_logic(f, src_expr, sz);
+        /* [widescreen] addimm/subimm: widen the moved immediate by
+         * +/-(g_ws_margin>>shift) before the store (e.g. move.w #320,d5 ->
+         * right-edge tile-load column seed). margin 0 => identical. */
+        const WsSite *_wsm = ws_site_for_kind(addr, WS_SITE_ADDIMM, WS_SITE_SUBIMM);
+        if (_wsm && (_wsm->kind == WS_SITE_ADDIMM || _wsm->kind == WS_SITE_SUBIMM)) {
+            const char *op = (_wsm->kind == WS_SITE_ADDIMM) ? "+" : "-";
+            char wmov[300];
+            snprintf(wmov, sizeof(wmov),
+                     "(uint32_t)((int32_t)(%s) %s (int32_t)(g_ws_margin >> %u))",
+                     src_expr, op, _wsm->shift);
+            fprintf(f, "  /* [widescreen] move #imm %s (g_ws_margin>>%u) */\n",
+                    op, _wsm->shift);
+            emit_ea_store(f, instr, dst_ea, sz, &er_dst, wmov);
+            emit_flags_logic(f, wmov, sz);
+        } else {
+            emit_ea_store(f, instr, dst_ea, sz, &er_dst, src_expr);
+            /* Update N,Z; clear V,C */
+            emit_flags_logic(f, src_expr, sz);
+        }
         break;
     }
 
@@ -2339,6 +2473,15 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     /* ------------------------------------------------------------------ */
     case MN_ANDI: {
         uint32_t imm = er_next_imm(&er, sz);
+        /* [widescreen] mask10: widen the mask one low bit ($1FF -> $3FF) so a
+         * 9-bit sprite-X clips past 512 instead of wrapping into the left edge.
+         * Unconditional (not g_ws_margin-gated) is byte-identical at 4:3 because
+         * the masked sprite-X never sets the new high bit there (4:3 max ~448 <
+         * 512) — proven by the earlier 4:3 parity validation. Precondition: only
+         * mark sites whose masked value can't set bit `imm+1` at 4:3. */
+        const WsSite *_ws = ws_site_for_kind(addr, WS_SITE_MASK10, WS_SITE_MASK10);
+        if (_ws && _ws->kind == WS_SITE_MASK10)
+            imm = (imm << 1) | 1u;
         emit_alui_logic(f, instr, sz, &er, tmp, addr, imm, "&");
         break;
     }
@@ -3639,6 +3782,11 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
     s_reverse_debug = reverse_debug;
     s_extra_seeds      = cfg ? cfg->extra_seeds      : NULL;
     s_extra_seed_count = cfg ? cfg->extra_seed_count : 0;
+    s_ws_sites      = cfg ? cfg->ws_sites      : NULL;
+    s_ws_site_count = cfg ? cfg->ws_site_count : 0;
+    if (s_ws_site_count)
+        printf("[Codegen] [widescreen] %d injection sites armed (recompile-time)\n",
+               s_ws_site_count);
     codegen_diag_reset();
     audit_reset();
 

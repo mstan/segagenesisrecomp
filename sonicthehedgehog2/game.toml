@@ -71,34 +71,196 @@ level_modes    = [0x08, 0x0C]   # GM_Demo, GM_Level (high bit may set on transit
 # the S2 RAM map marks unused (S1 sound-driver leftover); see s2.constants.asm.
 [widescreen]
 capable         = true
-extra_ram_addr  = 0xFFFFF100
 max_extra_cells = 8         # 8 cells (64px)/side -> 448px (16:9). Capped so the
                            # widened tile-row redraw stays within Block_cache (32
                            # blocks): base 22 + 2*cells <= 32.
 eligible_modes     = [0x08, 0x0C]  # EXACT match (no 0x7F mask): GM_Demo, GM_Level
-level_started_addr = 0xFFF711       # Level_started_flag (byte): require != 0 to widen
-two_player_addr    = 0xFFFFD8       # Two_player_mode (word): require == 0 to widen
-redraw_flag_addr   = 0xFFF72C       # Screen_redraw_flag (byte): engine writes 1 when
-                                   # widescreen turns on, forcing a full tile redraw so
-                                   # the revealed margins are filled (initial fill ran
-                                   # earlier while still gated to 4:3)
+level_started_addr = 0xFFF711       # Level_started_flag (byte): require != 0 to widen (read-only gate)
+two_player_addr    = 0xFFFFD8       # Two_player_mode (word): require == 0 to widen (read-only gate)
+redraw_flag_addr   = 0xFFF72C       # Screen_redraw_flag: the canonical ROM's OWN full-redraw
+                                    # flag (s2.asm tst.b @ 18588; game sets it for WFZ piston etc).
+                                    # Engine sets it 1 when 16:9 ARMS -> the game's full redraw runs
+                                    # (now with margin>0, via the widened Draw_All) and FILLS the
+                                    # revealed margins. Without this the initial fill ran at margin 0
+                                    # -> stale margin VRAM -> static "diagonal noise" standing still.
+                                    # Safe to write (it's a real game flag, not a carved word).
+# NO extra_ram_addr: that WAS the legacy carved Widescreen_extra word (0xFFFFF100 is live
+# canonical state). Content widening is the [[widescreen_site]] injection below (g_ws_margin).
+
+# ---------------------------------------------------------------------------
+# [[widescreen_site]] — PSX-style post-patch injection (canonical s2_canonical.lst).
+# Object culls + tile-load column seeds + FG/Draw_All per-row block count (the
+# count fixes the diagonal tile-tearing during diagonal scroll — same as S1's
+# DrawBlocks_LR widen). The row count uses `call_widen`: it retargets the 3
+# FG/Draw_All DrawBlockRow callers (DADE/DB0C/DB26) to DrawBlockRow_CustomWidth
+# @ DF8A with d6 preset = 21 + margin/8, so ONLY those 3 widen — the other 6
+# DrawBlockRow callers (BG rows) stay at 21, matching the shipped disasm.
+# RingsManager visible-window cull is now widened too (cull_window_left + addreg
+# scale=2) — see the entries below. Margins are filled on 16:9 arm via the game's
+# own Screen_redraw_flag (redraw_flag_addr above) running the widened Draw_All.
+# ---------------------------------------------------------------------------
+
+# Object cull (BuildSprites, d1): left via cull_left (bmi), right via subreg before cmpi #320.
+[[widescreen_site]]
+addr = 0x16668
+kind = "cull_left"
+reg  = 1
+[[widescreen_site]]
+addr = 0x16670
+kind = "subreg"
+reg  = 1
+[[widescreen_site]]
+addr = 0x1673A
+kind = "cull_left"
+reg  = 1
+[[widescreen_site]]
+addr = 0x16742
+kind = "subreg"
+reg  = 1
+
+# Tile-load LEFT column seeds: moveq #-16,d5 -> -margin (subimm reg=5)
+# Draw_All, Draw_FG (up/down/left), Draw_BG1 (left), SBZ adv-BG, CPZ adv-BG.
+[[widescreen_site]]
+addr = 0xDAD2
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDADC
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDB02
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDB0A
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDB1A
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDB24
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDB32
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDB3A
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDC00
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDC08
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDD5A
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDE56
+kind = "subimm"
+reg  = 5
+
+# Tile-load RIGHT column seeds: move.w #320,d5 -> +margin (addimm reg=5)
+# Draw_FG (right), Draw_BG1 (right), SBZ adv-BG, CPZ adv-BG.
+[[widescreen_site]]
+addr = 0xDB48
+kind = "addimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDB52
+kind = "addimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDC16
+kind = "addimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDC20
+kind = "addimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDD68
+kind = "addimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDE64
+kind = "addimm"
+reg  = 5
+
+# FG/Draw_All per-row block count: retarget DrawBlockRow (DF92, resets d6=21) ->
+# DrawBlockRow_CustomWidth (DF8A) with d6 preset = 21 + margin/8. Only these 3
+# callers widen; the 6 BG-row DrawBlockRow callers keep 21 (matches the disasm).
+[[widescreen_site]]
+addr   = 0xDADE          # Draw_All draw call
+kind   = "call_widen"
+reg    = 6
+base   = 21
+shift  = 3
+target = 0xDF8A
+[[widescreen_site]]
+addr   = 0xDB0C          # Draw_FG scroll_up redraw
+kind   = "call_widen"
+reg    = 6
+base   = 21
+shift  = 3
+target = 0xDF8A
+[[widescreen_site]]
+addr   = 0xDB26          # Draw_FG scroll_down redraw
+kind   = "call_widen"
+reg    = 6
+base   = 21
+shift  = 3
+target = 0xDF8A
+
+# RingsManager visible-window cull: widen [camera-8, camera-8+336] by margin/side.
+# LEFT clamp: at the `bhi` after `subq #8,d4`, cull_window_left mutates d4 -= margin
+# and switches bhi->bgt (the inserted sub breaks bhi's borrow). RIGHT edge: addreg
+# d4 by 2*margin BEFORE `addi #screen_width+16,d4` (undo the left -margin + add the
+# right +margin). Two copies: RingsManager_Init and RingsManager_Main.
+[[widescreen_site]]
+addr  = 0x16FAC          # RingsManager_Init: left-window bhi
+kind  = "cull_window_left"
+reg   = 4
+[[widescreen_site]]
+addr  = 0x16FC4          # RingsManager_Init: right-window addi (inject 2*margin before)
+kind  = "addreg"
+reg   = 4
+scale = 2
+[[widescreen_site]]
+addr  = 0x1701E          # RingsManager_Main: left-window bhi
+kind  = "cull_window_left"
+reg   = 4
+[[widescreen_site]]
+addr  = 0x17040          # RingsManager_Main: right-window addi (inject 2*margin before)
+kind  = "addreg"
+reg   = 4
+scale = 2
 
 # ---------------------------------------------------------------------------
 # Interrupt vectors (from 68K vector table)
 [functions]
 extra = [
-    0x000206,   # EntryPoint — initial PC ($000004)
-    0x000408,   # VBlank (IRQ level 6) — vector $000078
-    0x000F54,   # HBlank (IRQ level 4) — vector $000070
+    0x000206,   # EntryPoint â€” initial PC ($000004)
+    0x000408,   # VBlank (IRQ level 6) â€” vector $000078
+    0x000F54,   # HBlank (IRQ level 4) â€” vector $000070
     0x0051FC,   # SS per-frame loop top (s2disasm s2.asm: the anonymous "-"
-                # label after SpecialStage init — "bsr PauseGame / cmpi.b
+                # label after SpecialStage init â€” "bsr PauseGame / cmpi.b
                 # #GameModeID_SpecialStage,(Game_Mode) / ... / bsr SSTrack_Draw").
                 # Needed as a dispatch entry so save-state loads can resume
                 # the special stage moment-in-time (GameSpec save_resume_pc).
 ]
 
 # ---------------------------------------------------------------------------
-# Known-dynamic dispatch sites — intentionally absent from any
+# Known-dynamic dispatch sites â€” intentionally absent from any
 # [[jump_table]] directive because the dispatcher computes its target
 # at runtime from RAM contents. The recompiler's static walker logs
 # these in sonic2.unresolved_jumptables.log; they are NOT bugs.

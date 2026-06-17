@@ -142,8 +142,12 @@ extern void glue_run_game_chunk(uint32_t cycles);
 extern void glue_own_interrupt(int level, GVDP *vdp);
 extern int  glue_own_vint_service_latched(GVDP *vdp);  /* deliver a V-int latched while 68K IRQs were masked */
 
-/* ARGB palette cache (normal/shadow/highlight), fed by VDP CRAM writes. */
-static uint32_t s_cram_argb[GVDP_TOTAL_PALETTE];
+/* ARGB palette cache (normal/shadow/highlight), fed by VDP CRAM writes. The
+ * extra trailing slot (index GVDP_WS_BAR_INDEX) is a synthetic entry the VDP
+ * emits for black-mode widescreen pillarbox columns; seeded to opaque black in
+ * machine_init() so the index->ARGB conversion stays branch-free. CRAM writes
+ * only ever touch indices < GVDP_TOTAL_PALETTE, so the slot is never clobbered. */
+static uint32_t s_cram_argb[GVDP_TOTAL_PALETTE + 1];
 
 static int clamp8(int v) { return v < 0 ? 0 : (v > 255 ? 255 : v); }
 static uint32_t bgr9_to_argb(uint16_t c, int lvl)
@@ -219,6 +223,8 @@ void machine_init(void)
     z80_init(&g_machine.z80);       /* superzazu power-on defaults */
     z80_own_reset(&g_machine.z80);
     machine_wire_pointers();
+    /* Widescreen black-bar pillarbox colour (opaque black). */
+    s_cram_argb[GVDP_WS_BAR_INDEX] = 0xFF000000u;
 }
 
 /* ---- Own-backend save states ----------------------------------------------

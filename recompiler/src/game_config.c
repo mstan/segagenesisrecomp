@@ -102,6 +102,22 @@ static void append_jump_table(GameConfig *cfg, uint32_t start, uint32_t end,
     e->format       = fmt;
 }
 
+static void append_ws_site(GameConfig *cfg, uint32_t addr, WsSiteKind kind,
+                           uint8_t reg, uint8_t shift, uint8_t scale,
+                           uint16_t base, uint32_t target) {
+    cfg->ws_sites = grow_to_fit(cfg->ws_sites, &cfg->ws_site_cap,
+                                cfg->ws_site_count, sizeof(WsSite));
+    WsSite *s = &cfg->ws_sites[cfg->ws_site_count++];
+    s->addr = addr; s->kind = kind; s->reg = reg; s->shift = shift;
+    s->scale = scale ? scale : 1; s->base = base; s->target = target;
+}
+
+const WsSite *game_config_ws_site(const GameConfig *cfg, uint32_t addr) {
+    for (int i = 0; i < cfg->ws_site_count; i++)
+        if (cfg->ws_sites[i].addr == addr) return &cfg->ws_sites[i];
+    return NULL;
+}
+
 /* Resolve a relative path against a base file's directory. */
 static void resolve_path(const char *base, const char *rel, char *out, int out_size) {
     const char *slash  = strrchr(base, '/');
@@ -280,6 +296,7 @@ void game_config_free(GameConfig *cfg) {
     free(cfg->blacklist);
     free(cfg->protected_ranges);
     free(cfg->code_addrs);
+    free(cfg->ws_sites);
     memset(cfg, 0, sizeof(*cfg));
 }
 
@@ -421,6 +438,47 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                    "max_extra_cells=%d eligible_modes=%d\n",
                    L->ws_capable, L->ws_extra_ram_addr, L->ws_max_extra_cells,
                    L->ws_eligible_mode_count);
+        }
+    }
+
+    /* [[widescreen_site]] — the post-patch widening injection sites (consumed
+     * at codegen, not emitted to the runtime layout). Root-level array of
+     * tables, independent of [ram_layout]. */
+    {
+        toml_array_t *wss = toml_array_in(root, "widescreen_site");
+        if (wss) {
+            int n = toml_array_nelem(wss);
+            for (int i = 0; i < n; i++) {
+                toml_table_t *t = toml_table_at(wss, i);
+                if (!t) continue;
+                uint32_t addr = toml_u32_or(t, "addr", 0);
+                char kindstr[32] = {0};   /* must fit "cull_window_left" (16) + NUL */
+                toml_string_into(t, "kind", kindstr, sizeof(kindstr));
+                WsSiteKind kind;
+                if      (strcmp(kindstr, "addreg") == 0)    kind = WS_SITE_ADDREG;
+                else if (strcmp(kindstr, "subreg") == 0)    kind = WS_SITE_SUBREG;
+                else if (strcmp(kindstr, "mask10") == 0)    kind = WS_SITE_MASK10;
+                else if (strcmp(kindstr, "cull_left") == 0) kind = WS_SITE_CULL_LEFT;
+                else if (strcmp(kindstr, "addimm") == 0)    kind = WS_SITE_ADDIMM;
+                else if (strcmp(kindstr, "subimm") == 0)    kind = WS_SITE_SUBIMM;
+                else if (strcmp(kindstr, "call_widen") == 0) kind = WS_SITE_CALL_WIDEN;
+                else if (strcmp(kindstr, "cull_window_left") == 0) kind = WS_SITE_CULL_WINDOW_LEFT;
+                else {
+                    fprintf(stderr, "[GameConfig] [[widescreen_site]] #%d: unknown kind '%s' "
+                            "(expected mask10|addreg|subreg|cull_left|addimm|subimm|call_widen|cull_window_left) — skipped\n",
+                            i, kindstr);
+                    continue;
+                }
+                append_ws_site(cfg, addr, kind,
+                               (uint8_t)toml_u32_or(t, "reg", 0),
+                               (uint8_t)toml_u32_or(t, "shift", 0),
+                               (uint8_t)toml_u32_or(t, "scale", 1),
+                               (uint16_t)toml_u32_or(t, "base", 0),
+                               toml_u32_or(t, "target", 0));
+            }
+            if (cfg->ws_site_count)
+                printf("[GameConfig] [[widescreen_site]] loaded: %d injection sites\n",
+                       cfg->ws_site_count);
         }
     }
 

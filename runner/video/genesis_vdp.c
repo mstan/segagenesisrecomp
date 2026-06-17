@@ -410,6 +410,25 @@ static int clamp_ws_extra(int w)
 
 void gvdp_set_ws_extra(int extra_px) { s_ws_extra = extra_px; }
 
+/* Fixed 16:9 output canvas (pixels), armed while widescreen is on. 0 = off
+ * (output width follows the per-frame content margin, i.e. authentic 4:3).
+ * When armed, EVERY frame emits this width: gameplay fills it with widened
+ * content; non-gameplay centers the authentic view and pillarboxes the rest,
+ * so the window never resizes between menus and gameplay. Clamped to the
+ * output buffer. Like s_ws_extra, kept OUTSIDE the GVDP struct (present-time
+ * render parameter, not hardware state — must not enter save images). */
+static int s_ws_canvas_w = 0;
+void gvdp_set_ws_canvas(int canvas_w)
+{
+    if (canvas_w < 0) canvas_w = 0;
+    if (canvas_w > GVDP_MAX_WIDTH) canvas_w = GVDP_MAX_WIDTH;
+    s_ws_canvas_w = canvas_w;
+}
+
+/* Pillarbox bar colour: 0 = per-scanline backdrop (seamless), 1 = black. */
+static int s_ws_bar_black = 0;
+void gvdp_set_ws_bar_black(int black) { s_ws_bar_black = black ? 1 : 0; }
+
 /* Widescreen Plane-B diagnostic (GENESIS_WS_BGDIAG): force Plane B's horizontal
  * scroll to a single constant (line-0) value on every scanline — removing the
  * per-line parallax — while keeping the widened (448) render. If the EHZ
@@ -422,7 +441,11 @@ void gvdp_set_bgdiag(int on) { s_ws_bgdiag = on; }
 int gvdp_active_width(const GVDP *v)
 {
     int w = gvdp_screen_width(v);
-    return w + 2 * clamp_ws_extra(w);
+    int content = w + 2 * clamp_ws_extra(w);
+    /* Armed canvas wins, but never emit fewer columns than the content needs
+     * (a content margin wider than the canvas would otherwise clip). */
+    if (s_ws_canvas_w > content) return s_ws_canvas_w;
+    return content;
 }
 
 /* Sprite engine: evaluate the sprite attribute table in link-list order for
@@ -436,9 +459,11 @@ int gvdp_active_width(const GVDP *v)
  * `line` is an OUTPUT row: a raster line normally, a double-res row in
  * interlace mode 2, where sprite Y/height are in double-res units (Y origin
  * 256 instead of 128), cells are 8x16 and patterns 64 bytes. */
-static void sprite_render_line(GVDP *v, int line, int w, int extra)
+static void sprite_render_line(GVDP *v, int line, int total, int offset)
 {
-    int total = w + 2 * extra;          /* output columns incl. widescreen margins */
+    /* `total` = output columns this row (incl. widescreen margins / pillarbox);
+     * `offset` = output column that authentic screen column 0 maps to (centers
+     * the view in the canvas). */
     memset(s_spr_op, 0, (size_t)total);
     memset(s_spr_shadow_op, 0, (size_t)total);
     memset(s_spr_hilite_op, 0, (size_t)total);
@@ -481,7 +506,7 @@ static void sprite_render_line(GVDP *v, int line, int w, int extra)
              * BuildSprites/Render_Sprites must likewise mask to $3FF in
              * widescreen so the high bit survives to the sprite table. */
             int xword     = vram_read_word(v, (uint16_t)(e + 6)) & 0x3FF;
-            int screen_x  = xword - 128 + extra;   /* +extra: center in widescreen output */
+            int screen_x  = xword - 128 + offset;  /* +offset: center in the output canvas */
 
             /* Sprite masking: an x==0 sprite after another on-line sprite
              * masks the rest of the line. */
@@ -585,14 +610,26 @@ static int in_window(const GVDP *v, int x, int line)
 int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
 {
     int w = gvdp_screen_width(v);
-    int extra = clamp_ws_extra(w);          /* widescreen margin per side; 0 = authentic */
-    int total = w + 2 * extra;              /* output columns emitted this line */
+    int content_extra = clamp_ws_extra(w);  /* genuine widened content per side; 0 = authentic */
+    int content_block = w + 2 * content_extra;
+    /* Output width: the armed 16:9 canvas (emitted EVERY frame so the window
+     * never resizes between menus and gameplay), else just the content block
+     * (authentic 4:3, byte-identical, when widescreen is off). */
+    int total  = (s_ws_canvas_w > content_block) ? s_ws_canvas_w : content_block;
+    int pillar = (total - content_block) / 2;     /* pillarbox bar width per side (>=0) */
+    int offset = pillar + content_extra;           /* output col that screen col 0 maps to */
     int im2 = MODE4_IM2(v);
     int rline = im2 ? (line >> 1) : line;   /* raster line for table lookups */
     uint8_t backdrop = (uint8_t)(REG_BACKDROP(v) & 0x3F);
+    /* Pillarbox bar fill: per-scanline backdrop (seamless) or the black
+     * sentinel the host maps to opaque black. */
+    uint8_t bar_idx = s_ws_bar_black ? (uint8_t)GVDP_WS_BAR_INDEX : backdrop;
 
     if (!gvdp_display_enabled(v)) {
-        for (int x = 0; x < total; x++) out[x] = backdrop;
+        for (int xo = 0; xo < total; xo++) {
+            int x = xo - offset;
+            out[xo] = (x < -content_extra || x >= w + content_extra) ? bar_idx : backdrop;
+        }
         return total;
     }
 
@@ -620,14 +657,21 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     int vs_mask = im2 ? 0x7FF : 0x3FF;
 
     /* Sprite layer for this output row (placed in centered output-column space). */
-    sprite_render_line(v, line, w, extra);
+    sprite_render_line(v, line, total, offset);
 
     for (int xo = 0; xo < total; xo++) {
-        /* xo is the output column; x is the original-screen column. With
-         * widescreen the view is centered, so columns [0,extra) and
-         * [w+extra,total) are the revealed margins (x < 0 or x >= w). The
-         * planes wrap-sample naturally for those (fetch_plane_pixel masks). */
-        int x = xo - extra;
+        /* xo is the output column; x is the original-screen column (centered
+         * via `offset`). Columns within [-content_extra, w+content_extra) are
+         * the authentic view plus any genuine widescreen margins (the planes
+         * wrap-sample for the margins via fetch_plane_pixel masks). Everything
+         * outside that is pillarbox: fill the bar colour and skip all layer
+         * compositing so no wrapped/garbage tiles or off-screen sprites bleed
+         * into the bars. */
+        int x = xo - offset;
+        if (x < -content_extra || x >= w + content_extra) {
+            out[xo] = bar_idx;
+            continue;
+        }
         /* Vertical scroll per plane (full, or per-16px-column 2-cell). */
         int vs_a, vs_b;
         if (vmode_2cell) {

@@ -24,6 +24,13 @@ extern M68KState g_cpu;
 extern uint8_t   g_rom[0x400000];   /* 4MB ROM map */
 extern uint8_t   g_ram[0x010000];   /* 64KB main RAM ($FF0000-$FFFFFF) */
 
+/* Widescreen (16:9) margin in extra pixels per side, set by the runner's
+ * per-frame gate (0 = authentic 4:3). The recompiler's [[widescreen_site]]
+ * injection reads this in the generated C to widen object-cull / tile-load /
+ * ring-window bounds; 0 makes every injected adjustment a no-op, so 4:3 output
+ * is byte-identical. Defined once in the runner (glue.c). */
+extern int g_ws_margin;
+
 /* ---- Memory Map ---- */
 #define ROM_BASE    0x000000u
 #define ROM_SIZE    0x400000u

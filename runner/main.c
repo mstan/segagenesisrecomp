@@ -131,6 +131,7 @@ static void color_lut_setup(void)
 static int s_ws_user_on    = 0;   /* user requested widescreen */
 static int s_ws_user_cells = 8;   /* requested extra 8px cells per side */
 static int s_ws_bgdiag_on  = 0;   /* GENESIS_WS_BGDIAG: Plane B parallax diagnostic */
+static int s_ws_bar_black  = 1;   /* pillarbox bars: black (default); GENESIS_WS_BARS=backdrop for seamless */
 
 static void widescreen_setup(void)
 {
@@ -146,11 +147,37 @@ static void widescreen_setup(void)
     s_ws_bgdiag_on = (bg && bg[0] && bg[0] != '0');
     if (s_ws_bgdiag_on)
         fprintf(stderr, "[VIDEO-WIDESCREEN] Plane B diagnostic ON (constant hscroll + wrap marker)\n");
+    /* Pillarbox bar colour for the always-16:9 window: black (default) or the
+     * per-scanline backdrop (seamless). Only matters on non-gameplay
+     * (pillarboxed) frames. */
+    const char *bars = getenv("GENESIS_WS_BARS");
+    if (bars && bars[0]) {
+        if (strcmp(bars, "black") == 0)         s_ws_bar_black = 1;
+        else if (strcmp(bars, "backdrop") == 0) s_ws_bar_black = 0;
+        else fprintf(stderr, "[VIDEO-WIDESCREEN] unknown GENESIS_WS_BARS=%s "
+                     "(use black|backdrop); using black\n", bars);
+    }
     if (s_ws_user_on)
-        fprintf(stderr, "[VIDEO-WIDESCREEN] requested ON (%d cells/side); "
-                "active only for widescreen-capable games in gameplay modes\n",
-                s_ws_user_cells);
+        fprintf(stderr, "[VIDEO-WIDESCREEN] requested ON (%d cells/side, %s bars); "
+                "16:9 window always (gameplay widened, other screens pillarboxed); "
+                "content widening active only for widescreen-capable games in "
+                "gameplay modes\n",
+                s_ws_user_cells, s_ws_bar_black ? "black" : "backdrop");
 }
+
+/* Widescreen window/output geometry (valid after widescreen_setup()). */
+#define WS_ASPECT_W 16
+#define WS_ASPECT_H 9
+/* True while the 16:9 presentation is active: user asked for it AND the game
+ * supports widescreen content. */
+static int ws_armed(void) { return s_ws_user_on && g_game_layout.ws_capable; }
+/* Width (px) of the fixed widescreen output canvas the VDP emits every frame. */
+static int ws_canvas_w(void) { return 320 + 2 * s_ws_user_cells * 8; }
+/* Height (px) that makes that canvas width a true 16:9 frame. The canvas is
+ * physically wider (2:1 at 8 cells), so the present path scales the authentic
+ * 224-line image into this height to fill the 16:9 window edge-to-edge —
+ * gameplay full-bleed, menus pillarboxed inside it (see gvdp pillarbox). */
+static int ws_canvas_h(void) { return ws_canvas_w() * WS_ASPECT_H / WS_ASPECT_W; }
 
 /* Expanded palette: 192 entries (64 CRAM × 3 brightness levels).
  * colour_updated_cb converts each entry from Genesis format to ARGB8888. */
@@ -194,6 +221,14 @@ static int display_logical_height(void)
 
 static void update_render_logical_size(SDL_Renderer *renderer)
 {
+    /* Widescreen: present on a true 16:9 logical canvas (canvas_w × 16:9 height)
+     * so the content fills the 16:9 window with no SDL letterbox. The authentic
+     * 224-line frame scales into the 16:9 height; gameplay is full-bleed and
+     * non-gameplay screens carry their pillarbox bars within the canvas. */
+    if (ws_armed()) {
+        SDL_RenderSetLogicalSize(renderer, ws_canvas_w(), ws_canvas_h());
+        return;
+    }
     SDL_RenderSetLogicalSize(renderer, s_screen_width, display_logical_height());
 }
 
@@ -295,6 +330,7 @@ static void widescreen_update_for_frame(void)
     extern uint8_t  m68k_read8 (uint32_t);
     extern uint16_t m68k_read16(uint32_t);
     extern void     m68k_write16(uint32_t, uint16_t);
+    extern int      g_ws_margin;   /* runtime widening signal (defined in glue.c) */
     int extra_px = 0;
     if (s_ws_user_on && g_game_layout.ws_capable) {
         int cells = s_ws_user_cells;
@@ -333,6 +369,26 @@ static void widescreen_update_for_frame(void)
     gvdp_set_ws_extra(extra_px);
     gvdp_set_bgdiag(s_ws_bgdiag_on);
 
+    /* Arm the fixed 16:9 output canvas: while widescreen is on for a capable
+     * game, EVERY frame emits the full canvas width — gameplay fills it with
+     * widened content (extra_px>0), other screens center the authentic view and
+     * pillarbox the sides (extra_px==0) — so the window never resizes. The width
+     * matches the window the engine opened ((320 + 2*cells*8) * 2). 0 disarms
+     * (authentic 4:3, byte-identical). Decoupled from extra_px on purpose. */
+    int canvas_w = (s_ws_user_on && g_game_layout.ws_capable)
+                       ? (320 + 2 * s_ws_user_cells * 8) : 0;
+    gvdp_set_ws_canvas(canvas_w);
+    gvdp_set_ws_bar_black(s_ws_bar_black);
+
+    /* Post-patch widening layer (recompile-the-original-ROM approach): the
+     * recompiler's [[widescreen_site]] injection reads g_ws_margin in the
+     * generated C to widen object-cull / tile-load / ring bounds. 0 => no-op
+     * (4:3). This supersedes the legacy disasm RAM-word path below. */
+    g_ws_margin = extra_px;
+
+    /* Legacy disasm-based path: write the Widescreen_extra RAM word the
+     * (patched-disasm) recompiled 68K read. A ROM recompiled unmodified never
+     * reads it; harmless to keep during the migration. */
     if (g_game_layout.ws_extra_ram_addr)
         m68k_write16(g_game_layout.ws_extra_ram_addr, (uint16_t)extra_px);
 
@@ -1351,12 +1407,23 @@ int main(int argc, char *argv[])
                      base, build_tag);
     }
 
-    /* 2× scale: 320×224 → 640×448. When widescreen is armed, open a wider
-     * window sized to the requested margin so the revealed columns are visible
-     * without a manual resize (the window stays resizable either way; the
-     * present path letterboxes/pillarboxes to whatever the frame reports). */
+    /* Resolve the widescreen request (env: GENESIS_WIDESCREEN / _COLUMNS /
+     * _BARS) BEFORE sizing the window — ws_armed()/ws_canvas_w() below depend
+     * on it. Only reads env + the compile-time g_game_layout, so it is safe to
+     * run this early. */
+    widescreen_setup();
+
+    /* 2× scale: 320×224 → 640×448 in authentic 4:3. When widescreen is armed
+     * for a capable game, open a TRUE 16:9 window (canvas_w × 2 wide, 16:9
+     * tall) so the launcher window is shaped 16:9 from the start. The 16:9
+     * logical size (see update_render_logical_size) makes the content fill it —
+     * gameplay full-bleed, menus pillarboxed inside. ws_armed() requires
+     * widescreen_setup() to have run, so that call is hoisted above this. */
     int win_w = 640, win_h = 448;
-    if (s_ws_user_on) win_w = (320 + 2 * s_ws_user_cells * 8) * 2;
+    if (ws_armed()) {
+        win_w = ws_canvas_w() * 2;          /* e.g. 448 * 2 = 896 */
+        win_h = win_w * WS_ASPECT_H / WS_ASPECT_W;   /* 896 * 9/16 = 504 -> 16:9 */
+    }
     SDL_Window *window = SDL_CreateWindow(
         window_title,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -1366,6 +1433,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
         return 1;
     }
+    fprintf(stderr, "[VIDEO] window %dx%d (%s)\n", win_w, win_h,
+            ws_armed() ? "16:9 widescreen" : "4:3");
 
     /* PRESENTVSYNC aligns each present to the display's vblank, which kills
      * the scroll tearing visible without it (notably on macOS/Metal). The
@@ -1464,7 +1533,8 @@ int main(int argc, char *argv[])
     audio_mixer_init();
     audio_obs_init();
     color_lut_setup();   /* present-time screen-color LUT (default raw passthrough) */
-    widescreen_setup();  /* 16:9 opt-in (default off; per-game + gameplay-gated) */
+    /* widescreen_setup() was hoisted above window creation (it sizes the 16:9
+     * window); nothing else here depends on it. */
 
 #if OWN_BACKEND
     gbus_sram_setup(&g_machine.bus);   /* g_rom is populated now (glue_init) */

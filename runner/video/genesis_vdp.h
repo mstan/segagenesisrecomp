@@ -40,6 +40,14 @@
 #define GVDP_PALETTE_HIGHLIGHT  128
 #define GVDP_TOTAL_PALETTE      192
 
+/* Widescreen pillarbox bar sentinel: a synthetic index one past the real
+ * palette that the display path maps to a fixed bar colour (opaque black).
+ * Emitted by gvdp_render_scanline for pillarbox columns ONLY when black-bar
+ * mode is selected; backdrop-bar mode emits the real backdrop index instead,
+ * so this stays branch-free in the index->ARGB conversion (the host sizes its
+ * ARGB cache to GVDP_TOTAL_PALETTE+1 and seeds this slot with black). */
+#define GVDP_WS_BAR_INDEX       GVDP_TOTAL_PALETTE
+
 /* ---- Callbacks the VDP needs from its host ------------------------------- */
 /* DMA 68k->VRAM/CRAM/VSRAM must read source words from the main bus. The host
  * supplies a reader over the 68K address space (word reads). */
@@ -119,7 +127,20 @@ int gvdp_screen_height(const GVDP *v);          /* 224 (V28) or 240 (V30) — RA
  * 0 (default) = authentic 4:3; the value is clamped to the output buffer.
  * NOT part of VDP state (excluded from raw-struct save images). */
 void gvdp_set_ws_extra(int extra_px);
-/* Active output width including widescreen margins (screen_width + 2*extra). */
+/* Arm a FIXED 16:9 output canvas (in pixels) used for EVERY frame while
+ * widescreen is on, decoupled from the per-frame content margin set by
+ * gvdp_set_ws_extra(). Gameplay frames fill the canvas with widened content;
+ * non-gameplay frames (menus/title/intro) center the authentic 320/256 view
+ * and pillarbox the sides, so the output width — and thus the window — never
+ * changes. 0 (default) disarms: output reverts to screen_width + 2*extra.
+ * NOT part of VDP state (excluded from raw-struct save images). */
+void gvdp_set_ws_canvas(int canvas_w);
+/* Pillarbox bar colour: 0 = per-scanline backdrop colour (seamless, looks like
+ * one wider background); 1 = opaque black (classic letterbox). The host picks
+ * the user-facing default (see GENESIS_WS_BARS in main.c). */
+void gvdp_set_ws_bar_black(int black);
+/* Active output width including widescreen margins (the armed canvas when set,
+ * else screen_width + 2*extra). */
 int  gvdp_active_width(const GVDP *v);
 /* Diagnostic: force Plane B hscroll constant (line 0) + mark its wrap column. */
 void gvdp_set_bgdiag(int on);
