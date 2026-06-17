@@ -17,6 +17,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#ifndef _WIN32
+#include <unistd.h>   /* readlink, ssize_t — exe-dir resolution + popen picker */
+#endif
 
 #include <SDL2/SDL.h>
 
@@ -44,7 +47,21 @@ static void init_exe_dir(const char *argv0)
     extern unsigned long __stdcall GetModuleFileNameA(void*, char*, unsigned long);
     GetModuleFileNameA(NULL, s_exe_dir, sizeof(s_exe_dir) - 1);
 #else
-    strncpy(s_exe_dir, argv0, sizeof(s_exe_dir) - 1);
+    /* Inside an AppImage /proc/self/exe is the read-only squashfs mount and
+     * argv0 may be relative; $APPIMAGE (exported by the AppImage runtime) is
+     * the .AppImage's path, so config/saves anchor next to it. Order:
+     * $APPIMAGE, then /proc/self/exe, then argv0. */
+    s_exe_dir[0] = '\0';
+    {
+        const char *appimg = getenv("APPIMAGE");
+        if (appimg && appimg[0]) {
+            strncpy(s_exe_dir, appimg, sizeof(s_exe_dir) - 1);
+        } else {
+            ssize_t r = readlink("/proc/self/exe", s_exe_dir, sizeof(s_exe_dir) - 1);
+            if (r > 0) s_exe_dir[r] = '\0';
+            else if (argv0) strncpy(s_exe_dir, argv0, sizeof(s_exe_dir) - 1);
+        }
+    }
 #endif
     s_exe_dir[sizeof(s_exe_dir) - 1] = '\0';
     /* Strip exe filename, keep directory with trailing slash */
@@ -62,6 +79,28 @@ const char *exe_relative(const char *filename)
     snprintf(buf, sizeof(buf), "%s%s", s_exe_dir, filename);
     return buf;
 }
+
+#ifndef _WIN32
+/* Run one shell-wrapped native file chooser; read the selected path from its
+ * stdout. Each command is gated on `command -v <tool>` so an absent tool
+ * prints nothing and we fall through. Returns 1 and fills `out` only on a
+ * real selection (the tool printed a path and exited 0). */
+static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
+{
+    FILE *p = popen(cmd, "r");
+    if (!p) return 0;
+    char buf[1024];
+    buf[0] = '\0';
+    char *got = fgets(buf, sizeof(buf), p);
+    int rc = pclose(p);
+    if (!got) return 0;
+    size_t n = strlen(buf);
+    while (n > 0 && (buf[n-1] == '\n' || buf[n-1] == '\r')) buf[--n] = '\0';
+    if (rc != 0 || n == 0 || n >= max_len) return 0;
+    memcpy(out, buf, n + 1);
+    return 1;
+}
+#endif
 
 #if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
 #include "glue.h"
@@ -1444,9 +1483,33 @@ int main(int argc, char *argv[])
             if (GetOpenFileNameA(&ofn))
                 rom_path = picked_path;
         }
+#else
+        /* Native graphical chooser, preference order; each gated on
+         * `command -v` so an absent tool falls through. No new link deps. */
+        static char picked_path[1024] = {0};
+        static const char *const pickers[] = {
+            "command -v zenity >/dev/null 2>&1 && "
+            "zenity --file-selection --title='Select Genesis/Mega Drive ROM' "
+            "--file-filter='Genesis ROMs | *.bin *.md *.gen *.smd *.BIN *.MD *.GEN *.SMD' "
+            "--file-filter='All files | *' 2>/dev/null",
+            "command -v kdialog >/dev/null 2>&1 && "
+            "kdialog --getopenfilename \"${HOME:-/}\" "
+            "'*.bin *.md *.gen *.smd|Genesis/Mega Drive ROMs' 2>/dev/null",
+            "command -v qarma >/dev/null 2>&1 && "
+            "qarma --file-selection --title='Select Genesis/Mega Drive ROM' 2>/dev/null",
+            "command -v osascript >/dev/null 2>&1 && "
+            "osascript -e 'POSIX path of (choose file with prompt \"Select Genesis ROM\")' "
+            "2>/dev/null",
+        };
+        for (size_t i = 0; i < sizeof(pickers) / sizeof(pickers[0]); i++)
+            if (run_picker_cmd(pickers[i], picked_path, sizeof(picked_path))) {
+                rom_path = picked_path;
+                break;
+            }
 #endif
         if (!rom_path) {
-            fprintf(stderr, "Usage: %s <sonic.bin>\n", argv[0]);
+            fprintf(stderr, "Usage: %s <sonic.bin>  "
+                    "(or install zenity/kdialog for a file picker)\n", argv[0]);
             return 1;
         }
     }
