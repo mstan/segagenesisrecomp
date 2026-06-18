@@ -207,6 +207,7 @@ void (*g_mem_write_trace_fn)(uint32_t byte_address, uint8_t value, uint32_t targ
 
 #define INSN_WATCHDOG_LIMIT 20000000ull
 static uint64_t s_insn_watchdog_base = 0;
+static void dump_bus_ring(void);   /* defined after the bus ring below; both watchdogs use it */
 
 static void instruction_watchdog_reset(void)
 {
@@ -244,6 +245,7 @@ static void instruction_watchdog_check(void)
     }
 #endif
     crash_report_dump_persistent(reason, &g_cpu, 0, 0, g_frame_count);
+    dump_bus_ring();   /* last 64 bus accesses — pins what a non-yielding spin is polling */
     exit(2);
 }
 
@@ -275,6 +277,24 @@ static inline void bus_ring_push(uint32_t addr, uint8_t kind) {
 }
 /* kind: 0=R8 1=R16 2=R32 3=W8 4=W16 5=W32 */
 
+/* Dump the always-on bus-access ring (low-level access pattern) — the post-hoc
+ * view of what a stall is touching. Called by BOTH watchdogs (bus + instruction)
+ * so a non-yielding spin reveals exactly what it is polling. */
+static void dump_bus_ring(void)
+{
+    static const char *kind_str[] = {"R8","R16","R32","W8","W16","W32"};
+    uint64_t total = s_bus_ring_total;
+    uint32_t window = (total < BUS_RING_SIZE) ? (uint32_t)total : BUS_RING_SIZE;
+    fprintf(stderr, "\n  Bus ring (last %u of %llu accesses):\n",
+            window, (unsigned long long)total);
+    for (uint32_t i = 0; i < window; i++) {
+        uint32_t idx = (s_bus_ring_head - window + i) & (BUS_RING_SIZE - 1);
+        const BusRingEntry *e = &s_bus_ring[idx];
+        const char *k = (e->kind < 6) ? kind_str[e->kind] : "??";
+        fprintf(stderr, "    [%2u] %s $%06X\n", i, k, e->addr);
+    }
+}
+
 static void watchdog_check(uint32_t addr, int is_write, uint32_t val)
 {
     (void)val;
@@ -286,24 +306,7 @@ static void watchdog_check(uint32_t addr, int is_write, uint32_t val)
              "watchdog: %u bus accesses without yield", s_watchdog_counter);
 
     crash_report_dump_persistent(reason, &g_cpu, addr, is_write, g_frame_count);
-
-    /* Also dump the bus-access ring (low-level access pattern) — useful
-     * for spin-loop classification when crash_report's symbol-resolved
-     * trail isn't enough. */
-    {
-        static const char *kind_str[] = {"R8","R16","R32","W8","W16","W32"};
-        uint64_t total = s_bus_ring_total;
-        uint32_t window = (total < BUS_RING_SIZE) ? (uint32_t)total : BUS_RING_SIZE;
-        fprintf(stderr, "\n  Bus ring (last %u of %llu accesses):\n",
-                window, (unsigned long long)total);
-        for (uint32_t i = 0; i < window; i++) {
-            uint32_t idx = (s_bus_ring_head - window + i) & (BUS_RING_SIZE - 1);
-            const BusRingEntry *e = &s_bus_ring[idx];
-            const char *k = (e->kind < 6) ? kind_str[e->kind] : "??";
-            fprintf(stderr, "    [%2u] %s $%06X\n", i, k, e->addr);
-        }
-    }
-
+    dump_bus_ring();
     exit(2);
 }
 
