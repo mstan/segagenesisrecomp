@@ -994,9 +994,26 @@ static void runner_sram_init_and_load(const char *rom_path)
     FILE *f = fopen(s_sram_path, "rb");
     if (f) {
         size_t n = sram_size();
-        size_t got = fread(sram_buf(), 1, n, f);
+        /* Validate the file SIZE before loading. A .srm whose length doesn't
+         * match this cart's SRAM size is truncated, oversized, or from another
+         * cart; splicing it in leaves partial/foreign bytes in SRAM and the game
+         * can boot into a corrupt save state. Reject -> start fresh (the buffer
+         * keeps its power-on contents). Game-agnostic: only the size is checked
+         * here — per-save semantic validity (slot checksums, etc.) is the game's
+         * own responsibility, so a correctly-sized but game-"bad" save still
+         * loads (the game must handle that). */
+        fseek(f, 0, SEEK_END);
+        long fsz = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        if (fsz != (long)n) {
+            fprintf(stderr, "[SRAM] IGNORING %s — file %ld B != cart SRAM %zu B "
+                    "(truncated/oversized/foreign); starting fresh\n",
+                    s_sram_path, fsz, n);
+        } else {
+            size_t got = fread(sram_buf(), 1, n, f);
+            fprintf(stderr, "[SRAM] loaded %zu/%zu bytes from %s\n", got, n, s_sram_path);
+        }
         fclose(f);
-        fprintf(stderr, "[SRAM] loaded %zu/%zu bytes from %s\n", got, n, s_sram_path);
     } else {
         fprintf(stderr, "[SRAM] no save file yet (%s) — starting fresh\n", s_sram_path);
     }
