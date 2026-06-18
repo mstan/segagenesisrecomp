@@ -2822,7 +2822,6 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         int bits = size_bits(sz);
         char res[64];
         snprintf(res, sizeof(res), "_%06Xr", addr);
-        uint32_t msb_mask = (bits == 32) ? 0x80000000u : (bits == 16 ? 0x8000u : 0x80u);
 
         if (asr_reg_count) {
             /* Register-counted ASL/ASR */
@@ -2834,19 +2833,29 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                         ct, res, bits, ct);
                 fprintf(f, "    uint32_t _c = (_cnt > 0 && _cnt <= %d) ? (((uint32_t)_sv >> (%d - _cnt)) & 1u) : 0u;\n",
                         bits, bits);
-                fprintf(f, "    uint32_t _v = 0u;\n");
-                fprintf(f, "    { uint32_t _orig_msb = (uint32_t)_sv & 0x%08Xu;\n"
-                           "      uint32_t _res_msb  = (uint32_t)%s & 0x%08Xu;\n"
-                           "      if (_orig_msb != _res_msb) _v = 1u; }\n",
-                        msb_mask, res, msb_mask);
+                /* V = sign bit changed at ANY point during the shift (hardware):
+                 * the top (_cnt+1) bits of the source are neither all-0 nor all-1.
+                 * The old initial-vs-final-MSB compare missed even-count sign
+                 * oscillations. (_sv is unsigned size-width here.) */
+                fprintf(f,
+                    "    uint32_t _v = 0u;\n"
+                    "    if (_cnt > 0) {\n"
+                    "      if (_cnt >= %d) _v = ((uint32_t)_sv != 0u) ? 1u : 0u;\n"
+                    "      else { uint32_t _top = (uint32_t)_sv >> (%d - 1 - _cnt);\n"
+                    "             uint32_t _allm = (_cnt + 1u >= 32u) ? 0xFFFFFFFFu : ((1u << (_cnt + 1u)) - 1u);\n"
+                    "             _v = (_top != 0u && _top != _allm) ? 1u : 0u; }\n"
+                    "    }\n",
+                    bits, bits);
             } else {
                 fprintf(f, "  { int%d_t _sv = (int%d_t)(%s)g_cpu.D[%d];\n",
                         bits, bits, ct, dreg);
                 fprintf(f, "    int _cnt = (int)(g_cpu.D[%d] & 63u);\n", creg);
                 fprintf(f, "    %s %s = (%s)((_cnt > 0 && _cnt < %d) ? (_sv >> _cnt) : (_cnt == 0 ? _sv : (_sv < 0 ? (%s)~(%s)0 : (%s)0)));\n",
                         ct, res, ct, bits, ct, ct, ct);
-                fprintf(f, "    uint32_t _c = (_cnt > 0 && _cnt <= %d) ? (((uint32_t)_sv >> (_cnt - 1)) & 1u) : 0u;\n",
-                        bits);
+                /* C = last bit shifted out; once _cnt >= bits the value is all-sign,
+                 * so C is the sign bit (hardware), not 0. */
+                fprintf(f, "    uint32_t _c = (_cnt == 0) ? 0u : ((_cnt < %d) ? (((uint32_t)_sv >> (_cnt - 1)) & 1u) : (((uint32_t)_sv >> %d) & 1u));\n",
+                        bits, bits - 1);
                 fprintf(f, "    uint32_t _v = 0u;\n");
             }
         } else if (left) {
@@ -2856,13 +2865,19 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             fprintf(f, "    uint32_t _c = (%d > 0 && %d <= %d) ? (((uint32_t)_sv >> (%d - %d)) & 1u) : 0u;\n",
                     count, count, bits, bits, count);
             fprintf(f, "    uint32_t _v = 0u;\n");
-            /* V flag: set if sign changed at any point during shift */
+            /* V = sign changed at ANY point during the shift (hardware): the top
+             * (count+1) bits of the source are neither all-0 nor all-1. count is
+             * a compile-time constant here, so emit a constant mask. */
             if (count > 0) {
-                fprintf(f,
-                    "    { uint32_t _orig_msb = (uint32_t)_sv & 0x%08Xu;\n"
-                    "      uint32_t _res_msb  = (uint32_t)%s & 0x%08Xu;\n"
-                    "      if (_orig_msb != _res_msb) _v = 1u; }\n",
-                    msb_mask, res, msb_mask);
+                if (count >= bits) {
+                    fprintf(f, "    if ((uint32_t)_sv != 0u) _v = 1u;\n");
+                } else {
+                    uint32_t _allm = ((count + 1) >= 32) ? 0xFFFFFFFFu
+                                                         : ((1u << (count + 1)) - 1u);
+                    fprintf(f, "    { uint32_t _top = (uint32_t)_sv >> %d;\n"
+                               "      if (_top != 0u && _top != 0x%Xu) _v = 1u; }\n",
+                            bits - 1 - count, _allm);
+                }
             }
         } else {
             /* ASR: arithmetic right shift */
@@ -2955,30 +2970,26 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         char res[64];
         snprintf(res, sizeof(res), "_%06Xr", addr);
 
+        /* Rotate a (bits+1)-wide value (the operand + X) in 64-bit so the .L
+         * case works — the old 32-bit form did `_x << 32` / `>> 33` (undefined,
+         * and it dropped the X bit for .L). Matches the Tier-3 interpreter. */
+        unsigned long long widemask = ((unsigned long long)1 << (bits + 1)) - 1ull;
+        unsigned long long lowmask  = (bits == 32) ? 0xFFFFFFFFull
+                                                   : (((unsigned long long)1 << bits) - 1ull);
         fprintf(f, "  { %s _sv = (%s)g_cpu.D[%d];\n", ct, ct, dreg);
-        fprintf(f, "    uint32_t _x = (g_cpu.SR >> 4) & 1u;\n");
-        /* Build a (bits+1)-wide value with X in the extra bit, then rotate */
-        if (left) {
-            fprintf(f,
-                "    uint32_t _wide = ((uint32_t)_sv) | (_x << %d);\n"
-                "    uint32_t _rot  = ((_wide << %d) | (_wide >> (%d - %d))) & 0x%08Xu;\n"
-                "    %s %s = (%s)(_rot & 0x%08Xu);\n"
-                "    uint32_t _c = (_rot >> %d) & 1u;\n",
-                bits,
-                c, bits + 1, c, (bits == 32) ? 0xFFFFFFFFu : ((1u << (bits + 1)) - 1u),
-                ct, res, ct, (bits == 32) ? 0xFFFFFFFFu : ((1u << bits) - 1u),
-                bits);
+        fprintf(f, "    uint64_t _x = (g_cpu.SR >> 4) & 1u;\n");
+        fprintf(f, "    uint64_t _wide = ((uint64_t)_sv) | (_x << %d);\n", bits);
+        if (c == 0) {
+            fprintf(f, "    uint64_t _rot = _wide & 0x%llXull;\n", widemask);
+        } else if (left) {
+            fprintf(f, "    uint64_t _rot = ((_wide << %d) | (_wide >> %d)) & 0x%llXull;\n",
+                    c, bits + 1 - c, widemask);
         } else {
-            fprintf(f,
-                "    uint32_t _wide = ((uint32_t)_sv) | (_x << %d);\n"
-                "    uint32_t _rot  = ((_wide >> %d) | (_wide << (%d - %d))) & 0x%08Xu;\n"
-                "    %s %s = (%s)(_rot & 0x%08Xu);\n"
-                "    uint32_t _c = (_rot >> %d) & 1u;\n",
-                bits,
-                c, bits + 1, c, (bits == 32) ? 0xFFFFFFFFu : ((1u << (bits + 1)) - 1u),
-                ct, res, ct, (bits == 32) ? 0xFFFFFFFFu : ((1u << bits) - 1u),
-                bits);
+            fprintf(f, "    uint64_t _rot = ((_wide >> %d) | (_wide << %d)) & 0x%llXull;\n",
+                    c, bits + 1 - c, widemask);
         }
+        fprintf(f, "    %s %s = (%s)(_rot & 0x%llXull);\n", ct, res, ct, lowmask);
+        fprintf(f, "    uint32_t _c = (uint32_t)((_rot >> %d) & 1u);\n", bits);
         emit_store_dn(f, "    ", dreg, res, sz);
         fprintf(f, "    g_cpu.SR &= ~(0x1Fu);\n");
         fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
@@ -3020,20 +3031,22 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         char tmp2[32];
         snprintf(tmp2, sizeof(tmp2), "_tv%06X", addr);
         emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp2, src_expr);
+        /* HW-accurate (matches clown68000 / the Tier-3 floor): on quotient
+         * overflow set V+N, clear Z, leave Dn UNCHANGED. C always cleared.
+         * On real inputs this is identical to a plain divide (no overflow). */
         fprintf(f,
-            "  { uint16_t _dv = (uint16_t)(%s);\n"
-            "    if (_dv != 0) {\n"
-            "      uint32_t _quo = g_cpu.D[%d] / _dv;\n"
-            "      uint32_t _rem = g_cpu.D[%d] %% _dv;\n"
+            "  { uint16_t _dv = (uint16_t)(%s); uint32_t _dest = g_cpu.D[%d];\n"
+            "    g_cpu.SR &= ~(1u<<0);\n"
+            "    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }\n"
+            "    else if ((uint32_t)_dv >= (_dest >> 16)) {\n"
+            "      uint32_t _quo = _dest / _dv, _rem = _dest %% _dv;\n"
             "      g_cpu.D[%d] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);\n"
-            "    }\n",
-            src_expr, dreg, dreg, dreg);
-        /* DIVU does not affect X flag */
-        fprintf(f,
-            "    g_cpu.SR &= ~(0x0Fu);\n"
-            "    if (!(g_cpu.D[%d] & 0xFFFFu)) g_cpu.SR |= (1u<<2);\n"
-            "    if ((g_cpu.D[%d] >> 15) & 1u)  g_cpu.SR |= (1u<<3);\n"
-            "  }\n", dreg, dreg);
+            "      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));\n"
+            "      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);\n"
+            "      if (_quo == 0u)     g_cpu.SR |= (1u<<2);\n"
+            "    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }\n"
+            "  }\n",
+            src_expr, dreg, dreg);
         break;
     }
 
@@ -3043,20 +3056,32 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         char tmp2[32];
         snprintf(tmp2, sizeof(tmp2), "_tv%06X", addr);
         emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp2, src_expr);
+        /* HW-accurate signed divide (matches clown68000 / the Tier-3 floor):
+         * absolute-value method + unsigned and signed overflow checks; on
+         * overflow set V+N, clear Z, leave Dn unchanged. C always cleared. */
         fprintf(f,
-            "  { int16_t _dv = (int16_t)(%s);\n"
-            "    if (_dv != 0) {\n"
-            "      int32_t _quo = (int32_t)g_cpu.D[%d] / _dv;\n"
-            "      int32_t _rem = (int32_t)g_cpu.D[%d] %% _dv;\n"
-            "      g_cpu.D[%d] = ((uint32_t)(uint16_t)_quo) | (((uint32_t)(uint16_t)_rem) << 16);\n"
-            "    }\n",
-            src_expr, dreg, dreg, dreg);
-        /* DIVS does not affect X flag */
-        fprintf(f,
-            "    g_cpu.SR &= ~(0x0Fu);\n"
-            "    if (!(g_cpu.D[%d] & 0xFFFFu)) g_cpu.SR |= (1u<<2);\n"
-            "    if ((g_cpu.D[%d] >> 15) & 1u)  g_cpu.SR |= (1u<<3);\n"
-            "  }\n", dreg, dreg);
+            "  { int16_t _dv = (int16_t)(%s); uint32_t _dest = g_cpu.D[%d];\n"
+            "    g_cpu.SR &= ~(1u<<0);\n"
+            "    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }\n"
+            "    else {\n"
+            "      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);\n"
+            "      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;\n"
+            "      uint32_t _adst = _dn ? (0u - _dest) : _dest;\n"
+            "      if (_asrc >= (_adst >> 16)) {\n"
+            "        uint32_t _aq = _adst / _asrc;\n"
+            "        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {\n"
+            "          uint32_t _ar = _adst %% _asrc;\n"
+            "          uint32_t _quo = _rn ? (0u - _aq) : _aq;\n"
+            "          uint32_t _rem = _dn ? (0u - _ar) : _ar;\n"
+            "          g_cpu.D[%d] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);\n"
+            "          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));\n"
+            "          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);\n"
+            "          if (_quo == 0u)     g_cpu.SR |= (1u<<2);\n"
+            "        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }\n"
+            "      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }\n"
+            "    }\n"
+            "  }\n",
+            src_expr, dreg, dreg);
         break;
     }
 
@@ -3147,6 +3172,18 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
                 int16_t d16 = (int16_t)ext;
                 uint32_t eff = (uint32_t)((int32_t)pc_addr + d16);
                 snprintf(base_expr, sizeof(base_expr), "0x%08Xu", eff);
+                break;
+            }
+            case 3: {  /* (d8,PC,Xn) — PC-relative indexed */
+                uint32_t pc_addr = instr->addr + er2.bp;
+                uint16_t ext = er_next(&er2);
+                int xreg  = (ext >> 12) & 7;
+                int xtype = (ext >> 15) & 1;
+                int8_t d8 = (int8_t)(ext & 0xFF);
+                const char *xr = xtype ? "g_cpu.A" : "g_cpu.D";
+                snprintf(base_expr, sizeof(base_expr),
+                         "(uint32_t)(0x%08X + (int32_t)(int16_t)%s[%d] + (%d))",
+                         pc_addr, xr, xreg, (int)d8);
                 break;
             }
             default:
@@ -3240,7 +3277,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
          *   dst_is_ea=true  → MOVE SR,<ea>  (store SR → EA) */
         if (!instr->dst_is_ea) {
             emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
-            fprintf(f, "  g_cpu.SR = (uint16_t)(%s);\n", src_expr);
+            /* Mask to the valid 68000 SR bits (T,S,I2-0,X,N,Z,V,C = 0xA71F) —
+             * unused bits read as 0 on hardware. */
+            fprintf(f, "  g_cpu.SR = (uint16_t)((%s) & 0xA71Fu);\n", src_expr);
         } else {
             emit_ea_store(f, instr, instr->src_ea, M68K_SIZE_W, &er, "g_cpu.SR");
         }
@@ -3257,10 +3296,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
          *                     store to EA as a word) */
         if (!instr->dst_is_ea) {
             emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
-            fprintf(f, "  g_cpu.SR = (g_cpu.SR & 0xFF00u) | (uint16_t)((%s) & 0xFFu);\n", src_expr);
+            /* CCR is only 5 bits (X,N,Z,V,C = 0x1F); bits 5-7 read as 0. */
+            fprintf(f, "  g_cpu.SR = (g_cpu.SR & 0xFF00u) | (uint16_t)((%s) & 0x1Fu);\n", src_expr);
         } else {
             emit_ea_store(f, instr, instr->src_ea, M68K_SIZE_W, &er,
-                          "(uint16_t)(g_cpu.SR & 0x00FFu)");
+                          "(uint16_t)(g_cpu.SR & 0x001Fu)");
         }
         break;
     }
