@@ -1,0 +1,46 @@
+# game.toml — Rocket Knight Adventures (Konami, 1993). USA NTSC, 1 MB ROM.
+# 68000, flat $000000-$0FFFFF, identity-mapped (no banks, no SRAM).
+#
+# FIRST NON-SONIC bring-up + the real test of the Tier-3 floor: there is NO
+# community disassembly in-tree, so discovery is the recompiler's heuristic
+# (vector-table scan + BSR/JSR/RTS walk) seeded by the entry + V-int, plus the
+# dispatch-miss / floor / coverage-manifest loop. Each lead is cross-checked
+# against the raw ROM in a disassembler before becoming a seed (PRINCIPLES #16).
+#
+# ROM identity (USA): header "ROCKET KNIGHT ADVENTURES", serial GM T-95046-00,
+# region "U" (NTSC), 1993 Konami. Vectors (from $000000):
+#   SSP   $FFFFFF00   (reset; the entry does NOT override it — uses it directly)
+#   Entry $000208
+#   H-int $FFFFE010   (RAM-installed trampoline — resolved at runtime, not ROM)
+#   V-int $0003D4
+
+[game]
+output_prefix = "rka"
+# No annotations / discovery_files / code_addrs_file: pure-heuristic discovery.
+
+# ---------------------------------------------------------------------------
+# Per-game RAM layout. RKA is NOT Sonic, so the Sonic-shaped tracking fields
+# (game_mode / vint_routine / player_object) are UNKNOWN — left 0 (cosmetic;
+# only feed boot_smoke / telemetry, per the load-bearing audit). The
+# LOAD-BEARING stack fields use RKA's actual reset SSP $FFFFFF00 (the entry
+# relies on it). plc_pending = 0 (RKA has no Sonic PLC system). Refine the
+# cosmetic addrs later from the V-int code at $0003D4.
+# ---------------------------------------------------------------------------
+[ram_layout]
+game_mode      = 0x000000     # unknown (cosmetic) — refine from disasm
+vint_runcount  = 0x000000     # unknown (divergence-diff sync only) — refine
+vint_routine   = 0x000000     # unknown (yield-gate tracing) — refine
+plc_pending    = 0x000000     # RKA has no PLC system
+initial_ssp    = 0xFFFFFF00   # reset SSP; RKA uses it directly (LOAD-BEARING)
+vbla_stack     = 0xFFFFFF00   # V-int handler stack base (LOAD-BEARING)
+intr_stack     = 0xFFFFFF00   # IRQ handler stack base (LOAD-BEARING)
+player_object  = 0x000000     # unknown (cosmetic)
+level_modes    = []
+
+# Heuristic discovery is seeded from the vector table automatically; list the
+# entry + V-int explicitly too. The H-int target is RAM ($FFE010), not seedable.
+# A dispatch_misses.log entry after a run is a coverage gap to root-cause in
+# discovery (Principle #13/#16), cross-checked against the ROM — NOT blind seeding.
+[functions]
+extra = [0x000208, 0x0003D4]
+blacklist = []
