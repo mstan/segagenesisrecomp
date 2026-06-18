@@ -242,6 +242,13 @@ static void instruction_watchdog_check(void)
             g_machine.bus.z80_busreq, g_machine.bus.z80_reset_off,
             (unsigned)g_machine.bus.z80_bank, nz_z80ram,
             g_ram[0xF00D], g_ram[0xF00A], g_ram[0xF00B]);
+        /* Z80 driver entry bytes — decode why z80pc is stuck. */
+        fprintf(stderr, "[OWN-DIAG] z80_ram[0..0x1F]:");
+        for (int i = 0; i < 0x20; i++) fprintf(stderr, " %02X", g_machine.bus.z80_ram[i]);
+        fprintf(stderr, "  | around z80pc[$%04X-8..+8]:", (unsigned)g_machine.z80.pc);
+        for (int i = (int)g_machine.z80.pc - 8; i <= (int)g_machine.z80.pc + 8; i++)
+            if (i >= 0 && i < 0x2000) fprintf(stderr, " %02X", g_machine.bus.z80_ram[i]);
+        fprintf(stderr, "\n");
     }
 #endif
     crash_report_dump_persistent(reason, &g_cpu, 0, 0, g_frame_count);
@@ -1237,7 +1244,23 @@ void glue_check_vblank(void)
      * "some animations run too fast, some look right" symptom. It would also
      * run V_Int against the wrong RAM buffer (fire_vblank_handler_once saves
      * s_emu->state.m68k.ram, but recompiled code mutates g_ram here). So under
-     * the own backend this routine does watchdog bookkeeping only. */
+     * the own backend this routine does watchdog bookkeeping only —
+     *
+     * EXCEPT the non-yielding-loop safety: the own backend yields the 68K fiber
+     * only at recompiler-emitted yield sites (WaitForVBlank). A tight loop with
+     * no such site — e.g. Rocket Knight's sound-init busy-wait for the Z80 to
+     * raise its ready flag — would never let the scanline scheduler run, so the
+     * Z80 never steps, the flag never sets, and the loop deadlocks until the
+     * instruction watchdog kills it. If the game has burned more than two wall
+     * frames of 68K cycles without yielding, force the DESIGNED cycle-budget
+     * yield (check_cycle_budget -> fiber_switch to the scheduler), which steps
+     * the Z80 and lets the scheduler fire V-int via its own path (no doubling).
+     * Well-behaved games yield every frame (g_cycle_accumulator resets in
+     * glue_end_of_wall_frame) and never reach this. */
+    if (s_interleave_active && !s_in_vblank_service
+        && g_cycle_accumulator >= 2u * NTSC_CYCLES_PER_WALL_FRAME) {
+        check_cycle_budget();
+    }
     return;
 #else
     if (s_in_vblank_service)
