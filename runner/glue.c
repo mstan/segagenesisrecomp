@@ -28,6 +28,12 @@
 /* genesis_runtime.h interface */
 #include "genesis_runtime.h"
 
+/* Tier-3 clean-room 68000 interpreter — the runtime correctness floor. On a
+ * dispatch miss the native build used to silently no-op the missed function;
+ * the floor runs it correctly instead (validated 0-divergence vs clown68000).
+ * Permissive/AGPL-free: reuses the recompiler's own decoder. */
+#include "m68k_interp.h"
+
 /* clownmdemu bus layer (oracle/hybrid builds only — native has no
  * clownmdemu include paths; the own backend routes the bus through
  * genesis_bus.c instead) */
@@ -1806,11 +1812,153 @@ static int is_bra_w_trampoline(uint32_t addr)
     return opcode == 0x6000u;
 }
 
+/* Re-entrancy guard for the floor. The interpreter is self-contained (it does
+ * not re-enter dispatch), but never recurse the floor defensively. */
+static int s_in_floor = 0;
+
+#if ENABLE_RECOMPILED_CODE
+/* ── Coverage manifest ──────────────────────────────────────────────────────
+ * Records every in-ROM address the floor executed (the missed entry + the
+ * JSR/BSR/JMP subtree it traversed) to floor_coverage.txt, deduplicated for the
+ * session. These are LEADS to grow static coverage: validate each against the
+ * disasm (PRINCIPLES.md #16), then fold confirmed entries into game.toml
+ * [funcs] extra_funcs / the gen_disasm seed pipeline so the recompiler discovers
+ * them and they become Tier-1 native. (Interior-label misses are deliberately
+ * NOT here — they live in interior_label_misses.log and need a codegen fix, not
+ * a seed.) The subtree matters because the interpreter runs callees inline, so
+ * an undiscovered callee never logs its own dispatch miss — this is the only
+ * place it surfaces. */
+#define FLOOR_COV_MAX 8192
+static uint32_t s_floor_cov[FLOOR_COV_MAX];
+static int      s_floor_cov_count  = 0;
+static int      s_floor_cov_header = 0;
+static void floor_record_coverage(uint32_t addr)
+{
+    addr &= 0xFFFFFFu;
+    uint32_t rl = g_game_spec.expected_rom_size
+                      ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
+    if (addr >= rl) return;
+    for (int i = 0; i < s_floor_cov_count; i++) if (s_floor_cov[i] == addr) return;
+    if (s_floor_cov_count >= FLOOR_COV_MAX) return;
+    s_floor_cov[s_floor_cov_count++] = addr;
+
+    extern const char *exe_relative(const char *);
+    FILE *f = fopen(exe_relative("floor_coverage.txt"), "a");
+    if (!f) return;
+    if (!s_floor_cov_header) {
+        s_floor_cov_header = 1;
+        fprintf(f,
+            "# floor_coverage.txt — addresses executed by the Tier-3 interpreter\n"
+            "# floor (a missed function entry, or a JSR/BSR/JMP target in its\n"
+            "# subtree). LEADS to grow static coverage: validate each against the\n"
+            "# disasm (PRINCIPLES.md #16 — disasm is ground truth), then fold the\n"
+            "# confirmed code entries into game.toml [funcs] extra_funcs / the\n"
+            "# gen_disasm seed pipeline so they recompile to Tier-1 native.\n");
+    }
+    fprintf(f, "extra_func 0x%06X\n", addr);
+    fclose(f);
+}
+
+/* Halt blacklist: a missed address the floor could not run (its first/early
+ * bytes decode as illegal/F-line — i.e. the JMP-table dispatched to DATA, or a
+ * misaligned PC). Re-running it every frame would just halt again and spam the
+ * log, so remember it and decline silently thereafter. Declining is safe: it
+ * is exactly the old no-op behaviour for that (non-code) target. */
+#define FLOOR_BL_MAX 2048
+static uint32_t s_floor_bl[FLOOR_BL_MAX];
+static int      s_floor_bl_count = 0;
+static int floor_blacklisted(uint32_t a) {
+    for (int i = 0; i < s_floor_bl_count; i++) if (s_floor_bl[i] == a) return 1;
+    return 0;
+}
+static void floor_blacklist_add(uint32_t a) {
+    if (s_floor_bl_count < FLOOR_BL_MAX) s_floor_bl[s_floor_bl_count++] = a;
+}
+/* Floor enable switch (GENESIS_FLOOR=1/on/yes). DEFAULT OFF: opt-in.
+ *
+ * The interpreter is validated 0-divergence vs clown68000 and works in-game on
+ * Sonic 1 (it correctly executes interior-label "Duff's-device" misses that the
+ * static dispatch can only no-op). But it does NOT yet model the per-instruction
+ * cycle accounting + glue_check_vblank() that the generated native code emits,
+ * so a floor run that should span a VBlank skips it — harmless for short
+ * mid-game handlers, but it desyncs timing-sensitive code (Sonic 3&K froze at
+ * frame ~2014 from a frame-5 boot miss; A/B-confirmed it's the floor's
+ * EXECUTION, not pre-existing). Until that interaction is root-caused, the floor
+ * ships OFF by default so no game regresses; enable per-game where validated. */
+static int floor_enabled(void) {
+    static int e = -1;
+    if (e < 0) {
+        const char *v = getenv("GENESIS_FLOOR");
+        e = (v && (v[0] == '1' || v[0] == 'o' || v[0] == 'O' || v[0] == 'y' || v[0] == 'Y')) ? 1 : 0;
+        if (e) fprintf(stderr, "[FLOOR] ENABLED via GENESIS_FLOOR=%s\n", v);
+    }
+    return e;
+}
+#endif
+
 void genesis_log_dispatch_miss(uint32_t addr)
 {
     g_miss_count_any++;
     g_miss_last_addr  = addr;
     g_miss_last_frame = g_frame_count;
+
+#if ENABLE_RECOMPILED_CODE
+    /* ── THE TIER-3 FLOOR ───────────────────────────────────────────────────
+     * Run the missed function on the clean-room interpreter so it executes
+     * CORRECTLY instead of silently no-op'ing (the old behaviour). It was
+     * reached via a JMP / tail-jump from a JSR-entered function, so the
+     * enclosing return address is on top of the 68K stack and the function's
+     * RTS returns there — the same A7 contract a native handler honours.
+     * Validated 0-divergence vs clown68000 (see runner/m68k_interp.c).
+     * In-ROM only: a RAM/hardware PC isn't decodable from the ROM image (and
+     * the RAM jmp-trampoline case is resolved to a ROM target before here). */
+    {
+        uint32_t rl = g_game_spec.expected_rom_size
+                          ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
+        /* Even, in-ROM, not-already-declined, not re-entrant. An odd target is
+         * never a valid instruction start (a real 68K would address-error). */
+        uint32_t ret = m68k_read32(g_cpu.A[7]);
+        /* Trust-the-return guard: the floor runs the missed function until its
+         * RTS lands on `ret` (the enclosing return on top of A7). That is only
+         * sound when `ret` is a real code return — an even, in-ROM address. At
+         * early boot (before the stack is set up) or for a spurious dispatch,
+         * A7-top is garbage; running until a bogus stop would execute far past
+         * the function and corrupt state. When the return isn't trustworthy,
+         * decline — exactly the old no-op, which the game already tolerates.
+         *
+         * Charter guard: the floor runs undiscovered FUNCTION ENTRIES only. An
+         * interior-label miss (a computed JMP landing INSIDE a known function —
+         * the Duff's-device codegen gap handled + logged below) is NOT a
+         * function entry: A7-top is the ENCLOSING function's return, so the
+         * floor would interpret the rest of that function and pop a return the
+         * native loose-A7 model (generated RTS == `return;`) still believes it
+         * owns — desyncing the stack. That is the real S3K frame-~2014 freeze:
+         * the frame-5 interior-label miss $00043A was being run here. Skip
+         * interior labels (bra.w trampolines are genuine callable entries, so
+         * they still run) — the exact complement of the no-op test below. */
+        if (floor_enabled() && !s_in_floor && addr < rl && !(addr & 1u)
+            && ret && !(ret & 1u) && ret < rl && !floor_blacklisted(addr)
+            && (!is_interior_label(addr) || is_bra_w_trampoline(addr))) {
+            s_in_floor = 1;
+            M68kiStatus st = m68k_interp_run(addr, ret);
+            s_in_floor = 0;
+            if (st == M68KI_OK) {
+                /* Manifest: the missed entry + the call/jump subtree (real code). */
+                floor_record_coverage(addr);
+                for (int i = 0; i < g_m68ki_discover_count; i++)
+                    floor_record_coverage(g_m68ki_discover[i]);
+            } else {
+                /* Could not run it (illegal/F-line first bytes => DATA target, or
+                 * guard/bad-addr). Decline + remember; do NOT record as a code
+                 * lead. Log once. */
+                floor_blacklist_add(addr);
+                fprintf(stderr, "[FLOOR] declined miss $%06X (status %d, opcode $%04X "
+                        "at $%06X) — target not runnable code; blacklisted\n",
+                        addr, (int)st, g_m68ki_bad_op, g_m68ki_bad_pc);
+            }
+        }
+    }
+#endif
 
     /* TRUE interior labels — addresses inside an existing function but not
      * its entry. They are NEVER valid extra_func seeds (the recompiler

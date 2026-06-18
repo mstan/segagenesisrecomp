@@ -1,0 +1,4 @@
+[diff] ROM ../../sonicthehedgehog/sonic.bin: 524288 bytes
+[diff] 300 entries x 1 seeds
+
+[diff] RESULT  pass=0 diverge=0 unimpl=0 skip_fault=0 skip_nonterm=300

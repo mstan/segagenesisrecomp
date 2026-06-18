@@ -12,12 +12,4 @@ const GameRamLayout g_game_layout = {
     .player_object_addr = 0x00FFB000u,
     .level_modes        = { 0x08u, 0x0Cu },
     .level_mode_count   = 2,
-    .ws_capable         = 1,
-    .ws_extra_ram_addr  = 0x00FFCFCCu,
-    .ws_max_extra_cells = 8,
-    .ws_eligible_modes  = { 0x08u, 0x0Cu },
-    .ws_eligible_mode_count = 2,
-    .ws_level_started_addr  = 0x00FFF711u,
-    .ws_two_player_addr     = 0x00FFFFE8u,
-    .ws_redraw_flag_addr    = 0x00FFCFCEu,
 };
