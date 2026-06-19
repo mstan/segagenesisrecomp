@@ -17,6 +17,10 @@
 [game]
 output_prefix = "rka"
 # No annotations / discovery_files / code_addrs_file: pure-heuristic discovery.
+# RKA has no community disasm, and reaches most of its code through PC-indexed
+# jump tables. Enable the recompiler's auto-walk of pcrel16 jump tables (off by
+# default for the Sonic games, which seed tables from disasm). Validator-gated.
+jump_table_autodiscovery = true
 
 # ---------------------------------------------------------------------------
 # Per-game RAM layout. RKA is NOT Sonic, so the Sonic-shaped tracking fields
