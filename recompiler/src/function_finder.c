@@ -43,6 +43,10 @@ static int s_jt_targets_pushed        = 0;  /* worklist additions           */
 static int s_jt_targets_rejected      = 0;  /* failed validation            */
 static int s_jt_unresolved            = 0;  /* path terminated, no table    */
 
+/* Two-step long-pointer dispatch counters (movea.l <tbl>(pc,Xn),aN; jmp/jsr (aN)). */
+static int s_jt_twostep_sites         = 0;  /* movea+indirect idioms matched */
+static int s_jt_twostep_tables        = 0;  /* tables yielding >=1 entry      */
+
 /* Per-site record for every dispatch we couldn't enumerate. Dumped to
  * generated/<prefix>.unresolved_jumptables.log so the user can grep
  * disasm for these PCs and either add manual jump_table directives or
@@ -75,6 +79,10 @@ static void record_unresolved(uint32_t pc, uint32_t base, uint16_t ext, uint8_t 
 
 #define JT_AUTO_MAX_ENTRIES   256
 #define JT_AUTO_MIN_ENTRIES     2
+
+/* Two-step long-pointer table walk bounds (see jt_enumerate_long). */
+#define JT_LONG_MAX_ENTRIES    64
+#define JT_LONG_LEAD_SKIP       4
 
 /* Forward decl — defined later, but jt_enumerate needs to call it. */
 static void add_function(FunctionList *list, uint32_t addr);
@@ -214,6 +222,89 @@ jt_enumerate_bra_ladder(const GenesisRom *rom, const GameConfig *cfg,
     return count;
 }
 
+/* True if `ins` writes address register `areg`. Used to detect when the
+ * pointer a two-step dispatch loaded into aN is clobbered before the
+ * indirect jmp/jsr (aN) consumes it — in which case the loaded table is
+ * NOT the one the indirect transfer uses, so we must not attribute it.
+ * Conservative: EXG / MOVEM are treated as clobbers (rare between a table
+ * load and its use; a false abort only costs a conservative miss). */
+static bool insn_writes_areg(const M68KInstr *ins, int areg) {
+    switch (ins->mnemonic) {
+    case MN_MOVEA: case MN_LEA: case MN_ADDA: case MN_SUBA:
+    case MN_LINK:  case MN_UNLK: case MN_MOVE_USP:
+        return ins->reg == areg;
+    case MN_EXG:                 /* may swap an An; can't tell which cheaply */
+    case MN_MOVEM:               /* (sp)+,<regs> can reload aN               */
+        return true;
+    default:
+        break;
+    }
+    /* ADDQ/SUBQ #n,An — the An destination is encoded in src_ea. */
+    if ((ins->mnemonic == MN_ADDQ || ins->mnemonic == MN_SUBQ)
+            && ((ins->src_ea >> 3) & 7) == EA_An
+            && (ins->src_ea & 7) == areg)
+        return true;
+    /* Any MOVE-group instruction whose DESTINATION EA is (An,areg).
+     * (dst_ea is only populated for the MOVE groups; 0 elsewhere = D0,
+     * so this is a no-op for non-MOVE mnemonics.) */
+    if (((ins->dst_ea >> 3) & 7) == EA_An && (ins->dst_ea & 7) == areg)
+        return true;
+    return false;
+}
+
+/* Enumerate a two-step long-pointer dispatch table at `base`: a run of
+ * 32-bit ROM code pointers that `movea.l <base>(pc,Xn),aN; jmp/jsr (aN)`
+ * indexes. Each valid entry is a function ENTRY (the indirect transfer
+ * lands directly on it).
+ *
+ * Unlike the pcrel16 auto-walk, the per-entry gate here is STRONG and so
+ * this runs unconditionally for every game (no jump_table_autodiscovery
+ * opt-in), like the bra-ladder detector: a genuine ROM code pointer has a
+ * clear top byte and is < rom_size, so a random longword almost never
+ * passes (top byte 0 is ~1/256, and < a <=4MB rom_size rarer still). That
+ * makes over-walk self-terminating — the first longword past the table end
+ * is overwhelmingly likely to be code/data with a set top byte.
+ *
+ * Tolerates up to JT_LONG_LEAD_SKIP leading invalid slots: the low command
+ * indices of a 0-based dispatch table are frequently unused garbage (e.g.
+ * RKA's $1944 dispatcher, whose cmd-0 slot at $1976 is $65D04E75 — odd, so
+ * not a pointer). After the first valid entry, the first invalid one ends
+ * the table. Caps at JT_LONG_MAX_ENTRIES to bound a misfire. Returns the
+ * number of targets pushed (0 == not a recognizable table). */
+static int
+jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
+                  FunctionList *list, uint32_t base,
+                  const M68KValidatorOptions *vopts) {
+    int pushed = 0;
+    int valid_seen = 0;
+    for (int i = 0; i < JT_LONG_MAX_ENTRIES; i++) {
+        uint32_t entry_addr = base + (uint32_t)i * 4;
+        if (entry_addr + 4 > rom->rom_size) break;
+        uint32_t raw = rom_read32(rom, entry_addr);
+        /* A real entry is a non-null, even, in-ROM pointer (top byte clear,
+         * which `raw < rom_size` enforces for these <=4MB ROMs) whose first
+         * instruction is a legal MC68000 encoding. */
+        bool ok = (raw != 0) && !(raw & 1) && (raw < rom->rom_size);
+        if (ok) {
+            M68KInstr probe;
+            if (!m68k_decode(rom, raw, &probe)
+                    || m68k_validate(&probe, vopts) != M68K_LEGAL)
+                ok = false;
+        }
+        if (!ok) {
+            if (valid_seen) break;             /* table end after real entries */
+            if (i >= JT_LONG_LEAD_SKIP) break; /* too many leading non-pointers */
+            continue;                          /* tolerate a leading dead slot  */
+        }
+        valid_seen++;
+        if (cfg && game_config_is_blacklisted(cfg, raw)) continue;
+        add_function(list, raw);
+        pushed++;
+        s_jt_targets_pushed++;
+    }
+    return pushed;
+}
+
 static void push_addr(uint32_t addr) {
     if (addr >= 0x400000 || addr_seen[addr]) return;
     if (s_work_top >= WORK_STACK_SIZE) {
@@ -341,6 +432,8 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
     s_jt_targets_pushed   = 0;
     s_jt_targets_rejected = 0;
     s_jt_unresolved       = 0;
+    s_jt_twostep_sites    = 0;
+    s_jt_twostep_tables   = 0;
     /* Reuse the unresolved-site buffer across runs but reset its
      * logical length. Capacity is preserved so the next run avoids
      * re-allocating from scratch. */
@@ -423,6 +516,119 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
                                 base + (uint32_t)off, &vopts) >= JT_AUTO_MIN_ENTRIES)
                             break;
                     }
+                }
+            }
+
+            /* Two-step long-pointer dispatch table:
+             *   movea.l <table>(pc,Xn.W),aN   ; load a 32-bit code pointer
+             *   ...                           ; (optional arg setup)
+             *   jmp/jsr (aN)                  ; transfer through it
+             * The recompiler reaches most of a non-Sonic ROM's handlers
+             * through this idiom (RKA's command queue at $1944, object state
+             * machines, etc.). The `jmp/jsr (aN)` site alone has no static
+             * target, so without enumerating the table at the LOAD the target
+             * handlers dispatch-miss (graphics/VDP routines never run → empty
+             * VRAM → black screen). Match on the movea.l load, confirm the
+             * indirect transfer through the same aN follows in straight-line
+             * code, then enumerate the long-pointer table. Strong per-entry
+             * gate (jt_enumerate_long) — safe to run for every game. */
+            if (instr.mnemonic == MN_MOVEA && instr.size == M68K_SIZE_L
+                    && instr.src_ea == ((EA_PCR << 3) | PCR_PC_IDX)
+                    && instr.word_count >= 2) {
+                int      areg = instr.reg;                       /* destination aN  */
+                int8_t   d8   = (int8_t)(instr.words[1] & 0xFF); /* brief-ext disp  */
+                uint32_t base = pc + 2 + (int32_t)d8;            /* (pc) bias = +2  */
+                /* Scan straight-line forward for `jmp/jsr (aN)` on the same
+                 * aN. Abort if aN is reloaded/clobbered, or control leaves
+                 * the region, before the indirect transfer. */
+                uint32_t lpc = pc + instr.byte_length;
+                for (int k = 0; k < 6 && lpc < rom->rom_size; k++) {
+                    M68KInstr li;
+                    if (!m68k_decode(rom, lpc, &li)) break;
+                    if (m68k_validate(&li, &vopts) != M68K_LEGAL) break;
+                    if ((li.mnemonic == MN_JMP || li.mnemonic == MN_JSR)
+                            && !li.has_target
+                            && li.src_ea == ((EA_An_IND << 3) | areg)) {
+                        s_jt_twostep_sites++;
+                        if (jt_enumerate_long(rom, cfg, list, base, &vopts) > 0)
+                            s_jt_twostep_tables++;
+                        break;
+                    }
+                    if (insn_writes_areg(&li, areg)) break;
+                    if (m68k_is_call(&li) || m68k_is_terminator(&li)
+                            || li.mnemonic == MN_Bcc || li.mnemonic == MN_DBcc)
+                        break;
+                    lpc += li.byte_length;
+                }
+            }
+
+            /* Two-step long-pointer dispatch via a base REGISTER:
+             *   lea     <table>, aN          ; abs.l or (d,pc) table base -> aN
+             *   ...                          ; index scaling (no clobber of aN)
+             *   movea.l (aN,Xn.W), aP        ; aP = table[index]
+             *   jmp/jsr (aP)                 ; transfer through it
+             * Distinct from the PC-indexed movea form above: here a `lea`
+             * makes the table base static and a SEPARATE `movea.l (aN,Xn.W)`
+             * does the indexed load (RKA's command dispatchers, e.g. $23B6:
+             * `lea $23D8,a0; movea.l (a0,d0.w),a0; jmp (a0)`, whose slots
+             * include the shared rts handler $23D6). The indirect jmp/jsr (aP)
+             * site is non-PC-indexed, so without enumerating the lea's table
+             * those handlers dispatch-miss. Same strong long-pointer gate. */
+            if (instr.mnemonic == MN_LEA) {
+                int      tbl_reg  = instr.reg;               /* aN = base reg   */
+                int      lea_mode = (instr.src_ea >> 3) & 7;
+                int      lea_reg  = instr.src_ea & 7;
+                uint32_t tbl_base = 0;
+                bool     have_base = false;
+                if (lea_mode == EA_PCR && lea_reg == PCR_ABS_L
+                        && instr.word_count >= 3) {
+                    tbl_base = ((uint32_t)instr.words[1] << 16) | instr.words[2];
+                    have_base = (tbl_base < rom->rom_size);
+                } else if (lea_mode == EA_PCR && lea_reg == PCR_PC_DISP
+                        && instr.word_count >= 2) {
+                    tbl_base = pc + 2 + (int32_t)(int16_t)instr.words[1];
+                    have_base = (tbl_base < rom->rom_size);
+                }
+                uint32_t lpc = pc + instr.byte_length;
+                for (int k = 0; have_base && k < 8 && lpc < rom->rom_size; k++) {
+                    M68KInstr li;
+                    if (!m68k_decode(rom, lpc, &li)) break;
+                    if (m68k_validate(&li, &vopts) != M68K_LEGAL) break;
+                    /* the indexed long load through aN */
+                    if (li.mnemonic == MN_MOVEA && li.size == M68K_SIZE_L
+                            && ((li.src_ea >> 3) & 7) == EA_An_IDX
+                            && (li.src_ea & 7) == tbl_reg
+                            && li.word_count >= 2) {
+                        int      ap   = li.reg;                       /* dest aP   */
+                        int8_t   disp = (int8_t)(li.words[1] & 0xFF); /* base disp */
+                        uint32_t base = tbl_base + (int32_t)disp;
+                        uint32_t jpc  = lpc + li.byte_length;
+                        for (int j = 0; j < 4 && jpc < rom->rom_size; j++) {
+                            M68KInstr ji;
+                            if (!m68k_decode(rom, jpc, &ji)) break;
+                            if (m68k_validate(&ji, &vopts) != M68K_LEGAL) break;
+                            if ((ji.mnemonic == MN_JMP || ji.mnemonic == MN_JSR)
+                                    && !ji.has_target
+                                    && ji.src_ea == ((EA_An_IND << 3) | ap)) {
+                                s_jt_twostep_sites++;
+                                if (jt_enumerate_long(rom, cfg, list, base, &vopts) > 0)
+                                    s_jt_twostep_tables++;
+                                break;
+                            }
+                            if (insn_writes_areg(&ji, ap)) break;
+                            if (m68k_is_call(&ji) || m68k_is_terminator(&ji)
+                                    || ji.mnemonic == MN_Bcc
+                                    || ji.mnemonic == MN_DBcc) break;
+                            jpc += ji.byte_length;
+                        }
+                        break;  /* consumed this lea's indexed load */
+                    }
+                    /* aN reloaded before the indexed load -> not a table base. */
+                    if (insn_writes_areg(&li, tbl_reg)) break;
+                    if (m68k_is_call(&li) || m68k_is_terminator(&li)
+                            || li.mnemonic == MN_Bcc || li.mnemonic == MN_DBcc)
+                        break;
+                    lpc += li.byte_length;
                 }
             }
 
@@ -523,6 +729,9 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
            s_jt_pc_indexed_sites, s_jt_auto_enumerated,
            s_jt_manual_enumerated, s_jt_targets_pushed,
            s_jt_targets_rejected, s_jt_unresolved);
+    printf("[FunctionFinder] Two-step long-pointer dispatch: sites=%d "
+           "tables_enumerated=%d\n",
+           s_jt_twostep_sites, s_jt_twostep_tables);
 
     /* Dump unresolved dispatch sites so the user can investigate which
      * tables the static extractor missed. The recompiler still emits
