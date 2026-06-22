@@ -1255,3 +1255,87 @@ M68kiStatus m68k_interp_run(uint32_t entry_pc, uint32_t stop_pc) {
     }
     return M68KI_OK;
 }
+
+/* ---------------------------------------------------------------------------
+ * Framed capsule run — the edge-aware tier-3 fallback primitive.
+ *
+ * Runs from entry_pc tracking NET CALL DEPTH (JSR/BSR = +1, the matching
+ * RTS/RTR = -1).  The run stops at the *depth-0* return — the point where the
+ * capsule's own frame returns to whoever invoked the missed computed transfer.
+ * Crucially, that final return is PEEKED, NOT POPPED: we read the return target
+ * off A7 and exit with A7 UNCHANGED.  This makes the capsule A7-NEUTRAL, which
+ * is what the native loose-A7 model requires — the caller (the generated JSR
+ * site's `A7 += 4`, or the enclosing JSR for a JMP-tail/interior miss) performs
+ * the single pop, exactly as if the missed code had been a native function
+ * whose RTS compiles to `return;`.  Letting the interpreter pop here is the old
+ * desync bug the charter guard worked around (double pop: capsule + native).
+ *
+ * Because the stop condition is "the frame returns" rather than "PC == a
+ * specific address", this single capsule is correct for all three miss shapes:
+ *   - computed JSR  (target is a fresh function entry; its top-level RTS),
+ *   - computed JMP-tail (target shares the caller's frame; the shared RTS),
+ *   - interior-label (a JMP landing inside a known function; that function's
+ *     RTS) — the case the charter guard had to SKIP under the old model.
+ *
+ * On success: returns M68KI_OK and writes *out_exit_pc = the (peeked) return
+ * target.  The caller validates that target is a plausible return; an
+ * implausible one is an UNSAFE_EXIT (signal, never silent corruption).
+ * On failure: HALT_* (target wasn't runnable code / runaway / bad fetch).
+ *
+ * RTE is deliberately NOT treated as a frame return: it unwinds an exception
+ * frame, not a subroutine call, and must not appear at the top of a computed
+ * dispatch frame — if one shows up the loop will run past it and surface as a
+ * halt/guard rather than a silent mis-return.
+ * ------------------------------------------------------------------------- */
+M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
+    g_cpu.PC = entry_pc & 0xFFFFFFu;
+    g_m68ki_insn_count = 0;
+    g_m68ki_discover_count = 0;
+    if (out_exit_pc) *out_exit_pc = 0;
+
+    int depth = 0;
+    for (;;) {
+        uint32_t pc = g_cpu.PC & 0xFFFFFFu;
+        if (pc >= ROM_SIZE) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
+
+        M68KInstr ins;
+        if (!m68k_decode(romview(), pc, &ins)) {
+            g_m68ki_bad_pc = pc; g_m68ki_bad_op = m68k_read16(pc);
+            return M68KI_HALT_UNIMPL;
+        }
+
+        /* The capsule's own return: peek, don't pop (A7-neutral). RTS pops PC;
+         * RTR pops a CCR word first, so its PC is one word deeper. */
+        if (depth == 0 && (ins.mnemonic == MN_RTS || ins.mnemonic == MN_RTR)) {
+            uint32_t ret = (ins.mnemonic == MN_RTR)
+                               ? m68k_read32(g_cpu.A[7] + 2u)
+                               : m68k_read32(g_cpu.A[7]);
+            if (out_exit_pc) *out_exit_pc = ret & 0xFFFFFFu;
+            return M68KI_OK;
+        }
+
+        uint32_t next;
+        s_illegal_ea = 0;
+        M68kiStatus st = exec_one(&ins, &next);
+        if (st != M68KI_OK) return st;
+        if (s_illegal_ea) {
+            g_m68ki_bad_pc = ins.addr; g_m68ki_bad_op = ins.words[0];
+            return M68KI_HALT_UNIMPL;
+        }
+        g_cpu.PC = next & 0xFFFFFFu;
+#if ENABLE_RECOMPILED_CODE
+        interp_account_cycles(&ins);
+#endif
+        /* Net-depth bookkeeping (after exec). A nested RTS/RTR balances a prior
+         * JSR/BSR within the capsule; depth never goes below 0 because a
+         * depth-0 return is intercepted above. */
+        if (ins.mnemonic == MN_JSR || ins.mnemonic == MN_BSR)
+            depth++;
+        else if (ins.mnemonic == MN_RTS || ins.mnemonic == MN_RTR)
+            depth--;
+
+        if (++g_m68ki_insn_count > M68KI_INSN_GUARD) {
+            g_m68ki_bad_pc = g_cpu.PC; return M68KI_HALT_GUARD;
+        }
+    }
+}

@@ -49,6 +49,19 @@ typedef enum {
 M68kiStatus m68k_interp_run(uint32_t entry_pc, uint32_t stop_pc);
 
 /*
+ * Framed capsule run — the edge-aware tier-3 fallback primitive (see the long
+ * comment in m68k_interp.c). Runs from entry_pc tracking net call depth and
+ * stops at the depth-0 return, PEEKING the return target without popping A7
+ * (A7-neutral) so the native loose-A7 caller performs the single pop. Correct
+ * for computed-JSR, computed-JMP-tail, and interior-label misses alike.
+ *
+ * On M68KI_OK, *out_exit_pc is the peeked return target; the caller must
+ * validate it is a plausible return (an implausible one is an UNSAFE_EXIT).
+ * On HALT_*, the target was not runnable code (or ran away / bad fetch).
+ */
+M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc);
+
+/*
  * Execute exactly one instruction at g_cpu.PC and advance g_cpu.PC. Used by
  * the lockstep differential harness (so it can compare register/RAM state
  * after every instruction against clown68000). Returns M68KI_OK or a HALT_*.

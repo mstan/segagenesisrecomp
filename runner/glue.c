@@ -1900,6 +1900,39 @@ static int floor_blacklisted(uint32_t a) {
 static void floor_blacklist_add(uint32_t a) {
     if (s_floor_bl_count < FLOOR_BL_MAX) s_floor_bl[s_floor_bl_count++] = a;
 }
+
+/* UNSAFE_EXIT receipt: the framed capsule ran a missed target to its depth-0
+ * return, but that return did NOT land on the native loose-A7 return the caller
+ * is about to pop (an unbalanced A7 — a skip-return / stack pivot — or a
+ * mis-decode). Continuing would let native resume with a desynced stack. Per
+ * the oracle-parity charter we never silently corrupt: record the full state
+ * loudly so the first-divergence harness can classify it, then DECLINE (the old
+ * no-op for that target). The capsule itself is A7-neutral, so declining leaves
+ * the stack exactly as native expects. */
+static int s_floor_unsafe_count = 0;
+static void floor_unsafe_record(uint32_t miss_addr, uint32_t run_at,
+                                uint32_t exit_pc, uint32_t expected_ret,
+                                const char *why)
+{
+    s_floor_unsafe_count++;
+    fprintf(stderr,
+            "[FLOOR][UNSAFE] miss $%06X (ran $%06X): %s — exit_pc=$%06X "
+            "expected_ret=$%06X A7=$%06X frame=%" PRIu64 " — declined\n",
+            miss_addr, run_at, why, exit_pc, expected_ret,
+            g_cpu.A[7] & 0xFFFFFFu, g_frame_count);
+
+    extern const char *exe_relative(const char *);
+    FILE *f = fopen(exe_relative("floor_unsafe.log"), "a");
+    if (!f) return;
+    fprintf(f,
+            "miss=0x%06X run_at=0x%06X exit_pc=0x%06X expected_ret=0x%06X "
+            "A7=0x%06X D0=0x%08X D1=0x%08X A0=0x%08X A1=0x%08X SR=0x%04X "
+            "frame=%" PRIu64 " why=\"%s\"\n",
+            miss_addr, run_at, exit_pc, expected_ret, g_cpu.A[7] & 0xFFFFFFu,
+            g_cpu.D[0], g_cpu.D[1], g_cpu.A[0], g_cpu.A[1], g_cpu.SR,
+            g_frame_count, why ? why : "");
+    fclose(f);
+}
 /* Floor enable switch (GENESIS_FLOOR=1/on/yes). DEFAULT OFF: opt-in.
  *
  * The interpreter is validated 0-divergence vs clown68000 and works in-game on
@@ -1929,58 +1962,78 @@ void genesis_log_dispatch_miss(uint32_t addr)
     g_miss_last_frame = g_frame_count;
 
 #if ENABLE_RECOMPILED_CODE
-    /* ── THE TIER-3 FLOOR ───────────────────────────────────────────────────
-     * Run the missed function on the clean-room interpreter so it executes
-     * CORRECTLY instead of silently no-op'ing (the old behaviour). It was
-     * reached via a JMP / tail-jump from a JSR-entered function, so the
-     * enclosing return address is on top of the 68K stack and the function's
-     * RTS returns there — the same A7 contract a native handler honours.
-     * Validated 0-divergence vs clown68000 (see runner/m68k_interp.c).
-     * In-ROM only: a RAM/hardware PC isn't decodable from the ROM image (and
-     * the RAM jmp-trampoline case is resolved to a ROM target before here). */
-    {
+    /* ── EDGE-AWARE TIER-3 FALLBACK ─────────────────────────────────────────
+     * Every computed-dispatch miss — computed JSR, computed JMP-tail, and the
+     * interior-label JMP (the Duff's-device codegen gap) — funnels here via
+     * call_by_address. Instead of silently no-op'ing it (dead object code,
+     * the gameplay-garble cause) we run the missed code on the A7-NEUTRAL
+     * framed capsule (m68k_interp_run_framed): it runs the target to its
+     * depth-0 return and PEEKS that return without popping, so the native
+     * loose-A7 caller performs the single pop. That one capsule is correct for
+     * all three miss shapes — and being A7-neutral it FIXES the interior-label
+     * double-pop that the old single-model floor had to skip (the S3K freeze),
+     * so no charter guard is needed.
+     *
+     * A RAM-resident target is resolved to its ROM destination first (the
+     * capsule decodes from the ROM image only). A capsule exit that does NOT
+     * land on the native loose-A7 return the caller is about to pop is an
+     * UNSAFE_EXIT (unbalanced A7 — skip-return / stack pivot — or mis-decode):
+     * recorded loudly and declined, never silently resumed (oracle-parity
+     * charter: interpreter fallback is fine, silent corruption is defeat).
+     *
+     * Default OFF (GENESIS_FLOOR); enabled per game where validated. */
+    if (floor_enabled() && !s_in_floor && !floor_blacklisted(addr)) {
         uint32_t rl = g_game_spec.expected_rom_size
                           ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
-        /* Even, in-ROM, not-already-declined, not re-entrant. An odd target is
-         * never a valid instruction start (a real 68K would address-error). */
-        uint32_t ret = m68k_read32(g_cpu.A[7]);
-        /* Trust-the-return guard: the floor runs the missed function until its
-         * RTS lands on `ret` (the enclosing return on top of A7). That is only
-         * sound when `ret` is a real code return — an even, in-ROM address. At
-         * early boot (before the stack is set up) or for a spurious dispatch,
-         * A7-top is garbage; running until a bogus stop would execute far past
-         * the function and corrupt state. When the return isn't trustworthy,
-         * decline — exactly the old no-op, which the game already tolerates.
-         *
-         * Charter guard: the floor runs undiscovered FUNCTION ENTRIES only. An
-         * interior-label miss (a computed JMP landing INSIDE a known function —
-         * the Duff's-device codegen gap handled + logged below) is NOT a
-         * function entry: A7-top is the ENCLOSING function's return, so the
-         * floor would interpret the rest of that function and pop a return the
-         * native loose-A7 model (generated RTS == `return;`) still believes it
-         * owns — desyncing the stack. That is the real S3K frame-~2014 freeze:
-         * the frame-5 interior-label miss $00043A was being run here. Skip
-         * interior labels (bra.w trampolines are genuine callable entries, so
-         * they still run) — the exact complement of the no-op test below. */
-        if (floor_enabled() && !s_in_floor && addr < rl && !(addr & 1u)
-            && ret && !(ret & 1u) && ret < rl && !floor_blacklisted(addr)
-            && (!is_interior_label(addr) || is_bra_w_trampoline(addr))) {
-            s_in_floor = 1;
-            M68kiStatus st = m68k_interp_run(addr, ret);
-            s_in_floor = 0;
-            if (st == M68KI_OK) {
-                /* Manifest: the missed entry + the call/jump subtree (real code). */
-                floor_record_coverage(addr);
-                for (int i = 0; i < g_m68ki_discover_count; i++)
-                    floor_record_coverage(g_m68ki_discover[i]);
+        /* The native loose-A7 return the caller (JSR site / enclosing JSR) is
+         * about to pop — the capsule must return exactly here to be safe. */
+        uint32_t expected_ret = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;
+        uint32_t run_at = addr;
+
+        /* RAM-resident computed target: follow the JMP/JSR trampoline chain to
+         * a ROM entry the capsule can decode. If it stays in RAM the floor
+         * cannot fetch it from the ROM image — record + decline (a real
+         * RAM-code execution strategy is future work; a RAM target is never a
+         * static native function). */
+        if (run_at >= RAM_BASE) {
+            uint32_t resolved = recomp_resolve_ram_trampoline(run_at) & 0xFFFFFFu;
+            if (resolved < rl && !(resolved & 1u)) {
+                run_at = resolved;
             } else {
-                /* Could not run it (illegal/F-line first bytes => DATA target, or
-                 * guard/bad-addr). Decline + remember; do NOT record as a code
-                 * lead. Log once. */
+                floor_unsafe_record(addr, run_at, resolved, expected_ret,
+                                    "RAM target did not resolve to a ROM entry");
                 floor_blacklist_add(addr);
-                fprintf(stderr, "[FLOOR] declined miss $%06X (status %d, opcode $%04X "
-                        "at $%06X) — target not runnable code; blacklisted\n",
-                        addr, (int)st, g_m68ki_bad_op, g_m68ki_bad_pc);
+                run_at = 0;  /* skip the capsule */
+            }
+        }
+
+        if (run_at && run_at < rl && !(run_at & 1u)) {
+            uint32_t exit_pc = 0;
+            s_in_floor = 1;
+            M68kiStatus st = m68k_interp_run_framed(run_at, &exit_pc);
+            s_in_floor = 0;
+
+            if (st == M68KI_OK) {
+                int plausible = exit_pc && !(exit_pc & 1u) && exit_pc < rl;
+                if (plausible && exit_pc == expected_ret) {
+                    /* Clean balanced return to the native continuation. Manifest
+                     * the entry + its call/jump subtree as real code leads. */
+                    floor_record_coverage(addr);
+                    for (int i = 0; i < g_m68ki_discover_count; i++)
+                        floor_record_coverage(g_m68ki_discover[i]);
+                    return;  /* handled; native caller performs the single A7 pop */
+                }
+                floor_unsafe_record(addr, run_at, exit_pc, expected_ret,
+                                    "capsule exit_pc != native loose-A7 return");
+                floor_blacklist_add(addr);
+            } else {
+                /* Not runnable as code (illegal/F-line first bytes => DATA
+                 * target), or runaway/bad fetch. Decline + remember (the old
+                 * no-op for that non-code target, which the game tolerates). */
+                floor_blacklist_add(addr);
+                fprintf(stderr, "[FLOOR] declined miss $%06X (ran $%06X, status %d, "
+                        "opcode $%04X at $%06X) — target not runnable code; blacklisted\n",
+                        addr, run_at, (int)st, g_m68ki_bad_op, g_m68ki_bad_pc);
             }
         }
     }
