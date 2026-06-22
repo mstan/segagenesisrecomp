@@ -1295,6 +1295,13 @@ int main(int argc, char *argv[])
     const char *mem_write_log_spec = NULL;
     const char *wav_path = NULL;
 
+    /* --exec-coverage-out PATH — oracle build only. At exit, dump the
+     * always-on executed-PC coverage bitmaps (ROM + WRAM) to a binary
+     * file. This is the discovery runtime oracle's guaranteed-code
+     * positive set; tools/rka decode it into address lists. No-op on
+     * native (the interpreter that feeds the coverage isn't running). */
+    const char *exec_cov_out = NULL;
+
     /* Headless smoke / framebuffer-hash assertion mode. When --hash-frames
      * is set, emit a [FBHASH] line every N wall frames with an FNV-1a-64
      * fingerprint of the framebuffer's active region. Used by CI / golden
@@ -1361,6 +1368,8 @@ int main(int argc, char *argv[])
             hash_frames = (uint32_t)atol(argv[++i]);
         } else if (strcmp(argv[i], "--input-script") == 0 && i + 1 < argc) {
             input_script_path = argv[++i];
+        } else if (strcmp(argv[i], "--exec-coverage-out") == 0 && i + 1 < argc) {
+            exec_cov_out = argv[++i];
         } else if (strncmp(argv[i], "--audio-backend=", 16) == 0) {
             const char *v = argv[i] + 16;
             if      (strcmp(v, "ours")       == 0) s_audio_backend = AUDIO_BACKEND_OURS;
@@ -2382,6 +2391,18 @@ int main(int argc, char *argv[])
       fprintf(stderr, "[VBLA] cvblank_fires=%llu VBla_Exit=%d VBla_Music=%d loc_B88=%d\n",
               (unsigned long long)g_cvblank_fires_total,
               g_dbg_b64_count, g_dbg_b5e_count, g_dbg_b88_count); }
+#endif
+
+    /* --- Discovery runtime oracle: dump executed-PC coverage --- */
+#if SONIC_REVERSE_DEBUG && defined(SONIC_ORACLE_BUILD)
+    if (exec_cov_out) {
+        extern void oracle_exec_coverage_write(const char *path);
+        oracle_exec_coverage_write(exec_cov_out);
+    }
+#else
+    if (exec_cov_out)
+        fprintf(stderr, "[EXECCOV] --exec-coverage-out requires the oracle "
+                        "build (interpreter coverage); ignored\n");
 #endif
 
     /* --- Cleanup --- */

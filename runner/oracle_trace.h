@@ -53,6 +53,23 @@ uint32_t t3_snapshot_count(void);
  * All register values are 32-bit unsigned, SR is 16-bit. */
 int t3_format_entry(uint32_t i, char *buf, size_t buflen);
 
+/* ---- Always-on executed-PC coverage (discovery runtime oracle) ----
+ *
+ * Independent of the t3 ring (which is opt-in and evicts after ~1M
+ * insns): two non-evicting bitmaps mark EVERY instruction-fetch PC for
+ * the whole session — one bit per even ROM address, one per even WRAM
+ * address. Together they are the complete executed_pc_set, the
+ * guaranteed-code positive set used to gate discovery candidates
+ * (a candidate target whose bit is set is definitely code), plus the
+ * RAM-execution set that identifies RAM-resident computed-jump targets
+ * (e.g. $FFB1F2) that must route to the interpreter, never a static
+ * function. Marked unconditionally from t3_pre_insn; queried at exit.
+ *
+ * oracle_exec_coverage_write() dumps both bitmaps to a self-describing
+ * binary file (magic 'ECOV') that tools/rka decode into address lists.
+ * No-op-safe to call with a NULL/empty path. */
+void oracle_exec_coverage_write(const char *path);
+
 /* ---- Oracle break/step (Phase 3 of the Tier-4 vision) ----
  *
  * Set PC-breakpoints that fire when the interpreter reaches a given PC.
