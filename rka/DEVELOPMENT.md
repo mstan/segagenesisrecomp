@@ -98,3 +98,47 @@ This work lives on `feat/discovery-heuristics` (branched from
   `function_finder.c`; kept here for re-application once proven FP-free).
 - `interior_label_misses.log` — raw miss log (untracked; append-mode, clear
   before each measurement).
+
+## 2026-06-21 — runtime oracle (Step 1) + detector audit (Step 2)
+
+Implemented the design conferred with ChatGPT (see memory
+`project_discovery_heuristics_design`).
+
+**Step 1 — runtime oracle (engine commit `e68fa14`).** Added an always-on,
+non-evicting executed-PC coverage capture to the oracle build
+(`runner/oracle_trace.c`, marked from `t3_pre_insn`; dumped via
+`--exec-coverage-out`). Brought `RKARecomp_oracle` online (the hybrid-table
+stub had never defined `g_hybrid_table`). `gen_runtime_oracle.py` decodes the
+`ECOV` dump → `rka_executed_pcs.txt` + `rka_ram_targets.txt`. A 4000-frame
+attract run captured 6150 ROM + 10 WRAM distinct PCs; **all 7 baseline miss
+targets are runtime-confirmed real code** — the detectors were right about
+those 7; the regression was over-discovery of *other* speculative targets.
+
+**Step 2 — detector audit (`audit_discovery.py`).** Re-runs the two reverted
+detector classes (JSR/JMP PC-indexed word tables; two-step long-pointer
+tables) faithfully to `function_finder.c`, source-instruction-anchored to known
+boundaries, and classifies every candidate against the runtime oracle +
+function spans. No codegen touched. Result (964 candidates):
+
+- **`JSR_PC_INDEX_WORD`: 9 candidates, 9/9 runtime-observed** → 8 new function
+  entries + 1 interior. The Konami JSR word-table detector is **proven safe**.
+- **`JMP_PC_INDEX_WORD`: 504 candidates, ALL interior, 0 functions.** In-function
+  switch targets — must be interior labels, never functions (minting these as
+  functions is what corrupted codegen).
+- **`LONG_PTR_TABLE` past old cap 64: 327 entries, 8 observed, 313 garbage.**
+  The cap raise was the over-discovery engine; the cap must be a *proven
+  per-table bound*, not a global raise.
+- Zero `ObservedMidInstruction` (sanity: every observed target is a real
+  boundary).
+
+Concrete safe-to-promote set (15 runtime-confirmed new function entries):
+`$5F1A/$5F2E/$5F42` ($5F12 JSR table), `$C7A6/$CB56/$CC5E/$CD16/$CE5C` ($C74C
+JSR table), `$2FE20/$2FFAC/$300F2/$3067C/$31A7C/$15E5C/$12F8A` ($23D8 long
+table). `$FFB1F2` → RAM/interp. (The 1-entry `$898E` table uses an idiom
+`audit_discovery.py` does not yet enumerate — a small coverage gap to close.)
+
+**Additional artifacts:**
+- `gen_runtime_oracle.py` — decode the oracle `ECOV` coverage dump.
+- `audit_discovery.py` — detector audit / candidate classifier.
+- `rka_executed_pcs.txt`, `rka_ram_targets.txt`, `rka_discovery_audit.csv` —
+  generated outputs (untracked; regenerate from a fresh oracle run).
