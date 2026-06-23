@@ -3,6 +3,15 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Shared clock-domain bridge: persistent band-limited polyphase resampler + a
+ * P-only normalized-fill controller, plus Phase-1 stall concealment (boot
+ * pre-roll + pitch-preserving underrun loop). Replaces the old nearest-neighbor
+ * ±0.5% servo (which crackled because every correction dropped/duplicated
+ * samples) and the >8-frame hard-drop. See recomp_audio_drc.h. This is the only
+ * TU that pulls in the implementation. */
+#define RECOMP_AUDIO_DRC_IMPL
+#include "recomp_audio_drc.h"
+
 /* Volume divisors from the reference mixer (clownmdemu-frontend-common/mixer.h).
  * FM is fixed; PSG is a RUNTIME knob ([SND-TRACE] tuning, default 8 = original
  * behaviour) so the PSG/FM balance can be dialled in by ear without rebuilds —
@@ -23,6 +32,25 @@ void audio_set_master_volume(int pct)
 }
 
 static SDL_AudioDeviceID s_dev = 0;
+
+/* DRC bridge state. Producer (rab_push) runs on the emulation/main thread inside
+ * audio_flush under SDL_LockAudioDevice; consumer (rab_pull) runs on the SDL
+ * audio callback thread. SDL_LockAudioDevice gives us the SPSC guarantee. */
+static rab_bridge s_bridge;
+static int        s_bridge_ready = 0;
+static uint64_t   s_prev_underruns = 0;
+
+/* SDL pull callback: the device asks for `len` bytes of stereo S16; the bridge
+ * resamples from the internal mix rate to the device rate under DRC and emits
+ * faded silence (or pitch-preserving conceal) on underrun. No guest code, no
+ * locks, no allocation here. */
+static void genesis_audio_callback(void *user, Uint8 *stream, int len)
+{
+    (void)user;
+    if (!s_bridge_ready) { memset(stream, 0, (size_t)len); return; }
+    int frames = len / (int)(2 * sizeof(int16_t)); /* stereo S16 */
+    rab_pull(&s_bridge, (int16_t *)stream, frames);
+}
 
 /* Audio stats */
 static AudioStats s_stats = {0};
@@ -88,41 +116,66 @@ int audio_init(int psg_sample_rate)
 {
     SDL_AudioSpec want, got;
     SDL_memset(&want, 0, sizeof(want));
-    want.freq     = psg_sample_rate;
+    /* Open at a normal host rate and let the DRC bridge own the (large)
+     * downsample from the internal mix rate. Previously the device was opened
+     * at the raw PSG rate (~223721 Hz) and SDL did the resample internally,
+     * with our nearest-neighbor servo riding on top — both contributed to the
+     * crackle. The bridge does a band-limited polyphase 223721->host downsample
+     * with a P-only ratio servo, so the device runs at a clean 48 kHz. */
+    want.freq     = 48000;
     want.format   = AUDIO_S16SYS;
     want.channels = 2;
     want.samples  = 1024;
-    want.callback = NULL;   /* push model via SDL_QueueAudio */
+    want.callback = genesis_audio_callback;
 
-    s_dev = SDL_OpenAudioDevice(NULL, 0, &want, &got, 0);
+    /* Allow SDL to renegotiate the rate (some backends won't give exactly
+     * 48000); the bridge keys off got.freq so any rate works. */
+    s_dev = SDL_OpenAudioDevice(NULL, 0, &want, &got,
+                                SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
     if (s_dev == 0) {
         fprintf(stderr, "audio: SDL_OpenAudioDevice failed: %s\n", SDL_GetError());
         return -1;
     }
-    s_stats.min_queued_bytes = UINT32_MAX;  /* low-water: nothing sampled yet */
-    /* Prime the queue with the servo's target depth of silence so playback
-     * starts with a cushion instead of riding the empty mark until the
-     * +ratio servo crawls it up (4 frames ≈ 67 ms; matches
-     * TARGET_DEPTH_FRAMES in audio_flush). */
-    {
-        static const int16_t silence[8192] = {0};
-        uint32_t prime = (uint32_t)((uint64_t)psg_sample_rate * 4u * 2 * 2 / 60)
-                         & ~3u;  /* stereo-s16 frame aligned */
-        while (prime > 0) {
-            uint32_t chunk = prime < sizeof(silence) ? prime : sizeof(silence);
-            SDL_QueueAudio(s_dev, silence, chunk);
-            prime -= chunk;
-        }
+
+    rab_config cfg;
+    rab_config_defaults(&cfg);
+    cfg.channels    = 2;
+    cfg.source_rate = (double)psg_sample_rate; /* internal FM+PSG mix rate */
+    cfg.host_rate   = (double)got.freq;         /* device rate (48 kHz) */
+    /* Phase-1 stall concealment: a ~200 ms boot pre-roll hides the cold-start
+     * hitch for free (the servo drains the excess down to target over time),
+     * and stretch_enable (default 1) conceals brief producer stalls by a
+     * pitch-preserving loop of recent audio instead of fading to silence. */
+    cfg.preroll_ms     = 200.0;
+    cfg.stretch_enable = 1;     /* conceal on (defaults to 1; pinned explicit) */
+    if (rab_init(&s_bridge, &cfg) != 0) {
+        fprintf(stderr, "audio: rab_init (DRC bridge) failed\n");
+        SDL_CloseAudioDevice(s_dev); s_dev = 0;
+        return -1;
     }
+    s_bridge_ready   = 1;
+    s_prev_underruns = 0;
+    s_stats.min_queued_bytes = UINT32_MAX;  /* low-water: nothing sampled yet */
+
+    /* No manual silence prime: the bridge holds output muted until its ring
+     * reaches the pre-roll fill, then fades in (clean startup, no edge click). */
     SDL_PauseAudioDevice(s_dev, 0);
+    fprintf(stderr, "[audio] DRC bridge: %d Hz internal -> %d Hz device "
+            "(preroll %.0f ms, conceal %s)\n",
+            psg_sample_rate, got.freq, cfg.preroll_ms,
+            cfg.stretch_enable ? "on" : "off");
     return 0;
 }
 
 void audio_close(void)
 {
     if (s_dev != 0) {
+        SDL_LockAudioDevice(s_dev);
+        s_bridge_ready = 0;
+        SDL_UnlockAudioDevice(s_dev);
         SDL_CloseAudioDevice(s_dev);
         s_dev = 0;
+        rab_free(&s_bridge);
     }
 }
 
@@ -136,38 +189,42 @@ void audio_flush(uint32_t wall_frame, int realtime,
     if (psg_frames > OUT_BUF_FRAMES)
         psg_frames = OUT_BUF_FRAMES;
 
-    /* Delivery observability: sample queue depth at flush entry. An empty
-     * queue here means the device consumed everything and played silence
-     * for some span since the last flush — an audible splice the generated
-     * stream (WAV, [BOOP] detector) can never show. */
+    /* Delivery observability: the bridge ring fill (ms) at flush entry is the
+     * analogue of the old SDL-queue depth, and the bridge's own underrun
+     * counter is the authoritative record of the device starving (a splice the
+     * generated WAV stream can never show). The queued_bytes field now carries
+     * ring fill in milliseconds. */
     if (realtime) {
-        uint32_t entry_queued = SDL_GetQueuedAudioSize(s_dev);
         uint64_t pc_now = SDL_GetPerformanceCounter();
         uint32_t dt_us = 0;
         if (s_last_flush_pc)
             dt_us = (uint32_t)((pc_now - s_last_flush_pc) * 1000000ull
                                / SDL_GetPerformanceFrequency());
         s_last_flush_pc = pc_now;
+        rab_stats bst; rab_get_stats(&s_bridge, &bst);
+        uint32_t fill_ms = (uint32_t)(rab_fill_ms(&s_bridge) + 0.5);
         s_depth_ring[s_depth_head].wall_frame   = wall_frame;
-        s_depth_ring[s_depth_head].queued_bytes = entry_queued;
+        s_depth_ring[s_depth_head].queued_bytes = fill_ms; /* ring fill, ms */
         s_depth_ring[s_depth_head].wall_dt_us   = dt_us;
         s_depth_head = (s_depth_head + 1) % DEPTH_RING_SIZE;
         s_depth_count++;
         if (s_stats.total_flushes >= DELIVERY_WARMUP_FLUSHES) {
-            if (entry_queued < s_stats.min_queued_bytes)
-                s_stats.min_queued_bytes = entry_queued;
-            if (entry_queued == 0) {
+            if (fill_ms < s_stats.min_queued_bytes)
+                s_stats.min_queued_bytes = fill_ms;
+            if (bst.underrun_events != s_prev_underruns) {
                 s_stats.underrun_flushes++;
                 delivery_event(wall_frame, dt_us, 0);
             }
         }
+        s_prev_underruns = bst.underrun_events;
     }
 
     /* Reference mixer approach: iterate at PSG rate (no PSG resampling at
      * ratio 1), upsample FM to the output rate via nearest-neighbour.
      * Divisors: PSG/8, FM/1 — same as clownmdemu-frontend-common/mixer.h.
-     * out_n != psg_frames applies the drift servo's nearest-neighbour
-     * micro-resample (≤ ±0.5%) on top. */
+     * This is now a FIXED ratio-1 conversion, never rate-modulated: the DRC
+     * bridge owns the band-limited downsample to the device rate and the
+     * clock-domain servo, so this mix never drops/duplicates a sample. */
     #define MIX_INTO(out_n)                                                  \
         for (size_t i = 0; i < (out_n); i++) {                               \
             size_t si = (out_n) == psg_frames ? i                            \
@@ -186,75 +243,40 @@ void audio_flush(uint32_t wall_frame, int realtime,
             s_out[i * 2 + 1] = (int16_t)r;                                   \
         }
 
-    /* WAV capture taps the GENERATED stream at ratio 1, before the drift
-     * servo touches anything — WAV content stays bit-deterministic across
-     * runs and pacing modes (the paired-capture diffing contract). The
-     * delivery rings, not the WAV, are the record of what the speaker got. */
+    /* Mix one video frame at the internal PSG rate into s_out (PSG ratio 1; FM
+     * upsampled to PSG rate). This is the single mix, a FIXED conversion, so it
+     * no longer crackles. The DRC bridge owns the downsample and the servo. */
+    MIX_INTO(psg_frames);
+
+    /* WAV capture taps the GENERATED stream at ratio 1, before master volume
+     * and before the bridge — WAV content stays bit-deterministic across runs
+     * and pacing modes (the paired-capture diffing contract). The delivery
+     * rings, not the WAV, are the record of what the speaker got. */
     if (s_wav_file) {
-        MIX_INTO(psg_frames);
         uint32_t bytes = (uint32_t)(psg_frames * 2 * sizeof(int16_t));
         fwrite(s_out, 1, bytes, s_wav_file);
         s_wav_data_bytes += bytes;
     }
 
-    /* Drift servo (dynamic rate control): the pacer runs on the CPU wall
-     * clock, the device drains on the sound card's clock — two oscillators
-     * that never agree exactly. Without feedback the queue slowly wanders
-     * until it either runs empty (underrun: device plays a silence gap)
-     * or hits the hard cap (drop: a whole frame spliced out) — both
-     * audible, both invisible in the WAV; the measured cause of the
-     * "occasional boop". Nudge this flush's output length by at most
-     * ±0.5% (inaudible) toward holding TARGET_DEPTH_FRAMES of cushion;
-     * steady state converges to production == consumption.
-     *
-     * Target depth: measured interactive main-loop stalls reach ~40 ms
-     * (2.5 frames — [AUDIO-DELIVERY] dt_us evidence), which a 2-frame
-     * cushion cannot absorb. 4 frames (~67 ms latency, in line with
-     * common emulator defaults) rides through the measured stall class.
-     * Known residual: the Sega-scream handler stalls the host ~300 ms
-     * (atomic giant-handler execution) — no reasonable cushion covers
-     * that; fixing it needs handler slicing in the scheduler. */
-    #define TARGET_DEPTH_FRAMES 4
-    #define SERVO_MAX_ADJ 0.005
-    Uint32 frame_bytes = (Uint32)(psg_frames * 2 * sizeof(int16_t));
-    size_t out_n = psg_frames;
-    if (realtime) {
-        Uint32 queued_now = SDL_GetQueuedAudioSize(s_dev);
-        double target = (double)(TARGET_DEPTH_FRAMES * frame_bytes);
-        double dev = (target - (double)queued_now) / target;
-        if (dev >  1.0) dev =  1.0;
-        if (dev < -1.0) dev = -1.0;
-        out_n = (size_t)((double)psg_frames * (1.0 + SERVO_MAX_ADJ * dev) + 0.5);
-        if (out_n > OUT_BUF_FRAMES) out_n = OUT_BUF_FRAMES;
-        if (out_n < 1) out_n = 1;
-    }
-    MIX_INTO(out_n);
-
-    /* Master volume — speaker output only (the WAV tap above is untouched, so
-     * paired captures stay bit-deterministic regardless of this setting). */
+    /* Master volume — speaker output only (applied after the WAV tap, so paired
+     * captures stay bit-deterministic regardless of this setting). */
     if (s_master_vol != 256) {
-        for (size_t i = 0; i < out_n * 2; i++)
+        for (size_t i = 0; i < psg_frames * 2; i++)
             s_out[i] = (int16_t)((int32_t)s_out[i] * s_master_vol / 256);
     }
 
-    /* Hard cap on queue depth — safety net only now that the servo holds
-     * depth near target. If the queue is somehow above ~8 frames worth,
-     * drop this flush rather than let lag accumulate.
-     * In realtime this drop IS an audible splice — record it in the
-     * delivery rings. In turbo it fires every frame by design (production
-     * outruns the device several-fold) and is not an anomaly. */
-    Uint32 out_bytes = (Uint32)(out_n * 2 * sizeof(int16_t));
-    Uint32 queued = SDL_GetQueuedAudioSize(s_dev);
-    Uint32 limit = frame_bytes * 8;
-    if (queued > limit) {
-        if (realtime) {
-            s_stats.dropped_flushes++;
-            delivery_event(wall_frame, queued, 1);
-        } else {
-            s_stats.turbo_dropped_flushes++;
-        }
-    } else {
-        SDL_QueueAudio(s_dev, s_out, out_bytes);
+    /* Hand the mixed frame to the DRC bridge. Realtime only: in turbo there is
+     * no device playback, so pushing would just overflow the ring. The lock
+     * gives the single-producer/single-consumer guarantee against the pull
+     * callback. The bridge's P-only controller + faded/pitch-preserving conceal
+     * replace the old ±0.5% nearest-neighbor servo and the >8-frame hard drop
+     * (every one of which was a discard = a click/crackle). */
+    if (realtime && s_bridge_ready) {
+        SDL_LockAudioDevice(s_dev);
+        rab_push(&s_bridge, s_out, (int)psg_frames);
+        SDL_UnlockAudioDevice(s_dev);
+    } else if (!realtime) {
+        s_stats.turbo_dropped_flushes++;
     }
 
     /* Stats */
