@@ -320,20 +320,33 @@ declared focus of the first oracle slice.
     `segagenesisrecomp/runner/audio/sn76489.c` (build's copy via junction) and the worktree copy.
     Output-tap-phase (read-after vs read-before shift) left as-is — second-order, ambiguous, not
     needed. **NEXT: user ear-validates S3 in-game (one game at a time), then re-check S1/S2 jumps.**
-- [x] **S1 jump-SFX boop is NOT a synth-core bug — it is the live DELIVERY path (2026-06-28).** The
-  user's boop is specifically a SONIC 1 artifact. Captured a real S1 GHZ jump (S1 GEN_DEV_TRACE build
-  + `jump_repro6b.txt`, `_run_s1_jump/`) and ran the 3-way rig. The S1 jump SFX is a **ch0 TONE sweep**
-  (320→95 ≈ 350→1177 Hz), **zero `$E_` noise-control writes in the whole ring** → the ÷2 noise fix
-  cannot apply. Our PSG renders the captured stream faithfully: **ours-vs-clownmdemu envelope corr
-  0.999, pitch 0.46 cents, 100% onset match**; ours+clown share only a uniform common-mode offset vs
-  BlastEm (its selftest RMS ~3× lower — a BlastEm gain/divider calibration, not a per-core bug). 156
-  tone latch→data pairs, 0 with a >1-line render gap (no latch/data straddle). So with a die-accurate
-  reference finally on the PSG, the S1 jump synth output is PROVEN correct → the boop lives in the
-  real-time delivery/device path (mixer drain → resample → SDL queue), confirming the old "every
-  measured chip-stage equal yet native jump boops" finding ([[project_s1_boop_delivery_rootcause]]).
-  — *Lever: probe the ALWAYS-ON delivery rings (`audio.c` `s_depth_ring`/`s_evt_ring` + `snd_ring`)
-  during a live user playtest — query the window of a booped jump for underrun/splice, NOT the chip
-  register replay (that stream is proven faithful).*
+- [~] **S1 jump-SFX boop — OPEN (Axis 3/5e); eliminated synth + delivery + register stream (2026-06-28).**
+  The user's boop is specifically a SONIC 1 artifact. The S1 jump SFX is a **ch0 TONE sweep** (320→95 ≈
+  350→1177 Hz), **zero `$E_` noise writes** → the ÷2 noise fix does not apply. Four-layer elimination:
+  1. **Synth math — exonerated.** Offline 3-way replay of the native jump ring (`_run_s1_jump/`):
+     ours-vs-clownmdemu envelope corr **0.999**, pitch 0.46 cents, 100% onsets; only a common-mode
+     offset vs BlastEm (its selftest RMS ~3× lower = calibration, not a per-core bug).
+  2. **Delivery path — exonerated.** Live delivery-ring probe (S1 `--port 4380`, `audio_delivery_dump`)
+     during the user's deterministic every-jump boop: **0 new underruns/drops, 0 queue-zero dips,
+     queue 47-55KB, dt_us steady ~16.7ms.** No splice/underrun. So NOT a delivery glitch (corrects the
+     earlier delivery-path hypothesis).
+  3. **Register-stream values + wall-frame timing — exonerated.** native-vs-oracle (clownmdemu backend)
+     register diff at the jump: ch0 sweep values **byte-identical**, cadence **1 step/wall-frame in
+     both**, no extra/missing/dup writes.
+  4. **Residual difference (only one left):** a *constant* ~86%-of-frame intra-frame stamp PHASE —
+     native re-stamps V-int SMPS writes to the vblank delivery cursor (end-of-frame) via
+     `g_68k_stamp_rebase` (`glue.c:766`, consumed by `STAMP_68K()` `genesis_bus.c:35`); the clownmdemu
+     oracle surfaces them at frame start. A *constant* sub-frame shift of a steady sweep is inaudible.
+  **Contradiction → premise likely stale.** If registers + synth are identical, native and oracle
+  should sound the same; the "native boops / oracle clean" A/B is **17 days old** (pre-declown /
+  pre-own-backend-rework) and was NOT re-verified on current builds. — *USER DECISION 2026-06-28: STOP
+  chasing; log as the open Axis 3/5e lever. To resume: (a) re-establish ground truth — live ear A/B of
+  current oracle vs native GHZ jump; if current oracle also boops, the premise is stale (boop may be
+  hardware-faithful / a shared render trait). (b) If still real: the atomic-V-int handler (writes
+  bunched at vblank, `own_deliver_vint` glue.c) is the prime Axis-3 suspect — interleave it across
+  chunk boundaries for true mid-frame timing; or window-aligned live-WAV spectral diff native vs oracle
+  to catch a live-mixer/device-path difference the register replay can't see.* See
+  [[project_s1_boop_delivery_rootcause]].
 - [ ] **Sub-sample leftover discarded per frame** to match clownmdemu's per-Iterate reset
   (`sn76489.c:194-197`) — secondary to the noise-channel bug. — *Validate: PSG sample diff vs BlastEm.*
 
@@ -592,9 +605,12 @@ ring window.
   via the BlastEm-PSG chip-replay: ours-vs-BlastEm whole-clip corr 0.526→0.954 (== clown 0.953),
   per-`$E7`-window xcorr 0.233→0.535 (≈ clown 0.518) — outlier signature gone, our PSG now as
   accurate as clownmdemu vs the die-accurate reference. Pending user in-game ear-test. Axis 5d → FIXED.
-- 2026-06-28 — **S1 jump boop localized to the DELIVERY path, NOT the synth (separate from the ÷2 fix).**
-  Captured a real S1 GHZ jump (new S1 GEN_DEV_TRACE build + `jump_repro6b.txt`); the S1 jump SFX is a
-  ch0 TONE sweep with ZERO `$E_` noise writes, and our PSG renders it faithfully (ours-vs-clown 0.999 /
-  0.46 cents / 100% onsets; common-mode-only offset vs BlastEm). So the ÷2 noise fix does NOT address
-  the S1 boop, and the S1 synth core is independently proven correct → the boop is a real-time delivery
-  artifact (mixer/resample/SDL queue). Next S1 lever = always-on delivery-ring probe during live play.
+- 2026-06-28 — **S1 jump boop investigation: eliminated synth + delivery + register-stream; OPEN as
+  Axis 3/5e (user said stop & log).** S1 jump = ch0 tone sweep (no noise; ÷2 fix N/A). (1) synth
+  exonerated (ours≈clown 0.999); (2) delivery exonerated (live ring probe: 0 underruns/drops at every
+  deterministic boop, queue healthy) — corrects the earlier delivery-path hypothesis; (3) register
+  values + wall-frame cadence native≡oracle (byte-identical); (4) only residual = constant inaudible
+  intra-frame stamp phase (`g_68k_stamp_rebase`, glue.c:766). Contradiction: registers+synth identical
+  ⇒ should sound identical, but the "native boops/oracle clean" premise is 17 days stale & unverified
+  on current builds. Logged as open Axis-3/5e lever (re-verify premise via live ear A/B; else atomic-
+  V-int interleave or live-WAV spectral diff). ÷2 fix is unaffected — already committed + ear-validated.
