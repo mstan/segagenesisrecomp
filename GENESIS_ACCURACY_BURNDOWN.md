@@ -102,7 +102,7 @@ Release. Promoting it (or a lean variant) to always-on is the first ring-extensi
 | # | Axis | Verdict | Gap (one line) | Lever |
 |---|---|---|---|---|
 | 1 | 68000 instruction semantics | **APPROXIMATE** | broad family coverage; known stubs (MOVEP, CHK, mem-ADDX/SUBX, RTR, CMPM, CCR/SR imm), no EA-legality layer; permissive decoder buckets unknowns to `MN_OTHER` | hard-diagnostic counter on `MN_OTHER`/comment-only emits; legality matrix; fill stubs; synthetic opcode-coverage matrix vs BlastEm/clown68000 |
-| 2 | Cycle / timing | **APPROXIMATE** | per-instruction cost (clown-probed), paces the frame but not bus-cycle-exact; data-dependent MUL/DIV/shift averaged; no prefetch/bus-contention | wire exact data-dependent costs; BlastEm `current_cycle` Δ-anchor comparator (cyc_watch analog) |
+| 2 | Cycle / timing | **APPROXIMATE — MEASURED within ~1.3% vs die-accurate BlastEm (Z80 path)** | comparator BUILT (`tools/cycle_compare/`, 99.9% align, Δ ratio 0.9866); found Z80 DAC-loop constant(285)-vs-alternating(294/252) cost-averaging; 68K per-insn path not yet exercised (S1 boot+title is all Z80-origin); data-dependent MUL/DIV/shift still averaged | run comparator on a 68K-driven-audio window; fix Z80 DAC period; wire exact data-dependent costs |
 | 3 | Interrupt / event timing | **SCANLINE (gen) / near-FRAME (V-int delivery)** | H-int genuinely per-scanline; V-int handler runs as one atomic lump at the vblank line (audio stamp-rebase compensates) | interleave the 68K V-int handler across chunk boundaries; validate take-point vs BlastEm |
 | 4 | Memory map / MMIO | **APPROXIMATE** | per-access functional; HV counter approximate; status FIFO hardcoded empty; phantom-hblank toggle hack on each status read | real per-line H-counter + FIFO state; MMIO trace diff vs BlastEm |
 | 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **MIXED — weakest axis (audio focus)** | video scanline-accurate (no mid-line split); DMA transfer instantaneous (fill/copy charge nothing); **FM faithful (residual DAC-path, sub-audible); jump-SFX boop = `sn76489.c` noise channel missing the ÷2 output flip-flop — FIXED + measurement-validated (ours-vs-BlastEm now == clown-vs-BlastEm), pending user ear-test** | user ear-test S3/S1/S2 jumps; mid-line raster split; spread DMA over charged scanlines |
@@ -153,8 +153,31 @@ stand up the opcode-coverage matrix.
 
 ## Axis 2 — Cycle / timing
 
-Status: **APPROXIMATE** — per-instruction cost accounting, not bus-cycle-exact.
+Status: **APPROXIMATE — now MEASURED within ~1.3% vs die-accurate BlastEm (Z80 path); 68K path
+not yet exercised.**
 
+- [x] **BlastEm Δ-anchor cycle comparator BUILT + first slice run (2026-06-28).** Extended the
+  BlastEm oracle with an always-on register-WRITE ring tagged with monotonic `abs_cycle` (hooks:
+  `psg.c:54` psg_write; `ym2612.c:542/550/682` addr-part1/part2/data — `tools/blastem/oracle_ring.{c,h}`,
+  dump `<prefix>.writes.bin`). Comparator `tools/cycle_compare/cycle_delta_compare.py` aligns our
+  `chip_ring.txt` writes against BlastEm's writes (LCS, **99.9% matched**, one contiguous block) and
+  compares the **Δ-cycle between consecutive writes** (offset-independent). Cycle domains reconciled:
+  both 68000 master cycles, **scale = 1.0** (our `mc=` is per-wall-frame `g_audio_cycle_counter*7 +
+  g_68k_stamp_rebase` for 68K-origin / `machine_z80_stamp()` for Z80-origin; BlastEm `abs_cycle` folds
+  every `sync_components` rebase). RESULT (S1 boot+title): **overall recomp/BlastEm Δ ratio = 0.9866**
+  (~1.3% short), median per-interval 0.983, 48,115/54k intervals within ±7%, none beyond +25%; gross
+  frame calibration 1.015 (within ~1.5%). Our pacing is faithful to die-accurate within ~1.3%.
+- [x] **Localized inaccuracy (the predicted "averaged data-dependent cost" class):** the **Z80 DAC
+  playback loop** (FM `$2A` writes) emits a *constant* 285-cycle period in our recomp, but the real
+  Z80 loop *alternates* 294 (ratio 0.969) / 252 (ratio 1.131) — a branch-dependent cost flattened to a
+  constant. Music FM writes: uniform ~1.7% undercount (ratio 0.983). — *This is in the **Z80** timing /
+  `machine_z80_stamp` derivation, not the 68K.*
+- [ ] **SCOPE CAVEAT — this slice is Z80-only.** In S1 boot+title *all* matched chip writes are
+  Z80-origin (SMPS sound driver, pcz $00C5/$00C8…). So it validates Z80 timing + `machine_z80_stamp`
+  + frame-level scheduling (cross-frame intervals spanning the V-int handler ≈ 0.983), but does NOT
+  exercise the **68K recompiled per-instruction cost** directly. — *Next: a 68K-driven-audio window —
+  the Sega-scream PCM (68K V-int-driven, but it lives before S1's frame-90 capture gate) or a Sonic
+  2/3 section with a 68K-side audio driver. The comparator is game-agnostic and ready for it.*
 - [x] Generated code emits per-instruction `g_cycle_accumulator += N;
   g_audio_cycle_counter += N; if (… >= g_vblank_threshold) glue_check_vblank();`
   (`code_generator.c:949-956`, emitted `:1780`).
@@ -166,15 +189,16 @@ Status: **APPROXIMATE** — per-instruction cost accounting, not bus-cycle-exact
   debt `s_irq_cycle_debt` paid before each chunk (`glue.c:536-595,769-780`); DMA freeze
   charged via `glue_charge_68k_stall` (`glue.c:632-640`).
 - [ ] **Data-dependent costs averaged** — MULx/DIVx magnitude, register shift counts use
-  a mid-range estimate (`code_generator.c:1409-1411`). — *Ref: M68000 PRM cycle tables /
-  BlastEm. Validate: BlastEm `current_cycle` Δ between anchors on real call sites.*
-- [ ] **No prefetch / bus-arbitration / sub-line contention model.** — *Validate: cyc_watch
-  Δ-anchor comparator vs BlastEm (the cycle_compare.py analog).*
+  a mid-range estimate (`code_generator.c:1409-1411`). — *Now measurable: run the comparator on a
+  68K-driven-audio window and look for the alternating-vs-constant Δ signature (as found in the Z80 DAC
+  loop). Then wire exact data-dependent MUL/DIV/shift costs the probe can already measure.*
+- [ ] **No prefetch / bus-arbitration / sub-line contention model.** — the ~1.3% residual undercount is
+  consistent with this (and with the Z80 DAC averaging). — *Validate: comparator on more windows.*
 
-Lever: build the **BlastEm Δ-anchor cycle comparator** (offset-independent — absolute
-cycle compare through boot is meaningless; per-hit deltas between consecutive same-anchor
-hits cancel the offset, exactly the PSX `cycle_compare.py` method). Then wire exact
-data-dependent MUL/DIV/shift costs the probe can already measure.
+Lever: the **BlastEm Δ-anchor cycle comparator is built** (`tools/cycle_compare/`, offset-independent,
+99.9% align, scale 1.0). Next: (1) run it on a 68K-driven-audio window to validate the 68K per-instruction
+cost path (this slice was Z80-only); (2) fix the Z80 DAC-loop constant→alternating(294/252) period; (3)
+wire exact data-dependent MUL/DIV/shift costs.
 
 ---
 
@@ -614,3 +638,11 @@ ring window.
   ⇒ should sound identical, but the "native boops/oracle clean" premise is 17 days stale & unverified
   on current builds. Logged as open Axis-3/5e lever (re-verify premise via live ear A/B; else atomic-
   V-int interleave or live-WAV spectral diff). ÷2 fix is unaffected — already committed + ear-validated.
+- 2026-06-28 — **Axis 2 first slice: BlastEm Δ-anchor cycle comparator BUILT + run.** Extended the
+  BlastEm oracle with a cycle-stamped register-WRITE ring (psg_write + ym2612 write paths), rebuilt;
+  `tools/cycle_compare/cycle_delta_compare.py` aligns our chip_ring writes vs BlastEm's (99.9%) and
+  compares offset-independent Δ-cycles. S1 boot+title: recomp/BlastEm pacing ratio **0.9866** (~1.3%
+  short), gross frame calib 1.015 — faithful within ~1.3%. Found a localized Z80 DAC-loop cost-averaging
+  bug (constant 285 vs real alternating 294/252). CAVEAT: S1 boot+title writes are all Z80-origin, so
+  the 68K per-instruction cost path is NOT yet exercised — next slice needs a 68K-driven-audio window
+  (Sega scream / S2-S3). Comparator is game-agnostic. Axis 2 status → measured (Z80 path).

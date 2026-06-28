@@ -1,0 +1,54 @@
+=== Axis-2 Delta-anchor cycle comparator ===
+recomp  writes :    92003  (wall frames 161..599, vint 99..432)
+blastem writes :    54072  (total produced 54072)
+recomp  by chip/port : {'FMp0': 45884, 'FMp1': 45884, 'FMp2': 93, 'FMp3': 93, 'PSGp0': 49}
+blastem by chip/port : {'FMp0': 27020, 'FMp1': 27020, 'FMp2': 12, 'FMp3': 12, 'PSGp0': 8}
+
+[align] running SequenceMatcher (this can take ~1 min)...
+[align] matched 54000/92003 recomp writes (58.7% of recomp; 99.9% of blastem) across 1 blocks
+[align] NOTE low recomp%% just means recomp's window has more writes than blastem's 54072; the % of blastem matched is the alignment quality.
+[align] largest blocks (size @ recomp_i->blastem_j): 54000@0->72
+
+[calib] gross frame Delta (blastem master-cycles per recomp wall-frame):
+        n=100  median=909552  mean=900443  expected(NTSC)=896040  ratio_to_expected=1.01508
+
+[delta] intra-frame matched consecutive intervals: 53899 total, 53899 usable (dr>0 & db>0)
+[delta] cross-frame intervals (V-int/vblank, reported separately): 100
+
+=== HEADLINE Axis-2 result (recomp / BlastEm Delta-cycle) ===
+  aggregate pacing ratio  sum(dr)/sum(db) = 0.98655   (1.0 = perfect)
+  median per-interval ratio              = 0.98337
+  mean   per-interval ratio              = 0.99468
+  percentiles  1/5/25/50/75/95/99 = 0.969 0.969 0.969 0.983 0.983 1.131 1.131
+  log2(ratio) histogram (|<.1| octave = within ~7% of perfect):
+             <-4 :       0  
+          -4..-2 :       0  
+          -2..-1 :       0  
+         -1..-.5 :       0  
+       -.5..-.25 :       0  
+       -.25..-.1 :       0  
+        -.1..+.1 :   48115  ############################################################
+       +.1..+.25 :    5784  #######
+       +.25..+.5 :       0  
+          +.5..1 :       0  
+            1..2 :       0  
+            2..4 :       0  
+              >4 :       0  
+
+=== distinct divergence MODES (ranked by impact = count*|log2 ratio|) ===
+    ratio     dr     db   count  org  next-write   sample(wf/sl/vint/pcz)
+    1.131    285    252    5784  Z80  FM p0 $2A  261/77/199/$00C5
+    0.969    285    294   21208  Z80  FM p0 $2A  261/76/199/$00C5
+    0.983   3015   3066     328  Z80  FM p1 $FF  252/98/190/$00C8
+    0.983   3015   3066     313  Z80  FM p1 $83  260/220/198/$00C8
+    0.983   3015   3066     311  Z80  FM p1 $7E  261/64/199/$00C8
+    0.983   3015   3066     310  Z80  FM p1 $82  261/76/199/$00C8
+    0.983   3015   3066     276  Z80  FM p1 $81  261/71/199/$00C8
+    0.983   3015   3066     276  Z80  FM p1 $7D  261/42/199/$00C8
+    0.983   3015   3066     274  Z80  FM p1 $7F  261/66/199/$00C8
+    0.983   3015   3066     274  Z80  FM p1 $80  261/67/199/$00C8
+    0.983   3015   3066     258  Z80  FM p1 $7C  261/10/199/$00C8
+    0.983   3015   3066     251  Z80  FM p1 $84  259/206/197/$00C8
+  [Z80-origin (DAC/PSG playback cadence)] n=53899 agg ratio sum(dr)/sum(db)=0.98655 median=0.98337
+
+[cross-frame] 100 usable; median ratio=0.98337 mean=0.98928  (these span the V-int handler + vblank wait)

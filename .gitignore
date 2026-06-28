@@ -25,3 +25,9 @@ tools/synth_replay/build/
 # accuracy worktree: local-only BlastEm GPLv3 oracle (dev-only, never shipped,
 # never linked into our binaries). Source tree + build artifacts stay local.
 tools/blastem/
+
+# accuracy worktree: cycle comparator capture artifacts (big rings / ROM) stay
+# local; only the tool + its text report are tracked.
+tools/cycle_compare/*
+!tools/cycle_compare/cycle_delta_compare.py
+!tools/cycle_compare/comparator_report.txt
