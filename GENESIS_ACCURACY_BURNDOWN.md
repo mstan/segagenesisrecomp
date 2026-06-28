@@ -596,6 +596,41 @@ ring window.
 `tools/synth_replay/synth_replay.cpp` (Nuked FM path + 3-way compare), `gen_fm_tone.py`
 (integration self-test), `tools/audio_drift_diff.py` (drift-tolerant metric).
 
+## Deferred backlog — revisit someday (low-value, parked by user 2026-06-28)
+
+The substantive audio work is done (FM faithful; PSG ÷2 noise bug fixed + shipped). These
+remaining items are real but low-value — each is sub-audible, cosmetic, or a parked bug with
+a stale premise. Logged so they're not lost; **revisit someday**. Each carries enough to resume
+cold without re-deriving.
+
+1. **S1 jump-SFX boop — OPEN bug, premise likely stale (Axis 3/5e).** Eliminated as a cause:
+   PSG synth (ours≈clown 0.999), delivery path (live rings healthy through every boop), and the
+   register stream (native≡oracle values + wall-frame cadence). Only residual = a *constant*
+   intra-frame stamp phase (`g_68k_stamp_rebase`, `glue.c:766`), inaudible for a steady sweep.
+   The "native boops / oracle clean" A/B is 17 days old (pre-declown/own-backend rework) and was
+   NOT re-verified on current builds. **Resume:** (a) live ear A/B of CURRENT oracle vs native GHZ
+   jump — if current oracle also boops, the premise is dead (boop may be hardware-faithful);
+   (b) else interleave the atomic V-int handler (`own_deliver_vint`) across chunk boundaries, or a
+   window-aligned live-WAV spectral diff native-vs-oracle. See full detail in Axis 5d.
+2. **Z80 DAC-loop cost-averaging (Axis 2 / 5e).** The Z80 DAC playback loop emits a *constant*
+   285-cycle period between FM `$2A` writes; real hardware *alternates* 294/252 (branch-dependent).
+   Found by the cycle comparator (`tools/cycle_compare/`). It's a timing-STAMP modeling detail in how
+   the runner cycle-stamps interpreted-Z80 writes (`machine_z80_stamp`), NOT an interpretation limit
+   (keeping Z80 interp — see the Z80-recompiler-option note in project memory). Sub-1.3% effect.
+   **Resume:** make the Z80 write stamping reflect the loop's branch-dependent per-iteration cost.
+3. **PSG sub-sample leftover discarded per frame (Axis 5d).** `sn76489.c:194-197` drops the
+   sub-sample remainder each frame to match clownmdemu's per-Iterate reset — flagged as a possible
+   long-run drift. **Resume:** PSG sample-stream diff vs BlastEm over a long run; carry the remainder
+   if it drifts.
+4. **FM DAC reconstruction (Axis 5c).** The ~8–13% ymfm-vs-Nuked residual is DAC-path-dominated
+   (~36%): ymfm's `dac_discontinuity` ladder vs Nuked's die-accurate time-multiplexed DAC. Pitch is
+   perfect (≤1.13 cents); this is timbral and sub-audible — KNOWN-GOOD. **Resume only if** a
+   die-accurate DAC reconstruction is wanted in the ymfm wrapper; do not chase below audibility.
+5. **PSG common-mode gain vs BlastEm (calibration).** Ours and clownmdemu agree but sit at a uniform
+   gain offset from BlastEm (its volume table is /14, selftest RMS ~3× lower). Scale-invariant metrics
+   already neutralize it; it's a reference-calibration note, not a defect. **Resume:** only if an
+   absolute-level comparison vs BlastEm is ever needed.
+
 ## Changelog
 
 - 2026-06-28 — Initial 7-axis recon + scorecard. Four parallel recon agents: (a) PSX
