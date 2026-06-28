@@ -19,5 +19,9 @@ LICENSING.md
 
 # accuracy worktree: local synth_replay builds + capture runs
 tools/synth_replay/_run_*/
-tools/synth_replay/build_acc/
+tools/synth_replay/build_acc*/
 tools/synth_replay/build/
+
+# accuracy worktree: local-only BlastEm GPLv3 oracle (dev-only, never shipped,
+# never linked into our binaries). Source tree + build artifacts stay local.
+tools/blastem/

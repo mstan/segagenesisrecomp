@@ -30,6 +30,8 @@ add_executable(synth_replay
     "${CORE}/source/log.c"
     # REFERENCE (Nuked-OPN2 die-accurate YM2612 — dev-only LGPL oracle)
     "${CMAKE_CURRENT_SOURCE_DIR}/../nuked-opn2/ym3438.c"
+    # REFERENCE (BlastEm SN76489 PSG — dev-only GPLv3 oracle; PSG truth)
+    "${CMAKE_CURRENT_SOURCE_DIR}/blastem_psg.c"
 )
 
 target_include_directories(synth_replay PRIVATE

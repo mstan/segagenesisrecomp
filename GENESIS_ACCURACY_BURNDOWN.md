@@ -105,7 +105,7 @@ Release. Promoting it (or a lean variant) to always-on is the first ring-extensi
 | 2 | Cycle / timing | **APPROXIMATE** | per-instruction cost (clown-probed), paces the frame but not bus-cycle-exact; data-dependent MUL/DIV/shift averaged; no prefetch/bus-contention | wire exact data-dependent costs; BlastEm `current_cycle` Δ-anchor comparator (cyc_watch analog) |
 | 3 | Interrupt / event timing | **SCANLINE (gen) / near-FRAME (V-int delivery)** | H-int genuinely per-scanline; V-int handler runs as one atomic lump at the vblank line (audio stamp-rebase compensates) | interleave the 68K V-int handler across chunk boundaries; validate take-point vs BlastEm |
 | 4 | Memory map / MMIO | **APPROXIMATE** | per-access functional; HV counter approximate; status FIFO hardcoded empty; phantom-hblank toggle hack on each status read | real per-line H-counter + FIFO state; MMIO trace diff vs BlastEm |
-| 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **MIXED — weakest axis (audio focus)** | video scanline-accurate (no mid-line split); DMA transfer instantaneous (68k→VDP freeze timed in aggregate; fill/copy charge nothing); **residual jump-SFX boop in the generated FM/PSG stream** | per-chip sample-stream diff vs Nuked-OPN2/BlastEm; mid-line raster split; spread DMA over charged scanlines |
+| 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **MIXED — weakest axis (audio focus)** | video scanline-accurate (no mid-line split); DMA transfer instantaneous (fill/copy charge nothing); **FM faithful (residual DAC-path, sub-audible); jump-SFX boop = `sn76489.c` noise channel missing the ÷2 output flip-flop — FIXED + measurement-validated (ours-vs-BlastEm now == clown-vs-BlastEm), pending user ear-test** | user ear-test S3/S1/S2 jumps; mid-line raster split; spread DMA over charged scanlines |
 | 6 | Static-vs-dynamic recompiler fidelity | **STRONG (floor 0-div vs clown68000, default OFF)** | diff harness shares the decoder with the thing it tests (can't catch a decoder-level bug common to both); framed capsule can't run RAM-resident code | ship the planned free-running native-vs-oracle `oracle_block_diff.py`; RAM-code execution in the floor if needed |
 | 7 | Determinism | **STRONG (deterministic; good headless trace)** | none material; cross-binary native-vs-oracle is non-bit-equal *by design* (layered-parity) | keep as invariant; `--hash-frames`/WRAM-FNV gate already exists |
 
@@ -260,24 +260,82 @@ declared focus of the first oracle slice.
   reference) is corroborated by the die-accurate core. Drift-tolerant metric
   (`tools/audio_drift_diff.py`): per-window xcorr **0.996**, onsets **98% matched** (median
   Δ 0.0 ms), per-note pitch error **median 1.13 cents / p90 4.07** (imperceptible).
-- [ ] **Residual ~8–13% post-alignment waveform difference** (recomp ymfm vs Nuked) — the
-  genuine ymfm-vs-die-accurate gap (DAC-ladder / operator rounding); NOT bit-exact, as
-  expected for Genesis FM across cores. This is the real remaining FM lever. — *Validate:
-  per-channel `--fm-channel N` Nuked diff to attribute the residual to a specific channel /
-  the DAC path.*
-- [ ] **Jump-SFX boop** still to be reproduced under this rig — the S3 slice captured title
-  music; next is an SFX-window capture (jump → the boop SFX) and the same Nuked diff at the
-  sweep windows. The earlier "every stage equal" S1 finding is consistent with the residual
-  living in the cross-core waveform delta, now measurable. — *Ref: Nuked-OPN2. Validate:
-  per-chip sample diff at the SFX sweep window.*
+- [x] **Residual ~8–13% post-alignment ATTRIBUTED (2026-06-28)** — `synth_replay --fm-channel
+  N` / `--dac` (write-stream filtering applied identically to all three cores; valid because
+  the YM2612 has no cross-channel modulation, and the silenced-channel DAC-ladder bias cancels
+  in the residual since it's present on both sides). On the S3 title ring, the **DAC path
+  dominates**: it carries ~the entire FM output energy (envRMS 973 vs full-mix 1034) and ~36%
+  of the full-mix residual energy despite a modest 4.9% own residual — cause is ymfm's
+  `dac_discontinuity` ladder vs Nuked's die-accurate time-multiplexed DAC. Next contributors
+  ch0 (13.5%) / ch1 (7.7%, highest *per-unit* divergence at 8.2%); ch3/4/5 negligible (ch5
+  unused — S3 uses ch6 as DAC). **Pitch ≤1.13 cents on every channel → residual is
+  timbral/level, not frequency-math.** Outputs: `tools/synth_replay/_run_chan/{full,ch0..5,dac}/`,
+  binary `build_acc_chan/`. (Bug fixed in passing: prior `--fm-channel` leaked DAC regs $2A/$2B
+  into every per-channel render.) — *Lever: a die-accurate DAC reconstruction in the ymfm
+  wrapper is the only remaining FM accuracy gain, and it is sub-audible (4.9% on the dominant
+  source, imperceptible pitch). Treat as KNOWN-GOOD; do not chase below audibility.*
+- [x] **Jump-SFX boop REPRODUCED + LOCALIZED (2026-06-28) — it is PSG, not FM** (see 5d). An
+  in-game S3 capture (AIZ Act-1, real jumps via `--input-script`, ring f1753–2921) run through
+  `synth_replay` + `audio_drift_diff.py` at 250 ms windows shows FM stays faithful at every
+  jump (ymfm-vs-Nuked xcorr ~0.98, residual 10–23%), while the PSG (ours-vs-clownmdemu) goes
+  to ~99% residual / xcorr ≈ 0 at exactly the jump-SFX onsets. The boop is the PSG noise
+  channel, NOT the FM path. Artifacts: `tools/synth_replay/_run_s3_sfx/`. — *This re-points the
+  long-standing S1/S3 "boop" investigation (was FM-framed) at the PSG noise model.*
+  - Secondary: one isolated FM cluster at 16.0–16.5 s (residual up to 76%, xcorr 0.65) pulls
+    FM pitch *mean* to 10.3 cents despite the 0.5-cent median — minor vs the PSG issue.
 
-### 5d. PSG (SN76489) — **APPROXIMATE**
+### 5d. PSG (SN76489) — **BUG ROOT-CAUSED: noise channel clocks LFSR 2× too fast (the jump "boop")**
 - [x] Clean-room own core `runner/audio/sn76489.c` (replaced AGPL clownmdemu PSG); 3
   square + 16-bit LFSR noise, log volume table (`:60-63`); rate master/240 ≈ **223,721 Hz**
   NTSC (`:22,189-192`); own LPF matching clownmdemu coeffs (`:48-52,124-132`).
+- [x] **Jump-SFX boop ROOT-LOCATED to the noise channel (2026-06-28).** In-game S3 capture
+  (`_run_s3_sfx/`) per-window diff: every PSG-divergent window contains a channel-3
+  **noise-control `$E7` write** (white-noise clocked by ch2's tone period); clean windows lack it.
+- [x] **ROOT-CAUSED + ADJUDICATED via BlastEm `psg.c` (die-accurate-ish, 2026-06-28).** Vendored
+  BlastEm's SN76489 into `synth_replay` as a 3rd chip-replay core (`tools/synth_replay/blastem_psg.{c,h}`,
+  GPLv3 dev-only) and compared ours/clownmdemu/BlastEm on the IDENTICAL `$E7` register timeline
+  (Layer A, zero drift). At the 11 jump windows: **ours-vs-BlastEm xcorr 0.233** (goes *negative*,
+  −0.28/−0.21, at the worst onsets) vs **clown-vs-BlastEm 0.471** — i.e. BlastEm and clownmdemu
+  AGREE and **ours is the systematic outlier** (not a seed difference, which would track clown).
+  **BUG: our noise channel is missing the rising-edge ÷2 output flip-flop, so it advances the LFSR
+  on EVERY counter expiry → noise an octave too high → the boop.**
+  - ours `sn76489.c:114-121` — `if (--noise_counter<=0)` reloads and shifts the LFSR every expiry,
+    no `output_state[3]` toggle gating the shift.
+  - BlastEm `tools/blastem/psg.c:117-123` — expiry toggles `output_state[3]`; LFSR shifts only when
+    true → ÷2. clownmdemu `clownmdemu-core/source/psg.c:212-214` — same ÷2 via `fake_output_bit`.
+  - Both independent references implement the documented SN76489 behavior (LFSR clocks on the rising
+    edge of the divider, i.e. ÷2); ours does not. Applies to ALL noise modes; for the ch2-clocked
+    `$E7` case it doubles the noise rate.
+  - Secondary (minor): output-tap phase — ours reads `lfsr&1` AFTER the shift (`:120`), BlastEm reads
+    BEFORE the rotate (`psg.c:122`). The feedback tap (bit0^bit3, white) matches BlastEm.
+  - **FIX APPLIED + MEASUREMENT-VALIDATED 2026-06-28 (pending user ear-test).** Added a `noise_ff`
+    ÷2 flip-flop to the noise channel; the LFSR now shifts only on its rising edge (`sn76489.c`
+    struct field + render gate). Rebuilt synth_replay (`build_acc_psg`) against the fixed core and
+    re-ran the identical-ring 3-way compare. **The "ours is the outlier" signature is GONE:**
+    whole-clip envelope corr ours-vs-BlastEm **0.526→0.954** (== clown-vs-BlastEm 0.953),
+    ours-vs-clown **0.840→0.998**; per-`$E7`-window xcorr ours-vs-BlastEm **0.233→0.535** (now ≈
+    clown-vs-BlastEm 0.518, was well below it). I.e. our PSG now tracks the die-accurate BlastEm
+    reference exactly as well as clownmdemu does. Residual ~0.5/window = irreducible cross-core
+    noise-phase + BlastEm unipolar output (common-mode to both cores). Applied to BOTH
+    `segagenesisrecomp/runner/audio/sn76489.c` (build's copy via junction) and the worktree copy.
+    Output-tap-phase (read-after vs read-before shift) left as-is — second-order, ambiguous, not
+    needed. **NEXT: user ear-validates S3 in-game (one game at a time), then re-check S1/S2 jumps.**
+- [x] **S1 jump-SFX boop is NOT a synth-core bug — it is the live DELIVERY path (2026-06-28).** The
+  user's boop is specifically a SONIC 1 artifact. Captured a real S1 GHZ jump (S1 GEN_DEV_TRACE build
+  + `jump_repro6b.txt`, `_run_s1_jump/`) and ran the 3-way rig. The S1 jump SFX is a **ch0 TONE sweep**
+  (320→95 ≈ 350→1177 Hz), **zero `$E_` noise-control writes in the whole ring** → the ÷2 noise fix
+  cannot apply. Our PSG renders the captured stream faithfully: **ours-vs-clownmdemu envelope corr
+  0.999, pitch 0.46 cents, 100% onset match**; ours+clown share only a uniform common-mode offset vs
+  BlastEm (its selftest RMS ~3× lower — a BlastEm gain/divider calibration, not a per-core bug). 156
+  tone latch→data pairs, 0 with a >1-line render gap (no latch/data straddle). So with a die-accurate
+  reference finally on the PSG, the S1 jump synth output is PROVEN correct → the boop lives in the
+  real-time delivery/device path (mixer drain → resample → SDL queue), confirming the old "every
+  measured chip-stage equal yet native jump boops" finding ([[project_s1_boop_delivery_rootcause]]).
+  — *Lever: probe the ALWAYS-ON delivery rings (`audio.c` `s_depth_ring`/`s_evt_ring` + `snd_ring`)
+  during a live user playtest — query the window of a booped jump for underrun/splice, NOT the chip
+  register replay (that stream is proven faithful).*
 - [ ] **Sub-sample leftover discarded per frame** to match clownmdemu's per-Iterate reset
-  (`sn76489.c:194-197`) — flagged possible long-run boop. — *Ref: SN76489 datasheet /
-  BlastEm `psg_run` (Nuked-PSG is the WRONG chip — YM7101). Validate: PSG sample diff.*
+  (`sn76489.c:194-197`) — secondary to the noise-channel bug. — *Validate: PSG sample diff vs BlastEm.*
 
 ### 5e. CPU↔audio sync — **sample-accurate w.r.t. writes, drained per wall-frame**
 - [x] Every FM/PSG write pushed as cycle-stamped `AudioEvent` (`event_queue.h:27-34`);
@@ -398,8 +456,23 @@ histogram + per-note pitch error within a few cents, cross-referenced against Nu
 
 Confirmed feasible (recon agent d, web-verified). All dev-only.
 
-**BlastEm (cycles + state + audio reference)** — GPLv3 C, builds on MSYS2 MINGW64
-(`mingw-w64-x86_64-{gcc,make,SDL2}` + GLEW, `make`):
+**BlastEm (cycles + state + audio reference) — BUILT 2026-06-28**, pinned hg changeset
+`7650b0eb0fa838fe34372d7b19296490dcea5c27` (Pavone's canonical `retrodev.com/repos/blastem`,
+NOT the libretro GitHub fork; v0.6.2+1118, no tagged release since 2019). Local-only at
+`tools/blastem/` (gitignored), GPLv3 dev-only, never shipped/linked. Built on MSYS2 MINGW64
+(`mingw-w64-x86_64-{gcc,make,SDL2,glew,pkgconf}`) with a `pcshim/gl.pc` + Windows source
+overrides (`make blastem NET=net_win.o TERMINAL=terminal_win.o MEM=mem_win.o FONT=… CHOOSER=…`).
+Instrumentation landed (always-on, armed at launch via env, NO arm-at-probe / NO pause):
+- m68k cycle anchor — `genesis.c:630` (`oracle_cycle_base_add(deduction)` at the `sync_components`
+  rebase) → monotonic `abs_cycle = base + local_cycle` survives BlastEm's periodic rebase
+  (verified: 0 non-monotonic steps over 54.5M master clocks).
+- FM tap — `ym2612.c:500` end of `ym_output_sample()`; PSG tap — `psg.c:174` in `psg_run()`.
+- New `oracle_ring.{h,c}` (fixed-size, pow2, eviction-bounded). Query = env-gated file dump at
+  exit (`BLASTEM_RING_DUMP=<prefix>` → `<prefix>.{fm,psg}.bin`, 16-byte entries
+  `{u64 abs_cycle; i16 L; i16 R}`, monotonic → bisectable by window). Chose file dump over the
+  GDB stub because `qRcmd` only runs while halted (= the forbidden pause-to-observe). Docs:
+  `tools/blastem/BLASTEM_ORACLE_README.md`.
+Build plan as originally scoped (now satisfied):
 1. **Guest-cycle export** — read `m68k_context.current_cycle` (uint32_t) at frame/sync in
    the `genesis.c` step path. Caveat: BlastEm periodically rebases `current_cycle` to avoid
    overflow — read it *relative to a known sync point*, never as a long-run absolute (use
@@ -432,10 +505,14 @@ from the heavier GPL Nuked-MD).
 
 ## Open levers, prioritized
 
-1. **(audio, P0)** Stand up the audio oracle slice on S3K — extend `synth_replay` with a
-   Nuked-OPN2 path + the three drift-tolerant metrics; first real recomp-vs-Nuked FM diff
-   at the boop sweep windows. *(Deliverable ii — this pass is doc/recon first.)*
-2. **(ring, P0)** Promote `[CHIP-TRACE]` (or a lean variant) to always-on in Release so the
+1. **(audio, P0) — DONE 2026-06-28.** Audio oracle slice stood up: Nuked-OPN2 FM path +
+   drift-tolerant metrics + per-channel attribution + in-game SFX capture. FM = faithful
+   (residual DAC-path, sub-audible); **boop localized to the PSG noise channel.**
+2. **(audio/PSG, P0) — FIXED + measurement-validated 2026-06-28; PENDING USER EAR-TEST.** Added the
+   ÷2 `noise_ff` flip-flop to `sn76489.c`; LFSR now shifts on its rising edge only. Re-measured:
+   ours-vs-BlastEm 0.526→0.954 (== clown), per-window 0.233→0.535 — outlier gone. Remaining: user
+   ear-validates S3 in-game, then S1/S2 jumps; commit (this submodule first, per #20) on user say-so.
+3. **(ring, P0)** Promote `[CHIP-TRACE]` (or a lean variant) to always-on in Release so the
    shared native↔oracle audio tap satisfies the global ring rule.
 3. **(cycle, P1)** BlastEm Δ-anchor cycle comparator (cyc_watch/cycle_compare analog).
 4. **(recompiler, P1)** Ship `oracle_block_diff.py` free-running native-vs-oracle
@@ -491,3 +568,33 @@ ring window.
 - 2026-06-28 — First audio slice landed (Nuked-OPN2 die-accurate FM reference + drift-
   tolerant metric). S3 FM: recomp ymfm vs Nuked corr 0.999, pitch 1.13 cents, onset 98%.
   ymfm validated as faithful YM2612; ~8–13% residual is the next FM lever. Axis 5c updated.
+- 2026-06-28 — Three measurement tasks fanned out in parallel (no behavioral changes):
+  - **FM residual attributed** (`--fm-channel`/`--dac` added to synth_replay, built into
+    `build_acc_chan/`): the 8–13% ymfm-vs-Nuked residual is **DAC-path-dominated** (~36%, ymfm
+    `dac_discontinuity` ladder vs Nuked die-accurate DAC), then ch0/ch1; pitch ≤1.13 cents
+    everywhere → timbral/sub-audible, KNOWN-GOOD. Axis 5c updated.
+  - **Jump-SFX boop reproduced + localized**: in-game S3 capture (`_run_s3_sfx/`) shows the
+    boop is the **PSG noise channel** ($E7 ch2-clocked white-noise) vs clownmdemu (~99%
+    residual / xcorr ≈ 0 at jump onsets), while FM stays faithful. Re-points the S1/S3 boop
+    hunt from FM to the SN76489 noise model. Axis 5d updated → SOFT-SPOT. **Caveat: clownmdemu
+    is approximate; await BlastEm `psg_run` before changing `sn76489.c`.**
+  - **BlastEm source-hook oracle**: building in background (MSYS2 MINGW64) to provide the
+    die-accurate PSG (`psg_run`) + cycle (`current_cycle` Δ-anchor) legs.
+- 2026-06-28 — **BlastEm oracle BUILT** (pinned hg `7650b0eb0fa8`, Pavone retrodev.com; always-on
+  FM/PSG/cycle rings keyed by monotonic `abs_cycle`, env-gated file dump — verified 0 non-monotonic
+  steps / 54.5M clocks). **PSG boop ROOT-CAUSED**: vendored BlastEm `psg.c` into synth_replay as a
+  3rd chip-replay core; ours-vs-BlastEm 0.233 vs clown-vs-BlastEm 0.471 at the `$E7` jump windows →
+  BlastEm+clown agree, **ours is the outlier**. Bug = `sn76489.c` noise channel missing the
+  rising-edge ÷2 output flip-flop (LFSR clocked 2× too fast → noise an octave high). Fix identified,
+  NOT applied (behavioral; awaiting user go-ahead + ear validation). Axis 5d → ROOT-CAUSED.
+- 2026-06-28 — **PSG ÷2 noise FIX APPLIED + measurement-validated** (user-approved). `sn76489.c`
+  noise channel given a `noise_ff` ÷2 flip-flop; LFSR shifts only on its rising edge. Re-measured
+  via the BlastEm-PSG chip-replay: ours-vs-BlastEm whole-clip corr 0.526→0.954 (== clown 0.953),
+  per-`$E7`-window xcorr 0.233→0.535 (≈ clown 0.518) — outlier signature gone, our PSG now as
+  accurate as clownmdemu vs the die-accurate reference. Pending user in-game ear-test. Axis 5d → FIXED.
+- 2026-06-28 — **S1 jump boop localized to the DELIVERY path, NOT the synth (separate from the ÷2 fix).**
+  Captured a real S1 GHZ jump (new S1 GEN_DEV_TRACE build + `jump_repro6b.txt`); the S1 jump SFX is a
+  ch0 TONE sweep with ZERO `$E_` noise writes, and our PSG renders it faithfully (ours-vs-clown 0.999 /
+  0.46 cents / 100% onsets; common-mode-only offset vs BlastEm). So the ÷2 noise fix does NOT address
+  the S1 boop, and the S1 synth core is independently proven correct → the boop is a real-time delivery
+  artifact (mixer/resample/SDL queue). Next S1 lever = always-on delivery-ring probe during live play.

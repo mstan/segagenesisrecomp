@@ -54,6 +54,15 @@ extern "C" {
     #include "ym3438.h"
 }
 
+/* ---- BlastEm SN76489 PSG (die-accurate-ish PSG truth; GPLv3, DEV-ONLY oracle,
+ *      never shipped — same posture as the clownmdemu/Nuked synths above).
+ *      This is the THIRD PSG reference that adjudicates our sn76489.c LFSR-noise
+ *      model against clownmdemu (a deliberately-approximate reference). The
+ *      vendored core (blastem_psg.c) is a verbatim extract of BlastEm psg.c. */
+extern "C" {
+    #include "blastem_psg.h"
+}
+
 /* Scheduler timing constants (must match genesis_machine.c). */
 static const uint64_t MASTER_PER_LINE  = 3420;
 static const uint64_t MASTER_PER_FRAME = 3420ull * 262ull; /* 896040 */
@@ -324,19 +333,83 @@ static void render_nuked(const std::vector<Event> &ev, std::vector<int16_t> &fm_
             fm_writes, fm_all.size() / 2);
 }
 
+/* ---- BlastEm SN76489 PSG (PSG truth reference) ----
+ * Replays the SAME PSG byte stream through BlastEm's psg.c LFSR/tone model at
+ * the identical master/240 step the harness uses for ours + clownmdemu, so the
+ * three PSG cores are compared at ZERO timing drift by construction (Layer A).
+ * Records, in g_e7_onsets, the output-sample index at each $E7 noise-control
+ * write (the jump-SFX onset windows being adjudicated). */
+static std::vector<size_t> g_e7_onsets;
+static void render_blastem_psg(const std::vector<Event> &ev, std::vector<int16_t> &psg_all)
+{
+    bpsg_context psg; bpsg_init(&psg);
+    std::vector<int16_t> buf; buf.reserve(8192);
+    uint64_t prev = ev.empty() ? 0 : ev[0].mc;
+    uint64_t psg_acc = 0;
+    int psg_cmds = 0;
+    for (const Event &e : ev) {
+        uint32_t d = (uint32_t)(e.mc - prev); prev = e.mc;
+        psg_acc += d;
+        size_t psg_n = (size_t)(psg_acc / PSG_MASTER_PER_SAMPLE); psg_acc %= PSG_MASTER_PER_SAMPLE;
+        if (psg_n) {
+            buf.assign(psg_n, 0);
+            bpsg_run(&psg, buf.data(), psg_n);
+            for (size_t i = 0; i < psg_n; i++) psg_all.push_back(buf[i]);
+        }
+        if (e.kind == 1) {
+            if (e.val == 0xE7) g_e7_onsets.push_back(psg_all.size()); /* onset sample idx */
+            bpsg_write(&psg, e.val);
+            psg_cmds++;
+        }
+        /* FM ignored — BlastEm here is the PSG reference only. */
+    }
+    fprintf(stderr, "[blastem-psg] PSG cmds=%d  output PSG samples=%zu  $E7 onsets=%zu\n",
+            psg_cmds, psg_all.size(), g_e7_onsets.size());
+}
+
 static double rms(const std::vector<int16_t> &s, size_t lo, size_t hi, int stride, int off) {
     double acc = 0; size_t n = 0;
     for (size_t i = lo; i < hi; i += stride) { double v = s[i + off]; acc += v * v; n++; }
     return n ? std::sqrt(acc / n) : 0.0;
 }
 
-/* --fm-channel N: keep only FM events belonging to channel N (0..5) plus the
- * global registers (LFO $22, timers $24-$27, DAC $2A/$2B) and that channel's
- * key-on/off events on $28. PSG events are dropped. Stateful: an address write
- * selects the register; the following data write inherits its keep/drop fate.
- * Lets us attribute the ours-vs-theirs FM band deficit to a single channel,
- * since both cores replay the SAME filtered stream. */
-static std::vector<Event> filter_fm_channel(const std::vector<Event> &ev, int ch)
+/* Isolation modes for --fm-channel / --dac.
+ *   0..5     = a single FM channel (its 4 operators + key-on + freq/algo regs)
+ *   ISO_DAC  = the channel-6 DAC path ($2A data / $2B enable) ONLY
+ *   ISO_NONE = no isolation (full stream; default — byte-identical to today). */
+static const int ISO_NONE = -2;
+static const int ISO_DAC  = -1;
+
+/* Per-channel / DAC isolation by WRITE FILTERING.
+ *
+ * WHY write-filtering and not per-core output extraction:
+ *   - ymfm's per-channel output lives behind ym2612::generate's private m_fm /
+ *     dac_discontinuity (ymfm_opn.cpp): exposing it would require editing the
+ *     ymfm vendor source or the runner wrapper (runner/audio/ym2612_ymfm.cpp) —
+ *     both forbidden (no behavioural change to the runner). Re-instantiating
+ *     ymfm here would duplicate the wrapper's gain/LPF and stop testing the
+ *     SHIPPED 'ours' path.
+ *   - The YM2612 has NO cross-channel modulation: each FM channel's operators
+ *     depend only on that channel's own registers + the global LFO ($22) + ch3
+ *     mode ($27). So muting the other channels does NOT change the kept channel's
+ *     synthesis — write-filtering yields the same per-channel audio that true
+ *     output extraction would, and it does so identically for ALL three cores
+ *     (ours/theirs/nuked replay the one filtered stream), keeping the comparison
+ *     fair. The only contamination is the (constant) DAC-ladder bias the silent
+ *     channels still contribute through each core's output mux — present equally
+ *     on both sides, so it cancels in the ours-vs-nuked envelope/residual metric.
+ *
+ * Globals always kept: $21/$2C test, $22 LFO, $24-$27 timers + ch3 mode.
+ * DAC regs $2A/$2B kept ONLY in ISO_DAC (so the DAC drums do NOT leak into the
+ *   per-FM-channel renders — the bug in the previous revision, which kept them as
+ *   "globals" for every channel).
+ * $28 key-on kept for FM-channel modes (data write must select that channel);
+ *   dropped in ISO_DAC (the DAC needs no key-on).
+ * PSG events are always dropped (FM attribution only).
+ *
+ * Stateful: an address write selects the register; the following data write
+ * inherits its keep/drop fate (key-on data is filtered by selected channel). */
+static std::vector<Event> filter_fm_stream(const std::vector<Event> &ev, int mode)
 {
     std::vector<Event> out;
     out.reserve(ev.size());
@@ -349,14 +422,22 @@ static std::vector<Event> filter_fm_channel(const std::vector<Event> &ev, int ch
             uint8_t a = e.val;
             int keep;
             addr_is_keyon[part] = 0;
-            if (a < 0x30) {
-                /* globals ($22 LFO, $24-$27 timers/ch3 mode, $2A/$2B DAC) — keep.
-                 * $28 key-on: keep the address write; the DATA write decides. */
-                keep = 1;
-                if (part == 0 && a == 0x28) addr_is_keyon[part] = 1;
-            } else {
-                int cip = a & 3;               /* channel within part; 3 = invalid */
-                keep = (cip != 3) && (part * 3 + cip == ch);
+            if (a < 0x30) {                     /* global / DAC / key-on region */
+                if (a == 0x2A || a == 0x2B) {
+                    keep = (mode == ISO_DAC);   /* DAC data/enable — DAC mode only */
+                } else if (a == 0x28) {
+                    keep = (mode != ISO_DAC);   /* key-on — FM-channel modes only */
+                    if (part == 0 && mode != ISO_DAC) addr_is_keyon[part] = 1;
+                } else {
+                    keep = 1;                   /* $21/$22/$24-$27/$2C — keep all */
+                }
+            } else {                           /* per-channel operator/freq regs */
+                if (mode == ISO_DAC) {
+                    keep = 0;                   /* no FM voices in pure-DAC render */
+                } else {
+                    int cip = a & 3;           /* channel within part; 3 = invalid */
+                    keep = (cip != 3) && (part * 3 + cip == mode);
+                }
             }
             keep_data[part] = keep;
             if (keep) out.push_back(e);
@@ -365,7 +446,7 @@ static std::vector<Event> filter_fm_channel(const std::vector<Event> &ev, int ch
                 /* $28 data: bits 0-2 select 0,1,2 (ch0-2) / 4,5,6 (ch3-5). */
                 int sel = e.val & 7;
                 int kch = (sel >= 4) ? (sel - 4 + 3) : sel;
-                if (sel != 3 && sel != 7 && kch == ch) out.push_back(e);
+                if (sel != 3 && sel != 7 && kch == mode) out.push_back(e);
             } else if (keep_data[part]) {
                 out.push_back(e);
             }
@@ -377,10 +458,13 @@ static std::vector<Event> filter_fm_channel(const std::vector<Event> &ev, int ch
 int main(int argc, char **argv)
 {
     const char *path = argc > 1 ? argv[1] : "chip_ring.txt";
-    int fm_channel = -1;
-    for (int i = 2; i < argc; i++)
+    int iso_mode = ISO_NONE;   /* default: full stream, byte-identical to today */
+    for (int i = 2; i < argc; i++) {
         if (!strcmp(argv[i], "--fm-channel") && i + 1 < argc)
-            fm_channel = atoi(argv[++i]);
+            iso_mode = atoi(argv[++i]);          /* 0..5 = single FM channel */
+        else if (!strcmp(argv[i], "--dac"))
+            iso_mode = ISO_DAC;                  /* channel-6 DAC path only */
+    }
     FILE *f = fopen(path, "rb");
     if (!f) { fprintf(stderr, "cannot open %s\n", path); return 1; }
 
@@ -397,6 +481,22 @@ int main(int argc, char **argv)
         PSG_Update(&t, b.data(), 2000);
         double s = 0; for (int16_t v : b) s += (double)v * v;
         fprintf(stderr, "[selftest] clownmdemu PSG RMS over 2000 frames = %.0f\n", std::sqrt(s / b.size()));
+    }
+
+    /* Self-test: drive the vendored BlastEm PSG with the same loud ch0 tone +
+     * white noise and confirm it outputs (sanity that the noise path is alive
+     * before we trust the $E7-window verdict). */
+    {
+        bpsg_context t; bpsg_init(&t);
+        bpsg_write(&t, 0x80 | 0x0E);  /* latch ch0 tone, freq lo = 0xE */
+        bpsg_write(&t, 0x01);         /* freq hi bits */
+        bpsg_write(&t, 0x90 | 0x00);  /* latch ch0 volume = 0 (loudest) */
+        bpsg_write(&t, 0xE7);         /* latch ch3 noise: white, clocked by ch2 */
+        bpsg_write(&t, 0xF0);         /* noise volume = 0 (loudest) */
+        std::vector<int16_t> b(2000, 0);
+        bpsg_run(&t, b.data(), 2000);
+        double s = 0; for (int16_t v : b) s += (double)v * v;
+        fprintf(stderr, "[selftest] BlastEm  PSG RMS over 2000 frames = %.0f\n", std::sqrt(s / b.size()));
     }
 
     /* Parse the ring (chip_trace.c format):
@@ -432,19 +532,25 @@ int main(int argc, char **argv)
             ev.size(), path, raw.empty() ? "legacy capture" : "mixer");
     if (ev.empty()) return 1;
 
-    if (fm_channel >= 0) {
-        ev = filter_fm_channel(ev, fm_channel);
-        fprintf(stderr, "[--fm-channel %d] filtered stream: %zu events\n",
-                fm_channel, ev.size());
-        if (ev.empty()) return 1;
+    if (iso_mode != ISO_NONE) {
+        size_t before = ev.size();
+        ev = filter_fm_stream(ev, iso_mode);
+        if (iso_mode == ISO_DAC)
+            fprintf(stderr, "[--dac] filtered stream: %zu of %zu events\n",
+                    ev.size(), before);
+        else
+            fprintf(stderr, "[--fm-channel %d] filtered stream: %zu of %zu events\n",
+                    iso_mode, ev.size(), before);
+        if (ev.empty()) { fprintf(stderr, "no events after isolation filter\n"); return 1; }
     }
 
-    std::vector<int16_t> fm_o, psg_o, fm_t, psg_t, fm_n;
+    std::vector<int16_t> fm_o, psg_o, fm_t, psg_t, fm_n, psg_b;
     render_ours(ev, fm_o, psg_o);
     render_theirs(ev, fm_t, psg_t);
     render_nuked(ev, fm_n);   /* die-accurate FM reference */
-    fprintf(stderr, "ours:   FM %zu PSG %zu | theirs: FM %zu PSG %zu | nuked: FM %zu samples\n",
-            fm_o.size()/2, psg_o.size(), fm_t.size()/2, psg_t.size(), fm_n.size()/2);
+    render_blastem_psg(ev, psg_b);   /* PSG truth reference (BlastEm) */
+    fprintf(stderr, "ours:   FM %zu PSG %zu | theirs: FM %zu PSG %zu | nuked: FM %zu | blastem PSG %zu samples\n",
+            fm_o.size()/2, psg_o.size(), fm_t.size()/2, psg_t.size(), fm_n.size()/2, psg_b.size());
 
     /* Decompose: FM-core vs PSG-core, separating LEVEL (best-fit scale) from
      * CONTENT (residual after scaling). Buffers are equal-length per synth. */
@@ -478,16 +584,27 @@ int main(int argc, char **argv)
     compare("FM o/t",  fm_o,  fm_t, 2);   /* ours vs clownmdemu  (stereo) */
     compare("FM o/n",  fm_o,  fm_n, 2);   /* ours vs Nuked-OPN2  (the accuracy verdict) */
     compare("FM t/n",  fm_t,  fm_n, 2);   /* clownmdemu vs Nuked (reference cross-check) */
-    compare("PSG",     psg_o, psg_t, 1);  /* mono — PSG truth pending BlastEm psg_run */
+    compare("PSGo/t",  psg_o, psg_t, 1);  /* ours vs clownmdemu (approx reference) */
+    compare("PSGo/b",  psg_o, psg_b, 1);  /* ours vs BlastEm   (PSG truth verdict) */
+    compare("PSGt/b",  psg_t, psg_b, 1);  /* clownmdemu vs BlastEm (reference cross-check) */
 
     /* Separate per-stream WAVs for offline spectral analysis. */
     write_wav("ours_fm.wav",   fm_o, 53267);
     write_wav("theirs_fm.wav", fm_t, 53267);
     write_wav("nuked_fm.wav",  fm_n, 53267);
-    { std::vector<int16_t> a(psg_o.size()*2), b(psg_t.size()*2);
+    { std::vector<int16_t> a(psg_o.size()*2), b(psg_t.size()*2), c(psg_b.size()*2);
       for (size_t i=0;i<psg_o.size();i++){a[i*2]=a[i*2+1]=psg_o[i];}
       for (size_t i=0;i<psg_t.size();i++){b[i*2]=b[i*2+1]=psg_t[i];}
-      write_wav("ours_psg.wav", a, 223721); write_wav("theirs_psg.wav", b, 223721); }
+      for (size_t i=0;i<psg_b.size();i++){c[i*2]=c[i*2+1]=psg_b[i];}
+      write_wav("ours_psg.wav", a, 223721); write_wav("theirs_psg.wav", b, 223721);
+      write_wav("blastem_psg.wav", c, 223721); }
+
+    /* Sidecar: $E7 noise-control onset sample indices (PSG output stream), so a
+     * downstream driver can slice the exact jump-SFX windows and run the
+     * drift-tolerant metric (audio_drift_diff.py) per window. */
+    { FILE *of = fopen("e7_onsets.txt", "wb");
+      if (of) { for (size_t s : g_e7_onsets) fprintf(of, "%zu\n", s); fclose(of);
+                fprintf(stderr, "wrote e7_onsets.txt (%zu onsets)\n", g_e7_onsets.size()); } }
 
     std::vector<int16_t> mix_o = mix(fm_o, psg_o);
     std::vector<int16_t> mix_t = mix(fm_t, psg_t);
