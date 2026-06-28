@@ -16,3 +16,8 @@ tests/last_run/
 
 # Internal licensing/teardown working note — never commit
 LICENSING.md
+
+# accuracy worktree: local synth_replay builds + capture runs
+tools/synth_replay/_run_*/
+tools/synth_replay/build_acc/
+tools/synth_replay/build/

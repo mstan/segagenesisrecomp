@@ -28,6 +28,8 @@ add_executable(synth_replay
     "${CORE}/source/psg.c"
     "${CORE}/source/low-pass-filter.c"
     "${CORE}/source/log.c"
+    # REFERENCE (Nuked-OPN2 die-accurate YM2612 — dev-only LGPL oracle)
+    "${CMAKE_CURRENT_SOURCE_DIR}/../nuked-opn2/ym3438.c"
 )
 
 target_include_directories(synth_replay PRIVATE
@@ -35,4 +37,5 @@ target_include_directories(synth_replay PRIVATE
     "${RUNNER}/include"
     "${RUNNER}/external/ymfm/src"
     "${CORE}/source"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../nuked-opn2"
 )

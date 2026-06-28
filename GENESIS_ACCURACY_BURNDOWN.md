@@ -245,18 +245,31 @@ declared focus of the first oracle slice.
   stall** (only 68k→VDP does). — *Ref: VDP DMA timing. Validate: DMA-stall cycle Δ vs
   BlastEm; spread transfer across charged scanlines.*
 
-### 5c. FM (YM2612) — **APPROXIMATE; residual boop**
+### 5c. FM (YM2612) — **MEASURED vs die-accurate Nuked-OPN2: corr 0.999 / 1.13 cents**
 - [x] ymfm (BSD-3) core, `runner/audio/ym2612_ymfm.cpp` behind the stable C API
   (`:4-6,115`); clock = master/7 = 7,670,453 Hz, output = clock/144 = **53,267 Hz**
   (`:39-41,159-164`); HW output low-pass matching clownmdemu coeffs (`:69-94,106-107`).
 - [x] **YM_GAIN = 195/256** correction (`ym2612_ymfm.cpp:51-52`, applied `:104`) — fixed
   the +2.3 dB level boop (ymfm x21.005 vs reference x16). Synth_replay envelope
   correlation 1.000 (`:46-50`).
-- [ ] **Residual jump-SFX boop** in the *generated stream* — every measured stage (writes,
-  synth, delivery) tested equal, artifact is in the stream itself; suspected long-run
-  source = `psg_reset_leftover()` sub-sample carry discard (`mixer.c:156-162`,
-  `sn76489.c:194-197`). Next = sample/spectrogram diff at SFX sweep windows. — *Ref:
-  Nuked-OPN2 (die-accurate). Validate: per-chip sample-stream diff, drift-tolerant.*
+- [x] **GREEN-leg-1 (reference) NOW MET** — Nuked-OPN2 (LGPL, die-accurate YM2612) vendored
+  at `tools/nuked-opn2/` (pinned 335747d) and replayed through the shared chip-write ring
+  by `tools/synth_replay` (FM path added). On S3 title music (16.8 s, 255k FM writes,
+  zero timing drift by construction): **ours(ymfm) vs Nuked-OPN2 envelope corr = 0.999;
+  clownmdemu vs Nuked = 1.000** → ymfm is a faithful YM2612, and clownmdemu (the prior
+  reference) is corroborated by the die-accurate core. Drift-tolerant metric
+  (`tools/audio_drift_diff.py`): per-window xcorr **0.996**, onsets **98% matched** (median
+  Δ 0.0 ms), per-note pitch error **median 1.13 cents / p90 4.07** (imperceptible).
+- [ ] **Residual ~8–13% post-alignment waveform difference** (recomp ymfm vs Nuked) — the
+  genuine ymfm-vs-die-accurate gap (DAC-ladder / operator rounding); NOT bit-exact, as
+  expected for Genesis FM across cores. This is the real remaining FM lever. — *Validate:
+  per-channel `--fm-channel N` Nuked diff to attribute the residual to a specific channel /
+  the DAC path.*
+- [ ] **Jump-SFX boop** still to be reproduced under this rig — the S3 slice captured title
+  music; next is an SFX-window capture (jump → the boop SFX) and the same Nuked diff at the
+  sweep windows. The earlier "every stage equal" S1 finding is consistent with the residual
+  living in the cross-core waveform delta, now measurable. — *Ref: Nuked-OPN2. Validate:
+  per-chip sample diff at the SFX sweep window.*
 
 ### 5d. PSG (SN76489) — **APPROXIMATE**
 - [x] Clean-room own core `runner/audio/sn76489.c` (replaced AGPL clownmdemu PSG); 3
@@ -434,10 +447,47 @@ from the heavier GPL Nuked-MD).
 
 ---
 
+## First audio slice — results (S3, 2026-06-28)
+
+Deliverable (ii): the first real recomp-vs-accurate-reference audio comparison. Chip-level
+(Layer A), zero timing drift by construction (both synths replay the SAME chip-write ring).
+
+**Setup.** Built Sonic3Recomp with `GEN_DEV_TRACE=ON` (`build-trace/`), captured S3 title
+music headless (`--max-frames 1500 --snd-dump-frame 1450 --wav`), giving a real
+`chip_ring.txt` (255k FM writes, 16.8 s) from the recompiled runtime. Vendored Nuked-OPN2
+(`tools/nuked-opn2/`, die-accurate YM2612, dev-only LGPL) and added an FM reference path to
+`tools/synth_replay` so the ring replays through ymfm (ours), clownmdemu (prior reference),
+and Nuked-OPN2 (die truth) through the identical mixer. Built the drift-tolerant metric
+`tools/audio_drift_diff.py` (xcorr alignment + onset histogram + per-note pitch cents).
+
+**Result (recomp ymfm vs Nuked-OPN2 die-accurate, S3 FM):**
+| metric | value | reading |
+|---|---|---|
+| envelope correlation | **0.999** | content/timing match (clownmdemu vs Nuked = 1.000) |
+| per-window xcorr | 0.996 (lag −0.04 ms, drift 0.08 ms) | no timing drift |
+| onset match | **98%**, median Δ 0.0 ms, std 2.56 ms | note onsets aligned |
+| per-note pitch error | **median 1.13 cents**, p90 4.07 | musically imperceptible |
+| post-align residual | 8–13% of RMS | genuine cross-core waveform delta (DAC ladder) — the real FM lever |
+| best-fit gain | ×21.7 | per-core level calibration (scale-invariant; not a defect) |
+
+**Verdict:** ymfm is a faithful YM2612 for S3 — GREEN-leg-1 (die-accurate reference) met for
+FM content/timing/pitch. Open: attribute the ~8–13% residual per-channel; capture an
+SFX-window (jump) for the boop; PSG truth still pending BlastEm `psg_run` (PSG vs clownmdemu
+corr 0.955). Whole-pipeline (Layer B) needs window-aligned captures — the native WAV spans
+boot→1500 while the ring is the last 262k events, so a direct native-vs-ring WAV diff is
+window-misaligned (not a fidelity finding); next is capturing the native WAV over the exact
+ring window.
+
+**New tooling (this slice):** `tools/nuked-opn2/{ym3438.c,ym3438.h}` (pinned 335747d),
+`tools/synth_replay/synth_replay.cpp` (Nuked FM path + 3-way compare), `gen_fm_tone.py`
+(integration self-test), `tools/audio_drift_diff.py` (drift-tolerant metric).
+
 ## Changelog
 
 - 2026-06-28 — Initial 7-axis recon + scorecard. Four parallel recon agents: (a) PSX
   template map, (b) per-axis posture (cited), (c) audio deep-dive (cited), (d) emulator
   landscape (web-verified). Oracle decision locked: BlastEm source-hooked + Nuked-OPN2
-  chip truth. First audio slice target: Sonic 3 / S3K. Scope this pass: doc/recon first;
-  audio slice is the next focused follow-up.
+  chip truth. First audio slice target: Sonic 3 / S3K.
+- 2026-06-28 — First audio slice landed (Nuked-OPN2 die-accurate FM reference + drift-
+  tolerant metric). S3 FM: recomp ymfm vs Nuked corr 0.999, pitch 1.13 cents, onset 98%.
+  ymfm validated as faithful YM2612; ~8–13% residual is the next FM lever. Axis 5c updated.

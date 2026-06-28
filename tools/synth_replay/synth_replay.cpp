@@ -48,6 +48,12 @@ extern "C" {
     #include "low-pass-filter.h"
 }
 
+/* ---- Nuked-OPN2 (die-accurate YM2612 reference; LGPL-2.1, DEV-ONLY oracle,
+ *      never shipped — same posture as the clownmdemu synth above) ---- */
+extern "C" {
+    #include "ym3438.h"
+}
+
 /* Scheduler timing constants (must match genesis_machine.c). */
 static const uint64_t MASTER_PER_LINE  = 3420;
 static const uint64_t MASTER_PER_FRAME = 3420ull * 262ull; /* 896040 */
@@ -250,6 +256,74 @@ static void render_theirs(const std::vector<Event> &ev,
             (unsigned)psg.state.tones[2].attenuation, (unsigned)psg.state.noise.attenuation);
 }
 
+/* ---- NUKED-OPN2 (die-accurate FM reference) ----
+ * Replays the SAME FM register stream through the decap-accurate YM2612 core,
+ * so ours(ymfm) vs nuked is a pure synth-core comparison at zero timing drift.
+ * Drives OPN2_Clock at the chip's internal slot rate: 1 slot = 6 YM clocks =
+ * 42 system-master cycles; 24 slots = one 53267 Hz output sample (24*42 = 1008
+ * = FM_MASTER_PER_SAMPLE). The 24 multiplexed mol/mor slots are boxcar-summed
+ * into one stereo sample (the analog DAC is time-multiplexed; the sum models
+ * the reconstructed output, then the same FM low-pass as 'theirs' is applied so
+ * only the synth core differs). YM2612 mode = MD1/MD2 discrete DAC + ladder. */
+static const int MASTER_PER_OPN2_CLOCK = 42;   /* 1008 / 24 */
+/* Boxcar-sum the 24 multiplexed slots into one 53267 Hz sample. The absolute
+ * level of Nuked vs ymfm differs by a per-core calibration constant (the cores
+ * scale their internal fixed-point differently); ours-vs-nuked is therefore a
+ * SCALE-INVARIANT comparison (best-fit gain / envelope correlation), which is
+ * the correct bar for Genesis FM — bit-exact level across cores is not realistic
+ * (see GENESIS_ACCURACY_BURNDOWN.md, audio metric verdict). DIV keeps dense
+ * 6-channel content inside int16 without clipping. */
+static const int NUKED_OUT_DIV = 4;
+static void render_nuked(const std::vector<Event> &ev, std::vector<int16_t> &fm_all)
+{
+    ym3438_t chip;
+    OPN2_SetChipType(ym3438_mode_ym2612);
+    OPN2_Reset(&chip);
+    LowPassFilter_FirstOrder_State lpf[2];
+    LowPassFilter_FirstOrder_Initialise(lpf, 2);
+
+    uint64_t prev = ev.empty() ? 0 : ev[0].mc;
+    int64_t master_acc = 0;
+    int slot = 0; int32_t accL = 0, accR = 0;
+    auto clock_one = [&]() {
+        Bit16s buf[2];
+        OPN2_Clock(&chip, buf);
+        accL += buf[0]; accR += buf[1];
+        if (++slot == 24) {
+            fm_all.push_back(clamp16(accL / NUKED_OUT_DIV));
+            fm_all.push_back(clamp16(accR / NUKED_OUT_DIV));
+            accL = accR = 0; slot = 0;
+        }
+    };
+    auto run = [&](uint64_t dmaster) {
+        master_acc += (int64_t)dmaster;
+        while (master_acc >= MASTER_PER_OPN2_CLOCK) { clock_one(); master_acc -= MASTER_PER_OPN2_CLOCK; }
+    };
+    int fm_writes = 0;
+    for (const Event &e : ev) {
+        uint64_t d = (uint64_t)(e.mc - prev); prev = e.mc;
+        run(d);
+        if (e.kind == 0) {
+            OPN2_Write(&chip, (Bit32u)e.port, (Bit8u)e.val);
+            /* OPN2_Write is buffered: the write-enable shift register is consumed
+             * one bit per OPN2_Clock. Force 2 clocks so this write is latched
+             * before the next one (so an address always latches before its data,
+             * even when the mixer pair-guard gives them the same stamp / zero gap).
+             * Borrowed from the timeline via master_acc, repaid by later gaps, so
+             * the total sample count stays aligned with ours/theirs. */
+            clock_one(); clock_one();
+            master_acc -= 2 * MASTER_PER_OPN2_CLOCK;
+            fm_writes++;
+        }
+        /* PSG ignored — nuked is the FM reference only (PSG truth = BlastEm). */
+    }
+    if (!fm_all.empty())
+        LowPassFilter_FirstOrder_Apply(lpf, 2, fm_all.data(), fm_all.size() / 2,
+            LOW_PASS_FILTER_COMPUTE_MAGIC_FIRST_ORDER(6.910, 4.910));
+    fprintf(stderr, "[nuked] FM writes=%d  output FM samples=%zu\n",
+            fm_writes, fm_all.size() / 2);
+}
+
 static double rms(const std::vector<int16_t> &s, size_t lo, size_t hi, int stride, int off) {
     double acc = 0; size_t n = 0;
     for (size_t i = lo; i < hi; i += stride) { double v = s[i + off]; acc += v * v; n++; }
@@ -365,11 +439,12 @@ int main(int argc, char **argv)
         if (ev.empty()) return 1;
     }
 
-    std::vector<int16_t> fm_o, psg_o, fm_t, psg_t;
+    std::vector<int16_t> fm_o, psg_o, fm_t, psg_t, fm_n;
     render_ours(ev, fm_o, psg_o);
     render_theirs(ev, fm_t, psg_t);
-    fprintf(stderr, "ours:   FM %zu PSG %zu | theirs: FM %zu PSG %zu samples\n",
-            fm_o.size()/2, psg_o.size(), fm_t.size()/2, psg_t.size());
+    render_nuked(ev, fm_n);   /* die-accurate FM reference */
+    fprintf(stderr, "ours:   FM %zu PSG %zu | theirs: FM %zu PSG %zu | nuked: FM %zu samples\n",
+            fm_o.size()/2, psg_o.size(), fm_t.size()/2, psg_t.size(), fm_n.size()/2);
 
     /* Decompose: FM-core vs PSG-core, separating LEVEL (best-fit scale) from
      * CONTENT (residual after scaling). Buffers are equal-length per synth. */
@@ -399,12 +474,16 @@ int main(int argc, char **argv)
                tag, ra, rb, corr, rel);
     };
     printf("== core decomposition (phase-invariant envelope match) ==\n");
-    compare("FM",  fm_o,  fm_t, 2);   /* stereo interleaved */
-    compare("PSG", psg_o, psg_t, 1);  /* mono */
+    printf("  reference legend: theirs=clownmdemu (prev-correct), nuked=Nuked-OPN2 (die-accurate truth)\n");
+    compare("FM o/t",  fm_o,  fm_t, 2);   /* ours vs clownmdemu  (stereo) */
+    compare("FM o/n",  fm_o,  fm_n, 2);   /* ours vs Nuked-OPN2  (the accuracy verdict) */
+    compare("FM t/n",  fm_t,  fm_n, 2);   /* clownmdemu vs Nuked (reference cross-check) */
+    compare("PSG",     psg_o, psg_t, 1);  /* mono — PSG truth pending BlastEm psg_run */
 
     /* Separate per-stream WAVs for offline spectral analysis. */
     write_wav("ours_fm.wav",   fm_o, 53267);
     write_wav("theirs_fm.wav", fm_t, 53267);
+    write_wav("nuked_fm.wav",  fm_n, 53267);
     { std::vector<int16_t> a(psg_o.size()*2), b(psg_t.size()*2);
       for (size_t i=0;i<psg_o.size();i++){a[i*2]=a[i*2+1]=psg_o[i];}
       for (size_t i=0;i<psg_t.size();i++){b[i*2]=b[i*2+1]=psg_t[i];}
