@@ -6,6 +6,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
+#include "m68k_cycle_cost.h"   /* operand-keyed (data-dependent) instruction cycle costs [PARKED branch] */
 
 /* ---- CPU State ---- */
 /* Tagged so headers that only need a pointer (e.g. crash_report.h) can

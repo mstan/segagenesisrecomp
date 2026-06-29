@@ -12,6 +12,7 @@
 #include "annotations.h"
 #include "game_config.h"
 #include "rom_parser.h"
+#include "../../runner/include/m68k_cycle_cost.h"  /* operand-keyed cycle helpers (shared w/ runtime) [PARKED] */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1642,11 +1643,11 @@ static int estimate_cycles_prm(const M68KInstr *instr)
     }
 }
 
-/* Primary cycle-cost entry point. Asks the clown68000 interpreter (via
- * cycle_probe) for the exact cost; falls back to the PRM-derived table
- * above if the probe isn't initialised (e.g. unit-test paths) or if
- * clown returned an unreasonable value. */
-static int estimate_cycles(const M68KInstr *instr)
+/* Raw per-instruction cost: ask the clown68000 interpreter (via cycle_probe)
+ * for the exact cost; fall back to the PRM-derived table above if the probe
+ * isn't initialised (e.g. unit-test paths) or clown returned an unreasonable
+ * value. */
+static int estimate_cycles_raw(const M68KInstr *instr)
 {
     int measured = cycle_probe_measure(instr->addr);
     /* Guard: any positive value within a sane range wins. Outside that
@@ -1655,6 +1656,103 @@ static int estimate_cycles(const M68KInstr *instr)
     if (measured > 0 && measured <= 300)
         return measured;
     return estimate_cycles_prm(instr);
+}
+
+/* ---- Operand-keyed (data-dependent) cycle costs --------------------------
+ * A few instructions cost a function of the RUNTIME operand value, which the
+ * codegen-time probe cannot know (it substitutes a fixed synthetic operand, so
+ * the baked constant over/under-counts). For those we emit a runtime cycle add
+ * (m68k_cycle_cost.h) instead of a constant: see emit_instr's MULU/MULS/DIVU/
+ * DIVS/shift cases. This covers register-direct (Dn) and register-indirect
+ * sources; immediate / PC-relative / absolute sources are known at codegen so
+ * the probe is already exact and they keep the constant cost.
+ *
+ * PARKED (reverted on main): destabilises timing-sensitive scenes; broke S3.
+ * See GENESIS_ACCURACY_BURNDOWN.md backlog item 7. */
+
+/* The synthetic operand cycle_probe uses (cycle_probe.c): D0..D6 = 0x5555,
+ * D7 = 4; address regs = 0x00FFFE00 (out of ROM range, so register-indirect
+ * source reads decode to 0 through the stub bus). */
+static unsigned cyc_synth_src_value(const M68KInstr *instr)
+{
+    int srcmode = (instr->src_ea >> 3) & 7;
+    int srcreg  =  instr->src_ea       & 7;
+    if (srcmode == 0)                 /* Dn direct */
+        return (srcreg == 7) ? 4u : 0x5555u;
+    return 0u;                        /* register-indirect: stub reads 0 */
+}
+
+/* True for instructions whose cost we charge at runtime from the operand. */
+static int cycle_is_operand_keyed(const M68KInstr *instr)
+{
+    switch (instr->mnemonic) {
+    case MN_MULU: case MN_MULS:
+    case MN_DIVU: case MN_DIVS: {
+        int srcmode = (instr->src_ea >> 3) & 7;
+        /* mode 0 (Dn) or 2..6 (register-indirect family); NOT mode 7
+         * (abs/PC/immediate — known at codegen, probe already exact). */
+        return srcmode == 0 || (srcmode >= 2 && srcmode <= 6);
+    }
+    case MN_LSL: case MN_LSR: case MN_ASL: case MN_ASR:
+    case MN_ROL: case MN_ROR:
+        /* register-counted register shift (count from Dn at runtime).
+         * mem_shift is always 1-bit and immediate-count is known at codegen.
+         * ROXL/ROXR are excluded — their emitter only handles immediate count. */
+        return !instr->mem_shift && instr->src_ea >= 0;
+    default:
+        return 0;
+    }
+}
+
+/* The action-cycle count the runtime helper would add for the SYNTHETIC operand
+ * the probe used, so the operand-independent base = probe_total - this. */
+static int cyc_synth_action(const M68KInstr *instr)
+{
+    unsigned s = cyc_synth_src_value(instr);
+    switch (instr->mnemonic) {
+    case MN_MULU: return m68k_mulu_var_cycles((uint16_t)s);
+    case MN_MULS: return m68k_muls_var_cycles((uint16_t)s);
+    case MN_DIVU: {
+        uint32_t d = (instr->reg == 7) ? 4u : 0x00005555u;
+        return m68k_divu_action_cycles(d, (uint16_t)s);
+    }
+    case MN_DIVS: {
+        uint32_t d = (instr->reg == 7) ? 4u : 0x00005555u;
+        return m68k_divs_action_cycles(d, (uint16_t)s);
+    }
+    default: return 0;
+    }
+}
+
+/* Operand-independent base for an operand-keyed MUL/DIV instruction:
+ * fixed = clown total (synthetic) - the synthetic action part. The runtime
+ * add then contributes the real action part. (Shifts hardcode their base.) */
+static int operand_keyed_fixed(const M68KInstr *instr)
+{
+    int fixed = estimate_cycles_raw(instr) - cyc_synth_action(instr);
+    if (fixed < 0) fixed = 0;
+    return fixed;
+}
+
+/* Primary cycle-cost entry point used by the generic per-instruction emit.
+ * Returns -1 for operand-keyed instructions so the generic accounting is
+ * suppressed — those emit their own runtime-keyed accounting inline. */
+static int estimate_cycles(const M68KInstr *instr)
+{
+    if (cycle_is_operand_keyed(instr))
+        return -1;
+    return estimate_cycles_raw(instr);
+}
+
+/* Emit cycle accounting whose count is a runtime C expression (operand-keyed).
+ * Mirrors emit_cycle_accounting but evaluates `cyc_expr` once at runtime. */
+static void emit_cycle_accounting_expr(FILE *f, const char *indent,
+                                       const char *cyc_expr)
+{
+    fprintf(f, "%s{ int _ckc = (int)(%s); g_native_insn_count++;"
+               " g_cycle_accumulator += _ckc; g_audio_cycle_counter += _ckc;"
+               " if (g_cycle_accumulator >= g_vblank_threshold)"
+               " glue_check_vblank(); }\n", indent, cyc_expr);
 }
 
 /* emit_mem_shift — the 68K memory shift/rotate forms (opcode size field == 11,
@@ -2826,6 +2924,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
          * shifts can hit count == 0 at runtime; immediate-count shifts
          * encode 0 as 8, so they always shift. */
         emit_shift_sr_update(f, res, bits, reg_count, false);
+        if (reg_count) {   /* operand-keyed cost: base + 2*count (_cnt = D&63, captured pre-store) */
+            char ce[48];
+            snprintf(ce, sizeof(ce), "%d + 2*_cnt", (sz == M68K_SIZE_L) ? 8 : 6);
+            emit_cycle_accounting_expr(f, "    ", ce);
+        }
         fprintf(f, "  }\n");
         break;
     }
@@ -2915,6 +3018,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
          * Immediate count of 0 is decoded as 8, so only register-count form
          * can hit this case at runtime. Mirrors LSL/LSR's _cnt==0 handling. */
         emit_shift_sr_update(f, res, bits, asr_reg_count, true);
+        if (asr_reg_count) {   /* operand-keyed cost: base + 2*count (_cnt = D&63, pre-store) */
+            char ce[48];
+            snprintf(ce, sizeof(ce), "%d + 2*_cnt", (sz == M68K_SIZE_L) ? 8 : 6);
+            emit_cycle_accounting_expr(f, "    ", ce);
+        }
         fprintf(f, "  }\n");
         break;
     }
@@ -2937,6 +3045,9 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             int creg = instr->src_ea;
             fprintf(f, "  { %s _sv = (%s)g_cpu.D[%d];\n", ct, ct, dreg);
             fprintf(f, "    int _cnt = (int)(g_cpu.D[%d] & 63u) %% %d;\n", creg, bits);
+            /* raw count (not mod bits) for the operand-keyed cycle cost; captured
+             * pre-store so creg==dreg still reads the original count. */
+            fprintf(f, "    int _ckcnt = (int)(g_cpu.D[%d] & 63u);\n", creg);
             if (left) {
                 fprintf(f, "    %s %s = _cnt ? ((_sv << _cnt) | (_sv >> (%d - _cnt))) : _sv;\n",
                         ct, res, bits);
@@ -2973,6 +3084,11 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
         fprintf(f, "    if (!%s) g_cpu.SR |= (1u<<2);\n", res);
         fprintf(f, "    if ((uint32_t)%s >> %d) g_cpu.SR |= (1u<<3);\n", res, bits - 1);
         fprintf(f, "    if (_c) g_cpu.SR |= (1u<<0);\n");
+        if (rot_reg_count) {   /* operand-keyed cost: base + 2*raw_count */
+            char ce[48];
+            snprintf(ce, sizeof(ce), "%d + 2*_ckcnt", (sz == M68K_SIZE_L) ? 8 : 6);
+            emit_cycle_accounting_expr(f, "    ", ce);
+        }
         fprintf(f, "  }\n");
         break;
     }
@@ -3023,12 +3139,25 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     case MN_MULU: {
         int dreg = instr->reg;
         emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
-        fprintf(f,
-            "  g_cpu.D[%d] = (uint32_t)(uint16_t)g_cpu.D[%d] * (uint32_t)(uint16_t)(%s);\n",
-            dreg, dreg, src_expr);
         char expr[64];
         snprintf(expr, sizeof(expr), "g_cpu.D[%d]", dreg);
-        emit_flags_logic(f, expr, M68K_SIZE_L);
+        if (cycle_is_operand_keyed(instr)) {
+            /* Capture the source once, then charge the runtime operand-keyed
+             * cost (38 + 2*ones(src)) instead of the synthetic-operand guess. */
+            char ce[96];
+            snprintf(ce, sizeof(ce), "%d + m68k_mulu_var_cycles(_mksrc)", operand_keyed_fixed(instr));
+            fprintf(f, "  { uint16_t _mksrc = (uint16_t)(%s);\n", src_expr);
+            fprintf(f, "    g_cpu.D[%d] = (uint32_t)(uint16_t)g_cpu.D[%d] * (uint32_t)_mksrc;\n",
+                    dreg, dreg);
+            emit_flags_logic(f, expr, M68K_SIZE_L);
+            emit_cycle_accounting_expr(f, "    ", ce);
+            fprintf(f, "  }\n");
+        } else {
+            fprintf(f,
+                "  g_cpu.D[%d] = (uint32_t)(uint16_t)g_cpu.D[%d] * (uint32_t)(uint16_t)(%s);\n",
+                dreg, dreg, src_expr);
+            emit_flags_logic(f, expr, M68K_SIZE_L);
+        }
         break;
     }
 
@@ -3036,12 +3165,23 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
     case MN_MULS: {
         int dreg = instr->reg;
         emit_ea_load(f, instr, instr->src_ea, M68K_SIZE_W, &er, tmp, src_expr);
-        fprintf(f,
-            "  g_cpu.D[%d] = (uint32_t)((int32_t)(int16_t)g_cpu.D[%d] * (int32_t)(int16_t)(%s));\n",
-            dreg, dreg, src_expr);
         char expr[64];
         snprintf(expr, sizeof(expr), "g_cpu.D[%d]", dreg);
-        emit_flags_logic(f, expr, M68K_SIZE_L);
+        if (cycle_is_operand_keyed(instr)) {
+            char ce[96];
+            snprintf(ce, sizeof(ce), "%d + m68k_muls_var_cycles(_mksrc)", operand_keyed_fixed(instr));
+            fprintf(f, "  { uint16_t _mksrc = (uint16_t)(%s);\n", src_expr);
+            fprintf(f, "    g_cpu.D[%d] = (uint32_t)((int32_t)(int16_t)g_cpu.D[%d] * (int32_t)(int16_t)_mksrc);\n",
+                    dreg, dreg);
+            emit_flags_logic(f, expr, M68K_SIZE_L);
+            emit_cycle_accounting_expr(f, "    ", ce);
+            fprintf(f, "  }\n");
+        } else {
+            fprintf(f,
+                "  g_cpu.D[%d] = (uint32_t)((int32_t)(int16_t)g_cpu.D[%d] * (int32_t)(int16_t)(%s));\n",
+                dreg, dreg, src_expr);
+            emit_flags_logic(f, expr, M68K_SIZE_L);
+        }
         break;
     }
 
@@ -3064,9 +3204,14 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             "      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));\n"
             "      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);\n"
             "      if (_quo == 0u)     g_cpu.SR |= (1u<<2);\n"
-            "    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }\n"
-            "  }\n",
+            "    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }\n",
             src_expr, dreg, dreg);
+        if (cycle_is_operand_keyed(instr)) {
+            char ce[112];
+            snprintf(ce, sizeof(ce), "%d + m68k_divu_action_cycles(_dest, _dv)", operand_keyed_fixed(instr));
+            emit_cycle_accounting_expr(f, "    ", ce);
+        }
+        fprintf(f, "  }\n");
         break;
     }
 
@@ -3099,9 +3244,14 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             "          if (_quo == 0u)     g_cpu.SR |= (1u<<2);\n"
             "        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }\n"
             "      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }\n"
-            "    }\n"
-            "  }\n",
+            "    }\n",
             src_expr, dreg, dreg);
+        if (cycle_is_operand_keyed(instr)) {
+            char ce[112];
+            snprintf(ce, sizeof(ce), "%d + m68k_divs_action_cycles(_dest, (uint16_t)_dv)", operand_keyed_fixed(instr));
+            emit_cycle_accounting_expr(f, "    ", ce);
+        }
+        fprintf(f, "  }\n");
         break;
     }
 
