@@ -104,8 +104,8 @@ Release. Promoting it (or a lean variant) to always-on is the first ring-extensi
 | 1 | 68000 instruction semantics | **STRONG — measured complete** | 83/83 mnemonics real codegen (0 stub/comment-only/mis-emit); synthetic 65,536-opcode sweep: 0 legal opcodes → MN_OTHER; real games: 0 unimplemented-instruction sites (707 flagged are all data-as-code → discovery problem). Old "stubs" verdict was a stale COVERAGE.md. Minor: EA-legality checked at discovery not codegen; 5 fallback markers bypass codegen_diag | route 5 markers through codegen_diag; refresh COVERAGE.md; prune data-as-code via executed-PC ring (Axis-6 follow-up) |
 | 2 | Cycle / timing | **STRONG — measured** | Z80-path pacing ~1.3% vs BlastEm (comparator `tools/cycle_compare/`); 68K fixed-cost CYCLE-EXACT (clown68000==PRM, validated via `insn_cost/` harness); only error = data-dependent over-count on ~0.25% of sites (register MULS/DIV/shift; ≤~1% frame bias, never correctness). Z80 DAC-loop constant-vs-alternating averaging | emit runtime operand-keyed MUL/DIV/shift costs; fix Z80 DAC period (both small codegen fixes) |
 | 3 | Interrupt / event timing | **SCANLINE (gen) / near-FRAME (V-int delivery)** | H-int genuinely per-scanline; V-int handler runs as one atomic lump at the vblank line (audio stamp-rebase compensates) | interleave the 68K V-int handler across chunk boundaries; validate take-point vs BlastEm |
-| 4 | Memory map / MMIO | **APPROXIMATE** | per-access functional; HV counter approximate; status FIFO hardcoded empty; phantom-hblank toggle hack on each status read | real per-line H-counter + FIFO state; MMIO trace diff vs BlastEm |
-| 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **MIXED — weakest axis (audio focus)** | video scanline-accurate (no mid-line split); DMA transfer instantaneous (fill/copy charge nothing); **FM faithful (residual DAC-path, sub-audible); jump-SFX boop = `sn76489.c` noise channel missing the ÷2 output flip-flop — FIXED + measurement-validated (ours-vs-BlastEm now == clown-vs-BlastEm), pending user ear-test** | user ear-test S3/S1/S2 jumps; mid-line raster split; spread DMA over charged scanlines |
+| 4 | Memory map / MMIO | **APPROXIMATE** (VDP state byte-matched BlastEm at a static screen, but HV/FIFO read paths not exercised there) | per-access functional; HV counter approximate; status FIFO hardcoded empty; phantom-hblank toggle hack on each status read | real per-line H-counter + FIFO state; MMIO trace diff vs BlastEm |
+| 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **FM + PSG audio DONE; VIDEO measured byte-identical vs BlastEm (static scene)** | **FM faithful vs Nuked (residual sub-audible DAC); PSG ÷2 noise bug FIXED+shipped; VDP VRAM/CRAM/VSRAM + framebuffer 100% identical to BlastEm at the Sega-logo static scene**; not yet measured: animated/scrolling scenes (mid-line raster split), DMA fill/copy timing | video harness at animated/raster scenes; spread DMA over charged scanlines |
 | 6 | Static-vs-dynamic recompiler fidelity | **STRONG (floor 0-div vs clown68000, default OFF)** | diff harness shares the decoder with the thing it tests (can't catch a decoder-level bug common to both); framed capsule can't run RAM-resident code | ship the planned free-running native-vs-oracle `oracle_block_diff.py`; RAM-code execution in the floor if needed |
 | 7 | Determinism | **STRONG (deterministic; good headless trace)** | none material; cross-binary native-vs-oracle is non-bit-equal *by design* (layered-parity) | keep as invariant; `--hash-frames`/WRAM-FNV gate already exists |
 
@@ -282,14 +282,26 @@ and the hardcoded FIFO-empty; build the `mmio_tally.py` analog + MMIO trace diff
 Covers VDP rendering, **YM2612 FM**, **SN76489 PSG**, Z80, DMA, controllers. Audio is the
 declared focus of the first oracle slice.
 
-### 5a. Video (VDP rendering) — **SCANLINE-ACCURATE**
+### 5a. Video (VDP rendering) — **SCANLINE-ACCURATE; MEASURED byte-identical vs BlastEm (static scene)**
 - [x] Whole-line renderer: planes A/B + window + sprites with full Genesis priority order,
   shadow/highlight, per-line H-scroll, 2-cell V-scroll, interlace mode 2
   (`genesis_vdp.c:610-740`); sprite engine per line (`:462-557`); per-line H-scroll table
   indexing reproduces mid-frame parallax (`:646-651`).
-- [ ] **No mid-line raster split** — register changes finer than one line not honored;
-  the phantom-hblank toggle (axis 4) is the workaround. — *Validate: per-vblank VRAM/CRAM
-  hash + framebuffer diff vs BlastEm; raster-effect test ROMs.*
+- [x] **MEASURED vs die-accurate BlastEm — 100% identical at a static sync point (2026-06-28).**
+  Extended BlastEm with an always-on per-frame VRAM/CRAM/VSRAM FNV hash ring + raw/framebuffer dump
+  (`tools/blastem/oracle_ring.{c,h}`, hook `vdp.c:3105`). Our side needed NO runner change — used the
+  existing TCP `read_vram`/`read_cram`/`read_vsram`/`screenshot` + the always-on 600-frame `frame_record`
+  ring (`get_frame`). Harness `tools/vdp_compare/` (content-locked alignment — match on CRAM palette, NOT
+  absolute frame; validated by a negative control that correctly caught a black inter-screen frame). At
+  the Sonic 1 Sega-logo static scene: **VRAM (all 65536 bytes) 0 diff, CRAM 0 diff, VSRAM 0 diff,
+  framebuffer pixel-identical.** → DMA/tile-upload, palette, scroll, and the whole render path are
+  byte-faithful for a held screen; the Axis-4 approximations (phantom-hblank / HV-counter / FIFO) did NOT
+  perturb this state surface.
+- [ ] **Not yet measured: ANIMATED scenes** — the Sega palette-sweep (75 CRAM states), title, and
+  in-game scrolling/sprites where sub-frame timing + DMA-order are live. The **No mid-line raster split**
+  gap (register changes finer than one line not honored; phantom-hblank toggle is the workaround) is the
+  thing those would stress. — *Next slices: re-run the harness at animated/scrolling sync points + a
+  raster-effect test ROM; expect benign sub-frame divergence per layered-parity, classify any real gap.*
 
 ### 5b. DMA — **APPROXIMATE**
 - [x] 68k→VDP freeze timed in aggregate via raster-gated access slots
@@ -737,3 +749,12 @@ cold without re-deriving.
   correctness (only gates pacing). Fix = runtime operand-keyed cycle add (codegen, deferred). Immediate-
   operand forms already exact. Axis 2 → STRONG (measured). BlastEm microbench deferred (clown IS the cost
   oracle, PRM-validated). Real-game frequency table in Axis 2.
+- 2026-06-28 — **Axis 5a/4 video first slice: VDP byte-identical vs BlastEm at a static scene.** Extended
+  BlastEm with an always-on per-frame VRAM/CRAM/VSRAM hash ring + framebuffer dump (`oracle_ring.{c,h}`,
+  hook `vdp.c:3105`); our side needed NO runner change (existing TCP read_vram/cram/vsram/screenshot +
+  600-frame frame_record). Harness `tools/vdp_compare/` uses CONTENT-LOCKED alignment (match on CRAM
+  palette, not absolute frame — absolute matching proven invalid, caught a black inter-screen frame as the
+  negative control). Sonic 1 Sega-logo static scene: VRAM (65536B) / CRAM / VSRAM all 0-diff, framebuffer
+  pixel-identical -> clean-room VDP faithful for a held screen. Not yet: animated/scrolling/sprite scenes
+  (mid-line raster split). Axis 5a -> measured-faithful (static); Axis 4 only partially exercised (HV/FIFO
+  read paths not hit by a held screen).

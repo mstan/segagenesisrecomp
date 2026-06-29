@@ -35,3 +35,6 @@ tools/cycle_compare/*
 tools/cycle_compare/insn_cost/*
 !tools/cycle_compare/insn_cost/clown_cost_harness.c
 !tools/cycle_compare/insn_cost/prm_error_model.py
+
+# accuracy worktree: VDP-compare harness scripts tracked; capture artifacts local
+tools/vdp_compare/_out/
