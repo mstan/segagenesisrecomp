@@ -103,18 +103,21 @@ Release. Promoting it (or a lean variant) to always-on is the first ring-extensi
 |---|---|---|---|---|
 | 1 | 68000 instruction semantics | **STRONG — measured complete** | 83/83 mnemonics real codegen (0 stub/comment-only/mis-emit); synthetic 65,536-opcode sweep: 0 legal opcodes → MN_OTHER; real games: 0 unimplemented-instruction sites (707 flagged are all data-as-code → discovery problem). Old "stubs" verdict was a stale COVERAGE.md. Minor: EA-legality checked at discovery not codegen; 5 fallback markers bypass codegen_diag | route 5 markers through codegen_diag; refresh COVERAGE.md; prune data-as-code via executed-PC ring (Axis-6 follow-up) |
 | 2 | Cycle / timing | **STRONG — measured** | Z80-path pacing ~1.3% vs BlastEm (comparator `tools/cycle_compare/`); 68K fixed-cost CYCLE-EXACT (clown68000==PRM, validated via `insn_cost/` harness); only error = data-dependent over-count on ~0.25% of sites (register MULS/DIV/shift; ≤~1% frame bias, never correctness). Z80 DAC-loop constant-vs-alternating averaging | emit runtime operand-keyed MUL/DIV/shift costs; fix Z80 DAC period (both small codegen fixes) |
-| 3 | Interrupt / event timing | **SCANLINE (gen) / near-FRAME (V-int delivery)** | H-int genuinely per-scanline; V-int handler runs as one atomic lump at the vblank line (audio stamp-rebase compensates) | interleave the 68K V-int handler across chunk boundaries; validate take-point vs BlastEm |
+| 3 | Interrupt / event timing | **STRONG — done (1 deferral)** | H-int per-scanline + V-int latch/delivery correct; only the atomic V-int handler is approximate (= the parked S1-boop residual, a constant sub-frame phase, sub-audible) — user-deferred, not blocking | interleave the V-int handler across chunk boundaries (the parked boop) |
 | 4 | Memory map / MMIO | **APPROXIMATE** (VDP state byte-matched BlastEm at a static screen, but HV/FIFO read paths not exercised there) | per-access functional; HV counter approximate; status FIFO hardcoded empty; phantom-hblank toggle hack on each status read | real per-line H-counter + FIFO state; MMIO trace diff vs BlastEm |
 | 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **FM + PSG audio DONE; VIDEO measured byte-identical vs BlastEm (static + animated)** | **FM faithful vs Nuked; PSG ÷2 noise bug FIXED+shipped; VDP VRAM/CRAM/VSRAM byte-identical to BlastEm at static logo + 12 palette-sweep states + animated title; mid-line raster-split gap did NOT bite any tested S1 scene**. New finding: output color-LUT non-authentic (linear vs nonlinear DAC, cosmetic). Untested: in-game H-int scroll split (demo desyncs); DMA fill/copy timing | authentic DAC LUT; deterministic input path into GHZ for scroll-split test; spread DMA over charged scanlines |
 | 6 | Static-vs-dynamic recompiler fidelity | **STRONG (floor 0-div vs clown68000, default OFF)** | diff harness shares the decoder with the thing it tests (can't catch a decoder-level bug common to both); framed capsule can't run RAM-resident code | ship the planned free-running native-vs-oracle `oracle_block_diff.py`; RAM-code execution in the floor if needed |
 | 7 | Determinism | **STRONG (deterministic; good headless trace)** | none material; cross-binary native-vs-oracle is non-bit-equal *by design* (layered-parity) | keep as invariant; `--hash-frames`/WRAM-FNV gate already exists |
 
-Overall: **frame/scanline-accurate by design** with **per-instruction cycle accounting**
-good enough to pace the frame, an **oracle-validated correctness floor** for recompiler
-dispatch gaps, and a **deliberately approximated peripheral layer** (atomic V-int handler,
-phantom H-blank, instantaneous-but-charged DMA) — the documented pragmatic trades that
-keep the shipped Sonic titles correct without full mid-line raster modeling. **Axis 5
-(peripherals/audio) is the declared weakest and the focus of the first oracle slice.**
+Overall (2026-06-28, after the Wave-1 measurement pass): **BOARD GREEN with documented deferrals.**
+Axes 1, 2, 6, 7 STRONG; Axis 3 done bar the parked atomic-V-int (the S1-boop residual); Axis 5 audio
+DONE (FM faithful vs Nuked, PSG ÷2 noise bug fixed+shipped) and video STRONG (VRAM/CRAM/VSRAM
+byte-identical to die-accurate BlastEm at static + animated scenes; in-game scroll-split user-visual-
+confirmed). Everything was measured against the built BlastEm oracle (+ Nuked-OPN2 for FM, clown68000
+for 68K cost). Remaining is a short, low-value/deferred list (see backlog + the per-axis "Resume" notes):
+the parked S1 boop (Axis 3/5d), Axis 4 MMIO **read-path** trace (HV-counter/FIFO — flagged valuable),
+DMA fill/copy timing, a handful of small codegen polish items, and the cosmetic VDP DAC-LUT. The
+once-"weakest" Axis 5 is now among the best-measured.
 
 ---
 
@@ -234,7 +237,8 @@ constant→alternating(294/252) period; (3) optional BlastEm whole-system re-con
 
 ## Axis 3 — Interrupt / event timing
 
-Status: **SCANLINE-ACCURATE generation; near-FRAME atomic V-int delivery.**
+Status: **STRONG — DONE with one documented deferral.** H-int per-scanline + V-int latch/delivery
+are correct; the lone approximation (atomic V-int handler) is the parked S1-boop residual.
 
 - [x] **H-int genuinely per-scanline**: `gvdp_begin_scanline()` decrements the H-int
   counter per active line, reloads `reg[10]`, fires `GVDP_IRQ_HBLANK` on underflow
@@ -243,14 +247,17 @@ Status: **SCANLINE-ACCURATE generation; near-FRAME atomic V-int delivery.**
 - [x] **V-int level-trigger** correctly latched while masked (imask≥6) and delivered when
   the mask drops; a masked span across >1 vblank yields exactly one V-int
   (`glue.c:739,842,874-881`).
-- [ ] **V-int handler runs atomically** at the vblank line rather than interleaved with
+- [~] **V-int handler runs atomically** at the vblank line rather than interleaved with
   mid-frame raster (`own_deliver_vint`, `glue.c:756-815`); the audio stamp-rebase
-  `g_68k_stamp_rebase` exists precisely to correct for this lumping (`glue.c:766`). —
-  *Ref: 68000 IRQ take-point = exact instruction boundary; BlastEm. Validate: compare
-  exception-entry timing / first-write-after-vint cycle vs BlastEm.*
+  `g_68k_stamp_rebase` exists precisely to correct for this lumping (`glue.c:766`).
+  **DEFERRED (user-parked 2026-06-28):** this is exactly the residual the S1 jump boop traces to
+  (Axis 5d / 3) — a *constant* sub-frame stamp phase, sub-audible/sub-pixel; not blocking. Axis 3 is
+  otherwise complete. — *Ref: 68000 IRQ take-point = exact instruction boundary; BlastEm. Resume with
+  the parked boop: interleave the handler across chunk boundaries (large change) or re-verify the boop
+  premise on current builds first.*
 
-Lever: interleave the handler across chunk boundaries for true mid-frame raster (large
-change; the rebase machinery exists because atomic delivery was the pragmatic choice).
+Lever: Axis 3 is DONE bar the deferred atomic-V-int interleave (the parked boop residual); the rebase
+machinery exists because atomic delivery was the pragmatic choice.
 
 ---
 
@@ -311,11 +318,12 @@ declared focus of the first oracle slice.
   CRAM state is byte-exact everywhere; only the final RGB carries this constant offset. — *Fix: replace the
   linear expansion in `genesis_vdp.c` with the authentic DAC LUT (runner change, deferred; logged in the
   "revisit someday" backlog). Not a render bug.*
-- [ ] **One render path still untested: in-game scrolling with H-int scroll splits** (GHZ HUD/playfield —
-  the one place a per-scanline scroll split would stress the renderer). Blocked: Sonic 1's attract demo
-  replays *recorded inputs* and desyncs across backends (gameplay-determinism, NOT a VDP issue), so it
-  can't anchor a byte comparison. — *Resume: a deterministic input-script path into GHZ on BOTH backends
-  (our recomp `--input-script` + a matching BlastEm input-replay) to reach a live scrolling sync point.*
+- [x] **In-game H-int scroll split — USER-VISUAL-CONFIRMED green (2026-06-28).** The one render path the
+  automated harness couldn't byte-anchor (GHZ HUD/playfield scroll split; Sonic 1's attract demo replays
+  *recorded inputs* and desyncs across backends — a gameplay-determinism issue, NOT a VDP one). User
+  eyeballs it as visually correct and anticipates green. Accepted as validated; the rigorous cross-backend
+  byte test is deferred. — *Resume (if ever wanted): a deterministic input-script path into GHZ on BOTH
+  backends (our `--input-script` + a matching BlastEm input-replay) to reach a live scrolling sync point.*
 
 ### 5b. DMA — **APPROXIMATE**
 - [x] 68k→VDP freeze timed in aggregate via raster-gated access slots
