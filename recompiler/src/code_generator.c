@@ -440,11 +440,21 @@ static void emit_ea_load_ex(FILE *f, const M68KInstr *instr, int ea, M68KSize sz
         }
         default:
             snprintf(out_expr, 256, "0 /* unknown EA 7/%d */", reg);
+            codegen_diag_record(CGD_EA_FALLBACK,
+                                s_diag_instr ? s_diag_instr->addr : 0,
+                                s_diag_instr ? s_diag_instr->words[0] : 0,
+                                s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                                s_diag_func_name, s_diag_func_addr);
             break;
         }
         break;
     default:
         snprintf(out_expr, 256, "0 /* unknown mode %d */", mode);
+        codegen_diag_record(CGD_EA_FALLBACK,
+                            s_diag_instr ? s_diag_instr->addr : 0,
+                            s_diag_instr ? s_diag_instr->words[0] : 0,
+                            s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                            s_diag_func_name, s_diag_func_addr);
         break;
     }
 }
@@ -521,11 +531,21 @@ static void emit_ea_addr_ex(FILE *f, const M68KInstr *instr, int ea,
         }
         default:
             snprintf(out_expr, 256, "0 /* unknown EA addr 7/%d */", reg);
+            codegen_diag_record(CGD_EA_FALLBACK,
+                                s_diag_instr ? s_diag_instr->addr : 0,
+                                s_diag_instr ? s_diag_instr->words[0] : 0,
+                                s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                                s_diag_func_name, s_diag_func_addr);
             break;
         }
         break;
     default:
         snprintf(out_expr, 256, "0 /* cannot take addr of mode %d */", mode);
+        codegen_diag_record(CGD_EA_FALLBACK,
+                            s_diag_instr ? s_diag_instr->addr : 0,
+                            s_diag_instr ? s_diag_instr->words[0] : 0,
+                            s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                            s_diag_func_name, s_diag_func_addr);
         break;
     }
 }
@@ -3188,11 +3208,21 @@ static void emit_instr(FILE *f, const GenesisRom *rom,
             }
             default:
                 snprintf(base_expr, sizeof(base_expr), "0 /* MOVEM unknown EA */");
+                codegen_diag_record(CGD_EA_FALLBACK,
+                                    s_diag_instr ? s_diag_instr->addr : 0,
+                                    s_diag_instr ? s_diag_instr->words[0] : 0,
+                                    s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                                    s_diag_func_name, s_diag_func_addr);
                 break;
             }
             break;
         default:
             snprintf(base_expr, sizeof(base_expr), "0 /* MOVEM unknown mode */");
+            codegen_diag_record(CGD_EA_FALLBACK,
+                                s_diag_instr ? s_diag_instr->addr : 0,
+                                s_diag_instr ? s_diag_instr->words[0] : 0,
+                                s_diag_instr ? s_diag_instr->mnemonic : MN_OTHER,
+                                s_diag_func_name, s_diag_func_addr);
             break;
         }
 
