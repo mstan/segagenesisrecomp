@@ -101,7 +101,7 @@ Release. Promoting it (or a lean variant) to always-on is the first ring-extensi
 
 | # | Axis | Verdict | Gap (one line) | Lever |
 |---|---|---|---|---|
-| 1 | 68000 instruction semantics | **APPROXIMATE** | broad family coverage; known stubs (MOVEP, CHK, mem-ADDX/SUBX, RTR, CMPM, CCR/SR imm), no EA-legality layer; permissive decoder buckets unknowns to `MN_OTHER` | hard-diagnostic counter on `MN_OTHER`/comment-only emits; legality matrix; fill stubs; synthetic opcode-coverage matrix vs BlastEm/clown68000 |
+| 1 | 68000 instruction semantics | **STRONG — measured complete** | 83/83 mnemonics real codegen (0 stub/comment-only/mis-emit); synthetic 65,536-opcode sweep: 0 legal opcodes → MN_OTHER; real games: 0 unimplemented-instruction sites (707 flagged are all data-as-code → discovery problem). Old "stubs" verdict was a stale COVERAGE.md. Minor: EA-legality checked at discovery not codegen; 5 fallback markers bypass codegen_diag | route 5 markers through codegen_diag; refresh COVERAGE.md; prune data-as-code via executed-PC ring (Axis-6 follow-up) |
 | 2 | Cycle / timing | **APPROXIMATE — MEASURED within ~1.3% vs die-accurate BlastEm (Z80 path)** | comparator BUILT (`tools/cycle_compare/`, 99.9% align, Δ ratio 0.9866); found Z80 DAC-loop constant(285)-vs-alternating(294/252) cost-averaging; 68K per-insn path not yet exercised (S1 boot+title is all Z80-origin); data-dependent MUL/DIV/shift still averaged | run comparator on a 68K-driven-audio window; fix Z80 DAC period; wire exact data-dependent costs |
 | 3 | Interrupt / event timing | **SCANLINE (gen) / near-FRAME (V-int delivery)** | H-int genuinely per-scanline; V-int handler runs as one atomic lump at the vblank line (audio stamp-rebase compensates) | interleave the 68K V-int handler across chunk boundaries; validate take-point vs BlastEm |
 | 4 | Memory map / MMIO | **APPROXIMATE** | per-access functional; HV counter approximate; status FIFO hardcoded empty; phantom-hblank toggle hack on each status read | real per-line H-counter + FIFO state; MMIO trace diff vs BlastEm |
@@ -120,34 +120,47 @@ keep the shipped Sonic titles correct without full mid-line raster modeling. **A
 
 ## Axis 1 — 68000 instruction semantics
 
-Status: **APPROXIMATE** — broad coverage, oracle-gated on selected funcs, but known stubs
-and no opcode-legality enforcement.
+Status: **STRONG — MEASURED COMPLETE for legal opcodes (2026-06-28).** (Upgraded from
+APPROXIMATE; that verdict was based on a stale `COVERAGE.md`.)
 
-- [x] Most MC68000 families have non-stub codegen — moves, integer arith/logical, bit
-  ops, shifts/rotates, MUL/DIV, control flow, Scc (`COVERAGE.md:31-43`).
+- [x] **Opcode-coverage matrix BUILT + synthetic sweep DONE** (`tools/opcode_coverage/`:
+  `coverage_matrix.md`, `synthetic_sweep.c`, `scan_generated.py`). **83/83 mnemonics have a REAL
+  codegen path — 0 stubs, 0 comment-only, 0 known mis-emits.** Synthetic sweep of all 65,536 base
+  opcodes through the real decoder+validator: **0 legal opcodes decode to `MN_OTHER`** (legal MC68000
+  opcode space fully covered); all 83 mnemonics reachable; `MN_OTHER` is reached ONLY by genuinely
+  illegal/reserved encodings (reserved size ss==3, undefined group-4, bit-8 MOVEQ, illegal imm-to-CCR/SR).
+- [x] **`COVERAGE.md` (repo root) is STALE** — predates Phase 4 + 7A/B/C. Everything it lists as a
+  stub/`MN_OTHER`/mis-emit is now REAL codegen (retirements documented in `codegen_diag.h:16-24`):
+  MOVEP, CHK, ABCD/SBCD/NBCD, mem-form ADDX/SUBX, RESET, TRAPV, RTR, CMPM, imm-to-CCR/SR are real;
+  `MOVE CCR,<ea>` mis-emit is FIXED (`code_generator.c:3290-3305`, both directions). — *Follow-up: refresh
+  COVERAGE.md (recompiler-repo doc, out of accuracy scope).*
 - [x] Flags computed with explicit per-size formulas; ADD widens to 64-bit for carry
-  (`code_generator.c:679-692`), SUB/CMP carry via size-masked compare (`:695-732`),
-  MOVE-like sets N/Z, clears V/C, preserves X (`:660-671`). A real ADD-flag bug here was
-  caught by the L3 oracle on `Hud_TimeRingBonus` (`code_generator.c:676-678`).
-- [x] Tier-3 interpreter mirrors codegen semantics by construction and is differentially
-  gated against clown68000 (`runner/tests/m68k_interp_diff.c:1-20,36-56`).
-- [ ] **Stubs / unimplemented**: MOVEP, ABCD/SBCD/NBCD (partial), CHK, memory-form
-  ADDX/SUBX, TRAP (ignored), STOP→`return;` (`COVERAGE.md:51-56`); collapsed to
-  `MN_OTHER`: RESET, TRAPV, RTR, CMPM, ORI/ANDI/EORI #imm→CCR/SR, ILLEGAL/A-line/F-line
-  (`:60-67`); `MOVE CCR,<ea>` mis-emitted as load-to-CCR (`:69`). — *Ref: M68000 PRM;
-  cross-check decode vs BlastEm m68k core. Validate: clown68000 per-insn diff + a
-  synthetic opcode-sweep coverage matrix.*
-- [ ] **No EA-legality matrix**: invalid encodings in data can decode as real
-  instructions; `MOVE.B` to An can mis-decode as MOVEA (`COVERAGE.md:71-83`). — *Validate:
-  fuzz random encodings, diff decoder vs BlastEm/clown68000 legality.*
-- [ ] **No synthetic instruction-coverage measurement** (PSX has
-  `build_instruction_coverage.py`). Tests are Sonic-ROM-centered (`l1_decoder_test`,
-  `l3_oracle_test`, `COVERAGE.md:104-108`). — *Lever: build the Genesis analog —
-  per-opcode bucket implemented/missing/deferred with source line ranges.*
+  (`code_generator.c:679-692`); a real ADD-flag bug here was caught by the L3 oracle on
+  `Hud_TimeRingBonus` (`:676-678`). Conservative-but-real (`REAL*`): ABCD/SBCD/NBCD/ADDX/SUBX emit
+  deterministic undefined N/V + correct sticky-Z; CHK traps loud; STOP sets SR (no halt-until-IRQ model).
+- [x] Tier-3 interpreter mirrors codegen semantics by construction, differentially gated vs clown68000
+  (`runner/tests/m68k_interp_diff.c:1-20,36-56`).
+- [x] **Real-game exposure measured (`scan_generated.py`): 707 non-real sites total, but NONE is an
+  unimplemented valid instruction** — all are data-as-code (MN_OTHER words = printable ASCII, e.g. the
+  `SEGA GENESIS` header at $000102; or illegal-EA forms only reachable from data). **S1 = 0 (clean),
+  S2 = 7 (one func `func_0087DC`, illegal EA from data); S3/S3K/S&K clusters live in data regions
+  ($04xxxx/$1Fxxxx/$24xxxx).** → This is a **function-discovery / data-as-code problem (Axis 6 / the
+  discovery pipeline), NOT an instruction-semantics gap.** — *Confirm live-vs-dead via the runtime
+  executed-PC ring (RKA-style); prune the data regions from discovery.*
+- [ ] **EA-legality screened at DISCOVERY only, not at codegen.** A centralized validator
+  (`m68k_validator.c`) is consulted by `function_finder.c` (8 sites) to stop speculative scans on illegal
+  encodings, but **codegen never re-validates**, and the decoder unconditionally classifies `MOVE.B`→An
+  as `MN_MOVEA` (`m68k_decoder.c:242`) / tolerates 68020 32-bit branches (`:688`) — both caught downstream
+  at discovery, not in the decoder. It doesn't screen JSR/JMP/bit-op/MOVEP/CHK/LEA/PEA/load-side illegal
+  EAs. — *Minor; only matters for data-as-code, which discovery already gates.*
+- [ ] **5 EA-fallback markers bypass `codegen_diag`** (`cannot take addr`, `unknown EA addr 7/r`,
+  `unknown EA 7/r`, `unknown mode m`, `MOVEM unknown EA`) — comment-only, so they escape
+  `--fail-on-unsupported` + the end-of-run summary. — *Clean follow-up: route them through `codegen_diag`
+  (recompiler change, deferred).*
 
-Lever: add a codegen hard-diagnostic counter on every `MN_OTHER`/comment-only emit so
-coverage gaps surface as a number, not silence; add the legality layer; fill the stubs;
-stand up the opcode-coverage matrix.
+Lever: instruction semantics is essentially DONE. Remaining (all minor/deferred): route the 5 fallback
+markers through `codegen_diag`; refresh the stale `COVERAGE.md`; the 707 data-as-code sites are a
+discovery/Axis-6 follow-up (confirm dead via executed-PC ring), not semantics.
 
 ---
 
@@ -699,3 +712,12 @@ cold without re-deriving.
   dense output is VDP writes. 68K cost path remains UNMEASURED — needs either a 68K-driven VDP-write
   Δ-anchor (new VDP rings both sides) or a synthetic per-instruction microbench vs BlastEm (validate the
   clown68000 cost model directly). Deferred pending user call. Frame-90 dev-trace gate confirmed harmless.
+- 2026-06-28 — **Axis 1 first slice: opcode-coverage matrix + real-game exposure (STRONG result).** Built
+  `tools/opcode_coverage/` (coverage_matrix.md, synthetic_sweep.c all-65536-opcode classifier,
+  scan_generated.py). Result: **83/83 mnemonics real codegen, 0 stub/comment-only/mis-emit; 0 legal
+  opcodes → MN_OTHER; 0 unimplemented-instruction sites in real games** (707 flagged sites all data-as-
+  code: ASCII headers / illegal EA from data; S1 clean, S2 7, S3/S&K clusters in data regions). The old
+  APPROXIMATE verdict was a stale COVERAGE.md — all listed stubs/MN_OTHER/mis-emits are now real
+  (codegen_diag.h:16-24; MOVE CCR fixed code_generator.c:3290-3305). Axis 1 → STRONG. Minor follow-ups:
+  EA-legality screened at discovery not codegen; 5 fallback markers bypass codegen_diag; refresh
+  COVERAGE.md; confirm the data-as-code sites dead via executed-PC ring (Axis-6/discovery, not semantics).
