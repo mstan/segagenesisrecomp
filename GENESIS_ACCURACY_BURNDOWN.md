@@ -105,7 +105,7 @@ Release. Promoting it (or a lean variant) to always-on is the first ring-extensi
 | 2 | Cycle / timing | **STRONG — measured** | Z80-path pacing ~1.3% vs BlastEm (comparator `tools/cycle_compare/`); 68K fixed-cost CYCLE-EXACT (clown68000==PRM, validated via `insn_cost/` harness); only error = data-dependent over-count on ~0.25% of sites (register MULS/DIV/shift; ≤~1% frame bias, never correctness). Z80 DAC-loop constant-vs-alternating averaging | emit runtime operand-keyed MUL/DIV/shift costs; fix Z80 DAC period (both small codegen fixes) |
 | 3 | Interrupt / event timing | **SCANLINE (gen) / near-FRAME (V-int delivery)** | H-int genuinely per-scanline; V-int handler runs as one atomic lump at the vblank line (audio stamp-rebase compensates) | interleave the 68K V-int handler across chunk boundaries; validate take-point vs BlastEm |
 | 4 | Memory map / MMIO | **APPROXIMATE** (VDP state byte-matched BlastEm at a static screen, but HV/FIFO read paths not exercised there) | per-access functional; HV counter approximate; status FIFO hardcoded empty; phantom-hblank toggle hack on each status read | real per-line H-counter + FIFO state; MMIO trace diff vs BlastEm |
-| 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **FM + PSG audio DONE; VIDEO measured byte-identical vs BlastEm (static scene)** | **FM faithful vs Nuked (residual sub-audible DAC); PSG ÷2 noise bug FIXED+shipped; VDP VRAM/CRAM/VSRAM + framebuffer 100% identical to BlastEm at the Sega-logo static scene**; not yet measured: animated/scrolling scenes (mid-line raster split), DMA fill/copy timing | video harness at animated/raster scenes; spread DMA over charged scanlines |
+| 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **FM + PSG audio DONE; VIDEO measured byte-identical vs BlastEm (static + animated)** | **FM faithful vs Nuked; PSG ÷2 noise bug FIXED+shipped; VDP VRAM/CRAM/VSRAM byte-identical to BlastEm at static logo + 12 palette-sweep states + animated title; mid-line raster-split gap did NOT bite any tested S1 scene**. New finding: output color-LUT non-authentic (linear vs nonlinear DAC, cosmetic). Untested: in-game H-int scroll split (demo desyncs); DMA fill/copy timing | authentic DAC LUT; deterministic input path into GHZ for scroll-split test; spread DMA over charged scanlines |
 | 6 | Static-vs-dynamic recompiler fidelity | **STRONG (floor 0-div vs clown68000, default OFF)** | diff harness shares the decoder with the thing it tests (can't catch a decoder-level bug common to both); framed capsule can't run RAM-resident code | ship the planned free-running native-vs-oracle `oracle_block_diff.py`; RAM-code execution in the floor if needed |
 | 7 | Determinism | **STRONG (deterministic; good headless trace)** | none material; cross-binary native-vs-oracle is non-bit-equal *by design* (layered-parity) | keep as invariant; `--hash-frames`/WRAM-FNV gate already exists |
 
@@ -297,11 +297,25 @@ declared focus of the first oracle slice.
   framebuffer pixel-identical.** → DMA/tile-upload, palette, scroll, and the whole render path are
   byte-faithful for a held screen; the Axis-4 approximations (phantom-hblank / HV-counter / FIFO) did NOT
   perturb this state surface.
-- [ ] **Not yet measured: ANIMATED scenes** — the Sega palette-sweep (75 CRAM states), title, and
-  in-game scrolling/sprites where sub-frame timing + DMA-order are live. The **No mid-line raster split**
-  gap (register changes finer than one line not honored; phantom-hblank toggle is the workaround) is the
-  thing those would stress. — *Next slices: re-run the harness at animated/scrolling sync points + a
-  raster-effect test ROM; expect benign sub-frame divergence per layered-parity, classify any real gap.*
+- [x] **ANIMATED scenes MEASURED faithful (2026-06-28).** Sega palette-sweep (deterministic, no input):
+  sampled 12 CRAM states across the whole sweep, content-locked our ring by exact CRAM bytes — **every
+  state 64/64 CRAM match; 11/12 VRAM/CRAM/VSRAM 0-diff** (12th is the logo→title transition boundary,
+  benign). Title screen (dynamic: Sonic hand-tap SPRITE animation + scrolling/cycling water): **VRAM
+  0-diff, VSRAM 0-diff**; CRAM differs only by 9/64 = the water palette-cycle caught at a different phase
+  (benign). **The "no mid-line raster split" gap did NOT bite** in any tested Sonic 1 scene (static logo,
+  full sweep, title) — the scanline-accurate renderer held up with zero structural divergence. New harness:
+  `tools/vdp_compare/{capture_sweep.py,catch_fb.py,match_vram.py}`.
+- [ ] **Output color-LUT is non-authentic (NEW finding, cosmetic, all scenes).** The ONLY systematic
+  framebuffer difference vs BlastEm is the 3-bit→8-bit channel expansion: ours = **linear `level×36`**,
+  BlastEm uses the **authentic nonlinear Genesis DAC curve** (max channel delta 15/255). Palette INDEX /
+  CRAM state is byte-exact everywhere; only the final RGB carries this constant offset. — *Fix: replace the
+  linear expansion in `genesis_vdp.c` with the authentic DAC LUT (runner change, deferred; logged in the
+  "revisit someday" backlog). Not a render bug.*
+- [ ] **One render path still untested: in-game scrolling with H-int scroll splits** (GHZ HUD/playfield —
+  the one place a per-scanline scroll split would stress the renderer). Blocked: Sonic 1's attract demo
+  replays *recorded inputs* and desyncs across backends (gameplay-determinism, NOT a VDP issue), so it
+  can't anchor a byte comparison. — *Resume: a deterministic input-script path into GHZ on BOTH backends
+  (our recomp `--input-script` + a matching BlastEm input-replay) to reach a live scrolling sync point.*
 
 ### 5b. DMA — **APPROXIMATE**
 - [x] 68k→VDP freeze timed in aggregate via raster-gated access slots
@@ -672,6 +686,11 @@ cold without re-deriving.
    gain offset from BlastEm (its volume table is /14, selftest RMS ~3× lower). Scale-invariant metrics
    already neutralize it; it's a reference-calibration note, not a defect. **Resume:** only if an
    absolute-level comparison vs BlastEm is ever needed.
+6. **VDP output color-LUT is non-authentic (video, cosmetic).** Our 3-bit→8-bit channel expansion is
+   linear (`level×36`) in `genesis_vdp.c`; the authentic Genesis DAC curve is nonlinear (BlastEm uses it;
+   max channel delta 15/255). Palette/CRAM state is byte-exact everywhere — only the final RGB differs by
+   this constant offset, on every scene. **Resume:** swap the linear expansion for the authentic DAC LUT
+   (small runner change). Pure visual-accuracy polish; no behavioral/gameplay effect.
 
 ## Changelog
 
@@ -758,3 +777,13 @@ cold without re-deriving.
   pixel-identical -> clean-room VDP faithful for a held screen. Not yet: animated/scrolling/sprite scenes
   (mid-line raster split). Axis 5a -> measured-faithful (static); Axis 4 only partially exercised (HV/FIFO
   read paths not hit by a held screen).
+- 2026-06-28 — **Axis 5a video SECOND slice: ANIMATED scenes faithful.** Sega palette-sweep (12 sampled
+  CRAM states, content-locked by exact CRAM): every state matched, 11/12 VRAM/CRAM/VSRAM 0-diff. Title
+  screen (sprite animation + scrolling water): VRAM/VSRAM 0-diff, CRAM differs only by water palette-cycle
+  phase. **The mid-line raster-split approximation did NOT bite any tested Sonic 1 scene** — scanline
+  renderer holds up. NEW finding: output color-LUT non-authentic (ours linear level*36 vs BlastEm's
+  nonlinear Genesis DAC curve, max 15/255; cosmetic, all scenes -> backlog item 6). GHZ attract demo not
+  byte-alignable (recorded-input demo desyncs = gameplay-determinism, not VDP) -> in-game H-int scroll
+  split remains the one untested render path (needs deterministic input into GHZ on both backends). New
+  harness: `tools/vdp_compare/{capture_sweep.py,catch_fb.py,match_vram.py}`. Axis 5a -> STRONG (static +
+  animated measured-faithful).
