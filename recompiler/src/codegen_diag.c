@@ -20,6 +20,7 @@ static const char *s_kind_names[CGD_KIND_COUNT] = {
     "BRANCH_WITHOUT_TARGET",
     "INVALID_STORE_EA",
     "MOVE_CCR_DIRECTION_AMBIGUOUS",
+    "EA_FALLBACK",
 };
 
 void codegen_diag_reset(void) {
