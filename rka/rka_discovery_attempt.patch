@@ -1,0 +1,140 @@
+diff --git a/recompiler/src/function_finder.c b/recompiler/src/function_finder.c
+index c19aaa0..1205351 100644
+--- a/recompiler/src/function_finder.c
++++ b/recompiler/src/function_finder.c
+@@ -47,6 +47,9 @@ static int s_jt_unresolved            = 0;  /* path terminated, no table    */
+ static int s_jt_twostep_sites         = 0;  /* movea+indirect idioms matched */
+ static int s_jt_twostep_tables        = 0;  /* tables yielding >=1 entry      */
+ 
++/* JSR (d8,PC,Xn.W) self-relative word-offset call-table counter. */
++static int s_jt_jsr_word_tables       = 0;  /* word-offset jsr tables enumerated */
++
+ /* Per-site record for every dispatch we couldn't enumerate. Dumped to
+  * generated/<prefix>.unresolved_jumptables.log so the user can grep
+  * disasm for these PCs and either add manual jump_table directives or
+@@ -80,8 +83,14 @@ static void record_unresolved(uint32_t pc, uint32_t base, uint16_t ext, uint8_t
+ #define JT_AUTO_MAX_ENTRIES   256
+ #define JT_AUTO_MIN_ENTRIES     2
+ 
+-/* Two-step long-pointer table walk bounds (see jt_enumerate_long). */
+-#define JT_LONG_MAX_ENTRIES    64
++/* Two-step long-pointer table walk bounds (see jt_enumerate_long). The cap
++ * is only a runaway backstop: the strong per-entry gate (non-null, even,
++ * in-ROM, legal-decoding pointer) self-terminates at the real table end, so
++ * the cap must merely be larger than any real dispatch table. RKA's master
++ * object table at $0023D8 is 391 entries; the old cap of 64 silently
++ * truncated it, leaving entries 64..390 (e.g. $02FE20 idx 83, $012F8A idx
++ * 101) undiscovered -> interior/dispatch misses for whole object classes. */
++#define JT_LONG_MAX_ENTRIES  1024
+ #define JT_LONG_LEAD_SKIP       4
+ 
+ /* Forward decl — defined later, but jt_enumerate needs to call it. */
+@@ -163,6 +172,65 @@ jt_enumerate(const GenesisRom *rom, const GameConfig *cfg,
+     return pushed;
+ }
+ 
++/* Self-relative WORD-OFFSET call table behind a computed `jsr (d8,PC,Xn.W)`.
++ *
++ * The Konami/RKA object dispatch idiom is:
++ *     move.w  table(pc,Dn.w),Dn      ; Dn = signed 16-bit offset = table[index]
++ *     jsr     table(pc,Dn.w)         ; call table + offset = the case body
++ *   table:
++ *     dc.w  body0-table, body1-table, ...   ; offsets to case-body subroutines
++ *   body0: ... rts
++ *   body1: ... rts
++ * The case bodies are self-contained subroutines (each ends in rts — they are
++ * CALLED), embedded right after the table. Because the transfer is a JSR, the
++ * targets MUST be first-class function entries (a JSR cannot become an
++ * in-function goto the way the JMP-table forms do); the boundary-splitter then
++ * carves them out of the enclosing function so call_by_address resolves them.
++ *
++ * Strong gate, safe to run unconditionally (no autodiscovery opt-in), because:
++ *  - Every real entry resolves to code WITHIN a tight window of the table base
++ *    (case bodies sit just past the table). Once the walk runs off the table
++ *    end into adjacent code/data, the next "offset" resolves far outside the
++ *    window and the walk stops. The wild garbage offsets that follow a real
++ *    table (RKA's $5F12 table: +8/+28/+48/+76 then +4146/+28672/-20330) are
++ *    rejected by the window in one step.
++ *  - Targets must be even, in-ROM, and decode as a legal MC68000 instruction.
++ * This mirrors jt_enumerate_long's strong per-entry gate for long-pointer
++ * tables, the reason that detector also runs for every game.
++ *
++ * Returns the number of targets pushed as function entries. */
++#define JT_PCRELW_WINDOW 0x800u   /* max |target-base| for a real word offset */
++
++static int
++jt_enumerate_jsr_word_table(const GenesisRom *rom, const GameConfig *cfg,
++                            FunctionList *list, uint32_t base,
++                            const M68KValidatorOptions *vopts) {
++    int pushed = 0;
++    for (int i = 0; i < JT_AUTO_MAX_ENTRIES; i++) {
++        uint32_t entry_addr = base + (uint32_t)i * 2u;
++        if (entry_addr + 1 >= rom->rom_size) break;
++        int16_t  off    = (int16_t)rom_read16(rom, entry_addr);
++        uint32_t target = (uint32_t)((int32_t)base + (int32_t)off);
++
++        /* Window gate: a real self-relative offset lands near the table. */
++        uint32_t dist = (target > base) ? (target - base) : (base - target);
++        if (dist > JT_PCRELW_WINDOW)       break;
++        if (target & 1)                    break;   /* odd = never a code start */
++        if (target >= rom->rom_size)       break;
++
++        /* Validator gate: the body's first instruction must decode legally. */
++        M68KInstr probe;
++        if (!m68k_decode(rom, target, &probe))         break;
++        if (m68k_validate(&probe, vopts) != M68K_LEGAL) break;
++
++        if (cfg && game_config_is_blacklisted(cfg, target)) continue;
++        add_function(list, target);
++        pushed++;
++        s_jt_targets_pushed++;
++    }
++    return pushed;
++}
++
+ /* Enumerate a branch-ladder jump table: a run of consecutive `bra.s`
+  * (2-byte) or `bra.w` (4-byte) trampolines that a `JMP (d8,PC,Dn.W)`
+  * dispatches into by computing base + index*stride. Each slot's ADDRESS
+@@ -507,15 +575,28 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
+                 if (jea_mode == 7 && jea_reg == 3 && instr.word_count >= 2) {
+                     int8_t   d8   = (int8_t)(instr.words[1] & 0xFF);
+                     uint32_t base = pc + 2 + (int32_t)d8;
+-                    /* The `table-N(pc,Dn)` idiom places the first slot N bytes
+-                     * past the computed base (N = the slot stride). Probe
+-                     * base, base+2, base+4 for the ladder start; first run of
+-                     * >=2 same-width BRA slots wins. */
++                    /* (a) bra-ladder form: the `table-N(pc,Dn)` idiom places the
++                     * first slot N bytes past the computed base (N = the slot
++                     * stride). Probe base, base+2, base+4 for the ladder start;
++                     * first run of >=2 same-width BRA slots wins. */
++                    int laddered = 0;
+                     for (int off = 0; off <= 4; off += 2) {
+                         if (jt_enumerate_bra_ladder(rom, cfg, list,
+-                                base + (uint32_t)off, &vopts) >= JT_AUTO_MIN_ENTRIES)
++                                base + (uint32_t)off, &vopts) >= JT_AUTO_MIN_ENTRIES) {
++                            laddered = 1;
+                             break;
++                        }
+                     }
++                    /* (b) self-relative word-offset call table (RKA object
++                     * dispatch: `move.w tbl(pc,Dn),Dn; jsr tbl(pc,Dn)`). The
++                     * case bodies are CALLED subroutines, so they must become
++                     * function entries — the JSR analogue of the JMP offset
++                     * table the codegen turns into an in-function switch.
++                     * Strong window+validator gate, safe unconditionally. */
++                    if (!laddered &&
++                        jt_enumerate_jsr_word_table(rom, cfg, list, base, &vopts)
++                            >= JT_AUTO_MIN_ENTRIES)
++                        s_jt_jsr_word_tables++;
+                 }
+             }
+ 
+@@ -732,6 +813,8 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
+     printf("[FunctionFinder] Two-step long-pointer dispatch: sites=%d "
+            "tables_enumerated=%d\n",
+            s_jt_twostep_sites, s_jt_twostep_tables);
++    printf("[FunctionFinder] JSR (d8,PC,Xn) word-offset call tables: %d\n",
++           s_jt_jsr_word_tables);
+ 
+     /* Dump unresolved dispatch sites so the user can investigate which
+      * tables the static extractor missed. The recompiler still emits

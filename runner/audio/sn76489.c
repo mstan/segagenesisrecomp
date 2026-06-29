@@ -38,6 +38,7 @@ typedef struct {
     uint8_t  noise_ctrl;       /* low 3 bits: fb-mode + rate */
     int32_t  noise_counter;
     uint16_t lfsr;
+    uint8_t  noise_ff;         /* ÷2 tone-divider flip-flop (clocks the LFSR) */
     uint8_t  noise_out;
     uint8_t  latch;            /* (chan<<1)|type of last LATCH byte */
     int32_t  lpf_y;            /* low-pass: previous output  */
@@ -113,11 +114,20 @@ static int16_t sn_render_sample(SN76489 *p)
 
     if (--p->noise_counter <= 0) {
         p->noise_counter = sn_noise_reload(p);
-        uint16_t fb = (p->noise_ctrl & 0x04)            /* 1 = white */
-                    ? ((p->lfsr ^ (p->lfsr >> 3)) & 1)  /* taps bit0 ^ bit3 */
-                    : (p->lfsr & 1);                    /* periodic */
-        p->lfsr = (uint16_t)((p->lfsr >> 1) | (fb << 15));
-        p->noise_out = (uint8_t)(p->lfsr & 1);
+        /* The noise generator drives an internal /2 flip-flop (exactly like a
+         * tone channel's square output); the LFSR is clocked only on that
+         * flip-flop's rising edge, i.e. once per TWO counter periods. Without
+         * this the LFSR ran twice as fast (noise an octave too high) — the
+         * jump-SFX "boop". Matches BlastEm psg.c output_state[3] and clownmdemu
+         * psg.c fake_output_bit. */
+        p->noise_ff ^= 1;
+        if (p->noise_ff) {
+            uint16_t fb = (p->noise_ctrl & 0x04)            /* 1 = white */
+                        ? ((p->lfsr ^ (p->lfsr >> 3)) & 1)  /* taps bit0 ^ bit3 */
+                        : (p->lfsr & 1);                    /* periodic */
+            p->lfsr = (uint16_t)((p->lfsr >> 1) | (fb << 15));
+            p->noise_out = (uint8_t)(p->lfsr & 1);
+        }
     }
     mix += p->noise_out ? SN_VOL[p->vol[3]] : -SN_VOL[p->vol[3]];
 

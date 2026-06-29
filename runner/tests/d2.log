@@ -1,0 +1,22 @@
+[diff] ROM ../../sonicthehedgehog2/sonic2.bin: 1048576 bytes
+[diff] 5409 entries x 4 seeds
+[UNIMPL] entry $00155E seed 1: opcode $0000 at $FF8118
+[UNIMPL] entry $00156A seed 0: opcode $0000 at $FF8084
+[UNIMPL] entry $00156A seed 1: opcode $0000 at $FF8290
+[UNIMPL] entry $0015AA seed 0: opcode $0000 at $FF8180
+[UNIMPL] entry $0015AA seed 1: opcode $0000 at $FF8394
+[UNIMPL] entry $0015B6 seed 2: opcode $0000 at $FF855C
+[UNIMPL] entry $0015B6 seed 3: opcode $0000 at $FF8294
+[UNIMPL] entry $0015C0 seed 2: opcode $0000 at $FF8504
+[UNIMPL] entry $0015C0 seed 3: opcode $0000 at $FF82CC
+[UNIMPL] entry $005B1A seed 1: opcode $02F4 at $0057B8
+[UNIMPL] entry $005EBA seed 2: opcode $000A at $006E54
+[UNIMPL] entry $005EBA seed 3: opcode $000A at $006E54
+[UNIMPL] entry $005FC8 seed 2: opcode $000C at $004398
+[UNIMPL] entry $00603A seed 0: opcode $000A at $006E54
+[UNIMPL] entry $0062D6 seed 0: opcode $0B0B at $006E10
+[UNIMPL] entry $0347EE seed 2: opcode $000A at $0347FA
+[UNIMPL] entry $03E23E seed 2: opcode $00C0 at $03E274
+
+[diff] RESULT  pass=20831 (terminated=18992) diverge=0 unimpl=17 skip_fault=788 bcd_undef=0
+[diff] last unimpl opcode $00C0 at $03E274

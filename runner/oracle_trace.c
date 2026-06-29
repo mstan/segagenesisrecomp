@@ -70,6 +70,33 @@ static int t3_range_hit(uint32_t pc)
  * clown68000 interpreter's main loop. */
 uint64_t g_oracle_insn_count = 0;
 
+/* ---- Always-on executed-PC coverage ----
+ * Non-evicting; accumulates the COMPLETE executed_pc_set across the whole
+ * session. 68K instruction fetches are word-aligned, so one bit per even
+ * address. ROM covers the full 4 MB address window ($000000-$3FFFFF);
+ * WRAM covers $FF0000-$FFFFFF (mirrors fold via the 16-bit mask). */
+#define EXEC_ROM_BYTES   0x400000u   /* 4 MB max ROM window         */
+#define EXEC_RAM_BYTES   0x010000u   /* 64 KB WRAM                  */
+static uint8_t  s_exec_rom_bits[EXEC_ROM_BYTES / 2 / 8];   /* 256 KB */
+static uint8_t  s_exec_ram_bits[EXEC_RAM_BYTES / 2 / 8];   /*   4 KB */
+static uint64_t s_exec_rom_hits = 0, s_exec_ram_hits = 0, s_exec_other = 0;
+
+static inline void exec_cov_mark(uint32_t pc)
+{
+    pc &= 0xFFFFFFu;
+    if (pc < EXEC_ROM_BYTES) {
+        uint32_t bit = pc >> 1;
+        s_exec_rom_bits[bit >> 3] |= (uint8_t)(1u << (bit & 7u));
+        s_exec_rom_hits++;
+    } else if (pc >= 0xFF0000u) {
+        uint32_t bit = (pc & 0xFFFFu) >> 1;
+        s_exec_ram_bits[bit >> 3] |= (uint8_t)(1u << (bit & 7u));
+        s_exec_ram_hits++;
+    } else {
+        s_exec_other++;   /* unexpected region (mapped I/O etc.) */
+    }
+}
+
 /* Phase 3: oracle break/step state. */
 #define ORACLE_BREAK_MAX 128
 static struct {
@@ -202,6 +229,7 @@ uint64_t oracle_snap_insn_at(int i)
 
 static void t3_pre_insn(cc_u32l pc)
 {
+    exec_cov_mark((uint32_t)pc);   /* always-on coverage, independent of ranges */
     g_oracle_insn_count++;
     if ((g_oracle_insn_count % ORACLE_SNAP_INTERVAL) == 0)
         oracle_take_snapshot();
@@ -318,6 +346,49 @@ int t3_format_entry(uint32_t i, char *buf, size_t buflen)
         (unsigned)e->a[4], (unsigned)e->a[5],
         (unsigned)e->a[6], (unsigned)e->a[7]);
     return (n < 0 || (size_t)n >= buflen) ? -1 : n;
+}
+
+/* Dump both coverage bitmaps to a self-describing binary file. Called
+ * once at process exit (see main.c --exec-coverage-out). */
+void oracle_exec_coverage_write(const char *path)
+{
+    if (!path || !*path) return;
+    FILE *f = fopen(path, "wb");
+    if (!f) {
+        fprintf(stderr, "[EXECCOV] cannot open %s for write\n", path);
+        return;
+    }
+    const char magic[4] = { 'E', 'C', 'O', 'V' };
+    uint32_t version    = 1u;
+    uint32_t rom_window = EXEC_ROM_BYTES;
+    uint32_t ram_window = EXEC_RAM_BYTES;
+    uint32_t rom_bytes  = (uint32_t)sizeof(s_exec_rom_bits);
+    uint32_t ram_bytes  = (uint32_t)sizeof(s_exec_ram_bits);
+    fwrite(magic, 1, 4, f);
+    fwrite(&version,        sizeof version,        1, f);
+    fwrite(&rom_window,     sizeof rom_window,     1, f);
+    fwrite(&ram_window,     sizeof ram_window,     1, f);
+    fwrite(&rom_bytes,      sizeof rom_bytes,      1, f);
+    fwrite(&ram_bytes,      sizeof ram_bytes,      1, f);
+    fwrite(&s_exec_rom_hits, sizeof s_exec_rom_hits, 1, f);
+    fwrite(&s_exec_ram_hits, sizeof s_exec_ram_hits, 1, f);
+    fwrite(&s_exec_other,    sizeof s_exec_other,    1, f);
+    fwrite(s_exec_rom_bits, 1, rom_bytes, f);
+    fwrite(s_exec_ram_bits, 1, ram_bytes, f);
+    fclose(f);
+
+    uint64_t rom_addrs = 0, ram_addrs = 0;
+    for (uint32_t i = 0; i < rom_bytes; i++)
+        for (uint8_t b = s_exec_rom_bits[i]; b; b >>= 1) rom_addrs += (b & 1u);
+    for (uint32_t i = 0; i < ram_bytes; i++)
+        for (uint8_t b = s_exec_ram_bits[i]; b; b >>= 1) ram_addrs += (b & 1u);
+    fprintf(stderr,
+        "[EXECCOV] wrote %s: %llu distinct ROM PCs, %llu distinct WRAM PCs "
+        "(%llu rom-hits, %llu ram-hits, %llu other)\n",
+        path,
+        (unsigned long long)rom_addrs, (unsigned long long)ram_addrs,
+        (unsigned long long)s_exec_rom_hits, (unsigned long long)s_exec_ram_hits,
+        (unsigned long long)s_exec_other);
 }
 
 #endif /* SONIC_REVERSE_DEBUG && SONIC_ORACLE_BUILD */

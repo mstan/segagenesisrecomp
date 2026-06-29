@@ -1,0 +1,57 @@
+{
+  "tool": "zone_smoke.py",
+  "version": 1,
+  "game": "rka",
+  "input_script": "(boot)",
+  "hash_frames": 60,
+  "fbhashes": [
+    {
+      "frame": 60,
+      "hash": "0x2A0B972960C5E325"
+    },
+    {
+      "frame": 120,
+      "hash": "0x1CAF9283EB7F14E5"
+    },
+    {
+      "frame": 180,
+      "hash": "0x1CAF9283EB7F14E5"
+    },
+    {
+      "frame": 240,
+      "hash": "0x1CAF9283EB7F14E5"
+    },
+    {
+      "frame": 300,
+      "hash": "0x158AF381BE42E7B1"
+    },
+    {
+      "frame": 360,
+      "hash": "0xAB6F6FDD5C1F54A9"
+    },
+    {
+      "frame": 420,
+      "hash": "0xAB6F6FDD5C1F54A9"
+    },
+    {
+      "frame": 480,
+      "hash": "0xC4CE11D2917D3F3D"
+    },
+    {
+      "frame": 540,
+      "hash": "0x5A22F9EE16A5658D"
+    },
+    {
+      "frame": 600,
+      "hash": "0x7A30039C88C0BFC5"
+    },
+    {
+      "frame": 660,
+      "hash": "0x953F443DF1FD3FE1"
+    },
+    {
+      "frame": 720,
+      "hash": "0xDBCE57A6310A2CBD"
+    }
+  ]
+}

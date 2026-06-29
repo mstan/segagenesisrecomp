@@ -957,6 +957,22 @@ static uint64_t sram_content_hash(void)
     return h;
 }
 
+/* FNV-1a-64 over the active region of s_framebuf (the verified raw VDP output,
+ * never the present-time color copy). Shared by the fixed-frame [FBHASH] path
+ * and the state-anchored [MODEHASH] path. */
+static uint64_t framebuf_active_hash(void)
+{
+    uint64_t h = 0xCBF29CE484222325ULL;
+    const uint8_t *p = (const uint8_t *)s_framebuf;
+    int row_bytes = s_screen_width * (int)sizeof(uint32_t);
+    int stride    = MAX_SCREEN_WIDTH * (int)sizeof(uint32_t);
+    for (int y = 0; y < s_screen_height; y++) {
+        const uint8_t *row = p + (size_t)y * stride;
+        for (int x = 0; x < row_bytes; x++) { h ^= row[x]; h *= 0x100000001B3ULL; }
+    }
+    return h;
+}
+
 static void runner_sram_flush(void)
 {
     if (!s_sram_active) return;
@@ -994,9 +1010,26 @@ static void runner_sram_init_and_load(const char *rom_path)
     FILE *f = fopen(s_sram_path, "rb");
     if (f) {
         size_t n = sram_size();
-        size_t got = fread(sram_buf(), 1, n, f);
+        /* Validate the file SIZE before loading. A .srm whose length doesn't
+         * match this cart's SRAM size is truncated, oversized, or from another
+         * cart; splicing it in leaves partial/foreign bytes in SRAM and the game
+         * can boot into a corrupt save state. Reject -> start fresh (the buffer
+         * keeps its power-on contents). Game-agnostic: only the size is checked
+         * here — per-save semantic validity (slot checksums, etc.) is the game's
+         * own responsibility, so a correctly-sized but game-"bad" save still
+         * loads (the game must handle that). */
+        fseek(f, 0, SEEK_END);
+        long fsz = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        if (fsz != (long)n) {
+            fprintf(stderr, "[SRAM] IGNORING %s — file %ld B != cart SRAM %zu B "
+                    "(truncated/oversized/foreign); starting fresh\n",
+                    s_sram_path, fsz, n);
+        } else {
+            size_t got = fread(sram_buf(), 1, n, f);
+            fprintf(stderr, "[SRAM] loaded %zu/%zu bytes from %s\n", got, n, s_sram_path);
+        }
         fclose(f);
-        fprintf(stderr, "[SRAM] loaded %zu/%zu bytes from %s\n", got, n, s_sram_path);
     } else {
         fprintf(stderr, "[SRAM] no save file yet (%s) — starting fresh\n", s_sram_path);
     }
@@ -1278,6 +1311,13 @@ int main(int argc, char *argv[])
     const char *mem_write_log_spec = NULL;
     const char *wav_path = NULL;
 
+    /* --exec-coverage-out PATH — oracle build only. At exit, dump the
+     * always-on executed-PC coverage bitmaps (ROM + WRAM) to a binary
+     * file. This is the discovery runtime oracle's guaranteed-code
+     * positive set; tools/rka decode it into address lists. No-op on
+     * native (the interpreter that feeds the coverage isn't running). */
+    const char *exec_cov_out = NULL;
+
     /* Headless smoke / framebuffer-hash assertion mode. When --hash-frames
      * is set, emit a [FBHASH] line every N wall frames with an FNV-1a-64
      * fingerprint of the framebuffer's active region. Used by CI / golden
@@ -1285,6 +1325,7 @@ int main(int argc, char *argv[])
      * Pairs naturally with --max-frames; together they make the runner a
      * one-shot regression test. */
     uint32_t hash_frames = 0;
+    int      hash_on_mode = 0;   /* --hash-on-mode: hash on Game_Mode transitions (pacing-invariant) */
 
     /* --input-script PATH — load a .input scripting file (button
      * timeline + RAM assertions + EXIT). See runner/input_script.h
@@ -1342,8 +1383,12 @@ int main(int argc, char *argv[])
             interlace_display_cli = argv[i] + 20;
         } else if (strcmp(argv[i], "--hash-frames") == 0 && i + 1 < argc) {
             hash_frames = (uint32_t)atol(argv[++i]);
+        } else if (strcmp(argv[i], "--hash-on-mode") == 0) {
+            hash_on_mode = 1;
         } else if (strcmp(argv[i], "--input-script") == 0 && i + 1 < argc) {
             input_script_path = argv[++i];
+        } else if (strcmp(argv[i], "--exec-coverage-out") == 0 && i + 1 < argc) {
+            exec_cov_out = argv[++i];
         } else if (strncmp(argv[i], "--audio-backend=", 16) == 0) {
             const char *v = argv[i] + 16;
             if      (strcmp(v, "ours")       == 0) s_audio_backend = AUDIO_BACKEND_OURS;
@@ -1391,7 +1436,7 @@ int main(int argc, char *argv[])
          * ROM and no automation/headless flag (preserves every scripted dev /
          * CI invocation in CLAUDE.md). */
         int positional_rom = (rom_path != NULL);
-        int automation = (max_frames || hash_frames || input_script_path ||
+        int automation = (max_frames || hash_frames || hash_on_mode || input_script_path ||
                           snd_dump_frame || snd_dump_vint || target_fps_cli != 0.0 ||
                           mem_write_log_spec || wav_path || s_script_start_frame ||
                           s_script_right_frame || debug_port_cli || start_turbo ||
@@ -1882,6 +1927,8 @@ int main(int argc, char *argv[])
     int running = 1;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
     uint32_t frame_num = 0;
+    int      mode_prev = -1;     /* --hash-on-mode: last Game_Mode seen (-1 = none yet) */
+    uint32_t mode_seq  = 0;      /* --hash-on-mode: transition sequence counter */
     Uint32 frame_start = SDL_GetTicks();
     const Uint32 frame_ms = 1000u / 60u;   /* ~16 ms at 60 Hz */
 
@@ -2275,23 +2322,33 @@ int main(int argc, char *argv[])
         /* FNV-1a-64 hash of the framebuffer's active region. Emitted
          * every `hash_frames` frames when --hash-frames is set so CI /
          * golden-image comparison can detect rendering regressions
-         * without a human watching the screen. Cheap (one full pass
-         * over the active pixels per N frames). */
+         * without a human watching the screen. NOTE: fixed-frame sampling is
+         * drift-fragile — any timing change slides content past the sample
+         * points (see GENESIS_ACCURACY_BURNDOWN.md item 8). Prefer
+         * --hash-on-mode for a pacing-invariant regression guard. */
         if (hash_frames > 0 && (frame_num % hash_frames) == 0) {
-            uint64_t h = 0xCBF29CE484222325ULL;
-            const uint8_t *p = (const uint8_t *)s_framebuf;
-            int row_bytes = s_screen_width * (int)sizeof(uint32_t);
-            int stride    = MAX_SCREEN_WIDTH * (int)sizeof(uint32_t);
-            for (int y = 0; y < s_screen_height; y++) {
-                const uint8_t *row = p + (size_t)y * stride;
-                for (int x = 0; x < row_bytes; x++) {
-                    h ^= row[x];
-                    h *= 0x100000001B3ULL;
-                }
-            }
             fprintf(stderr, "[FBHASH] frame=%u w=%d h=%d hash=0x%016llX\n",
                     frame_num, s_screen_width, s_screen_height,
-                    (unsigned long long)h);
+                    (unsigned long long)framebuf_active_hash());
+        }
+
+        /* State-anchored hash: emit a framebuffer hash on each Game_Mode
+         * TRANSITION rather than at fixed wall frames. The transition sequence
+         * is deterministic; only its wall-frame timing drifts, so anchoring to
+         * "the game reached state X" makes the guard immune to pacing drift.
+         * Tag carries the sequence index + the mode so the harness compares
+         * like-for-like (seq, mode), never absolute frame. */
+        if (hash_on_mode && g_game_layout.game_mode_addr) {
+            int mode = (int)m68k_read8(g_game_layout.game_mode_addr);
+            if (mode != mode_prev) {
+                fprintf(stderr,
+                        "[MODEHASH] seq=%u mode=0x%02X frame=%u w=%d h=%d hash=0x%016llX\n",
+                        mode_seq, (unsigned)mode, frame_num,
+                        s_screen_width, s_screen_height,
+                        (unsigned long long)framebuf_active_hash());
+                mode_prev = mode;
+                mode_seq++;
+            }
         }
 
         /* Persist battery SRAM to disk shortly after the game writes a save. */
@@ -2365,6 +2422,18 @@ int main(int argc, char *argv[])
       fprintf(stderr, "[VBLA] cvblank_fires=%llu VBla_Exit=%d VBla_Music=%d loc_B88=%d\n",
               (unsigned long long)g_cvblank_fires_total,
               g_dbg_b64_count, g_dbg_b5e_count, g_dbg_b88_count); }
+#endif
+
+    /* --- Discovery runtime oracle: dump executed-PC coverage --- */
+#if SONIC_REVERSE_DEBUG && defined(SONIC_ORACLE_BUILD)
+    if (exec_cov_out) {
+        extern void oracle_exec_coverage_write(const char *path);
+        oracle_exec_coverage_write(exec_cov_out);
+    }
+#else
+    if (exec_cov_out)
+        fprintf(stderr, "[EXECCOV] --exec-coverage-out requires the oracle "
+                        "build (interpreter coverage); ignored\n");
 #endif
 
     /* --- Cleanup --- */

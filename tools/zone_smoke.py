@@ -58,22 +58,40 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-SUBMODULE_ROOT = SCRIPT_DIR.parent  # segagenesisrecomp/
-WORKSPACE_ROOT = SUBMODULE_ROOT.parent.parent  # F:/Projects/segagenesisrecomp
+SUBMODULE_ROOT = SCRIPT_DIR.parent  # segagenesisrecomp/ (the engine repo)
 
-# Where each release repo's built exe lives. The smoke harness runs from
-# inside the exe's directory so it picks up debug.ini / annotations / ROM
-# the way the user does when they double-click.
+# The game release repos sit beside the engine; the exact nesting differs by
+# checkout (engine-top-level + junctions vs submodule-under-release-repo), so
+# resolve the exe against several candidate workspace roots rather than assume
+# one. The smoke harness runs from inside the exe's directory so it picks up
+# debug.ini / annotations / ROM the way the user does when they double-click.
+CANDIDATE_ROOTS = [
+    SUBMODULE_ROOT.parent,          # engine-top-level layout: F:/Projects/segagenesisrecomp
+    SUBMODULE_ROOT.parent.parent,   # submodule-under-release-repo layout
+]
+
 GAMES = {
-    "sonic1": {
-        "exe_path":    WORKSPACE_ROOT / "SonicTheHedgehogRecomp"  / "build" / "Release" / "SonicTheHedgehogRecomp.exe",
-        "rom_name":    "sonic.bin",
-    },
-    "sonic2": {
-        "exe_path":    WORKSPACE_ROOT / "SonicTheHedgehog2Recomp" / "build" / "Release" / "SonicTheHedgehog2Recomp.exe",
-        "rom_name":    "sonic2.bin",
-    },
+    "sonic1": {"repo": "SonicTheHedgehogRecomp",  "exe_name": "SonicTheHedgehogRecomp.exe",  "rom_name": "sonic.bin",  "game_dir": "sonicthehedgehog"},
+    "sonic2": {"repo": "SonicTheHedgehog2Recomp", "exe_name": "SonicTheHedgehog2Recomp.exe", "rom_name": "sonic2.bin", "game_dir": "sonicthehedgehog2"},
+    "rka":    {"repo": "RocketKnightAdventuresRecomp", "exe_name": "RKARecomp.exe", "rom_name": "rka.bin", "game_dir": "rka"},
 }
+
+
+def resolve_exe(game: str, override: str | None) -> Path:
+    if override:
+        return Path(override).resolve()
+    cfg = GAMES[game]
+    tried = []
+    for root in CANDIDATE_ROOTS:
+        cand = root / cfg["repo"] / "build" / "Release" / cfg["exe_name"]
+        tried.append(cand)
+        if cand.is_file():
+            return cand
+    # Return the first candidate so the caller's not-found error lists a path.
+    raise FileNotFoundError(
+        "runner exe not found; tried:\n  " + "\n  ".join(str(t) for t in tried)
+        + "\nbuild the project first, or pass --exe <path>"
+    )
 
 # `[FBHASH] frame=12 w=320 h=224 hash=0x1234567890ABCDEF`
 FBHASH_RE = re.compile(
@@ -81,26 +99,25 @@ FBHASH_RE = re.compile(
 )
 
 
-def run_smoke(game: str, input_script: Path, hash_frames: int,
-              max_frames: int, timeout: float, keep_log: bool):
+def run_smoke(game: str, input_script, hash_frames: int,
+              max_frames: int, timeout: float, keep_log: bool,
+              exe_override=None):
     cfg = GAMES[game]
-    exe: Path = cfg["exe_path"]
-    if not exe.is_file():
-        raise FileNotFoundError(
-            f"runner exe not found at {exe} — build the project first"
-        )
+    exe: Path = resolve_exe(game, exe_override)
     rom = exe.parent / cfg["rom_name"]
     if not rom.is_file():
         raise FileNotFoundError(
             f"ROM {cfg['rom_name']} not next to exe at {rom}"
         )
 
-    args = [
-        str(exe),
-        cfg["rom_name"],
-        "--input-script", str(input_script.resolve()),
-        "--hash-frames", str(hash_frames),
-    ]
+    args = [str(exe), cfg["rom_name"], "--hash-frames", str(hash_frames)]
+    if input_script is not None:
+        args += ["--input-script", str(input_script.resolve())]
+    else:
+        # No scripted flow (e.g. a boot/title golden test): run headless and
+        # rely on --max-frames to end the run. --no-launcher + --turbo keep it
+        # deterministic and unattended.
+        args += ["--no-launcher", "--turbo"]
     if max_frames > 0:
         args += ["--max-frames", str(max_frames)]
 
@@ -181,8 +198,10 @@ def diff_fbhashes(baseline, current):
 def main(argv):
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--game", choices=sorted(GAMES), required=True)
-    p.add_argument("--input", required=True,
-                   help="path to .input script (relative to repo or absolute)")
+    p.add_argument("--input", default=None,
+                   help="path to .input script (relative to repo or absolute). "
+                        "Omit for a no-input boot/title golden test (requires "
+                        "--max-frames).")
     p.add_argument("--baseline", default=None,
                    help="baseline JSON path (default: <input>.smoke_baseline.json)")
     p.add_argument("--write-baseline", action="store_true",
@@ -195,22 +214,34 @@ def main(argv):
                    help="seconds to wait for the runner to exit (default 300)")
     p.add_argument("--keep-log", action="store_true",
                    help="save runner stdout/stderr to <input>.smoke.log")
+    p.add_argument("--exe", default=None,
+                   help="explicit path to the runner exe (overrides auto-resolve)")
     args = p.parse_args(argv)
 
-    input_path = Path(args.input).resolve()
-    if not input_path.is_file():
-        print(f"[zone_smoke] input script not found: {input_path}", file=sys.stderr)
-        return 2
+    if args.input is not None:
+        input_path = Path(args.input).resolve()
+        if not input_path.is_file():
+            print(f"[zone_smoke] input script not found: {input_path}", file=sys.stderr)
+            return 2
+    else:
+        input_path = None
+        if args.max_frames <= 0:
+            print("[zone_smoke] --max-frames is required when --input is omitted "
+                  "(no EXIT directive to end the run)", file=sys.stderr)
+            return 2
 
-    baseline_path = (
-        Path(args.baseline).resolve() if args.baseline
-        else input_path.with_suffix(".smoke_baseline.json")
-    )
+    if args.baseline:
+        baseline_path = Path(args.baseline).resolve()
+    elif input_path is not None:
+        baseline_path = input_path.with_suffix(".smoke_baseline.json")
+    else:
+        game_dir = SUBMODULE_ROOT / GAMES[args.game]["game_dir"]
+        baseline_path = game_dir / f"{args.game}_boot_smoke_baseline.json"
 
     try:
         fbhashes, rc = run_smoke(
             args.game, input_path, args.hash_frames, args.max_frames,
-            args.timeout, args.keep_log,
+            args.timeout, args.keep_log, args.exe,
         )
     except (FileNotFoundError, RuntimeError) as e:
         print(f"[zone_smoke] {e}", file=sys.stderr)
@@ -231,7 +262,7 @@ def main(argv):
         "tool": "zone_smoke.py",
         "version": 1,
         "game": args.game,
-        "input_script": str(input_path.name),
+        "input_script": input_path.name if input_path is not None else "(boot)",
         "hash_frames": args.hash_frames,
         "fbhashes": fbhashes,
     }

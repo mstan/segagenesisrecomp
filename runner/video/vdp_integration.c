@@ -5,6 +5,7 @@
  */
 #include "genesis_vdp.h"
 #include "vdp_integration.h"
+#include "genesis_dac.h"  /* authentic Genesis output-DAC color ladder */
 #include <string.h>
 
 /* Authoritative DMA-source word read, provided by glue.c (ROM + live work
@@ -15,21 +16,12 @@ static GVDP     g_gvdp;
 static uint32_t g_cram_argb[GVDP_TOTAL_PALETTE];   /* 192 entries (N/SH/HL)   */
 static int      g_inited;
 
-static int clamp8(int v) { return v < 0 ? 0 : (v > 255 ? 255 : v); }
-
-/* Genesis 9-bit BGR -> ARGB8888 at one of three brightness levels.
- * normal: channel*36 (0..252); shadow: half; highlight: upper half. */
+/* Genesis 9-bit BGR -> ARGB8888 at one of three brightness levels
+ * (0 normal, 1 shadow, 2 highlight) via the authentic nonlinear Genesis DAC
+ * ladder (genesis_dac.h), matching BlastEm. */
 static uint32_t bgr9_to_argb(uint16_t c, int level)
 {
-    int r = (c >> 1) & 7, g = (c >> 5) & 7, b = (c >> 9) & 7;
-    int scale, off;
-    if      (level == 1) { scale = 18; off = 0;   }   /* shadow    */
-    else if (level == 2) { scale = 18; off = 130; }   /* highlight */
-    else                 { scale = 36; off = 0;   }   /* normal    */
-    return 0xFF000000u
-         | ((uint32_t)clamp8(off + r * scale) << 16)
-         | ((uint32_t)clamp8(off + g * scale) << 8)
-         |  (uint32_t)clamp8(off + b * scale);
+    return genesis_dac_cram_to_argb(c, level);
 }
 
 static void colour_cb(void *user, unsigned index, uint16_t bgr9)

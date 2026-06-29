@@ -28,6 +28,12 @@
 /* genesis_runtime.h interface */
 #include "genesis_runtime.h"
 
+/* Tier-3 clean-room 68000 interpreter — the runtime correctness floor. On a
+ * dispatch miss the native build used to silently no-op the missed function;
+ * the floor runs it correctly instead (validated 0-divergence vs clown68000).
+ * Permissive/AGPL-free: reuses the recompiler's own decoder. */
+#include "m68k_interp.h"
+
 /* clownmdemu bus layer (oracle/hybrid builds only — native has no
  * clownmdemu include paths; the own backend routes the bus through
  * genesis_bus.c instead) */
@@ -201,6 +207,7 @@ void (*g_mem_write_trace_fn)(uint32_t byte_address, uint8_t value, uint32_t targ
 
 #define INSN_WATCHDOG_LIMIT 20000000ull
 static uint64_t s_insn_watchdog_base = 0;
+static void dump_bus_ring(void);   /* defined after the bus ring below; both watchdogs use it */
 
 static void instruction_watchdog_reset(void)
 {
@@ -235,9 +242,17 @@ static void instruction_watchdog_check(void)
             g_machine.bus.z80_busreq, g_machine.bus.z80_reset_off,
             (unsigned)g_machine.bus.z80_bank, nz_z80ram,
             g_ram[0xF00D], g_ram[0xF00A], g_ram[0xF00B]);
+        /* Z80 driver entry bytes — decode why z80pc is stuck. */
+        fprintf(stderr, "[OWN-DIAG] z80_ram[0..0x1F]:");
+        for (int i = 0; i < 0x20; i++) fprintf(stderr, " %02X", g_machine.bus.z80_ram[i]);
+        fprintf(stderr, "  | around z80pc[$%04X-8..+8]:", (unsigned)g_machine.z80.pc);
+        for (int i = (int)g_machine.z80.pc - 8; i <= (int)g_machine.z80.pc + 8; i++)
+            if (i >= 0 && i < 0x2000) fprintf(stderr, " %02X", g_machine.bus.z80_ram[i]);
+        fprintf(stderr, "\n");
     }
 #endif
     crash_report_dump_persistent(reason, &g_cpu, 0, 0, g_frame_count);
+    dump_bus_ring();   /* last 64 bus accesses — pins what a non-yielding spin is polling */
     exit(2);
 }
 
@@ -269,6 +284,24 @@ static inline void bus_ring_push(uint32_t addr, uint8_t kind) {
 }
 /* kind: 0=R8 1=R16 2=R32 3=W8 4=W16 5=W32 */
 
+/* Dump the always-on bus-access ring (low-level access pattern) — the post-hoc
+ * view of what a stall is touching. Called by BOTH watchdogs (bus + instruction)
+ * so a non-yielding spin reveals exactly what it is polling. */
+static void dump_bus_ring(void)
+{
+    static const char *kind_str[] = {"R8","R16","R32","W8","W16","W32"};
+    uint64_t total = s_bus_ring_total;
+    uint32_t window = (total < BUS_RING_SIZE) ? (uint32_t)total : BUS_RING_SIZE;
+    fprintf(stderr, "\n  Bus ring (last %u of %llu accesses):\n",
+            window, (unsigned long long)total);
+    for (uint32_t i = 0; i < window; i++) {
+        uint32_t idx = (s_bus_ring_head - window + i) & (BUS_RING_SIZE - 1);
+        const BusRingEntry *e = &s_bus_ring[idx];
+        const char *k = (e->kind < 6) ? kind_str[e->kind] : "??";
+        fprintf(stderr, "    [%2u] %s $%06X\n", i, k, e->addr);
+    }
+}
+
 static void watchdog_check(uint32_t addr, int is_write, uint32_t val)
 {
     (void)val;
@@ -280,24 +313,7 @@ static void watchdog_check(uint32_t addr, int is_write, uint32_t val)
              "watchdog: %u bus accesses without yield", s_watchdog_counter);
 
     crash_report_dump_persistent(reason, &g_cpu, addr, is_write, g_frame_count);
-
-    /* Also dump the bus-access ring (low-level access pattern) — useful
-     * for spin-loop classification when crash_report's symbol-resolved
-     * trail isn't enough. */
-    {
-        static const char *kind_str[] = {"R8","R16","R32","W8","W16","W32"};
-        uint64_t total = s_bus_ring_total;
-        uint32_t window = (total < BUS_RING_SIZE) ? (uint32_t)total : BUS_RING_SIZE;
-        fprintf(stderr, "\n  Bus ring (last %u of %llu accesses):\n",
-                window, (unsigned long long)total);
-        for (uint32_t i = 0; i < window; i++) {
-            uint32_t idx = (s_bus_ring_head - window + i) & (BUS_RING_SIZE - 1);
-            const BusRingEntry *e = &s_bus_ring[idx];
-            const char *k = (e->kind < 6) ? kind_str[e->kind] : "??";
-            fprintf(stderr, "    [%2u] %s $%06X\n", i, k, e->addr);
-        }
-    }
-
+    dump_bus_ring();
     exit(2);
 }
 
@@ -1228,7 +1244,23 @@ void glue_check_vblank(void)
      * "some animations run too fast, some look right" symptom. It would also
      * run V_Int against the wrong RAM buffer (fire_vblank_handler_once saves
      * s_emu->state.m68k.ram, but recompiled code mutates g_ram here). So under
-     * the own backend this routine does watchdog bookkeeping only. */
+     * the own backend this routine does watchdog bookkeeping only —
+     *
+     * EXCEPT the non-yielding-loop safety: the own backend yields the 68K fiber
+     * only at recompiler-emitted yield sites (WaitForVBlank). A tight loop with
+     * no such site — e.g. Rocket Knight's sound-init busy-wait for the Z80 to
+     * raise its ready flag — would never let the scanline scheduler run, so the
+     * Z80 never steps, the flag never sets, and the loop deadlocks until the
+     * instruction watchdog kills it. If the game has burned more than two wall
+     * frames of 68K cycles without yielding, force the DESIGNED cycle-budget
+     * yield (check_cycle_budget -> fiber_switch to the scheduler), which steps
+     * the Z80 and lets the scheduler fire V-int via its own path (no doubling).
+     * Well-behaved games yield every frame (g_cycle_accumulator resets in
+     * glue_end_of_wall_frame) and never reach this. */
+    if (s_interleave_active && !s_in_vblank_service
+        && g_cycle_accumulator >= 2u * NTSC_CYCLES_PER_WALL_FRAME) {
+        check_cycle_budget();
+    }
     return;
 #else
     if (s_in_vblank_service)
@@ -1806,11 +1838,206 @@ static int is_bra_w_trampoline(uint32_t addr)
     return opcode == 0x6000u;
 }
 
+/* Re-entrancy guard for the floor. The interpreter is self-contained (it does
+ * not re-enter dispatch), but never recurse the floor defensively. */
+static int s_in_floor = 0;
+
+#if ENABLE_RECOMPILED_CODE
+/* ── Coverage manifest ──────────────────────────────────────────────────────
+ * Records every in-ROM address the floor executed (the missed entry + the
+ * JSR/BSR/JMP subtree it traversed) to floor_coverage.txt, deduplicated for the
+ * session. These are LEADS to grow static coverage: validate each against the
+ * disasm (PRINCIPLES.md #16), then fold confirmed entries into game.toml
+ * [funcs] extra_funcs / the gen_disasm seed pipeline so the recompiler discovers
+ * them and they become Tier-1 native. (Interior-label misses are deliberately
+ * NOT here — they live in interior_label_misses.log and need a codegen fix, not
+ * a seed.) The subtree matters because the interpreter runs callees inline, so
+ * an undiscovered callee never logs its own dispatch miss — this is the only
+ * place it surfaces. */
+#define FLOOR_COV_MAX 8192
+static uint32_t s_floor_cov[FLOOR_COV_MAX];
+static int      s_floor_cov_count  = 0;
+static int      s_floor_cov_header = 0;
+static void floor_record_coverage(uint32_t addr)
+{
+    addr &= 0xFFFFFFu;
+    uint32_t rl = g_game_spec.expected_rom_size
+                      ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
+    if (addr >= rl) return;
+    for (int i = 0; i < s_floor_cov_count; i++) if (s_floor_cov[i] == addr) return;
+    if (s_floor_cov_count >= FLOOR_COV_MAX) return;
+    s_floor_cov[s_floor_cov_count++] = addr;
+
+    extern const char *exe_relative(const char *);
+    FILE *f = fopen(exe_relative("floor_coverage.txt"), "a");
+    if (!f) return;
+    if (!s_floor_cov_header) {
+        s_floor_cov_header = 1;
+        fprintf(f,
+            "# floor_coverage.txt — addresses executed by the Tier-3 interpreter\n"
+            "# floor (a missed function entry, or a JSR/BSR/JMP target in its\n"
+            "# subtree). LEADS to grow static coverage: validate each against the\n"
+            "# disasm (PRINCIPLES.md #16 — disasm is ground truth), then fold the\n"
+            "# confirmed code entries into game.toml [funcs] extra_funcs / the\n"
+            "# gen_disasm seed pipeline so they recompile to Tier-1 native.\n");
+    }
+    fprintf(f, "extra_func 0x%06X\n", addr);
+    fclose(f);
+}
+
+/* Halt blacklist: a missed address the floor could not run (its first/early
+ * bytes decode as illegal/F-line — i.e. the JMP-table dispatched to DATA, or a
+ * misaligned PC). Re-running it every frame would just halt again and spam the
+ * log, so remember it and decline silently thereafter. Declining is safe: it
+ * is exactly the old no-op behaviour for that (non-code) target. */
+#define FLOOR_BL_MAX 2048
+static uint32_t s_floor_bl[FLOOR_BL_MAX];
+static int      s_floor_bl_count = 0;
+static int floor_blacklisted(uint32_t a) {
+    for (int i = 0; i < s_floor_bl_count; i++) if (s_floor_bl[i] == a) return 1;
+    return 0;
+}
+static void floor_blacklist_add(uint32_t a) {
+    if (s_floor_bl_count < FLOOR_BL_MAX) s_floor_bl[s_floor_bl_count++] = a;
+}
+
+/* UNSAFE_EXIT receipt: the framed capsule ran a missed target to its depth-0
+ * return, but that return did NOT land on the native loose-A7 return the caller
+ * is about to pop (an unbalanced A7 — a skip-return / stack pivot — or a
+ * mis-decode). Continuing would let native resume with a desynced stack. Per
+ * the oracle-parity charter we never silently corrupt: record the full state
+ * loudly so the first-divergence harness can classify it, then DECLINE (the old
+ * no-op for that target). The capsule itself is A7-neutral, so declining leaves
+ * the stack exactly as native expects. */
+static int s_floor_unsafe_count = 0;
+static void floor_unsafe_record(uint32_t miss_addr, uint32_t run_at,
+                                uint32_t exit_pc, uint32_t expected_ret,
+                                const char *why)
+{
+    s_floor_unsafe_count++;
+    fprintf(stderr,
+            "[FLOOR][UNSAFE] miss $%06X (ran $%06X): %s — exit_pc=$%06X "
+            "expected_ret=$%06X A7=$%06X frame=%" PRIu64 " — declined\n",
+            miss_addr, run_at, why, exit_pc, expected_ret,
+            g_cpu.A[7] & 0xFFFFFFu, g_frame_count);
+
+    extern const char *exe_relative(const char *);
+    FILE *f = fopen(exe_relative("floor_unsafe.log"), "a");
+    if (!f) return;
+    fprintf(f,
+            "miss=0x%06X run_at=0x%06X exit_pc=0x%06X expected_ret=0x%06X "
+            "A7=0x%06X D0=0x%08X D1=0x%08X A0=0x%08X A1=0x%08X SR=0x%04X "
+            "frame=%" PRIu64 " why=\"%s\"\n",
+            miss_addr, run_at, exit_pc, expected_ret, g_cpu.A[7] & 0xFFFFFFu,
+            g_cpu.D[0], g_cpu.D[1], g_cpu.A[0], g_cpu.A[1], g_cpu.SR,
+            g_frame_count, why ? why : "");
+    fclose(f);
+}
+/* Floor enable switch (GENESIS_FLOOR=1/on/yes). DEFAULT OFF: opt-in.
+ *
+ * The interpreter is validated 0-divergence vs clown68000 and works in-game on
+ * Sonic 1 (it correctly executes interior-label "Duff's-device" misses that the
+ * static dispatch can only no-op). But it does NOT yet model the per-instruction
+ * cycle accounting + glue_check_vblank() that the generated native code emits,
+ * so a floor run that should span a VBlank skips it — harmless for short
+ * mid-game handlers, but it desyncs timing-sensitive code (Sonic 3&K froze at
+ * frame ~2014 from a frame-5 boot miss; A/B-confirmed it's the floor's
+ * EXECUTION, not pre-existing). Until that interaction is root-caused, the floor
+ * ships OFF by default so no game regresses; enable per-game where validated. */
+static int floor_enabled(void) {
+    static int e = -1;
+    if (e < 0) {
+        const char *v = getenv("GENESIS_FLOOR");
+        e = (v && (v[0] == '1' || v[0] == 'o' || v[0] == 'O' || v[0] == 'y' || v[0] == 'Y')) ? 1 : 0;
+        if (e) fprintf(stderr, "[FLOOR] ENABLED via GENESIS_FLOOR=%s\n", v);
+    }
+    return e;
+}
+#endif
+
 void genesis_log_dispatch_miss(uint32_t addr)
 {
     g_miss_count_any++;
     g_miss_last_addr  = addr;
     g_miss_last_frame = g_frame_count;
+
+#if ENABLE_RECOMPILED_CODE
+    /* ── EDGE-AWARE TIER-3 FALLBACK ─────────────────────────────────────────
+     * Every computed-dispatch miss — computed JSR, computed JMP-tail, and the
+     * interior-label JMP (the Duff's-device codegen gap) — funnels here via
+     * call_by_address. Instead of silently no-op'ing it (dead object code,
+     * the gameplay-garble cause) we run the missed code on the A7-NEUTRAL
+     * framed capsule (m68k_interp_run_framed): it runs the target to its
+     * depth-0 return and PEEKS that return without popping, so the native
+     * loose-A7 caller performs the single pop. That one capsule is correct for
+     * all three miss shapes — and being A7-neutral it FIXES the interior-label
+     * double-pop that the old single-model floor had to skip (the S3K freeze),
+     * so no charter guard is needed.
+     *
+     * A RAM-resident target is resolved to its ROM destination first (the
+     * capsule decodes from the ROM image only). A capsule exit that does NOT
+     * land on the native loose-A7 return the caller is about to pop is an
+     * UNSAFE_EXIT (unbalanced A7 — skip-return / stack pivot — or mis-decode):
+     * recorded loudly and declined, never silently resumed (oracle-parity
+     * charter: interpreter fallback is fine, silent corruption is defeat).
+     *
+     * Default OFF (GENESIS_FLOOR); enabled per game where validated. */
+    if (floor_enabled() && !s_in_floor && !floor_blacklisted(addr)) {
+        uint32_t rl = g_game_spec.expected_rom_size
+                          ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
+        /* The native loose-A7 return the caller (JSR site / enclosing JSR) is
+         * about to pop — the capsule must return exactly here to be safe. */
+        uint32_t expected_ret = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;
+        uint32_t run_at = addr;
+
+        /* RAM-resident computed target: follow the JMP/JSR trampoline chain to
+         * a ROM entry the capsule can decode. If it stays in RAM the floor
+         * cannot fetch it from the ROM image — record + decline (a real
+         * RAM-code execution strategy is future work; a RAM target is never a
+         * static native function). */
+        if (run_at >= RAM_BASE) {
+            uint32_t resolved = recomp_resolve_ram_trampoline(run_at) & 0xFFFFFFu;
+            if (resolved < rl && !(resolved & 1u)) {
+                run_at = resolved;
+            } else {
+                floor_unsafe_record(addr, run_at, resolved, expected_ret,
+                                    "RAM target did not resolve to a ROM entry");
+                floor_blacklist_add(addr);
+                run_at = 0;  /* skip the capsule */
+            }
+        }
+
+        if (run_at && run_at < rl && !(run_at & 1u)) {
+            uint32_t exit_pc = 0;
+            s_in_floor = 1;
+            M68kiStatus st = m68k_interp_run_framed(run_at, &exit_pc);
+            s_in_floor = 0;
+
+            if (st == M68KI_OK) {
+                int plausible = exit_pc && !(exit_pc & 1u) && exit_pc < rl;
+                if (plausible && exit_pc == expected_ret) {
+                    /* Clean balanced return to the native continuation. Manifest
+                     * the entry + its call/jump subtree as real code leads. */
+                    floor_record_coverage(addr);
+                    for (int i = 0; i < g_m68ki_discover_count; i++)
+                        floor_record_coverage(g_m68ki_discover[i]);
+                    return;  /* handled; native caller performs the single A7 pop */
+                }
+                floor_unsafe_record(addr, run_at, exit_pc, expected_ret,
+                                    "capsule exit_pc != native loose-A7 return");
+                floor_blacklist_add(addr);
+            } else {
+                /* Not runnable as code (illegal/F-line first bytes => DATA
+                 * target), or runaway/bad fetch. Decline + remember (the old
+                 * no-op for that non-code target, which the game tolerates). */
+                floor_blacklist_add(addr);
+                fprintf(stderr, "[FLOOR] declined miss $%06X (ran $%06X, status %d, "
+                        "opcode $%04X at $%06X) — target not runnable code; blacklisted\n",
+                        addr, run_at, (int)st, g_m68ki_bad_op, g_m68ki_bad_pc);
+            }
+        }
+    }
+#endif
 
     /* TRUE interior labels — addresses inside an existing function but not
      * its entry. They are NEVER valid extra_func seeds (the recompiler

@@ -29,6 +29,8 @@ typedef enum {
     CGD_BRANCH_WITHOUT_TARGET,
     CGD_INVALID_STORE_EA,
     CGD_MOVE_CCR_DIRECTION_AMBIGUOUS,
+    CGD_EA_FALLBACK,   /* EA load/lea/MOVEM fell back to "0" — unhandled mode/reg
+                        * (was comment-only; now machine-checkable) */
     CGD_KIND_COUNT
 } CodegenDiagKind;
 
