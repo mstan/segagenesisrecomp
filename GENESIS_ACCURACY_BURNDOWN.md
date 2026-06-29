@@ -172,12 +172,23 @@ not yet exercised.**
   Z80 loop *alternates* 294 (ratio 0.969) / 252 (ratio 1.131) — a branch-dependent cost flattened to a
   constant. Music FM writes: uniform ~1.7% undercount (ratio 0.983). — *This is in the **Z80** timing /
   `machine_z80_stamp` derivation, not the 68K.*
-- [ ] **SCOPE CAVEAT — this slice is Z80-only.** In S1 boot+title *all* matched chip writes are
-  Z80-origin (SMPS sound driver, pcz $00C5/$00C8…). So it validates Z80 timing + `machine_z80_stamp`
-  + frame-level scheduling (cross-frame intervals spanning the V-int handler ≈ 0.983), but does NOT
-  exercise the **68K recompiled per-instruction cost** directly. — *Next: a 68K-driven-audio window —
-  the Sega-scream PCM (68K V-int-driven, but it lives before S1's frame-90 capture gate) or a Sonic
-  2/3 section with a 68K-side audio driver. The comparator is game-agnostic and ready for it.*
+- [ ] **68K per-instruction cost path STILL UNMEASURED — chip writes can't anchor it (2026-06-28).**
+  Both slices' chip writes are 100% Z80-origin: S1 boot+title (pcz $00C5/$00C8) AND the Sega scream
+  (the "SEGA" PCM is a normal SMPS DAC sample played by the **Z80**, not a 68K routine — 27000 `$2A`
+  writes, all pcz $00C5/$00C8, zero 68K `$FFFF`; scream slice just re-measured the Z80 path at 0.98655
+  with the same constant(3300)-vs-bimodal{3318,3360} stamp signature). Root reason: **in SMPS games the
+  Z80 does ~all chip I/O; the 68K barely writes the chips** (only sparse `pcz=$FFFF` FM-register writes,
+  ~617 in the title window — not a dense loop). (The dev-trace `SND_TRACE_START_FRAME 90u` gate,
+  `chip_trace.c:35` / `genesis_machine.c:40`, is GEN_DEV_TRACE-only and did NOT block anything.) So the
+  chip-write comparator validates **Z80 timing + `machine_z80_stamp` + frame scheduling** (~1.3%) but
+  cannot reach the 68K. — *To measure the 68K cost path, two real options (both a lift, neither needs
+  changing shipped behavior): (A) **68K-driven VDP-write Δ-anchor** — the 68K's dense output IS VDP
+  writes (VRAM/CRAM/VSRAM/sprite/scroll); add a VDP-write ring (addr/data/cycle/pc) on our side + hook
+  BlastEm's VDP write path with abs_cycle, then the same offset-independent Δ diff. (B) **Synthetic
+  per-instruction microbench** — our 68K costs are sourced from clown68000 at codegen (`cycle_probe.c`),
+  so validate that model directly: loop each instruction (esp. data-dependent MUL/DIV/shift) on BlastEm,
+  measure cycles via abs_cycle, compare to the clown68000 cost — the PSX instruction-cost-matrix analog,
+  targets exactly the flagged averaging. DEFERRED pending user call (anti-thrash).*
 - [x] Generated code emits per-instruction `g_cycle_accumulator += N;
   g_audio_cycle_counter += N; if (… >= g_vblank_threshold) glue_check_vblank();`
   (`code_generator.c:949-956`, emitted `:1780`).
@@ -681,3 +692,10 @@ cold without re-deriving.
   bug (constant 285 vs real alternating 294/252). CAVEAT: S1 boot+title writes are all Z80-origin, so
   the 68K per-instruction cost path is NOT yet exercised — next slice needs a 68K-driven-audio window
   (Sega scream / S2-S3). Comparator is game-agnostic. Axis 2 status → measured (Z80 path).
+- 2026-06-28 — **Axis 2 68K-window slice attempted via Sega scream → NEGATIVE: scream is Z80-driven too.**
+  The "SEGA" PCM is a normal SMPS DAC sample played by the Z80 (27000 `$2A` writes, all pcz $00C5/$00C8,
+  zero 68K `$FFFF`), so it re-measured the Z80 path (0.98655, same constant-vs-bimodal stamp). Learned:
+  in SMPS games the Z80 does ~all chip I/O, so chip writes can't anchor a 68K-cost measurement; the 68K's
+  dense output is VDP writes. 68K cost path remains UNMEASURED — needs either a 68K-driven VDP-write
+  Δ-anchor (new VDP rings both sides) or a synthetic per-instruction microbench vs BlastEm (validate the
+  clown68000 cost model directly). Deferred pending user call. Frame-90 dev-trace gate confirmed harmless.
