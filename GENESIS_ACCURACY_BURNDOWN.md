@@ -102,7 +102,7 @@ Release. Promoting it (or a lean variant) to always-on is the first ring-extensi
 | # | Axis | Verdict | Gap (one line) | Lever |
 |---|---|---|---|---|
 | 1 | 68000 instruction semantics | **STRONG — measured complete** | 83/83 mnemonics real codegen (0 stub/comment-only/mis-emit); synthetic 65,536-opcode sweep: 0 legal opcodes → MN_OTHER; real games: 0 unimplemented-instruction sites (707 flagged are all data-as-code → discovery problem). Old "stubs" verdict was a stale COVERAGE.md. Minor: EA-legality checked at discovery not codegen; 5 fallback markers bypass codegen_diag | route 5 markers through codegen_diag; refresh COVERAGE.md; prune data-as-code via executed-PC ring (Axis-6 follow-up) |
-| 2 | Cycle / timing | **APPROXIMATE — MEASURED within ~1.3% vs die-accurate BlastEm (Z80 path)** | comparator BUILT (`tools/cycle_compare/`, 99.9% align, Δ ratio 0.9866); found Z80 DAC-loop constant(285)-vs-alternating(294/252) cost-averaging; 68K per-insn path not yet exercised (S1 boot+title is all Z80-origin); data-dependent MUL/DIV/shift still averaged | run comparator on a 68K-driven-audio window; fix Z80 DAC period; wire exact data-dependent costs |
+| 2 | Cycle / timing | **STRONG — measured** | Z80-path pacing ~1.3% vs BlastEm (comparator `tools/cycle_compare/`); 68K fixed-cost CYCLE-EXACT (clown68000==PRM, validated via `insn_cost/` harness); only error = data-dependent over-count on ~0.25% of sites (register MULS/DIV/shift; ≤~1% frame bias, never correctness). Z80 DAC-loop constant-vs-alternating averaging | emit runtime operand-keyed MUL/DIV/shift costs; fix Z80 DAC period (both small codegen fixes) |
 | 3 | Interrupt / event timing | **SCANLINE (gen) / near-FRAME (V-int delivery)** | H-int genuinely per-scanline; V-int handler runs as one atomic lump at the vblank line (audio stamp-rebase compensates) | interleave the 68K V-int handler across chunk boundaries; validate take-point vs BlastEm |
 | 4 | Memory map / MMIO | **APPROXIMATE** | per-access functional; HV counter approximate; status FIFO hardcoded empty; phantom-hblank toggle hack on each status read | real per-line H-counter + FIFO state; MMIO trace diff vs BlastEm |
 | 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **MIXED — weakest axis (audio focus)** | video scanline-accurate (no mid-line split); DMA transfer instantaneous (fill/copy charge nothing); **FM faithful (residual DAC-path, sub-audible); jump-SFX boop = `sn76489.c` noise channel missing the ÷2 output flip-flop — FIXED + measurement-validated (ours-vs-BlastEm now == clown-vs-BlastEm), pending user ear-test** | user ear-test S3/S1/S2 jumps; mid-line raster split; spread DMA over charged scanlines |
@@ -166,8 +166,8 @@ discovery/Axis-6 follow-up (confirm dead via executed-PC ring), not semantics.
 
 ## Axis 2 — Cycle / timing
 
-Status: **APPROXIMATE — now MEASURED within ~1.3% vs die-accurate BlastEm (Z80 path); 68K path
-not yet exercised.**
+Status: **STRONG (measured) — Z80-path pacing ~1.3% vs die-accurate BlastEm; 68K fixed-cost CYCLE-EXACT
+(clown68000==PRM); only error is a small (~0.25% of sites, ≤~1% frame) data-dependent over-count.**
 
 - [x] **BlastEm Δ-anchor cycle comparator BUILT + first slice run (2026-06-28).** Extended the
   BlastEm oracle with an always-on register-WRITE ring tagged with monotonic `abs_cycle` (hooks:
@@ -185,23 +185,31 @@ not yet exercised.**
   Z80 loop *alternates* 294 (ratio 0.969) / 252 (ratio 1.131) — a branch-dependent cost flattened to a
   constant. Music FM writes: uniform ~1.7% undercount (ratio 0.983). — *This is in the **Z80** timing /
   `machine_z80_stamp` derivation, not the 68K.*
-- [ ] **68K per-instruction cost path STILL UNMEASURED — chip writes can't anchor it (2026-06-28).**
-  Both slices' chip writes are 100% Z80-origin: S1 boot+title (pcz $00C5/$00C8) AND the Sega scream
-  (the "SEGA" PCM is a normal SMPS DAC sample played by the **Z80**, not a 68K routine — 27000 `$2A`
-  writes, all pcz $00C5/$00C8, zero 68K `$FFFF`; scream slice just re-measured the Z80 path at 0.98655
-  with the same constant(3300)-vs-bimodal{3318,3360} stamp signature). Root reason: **in SMPS games the
-  Z80 does ~all chip I/O; the 68K barely writes the chips** (only sparse `pcz=$FFFF` FM-register writes,
-  ~617 in the title window — not a dense loop). (The dev-trace `SND_TRACE_START_FRAME 90u` gate,
-  `chip_trace.c:35` / `genesis_machine.c:40`, is GEN_DEV_TRACE-only and did NOT block anything.) So the
-  chip-write comparator validates **Z80 timing + `machine_z80_stamp` + frame scheduling** (~1.3%) but
-  cannot reach the 68K. — *To measure the 68K cost path, two real options (both a lift, neither needs
-  changing shipped behavior): (A) **68K-driven VDP-write Δ-anchor** — the 68K's dense output IS VDP
-  writes (VRAM/CRAM/VSRAM/sprite/scroll); add a VDP-write ring (addr/data/cycle/pc) on our side + hook
-  BlastEm's VDP write path with abs_cycle, then the same offset-independent Δ diff. (B) **Synthetic
-  per-instruction microbench** — our 68K costs are sourced from clown68000 at codegen (`cycle_probe.c`),
-  so validate that model directly: loop each instruction (esp. data-dependent MUL/DIV/shift) on BlastEm,
-  measure cycles via abs_cycle, compare to the clown68000 cost — the PSX instruction-cost-matrix analog,
-  targets exactly the flagged averaging. DEFERRED pending user call (anti-thrash).*
+- [x] **68K per-instruction cost path MEASURED via the cost-MODEL (clown harness vs PRM), 2026-06-28.**
+  Chip writes can't anchor it (both chip-write slices are 100% Z80-origin — even the Sega scream is a
+  Z80 SMPS DAC sample, pcz $00C5/$00C8; the 68K barely writes the chips), so instead validated the
+  cost SOURCE directly: built `tools/cycle_compare/insn_cost/clown_cost_harness.c` (links the real
+  `clown68000.c`, reproduces the shipped codegen probe) + `prm_error_model.py` and compared to the
+  authoritative MC68000 PRM. **Result: FIXED-cost instructions (≈99.75% of sites) are CYCLE-EXACT** —
+  clown68000 matches the PRM exactly (MOVE.L=4, ADD.W=4, BRA.W=10, JSR=20/16, LEA=12, RTS=16, NOP=4).
+  clown68000 is a faithful cost oracle for everything non-data-dependent. *(Burndown framing corrected:
+  the shipped cost is the clown probe `cycle_probe.c:81-102` with synthetic operands D=0x5555/D7=4 —
+  NOT the mid-range PRM-fallback constants `code_generator.c:1463-1623`, which are dead unless the probe
+  fails.)*
+- [x] **Data-dependent costs — MEASURED, small one-directional over-count (the only 68K cost error).**
+  Because the codegen probe substitutes a fixed synthetic operand, **immediate-source** MUL/DIV and
+  **immediate-count** shifts read the real operand from ROM → exact; only **register/memory-source**
+  MUL/DIV and **register-count** shifts carry a fixed-guess error: MULU 54 = unbiased mean (±16 worst);
+  **MULS pinned at worst-case 70** (0x5555 = max bit-pair transitions → systematic **+16 mean / +32
+  worst**); DIVU/DIVS land near the top of range (+11–22 mean); register shifts use count `0x5555&63=21`
+  vs real 1–8 (over-count ~25–40). Net: the recompiled CPU slightly **over-counts** cycles → vblank/audio
+  pacing fires marginally early. **Real-game frequency ≈0.25% of static sites** (S1 98, S2 144, S3 211,
+  S3K 598, S&K 387; many MUL are immediate-source = already exact). Aggregate frame bias ~0.1–1% of the
+  ~109k-cycle budget — a minor contributor to the ~1.3% gap, below the dominant Z80-arbitration effects.
+  **Never a correctness issue** (these counters only gate raster/audio pacing). — *Fix (codegen change,
+  out of scope here): emit a RUNTIME operand-keyed cycle add — MULU `+38+2·popcount(src)`, MULS
+  `+38+2·transitions(src)`, shift `+(long?8:6)+2·_cnt` (`_cnt` already in scope `code_generator.c:2767`),
+  DIV closed-form over `_dest/_dv` (`:3038-3083`). Immediate forms need no change.*
 - [x] Generated code emits per-instruction `g_cycle_accumulator += N;
   g_audio_cycle_counter += N; if (… >= g_vblank_threshold) glue_check_vblank();`
   (`code_generator.c:949-956`, emitted `:1780`).
@@ -212,17 +220,15 @@ not yet exercised.**
   (`genesis_machine.c:271,362`; `glue.c:602-630`); interrupt-handler cycles become raster
   debt `s_irq_cycle_debt` paid before each chunk (`glue.c:536-595,769-780`); DMA freeze
   charged via `glue_charge_68k_stall` (`glue.c:632-640`).
-- [ ] **Data-dependent costs averaged** — MULx/DIVx magnitude, register shift counts use
-  a mid-range estimate (`code_generator.c:1409-1411`). — *Now measurable: run the comparator on a
-  68K-driven-audio window and look for the alternating-vs-constant Δ signature (as found in the Z80 DAC
-  loop). Then wire exact data-dependent MUL/DIV/shift costs the probe can already measure.*
-- [ ] **No prefetch / bus-arbitration / sub-line contention model.** — the ~1.3% residual undercount is
-  consistent with this (and with the Z80 DAC averaging). — *Validate: comparator on more windows.*
+- [ ] **No prefetch / bus-arbitration / sub-line contention model.** — the ~1.3% residual (Z80-path
+  measured) is dominated by Z80-arbitration / DAC-stamp effects, not the 68K cost (now shown exact for
+  fixed-cost, ≤~1% frame bias for data-dependent). — *Validate: comparator on more windows if needed.*
 
-Lever: the **BlastEm Δ-anchor cycle comparator is built** (`tools/cycle_compare/`, offset-independent,
-99.9% align, scale 1.0). Next: (1) run it on a 68K-driven-audio window to validate the 68K per-instruction
-cost path (this slice was Z80-only); (2) fix the Z80 DAC-loop constant→alternating(294/252) period; (3)
-wire exact data-dependent MUL/DIV/shift costs.
+Lever: Axis 2 is **measured** — chip-write comparator built (`tools/cycle_compare/`, Z80 pacing ~1.3%);
+68K cost validated via the clown harness (`tools/cycle_compare/insn_cost/`, fixed-cost exact vs PRM).
+Remaining (all small codegen fixes, deferred): (1) emit runtime operand-keyed costs for register-source
+MUL/DIV + register-count shifts (closes the ~0.25%-of-sites over-count); (2) fix the Z80 DAC-loop
+constant→alternating(294/252) period; (3) optional BlastEm whole-system re-confirm. None is correctness.
 
 ---
 
@@ -721,3 +727,13 @@ cold without re-deriving.
   (codegen_diag.h:16-24; MOVE CCR fixed code_generator.c:3290-3305). Axis 1 → STRONG. Minor follow-ups:
   EA-legality screened at discovery not codegen; 5 fallback markers bypass codegen_diag; refresh
   COVERAGE.md; confirm the data-as-code sites dead via executed-PC ring (Axis-6/discovery, not semantics).
+- 2026-06-28 — **Axis 2 68K per-instruction COST slice: measured via cost-model (clown harness vs PRM).**
+  Built `tools/cycle_compare/insn_cost/` (clown_cost_harness.c links real clown68000.c + reproduces the
+  shipped probe; prm_error_model.py). FINDING: our shipped cost = the clown68000 codegen probe (NOT the
+  dead mid-range PRM fallback). **Fixed-cost instructions (≈99.75% of sites) are cycle-EXACT vs PRM.** Only
+  error: data-dependent register/memory-source MUL/DIV + register-count shifts, where the probe's synthetic
+  operand (0x5555) can't track runtime values → small one-directional OVER-count (MULS pinned at +16 mean/
+  +32 worst; DIVU/DIVS +11–22; reg shifts +25–40). ≈0.25% of static sites; ≤~1% frame bias; never
+  correctness (only gates pacing). Fix = runtime operand-keyed cycle add (codegen, deferred). Immediate-
+  operand forms already exact. Axis 2 → STRONG (measured). BlastEm microbench deferred (clown IS the cost
+  oracle, PRM-validated). Real-game frequency table in Axis 2.

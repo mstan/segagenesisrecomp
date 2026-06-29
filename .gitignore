@@ -31,3 +31,7 @@ tools/blastem/
 tools/cycle_compare/*
 !tools/cycle_compare/cycle_delta_compare.py
 !tools/cycle_compare/comparator_report.txt
+!tools/cycle_compare/insn_cost/
+tools/cycle_compare/insn_cost/*
+!tools/cycle_compare/insn_cost/clown_cost_harness.c
+!tools/cycle_compare/insn_cost/prm_error_model.py
