@@ -694,11 +694,45 @@ cold without re-deriving.
    gain offset from BlastEm (its volume table is /14, selftest RMS ~3× lower). Scale-invariant metrics
    already neutralize it; it's a reference-calibration note, not a defect. **Resume:** only if an
    absolute-level comparison vs BlastEm is ever needed.
-6. **VDP output color-LUT is non-authentic (video, cosmetic).** Our 3-bit→8-bit channel expansion is
-   linear (`level×36`) in `genesis_vdp.c`; the authentic Genesis DAC curve is nonlinear (BlastEm uses it;
-   max channel delta 15/255). Palette/CRAM state is byte-exact everywhere — only the final RGB differs by
-   this constant offset, on every scene. **Resume:** swap the linear expansion for the authentic DAC LUT
-   (small runner change). Pure visual-accuracy polish; no behavioral/gameplay effect.
+6. **VDP output color-LUT is non-authentic (video, cosmetic). — DONE 2026-06-28 (SHIPPED).** Replaced the
+   linear `level×36` expansion with the authentic nonlinear Genesis DAC ladder (`runner/video/genesis_dac.h`,
+   matching BlastEm `levels[]`), routed through all four color sites; `s_framebuf` now matches BlastEm,
+   shadow/highlight preserved. User-eye-validated S1/S2/S3. (Baselines regenerate — see changelog.)
+
+7. **Operand-keyed MUL/DIV/shift cycle costs (Axis 2) — IMPLEMENTED + REVERTED 2026-06-28; revisit only with
+   a more robust own-backend pacing model.** The lowest-value Axis-2 lever (the ≤1%-of-sites data-dependent
+   over-count on register-source MULU/MULS/DIVU/DIVS + register-count shifts). It was built and is numerically
+   correct: a shared `m68k_cycle_cost.h` reproduces clown68000's exact Action cycle model (MULU 38+2·ones,
+   MULS 38+2·patterns, DIV = base 4 + exact DIVCommon, reg-count shift = base+2·cnt), emitted as a RUNTIME
+   operand-keyed cycle add (`estimate_cycles` returns −1 to suppress the generic constant; inline accounting
+   from the live operand). Clown-verified via `tools/cycle_compare/insn_cost` (MULU 38/54/70, MULS 38/40/70,
+   DIVU 136/134, DIVS 150/154, ASL.W reg 8/14/48).
+   **Consequence (why reverted):** making per-instruction costs accurate-but-different shifts the own-backend's
+   vblank pacing. On Sonic 3 (standalone) this nudged the Sega-screen code onto a *different control-flow
+   branch* that computes a JMP to an interior Duff's-device label ($00043A) which has no generated landing
+   pad → `call_by_address` miss → the logo rendered half-missing and looped (SEGA chime every ~4–5 s). S1/S2
+   tolerated the same change (user-validated good) because their hot paths don't diverge. Proof it was the
+   costs and nothing else: my regen changed only `*_full.c` (function bodies / accounting); every game's
+   `*_dispatch.c` was byte-identical, so discovery/dispatch was unchanged — the divergence was purely the new
+   timing. Restoring the committed `sonic3_full.c` (constant costs) → 0 misses, no loop.
+   **Root issue to fix first:** the own-backend's frame pacing is sensitive to absolute per-instruction cost
+   rather than robust to it (a game shouldn't break because instruction costs got *more* accurate). That, plus
+   a landing pad for the $00043A-class interior JMP target, are the prerequisites. Until then this fix is net-
+   negative (low value, can break timing-sensitive scenes) and stays reverted. The code is recoverable from
+   git history / this entry if revisited. Decision logged by user 2026-06-28: "document the fix and its
+   consequences. maybe someday we revisit."
+
+8. **Smoke harness is fixed-frame-sampled → drift-fragile (revisit later, user-deferred 2026-06-28).**
+   `boot_smoke.py`/`zone_smoke.py` sample `[FBHASH]` at fixed absolute wall frames driven by `.input`
+   frame-count WAITs. It is fully deterministic run-to-run (Axis 7), but ANY codegen/timing change that
+   shifts how many frames the game takes to reach a state slides content past the fixed sample points →
+   false DIVERGENCE (see [[feedback_smoke_harness_unreliable]]). NOT the interpreter — boot_smoke is
+   native-only; the oracle/Z80 interp are separate/deterministic. Same root sensitivity as the reverted
+   cycle-cost break (item 7): own-backend pacing isn't robust to timing perturbation. **Resume:** re-anchor
+   the smoke to CONTENT/STATE (hash when the game reaches a known state — CRAM-palette / Game_Mode match —
+   not at fixed frames), mirroring the VDP oracle's content-locked alignment (`tools/vdp_compare/`). Makes
+   the guard pacing-immune. Until then the smoke is a "did it boot/crash?" check, not a regression guard,
+   and its baselines are intentionally not re-maintained.
 
 ## Changelog
 
@@ -795,3 +829,29 @@ cold without re-deriving.
   split remains the one untested render path (needs deterministic input into GHZ on both backends). New
   harness: `tools/vdp_compare/{capture_sweep.py,catch_fb.py,match_vram.py}`. Axis 5a -> STRONG (static +
   animated measured-faithful).
+- 2026-06-28 — **Deferred-backlog behavioral fixes: 1 shipped (DAC LUT), 1 diagnostic kept (EA markers),
+  2 NOT shipped (cycle costs REVERTED, Z80 a non-fix).** Final state: all 5 games (S1/S2/S3/S&K/S3K) on
+  their committed/known-good generation + the DAC LUT runner change; all boot + run headless clean.
+  S1/S2/S3 user-eye-validated.
+  - **Axis 5a — authentic VDP output-DAC LUT — SHIPPED (user-validated S1/S2/S3).** Replaced the linear
+    ×36/×18 3→8-bit expansion with the authentic nonlinear Genesis DAC ladder (BlastEm `vdp.c` `levels[]`:
+    normal=levels[2c], shadow=levels[c], highlight=levels[c+7]) via a new shared `runner/video/genesis_dac.h`,
+    routed through ALL four color sites (genesis_machine.c own backend, vdp_integration.c oracle, main.c,
+    color_lut.c RAW table) + color_lut.h `map_argb` nearest-index recovery. `s_framebuf` now matches BlastEm
+    (closes cosmetic backlog #6); shadow/highlight preserved exactly. **Side effect: all `[FBHASH]` /
+    boot_smoke baselines change — regenerate post-validation.** The one behavioral change that stuck.
+  - **Axis 2 — operand-keyed MUL/DIV/shift cycle costs — IMPLEMENTED, then REVERTED (broke S3).** See the
+    detailed post-mortem in the "revisit someday" backlog (item 7 below). Short version: the change was
+    *numerically correct* (clown-verified) but its pacing shift caused S3's Sega-screen code to take a
+    different control-flow branch that JMPs to an interior Duff's-device label ($00043A) with no landing
+    pad → dispatch miss → broken/looping logo. S1/S2 tolerated it (validated good), but the change is
+    demonstrably unsafe against the own-backend's timing-sensitive execution, and is the lowest-value fix.
+    Reverted everywhere (`code_generator.c`, `genesis_runtime.h` git-restored; `m68k_cycle_cost.h` removed).
+  - **Axis 1 — EA-fallback markers now machine-checkable — KEPT (diagnostic only, no codegen output change).**
+    Added `CGD_EA_FALLBACK`; routed all 6 EA-load/lea/MOVEM "0"-fallback sites through `codegen_diag` so they
+    appear in the summary + `--fail-on-unsupported` (were comment-only). S1 = 0 (clean). Survives the revert.
+  - **Axis 2 — Z80 DAC-loop period: investigated, NO fix warranted.** The comparator shows ours = constant
+    285 master cycles between `$2A` DAC writes vs BlastEm's alternating 252 (n=5784) / 294 (n=21208) — but
+    the count-weighted mean of BlastEm's values is **exactly 285.0**, so our model is already mean-correct;
+    only per-sample jitter differs (sub-audible). Reproducing the jitter would need a cycle-exact Z80 core
+    (deferred) or fabricated jitter (violates the no-invented-hardware rule). Documented, not patched.
