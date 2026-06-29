@@ -722,17 +722,25 @@ cold without re-deriving.
    git history / this entry if revisited. Decision logged by user 2026-06-28: "document the fix and its
    consequences. maybe someday we revisit."
 
-8. **Smoke harness is fixed-frame-sampled → drift-fragile (revisit later, user-deferred 2026-06-28).**
-   `boot_smoke.py`/`zone_smoke.py` sample `[FBHASH]` at fixed absolute wall frames driven by `.input`
-   frame-count WAITs. It is fully deterministic run-to-run (Axis 7), but ANY codegen/timing change that
+8. **Smoke harness fixed-frame-sampled → drift-fragile. STATE-ANCHORED REARCH DONE 2026-06-29 (boot path).**
+   Diagnosis: `boot_smoke.py`/`zone_smoke.py` sample `[FBHASH]` at fixed absolute wall frames driven by
+   `.input` frame-count WAITs. Fully deterministic run-to-run (Axis 7), but ANY codegen/timing change that
    shifts how many frames the game takes to reach a state slides content past the fixed sample points →
    false DIVERGENCE (see [[feedback_smoke_harness_unreliable]]). NOT the interpreter — boot_smoke is
    native-only; the oracle/Z80 interp are separate/deterministic. Same root sensitivity as the reverted
-   cycle-cost break (item 7): own-backend pacing isn't robust to timing perturbation. **Resume:** re-anchor
-   the smoke to CONTENT/STATE (hash when the game reaches a known state — CRAM-palette / Game_Mode match —
-   not at fixed frames), mirroring the VDP oracle's content-locked alignment (`tools/vdp_compare/`). Makes
-   the guard pacing-immune. Until then the smoke is a "did it boot/crash?" check, not a regression guard,
-   and its baselines are intentionally not re-maintained.
+   cycle-cost break (item 7).
+   **FIX shipped:** runner `--hash-on-mode` emits `[MODEHASH] seq=N mode=0xMM frame=F ... hash=..` on every
+   `g_game_layout.game_mode_addr` (Game_Mode) TRANSITION instead of at fixed frames; `tools/state_smoke.py`
+   captures the checkpoint sequence and compares by **(seq, mode, hash)**, IGNORING frame entirely — so the
+   guard is pacing-invariant by construction ("the framebuffer when the game reached state X" is the same
+   whether X arrived at frame 480 or 482). Validated on S1: deterministic (3 checkpoints Sega 0x00 → title
+   0x04 → 0x88), and stable under a deliberate pacing perturbation (M68K_PER_LINE 488→487). Finding: S1's
+   boot transitions are vblank-counted, so that perturbation didn't even drift the frames — but the design
+   handles drift when it occurs (the auto-discovery case in feedback_smoke_harness_unreliable did drift).
+   **Remaining (revisit):** this anchors on Game_Mode, so it covers the BOOT/menu state SEQUENCE. Mid-
+   gameplay regression (mode constant the whole time — e.g. zone_smoke's run-right scripts) needs a
+   different anchor (player-position / a watched RAM-state reaching a value). Old fixed-frame baselines
+   still not re-maintained (superseded by state baselines where adopted).
 
 ## Changelog
 
