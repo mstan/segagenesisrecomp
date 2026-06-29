@@ -104,20 +104,35 @@ Release. Promoting it (or a lean variant) to always-on is the first ring-extensi
 | 1 | 68000 instruction semantics | **STRONG — measured complete** | 83/83 mnemonics real codegen (0 stub/comment-only/mis-emit); synthetic 65,536-opcode sweep: 0 legal opcodes → MN_OTHER; real games: 0 unimplemented-instruction sites (707 flagged are all data-as-code → discovery problem). Old "stubs" verdict was a stale COVERAGE.md. Minor: EA-legality checked at discovery not codegen; 5 fallback markers bypass codegen_diag | route 5 markers through codegen_diag; refresh COVERAGE.md; prune data-as-code via executed-PC ring (Axis-6 follow-up) |
 | 2 | Cycle / timing | **STRONG — measured** | Z80-path pacing ~1.3% vs BlastEm (comparator `tools/cycle_compare/`); 68K fixed-cost CYCLE-EXACT (clown68000==PRM, validated via `insn_cost/` harness); only error = data-dependent over-count on ~0.25% of sites (register MULS/DIV/shift; ≤~1% frame bias, never correctness). Z80 DAC-loop constant-vs-alternating averaging | emit runtime operand-keyed MUL/DIV/shift costs; fix Z80 DAC period (both small codegen fixes) |
 | 3 | Interrupt / event timing | **STRONG — done (1 deferral)** | H-int per-scanline + V-int latch/delivery correct; only the atomic V-int handler is approximate (= the parked S1-boop residual, a constant sub-frame phase, sub-audible) — user-deferred, not blocking | interleave the V-int handler across chunk boundaries (the parked boop) |
-| 4 | Memory map / MMIO | **APPROXIMATE** (VDP state byte-matched BlastEm at a static screen, but HV/FIFO read paths not exercised there) | per-access functional; HV counter approximate; status FIFO hardcoded empty; phantom-hblank toggle hack on each status read | real per-line H-counter + FIFO state; MMIO trace diff vs BlastEm |
+| 4 | Memory map / MMIO | **MEASURED — read stream characterized vs BlastEm; approximations benign** | HV unread (0/all-games static + 0/oracle-runtime); FIFO-empty hardcoded matches truth 99.95%; phantom-hblank unfaithful (50% vs real 16%) but un-gated by the games | real hslot-derived hblank (deferred — only matters if a game gates on hblank bit 2; none do) |
 | 5 | Peripherals / devices (VDP video, **FM**, **PSG**, Z80, DMA, IO) | **FM + PSG audio DONE; VIDEO measured byte-identical vs BlastEm (static + animated)** | **FM faithful vs Nuked; PSG ÷2 noise bug FIXED+shipped; VDP VRAM/CRAM/VSRAM byte-identical to BlastEm at static logo + 12 palette-sweep states + animated title; mid-line raster-split gap did NOT bite any tested S1 scene**. New finding: output color-LUT non-authentic (linear vs nonlinear DAC, cosmetic). Untested: in-game H-int scroll split (demo desyncs); DMA fill/copy timing | authentic DAC LUT; deterministic input path into GHZ for scroll-split test; spread DMA over charged scanlines |
 | 6 | Static-vs-dynamic recompiler fidelity | **STRONG (floor 0-div vs clown68000, default OFF)** | diff harness shares the decoder with the thing it tests (can't catch a decoder-level bug common to both); framed capsule can't run RAM-resident code | ship the planned free-running native-vs-oracle `oracle_block_diff.py`; RAM-code execution in the floor if needed |
 | 7 | Determinism | **STRONG (deterministic; good headless trace)** | none material; cross-binary native-vs-oracle is non-bit-equal *by design* (layered-parity) | keep as invariant; `--hash-frames`/WRAM-FNV gate already exists |
 
-Overall (2026-06-28, after the Wave-1 measurement pass): **BOARD GREEN with documented deferrals.**
-Axes 1, 2, 6, 7 STRONG; Axis 3 done bar the parked atomic-V-int (the S1-boop residual); Axis 5 audio
-DONE (FM faithful vs Nuked, PSG ÷2 noise bug fixed+shipped) and video STRONG (VRAM/CRAM/VSRAM
-byte-identical to die-accurate BlastEm at static + animated scenes; in-game scroll-split user-visual-
-confirmed). Everything was measured against the built BlastEm oracle (+ Nuked-OPN2 for FM, clown68000
-for 68K cost). Remaining is a short, low-value/deferred list (see backlog + the per-axis "Resume" notes):
-the parked S1 boop (Axis 3/5d), Axis 4 MMIO **read-path** trace (HV-counter/FIFO — flagged valuable),
-DMA fill/copy timing, a handful of small codegen polish items, and the cosmetic VDP DAC-LUT. The
-once-"weakest" Axis 5 is now among the best-measured.
+Overall (2026-06-29): **SPIKE COMPLETE — ALL 7 AXES MEASURED against an accurate oracle.**
+Axes 1, 2, 6, 7 STRONG; Axis 3 done bar the parked atomic-V-int (the S1-boop residual, premise stale);
+Axis 4 MEASURED (read stream characterized vs BlastEm — HV unread, FIFO-empty faithful 99.95%,
+phantom-hblank unfaithful-but-un-gated); Axis 5 audio DONE (FM faithful vs Nuked, PSG ÷2 noise bug
+fixed+shipped) and video STRONG (VRAM/CRAM/VSRAM byte-identical to BlastEm at static + animated scenes;
+authentic DAC LUT shipped). Every axis was measured against the built oracle (BlastEm cycle-accurate +
+read-trace, Nuked-OPN2 die-accurate FM, clown68000 68K cost) — "looks good" was never accepted as a
+status. The once-"weakest" Axis 5 is now among the best-measured, and the last APPROXIMATE axis (4) is
+closed.
+
+**Remaining is the documented "revisit someday" backlog only** (all parked/low-value/cosmetic, none
+blocking): the parked S1 boop (Axis 3/5e — needs a live-ear premise re-verify first); a faithful
+hslot-derived hblank bit (Axis 4 — only matters if a game gates on hblank bit 2; none do); operand-keyed
+cycle costs (Axis 2 — parked on its own branch, breaks pacing); DMA fill/copy timing (Axis 5b); a
+gameplay-anchor extension to the state-smoke harness (item 8); and the sub-audible FM/PSG residuals.
+See the "Deferred backlog" + per-axis "Lever/Resume" notes.
+
+### Spike exit criteria — met
+1. Every axis cross-referenced against a hardware/spec/independent-emulator REFERENCE: yes (PRM, BlastEm,
+   GPGX/clownmdemu, Nuked-OPN2, clown68000).
+2. Every axis runtime-validated against an ACCURATE ORACLE on the relevant state surface: yes (FM/PSG
+   samples vs Nuked/BlastEm; cycle Δ vs BlastEm; VRAM/CRAM/VSRAM vs BlastEm; 68K cost vs clown68000/PRM;
+   MMIO read stream vs BlastEm; recompiled==Tier-3-floor for backend equivalence).
+3. Deferrals documented with resume notes: yes (backlog items 1-8).
 
 ---
 
@@ -263,7 +278,8 @@ machinery exists because atomic delivery was the pragmatic choice.
 
 ## Axis 4 — Memory map / MMIO
 
-Status: **APPROXIMATE** — per-access functional, not cycle-timed.
+Status: **MEASURED (2026-06-29) — read-stream characterized vs BlastEm; all three approximations
+BENIGN for the target games, one (phantom-hblank) unfaithful-but-un-gated.** Upgraded from APPROXIMATE.
 
 - [x] VDP ports individually modeled: data/control/HV decode (`genesis_bus.c:228-296`),
   control-port two-write FSM, register writes, address/code latch, auto-increment
@@ -271,16 +287,34 @@ Status: **APPROXIMATE** — per-access functional, not cycle-timed.
   (`:127-133`).
 - [x] FM/PSG/Z80/IO routed (`genesis_bus.c:233-296`); FM/PSG writes pushed to the
   cycle-stamped audio event queue, not applied inline (`:287-296`).
-- [ ] **HV counter approximate** — V in high byte, H derived from `in_hblank` flag only
-  (`genesis_vdp.c:346-351`). — *Ref: VDP HV-counter tables. Validate vs BlastEm HV reads.*
-- [ ] **Phantom H-blank hack** — `gvdp_read_control` toggles `in_hblank ^= 1` on every
-  status read (`genesis_vdp.c:342`) so per-whole-line code polling the H-blank flag makes
-  progress. Deliberate, not hardware. — *Validate: MMIO status-read trace diff vs BlastEm.*
-- [ ] **Status FIFO bit hardcoded "empty"** (`genesis_vdp.c:330`). — *Validate vs BlastEm
-  FIFO model (BlastEm passes the Nemesis FIFO test).*
+- [x] **MMIO READ-PATH measured two ways (2026-06-29).** (1) Static, our generated C: **0 HV-counter
+  ($C00008) reads across ALL 5 games** (S1/S2/S3/S&K/S3K); the bus routes $C00008-F →
+  `gvdp_read_hv_counter` (`genesis_bus.c:231`) and Sonic uses all-direct VDP addressing, so 0 literal
+  reads = genuinely unused. Status ($C00004) reads are few (S1=3, S2=8) and are either control-FSM-reset
+  reads (value unused — read resets the two-write FSM as a side effect before a control write) or a
+  **DMA-busy poll** (S2 `$000306`: `move ($C00004),d1; btst #1,d1; bne` — bit 1 = DMA active, which our
+  model drives from `dma_active`; our synchronous DMA clears it before the poll, so the loop exits
+  correctly). **No game tests the FIFO-empty bit (0x0200).** (2) Oracle, BlastEm read-trace (S1 boot→
+  title, 600 frames, 6317 VDP reads; dev-only tap `oracle_ring_vdp_read_put` in `tools/blastem`,
+  gitignored): **HV reads = 0** (confirms the fake-HV path is never exercised); **FIFO-empty = 99.95%
+  set** (our hardcoded always-empty is FAITHFUL; FIFO-full 0/6317); **hblank = real 15.89%,
+  position-dependent on hslot.**
+- [x] **HV counter approximate (V=scanline, H=0x00/0x80, `genesis_vdp.c:346-351`) — BENIGN.** Never read
+  by any target game (0 static + 0 oracle-runtime). *Caveat: this window is boot→title; the static 0
+  covers all generated functions incl. HInt handlers, but an in-level HV read via a computed address
+  isn't 100% excluded — extremely unlikely given Sonic's direct addressing.*
+- [x] **Status FIFO bit hardcoded "empty" (`genesis_vdp.c:330`) — FAITHFUL/BENIGN.** Oracle ground truth
+  = FIFO-empty set 99.95% of reads, FIFO-full 0%; no game tests the bit anyway.
+- [~] **Phantom H-blank toggle (`gvdp_read_control` `in_hblank ^= 1` per read, `:342`) — UNFAITHFUL but
+  un-gated.** This is the ONE bit our model gets wrong: ~50% artificial alternation vs real **15.89%**
+  position-dependent. Harmless today because S1's status polling gates on VINT (bit 7) / VBLANK (bit 3),
+  never hblank (bit 2) — but any code path that DID test bit 2 would diverge. The toggle exists so the
+  SEGA-chant DAC feeder (per-whole-line hblank poll) makes progress under our per-whole-line renderer.
 
-Lever: real per-line H-counter + proper FIFO state removes both the phantom-hblank toggle
-and the hardcoded FIFO-empty; build the `mmio_tally.py` analog + MMIO trace diff vs BlastEm.
+Lever (deferred, low priority): a real per-pixel hslot-derived hblank bit would make the status read
+faithful and retire the toggle; only matters if a target game starts gating on hblank (none do). Real HV
+table only matters for an HV-reading game (none of ours read it). Tap + analysis preserved in
+`tools/blastem` (oracle_ring vdpreads.csv) for re-measurement on other games/scenes.
 
 ---
 
@@ -863,3 +897,13 @@ cold without re-deriving.
     the count-weighted mean of BlastEm's values is **exactly 285.0**, so our model is already mean-correct;
     only per-sample jitter differs (sub-audible). Reproducing the jitter would need a cycle-exact Z80 core
     (deferred) or fabricated jitter (violates the no-invented-hardware rule). Documented, not patched.
+- 2026-06-29 — **Axis 4 CLOSED → SPIKE COMPLETE (all 7 axes measured).** MMIO read-path measured two ways.
+  (1) Static (our generated C): 0 HV-counter ($C00008) reads across all 5 games; status ($C00004) reads are
+  control-FSM-reset reads or a DMA-busy poll (bit 1, modeled via dma_active); no game tests the FIFO-empty
+  bit. (2) Oracle (BlastEm read-trace, new dev-only `oracle_ring_vdp_read_put` tap in tools/blastem, S1
+  boot→title 600 frames / 6317 VDP reads): HV reads = 0; FIFO-empty set 99.95% (our hardcoded always-empty
+  is FAITHFUL), FIFO-full 0%; hblank real 15.89% position-dependent vs our ~50% artificial toggle. Verdict:
+  HV-fake + FIFO-hardcoded are benign (unread / faithful); phantom-hblank is the one unfaithful bit but is
+  un-gated by the target games (they poll VINT bit7 / VBLANK bit3, never hblank bit2). Axis 4 APPROXIMATE →
+  MEASURED. Board: all 7 axes measured against an accurate oracle; remaining work is the documented
+  revisit-someday backlog only. Spike exit criteria met (see Overall section).
