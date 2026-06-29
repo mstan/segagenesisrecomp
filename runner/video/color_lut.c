@@ -185,14 +185,15 @@ bool screen_kind_from_name(const char* name, ScreenKind* out) {
 }
 
 void color_lut_build(ColorLut* lut, ScreenKind screen, double darken) {
-  /* RAW: exact replica of main.c md_colour_to_argb (×36 per 3-bit channel).
-   * This MUST be bit-identical so default-off output equals the raw path. */
+  /* RAW: exact replica of the runtime color conversion (authentic Genesis DAC
+   * ladder, normal level). MUST match so default-off output equals the raw
+   * framebuffer path. */
   if (screen == SCREEN_RAW) {
     lut->passthrough = true;
     for (int idx = 0; idx < 512; ++idx) {
-      uint32_t r = (uint32_t)(idx & 7u) * 36u;
-      uint32_t g = (uint32_t)((idx >> 3) & 7u) * 36u;
-      uint32_t b = (uint32_t)((idx >> 6) & 7u) * 36u;
+      uint32_t r = genesis_dac_level(idx & 7u, GENESIS_DAC_NORMAL);
+      uint32_t g = genesis_dac_level((idx >> 3) & 7u, GENESIS_DAC_NORMAL);
+      uint32_t b = genesis_dac_level((idx >> 6) & 7u, GENESIS_DAC_NORMAL);
       lut->table[idx] = 0xFF000000u | (r << 16) | (g << 8) | b;
     }
     return;

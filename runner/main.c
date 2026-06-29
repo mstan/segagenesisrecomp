@@ -144,6 +144,7 @@ static uint32_t s_framebuf[MAX_SCREEN_WIDTH * MAX_SCREEN_HEIGHT]; /* ARGB8888 */
  * defined on the raw VDP output and remain byte-identical with the screen off.
  * See video/color_lut.h. */
 #include "video/color_lut.h"
+#include "video/genesis_dac.h"  /* authentic Genesis output-DAC color ladder */
 static uint32_t s_present_buf[MAX_SCREEN_WIDTH * MAX_SCREEN_HEIGHT]; /* present copy */
 static ColorLut s_color_lut;
 static int      s_color_lut_on = 0;   /* 0 = raw passthrough (default) */
@@ -287,14 +288,12 @@ static void update_render_logical_size(SDL_Renderer *renderer)
  *   bits  3:1  = Red   (0-7)
  *   bits  7:5  = Green (0-7)
  *   bits 11:9  = Blue  (0-7)
- * Expand 3-bit components to 8-bit using × 36 (7×36 = 252 ≈ 255). */
+ * Expand 3-bit components to 8-bit via the authentic nonlinear Genesis DAC
+ * ladder (genesis_dac.h), matching real hardware / the BlastEm oracle. */
 static uint32_t md_colour_to_argb(cc_u16f colour)
 {
     /* Genesis CRAM: ----BBB-GGG-RRR- (bits 1-3=R, 5-7=G, 9-11=B) */
-    uint8_t r = (uint8_t)(((colour >>  1) & 7u) * 36u);
-    uint8_t g = (uint8_t)(((colour >>  5) & 7u) * 36u);
-    uint8_t b = (uint8_t)(((colour >>  9) & 7u) * 36u);
-    return 0xFF000000u | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+    return genesis_dac_cram_to_argb((uint16_t)colour, GENESIS_DAC_NORMAL);
 }
 
 #if PERMISSIVE_VDP

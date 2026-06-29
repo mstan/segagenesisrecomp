@@ -36,6 +36,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include "genesis_dac.h"   /* authentic DAC ladder + nearest-index recovery */
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,17 +79,14 @@ static inline uint32_t color_lut_map_cram(const ColorLut* lut, uint16_t cram) {
   return lut->table[idx & 0x1FFu];
 }
 
-/* Map an already-expanded ARGB8888 pixel (as produced by md_colour_to_argb,
- * i.e. each channel is one of the 8 levels {0,36,72,...,252}) back through the
- * LUT. Used for the present-time pass over s_framebuf where only ARGB is left.
- * Recovers the 3-bit channel by dividing the 8-bit value by 36. */
+/* Map an already-expanded ARGB8888 pixel (as produced by the runtime DAC
+ * ladder) back through the LUT. Used for the present-time pass over s_framebuf
+ * where only ARGB is left. Recovers the 3-bit channel as the nearest normal
+ * DAC level (inverse of the authentic ladder). */
 static inline uint32_t color_lut_map_argb(const ColorLut* lut, uint32_t argb) {
-  uint32_t r = ((argb >> 16) & 0xFFu) / 36u;
-  uint32_t g = ((argb >>  8) & 0xFFu) / 36u;
-  uint32_t b = ( argb        & 0xFFu) / 36u;
-  if (r > 7u) r = 7u;
-  if (g > 7u) g = 7u;
-  if (b > 7u) b = 7u;
+  uint32_t r = (uint32_t)genesis_dac_nearest_normal_idx((argb >> 16) & 0xFFu);
+  uint32_t g = (uint32_t)genesis_dac_nearest_normal_idx((argb >>  8) & 0xFFu);
+  uint32_t b = (uint32_t)genesis_dac_nearest_normal_idx( argb        & 0xFFu);
   uint32_t idx = r | (g << 3) | (b << 6);
   return lut->table[idx & 0x1FFu];
 }

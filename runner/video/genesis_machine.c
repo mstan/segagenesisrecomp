@@ -4,6 +4,7 @@
  * Z80, and our VDP, delivering V/H interrupts. Original implementation.
  */
 #include "genesis_machine.h"
+#include "genesis_dac.h"  /* authentic Genesis output-DAC color ladder */
 #include "chip_trace.h"   /* [CHIP-TRACE] shared FM/PSG stream ring + g_snd_* globals */
 #include <string.h>
 #include <stdio.h>   /* [SND-TRACE] temporary sound-command lifecycle trace */
@@ -149,17 +150,11 @@ extern int  glue_own_vint_service_latched(GVDP *vdp);  /* deliver a V-int latche
  * only ever touch indices < GVDP_TOTAL_PALETTE, so the slot is never clobbered. */
 static uint32_t s_cram_argb[GVDP_TOTAL_PALETTE + 1];
 
-static int clamp8(int v) { return v < 0 ? 0 : (v > 255 ? 255 : v); }
+/* lvl: 0 = normal, 1 = shadow, 2 = highlight (matches GENESIS_DAC_*). Uses the
+ * authentic nonlinear Genesis DAC ladder (genesis_dac.h), not linear ×36. */
 static uint32_t bgr9_to_argb(uint16_t c, int lvl)
 {
-    int r = (c >> 1) & 7, g = (c >> 5) & 7, b = (c >> 9) & 7, scale, off;
-    if      (lvl == 1) { scale = 18; off = 0;   }
-    else if (lvl == 2) { scale = 18; off = 130; }
-    else               { scale = 36; off = 0;   }
-    return 0xFF000000u
-         | ((uint32_t)clamp8(off + r * scale) << 16)
-         | ((uint32_t)clamp8(off + g * scale) << 8)
-         |  (uint32_t)clamp8(off + b * scale);
+    return genesis_dac_cram_to_argb(c, lvl);
 }
 static void colour_cb(void *u, unsigned idx, uint16_t bgr9)
 {
