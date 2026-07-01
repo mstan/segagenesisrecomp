@@ -817,6 +817,27 @@ void glue_handle_interrupt(cc_u16f level)
  * permits — see glue_own_vint_service_latched(). */
 static int s_own_vint_latched = 0;
 
+/* --- STAGE 1: interleaved interrupt delivery (behind GENESIS_INTERLEAVE_IRQ) --
+ * The atomic model runs a V-int/H-int handler to completion on the MAIN fiber
+ * (yields gated), then fakes its duration with s_irq_cycle_debt. A multi-frame
+ * handler (the Sega-scream PCM V-int, ~16.5M cycles) therefore executes with the
+ * VDP/Z80 FROZEN, forking machine state from the cycle-accurate oracle at the
+ * scream (co-sim: runner first-diverges ~frame 54). Interleaved delivery instead
+ * runs the handler ON THE GAME FIBER, so its bus accesses drain the cycle budget
+ * -> check_cycle_budget yields to the scanline scheduler -> VDP renders + Z80
+ * steps -> the game fiber resumes back into the handler. Same interleave the
+ * main program already uses; matches hardware/clownmdemu. Default OFF. */
+static int s_interleave_irq  = -1;   /* -1 = unread env; 0/1 after */
+static int s_pending_irq     = 0;    /* level (4/6) flagged by scheduler, run by game fiber */
+static int s_irq_in_progress = 0;    /* an interleaved handler is running on the game fiber */
+static int interleave_irq_on(void) {
+    if (s_interleave_irq < 0) {
+        const char *e = getenv("GENESIS_INTERLEAVE_IRQ");
+        s_interleave_irq = (e && *e && *e != '0') ? 1 : 0;
+    }
+    return s_interleave_irq;
+}
+
 /* Run the game's V_Int(6) handler atomically against OUR work RAM + VDP. Saves
  * /restores g_cpu and gates budget yields (s_in_vblank_service), so it is safe
  * to fire while the fiber is parked mid-instruction at a budget yield. */
@@ -900,19 +921,77 @@ static void own_deliver_vint(GVDP *vdp)
     s_game_yielded_vblank = 0;
 }
 
+/* STAGE 1: run the V-int/H-int handler ON THE GAME FIBER, budget-interleaved
+ * with the scanline scheduler (NOT atomically on the main fiber). Called from
+ * the game fiber's WaitForVBla resume point (glue_yield_for_vblank) when the
+ * scheduler flagged s_pending_irq. The handler's bus accesses drain the cycle
+ * budget; check_cycle_budget then fiber_switches to the scheduler, which renders
+ * a scanline + steps the Z80 and resumes the game fiber back into the handler.
+ * No s_irq_cycle_debt (real interleaved cycles are consumed) and no
+ * s_in_vblank_service (so check_cycle_budget is NOT gated -> the handler yields).
+ * SR interrupt mask is raised to `level` like the CPU does on interrupt entry,
+ * so a V-int crossing during the handler LATCHES (see glue_own_interrupt) rather
+ * than re-entering. */
+static void own_run_handler_interleaved(int level, GVDP *vdp)
+{
+    const uint32_t STK = g_game_layout.intr_stack;
+    uint32_t byteoff = (STK - 256u) & 0xFFFFu;
+    uint8_t save[256];
+    M68KState saved = g_cpu;
+    for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
+    g_cpu.A[7] = STK;
+    g_cpu.SR = (uint16_t)((g_cpu.SR & ~0x0700u) | ((uint16_t)(level & 7) << 8));
+    s_irq_in_progress = 1;
+    uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
+    g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+#ifdef GENESIS_COSIM
+    if (genesis_force_interp()) {
+        m68k_interp_run_handler(m68k_read32(level == 6 ? 0x78 : 0x70) & 0xFFFFFFu);
+    } else
+#endif
+    if (level == 6) { if (g_game_spec.call_vblank) g_game_spec.call_vblank(); }
+    else            { if (g_game_spec.call_hblank) g_game_spec.call_hblank(); }
+    g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+    vdp->in_vblank = saved_vb;
+    for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+    g_cpu = saved;
+    s_irq_in_progress = 0;
+    s_game_yielded_vblank = 0;
+}
+
 /* Own-backend interrupt delivery — the clownmdemu-free twin of
  * glue_handle_interrupt: runs the game's V-int(6)/H-int(4) handler using OUR
  * work RAM (g_ram) for the IRQ-stack save/restore and OUR VDP's vblank flag. */
 void glue_own_interrupt(int level, GVDP *vdp)
 {
     if (!s_game_running) return;
+    /* An interleaved handler is already running on the game fiber (the scheduler
+     * is crossing raster lines DURING it). Do not start another delivery — latch
+     * a crossing V-int and let it deliver after the current handler RTEs. (SR
+     * mask=level usually makes imask>=6 below anyway; this guards the case where
+     * the handler itself drops the mask mid-run.) */
+    if (s_irq_in_progress) { if (level == 6) s_own_vint_latched = 1; return; }
     int imask = (g_cpu.SR >> 8) & 7;
 
     if (level == 6) {
         /* Fire V_Int once per wall frame, exactly like hardware — NOT only when
          * the game has parked at WaitForVBlank. If the 68K currently has IRQs
          * masked, latch it and deliver when the mask drops instead of losing it. */
-        if (imask < 6) { s_own_vint_latched = 0; own_deliver_vint(vdp); }
+        if (imask < 6) {
+            s_own_vint_latched = 0;
+            /* STAGE 1: if interleaved delivery is on AND the game is parked at
+             * WaitForVBla, run the handler on the GAME FIBER (budget-interleaved)
+             * instead of atomically here. Flag it and wake the fiber; the handler
+             * runs at the glue_yield_for_vblank resume point. Mid-run delivery
+             * (game not parked) still uses the atomic path below — no regression
+             * for lag-frame V-ints. */
+            if (interleave_irq_on() && s_game_yielded_vblank) {
+                s_pending_irq = 6;
+                s_game_yielded_vblank = 0;   /* let glue_run_game_chunk resume the fiber */
+            } else {
+                own_deliver_vint(vdp);
+            }
+        }
         else           {
 #ifdef GEN_DEV_TRACE
             /* [VINT-MASK] V-int latched because the main-context 68K has IRQs
@@ -999,8 +1078,8 @@ extern uint32_t m68k_read32(uint32_t);
  * yield to main loop for one frame. */
 void glue_yield_for_vblank(void)
 {
-    if (s_in_vblank_service)
-        return;
+    if (s_in_vblank_service || s_irq_in_progress)
+        return;   /* inside a handler (atomic or interleaved) — don't re-park */
     s_watchdog_counter = 0;
     if (g_yield_log_file) {
         uint32_t vbc = m68k_read32(g_game_layout.vint_runcount_addr & 0xFFFF);
@@ -1024,6 +1103,16 @@ void glue_yield_for_vblank(void)
     s_game_yielded_vblank = 1;
     { char stack_marker; game_stack_note("WaitForVint", &stack_marker); }
     fiber_switch(s_main_fiber);
+    /* STAGE 1 interleaved IRQ: the scheduler flagged a V-int/H-int while we were
+     * parked here. Run its handler NOW, on this (game) fiber — its bus accesses
+     * yield via check_cycle_budget so it interleaves with the scanline scheduler
+     * (VDP/Z80 advance mid-handler), instead of the scheduler running it in one
+     * atomic lump. The handler wakes the wait (bumps v_vblank_count) so the game
+     * loop below exits. Loops in case another IRQ is flagged before we return. */
+    while (s_pending_irq) {
+        int lvl = s_pending_irq; s_pending_irq = 0;
+        own_run_handler_interleaved(lvl, &g_machine.vdp);
+    }
     /* Resumed here when next frame's DoCycles calls glue_run_game_chunk.
      *
      * Simulate WaitForVBlank polling overhead: the real 68K spins in a
