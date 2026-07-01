@@ -122,10 +122,11 @@ int main(int argc, char *argv[]) {
     printf("[GenesisRecomp] Found %d functions\n", funcs.count);
 
     /* Emit C */
-    char out_full[256], out_dispatch[256], out_layout[256];
+    char out_full[256], out_dispatch[256], out_layout[256], out_cycles[256];
     snprintf(out_full,     sizeof(out_full),     "generated/%s_full.c",     output_prefix);
     snprintf(out_dispatch, sizeof(out_dispatch), "generated/%s_dispatch.c", output_prefix);
     snprintf(out_layout,   sizeof(out_layout),   "generated/%s_layout.c",   output_prefix);
+    snprintf(out_cycles,   sizeof(out_cycles),   "generated/%s_cycles.c",   output_prefix);
 
     if (!codegen_emit(&rom, &funcs, out_full, out_dispatch, &at, &cfg, reverse_debug)) {
         fprintf(stderr, "[GenesisRecomp] Code generation failed\n");
@@ -133,6 +134,15 @@ int main(int argc, char *argv[]) {
         function_list_free(&funcs);
         return 1;
     }
+
+    /* Emit the per-instruction cycle-cost table (populated during codegen) so
+     * the runtime interpreter / Tier-3 floor charge the SAME costs the
+     * recompiled code does. See emit_insn_cost_table in code_generator.c. */
+    { extern void emit_insn_cost_table(FILE *);
+      FILE *cf = fopen(out_cycles, "w");
+      if (cf) { emit_insn_cost_table(cf); fclose(cf);
+                printf("[GenesisRecomp] Emitted %s\n", out_cycles); }
+      else fprintf(stderr, "[GenesisRecomp] WARN: could not write %s\n", out_cycles); }
 
     /* Emit per-game RAM layout TU. Hard build failure if the game.toml
      * has no [ram_layout] — shared runner code now reads g_game_layout

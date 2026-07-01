@@ -974,6 +974,9 @@ static void emit_cycle_accounting(FILE *f, const char *indent, int cycles)
                " g_audio_cycle_counter += %d;"
                " if (g_cycle_accumulator >= g_vblank_threshold)"
                " glue_check_vblank();\n", indent, cycles, cycles);
+    /* Differential co-sim per-instruction checkpoint (no-op unless GENESIS_COSIM;
+     * mirrors interp_account_cycles in m68k_interp.c). */
+    fprintf(f, "%sGEN_COSIM_TICK(%d);\n", indent, cycles);
 }
 
 static void emit_split_tail_call(FILE *f, const char *indent,
@@ -1646,15 +1649,49 @@ static int estimate_cycles_prm(const M68KInstr *instr)
  * cycle_probe) for the exact cost; falls back to the PRM-derived table
  * above if the probe isn't initialised (e.g. unit-test paths) or if
  * clown returned an unreasonable value. */
+/* Per-address record of the EXACT cost the generated code was stamped with
+ * (clown-measured, or PRM fallback). Emitted as <prefix>_cycles.c so the
+ * runtime interpreter / Tier-3 floor can charge the SAME cost the recompiled
+ * code does — otherwise the interp (PRM estimate) and recomp (clown-measured)
+ * disagree on g_audio_cycle_counter, which drives audio-stamp pacing. Indexed
+ * by addr>>1 (68K instructions are word-aligned); 0 = not recorded. */
+static uint16_t *g_insn_cost_by_addr = NULL;   /* [0x200000] */
+static void insn_cost_record(uint32_t addr, int cost) {
+    if (!g_insn_cost_by_addr)
+        g_insn_cost_by_addr = (uint16_t *)calloc(0x200000u, sizeof(uint16_t));
+    if (g_insn_cost_by_addr && addr < 0x400000u && cost > 0 && cost < 0x10000)
+        g_insn_cost_by_addr[addr >> 1] = (uint16_t)cost;
+}
+/* Emit the sorted (addr,cost) table (called from main after codegen). */
+void emit_insn_cost_table(FILE *f) {
+    fprintf(f, "/* AUTO-GENERATED per-instruction cycle costs — do not edit.\n"
+               " * The EXACT costs the recompiled code was stamped with (clown-\n"
+               " * measured via cycle_probe, or PRM fallback). game_cycles.c looks\n"
+               " * these up so the interpreter/floor pace identically. */\n");
+    fprintf(f, "#include \"game_cycles.h\"\n\n");
+    fprintf(f, "const GameInsnCost g_game_insn_costs[] = {\n");
+    size_t n = 0;
+    if (g_insn_cost_by_addr) {
+        for (uint32_t i = 0; i < 0x200000u; i++) {
+            if (g_insn_cost_by_addr[i]) {
+                fprintf(f, "{0x%06Xu,%u},", i << 1, g_insn_cost_by_addr[i]);
+                if ((++n & 7u) == 0) fprintf(f, "\n");
+            }
+        }
+    }
+    fprintf(f, "\n};\nconst size_t g_game_insn_cost_count = %zuu;\n", n);
+}
+
 static int estimate_cycles(const M68KInstr *instr)
 {
     int measured = cycle_probe_measure(instr->addr);
     /* Guard: any positive value within a sane range wins. Outside that
      * range, fall back — clown returned <=0 (not initialised) or some
      * absurd count (illegal opcode trap path, etc). */
-    if (measured > 0 && measured <= 300)
-        return measured;
-    return estimate_cycles_prm(instr);
+    int cost = (measured > 0 && measured <= 300) ? measured
+                                                 : estimate_cycles_prm(instr);
+    insn_cost_record(instr->addr, cost);
+    return cost;
 }
 
 /* emit_mem_shift — the 68K memory shift/rotate forms (opcode size field == 11,

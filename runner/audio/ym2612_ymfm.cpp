@@ -182,6 +182,25 @@ extern "C" int ym2612_save_state(FILE *f) {
     return 1;
 }
 
+#ifdef GENESIS_COSIM
+#include "cosim.h"
+/* Full FM chip state hashed for differential co-sim. Same surface as
+ * ym2612_save_state (the opaque ymfm blob via save_restore + wrapper LPF /
+ * sample-clock remainder) but folded into an FNV-1a hash instead of a FILE.
+ * save_restore in save-mode is a pure read — side-effect-free on the chip. */
+extern "C" uint64_t ym2612_cosim_hash(void) {
+    if (!s_inited) ym2612_init();
+    std::vector<uint8_t> buf;
+    ymfm::ymfm_saved_state st(buf, true);
+    s_chip->save_restore(st);
+    uint64_t h = cosim_fnv_bytes(cosim_fnv_init(), buf.data(), buf.size());
+    h = cosim_fnv_u32(h, s_master_accum);
+    h = cosim_fnv_bytes(h, s_fm_lpf_prev, sizeof s_fm_lpf_prev);
+    h = cosim_fnv_bytes(h, s_fm_lpf_out,  sizeof s_fm_lpf_out);
+    return h;
+}
+#endif /* GENESIS_COSIM */
+
 extern "C" int ym2612_load_state(FILE *f) {
     if (!s_inited) ym2612_init();
     uint32_t n = 0;

@@ -16,6 +16,9 @@
 #include "m68k_interp.h"
 #include "m68k_decoder.h"   /* recompiler/src — added to the runner include path */
 #include "rom_parser.h"     /* GenesisRom, rom_read* (decoder's fetch source)    */
+#ifdef GENESIS_COSIM
+#include "game_cycles.h"    /* game_insn_cost — clown-measured baked costs        */
+#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -1197,13 +1200,27 @@ static int interp_estimate_cycles(const M68KInstr *instr) {
 
 /* The emit_cycle_accounting() tail, executed after one interpreted instruction. */
 static void interp_account_cycles(const M68KInstr *ins) {
-    int cyc = interp_estimate_cycles(ins);
+    int cyc = -1;
+#ifdef GENESIS_COSIM
+    /* Charge the SAME clown-measured cost the recompiled code was stamped with,
+     * so g_audio_cycle_counter converges with the recomp instead of drifting on
+     * a PRM estimate. Falls back to the estimate for addresses not in the table
+     * (RAM-resident code). Gated to the cosim build for now — enabling it in the
+     * shipping floor is a validated pacing change (see game_cycles.h). */
+    cyc = game_insn_cost(ins->addr);
+#endif
+    if (cyc < 0) cyc = interp_estimate_cycles(ins);
     if (cyc < 0) cyc = 4;                          /* never stall the clock */
     g_native_insn_count++;
     g_cycle_accumulator   += (uint32_t)cyc;
     g_audio_cycle_counter += (uint32_t)cyc;
     if (g_cycle_accumulator >= g_vblank_threshold)
         glue_check_vblank();
+    /* Differential co-sim: advance the same monotonic checkpoint axis the
+     * recompiled backend advances via emit_cycle_accounting's GEN_COSIM_TICK,
+     * with the identical per-instruction cost — so both backends park at the
+     * same axis value. No-op unless GENESIS_COSIM. */
+    GEN_COSIM_TICK(cyc);
 }
 #endif /* ENABLE_RECOMPILED_CODE */
 
@@ -1339,3 +1356,60 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
         }
     }
 }
+
+#ifdef GENESIS_COSIM
+/* ---------------------------------------------------------------------------
+ * Interrupt-handler run (FORCE_INTERP / pairing #1).
+ *
+ * Interprets an interrupt HANDLER BODY from its autovector entry, stopping at
+ * the handler's own depth-0 RTE — the exact analog of what the recompiled
+ * g_game_spec.call_vblank()/call_hblank() do inside glue's own_deliver_vint /
+ * glue_own_interrupt: run the handler for its SIDE EFFECTS (RAM / chip / Z80
+ * mailbox writes) with the caller's save/restore around it. The RTE is PEEKED,
+ * not executed: glue set A7 = intr_stack with no real exception frame pushed
+ * (matching the recomp model), and discards g_cpu afterward, so popping would
+ * read garbage. Net call depth (JSR/BSR +1, RTS/RTR -1) keeps a nested
+ * subroutine's RTE-free returns from ending the run early.
+ * ------------------------------------------------------------------------- */
+M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
+    g_cpu.PC = entry_pc & 0xFFFFFFu;
+    g_m68ki_insn_count = 0;
+    g_m68ki_discover_count = 0;
+
+    int depth = 0;
+    for (;;) {
+        uint32_t pc = g_cpu.PC & 0xFFFFFFu;
+        if (pc >= ROM_SIZE) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
+
+        M68KInstr ins;
+        if (!m68k_decode(romview(), pc, &ins)) {
+            g_m68ki_bad_pc = pc; g_m68ki_bad_op = m68k_read16(pc);
+            return M68KI_HALT_UNIMPL;
+        }
+
+        if (depth == 0 && ins.mnemonic == MN_RTE)
+            return M68KI_OK;                 /* handler's own return — stop, don't pop */
+
+        uint32_t next;
+        s_illegal_ea = 0;
+        M68kiStatus st = exec_one(&ins, &next);
+        if (st != M68KI_OK) return st;
+        if (s_illegal_ea) {
+            g_m68ki_bad_pc = ins.addr; g_m68ki_bad_op = ins.words[0];
+            return M68KI_HALT_UNIMPL;
+        }
+        g_cpu.PC = next & 0xFFFFFFu;
+#if ENABLE_RECOMPILED_CODE
+        interp_account_cycles(&ins);
+#endif
+        if (ins.mnemonic == MN_JSR || ins.mnemonic == MN_BSR)
+            depth++;
+        else if (ins.mnemonic == MN_RTS || ins.mnemonic == MN_RTR)
+            depth--;
+
+        if (++g_m68ki_insn_count > M68KI_INSN_GUARD) {
+            g_m68ki_bad_pc = g_cpu.PC; return M68KI_HALT_GUARD;
+        }
+    }
+}
+#endif /* GENESIS_COSIM */

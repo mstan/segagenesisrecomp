@@ -48,10 +48,47 @@ static int evt_cmp(const void *pa, const void *pb)
     return a->idx < b->idx ? -1 : (a->idx > b->idx ? 1 : 0);   /* stable */
 }
 
+/* Boop-bisection toggles (env, read once). Each DISABLES one mixer mechanism
+ * that CLAIMS to fix the boop, so we can A/B which one actually causes the jump
+ * SFX trailing-boop. Default 0 = current (shipping) behavior. Dev-only. */
+static int s_mix_toggle_read = 0;
+static int s_no_spread = 0, s_no_pairguard = 0, s_no_leftover = 0, s_no_clamp = 0;
+static void mixer_read_toggles(void) {
+    if (s_mix_toggle_read) return;
+    s_mix_toggle_read = 1;
+    const char *e;
+    if ((e = getenv("GENESIS_MIXER_NO_SPREAD"))    && *e && *e!='0') s_no_spread   = 1;
+    if ((e = getenv("GENESIS_MIXER_NO_PAIRGUARD")) && *e && *e!='0') s_no_pairguard= 1;
+    if ((e = getenv("GENESIS_MIXER_NO_LEFTOVER"))  && *e && *e!='0') s_no_leftover = 1;
+    if ((e = getenv("GENESIS_MIXER_NO_CLAMP"))     && *e && *e!='0') s_no_clamp    = 1;
+    if (s_no_spread||s_no_pairguard||s_no_leftover||s_no_clamp)
+        fprintf(stderr, "[MIXER-TOGGLE] no_spread=%d no_pairguard=%d no_leftover=%d no_clamp=%d\n",
+                s_no_spread, s_no_pairguard, s_no_leftover, s_no_clamp);
+}
+
 void audio_mixer_drain(uint32_t frame_end_cycle,
                        int16_t *fm_stereo_out, size_t fm_cap, size_t *fm_written,
                        int16_t *psg_mono_out,  size_t psg_cap, size_t *psg_written)
 {
+    mixer_read_toggles();
+
+    /* Always-on APPLIED-order capture (env GENESIS_AUDIO_APPLIEDDUMP=<path>):
+     * records every FM/PSG write in the order + timing the mixer actually
+     * feeds the chip THIS frame — the POST-drain (sorted + spread + clamped)
+     * stream — vs the PRE-drain push stream captured by event_queue.c's
+     * WRITEDUMP. Each row carries the event's push index within the frame
+     * (pi=), so a diff tool can pinpoint where the stamp sort reordered a
+     * write away from its issue order — i.e. where the own backend's two-axis
+     * stamps disagree with the faithful push order (which matches the oracle
+     * at envelope corr 1.000). No-op unless the env is set. */
+    static FILE *s_ad = NULL; static int s_ad_init = 0;
+    if (!s_ad_init) {
+        s_ad_init = 1;
+        const char *p = getenv("GENESIS_AUDIO_APPLIEDDUMP");
+        if (p && *p) s_ad = fopen(p, "w");
+    }
+    extern unsigned long g_snd_frame;
+
     /* Per-chip monotonic cycle trackers. Each chip advances only at its
      * own write events (plus the frame tail), matching clownmdemu's
      * per-chip SyncFM / SyncPSG pattern. Advancing both chips on every
@@ -77,6 +114,7 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * event can sort between an address write and the data write that
      * completes it, so the synth's address latch can never be clobbered
      * mid-pair by cross-axis interleaving. */
+    if (!s_no_pairguard)
     for (size_t i = 0; i < n; i++) {
         uint8_t p = evs[i].e.port;
         if (p == AUDIO_PORT_FM1_ADDR || p == AUDIO_PORT_FM2_ADDR) {
@@ -101,12 +139,14 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * (address, data) pair so a pair never straddles the boundary with a
      * foreign write able to sort between its halves next frame. */
     size_t n_apply = n;
+    if (!s_no_spread) {
     while (n_apply > 0 && evs[n_apply - 1].e.cycle_stamp > frame_end_cycle)
         n_apply--;
     if (n_apply > 0) {
         uint8_t lastp = evs[n_apply - 1].e.port;
         if (lastp == AUDIO_PORT_FM1_ADDR || lastp == AUDIO_PORT_FM2_ADDR)
             n_apply--;   /* keep the orphan address with its deferred data */
+    }
     }
     if (n_apply < n) {
         static AudioEvent defer[DRAIN_CAP];
@@ -145,6 +185,14 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
             }
             fm_prev = e.cycle_stamp;
         }
+        if (s_ad) {
+            if (e.port == AUDIO_PORT_PSG)
+                fprintf(s_ad, "f=%lu APP PSG $%02X cyc=%u pi=%u\n",
+                        g_snd_frame, e.value, e.cycle_stamp, (unsigned)evs[i].idx);
+            else
+                fprintf(s_ad, "f=%lu APP FM  p%u $%02X cyc=%u pi=%u\n",
+                        g_snd_frame, e.port, e.value, e.cycle_stamp, (unsigned)evs[i].idx);
+        }
     }
 
     /* Tail-advance each chip to end of wall frame. */
@@ -159,7 +207,7 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * boundary there (sync.psg.current_cycle is a per-Iterate local
      * that resets to 0). Our persistent leftover caused sub-sample
      * drift that may have been the boop source on long runs. */
-    psg_reset_leftover();
+    if (!s_no_leftover) psg_reset_leftover();
 
     /* Copy generated samples into the caller's buffers. */
     size_t fm_avail  = ym2612_samples_available();

@@ -68,6 +68,13 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc);
  */
 M68kiStatus m68k_interp_step(void);
 
+#ifdef GENESIS_COSIM
+/* Interpret an interrupt HANDLER BODY from its autovector entry, stopping at the
+ * handler's own depth-0 RTE (peeked, not executed). FORCE_INTERP / pairing #1:
+ * the interpreted twin of g_game_spec.call_vblank()/call_hblank(). */
+M68kiStatus m68k_interp_run_handler(uint32_t entry_pc);
+#endif
+
 /* Per-run diagnostics (the manifest/floor layers read these). */
 extern uint32_t g_m68ki_bad_pc;      /* PC of the offending instruction (UNIMPL) */
 extern uint16_t g_m68ki_bad_op;      /* opcode word of the offending instruction */

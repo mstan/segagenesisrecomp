@@ -218,6 +218,48 @@ int psg_save_state(FILE *f)
     return 1;
 }
 
+#ifdef GENESIS_COSIM
+#include "cosim.h"
+/* Full PSG state hashed for differential co-sim (field-by-field to dodge
+ * struct padding). Includes the noise LFSR + counters + sample-clock leftover
+ * — the surface frame_snapshots.c zeroes. */
+uint64_t psg_cosim_hash(void)
+{
+    if (!s_inited) psg_init();
+    uint64_t h = cosim_fnv_init();
+    for (int i = 0; i < 3; i++) h = cosim_fnv_u16(h, s_sn.tone_period[i]);
+    for (int i = 0; i < 3; i++) h = cosim_fnv_u32(h, (uint32_t)s_sn.tone_counter[i]);
+    for (int i = 0; i < 3; i++) h = cosim_fnv_u8(h, s_sn.tone_out[i]);
+    for (int i = 0; i < 4; i++) h = cosim_fnv_u8(h, s_sn.vol[i]);
+    h = cosim_fnv_u8(h, s_sn.noise_ctrl);
+    h = cosim_fnv_u32(h, (uint32_t)s_sn.noise_counter);
+    h = cosim_fnv_u16(h, s_sn.lfsr);
+    h = cosim_fnv_u8(h, s_sn.noise_ff);
+    h = cosim_fnv_u8(h, s_sn.noise_out);
+    h = cosim_fnv_u8(h, s_sn.latch);
+    h = cosim_fnv_u32(h, (uint32_t)s_sn.lpf_y);
+    h = cosim_fnv_u32(h, (uint32_t)s_sn.lpf_prev);
+    h = cosim_fnv_u32(h, s_leftover_master_cycles);
+    return h;
+}
+
+#include <stdio.h>
+/* Human-readable PSG field dump for co-sim drill (which field diverges?). */
+int psg_cosim_dump(char *buf, int cap) {
+    if (!s_inited) psg_init();
+    return snprintf(buf, (size_t)cap,
+        "tone_p %u %u %u tone_c %d %d %d tone_o %u %u %u "
+        "vol %u %u %u %u noise_ctrl %u noise_c %d lfsr %u noise_ff %u noise_o %u "
+        "latch %u leftover %u",
+        s_sn.tone_period[0], s_sn.tone_period[1], s_sn.tone_period[2],
+        s_sn.tone_counter[0], s_sn.tone_counter[1], s_sn.tone_counter[2],
+        s_sn.tone_out[0], s_sn.tone_out[1], s_sn.tone_out[2],
+        s_sn.vol[0], s_sn.vol[1], s_sn.vol[2], s_sn.vol[3],
+        s_sn.noise_ctrl, s_sn.noise_counter, s_sn.lfsr, s_sn.noise_ff,
+        s_sn.noise_out, s_sn.latch, s_leftover_master_cycles);
+}
+#endif /* GENESIS_COSIM */
+
 int psg_load_state(FILE *f)
 {
     if (!s_inited) psg_init();

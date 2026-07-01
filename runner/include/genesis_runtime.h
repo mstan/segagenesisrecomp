@@ -178,6 +178,26 @@ void glue_check_vblank(void);
  * audio mixer (runner/audio/). Defined in runner/glue.c. */
 extern uint32_t g_audio_cycle_counter;
 
+/* ---- Differential co-simulation per-instruction checkpoint hook ----------
+ * GEN_COSIM_TICK(n) is emitted per instruction by the generator
+ * (emit_cycle_accounting) and mirrored in m68k_interp.c (interp_account_cycles).
+ * It advances a MONOTONIC cycle axis that both backends bump by the same
+ * per-instruction cost, and when that axis crosses the next checkpoint boundary
+ * the guest hashes full architectural state and PARKS for the coordinator
+ * (see cosim.c). Expands to nothing unless GENESIS_COSIM is defined, so normal
+ * native/oracle builds are byte-for-byte unaffected. The stride between
+ * checkpoints (env GENESIS_COSIM_STRIDE) subsumes frame-sync (large stride) and
+ * cycle-exact (small stride) under one mechanism. */
+#ifdef GENESIS_COSIM
+extern uint64_t g_cosim_cycle;      /* monotonic; never resets (unlike g_audio) */
+extern uint64_t g_cosim_next_cp;    /* next checkpoint boundary                 */
+void cosim_checkpoint(void);        /* hash + park; advances g_cosim_next_cp    */
+#define GEN_COSIM_TICK(n) do { g_cosim_cycle += (uint64_t)(n); \
+    if (g_cosim_cycle >= g_cosim_next_cp) cosim_checkpoint(); } while (0)
+#else
+#define GEN_COSIM_TICK(n) ((void)0)
+#endif
+
 /* ---- Controller ---- */
 /* 3-button pad bitmask: bit5=C, bit4=B, bit3=A,
  *   bit2=Start, bit1=Up, bit0=Down (bit6=Left? depends on read mode)

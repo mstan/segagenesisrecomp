@@ -575,7 +575,34 @@ static cc_s16l s_psg_accum[PSG_ACCUM_FRAMES];       /* mono   */
 static size_t  s_fm_count  = 0;
 static size_t  s_psg_count = 0;
 
+/* Tier-3 audio localization: dump the mixer's DETERMINISTIC pre-resample output
+ * (before the DRC resampler + host audio sink) so a boop can be pinned to the
+ * mixer vs the resampler, and to FM vs PSG, and diffed across mixer-logic
+ * toggles. Env GENESIS_AUDIO_PREDRC=<prefix> => <prefix>.fm.s16 (interleaved
+ * stereo) + <prefix>.psg.s16 (mono), raw int16 LE. No-op unless the env is set,
+ * so it's harmless in every build. */
+static void dump_predrc(const cc_s16l *fm, size_t fm_frames,
+                        const cc_s16l *psg, size_t psg_frames) {
+    static FILE *ff = NULL, *pf = NULL;
+    static int inited = 0;
+    if (!inited) {
+        inited = 1;
+        const char *pfx = getenv("GENESIS_AUDIO_PREDRC");
+        if (pfx && *pfx) {
+            char p[512];
+            snprintf(p, sizeof p, "%s.fm.s16",  pfx); ff = fopen(p, "wb");
+            snprintf(p, sizeof p, "%s.psg.s16", pfx); pf = fopen(p, "wb");
+            fprintf(stderr, "[PREDRC] dumping pre-resample mixer output to %s.{fm,psg}.s16\n", pfx);
+        }
+    }
+    if (ff && fm  && fm_frames)  fwrite(fm,  sizeof(cc_s16l), fm_frames * 2, ff);
+    if (pf && psg && psg_frames) fwrite(psg, sizeof(cc_s16l), psg_frames,    pf);
+}
+
 #include "audio/mixer.h"          /* audio_mixer_drain */
+#ifdef GENESIS_COSIM
+#include "cosim.h"                 /* cosim_init / cosim_frame_checkpoint */
+#endif
 #include "audio/observability.h"  /* boop detector */
 #include "audio/event_queue.h"    /* audio_event_queue_reset (save-state load) */
 #include "audio/ym2612.h"         /* ym2612_save/load_state */
@@ -1837,6 +1864,13 @@ int main(int argc, char *argv[])
     if (s_debug_enabled)
         cmd_server_init(debug_port);
 
+#ifdef GENESIS_COSIM
+    /* Differential co-simulation: bring up the lockstep TCP server + checkpoint
+     * machinery BEFORE the first 68K instruction runs (env GENESIS_COSIM_PORT /
+     * _STRIDE / _CLOCK). Only built into the genesis-cosim target. */
+    cosim_init();
+#endif
+
 #if SONIC_REVERSE_DEBUG
     /* Always-on Tier 1 store ring — install before the first 68K
      * instruction so probes have full coverage from boot without any
@@ -2139,6 +2173,8 @@ int main(int argc, char *argv[])
                                 s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
                                 s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count);
           }
+          /* Tier-3: deterministic pre-resample mixer capture (env-gated). */
+          dump_predrc(s_fm_accum, s_fm_count, s_psg_accum, s_psg_count);
           /* Observability runs regardless — we want to detect boops in
            * whichever backend is providing samples. */
           audio_obs_ingest_fm ((const int16_t *)s_fm_accum,  s_fm_count);
@@ -2152,7 +2188,19 @@ int main(int argc, char *argv[])
           if (s_quit_via_park_drain) { running = 0; break; }
 #endif
           glue_service_vblank();
-          glue_end_of_wall_frame(); }
+          glue_end_of_wall_frame();
+#ifdef GENESIS_COSIM
+          /* Differential co-sim FRAME checkpoint. Own-backend: master_cycle is the
+           * ruler. Oracle (pairing #2): no g_machine — use the wall-frame number
+           * (both backends run one frame per checkpoint; the chain folds the
+           * ordinal, so the clock value is report-only). */
+#if OWN_BACKEND
+          cosim_frame_checkpoint(g_machine.master_cycle);
+#else
+          cosim_frame_checkpoint((uint64_t)frame_num);
+#endif
+#endif
+          }
 #else
         s_current_frame_for_input = frame_num;
         /* [CHIP-TRACE] stamp the oracle's FM/PSG write stream with the current
@@ -2165,6 +2213,12 @@ int main(int argc, char *argv[])
         ClownMDEmu_Iterate(&g_clownmdemu);
 #if SONIC_REVERSE_DEBUG
         rdb_record_iterate();
+#endif
+#ifdef GENESIS_COSIM
+        /* Pairing #2 (oracle) FRAME checkpoint: ClownMDEmu_Iterate ran one full
+         * wall frame. No g_machine here — key on the wall-frame number (the chain
+         * folds the ordinal, so the clock value is report-only). */
+        cosim_frame_checkpoint((uint64_t)frame_num);
 #endif
 #endif
         check_ramdump();
