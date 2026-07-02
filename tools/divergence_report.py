@@ -107,8 +107,8 @@ def _kill(name):
 
 def _pair(a_backend, b_backend, clock, stride, pairing2, start_frame=0):
     """Launch an A/B instance pair (fresh ports each call)."""
-    _kill("SonicTheHedgehogRecomp_cosim.exe")
-    _kill("SonicTheHedgehogRecomp_oracle_cosim.exe")
+    _kill(f"{G.GAMES[G.GAME]['exe']}_cosim.exe")
+    _kill(f"{G.GAMES[G.GAME]['exe']}_oracle_cosim.exe")
     vis_a = pairing2 and a_backend != "oracle"
     vis_b = pairing2 and b_backend != "oracle"
     exe_a = G.find_oracle_exe(None) if a_backend == "oracle" else G.find_exe(None)

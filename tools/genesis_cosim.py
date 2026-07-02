@@ -36,9 +36,9 @@ SUBS = ["cpu68k","timing","ram","z80","z80ram","handshake","vdp","fm","psg","evq
 # checked out); building/running them needs the _wt-cosim-<g> worktree + ROM + the
 # _cosim/_oracle_cosim CMake targets (copy Sonic 1's — see COSIM.md).
 GAMES = {
-    "s1": {"wt": "_wt-cosim-s1", "exe": "SonicTheHedgehogRecomp",  "waitvbl": "29a8"},
-    "s2": {"wt": "_wt-cosim-s2", "exe": "SonicTheHedgehog2Recomp", "waitvbl": "3384"},
-    "s3": {"wt": "_wt-cosim-s3", "exe": "Sonic3KRecomp",           "waitvbl": ""},
+    "s1": {"wt": "_wt-cosim-s1", "exe": "SonicTheHedgehogRecomp",  "waitvbl": "29a8", "rom": "sonic.bin"},
+    "s2": {"wt": "_wt-cosim-s2", "exe": "SonicTheHedgehog2Recomp", "waitvbl": "3384", "rom": "sonic2.bin"},
+    "s3": {"wt": "_wt-cosim-s3", "exe": "Sonic3KRecomp",           "waitvbl": "1d18", "rom": "sonic3k.bin"},
 }
 GAME = "s1"   # module-level selection; set by --game (or divergence_report)
 
@@ -70,7 +70,7 @@ class Inst:
                  waitvbl_pc="", visible=False):
         self.name = name
         exe_dir = os.path.dirname(exe)
-        rom = os.path.join(exe_dir, "sonic.bin")          # shared read-only ROM
+        rom = os.path.join(exe_dir, GAMES[GAME]["rom"])   # per-game read-only ROM
         # ISOLATED per-instance cwd: settings.ini / saves / logs must not be
         # shared between the two instances (a shared build dir races boot-time
         # state -> nondeterminism + crashes). See project memory "rule out
