@@ -26,22 +26,42 @@ import argparse, os, socket, subprocess, sys, time
 
 SUBS = ["cpu68k","timing","ram","z80","z80ram","handshake","vdp","fm","psg","evq"]
 
+# Per-game harness config. The runner/engine cosim is game-agnostic (WaitForVBla
+# PC via GENESIS_COSIM_WAITVBL_PC; regions via g_game_spec/g_game_layout; the
+# clown-measured cost table is per-game generated). Only the TOOLING needs to
+# know each game's build-worktree dir, exe base name, and WaitForVBla entry PC.
+#   waitvbl: WaitForVBla func entry PC (pattern-detected in code_generator.c) —
+#            s1 func_0029A8, s2 func_003384 (verified in each game's generated C).
+# s2/s3 configs are prefilled but UNVERIFIED-BY-RUN here (their game repos are not
+# checked out); building/running them needs the _wt-cosim-<g> worktree + ROM + the
+# _cosim/_oracle_cosim CMake targets (copy Sonic 1's — see COSIM.md).
+GAMES = {
+    "s1": {"wt": "_wt-cosim-s1", "exe": "SonicTheHedgehogRecomp",  "waitvbl": "29a8"},
+    "s2": {"wt": "_wt-cosim-s2", "exe": "SonicTheHedgehog2Recomp", "waitvbl": "3384"},
+    "s3": {"wt": "_wt-cosim-s3", "exe": "Sonic3KRecomp",           "waitvbl": ""},
+}
+GAME = "s1"   # module-level selection; set by --game (or divergence_report)
+
+def game_waitvbl():
+    return GAMES[GAME]["waitvbl"]
+
 
 def _find(name, explicit=None):
     if explicit:
         return explicit
     here = os.path.dirname(os.path.abspath(__file__))
-    c = os.path.abspath(os.path.join(here, "..", "..", "_wt-cosim-s1",
+    c = os.path.abspath(os.path.join(here, "..", "..", GAMES[GAME]["wt"],
                                      "build-cosim", "Release", name))
     if os.path.exists(c):
         return c
-    sys.exit(f"{name} not found; build it or pass --exe/--exe-oracle")
+    sys.exit(f"{name} not found; build it or pass --exe/--exe-oracle "
+             f"(game={GAME}, worktree={GAMES[GAME]['wt']})")
 
 def find_exe(explicit):        # own-backend cosim (recomp + interp backends)
-    return _find("SonicTheHedgehogRecomp_cosim.exe", explicit)
+    return _find(f"{GAMES[GAME]['exe']}_cosim.exe", explicit)
 
 def find_oracle_exe(explicit): # clownmdemu oracle cosim (pairing #2 B-side)
-    return _find("SonicTheHedgehogRecomp_oracle_cosim.exe", explicit)
+    return _find(f"{GAMES[GAME]['exe']}_oracle_cosim.exe", explicit)
 
 
 class Inst:
@@ -68,9 +88,11 @@ class Inst:
         env["SDL_AUDIODRIVER"] = "dummy"
         if backend == "interp":
             env["GENESIS_FORCE_INTERP"] = "1"
-            # Converge with the recomp's WaitForVBla yield stub (see glue.c).
-            if waitvbl_pc:
-                env["GENESIS_COSIM_WAITVBL_PC"] = waitvbl_pc
+        # WaitForVBla entry PC: the interp yields there like the recomp stub, and
+        # the oracle's cosim_cycles hook samples work cycles at that PC. Harmless
+        # for the own recomp backend (it captures at glue_yield_for_vblank).
+        if waitvbl_pc:
+            env["GENESIS_COSIM_WAITVBL_PC"] = waitvbl_pc
         # backend == "oracle" is the clownmdemu exe (auto-visible internally).
         # Pairing #2: own-backend side must also hash the visible surface.
         if visible:
@@ -120,6 +142,10 @@ class Inst:
                 break
             rows.append(ln)
         return rows
+
+    def cyclefields(self):
+        """Cross-backend work-cycle ruler: {'work': <str>, 'cum': <str>}."""
+        return self.kv(self.cmd("cyclefields"))
 
     def kv(self, resp):
         """Parse 'k v k v ...' tolerating leading status words (e.g. 'parked')
@@ -236,6 +262,9 @@ def run_profile(a, b, args, pairing2):
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--game", default="s1", choices=list(GAMES),
+                    help="which game's cosim build to drive (default s1). s2/s3 need "
+                         "their _wt-cosim-<g> worktree + _cosim/_oracle_cosim targets built.")
     ap.add_argument("--exe")
     ap.add_argument("--exe-oracle")
     ap.add_argument("--a", default="recomp", choices=["recomp","interp","oracle"])
@@ -251,9 +280,10 @@ def main():
     ap.add_argument("--max", type=int, default=2000, help="max checkpoints to compare")
     ap.add_argument("--inject-at", type=int, default=0, help="apply injection at cp K (gate 3)")
     ap.add_argument("--inject", default="", help="reg:IDX:XOR or ram:OFF:XOR")
-    ap.add_argument("--waitvbl-pc", default="29a8",
-                    help="hex PC of the game's WaitForVBla stub (Sonic 1: 29a8). The interp "
-                         "yields there like the recomp so the two backends stay program-aligned.")
+    ap.add_argument("--waitvbl-pc", default="",
+                    help="hex PC of the game's WaitForVBla stub (default: per --game; "
+                         "s1=29a8, s2=3384). The interp yields there like the recomp, and the "
+                         "oracle samples work cycles there, so the backends stay program-aligned.")
     ap.add_argument("--subs", default="",
                     help="comma list of sub-hashes to compare instead of the full chain. "
                          "For pairing #1 use the cross-backend-comparable set "
@@ -265,6 +295,10 @@ def main():
                          "the first-divergence checkpoint + how many checkpoints matched vs "
                          "diverged. Answers 'across all systems, how divergent is this demo'.")
     args = ap.parse_args()
+    global GAME
+    GAME = args.game
+    if not args.waitvbl_pc:
+        args.waitvbl_pc = game_waitvbl()
 
     # Route each side to the right exe. Pairing #2 (any side == oracle) forces
     # the own-backend side into visible-surface mode so the hashes are comparable.

@@ -106,4 +106,27 @@ void cosim_frame_checkpoint(uint64_t master_cycle);
 /* Is the cosim active (env/port up)? Guards the FORCE_INTERP path. */
 int  cosim_active(void);
 
+/* ---------------------------------------------- cross-backend work-cycle ruler */
+/* Per-frame 68K WORK cycles (executed before the WaitForVBla idle wait) and a
+ * monotonic cumulative of same, in the SAME unit on both backends (clown-
+ * measured g_game_insn_costs) — so directly comparable across own-backend and
+ * oracle. The idle spin is EXCLUDED, so this is real work, not the fixed frame
+ * budget. Served by the `cyclefields` command. See cosim_cycles.c. */
+extern uint64_t g_cosim_work_cycles;   /* most recent logical frame's work cycles */
+extern uint64_t g_cosim_cum_cycles;    /* monotonic sum of per-frame work          */
+extern uint64_t g_cosim_park_count;    /* WaitForVBla parks so far (comparability) */
+extern uint64_t g_cosim_work_insns;    /* instructions in the most recent frame     */
+extern uint64_t g_cosim_fb_count;      /* oracle: fallback-costed insns this frame  */
+
+#if OWN_BACKEND
+/* Own backend: called at each WaitForVBla park; captures the park-to-park delta
+ * of the monotonic cosim axis (g_cosim_cycle) as this frame's work cycles. */
+void cosim_cycles_note_park(void);
+#else
+/* Oracle: install the per-instruction cycle-charging hook (chains onto the
+ * existing g_hybrid_pre_insn_fn). Reads GENESIS_COSIM_WAITVBL_PC for the
+ * spin-entry PC. Call once from cosim_init, AFTER glue_init/HybridInit. */
+void cosim_cycles_oracle_install(void);
+#endif
+
 #endif /* GENESIS_COSIM_H */

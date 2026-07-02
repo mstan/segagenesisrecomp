@@ -115,8 +115,9 @@ def _pair(a_backend, b_backend, clock, stride, pairing2, start_frame=0):
     exe_b = G.find_oracle_exe(None) if b_backend == "oracle" else G.find_exe(None)
     # Both sides free-run the SAME prologue length so their master_cycle stays aligned.
     ee = {"GENESIS_COSIM_START_FRAME": str(start_frame)} if start_frame else None
-    a = G.Inst("a", exe_a, PORT_A, a_backend, stride, clock, waitvbl_pc="29a8", visible=vis_a, extra_env=ee)
-    b = G.Inst("b", exe_b, PORT_B, b_backend, stride, clock, waitvbl_pc="29a8", visible=vis_b, extra_env=ee)
+    wv = G.game_waitvbl()
+    a = G.Inst("a", exe_a, PORT_A, a_backend, stride, clock, waitvbl_pc=wv, visible=vis_a, extra_env=ee)
+    b = G.Inst("b", exe_b, PORT_B, b_backend, stride, clock, waitvbl_pc=wv, visible=vis_b, extra_env=ee)
     if not (identity_ok(a) and identity_ok(b)):
         a.close(); b.close()
         sys.exit("[divergence_report] a non-genesis server answered on the cosim port "
@@ -207,8 +208,78 @@ def chunk_fidelity(frames, sample_every=30):
         a.close(); b.close()
 
 
+def cycle_drift(frames, sample_every=30, tol=64, start_frame=0):
+    """Cross-backend WORK-cycle drift (the apples-to-apples timing ruler).
+
+    Steps pairing #2 on the frame clock; each frame reads `cyclefields` from both
+    backends — the 68K cycles of REAL WORK the logical frame did before parking at
+    WaitForVBla, in the same clown-measured unit on both sides (idle spin excluded).
+
+    A frame is only COMPARABLE when BOTH sides parked exactly once since the last
+    frame (park counter advanced by 1 on each). Otherwise the game's logical frame
+    (park-to-park) is out of phase with the raster checkpoint — either a one-frame
+    offset at a transition, or (post-divergence) the own backend stops parking at
+    the WaitForVBla PC entirely while the oracle keeps going. Comparing work across
+    a non-comparable frame is meaningless (stale-vs-live), so we exclude it and say
+    so. Among comparable frames, a delta beyond `tol` is a genuine timing divergence.
+
+    Returns (rows, first_sustained, stats):
+      rows            = sampled (frame, wo, wr, delta, comparable) for display
+      first_sustained = (frame, wo, wr, delta) of the first of >=2 consecutive
+                        comparable frames with |delta|>tol, else None
+      stats           = {'comparable', 'stale', 'typical_delta', 'max_delta'}"""
+    a, b = _pair("recomp", "oracle", "frame", 1, pairing2=True, start_frame=start_frame)
+    # Pass 1: collect every frame's (frame, wo, wr, delta, comparable). A frame is
+    # comparable only if BOTH sides parked exactly once since the last (park counter
+    # +1 each) — else it's a phase offset or the post-divergence no-park cascade.
+    samples = []
+    prev_po = prev_pr = None
+    try:
+        for cp in range(1, frames + 1):
+            a.cmd("step 1"); b.cmd("step 1")
+            ca, cb = a.cyclefields(), b.cyclefields()
+            wo = int(ca.get("work", "0")); wr = int(cb.get("work", "0"))
+            po = int(ca.get("parks", "0")); pr = int(cb.get("parks", "0"))
+            is_cmp = (prev_po is not None and po - prev_po == 1 and pr - prev_pr == 1)
+            prev_po, prev_pr = po, pr
+            samples.append((start_frame + cp, wo, wr, wo - wr, is_cmp))
+    finally:
+        a.close(); b.close()
+
+    cmp_deltas = [d for _, _, _, d, c in samples if c]
+    comparable = len(cmp_deltas)
+    stale = len(samples) - comparable
+    # The runner-vs-oracle work delta carries a constant per-frame structural
+    # offset (own counts ~3 more instructions/frame at the vblank/dispatch
+    # boundary — benign, pairing #1 is bit-exact). Flag RELATIVE to that baseline
+    # so the constant doesn't mask (or fake) a divergence, and require the drift
+    # to be SUSTAINED (>=2 consecutive comparable frames) so a one-frame phase
+    # swap of a heavy frame (equal-and-opposite on the next frame) doesn't flag.
+    from collections import Counter
+    typical = Counter(cmp_deltas).most_common(1)[0][0] if cmp_deltas else 0
+    first_sustained = None; run = 0
+    for fr, wo, wr, d, c in samples:
+        if not c:
+            run = 0; continue
+        if abs(d - typical) > tol:
+            run += 1
+            if run >= 2 and first_sustained is None:
+                first_sustained = (fr, wo, wr, d)
+        else:
+            run = 0
+    mx = max(cmp_deltas, key=lambda d: abs(d - typical)) if cmp_deltas else 0
+    stats = {"comparable": comparable, "stale": stale,
+             "typical_delta": typical, "max_delta": mx}
+    rows = [s for s in samples if (s[0] - start_frame) % sample_every == 0
+            or s[0] == start_frame + frames]
+    return rows, first_sustained, stats
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--game", default="s1", choices=list(G.GAMES),
+                    help="which game's cosim build to score (default s1). s2/s3 need their "
+                         "_wt-cosim-<g> worktree + _cosim/_oracle_cosim targets built first.")
     ap.add_argument("--frames", type=int, default=600,
                     help="pairing #2 (vs oracle) frame-clock checkpoints")
     ap.add_argument("--cycles", type=int, default=2_000_000,
@@ -216,15 +287,20 @@ def main():
     ap.add_argument("--cycle-stride", type=int, default=500)
     ap.add_argument("--gate-cp", type=int, default=1000, help="checkpoints per determinism gate")
     ap.add_argument("--no-oracle", action="store_true", help="skip pairing #2")
+    ap.add_argument("--cycle-tol", type=int, default=64,
+                    help="section [5]: per-frame work-cycle delta (own vs oracle) above "
+                         "which a frame is flagged as a real timing divergence")
     ap.add_argument("--p2-start-frame", type=int, default=0,
                     help="pairing #2: free-run this many frames before checkpointing "
                          "(skip a known-divergent prologue like the Sega scream, ~frames "
                          "0-130, to probe whether the runner is faithful in STEADY STATE)")
     args = ap.parse_args()
+    G.GAME = args.game
     t0 = time.time()
 
     print("=" * 74)
-    print("  GENESIS HOLISTIC DIVERGENCE REPORT — Sonic 1 attract (deterministic)")
+    print(f"  GENESIS HOLISTIC DIVERGENCE REPORT — {G.GAMES[args.game]['exe']} "
+          f"(game={args.game}, deterministic attract)")
     print("=" * 74)
 
     # ---- 1. GATES ----------------------------------------------------------
@@ -311,6 +387,40 @@ def main():
             f"{r} {100*(1-peak[r]/n):.0f}% faithful ({peak[r]}/{n})" for r, n, _ in CHUNK_REGIONS))
         print("    => sparse + timing-sensitive; VRAM/display stays faithful; z80ram re-converges "
               "— NOT a cascade.")
+
+    # ---- 5. CROSS-BACKEND WORK-CYCLE DRIFT (apples-to-apples timing) --------
+    if not args.no_oracle:
+        sf = args.p2_start_frame
+        print(f"\n[5] CROSS-BACKEND WORK-CYCLE DRIFT over {args.frames} frames "
+              f"(~{args.frames/59.94:.0f}s)")
+        print("    [68K WORK cycles per logical frame (pre-WaitForVBla), same clown-measured")
+        print("     unit on both backends, idle spin excluded — the real timing ruler]")
+        rows, first, st = cycle_drift(args.frames, tol=args.cycle_tol, start_frame=sf)
+        base = st['typical_delta']
+        print(f"      {'frame':>6} {'work_own':>10} {'work_oracle':>12} {'delta':>8} {'vs.base':>8}   comparable?")
+        for fr, wo, wr, d, cmp in rows:
+            tag = "" if cmp else "  (not comparable: phase/no-park)"
+            rel = d - base
+            flag = "  <-- drift" if (cmp and abs(rel) > args.cycle_tol) else ""
+            rels = f"{rel:+}" if cmp else "--"
+            print(f"      {fr:>6} {wo:>10} {wr:>12} {d:>+8} {rels:>8}   {'yes' if cmp else 'NO':>3}{flag}{tag}")
+        print(f"    comparable frames: {st['comparable']}   not-comparable (phase/post-divergence "
+              f"no-park): {st['stale']}")
+        print(f"    baseline (constant per-frame structural offset): {base:+} cyc   "
+              f"max deviation from baseline: {st['max_delta']-base:+} cyc")
+        if first:
+            fr, wo, wr, d = first
+            print(f"    => FIRST SUSTAINED drift (>{args.cycle_tol} cyc from the {base:+}-cyc baseline, "
+                  f">=2 frames) at frame {fr} (~{fr/59.94:.1f}s):")
+            print(f"       own {wo} vs oracle {wr} (Δ{d:+}, {d-base:+} vs baseline) — a real per-frame "
+                  f"timing divergence. Drill with cosim window/memchunks at that frame.")
+        else:
+            print(f"    => every COMPARABLE frame's 68K workload tracks the oracle within a constant "
+                  f"{base:+}-cyc per-frame offset (a benign structural difference at the vblank/")
+            print(f"       dispatch boundary; pairing #1 is bit-exact). No sustained deviation "
+                  f">{args.cycle_tol} cyc — the runner's frame timing is FAITHFUL on the real cycle")
+            print(f"       axis. (Non-comparable frames = one-frame phase swaps + the post-divergence "
+                  f"no-park cascade where own stops parking at WaitForVBla — gap #6.)")
 
     print(f"\ndone in {time.time()-t0:.0f}s")
     return 0

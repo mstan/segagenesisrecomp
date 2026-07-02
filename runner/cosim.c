@@ -267,6 +267,18 @@ static void handle(sock_t c, char *line) {
         if (sscanf(line + 11, "%d %x", &idx, &xorv) == 2)
             cosim_inject_reg(idx, xorv);
         send_str(c, "ok\n");
+    } else if (!strcmp(line, "cyclefields")) {
+        /* Cross-backend WORK-cycle ruler (cosim_cycles.c): per-logical-frame
+         * 68K work cycles + a monotonic cumulative, same unit on both backends
+         * so the coordinator diffs them directly. */
+        wait_parked();
+        snprintf(out, sizeof out, "work %llu cum %llu parks %llu insn %llu fb %llu\n",
+            (unsigned long long)g_cosim_work_cycles,
+            (unsigned long long)g_cosim_cum_cycles,
+            (unsigned long long)g_cosim_park_count,
+            (unsigned long long)g_cosim_work_insns,
+            (unsigned long long)g_cosim_fb_count);
+        send_str(c, out);
     } else if (!strcmp(line, "timingfields")) {
         wait_parked();
 #if OWN_BACKEND
@@ -424,6 +436,12 @@ void cosim_init(void) {
         fprintf(stderr, "[COSIM] bind/listen on port %u failed\n", port);
         closesock(s_listen); s_listen = SOCK_INVALID; return;
     }
+
+#if !OWN_BACKEND
+    /* Oracle: chain the per-instruction cycle-charging hook onto the interpreter
+     * (runs after glue_init/HybridInit, which already set g_hybrid_pre_insn_fn). */
+    cosim_cycles_oracle_install();
+#endif
 
 #ifdef _WIN32
     _beginthreadex(0, 0, server_thread, 0, 0, 0);

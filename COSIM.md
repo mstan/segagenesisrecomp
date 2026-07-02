@@ -37,9 +37,10 @@ does. Read that section before trusting a number.
 
 | file | role |
 |---|---|
-| `runner/cosim.{c,h}` | TCP lockstep server + checkpoint/park; `frame`/`cycle` clocks; `GENESIS_COSIM_START_FRAME` prologue skip; commands: `step/chain/sub/cpu/window/inject/memchunks/timingfields/vdpfields/...` |
+| `runner/cosim.{c,h}` | TCP lockstep server + checkpoint/park; `frame`/`cycle` clocks; `GENESIS_COSIM_START_FRAME` prologue skip; commands: `step/chain/sub/cpu/window/inject/memchunks/cyclefields/timingfields/vdpfields/...` |
 | `runner/cosim_state.c` | full-state per-subsystem FNV hash (pairing #1): cpu68k, timing, ram, z80, z80ram, handshake, vdp, fm, psg, evq |
 | `runner/cosim_visible.c` | guest-**visible**-surface hash (pairing #2, normalized both backends via `frame_snapshots.c`); `cosim_visible_region_chunks` (the localizer) |
+| `runner/cosim_cycles.c` | **cross-backend WORK-cycle ruler** (pairing #2): 68K cycles of real work per logical frame (pre-`WaitForVBla`), same clown-measured unit on both backends (idle spin excluded). Own = park-to-park delta of `g_cosim_cycle`; oracle = per-instruction `game_insn_cost(pc)` hook, spin window skipped. `cyclefields` reports `work`/`cum`/`parks`. Closes gaps #1/#4. |
 | `runner/game_cycles.{c,h}` + `generated/<game>_cycles.c` | clown-measured per-address 68K cycle-cost table; interp charges the same costs under `GENESIS_COSIM` so both share the cycle axis |
 | `runner/glue.c` | `FORCE_INTERP` (interp drives the whole program, yields at the WaitForVBla PC); **interleave-IRQ scaffold** (`GENESIS_INTERLEAVE_IRQ`, default OFF — see gaps) |
 | `tools/genesis_cosim.py` | coordinator: gates, `--clock frame\|cycle`, `--profile` (holistic, no-halt), `--subs`, injection |
@@ -53,8 +54,10 @@ does. Read that section before trusting a number.
 #   cmake --build build-cosim --config Release --target SonicTheHedgehogRecomp_cosim
 #   cmake --build build-cosim --config Release --target SonicTheHedgehogRecomp_oracle_cosim
 
-# ONE-COMMAND SCORECARD (gates -> pairing#1 cycle-clock -> pairing#2 frame-clock + chunk-level):
+# ONE-COMMAND SCORECARD (gates -> pairing#1 cycle-clock -> pairing#2 frame-clock +
+# chunk-level [4] + cross-backend WORK-CYCLE drift [5]). --game s1|s2|s3 (default s1):
 python tools/divergence_report.py --frames 600 --cycles 2000000
+python tools/divergence_report.py --game s2 --frames 600     # once S2's worktree/targets exist
 
 # validation gates only (trust nothing until these pass):
 python tools/genesis_cosim.py --a recomp --b recomp --clock cycle --profile --max 300   # Gate 1 determinism
@@ -84,11 +87,21 @@ pass `--porta/--portb` if a psxrecomp instance is around.
 
 ## What it does NOT do yet (READ THIS)
 
-1. **No cross-backend CYCLE alignment vs clownmdemu.** The own backend
-   fast-forwards the `WaitForVBla` idle spin, so it shares no instruction/cycle
-   axis with a literal interpreter. Pairing #2 therefore only has the **frame**
-   clock. We cannot (yet) say "VBLANK fired at a different guest cycle" against
-   the oracle the way psxrecomp did against its interp.
+1. ~~**No cross-backend CYCLE alignment vs clownmdemu.**~~ **CLOSED** (2026-07-01,
+   `runner/cosim_cycles.c` + report section [5]). We now have a directly-comparable
+   number on both backends: the 68K cycles of real WORK a logical frame does before
+   parking at `WaitForVBla`, in the SAME clown-measured unit (idle spin excluded on
+   both). We deliberately keep the own-backend fast-forward (it is the shipping
+   runner's pacing model) and recover the axis by charging work cycles on both sides:
+   own = park-to-park delta of `g_cosim_cycle`; oracle = a per-instruction
+   `game_insn_cost(pc)` hook that skips the spin window. Only frames where BOTH sides
+   parked once (the `parks` counter) are comparable — the rest are phase offsets or
+   the post-divergence no-park cascade (gap #6), and are excluded + labelled.
+   **Result (Sonic 1 attract):** comparable frames track the oracle within a small
+   constant (typical Δ≈+40 cyc, ~0.03 % of a frame) — the runner's per-frame timing
+   is faithful on the real cycle axis. Open sub-items: (a) understand the +40-cyc
+   constant offset (WaitForVBla stub-vs-spin accounting boundary); (b) a sustained
+   ~+176-cyc drift from ~frame 89 (a real, small per-frame divergence to drill).
 
 2. **Whole-region sub-hashes over-report divergence.** `cosim_state.c` /
    `cosim_visible.c` hash entire regions (8–64 KB); a single differing byte
@@ -120,9 +133,21 @@ pass `--porta/--portb` if a psxrecomp instance is around.
    cross-validate the attract **demo gameplay** (starts ~frame 555) without first
    re-syncing state. `START_FRAME` skips a prologue but does not re-sync.
 
-7. **Sonic-1-specific bring-up.** `--waitvbl-pc` defaults to `29a8` (S1);
-   `divergence_report` region layout (`$FFFD00` sound region, chunk sizes) and
-   port defaults are S1-flavored. Not yet parameterized per game.
+7. **Multi-game: tooling parameterized, S2/S3 not yet RUN.** The tooling now
+   takes `--game {s1,s2,s3}` (a `GAMES` table in `genesis_cosim.py`: build-worktree
+   dir, exe base, WaitForVBla PC — s1=`29a8`, s2=`3384`); the engine cosim was
+   already game-agnostic (WaitForVBla via `GENESIS_COSIM_WAITVBL_PC`, regions via
+   `g_game_spec`/`g_game_layout`, per-game clown cost table). S1 is validated.
+   **To actually run S2/S3** (repos ARE present — `SonicTheHedgehog2Recomp`,
+   `Sonic3AndKnucklesRecomp`; ROMs present): (1) **regen the game** with the
+   current recompiler — S2/S3 were generated by an older recompiler and are
+   MISSING `generated/<g>_cycles.c` (the clown cost table the ruler + interp
+   pacing require; the recompiler emits it unconditionally now, so a regen
+   produces it — watch for dispatch misses); (2) add a `_wt-cosim-<g>` worktree
+   with `segagenesisrecomp` symlinked to `_wt-cosim` (mirror `_wt-cosim-s1`);
+   (3) add the `_cosim` / `_oracle_cosim` CMake targets (copy Sonic 1's block,
+   swap in `sonicthehedgehog2/` + `<g>_cycles.c`); (4) build + copy the ROM next
+   to the exe; (5) `python tools/divergence_report.py --game s2`.
 
 8. **The interleave-IRQ scaffold is NOT a fix.** `GENESIS_INTERLEAVE_IRQ`
    (glue.c) runs handlers on the game fiber (budget-interleaved) instead of

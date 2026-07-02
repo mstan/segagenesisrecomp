@@ -1081,6 +1081,12 @@ void glue_yield_for_vblank(void)
     if (s_in_vblank_service || s_irq_in_progress)
         return;   /* inside a handler (atomic or interleaved) — don't re-park */
     s_watchdog_counter = 0;
+#ifdef GENESIS_COSIM
+    /* Cross-backend work-cycle ruler: g_cycle_accumulator is this logical
+     * frame's 68K work (summed from the same clown-measured cost table the
+     * oracle uses), captured at the WaitForVBla park. See cosim_cycles.c. */
+    { extern void cosim_cycles_note_park(void); cosim_cycles_note_park(); }
+#endif
     if (g_yield_log_file) {
         uint32_t vbc = m68k_read32(g_game_layout.vint_runcount_addr & 0xFFFF);
         uint8_t  vr  = m68k_read8 (g_game_layout.vint_routine_addr  & 0xFFFF);
