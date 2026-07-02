@@ -125,6 +125,34 @@ uint64_t cosim_state_hash_visible(CosimSubHashes *sub) {
     return h;
 }
 
+/* Localizer: hash a named guest memory region in `nchunks` equal slices, using
+ * the SAME normalized snapshot accessors as the visible hash (so it is directly
+ * comparable across the own-backend and clownmdemu oracle). The coordinator
+ * diffs the per-chunk hashes at the first-divergence checkpoint to localize WHICH
+ * bytes of z80ram / WRAM / VRAM split — the field-diff step of the decision
+ * procedure for the runner (cross-backend, where a full byte dump is not
+ * comparable but a region diff is). Returns nchunks written, or -1 (unknown). */
+int cosim_visible_region_chunks(const char *region, int nchunks, uint64_t *out)
+{
+    const uint8_t *buf = 0; size_t sz = 0;
+    static uint8_t s_wram[0x10000];
+    static VdpSnap s_v;
+    Z80RegSnap zs;
+    if (!region) return -1;
+    if (!strcmp(region, "z80ram")) { z80_snapshot(&zs, COSIM_EMU); buf = zs.ram; sz = sizeof zs.ram; }
+    else if (!strcmp(region, "wram")) { wram_snapshot(s_wram, COSIM_EMU); buf = s_wram; sz = sizeof s_wram; }
+    else if (!strcmp(region, "vram")) { vdp_snapshot(&s_v, COSIM_EMU); buf = s_v.vram; sz = sizeof s_v.vram; }
+    else return -1;
+    if (nchunks < 1) nchunks = 1;
+    size_t chunk = sz / (size_t)nchunks; if (chunk == 0) chunk = 1;
+    for (int i = 0; i < nchunks; i++) {
+        size_t off = (size_t)i * chunk;
+        size_t len = (i == nchunks - 1) ? (sz - off) : chunk;
+        out[i] = (off < sz) ? cosim_fnv_bytes(cosim_fnv_init(), buf + off, len) : cosim_fnv_init();
+    }
+    return nchunks;
+}
+
 #if !OWN_BACKEND
 /* The injection/reset entry points that cosim.c calls live in cosim_state.c,
  * which the ORACLE build cannot compile (it reads own-backend globals). Gate-3

@@ -322,6 +322,26 @@ static void handle(sock_t c, char *line) {
             send_str(c, out);
         }
         send_str(c, "end\n");
+    } else if (!strncmp(line, "memchunks", 9)) {
+        /* Localize a cross-backend region divergence: per-chunk hashes of
+         * z80ram / wram / vram (normalized accessors, comparable A-vs-B). */
+        wait_parked();
+        char region[32] = {0}; int nch = 32;
+        sscanf(line + 9, "%31s %d", region, &nch);
+        if (nch < 1) nch = 1; if (nch > 1024) nch = 1024;
+        static uint64_t hh[1024];
+        extern int cosim_visible_region_chunks(const char *, int, uint64_t *);
+        int got = cosim_visible_region_chunks(region, nch, hh);
+        if (got < 0) { send_str(c, "err region\n"); }
+        else {
+            snprintf(out, sizeof out, "chunks %d region %s\n", got, region);
+            send_str(c, out);
+            for (int i = 0; i < got; i++) {
+                snprintf(out, sizeof out, "c %d %016llx\n", i, (unsigned long long)hh[i]);
+                send_str(c, out);
+            }
+            send_str(c, "end\n");
+        }
     } else if (!strcmp(line, "reset")) {
         s_chain = COSIM_FNV_OFFSET; s_cp = 0;
         cosim_state_reset();
