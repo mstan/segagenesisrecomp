@@ -170,3 +170,13 @@ With thanks to the Sonic Retro community for maintaining these disassemblies.
 [PolyForm Noncommercial 1.0.0](LICENSE.md) — free for non-commercial use.
 
 `clownmdemu-core/` is third-party code with its own license. See `clownmdemu-core/LICENCE.txt`.
+
+---
+
+<p align="center">
+  <sub><b>R.A.I.D. — Retro AI Development</b> · a Discord for AI-assisted retro reverse-engineering, decomp &amp; recomp</sub>
+</p>
+
+<p align="center">
+  <a href="https://discord.gg/Ad9BwSzctP"><img src=".github/raid-discord.png" alt="Join the Retro AI Development (R.A.I.D.) Discord" width="200"></a>
+</p>
