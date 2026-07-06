@@ -91,14 +91,33 @@ capture records nothing** (rdb_count=0) even with `SONIC_REVERSE_DEBUG=ON`
 and a `--reverse-debug` regen — fixing that hook gives caller-attributed
 sound-queue writes and settles the trigger identity in one run.
 
-**Practical read:** every measurable property of the audio pipeline is
-faithful; what shifts is *when* an authentic, periodic game sound fires
-relative to gameplay, because of the backends' vint-phase divergence. A "fix"
-would be runner boot-timing alignment (vint-count parity with an accurate
-machine through boot), not an audio-code change — high regression risk
-(pacing sensitivity precedent: operand-keyed cycle costs broke S3) for a
-phase-only deviation. Recommend: fix the Tier-1 hook first, confirm the
-native trigger identity, then decide if vint-phase alignment is worth it.
+**Practical read — CORRECTED (owner ear-verdict, 2026-07-05):** the
+"authentic waterfall, merely phase-shifted" conclusion is RETRACTED for the
+native-side events. The owner confirms the post-jump boop is illegitimate
+(not the waterfall), and the evidence agrees on re-review: (a) the native
+occurrences never satisfied the waterfall's own `vbl & $3F` trigger gate;
+(b) a real waterfall start leaves its special track running in driver RAM
+for seconds, but driver RAM stayed byte-identical to the oracle at every
+frame boundary through the native events — the signature of an illegitimate
+one-shot write burst, not a legitimate SFX start. What IS proven: the
+oracle's wf1452 occurrence is a real `Sound_PlaySpecial` waterfall start,
+and the native burst reuses the same opening bytes. The native burst's
+ORIGIN (68K driver path taking an input-gated branch vs our Z80/bus
+emulation emitting a stray $7F11 write) is UNDETERMINED — and the
+instrument that would answer it is broken: chip-ring writer attribution
+(`pcz`) reads $0000 on every PSG event, which is neither the 68K marker
+($FFFF per genesis_bus.c CHIP_PC_68K) nor a Z80 PC.
+
+**Named path to the answer (instrument repairs, always-on ring discipline):**
+1. Fix `pcz` writer-attribution plumbing end-to-end (bus push → event queue
+   → chip ring/WRITEDUMP), so every FM/PSG event carries 68K-vs-Z80 origin.
+   One clean jump-run capture then splits the hypothesis space in half.
+2. Fix native Tier-1 rdb capture (records nothing even with
+   SONIC_REVERSE_DEBUG=ON + --reverse-debug regen). If the burst is
+   68K-origin, caller-attributed WRAM writes name the routine in one run.
+3. Only then consider fixes (driver-input timing or Z80/bus write path);
+   do NOT attempt vint-phase boot alignment on this evidence — high
+   regression risk (operand-keyed cycle-cost precedent broke S3).
 
 ### FINDING S1-1 (original statement) — the jump "boop", root-caused to the driver write stream
 
