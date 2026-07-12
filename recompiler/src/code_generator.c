@@ -1283,7 +1283,8 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
                           AddrSet *instrs, AddrSet *labels,
                           const uint32_t *sorted_funcs, int nfuncs,
                           AddrSet *extern_targets,
-                          const uint32_t *extra_seeds, int extra_seed_count) {
+                          const uint32_t *extra_seeds, int extra_seed_count,
+                          const GameConfig *cfg) {
     /* Worklist-based CFG walk */
     AddrSet worklist;
     addrset_init(&worklist);
@@ -1371,21 +1372,30 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
 
             case MN_BSR:
             case MN_JSR:
-                /* JSR/BSR targets are normally discovered by FunctionFinder
-                 * (separate pre-pass). But when the target is one of our
-                 * extra_seeds — i.e. a disasm local label — we promote it
-                 * to a function entry here by adding to extern_targets. The
-                 * boundary-splitter then makes it callable via
-                 * call_by_address. Without this, the JSR emit produces a
-                 * `recomp_call_func(func_XXXXXX)` that references an
-                 * undeclared identifier. */
-                if (instr.has_target && extra_seeds && extern_targets) {
-                    for (int s = 0; s < extra_seed_count; s++) {
-                        if (extra_seeds[s] == instr.target_addr) {
-                            addrset_insert(extern_targets, instr.target_addr);
-                            break;
+                /* FunctionFinder's linear walk stops at computed JMPs, while
+                 * this CFG walk can prove and enter their case bodies. Close a
+                 * direct call found there only with independent evidence:
+                 * either the target is a disassembly-provided local seed (the
+                 * historical path), or a trusted runtime oracle observed BOTH
+                 * the call instruction and its static target. Requiring the
+                 * executed edge prevents speculative/data-shaped CFG paths
+                 * from cascading into false function entries. */
+                if (instr.has_target && extern_targets) {
+                    bool proven = false;
+                    if (extra_seeds) {
+                        for (int s = 0; s < extra_seed_count; s++) {
+                            if (extra_seeds[s] == instr.target_addr) {
+                                proven = true;
+                                break;
+                            }
                         }
                     }
+                    if (!proven && game_config_has_runtime_oracle(cfg)) {
+                        proven = game_config_runtime_observed(cfg, instr.addr) &&
+                                 game_config_runtime_observed(cfg, instr.target_addr);
+                    }
+                    if (proven)
+                        addrset_insert(extern_targets, instr.target_addr);
                 }
                 break;
 
@@ -3897,7 +3907,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             scan_function(rom, all_funcs.addrs[i], &instrs, &labels,
                           all_funcs.addrs, all_funcs.count, &extern_targets,
                           cfg ? cfg->extra_seeds : NULL,
-                          cfg ? cfg->extra_seed_count : 0);
+                          cfg ? cfg->extra_seed_count : 0, cfg);
             addrset_free(&instrs);
             addrset_free(&labels);
         }
@@ -3986,7 +3996,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         scan_function(rom, func_addr, &instrs, &labels,
                       all_funcs.addrs, all_funcs.count, NULL,
                       cfg ? cfg->extra_seeds : NULL,
-                      cfg ? cfg->extra_seed_count : 0);
+                      cfg ? cfg->extra_seed_count : 0, cfg);
 
         /* Sort instruction addresses */
         addrset_sort(&instrs);

@@ -364,6 +364,7 @@ bool game_config_load(GameConfig *cfg, const char *path) {
         cfg->vblank_yield_addr        = toml_u32_or(game, "vblank_yield_addr", 0);
         cfg->allow_68020_branch       = toml_bool_or(game, "allow_68020_branch", false);
         cfg->jump_table_autodiscovery = toml_bool_or(game, "jump_table_autodiscovery", false);
+        cfg->runtime_table_promotions = toml_bool_or(game, "runtime_table_promotions", false);
 
         /* code_addrs_file: flat text list (one hex instruction-start addr per
          * line) — the disasm "is this code?" oracle that gates boundary-split
@@ -387,8 +388,9 @@ bool game_config_load(GameConfig *cfg, const char *path) {
 
         /* runtime_exec_file: flat text list of hex instruction-start addrs
          * actually executed in a trusted emulator run (the runtime oracle).
-         * Used as an ADDITIVE promotion gate for speculative jump-table
-         * targets. Loaded into cfg->runtime_exec (sorted). */
+         * Consumers intersect it with independent structural evidence.
+         * Speculative table promotion additionally requires the explicit
+         * runtime_table_promotions opt-in. */
         {
             char ref[256] = {0};
             toml_string_into(game, "runtime_exec_file", ref, sizeof(ref));
@@ -398,8 +400,9 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                 int n = load_runtime_exec_file(cfg, ref_path);
                 if (n > 0)
                     fprintf(stderr, "[GameConfig] runtime_exec_file '%s': %d "
-                            "observed PCs (speculative-promotion gate ON)\n",
-                            ref_path, n);
+                            "observed PCs (table promotions %s)\n",
+                            ref_path, n,
+                            cfg->runtime_table_promotions ? "ON" : "OFF");
                 else
                     fprintf(stderr, "[GameConfig] WARNING: runtime_exec_file "
                             "'%s' empty/unreadable; runtime gate OFF\n", ref_path);
@@ -558,6 +561,10 @@ bool game_config_is_known_code(const GameConfig *cfg, uint32_t addr) {
 
 bool game_config_has_runtime_oracle(const GameConfig *cfg) {
     return cfg && cfg->runtime_exec_count > 0;
+}
+
+bool game_config_runtime_table_promotions(const GameConfig *cfg) {
+    return game_config_has_runtime_oracle(cfg) && cfg->runtime_table_promotions;
 }
 
 bool game_config_runtime_observed(const GameConfig *cfg, uint32_t addr) {

@@ -87,9 +87,9 @@ static void record_unresolved(uint32_t pc, uint32_t base, uint16_t ext, uint8_t 
 
 /* Two-step long-pointer table walk bounds (see jt_enumerate_long). The static
  * cap stays conservative: entries 0..JT_LONG_MAX_ENTRIES-1 promote on the
- * structural gate alone (existing behavior). When a runtime executed-PC oracle
- * is loaded, the walk extends to JT_LONG_GATED_MAX but entries past the static
- * cap promote ONLY if runtime-observed — additive, can't regress. */
+ * structural gate alone (existing behavior). When runtime table promotion is
+ * explicitly enabled, the walk extends to JT_LONG_GATED_MAX but entries past
+ * the static cap promote ONLY if runtime-observed. */
 #define JT_LONG_MAX_ENTRIES    64
 #define JT_LONG_GATED_MAX    1024
 #define JT_LONG_LEAD_SKIP       4
@@ -100,6 +100,7 @@ static void record_unresolved(uint32_t pc, uint32_t base, uint16_t ext, uint8_t 
 
 /* Forward decl — defined later, but jt_enumerate needs to call it. */
 static void add_function(FunctionList *list, uint32_t addr);
+static void add_function_impl(FunctionList *list, uint32_t addr, bool queue);
 
 static const JumpTableEntry *
 jt_lookup_manual(const GameConfig *cfg, uint32_t base) {
@@ -291,10 +292,9 @@ jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
                   const M68KValidatorOptions *vopts) {
     int pushed = 0;
     int valid_seen = 0;
-    /* With a runtime oracle, walk further than the static cap — but entries
-     * past the cap promote only if runtime-observed (see below), so the wider
-     * walk cannot over-discover. Without an oracle the cap is unchanged. */
-    bool gated   = game_config_has_runtime_oracle(cfg);
+    /* With runtime table promotion enabled, walk further than the static cap;
+     * otherwise the cap and baseline discovery set remain unchanged. */
+    bool gated   = game_config_runtime_table_promotions(cfg);
     int  walk_max = gated ? JT_LONG_GATED_MAX : JT_LONG_MAX_ENTRIES;
     for (int i = 0; i < walk_max; i++) {
         uint32_t entry_addr = base + (uint32_t)i * 4;
@@ -325,6 +325,15 @@ jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
         if (i >= JT_LONG_MAX_ENTRIES) {
             if (!game_config_runtime_observed(cfg, raw)) continue;
             s_jt_runtime_promotions++;
+            /* Runtime evidence proves this table target, not every
+             * speculative table-shaped path reachable from it. Register the
+             * entry without reopening phase-0 heuristic discovery. Codegen's
+             * CFG walk still emits its body and closes separately-proven
+             * direct calls. */
+            add_function_impl(list, raw, false);
+            pushed++;
+            s_jt_targets_pushed++;
+            continue;
         }
         add_function(list, raw);
         pushed++;
@@ -341,15 +350,14 @@ jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
  * must become a first-class function entry (the JSR analogue of the JMP offset
  * table the codegen turns into an in-function switch). Tight window+validator
  * gate, plus an ADDITIVE runtime gate: a body is promoted only if the runtime
- * oracle saw it execute. With no oracle this adds nothing (no-oracle games stay
- * byte-identical); with one it adds exactly the runtime-confirmed case bodies
- * (audit: 9/9 RKA candidates observed). Returns the number promoted. */
+ * oracle saw it execute, and only when runtime_table_promotions is explicitly
+ * enabled. The default leaves every game's baseline set unchanged. */
 static int
 jt_enumerate_jsr_word_table(const GenesisRom *rom, const GameConfig *cfg,
                             FunctionList *list, uint32_t base,
                             const M68KValidatorOptions *vopts) {
     int  pushed = 0;
-    bool gated  = game_config_has_runtime_oracle(cfg);
+    bool gated  = game_config_runtime_table_promotions(cfg);
     for (int i = 0; i < JT_AUTO_MAX_ENTRIES; i++) {
         uint32_t entry_addr = base + (uint32_t)i * 2u;
         if (entry_addr + 1 >= rom->rom_size) break;
@@ -364,7 +372,10 @@ jt_enumerate_jsr_word_table(const GenesisRom *rom, const GameConfig *cfg,
         if (m68k_validate(&probe, vopts) != M68K_LEGAL)  break;
         if (cfg && game_config_is_blacklisted(cfg, target)) continue;
         if (!gated || !game_config_runtime_observed(cfg, target)) continue;
-        add_function(list, target);
+        /* Same precision rule as the runtime-gated long-table extension:
+         * register the proven callable case body without recursively running
+         * speculative table detectors from it. */
+        add_function_impl(list, target, false);
         pushed++;
         s_jt_targets_pushed++;
         s_jt_runtime_promotions++;

@@ -211,6 +211,11 @@ typedef struct {
     uint32_t       *runtime_exec;
     int            runtime_exec_count;
     int            runtime_exec_cap;
+    /* Opt-in for speculative table walkers to promote runtime-observed
+     * targets. Merely loading runtime_exec_file leaves phase-0 discovery
+     * unchanged, allowing other consumers to use the oracle as an evidence
+     * intersection without perturbing the baseline function set. */
+    bool           runtime_table_promotions;
     uint32_t       vblank_yield_addr;   /* 0 = not set; emit glue_yield_for_vblank() for this function */
     ProtectedRange *protected_ranges;
     int            protected_range_count;
@@ -253,6 +258,9 @@ bool game_config_is_known_code(const GameConfig *cfg, uint32_t addr);
 
 /* True if a runtime executed-PC oracle is loaded for this game. */
 bool game_config_has_runtime_oracle(const GameConfig *cfg);
+
+/* True only when an oracle is loaded AND runtime_table_promotions is enabled. */
+bool game_config_runtime_table_promotions(const GameConfig *cfg);
 
 /* True if addr was observed executing in the runtime oracle. Returns false if
  * no oracle is loaded (so callers must guard additive promotion on
