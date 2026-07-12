@@ -63,6 +63,14 @@ static void append_extra_func(GameConfig *cfg, uint32_t addr) {
     cfg->extra_funcs[cfg->extra_func_count++] = addr;
 }
 
+static void append_late_extra_func(GameConfig *cfg, uint32_t addr) {
+    cfg->late_extra_funcs = grow_to_fit(cfg->late_extra_funcs,
+                                        &cfg->late_extra_func_cap,
+                                        cfg->late_extra_func_count,
+                                        sizeof(uint32_t));
+    cfg->late_extra_funcs[cfg->late_extra_func_count++] = addr;
+}
+
 static void append_extra_seed(GameConfig *cfg, uint32_t addr) {
     cfg->extra_seeds = grow_to_fit(cfg->extra_seeds,
                                    &cfg->extra_seed_cap,
@@ -141,7 +149,9 @@ static int cmp_u32(const void *a, const void *b) {
  * comments allowed) into cfg->code_addrs, then sort for binary search. This
  * is the disasm "is this code?" oracle used to gate boundary-split promotion.
  * Returns the number of addresses loaded. */
-static int load_code_addrs_file(GameConfig *cfg, const char *path) {
+/* Load a flat text file of hex addresses (one per line, '#' comments allowed)
+ * into a u32 array, growing as needed, then sort for binary search. */
+static int load_u32_file(const char *path, uint32_t **arr, int *count, int *cap) {
     FILE *fp = fopen(path, "r");
     if (!fp) return 0;
     char line[64];
@@ -150,15 +160,23 @@ static int load_code_addrs_file(GameConfig *cfg, const char *path) {
         while (*p == ' ' || *p == '\t') p++;
         if (*p == '#' || *p == '\n' || *p == '\r' || *p == '\0') continue;
         uint32_t a = (uint32_t)strtoul(p, NULL, 16);
-        cfg->code_addrs = grow_to_fit(cfg->code_addrs, &cfg->code_addr_cap,
-                                      cfg->code_addr_count, sizeof(uint32_t));
-        cfg->code_addrs[cfg->code_addr_count++] = a;
+        *arr = grow_to_fit(*arr, cap, *count, sizeof(uint32_t));
+        (*arr)[(*count)++] = a;
     }
     fclose(fp);
-    if (cfg->code_addr_count > 0)
-        qsort(cfg->code_addrs, (size_t)cfg->code_addr_count,
-              sizeof(uint32_t), cmp_u32);
-    return cfg->code_addr_count;
+    if (*count > 0)
+        qsort(*arr, (size_t)*count, sizeof(uint32_t), cmp_u32);
+    return *count;
+}
+
+static int load_code_addrs_file(GameConfig *cfg, const char *path) {
+    return load_u32_file(path, &cfg->code_addrs,
+                         &cfg->code_addr_count, &cfg->code_addr_cap);
+}
+
+static int load_runtime_exec_file(GameConfig *cfg, const char *path) {
+    return load_u32_file(path, &cfg->runtime_exec,
+                         &cfg->runtime_exec_count, &cfg->runtime_exec_cap);
 }
 
 /* ------------------------------------------------------------------ */
@@ -239,6 +257,14 @@ static bool merge_toml(GameConfig *cfg, toml_table_t *root, const char *src_path
                 if (d.ok) append_extra_seed(cfg, (uint32_t)d.u.i);
             }
         }
+        toml_array_t *late_extra = toml_array_in(funcs, "late_extra");
+        if (late_extra) {
+            int n = toml_array_nelem(late_extra);
+            for (int i = 0; i < n; i++) {
+                toml_datum_t d = toml_int_at(late_extra, i);
+                if (d.ok) append_late_extra_func(cfg, (uint32_t)d.u.i);
+            }
+        }
         toml_array_t *bl = toml_array_in(funcs, "blacklist");
         if (bl) {
             int n = toml_array_nelem(bl);
@@ -292,10 +318,12 @@ void game_config_init_empty(GameConfig *cfg) {
 void game_config_free(GameConfig *cfg) {
     free(cfg->jump_tables);
     free(cfg->extra_funcs);
+    free(cfg->late_extra_funcs);
     free(cfg->extra_seeds);
     free(cfg->blacklist);
     free(cfg->protected_ranges);
     free(cfg->code_addrs);
+    free(cfg->runtime_exec);
     free(cfg->ws_sites);
     memset(cfg, 0, sizeof(*cfg));
 }
@@ -354,6 +382,27 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                 else
                     fprintf(stderr, "[GameConfig] WARNING: code_addrs_file "
                             "'%s' empty/unreadable; data-gate OFF\n", caf_path);
+            }
+        }
+
+        /* runtime_exec_file: flat text list of hex instruction-start addrs
+         * actually executed in a trusted emulator run (the runtime oracle).
+         * Used as an ADDITIVE promotion gate for speculative jump-table
+         * targets. Loaded into cfg->runtime_exec (sorted). */
+        {
+            char ref[256] = {0};
+            toml_string_into(game, "runtime_exec_file", ref, sizeof(ref));
+            if (ref[0]) {
+                char ref_path[512];
+                resolve_path(path, ref, ref_path, sizeof(ref_path));
+                int n = load_runtime_exec_file(cfg, ref_path);
+                if (n > 0)
+                    fprintf(stderr, "[GameConfig] runtime_exec_file '%s': %d "
+                            "observed PCs (speculative-promotion gate ON)\n",
+                            ref_path, n);
+                else
+                    fprintf(stderr, "[GameConfig] WARNING: runtime_exec_file "
+                            "'%s' empty/unreadable; runtime gate OFF\n", ref_path);
             }
         }
 
@@ -504,6 +553,16 @@ bool game_config_is_known_code(const GameConfig *cfg, uint32_t addr) {
     /* No oracle loaded → gating disabled, everything is "code" (prior behavior). */
     if (!cfg || cfg->code_addr_count == 0) return true;
     return bsearch(&addr, cfg->code_addrs, (size_t)cfg->code_addr_count,
+                   sizeof(uint32_t), cmp_u32) != NULL;
+}
+
+bool game_config_has_runtime_oracle(const GameConfig *cfg) {
+    return cfg && cfg->runtime_exec_count > 0;
+}
+
+bool game_config_runtime_observed(const GameConfig *cfg, uint32_t addr) {
+    if (!cfg || cfg->runtime_exec_count == 0) return false;
+    return bsearch(&addr, cfg->runtime_exec, (size_t)cfg->runtime_exec_count,
                    sizeof(uint32_t), cmp_u32) != NULL;
 }
 
