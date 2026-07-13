@@ -363,18 +363,33 @@ jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
  * Because the transfer is a JSR, each case body is a CALLED subroutine and so
  * must become a first-class function entry (the JSR analogue of the JMP offset
  * table the codegen turns into an in-function switch). Tight window+validator
- * gate, plus an ADDITIVE runtime gate: a body is promoted only if the runtime
- * oracle saw it execute, and only when runtime_table_promotions is explicitly
- * enabled. The default leaves every game's baseline set unchanged. */
+ * gate, plus a TABLE-LIVENESS runtime gate: a proven-producer table promotes
+ * ALL its structurally valid entries (bounded by the first case body) once
+ * the runtime oracle has seen AT LEAST ONE entry execute. Per-entry runtime
+ * gating is deliberately NOT used: rare states (RKA's full-charge ricochet)
+ * never run during attract capture, and their un-promoted case bodies became
+ * silent per-frame interior no-ops. Only when runtime_table_promotions is
+ * explicitly enabled; the default leaves every game's baseline set unchanged. */
 static int
 jt_enumerate_jsr_word_table(const GenesisRom *rom, const GameConfig *cfg,
                             FunctionList *list, uint32_t base,
                             const M68KValidatorOptions *vopts) {
-    int  pushed = 0;
-    bool gated  = game_config_runtime_table_promotions(cfg);
+    if (!game_config_runtime_table_promotions(cfg))
+        return 0;
+
+    /* Pass 1 — structural extent + liveness. The producer pair is already
+     * proven by the caller (is_jsr_word_table_pair), so the only remaining
+     * unknown is the table END. Bound it by the FIRST CASE BODY: entries
+     * live in [base, min positive-offset target). Track whether the runtime
+     * oracle saw ANY entry execute ("the table is live"). */
+    uint32_t targets[JT_AUTO_MAX_ENTRIES];
+    int      n = 0;
+    uint32_t first_body = 0xFFFFFFFFu;
+    bool     live = false;
     for (int i = 0; i < JT_AUTO_MAX_ENTRIES; i++) {
         uint32_t entry_addr = base + (uint32_t)i * 2u;
         if (entry_addr + 1 >= rom->rom_size) break;
+        if (entry_addr >= first_body)       break;   /* ran into a case body    */
         int16_t  off    = (int16_t)rom_read16(rom, entry_addr);
         uint32_t target = (uint32_t)((int32_t)base + (int32_t)off);
         uint32_t dist = (target > base) ? (target - base) : (base - target);
@@ -384,15 +399,46 @@ jt_enumerate_jsr_word_table(const GenesisRom *rom, const GameConfig *cfg,
         M68KInstr probe;
         if (!m68k_decode(rom, target, &probe))          break;
         if (m68k_validate(&probe, vopts) != M68K_LEGAL)  break;
+        if (target > base && target < first_body) first_body = target;
+        targets[n++] = target;
+        if (game_config_runtime_observed(cfg, target)) live = true;
+    }
+
+    /* A proven-producer table with zero runtime-observed entries stays
+     * unpromoted (never seen live — could be dead data after all). One live
+     * entry proves the WHOLE table: sibling case bodies are the same
+     * structure, whether or not the runtime workload happened to reach them.
+     * This closes the "state never executed during attract" hole — RKA's
+     * full-charge ricochet handler ($00D84C in the $00D836 table) dispatched
+     * every frame into a silent interior no-op (permanent spin) because the
+     * old per-entry runtime gate refused it. */
+    if (!live)
+        return 0;
+
+    /* Clamp to the structural end when a case body begins inside the scanned
+     * range (entries past it were mis-read code bytes, not table words). */
+    int n_clamped = n;
+    if (first_body != 0xFFFFFFFFu && first_body > base) {
+        int max_entries = (int)((first_body - base) / 2u);
+        if (n_clamped > max_entries) n_clamped = max_entries;
+    }
+
+    int pushed = 0;
+    for (int i = 0; i < n_clamped; i++) {
+        uint32_t target = targets[i];
         if (cfg && game_config_is_blacklisted(cfg, target)) continue;
-        if (!gated || !game_config_runtime_observed(cfg, target)) continue;
         /* Same precision rule as the runtime-gated long-table extension:
          * register the proven callable case body without recursively running
          * speculative table detectors from it. */
         add_function_impl(list, target, false);
         pushed++;
         s_jt_targets_pushed++;
-        s_jt_runtime_promotions++;
+        if (game_config_runtime_observed(cfg, target))
+            s_jt_runtime_promotions++;
+        else
+            fprintf(stderr, "[FunctionFinder] jsr-table $%06X: sibling-proven "
+                            "case body $%06X (live table, entry not yet "
+                            "runtime-observed)\n", base, target);
     }
     return pushed;
 }
