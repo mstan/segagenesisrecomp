@@ -1,0 +1,28 @@
+# Fast gameplay-only diagnostic. Final acceptance uses post-attract script.
+WAIT 700
+PRESS START 2
+WAIT 700
+SCREENSHOT rka_quick_00.png
+HOLD RIGHT
+WAIT 300
+PRESS A 2
+WAIT 300
+SCREENSHOT rka_quick_01.png
+WAIT 600
+SCREENSHOT rka_quick_02.png
+PRESS A 2
+WAIT 600
+SCREENSHOT rka_quick_03.png
+WAIT 600
+SCREENSHOT rka_quick_04.png
+PRESS A 2
+WAIT 600
+SCREENSHOT rka_quick_05.png
+WAIT 600
+SCREENSHOT rka_quick_06.png
+PRESS A 2
+WAIT 600
+SCREENSHOT rka_quick_07.png
+WAIT 600
+SCREENSHOT rka_quick_08.png
+EXIT 0

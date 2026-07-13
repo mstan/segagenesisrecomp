@@ -11,6 +11,13 @@
 typedef struct {
     uint8_t  *rom_data;
     uint32_t  rom_size;
+    /* Optional byte-fetch override: when non-NULL, rom_read8/16/32 route
+     * every access through it (addr is the caller's full address). Lets the
+     * runtime's tier-3 interpreter decode RAM-RESIDENT code from live work
+     * RAM (self-modifying copied handlers) with the same decoder the static
+     * recompiler uses. NULL (the zero-init default) = plain ROM array. */
+    uint8_t (*read8_override)(uint32_t addr, void *user);
+    void     *read8_user;
     uint32_t  initial_sp;        /* Supervisor stack pointer from vector table */
     uint32_t  initial_pc;        /* Initial PC (RESET entry point) */
     uint16_t  header_checksum;   /* Checksum from ROM header at $018E */

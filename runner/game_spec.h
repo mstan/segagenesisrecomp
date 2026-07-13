@@ -62,6 +62,16 @@ typedef struct GameSpec {
      * 0x80000, Sonic 2 is 0x100000, Sonic 3K is 0x400000. */
     uint32_t    expected_rom_size;
 
+    /* Tier-3 interpreter floor default for THIS game (0 = off). When on,
+     * every computed-dispatch miss executes CORRECTLY on the A7-neutral
+     * interpreter capsule instead of silently no-op'ing, and the executed
+     * subtree is appended to floor_coverage.txt as `extra_func` leads for
+     * the next regen — the psxrecomp-style fallback + feedback loop. The
+     * GENESIS_FLOOR env var still overrides in either direction. Enable
+     * per game once validated (RKA: on; Sonics ship with full disasm
+     * coverage and keep it off so a miss stays a loud regression). */
+    int         tier3_floor_default;
+
     /* ---- Battery SRAM override ---- */
     /* Explicit SRAM geometry for carts whose standard header ($1B0 "RA"
      * + BE start/end longwords) does NOT declare it. The Sonic 3 &

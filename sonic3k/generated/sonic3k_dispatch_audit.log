@@ -1,10 +1,10 @@
 # JMP-table dispatch audit
-# total sites: 5450
+# total sites: 5452
 #
 # Summary:
-#   static_target           5142  (JMP with statically resolved target — safe)
+#   static_target           5143  (JMP with statically resolved target — safe)
 #   in_function_switch         0  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
-#   dynamic_register          56  (JMP (An)/(d,An)/(An,Xn) — runtime address from register, safe via call_by_address)
+#   dynamic_register          57  (JMP (An)/(d,An)/(An,Xn) — runtime address from register, safe via call_by_address)
 #   fallback_hybrid                — JMP(PC,Dn.W) routed through hybrid_jmp_interpret; subdivided:
 #     function_entry          99    (base IS a registered function — call_by_address resolves it directly)
 #     bra_w_trampoline         0    (base opcode = 0x6000; runtime miss feedback works)
@@ -2908,6 +2908,7 @@ $083CAC  in func $083CA8  base $00172C  kind=static_target
 $083CBA  in func $083CB4  base $085940  kind=static_target
 $083CC6  in func $083CC0  base $085940  kind=static_target
 $083DAC  in func $083D84  base $000000  kind=dynamic_register
+$083E6C  in func $083E48  base $08488A  kind=static_target
 $083E6C  in func $083E4C  base $08488A  kind=static_target
 $083EC2  in func $083EC2  base $0852A0  kind=static_target
 $083F70  in func $083F68  base $01ABC6  kind=static_target
@@ -3559,6 +3560,7 @@ $091E1C  in func $091E1C  base $08488A  kind=static_target
 $091E78  in func $091E72  base $08495E  kind=static_target
 $092A18  in func $092A0E  base $092A1C  kind=fallback_hybrid/offset_table
 $092ACE  in func $092ABE  base $01ABC6  kind=static_target
+$1FBFA0  in func $1FB6B4  base $000000  kind=dynamic_register
 $1FBFA0  in func $1FB6CE  base $000000  kind=dynamic_register
 $200BE2  in func $200AB4  base $001E7A  kind=static_target
 $200BEA  in func $200AB4  base $001E7A  kind=static_target

@@ -55,6 +55,7 @@
 
 #include "frame_record.h"
 #include "game_layout.h"
+#include "game_spec.h"
 
 void recomp_push_return(uint32_t ret_addr)
 {
@@ -379,6 +380,53 @@ uint32_t recomp_resolve_ram_trampoline(uint32_t addr)
     return resolved;
 }
 
+/* Dispatch target is RAM-resident code. Execute it on the tier-3 interpreter
+ * DIRECTLY FROM LIVE WORK RAM (m68k_interp_run_ram_handler). Games install
+ * short interrupt handlers and helper stubs by copying — and then PATCHING —
+ * code in RAM: RKA's H-int raster handler advances its own MOVE source
+ * operand every HBlank, and its per-scene installer parameterizes that
+ * operand at copy time. Any static redirection to a ROM master (the old
+ * copied-ROM-stub resolver) executes FROZEN operands and silently breaks the
+ * effect; the live-fetch capsule is correct by construction and also
+ * subsumes the old hand-decoded RTS / shift-helper stubs ($FFB1F2).
+ *
+ * ABI: identical to a generated function call — the capsule is A7-neutral at
+ * its depth-0 RTS (the generated caller performs the single pop), and an RTE
+ * body sets g_rte_pending and returns, exactly like generated RTE code.
+ * Cycle accounting runs per interpreted instruction. */
+int recomp_dispatch_ram_stub(uint32_t addr)
+{
+    addr &= 0xFFFFFFu;
+    if (addr < RAM_BASE)
+        return 0;
+
+#if !ENABLE_RECOMPILED_CODE
+    /* Oracle/interpreter builds execute RAM-resident code natively on their
+     * 68K core; the generated-dispatch RAM hook is a no-op there. */
+    return 0;
+#else
+    static uint32_t s_reported_addr;
+    uint32_t exit_pc = 0;
+    M68kiStatus st = m68k_interp_run_ram_handler(addr, &exit_pc);
+    if (st == M68KI_OK)
+        return 1;
+
+    if (s_reported_addr != addr) {
+        s_reported_addr = addr;
+        fprintf(stderr,
+                "[dispatch][RAM] unrunnable RAM code $%06X status=%d words=%04X %04X "
+                "%04X %04X bad_pc=$%06X bad_op=$%04X\n",
+                addr, (int)st,
+                recomp_ram_read16_direct(addr),
+                recomp_ram_read16_direct(addr + 2u),
+                recomp_ram_read16_direct(addr + 4u),
+                recomp_ram_read16_direct(addr + 6u),
+                g_m68ki_bad_pc, g_m68ki_bad_op);
+    }
+    return 0;
+#endif /* ENABLE_RECOMPILED_CODE */
+}
+
 void glue_reset_frame_sync(void)
 {
     g_hybrid_cycle_counter = 0;
@@ -624,6 +672,10 @@ static int     s_game_yielded_vblank = 0;
  * sound. glue_run_game_chunk drains this debt at M68K_PER_LINE per scanline
  * before resuming main-loop work. Only ever nonzero on the own backend. */
 static uint32_t s_irq_cycle_debt = 0;
+/* Interrupt level whose atomically-executed handler owns the outstanding
+ * raster debt. A second level-6 interrupt cannot be accepted while the real
+ * 68000 would still be inside the previous level-6 handler. */
+static int s_irq_cycle_debt_level = 0;
 /* g_audio_cycle_counter value at the last budget drain (see
  * check_cycle_budget — the budget drains by real elapsed 68K cycles). */
 static uint32_t s_budget_cyc_seen = 0;
@@ -662,10 +714,13 @@ void glue_run_game_chunk(cc_u32f cycles)
     if (s_irq_cycle_debt) {
         if (s_irq_cycle_debt >= cycles) {
             s_irq_cycle_debt -= (uint32_t)cycles;
+            if (s_irq_cycle_debt == 0)
+                s_irq_cycle_debt_level = 0;
             return;
         }
         cycles -= s_irq_cycle_debt;
         s_irq_cycle_debt = 0;
+        s_irq_cycle_debt_level = 0;
     }
 
     s_chunk_cycles = cycles;
@@ -701,6 +756,14 @@ static void check_cycle_budget(void)
             s_cycle_budget -= (int32_t)(now - s_budget_cyc_seen);
         s_budget_cyc_seen = now;   /* also re-syncs after the per-frame reset */
         if (s_cycle_budget <= 0) {
+            /* This is a real cooperative yield to the scanline scheduler.
+             * Keep the bus watchdog's "without yield" window aligned with
+             * the instruction watchdog, which glue_run_game_chunk resets on
+             * every fiber return. Games such as RKA advance exclusively via
+             * this budget path rather than a recognized WaitForVBlank hook;
+             * without this reset, normal bus traffic accumulates over
+             * thousands of frames and eventually produces a false hang. */
+            s_watchdog_counter = 0;
             g_chunk_yield_count++;
             { char stack_marker; game_stack_note("cycle-budget", &stack_marker); }
             fiber_switch(s_main_fiber);
@@ -885,6 +948,8 @@ static void own_deliver_vint(GVDP *vdp)
 #endif
     if (g_game_spec.call_vblank) g_game_spec.call_vblank();
     s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
+    if (s_irq_cycle_debt)
+        s_irq_cycle_debt_level = 6;
 #ifdef GEN_DEV_TRACE
     /* [IRQ-DEBT] a V-int handler owing more than one full frame of raster
      * debt freezes the main loop for multiple wall frames (and with it the
@@ -976,7 +1041,16 @@ void glue_own_interrupt(int level, GVDP *vdp)
     if (level == 6) {
         /* Fire V_Int once per wall frame, exactly like hardware — NOT only when
          * the game has parked at WaitForVBlank. If the 68K currently has IRQs
-         * masked, latch it and deliver when the mask drops instead of losing it. */
+         * masked, latch it and deliver when the mask drops instead of losing it.
+         *
+         * We deliver even when a prior handler's raster debt is still outstanding
+         * (s_irq_cycle_debt > 0): deferring on debt deadlocks a game that busy-
+         * waits on V-int-driven state (Sonic 1's SEGA screen runs a ~1-frame
+         * V_Int PCM-feed handler, so debt is >=1 frame every fire; latching the
+         * next V-int behind it stalled Sega_WaitEnd's $F614 countdown forever and
+         * ran the fiber stack away). Debt is still charged/drained for cycle
+         * stamping; it no longer gates delivery. Masked-span merging is preserved
+         * by the imask>=6 latch path below. */
         if (imask < 6) {
             s_own_vint_latched = 0;
             /* STAGE 1: if interleaved delivery is on AND the game is parked at
@@ -1029,6 +1103,8 @@ void glue_own_interrupt(int level, GVDP *vdp)
 #endif
         if (g_game_spec.call_hblank) g_game_spec.call_hblank();
         s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
+        if (s_irq_cycle_debt && s_irq_cycle_debt_level < 4)
+            s_irq_cycle_debt_level = 4;
         g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
         g_68k_stamp_rebase = saved_rebase;
         s_in_vblank_service = 0;
@@ -1045,6 +1121,9 @@ void glue_own_interrupt(int level, GVDP *vdp)
 int glue_own_vint_service_latched(GVDP *vdp)
 {
     if (!s_own_vint_latched || !s_game_running) return 0;
+    /* Deliver as soon as the mask drops; do NOT hold behind outstanding raster
+     * debt (that indefinitely-deferred S1's SEGA-screen V-int — see
+     * glue_own_interrupt). Debt is still charged/drained for cycle stamping. */
     if (((g_cpu.SR >> 8) & 7) >= 6) return 0;   /* still masked — keep latched */
     s_own_vint_latched = 0;
     own_deliver_vint(vdp);
@@ -1625,6 +1704,7 @@ void glue_restart_game_fiber(uint32_t resume_pc)
     s_cycle_budget = 0;
     s_chunk_cycles = 0;
     s_irq_cycle_debt = 0;
+    s_irq_cycle_debt_level = 0;
     s_watchdog_counter = 0;
     s_vblank_fired_this_frame = 0;
     s_vblank_executed_this_frame = 0;
@@ -1897,6 +1977,10 @@ void m68k_write16(uint32_t byte_addr, uint16_t val)
 #endif
     HYBRID_BUMP_CYCLES();
 #if OWN_BACKEND
+    if (g_mem_write_trace_fn) {
+        g_mem_write_trace_fn(byte_addr,      (uint8_t)(val >> 8), g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 1u, (uint8_t)val,        g_audio_cycle_counter);
+    }
     gbus_write16(&g_machine.bus, byte_addr, val);
 #else
     M68kWriteCallback(&s_cpu_data,
@@ -1926,6 +2010,8 @@ void m68k_write8(uint32_t byte_addr, uint8_t val)
     }
     HYBRID_BUMP_CYCLES();
 #if OWN_BACKEND
+    if (g_mem_write_trace_fn)
+        g_mem_write_trace_fn(byte_addr, val, g_audio_cycle_counter);
     gbus_write8(&g_machine.bus, byte_addr, val);
 #else
     cc_bool hi = (byte_addr & 1) == 0;
@@ -1957,6 +2043,12 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
      * them, the half-written command corrupts VDP state. */
     HYBRID_BUMP_CYCLES();
 #if OWN_BACKEND
+    if (g_mem_write_trace_fn) {
+        g_mem_write_trace_fn(byte_addr,      (uint8_t)(val >> 24), g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 1u, (uint8_t)(val >> 16), g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 2u, (uint8_t)(val >> 8),  g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 3u, (uint8_t)val,         g_audio_cycle_counter);
+    }
     gbus_write16(&g_machine.bus, byte_addr,     (uint16_t)(val >> 16));
     gbus_write16(&g_machine.bus, byte_addr + 2, (uint16_t)(val & 0xFFFF));
 #else
@@ -2142,8 +2234,18 @@ static int floor_enabled(void) {
     static int e = -1;
     if (e < 0) {
         const char *v = getenv("GENESIS_FLOOR");
-        e = (v && (v[0] == '1' || v[0] == 'o' || v[0] == 'O' || v[0] == 'y' || v[0] == 'Y')) ? 1 : 0;
-        if (e) fprintf(stderr, "[FLOOR] ENABLED via GENESIS_FLOOR=%s\n", v);
+        if (v) {
+            /* Env var overrides in EITHER direction (1/on/yes vs 0/off/no). */
+            e = (v[0] == '1' || v[0] == 'o' || v[0] == 'O' || v[0] == 'y' || v[0] == 'Y') ? 1 : 0;
+            fprintf(stderr, "[FLOOR] %s via GENESIS_FLOOR=%s\n",
+                    e ? "ENABLED" : "DISABLED", v);
+        } else {
+            /* Per-game default: games without full disasm coverage (RKA) run
+             * the miss-fallback + floor_coverage.txt feedback loop always-on;
+             * disasm-complete games keep misses loud-and-fatal-ish. */
+            e = g_game_spec.tier3_floor_default ? 1 : 0;
+            if (e) fprintf(stderr, "[FLOOR] ENABLED by game spec default\n");
+        }
     }
     return e;
 }
@@ -2184,31 +2286,26 @@ void genesis_log_dispatch_miss(uint32_t addr)
         uint32_t expected_ret = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;
         uint32_t run_at = addr;
 
-        /* RAM-resident computed target: follow the JMP/JSR trampoline chain to
-         * a ROM entry the capsule can decode. If it stays in RAM the floor
-         * cannot fetch it from the ROM image — record + decline (a real
-         * RAM-code execution strategy is future work; a RAM target is never a
-         * static native function). */
+        /* RAM-resident computed target: follow the JMP/JSR trampoline chain
+         * toward a ROM entry (native functions run faster). A target that
+         * stays in RAM is fine now: the capsule fetches through the live bus
+         * view, so RAM-resident code (and RAM helpers reached mid-subtree
+         * from a missed ROM function) executes correctly. */
         if (run_at >= RAM_BASE) {
             uint32_t resolved = recomp_resolve_ram_trampoline(run_at) & 0xFFFFFFu;
-            if (resolved < rl && !(resolved & 1u)) {
+            if ((resolved < rl || resolved >= RAM_BASE) && !(resolved & 1u))
                 run_at = resolved;
-            } else {
-                floor_unsafe_record(addr, run_at, resolved, expected_ret,
-                                    "RAM target did not resolve to a ROM entry");
-                floor_blacklist_add(addr);
-                run_at = 0;  /* skip the capsule */
-            }
         }
 
-        if (run_at && run_at < rl && !(run_at & 1u)) {
+        if (run_at && (run_at < rl || run_at >= RAM_BASE) && !(run_at & 1u)) {
             uint32_t exit_pc = 0;
             s_in_floor = 1;
             M68kiStatus st = m68k_interp_run_framed(run_at, &exit_pc);
             s_in_floor = 0;
 
             if (st == M68KI_OK) {
-                int plausible = exit_pc && !(exit_pc & 1u) && exit_pc < rl;
+                int plausible = exit_pc && !(exit_pc & 1u) &&
+                                (exit_pc < rl || exit_pc >= RAM_BASE);
                 if (plausible && exit_pc == expected_ret) {
                     /* Clean balanced return to the native continuation. Manifest
                      * the entry + its call/jump subtree as real code leads. */

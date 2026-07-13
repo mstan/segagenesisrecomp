@@ -1050,6 +1050,48 @@ static bool addr_belongs_to_other_function(uint32_t addr, uint32_t my_start,
     return sorted_funcs[best] != my_start;
 }
 
+/* addr_is_function_entry — exact-match membership in the sorted entry set. */
+static bool addr_is_function_entry(uint32_t addr, const uint32_t *sorted_funcs,
+                                   int nfuncs) {
+    int lo = 0, hi = nfuncs - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (sorted_funcs[mid] == addr) return true;
+        if (sorted_funcs[mid] < addr) lo = mid + 1;
+        else                          hi = mid - 1;
+    }
+    return false;
+}
+
+/* Report (once per entry per run) a discovered function entry that lands
+ * MID-INSTRUCTION relative to a decoded stream — a data-shadowed / falsely
+ * discovered entry. The stream decodes through it (see the linear-scan rule
+ * below); the entry itself stays dispatchable as its own function. */
+#define MISALIGNED_REPORT_CAP 1024
+static uint32_t s_misaligned_reported[MISALIGNED_REPORT_CAP];
+static int      s_misaligned_reported_count = 0;
+static void report_misaligned_entries_in_range(uint32_t pc, uint32_t len,
+                                               uint16_t opcode, M68KMnemonic mn,
+                                               uint32_t enclosing_func,
+                                               const uint32_t *sorted_funcs,
+                                               int nfuncs) {
+    for (uint32_t a = pc + 2; a < pc + len; a += 2) {
+        if (!addr_is_function_entry(a, sorted_funcs, nfuncs)) continue;
+        bool seen = false;
+        for (int i = 0; i < s_misaligned_reported_count; i++)
+            if (s_misaligned_reported[i] == a) { seen = true; break; }
+        if (seen) continue;
+        if (s_misaligned_reported_count < MISALIGNED_REPORT_CAP)
+            s_misaligned_reported[s_misaligned_reported_count++] = a;
+        codegen_diag_record(CGD_MISALIGNED_FUNC_ENTRY, a, opcode, mn,
+                            NULL, enclosing_func);
+        fprintf(stderr, "[Codegen] WARN: function entry $%06X lands mid-instruction "
+                        "(inside $%06X..$%06X of func $%06X) — data-shadowed entry; "
+                        "stream decodes through it\n",
+                a, pc, pc + len - 2, enclosing_func);
+    }
+}
+
 /* =========================================================================
  * probe_pc_idx_targets — find interior-label dispatch targets of a
  * `JMP (d8, PC, Xn)` instruction.
@@ -1286,7 +1328,8 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
                           AddrSet *instrs, AddrSet *labels,
                           const uint32_t *sorted_funcs, int nfuncs,
                           AddrSet *extern_targets,
-                          const uint32_t *extra_seeds, int extra_seed_count) {
+                          const uint32_t *extra_seeds, int extra_seed_count,
+                          const GameConfig *cfg) {
     /* Worklist-based CFG walk */
     AddrSet worklist;
     addrset_init(&worklist);
@@ -1325,13 +1368,26 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
         while (pc < rom->rom_size) {
             if (addrset_contains(instrs, pc)) break;
 
-            /* Stop linear scan if we've reached another function's entry point */
+            /* Stop the linear scan ONLY at another function's EXACT entry
+             * point — the end-of-function fall-through logic emits the
+             * boundary tail call there. A function entry that lands
+             * MID-INSTRUCTION relative to this stream (territory test true,
+             * but no entry coincides with an instruction start) is a
+             * data-shadowed / falsely-discovered entry: severing the stream
+             * there silently truncated the enclosing function with no
+             * dispatch miss (RKA's $693E scroll-table builder lost its two
+             * per-frame fill loops to bogus entry $697A → frozen background).
+             * Decode through it and record the diagnostic instead. */
             if (pc != start_addr &&
-                addr_belongs_to_other_function(pc, start_addr, sorted_funcs, nfuncs))
+                addr_is_function_entry(pc, sorted_funcs, nfuncs))
                 break;
 
             M68KInstr instr;
             if (!m68k_decode(rom, pc, &instr)) break;
+
+            report_misaligned_entries_in_range(pc, instr.byte_length,
+                                               instr.words[0], instr.mnemonic,
+                                               start_addr, sorted_funcs, nfuncs);
 
             addrset_insert(instrs, pc);
 
@@ -1374,21 +1430,30 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
 
             case MN_BSR:
             case MN_JSR:
-                /* JSR/BSR targets are normally discovered by FunctionFinder
-                 * (separate pre-pass). But when the target is one of our
-                 * extra_seeds — i.e. a disasm local label — we promote it
-                 * to a function entry here by adding to extern_targets. The
-                 * boundary-splitter then makes it callable via
-                 * call_by_address. Without this, the JSR emit produces a
-                 * `recomp_call_func(func_XXXXXX)` that references an
-                 * undeclared identifier. */
-                if (instr.has_target && extra_seeds && extern_targets) {
-                    for (int s = 0; s < extra_seed_count; s++) {
-                        if (extra_seeds[s] == instr.target_addr) {
-                            addrset_insert(extern_targets, instr.target_addr);
-                            break;
+                /* FunctionFinder's linear walk stops at computed JMPs, while
+                 * this CFG walk can prove and enter their case bodies. Close a
+                 * direct call found there only with independent evidence:
+                 * either the target is a disassembly-provided local seed (the
+                 * historical path), or a trusted runtime oracle observed BOTH
+                 * the call instruction and its static target. Requiring the
+                 * executed edge prevents speculative/data-shaped CFG paths
+                 * from cascading into false function entries. */
+                if (instr.has_target && extern_targets) {
+                    bool proven = false;
+                    if (extra_seeds) {
+                        for (int s = 0; s < extra_seed_count; s++) {
+                            if (extra_seeds[s] == instr.target_addr) {
+                                proven = true;
+                                break;
+                            }
                         }
                     }
+                    if (!proven && game_config_has_runtime_oracle(cfg)) {
+                        proven = game_config_runtime_observed(cfg, instr.addr) &&
+                                 game_config_runtime_observed(cfg, instr.target_addr);
+                    }
+                    if (proven)
+                        addrset_insert(extern_targets, instr.target_addr);
                 }
                 break;
 
@@ -3934,7 +3999,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             scan_function(rom, all_funcs.addrs[i], &instrs, &labels,
                           all_funcs.addrs, all_funcs.count, &extern_targets,
                           cfg ? cfg->extra_seeds : NULL,
-                          cfg ? cfg->extra_seed_count : 0);
+                          cfg ? cfg->extra_seed_count : 0, cfg);
             addrset_free(&instrs);
             addrset_free(&labels);
         }
@@ -4023,7 +4088,7 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         scan_function(rom, func_addr, &instrs, &labels,
                       all_funcs.addrs, all_funcs.count, NULL,
                       cfg ? cfg->extra_seeds : NULL,
-                      cfg ? cfg->extra_seed_count : 0);
+                      cfg ? cfg->extra_seed_count : 0, cfg);
 
         /* Sort instruction addresses */
         addrset_sort(&instrs);
@@ -4339,6 +4404,8 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         "}\n\n"
         "static void recomp_dispatch_once(uint32_t addr) {\n"
         "    addr = recomp_resolve_ram_trampoline(addr);\n"
+        "    if (recomp_dispatch_ram_stub(addr))\n"
+        "        return;\n"
         "    for (int i = 0; s_dispatch_table[i].fn; i++) {\n"
         "        if (s_dispatch_table[i].addr == addr) {\n"
         "            s_dispatch_table[i].fn();\n"

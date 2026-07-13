@@ -40,7 +40,13 @@ void input_map_init_defaults(void)
     memset(&g_input_map, 0, sizeof(g_input_map));
 
     PlayerInput *p1 = &g_input_map.p[0];
-    p1->device       = INPUT_DEV_KEYBOARD; /* exclusive device select (pick Gamepad in launcher) */
+    /* Default = keyboard AND gamepad, additive (same merge rule as the
+     * script/TCP sources in input_requested_cb): a connected pad works
+     * plug-and-play — required for games without a launcher UI (RKA runs
+     * --no-launcher, so nothing could ever flip the device to Gamepad).
+     * Keyboard-only users see no change (no pad ⇒ empty pad mask), and a
+     * launcher/settings.ini device choice still overrides this default. */
+    p1->device       = INPUT_DEV_KEYBOARD | INPUT_DEV_GAMEPAD;
     p1->pad_type     = PAD_3BUTTON;
     p1->deadzone_pct = 25;
     /* Keyboard arrows + Z/X/C + Return (the existing main.c mapping), plus
@@ -50,8 +56,11 @@ void input_map_init_defaults(void)
     set_btn(p1, GB_DOWN,  SDL_SCANCODE_DOWN,   SDL_CONTROLLER_BUTTON_DPAD_DOWN);
     set_btn(p1, GB_LEFT,  SDL_SCANCODE_LEFT,   SDL_CONTROLLER_BUTTON_DPAD_LEFT);
     set_btn(p1, GB_RIGHT, SDL_SCANCODE_RIGHT,  SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
-    set_btn(p1, GB_A,     SDL_SCANCODE_Z,      SDL_CONTROLLER_BUTTON_A);
-    set_btn(p1, GB_B,     SDL_SCANCODE_X,      SDL_CONTROLLER_BUTTON_B);
+    /* Pad: Genesis B (the primary action/jump on most carts) sits on the
+     * face-bottom button (Cross on DualSense, A on Xbox); Genesis A on the
+     * face-right button. More natural for PlayStation pads (user request). */
+    set_btn(p1, GB_A,     SDL_SCANCODE_Z,      SDL_CONTROLLER_BUTTON_B);
+    set_btn(p1, GB_B,     SDL_SCANCODE_X,      SDL_CONTROLLER_BUTTON_A);
     set_btn(p1, GB_C,     SDL_SCANCODE_C,      SDL_CONTROLLER_BUTTON_X);
     set_btn(p1, GB_START, SDL_SCANCODE_RETURN, SDL_CONTROLLER_BUTTON_START);
     set_btn(p1, GB_X,     SDL_SCANCODE_A,      SDL_CONTROLLER_BUTTON_Y);
@@ -69,8 +78,8 @@ void input_map_init_defaults(void)
     set_btn(p2, GB_DOWN,  SDL_SCANCODE_K,      SDL_CONTROLLER_BUTTON_DPAD_DOWN);
     set_btn(p2, GB_LEFT,  SDL_SCANCODE_J,      SDL_CONTROLLER_BUTTON_DPAD_LEFT);
     set_btn(p2, GB_RIGHT, SDL_SCANCODE_L,      SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
-    set_btn(p2, GB_A,     SDL_SCANCODE_N,      SDL_CONTROLLER_BUTTON_A);
-    set_btn(p2, GB_B,     SDL_SCANCODE_M,      SDL_CONTROLLER_BUTTON_B);
+    set_btn(p2, GB_A,     SDL_SCANCODE_N,      SDL_CONTROLLER_BUTTON_B);
+    set_btn(p2, GB_B,     SDL_SCANCODE_M,      SDL_CONTROLLER_BUTTON_A);
     set_btn(p2, GB_C,     SDL_SCANCODE_COMMA,  SDL_CONTROLLER_BUTTON_X);
     set_btn(p2, GB_START, SDL_SCANCODE_RSHIFT, SDL_CONTROLLER_BUTTON_START);
     set_btn(p2, GB_X,     SDL_SCANCODE_U,      SDL_CONTROLLER_BUTTON_Y);

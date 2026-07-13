@@ -1,0 +1,35 @@
+# Let the complete attract cycle return to the title, then enter the game.
+WAIT 10750
+SAVE_STATE rka_title.state
+PRESS START 180
+WAIT 700
+SCREENSHOT rka_fuzz_00.png
+
+# Primary fuzz condition: hold right continuously, with intermittent jumps.
+HOLD RIGHT
+WAIT 300
+PRESS B 2
+WAIT 300
+SCREENSHOT rka_fuzz_01.png
+WAIT 300
+PRESS B 2
+WAIT 300
+SCREENSHOT rka_fuzz_02.png
+WAIT 600
+SCREENSHOT rka_fuzz_03.png
+PRESS B 2
+WAIT 600
+SCREENSHOT rka_fuzz_04.png
+WAIT 600
+SCREENSHOT rka_fuzz_05.png
+PRESS B 2
+WAIT 600
+SCREENSHOT rka_fuzz_06.png
+WAIT 600
+SCREENSHOT rka_fuzz_07.png
+PRESS B 2
+WAIT 600
+SCREENSHOT rka_fuzz_08.png
+WAIT 600
+SCREENSHOT rka_fuzz_09.png
+EXIT 0

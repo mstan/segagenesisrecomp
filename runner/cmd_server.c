@@ -1474,6 +1474,58 @@ static void handle_frame_timeseries(int id, const char *json)
     send_err((id), "chip-state snapshot is dev/oracle-only (not on the own backend)")
 #endif
 
+/* vdp_events {count?, kind?} — dump the newest N entries of the always-on
+ * VDP event ring (register writes, completed control commands, DMA
+ * exec/decline, data-port writes). Own backend only: the ring lives in the
+ * clean-room VDP. `kind` filters to one GVDP_EVT_* class. */
+static void handle_vdp_events(int id, const char *json)
+{
+#if OWN_BACKEND
+    int count = json_get_int(json, "count", 256);
+    int kind  = json_get_int(json, "kind", 0);
+    if (count < 1) count = 1;
+    if (count > GVDP_EVENT_CAP) count = GVDP_EVENT_CAP;
+    uint32_t seq_end = g_gvdp_event_seq;
+    uint32_t avail = seq_end < GVDP_EVENT_CAP ? seq_end : GVDP_EVENT_CAP;
+    uint32_t start = seq_end - avail;
+
+    /* Pass 1: how many entries match the filter? Emit only the newest
+     * `count` of them (oldest-first) in pass 2. */
+    uint32_t matches = 0;
+    for (uint32_t s = start; s < seq_end; s++) {
+        const GVdpEvent *e = &g_gvdp_events[s % GVDP_EVENT_CAP];
+        if (e->seq != s) continue;             /* overwritten during walk      */
+        if (kind && e->kind != kind) continue;
+        matches++;
+    }
+    uint32_t skip = matches > (uint32_t)count ? matches - (uint32_t)count : 0;
+
+    JBuf j; jb_init(&j);
+    jb_printf(&j, "{\"id\":%d,\"ok\":true,\"seq_end\":%u,\"matches\":%u,\"events\":[",
+              id, seq_end, matches);
+    int emitted = 0;
+    for (uint32_t s = start; s < seq_end; s++) {
+        const GVdpEvent *e = &g_gvdp_events[s % GVDP_EVENT_CAP];
+        if (e->seq != s) continue;
+        if (kind && e->kind != kind) continue;
+        if (skip) { skip--; continue; }
+        jb_printf(&j, "%s{\"seq\":%u,\"kind\":%u,\"code\":%u,\"reason\":%u,"
+                      "\"vbl\":%u,\"line\":%u,\"addr\":%u,\"value\":%u,"
+                      "\"inc\":%u,\"len\":%u,\"src\":%u}",
+                  emitted ? "," : "", e->seq, e->kind, e->code, e->reason,
+                  e->in_vblank, e->scanline, e->addr, e->value, e->inc,
+                  (unsigned)e->len, (unsigned)e->src);
+        emitted++;
+    }
+    jb_printf(&j, "],\"emitted\":%d}", emitted);
+    cmd_send_response(j.buf);
+    jb_free(&j);
+#else
+    (void)json;
+    send_err(id, "vdp_events requires the own-backend VDP");
+#endif
+}
+
 static void handle_z80_state(int id, const char *json)
 {
 #if OWN_BACKEND
@@ -2270,11 +2322,18 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
             send_err(id, "count must be 1-36000");
         }
     } else if (strcmp(cmd, "set_input") == 0) {
-        /* Genesis button bits: 0=Up,1=Down,2=Left,3=Right,4=B,5=C,6=A,7=Start */
+        /* Genesis button bits: 0=Up,1=Down,2=Left,3=Right,4=B,5=C,6=A,7=Start.
+         * keys is a HEX mask; keys="off" releases the TCP input source
+         * entirely (keyboard-only again). TCP input is additive with the
+         * live keyboard — see input_requested_cb. */
         char keys_str[32];
         if (json_get_str(json, "keys", keys_str, sizeof(keys_str))) {
-            cr.input_override = true;
-            cr.input_keys = (uint8_t)hex_to_u32(keys_str);
+            if (strcmp(keys_str, "off") == 0 || strcmp(keys_str, "release") == 0) {
+                cr.input_release = true;
+            } else {
+                cr.input_override = true;
+                cr.input_keys = (uint8_t)hex_to_u32(keys_str);
+            }
             send_ok(id);
         } else {
             cr.input_override = true;
@@ -2316,6 +2375,8 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         handle_psg_state(id);
     } else if (strcmp(cmd, "vdp_state") == 0) {
         handle_vdp_state(id, json);
+    } else if (strcmp(cmd, "vdp_events") == 0) {
+        handle_vdp_events(id, json);
     } else if (strcmp(cmd, "read_vsram") == 0) {
         handle_read_vsram(id);
 #if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE

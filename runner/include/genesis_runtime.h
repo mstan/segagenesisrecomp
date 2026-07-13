@@ -73,6 +73,10 @@ void recomp_call_addr(uint32_t addr);
 void recomp_call_func(RecompFuncPtr fn);
 void recomp_push_return(uint32_t ret_addr);
 uint32_t recomp_resolve_ram_trampoline(uint32_t addr);
+/* Execute terminal one-instruction RAM stubs whose semantics are represented by
+ * returning to the native dispatcher. Currently handles RTS; returns nonzero
+ * when the address was consumed. */
+int recomp_dispatch_ram_stub(uint32_t addr);
 
 /* Logging for dispatch misses */
 void genesis_log_dispatch_miss(uint32_t addr);

@@ -21,6 +21,7 @@ static const char *s_kind_names[CGD_KIND_COUNT] = {
     "INVALID_STORE_EA",
     "MOVE_CCR_DIRECTION_AMBIGUOUS",
     "EA_FALLBACK",
+    "MISALIGNED_FUNC_ENTRY",
 };
 
 void codegen_diag_reset(void) {

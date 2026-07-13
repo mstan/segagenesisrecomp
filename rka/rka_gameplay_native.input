@@ -1,0 +1,11 @@
+WAIT 1570
+DUMP_RAM rka_native_1570.ram
+WAIT 10
+DUMP_RAM rka_native_1580.ram
+WAIT 20
+DUMP_RAM rka_native_1600.ram
+WAIT 100
+DUMP_RAM rka_native_1700.ram
+WAIT 100
+DUMP_RAM rka_native_1800.ram
+EXIT 0

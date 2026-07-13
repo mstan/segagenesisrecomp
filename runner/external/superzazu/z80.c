@@ -1453,7 +1453,12 @@ void exec_opcode_cb(z80* const z, uint8_t opcode) {
     z->cyc += 7;
   }
 
-  if (reg == &hl) {
+  /* BIT b,(HL) is read-only. The previous unconditional write-back sent the
+   * value read from memory back through the bus for x=1 as well; when (HL)
+   * points at YM2612 status, that bogus write clobbers the chip's address
+   * latch between every real address/data pair. Rotate/shift, RES and SET do
+   * modify memory and still require the write-back. */
+  if (reg == &hl && x_ != 1) {
     wb(z, get_hl(z), hl);
   }
 }

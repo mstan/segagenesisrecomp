@@ -170,6 +170,15 @@ typedef struct {
     uint32_t       *extra_funcs;
     int            extra_func_count;
     int            extra_func_cap;
+    /* Audited function entries registered only after heuristic discovery has
+     * reached its fixed point. Their ordinary direct-call/branch closure is
+     * walked, but speculative table detectors are disabled during that second
+     * pass. This prevents a correct late entry in an oracle-less game from
+     * exposing unrelated data-shaped tables and triggering an over-discovery
+     * cascade. */
+    uint32_t       *late_extra_funcs;
+    int            late_extra_func_count;
+    int            late_extra_func_cap;
     /* Additional INTERIOR PCs to seed scan_function's CFG-walk worklist.
      * Sourced from disasm local labels (asm68k `.foo` scoped under a
      * parent global label). NOT promoted to function entries — they're
@@ -192,6 +201,21 @@ typedef struct {
     uint32_t       *code_addrs;
     int            code_addr_count;
     int            code_addr_cap;
+    /* Runtime executed-PC oracle (instruction-start set actually executed in a
+     * trusted emulator run), loaded from game.toml `runtime_exec_file` (one hex
+     * addr per line, produced by rka/gen_runtime_oracle.py). Used as an ADDITIVE
+     * promotion gate for speculative jump-table targets: a target beyond what
+     * static discovery already accepts is promoted only if it was observed
+     * executing. Empty => no runtime gating (default; existing behavior). Kept
+     * SORTED for binary search. */
+    uint32_t       *runtime_exec;
+    int            runtime_exec_count;
+    int            runtime_exec_cap;
+    /* Opt-in for speculative table walkers to promote runtime-observed
+     * targets. Merely loading runtime_exec_file leaves phase-0 discovery
+     * unchanged, allowing other consumers to use the oracle as an evidence
+     * intersection without perturbing the baseline function set. */
+    bool           runtime_table_promotions;
     uint32_t       vblank_yield_addr;   /* 0 = not set; emit glue_yield_for_vblank() for this function */
     ProtectedRange *protected_ranges;
     int            protected_range_count;
@@ -231,6 +255,17 @@ bool game_config_is_blacklisted(const GameConfig *cfg, uint32_t addr);
  * oracle. If no code_addrs_file was loaded (code_addr_count == 0) this returns
  * true for every address (gating disabled — prior behavior). */
 bool game_config_is_known_code(const GameConfig *cfg, uint32_t addr);
+
+/* True if a runtime executed-PC oracle is loaded for this game. */
+bool game_config_has_runtime_oracle(const GameConfig *cfg);
+
+/* True only when an oracle is loaded AND runtime_table_promotions is enabled. */
+bool game_config_runtime_table_promotions(const GameConfig *cfg);
+
+/* True if addr was observed executing in the runtime oracle. Returns false if
+ * no oracle is loaded (so callers must guard additive promotion on
+ * game_config_has_runtime_oracle first). */
+bool game_config_runtime_observed(const GameConfig *cfg, uint32_t addr);
 
 void game_config_init_empty(GameConfig *cfg);
 void game_config_free(GameConfig *cfg);

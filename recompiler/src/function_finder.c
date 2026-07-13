@@ -46,6 +46,12 @@ static int s_jt_unresolved            = 0;  /* path terminated, no table    */
 /* Two-step long-pointer dispatch counters (movea.l <tbl>(pc,Xn),aN; jmp/jsr (aN)). */
 static int s_jt_twostep_sites         = 0;  /* movea+indirect idioms matched */
 static int s_jt_twostep_tables        = 0;  /* tables yielding >=1 entry      */
+static int s_jt_bounded_promotions    = 0;  /* explicit abs-table entries >64 */
+
+/* JSR (d8,PC,Xn.W) self-relative word-offset call-table counters + runtime-
+ * gated additive promotions (long tables beyond the static cap, JSR tables). */
+static int s_jt_jsr_word_tables       = 0;  /* word-offset jsr tables found    */
+static int s_jt_runtime_promotions    = 0;  /* targets added via runtime oracle */
 
 /* Per-site record for every dispatch we couldn't enumerate. Dumped to
  * generated/<prefix>.unresolved_jumptables.log so the user can grep
@@ -80,12 +86,22 @@ static void record_unresolved(uint32_t pc, uint32_t base, uint16_t ext, uint8_t 
 #define JT_AUTO_MAX_ENTRIES   256
 #define JT_AUTO_MIN_ENTRIES     2
 
-/* Two-step long-pointer table walk bounds (see jt_enumerate_long). */
+/* Two-step long-pointer table walk bounds (see jt_enumerate_long). The static
+ * cap stays conservative: entries 0..JT_LONG_MAX_ENTRIES-1 promote on the
+ * structural gate alone (existing behavior). When runtime table promotion is
+ * explicitly enabled, the walk extends to JT_LONG_GATED_MAX but entries past
+ * the static cap promote ONLY if runtime-observed. */
 #define JT_LONG_MAX_ENTRIES    64
+#define JT_LONG_GATED_MAX    1024
 #define JT_LONG_LEAD_SKIP       4
+
+/* Max |target - base| for a self-relative WORD offset to count as a real
+ * JSR-table entry (case bodies sit just past the table; wild offsets reject). */
+#define JT_PCRELW_WINDOW   0x800u
 
 /* Forward decl — defined later, but jt_enumerate needs to call it. */
 static void add_function(FunctionList *list, uint32_t addr);
+static void add_function_impl(FunctionList *list, uint32_t addr, bool queue);
 
 static const JumpTableEntry *
 jt_lookup_manual(const GameConfig *cfg, uint32_t base) {
@@ -277,7 +293,22 @@ jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
                   const M68KValidatorOptions *vopts) {
     int pushed = 0;
     int valid_seen = 0;
-    for (int i = 0; i < JT_LONG_MAX_ENTRIES; i++) {
+    /* A matching explicit abs/stride-4 [[jump_table]] supplies an audited
+     * extent for this particular long-pointer table. This permits large object
+     * tables without weakening the conservative global cap. */
+    const JumpTableEntry *manual = jt_lookup_manual(cfg, base);
+    bool bounded = manual
+        && manual->format == JT_FMT_ABS_L
+        && manual->stride_bytes == 4
+        && manual->end_addr > base
+        && ((manual->end_addr - base) & 3u) == 0;
+    int bounded_count = bounded ? (int)((manual->end_addr - base) / 4u) : 0;
+    /* With runtime table promotion enabled, walk further than the static cap;
+     * otherwise the cap and baseline discovery set remain unchanged. */
+    bool gated   = game_config_runtime_table_promotions(cfg);
+    int  walk_max = bounded ? bounded_count
+                  : gated ? JT_LONG_GATED_MAX : JT_LONG_MAX_ENTRIES;
+    for (int i = 0; i < walk_max; i++) {
         uint32_t entry_addr = base + (uint32_t)i * 4;
         if (entry_addr + 4 > rom->rom_size) break;
         uint32_t raw = rom_read32(rom, entry_addr);
@@ -298,11 +329,156 @@ jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
         }
         valid_seen++;
         if (cfg && game_config_is_blacklisted(cfg, raw)) continue;
+        /* Entries within the static cap promote as before. Past it, an
+         * explicitly bounded table promotes non-recursively; otherwise the
+         * opt-in runtime oracle must have observed the target. */
+        if (i >= JT_LONG_MAX_ENTRIES) {
+            if (bounded) {
+                s_jt_bounded_promotions++;
+            } else {
+                if (!game_config_runtime_observed(cfg, raw)) continue;
+                s_jt_runtime_promotions++;
+            }
+            /* Runtime evidence proves this table target, not every
+             * speculative table-shaped path reachable from it. Register the
+             * entry without reopening phase-0 heuristic discovery. Codegen's
+             * CFG walk still emits its body and closes separately-proven
+             * direct calls. */
+            add_function_impl(list, raw, false);
+            pushed++;
+            s_jt_targets_pushed++;
+            continue;
+        }
         add_function(list, raw);
         pushed++;
         s_jt_targets_pushed++;
     }
     return pushed;
+}
+
+/* Self-relative WORD-offset call table behind a computed `jsr (d8,PC,Xn.W)`:
+ *     move.w  tbl(pc,Dn),Dn        ; Dn = signed 16-bit offset = tbl[index]
+ *     jsr     tbl(pc,Dn)           ; call tbl + offset
+ *   tbl: dc.w body0-tbl, body1-tbl, ...
+ * Because the transfer is a JSR, each case body is a CALLED subroutine and so
+ * must become a first-class function entry (the JSR analogue of the JMP offset
+ * table the codegen turns into an in-function switch). Tight window+validator
+ * gate, plus a TABLE-LIVENESS runtime gate: a proven-producer table promotes
+ * ALL its structurally valid entries (bounded by the first case body) once
+ * the runtime oracle has seen AT LEAST ONE entry execute. Per-entry runtime
+ * gating is deliberately NOT used: rare states (RKA's full-charge ricochet)
+ * never run during attract capture, and their un-promoted case bodies became
+ * silent per-frame interior no-ops. Only when runtime_table_promotions is
+ * explicitly enabled; the default leaves every game's baseline set unchanged. */
+static int
+jt_enumerate_jsr_word_table(const GenesisRom *rom, const GameConfig *cfg,
+                            FunctionList *list, uint32_t base,
+                            const M68KValidatorOptions *vopts) {
+    if (!game_config_runtime_table_promotions(cfg))
+        return 0;
+
+    /* Pass 1 — structural extent + liveness. The producer pair is already
+     * proven by the caller (is_jsr_word_table_pair), so the only remaining
+     * unknown is the table END. Bound it by the FIRST CASE BODY: entries
+     * live in [base, min positive-offset target). Track whether the runtime
+     * oracle saw ANY entry execute ("the table is live"). */
+    uint32_t targets[JT_AUTO_MAX_ENTRIES];
+    int      n = 0;
+    uint32_t first_body = 0xFFFFFFFFu;
+    bool     live = false;
+    for (int i = 0; i < JT_AUTO_MAX_ENTRIES; i++) {
+        uint32_t entry_addr = base + (uint32_t)i * 2u;
+        if (entry_addr + 1 >= rom->rom_size) break;
+        if (entry_addr >= first_body)       break;   /* ran into a case body    */
+        int16_t  off    = (int16_t)rom_read16(rom, entry_addr);
+        uint32_t target = (uint32_t)((int32_t)base + (int32_t)off);
+        uint32_t dist = (target > base) ? (target - base) : (base - target);
+        if (dist > JT_PCRELW_WINDOW)        break;   /* off the table end       */
+        if (target & 1)                     break;   /* odd = never a code start */
+        if (target >= rom->rom_size)        break;
+        M68KInstr probe;
+        if (!m68k_decode(rom, target, &probe))          break;
+        if (m68k_validate(&probe, vopts) != M68K_LEGAL)  break;
+        if (target > base && target < first_body) first_body = target;
+        targets[n++] = target;
+        if (game_config_runtime_observed(cfg, target)) live = true;
+    }
+
+    /* A proven-producer table with zero runtime-observed entries stays
+     * unpromoted (never seen live — could be dead data after all). One live
+     * entry proves the WHOLE table: sibling case bodies are the same
+     * structure, whether or not the runtime workload happened to reach them.
+     * This closes the "state never executed during attract" hole — RKA's
+     * full-charge ricochet handler ($00D84C in the $00D836 table) dispatched
+     * every frame into a silent interior no-op (permanent spin) because the
+     * old per-entry runtime gate refused it. */
+    if (!live)
+        return 0;
+
+    /* Clamp to the structural end when a case body begins inside the scanned
+     * range (entries past it were mis-read code bytes, not table words). */
+    int n_clamped = n;
+    if (first_body != 0xFFFFFFFFu && first_body > base) {
+        int max_entries = (int)((first_body - base) / 2u);
+        if (n_clamped > max_entries) n_clamped = max_entries;
+    }
+
+    int pushed = 0;
+    for (int i = 0; i < n_clamped; i++) {
+        uint32_t target = targets[i];
+        if (cfg && game_config_is_blacklisted(cfg, target)) continue;
+        /* Same precision rule as the runtime-gated long-table extension:
+         * register the proven callable case body without recursively running
+         * speculative table detectors from it. */
+        add_function_impl(list, target, false);
+        pushed++;
+        s_jt_targets_pushed++;
+        if (game_config_runtime_observed(cfg, target))
+            s_jt_runtime_promotions++;
+        else
+            fprintf(stderr, "[FunctionFinder] jsr-table $%06X: sibling-proven "
+                            "case body $%06X (live table, entry not yet "
+                            "runtime-observed)\n", base, target);
+    }
+    return pushed;
+}
+
+/* Prove the Konami self-relative call-table producer instead of treating every
+ * computed PC-indexed JSR as this shape.  The required pair is adjacent:
+ *
+ *   move.w table(pc,Dn.w),Dn
+ *   jsr    table(pc,Dn.w)
+ *
+ * Both effective addresses must resolve to the same base and use the same
+ * word-sized data register index.  Without this producer check, ordinary
+ * computed JSRs can make nearby code bytes look like offset tables; a runtime
+ * PC oracle confirms those bytes are code but does not prove they are callable
+ * function boundaries (RKA title regression: 13 false tables / 648 entries). */
+static bool
+is_jsr_word_table_pair(const M68KInstr *prev, const M68KInstr *jsr,
+                       uint32_t jsr_base) {
+    if (!prev || !jsr || prev->addr + prev->byte_length != jsr->addr)
+        return false;
+    if (prev->mnemonic != MN_MOVE || prev->size != M68K_SIZE_W
+            || prev->src_ea != ((EA_PCR << 3) | PCR_PC_IDX)
+            || ((prev->dst_ea >> 3) & 7) != EA_Dn
+            || prev->word_count < 2 || jsr->word_count < 2)
+        return false;
+
+    uint16_t move_ext = prev->words[1];
+    uint16_t jsr_ext  = jsr->words[1];
+    /* Brief extension: bit 15 selects An vs Dn, bit 11 long vs word index,
+     * bits 14:12 select the index register.  RKA uses Dn.W on both sides. */
+    if ((move_ext & 0x8800u) != 0 || (jsr_ext & 0x8800u) != 0)
+        return false;
+    int move_idx = (move_ext >> 12) & 7;
+    int jsr_idx  = (jsr_ext  >> 12) & 7;
+    if (move_idx != jsr_idx || (prev->dst_ea & 7) != move_idx)
+        return false;
+
+    int8_t move_d8 = (int8_t)(move_ext & 0xFF);
+    uint32_t move_base = prev->addr + 2 + (int32_t)move_d8;
+    return move_base == jsr_base;
 }
 
 static void push_addr(uint32_t addr) {
@@ -320,7 +496,7 @@ static void push_addr(uint32_t addr) {
  * (jt_enumerate, bra-ladder, the CFG walk). NULL => no gating. */
 static const GameConfig *s_ff_cfg = NULL;
 
-static void add_function(FunctionList *list, uint32_t addr) {
+static void add_function_impl(FunctionList *list, uint32_t addr, bool queue) {
     if (addr >= 0x400000) return;
     /* Data-gate: when a code-address oracle is loaded, never register a target
      * the disasm assembles as DATA (or a mid-instruction address). Explicit
@@ -341,7 +517,11 @@ static void add_function(FunctionList *list, uint32_t addr) {
     }
     FunctionEntry *e = &list->entries[list->count++];
     e->addr = addr;
-    push_addr(addr);
+    if (queue) push_addr(addr);
+}
+
+static void add_function(FunctionList *list, uint32_t addr) {
+    add_function_impl(list, addr, true);
 }
 
 /* True if the routine at `start` captures its caller's return address off the
@@ -434,6 +614,7 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
     s_jt_unresolved       = 0;
     s_jt_twostep_sites    = 0;
     s_jt_twostep_tables   = 0;
+    s_jt_bounded_promotions = 0;
     /* Reuse the unresolved-site buffer across runs but reset its
      * logical length. Capacity is preserved so the next run avoids
      * re-allocating from scratch. */
@@ -459,10 +640,25 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
         add_function(list, cfg->extra_funcs[i]);
     }
 
-    /* Walk loop */
+    /* Two discovery phases:
+     *   0. normal heuristic fixed point;
+     *   1. audited late entries plus their ordinary direct-call/branch closure,
+     *      with speculative computed-table detectors disabled.
+     * This lets oracle-less games recover proven function entries without one
+     * such entry recursively reopening broad data-shaped table discovery. */
+    for (int discovery_phase = 0; discovery_phase < 2; discovery_phase++) {
+        if (discovery_phase == 1) {
+            for (int i = 0; cfg && i < cfg->late_extra_func_count; i++) {
+                if (game_config_is_blacklisted(cfg, cfg->late_extra_funcs[i])) continue;
+                add_function(list, cfg->late_extra_funcs[i]);
+            }
+        }
+
     while (s_work_top > 0) {
         uint32_t func_start = s_work_stack[--s_work_top];
         uint32_t pc = func_start;
+        M68KInstr prev_instr;
+        bool have_prev = false;
 
         while (pc < rom->rom_size) {
             M68KInstr instr;
@@ -490,7 +686,8 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
                  * the return address is a live dispatch entry — register it.
                  * add_function code-gates it, so data return addresses (e.g.
                  * inline-parameter callees) are rejected. */
-                if (function_captures_return_addr(rom, instr.target_addr))
+                if (discovery_phase == 0
+                        && function_captures_return_addr(rom, instr.target_addr))
                     add_function(list, pc + instr.byte_length);
             }
 
@@ -501,21 +698,34 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
              * entries (otherwise the animation command dispatch-misses and the
              * sprite's mapping frame is never updated). JSR returns — do NOT
              * break the scan path. */
-            if (instr.mnemonic == MN_JSR && !instr.has_target) {
+            if (discovery_phase == 0
+                    && instr.mnemonic == MN_JSR && !instr.has_target) {
                 int jea_mode = (instr.src_ea >> 3) & 7;
                 int jea_reg  = instr.src_ea & 7;
                 if (jea_mode == 7 && jea_reg == 3 && instr.word_count >= 2) {
                     int8_t   d8   = (int8_t)(instr.words[1] & 0xFF);
                     uint32_t base = pc + 2 + (int32_t)d8;
-                    /* The `table-N(pc,Dn)` idiom places the first slot N bytes
-                     * past the computed base (N = the slot stride). Probe
-                     * base, base+2, base+4 for the ladder start; first run of
-                     * >=2 same-width BRA slots wins. */
+                    /* (a) bra-ladder form: the `table-N(pc,Dn)` idiom places the
+                     * first slot N bytes past the computed base (N = the slot
+                     * stride). Probe base, base+2, base+4 for the ladder start;
+                     * first run of >=2 same-width BRA slots wins. */
+                    int laddered = 0;
                     for (int off = 0; off <= 4; off += 2) {
                         if (jt_enumerate_bra_ladder(rom, cfg, list,
-                                base + (uint32_t)off, &vopts) >= JT_AUTO_MIN_ENTRIES)
+                                base + (uint32_t)off, &vopts) >= JT_AUTO_MIN_ENTRIES) {
+                            laddered = 1;
                             break;
+                        }
                     }
+                    /* (b) self-relative word-offset call table (the Konami/RKA
+                     * object dispatch: `move.w tbl(pc,Dn),Dn; jsr tbl(pc,Dn)`).
+                     * Case bodies are CALLED subroutines -> function entries.
+                     * Runtime-gated, so a no-op for games without an oracle. */
+                    if (!laddered && have_prev
+                            && is_jsr_word_table_pair(&prev_instr, &instr, base) &&
+                        jt_enumerate_jsr_word_table(rom, cfg, list, base, &vopts)
+                            >= JT_AUTO_MIN_ENTRIES)
+                        s_jt_jsr_word_tables++;
                 }
             }
 
@@ -532,7 +742,8 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
              * indirect transfer through the same aN follows in straight-line
              * code, then enumerate the long-pointer table. Strong per-entry
              * gate (jt_enumerate_long) — safe to run for every game. */
-            if (instr.mnemonic == MN_MOVEA && instr.size == M68K_SIZE_L
+            if (discovery_phase == 0
+                    && instr.mnemonic == MN_MOVEA && instr.size == M68K_SIZE_L
                     && instr.src_ea == ((EA_PCR << 3) | PCR_PC_IDX)
                     && instr.word_count >= 2) {
                 int      areg = instr.reg;                       /* destination aN  */
@@ -574,7 +785,7 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
              * include the shared rts handler $23D6). The indirect jmp/jsr (aP)
              * site is non-PC-indexed, so without enumerating the lea's table
              * those handlers dispatch-miss. Same strong long-pointer gate. */
-            if (instr.mnemonic == MN_LEA) {
+            if (discovery_phase == 0 && instr.mnemonic == MN_LEA) {
                 int      tbl_reg  = instr.reg;               /* aN = base reg   */
                 int      lea_mode = (instr.src_ea >> 3) & 7;
                 int      lea_reg  = instr.src_ea & 7;
@@ -657,6 +868,8 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
              * directive or, failing that, by an auto-walk of pcrel16
              * entries until the validator says we've left the table. */
             if (instr.mnemonic == MN_JMP && !instr.has_target) {
+                if (discovery_phase != 0)
+                    break;
                 int ea_mode = (instr.src_ea >> 3) & 7;
                 int ea_reg  = instr.src_ea & 7;
                 if (ea_mode == 7 && ea_reg == 3 && instr.word_count >= 2) {
@@ -717,8 +930,11 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
             /* Terminator */
             if (m68k_is_terminator(&instr)) break;
 
+            prev_instr = instr;
+            have_prev = true;
             pc += instr.byte_length;
         }
+    }
     }
 
     printf("[FunctionFinder] %d functions found\n", list->count);
@@ -730,8 +946,12 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
            s_jt_manual_enumerated, s_jt_targets_pushed,
            s_jt_targets_rejected, s_jt_unresolved);
     printf("[FunctionFinder] Two-step long-pointer dispatch: sites=%d "
-           "tables_enumerated=%d\n",
-           s_jt_twostep_sites, s_jt_twostep_tables);
+           "tables_enumerated=%d bounded_promotions=%d\n",
+           s_jt_twostep_sites, s_jt_twostep_tables,
+           s_jt_bounded_promotions);
+    printf("[FunctionFinder] JSR (d8,PC,Xn) word-offset call tables: %d; "
+           "runtime-oracle additive promotions: %d\n",
+           s_jt_jsr_word_tables, s_jt_runtime_promotions);
 
     /* Dump unresolved dispatch sites so the user can investigate which
      * tables the static extractor missed. The recompiler still emits

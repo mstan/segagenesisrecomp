@@ -1,0 +1,31 @@
+WAIT 10750
+PRESS START 180
+WAIT 700
+SCREENSHOT rka_scroll_native_00.png
+HOLD RIGHT
+WAIT 300
+PRESS B 2
+WAIT 300
+SCREENSHOT rka_scroll_native_01.png
+WAIT 300
+PRESS B 2
+WAIT 300
+SCREENSHOT rka_scroll_native_02.png
+WAIT 600
+SCREENSHOT rka_scroll_native_03.png
+PRESS B 2
+WAIT 600
+SCREENSHOT rka_scroll_native_04.png
+WAIT 600
+SCREENSHOT rka_scroll_native_05.png
+PRESS B 2
+WAIT 600
+SCREENSHOT rka_scroll_native_06.png
+WAIT 600
+SCREENSHOT rka_scroll_native_07.png
+PRESS B 2
+WAIT 600
+SCREENSHOT rka_scroll_native_08.png
+WAIT 600
+SCREENSHOT rka_scroll_native_09.png
+EXIT 0
