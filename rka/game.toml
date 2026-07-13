@@ -21,6 +21,14 @@ output_prefix = "rka"
 # jump tables. Enable the recompiler's auto-walk of pcrel16 jump tables (off by
 # default for the Sonic games, which seed tables from disasm). Validator-gated.
 jump_table_autodiscovery = true
+runtime_exec_file = "rka_executed_pcs_12000.txt"
+
+# Runtime executed-PC coverage is an additive evidence gate, never a direct
+# function-boundary oracle: observing a PC proves code, but not a callable ABI
+# boundary. Discovery may promote it only when independent structure proves the
+# boundary as well (for example, both ends of an executed direct JSR edge).
+# Audited residual starts remain `late_extra` below so they cannot recursively
+# reopen heuristic discovery and reproduce the title-garble cascade.
 
 # ---------------------------------------------------------------------------
 # Per-game RAM layout. RKA is NOT Sonic, so the Sonic-shaped tracking fields
@@ -47,4 +55,68 @@ level_modes    = []
 # discovery (Principle #13/#16), cross-checked against the ROM — NOT blind seeding.
 [functions]
 extra = [0x000208, 0x0003D4]
-blacklist = []
+# Trusted computed-call/table targets from the interpreted attract oracle.
+# Registered after heuristic discovery reaches its fixed point; see
+# GameConfig.late_extra_funcs. $FFB1F2 is RAM code and intentionally absent.
+late_extra = [
+  0x005F1A, 0x005F2E, 0x005F42,
+  0x003EFE, 0x003F1C, 0x003F40, 0x003F62, 0x003F6C, 0x003FB0, 0x003FB8,
+  0x00883C, 0x0088F8, 0x008992,
+  0x009430, 0x00ABEE,
+  0x00C7A4, 0x00C7A6, 0x00CB56,
+  0x00C916, 0x00C91E, 0x00C920, 0x00C922, 0x00C924, 0x00C94C,
+  0x00CA88,
+  0x00CC44, 0x00CC4C, 0x00CC4E, 0x00CC56, 0x00CC58, 0x00CC5A, 0x00CC5C,
+  0x00CC5E, 0x00CD16,
+  0x00CDBA, 0x00CDBC, 0x00CDC4, 0x00CDCC, 0x00CDCE, 0x00CDD0,
+  0x00CE5C, 0x00CEE6, 0x00CEEE, 0x00CEF0, 0x00CEF8, 0x00CEFA, 0x00CEFC,
+  0x00CEFE,
+  0x00CF00, 0x00CF26,
+  0x00D01E, 0x00D026, 0x00D028, 0x00D02A, 0x00D02C, 0x00D02E, 0x00D030,
+  0x00D032, 0x00D0BA,
+  0x00D19C, 0x00D1A4, 0x00D1A6, 0x00D1A8, 0x00D1AA, 0x00D1AC, 0x00D1AE,
+  0x00D1B0, 0x00D286, 0x00D400, 0x00D4BA, 0x00D5D8, 0x00D68E, 0x00D7A8,
+  0x00D89A, 0x00D8F6, 0x00D98A, 0x00D9EE, 0x00DA4A, 0x00DA78,
+  0x00DB72, 0x00DBCC, 0x00DD0A, 0x00DD84, 0x00DE48, 0x00DE4E,
+  0x00DF22, 0x00DFA2, 0x00E06C, 0x00E0F8, 0x00E1C6, 0x00E22E,
+  0x00E2FE, 0x00E37C, 0x00E44A, 0x00E52C, 0x00E5C0, 0x00E6A4,
+  0x00C90C, 0x00C914, 0x00F5EC,
+  0x00F82A, 0x00F86A, 0x00F89A, 0x00F8CA, 0x00F8FA,
+  0x00F940, 0x00F970, 0x00F9B0, 0x00F9E0,
+  0x0106C6, 0x010BCE, 0x010CE6,
+  0x012D5E, 0x012EC2, 0x012F8A,
+  0x015DEE, 0x015E5C, 0x016256, 0x016B64, 0x016EAA, 0x01713E,
+  0x01615C,
+  0x022664, 0x0226A0, 0x022710, 0x022760, 0x022790, 0x0227C0,
+  0x023BD2,
+  0x027D2C, 0x027E18,
+  0x02A752, 0x02A754,
+  0x02E8E8,
+  # Complete 17-entry (14-unique) interleaved state table at $02E8FC,
+  # plus its embedded helper $02EAC4.
+  0x02E91E, 0x02E99A, 0x02E9CE, 0x02E9DA, 0x02E9FA,
+  0x02EA2E, 0x02EA6C, 0x02EA78, 0x02EAA0, 0x02EAC4,
+  0x02EB12, 0x02EB48, 0x02EB7A, 0x02EB86, 0x02EB96,
+  0x02EC1C, 0x02ECC0, 0x02ECE4,
+  0x02F134,
+  0x02FE20, 0x02FFAC, 0x0300F2, 0x03067C, 0x031A7C,
+  0x0305F0, 0x0307C8,
+  0x034F4A, 0x035096,
+  0x036530, 0x0365AA, 0x0365AE,
+  0x037C8A, 0x037CF6, 0x037D50,
+  0x03B02C, 0x03B194, 0x03B266, 0x03B560, 0x03B6D0, 0x03B746,
+  0x03B3CE, 0x03B404, 0x03B414, 0x03B420, 0x03B430, 0x03B44E,
+  0x03B48A, 0x03B4A8, 0x03B4CC, 0x03B4EA, 0x03B4F6, 0x03B50E,
+  0x03B522, 0x03B52E,
+]
+blacklist = [0x001C74]
+
+# RKA's central object dispatcher indexes exactly 391 absolute-long function
+# pointers. The exclusive end is proven by the next non-pointer longword at
+# $29F4 ($4E750000: RTS opcode + padding). Entries beyond the finder's global
+# cap are registered as non-recursive callable roots.
+[[jump_table]]
+start = 0x0023D8
+end = 0x0029F4
+stride = 4
+format = "abs"
