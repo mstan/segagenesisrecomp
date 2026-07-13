@@ -46,6 +46,7 @@ static int s_jt_unresolved            = 0;  /* path terminated, no table    */
 /* Two-step long-pointer dispatch counters (movea.l <tbl>(pc,Xn),aN; jmp/jsr (aN)). */
 static int s_jt_twostep_sites         = 0;  /* movea+indirect idioms matched */
 static int s_jt_twostep_tables        = 0;  /* tables yielding >=1 entry      */
+static int s_jt_bounded_promotions    = 0;  /* explicit abs-table entries >64 */
 
 /* JSR (d8,PC,Xn.W) self-relative word-offset call-table counters + runtime-
  * gated additive promotions (long tables beyond the static cap, JSR tables). */
@@ -292,10 +293,21 @@ jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
                   const M68KValidatorOptions *vopts) {
     int pushed = 0;
     int valid_seen = 0;
+    /* A matching explicit abs/stride-4 [[jump_table]] supplies an audited
+     * extent for this particular long-pointer table. This permits large object
+     * tables without weakening the conservative global cap. */
+    const JumpTableEntry *manual = jt_lookup_manual(cfg, base);
+    bool bounded = manual
+        && manual->format == JT_FMT_ABS_L
+        && manual->stride_bytes == 4
+        && manual->end_addr > base
+        && ((manual->end_addr - base) & 3u) == 0;
+    int bounded_count = bounded ? (int)((manual->end_addr - base) / 4u) : 0;
     /* With runtime table promotion enabled, walk further than the static cap;
      * otherwise the cap and baseline discovery set remain unchanged. */
     bool gated   = game_config_runtime_table_promotions(cfg);
-    int  walk_max = gated ? JT_LONG_GATED_MAX : JT_LONG_MAX_ENTRIES;
+    int  walk_max = bounded ? bounded_count
+                  : gated ? JT_LONG_GATED_MAX : JT_LONG_MAX_ENTRIES;
     for (int i = 0; i < walk_max; i++) {
         uint32_t entry_addr = base + (uint32_t)i * 4;
         if (entry_addr + 4 > rom->rom_size) break;
@@ -317,14 +329,16 @@ jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
         }
         valid_seen++;
         if (cfg && game_config_is_blacklisted(cfg, raw)) continue;
-        /* Additive runtime gate: entries within the static cap promote as
-         * before; entries BEYOND it promote only if the runtime oracle saw
-         * them execute. This recovers genuinely-large tables (RKA's 391-entry
-         * $23D8 object table) without re-admitting the data-as-code garbage a
-         * blanket cap raise let in. */
+        /* Entries within the static cap promote as before. Past it, an
+         * explicitly bounded table promotes non-recursively; otherwise the
+         * opt-in runtime oracle must have observed the target. */
         if (i >= JT_LONG_MAX_ENTRIES) {
-            if (!game_config_runtime_observed(cfg, raw)) continue;
-            s_jt_runtime_promotions++;
+            if (bounded) {
+                s_jt_bounded_promotions++;
+            } else {
+                if (!game_config_runtime_observed(cfg, raw)) continue;
+                s_jt_runtime_promotions++;
+            }
             /* Runtime evidence proves this table target, not every
              * speculative table-shaped path reachable from it. Register the
              * entry without reopening phase-0 heuristic discovery. Codegen's
@@ -554,6 +568,7 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
     s_jt_unresolved       = 0;
     s_jt_twostep_sites    = 0;
     s_jt_twostep_tables   = 0;
+    s_jt_bounded_promotions = 0;
     /* Reuse the unresolved-site buffer across runs but reset its
      * logical length. Capacity is preserved so the next run avoids
      * re-allocating from scratch. */
@@ -885,8 +900,9 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
            s_jt_manual_enumerated, s_jt_targets_pushed,
            s_jt_targets_rejected, s_jt_unresolved);
     printf("[FunctionFinder] Two-step long-pointer dispatch: sites=%d "
-           "tables_enumerated=%d\n",
-           s_jt_twostep_sites, s_jt_twostep_tables);
+           "tables_enumerated=%d bounded_promotions=%d\n",
+           s_jt_twostep_sites, s_jt_twostep_tables,
+           s_jt_bounded_promotions);
     printf("[FunctionFinder] JSR (d8,PC,Xn) word-offset call tables: %d; "
            "runtime-oracle additive promotions: %d\n",
            s_jt_jsr_word_tables, s_jt_runtime_promotions);
