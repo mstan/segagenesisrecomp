@@ -474,21 +474,25 @@ static cc_bool input_requested_cb(void *user_data,
     if (player_id > 1)
         return cc_false;    /* P1 + P2 */
 
-    /* Scripted-script (.input file) override — fully takes priority
-     * over SDL/TCP/legacy script when active. Held-button mask is
-     * already in Genesis bit order. P1-only (dev/regression tooling). */
+    /* Dev-driven sources ((.input scripts, --script-* flags, TCP set_input)
+     * MERGE with the live keyboard/gamepad instead of replacing it: a button
+     * held by ANY source reads as held. Unattended runs stay deterministic
+     * (nobody typing ⇒ identical stream), but a human can always grab the
+     * controls mid-script — previously a script parked on WAIT_RAM16 or a
+     * finished TCP probe locked the keyboard out entirely. Sources can only
+     * ADD buttons, never mask a live press. P1-only (dev/regression tooling). */
     if (player_id == 0 && input_script_active()) {
         uint8_t mask = input_script_held_mask();
         switch (button_id) {
-            case CLOWNMDEMU_BUTTON_UP:    return (mask & 0x01) ? cc_true : cc_false;
-            case CLOWNMDEMU_BUTTON_DOWN:  return (mask & 0x02) ? cc_true : cc_false;
-            case CLOWNMDEMU_BUTTON_LEFT:  return (mask & 0x04) ? cc_true : cc_false;
-            case CLOWNMDEMU_BUTTON_RIGHT: return (mask & 0x08) ? cc_true : cc_false;
-            case CLOWNMDEMU_BUTTON_B:     return (mask & 0x10) ? cc_true : cc_false;
-            case CLOWNMDEMU_BUTTON_C:     return (mask & 0x20) ? cc_true : cc_false;
-            case CLOWNMDEMU_BUTTON_A:     return (mask & 0x40) ? cc_true : cc_false;
-            case CLOWNMDEMU_BUTTON_START: return (mask & 0x80) ? cc_true : cc_false;
-            default: return cc_false;
+            case CLOWNMDEMU_BUTTON_UP:    if (mask & 0x01) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_DOWN:  if (mask & 0x02) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_LEFT:  if (mask & 0x04) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_RIGHT: if (mask & 0x08) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_B:     if (mask & 0x10) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_C:     if (mask & 0x20) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_A:     if (mask & 0x40) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_START: if (mask & 0x80) return cc_true; break;
+            default: break;
         }
     }
 
@@ -517,22 +521,21 @@ static cc_bool input_requested_cb(void *user_data,
         }
     }
 
-    /* TCP debug server input override (set_input command). P1 only.
+    /* TCP debug server input (set_input command) — additive, same merge rule
+     * as the script sources above. `set_input keys=off` clears it entirely.
      * Bit mapping matches Genesis: Up=0,Down=1,Left=2,Right=3,B=4,C=5,A=6,Start=7 */
     if (player_id == 0 && s_tcp_input_active) {
-        cc_bool result = cc_false;
         switch (button_id) {
-            case CLOWNMDEMU_BUTTON_UP:    result = (s_tcp_input_keys & 0x01) ? cc_true : cc_false; break;
-            case CLOWNMDEMU_BUTTON_DOWN:  result = (s_tcp_input_keys & 0x02) ? cc_true : cc_false; break;
-            case CLOWNMDEMU_BUTTON_LEFT:  result = (s_tcp_input_keys & 0x04) ? cc_true : cc_false; break;
-            case CLOWNMDEMU_BUTTON_RIGHT: result = (s_tcp_input_keys & 0x08) ? cc_true : cc_false; break;
-            case CLOWNMDEMU_BUTTON_B:     result = (s_tcp_input_keys & 0x10) ? cc_true : cc_false; break;
-            case CLOWNMDEMU_BUTTON_C:     result = (s_tcp_input_keys & 0x20) ? cc_true : cc_false; break;
-            case CLOWNMDEMU_BUTTON_A:     result = (s_tcp_input_keys & 0x40) ? cc_true : cc_false; break;
-            case CLOWNMDEMU_BUTTON_START: result = (s_tcp_input_keys & 0x80) ? cc_true : cc_false; break;
+            case CLOWNMDEMU_BUTTON_UP:    if (s_tcp_input_keys & 0x01) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_DOWN:  if (s_tcp_input_keys & 0x02) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_LEFT:  if (s_tcp_input_keys & 0x04) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_RIGHT: if (s_tcp_input_keys & 0x08) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_B:     if (s_tcp_input_keys & 0x10) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_C:     if (s_tcp_input_keys & 0x20) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_A:     if (s_tcp_input_keys & 0x40) return cc_true; break;
+            case CLOWNMDEMU_BUTTON_START: if (s_tcp_input_keys & 0x80) return cc_true; break;
             default: break;
         }
-        return result;
     }
 
     /* Live input via the rebindable per-player map (keyboard + that player's

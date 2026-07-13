@@ -13,6 +13,7 @@ typedef struct {
     bool     should_quit;
     int      run_extra_frames;
     bool     input_override;
+    bool     input_release;   /* set_input keys=off — drop the TCP source     */
     uint8_t  input_keys;      /* Genesis: Up/Down/Left/Right/A/B/C/Start */
 } CmdResult;
 
