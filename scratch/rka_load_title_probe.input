@@ -1,0 +1,5 @@
+LOAD_STATE rka_title.state
+WAIT 2
+SCREENSHOT rka_loaded_title_native.png
+WAIT 2
+EXIT 0

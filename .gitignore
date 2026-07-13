@@ -14,5 +14,11 @@ build/
 tests/last_run/
 **/*.unresolved_jumptables.log
 
+# Local decoder comparison worktrees/build products. These contain copied ROMs,
+# disassembly trees, and hundreds of MB of generated C; keep the small handoff
+# scripts/results outside these directories tracked explicitly instead.
+scratch/decoder_audit/
+scratch/decoder_old_worktree/
+
 # Internal licensing/teardown working note — never commit
 LICENSING.md
