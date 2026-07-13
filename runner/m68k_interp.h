@@ -62,6 +62,15 @@ M68kiStatus m68k_interp_run(uint32_t entry_pc, uint32_t stop_pc);
 M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc);
 
 /*
+ * RAM-handler capsule — executes RAM-RESIDENT code decoding every instruction
+ * from LIVE memory (self-modifying copied handlers stay correct). A7-neutral
+ * at the depth-0 RTS/RTR (peeks *out_exit_pc); an RTE at any depth mirrors
+ * generated-code semantics (set g_rte_pending, unwind capsule-pushed frames,
+ * return to the C caller). Per-instruction cycle accounting included.
+ */
+M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc);
+
+/*
  * Execute exactly one instruction at g_cpu.PC and advance g_cpu.PC. Used by
  * the lockstep differential harness (so it can compare register/RAM state
  * after every instruction against clown68000). Returns M68KI_OK or a HALT_*.

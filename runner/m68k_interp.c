@@ -43,22 +43,42 @@ static void discover(uint32_t t) {
 static int s_illegal_ea = 0;
 
 /* =========================================================================
- * Instruction fetch — decode straight out of g_rom via the decoder's own
- * GenesisRom accessor (zero-copy). Missed functions live in ROM (the RAM
- * jmp-trampoline case is resolved to a ROM target before we are ever called),
- * so a ROM-backed view is correct for every real case; a PC outside ROM halts
- * loudly rather than decoding garbage.
+ * Instruction fetch — ALL interpreter entry points decode through the live
+ * bus view below (ROM + work RAM). A ROM-only view is NOT sufficient even
+ * for the ROM-miss capsule: a missed ROM function's call tree can reach a
+ * RAM-resident helper mid-body (RKA's end-of-stage sequencer at $023430
+ * calls the $FFB1F2 shift stub), and a ROM-only fetch had to decline the
+ * whole miss there — silent no-op, stage-end softlock. A PC outside ROM/RAM
+ * halts loudly rather than decoding garbage.
  * ========================================================================= */
-static GenesisRom s_romview;
-static int        s_romview_init = 0;
-
-static const GenesisRom *romview(void) {
-    if (!s_romview_init) {
-        s_romview.rom_data = g_rom;
-        s_romview.rom_size = ROM_SIZE;
-        s_romview_init = 1;
+/* Bus-backed fetch view: decodes ROM from g_rom and RAM-RESIDENT code from
+ * LIVE work RAM (own backend: g_ram is the authoritative WRAM). This is what
+ * makes self-modifying copied handlers correct — RKA's H-int raster handler
+ * patches its own source operand each HBlank, so its instruction bytes MUST
+ * be fetched from RAM at execution time, never from a static ROM master. */
+static uint8_t busview_fetch8(uint32_t addr, void *user) {
+    (void)user;
+    addr &= 0xFFFFFFu;
+    if (addr >= 0xFF0000u) return g_ram[addr & 0xFFFFu];
+    if (addr < ROM_SIZE)   return g_rom[addr];
+    return 0xFFu;
+}
+static GenesisRom s_busview;
+static int        s_busview_init = 0;
+static const GenesisRom *busview(void) {
+    if (!s_busview_init) {
+        s_busview.rom_data       = g_rom;
+        s_busview.rom_size       = 0x1000000u;   /* full 24-bit space */
+        s_busview.read8_override = busview_fetch8;
+        s_busview_init = 1;
     }
-    return &s_romview;
+    return &s_busview;
+}
+
+/* A PC is fetchable when it points at ROM or work RAM. */
+static int pc_fetchable(uint32_t pc) {
+    pc &= 0xFFFFFFu;
+    return pc < ROM_SIZE || pc >= 0xFF0000u;
 }
 
 /* =========================================================================
@@ -1214,10 +1234,10 @@ static void interp_account_cycles(const M68KInstr *ins) {
 /* Execute one instruction at g_cpu.PC; advance g_cpu.PC. */
 M68kiStatus m68k_interp_step(void) {
     uint32_t pc = g_cpu.PC & 0xFFFFFFu;
-    if (pc >= ROM_SIZE) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
+    if (!pc_fetchable(pc)) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
 
     M68KInstr ins;
-    if (!m68k_decode(romview(), pc, &ins)) {
+    if (!m68k_decode(busview(), pc, &ins)) {
         g_m68ki_bad_pc = pc; g_m68ki_bad_op = m68k_read16(pc);
         return M68KI_HALT_UNIMPL;
     }
@@ -1296,10 +1316,10 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
     int depth = 0;
     for (;;) {
         uint32_t pc = g_cpu.PC & 0xFFFFFFu;
-        if (pc >= ROM_SIZE) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
+        if (!pc_fetchable(pc)) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
 
         M68KInstr ins;
-        if (!m68k_decode(romview(), pc, &ins)) {
+        if (!m68k_decode(busview(), pc, &ins)) {
             g_m68ki_bad_pc = pc; g_m68ki_bad_op = m68k_read16(pc);
             return M68KI_HALT_UNIMPL;
         }
@@ -1339,3 +1359,90 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
         }
     }
 }
+
+/* ---------------------------------------------------------------------------
+ * RAM-handler capsule — execute RAM-RESIDENT code from LIVE memory.
+ *
+ * Games install interrupt handlers and helper stubs by copying (and then
+ * PATCHING) code in work RAM: RKA's H-int raster handler advances its own
+ * MOVE source operand each HBlank, and its per-scene installer parameterizes
+ * that operand at copy time. Statically redirecting such a body to its ROM
+ * master executes FROZEN operands — the class of bug behind RKA's dead
+ * per-line VSRAM raster. This capsule decodes every instruction from the
+ * live bus view (busview: RAM + ROM), so self-modifications take effect on
+ * the very next fetch, exactly like hardware.
+ *
+ * Exit contract (mirrors the generated code's ABI):
+ *   - depth-0 RTS/RTR: PEEK the return target without popping (A7-neutral);
+ *     the generated caller performs the single pop — identical to the framed
+ *     capsule and to recomp_dispatch_ram_stub's old hand-decoded RTS path.
+ *   - RTE at any depth: the generated equivalent is `g_rte_pending = 1;
+ *     return;` with each JSR level unwinding its own +4 — so set
+ *     g_rte_pending, unwind the guest stack by 4*depth, and exit. This is
+ *     how interrupt-handler bodies return to glue's delivery wrapper.
+ * Cycle accounting runs per instruction (interp_account_cycles), the same
+ * tail the generated code emits.
+ * ------------------------------------------------------------------------- */
+#if ENABLE_RECOMPILED_CODE
+M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc)
+{
+    g_cpu.PC = entry_pc & 0xFFFFFFu;
+    g_m68ki_insn_count = 0;
+    g_m68ki_discover_count = 0;
+    if (out_exit_pc) *out_exit_pc = 0;
+
+    int depth = 0;
+    for (;;) {
+        uint32_t pc = g_cpu.PC & 0xFFFFFFu;
+        if (!pc_fetchable(pc)) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
+
+        M68KInstr ins;
+        if (!m68k_decode(busview(), pc, &ins)) {
+            g_m68ki_bad_pc = pc; g_m68ki_bad_op = m68k_read16(pc);
+            return M68KI_HALT_UNIMPL;
+        }
+
+        /* Depth-0 subroutine return: peek, don't pop (A7-neutral). */
+        if (depth == 0 && (ins.mnemonic == MN_RTS || ins.mnemonic == MN_RTR)) {
+            uint32_t ret = (ins.mnemonic == MN_RTR)
+                               ? m68k_read32(g_cpu.A[7] + 2u)
+                               : m68k_read32(g_cpu.A[7]);
+            if (out_exit_pc) *out_exit_pc = ret & 0xFFFFFFu;
+            return M68KI_OK;
+        }
+
+        /* RTE: generated-code semantics — no exception frame was pushed by
+         * glue's delivery wrapper, so nothing is popped. Unwind any nested
+         * JSR return addresses this capsule pushed, flag the skip-return,
+         * and hand control back to the C caller. */
+        if (ins.mnemonic == MN_RTE) {
+            g_cpu.A[7] += 4u * (uint32_t)depth;
+            g_rte_pending = 1;
+#if ENABLE_RECOMPILED_CODE
+            interp_account_cycles(&ins);
+#endif
+            return M68KI_OK;
+        }
+
+        uint32_t next;
+        s_illegal_ea = 0;
+        M68kiStatus st = exec_one(&ins, &next);
+        if (st != M68KI_OK) return st;
+        if (s_illegal_ea) {
+            g_m68ki_bad_pc = ins.addr; g_m68ki_bad_op = ins.words[0];
+            return M68KI_HALT_UNIMPL;
+        }
+        g_cpu.PC = next & 0xFFFFFFu;
+        interp_account_cycles(&ins);
+
+        if (ins.mnemonic == MN_JSR || ins.mnemonic == MN_BSR)
+            depth++;
+        else if (ins.mnemonic == MN_RTS || ins.mnemonic == MN_RTR)
+            depth--;
+
+        if (++g_m68ki_insn_count > M68KI_INSN_GUARD) {
+            g_m68ki_bad_pc = g_cpu.PC; return M68KI_HALT_GUARD;
+        }
+    }
+}
+#endif /* ENABLE_RECOMPILED_CODE */

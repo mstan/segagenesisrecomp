@@ -380,188 +380,51 @@ uint32_t recomp_resolve_ram_trampoline(uint32_t addr)
     return resolved;
 }
 
-typedef struct {
-    uint32_t ram_addr;
-    uint32_t rom_addr;
-    unsigned word_count;
-} CopiedRomStub;
-
-static CopiedRomStub s_copied_rom_stubs[8];
-
-static uint16_t recomp_rom_read16_direct(uint32_t addr)
-{
-    return (uint16_t)(((uint16_t)g_rom[addr] << 8) | g_rom[addr + 1u]);
-}
-
-/* Some games install short interrupt handlers by copying a ROM routine into
- * work RAM up to (but excluding) a $FFFF marker. Resolve those copies back to
- * their static ROM source so the generated implementation can execute them.
- * Exact full-body comparison avoids treating arbitrary writable data as code. */
-static uint32_t recomp_resolve_copied_rom_stub(uint32_t ram_addr,
-                                               unsigned *word_count_out)
-{
-    uint32_t rom_limit = g_game_spec.expected_rom_size
-                             ? g_game_spec.expected_rom_size
-                             : (uint32_t)sizeof(g_rom);
-
-    for (unsigned i = 0; i < sizeof(s_copied_rom_stubs) / sizeof(s_copied_rom_stubs[0]); i++) {
-        CopiedRomStub *cached = &s_copied_rom_stubs[i];
-        if (cached->ram_addr != ram_addr || cached->word_count == 0)
-            continue;
-        /* Copied raster handlers may intentionally patch operands in their
-         * own body (RKA advances the source word at RAM+$20 each HBlank).
-         * The first 12 words are the stable identifying prefix and include
-         * the command word that distinguishes its near-identical variants. */
-        unsigned signature_words = cached->word_count < 12u
-                                       ? cached->word_count : 12u;
-        unsigned w;
-        for (w = 0; w < signature_words; w++) {
-            if (recomp_ram_read16_direct(ram_addr + 2u * w) !=
-                recomp_rom_read16_direct(cached->rom_addr + 2u * w))
-                break;
-        }
-        if (w == signature_words) {
-            *word_count_out = cached->word_count;
-            return cached->rom_addr;
-        }
-    }
-
-    uint16_t first = recomp_ram_read16_direct(ram_addr);
-    for (uint32_t source = 0; source + 10u < rom_limit; source += 2u) {
-        if (recomp_rom_read16_direct(source) != first)
-            continue;
-
-        unsigned words;
-        for (words = 0; words < 64u && source + 2u * words + 1u < rom_limit; words++) {
-            uint16_t rom_word = recomp_rom_read16_direct(source + 2u * words);
-            if (rom_word == 0xFFFFu)
-                break;
-            if (recomp_ram_read16_direct(ram_addr + 2u * words) != rom_word)
-                break;
-        }
-        if (words < 4u || words >= 64u ||
-            recomp_rom_read16_direct(source + 2u * words) != 0xFFFFu)
-            continue;
-
-        CopiedRomStub *slot = &s_copied_rom_stubs[0];
-        for (unsigned i = 0; i < sizeof(s_copied_rom_stubs) / sizeof(s_copied_rom_stubs[0]); i++) {
-            if (s_copied_rom_stubs[i].word_count == 0 ||
-                s_copied_rom_stubs[i].ram_addr == ram_addr) {
-                slot = &s_copied_rom_stubs[i];
-                break;
-            }
-        }
-        slot->ram_addr = ram_addr;
-        slot->rom_addr = source;
-        slot->word_count = words;
-        *word_count_out = words;
-        fprintf(stderr, "[dispatch][RAM] copied handler $%06X -> ROM $%06X (%u words)\n",
-                ram_addr, source, words);
-        return source;
-    }
-    return 0;
-}
-
+/* Dispatch target is RAM-resident code. Execute it on the tier-3 interpreter
+ * DIRECTLY FROM LIVE WORK RAM (m68k_interp_run_ram_handler). Games install
+ * short interrupt handlers and helper stubs by copying — and then PATCHING —
+ * code in RAM: RKA's H-int raster handler advances its own MOVE source
+ * operand every HBlank, and its per-scene installer parameterizes that
+ * operand at copy time. Any static redirection to a ROM master (the old
+ * copied-ROM-stub resolver) executes FROZEN operands and silently breaks the
+ * effect; the live-fetch capsule is correct by construction and also
+ * subsumes the old hand-decoded RTS / shift-helper stubs ($FFB1F2).
+ *
+ * ABI: identical to a generated function call — the capsule is A7-neutral at
+ * its depth-0 RTS (the generated caller performs the single pop), and an RTE
+ * body sets g_rte_pending and returns, exactly like generated RTE code.
+ * Cycle accounting runs per interpreted instruction. */
 int recomp_dispatch_ram_stub(uint32_t addr)
 {
-    static uint32_t s_reported_addr;
-    uint32_t result;
-    uint32_t carry;
-    uint32_t overflow = 0;
-    unsigned shift_count = 0;
-    int shift_left = 0;
     addr &= 0xFFFFFFu;
     if (addr < RAM_BASE)
         return 0;
 
-    /* A generated JSR/JMP dispatcher already models the surrounding loose-A7
-     * call edge. For a RAM-resident RTS stub, returning from this C helper is
-     * therefore the complete instruction semantics: the generated caller (or
-     * its enclosing JMP caller) performs the single guest-stack pop exactly as
-     * it does for a native ROM function. RKA installs this canonical null
-     * handler at $FFB1F2. */
-    uint16_t opcode = recomp_ram_read16_direct(addr);
-    if (opcode == 0x4E75u) {
-        g_native_insn_count++;
-        g_cycle_accumulator += 16u;
-        g_audio_cycle_counter += 16u;
-        if (g_cycle_accumulator >= g_vblank_threshold)
-            glue_check_vblank();
+#if !ENABLE_RECOMPILED_CODE
+    /* Oracle/interpreter builds execute RAM-resident code natively on their
+     * 68K core; the generated-dispatch RAM hook is a no-op there. */
+    return 0;
+#else
+    static uint32_t s_reported_addr;
+    uint32_t exit_pc = 0;
+    M68kiStatus st = m68k_interp_run_ram_handler(addr, &exit_pc);
+    if (st == M68KI_OK)
         return 1;
-    }
-
-    /* RKA's configuration loader copies one of these two-instruction helpers
-     * to $FFB1F2. They scale D1 before collision-table lookups. Keep this
-     * decoder deliberately narrow: only the five exact opcodes present in the
-     * ROM's configuration records, and only when immediately followed by RTS. */
-    if (recomp_ram_read16_direct(addr + 2u) == 0x4E75u) {
-        switch (opcode) {
-        case 0xE381u: shift_left = 1; shift_count = 1; break; /* ASL.L #1,D1 */
-        case 0xE581u: shift_left = 1; shift_count = 2; break; /* ASL.L #2,D1 */
-        case 0xE781u: shift_left = 1; shift_count = 3; break; /* ASL.L #3,D1 */
-        case 0xE981u: shift_left = 1; shift_count = 4; break; /* ASL.L #4,D1 */
-        case 0xE289u: shift_left = 0; shift_count = 1; break; /* LSR.L #1,D1 */
-        default: break;
-        }
-    }
-
-    if (shift_count != 0) {
-        uint32_t source = g_cpu.D[1];
-        if (shift_left) {
-            result = source << shift_count;
-            carry = (source >> (32u - shift_count)) & 1u;
-
-            /* ASL sets V when the sign changes at any intermediate step. */
-            uint32_t top = source >> (31u - shift_count);
-            uint32_t all_same = (1u << (shift_count + 1u)) - 1u;
-            overflow = (top != 0u && top != all_same) ? 1u : 0u;
-        } else {
-            result = source >> shift_count;
-            carry = (source >> (shift_count - 1u)) & 1u;
-        }
-
-        g_cpu.D[1] = result;
-        g_cpu.SR &= ~0x1Fu;
-        if (result == 0)
-            g_cpu.SR |= 1u << 2;
-        if (result >> 31)
-            g_cpu.SR |= 1u << 3;
-        if (carry)
-            g_cpu.SR |= (1u << 0) | (1u << 4);
-        if (overflow)
-            g_cpu.SR |= 1u << 1;
-
-        /* One register shift (8 + 2*n cycles) followed by RTS (16 cycles). */
-        uint32_t cycles = 24u + 2u * shift_count;
-        g_native_insn_count += 2u;
-        g_cycle_accumulator += cycles;
-        g_audio_cycle_counter += cycles;
-        if (g_cycle_accumulator >= g_vblank_threshold)
-            glue_check_vblank();
-        return 1;
-    }
-
-    {
-        unsigned copied_words = 0;
-        uint32_t source = recomp_resolve_copied_rom_stub(addr, &copied_words);
-        if (source != 0 && copied_words != 0) {
-            call_by_address(source);
-            return 1;
-        }
-    }
 
     if (s_reported_addr != addr) {
         s_reported_addr = addr;
         fprintf(stderr,
-                "[dispatch][RAM] unresolved stub $%06X words=%04X %04X %04X %04X "
-                "mode=$%04X\n",
-                addr, opcode,
+                "[dispatch][RAM] unrunnable RAM code $%06X status=%d words=%04X %04X "
+                "%04X %04X bad_pc=$%06X bad_op=$%04X\n",
+                addr, (int)st,
+                recomp_ram_read16_direct(addr),
                 recomp_ram_read16_direct(addr + 2u),
                 recomp_ram_read16_direct(addr + 4u),
                 recomp_ram_read16_direct(addr + 6u),
-                recomp_ram_read16_direct(0xFFB1D0u));
+                g_m68ki_bad_pc, g_m68ki_bad_op);
     }
     return 0;
+#endif /* ENABLE_RECOMPILED_CODE */
 }
 
 void glue_reset_frame_sync(void)
@@ -2171,8 +2034,18 @@ static int floor_enabled(void) {
     static int e = -1;
     if (e < 0) {
         const char *v = getenv("GENESIS_FLOOR");
-        e = (v && (v[0] == '1' || v[0] == 'o' || v[0] == 'O' || v[0] == 'y' || v[0] == 'Y')) ? 1 : 0;
-        if (e) fprintf(stderr, "[FLOOR] ENABLED via GENESIS_FLOOR=%s\n", v);
+        if (v) {
+            /* Env var overrides in EITHER direction (1/on/yes vs 0/off/no). */
+            e = (v[0] == '1' || v[0] == 'o' || v[0] == 'O' || v[0] == 'y' || v[0] == 'Y') ? 1 : 0;
+            fprintf(stderr, "[FLOOR] %s via GENESIS_FLOOR=%s\n",
+                    e ? "ENABLED" : "DISABLED", v);
+        } else {
+            /* Per-game default: games without full disasm coverage (RKA) run
+             * the miss-fallback + floor_coverage.txt feedback loop always-on;
+             * disasm-complete games keep misses loud-and-fatal-ish. */
+            e = g_game_spec.tier3_floor_default ? 1 : 0;
+            if (e) fprintf(stderr, "[FLOOR] ENABLED by game spec default\n");
+        }
     }
     return e;
 }
@@ -2213,31 +2086,26 @@ void genesis_log_dispatch_miss(uint32_t addr)
         uint32_t expected_ret = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;
         uint32_t run_at = addr;
 
-        /* RAM-resident computed target: follow the JMP/JSR trampoline chain to
-         * a ROM entry the capsule can decode. If it stays in RAM the floor
-         * cannot fetch it from the ROM image — record + decline (a real
-         * RAM-code execution strategy is future work; a RAM target is never a
-         * static native function). */
+        /* RAM-resident computed target: follow the JMP/JSR trampoline chain
+         * toward a ROM entry (native functions run faster). A target that
+         * stays in RAM is fine now: the capsule fetches through the live bus
+         * view, so RAM-resident code (and RAM helpers reached mid-subtree
+         * from a missed ROM function) executes correctly. */
         if (run_at >= RAM_BASE) {
             uint32_t resolved = recomp_resolve_ram_trampoline(run_at) & 0xFFFFFFu;
-            if (resolved < rl && !(resolved & 1u)) {
+            if ((resolved < rl || resolved >= RAM_BASE) && !(resolved & 1u))
                 run_at = resolved;
-            } else {
-                floor_unsafe_record(addr, run_at, resolved, expected_ret,
-                                    "RAM target did not resolve to a ROM entry");
-                floor_blacklist_add(addr);
-                run_at = 0;  /* skip the capsule */
-            }
         }
 
-        if (run_at && run_at < rl && !(run_at & 1u)) {
+        if (run_at && (run_at < rl || run_at >= RAM_BASE) && !(run_at & 1u)) {
             uint32_t exit_pc = 0;
             s_in_floor = 1;
             M68kiStatus st = m68k_interp_run_framed(run_at, &exit_pc);
             s_in_floor = 0;
 
             if (st == M68KI_OK) {
-                int plausible = exit_pc && !(exit_pc & 1u) && exit_pc < rl;
+                int plausible = exit_pc && !(exit_pc & 1u) &&
+                                (exit_pc < rl || exit_pc >= RAM_BASE);
                 if (plausible && exit_pc == expected_ret) {
                     /* Clean balanced return to the native continuation. Manifest
                      * the entry + its call/jump subtree as real code leads. */

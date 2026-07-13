@@ -115,17 +115,23 @@ void rom_free(GenesisRom *rom) {
 }
 
 uint8_t rom_read8(const GenesisRom *rom, uint32_t addr) {
+    if (rom->read8_override) return rom->read8_override(addr, rom->read8_user);
     if (addr < rom->rom_size) return rom->rom_data[addr];
     return 0xFF;
 }
 
 uint16_t rom_read16(const GenesisRom *rom, uint32_t addr) {
+    if (rom->read8_override)
+        return (uint16_t)(rom->read8_override(addr,     rom->read8_user) << 8 |
+                          rom->read8_override(addr + 1, rom->read8_user));
     if (addr + 1 < rom->rom_size)
         return (uint16_t)(rom->rom_data[addr] << 8 | rom->rom_data[addr + 1]);
     return 0xFFFF;
 }
 
 uint32_t rom_read32(const GenesisRom *rom, uint32_t addr) {
+    if (rom->read8_override)
+        return ((uint32_t)rom_read16(rom, addr) << 16) | rom_read16(rom, addr + 2);
     if (addr + 3 < rom->rom_size)
         return (uint32_t)(rom->rom_data[addr]   << 24 | rom->rom_data[addr+1] << 16 |
                           rom->rom_data[addr+2] << 8  | rom->rom_data[addr+3]);

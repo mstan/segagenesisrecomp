@@ -40,6 +40,13 @@ const GameSpec g_game_spec = {
     .expected_rom_crc32     = 0u,
     .expected_rom_size      = 0x100000u,   /* 1 MB */
 
+    /* RKA has no community disasm, so static discovery is heuristic and
+     * WILL have holes (state-table case bodies never reached during attract
+     * capture — the full-charge ricochet spin-lock at $00D84C). Run the
+     * tier-3 miss fallback always-on: a miss executes correctly on the
+     * interpreter capsule and feeds floor_coverage.txt for the next regen. */
+    .tier3_floor_default    = 1,
+
     /* No battery SRAM (header carries no "RA"); sram_start/end stay 0. */
 
     .call_entry_point       = rka_call_entry_point,
