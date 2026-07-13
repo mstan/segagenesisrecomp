@@ -376629,6 +376629,91 @@ void func_033336(void) {
     if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_033342r);
   g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033348 */
+  uint16_t _t033348 = m68k_read16(g_cpu.A[0]);
+  uint16_t _033348r = (uint16_t)((uint16_t)(_t033348) + (uint16_t)0x2030u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t033348)), _fb = (uint16_t)((uint16_t)0x2030u), _fr = (uint16_t)(_033348r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_033348r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $03334C */
+  uint16_t _t03334C = m68k_read16(g_cpu.A[0]);
+  uint16_t _03334Cr = (uint16_t)((uint16_t)(_t03334C) + (uint16_t)0x2030u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t03334C)), _fb = (uint16_t)((uint16_t)0x2030u), _fr = (uint16_t)(_03334Cr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_03334Cr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033350 */
+  uint32_t _033350r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) + (uint32_t)0xC20F0u);
+  { uint32_t _fa = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0])), _fb = (uint32_t)((uint32_t)0xC20F0u), _fr = (uint32_t)(_033350r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_033350r);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033356 */
+  uint16_t _t033356 = m68k_read16(g_cpu.A[0]);
+  uint16_t _033356r = (uint16_t)((uint16_t)(_t033356) + (uint16_t)0x21E0u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t033356)), _fb = (uint16_t)((uint16_t)0x21E0u), _fr = (uint16_t)(_033356r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_033356r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $03335A */
+  uint16_t _t03335A = m68k_read16(g_cpu.A[0]);
+  uint16_t _03335Ar = (uint16_t)((uint16_t)(_t03335A) + (uint16_t)0x21E0u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t03335A)), _fb = (uint16_t)((uint16_t)0x21E0u), _fr = (uint16_t)(_03335Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_03335Ar));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $03335E */
+  uint8_t _03335Er = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) + (uint8_t)0x28u);
+  { uint8_t _fa = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fb = (uint8_t)((uint8_t)0x28u), _fr = (uint8_t)(_03335Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_03335Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033362 */
+  uint8_t _t033362 = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)8380));
+  uint8_t _033362r = (uint8_t)(_t033362) | (uint8_t)0xAu;
+  { uint8_t _fv = (uint8_t)(_033362r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[4] + (int32_t)8380), (uint8_t)(_033362r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033368 */
+  uint8_t _033368r = (uint8_t)((uint8_t)g_cpu.D[3]) | (uint8_t)0xA8u;
+  { uint8_t _fv = (uint8_t)(_033368r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_033368r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $03336C */
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x0335A8u); return;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 void func_033344(void) {
@@ -376672,6 +376757,59 @@ void func_033344(void) {
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_033350r);
   g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033356 */
+  uint16_t _t033356 = m68k_read16(g_cpu.A[0]);
+  uint16_t _033356r = (uint16_t)((uint16_t)(_t033356) + (uint16_t)0x21E0u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t033356)), _fb = (uint16_t)((uint16_t)0x21E0u), _fr = (uint16_t)(_033356r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_033356r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $03335A */
+  uint16_t _t03335A = m68k_read16(g_cpu.A[0]);
+  uint16_t _03335Ar = (uint16_t)((uint16_t)(_t03335A) + (uint16_t)0x21E0u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t03335A)), _fb = (uint16_t)((uint16_t)0x21E0u), _fr = (uint16_t)(_03335Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_03335Ar));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $03335E */
+  uint8_t _03335Er = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) + (uint8_t)0x28u);
+  { uint8_t _fa = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fb = (uint8_t)((uint8_t)0x28u), _fr = (uint8_t)(_03335Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_03335Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033362 */
+  uint8_t _t033362 = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)8380));
+  uint8_t _033362r = (uint8_t)(_t033362) | (uint8_t)0xAu;
+  { uint8_t _fv = (uint8_t)(_033362r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[4] + (int32_t)8380), (uint8_t)(_033362r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033368 */
+  uint8_t _033368r = (uint8_t)((uint8_t)g_cpu.D[3]) | (uint8_t)0xA8u;
+  { uint8_t _fv = (uint8_t)(_033368r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_033368r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $03336C */
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x0335A8u); return;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 void func_033352(void) {
@@ -376715,6 +376853,27 @@ void func_033352(void) {
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_03335Er));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033362 */
+  uint8_t _t033362 = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)8380));
+  uint8_t _033362r = (uint8_t)(_t033362) | (uint8_t)0xAu;
+  { uint8_t _fv = (uint8_t)(_033362r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[4] + (int32_t)8380), (uint8_t)(_033362r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $033368 */
+  uint8_t _033368r = (uint8_t)((uint8_t)g_cpu.D[3]) | (uint8_t)0xA8u;
+  { uint8_t _fv = (uint8_t)(_033368r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_033368r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $03336C */
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x0335A8u); return;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 /* Obj_CNZBarberPoleSprite */
@@ -878038,6 +878197,32 @@ void func_083E38(void) {
     if (!_fv)             g_cpu.SR |= (1u<<2);
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E3E */
+  uint8_t _t083E3E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-32640));
+  { uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    uint8_t _083E3Er = (uint8_t)(0 - (uint8_t)(_t083E3E) - (uint8_t)_x);
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t083E3E), _fr = (uint8_t)(_083E3Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-32640), (uint8_t)(_083E3Er));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E42 */
+  { uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    uint8_t _083E42r = (uint8_t)(0 - (uint8_t)(g_cpu.A[0]) - (uint8_t)_x);
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(g_cpu.A[0]), _fr = (uint8_t)(_083E42r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.A[0] = (uint32_t)(_083E42r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x083E44u); return;
 }
 
 void func_083E3C(void) {
@@ -878062,6 +878247,19 @@ void func_083E3C(void) {
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-32640), (uint8_t)(_083E3Er));
   }
   g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E42 */
+  { uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    uint8_t _083E42r = (uint8_t)(0 - (uint8_t)(g_cpu.A[0]) - (uint8_t)_x);
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(g_cpu.A[0]), _fr = (uint8_t)(_083E42r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.A[0] = (uint32_t)(_083E42r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x083E44u); return;
 }
 
 void func_083E40(void) {
@@ -878126,6 +878324,61 @@ void func_083E48(void) {
     if (!_fv)             g_cpu.SR |= (1u<<2);
     if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
   g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E4E */
+  uint16_t _083E4Er = (uint16_t)((uint16_t)g_cpu.D[6]) | (uint16_t)0x829u;
+  { uint16_t _fv = (uint16_t)(_083E4Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_083E4Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E52 */
+  uint8_t _083E52r = (uint8_t)((uint8_t)g_cpu.D[5]) | (uint8_t)0x38u;
+  { uint8_t _fv = (uint8_t)(_083E52r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_083E52r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E56 */
+  if (!(g_cpu.SR & (1u<<2))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x083EC2u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E5A */
+  uint32_t _t083E5A = m68k_read32(g_cpu.A[1]);
+  { uint32_t _fv = (uint32_t)(_t083E5A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E5C */
+  if ((g_cpu.SR & (1u<<2))) {
+    g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x083EC2u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E60 */
+  uint16_t _ts083E60 = m68k_read16((uint32_t)(g_cpu.A[1] + (int32_t)16));
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)16), (uint16_t)(_ts083E60));
+  { uint16_t _fv = (uint16_t)(_ts083E60);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E66 */
+  uint16_t _ts083E66 = m68k_read16((uint32_t)(g_cpu.A[1] + (int32_t)20));
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)20), (uint16_t)(_ts083E66));
+  { uint16_t _fv = (uint16_t)(_ts083E66);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $083E6C */
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x08488Au); return;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 /* Obj_WaitForParent */
@@ -971652,6 +971905,620 @@ void func_1FB49E(void) {
     _1FB516r = (uint8_t)((uint8_t)(_t1FB516) & ~(uint8_t)(1u<<_bn)); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)38), (uint8_t)(_1FB516r));
   g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB51A */
+  m68k_write32((uint32_t)(g_cpu.A[5] + (int32_t)(int16_t)g_cpu.D[0] + (-79)), (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB51E */
+  uint32_t _ts1FB51E = m68k_read32(g_cpu.A[0]); g_cpu.A[0] += 4;
+  /* cannot store to EA 7/5 */
+  { uint32_t _fv = (uint32_t)(_ts1FB51E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB520 */
+  uint8_t _t1FB520 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)11384));
+  uint8_t _1FB520r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[1] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB520) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB520r = (uint8_t)((uint8_t)(_t1FB520) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)11384), (uint8_t)(_1FB520r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB524 */
+  uint8_t _t1FB524 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-32764));
+  uint8_t _1FB524r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[1] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB524) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB524r = (uint8_t)((uint8_t)(_t1FB524) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-32764), (uint8_t)(_1FB524r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB528 */
+  /* unimplemented opcode $04C0 @ $1FB528 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB52C */
+  g_cpu.D[4] = (uint32_t)(uint16_t)g_cpu.D[4] * (uint32_t)(uint16_t)((uint16_t)g_cpu.D[0]);
+  { uint32_t _fv = (uint32_t)(g_cpu.D[4]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 54; g_audio_cycle_counter += 54; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB52E */
+  uint8_t _1FB52Er = (uint8_t)g_cpu.D[0] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB52Er);
+  { uint8_t _fv = (uint8_t)(_1FB52Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB530 */
+  uint8_t _1FB530r = (uint8_t)g_cpu.D[2] & (uint8_t)((uint8_t)g_cpu.D[0]);
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB530r);
+  { uint8_t _fv = (uint8_t)(_1FB530r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB532 */
+  uint16_t _tv1FB532 = m68k_read16((uint32_t)(int32_t)(int16_t)0x7840);
+  { int16_t _dv = (int16_t)(_tv1FB532); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 42; g_audio_cycle_counter += 42; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB536 */
+  { g_cpu.A[0] -= 1;
+    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[0]);
+    g_cpu.A[0] -= 1;
+    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[0]);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    m68k_write8(g_cpu.A[0], _r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB538 */
+  uint8_t _1FB538r = (uint8_t)g_cpu.D[4] & (uint8_t)((uint8_t)g_cpu.D[0]);
+  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB538r);
+  { uint8_t _fv = (uint8_t)(_1FB538r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB53A */
+  uint8_t _1FB53Ar = (uint8_t)g_cpu.D[0] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB53Ar);
+  { uint8_t _fv = (uint8_t)(_1FB53Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB53C */
+  uint32_t _1FB53Cr = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) - (uint32_t)0x81F8F800u);
+  { uint32_t _fa = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0])), _fb = (uint32_t)((uint32_t)0x81F8F800u), _fr = (uint32_t)(_1FB53Cr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB53Cr);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB542 */
+  { g_cpu.A[0] -= 1;
+    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[0]);
+    g_cpu.A[0] -= 1;
+    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[0]);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    m68k_write8(g_cpu.A[0], _r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB544 */
+  { uint16_t _dv = (uint16_t)((uint16_t)g_cpu.D[0]); uint32_t _dest = g_cpu.D[4];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[4] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 136; g_audio_cycle_counter += 136; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB546 */
+  uint8_t _1FB546r = (uint8_t)g_cpu.D[0] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB546r);
+  { uint8_t _fv = (uint8_t)(_1FB546r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB548 */
+  uint16_t _1FB548r = (uint16_t)g_cpu.D[2] & (uint16_t)((uint16_t)g_cpu.D[0]);
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_1FB548r);
+  { uint16_t _fv = (uint16_t)(_1FB548r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB54A */
+  { g_cpu.A[0] -= 1;
+    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[0]);
+    g_cpu.A[0] -= 1;
+    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[0]);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    m68k_write8(g_cpu.A[0], _r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB54C */
+  g_cpu.D[0] = (uint32_t)(int32_t)(int16_t)g_cpu.D[0];
+  { uint32_t _fv = (uint32_t)(g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB54E */
+  uint8_t _1FB54Er = (uint8_t)g_cpu.D[0] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB54Er);
+  { uint8_t _fv = (uint8_t)(_1FB54Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB550 */
+  uint16_t _1FB550r = (uint16_t)g_cpu.D[2] & (uint16_t)((uint16_t)g_cpu.D[0]);
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_1FB550r);
+  { uint16_t _fv = (uint16_t)(_1FB550r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB552 */
+  uint16_t _tv1FB552 = m68k_read16((uint32_t)(int32_t)(int16_t)0xB840);
+  { int16_t _dv = (int16_t)(_tv1FB552); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 42; g_audio_cycle_counter += 42; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB556 */
+  { uint16_t _dv = (uint16_t)(0x3C80u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB55A */
+  uint16_t _tv1FB55A = m68k_read16((uint32_t)(int32_t)(int16_t)0x7800);
+  { int16_t _dv = (int16_t)(_tv1FB55A); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 146; g_audio_cycle_counter += 146; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB55E */
+  { uint16_t _dv = (uint16_t)(0xFC40u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB562 */
+  uint16_t _tv1FB562 = m68k_read16((uint32_t)(int32_t)(int16_t)0x38C0);
+  { int16_t _dv = (int16_t)(_tv1FB562); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 158; g_audio_cycle_counter += 158; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB566 */
+  { uint16_t _dv = (uint16_t)(0xBC40u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB56A */
+  uint16_t _tv1FB56A = m68k_read16((uint32_t)(int32_t)(int16_t)0x38C0);
+  { int16_t _dv = (int16_t)(_tv1FB56A); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 158; g_audio_cycle_counter += 158; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB56E */
+  { uint16_t _dv = (uint16_t)(0xBC40u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB572 */
+  uint16_t _tv1FB572 = m68k_read16((uint32_t)(int32_t)(int16_t)0x38C0);
+  { int16_t _dv = (int16_t)(_tv1FB572); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 158; g_audio_cycle_counter += 158; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB576 */
+  { uint16_t _dv = (uint16_t)(0xBC40u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB57A */
+  uint16_t _tv1FB57A = m68k_read16((uint32_t)(int32_t)(int16_t)0x38C0);
+  { int16_t _dv = (int16_t)(_tv1FB57A); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 158; g_audio_cycle_counter += 158; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB57E */
+  { uint16_t _dv = (uint16_t)(0xBC80u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB582 */
+  g_cpu.A[0] = (uint32_t)(int32_t)(int16_t)((uint16_t)g_cpu.D[4]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB584 */
+  uint16_t _t1FB584 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)30848));
+  uint16_t _1FB584r = (uint16_t)(_t1FB584) & (uint16_t)0x81F8u;
+  { uint16_t _fv = (uint16_t)(_1FB584r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)30848), (uint16_t)(_1FB584r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB58A */
+  { uint16_t _dv = (uint16_t)(0x7CC0u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB58E */
+  uint16_t _tv1FB58E = m68k_read16((uint32_t)(int32_t)(int16_t)0xB880);
+  { int16_t _dv = (int16_t)(_tv1FB58E); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 42; g_audio_cycle_counter += 42; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB592 */
+  { g_cpu.A[0] -= 1;
+    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[0]);
+    g_cpu.A[0] -= 1;
+    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[0]);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    m68k_write8(g_cpu.A[0], _r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB594 */
+  { uint32_t _bn = 4u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB598 */
+  uint16_t _1FB598r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[0]) - (uint16_t)0x81F8u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[0])), _fb = (uint16_t)((uint16_t)0x81F8u), _fr = (uint16_t)(_1FB598r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_1FB598r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB59C */
+  uint32_t _1FB59Cr = (uint32_t)((uint32_t)g_cpu.D[4] - (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fa = (uint32_t)((uint32_t)g_cpu.D[4]), _fb = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0])), _fr = (uint32_t)(_1FB59Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB59E */
+  { uint16_t _dv = (uint16_t)(0x7CC0u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB5A2 */
+  uint16_t _tv1FB5A2 = m68k_read16((uint32_t)(int32_t)(int16_t)0xB880);
+  { int16_t _dv = (int16_t)(_tv1FB5A2); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 42; g_audio_cycle_counter += 42; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB5A6 */
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)552), (uint16_t)((uint16_t)g_cpu.D[0]));
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB5AA */
+  uint16_t _tv1FB5AA = m68k_read16((uint32_t)(int32_t)(int16_t)0x7880);
+  { int16_t _dv = (int16_t)(_tv1FB5AA); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 158; g_audio_cycle_counter += 158; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB5AE */
+  uint16_t _ts1FB5AE = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(int32_t)(int16_t)0x0228, (uint16_t)(_ts1FB5AE));
+  { uint16_t _fv = (uint16_t)(_ts1FB5AE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x1FB5B2u); return;
 }
 
 void func_1FB518(void) {
@@ -972516,6 +973383,295 @@ void func_1FB5B2(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)11136), (uint8_t)(_1FB5EEr));
   g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB5F4 */
+  uint8_t _t1FB5F4 = m68k_read8((uint32_t)(g_cpu.A[1] + (int32_t)(int16_t)g_cpu.D[2] + (-40)));
+  uint8_t _1FB5F4r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB5F4) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB5F4r = (uint8_t)((uint8_t)(_t1FB5F4) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)(int16_t)g_cpu.D[2] + (-40)), (uint8_t)(_1FB5F4r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB5F8 */
+  uint8_t _t1FB5F8 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)11392));
+  uint8_t _1FB5F8r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB5F8) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB5F8r = (uint8_t)((uint8_t)(_t1FB5F8) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)11392), (uint8_t)(_1FB5F8r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB5FC */
+  uint8_t _t1FB5FC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-32504));
+  uint8_t _1FB5FCr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB5FC) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB5FCr = (uint8_t)((uint8_t)(_t1FB5FC) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-32504), (uint8_t)(_1FB5FCr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB600 */
+  { uint32_t _bn = 4u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB604 */
+  uint8_t _1FB604r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) - (uint8_t)0xC8u);
+  { uint8_t _fa = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fb = (uint8_t)((uint8_t)0xC8u), _fr = (uint8_t)(_1FB604r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB604r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB608 */
+  uint8_t _t1FB608 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-32516));
+  uint8_t _1FB608r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB608) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB608r = (uint8_t)((uint8_t)(_t1FB608) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-32516), (uint8_t)(_1FB608r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB60C */
+  g_cpu.D[6] = 0x00000040u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000040u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB60E */
+  uint8_t _1FB60Er = (uint8_t)g_cpu.D[0] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB60Er);
+  { uint8_t _fv = (uint8_t)(_1FB60Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB610 */
+  uint16_t _1FB610r = (uint16_t)g_cpu.D[2] & (uint16_t)((uint16_t)g_cpu.D[0]);
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)_1FB610r);
+  { uint16_t _fv = (uint16_t)(_1FB610r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB612 */
+  { g_cpu.A[0] -= 1;
+    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[0]);
+    g_cpu.A[0] -= 1;
+    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[0]);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    m68k_write8(g_cpu.A[0], _r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB614 */
+  g_cpu.D[0] = (g_cpu.D[0] >> 16) | (g_cpu.D[0] << 16);
+  { uint32_t _fv = (uint32_t)(g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB616 */
+  { g_cpu.A[0] -= 1;
+    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[0]);
+    g_cpu.A[0] -= 1;
+    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[0]);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    m68k_write8(g_cpu.A[0], _r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB618 */
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)(uint16_t)(int16_t)(int8_t)(g_cpu.D[0]);
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB61A */
+  { uint16_t _dv = (uint16_t)(0xFC80u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB61E */
+  uint16_t _tv1FB61E = m68k_read16((uint32_t)(int32_t)(int16_t)0x7800);
+  { int16_t _dv = (int16_t)(_tv1FB61E); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else {
+      int _sn = (_dv < 0), _dn = ((int32_t)_dest < 0); int _rn = (_sn != _dn);
+      uint32_t _asrc = _sn ? (uint32_t)(0 - (int32_t)_dv) : (uint32_t)_dv;
+      uint32_t _adst = _dn ? (0u - _dest) : _dest;
+      if (_asrc >= (_adst >> 16)) {
+        uint32_t _aq = _adst / _asrc;
+        if (_aq <= (_rn ? 0x8000u : 0x7FFFu)) {
+          uint32_t _ar = _adst % _asrc;
+          uint32_t _quo = _rn ? (0u - _aq) : _aq;
+          uint32_t _rem = _dn ? (0u - _ar) : _ar;
+          g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+          g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+          if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+          if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+        } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+      } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+    }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 146; g_audio_cycle_counter += 146; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB622 */
+  { g_cpu.A[0] -= 1;
+    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[0]);
+    g_cpu.A[0] -= 1;
+    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[0]);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    m68k_write8(g_cpu.A[0], _r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB624 */
+  uint32_t _1FB624r = (uint32_t)g_cpu.D[4] | (uint32_t)((uint32_t)g_cpu.D[0]);
+  g_cpu.D[4] = (uint32_t)_1FB624r;
+  { uint32_t _fv = (uint32_t)(_1FB624r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB626 */
+  uint8_t _1FB626r = (uint8_t)g_cpu.D[0] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB626r);
+  { uint8_t _fv = (uint8_t)(_1FB626r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB628 */
+  uint8_t _1FB628r = (uint8_t)g_cpu.D[2] | (uint8_t)((uint8_t)g_cpu.D[0]);
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB628r);
+  { uint8_t _fv = (uint8_t)(_1FB628r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB62A */
+  m68k_write32(g_cpu.A[7], (uint32_t)(0x066881F8u));
+  { uint32_t _fv = (uint32_t)(0x066881F8u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB630 */
+  g_cpu.D[4] = 0x00000000u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000000u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB632 */
+  { uint16_t _dv = (uint16_t)(0xFC80u); uint32_t _dest = g_cpu.D[0];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[0] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 140; g_audio_cycle_counter += 140; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB636 */
+  { g_cpu.A[0] -= 1;
+    uint8_t _b = (uint8_t)m68k_read8(g_cpu.A[0]);
+    g_cpu.A[0] -= 1;
+    uint8_t _a = (uint8_t)m68k_read8(g_cpu.A[0]);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = (int32_t)(_a & 0xF) - (int32_t)(_b & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = (int32_t)(_a >> 4) - (int32_t)(_b >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    m68k_write8(g_cpu.A[0], _r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB638 */
+  uint32_t _1FB638r = 0;
+  { uint32_t _bn = 4u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB638r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB638r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB63C */
+  uint8_t _1FB63Cr = (uint8_t)g_cpu.D[0] & (uint8_t)((uint8_t)g_cpu.D[0]);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB63Cr);
+  { uint8_t _fv = (uint8_t)(_1FB63Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB63E */
+  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], (uint32_t)(g_cpu.A[0]));
+  { uint32_t _fv = (uint32_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB640 */
+  uint8_t _t1FB640 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)1576));
+  uint8_t _1FB640r = (uint8_t)((uint8_t)(_t1FB640) + (uint8_t)0x44u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t1FB640)), _fb = (uint8_t)((uint8_t)0x44u), _fr = (uint8_t)(_1FB640r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)1576), (uint8_t)(_1FB640r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x1FB646u); return;
 }
 
 void func_1FB5F0(void) {
@@ -973279,6 +974435,5717 @@ void func_1FB6B4(void) {
   /* $1FB6CC */
   /* unimplemented opcode $04E8 @ $1FB6CC */
   g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6D0 */
+  g_cpu.A[2] -= 4; m68k_write32(g_cpu.A[2], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6D2 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[6] + (int32_t)9384);
+    uint32_t _v  = g_cpu.D[1];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6D6 */
+  uint8_t _t1FB6D6 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB6D6r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[1] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB6D6) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB6D6r = (uint8_t)((uint8_t)(_t1FB6D6) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB6D6r)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6D8 */
+  g_cpu.D[2] = (uint32_t)(uint32_t)(g_cpu.A[4]);
+  { uint32_t _fv = (uint32_t)(g_cpu.A[4]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6DA */
+  uint8_t _t1FB6DA = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB6DAr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[1] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB6DA) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB6DAr = (uint8_t)((uint8_t)(_t1FB6DA) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB6DAr)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6DC */
+  uint8_t _1FB6DCr = (uint8_t)g_cpu.D[1] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB6DCr);
+  { uint8_t _fv = (uint8_t)(_1FB6DCr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6DE */
+  uint32_t _1FB6DEr = (uint32_t)g_cpu.D[2] | (uint32_t)((uint32_t)g_cpu.D[0]);
+  g_cpu.D[2] = (uint32_t)_1FB6DEr;
+  { uint32_t _fv = (uint32_t)(_1FB6DEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6E0 */
+  uint8_t _1FB6E0r = (uint8_t)g_cpu.D[1] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB6E0r);
+  { uint8_t _fv = (uint8_t)(_1FB6E0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6E2 */
+  uint32_t _1FB6E2r = (uint32_t)g_cpu.D[2] | (uint32_t)((uint32_t)g_cpu.D[0]);
+  g_cpu.D[2] = (uint32_t)_1FB6E2r;
+  { uint32_t _fv = (uint32_t)(_1FB6E2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6E4 */
+  uint8_t _1FB6E4r = (uint8_t)g_cpu.D[1] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB6E4r);
+  { uint8_t _fv = (uint8_t)(_1FB6E4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6E6 */
+  uint32_t _1FB6E6r = (uint32_t)g_cpu.D[2] | (uint32_t)((uint32_t)g_cpu.D[0]);
+  g_cpu.D[2] = (uint32_t)_1FB6E6r;
+  { uint32_t _fv = (uint32_t)(_1FB6E6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6E8 */
+  uint8_t _1FB6E8r = (uint8_t)g_cpu.D[1] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB6E8r);
+  { uint8_t _fv = (uint8_t)(_1FB6E8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6EA */
+  { uint16_t _dv = (uint16_t)((uint16_t)g_cpu.D[0]); uint32_t _dest = g_cpu.D[2];
+    g_cpu.SR &= ~(1u<<0);
+    if (_dv == 0u) { g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1)); }
+    else if ((uint32_t)_dv >= (_dest >> 16)) {
+      uint32_t _quo = _dest / _dv, _rem = _dest % _dv;
+      g_cpu.D[2] = (_quo & 0xFFFFu) | ((_rem & 0xFFFFu) << 16);
+      g_cpu.SR &= ~((1u<<3)|(1u<<2)|(1u<<1));
+      if (_quo & 0x8000u) g_cpu.SR |= (1u<<3);
+      if (_quo == 0u)     g_cpu.SR |= (1u<<2);
+    } else { g_cpu.SR |= (1u<<1); g_cpu.SR |= (1u<<3); g_cpu.SR &= ~(1u<<2); }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 136; g_audio_cycle_counter += 136; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6EC */
+  uint8_t _1FB6ECr = (uint8_t)g_cpu.D[1] | (uint8_t)((uint8_t)g_cpu.D[4]);
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB6ECr);
+  { uint8_t _fv = (uint8_t)(_1FB6ECr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6EE */
+  uint8_t _1FB6EEr = (uint8_t)g_cpu.D[2] & (uint8_t)((uint8_t)g_cpu.D[0]);
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)_1FB6EEr);
+  { uint8_t _fv = (uint8_t)(_1FB6EEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6F0 */
+  uint32_t _ts1FB6F0 = m68k_read32(g_cpu.A[0]); g_cpu.A[0] += 4;
+  m68k_write32(g_cpu.A[2], (uint32_t)(_ts1FB6F0)); g_cpu.A[2] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FB6F0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6F2 */
+  uint8_t _t1FB6F2 = m68k_read8((uint32_t)(int32_t)(int16_t)0x0000);
+  uint8_t _1FB6F2r = (uint8_t)((uint8_t)(_t1FB6F2) + (uint8_t)0xFFu);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t1FB6F2)), _fb = (uint8_t)((uint8_t)0xFFu), _fr = (uint8_t)(_1FB6F2r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0x0000, (uint8_t)(_1FB6F2r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6F8 */
+  uint8_t _1FB6F8r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x90u;
+  { uint8_t _fv = (uint8_t)(_1FB6F8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB6F8r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB6FC */
+  /* unimplemented opcode $00C8 @ $1FB6FC */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB700 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB700 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB700r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[1] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB700) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB700r = (uint8_t)((uint8_t)(_t1FB700) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB700r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB702 */
+  uint8_t _t1FB702 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-18686));
+  uint8_t _1FB702r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB702) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB702r = (uint8_t)((uint8_t)(_t1FB702) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-18686), (uint8_t)(_1FB702r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB706 */
+  uint32_t _t1FB706 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB706r = (uint32_t)((uint32_t)(_t1FB706) - (uint32_t)0x128B702u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t1FB706)), _fb = (uint32_t)((uint32_t)0x128B702u), _fr = (uint32_t)(_1FB706r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB706r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB70C */
+  uint8_t _t1FB70C = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB70Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB70C) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB70Cr = (uint8_t)((uint8_t)(_t1FB70C) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB70Cr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB70E */
+  /* unimplemented opcode $00E8 @ $1FB70E */
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB712 */
+  uint32_t _1FB712r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[2] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB712r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB712r);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB714 */
+  uint32_t _t1FB714 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)336));
+  uint32_t _1FB714r = (uint32_t)(_t1FB714) | (uint32_t)0xB7150670u;
+  { uint32_t _fv = (uint32_t)(_1FB714r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)336), (uint32_t)(_1FB714r));
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB71C */
+  uint8_t _1FB71Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB71Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB71Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB71E */
+  uint8_t _t1FB71E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)120));
+  uint8_t _1FB71Er = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[3] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB71E) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB71Er = (uint8_t)((uint8_t)(_t1FB71E) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)120), (uint8_t)(_1FB71Er));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB722 */
+  uint8_t _1FB722r = (uint8_t)((uint8_t)g_cpu.D[5]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB722r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB722r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB724 */
+  uint32_t _1FB724r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[3] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB724r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB724r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB726 */
+  /* unimplemented opcode $00F0 @ $1FB726 */
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB72A */
+  uint8_t _t1FB72A = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-120)));
+  uint8_t _1FB72Ar = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[3] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB72A) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB72Ar = (uint8_t)((uint8_t)(_t1FB72A) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-120)), (uint8_t)(_1FB72Ar));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB72E */
+  g_cpu.A[0] -= 1; uint8_t _t1FB72E = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB72Er = (uint8_t)(_t1FB72E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB72Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB72Er));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB730 */
+  uint8_t _t1FB730 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (32)));
+  { uint32_t _bn = 0u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB730) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB736 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB736 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB736r = 0;
+  { uint32_t _bn = 0u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB736) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB736r = (uint8_t)((uint8_t)(_t1FB736) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB736r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB73A */
+  uint8_t _1FB73Ar = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB73Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB73Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB73C */
+  uint8_t _t1FB73C = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-56)));
+  { uint32_t _bn = (uint32_t)g_cpu.D[4] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB73C) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB740 */
+  uint8_t _1FB740r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB740r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB740r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB742 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)160);
+    uint32_t _v  = g_cpu.D[4];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB746 */
+  uint8_t _t1FB746 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB746r = (uint8_t)(_t1FB746) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB746r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB746r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB748 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)368);
+    uint32_t _v  = g_cpu.D[4];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 24));
+    m68k_write8(_ea + 2, (uint8_t)(_v >> 16));
+    m68k_write8(_ea + 4, (uint8_t)(_v >>  8));
+    m68k_write8(_ea + 6, (uint8_t)(_v      ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB74C */
+  g_cpu.A[0] -= 1; uint8_t _t1FB74C = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB74Cr = (uint8_t)(_t1FB74C) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB74Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB74Cr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB74E */
+  uint32_t _1FB74Er = (uint32_t)((uint32_t)g_cpu.D[0]) ^ (uint32_t)0xF8B702u;
+  { uint32_t _fv = (uint32_t)(_1FB74Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB74Er);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB754 */
+  uint32_t _t1FB754 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB754r = (uint32_t)(_t1FB754) ^ (uint32_t)0x1A0B711u;
+  { uint32_t _fv = (uint32_t)(_1FB754r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB754r)); g_cpu.A[0] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB75A */
+  /* unimplemented opcode $0AE0 @ $1FB75A */
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB75E */
+  uint8_t _t1FB75E = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB75Er = (uint8_t)(_t1FB75E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB75Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB75Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB760 */
+  uint8_t _t1FB760 = m68k_read8((uint32_t)(int32_t)(int16_t)0x01D0);
+  uint8_t _1FB760r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[5] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB760) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB760r = (uint8_t)((uint8_t)(_t1FB760) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0x01D0, (uint8_t)(_1FB760r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB764 */
+  uint8_t _t1FB764 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB764r = (uint8_t)(_t1FB764) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB764r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB764r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB766 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB766 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB766r = (uint8_t)((uint8_t)(_t1FB766) - (uint8_t)0x60u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t1FB766)), _fb = (uint8_t)((uint8_t)0x60u), _fr = (uint8_t)(_1FB766r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB76A */
+  uint8_t _1FB76Ar = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB76Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB76Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB76C */
+  g_cpu.A[0] -= 4; uint32_t _t1FB76C = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB76Cr = (uint32_t)((uint32_t)(_t1FB76C) - (uint32_t)0x60B710u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t1FB76C)), _fb = (uint32_t)((uint32_t)0x60B710u), _fr = (uint32_t)(_1FB76Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB772 */
+  /* unimplemented opcode $0CF0 @ $1FB772 */
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB776 */
+  uint8_t _1FB776r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB776r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB776r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB778 */
+  uint8_t _t1FB778 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB778r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[6] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB778) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB778r = (uint8_t)((uint8_t)(_t1FB778) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB778r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB77A */
+  uint8_t _t1FB77A = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB77Ar = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB77A) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB77Ar = (uint8_t)((uint8_t)(_t1FB77A) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB77Ar)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB77C */
+  uint8_t _1FB77Cr = (uint8_t)((uint8_t)g_cpu.D[0]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB77Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB77Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB77E */
+  g_cpu.A[0] -= 1; uint8_t _t1FB77E = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB77Er = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[6] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB77E) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB77Er = (uint8_t)((uint8_t)(_t1FB77E) | (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB77Er));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB780 */
+  uint32_t _t1FB780 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB780r = (uint32_t)(_t1FB780) | (uint32_t)0xB7020E98u;
+  { uint32_t _fv = (uint32_t)(_1FB780r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB780r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB786 */
+  uint8_t _t1FB786 = m68k_read8((uint32_t)(int32_t)(int16_t)0xB711);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB786) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB78A */
+  g_cpu.A[0] -= 1; uint8_t _t1FB78A = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[7] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB78A) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB78C */
+  uint16_t _t1FB78C = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)4048));
+  uint16_t _1FB78Cr = (uint16_t)(_t1FB78C) | (uint16_t)0xB720u;
+  { uint16_t _fv = (uint16_t)(_1FB78Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)4048), (uint16_t)(_1FB78Cr));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB792 */
+  g_cpu.A[0] -= 4; uint32_t _t1FB792 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB792r = (uint32_t)(_t1FB792) | (uint32_t)0xB7021030u;
+  { uint32_t _fv = (uint32_t)(_1FB792r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB792r));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB798 */
+  uint8_t _t1FB798 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB798r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB798) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB798r = (uint8_t)((uint8_t)(_t1FB798) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB798r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB79A */
+  g_cpu.A[0] -= 1; uint8_t _t1FB79A = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB79Ar = (uint8_t)(_t1FB79A) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB79Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB79Ar));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB79C */
+  m68k_write8(g_cpu.A[0], (uint8_t)((uint8_t)g_cpu.D[0])); g_cpu.A[0] += 1;
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB79E */
+  uint32_t _t1FB79E = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB79Er = (uint32_t)(_t1FB79E) | (uint32_t)0xB7111180u;
+  { uint32_t _fv = (uint32_t)(_1FB79Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB79Er)); g_cpu.A[0] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7A4 */
+  /* unimplemented opcode $00E0 @ $1FB7A4 */
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7A8 */
+  m68k_write8((uint32_t)(int32_t)(int16_t)0x00C0, (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7AC */
+  uint8_t _t1FB7AC = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB7ACr = (uint8_t)(_t1FB7AC) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB7ACr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB7ACr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7AE */
+  uint8_t _ts1FB7AE = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (112)));
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB725, (uint8_t)(_ts1FB7AE));
+  { uint8_t _fv = (uint8_t)(_ts1FB7AE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7B4 */
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFFFF00u) | (uint32_t)((uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7B6 */
+  uint32_t _1FB7B6r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB7B6r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) ^ (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB7B6r);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7B8 */
+  uint8_t _1FB7B8r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB7B8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB7B8r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7BA */
+  uint8_t _t1FB7BA = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (80)));
+  g_cpu.A[1] = (uint32_t)(_t1FB7BA);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7BE */
+  uint8_t _t1FB7BE = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB7BEr = (uint8_t)(_t1FB7BE) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB7BEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB7BEr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7C0 */
+  m68k_write8(g_cpu.A[1], (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7C2 */
+  uint32_t _1FB7C2r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB7C2r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB7C2r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7C4 */
+  uint8_t _1FB7C4r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB7C4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB7C4r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7C6 */
+  uint8_t _ts1FB7C6 = m68k_read8(g_cpu.A[0]);
+  m68k_write8(g_cpu.A[1], (uint8_t)(_ts1FB7C6));
+  { uint8_t _fv = (uint8_t)(_ts1FB7C6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7C8 */
+  uint32_t _1FB7C8r = (uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)0xB7021300u;
+  { uint32_t _fv = (uint32_t)(_1FB7C8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB7C8r);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7CE */
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7D0 */
+  uint8_t _t1FB7D0 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB7D0r = (uint8_t)(_t1FB7D0) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB7D0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB7D0r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7D2 */
+  uint8_t _ts1FB7D2 = m68k_read8(g_cpu.A[0]);
+  g_cpu.A[1] -= 1; m68k_write8(g_cpu.A[1], (uint8_t)(_ts1FB7D2));
+  { uint8_t _fv = (uint8_t)(_ts1FB7D2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7D4 */
+  uint8_t _t1FB7D4 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (17)));
+  uint8_t _1FB7D4r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB7D4) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB7D4r = (uint8_t)((uint8_t)(_t1FB7D4) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (17)), (uint8_t)(_1FB7D4r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7D8 */
+  uint8_t _ts1FB7D8 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (64)));
+  m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)-18656), (uint8_t)(_ts1FB7D8));
+  { uint8_t _fv = (uint8_t)(_ts1FB7D8);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7DE */
+  m68k_write8((uint32_t)(g_cpu.A[1] + (int32_t)(int16_t)g_cpu.D[0] + (-112)), (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7E2 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB7E2 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB7E2r = (uint8_t)(_t1FB7E2) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB7E2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB7E2r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7E4 */
+  uint8_t _ts1FB7E4 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (64)));
+  m68k_write8(0xB7021420u, (uint8_t)(_ts1FB7E4));
+  { uint8_t _fv = (uint8_t)(_ts1FB7E4);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 26; g_audio_cycle_counter += 26; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7EC */
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7EE */
+  g_cpu.A[0] -= 1; uint8_t _t1FB7EE = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB7EEr = (uint8_t)(_t1FB7EE) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB7EEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB7EEr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7F0 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB7F0 = m68k_read8(g_cpu.A[0]);
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_ts1FB7F0));
+  { uint8_t _fv = (uint8_t)(_ts1FB7F0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7F2 */
+  uint8_t _t1FB7F2 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (2)));
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB7F2) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7F6 */
+  uint8_t _ts1FB7F6 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (112)));
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_ts1FB7F6));
+  { uint8_t _fv = (uint8_t)(_ts1FB7F6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7FA */
+  uint8_t _t1FB7FA = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB7FAr = (uint8_t)(_t1FB7FA) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB7FAr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB7FAr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7FC */
+  g_cpu.A[0] -= 1; uint8_t _t1FB7FC = m68k_read8(g_cpu.A[0]);
+  g_cpu.A[2] = (uint32_t)(_t1FB7FC);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB7FE */
+  uint32_t _1FB7FEr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB7FEr = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB7FEr);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB800 */
+  uint8_t _1FB800r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB800r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB800r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB802 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB802 = m68k_read8(g_cpu.A[0]);
+  g_cpu.A[2] -= 1; m68k_write8(g_cpu.A[2], (uint8_t)(_ts1FB802));
+  { uint8_t _fv = (uint8_t)(_ts1FB802);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB804 */
+  /* unimplemented opcode $00F0 @ $1FB804 */
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB808 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB808 = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[2] + (int32_t)352), (uint8_t)(_ts1FB808));
+  { uint8_t _fv = (uint8_t)(_ts1FB808);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB80C */
+  uint8_t _t1FB80C = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB80Cr = (uint8_t)(_t1FB80C) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB80Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB80Cr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB80E */
+  uint8_t _ts1FB80E = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.D[0] + (-64)), (uint8_t)(_ts1FB80E));
+  { uint8_t _fv = (uint8_t)(_ts1FB80E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB812 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB812 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB812r = (uint8_t)(_t1FB812) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB812r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB812r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB814 */
+  m68k_write8((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.D[0] + (-104)), (uint8_t)(g_cpu.A[0]));
+  { uint8_t _fv = (uint8_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB818 */
+  uint8_t _1FB818r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB818r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB818r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB81A */
+  uint8_t _ts1FB81A = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (96)));
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_ts1FB81A));
+  { uint8_t _fv = (uint8_t)(_ts1FB81A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB81E */
+  uint8_t _t1FB81E = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB81Er = (uint8_t)(_t1FB81E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB81Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB81Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB820 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB820 = m68k_read8(g_cpu.A[0]);
+  m68k_write8(g_cpu.A[3], (uint8_t)(_ts1FB820)); g_cpu.A[3] += 1;
+  { uint8_t _fv = (uint8_t)(_ts1FB820);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB822 */
+  g_cpu.A[0] -= 4; uint32_t _t1FB822 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB822r = (uint32_t)(_t1FB822) | (uint32_t)0xB7111700u;
+  { uint32_t _fv = (uint32_t)(_1FB822r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB822r));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB828 */
+  uint8_t _t1FB828 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB828r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB828) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB828r = (uint8_t)((uint8_t)(_t1FB828) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB828r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB82A */
+  uint8_t _t1FB82A = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB82Ar = (uint8_t)(_t1FB82A) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB82Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB82Ar));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB82C */
+  uint8_t _ts1FB82C = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[3] + (int32_t)192), (uint8_t)(_ts1FB82C));
+  { uint8_t _fv = (uint8_t)(_ts1FB82C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB830 */
+  uint8_t _1FB830r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB830r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB830r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB832 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB832 = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[3] + (int32_t)400), (uint8_t)(_ts1FB832));
+  { uint8_t _fv = (uint8_t)(_ts1FB832);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB836 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB836 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB836r = (uint8_t)(_t1FB836) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB836r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB836r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB838 */
+  uint8_t _ts1FB838 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-128)));
+  m68k_write8((uint32_t)(g_cpu.A[3] + (int32_t)-18686), (uint8_t)(_ts1FB838));
+  { uint8_t _fv = (uint8_t)(_ts1FB838);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB83E */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB83E = m68k_read8(g_cpu.A[0]);
+  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_ts1FB83E));
+  { uint8_t _fv = (uint8_t)(_ts1FB83E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB840 */
+  uint8_t _t1FB840 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[1] + (-96)));
+  uint8_t _1FB840r = (uint8_t)(_t1FB840) | (uint8_t)0x0u;
+  { uint8_t _fv = (uint8_t)(_1FB840r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[1] + (-96)), (uint8_t)(_1FB840r));
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB846 */
+  /* unimplemented opcode $00C0 @ $1FB846 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB84A */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB84A = m68k_read8(g_cpu.A[0]);
+  m68k_write8(g_cpu.A[4], (uint8_t)(_ts1FB84A));
+  { uint8_t _fv = (uint8_t)(_ts1FB84A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB84C */
+  g_cpu.A[0] -= 1; uint8_t _t1FB84C = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB84Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB84C) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB84Cr = (uint8_t)((uint8_t)(_t1FB84C) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB84Cr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB84E */
+  uint8_t _t1FB84E = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FB84Er = (uint8_t)(_t1FB84E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB84Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FB84Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB850 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB850 = m68k_read8(g_cpu.A[0]);
+  m68k_write8(g_cpu.A[4], (uint8_t)(_ts1FB850)); g_cpu.A[4] += 1;
+  { uint8_t _fv = (uint8_t)(_ts1FB850);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB852 */
+  g_cpu.A[0] -= 4; uint32_t _t1FB852 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB852r = (uint32_t)(_t1FB852) | (uint32_t)0xB7111980u;
+  { uint32_t _fv = (uint32_t)(_1FB852r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB852r));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB858 */
+  uint32_t _1FB858r = (uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)0xB72019A0u;
+  { uint32_t _fv = (uint32_t)(_1FB858r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB858r);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB85E */
+  uint8_t _t1FB85E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (0)));
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB85E) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB862 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB862 = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[0] + (96)), (uint8_t)(_ts1FB862));
+  { uint8_t _fv = (uint8_t)(_ts1FB862);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB866 */
+  uint8_t _t1FB866 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB866r = (uint8_t)(_t1FB866) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB866r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB866r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB868 */
+  /* cannot store to EA 7/4 */
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB86C */
+  uint8_t _1FB86Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB86Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB86Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB86E */
+  uint8_t _ts1FB86E = m68k_read8(g_cpu.A[0]);
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_ts1FB86E));
+  { uint8_t _fv = (uint8_t)(_ts1FB86E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB870 */
+  uint8_t _t1FB870 = m68k_read8((uint32_t)(int32_t)(int16_t)0xB800);
+  uint8_t _1FB870r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB870) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB870r = (uint8_t)((uint8_t)(_t1FB870) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB800, (uint8_t)(_1FB870r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB874 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB874 = m68k_read8(g_cpu.A[0]);
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_ts1FB874));
+  { uint8_t _fv = (uint8_t)(_ts1FB874);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB876 */
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB878 */
+  uint8_t _1FB878r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FB878r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB87A */
+  g_cpu.A[5] -= 1; m68k_write8(g_cpu.A[5], (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB87C */
+  uint32_t _t1FB87C = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (96)));
+  uint32_t _1FB87Cr = (uint32_t)(_t1FB87C) | (uint32_t)0xB7021B40u;
+  { uint32_t _fv = (uint32_t)(_1FB87Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (96)), (uint32_t)(_1FB87Cr));
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB884 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB884 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB884r = (uint8_t)(_t1FB884) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB884r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB884r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB886 */
+  uint8_t _ts1FB886 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-128)));
+  m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)-18656), (uint8_t)(_ts1FB886));
+  { uint8_t _fv = (uint8_t)(_ts1FB886);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB88C */
+  m68k_write8((uint32_t)(g_cpu.A[5] + (int32_t)(int16_t)g_cpu.D[0] + (-96)), (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB890 */
+  uint8_t _t1FB890 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FB890r = (uint8_t)(_t1FB890) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB890r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FB890r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB892 */
+  /* cannot store to EA 7/5 */
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB894 */
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB896 */
+  uint8_t _1FB896r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB896r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB896r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB898 */
+  uint8_t _ts1FB898 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-96)));
+  /* cannot store to EA 7/5 */
+  { uint8_t _fv = (uint8_t)(_ts1FB898);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB89C */
+  uint8_t _t1FB89C = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FB89Cr = (uint8_t)(_t1FB89C) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB89Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FB89Cr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB89E */
+  g_cpu.D[6] = (g_cpu.D[6] & 0xFFFFFF00u) | (uint32_t)((uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8A0 */
+  uint8_t _t1FB8A0 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (17)));
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB8A0) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8A4 */
+  g_cpu.A[6] = (uint32_t)((uint8_t)g_cpu.D[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8A6 */
+  g_cpu.A[0] -= 2; uint16_t _t1FB8A6 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FB8A6r = (uint16_t)(_t1FB8A6) | (uint16_t)0xB705u;
+  { uint16_t _fv = (uint16_t)(_1FB8A6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FB8A6r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8AA */
+  m68k_write8(g_cpu.A[6], (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8AC */
+  uint32_t _1FB8ACr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB8ACr = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB8ACr);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8AE */
+  uint8_t _t1FB8AE = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB8AEr = (uint8_t)(_t1FB8AE) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB8AEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB8AEr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8B0 */
+  uint8_t _ts1FB8B0 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (48)));
+  m68k_write8(g_cpu.A[6], (uint8_t)(_ts1FB8B0));
+  { uint8_t _fv = (uint8_t)(_ts1FB8B0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8B4 */
+  uint8_t _1FB8B4r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FB8B4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8B6 */
+  uint8_t _ts1FB8B6 = m68k_read8(g_cpu.A[0]); g_cpu.A[0] += 1;
+  m68k_write8(g_cpu.A[6], (uint8_t)(_ts1FB8B6)); g_cpu.A[6] += 1;
+  { uint8_t _fv = (uint8_t)(_ts1FB8B6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8B8 */
+  /* unimplemented opcode $00E0 @ $1FB8B8 */
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8BC */
+  g_cpu.A[6] -= 1; m68k_write8(g_cpu.A[6], (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8BE */
+  uint16_t _1FB8BEr = (uint16_t)((uint16_t)g_cpu.D[0]) | (uint16_t)0xB720u;
+  { uint16_t _fv = (uint16_t)(_1FB8BEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_1FB8BEr));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8C2 */
+  uint8_t _ts1FB8C2 = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)256), (uint8_t)(_ts1FB8C2));
+  { uint8_t _fv = (uint8_t)(_ts1FB8C2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8C6 */
+  g_cpu.A[3] -= 1; uint8_t _t1FB8C6 = m68k_read8(g_cpu.A[3]);
+  uint8_t _1FB8C6r = (uint8_t)(_t1FB8C6) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB8C6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[3], (uint8_t)(_1FB8C6r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8C8 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB8C8 = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)368), (uint8_t)(_ts1FB8C8));
+  { uint8_t _fv = (uint8_t)(_ts1FB8C8);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8CC */
+  uint8_t _t1FB8CC = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FB8CCr = (uint8_t)(_t1FB8CC) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB8CCr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FB8CCr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8CE */
+  uint8_t _ts1FB8CE = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (64)), (uint8_t)(_ts1FB8CE));
+  { uint8_t _fv = (uint8_t)(_ts1FB8CE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8D2 */
+  uint8_t _1FB8D2r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB8D2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB8D2r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8D4 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB8D4 = m68k_read8(g_cpu.A[0]);
+  /* cannot store to EA 7/6 */
+  { uint8_t _fv = (uint8_t)(_ts1FB8D4);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8D6 */
+  uint16_t _t1FB8D6 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)7680));
+  uint16_t _1FB8D6r = (uint16_t)(_t1FB8D6) | (uint16_t)0xB715u;
+  { uint16_t _fv = (uint16_t)(_1FB8D6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)7680), (uint16_t)(_1FB8D6r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8DC */
+  /* unimplemented opcode $00F8 @ $1FB8DC */
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8E0 */
+  uint8_t _ts1FB8E0 = m68k_read8(g_cpu.A[0]); g_cpu.A[0] += 1;
+  g_cpu.D[7] = (g_cpu.D[7] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_ts1FB8E0));
+  { uint8_t _fv = (uint8_t)(_ts1FB8E0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8E2 */
+  uint32_t _1FB8E2r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB8E2r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB8E2r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8E4 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB8E4 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB8E4r = (uint8_t)(_t1FB8E4) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB8E4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB8E4r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8E6 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB8E6 = m68k_read8(g_cpu.A[0]);
+  g_cpu.A[7] = (uint32_t)(_t1FB8E6);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8E8 */
+  /* unimplemented opcode $00C8 @ $1FB8E8 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8EC */
+  g_cpu.A[0] -= 1; uint8_t _t1FB8EC = m68k_read8(g_cpu.A[0]);
+  g_cpu.A[7] = (uint32_t)(_t1FB8EC);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8EE */
+  uint8_t _t1FB8EE = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-18686));
+  uint8_t _1FB8EEr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB8EE) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB8EEr = (uint8_t)((uint8_t)(_t1FB8EE) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-18686), (uint8_t)(_1FB8EEr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8F2 */
+  m68k_write8(g_cpu.A[7], (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8F4 */
+  uint32_t _t1FB8F4 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (32)));
+  uint32_t _1FB8F4r = (uint32_t)(_t1FB8F4) | (uint32_t)0xB7021EC0u;
+  { uint32_t _fv = (uint32_t)(_1FB8F4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (32)), (uint32_t)(_1FB8F4r));
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8FC */
+  uint8_t _1FB8FCr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB8FCr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB8FCr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB8FE */
+  uint8_t _ts1FB8FE = m68k_read8(g_cpu.A[0]);
+  g_cpu.A[7] -= 1; m68k_write8(g_cpu.A[7], (uint8_t)(_ts1FB8FE));
+  { uint8_t _fv = (uint8_t)(_ts1FB8FE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB900 */
+  g_cpu.A[0] -= 4; uint32_t _t1FB900 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB900r = (uint32_t)(_t1FB900) | (uint32_t)0xB7211F18u;
+  { uint32_t _fv = (uint32_t)(_1FB900r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB900r));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB906 */
+  uint8_t _t1FB906 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (33)));
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB906) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB90A */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB90A = m68k_read8(g_cpu.A[0]);
+  g_cpu.A[7] -= 1; m68k_write8(g_cpu.A[7], (uint8_t)(_ts1FB90A));
+  { uint8_t _fv = (uint8_t)(_ts1FB90A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB90C */
+  uint32_t _1FB90Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB90Cr = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB90Cr);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB90E */
+  uint8_t _t1FB90E = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FB90Er = (uint8_t)(_t1FB90E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB90Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FB90Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB910 */
+  m68k_write8((uint32_t)(g_cpu.A[7] + (int32_t)440), (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB914 */
+  uint8_t _1FB914r = (uint8_t)((uint8_t)g_cpu.D[3]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB914r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB914r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB916 */
+  uint8_t _ts1FB916 = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[7] + (int32_t)128), (uint8_t)(_ts1FB916));
+  { uint8_t _fv = (uint8_t)(_ts1FB916);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB91A */
+  uint8_t _1FB91Ar = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB91Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB91Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB91C */
+  uint8_t _ts1FB91C = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[7] + (int32_t)(int16_t)g_cpu.D[0] + (96)), (uint8_t)(_ts1FB91C));
+  { uint8_t _fv = (uint8_t)(_ts1FB91C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB920 */
+  uint8_t _1FB920r = (uint8_t)((uint8_t)g_cpu.D[5]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB920r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB920r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB922 */
+  uint8_t _ts1FB922 = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[7] + (int32_t)(int16_t)g_cpu.D[0] + (80)), (uint8_t)(_ts1FB922));
+  { uint8_t _fv = (uint8_t)(_ts1FB922);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB926 */
+  uint8_t _t1FB926 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB926r = (uint8_t)(_t1FB926) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB926r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB926r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB928 */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB928 = m68k_read8(g_cpu.A[0]);
+  m68k_write8((uint32_t)(g_cpu.A[7] + (int32_t)(int16_t)g_cpu.D[0] + (-48)), (uint8_t)(_ts1FB928));
+  { uint8_t _fv = (uint8_t)(_ts1FB928);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB92C */
+  uint8_t _t1FB92C = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB92Cr = (uint8_t)(_t1FB92C) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB92Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB92Cr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB92E */
+  g_cpu.A[0] -= 1; uint8_t _ts1FB92E = m68k_read8(g_cpu.A[0]);
+  /* cannot store to EA 7/7 */
+  { uint8_t _fv = (uint8_t)(_ts1FB92E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB930 */
+  uint16_t _t1FB930 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FB930r = (uint16_t)(_t1FB930) | (uint16_t)0xB702u;
+  { uint16_t _fv = (uint16_t)(_1FB930r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FB930r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB934 */
+  g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[0]);
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB936 */
+  uint8_t _t1FB936 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB936) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB938 */
+  g_cpu.A[1] -= 1; uint8_t _t1FB938 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB938r = (uint8_t)(_t1FB938) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB938r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB938r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB93A */
+  uint32_t _ts1FB93A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts1FB93A);
+  { uint32_t _fv = (uint32_t)(_ts1FB93A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB93C */
+  g_cpu.A[0] -= 1; uint8_t _t1FB93C = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB93Cr = (uint8_t)(_t1FB93C) | (uint8_t)0x21u;
+  { uint8_t _fv = (uint8_t)(_1FB93Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB93Cr));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB940 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB942 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB942 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB942r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB942) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB942r = (uint8_t)((uint8_t)(_t1FB942) | (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB942r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB944 */
+  g_cpu.A[1] -= 1; uint8_t _t1FB944 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB944r = (uint8_t)(_t1FB944) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB944r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB944r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB946 */
+  uint32_t _t1FB946 = m68k_read32((uint32_t)(int32_t)(int16_t)0x00D8);
+  g_cpu.A[0] = (uint32_t)(_t1FB946);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB94A */
+  uint8_t _t1FB94A = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB94Ar = (uint8_t)(_t1FB94A) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB94Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB94Ar));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB94C */
+  m68k_write32(g_cpu.A[0], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB94E */
+  uint8_t _t1FB94E = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB94Er = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB94E) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB94Er = (uint8_t)((uint8_t)(_t1FB94E) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB94Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB950 */
+  uint8_t _1FB950r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FB950r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB952 */
+  m68k_write32(g_cpu.A[0], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB954 */
+  uint8_t _t1FB954 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (0)));
+  uint8_t _1FB954r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB954) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB954r = (uint8_t)((uint8_t)(_t1FB954) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (0)), (uint8_t)(_1FB954r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB958 */
+  uint32_t _ts1FB958 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)240));
+  m68k_write32(g_cpu.A[0], (uint32_t)(_ts1FB958));
+  { uint32_t _fv = (uint32_t)(_ts1FB958);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB95C */
+  uint8_t _1FB95Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB95Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB95Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB95E */
+  m68k_write32(g_cpu.A[0], (uint32_t)((uint32_t)g_cpu.D[0])); g_cpu.A[0] += 4;
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB960 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18686);
+    uint32_t _v  = g_cpu.D[0];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB964 */
+  m68k_write32(g_cpu.A[0], (uint32_t)(g_cpu.A[0])); g_cpu.A[0] += 4;
+  { uint32_t _fv = (uint32_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB966 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18686);
+    uint32_t _v  = g_cpu.D[0];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 24));
+    m68k_write8(_ea + 2, (uint8_t)(_v >> 16));
+    m68k_write8(_ea + 4, (uint8_t)(_v >>  8));
+    m68k_write8(_ea + 6, (uint8_t)(_v      ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB96A */
+  uint32_t _ts1FB96A = m68k_read32(g_cpu.A[0]);
+  m68k_write32(g_cpu.A[0], (uint32_t)(_ts1FB96A)); g_cpu.A[0] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FB96A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB96C */
+  uint16_t _1FB96Cr = (uint16_t)(g_cpu.A[0]) | (uint16_t)0xB711u;
+  { uint16_t _fv = (uint16_t)(_1FB96Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[0] = (uint32_t)(_1FB96Cr);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB970 */
+  uint32_t _ts1FB970 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-72)));
+  m68k_write32(g_cpu.A[0], (uint32_t)(_ts1FB970)); g_cpu.A[0] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FB970);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB974 */
+  uint8_t _1FB974r = (uint8_t)((uint8_t)g_cpu.D[5]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB974r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB974r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB976 */
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)456), (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB97A */
+  uint8_t _1FB97Ar = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB97Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB97Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB97C */
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)208), (uint32_t)(g_cpu.A[0]));
+  { uint32_t _fv = (uint32_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB980 */
+  uint8_t _t1FB980 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB980r = (uint8_t)(_t1FB980) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB980r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB980r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB982 */
+  uint32_t _ts1FB982 = m68k_read32(g_cpu.A[0]);
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)464), (uint32_t)(_ts1FB982));
+  { uint32_t _fv = (uint32_t)(_ts1FB982);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB986 */
+  uint8_t _t1FB986 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FB986r = (uint8_t)(_t1FB986) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB986r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FB986r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB988 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FB988 = m68k_read32(g_cpu.A[0]);
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)208), (uint32_t)(_ts1FB988));
+  { uint32_t _fv = (uint32_t)(_ts1FB988);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 26; g_audio_cycle_counter += 26; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB98C */
+  uint8_t _1FB98Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB98Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB98Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB98E */
+  g_cpu.A[0] -= 4; uint32_t _ts1FB98E = m68k_read32(g_cpu.A[0]);
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)384), (uint32_t)(_ts1FB98E));
+  { uint32_t _fv = (uint32_t)(_ts1FB98E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 26; g_audio_cycle_counter += 26; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB992 */
+  uint8_t _1FB992r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB992r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB992r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB994 */
+  uint32_t _ts1FB994 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (64)));
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)-18655), (uint32_t)(_ts1FB994));
+  { uint32_t _fv = (uint32_t)(_ts1FB994);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB99A */
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (16)), (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB99E */
+  uint8_t _1FB99Er = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FB99Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9A0 */
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (112)), (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9A4 */
+  uint8_t _1FB9A4r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FB9A4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9A6 */
+  m68k_write32((uint32_t)(int32_t)(int16_t)0x0170, (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9AA */
+  g_cpu.A[1] -= 1; uint8_t _t1FB9AA = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB9AAr = (uint8_t)(_t1FB9AA) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB9AAr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB9AAr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9AC */
+  uint32_t _ts1FB9AC = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (112)));
+  m68k_write32((uint32_t)(int32_t)(int16_t)0xB702, (uint32_t)(_ts1FB9AC));
+  { uint32_t _fv = (uint32_t)(_ts1FB9AC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9B2 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FB9B2 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[1] = (uint32_t)(uint32_t)(_ts1FB9B2);
+  { uint32_t _fv = (uint32_t)(_ts1FB9B2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9B4 */
+  g_cpu.A[0] -= 1; uint8_t _t1FB9B4 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB9B4r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB9B4) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB9B4r = (uint8_t)((uint8_t)(_t1FB9B4) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB9B4r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9B6 */
+  uint8_t _1FB9B6r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB9B6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB9B6r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9B8 */
+  uint32_t _ts1FB9B8 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-112)));
+  g_cpu.D[1] = (uint32_t)(uint32_t)(_ts1FB9B8);
+  { uint32_t _fv = (uint32_t)(_ts1FB9B8);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9BC */
+  uint8_t _t1FB9BC = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB9BCr = (uint8_t)(_t1FB9BC) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB9BCr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB9BCr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9BE */
+  uint32_t _t1FB9BE = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (32)));
+  g_cpu.A[1] = (uint32_t)(_t1FB9BE);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9C2 */
+  uint8_t _t1FB9C2 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FB9C2r = (uint8_t)(_t1FB9C2) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB9C2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FB9C2r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9C4 */
+  uint32_t _ts1FB9C4 = m68k_read32(g_cpu.A[0]); g_cpu.A[0] += 4;
+  m68k_write32(g_cpu.A[1], (uint32_t)(_ts1FB9C4)); g_cpu.A[1] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FB9C4);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9C6 */
+  g_cpu.A[0] -= 4; uint32_t _t1FB9C6 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB9C6r = (uint32_t)(_t1FB9C6) | (uint32_t)0xB7022310u;
+  { uint32_t _fv = (uint32_t)(_1FB9C6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB9C6r));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9CC */
+  g_cpu.A[0] -= 2; uint16_t _t1FB9CC = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FB9CCr = (uint16_t)(_t1FB9CC) | (uint16_t)0xB720u;
+  { uint16_t _fv = (uint16_t)(_1FB9CCr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FB9CCr));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9D0 */
+  uint32_t _ts1FB9D0 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (16)));
+  g_cpu.A[1] -= 4; m68k_write32(g_cpu.A[1], (uint32_t)(_ts1FB9D0));
+  { uint32_t _fv = (uint32_t)(_ts1FB9D0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9D4 */
+  uint8_t _1FB9D4r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB9D4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB9D4r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9D6 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FB9D6 = m68k_read32(g_cpu.A[0]);
+  m68k_write32((uint32_t)(g_cpu.A[1] + (int32_t)(int16_t)g_cpu.D[0] + (88)), (uint32_t)(_ts1FB9D6));
+  { uint32_t _fv = (uint32_t)(_ts1FB9D6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 58; g_audio_cycle_counter += 58; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9DA */
+  g_cpu.A[0] -= 1; uint8_t _t1FB9DA = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB9DAr = (uint8_t)(_t1FB9DA) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB9DAr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB9DAr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9DC */
+  g_cpu.A[0] -= 4; uint32_t _ts1FB9DC = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[2] = (uint32_t)(uint32_t)(_ts1FB9DC);
+  { uint32_t _fv = (uint32_t)(_ts1FB9DC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9DE */
+  g_cpu.A[0] -= 4; uint32_t _t1FB9DE = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FB9DEr = (uint32_t)(_t1FB9DE) | (uint32_t)0xB7152470u;
+  { uint32_t _fv = (uint32_t)(_1FB9DEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FB9DEr));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9E4 */
+  /* unimplemented opcode $00C8 @ $1FB9E4 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9E8 */
+  m68k_write32(g_cpu.A[2], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9EA */
+  g_cpu.A[0] -= 1; uint8_t _t1FB9EA = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FB9EAr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FB9EA) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB9EAr = (uint8_t)((uint8_t)(_t1FB9EA) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FB9EAr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9EC */
+  uint8_t _1FB9ECr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB9ECr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB9ECr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9EE */
+  uint32_t _ts1FB9EE = m68k_read32(g_cpu.A[0]);
+  m68k_write32(g_cpu.A[2], (uint32_t)(_ts1FB9EE)); g_cpu.A[2] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FB9EE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9F0 */
+  uint32_t _1FB9F0r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FB9F0r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FB9F0r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9F2 */
+  uint8_t _1FB9F2r = (uint8_t)((uint8_t)g_cpu.D[5]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB9F2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB9F2r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9F4 */
+  uint32_t _ts1FB9F4 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)240));
+  m68k_write32(g_cpu.A[2], (uint32_t)(_ts1FB9F4)); g_cpu.A[2] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FB9F4);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9F8 */
+  uint8_t _1FB9F8r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FB9F8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FB9F8r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9FA */
+  uint32_t _ts1FB9FA = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-16)));
+  m68k_write32(g_cpu.A[2], (uint32_t)(_ts1FB9FA)); g_cpu.A[2] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FB9FA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FB9FE */
+  uint8_t _1FB9FEr = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FB9FEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA00 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBA00 = m68k_read32(g_cpu.A[0]);
+  m68k_write32((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.D[0] + (80)), (uint32_t)(_ts1FBA00));
+  { uint32_t _fv = (uint32_t)(_ts1FBA00);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 58; g_audio_cycle_counter += 58; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA04 */
+  uint8_t _1FBA04r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBA04r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA06 */
+  uint32_t _ts1FBA06 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-104)));
+  m68k_write32((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.A[3] + (17)), (uint32_t)(_ts1FBA06));
+  { uint32_t _fv = (uint32_t)(_ts1FBA06);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA0C */
+  uint32_t _ts1FBA0C = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-128)));
+  m68k_write32((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.A[3] + (32)), (uint32_t)(_ts1FBA0C));
+  { uint32_t _fv = (uint32_t)(_ts1FBA0C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA12 */
+  g_cpu.A[3] = (uint32_t)((uint32_t)g_cpu.D[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA14 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18686);
+    uint32_t _v  = ((uint32_t)m68k_read8(_ea + 0) << 24)
+                 | ((uint32_t)m68k_read8(_ea + 2) << 16)
+                 | ((uint32_t)m68k_read8(_ea + 4) <<  8)
+                 | ((uint32_t)m68k_read8(_ea + 6)      );
+    g_cpu.D[0] = _v;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA18 */
+  m68k_write32(g_cpu.A[3], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA1A */
+  /* unimplemented opcode $00D0 @ $1FBA1A */
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA1E */
+  m68k_write32(g_cpu.A[3], (uint32_t)(g_cpu.A[0]));
+  { uint32_t _fv = (uint32_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA20 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBA20 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBA20r = (uint16_t)(_t1FBA20) | (uint16_t)0xB720u;
+  { uint16_t _fv = (uint16_t)(_1FBA20r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBA20r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA24 */
+  uint32_t _ts1FBA24 = m68k_read32(g_cpu.A[0]);
+  m68k_write32(g_cpu.A[3], (uint32_t)(_ts1FBA24));
+  { uint32_t _fv = (uint32_t)(_ts1FBA24);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA26 */
+  uint8_t _t1FBA26 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (17)));
+  uint8_t _1FBA26r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBA26) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBA26r = (uint8_t)((uint8_t)(_t1FBA26) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (17)), (uint8_t)(_1FBA26r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA2A */
+  uint32_t _ts1FBA2A = m68k_read32(g_cpu.A[0]); g_cpu.A[0] += 4;
+  m68k_write32(g_cpu.A[3], (uint32_t)(_ts1FBA2A)); g_cpu.A[3] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FBA2A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA2C */
+  uint8_t _t1FBA2C = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBA2C) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA2E */
+  uint8_t _1FBA2Er = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA2Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBA2Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA30 */
+  uint32_t _ts1FBA30 = m68k_read32((uint32_t)(int32_t)(int16_t)0x01C0);
+  g_cpu.A[3] -= 4; m68k_write32(g_cpu.A[3], (uint32_t)(_ts1FBA30));
+  { uint32_t _fv = (uint32_t)(_ts1FBA30);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA34 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBA34 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBA34r = (uint8_t)(_t1FBA34) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA34r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBA34r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA36 */
+  m68k_write32((uint32_t)(g_cpu.A[3] + (int32_t)296), (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA3A */
+  uint8_t _1FBA3Ar = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBA3Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA3C */
+  uint32_t _ts1FBA3C = m68k_read32(g_cpu.A[0]); g_cpu.A[0] += 4;
+  m68k_write32((uint32_t)(g_cpu.A[3] + (int32_t)136), (uint32_t)(_ts1FBA3C));
+  { uint32_t _fv = (uint32_t)(_ts1FBA3C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA40 */
+  uint8_t _1FBA40r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA40r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBA40r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA42 */
+  uint32_t _ts1FBA42 = m68k_read32(g_cpu.A[0]);
+  m68k_write32((uint32_t)(g_cpu.A[3] + (int32_t)(int16_t)g_cpu.D[0] + (48)), (uint32_t)(_ts1FBA42));
+  { uint32_t _fv = (uint32_t)(_ts1FBA42);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA46 */
+  uint8_t _t1FBA46 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBA46r = (uint8_t)(_t1FBA46) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA46r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBA46r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA48 */
+  g_cpu.A[4] = (uint32_t)((uint32_t)g_cpu.D[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA4A */
+  uint32_t _1FBA4Ar = (uint32_t)(g_cpu.A[0]) | (uint32_t)0xB7112860u;
+  { uint32_t _fv = (uint32_t)(_1FBA4Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[0] = (uint32_t)(_1FBA4Ar);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA50 */
+  /* unimplemented opcode $00C8 @ $1FBA50 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA54 */
+  m68k_write32(g_cpu.A[4], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA56 */
+  uint8_t _t1FBA56 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-18686));
+  uint8_t _1FBA56r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBA56) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBA56r = (uint8_t)((uint8_t)(_t1FBA56) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-18686), (uint8_t)(_1FBA56r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA5A */
+  m68k_write32((uint32_t)(g_cpu.A[4] + (int32_t)144), (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA5E */
+  uint8_t _1FBA5Er = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA5Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBA5Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA60 */
+  m68k_write32((uint32_t)(g_cpu.A[4] + (int32_t)424), (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA64 */
+  uint8_t _t1FBA64 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBA64r = (uint8_t)(_t1FBA64) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA64r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBA64r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA66 */
+  m68k_write32((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[0] + (40)), (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA6A */
+  uint8_t _t1FBA6A = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBA6Ar = (uint8_t)(_t1FBA6A) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA6Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBA6Ar));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA6C */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBA6C = m68k_read32(g_cpu.A[0]);
+  m68k_write32((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[0] + (72)), (uint32_t)(_ts1FBA6C));
+  { uint32_t _fv = (uint32_t)(_ts1FBA6C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 58; g_audio_cycle_counter += 58; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA70 */
+  uint8_t _1FBA70r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBA70r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA72 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBA72 = m68k_read32(g_cpu.A[0]);
+  /* cannot store to EA 7/4 */
+  { uint32_t _fv = (uint32_t)(_ts1FBA72);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA78 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBA78 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[5] = (uint32_t)(uint32_t)(_ts1FBA78);
+  { uint32_t _fv = (uint32_t)(_ts1FBA78);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA7A */
+  g_cpu.A[0] -= 1; uint8_t _t1FBA7A = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBA7Ar = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBA7A) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBA7Ar = (uint8_t)((uint8_t)(_t1FBA7A) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBA7Ar));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA7C */
+  uint8_t _1FBA7Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA7Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBA7Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA7E */
+  m68k_write32(g_cpu.A[5], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA80 */
+  uint32_t _t1FBA80 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)312));
+  uint32_t _1FBA80r = (uint32_t)(_t1FBA80) | (uint32_t)0xB7202AD0u;
+  { uint32_t _fv = (uint32_t)(_1FBA80r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)312), (uint32_t)(_1FBA80r));
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA88 */
+  uint8_t _t1FBA88 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBA88r = (uint8_t)(_t1FBA88) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA88r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBA88r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA8A */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBA8A = m68k_read32(g_cpu.A[0]);
+  g_cpu.A[5] -= 4; m68k_write32(g_cpu.A[5], (uint32_t)(_ts1FBA8A));
+  { uint32_t _fv = (uint32_t)(_ts1FBA8A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA8C */
+  uint32_t _t1FBA8C = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (88)));
+  uint32_t _1FBA8Cr = (uint32_t)(_t1FBA8C) | (uint32_t)0xB7022B90u;
+  { uint32_t _fv = (uint32_t)(_1FBA8Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (88)), (uint32_t)(_1FBA8Cr));
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA94 */
+  uint8_t _1FBA94r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBA94r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBA94r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA96 */
+  /* cannot store to EA 7/5 */
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA98 */
+  uint16_t _t1FBA98 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[2] + (-48)));
+  uint16_t _1FBA98r = (uint16_t)(_t1FBA98) | (uint16_t)0xB721u;
+  { uint16_t _fv = (uint16_t)(_1FBA98r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[2] + (-48)), (uint16_t)(_1FBA98r));
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBA9E */
+  uint8_t _t1FBA9E = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBA9E) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAA0 */
+  uint8_t _1FBAA0r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBAA0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBAA0r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAA2 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBAA2 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[6] = (uint32_t)(uint32_t)(_ts1FBAA2);
+  { uint32_t _fv = (uint32_t)(_ts1FBAA2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAA4 */
+  uint8_t _t1FBAA4 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBAA4r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBAA4) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBAA4r = (uint8_t)((uint8_t)(_t1FBAA4) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBAA4r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAA6 */
+  uint8_t _t1FBAA6 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBAA6r = (uint8_t)(_t1FBAA6) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBAA6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBAA6r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAA8 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBAA8 = m68k_read32(g_cpu.A[0]);
+  m68k_write32(g_cpu.A[6], (uint32_t)(_ts1FBAA8)); g_cpu.A[6] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FBAA8);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAAA */
+  g_cpu.A[0] -= 4; uint32_t _t1FBAAA = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FBAAAr = (uint32_t)(_t1FBAAA) | (uint32_t)0xB8002CE0u;
+  { uint32_t _fv = (uint32_t)(_1FBAAAr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FBAAAr));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAB0 */
+  uint8_t _t1FBAB0 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBAB0) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAB2 */
+  uint8_t _1FBAB2r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBAB2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAB4 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBAB4 = m68k_read32(g_cpu.A[0]);
+  m68k_write32(g_cpu.A[6], (uint32_t)(_ts1FBAB4)); g_cpu.A[6] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FBAB4);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAB6 */
+  uint8_t _t1FBAB6 = m68k_read8(g_cpu.A[0]); g_cpu.A[0] += 1;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBAB6) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAB8 */
+  g_cpu.A[1] -= 1; uint8_t _t1FBAB8 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBAB8r = (uint8_t)(_t1FBAB8) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBAB8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBAB8r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBABA */
+  uint32_t _ts1FBABA = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (80)));
+  m68k_write32(g_cpu.A[6], (uint32_t)(_ts1FBABA)); g_cpu.A[6] += 4;
+  { uint32_t _fv = (uint32_t)(_ts1FBABA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBABE */
+  uint8_t _t1FBABE = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBABEr = (uint8_t)(_t1FBABE) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBABEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBABEr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAC0 */
+  uint32_t _ts1FBAC0 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)384));
+  m68k_write32((uint32_t)(g_cpu.A[6] + (int32_t)-18686), (uint32_t)(_ts1FBAC0));
+  { uint32_t _fv = (uint32_t)(_ts1FBAC0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAC6 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBAC6 = m68k_read32(g_cpu.A[0]);
+  m68k_write32((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (-128)), (uint32_t)(_ts1FBAC6));
+  { uint32_t _fv = (uint32_t)(_ts1FBAC6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 58; g_audio_cycle_counter += 58; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBACA */
+  uint8_t _1FBACAr = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBACAr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBACC */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBACC = m68k_read32(g_cpu.A[0]);
+  m68k_write32((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (-32)), (uint32_t)(_ts1FBACC));
+  { uint32_t _fv = (uint32_t)(_ts1FBACC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 58; g_audio_cycle_counter += 58; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAD0 */
+  uint8_t _1FBAD0r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBAD0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAD2 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBAD2 = m68k_read32(g_cpu.A[0]);
+  /* cannot store to EA 7/6 */
+  { uint32_t _fv = (uint32_t)(_ts1FBAD2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAD4 */
+  /* unimplemented opcode $00E0 @ $1FBAD4 */
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAD8 */
+  uint32_t _ts1FBAD8 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-80)));
+  /* cannot store to EA 7/6 */
+  { uint32_t _fv = (uint32_t)(_ts1FBAD8);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBADC */
+  g_cpu.A[0] -= 1; uint8_t _t1FBADC = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBADCr = (uint8_t)(_t1FBADC) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBADCr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBADCr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBADE */
+  g_cpu.A[0] -= 4; uint32_t _t1FBADE = m68k_read32(g_cpu.A[0]);
+  g_cpu.A[7] = (uint32_t)(_t1FBADE);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAE0 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBAE0 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBAE0r = (uint16_t)(_t1FBAE0) | (uint16_t)0xB800u;
+  { uint16_t _fv = (uint16_t)(_1FBAE0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBAE0r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAE4 */
+  g_cpu.A[0] -= 4; uint32_t _t1FBAE4 = m68k_read32(g_cpu.A[0]);
+  g_cpu.A[7] = (uint32_t)(_t1FBAE4);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAE6 */
+  /* unimplemented opcode $00C0 @ $1FBAE6 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAEA */
+  uint32_t _ts1FBAEA = m68k_read32(g_cpu.A[0]);
+  m68k_write32(g_cpu.A[7], (uint32_t)(_ts1FBAEA));
+  { uint32_t _fv = (uint32_t)(_ts1FBAEA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAEC */
+  uint16_t _1FBAECr = (uint16_t)((uint16_t)g_cpu.D[0]) | (uint16_t)0xB720u;
+  { uint16_t _fv = (uint16_t)(_1FBAECr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_1FBAECr));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAF0 */
+  uint32_t _ts1FBAF0 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)248));
+  m68k_write32(g_cpu.A[7], (uint32_t)(_ts1FBAF0));
+  { uint32_t _fv = (uint32_t)(_ts1FBAF0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAF4 */
+  uint8_t _1FBAF4r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBAF4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBAF4r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAF6 */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBAF6 = m68k_read32(g_cpu.A[0]);
+  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], (uint32_t)(_ts1FBAF6));
+  { uint32_t _fv = (uint32_t)(_ts1FBAF6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAF8 */
+  uint32_t _1FBAF8r = (uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)0xB8002F20u;
+  { uint32_t _fv = (uint32_t)(_1FBAF8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBAF8r);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBAFE */
+  /* unimplemented opcode $00E0 @ $1FBAFE */
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB02 */
+  uint32_t _ts1FBB02 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (32)));
+  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], (uint32_t)(_ts1FBB02));
+  { uint32_t _fv = (uint32_t)(_ts1FBB02);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB06 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBB06 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBB06r = (uint8_t)(_t1FBB06) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB06r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBB06r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB08 */
+  /* cannot store to EA 7/7 */
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB0A */
+  uint8_t _t1FBB0A = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBB0Ar = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBB0A) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBB0Ar = (uint8_t)((uint8_t)(_t1FBB0A) | (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBB0Ar)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB0C */
+  uint8_t _t1FBB0C = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBB0Cr = (uint8_t)(_t1FBB0C) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB0Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBB0Cr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB0E */
+  g_cpu.A[0] -= 4; uint32_t _ts1FBB0E = m68k_read32(g_cpu.A[0]);
+  /* cannot store to EA 7/7 */
+  { uint32_t _fv = (uint32_t)(_ts1FBB0E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB10 */
+  g_cpu.A[0] -= 4; uint32_t _t1FBB10 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FBB10r = (uint32_t)(_t1FBB10) | (uint32_t)0xB8002FE0u;
+  { uint32_t _fv = (uint32_t)(_1FBB10r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FBB10r));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB16 */
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB18 */
+  uint8_t _1FBB18r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB18r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB1A */
+  uint32_t _ts1FBB1A = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)152));
+  /* cannot store to EA 7/7 */
+  { uint32_t _fv = (uint32_t)(_ts1FBB1A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB1E */
+  uint8_t _1FBB1Er = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB1Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBB1Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB20 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB20 = m68k_read16(g_cpu.A[0]);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBB20));
+  { uint16_t _fv = (uint16_t)(_ts1FBB20);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB22 */
+  uint32_t _1FBB22r = (uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)0xB7113028u;
+  { uint32_t _fv = (uint32_t)(_1FBB22r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBB22r);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB28 */
+  uint32_t _1FBB28r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[5]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBB28r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[5]) ^ (uint32_t)(1u<<_bn)); }
+  g_cpu.D[5] = (uint32_t)(uint32_t)(_1FBB28r);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB2A */
+  uint8_t _1FBB2Ar = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB2Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBB2Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB2C */
+  m68k_write16(g_cpu.A[0], (uint16_t)(g_cpu.A[0]));
+  { uint16_t _fv = (uint16_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB2E */
+  uint8_t _t1FBB2E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-18656));
+  uint8_t _1FBB2Er = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBB2E) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBB2Er = (uint8_t)((uint8_t)(_t1FBB2E) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-18656), (uint8_t)(_1FBB2Er));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB32 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB32 = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[0], (uint16_t)(_ts1FBB32));
+  { uint16_t _fv = (uint16_t)(_ts1FBB32);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB34 */
+  /* unimplemented opcode $00C0 @ $1FBB34 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB38 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB38 = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[0], (uint16_t)(_ts1FBB38));
+  { uint16_t _fv = (uint16_t)(_ts1FBB38);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB3A */
+  g_cpu.A[0] -= 1; uint8_t _t1FBB3A = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBB3A) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB3C */
+  uint8_t _1FBB3Cr = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB3Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB3E */
+  uint16_t _ts1FBB3E = m68k_read16((uint32_t)(int32_t)(int16_t)0x00A8);
+  g_cpu.A[0] -= 2; m68k_write16(g_cpu.A[0], (uint16_t)(_ts1FBB3E));
+  { uint16_t _fv = (uint16_t)(_ts1FBB3E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB42 */
+  uint8_t _1FBB42r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB42r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBB42r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB44 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB44 = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)224), (uint16_t)(_ts1FBB44));
+  { uint16_t _fv = (uint16_t)(_ts1FBB44);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB48 */
+  uint8_t _1FBB48r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB48r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB4A */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB4A = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)320), (uint16_t)(_ts1FBB4A));
+  { uint16_t _fv = (uint16_t)(_ts1FBB4A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB4E */
+  uint8_t _1FBB4Er = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB4Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB50 */
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-48)), (uint16_t)((uint16_t)g_cpu.D[0]));
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB54 */
+  uint8_t _t1FBB54 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBB54r = (uint8_t)(_t1FBB54) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB54r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBB54r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB56 */
+  m68k_write16((uint32_t)(int32_t)(int16_t)0x0188, (uint16_t)((uint16_t)g_cpu.D[0]));
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB5A */
+  uint8_t _1FBB5Ar = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB5Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBB5Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB5C */
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(g_cpu.A[0]));
+  { uint16_t _fv = (uint16_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB5E */
+  uint8_t _t1FBB5E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-18667));
+  uint8_t _1FBB5Er = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBB5E) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBB5Er = (uint8_t)((uint8_t)(_t1FBB5E) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-18667), (uint8_t)(_1FBB5Er));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB62 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB62 = m68k_read16(g_cpu.A[0]);
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBB62));
+  { uint16_t _fv = (uint16_t)(_ts1FBB62);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB64 */
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB66 */
+  uint8_t _1FBB66r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB66r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB68 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB68 = m68k_read16(g_cpu.A[0]);
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBB68));
+  { uint16_t _fv = (uint16_t)(_ts1FBB68);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB6A */
+  g_cpu.A[0] -= 1; uint8_t _t1FBB6A = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBB6Ar = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBB6A) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBB6Ar = (uint8_t)((uint8_t)(_t1FBB6A) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBB6Ar));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB6C */
+  uint8_t _1FBB6Cr = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB6Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB6E */
+  m68k_write16(g_cpu.A[1], (uint16_t)((uint16_t)g_cpu.D[0]));
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB70 */
+  uint8_t _t1FBB70 = m68k_read8((uint32_t)(int32_t)(int16_t)0xB702);
+  uint8_t _1FBB70r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBB70) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBB70r = (uint8_t)((uint8_t)(_t1FBB70) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB702, (uint8_t)(_1FBB70r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB74 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB74 = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[1], (uint16_t)(_ts1FBB74)); g_cpu.A[1] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBB74);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB76 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBB76 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBB76) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB78 */
+  uint8_t _1FBB78r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB78r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB7A */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB7A = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[1], (uint16_t)(_ts1FBB7A)); g_cpu.A[1] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBB7A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB7C */
+  uint32_t _1FBB7Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBB7Cr = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBB7Cr);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB7E */
+  uint8_t _1FBB7Er = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB7Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB80 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB80 = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[1], (uint16_t)(_ts1FBB80)); g_cpu.A[1] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBB80);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB82 */
+  uint8_t _t1FBB82 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBB82r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBB82) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBB82r = (uint8_t)((uint8_t)(_t1FBB82) | (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBB82r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB84 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBB84 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBB84r = (uint8_t)(_t1FBB84) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB84r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBB84r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB86 */
+  uint16_t _ts1FBB86 = m68k_read16((uint32_t)(int32_t)(int16_t)0x0100);
+  m68k_write16(g_cpu.A[1], (uint16_t)(_ts1FBB86)); g_cpu.A[1] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBB86);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB8A */
+  uint8_t _t1FBB8A = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBB8Ar = (uint8_t)(_t1FBB8A) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB8Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBB8Ar));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB8C */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB8C = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)(int16_t)g_cpu.D[0] + (64)), (uint16_t)(_ts1FBB8C));
+  { uint16_t _fv = (uint16_t)(_ts1FBB8C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 50; g_audio_cycle_counter += 50; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB90 */
+  uint8_t _1FBB90r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB90r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB92 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB92 = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(g_cpu.A[1] + (int32_t)(int16_t)g_cpu.D[0] + (-96)), (uint16_t)(_ts1FBB92));
+  { uint16_t _fv = (uint16_t)(_ts1FBB92);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 50; g_audio_cycle_counter += 50; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB96 */
+  uint8_t _1FBB96r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBB96r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB98 */
+  uint16_t _ts1FBB98 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-32)));
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBB98));
+  { uint16_t _fv = (uint16_t)(_ts1FBB98);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB9C */
+  uint8_t _1FBB9Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBB9Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBB9Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBB9E */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBB9E = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[2], (uint16_t)(_ts1FBB9E));
+  { uint16_t _fv = (uint16_t)(_ts1FBB9E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBA0 */
+  uint8_t _t1FBBA0 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBBA0r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBBA0) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBBA0r = (uint8_t)((uint8_t)(_t1FBBA0) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBBA0r)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBA2 */
+  uint8_t _1FBBA2r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBBA2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBBA2r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBA4 */
+  uint16_t _ts1FBBA4 = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[2], (uint16_t)(_ts1FBBA4)); g_cpu.A[2] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBBA4);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBA6 */
+  uint8_t _t1FBBA6 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBBA6) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBA8 */
+  uint8_t _1FBBA8r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBBA8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBBA8r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBAA */
+  uint16_t _ts1FBBAA = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)456));
+  m68k_write16(g_cpu.A[2], (uint16_t)(_ts1FBBAA)); g_cpu.A[2] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBBAA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBAE */
+  uint8_t _t1FBBAE = m68k_read8(g_cpu.A[2]);
+  uint8_t _1FBBAEr = (uint8_t)(_t1FBBAE) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBBAEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[2], (uint8_t)(_1FBBAEr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBB0 */
+  m68k_write16((uint32_t)(g_cpu.A[2] + (int32_t)416), (uint16_t)((uint16_t)g_cpu.D[0]));
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBB4 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBBB4 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBBB4r = (uint8_t)(_t1FBBB4) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBBB4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBBB4r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBB6 */
+  uint16_t _ts1FBBB6 = m68k_read16((uint32_t)(int32_t)(int16_t)0x00D0);
+  m68k_write16((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.A[3] + (2)), (uint16_t)(_ts1FBBB6));
+  { uint16_t _fv = (uint16_t)(_ts1FBBB6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBBC */
+  /* cannot store to EA 7/2 */
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBC0 */
+  uint8_t _1FBBC0r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBBC0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBBC0r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBC2 */
+  uint16_t _t1FBBC2 = m68k_read16(g_cpu.A[0]);
+  g_cpu.A[3] = (uint32_t)(int32_t)(int16_t)(_t1FBBC2);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBC4 */
+  uint32_t _t1FBBC4 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (88)));
+  uint32_t _1FBBC4r = (uint32_t)(_t1FBBC4) | (uint32_t)0xB7203660u;
+  { uint32_t _fv = (uint32_t)(_1FBBC4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (88)), (uint32_t)(_1FBBC4r));
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBCC */
+  uint8_t _1FBBCCr = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBBCCr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBCE */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBBCE = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[3], (uint16_t)(_ts1FBBCE));
+  { uint16_t _fv = (uint16_t)(_ts1FBBCE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBD0 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18656);
+    uint32_t _v  = g_cpu.D[0];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBD4 */
+  uint16_t _ts1FBBD4 = m68k_read16(g_cpu.A[0]); g_cpu.A[0] += 2;
+  m68k_write16(g_cpu.A[3], (uint16_t)(_ts1FBBD4)); g_cpu.A[3] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBBD4);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBD6 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBBD6 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBBD6) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBD8 */
+  uint8_t _t1FBBD8 = m68k_read8(g_cpu.A[2]);
+  uint8_t _1FBBD8r = (uint8_t)(_t1FBBD8) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBBD8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[2], (uint8_t)(_1FBBD8r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBDA */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBBDA = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(g_cpu.A[3] + (int32_t)296), (uint16_t)(_ts1FBBDA));
+  { uint16_t _fv = (uint16_t)(_ts1FBBDA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBDE */
+  uint8_t _1FBBDEr = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBBDEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBE0 */
+  uint16_t _ts1FBBE0 = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(g_cpu.A[3] + (int32_t)120), (uint16_t)(_ts1FBBE0));
+  { uint16_t _fv = (uint16_t)(_ts1FBBE0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBE4 */
+  uint8_t _1FBBE4r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBBE4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBBE4r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBE6 */
+  uint16_t _ts1FBBE6 = m68k_read16(g_cpu.A[0]); g_cpu.A[0] += 2;
+  m68k_write16((uint32_t)(g_cpu.A[3] + (int32_t)328), (uint16_t)(_ts1FBBE6));
+  { uint16_t _fv = (uint16_t)(_ts1FBBE6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBEA */
+  uint8_t _1FBBEAr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBBEAr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBBEAr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBEC */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBBEC = m68k_read16(g_cpu.A[0]);
+  /* cannot store to EA 7/3 */
+  { uint16_t _fv = (uint16_t)(_ts1FBBEC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 50; g_audio_cycle_counter += 50; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBF0 */
+  uint8_t _1FBBF0r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBBF0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBF2 */
+  uint16_t _ts1FBBF2 = m68k_read16((uint32_t)(int32_t)(int16_t)0x0060);
+  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBBF2));
+  { uint16_t _fv = (uint16_t)(_ts1FBBF2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBF6 */
+  uint8_t _1FBBF6r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBBF6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBBF6r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBF8 */
+  g_cpu.A[4] = (uint32_t)(int32_t)(int16_t)((uint16_t)g_cpu.D[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBFA */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18667);
+    uint32_t _v  = g_cpu.D[0];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBBFE */
+  uint16_t _t1FBBFE = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)64));
+  g_cpu.A[4] = (uint32_t)(int32_t)(int16_t)(_t1FBBFE);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC02 */
+  uint8_t _t1FBC02 = m68k_read8(g_cpu.A[2]);
+  uint8_t _1FBC02r = (uint8_t)(_t1FBC02) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC02r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[2], (uint8_t)(_1FBC02r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC04 */
+  uint16_t _t1FBC04 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (64)));
+  g_cpu.A[4] = (uint32_t)(int32_t)(int16_t)(_t1FBC04);
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC08 */
+  uint8_t _1FBC08r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC08r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBC08r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC0A */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBC0A = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[4], (uint16_t)(_ts1FBC0A));
+  { uint16_t _fv = (uint16_t)(_ts1FBC0A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC0C */
+  /* unimplemented opcode $00C8 @ $1FBC0C */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC10 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBC10 = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[4], (uint16_t)(_ts1FBC10)); g_cpu.A[4] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBC10);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC12 */
+  uint8_t _t1FBC12 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (2)));
+  uint8_t _1FBC12r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBC12) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBC12r = (uint8_t)((uint8_t)(_t1FBC12) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (2)), (uint8_t)(_1FBC12r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC16 */
+  m68k_write16((uint32_t)(g_cpu.A[4] + (int32_t)240), (uint16_t)((uint16_t)g_cpu.D[0]));
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC1A */
+  uint8_t _1FBC1Ar = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC1Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBC1Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC1C */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBC1C = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(g_cpu.A[4] + (int32_t)392), (uint16_t)(_ts1FBC1C));
+  { uint16_t _fv = (uint16_t)(_ts1FBC1C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC20 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBC20 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBC20r = (uint8_t)(_t1FBC20) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC20r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBC20r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC22 */
+  uint16_t _ts1FBC22 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-72)));
+  m68k_write16((uint32_t)(g_cpu.A[4] + (int32_t)-18656), (uint16_t)(_ts1FBC22));
+  { uint16_t _fv = (uint16_t)(_ts1FBC22);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC28 */
+  m68k_write16((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[0] + (48)), (uint16_t)(g_cpu.A[0]));
+  { uint16_t _fv = (uint16_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC2C */
+  uint8_t _1FBC2Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC2Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBC2Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC2E */
+  uint16_t _ts1FBC2E = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)448));
+  /* cannot store to EA 7/4 */
+  { uint16_t _fv = (uint16_t)(_ts1FBC2E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC34 */
+  uint16_t _ts1FBC34 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-16)));
+  /* cannot store to EA 7/4 */
+  { uint16_t _fv = (uint16_t)(_ts1FBC34);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC3A */
+  uint16_t _ts1FBC3A = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (32)));
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBC3A));
+  { uint16_t _fv = (uint16_t)(_ts1FBC3A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC3E */
+  g_cpu.A[5] -= 1; uint8_t _t1FBC3E = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBC3Er = (uint8_t)(_t1FBC3E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC3Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBC3Er));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC40 */
+  uint16_t _ts1FBC40 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-104)));
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBC40));
+  { uint16_t _fv = (uint16_t)(_ts1FBC40);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC44 */
+  uint8_t _1FBC44r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC44r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBC44r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC46 */
+  g_cpu.A[5] = (uint32_t)(int32_t)(int16_t)((uint16_t)g_cpu.D[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC48 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBC48 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBC48) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC4A */
+  uint8_t _t1FBC4A = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBC4Ar = (uint8_t)(_t1FBC4A) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC4Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBC4Ar));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC4C */
+  m68k_write16(g_cpu.A[5], (uint16_t)(g_cpu.A[0]));
+  { uint16_t _fv = (uint16_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC4E */
+  uint16_t _t1FBC4E = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBC4Er = (uint16_t)(_t1FBC4E) | (uint16_t)0xB711u;
+  { uint16_t _fv = (uint16_t)(_1FBC4Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBC4Er)); g_cpu.A[0] += 2;
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC52 */
+  uint16_t _ts1FBC52 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)248));
+  m68k_write16(g_cpu.A[5], (uint16_t)(_ts1FBC52));
+  { uint16_t _fv = (uint16_t)(_ts1FBC52);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC56 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBC56 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBC56r = (uint8_t)(_t1FBC56) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC56r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBC56r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC58 */
+  uint16_t _ts1FBC58 = m68k_read16(g_cpu.A[0]); g_cpu.A[0] += 2;
+  m68k_write16(g_cpu.A[5], (uint16_t)(_ts1FBC58)); g_cpu.A[5] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBC58);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC5A */
+  uint32_t _1FBC5Ar = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBC5Ar = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) | (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBC5Ar);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC5C */
+  g_cpu.A[0] -= 1; uint8_t _t1FBC5C = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBC5Cr = (uint8_t)(_t1FBC5C) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC5Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBC5Cr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC5E */
+  uint16_t _ts1FBC5E = m68k_read16(g_cpu.A[0]);
+  g_cpu.A[5] -= 2; m68k_write16(g_cpu.A[5], (uint16_t)(_ts1FBC5E));
+  { uint16_t _fv = (uint16_t)(_ts1FBC5E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC60 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBC60 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBC60) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC62 */
+  uint8_t _t1FBC62 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBC62r = (uint8_t)(_t1FBC62) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC62r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBC62r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC64 */
+  uint16_t _ts1FBC64 = m68k_read16(g_cpu.A[0]); g_cpu.A[0] += 2;
+  g_cpu.A[5] -= 2; m68k_write16(g_cpu.A[5], (uint16_t)(_ts1FBC64));
+  { uint16_t _fv = (uint16_t)(_ts1FBC64);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC66 */
+  uint16_t _t1FBC66 = m68k_read16((uint32_t)(int32_t)(int16_t)0x3B30);
+  uint16_t _1FBC66r = (uint16_t)(_t1FBC66) | (uint16_t)0xB702u;
+  { uint16_t _fv = (uint16_t)(_1FBC66r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(int32_t)(int16_t)0x3B30, (uint16_t)(_1FBC66r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC6C */
+  g_cpu.A[0] -= 1; uint8_t _t1FBC6C = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBC6Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBC6C) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBC6Cr = (uint8_t)((uint8_t)(_t1FBC6C) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBC6Cr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC6E */
+  uint8_t _t1FBC6E = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBC6Er = (uint8_t)(_t1FBC6E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC6Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBC6Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC70 */
+  uint16_t _ts1FBC70 = m68k_read16((uint32_t)(int32_t)(int16_t)0x0058);
+  g_cpu.A[5] -= 2; m68k_write16(g_cpu.A[5], (uint16_t)(_ts1FBC70));
+  { uint16_t _fv = (uint16_t)(_ts1FBC70);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC74 */
+  uint8_t _t1FBC74 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBC74r = (uint8_t)(_t1FBC74) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC74r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBC74r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC76 */
+  uint16_t _ts1FBC76 = m68k_read16((uint32_t)(int32_t)(int16_t)0x0170);
+  m68k_write16((uint32_t)(g_cpu.A[5] + (int32_t)-18432), (uint16_t)(_ts1FBC76));
+  { uint16_t _fv = (uint16_t)(_ts1FBC76);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC7C */
+  uint16_t _ts1FBC7C = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(g_cpu.A[5] + (int32_t)(int16_t)g_cpu.D[0] + (-48)), (uint16_t)(_ts1FBC7C));
+  { uint16_t _fv = (uint16_t)(_ts1FBC7C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC80 */
+  uint8_t _1FBC80r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC80r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBC80r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC82 */
+  uint16_t _ts1FBC82 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-64)));
+  m68k_write16((uint32_t)(g_cpu.A[5] + (int32_t)(int16_t)g_cpu.A[3] + (2)), (uint16_t)(_ts1FBC82));
+  { uint16_t _fv = (uint16_t)(_ts1FBC82);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC88 */
+  /* cannot store to EA 7/5 */
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC8A */
+  g_cpu.A[0] -= 4; uint32_t _t1FBC8A = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FBC8Ar = (uint32_t)(_t1FBC8A) | (uint32_t)0xB8003BC8u;
+  { uint32_t _fv = (uint32_t)(_1FBC8Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FBC8Ar));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC90 */
+  uint32_t _1FBC90r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBC90r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) ^ (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBC90r);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC92 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBC92 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBC92r = (uint8_t)(_t1FBC92) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBC92r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBC92r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC94 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBC94 = m68k_read16(g_cpu.A[0]);
+  g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBC94));
+  { uint16_t _fv = (uint16_t)(_ts1FBC94);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC96 */
+  uint16_t _t1FBC96 = m68k_read16((uint32_t)(int32_t)(int16_t)0x3C20);
+  uint16_t _1FBC96r = (uint16_t)(_t1FBC96) | (uint16_t)0xB725u;
+  { uint16_t _fv = (uint16_t)(_1FBC96r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(int32_t)(int16_t)0x3C20, (uint16_t)(_1FBC96r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBC9C */
+  uint8_t _t1FBC9C = m68k_read8((uint32_t)(int32_t)(int16_t)0xB710);
+  uint8_t _1FBC9Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBC9C) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBC9Cr = (uint8_t)((uint8_t)(_t1FBC9C) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB710, (uint8_t)(_1FBC9Cr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCA0 */
+  uint16_t _ts1FBCA0 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)280));
+  g_cpu.D[6] = (g_cpu.D[6] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBCA0));
+  { uint16_t _fv = (uint16_t)(_ts1FBCA0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCA4 */
+  uint8_t _1FBCA4r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBCA4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBCA4r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCA6 */
+  uint16_t _t1FBCA6 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)480));
+  g_cpu.A[6] = (uint32_t)(int32_t)(int16_t)(_t1FBCA6);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCAA */
+  g_cpu.A[5] -= 1; uint8_t _t1FBCAA = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBCAAr = (uint8_t)(_t1FBCAA) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBCAAr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBCAAr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCAC */
+  m68k_write16(g_cpu.A[6], (uint16_t)((uint16_t)g_cpu.D[0]));
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCAE */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18671);
+    uint32_t _v  = ((uint32_t)m68k_read8(_ea + 0) << 24)
+                 | ((uint32_t)m68k_read8(_ea + 2) << 16)
+                 | ((uint32_t)m68k_read8(_ea + 4) <<  8)
+                 | ((uint32_t)m68k_read8(_ea + 6)      );
+    g_cpu.D[0] = _v;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCB2 */
+  uint16_t _ts1FBCB2 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-88)));
+  m68k_write16(g_cpu.A[6], (uint16_t)(_ts1FBCB2));
+  { uint16_t _fv = (uint16_t)(_ts1FBCB2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCB6 */
+  uint8_t _1FBCB6r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBCB6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBCB6r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCB8 */
+  uint16_t _ts1FBCB8 = m68k_read16((uint32_t)(int32_t)(int16_t)0x00A8);
+  m68k_write16(g_cpu.A[6], (uint16_t)(_ts1FBCB8));
+  { uint16_t _fv = (uint16_t)(_ts1FBCB8);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCBC */
+  uint8_t _t1FBCBC = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBCBCr = (uint8_t)(_t1FBCBC) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBCBCr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBCBCr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCBE */
+  g_cpu.A[6] -= 2; m68k_write16(g_cpu.A[6], (uint16_t)((uint16_t)g_cpu.D[0]));
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCC0 */
+  uint8_t _t1FBCC0 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBCC0r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBCC0) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBCC0r = (uint8_t)((uint8_t)(_t1FBCC0) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBCC0r)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCC2 */
+  uint8_t _t1FBCC2 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBCC2r = (uint8_t)(_t1FBCC2) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBCC2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBCC2r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCC4 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBCC4 = m68k_read16(g_cpu.A[0]);
+  g_cpu.A[6] -= 2; m68k_write16(g_cpu.A[6], (uint16_t)(_ts1FBCC4));
+  { uint16_t _fv = (uint16_t)(_ts1FBCC4);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCC6 */
+  /* unimplemented opcode $00E0 @ $1FBCC6 */
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCCA */
+  uint16_t _ts1FBCCA = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (0)));
+  m68k_write16((uint32_t)(g_cpu.A[6] + (int32_t)-18686), (uint16_t)(_ts1FBCCA));
+  { uint16_t _fv = (uint16_t)(_ts1FBCCA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCD0 */
+  uint16_t _ts1FBCD0 = m68k_read16(g_cpu.A[0]);
+  m68k_write16((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (-104)), (uint16_t)(_ts1FBCD0));
+  { uint16_t _fv = (uint16_t)(_ts1FBCD0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCD4 */
+  uint8_t _1FBCD4r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBCD4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBCD4r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCD6 */
+  uint16_t _ts1FBCD6 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (48)));
+  m68k_write16((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.A[3] + (18)), (uint16_t)(_ts1FBCD6));
+  { uint16_t _fv = (uint16_t)(_ts1FBCD6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCDC */
+  uint16_t _ts1FBCDC = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (104)));
+  m68k_write16((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.A[3] + (17)), (uint16_t)(_ts1FBCDC));
+  { uint16_t _fv = (uint16_t)(_ts1FBCDC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCE2 */
+  g_cpu.D[7] = (g_cpu.D[7] & 0xFFFF0000u) | (uint32_t)((uint16_t)(g_cpu.A[0]));
+  { uint16_t _fv = (uint16_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCE4 */
+  uint8_t _t1FBCE4 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-18670));
+  uint8_t _1FBCE4r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBCE4) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBCE4r = (uint8_t)((uint8_t)(_t1FBCE4) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-18670), (uint8_t)(_1FBCE4r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCE8 */
+  uint16_t _ts1FBCE8 = m68k_read16(g_cpu.A[0]);
+  g_cpu.D[7] = (g_cpu.D[7] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_ts1FBCE8));
+  { uint16_t _fv = (uint16_t)(_ts1FBCE8);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCEA */
+  /* unimplemented opcode $00D8 @ $1FBCEA */
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCEE */
+  g_cpu.A[7] = (uint32_t)(int32_t)(int16_t)((uint16_t)g_cpu.D[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCF0 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18656);
+    uint32_t _v  = g_cpu.D[0];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 24));
+    m68k_write8(_ea + 2, (uint8_t)(_v >> 16));
+    m68k_write8(_ea + 4, (uint8_t)(_v >>  8));
+    m68k_write8(_ea + 6, (uint8_t)(_v      ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCF4 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBCF4 = m68k_read16(g_cpu.A[0]);
+  g_cpu.A[7] = (uint32_t)(int32_t)(int16_t)(_t1FBCF4);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCF6 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18686);
+    uint32_t _v  = ((uint32_t)m68k_read8(_ea + 0) << 24)
+                 | ((uint32_t)m68k_read8(_ea + 2) << 16)
+                 | ((uint32_t)m68k_read8(_ea + 4) <<  8)
+                 | ((uint32_t)m68k_read8(_ea + 6)      );
+    g_cpu.D[0] = _v;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCFA */
+  uint16_t _t1FBCFA = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)96));
+  g_cpu.A[7] = (uint32_t)(int32_t)(int16_t)(_t1FBCFA);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBCFE */
+  uint8_t _1FBCFEr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBCFEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBCFEr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD00 */
+  uint16_t _ts1FBD00 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-80)));
+  m68k_write16(g_cpu.A[7], (uint16_t)(_ts1FBD00));
+  { uint16_t _fv = (uint16_t)(_ts1FBD00);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD04 */
+  uint8_t _t1FBD04 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBD04r = (uint8_t)(_t1FBD04) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD04r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBD04r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD06 */
+  m68k_write16(g_cpu.A[7], (uint16_t)((uint16_t)g_cpu.D[0])); g_cpu.A[7] += 2;
+  { uint16_t _fv = (uint16_t)((uint16_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD08 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBD08 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBD08r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBD08) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBD08r = (uint8_t)((uint8_t)(_t1FBD08) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBD08r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD0A */
+  uint8_t _t1FBD0A = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBD0Ar = (uint8_t)(_t1FBD0A) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD0Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBD0Ar));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD0C */
+  uint16_t _ts1FBD0C = m68k_read16(g_cpu.A[0]);
+  m68k_write16(g_cpu.A[7], (uint16_t)(_ts1FBD0C)); g_cpu.A[7] += 2;
+  { uint16_t _fv = (uint16_t)(_ts1FBD0C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD0E */
+  /* unimplemented opcode $00D0 @ $1FBD0E */
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD12 */
+  g_cpu.A[0] -= 2; uint16_t _ts1FBD12 = m68k_read16(g_cpu.A[0]);
+  g_cpu.A[7] -= 2; m68k_write16(g_cpu.A[7], (uint16_t)(_ts1FBD12));
+  { uint16_t _fv = (uint16_t)(_ts1FBD12);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD14 */
+  uint8_t _t1FBD14 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBD14) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD16 */
+  uint8_t _1FBD16r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD16r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBD16r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD18 */
+  m68k_write16((uint32_t)(g_cpu.A[7] + (int32_t)64), (uint16_t)(g_cpu.A[0]));
+  { uint16_t _fv = (uint16_t)(g_cpu.A[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD1C */
+  g_cpu.A[0] -= 1; uint8_t _t1FBD1C = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBD1Cr = (uint8_t)(_t1FBD1C) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD1Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBD1Cr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD1E */
+  uint16_t _ts1FBD1E = m68k_read16(g_cpu.A[0]); g_cpu.A[0] += 2;
+  m68k_write16((uint32_t)(g_cpu.A[7] + (int32_t)248), (uint16_t)(_ts1FBD1E));
+  { uint16_t _fv = (uint16_t)(_ts1FBD1E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD22 */
+  uint8_t _t1FBD22 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBD22r = (uint8_t)(_t1FBD22) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD22r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBD22r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD24 */
+  uint16_t _ts1FBD24 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)384));
+  m68k_write16((uint32_t)(g_cpu.A[7] + (int32_t)-18656), (uint16_t)(_ts1FBD24));
+  { uint16_t _fv = (uint16_t)(_ts1FBD24);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD2A */
+  { uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    uint8_t _1FBD2Ar = (uint8_t)(0 - (uint8_t)(g_cpu.A[0]) - (uint8_t)_x);
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(g_cpu.A[0]), _fr = (uint8_t)(_1FBD2Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.A[0] = (uint32_t)(_1FBD2Ar);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD2C */
+  uint8_t _t1FBD2C = m68k_read8((uint32_t)(int32_t)(int16_t)0xB702);
+  uint8_t _1FBD2Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBD2C) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBD2Cr = (uint8_t)((uint8_t)(_t1FBD2C) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB702, (uint8_t)(_1FBD2Cr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD30 */
+  uint8_t _t1FBD30 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    uint8_t _1FBD30r = (uint8_t)(0 - (uint8_t)(_t1FBD30) - (uint8_t)_x);
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t1FBD30), _fr = (uint8_t)(_1FBD30r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBD30r)); g_cpu.A[0] += 1;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD32 */
+  /* unimplemented opcode $00C8 @ $1FBD32 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD36 */
+  uint8_t _t1FBD36 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (16)));
+  { uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    uint8_t _1FBD36r = (uint8_t)(0 - (uint8_t)(_t1FBD36) - (uint8_t)_x);
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t1FBD36), _fr = (uint8_t)(_1FBD36r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (16)), (uint8_t)(_1FBD36r));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD3A */
+  uint8_t _1FBD3Ar = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD3Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBD3Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD3C */
+  uint8_t _t1FBD3C = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (120)));
+  { uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    uint8_t _1FBD3Cr = (uint8_t)(0 - (uint8_t)(_t1FBD3C) - (uint8_t)_x);
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t1FBD3C), _fr = (uint8_t)(_1FBD3Cr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (120)), (uint8_t)(_1FBD3Cr));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD40 */
+  uint8_t _1FBD40r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD40r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBD40r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD42 */
+  { uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    uint32_t _1FBD42r = (uint32_t)(0 - (uint32_t)((uint32_t)g_cpu.D[0]) - (uint32_t)_x);
+  { uint32_t _fa = (uint32_t)(0), _fb = (uint32_t)((uint32_t)g_cpu.D[0]), _fr = (uint32_t)(_1FBD42r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBD42r);
+  }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD44 */
+  uint8_t _t1FBD44 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (21)));
+  uint8_t _1FBD44r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBD44) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBD44r = (uint8_t)((uint8_t)(_t1FBD44) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (21)), (uint8_t)(_1FBD44r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD48 */
+  uint32_t _t1FBD48 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-16)));
+  { uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    uint32_t _1FBD48r = (uint32_t)(0 - (uint32_t)(_t1FBD48) - (uint32_t)_x);
+  { uint32_t _fa = (uint32_t)(0), _fb = (uint32_t)(_t1FBD48), _fr = (uint32_t)(_1FBD48r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-16)), (uint32_t)(_1FBD48r));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD4C */
+  uint8_t _1FBD4Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD4Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBD4Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD4E */
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (96)), (uint16_t)(g_cpu.SR));
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD52 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBD52 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBD52r = (uint8_t)(_t1FBD52) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD52r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBD52r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD54 */
+  /* unimplemented opcode $4100 @ $1FBD54 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD56 */
+  /* unimplemented opcode $00F8 @ $1FBD56 */
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD5A */
+  /* unimplemented opcode $4128 @ $1FBD5A */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD5C */
+  uint8_t _1FBD5Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(0x02u) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBD5Cr = (uint8_t)((uint8_t)(0x02u) ^ (uint8_t)(1u<<_bn)); }
+  /* cannot store to EA 7/4 */
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD60 */
+  /* unimplemented opcode $4158 @ $1FBD60 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD62 */
+  uint8_t _t1FBD62 = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBD62) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD64 */
+  uint8_t _1FBD64r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBD64r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD66 */
+  { int16_t _bound = (int16_t)((uint16_t)g_cpu.D[0]);
+    int16_t _val   = (int16_t)g_cpu.D[0];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD68 */
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD6A */
+  uint8_t _1FBD6Ar = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD6Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBD6Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD6C */
+  { int16_t _bound = (int16_t)((uint16_t)g_cpu.D[0]);
+    int16_t _val   = (int16_t)g_cpu.D[0];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD6E */
+  uint8_t _t1FBD6E = m68k_read8((uint32_t)(int32_t)(int16_t)0xB725);
+  uint8_t _1FBD6Er = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBD6E) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBD6Er = (uint8_t)((uint8_t)(_t1FBD6E) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB725, (uint8_t)(_1FBD6Er));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD72 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBD72 = m68k_read16(g_cpu.A[0]);
+  { int16_t _bound = (int16_t)(_t1FBD72);
+    int16_t _val   = (int16_t)g_cpu.D[0];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD74 */
+  uint16_t _1FBD74r = (uint16_t)((uint16_t)g_cpu.D[0]) | (uint16_t)0xB702u;
+  { uint16_t _fv = (uint16_t)(_1FBD74r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_1FBD74r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD78 */
+  g_cpu.A[0] = 0 /* cannot take addr of mode 3 */;
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD7A */
+  uint8_t _t1FBD7A = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-18686));
+  uint8_t _1FBD7Ar = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBD7A) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBD7Ar = (uint8_t)((uint8_t)(_t1FBD7A) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-18686), (uint8_t)(_1FBD7Ar));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD7E */
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0));
+  g_cpu.SR = (g_cpu.SR & ~0x0Fu) | (1u<<2);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD80 */
+  uint8_t _t1FBD80 = m68k_read8(g_cpu.A[4]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBD80) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD82 */
+  uint8_t _t1FBD82 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBD82r = (uint8_t)(_t1FBD82) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD82r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBD82r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD84 */
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(0));
+  g_cpu.SR = (g_cpu.SR & ~0x0Fu) | (1u<<2);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD86 */
+  uint8_t _t1FBD86 = m68k_read8((uint32_t)(int32_t)(int16_t)0xB702);
+  uint8_t _1FBD86r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBD86) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBD86r = (uint8_t)((uint8_t)(_t1FBD86) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB702, (uint8_t)(_1FBD86r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD8A */
+  m68k_write8(g_cpu.A[0], (uint8_t)(0));
+  g_cpu.SR = (g_cpu.SR & ~0x0Fu) | (1u<<2);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD8C */
+  uint32_t _t1FBD8C = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FBD8Cr = (uint32_t)(_t1FBD8C) | (uint32_t)0xB7154260u;
+  { uint32_t _fv = (uint32_t)(_1FBD8Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FBD8Cr));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD92 */
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD94 */
+  uint8_t _1FBD94r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBD94r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBD94r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD96 */
+  g_cpu.D[0] = (uint32_t)(uint32_t)(0);
+  g_cpu.SR = (g_cpu.SR & ~0x0Fu) | (1u<<2);
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD98 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18651);
+    uint32_t _v  = g_cpu.D[0];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD9C */
+  g_cpu.A[0] = (uint32_t)(0);
+  g_cpu.SR = (g_cpu.SR & ~0x0Fu) | (1u<<2);
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBD9E */
+  uint16_t _1FBD9Er = (uint16_t)((uint16_t)g_cpu.D[0]) | (uint16_t)0xB720u;
+  { uint16_t _fv = (uint16_t)(_1FBD9Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_1FBD9Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDA2 */
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)((uint16_t)(g_cpu.SR & 0x001Fu)));
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDA4 */
+  /* unimplemented opcode $00F0 @ $1FBDA4 */
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDA8 */
+  g_cpu.A[0] = (uint32_t)((uint16_t)(g_cpu.SR & 0x001Fu));
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDAA */
+  uint8_t _t1FBDAA = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-18686));
+  uint8_t _1FBDAAr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBDAA) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBDAAr = (uint8_t)((uint8_t)(_t1FBDAA) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-18686), (uint8_t)(_1FBDAAr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDAE */
+  /* unimplemented opcode $4340 @ $1FBDAE */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDB0 */
+  uint32_t _1FBDB0r = (uint32_t)(g_cpu.A[0]) | (uint32_t)0xB7114348u;
+  { uint32_t _fv = (uint32_t)(_1FBDB0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[0] = (uint32_t)(_1FBDB0r);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDB6 */
+  uint8_t _t1FBDB6 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBDB6r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBDB6) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBDB6r = (uint8_t)((uint8_t)(_t1FBDB6) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBDB6r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDB8 */
+  uint8_t _1FBDB8r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBDB8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBDB8r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDBA */
+  /* unimplemented opcode $4350 @ $1FBDBA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDBC */
+  uint8_t _t1FBDBC = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBDBC) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDBE */
+  uint8_t _t1FBDBE = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBDBEr = (uint8_t)(_t1FBDBE) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBDBEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBDBEr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDC0 */
+  { int16_t _bound = (int16_t)((uint16_t)g_cpu.D[0]);
+    int16_t _val   = (int16_t)g_cpu.D[1];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDC2 */
+  uint8_t _t1FBDC2 = m68k_read8((uint32_t)(int32_t)(int16_t)0xB800);
+  uint8_t _1FBDC2r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBDC2) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBDC2r = (uint8_t)((uint8_t)(_t1FBDC2) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB800, (uint8_t)(_1FBDC2r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDC6 */
+  uint16_t _t1FBDC6 = m68k_read16(g_cpu.A[0]);
+  { int16_t _bound = (int16_t)(_t1FBDC6);
+    int16_t _val   = (int16_t)g_cpu.D[1];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDC8 */
+  /* unimplemented opcode $00F0 @ $1FBDC8 */
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDCC */
+  g_cpu.A[1] = 0 /* cannot take addr of mode 0 */;
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDCE */
+  uint8_t _t1FBDCE = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBDCEr = (uint8_t)(_t1FBDCE) | (uint8_t)0x2u;
+  { uint8_t _fv = (uint8_t)(_1FBDCEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBDCEr)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDD2 */
+  g_cpu.A[1] = 0 /* cannot take addr of mode 0 */;
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDD4 */
+  uint32_t _1FBDD4r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBDD4r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBDD4r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDD6 */
+  uint8_t _1FBDD6r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBDD6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBDD6r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDD8 */
+  uint8_t _1FBDD8r = (uint8_t)(0 - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)((uint8_t)g_cpu.D[0]), _fr = (uint8_t)(_1FBDD8r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBDD8r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDDA */
+  /* unimplemented opcode $00F8 @ $1FBDDA */
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDDE */
+  uint8_t _t1FBDDE = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBDDEr = (uint8_t)(0 - (uint8_t)(_t1FBDDE));
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t1FBDDE), _fr = (uint8_t)(_1FBDDEr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBDDEr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDE0 */
+  uint16_t _1FBDE0r = (uint16_t)((uint16_t)g_cpu.D[0]) | (uint16_t)0xB800u;
+  { uint16_t _fv = (uint16_t)(_1FBDE0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_1FBDE0r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDE4 */
+  uint8_t _t1FBDE4 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBDE4r = (uint8_t)(0 - (uint8_t)(_t1FBDE4));
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t1FBDE4), _fr = (uint8_t)(_1FBDE4r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBDE4r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDE6 */
+  /* unimplemented opcode $00D0 @ $1FBDE6 */
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDEA */
+  g_cpu.A[0] -= 1; uint8_t _t1FBDEA = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBDEAr = (uint8_t)(0 - (uint8_t)(_t1FBDEA));
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t1FBDEA), _fr = (uint8_t)(_1FBDEAr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBDEAr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDEC */
+  uint8_t _t1FBDEC = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (37)));
+  uint8_t _1FBDECr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBDEC) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBDECr = (uint8_t)((uint8_t)(_t1FBDEC) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.A[3] + (37)), (uint8_t)(_1FBDECr));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDF0 */
+  uint16_t _t1FBDF0 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBDF0r = (uint16_t)(0 - (uint16_t)(_t1FBDF0));
+  { uint16_t _fa = (uint16_t)(0), _fb = (uint16_t)(_t1FBDF0), _fr = (uint16_t)(_1FBDF0r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBDF0r)); g_cpu.A[0] += 2;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDF2 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBDF2 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBDF2r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBDF2) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBDF2r = (uint8_t)((uint8_t)(_t1FBDF2) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBDF2r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDF4 */
+  uint8_t _1FBDF4r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBDF4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBDF4r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDF6 */
+  g_cpu.A[0] -= 4; uint32_t _t1FBDF6 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FBDF6r = (uint32_t)(0 - (uint32_t)(_t1FBDF6));
+  { uint32_t _fa = (uint32_t)(0), _fb = (uint32_t)(_t1FBDF6), _fr = (uint32_t)(_1FBDF6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FBDF6r));
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDF8 */
+  uint16_t _t1FBDF8 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[4] + (-96)));
+  uint16_t _1FBDF8r = (uint16_t)(_t1FBDF8) | (uint16_t)0xB702u;
+  { uint16_t _fv = (uint16_t)(_1FBDF8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[4] + (-96)), (uint16_t)(_1FBDF8r));
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBDFE */
+  uint8_t _t1FBDFE = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBDFEr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBDFE) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBDFEr = (uint8_t)((uint8_t)(_t1FBDFE) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBDFEr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE00 */
+  uint8_t _t1FBE00 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBE00r = (uint8_t)(_t1FBE00) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE00r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBE00r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE02 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBE02 = m68k_read16(g_cpu.A[0]);
+  g_cpu.SR = (g_cpu.SR & 0xFF00u) | (uint16_t)((_t1FBE02) & 0x1Fu);
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE04 */
+  uint8_t _t1FBE04 = m68k_read8((uint32_t)(int32_t)(int16_t)0xB702);
+  uint8_t _1FBE04r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBE04) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBE04r = (uint8_t)((uint8_t)(_t1FBE04) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB702, (uint8_t)(_1FBE04r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE08 */
+  /* unimplemented opcode $4500 @ $1FBE08 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE0A */
+  /* unimplemented opcode $00F8 @ $1FBE0A */
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE0E */
+  /* unimplemented opcode $4510 @ $1FBE0E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE10 */
+  uint8_t _t1FBE10 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBE10r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBE10) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBE10r = (uint8_t)((uint8_t)(_t1FBE10) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBE10r)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE12 */
+  uint8_t _t1FBE12 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBE12r = (uint8_t)(_t1FBE12) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE12r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBE12r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE14 */
+  /* unimplemented opcode $4530 @ $1FBE14 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE16 */
+  uint32_t _t1FBE16 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (72)));
+  uint32_t _1FBE16r = (uint32_t)(_t1FBE16) | (uint32_t)0xB7024550u;
+  { uint32_t _fv = (uint32_t)(_1FBE16r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (72)), (uint32_t)(_1FBE16r));
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE1E */
+  g_cpu.A[0] -= 1; uint8_t _t1FBE1E = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBE1Er = (uint8_t)(_t1FBE1E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE1Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBE1Er));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE20 */
+  /* unimplemented opcode $4570 @ $1FBE20 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE22 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18686);
+    uint32_t _v  = ((uint32_t)m68k_read8(_ea + 0) << 24)
+                 | ((uint32_t)m68k_read8(_ea + 2) << 16)
+                 | ((uint32_t)m68k_read8(_ea + 4) <<  8)
+                 | ((uint32_t)m68k_read8(_ea + 6)      );
+    g_cpu.D[0] = _v;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE26 */
+  uint16_t _t1FBE26 = m68k_read16(g_cpu.A[0]);
+  { int16_t _bound = (int16_t)(_t1FBE26);
+    int16_t _val   = (int16_t)g_cpu.D[2];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE28 */
+  /* unimplemented opcode $00D0 @ $1FBE28 */
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE2C */
+  uint16_t _t1FBE2C = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (112)));
+  { int16_t _bound = (int16_t)(_t1FBE2C);
+    int16_t _val   = (int16_t)g_cpu.D[2];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE30 */
+  uint8_t _1FBE30r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBE30r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE32 */
+  uint8_t _1FBE32r = (uint8_t)(~(uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fv = (uint8_t)(_1FBE32r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBE32r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE34 */
+  uint16_t _t1FBE34 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBE34r = (uint16_t)(_t1FBE34) | (uint16_t)0xB711u;
+  { uint16_t _fv = (uint16_t)(_1FBE34r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBE34r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE38 */
+  uint8_t _1FBE38r = (uint8_t)(~(uint8_t)(g_cpu.A[0]));
+  { uint8_t _fv = (uint8_t)(_1FBE38r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[0] = (uint32_t)(_1FBE38r);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE3A */
+  /* unimplemented opcode $00E8 @ $1FBE3A */
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE3E */
+  uint8_t _t1FBE3E = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBE3Er = (uint8_t)(~(uint8_t)(_t1FBE3E));
+  { uint8_t _fv = (uint8_t)(_1FBE3Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBE3Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE40 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBE40 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBE40r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBE40) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBE40r = (uint8_t)((uint8_t)(_t1FBE40) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBE40r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE42 */
+  g_cpu.A[5] -= 1; uint8_t _t1FBE42 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBE42r = (uint8_t)(_t1FBE42) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE42r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBE42r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE44 */
+  uint8_t _t1FBE44 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (80)));
+  uint8_t _1FBE44r = (uint8_t)(~(uint8_t)(_t1FBE44));
+  { uint8_t _fv = (uint8_t)(_1FBE44r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (80)), (uint8_t)(_1FBE44r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE48 */
+  uint8_t _t1FBE48 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBE48r = (uint8_t)(_t1FBE48) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE48r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBE48r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE4A */
+  uint16_t _1FBE4Ar = (uint16_t)(~(uint16_t)((uint16_t)g_cpu.D[0]));
+  { uint16_t _fv = (uint16_t)(_1FBE4Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_1FBE4Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE4C */
+  /* unimplemented opcode $00E0 @ $1FBE4C */
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE50 */
+  uint16_t _t1FBE50 = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (56)));
+  uint16_t _1FBE50r = (uint16_t)(~(uint16_t)(_t1FBE50));
+  { uint16_t _fv = (uint16_t)(_1FBE50r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (56)), (uint16_t)(_1FBE50r));
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE54 */
+  uint8_t _1FBE54r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE54r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBE54r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE56 */
+  uint32_t _1FBE56r = (uint32_t)(~(uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)(_1FBE56r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBE56r);
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE58 */
+  uint32_t _t1FBE58 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FBE58r = (uint32_t)(_t1FBE58) | (uint32_t)0xB70246F0u;
+  { uint32_t _fv = (uint32_t)(_1FBE58r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FBE58r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE5E */
+  g_cpu.A[0] -= 1; uint8_t _t1FBE5E = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBE5Er = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBE5E) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBE5Er = (uint8_t)((uint8_t)(_t1FBE5E) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBE5Er));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE60 */
+  uint8_t _t1FBE60 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBE60r = (uint8_t)(_t1FBE60) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE60r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBE60r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE62 */
+  /* unimplemented opcode $4740 @ $1FBE62 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE64 */
+  /* unimplemented opcode $00C8 @ $1FBE64 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE68 */
+  /* unimplemented opcode $4748 @ $1FBE68 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE6A */
+  uint8_t _t1FBE6A = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)18248));
+  uint8_t _1FBE6Ar = (uint8_t)(_t1FBE6A) | (uint8_t)0x0u;
+  { uint8_t _fv = (uint8_t)(_1FBE6Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)18248), (uint8_t)(_1FBE6Ar));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE70 */
+  uint16_t _t1FBE70 = m68k_read16((uint32_t)(int32_t)(int16_t)0x4758);
+  uint16_t _1FBE70r = (uint16_t)(_t1FBE70) | (uint16_t)0xB800u;
+  { uint16_t _fv = (uint16_t)(_1FBE70r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(int32_t)(int16_t)0x4758, (uint16_t)(_1FBE70r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE76 */
+  uint8_t _t1FBE76 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBE76r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBE76) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBE76r = (uint8_t)((uint8_t)(_t1FBE76) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBE76r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE78 */
+  uint8_t _1FBE78r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE78r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBE78r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE7A */
+  /* unimplemented opcode $4760 @ $1FBE7A */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE7C */
+  uint16_t _t1FBE7C = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBE7Cr = (uint16_t)(_t1FBE7C) | (uint16_t)0xB702u;
+  { uint16_t _fv = (uint16_t)(_1FBE7Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBE7Cr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE80 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBE80 = m68k_read16(g_cpu.A[0]);
+  { int16_t _bound = (int16_t)(_t1FBE80);
+    int16_t _val   = (int16_t)g_cpu.D[3];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE82 */
+  uint32_t _1FBE82r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBE82r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) ^ (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBE82r);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE84 */
+  uint8_t _t1FBE84 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBE84r = (uint8_t)(_t1FBE84) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE84r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBE84r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE86 */
+  g_cpu.A[3] = 0 /* cannot take addr of mode 3 */;
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE88 */
+  /* unimplemented opcode $00D8 @ $1FBE88 */
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE8C */
+  { uint8_t _a = (uint8_t)((uint8_t)g_cpu.D[0]);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = -(int32_t)(_a & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = -(int32_t)(_a >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_r));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 6; g_audio_cycle_counter += 6; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE8E */
+  uint32_t _1FBE8Er = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBE8Er = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) ^ (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBE8Er);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE90 */
+  uint8_t _1FBE90r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBE90r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBE90r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE92 */
+  uint8_t _t1FBE92 = m68k_read8(g_cpu.A[0]);
+  { uint8_t _a = (uint8_t)(_t1FBE92);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = -(int32_t)(_a & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = -(int32_t)(_a >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_r));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE94 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBE94 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBE94r = (uint8_t)(_t1FBE94) | (uint8_t)0x20u;
+  { uint8_t _fv = (uint8_t)(_1FBE94r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBE94r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE98 */
+  uint8_t _t1FBE98 = m68k_read8(g_cpu.A[0]);
+  { uint8_t _a = (uint8_t)(_t1FBE98);
+    uint32_t _x = (g_cpu.SR >> 4) & 1u;
+    int32_t _lo = -(int32_t)(_a & 0xF) - (int32_t)_x;
+    int32_t _adj_lo = (_lo < 0) ? 6 : 0;
+    int32_t _hi = -(int32_t)(_a >> 4) - (_lo < 0 ? 1 : 0);
+    int32_t _adj_hi = (_hi < 0) ? 6 : 0;
+    int32_t _full = (_hi & 0xFF) * 16 - _adj_hi*16 + ((_lo - _adj_lo) & 0xF);
+    uint8_t _r = (uint8_t)_full;
+    int _zold = (g_cpu.SR >> 2) & 1;
+    g_cpu.SR &= ~(1u<<1);
+    if (_r) { g_cpu.SR &= ~(1u<<2); } else if (_zold) { g_cpu.SR |= (1u<<2); }
+    g_cpu.SR &= ~((1u<<0) | (1u<<4) | (1u<<3));
+    if (_r & 0x80u) g_cpu.SR |= (1u<<3);
+    if (_hi < 0) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_r));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBE9A */
+  uint32_t _t1FBE9A = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FBE9Ar = (uint32_t)(_t1FBE9A) | (uint32_t)0xB7114840u;
+  { uint32_t _fv = (uint32_t)(_1FBE9Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FBE9Ar));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEA0 */
+  /* unimplemented opcode $00F0 @ $1FBEA0 */
+  g_native_insn_count++; g_cycle_accumulator += 56; g_audio_cycle_counter += 56; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEA4 */
+  { uint32_t _mbase = g_cpu.A[0];
+    _mbase -= 4; m68k_write32(_mbase, g_cpu.A[3]);
+    _mbase -= 4; m68k_write32(_mbase, g_cpu.A[2]);
+    g_cpu.A[0] = _mbase; }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEA8 */
+  uint8_t _1FBEA8r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBEA8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBEA8r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEAA */
+  { uint32_t _mbase = g_cpu.A[0];
+    _mbase -= 4; m68k_write32(_mbase, g_cpu.A[3]);
+    _mbase -= 4; m68k_write32(_mbase, g_cpu.A[2]);
+    _mbase -= 4; m68k_write32(_mbase, g_cpu.D[7]);
+    g_cpu.A[0] = _mbase; }
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEAE */
+  uint8_t _1FBEAEr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBEAEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBEAEr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEB0 */
+  { uint32_t _mbase = g_cpu.A[0];
+    _mbase -= 4; m68k_write32(_mbase, g_cpu.A[2]);
+    _mbase -= 4; m68k_write32(_mbase, g_cpu.A[1]);
+    _mbase -= 4; m68k_write32(_mbase, g_cpu.D[7]);
+    g_cpu.A[0] = _mbase; }
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEB4 */
+  g_cpu.A[5] -= 1; uint8_t _t1FBEB4 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBEB4r = (uint8_t)(_t1FBEB4) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBEB4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBEB4r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEB6 */
+  /* unimplemented opcode $4900 @ $1FBEB6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEB8 */
+  /* unimplemented opcode $00E8 @ $1FBEB8 */
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEBC */
+  /* unimplemented opcode $4940 @ $1FBEBC */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEBE */
+  g_cpu.A[0] -= 1; uint8_t _t1FBEBE = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBEBEr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBEBE) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBEBEr = (uint8_t)((uint8_t)(_t1FBEBE) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBEBEr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEC0 */
+  uint8_t _1FBEC0r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBEC0r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBEC0r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEC2 */
+  /* unimplemented opcode $4960 @ $1FBEC2 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEC4 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBEC4 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBEC4r = (uint16_t)(_t1FBEC4) | (uint16_t)0xB800u;
+  { uint16_t _fv = (uint16_t)(_1FBEC4r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBEC4r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEC8 */
+  uint16_t _t1FBEC8 = m68k_read16(g_cpu.A[0]);
+  { int16_t _bound = (int16_t)(_t1FBEC8);
+    int16_t _val   = (int16_t)g_cpu.D[4];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBECA */
+  uint16_t _1FBECAr = (uint16_t)(g_cpu.A[0]) | (uint16_t)0xB720u;
+  { uint16_t _fv = (uint16_t)(_1FBECAr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[0] = (uint32_t)(_1FBECAr);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBECE */
+  g_cpu.A[0] -= 2; uint16_t _t1FBECE = m68k_read16(g_cpu.A[0]);
+  { int16_t _bound = (int16_t)(_t1FBECE);
+    int16_t _val   = (int16_t)g_cpu.D[4];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBED0 */
+  uint8_t _t1FBED0 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBED0r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBED0) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBED0r = (uint8_t)((uint8_t)(_t1FBED0) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBED0r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBED2 */
+  uint8_t _t1FBED2 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBED2r = (uint8_t)(_t1FBED2) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBED2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBED2r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBED4 */
+  g_cpu.A[4] = (uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-40));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBED8 */
+  g_cpu.A[5] -= 1; uint8_t _t1FBED8 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBED8r = (uint8_t)(_t1FBED8) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBED8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBED8r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEDA */
+  uint16_t _t1FBEDA = m68k_read16(g_cpu.A[0]);
+  { uint16_t _fv = (uint16_t)(_t1FBEDA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEDC */
+  uint8_t _t1FBEDC = m68k_read8((uint32_t)(int32_t)(int16_t)0xB725);
+  uint8_t _1FBEDCr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBEDC) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBEDCr = (uint8_t)((uint8_t)(_t1FBEDC) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(int32_t)(int16_t)0xB725, (uint8_t)(_1FBEDCr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEE0 */
+  g_cpu.A[0] -= 4; uint32_t _t1FBEE0 = m68k_read32(g_cpu.A[0]);
+  { uint32_t _fv = (uint32_t)(_t1FBEE0);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEE2 */
+  /* unimplemented opcode $00C8 @ $1FBEE2 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEE6 */
+  uint32_t _t1FBEE6 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)244));
+  { uint32_t _fv = (uint32_t)(_t1FBEE6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEEA */
+  uint8_t _1FBEEAr = (uint8_t)((uint8_t)g_cpu.D[4]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBEEAr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBEEAr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEEC */
+  { uint8_t _tasv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_tasv) g_cpu.SR |= (1u<<2);
+    if (_tasv >> 7) g_cpu.SR |= (1u<<3);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_tasv | 0x80u));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEEE */
+  uint16_t _t1FBEEE = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBEEEr = (uint16_t)(_t1FBEEE) | (uint16_t)0xB703u;
+  { uint16_t _fv = (uint16_t)(_1FBEEEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBEEEr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEF2 */
+  { uint8_t _tasv = (uint8_t)((uint8_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_tasv) g_cpu.SR |= (1u<<2);
+    if (_tasv >> 7) g_cpu.SR |= (1u<<3);
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_tasv | 0x80u));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEF4 */
+  uint8_t _t1FBEF4 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBEF4r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBEF4) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBEF4r = (uint8_t)((uint8_t)(_t1FBEF4) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBEF4r)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEF6 */
+  uint8_t _1FBEF6r = (uint8_t)((uint8_t)g_cpu.D[3]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBEF6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBEF6r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEF8 */
+  uint8_t _t1FBEF8 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (56)));
+  { uint8_t _tasv = (uint8_t)(_t1FBEF8);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_tasv) g_cpu.SR |= (1u<<2);
+    if (_tasv >> 7) g_cpu.SR |= (1u<<3);
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (56)), (uint8_t)(_tasv | 0x80u));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEFC */
+  uint8_t _1FBEFCr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBEFCr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBEFCr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBEFE */
+  uint8_t _t1FBEFE = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (120)));
+  { uint8_t _tasv = (uint8_t)(_t1FBEFE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_tasv) g_cpu.SR |= (1u<<2);
+    if (_tasv >> 7) g_cpu.SR |= (1u<<3);
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (120)), (uint8_t)(_tasv | 0x80u));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF02 */
+  uint8_t _1FBF02r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF02r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBF02r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF04 */
+  /* unimplemented opcode $4B30 @ $1FBF04 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF06 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBF06 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBF06r = (uint16_t)(_t1FBF06) | (uint16_t)0xB711u;
+  { uint16_t _fv = (uint16_t)(_1FBF06r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBF06r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF0A */
+  /* unimplemented opcode $4B30 @ $1FBF0A */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF0C */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[0] + (int32_t)-18671);
+    uint32_t _v  = ((uint32_t)m68k_read8(_ea + 0) << 24)
+                 | ((uint32_t)m68k_read8(_ea + 2) << 16)
+                 | ((uint32_t)m68k_read8(_ea + 4) <<  8)
+                 | ((uint32_t)m68k_read8(_ea + 6)      );
+    g_cpu.D[0] = _v;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF10 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBF10 = m68k_read16(g_cpu.A[0]);
+  { int16_t _bound = (int16_t)(_t1FBF10);
+    int16_t _val   = (int16_t)g_cpu.D[5];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF12 */
+  /* unimplemented opcode $00C8 @ $1FBF12 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF16 */
+  g_cpu.A[0] -= 2; uint16_t _t1FBF16 = m68k_read16(g_cpu.A[0]);
+  { int16_t _bound = (int16_t)(_t1FBF16);
+    int16_t _val   = (int16_t)g_cpu.D[5];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF18 */
+  /* unimplemented opcode $00C8 @ $1FBF18 */
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF1C */
+  uint16_t _t1FBF1C = m68k_read16((uint32_t)(g_cpu.A[0] + (int32_t)244));
+  { int16_t _bound = (int16_t)(_t1FBF1C);
+    int16_t _val   = (int16_t)g_cpu.D[5];
+    if (_val < 0)        { g_cpu.SR |= (1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+    if (_val > _bound)   { g_cpu.SR &= ~(1u<<3);
+      g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+      m68k_trap_vector(6u); return; }
+  }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF20 */
+  uint8_t _1FBF20r = (uint8_t)((uint8_t)g_cpu.D[4]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF20r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBF20r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF22 */
+  g_cpu.A[5] = 0 /* cannot take addr of mode 0 */;
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF24 */
+  uint16_t _t1FBF24 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBF24r = (uint16_t)(_t1FBF24) | (uint16_t)0xB703u;
+  { uint16_t _fv = (uint16_t)(_1FBF24r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBF24r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF28 */
+  g_cpu.A[5] = 0 /* cannot take addr of mode 0 */;
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF2A */
+  uint8_t _t1FBF2A = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBF2Ar = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBF2A) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBF2Ar = (uint8_t)((uint8_t)(_t1FBF2A) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBF2Ar)); g_cpu.A[0] += 1;
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF2C */
+  uint8_t _1FBF2Cr = (uint8_t)((uint8_t)g_cpu.D[3]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF2Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBF2Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF2E */
+  g_cpu.A[5] = (uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (56));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF32 */
+  uint8_t _1FBF32r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF32r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBF32r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF34 */
+  g_cpu.A[5] = (uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (120));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF38 */
+  uint8_t _1FBF38r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF38r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBF38r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF3A */
+  uint8_t _t1FBF3A = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (96)));
+  uint8_t _1FBF3Ar = (uint8_t)(0 - (uint8_t)(_t1FBF3A));
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t1FBF3A), _fr = (uint8_t)(_1FBF3Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (96)), (uint8_t)(_1FBF3Ar));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF3E */
+  uint8_t _t1FBF3E = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBF3Er = (uint8_t)(_t1FBF3E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF3Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBF3Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF40 */
+  uint8_t _t1FBF40 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (72)));
+  uint8_t _1FBF40r = (uint8_t)(0 - (uint8_t)(_t1FBF40));
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t1FBF40), _fr = (uint8_t)(_1FBF40r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (72)), (uint8_t)(_1FBF40r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF44 */
+  uint8_t _t1FBF44 = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBF44r = (uint8_t)(_t1FBF44) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF44r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBF44r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF46 */
+  uint16_t _t1FBF46 = m68k_read16((uint32_t)(int32_t)(int16_t)0x0160);
+  uint16_t _1FBF46r = (uint16_t)(0 - (uint16_t)(_t1FBF46));
+  { uint16_t _fa = (uint16_t)(0), _fb = (uint16_t)(_t1FBF46), _fr = (uint16_t)(_1FBF46r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16((uint32_t)(int32_t)(int16_t)0x0160, (uint16_t)(_1FBF46r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF4A */
+  uint8_t _1FBF4Ar = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBF4Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF4C */
+  { uint32_t _mbase = g_cpu.A[0];
+    g_cpu.D[4] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[6] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF50 */
+  uint8_t _1FBF50r = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF50r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBF50r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF52 */
+  { uint32_t _mbase = g_cpu.A[0];
+    g_cpu.D[3] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[6] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[7] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 24; g_audio_cycle_counter += 24; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF56 */
+  g_cpu.A[5] -= 1; uint8_t _t1FBF56 = m68k_read8(g_cpu.A[5]);
+  uint8_t _1FBF56r = (uint8_t)(_t1FBF56) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF56r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[5], (uint8_t)(_1FBF56r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF58 */
+  { uint32_t _mbase = g_cpu.A[0];
+    g_cpu.D[6] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.A[0] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF5C */
+  uint8_t _1FBF5Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF5Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBF5Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF5E */
+  { uint32_t _mbase = (uint32_t)(g_cpu.A[0] + (int32_t)-18656);
+    g_cpu.D[3] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[5] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.D[6] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+    g_cpu.A[0] = (uint32_t)(int32_t)(int16_t)m68k_read16(_mbase); _mbase += 2;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF64 */
+  { uint32_t _mbase = (uint32_t)(int32_t)(int16_t)0xB720;
+    g_cpu.D[5] = m68k_read32(_mbase); _mbase += 4;
+    g_cpu.D[6] = m68k_read32(_mbase); _mbase += 4;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 32; g_audio_cycle_counter += 32; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF6A */
+  /* unimplemented opcode $4D00 @ $1FBF6A */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF6C */
+  uint32_t _1FBF6Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[0]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBF6Cr = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) ^ (uint32_t)(1u<<_bn)); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_1FBF6Cr);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF6E */
+  uint8_t _t1FBF6E = m68k_read8(g_cpu.A[1]);
+  uint8_t _1FBF6Er = (uint8_t)(_t1FBF6E) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF6Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[1], (uint8_t)(_1FBF6Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF70 */
+  /* unimplemented opcode $4D60 @ $1FBF70 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF72 */
+  g_cpu.A[0] -= 4; uint32_t _t1FBF72 = m68k_read32(g_cpu.A[0]);
+  uint32_t _1FBF72r = (uint32_t)(_t1FBF72) | (uint32_t)0xB7114DB0u;
+  { uint32_t _fv = (uint32_t)(_1FBF72r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_1FBF72r));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF78 */
+  uint8_t _t1FBF78 = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)19888));
+  uint8_t _1FBF78r = (uint8_t)(_t1FBF78) | (uint8_t)0x2u;
+  { uint8_t _fv = (uint8_t)(_1FBF78r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)19888), (uint8_t)(_1FBF78r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF7E */
+  uint8_t _t1FBF7E = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBF7Er = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBF7E) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBF7Er = (uint8_t)((uint8_t)(_t1FBF7E) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBF7Er));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF80 */
+  g_cpu.A[0] -= 1; uint8_t _t1FBF80 = m68k_read8(g_cpu.A[0]);
+  uint8_t _1FBF80r = (uint8_t)(_t1FBF80) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF80r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_1FBF80r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF82 */
+  g_cpu.A[6] = 0 /* cannot take addr of mode 4 */;
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF84 */
+  uint16_t _t1FBF84 = m68k_read16((uint32_t)(int32_t)(int16_t)0x4E00);
+  uint16_t _1FBF84r = (uint16_t)(_t1FBF84) | (uint16_t)0xB711u;
+  { uint16_t _fv = (uint16_t)(_1FBF84r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16((uint32_t)(int32_t)(int16_t)0x4E00, (uint16_t)(_1FBF84r));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF8A */
+  g_cpu.A[0] -= 1; uint8_t _t1FBF8A = m68k_read8(g_cpu.A[0]);
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBF8A) & (1u<<_bn)) ? (1u<<2) : 0u); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF8C */
+  uint8_t _1FBF8Cr = (uint8_t)((uint8_t)g_cpu.D[2]) ^ (uint8_t)g_cpu.D[3];
+  { uint8_t _fv = (uint8_t)(_1FBF8Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[2] = (g_cpu.D[2] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_1FBF8Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF8E */
+  uint8_t _t1FBF8E = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-80)));
+  uint8_t _1FBF8Er = (uint8_t)(~(uint8_t)(_t1FBF8E));
+  { uint8_t _fv = (uint8_t)(_1FBF8Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (-80)), (uint8_t)(_1FBF8Er));
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF92 */
+  uint8_t _1FBF92r = (uint8_t)((uint8_t)g_cpu.D[4] - (uint8_t)((uint8_t)g_cpu.D[0]));
+  { uint8_t _fa = (uint8_t)((uint8_t)g_cpu.D[4]), _fb = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fr = (uint8_t)(_1FBF92r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF94 */
+  recomp_push_return(0x1FBF96u); /* JSR push */
+  /* TODO: dynamic JSR/BSR EA 0/0 */
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF96 */
+  uint16_t _t1FBF96 = m68k_read16(g_cpu.A[0]);
+  uint16_t _1FBF96r = (uint16_t)(_t1FBF96) | (uint16_t)0xB711u;
+  { uint16_t _fv = (uint16_t)(_1FBF96r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 15)        g_cpu.SR |= (1u<<3); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_1FBF96r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF9A */
+  recomp_push_return(0x1FBF9Cu); /* JSR push */
+  /* TODO: dynamic JSR/BSR EA 0/0 */
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBF9C */
+  uint8_t _t1FBF9C = m68k_read8((uint32_t)(g_cpu.A[0] + (int32_t)-18671));
+  uint8_t _1FBF9Cr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[0] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t1FBF9C) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _1FBF9Cr = (uint8_t)((uint8_t)(_t1FBF9C) ^ (uint8_t)(1u<<_bn)); }
+  m68k_write8((uint32_t)(g_cpu.A[0] + (int32_t)-18671), (uint8_t)(_1FBF9Cr));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $1FBFA0 */
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[0] + (64))); return;
+  g_native_insn_count++; g_cycle_accumulator += 44; g_audio_cycle_counter += 44; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 void func_1FB6CE(void) {
@@ -1276420,6 +1283287,91 @@ void func_232570(void) {
     if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_23257Cr);
   g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $232582 */
+  uint16_t _t232582 = m68k_read16(g_cpu.A[0]);
+  uint16_t _232582r = (uint16_t)((uint16_t)(_t232582) + (uint16_t)0x2030u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t232582)), _fb = (uint16_t)((uint16_t)0x2030u), _fr = (uint16_t)(_232582r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_232582r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $232586 */
+  uint16_t _t232586 = m68k_read16(g_cpu.A[0]);
+  uint16_t _232586r = (uint16_t)((uint16_t)(_t232586) + (uint16_t)0x2030u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t232586)), _fb = (uint16_t)((uint16_t)0x2030u), _fr = (uint16_t)(_232586r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_232586r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $23258A */
+  uint32_t _23258Ar = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0]) + (uint32_t)0xC20F0u);
+  { uint32_t _fa = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[0])), _fb = (uint32_t)((uint32_t)0xC20F0u), _fr = (uint32_t)(_23258Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_23258Ar);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $232590 */
+  uint16_t _t232590 = m68k_read16(g_cpu.A[0]);
+  uint16_t _232590r = (uint16_t)((uint16_t)(_t232590) + (uint16_t)0x21E0u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t232590)), _fb = (uint16_t)((uint16_t)0x21E0u), _fr = (uint16_t)(_232590r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_232590r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $232594 */
+  uint16_t _t232594 = m68k_read16(g_cpu.A[0]);
+  uint16_t _232594r = (uint16_t)((uint16_t)(_t232594) + (uint16_t)0x21E0u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t232594)), _fb = (uint16_t)((uint16_t)0x21E0u), _fr = (uint16_t)(_232594r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_232594r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $232598 */
+  uint8_t _232598r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) + (uint8_t)0x28u);
+  { uint8_t _fa = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fb = (uint8_t)((uint8_t)0x28u), _fr = (uint8_t)(_232598r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_232598r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $23259C */
+  uint8_t _t23259C = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)8380));
+  uint8_t _23259Cr = (uint8_t)(_t23259C) | (uint8_t)0xAu;
+  { uint8_t _fv = (uint8_t)(_23259Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[4] + (int32_t)8380), (uint8_t)(_23259Cr));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2325A2 */
+  uint8_t _2325A2r = (uint8_t)((uint8_t)g_cpu.D[3]) | (uint8_t)0xE2u;
+  { uint8_t _fv = (uint8_t)(_2325A2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2325A2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2325A6 */
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x2327E2u); return;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 void func_23257E(void) {
@@ -1276463,6 +1283415,59 @@ void func_23257E(void) {
     if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (uint32_t)(uint32_t)(_23258Ar);
   g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $232590 */
+  uint16_t _t232590 = m68k_read16(g_cpu.A[0]);
+  uint16_t _232590r = (uint16_t)((uint16_t)(_t232590) + (uint16_t)0x21E0u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t232590)), _fb = (uint16_t)((uint16_t)0x21E0u), _fr = (uint16_t)(_232590r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_232590r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $232594 */
+  uint16_t _t232594 = m68k_read16(g_cpu.A[0]);
+  uint16_t _232594r = (uint16_t)((uint16_t)(_t232594) + (uint16_t)0x21E0u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t232594)), _fb = (uint16_t)((uint16_t)0x21E0u), _fr = (uint16_t)(_232594r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[0], (uint16_t)(_232594r));
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $232598 */
+  uint8_t _232598r = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0]) + (uint8_t)0x28u);
+  { uint8_t _fa = (uint8_t)((uint8_t)((uint8_t)g_cpu.D[0])), _fb = (uint8_t)((uint8_t)0x28u), _fr = (uint8_t)(_232598r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x000000FFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_232598r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $23259C */
+  uint8_t _t23259C = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)8380));
+  uint8_t _23259Cr = (uint8_t)(_t23259C) | (uint8_t)0xAu;
+  { uint8_t _fv = (uint8_t)(_23259Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[4] + (int32_t)8380), (uint8_t)(_23259Cr));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2325A2 */
+  uint8_t _2325A2r = (uint8_t)((uint8_t)g_cpu.D[3]) | (uint8_t)0xE2u;
+  { uint8_t _fv = (uint8_t)(_2325A2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2325A2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2325A6 */
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x2327E2u); return;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 void func_23258C(void) {
@@ -1276506,6 +1283511,27 @@ void func_23258C(void) {
     if (!((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_232598r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $23259C */
+  uint8_t _t23259C = m68k_read8((uint32_t)(g_cpu.A[4] + (int32_t)8380));
+  uint8_t _23259Cr = (uint8_t)(_t23259C) | (uint8_t)0xAu;
+  { uint8_t _fv = (uint8_t)(_23259Cr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[4] + (int32_t)8380), (uint8_t)(_23259Cr));
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2325A2 */
+  uint8_t _2325A2r = (uint8_t)((uint8_t)g_cpu.D[3]) | (uint8_t)0xE2u;
+  { uint8_t _fv = (uint8_t)(_2325A2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[3] = (g_cpu.D[3] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2325A2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2325A6 */
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x2327E2u); return;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
 }
 
 /* Obj_CNZBarberPoleSprite */
@@ -1372346,6 +1379372,7 @@ void func_240B7C(void) {
   g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   m68k_trap_vector(0x29u); return;
   g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240BC2u); return;
 }
 
 void func_240B94(void) {
@@ -1372843,6 +1379870,65 @@ void func_240C16(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240C40r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C44 */
+  g_cpu.A[0] -= 4; uint32_t _t240C44 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240C44r = (uint32_t)((uint32_t)(_t240C44) - (uint32_t)0x70726F64u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240C44)), _fb = (uint32_t)((uint32_t)0x70726F64u), _fr = (uint32_t)(_240C44r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240C44r));
+  g_native_insn_count++; g_cycle_accumulator += 30; g_audio_cycle_counter += 30; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C4A */
+  /* unimplemented opcode $7563 @ $240C4A */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C4C */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240CC0u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C4E */
+  uint8_t _240C4Er = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x98u;
+  { uint8_t _fv = (uint8_t)(_240C4Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240C4Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C52 */
+  uint16_t _t240C52 = m68k_read16(g_cpu.A[5]);
+  uint16_t _240C52r = (uint16_t)((uint16_t)(_t240C52) - (uint16_t)4u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t240C52)), _fb = (uint16_t)((uint16_t)4u), _fr = (uint16_t)(_240C52r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[5], (uint16_t)(_240C52r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C54 */
+  g_cpu.A[0] -= 1; uint8_t _t240C54 = m68k_read8(g_cpu.A[0]);
+  { uint8_t _fv = (uint8_t)(_t240C54);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C56 */
+  /* unimplemented opcode $4920 @ $240C56 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C58 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[6]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C5A */
+  /* unimplemented opcode $414B @ $240C5A */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C5C */
+  /* unimplemented opcode $4100 @ $240C5C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240C5Eu); return;
 }
 
 void func_240C42(void) {
@@ -1372958,13 +1380044,13 @@ void func_240C5E(void) {
   /* $240C6A */
   if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) {
     g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-    recomp_tail_call(0x240CE0u); return;
+    goto label_240CE0;
   }
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $240C6C */
   if ((g_cpu.SR&(1u<<2)) || (!!(g_cpu.SR&(1u<<3))!=!!(g_cpu.SR&(1u<<1)))) {
     g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-    recomp_tail_call(0x240CE0u); return;
+    goto label_240CE0;
   }
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $240C6E */
@@ -1373049,6 +1380135,292 @@ void func_240C5E(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240C84r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C88 */
+  uint32_t _240C88r = (uint32_t)((uint32_t)(g_cpu.A[4]) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(g_cpu.A[4])), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_240C88r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.A[4] = (uint32_t)(_240C88r);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C8E */
+  uint32_t _t240C8E = m68k_read32((uint32_t)(g_cpu.A[4] + (int32_t)25953));
+  g_cpu.A[0] = (uint32_t)(_t240C8E);
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C92 */
+  if (!(g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240CB4;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C94 */
+  if ((g_cpu.SR & (1u<<2))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240CF7u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C96 */
+  if ((!!(g_cpu.SR&(1u<<3)) != !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240CFDu); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C98 */
+  g_cpu.A[4] -= 4; uint32_t _t240C98 = m68k_read32(g_cpu.A[4]);
+  g_cpu.A[0] = (uint32_t)(_t240C98);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C9A */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D0Fu); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C9C */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D05u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240C9E */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D05u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CA0 */
+  g_cpu.D[1] = 0x00000000u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000000u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CA2 */
+  uint32_t _240CA2r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[3] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[6]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _240CA2r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[6]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[6] = (uint32_t)(uint32_t)(_240CA2r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CA4 */
+  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0 /* cannot take addr of mode 1 */);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CA6 */
+  g_cpu.A[7] += 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CA8 */
+  /* unimplemented opcode $4B41 @ $240CA8 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CAA */
+  uint16_t _t240CAA = m68k_read16(g_cpu.A[5]);
+  uint16_t _240CAAr = (uint16_t)((uint16_t)(_t240CAA) + (uint16_t)5u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t240CAA)), _fb = (uint16_t)((uint16_t)5u), _fr = (uint16_t)(_240CAAr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[5], (uint16_t)(_240CAAr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CAC */
+  g_cpu.A[0] -= 4; uint32_t _ts240CAC = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts240CAC);
+  { uint32_t _fv = (uint32_t)(_ts240CAC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CAE */
+  uint16_t _240CAEr = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)4u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)4u), _fr = (uint16_t)(_240CAEr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240CAEr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CB0 */
+  uint16_t _t240CB0 = m68k_read16(g_cpu.A[5]);
+  uint16_t _240CB0r = (uint16_t)((uint16_t)(_t240CB0) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t240CB0)), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_240CB0r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[5], (uint16_t)(_240CB0r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CB2 */
+  g_cpu.D[1] = (g_cpu.D[1] >> 16) | (g_cpu.D[1] << 16);
+  { uint32_t _fv = (uint32_t)(g_cpu.D[1]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240CB4:;
+  /* $240CB4 */
+  uint16_t _240CB4r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_240CB4r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240CB4r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CB6 */
+  uint8_t _240CB6r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x2u;
+  { uint8_t _fv = (uint8_t)(_240CB6r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240CB6r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CBA */
+  uint32_t _240CBAr = (uint32_t)((uint32_t)(g_cpu.A[2]) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(g_cpu.A[2])), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_240CBAr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.A[2] = (uint32_t)(_240CBAr);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC0 */
+  /* unimplemented opcode $7365 @ $240CC0 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC2 */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D2Du); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC4 */
+  if ((g_cpu.SR&(1u<<2)) || (!!(g_cpu.SR&(1u<<3))!=!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D38u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC6 */
+  g_cpu.A[7] -= 4; uint32_t _t240CC6 = m68k_read32(g_cpu.A[7]);
+  g_cpu.A[0] = (uint32_t)(_t240CC6);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC8 */
+  recomp_push_return(0x240CCAu); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240D37u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CCA */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240CEC;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CCC */
+  if (!(g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D33u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CCE */
+  /* unimplemented opcode $7369 @ $240CCE */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CD0 */
+  if ((g_cpu.SR & (1u<<2))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D40u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CD2 */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D46u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CD4 */
+  /* unimplemented opcode $7300 @ $240CD4 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CD6 */
+  uint32_t _240CD6r = (uint32_t)((uint32_t)(g_cpu.A[0]) + (uint32_t)0x48495341u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(g_cpu.A[0])), _fb = (uint32_t)((uint32_t)0x48495341u), _fr = (uint32_t)(_240CD6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.A[0] = (uint32_t)(_240CD6r);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CDC */
+  g_cpu.A[7] -= 4u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CDE */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240CE0:;
+  /* $240CE0 */
+  /* unimplemented opcode $4920 @ $240CE0 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CE2 */
+  g_cpu.A[7] -= 4u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CE4 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CE6 */
+  /* unimplemented opcode $4944 @ $240CE6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CE8 */
+  /* unimplemented opcode $4100 @ $240CE8 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CEA */
+  uint8_t _t240CEA = m68k_read8(g_cpu.A[0]);
+  uint8_t _240CEAr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[4] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t240CEA) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _240CEAr = (uint8_t)((uint8_t)(_t240CEA) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240CEAr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240CEC:;
+  /* $240CEC */
+  uint16_t _240CECr = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_240CECr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240CECr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CEE */
+  /* unimplemented opcode $4B41 @ $240CEE */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF0 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF2 */
+  /* unimplemented opcode $4920 @ $240CF2 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF4 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[1]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF6 */
+  /* unimplemented opcode $495A @ $240CF6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF8 */
+  g_cpu.A[3] -= 2u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CFA */
+  /* unimplemented opcode $4100 @ $240CFA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240CFCu); return;
 }
 
 void func_240C86(void) {
@@ -1373209,6 +1380581,148 @@ void func_240C86(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240CB6r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CBA */
+  uint32_t _240CBAr = (uint32_t)((uint32_t)(g_cpu.A[2]) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(g_cpu.A[2])), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_240CBAr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.A[2] = (uint32_t)(_240CBAr);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC0 */
+  /* unimplemented opcode $7365 @ $240CC0 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC2 */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D2Du); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC4 */
+  if ((g_cpu.SR&(1u<<2)) || (!!(g_cpu.SR&(1u<<3))!=!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D38u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC6 */
+  g_cpu.A[7] -= 4; uint32_t _t240CC6 = m68k_read32(g_cpu.A[7]);
+  g_cpu.A[0] = (uint32_t)(_t240CC6);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CC8 */
+  recomp_push_return(0x240CCAu); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240D37u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CCA */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240CEC;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CCC */
+  if (!(g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D33u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CCE */
+  /* unimplemented opcode $7369 @ $240CCE */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CD0 */
+  if ((g_cpu.SR & (1u<<2))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D40u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CD2 */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240D46u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CD4 */
+  /* unimplemented opcode $7300 @ $240CD4 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CD6 */
+  uint32_t _240CD6r = (uint32_t)((uint32_t)(g_cpu.A[0]) + (uint32_t)0x48495341u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(g_cpu.A[0])), _fb = (uint32_t)((uint32_t)0x48495341u), _fr = (uint32_t)(_240CD6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.A[0] = (uint32_t)(_240CD6r);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CDC */
+  g_cpu.A[7] -= 4u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CDE */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CE0 */
+  /* unimplemented opcode $4920 @ $240CE0 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CE2 */
+  g_cpu.A[7] -= 4u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CE4 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CE6 */
+  /* unimplemented opcode $4944 @ $240CE6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CE8 */
+  /* unimplemented opcode $4100 @ $240CE8 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CEA */
+  uint8_t _t240CEA = m68k_read8(g_cpu.A[0]);
+  uint8_t _240CEAr = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[4] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t240CEA) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _240CEAr = (uint8_t)((uint8_t)(_t240CEA) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240CEAr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240CEC:;
+  /* $240CEC */
+  uint16_t _240CECr = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_240CECr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240CECr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CEE */
+  /* unimplemented opcode $4B41 @ $240CEE */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF0 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF2 */
+  /* unimplemented opcode $4920 @ $240CF2 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF4 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[1]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF6 */
+  /* unimplemented opcode $495A @ $240CF6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CF8 */
+  g_cpu.A[3] -= 2u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240CFA */
+  /* unimplemented opcode $4100 @ $240CFA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240CFCu); return;
 }
 
 void func_240CB8(void) {
@@ -1373889,7 +1381403,7 @@ void func_240DDA(void) {
   /* $240DDE */
   if ((g_cpu.SR & (1u<<0))) {
     g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-    recomp_tail_call(0x240E4Eu); return;
+    goto label_240E4E;
   }
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $240DE0 */
@@ -1373976,6 +1381490,470 @@ void func_240DDA(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240DFEr));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E02 */
+  uint32_t _t240E02 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240E02r = (uint32_t)((uint32_t)(_t240E02) - (uint32_t)0x7363656Eu);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240E02)), _fb = (uint32_t)((uint32_t)0x7363656Eu), _fr = (uint32_t)(_240E02r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240E02r)); g_cpu.A[0] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E08 */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240E2A;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E0A */
+  recomp_push_return(0x240E0Cu); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240E7Eu); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E0C */
+  g_cpu.D[2] = 0x00000069u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000069u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E0E */
+  /* unimplemented opcode $7374 @ $240E0E */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E10 */
+  /* unimplemented opcode $7300 @ $240E10 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E12 */
+  uint32_t _t240E12 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240E12r = (uint32_t)((uint32_t)(_t240E12) + (uint32_t)0x4B554E49u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240E12)), _fb = (uint32_t)((uint32_t)0x4B554E49u), _fr = (uint32_t)(_240E12r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240E12r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E18 */
+  uint16_t _240E18r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_240E18r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E18r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E1A */
+  /* unimplemented opcode $4B45 @ $240E1A */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E1C */
+  g_cpu.A[0] -= 4; uint32_t _ts240E1C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts240E1C);
+  { uint32_t _fv = (uint32_t)(_ts240E1C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E1E */
+  /* unimplemented opcode $414F @ $240E1E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E20 */
+  /* unimplemented opcode $4B49 @ $240E20 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E22 */
+  uint8_t _240E22r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x92u;
+  { uint8_t _fv = (uint8_t)(_240E22r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240E22r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E26 */
+  /* unimplemented opcode $4348 @ $240E26 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E28 */
+  /* unimplemented opcode $4945 @ $240E28 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240E2A:;
+  /* $240E2A */
+  uint32_t _t240E2A = m68k_read32(g_cpu.A[1]); g_cpu.A[1] += 4;
+  g_cpu.A[0] = (uint32_t)(_t240E2A);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E2C */
+  /* unimplemented opcode $4F53 @ $240E2C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E2E */
+  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0 /* cannot take addr of mode 1 */);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E30 */
+  uint16_t _240E30r = (uint16_t)(0 - (uint16_t)((uint16_t)g_cpu.D[1]));
+  { uint16_t _fa = (uint16_t)(0), _fb = (uint16_t)((uint16_t)g_cpu.D[1]), _fr = (uint16_t)(_240E30r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E30r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E32 */
+  uint8_t _240E32r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x2u;
+  { uint8_t _fv = (uint8_t)(_240E32r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240E32r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E36 */
+  uint32_t _t240E36 = m68k_read32(g_cpu.A[2]);
+  uint32_t _240E36r = (uint32_t)((uint32_t)(_t240E36) - (uint32_t)0x7363656Eu);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240E36)), _fb = (uint32_t)((uint32_t)0x7363656Eu), _fr = (uint32_t)(_240E36r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[2], (uint32_t)(_240E36r)); g_cpu.A[2] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E3C */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240E5E;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E3E */
+  recomp_push_return(0x240E40u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240EB2u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E40 */
+  g_cpu.D[2] = 0x00000069u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000069u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E42 */
+  /* unimplemented opcode $7374 @ $240E42 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E44 */
+  /* unimplemented opcode $7300 @ $240E44 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E46 */
+  uint32_t _t240E46 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240E46r = (uint32_t)((uint32_t)(_t240E46) + (uint32_t)0x5453554Eu);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240E46)), _fb = (uint32_t)((uint32_t)0x5453554Eu), _fr = (uint32_t)(_240E46r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240E46r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E4C */
+  /* unimplemented opcode $454B @ $240E4C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240E4E:;
+  /* $240E4E */
+  /* unimplemented opcode $4F20 @ $240E4E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E50 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[1]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E52 */
+  /* unimplemented opcode $4F4B @ $240E52 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E54 */
+  /* unimplemented opcode $4900 @ $240E54 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E56 */
+  uint8_t _t240E56 = m68k_read8(g_cpu.A[0]);
+  uint8_t _240E56r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[4] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t240E56) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _240E56r = (uint8_t)((uint8_t)(_t240E56) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240E56r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E58 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E5A */
+  /* unimplemented opcode $4947 @ $240E5A */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E5C */
+  /* unimplemented opcode $4552 @ $240E5C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240E5E:;
+  /* $240E5E */
+  g_cpu.A[0] -= 1; uint8_t _t240E5E = m68k_read8(g_cpu.A[0]);
+  uint8_t _240E5Er = (uint8_t)((uint8_t)(_t240E5E) - (uint8_t)2u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t240E5E)), _fb = (uint8_t)((uint8_t)2u), _fr = (uint8_t)(_240E5Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240E5Er));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E60 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[7]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E62 */
+  /* unimplemented opcode $4B41 @ $240E62 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E64 */
+  uint16_t _240E64r = (uint16_t)(0 - (uint16_t)((uint16_t)g_cpu.D[1]));
+  { uint16_t _fa = (uint16_t)(0), _fb = (uint16_t)((uint16_t)g_cpu.D[1]), _fr = (uint16_t)(_240E64r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E64r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E66 */
+  uint8_t _240E66r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x2u;
+  { uint8_t _fv = (uint8_t)(_240E66r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240E66r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E6A */
+  uint32_t _t240E6A = m68k_read32(g_cpu.A[2]);
+  uint32_t _240E6Ar = (uint32_t)((uint32_t)(_t240E6A) - (uint32_t)0x7363656Eu);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240E6A)), _fb = (uint32_t)((uint32_t)0x7363656Eu), _fr = (uint32_t)(_240E6Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[2], (uint32_t)(_240E6Ar)); g_cpu.A[2] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E70 */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240E92;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E72 */
+  recomp_push_return(0x240E74u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240EE6u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E74 */
+  g_cpu.D[2] = 0x00000069u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000069u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E76 */
+  /* unimplemented opcode $7374 @ $240E76 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E78 */
+  /* unimplemented opcode $7300 @ $240E78 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E7A */
+  uint32_t _240E7Ar = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[4]) + (uint32_t)0x54414B41u);
+  { uint32_t _fa = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[4])), _fb = (uint32_t)((uint32_t)0x54414B41u), _fr = (uint32_t)(_240E7Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[4] = (uint32_t)(uint32_t)(_240E7Ar);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E80 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E82 */
+  /* unimplemented opcode $4920 @ $240E82 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E84 */
+  g_cpu.A[0] += 2u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E86 */
+  /* unimplemented opcode $4F4D @ $240E86 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E88 */
+  /* unimplemented opcode $4153 @ $240E88 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E8A */
+  uint32_t _t240E8A = m68k_read32(g_cpu.A[1]); g_cpu.A[1] += 4;
+  g_cpu.A[0] = (uint32_t)(_t240E8A);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E8C */
+  uint16_t _240E8Cr = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[4]) - (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[4])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_240E8Cr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E8Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E8E */
+  /* unimplemented opcode $4100 @ $240E8E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E90 */
+  uint32_t _240E90r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[4] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[6]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _240E90r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[6]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[6] = (uint32_t)(uint32_t)(_240E90r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240E92:;
+  /* $240E92 */
+  uint16_t _240E92r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_240E92r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E92r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E94 */
+  g_cpu.A[7] += 2u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E96 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E98 */
+  /* unimplemented opcode $4920 @ $240E98 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E9A */
+  g_cpu.A[7] -= 4u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E9C */
+  /* unimplemented opcode $4B4F @ $240E9C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E9E */
+  /* unimplemented opcode $4B41 @ $240E9E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA0 */
+  uint16_t _240EA0r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_240EA0r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240EA0r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA2 */
+  uint8_t _240EA2r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_240EA2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240EA2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA6 */
+  uint32_t _t240EA6 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240EA6r = (uint32_t)((uint32_t)(_t240EA6) - (uint32_t)0x61727420u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240EA6)), _fb = (uint32_t)((uint32_t)0x61727420u), _fr = (uint32_t)(_240EA6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240EA6r)); g_cpu.A[0] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EAC */
+  recomp_push_return(0x240EAEu); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240F21u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EAE */
+  /* unimplemented opcode $7369 @ $240EAE */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB0 */
+  /* unimplemented opcode $7374 @ $240EB0 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB2 */
+  recomp_push_return(0x240EB4u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240F22u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB4 */
+  g_cpu.D[2] = 0x00000000u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000000u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB6 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[6] + (int32_t)20307);
+    uint32_t _v  = g_cpu.D[3];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBA */
+  /* unimplemented opcode $414D @ $240EBA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBC */
+  g_cpu.A[0] -= 1; uint8_t _t240EBC = m68k_read8(g_cpu.A[0]);
+  uint8_t _240EBCr = (uint8_t)((uint8_t)(_t240EBC) - (uint8_t)2u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t240EBC)), _fb = (uint8_t)((uint8_t)2u), _fr = (uint8_t)(_240EBCr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240EBCr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBE */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[7]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC0 */
+  g_cpu.D[1] = (g_cpu.D[1] >> 16) | (g_cpu.D[1] << 16);
+  { uint32_t _fv = (uint32_t)(g_cpu.D[1]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC2 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC4 */
+  /* unimplemented opcode $4900 @ $240EC4 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240EC6u); return;
 }
 
 void func_240E00(void) {
@@ -1373993,7 +1381971,7 @@ void func_240E00(void) {
   /* $240E06 */
   if ((g_cpu.SR & (1u<<0))) {
     g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-    recomp_tail_call(0x240E76u); return;
+    goto label_240E76;
   }
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $240E08 */
@@ -1374107,6 +1382085,348 @@ void func_240E00(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240E32r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E36 */
+  uint32_t _t240E36 = m68k_read32(g_cpu.A[2]);
+  uint32_t _240E36r = (uint32_t)((uint32_t)(_t240E36) - (uint32_t)0x7363656Eu);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240E36)), _fb = (uint32_t)((uint32_t)0x7363656Eu), _fr = (uint32_t)(_240E36r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[2], (uint32_t)(_240E36r)); g_cpu.A[2] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E3C */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240E5E;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E3E */
+  recomp_push_return(0x240E40u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240EB2u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E40 */
+  g_cpu.D[2] = 0x00000069u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000069u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E42 */
+  /* unimplemented opcode $7374 @ $240E42 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E44 */
+  /* unimplemented opcode $7300 @ $240E44 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E46 */
+  uint32_t _t240E46 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240E46r = (uint32_t)((uint32_t)(_t240E46) + (uint32_t)0x5453554Eu);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240E46)), _fb = (uint32_t)((uint32_t)0x5453554Eu), _fr = (uint32_t)(_240E46r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240E46r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E4C */
+  /* unimplemented opcode $454B @ $240E4C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E4E */
+  /* unimplemented opcode $4F20 @ $240E4E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E50 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[1]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E52 */
+  /* unimplemented opcode $4F4B @ $240E52 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E54 */
+  /* unimplemented opcode $4900 @ $240E54 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E56 */
+  uint8_t _t240E56 = m68k_read8(g_cpu.A[0]);
+  uint8_t _240E56r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[4] & 7u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)(_t240E56) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _240E56r = (uint8_t)((uint8_t)(_t240E56) & ~(uint8_t)(1u<<_bn)); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240E56r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E58 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E5A */
+  /* unimplemented opcode $4947 @ $240E5A */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E5C */
+  /* unimplemented opcode $4552 @ $240E5C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240E5E:;
+  /* $240E5E */
+  g_cpu.A[0] -= 1; uint8_t _t240E5E = m68k_read8(g_cpu.A[0]);
+  uint8_t _240E5Er = (uint8_t)((uint8_t)(_t240E5E) - (uint8_t)2u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t240E5E)), _fb = (uint8_t)((uint8_t)2u), _fr = (uint8_t)(_240E5Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240E5Er));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E60 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[7]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E62 */
+  /* unimplemented opcode $4B41 @ $240E62 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E64 */
+  uint16_t _240E64r = (uint16_t)(0 - (uint16_t)((uint16_t)g_cpu.D[1]));
+  { uint16_t _fa = (uint16_t)(0), _fb = (uint16_t)((uint16_t)g_cpu.D[1]), _fr = (uint16_t)(_240E64r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E64r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E66 */
+  uint8_t _240E66r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x2u;
+  { uint8_t _fv = (uint8_t)(_240E66r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240E66r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E6A */
+  uint32_t _t240E6A = m68k_read32(g_cpu.A[2]);
+  uint32_t _240E6Ar = (uint32_t)((uint32_t)(_t240E6A) - (uint32_t)0x7363656Eu);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240E6A)), _fb = (uint32_t)((uint32_t)0x7363656Eu), _fr = (uint32_t)(_240E6Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[2], (uint32_t)(_240E6Ar)); g_cpu.A[2] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E70 */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240E92;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E72 */
+  recomp_push_return(0x240E74u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240EE6u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E74 */
+  g_cpu.D[2] = 0x00000069u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000069u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240E76:;
+  /* $240E76 */
+  /* unimplemented opcode $7374 @ $240E76 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E78 */
+  /* unimplemented opcode $7300 @ $240E78 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E7A */
+  uint32_t _240E7Ar = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[4]) + (uint32_t)0x54414B41u);
+  { uint32_t _fa = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[4])), _fb = (uint32_t)((uint32_t)0x54414B41u), _fr = (uint32_t)(_240E7Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[4] = (uint32_t)(uint32_t)(_240E7Ar);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E80 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E82 */
+  /* unimplemented opcode $4920 @ $240E82 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E84 */
+  g_cpu.A[0] += 2u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E86 */
+  /* unimplemented opcode $4F4D @ $240E86 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E88 */
+  /* unimplemented opcode $4153 @ $240E88 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E8A */
+  uint32_t _t240E8A = m68k_read32(g_cpu.A[1]); g_cpu.A[1] += 4;
+  g_cpu.A[0] = (uint32_t)(_t240E8A);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E8C */
+  uint16_t _240E8Cr = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[4]) - (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[4])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_240E8Cr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E8Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E8E */
+  /* unimplemented opcode $4100 @ $240E8E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E90 */
+  uint32_t _240E90r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[4] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[6]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _240E90r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[6]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[6] = (uint32_t)(uint32_t)(_240E90r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240E92:;
+  /* $240E92 */
+  uint16_t _240E92r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_240E92r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E92r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E94 */
+  g_cpu.A[7] += 2u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E96 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E98 */
+  /* unimplemented opcode $4920 @ $240E98 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E9A */
+  g_cpu.A[7] -= 4u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E9C */
+  /* unimplemented opcode $4B4F @ $240E9C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E9E */
+  /* unimplemented opcode $4B41 @ $240E9E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA0 */
+  uint16_t _240EA0r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_240EA0r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240EA0r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA2 */
+  uint8_t _240EA2r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_240EA2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240EA2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA6 */
+  uint32_t _t240EA6 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240EA6r = (uint32_t)((uint32_t)(_t240EA6) - (uint32_t)0x61727420u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240EA6)), _fb = (uint32_t)((uint32_t)0x61727420u), _fr = (uint32_t)(_240EA6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240EA6r)); g_cpu.A[0] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EAC */
+  recomp_push_return(0x240EAEu); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240F21u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EAE */
+  /* unimplemented opcode $7369 @ $240EAE */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB0 */
+  /* unimplemented opcode $7374 @ $240EB0 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB2 */
+  recomp_push_return(0x240EB4u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240F22u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB4 */
+  g_cpu.D[2] = 0x00000000u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000000u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB6 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[6] + (int32_t)20307);
+    uint32_t _v  = g_cpu.D[3];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBA */
+  /* unimplemented opcode $414D @ $240EBA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBC */
+  g_cpu.A[0] -= 1; uint8_t _t240EBC = m68k_read8(g_cpu.A[0]);
+  uint8_t _240EBCr = (uint8_t)((uint8_t)(_t240EBC) - (uint8_t)2u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t240EBC)), _fb = (uint8_t)((uint8_t)2u), _fr = (uint8_t)(_240EBCr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240EBCr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBE */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[7]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC0 */
+  g_cpu.D[1] = (g_cpu.D[1] >> 16) | (g_cpu.D[1] << 16);
+  { uint32_t _fv = (uint32_t)(g_cpu.D[1]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC2 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC4 */
+  /* unimplemented opcode $4900 @ $240EC4 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240EC6u); return;
 }
 
 void func_240E34(void) {
@@ -1374236,6 +1382556,227 @@ void func_240E34(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240E66r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E6A */
+  uint32_t _t240E6A = m68k_read32(g_cpu.A[2]);
+  uint32_t _240E6Ar = (uint32_t)((uint32_t)(_t240E6A) - (uint32_t)0x7363656Eu);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240E6A)), _fb = (uint32_t)((uint32_t)0x7363656Eu), _fr = (uint32_t)(_240E6Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[2], (uint32_t)(_240E6Ar)); g_cpu.A[2] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E70 */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240E92;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E72 */
+  recomp_push_return(0x240E74u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240EE6u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E74 */
+  g_cpu.D[2] = 0x00000069u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000069u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E76 */
+  /* unimplemented opcode $7374 @ $240E76 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E78 */
+  /* unimplemented opcode $7300 @ $240E78 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E7A */
+  uint32_t _240E7Ar = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[4]) + (uint32_t)0x54414B41u);
+  { uint32_t _fa = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[4])), _fb = (uint32_t)((uint32_t)0x54414B41u), _fr = (uint32_t)(_240E7Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[4] = (uint32_t)(uint32_t)(_240E7Ar);
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E80 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E82 */
+  /* unimplemented opcode $4920 @ $240E82 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E84 */
+  g_cpu.A[0] += 2u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E86 */
+  /* unimplemented opcode $4F4D @ $240E86 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E88 */
+  /* unimplemented opcode $4153 @ $240E88 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E8A */
+  uint32_t _t240E8A = m68k_read32(g_cpu.A[1]); g_cpu.A[1] += 4;
+  g_cpu.A[0] = (uint32_t)(_t240E8A);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E8C */
+  uint16_t _240E8Cr = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[4]) - (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[4])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_240E8Cr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E8Cr));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E8E */
+  /* unimplemented opcode $4100 @ $240E8E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E90 */
+  uint32_t _240E90r = 0;
+  { uint32_t _bn = (uint32_t)g_cpu.D[4] & 31u;
+    g_cpu.SR = (g_cpu.SR & ~(1u<<2)) | (!((uint32_t)((uint32_t)g_cpu.D[6]) & (1u<<_bn)) ? (1u<<2) : 0u);
+    _240E90r = (uint32_t)((uint32_t)((uint32_t)g_cpu.D[6]) & ~(uint32_t)(1u<<_bn)); }
+  g_cpu.D[6] = (uint32_t)(uint32_t)(_240E90r);
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240E92:;
+  /* $240E92 */
+  uint16_t _240E92r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_240E92r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240E92r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E94 */
+  g_cpu.A[7] += 2u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E96 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E98 */
+  /* unimplemented opcode $4920 @ $240E98 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E9A */
+  g_cpu.A[7] -= 4u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E9C */
+  /* unimplemented opcode $4B4F @ $240E9C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240E9E */
+  /* unimplemented opcode $4B41 @ $240E9E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA0 */
+  uint16_t _240EA0r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_240EA0r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240EA0r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA2 */
+  uint8_t _240EA2r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_240EA2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240EA2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA6 */
+  uint32_t _t240EA6 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240EA6r = (uint32_t)((uint32_t)(_t240EA6) - (uint32_t)0x61727420u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240EA6)), _fb = (uint32_t)((uint32_t)0x61727420u), _fr = (uint32_t)(_240EA6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240EA6r)); g_cpu.A[0] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EAC */
+  recomp_push_return(0x240EAEu); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240F21u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EAE */
+  /* unimplemented opcode $7369 @ $240EAE */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB0 */
+  /* unimplemented opcode $7374 @ $240EB0 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB2 */
+  recomp_push_return(0x240EB4u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240F22u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB4 */
+  g_cpu.D[2] = 0x00000000u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000000u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB6 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[6] + (int32_t)20307);
+    uint32_t _v  = g_cpu.D[3];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBA */
+  /* unimplemented opcode $414D @ $240EBA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBC */
+  g_cpu.A[0] -= 1; uint8_t _t240EBC = m68k_read8(g_cpu.A[0]);
+  uint8_t _240EBCr = (uint8_t)((uint8_t)(_t240EBC) - (uint8_t)2u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t240EBC)), _fb = (uint8_t)((uint8_t)2u), _fr = (uint8_t)(_240EBCr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240EBCr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBE */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[7]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC0 */
+  g_cpu.D[1] = (g_cpu.D[1] >> 16) | (g_cpu.D[1] << 16);
+  { uint32_t _fv = (uint32_t)(g_cpu.D[1]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC2 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC4 */
+  /* unimplemented opcode $4900 @ $240EC4 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240EC6u); return;
 }
 
 void func_240E68(void) {
@@ -1374382,6 +1382923,90 @@ void func_240E68(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240EA2r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EA6 */
+  uint32_t _t240EA6 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240EA6r = (uint32_t)((uint32_t)(_t240EA6) - (uint32_t)0x61727420u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240EA6)), _fb = (uint32_t)((uint32_t)0x61727420u), _fr = (uint32_t)(_240EA6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240EA6r)); g_cpu.A[0] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EAC */
+  recomp_push_return(0x240EAEu); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240F21u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EAE */
+  /* unimplemented opcode $7369 @ $240EAE */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB0 */
+  /* unimplemented opcode $7374 @ $240EB0 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB2 */
+  recomp_push_return(0x240EB4u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x240F22u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB4 */
+  g_cpu.D[2] = 0x00000000u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000000u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EB6 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[6] + (int32_t)20307);
+    uint32_t _v  = g_cpu.D[3];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBA */
+  /* unimplemented opcode $414D @ $240EBA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBC */
+  g_cpu.A[0] -= 1; uint8_t _t240EBC = m68k_read8(g_cpu.A[0]);
+  uint8_t _240EBCr = (uint8_t)((uint8_t)(_t240EBC) - (uint8_t)2u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t240EBC)), _fb = (uint8_t)((uint8_t)2u), _fr = (uint8_t)(_240EBCr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240EBCr));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EBE */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[7]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC0 */
+  g_cpu.D[1] = (g_cpu.D[1] >> 16) | (g_cpu.D[1] << 16);
+  { uint32_t _fv = (uint32_t)(g_cpu.D[1]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC2 */
+  g_cpu.A[0] -= 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EC4 */
+  /* unimplemented opcode $4900 @ $240EC4 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240EC6u); return;
 }
 
 void func_240EA4(void) {
@@ -1374621,6 +1383246,120 @@ void func_240EC6(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240EF6r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240EFA */
+  uint32_t _t240EFA = m68k_read32(g_cpu.A[0]);
+  uint32_t _240EFAr = (uint32_t)((uint32_t)(_t240EFA) - (uint32_t)0x6D757369u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240EFA)), _fb = (uint32_t)((uint32_t)0x6D757369u), _fr = (uint32_t)(_240EFAr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240EFAr)); g_cpu.A[0] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F00 */
+  if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_240F22;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F02 */
+  if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240F73u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F04 */
+  if ((!!(g_cpu.SR&(1u<<3)) != !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240F76u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F06 */
+  if ((g_cpu.SR&(1u<<2)) || (!!(g_cpu.SR&(1u<<3))!=!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240F7Bu); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F08 */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240F7Cu); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F0A */
+  /* unimplemented opcode $7300 @ $240F0A */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F0C */
+  uint32_t _t240F0C = m68k_read32(g_cpu.A[2]);
+  uint32_t _240F0Cr = (uint32_t)((uint32_t)(_t240F0C) + (uint32_t)0x44415252u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240F0C)), _fb = (uint32_t)((uint32_t)0x44415252u), _fr = (uint32_t)(_240F0Cr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0xFFFFFFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[2], (uint32_t)(_240F0Cr));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F12 */
+  g_cpu.A[4] -= 4u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F14 */
+  g_cpu.A[0] -= 4; uint32_t _ts240F14 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts240F14);
+  { uint32_t _fv = (uint32_t)(_ts240F14);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F16 */
+  g_cpu.A[7] += 1u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F18 */
+  uint16_t _t240F18 = m68k_read16(g_cpu.A[3]);
+  uint16_t _240F18r = (uint16_t)((uint16_t)(_t240F18) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t240F18)), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_240F18r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[3], (uint16_t)(_240F18r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F1A */
+  uint8_t _240F1Ar = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x92u;
+  { uint8_t _fv = (uint8_t)(_240F1Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240F1Ar));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F1E */
+  /* unimplemented opcode $4745 @ $240F1E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F20 */
+  /* unimplemented opcode $4F46 @ $240F20 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_240F22:;
+  /* $240F22 */
+  g_cpu.A[0] -= 1; uint8_t _t240F22 = m68k_read8(g_cpu.A[0]);
+  uint8_t _240F22r = (uint8_t)(~(uint8_t)(_t240F22));
+  { uint8_t _fv = (uint8_t)(_240F22r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_240F22r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F24 */
+  /* unimplemented opcode $4752 @ $240F24 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F26 */
+  /* unimplemented opcode $4143 @ $240F26 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F28 */
+  /* unimplemented opcode $4500 @ $240F28 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240F2Au); return;
 }
 
 void func_240EF8(void) {
@@ -1374884,6 +1383623,83 @@ void func_240F2A(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240F5Cr));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F60 */
+  uint32_t _t240F60 = m68k_read32(g_cpu.A[0]);
+  uint32_t _240F60r = (uint32_t)((uint32_t)(_t240F60) - (uint32_t)0x73656761u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t240F60)), _fb = (uint32_t)((uint32_t)0x73656761u), _fr = (uint32_t)(_240F60r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_240F60r)); g_cpu.A[0] += 4;
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F66 */
+  uint32_t _t240F66 = m68k_read32((uint32_t)(g_cpu.A[3] + (int32_t)(int16_t)g_cpu.D[6] + (117)));
+  g_cpu.A[0] = (uint32_t)(_t240F66);
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F6A */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x240FD0u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F6C */
+  uint32_t _t240F6C = m68k_read32((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[6] + (97)));
+  g_cpu.A[0] = (uint32_t)(_t240F6C);
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F70 */
+  if ((!!(g_cpu.SR&(1u<<3)) != !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241614u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F74 */
+  g_cpu.A[7] = (uint32_t)(0);
+  g_cpu.SR = (g_cpu.SR & ~0x0Fu) | (1u<<2);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F76 */
+  uint8_t _240F76r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x8Eu;
+  { uint8_t _fv = (uint8_t)(_240F76r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_240F76r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F7A */
+  uint16_t _240F7Ar = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_240F7Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_240F7Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F7C */
+  /* unimplemented opcode $4348 @ $240F7C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F7E */
+  /* unimplemented opcode $494F @ $240F7E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F80 */
+  g_cpu.A[0] -= 4; uint32_t _ts240F80 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts240F80);
+  { uint32_t _fv = (uint32_t)(_ts240F80);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F82 */
+  /* unimplemented opcode $4F47 @ $240F82 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F84 */
+  /* unimplemented opcode $4157 @ $240F84 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $240F86 */
+  /* unimplemented opcode $4100 @ $240F86 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x240F88u); return;
 }
 
 void func_240F5E(void) {
@@ -1375216,6 +1384032,7 @@ void func_240FB8(void) {
   g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   m68k_trap_vector(0x2Fu); return;
   g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x241028u); return;
 }
 
 void func_240FF4(void) {
@@ -1375455,6 +1384272,7 @@ void func_241028(void) {
   g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   m68k_trap_vector(0x29u); return;
   g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x24108Cu); return;
 }
 
 void func_24105C(void) {
@@ -1375682,7 +1384500,7 @@ void func_24108C(void) {
   /* $2410A2 */
   if ((g_cpu.SR & (1u<<0))) {
     g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-    recomp_tail_call(0x241112u); return;
+    goto label_241112;
   }
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $2410A4 */
@@ -1375784,6 +1384602,204 @@ void func_24108C(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2410D6r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410DA */
+  uint32_t _t2410DA = m68k_read32(g_cpu.A[0]);
+  uint32_t _2410DAr = (uint32_t)((uint32_t)(_t2410DA) - (uint32_t)0x20657865u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t2410DA)), _fb = (uint32_t)((uint32_t)0x20657865u), _fr = (uint32_t)(_2410DAr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_2410DAr));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410E0 */
+  if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241157u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410E2 */
+  g_cpu.D[2] = 0x00000069u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000069u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410E4 */
+  g_cpu.D[3] = 0x00000065u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000065u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410E6 */
+  g_cpu.A[3] -= 4; uint32_t _t2410E6 = m68k_read32(g_cpu.A[3]);
+  g_cpu.A[0] = (uint32_t)(_t2410E6);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410E8 */
+  if ((g_cpu.SR&(1u<<2)) || (!!(g_cpu.SR&(1u<<3))!=!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241159u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410EA */
+  g_cpu.D[1] = 0x00000064u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000064u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410EC */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x24115Cu); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410EE */
+  recomp_push_return(0x2410F0u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x241164u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410F0 */
+  if ((g_cpu.SR&(1u<<2)) || (!!(g_cpu.SR&(1u<<3))!=!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241164u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410F2 */
+  uint8_t _2410F2r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_2410F2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2410F2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410F6 */
+  g_cpu.A[0] -= 4; uint32_t _ts2410F6 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2410F6);
+  { uint32_t _fv = (uint32_t)(_ts2410F6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410F8 */
+  g_cpu.A[0] -= 4; uint32_t _ts2410F8 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2410F8);
+  { uint32_t _fv = (uint32_t)(_ts2410F8);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410FA */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[5]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410FC */
+  /* unimplemented opcode $414D @ $2410FC */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2410FE */
+  /* unimplemented opcode $4F52 @ $2410FE */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241100 */
+  g_cpu.A[0] -= 1; uint8_t _t241100 = m68k_read8(g_cpu.A[0]);
+  uint8_t _241100r = (uint8_t)((uint8_t)(_t241100) - (uint8_t)2u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t241100)), _fb = (uint8_t)((uint8_t)2u), _fr = (uint8_t)(_241100r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_241100r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241102 */
+  uint32_t _t241102 = m68k_read32(g_cpu.A[3]);
+  g_cpu.A[0] = (uint32_t)(_t241102);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241104 */
+  g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], 0 /* cannot take addr of mode 1 */);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241106 */
+  /* unimplemented opcode $4745 @ $241106 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241108 */
+  uint16_t _241108r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_241108r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241108r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24110A */
+  g_cpu.A[0] -= 4; uint32_t _ts24110A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24110A);
+  { uint32_t _fv = (uint32_t)(_ts24110A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24110C */
+  g_cpu.A[0] -= 4; uint32_t _ts24110C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24110C);
+  { uint32_t _fv = (uint32_t)(_ts24110C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24110E */
+  uint8_t _24110Er = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x8Au;
+  { uint8_t _fv = (uint8_t)(_24110Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24110Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_241112:;
+  /* $241112 */
+  g_cpu.A[0] -= 4; uint32_t _ts241112 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241112);
+  { uint32_t _fv = (uint32_t)(_ts241112);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241114 */
+  g_cpu.A[7] += 2u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241116 */
+  /* unimplemented opcode $4D49 @ $241116 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241118 */
+  /* unimplemented opcode $4F20 @ $241118 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24111A */
+  uint32_t _t24111A = m68k_read32(g_cpu.A[4]);
+  g_cpu.A[0] = (uint32_t)(_t24111A);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24111C */
+  /* unimplemented opcode $414B @ $24111C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24111E */
+  /* unimplemented opcode $414D @ $24111E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241120 */
+  /* unimplemented opcode $4920 @ $241120 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241122 */
+  g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[0]);
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x241124u); return;
 }
 
 void func_2410D8(void) {
@@ -1376054,7 +1385070,7 @@ void func_241124(void) {
   /* $241138 */
   if ((g_cpu.SR & (1u<<1))) {
     g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-    recomp_tail_call(0x2411A8u); return;
+    goto label_2411A8;
   }
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $24113A */
@@ -1376256,6 +1385272,138 @@ void func_241124(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24117Ar));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24117E */
+  uint32_t _t24117E = m68k_read32(g_cpu.A[0]);
+  uint32_t _24117Er = (uint32_t)((uint32_t)(_t24117E) - (uint32_t)0x20657865u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t24117E)), _fb = (uint32_t)((uint32_t)0x20657865u), _fr = (uint32_t)(_24117Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_24117Er));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241184 */
+  if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2411FBu); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241186 */
+  g_cpu.D[2] = 0x00000069u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000069u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241188 */
+  g_cpu.D[3] = 0x00000065u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000065u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24118A */
+  g_cpu.A[3] -= 4; uint32_t _t24118A = m68k_read32(g_cpu.A[3]);
+  g_cpu.A[0] = (uint32_t)(_t24118A);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24118C */
+  if ((g_cpu.SR&(1u<<2)) || (!!(g_cpu.SR&(1u<<3))!=!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2411FDu); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24118E */
+  g_cpu.D[1] = 0x00000064u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000064u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241190 */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241200u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241192 */
+  recomp_push_return(0x241194u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x241208u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241194 */
+  if ((g_cpu.SR&(1u<<2)) || (!!(g_cpu.SR&(1u<<3))!=!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241208u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241196 */
+  uint8_t _241196r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_241196r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_241196r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24119A */
+  uint32_t _t24119A = m68k_read32(g_cpu.A[4]);
+  g_cpu.A[0] = (uint32_t)(_t24119A);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24119C */
+  /* unimplemented opcode $414B @ $24119C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24119E */
+  /* unimplemented opcode $4148 @ $24119E */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2411A0 */
+  /* unimplemented opcode $4152 @ $2411A0 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2411A2 */
+  g_cpu.A[0] -= 1; uint8_t _t2411A2 = m68k_read8(g_cpu.A[0]);
+  uint8_t _2411A2r = (uint8_t)((uint8_t)(_t2411A2) - (uint8_t)2u);
+  { uint8_t _fa = (uint8_t)((uint8_t)(_t2411A2)), _fb = (uint8_t)((uint8_t)2u), _fr = (uint8_t)(_2411A2r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_2411A2r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2411A4 */
+  uint32_t _t2411A4 = m68k_read32(g_cpu.A[5]);
+  g_cpu.A[0] = (uint32_t)(_t2411A4);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2411A6 */
+  uint16_t _t2411A6 = m68k_read16(g_cpu.A[3]);
+  uint16_t _2411A6r = (uint16_t)((uint16_t)(_t2411A6) + (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t2411A6)), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_2411A6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[3], (uint16_t)(_2411A6r));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_2411A8:;
+  /* $2411A8 */
+  g_cpu.A[6] -= 2u;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2411AA */
+  /* unimplemented opcode $4F4D @ $2411AA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2411AC */
+  /* unimplemented opcode $4959 @ $2411AC */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2411AE */
+  /* unimplemented opcode $4100 @ $2411AE */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x2411B0u); return;
 }
 
 void func_24117C(void) {
@@ -1376496,7 +1385644,7 @@ void func_2411F4(void) {
   /* $2411FC */
   if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
     g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-    recomp_tail_call(0x241262u); return;
+    goto label_241262;
   }
   g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $2411FE */
@@ -1376715,6 +1385863,669 @@ void func_2411F4(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_241242r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241246 */
+  uint32_t _t241246 = m68k_read32(g_cpu.A[0]);
+  uint32_t _241246r = (uint32_t)((uint32_t)(_t241246) - (uint32_t)0x20736F75u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t241246)), _fb = (uint32_t)((uint32_t)0x20736F75u), _fr = (uint32_t)(_241246r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_241246r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24124C */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_2412B2;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24124E */
+  uint32_t _t24124E = m68k_read32((uint32_t)(g_cpu.A[3] + (int32_t)(int16_t)g_cpu.D[7] + (101)));
+  g_cpu.A[0] = (uint32_t)(_t24124E);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241252 */
+  if ((g_cpu.SR & ((1u<<0)|(1u<<2)))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2412BDu); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241254 */
+  recomp_push_return(0x241256u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x2412C2u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241256 */
+  uint32_t _t241256 = m68k_read32((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[6] + (97)));
+  g_cpu.A[0] = (uint32_t)(_t241256);
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24125A */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2412C7u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24125C */
+  /* unimplemented opcode $7320 @ $24125C */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24125E */
+  uint8_t _24125Er = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_24125Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24125Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_241262:;
+  /* $241262 */
+  g_cpu.A[0] -= 4; uint32_t _ts241262 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241262);
+  { uint32_t _fv = (uint32_t)(_ts241262);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241264 */
+  /* unimplemented opcode $4D41 @ $241264 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241266 */
+  uint16_t _241266r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_241266r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241266r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241268 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  m68k_trap_vector(0x2Fu); return;
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_2412B2:;
+  /* $2412B2 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412B4 */
+  /* unimplemented opcode $4F57 @ $2412B4 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412B6 */
+  /* unimplemented opcode $4152 @ $2412B6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412B8 */
+  g_cpu.A[0] -= 1; uint8_t _t2412B8 = m68k_read8(g_cpu.A[0]);
+  uint8_t _2412B8r = (uint8_t)(0 - (uint8_t)(_t2412B8));
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t2412B8), _fr = (uint8_t)(_2412B8r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_2412B8r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412BA */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[4]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412BC */
+  g_cpu.A[7] += 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412BE */
+  uint16_t _t2412BE = m68k_read16(g_cpu.A[3]);
+  uint16_t _2412BEr = (uint16_t)((uint16_t)(_t2412BE) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t2412BE)), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_2412BEr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[3], (uint16_t)(_2412BEr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412C0 */
+  /* unimplemented opcode $494E @ $2412C0 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412C2 */
+  uint8_t _2412C2r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x2u;
+  { uint8_t _fv = (uint8_t)(_2412C2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2412C2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412C6 */
+  uint32_t _t2412C6 = m68k_read32(g_cpu.A[0]);
+  uint32_t _2412C6r = (uint32_t)((uint32_t)(_t2412C6) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t2412C6)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_2412C6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_2412C6r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412CC */
+  /* unimplemented opcode $7370 @ $2412CC */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412CE */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241333u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D0 */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241333u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D2 */
+  if ((!!(g_cpu.SR&(1u<<3)) == !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_2412F4;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D4 */
+  g_cpu.D[2] = 0x00000068u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000068u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D6 */
+  recomp_push_return(0x2412D8u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x241346u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D8 */
+  if ((g_cpu.SR & (1u<<3))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x24134Du); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412DA */
+  g_cpu.A[0] -= 4; uint32_t _ts2412DA = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412DA);
+  { uint32_t _fv = (uint32_t)(_ts2412DA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412DC */
+  g_cpu.A[0] -= 4; uint32_t _ts2412DC = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412DC);
+  { uint32_t _fv = (uint32_t)(_ts2412DC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412DE */
+  uint8_t _2412DEr = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_2412DEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2412DEr));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E2 */
+  g_cpu.A[0] -= 4; uint32_t _ts2412E2 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412E2);
+  { uint32_t _fv = (uint32_t)(_ts2412E2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E4 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[4]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E6 */
+  /* unimplemented opcode $4542 @ $2412E6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E8 */
+  /* unimplemented opcode $4F52 @ $2412E8 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412EA */
+  /* unimplemented opcode $4148 @ $2412EA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412EC */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[5]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412EE */
+  /* unimplemented opcode $4343 @ $2412EE */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F0 */
+  uint16_t _2412F0r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_2412F0r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_2412F0r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F2 */
+  /* unimplemented opcode $434B @ $2412F2 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_2412F4:;
+  /* $2412F4 */
+  /* unimplemented opcode $454E @ $2412F4 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F6 */
+  g_cpu.A[0] -= 4; uint32_t _ts2412F6 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412F6);
+  { uint32_t _fv = (uint32_t)(_ts2412F6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F8 */
+  uint8_t _2412F8r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_2412F8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2412F8r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412FC */
+  g_cpu.A[0] -= 4; uint32_t _ts2412FC = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412FC);
+  { uint32_t _fv = (uint32_t)(_ts2412FC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_2412FE:;
+  /* $2412FE */
+  g_cpu.A[0] -= 4; uint32_t _ts2412FE = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412FE);
+  { uint32_t _fv = (uint32_t)(_ts2412FE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241300 */
+  g_cpu.A[0] -= 4; uint32_t _ts241300 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241300);
+  { uint32_t _fv = (uint32_t)(_ts241300);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241302 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[5]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241304 */
+  /* unimplemented opcode $4D49 @ $241304 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241306 */
+  g_cpu.A[0] -= 4; uint32_t _ts241306 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241306);
+  { uint32_t _fv = (uint32_t)(_ts241306);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241308 */
+  /* unimplemented opcode $4B41 @ $241308 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24130A */
+  uint16_t _24130Ar = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_24130Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24130Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24130C */
+  /* unimplemented opcode $4D55 @ $24130C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24130E */
+  uint16_t _24130Er = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_24130Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24130Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241310 */
+  g_cpu.A[0] -= 4; uint32_t _ts241310 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241310);
+  { uint32_t _fv = (uint32_t)(_ts241310);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241312 */
+  uint8_t _241312r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_241312r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_241312r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241316 */
+  uint32_t _t241316 = m68k_read32(g_cpu.A[0]);
+  uint32_t _241316r = (uint32_t)((uint32_t)(_t241316) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t241316)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_241316r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_241316r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24131C */
+  /* unimplemented opcode $7370 @ $24131C */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24131E */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241383u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241320 */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241383u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241322 */
+  if ((!!(g_cpu.SR&(1u<<3)) == !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_241344;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241324 */
+  g_cpu.D[2] = 0x00000068u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000068u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241326 */
+  recomp_push_return(0x241328u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_func(func_241396);
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241328 */
+  if ((g_cpu.SR & (1u<<3))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x24139Du); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132A */
+  g_cpu.A[0] -= 4; uint32_t _ts24132A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24132A);
+  { uint32_t _fv = (uint32_t)(_ts24132A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132C */
+  g_cpu.A[0] -= 4; uint32_t _ts24132C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24132C);
+  { uint32_t _fv = (uint32_t)(_ts24132C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132E */
+  uint8_t _24132Er = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_24132Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24132Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241332 */
+  g_cpu.A[0] -= 4; uint32_t _ts241332 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241332);
+  { uint32_t _fv = (uint32_t)(_ts241332);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241334 */
+  g_cpu.A[0] -= 4; uint32_t _ts241334 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241334);
+  { uint32_t _fv = (uint32_t)(_ts241334);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241336 */
+  g_cpu.A[0] -= 4; uint32_t _ts241336 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241336);
+  { uint32_t _fv = (uint32_t)(_ts241336);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241338 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[2]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24133A */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[1]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24133C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  m68k_trap_vector(0x21u); return;
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_241344:;
+  /* $241344 */
+  uint16_t _241344r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_241344r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241344r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241346 */
+  uint16_t _241346r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_241346r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241346r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241348 */
+  g_cpu.A[1] += 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24134A */
+  uint8_t _24134Ar = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_24134Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24134Ar));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24134E */
+  uint32_t _t24134E = m68k_read32(g_cpu.A[0]);
+  uint32_t _24134Er = (uint32_t)((uint32_t)(_t24134E) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t24134E)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_24134Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_24134Er));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241354 */
+  uint32_t _t241354 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[7] + (101)));
+  g_cpu.A[0] = (uint32_t)(_t241354);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241358 */
+  /* unimplemented opcode $7365 @ $241358 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135A */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413D0u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135C */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413C2u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135E */
+  g_cpu.A[2] -= 4; uint32_t _t24135E = m68k_read32(g_cpu.A[2]);
+  g_cpu.A[0] = (uint32_t)(_t24135E);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241360 */
+  /* unimplemented opcode $7900 @ $241360 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241362 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[2] + (int32_t)8224);
+    uint32_t _v  = g_cpu.D[3];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241366 */
+  g_cpu.A[0] -= 4; uint32_t _ts241366 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241366);
+  { uint32_t _fv = (uint32_t)(_ts241366);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241368 */
+  g_cpu.A[0] -= 4; uint32_t _ts241368 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241368);
+  { uint32_t _fv = (uint32_t)(_ts241368);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136A */
+  g_cpu.A[0] -= 4; uint32_t _ts24136A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136A);
+  { uint32_t _fv = (uint32_t)(_ts24136A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136C */
+  g_cpu.A[0] -= 4; uint32_t _ts24136C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136C);
+  { uint32_t _fv = (uint32_t)(_ts24136C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136E */
+  uint16_t _24136Er = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_24136Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24136Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241370 */
+  /* unimplemented opcode $4741 @ $241370 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241372 */
+  g_cpu.A[0] -= 4; uint32_t _ts241372 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241372);
+  { uint32_t _fv = (uint32_t)(_ts241372);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241374 */
+  g_cpu.A[0] -= 4; uint32_t _ts241374 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241374);
+  { uint32_t _fv = (uint32_t)(_ts241374);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241376 */
+  g_cpu.A[0] -= 4; uint32_t _ts241376 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241376);
+  { uint32_t _fv = (uint32_t)(_ts241376);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241378 */
+  g_cpu.A[0] -= 4; uint32_t _ts241378 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241378);
+  { uint32_t _fv = (uint32_t)(_ts241378);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137A */
+  g_cpu.A[0] -= 4; uint32_t _ts24137A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24137A);
+  { uint32_t _fv = (uint32_t)(_ts24137A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137C */
+  g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[0]);
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137E */
+  uint8_t _24137Er = (uint8_t)(g_cpu.A[6]) | (uint8_t)0x18u;
+  { uint8_t _fv = (uint8_t)(_24137Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[6] = (uint32_t)(_24137Er);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241382 */
+  g_cpu.A[2] -= 1; uint8_t _t241382 = m68k_read8(g_cpu.A[2]);
+  uint8_t _241382r = (uint8_t)(_t241382) | (uint8_t)0x2Cu;
+  { uint8_t _fv = (uint8_t)(_241382r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[2], (uint8_t)(_241382r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241386 */
+  uint8_t _t241386 = m68k_read8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)));
+  uint8_t _241386r = (uint8_t)(_t241386) | (uint8_t)0x40u;
+  { uint8_t _fv = (uint8_t)(_241386r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)), (uint8_t)(_241386r));
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x24138Cu); return;
 }
 
 void func_241244(void) {
@@ -1376733,7 +1386544,7 @@ void func_241244(void) {
   /* $24124C */
   if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
     g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-    recomp_tail_call(0x2412B2u); return;
+    goto label_2412B2;
   }
   g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $24124E */
@@ -1376803,6 +1386614,584 @@ void func_241244(void) {
   g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   m68k_trap_vector(0x2Fu); return;
   g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_2412B2:;
+  /* $2412B2 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412B4 */
+  /* unimplemented opcode $4F57 @ $2412B4 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412B6 */
+  /* unimplemented opcode $4152 @ $2412B6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412B8 */
+  g_cpu.A[0] -= 1; uint8_t _t2412B8 = m68k_read8(g_cpu.A[0]);
+  uint8_t _2412B8r = (uint8_t)(0 - (uint8_t)(_t2412B8));
+  { uint8_t _fa = (uint8_t)(0), _fb = (uint8_t)(_t2412B8), _fr = (uint8_t)(_2412B8r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 7)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00000080u) && ((_fa^_fr) & 0x00000080u)) g_cpu.SR |= (1u<<1); }
+  m68k_write8(g_cpu.A[0], (uint8_t)(_2412B8r));
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412BA */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[4]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412BC */
+  g_cpu.A[7] += 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412BE */
+  uint16_t _t2412BE = m68k_read16(g_cpu.A[3]);
+  uint16_t _2412BEr = (uint16_t)((uint16_t)(_t2412BE) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)(_t2412BE)), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_2412BEr);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write16(g_cpu.A[3], (uint16_t)(_2412BEr));
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412C0 */
+  /* unimplemented opcode $494E @ $2412C0 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412C2 */
+  uint8_t _2412C2r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x2u;
+  { uint8_t _fv = (uint8_t)(_2412C2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2412C2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412C6 */
+  uint32_t _t2412C6 = m68k_read32(g_cpu.A[0]);
+  uint32_t _2412C6r = (uint32_t)((uint32_t)(_t2412C6) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t2412C6)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_2412C6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_2412C6r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412CC */
+  /* unimplemented opcode $7370 @ $2412CC */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412CE */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241333u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D0 */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241333u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D2 */
+  if ((!!(g_cpu.SR&(1u<<3)) == !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_2412F4;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D4 */
+  g_cpu.D[2] = 0x00000068u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000068u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D6 */
+  recomp_push_return(0x2412D8u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x241346u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D8 */
+  if ((g_cpu.SR & (1u<<3))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x24134Du); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412DA */
+  g_cpu.A[0] -= 4; uint32_t _ts2412DA = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412DA);
+  { uint32_t _fv = (uint32_t)(_ts2412DA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412DC */
+  g_cpu.A[0] -= 4; uint32_t _ts2412DC = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412DC);
+  { uint32_t _fv = (uint32_t)(_ts2412DC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412DE */
+  uint8_t _2412DEr = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_2412DEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2412DEr));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E2 */
+  g_cpu.A[0] -= 4; uint32_t _ts2412E2 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412E2);
+  { uint32_t _fv = (uint32_t)(_ts2412E2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E4 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[4]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E6 */
+  /* unimplemented opcode $4542 @ $2412E6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E8 */
+  /* unimplemented opcode $4F52 @ $2412E8 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412EA */
+  /* unimplemented opcode $4148 @ $2412EA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412EC */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[5]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412EE */
+  /* unimplemented opcode $4343 @ $2412EE */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F0 */
+  uint16_t _2412F0r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_2412F0r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_2412F0r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F2 */
+  /* unimplemented opcode $434B @ $2412F2 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_2412F4:;
+  /* $2412F4 */
+  /* unimplemented opcode $454E @ $2412F4 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F6 */
+  g_cpu.A[0] -= 4; uint32_t _ts2412F6 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412F6);
+  { uint32_t _fv = (uint32_t)(_ts2412F6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F8 */
+  uint8_t _2412F8r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_2412F8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2412F8r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412FC */
+  g_cpu.A[0] -= 4; uint32_t _ts2412FC = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412FC);
+  { uint32_t _fv = (uint32_t)(_ts2412FC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_2412FE:;
+  /* $2412FE */
+  g_cpu.A[0] -= 4; uint32_t _ts2412FE = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412FE);
+  { uint32_t _fv = (uint32_t)(_ts2412FE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241300 */
+  g_cpu.A[0] -= 4; uint32_t _ts241300 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241300);
+  { uint32_t _fv = (uint32_t)(_ts241300);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241302 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[5]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241304 */
+  /* unimplemented opcode $4D49 @ $241304 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241306 */
+  g_cpu.A[0] -= 4; uint32_t _ts241306 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241306);
+  { uint32_t _fv = (uint32_t)(_ts241306);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241308 */
+  /* unimplemented opcode $4B41 @ $241308 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24130A */
+  uint16_t _24130Ar = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_24130Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24130Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24130C */
+  /* unimplemented opcode $4D55 @ $24130C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24130E */
+  uint16_t _24130Er = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_24130Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24130Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241310 */
+  g_cpu.A[0] -= 4; uint32_t _ts241310 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241310);
+  { uint32_t _fv = (uint32_t)(_ts241310);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241312 */
+  uint8_t _241312r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_241312r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_241312r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241316 */
+  uint32_t _t241316 = m68k_read32(g_cpu.A[0]);
+  uint32_t _241316r = (uint32_t)((uint32_t)(_t241316) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t241316)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_241316r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_241316r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24131C */
+  /* unimplemented opcode $7370 @ $24131C */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24131E */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241383u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241320 */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241383u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241322 */
+  if ((!!(g_cpu.SR&(1u<<3)) == !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_241344;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241324 */
+  g_cpu.D[2] = 0x00000068u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000068u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241326 */
+  recomp_push_return(0x241328u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_func(func_241396);
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241328 */
+  if ((g_cpu.SR & (1u<<3))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x24139Du); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132A */
+  g_cpu.A[0] -= 4; uint32_t _ts24132A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24132A);
+  { uint32_t _fv = (uint32_t)(_ts24132A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132C */
+  g_cpu.A[0] -= 4; uint32_t _ts24132C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24132C);
+  { uint32_t _fv = (uint32_t)(_ts24132C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132E */
+  uint8_t _24132Er = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_24132Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24132Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241332 */
+  g_cpu.A[0] -= 4; uint32_t _ts241332 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241332);
+  { uint32_t _fv = (uint32_t)(_ts241332);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241334 */
+  g_cpu.A[0] -= 4; uint32_t _ts241334 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241334);
+  { uint32_t _fv = (uint32_t)(_ts241334);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241336 */
+  g_cpu.A[0] -= 4; uint32_t _ts241336 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241336);
+  { uint32_t _fv = (uint32_t)(_ts241336);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241338 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[2]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24133A */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[1]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24133C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  m68k_trap_vector(0x21u); return;
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_241344:;
+  /* $241344 */
+  uint16_t _241344r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_241344r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241344r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241346 */
+  uint16_t _241346r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_241346r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241346r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241348 */
+  g_cpu.A[1] += 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24134A */
+  uint8_t _24134Ar = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_24134Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24134Ar));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24134E */
+  uint32_t _t24134E = m68k_read32(g_cpu.A[0]);
+  uint32_t _24134Er = (uint32_t)((uint32_t)(_t24134E) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t24134E)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_24134Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_24134Er));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241354 */
+  uint32_t _t241354 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[7] + (101)));
+  g_cpu.A[0] = (uint32_t)(_t241354);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241358 */
+  /* unimplemented opcode $7365 @ $241358 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135A */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413D0u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135C */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413C2u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135E */
+  g_cpu.A[2] -= 4; uint32_t _t24135E = m68k_read32(g_cpu.A[2]);
+  g_cpu.A[0] = (uint32_t)(_t24135E);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241360 */
+  /* unimplemented opcode $7900 @ $241360 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241362 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[2] + (int32_t)8224);
+    uint32_t _v  = g_cpu.D[3];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241366 */
+  g_cpu.A[0] -= 4; uint32_t _ts241366 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241366);
+  { uint32_t _fv = (uint32_t)(_ts241366);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241368 */
+  g_cpu.A[0] -= 4; uint32_t _ts241368 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241368);
+  { uint32_t _fv = (uint32_t)(_ts241368);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136A */
+  g_cpu.A[0] -= 4; uint32_t _ts24136A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136A);
+  { uint32_t _fv = (uint32_t)(_ts24136A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136C */
+  g_cpu.A[0] -= 4; uint32_t _ts24136C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136C);
+  { uint32_t _fv = (uint32_t)(_ts24136C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136E */
+  uint16_t _24136Er = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_24136Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24136Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241370 */
+  /* unimplemented opcode $4741 @ $241370 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241372 */
+  g_cpu.A[0] -= 4; uint32_t _ts241372 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241372);
+  { uint32_t _fv = (uint32_t)(_ts241372);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241374 */
+  g_cpu.A[0] -= 4; uint32_t _ts241374 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241374);
+  { uint32_t _fv = (uint32_t)(_ts241374);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241376 */
+  g_cpu.A[0] -= 4; uint32_t _ts241376 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241376);
+  { uint32_t _fv = (uint32_t)(_ts241376);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241378 */
+  g_cpu.A[0] -= 4; uint32_t _ts241378 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241378);
+  { uint32_t _fv = (uint32_t)(_ts241378);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137A */
+  g_cpu.A[0] -= 4; uint32_t _ts24137A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24137A);
+  { uint32_t _fv = (uint32_t)(_ts24137A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137C */
+  g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[0]);
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137E */
+  uint8_t _24137Er = (uint8_t)(g_cpu.A[6]) | (uint8_t)0x18u;
+  { uint8_t _fv = (uint8_t)(_24137Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[6] = (uint32_t)(_24137Er);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241382 */
+  g_cpu.A[2] -= 1; uint8_t _t241382 = m68k_read8(g_cpu.A[2]);
+  uint8_t _241382r = (uint8_t)(_t241382) | (uint8_t)0x2Cu;
+  { uint8_t _fv = (uint8_t)(_241382r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[2], (uint8_t)(_241382r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241386 */
+  uint8_t _t241386 = m68k_read8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)));
+  uint8_t _241386r = (uint8_t)(_t241386) | (uint8_t)0x40u;
+  { uint8_t _fv = (uint8_t)(_241386r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)), (uint8_t)(_241386r));
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x24138Cu); return;
 }
 
 void func_241290(void) {
@@ -1376821,7 +1387210,7 @@ void func_241290(void) {
   /* $241298 */
   if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
     g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
-    recomp_tail_call(0x2412FEu); return;
+    goto label_2412FE;
   }
   g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
   /* $24129A */
@@ -1376930,6 +1387319,535 @@ void func_241290(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2412C2r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412C6 */
+  uint32_t _t2412C6 = m68k_read32(g_cpu.A[0]);
+  uint32_t _2412C6r = (uint32_t)((uint32_t)(_t2412C6) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t2412C6)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_2412C6r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_2412C6r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412CC */
+  /* unimplemented opcode $7370 @ $2412CC */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412CE */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241333u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D0 */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241333u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D2 */
+  if ((!!(g_cpu.SR&(1u<<3)) == !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_2412F4;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D4 */
+  g_cpu.D[2] = 0x00000068u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000068u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D6 */
+  recomp_push_return(0x2412D8u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_addr(0x241346u); /* JSR target not in func table */
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412D8 */
+  if ((g_cpu.SR & (1u<<3))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x24134Du); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412DA */
+  g_cpu.A[0] -= 4; uint32_t _ts2412DA = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412DA);
+  { uint32_t _fv = (uint32_t)(_ts2412DA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412DC */
+  g_cpu.A[0] -= 4; uint32_t _ts2412DC = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412DC);
+  { uint32_t _fv = (uint32_t)(_ts2412DC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412DE */
+  uint8_t _2412DEr = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_2412DEr);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2412DEr));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E2 */
+  g_cpu.A[0] -= 4; uint32_t _ts2412E2 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412E2);
+  { uint32_t _fv = (uint32_t)(_ts2412E2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E4 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[4]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E6 */
+  /* unimplemented opcode $4542 @ $2412E6 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412E8 */
+  /* unimplemented opcode $4F52 @ $2412E8 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412EA */
+  /* unimplemented opcode $4148 @ $2412EA */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412EC */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[5]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412EE */
+  /* unimplemented opcode $4343 @ $2412EE */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F0 */
+  uint16_t _2412F0r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_2412F0r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_2412F0r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F2 */
+  /* unimplemented opcode $434B @ $2412F2 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_2412F4:;
+  /* $2412F4 */
+  /* unimplemented opcode $454E @ $2412F4 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F6 */
+  g_cpu.A[0] -= 4; uint32_t _ts2412F6 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412F6);
+  { uint32_t _fv = (uint32_t)(_ts2412F6);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412F8 */
+  uint8_t _2412F8r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_2412F8r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_2412F8r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2412FC */
+  g_cpu.A[0] -= 4; uint32_t _ts2412FC = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412FC);
+  { uint32_t _fv = (uint32_t)(_ts2412FC);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_2412FE:;
+  /* $2412FE */
+  g_cpu.A[0] -= 4; uint32_t _ts2412FE = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2412FE);
+  { uint32_t _fv = (uint32_t)(_ts2412FE);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241300 */
+  g_cpu.A[0] -= 4; uint32_t _ts241300 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241300);
+  { uint32_t _fv = (uint32_t)(_ts241300);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241302 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[5]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241304 */
+  /* unimplemented opcode $4D49 @ $241304 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241306 */
+  g_cpu.A[0] -= 4; uint32_t _ts241306 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241306);
+  { uint32_t _fv = (uint32_t)(_ts241306);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241308 */
+  /* unimplemented opcode $4B41 @ $241308 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24130A */
+  uint16_t _24130Ar = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_24130Ar);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24130Ar));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24130C */
+  /* unimplemented opcode $4D55 @ $24130C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24130E */
+  uint16_t _24130Er = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_24130Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24130Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241310 */
+  g_cpu.A[0] -= 4; uint32_t _ts241310 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241310);
+  { uint32_t _fv = (uint32_t)(_ts241310);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241312 */
+  uint8_t _241312r = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_241312r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_241312r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241316 */
+  uint32_t _t241316 = m68k_read32(g_cpu.A[0]);
+  uint32_t _241316r = (uint32_t)((uint32_t)(_t241316) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t241316)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_241316r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_241316r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24131C */
+  /* unimplemented opcode $7370 @ $24131C */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24131E */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241383u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241320 */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241383u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241322 */
+  if ((!!(g_cpu.SR&(1u<<3)) == !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_241344;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241324 */
+  g_cpu.D[2] = 0x00000068u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000068u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241326 */
+  recomp_push_return(0x241328u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_func(func_241396);
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241328 */
+  if ((g_cpu.SR & (1u<<3))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x24139Du); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132A */
+  g_cpu.A[0] -= 4; uint32_t _ts24132A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24132A);
+  { uint32_t _fv = (uint32_t)(_ts24132A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132C */
+  g_cpu.A[0] -= 4; uint32_t _ts24132C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24132C);
+  { uint32_t _fv = (uint32_t)(_ts24132C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132E */
+  uint8_t _24132Er = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_24132Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24132Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241332 */
+  g_cpu.A[0] -= 4; uint32_t _ts241332 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241332);
+  { uint32_t _fv = (uint32_t)(_ts241332);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241334 */
+  g_cpu.A[0] -= 4; uint32_t _ts241334 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241334);
+  { uint32_t _fv = (uint32_t)(_ts241334);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241336 */
+  g_cpu.A[0] -= 4; uint32_t _ts241336 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241336);
+  { uint32_t _fv = (uint32_t)(_ts241336);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241338 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[2]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24133A */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[1]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24133C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  m68k_trap_vector(0x21u); return;
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_241344:;
+  /* $241344 */
+  uint16_t _241344r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_241344r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241344r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241346 */
+  uint16_t _241346r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_241346r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241346r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241348 */
+  g_cpu.A[1] += 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24134A */
+  uint8_t _24134Ar = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_24134Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24134Ar));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24134E */
+  uint32_t _t24134E = m68k_read32(g_cpu.A[0]);
+  uint32_t _24134Er = (uint32_t)((uint32_t)(_t24134E) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t24134E)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_24134Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_24134Er));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241354 */
+  uint32_t _t241354 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[7] + (101)));
+  g_cpu.A[0] = (uint32_t)(_t241354);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241358 */
+  /* unimplemented opcode $7365 @ $241358 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135A */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413D0u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135C */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413C2u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135E */
+  g_cpu.A[2] -= 4; uint32_t _t24135E = m68k_read32(g_cpu.A[2]);
+  g_cpu.A[0] = (uint32_t)(_t24135E);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241360 */
+  /* unimplemented opcode $7900 @ $241360 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241362 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[2] + (int32_t)8224);
+    uint32_t _v  = g_cpu.D[3];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241366 */
+  g_cpu.A[0] -= 4; uint32_t _ts241366 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241366);
+  { uint32_t _fv = (uint32_t)(_ts241366);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241368 */
+  g_cpu.A[0] -= 4; uint32_t _ts241368 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241368);
+  { uint32_t _fv = (uint32_t)(_ts241368);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136A */
+  g_cpu.A[0] -= 4; uint32_t _ts24136A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136A);
+  { uint32_t _fv = (uint32_t)(_ts24136A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136C */
+  g_cpu.A[0] -= 4; uint32_t _ts24136C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136C);
+  { uint32_t _fv = (uint32_t)(_ts24136C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136E */
+  uint16_t _24136Er = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_24136Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24136Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241370 */
+  /* unimplemented opcode $4741 @ $241370 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241372 */
+  g_cpu.A[0] -= 4; uint32_t _ts241372 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241372);
+  { uint32_t _fv = (uint32_t)(_ts241372);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241374 */
+  g_cpu.A[0] -= 4; uint32_t _ts241374 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241374);
+  { uint32_t _fv = (uint32_t)(_ts241374);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241376 */
+  g_cpu.A[0] -= 4; uint32_t _ts241376 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241376);
+  { uint32_t _fv = (uint32_t)(_ts241376);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241378 */
+  g_cpu.A[0] -= 4; uint32_t _ts241378 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241378);
+  { uint32_t _fv = (uint32_t)(_ts241378);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137A */
+  g_cpu.A[0] -= 4; uint32_t _ts24137A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24137A);
+  { uint32_t _fv = (uint32_t)(_ts24137A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137C */
+  g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[0]);
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137E */
+  uint8_t _24137Er = (uint8_t)(g_cpu.A[6]) | (uint8_t)0x18u;
+  { uint8_t _fv = (uint8_t)(_24137Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[6] = (uint32_t)(_24137Er);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241382 */
+  g_cpu.A[2] -= 1; uint8_t _t241382 = m68k_read8(g_cpu.A[2]);
+  uint8_t _241382r = (uint8_t)(_t241382) | (uint8_t)0x2Cu;
+  { uint8_t _fv = (uint8_t)(_241382r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[2], (uint8_t)(_241382r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241386 */
+  uint8_t _t241386 = m68k_read8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)));
+  uint8_t _241386r = (uint8_t)(_t241386) | (uint8_t)0x40u;
+  { uint8_t _fv = (uint8_t)(_241386r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)), (uint8_t)(_241386r));
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x24138Cu); return;
 }
 
 void func_2412C4(void) {
@@ -1377165,6 +1388083,315 @@ void func_2412C4(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_241312r));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241316 */
+  uint32_t _t241316 = m68k_read32(g_cpu.A[0]);
+  uint32_t _241316r = (uint32_t)((uint32_t)(_t241316) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t241316)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_241316r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_241316r));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24131C */
+  /* unimplemented opcode $7370 @ $24131C */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24131E */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241383u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241320 */
+  if ((g_cpu.SR & (1u<<1))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x241383u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241322 */
+  if ((!!(g_cpu.SR&(1u<<3)) == !!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    goto label_241344;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241324 */
+  g_cpu.D[2] = 0x00000068u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000068u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241326 */
+  recomp_push_return(0x241328u); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_func(func_241396);
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241328 */
+  if ((g_cpu.SR & (1u<<3))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x24139Du); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132A */
+  g_cpu.A[0] -= 4; uint32_t _ts24132A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24132A);
+  { uint32_t _fv = (uint32_t)(_ts24132A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132C */
+  g_cpu.A[0] -= 4; uint32_t _ts24132C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24132C);
+  { uint32_t _fv = (uint32_t)(_ts24132C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24132E */
+  uint8_t _24132Er = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x80u;
+  { uint8_t _fv = (uint8_t)(_24132Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24132Er));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241332 */
+  g_cpu.A[0] -= 4; uint32_t _ts241332 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241332);
+  { uint32_t _fv = (uint32_t)(_ts241332);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241334 */
+  g_cpu.A[0] -= 4; uint32_t _ts241334 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241334);
+  { uint32_t _fv = (uint32_t)(_ts241334);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241336 */
+  g_cpu.A[0] -= 4; uint32_t _ts241336 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241336);
+  { uint32_t _fv = (uint32_t)(_ts241336);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241338 */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[2]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24133A */
+  g_cpu.A[0] = (uint32_t)(g_cpu.A[1]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24133C */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  m68k_trap_vector(0x21u); return;
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  label_241344:;
+  /* $241344 */
+  uint16_t _241344r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) - (uint16_t)3u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)3u), _fr = (uint16_t)(_241344r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241344r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241346 */
+  uint16_t _241346r = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1]) + (uint16_t)2u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[1])), _fb = (uint16_t)((uint16_t)2u), _fr = (uint16_t)(_241346r);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                        g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)                   g_cpu.SR |= (1u<<3);
+    if ((uint64_t)_fa + (uint64_t)_fb > 0x0000FFFFu) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (!((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[1] = (g_cpu.D[1] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_241346r));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241348 */
+  g_cpu.A[1] += 1u;
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24134A */
+  uint8_t _24134Ar = (uint8_t)((uint8_t)g_cpu.D[0]) | (uint8_t)0x1u;
+  { uint8_t _fv = (uint8_t)(_24134Ar);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24134Ar));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24134E */
+  uint32_t _t24134E = m68k_read32(g_cpu.A[0]);
+  uint32_t _24134Er = (uint32_t)((uint32_t)(_t24134E) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t24134E)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_24134Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_24134Er));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241354 */
+  uint32_t _t241354 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[7] + (101)));
+  g_cpu.A[0] = (uint32_t)(_t241354);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241358 */
+  /* unimplemented opcode $7365 @ $241358 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135A */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413D0u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135C */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413C2u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135E */
+  g_cpu.A[2] -= 4; uint32_t _t24135E = m68k_read32(g_cpu.A[2]);
+  g_cpu.A[0] = (uint32_t)(_t24135E);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241360 */
+  /* unimplemented opcode $7900 @ $241360 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241362 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[2] + (int32_t)8224);
+    uint32_t _v  = g_cpu.D[3];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241366 */
+  g_cpu.A[0] -= 4; uint32_t _ts241366 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241366);
+  { uint32_t _fv = (uint32_t)(_ts241366);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241368 */
+  g_cpu.A[0] -= 4; uint32_t _ts241368 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241368);
+  { uint32_t _fv = (uint32_t)(_ts241368);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136A */
+  g_cpu.A[0] -= 4; uint32_t _ts24136A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136A);
+  { uint32_t _fv = (uint32_t)(_ts24136A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136C */
+  g_cpu.A[0] -= 4; uint32_t _ts24136C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136C);
+  { uint32_t _fv = (uint32_t)(_ts24136C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136E */
+  uint16_t _24136Er = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_24136Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24136Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241370 */
+  /* unimplemented opcode $4741 @ $241370 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241372 */
+  g_cpu.A[0] -= 4; uint32_t _ts241372 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241372);
+  { uint32_t _fv = (uint32_t)(_ts241372);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241374 */
+  g_cpu.A[0] -= 4; uint32_t _ts241374 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241374);
+  { uint32_t _fv = (uint32_t)(_ts241374);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241376 */
+  g_cpu.A[0] -= 4; uint32_t _ts241376 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241376);
+  { uint32_t _fv = (uint32_t)(_ts241376);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241378 */
+  g_cpu.A[0] -= 4; uint32_t _ts241378 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241378);
+  { uint32_t _fv = (uint32_t)(_ts241378);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137A */
+  g_cpu.A[0] -= 4; uint32_t _ts24137A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24137A);
+  { uint32_t _fv = (uint32_t)(_ts24137A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137C */
+  g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[0]);
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137E */
+  uint8_t _24137Er = (uint8_t)(g_cpu.A[6]) | (uint8_t)0x18u;
+  { uint8_t _fv = (uint8_t)(_24137Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[6] = (uint32_t)(_24137Er);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241382 */
+  g_cpu.A[2] -= 1; uint8_t _t241382 = m68k_read8(g_cpu.A[2]);
+  uint8_t _241382r = (uint8_t)(_t241382) | (uint8_t)0x2Cu;
+  { uint8_t _fv = (uint8_t)(_241382r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[2], (uint8_t)(_241382r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241386 */
+  uint8_t _t241386 = m68k_read8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)));
+  uint8_t _241386r = (uint8_t)(_t241386) | (uint8_t)0x40u;
+  { uint8_t _fv = (uint8_t)(_241386r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)), (uint8_t)(_241386r));
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x24138Cu); return;
 }
 
 void func_241314(void) {
@@ -1377327,6 +1388554,169 @@ void func_241314(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_24134Ar));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24134E */
+  uint32_t _t24134E = m68k_read32(g_cpu.A[0]);
+  uint32_t _24134Er = (uint32_t)((uint32_t)(_t24134E) - (uint32_t)0x20202020u);
+  { uint32_t _fa = (uint32_t)((uint32_t)(_t24134E)), _fb = (uint32_t)((uint32_t)0x20202020u), _fr = (uint32_t)(_24134Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 31)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x80000000u) && ((_fa^_fr) & 0x80000000u)) g_cpu.SR |= (1u<<1); }
+  m68k_write32(g_cpu.A[0], (uint32_t)(_24134Er));
+  g_native_insn_count++; g_cycle_accumulator += 28; g_audio_cycle_counter += 28; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241354 */
+  uint32_t _t241354 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[7] + (101)));
+  g_cpu.A[0] = (uint32_t)(_t241354);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241358 */
+  /* unimplemented opcode $7365 @ $241358 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135A */
+  if (!(g_cpu.SR&(1u<<2)) && (!!(g_cpu.SR&(1u<<3))==!!(g_cpu.SR&(1u<<1)))) {
+    g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413D0u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 10; g_audio_cycle_counter += 10; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135C */
+  if ((g_cpu.SR & (1u<<0))) {
+    g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    recomp_tail_call(0x2413C2u); return;
+  }
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24135E */
+  g_cpu.A[2] -= 4; uint32_t _t24135E = m68k_read32(g_cpu.A[2]);
+  g_cpu.A[0] = (uint32_t)(_t24135E);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241360 */
+  /* unimplemented opcode $7900 @ $241360 */
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241362 */
+  { uint32_t _ea = (uint32_t)(g_cpu.A[2] + (int32_t)8224);
+    uint32_t _v  = g_cpu.D[3];
+    m68k_write8(_ea + 0, (uint8_t)(_v >> 8));
+    m68k_write8(_ea + 2, (uint8_t)(_v     ));
+  }
+  g_native_insn_count++; g_cycle_accumulator += 16; g_audio_cycle_counter += 16; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241366 */
+  g_cpu.A[0] -= 4; uint32_t _ts241366 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241366);
+  { uint32_t _fv = (uint32_t)(_ts241366);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241368 */
+  g_cpu.A[0] -= 4; uint32_t _ts241368 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241368);
+  { uint32_t _fv = (uint32_t)(_ts241368);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136A */
+  g_cpu.A[0] -= 4; uint32_t _ts24136A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136A);
+  { uint32_t _fv = (uint32_t)(_ts24136A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136C */
+  g_cpu.A[0] -= 4; uint32_t _ts24136C = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24136C);
+  { uint32_t _fv = (uint32_t)(_ts24136C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24136E */
+  uint16_t _24136Er = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5]) - (uint16_t)1u);
+  { uint16_t _fa = (uint16_t)((uint16_t)((uint16_t)g_cpu.D[5])), _fb = (uint16_t)((uint16_t)1u), _fr = (uint16_t)(_24136Er);
+    g_cpu.SR &= ~(0x1Fu);
+    if (!_fr)                   g_cpu.SR |= (1u<<2);
+    if (_fr >> 15)              g_cpu.SR |= (1u<<3);
+    if ((uint32_t)_fb > (uint32_t)_fa) { g_cpu.SR |= (1u<<0); g_cpu.SR |= (1u<<4); }
+    if (((_fa^_fb) & 0x00008000u) && ((_fa^_fr) & 0x00008000u)) g_cpu.SR |= (1u<<1); }
+  g_cpu.D[5] = (g_cpu.D[5] & 0xFFFF0000u) | (uint32_t)((uint16_t)(_24136Er));
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241370 */
+  /* unimplemented opcode $4741 @ $241370 */
+  g_native_insn_count++; g_cycle_accumulator += 34; g_audio_cycle_counter += 34; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241372 */
+  g_cpu.A[0] -= 4; uint32_t _ts241372 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241372);
+  { uint32_t _fv = (uint32_t)(_ts241372);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241374 */
+  g_cpu.A[0] -= 4; uint32_t _ts241374 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241374);
+  { uint32_t _fv = (uint32_t)(_ts241374);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241376 */
+  g_cpu.A[0] -= 4; uint32_t _ts241376 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241376);
+  { uint32_t _fv = (uint32_t)(_ts241376);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241378 */
+  g_cpu.A[0] -= 4; uint32_t _ts241378 = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241378);
+  { uint32_t _fv = (uint32_t)(_ts241378);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137A */
+  g_cpu.A[0] -= 4; uint32_t _ts24137A = m68k_read32(g_cpu.A[0]);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24137A);
+  { uint32_t _fv = (uint32_t)(_ts24137A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137C */
+  g_cpu.D[0] = (uint32_t)(uint32_t)((uint32_t)g_cpu.D[0]);
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24137E */
+  uint8_t _24137Er = (uint8_t)(g_cpu.A[6]) | (uint8_t)0x18u;
+  { uint8_t _fv = (uint8_t)(_24137Er);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.A[6] = (uint32_t)(_24137Er);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241382 */
+  g_cpu.A[2] -= 1; uint8_t _t241382 = m68k_read8(g_cpu.A[2]);
+  uint8_t _241382r = (uint8_t)(_t241382) | (uint8_t)0x2Cu;
+  { uint8_t _fv = (uint8_t)(_241382r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8(g_cpu.A[2], (uint8_t)(_241382r));
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241386 */
+  uint8_t _t241386 = m68k_read8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)));
+  uint8_t _241386r = (uint8_t)(_t241386) | (uint8_t)0x40u;
+  { uint8_t _fv = (uint8_t)(_241386r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  m68k_write8((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[0] + (0)), (uint8_t)(_241386r));
+  g_native_insn_count++; g_cycle_accumulator += 22; g_audio_cycle_counter += 22; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x24138Cu); return;
 }
 
 void func_24134C(void) {
@@ -1378029,6 +1389419,31 @@ void func_24146C(void) {
     if (!_fv)             g_cpu.SR |= (1u<<2);
     if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
   g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24147C */
+  uint32_t _ts24147C = m68k_read32((uint32_t)(g_cpu.A[6] + (int32_t)8239));
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24147C);
+  { uint32_t _fv = (uint32_t)(_ts24147C);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241480 */
+  uint32_t _ts241480 = m68k_read32((uint32_t)(g_cpu.A[0] + (int32_t)(int16_t)g_cpu.D[2] + (49)));
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241480);
+  { uint32_t _fv = (uint32_t)(_ts241480);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241484 */
+  uint32_t _ts241484 = m68k_read32((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.D[2] + (51)));
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241484);
+  { uint32_t _fv = (uint32_t)(_ts241484);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x241488u); return;
 }
 
 void func_24147A(void) {
@@ -1378064,6 +1389479,31 @@ void func_24147A(void) {
     if (!_fv)             g_cpu.SR |= (1u<<2);
     if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
   g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24148A */
+  uint32_t _ts24148A = m68k_read32((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[2] + (53)));
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24148A);
+  { uint32_t _fv = (uint32_t)(_ts24148A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24148E */
+  uint32_t _ts24148E = m68k_read32((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[2] + (55)));
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts24148E);
+  { uint32_t _fv = (uint32_t)(_ts24148E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241492 */
+  uint32_t _ts241492 = m68k_read32((uint32_t)(int32_t)(int16_t)0x2039);
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241492);
+  { uint32_t _fv = (uint32_t)(_ts241492);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x241496u); return;
 }
 
 void func_241488(void) {
@@ -1378099,6 +1389539,63 @@ void func_241488(void) {
     if (!_fv)             g_cpu.SR |= (1u<<2);
     if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
   g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24149A */
+  uint32_t _ts24149A = m68k_read32((uint32_t)(g_cpu.A[4] + (int32_t)(int16_t)g_cpu.D[2] + (59)));
+  g_cpu.D[4] = (uint32_t)(uint32_t)(_ts24149A);
+  { uint32_t _fv = (uint32_t)(_ts24149A);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24149E */
+  uint32_t _ts24149E = m68k_read32((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[2] + (60)));
+  g_cpu.D[4] = (uint32_t)(uint32_t)(_ts24149E);
+  { uint32_t _fv = (uint32_t)(_ts24149E);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414A2 */
+  uint32_t _ts2414A2 = m68k_read32((uint32_t)(int32_t)(int16_t)0x0001);
+  g_cpu.D[4] = (uint32_t)(uint32_t)(_ts2414A2);
+  { uint32_t _fv = (uint32_t)(_ts2414A2);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414A6 */
+  g_cpu.D[0] = (uint32_t)(uint32_t)(0 /* unknown EA 7/5 */);
+  { uint32_t _fv = (uint32_t)(0 /* unknown EA 7/5 */);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414A8 */
+  g_cpu.D[0] = (uint32_t)(uint32_t)(0 /* unknown EA 7/6 */);
+  { uint32_t _fv = (uint32_t)(0 /* unknown EA 7/6 */);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414AA */
+  uint32_t _ts2414AA = m68k_read32((uint32_t)(g_cpu.A[5] + (int32_t)8247));
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2414AA);
+  { uint32_t _fv = (uint32_t)(_ts2414AA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414AE */
+  g_cpu.D[0] = (uint32_t)(uint32_t)(0 /* unknown EA 7/7 */);
+  { uint32_t _fv = (uint32_t)(0 /* unknown EA 7/7 */);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414B0 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x2414B2u); return;
 }
 
 void func_241496(void) {
@@ -1378134,6 +1389631,39 @@ void func_241496(void) {
     if (!_fv)             g_cpu.SR |= (1u<<2);
     if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
   g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414A6 */
+  g_cpu.D[0] = (uint32_t)(uint32_t)(0 /* unknown EA 7/5 */);
+  { uint32_t _fv = (uint32_t)(0 /* unknown EA 7/5 */);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414A8 */
+  g_cpu.D[0] = (uint32_t)(uint32_t)(0 /* unknown EA 7/6 */);
+  { uint32_t _fv = (uint32_t)(0 /* unknown EA 7/6 */);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414AA */
+  uint32_t _ts2414AA = m68k_read32((uint32_t)(g_cpu.A[5] + (int32_t)8247));
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts2414AA);
+  { uint32_t _fv = (uint32_t)(_ts2414AA);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 46; g_audio_cycle_counter += 46; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414AE */
+  g_cpu.D[0] = (uint32_t)(uint32_t)(0 /* unknown EA 7/7 */);
+  { uint32_t _fv = (uint32_t)(0 /* unknown EA 7/7 */);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2414B0 */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[0]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x2414B2u); return;
 }
 
 void func_2414A4(void) {
@@ -1378507,6 +1390037,42 @@ void func_241538(void) {
     if (!_fv)             g_cpu.SR |= (1u<<2);
     if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
   g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241548 */
+  uint32_t _t241548 = m68k_read32(g_cpu.A[3]); g_cpu.A[3] += 4;
+  g_cpu.A[0] = (uint32_t)(_t241548);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24154A */
+  uint32_t _t24154A = m68k_read32(g_cpu.A[4]); g_cpu.A[4] += 4;
+  g_cpu.A[0] = (uint32_t)(_t24154A);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24154C */
+  uint32_t _t24154C = m68k_read32(g_cpu.A[3]); g_cpu.A[3] += 4;
+  g_cpu.A[4] = (uint32_t)(_t24154C);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24154E */
+  g_cpu.A[0] = (uint32_t)((uint32_t)g_cpu.D[3]);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241550 */
+  uint32_t _ts241550 = m68k_read32((uint32_t)(g_cpu.A[7] + (int32_t)(int16_t)g_cpu.D[2] + (67)));
+  g_cpu.D[0] = (uint32_t)(uint32_t)(_ts241550);
+  { uint32_t _fv = (uint32_t)(_ts241550);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241554 */
+  uint32_t _t241554 = m68k_read32(g_cpu.A[5]); g_cpu.A[5] += 4;
+  g_cpu.A[0] = (uint32_t)(_t241554);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241556 */
+  g_cpu.A[2] -= 4; uint32_t _t241556 = m68k_read32(g_cpu.A[2]);
+  g_cpu.A[0] = (uint32_t)(_t241556);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241558 */
+  g_cpu.A[3] -= 4; uint32_t _t241558 = m68k_read32(g_cpu.A[3]);
+  g_cpu.A[0] = (uint32_t)(_t241558);
+  g_native_insn_count++; g_cycle_accumulator += 14; g_audio_cycle_counter += 14; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x24155Au); return;
 }
 
 void func_241546(void) {
@@ -1378661,6 +1390227,59 @@ void func_241584(void) {
   uint32_t _t241590 = m68k_read32((uint32_t)(g_cpu.A[2] + (int32_t)(int16_t)g_cpu.D[0] + (1)));
   g_cpu.A[0] = (uint32_t)(_t241590);
   g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241594 */
+  uint32_t _t241594 = m68k_read32((uint32_t)(g_cpu.A[3] + (int32_t)(int16_t)g_cpu.D[2] + (116)));
+  g_cpu.A[0] = (uint32_t)(_t241594);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $241598 */
+  uint16_t _t241598 = m68k_read16(g_cpu.A[5]);
+  g_cpu.A[0] = (uint32_t)(int32_t)(int16_t)(_t241598);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24159A */
+  uint32_t _t24159A = m68k_read32((uint32_t)(g_cpu.A[5] + (int32_t)(int16_t)g_cpu.D[2] + (118)));
+  g_cpu.A[0] = (uint32_t)(_t24159A);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $24159E */
+  uint32_t _t24159E = m68k_read32((uint32_t)(g_cpu.A[7] + (int32_t)(int16_t)g_cpu.D[0] + (2)));
+  g_cpu.A[0] = (uint32_t)(_t24159E);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415A2 */
+  uint32_t _t2415A2 = m68k_read32((uint32_t)(g_cpu.A[3] + (int32_t)(int16_t)g_cpu.D[2] + (120)));
+  g_cpu.A[0] = (uint32_t)(_t2415A2);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415A6 */
+  uint32_t _t2415A6 = m68k_read32(0x30553056);
+  g_cpu.A[0] = (uint32_t)(_t2415A6);
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415AC */
+  uint16_t _t2415AC = m68k_read16(g_cpu.A[7]);
+  g_cpu.A[0] = (uint32_t)(int32_t)(int16_t)(_t2415AC);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415AE */
+  uint32_t _t2415AE = m68k_read32((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[2] + (122)));
+  g_cpu.A[0] = (uint32_t)(_t2415AE);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415B2 */
+  uint32_t _t2415B2 = m68k_read32((uint32_t)(0x002415B4 + (int32_t)(int16_t)g_cpu.D[0] + (1)));
+  g_cpu.A[0] = (uint32_t)(_t2415B2);
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415B6 */
+  g_cpu.A[0] = (uint32_t)(0x207D207Eu);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415BC */
+  g_cpu.A[4] = (uint32_t)(0 /* unknown EA 7/6 */);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415BE */
+  g_cpu.A[0] = (uint32_t)(0 /* unknown EA 7/7 */);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415C0 */
+  m68k_write32(g_cpu.A[0], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x2415C2u); return;
 }
 
 void func_241592(void) {
@@ -1378684,6 +1390303,43 @@ void func_241592(void) {
   uint32_t _t24159E = m68k_read32((uint32_t)(g_cpu.A[7] + (int32_t)(int16_t)g_cpu.D[0] + (2)));
   g_cpu.A[0] = (uint32_t)(_t24159E);
   g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415A2 */
+  uint32_t _t2415A2 = m68k_read32((uint32_t)(g_cpu.A[3] + (int32_t)(int16_t)g_cpu.D[2] + (120)));
+  g_cpu.A[0] = (uint32_t)(_t2415A2);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415A6 */
+  uint32_t _t2415A6 = m68k_read32(0x30553056);
+  g_cpu.A[0] = (uint32_t)(_t2415A6);
+  g_native_insn_count++; g_cycle_accumulator += 20; g_audio_cycle_counter += 20; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415AC */
+  uint16_t _t2415AC = m68k_read16(g_cpu.A[7]);
+  g_cpu.A[0] = (uint32_t)(int32_t)(int16_t)(_t2415AC);
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415AE */
+  uint32_t _t2415AE = m68k_read32((uint32_t)(g_cpu.A[6] + (int32_t)(int16_t)g_cpu.D[2] + (122)));
+  g_cpu.A[0] = (uint32_t)(_t2415AE);
+  g_native_insn_count++; g_cycle_accumulator += 48; g_audio_cycle_counter += 48; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415B2 */
+  uint32_t _t2415B2 = m68k_read32((uint32_t)(0x002415B4 + (int32_t)(int16_t)g_cpu.D[0] + (1)));
+  g_cpu.A[0] = (uint32_t)(_t2415B2);
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415B6 */
+  g_cpu.A[0] = (uint32_t)(0x207D207Eu);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415BC */
+  g_cpu.A[4] = (uint32_t)(0 /* unknown EA 7/6 */);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415BE */
+  g_cpu.A[0] = (uint32_t)(0 /* unknown EA 7/7 */);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415C0 */
+  m68k_write32(g_cpu.A[0], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x2415C2u); return;
 }
 
 void func_2415A0(void) {
@@ -1378719,6 +1390375,23 @@ void func_2415A0(void) {
   uint32_t _t2415B2 = m68k_read32((uint32_t)(0x002415B4 + (int32_t)(int16_t)g_cpu.D[0] + (1)));
   g_cpu.A[0] = (uint32_t)(_t2415B2);
   g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415B6 */
+  g_cpu.A[0] = (uint32_t)(0x207D207Eu);
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415BC */
+  g_cpu.A[4] = (uint32_t)(0 /* unknown EA 7/6 */);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415BE */
+  g_cpu.A[0] = (uint32_t)(0 /* unknown EA 7/7 */);
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $2415C0 */
+  m68k_write32(g_cpu.A[0], (uint32_t)((uint32_t)g_cpu.D[0]));
+  { uint32_t _fv = (uint32_t)((uint32_t)g_cpu.D[0]);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 12; g_audio_cycle_counter += 12; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x2415C2u); return;
 }
 
 void func_2415B4(void) {

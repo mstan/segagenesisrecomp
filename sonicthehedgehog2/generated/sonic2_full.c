@@ -382341,6 +382341,49 @@ void func_0407BE(void) {
     if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
   g_cpu.D[0] = (g_cpu.D[0] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_0407BEr));
   g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0407C2 */
+  uint8_t _0407C2r = (uint8_t)((uint8_t)g_cpu.D[4]) | (uint8_t)0x14u;
+  { uint8_t _fv = (uint8_t)(_0407C2r);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 7)        g_cpu.SR |= (1u<<3); }
+  g_cpu.D[4] = (g_cpu.D[4] & 0xFFFFFF00u) | (uint32_t)((uint8_t)(_0407C2r));
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0407C6 */
+  g_cpu.A[4] = (uint32_t)(int32_t)(int16_t)0xB800;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0407CA */
+  recomp_push_return(0x0407CEu); /* JSR push */
+  { int _saved_split_sp_popped = g_split_sp_popped; g_split_sp_popped = 0;
+    recomp_call_func(func_0407FC);
+    g_split_sp_popped = _saved_split_sp_popped;
+  }
+  if (g_rte_pending) { g_rte_pending = 0;
+    g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+    return; } /* RTE/skip propagation (pre-pop) */
+  g_cpu.A[7] += 4; /* JSR pop */
+  g_native_insn_count++; g_cycle_accumulator += 18; g_audio_cycle_counter += 18; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0407CE */
+  g_cpu.A[1] = (uint32_t)(int32_t)(int16_t)0xB800;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0407D2 */
+  g_cpu.A[4] = 0x0003FD9Cu;
+  g_native_insn_count++; g_cycle_accumulator += 8; g_audio_cycle_counter += 8; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0407D6 */
+  g_cpu.D[2] = 0x00000000u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000000u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  /* $0407D8 */
+  g_cpu.D[4] = 0x00000007u;
+  { uint32_t _fv = (uint32_t)((uint32_t)0x00000007u);
+    g_cpu.SR &= ~(0x0Fu);
+    if (!_fv)             g_cpu.SR |= (1u<<2);
+    if (_fv >> 31)        g_cpu.SR |= (1u<<3); }
+  g_native_insn_count++; g_cycle_accumulator += 4; g_audio_cycle_counter += 4; if (g_cycle_accumulator >= g_vblank_threshold) glue_check_vblank();
+  recomp_tail_call(0x0407DAu); return;
 }
 
 /* PatchHTZTiles */
