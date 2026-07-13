@@ -1,14 +1,14 @@
 # JMP-table dispatch audit
-# total sites: 456
+# total sites: 471
 #
 # Summary:
-#   static_target            245  (JMP with statically resolved target — safe)
-#   in_function_switch       144  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
+#   static_target            259  (JMP with statically resolved target — safe)
+#   in_function_switch       143  (JMP(PC,Dn.W) compiled to in-function switch+goto — safe, this is the Duff's-device fix)
 #   dynamic_register           8  (JMP (An)/(d,An)/(An,Xn) — runtime address from register, safe via call_by_address)
 #   fallback_hybrid                — JMP(PC,Dn.W) routed through hybrid_jmp_interpret; subdivided:
 #     function_entry           5    (base IS a registered function — call_by_address resolves it directly)
 #     bra_w_trampoline         0    (base opcode = 0x6000; runtime miss feedback works)
-#     offset_table            49    (base is a dc.w (target-base) table; 1+ entries decode to functions — runtime resolves it)
+#     offset_table            51    (base is a dc.w (target-base) table; 1+ entries decode to functions — runtime resolves it)
 #     INTERIOR_UNRESOLVED      5    (DANGER: base is interior to a function, NOT one of the safe patterns above — silent failure class like pre-fix CPZ)
 #     external_unresolved      0    (base outside any known function — investigate)
 #   unsupported                0  (decoder hit a JMP mode the emitter doesn't handle)
@@ -52,6 +52,7 @@ $006740  in func $00673A  base $012556  kind=static_target
 $0068B6  in func $0068B6  base $0068BA  kind=fallback_hybrid/function_entry
 $007CB6  in func $007CAC  base $007CBA  kind=fallback_hybrid/offset_table
 $007D08  in func $007CC2  base $0299E4  kind=static_target
+$007DB6  in func $007D36  base $029A3E  kind=static_target
 $007DB6  in func $007D7E  base $029A3E  kind=static_target
 $007E48  in func $007E48  base $007E4C  kind=fallback_hybrid/offset_table
 $00C748  in func $00C73A  base $00C74C  kind=fallback_hybrid/offset_table
@@ -111,6 +112,7 @@ $01369C  in func $01366C  base $0251FE  kind=static_target
 $014042  in func $014038  base $014046  kind=fallback_hybrid/offset_table
 $014456  in func $01444C  base $01445A  kind=fallback_hybrid/offset_table
 $014698  in func $01468E  base $01469C  kind=fallback_hybrid/offset_table
+$014B66  in func $014B3A  base $015EEC  kind=static_target
 $014B66  in func $014B58  base $015EEC  kind=static_target
 $014C66  in func $014C58  base $015EEC  kind=static_target
 $014CD4  in func $014CC6  base $015EEC  kind=static_target
@@ -188,24 +190,39 @@ $022E68  in func $022E5E  base $022E6C  kind=fallback_hybrid/offset_table
 $022F68  in func $022F04  base $011CF2  kind=static_target
 $022FF4  in func $022FEA  base $011666  kind=static_target
 $0230A2  in func $023098  base $011666  kind=static_target
+$0232F8  in func $023292  base $011666  kind=static_target
+$023350  in func $023300  base $023356  kind=static_target
+$023370  in func $023356  base $024D1C  kind=static_target
+$023388  in func $023356  base $024D1C  kind=static_target
+$02355A  in func $02355A  base $0237B8  kind=static_target
+$0235BC  in func $0235B2  base $0235C0  kind=fallback_hybrid/offset_table
 $0239AE  in func $023998  base $022DB8  kind=static_target
 $0239B4  in func $023998  base $011666  kind=static_target
+$0239F4  in func $0239D4  base $00496E  kind=static_target
+$023A20  in func $023A16  base $003AC8  kind=static_target
+$023A30  in func $023A26  base $003AC8  kind=static_target
+$023A8A  in func $023A4E  base $023026  kind=static_target
+$023AC6  in func $023A9A  base $022D54  kind=static_target
 $023BB0  in func $023B9E  base $011666  kind=static_target
 $023BCA  in func $023BB8  base $011666  kind=static_target
-$023BDC  in func $023BD2  base $023BE0  kind=in_function_switch targets=11
+$023BDC  in func $023BD2  base $023BE0  kind=in_function_switch targets=6
 $023C32  in func $023BD2  base $00496E  kind=static_target
-$023DC2  in func $023BD2  base $011666  kind=static_target
-$023EBC  in func $023BD2  base $023EC0  kind=in_function_switch targets=13
-$0240CE  in func $023BD2  base $022994  kind=static_target
+$023EBC  in func $023EAC  base $023EC0  kind=fallback_hybrid/offset_table
+$023FA2  in func $023F70  base $022994  kind=static_target
 $024284  in func $024260  base $005EF0  kind=static_target
+$0245A0  in func $024596  base $011666  kind=static_target
 $0245B0  in func $0245A6  base $0245B4  kind=in_function_switch targets=5
+$024706  in func $0246DC  base $023026  kind=static_target
 $024732  in func $024714  base $024736  kind=in_function_switch targets=1
+$024828  in func $024802  base $011CE4  kind=static_target
+$024898  in func $024898  base $011666  kind=static_target
 $0248BA  in func $02489E  base $0248BE  kind=in_function_switch targets=2
 $024900  in func $0248F6  base $024904  kind=in_function_switch targets=3
+$024A1A  in func $024A1A  base $011666  kind=static_target
 $024A26  in func $024A20  base $011666  kind=static_target
 $024A34  in func $024A20  base $0230B2  kind=static_target
 $024A9C  in func $024A94  base $011666  kind=static_target
-$024AAC  in func $024AA2  base $024AB0  kind=in_function_switch targets=14
+$024AAC  in func $024AA2  base $024AB0  kind=in_function_switch targets=8
 $024AF2  in func $024AA2  base $011666  kind=static_target
 $024B0E  in func $024AA2  base $0255F6  kind=static_target
 $024B14  in func $024AA2  base $02585E  kind=static_target
@@ -214,10 +231,6 @@ $024B34  in func $024AA2  base $011666  kind=static_target
 $024B42  in func $024AA2  base $011666  kind=static_target
 $024B74  in func $024AA2  base $024A3A  kind=static_target
 $024B7A  in func $024AA2  base $011666  kind=static_target
-$024BD0  in func $024AA2  base $0230B2  kind=static_target
-$024BD6  in func $024AA2  base $011666  kind=static_target
-$024BEA  in func $024AA2  base $011666  kind=static_target
-$024C4A  in func $024AA2  base $011666  kind=static_target
 $02516C  in func $02515A  base $024D1C  kind=static_target
 $025208  in func $0251FE  base $02515A  kind=static_target
 $02524A  in func $02520E  base $02524E  kind=fallback_hybrid/offset_table
@@ -426,6 +439,8 @@ $03A6B8  in func $03A5B4  base $03A6BC  kind=in_function_switch targets=11
 $03A9E2  in func $03A5B4  base $03A9E6  kind=in_function_switch targets=7
 $03ABAE  in func $03A5B4  base $03ABB2  kind=in_function_switch targets=6
 $03AC04  in func $03A5B4  base $005EF0  kind=static_target
+$03B07A  in func $03B06C  base $036932  kind=static_target
+$03B0D4  in func $03B06C  base $005EF0  kind=static_target
 $03B260  in func $03B194  base $036932  kind=static_target
 $03B27A  in func $03B266  base $03B27E  kind=in_function_switch targets=3
 $03B2FC  in func $03B266  base $036932  kind=static_target
