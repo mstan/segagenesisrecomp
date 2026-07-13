@@ -50,6 +50,83 @@ extern void glue_charge_68k_stall(uint32_t cycles);
 #define CHIP_PC_68K() (g_snd_pcz = 0xFFFFu)
 #define CHIP_PC_Z80() (g_snd_pcz = (unsigned)machine_z80_pc())
 
+/* YM2612 timer B -----------------------------------------------------------
+ * Timer B advances once per 16*144 YM clocks; the YM clock is master/7 on a
+ * Genesis. Thus one increment is 16128 master cycles and overflow occurs
+ * after (256 - reg $26) increments. RKA programs $26=$F2, yielding roughly
+ * 66 scanlines per tick, matching the hardware/oracle stream.
+ *
+ * The audio chips themselves are rendered later from the stamped write queue,
+ * so this small synchronous model exists solely for CPU-visible status reads.
+ * It deliberately models BUSY as always clear; only timer flag B is currently
+ * needed by supported software. */
+#define MASTER_CYCLES_PER_FRAME  (262ull * 3420ull)
+#define YM_TIMER_B_MASTER_TICK   (16ull * 144ull * 7ull)
+
+static uint64_t ym_abs_z80_stamp(void)
+{
+    return (uint64_t)g_snd_frame * MASTER_CYCLES_PER_FRAME +
+           (uint64_t)machine_z80_stamp();
+}
+
+static uint64_t ym_abs_68k_stamp(void)
+{
+    return (uint64_t)g_snd_frame * MASTER_CYCLES_PER_FRAME +
+           (uint64_t)STAMP_68K();
+}
+
+static void ym_timer_update(GenesisBus *b, uint64_t now)
+{
+    if (!b->ym_timer_b_running || b->ym_timer_b_period == 0 ||
+        now < b->ym_timer_b_deadline)
+        return;
+
+    if (b->ym_mode & 0x08u)             /* enable timer-B overflow flag */
+        b->ym_status |= 0x02u;
+
+    /* Timer B is periodic while load/enable bit 1 remains set. Advance the
+     * deadline past 'now' without an unbounded catch-up loop. */
+    uint64_t elapsed = now - b->ym_timer_b_deadline;
+    uint64_t periods = elapsed / b->ym_timer_b_period + 1u;
+    b->ym_timer_b_deadline += periods * b->ym_timer_b_period;
+}
+
+static void ym_write_side_effect(GenesisBus *b, uint8_t port, uint8_t val,
+                                 uint64_t now)
+{
+    ym_timer_update(b, now);
+    unsigned bank = (port >> 1) & 1u;
+    if ((port & 1u) == 0) {
+        b->ym_addr[bank] = val;
+        return;
+    }
+    if (bank != 0) return;              /* timers live in register bank 0 */
+
+    uint8_t reg = b->ym_addr[0];
+    if (reg == 0x26u) {
+        b->ym_timer_b = val;
+        b->ym_timer_b_period =
+            (uint64_t)(256u - (unsigned)val) * YM_TIMER_B_MASTER_TICK;
+    } else if (reg == 0x27u) {
+        /* Bits 4/5 clear timer A/B flags; bit 1 loads/runs timer B; bit 3
+         * enables its overflow flag. RKA writes $3C (clear/stop), updates
+         * $26, then writes $3A (clear/load/run). */
+        if (val & 0x10u) b->ym_status &= (uint8_t)~0x01u;
+        if (val & 0x20u) b->ym_status &= (uint8_t)~0x02u;
+        b->ym_mode = val;
+        if (val & 0x02u) {
+            if (b->ym_timer_b_period == 0)
+                b->ym_timer_b_period =
+                    (uint64_t)(256u - (unsigned)b->ym_timer_b) *
+                    YM_TIMER_B_MASTER_TICK;
+            b->ym_timer_b_running = 1;
+            b->ym_timer_b_deadline = now + b->ym_timer_b_period;
+        } else {
+            b->ym_timer_b_running = 0;
+        }
+    }
+}
+
 void gbus_init(GenesisBus *b, GVDP *vdp)
 {
     memset(b, 0, sizeof(*b));
@@ -244,13 +321,13 @@ uint16_t gbus_read16(GenesisBus *b, uint32_t a)
             return (uint16_t)(((uint16_t)b->z80_ram[off] << 8)
                               | b->z80_ram[(off + 1u) & 0x1FFFu]);
         }
-        /* YM2612 status ($A04000-$A04003, mirrored to $A05FFF): bit 7 = BUSY,
-         * bits 1..0 = timer B/A overflow. We model an infinitely-fast chip
-         * that is never busy and (since the 68K SMPS driver doesn't use the
-         * FM timers) has no overflow — so the status reads back 0. Returning
-         * 0xFF here would leave bit 7 set, and the driver's WriteFMI/WriteFMII
-         * busy-wait (btst #7; bne) would spin forever. */
-        if ((a & 0xFFFFu) < 0x6000u) return 0x0000u;   /* FM status: not busy */
+        /* YM2612 status ($A04000-$A04003, mirrored to $A05FFF): BUSY remains
+         * clear, while timer flags are updated synchronously for polling
+         * drivers. Mirror the byte onto both word lanes for 68K byte reads. */
+        if ((a & 0xFFFFu) < 0x6000u) {
+            ym_timer_update(b, ym_abs_68k_stamp());
+            return (uint16_t)((uint16_t)b->ym_status * 0x0101u);
+        }
         return 0xFFFFu;                          /* bank/PSG region: open bus  */
     }
     if (a >= 0xA10000u && a < 0xA10020u) return io_read(b, a);      /* I/O      */
@@ -290,7 +367,11 @@ void gbus_write16(GenesisBus *b, uint32_t a, uint16_t v)
             snd_trace_68k_write((uint16_t)off, b->z80_ram[off], (uint8_t)(v >> 8),
                                 b->z80_busreq, b->z80_reset_off);  /* [SND-TRACE] */
             b->z80_ram[off] = (uint8_t)(v >> 8); return; }
-        if (a >= 0xA04000u && a <= 0xA04003u) { CHIP_PC_68K(); audio_event_push(STAMP_68K(), (uint8_t)(a & 3), (uint8_t)v); return; }
+        if (a >= 0xA04000u && a <= 0xA04003u) {
+            uint8_t port = (uint8_t)(a & 3);
+            ym_write_side_effect(b, port, (uint8_t)v, ym_abs_68k_stamp());
+            CHIP_PC_68K(); audio_event_push(STAMP_68K(), port, (uint8_t)v); return;
+        }
         return;
     }
     if (a >= 0xA10000u && a < 0xA10020u) { io_write(b, a, (uint8_t)v); return; }
@@ -336,7 +417,11 @@ void gbus_write8(GenesisBus *b, uint32_t a, uint8_t v)
             snd_trace_68k_write((uint16_t)off, b->z80_ram[off], v,
                                 b->z80_busreq, b->z80_reset_off);  /* [SND-TRACE] */
             b->z80_ram[off] = v; return; }
-        if (a >= 0xA04000u && a <= 0xA04003u) { CHIP_PC_68K(); audio_event_push(STAMP_68K(), (uint8_t)(a & 3), v); return; }
+        if (a >= 0xA04000u && a <= 0xA04003u) {
+            uint8_t port = (uint8_t)(a & 3);
+            ym_write_side_effect(b, port, v, ym_abs_68k_stamp());
+            CHIP_PC_68K(); audio_event_push(STAMP_68K(), port, v); return;
+        }
         return;
     }
     if (a == 0xC00011u) { CHIP_PC_68K(); audio_event_push(STAMP_68K(), AUDIO_PORT_PSG, v); return; }
@@ -350,11 +435,11 @@ void gbus_write8(GenesisBus *b, uint32_t a, uint8_t v)
 uint8_t gbus_z80_read(GenesisBus *b, uint16_t addr)
 {
     if (addr < 0x4000u) return b->z80_ram[addr & 0x1FFFu];         /* RAM+mirror */
-    /* YM2612 status ($4000-$5FFF): bit 7 = BUSY. Model a never-busy, no-timer-
-     * overflow chip -> 0. Returning 0xFF (bit 7 set) made the SMPS Z80 driver's
-     * busy-wait spin forever at init (PC stuck ~$0008, zero FM writes) — the
-     * same bug as the 68K-side WriteFMI; see gbus_read16. */
-    if (addr < 0x6000u) return 0x00u;                               /* FM status  */
+    /* YM2612 status: BUSY is clear; timer flags advance on scheduler time. */
+    if (addr < 0x6000u) {
+        ym_timer_update(b, ym_abs_z80_stamp());
+        return b->ym_status;
+    }
     if (addr < 0x8000u) return 0xFFu;                               /* bank/PSG   */
     /* $8000-$FFFF: banked window into the 68K bus. */
     uint32_t a68 = ((uint32_t)b->z80_bank << 15) + (uint32_t)(addr - 0x8000u);
@@ -366,7 +451,11 @@ void gbus_z80_write(GenesisBus *b, uint16_t addr, uint8_t val)
     if (addr < 0x4000u) { unsigned off = addr & 0x1FFFu;
         if (g_sndwatch[off]) snd_trace_z80((uint16_t)off, val, 1);  /* [SND-TRACE] */
         b->z80_ram[off] = val; return; }                           /* RAM+mirror */
-    if (addr < 0x6000u) { CHIP_PC_Z80(); audio_event_push(machine_z80_stamp(), (uint8_t)(addr & 3), val); return; } /* FM */
+    if (addr < 0x6000u) {
+        uint8_t port = (uint8_t)(addr & 3);
+        ym_write_side_effect(b, port, val, ym_abs_z80_stamp());
+        CHIP_PC_Z80(); audio_event_push(machine_z80_stamp(), port, val); return;
+    } /* FM */
     if (addr < 0x6100u) {                                /* $6000 bank register   */
         b->z80_bank = ((b->z80_bank >> 1) | ((val & 1) << 8)) & 0x1FF;
         return;

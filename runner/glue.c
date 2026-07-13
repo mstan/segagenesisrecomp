@@ -55,6 +55,7 @@
 
 #include "frame_record.h"
 #include "game_layout.h"
+#include "game_spec.h"
 
 void recomp_push_return(uint32_t ret_addr)
 {
@@ -379,6 +380,190 @@ uint32_t recomp_resolve_ram_trampoline(uint32_t addr)
     return resolved;
 }
 
+typedef struct {
+    uint32_t ram_addr;
+    uint32_t rom_addr;
+    unsigned word_count;
+} CopiedRomStub;
+
+static CopiedRomStub s_copied_rom_stubs[8];
+
+static uint16_t recomp_rom_read16_direct(uint32_t addr)
+{
+    return (uint16_t)(((uint16_t)g_rom[addr] << 8) | g_rom[addr + 1u]);
+}
+
+/* Some games install short interrupt handlers by copying a ROM routine into
+ * work RAM up to (but excluding) a $FFFF marker. Resolve those copies back to
+ * their static ROM source so the generated implementation can execute them.
+ * Exact full-body comparison avoids treating arbitrary writable data as code. */
+static uint32_t recomp_resolve_copied_rom_stub(uint32_t ram_addr,
+                                               unsigned *word_count_out)
+{
+    uint32_t rom_limit = g_game_spec.expected_rom_size
+                             ? g_game_spec.expected_rom_size
+                             : (uint32_t)sizeof(g_rom);
+
+    for (unsigned i = 0; i < sizeof(s_copied_rom_stubs) / sizeof(s_copied_rom_stubs[0]); i++) {
+        CopiedRomStub *cached = &s_copied_rom_stubs[i];
+        if (cached->ram_addr != ram_addr || cached->word_count == 0)
+            continue;
+        /* Copied raster handlers may intentionally patch operands in their
+         * own body (RKA advances the source word at RAM+$20 each HBlank).
+         * The first 12 words are the stable identifying prefix and include
+         * the command word that distinguishes its near-identical variants. */
+        unsigned signature_words = cached->word_count < 12u
+                                       ? cached->word_count : 12u;
+        unsigned w;
+        for (w = 0; w < signature_words; w++) {
+            if (recomp_ram_read16_direct(ram_addr + 2u * w) !=
+                recomp_rom_read16_direct(cached->rom_addr + 2u * w))
+                break;
+        }
+        if (w == signature_words) {
+            *word_count_out = cached->word_count;
+            return cached->rom_addr;
+        }
+    }
+
+    uint16_t first = recomp_ram_read16_direct(ram_addr);
+    for (uint32_t source = 0; source + 10u < rom_limit; source += 2u) {
+        if (recomp_rom_read16_direct(source) != first)
+            continue;
+
+        unsigned words;
+        for (words = 0; words < 64u && source + 2u * words + 1u < rom_limit; words++) {
+            uint16_t rom_word = recomp_rom_read16_direct(source + 2u * words);
+            if (rom_word == 0xFFFFu)
+                break;
+            if (recomp_ram_read16_direct(ram_addr + 2u * words) != rom_word)
+                break;
+        }
+        if (words < 4u || words >= 64u ||
+            recomp_rom_read16_direct(source + 2u * words) != 0xFFFFu)
+            continue;
+
+        CopiedRomStub *slot = &s_copied_rom_stubs[0];
+        for (unsigned i = 0; i < sizeof(s_copied_rom_stubs) / sizeof(s_copied_rom_stubs[0]); i++) {
+            if (s_copied_rom_stubs[i].word_count == 0 ||
+                s_copied_rom_stubs[i].ram_addr == ram_addr) {
+                slot = &s_copied_rom_stubs[i];
+                break;
+            }
+        }
+        slot->ram_addr = ram_addr;
+        slot->rom_addr = source;
+        slot->word_count = words;
+        *word_count_out = words;
+        fprintf(stderr, "[dispatch][RAM] copied handler $%06X -> ROM $%06X (%u words)\n",
+                ram_addr, source, words);
+        return source;
+    }
+    return 0;
+}
+
+int recomp_dispatch_ram_stub(uint32_t addr)
+{
+    static uint32_t s_reported_addr;
+    uint32_t result;
+    uint32_t carry;
+    uint32_t overflow = 0;
+    unsigned shift_count = 0;
+    int shift_left = 0;
+    addr &= 0xFFFFFFu;
+    if (addr < RAM_BASE)
+        return 0;
+
+    /* A generated JSR/JMP dispatcher already models the surrounding loose-A7
+     * call edge. For a RAM-resident RTS stub, returning from this C helper is
+     * therefore the complete instruction semantics: the generated caller (or
+     * its enclosing JMP caller) performs the single guest-stack pop exactly as
+     * it does for a native ROM function. RKA installs this canonical null
+     * handler at $FFB1F2. */
+    uint16_t opcode = recomp_ram_read16_direct(addr);
+    if (opcode == 0x4E75u) {
+        g_native_insn_count++;
+        g_cycle_accumulator += 16u;
+        g_audio_cycle_counter += 16u;
+        if (g_cycle_accumulator >= g_vblank_threshold)
+            glue_check_vblank();
+        return 1;
+    }
+
+    /* RKA's configuration loader copies one of these two-instruction helpers
+     * to $FFB1F2. They scale D1 before collision-table lookups. Keep this
+     * decoder deliberately narrow: only the five exact opcodes present in the
+     * ROM's configuration records, and only when immediately followed by RTS. */
+    if (recomp_ram_read16_direct(addr + 2u) == 0x4E75u) {
+        switch (opcode) {
+        case 0xE381u: shift_left = 1; shift_count = 1; break; /* ASL.L #1,D1 */
+        case 0xE581u: shift_left = 1; shift_count = 2; break; /* ASL.L #2,D1 */
+        case 0xE781u: shift_left = 1; shift_count = 3; break; /* ASL.L #3,D1 */
+        case 0xE981u: shift_left = 1; shift_count = 4; break; /* ASL.L #4,D1 */
+        case 0xE289u: shift_left = 0; shift_count = 1; break; /* LSR.L #1,D1 */
+        default: break;
+        }
+    }
+
+    if (shift_count != 0) {
+        uint32_t source = g_cpu.D[1];
+        if (shift_left) {
+            result = source << shift_count;
+            carry = (source >> (32u - shift_count)) & 1u;
+
+            /* ASL sets V when the sign changes at any intermediate step. */
+            uint32_t top = source >> (31u - shift_count);
+            uint32_t all_same = (1u << (shift_count + 1u)) - 1u;
+            overflow = (top != 0u && top != all_same) ? 1u : 0u;
+        } else {
+            result = source >> shift_count;
+            carry = (source >> (shift_count - 1u)) & 1u;
+        }
+
+        g_cpu.D[1] = result;
+        g_cpu.SR &= ~0x1Fu;
+        if (result == 0)
+            g_cpu.SR |= 1u << 2;
+        if (result >> 31)
+            g_cpu.SR |= 1u << 3;
+        if (carry)
+            g_cpu.SR |= (1u << 0) | (1u << 4);
+        if (overflow)
+            g_cpu.SR |= 1u << 1;
+
+        /* One register shift (8 + 2*n cycles) followed by RTS (16 cycles). */
+        uint32_t cycles = 24u + 2u * shift_count;
+        g_native_insn_count += 2u;
+        g_cycle_accumulator += cycles;
+        g_audio_cycle_counter += cycles;
+        if (g_cycle_accumulator >= g_vblank_threshold)
+            glue_check_vblank();
+        return 1;
+    }
+
+    {
+        unsigned copied_words = 0;
+        uint32_t source = recomp_resolve_copied_rom_stub(addr, &copied_words);
+        if (source != 0 && copied_words != 0) {
+            call_by_address(source);
+            return 1;
+        }
+    }
+
+    if (s_reported_addr != addr) {
+        s_reported_addr = addr;
+        fprintf(stderr,
+                "[dispatch][RAM] unresolved stub $%06X words=%04X %04X %04X %04X "
+                "mode=$%04X\n",
+                addr, opcode,
+                recomp_ram_read16_direct(addr + 2u),
+                recomp_ram_read16_direct(addr + 4u),
+                recomp_ram_read16_direct(addr + 6u),
+                recomp_ram_read16_direct(0xFFB1D0u));
+    }
+    return 0;
+}
+
 void glue_reset_frame_sync(void)
 {
     g_hybrid_cycle_counter = 0;
@@ -545,6 +730,10 @@ static int     s_game_yielded_vblank = 0;
  * sound. glue_run_game_chunk drains this debt at M68K_PER_LINE per scanline
  * before resuming main-loop work. Only ever nonzero on the own backend. */
 static uint32_t s_irq_cycle_debt = 0;
+/* Interrupt level whose atomically-executed handler owns the outstanding
+ * raster debt. A second level-6 interrupt cannot be accepted while the real
+ * 68000 would still be inside the previous level-6 handler. */
+static int s_irq_cycle_debt_level = 0;
 /* g_audio_cycle_counter value at the last budget drain (see
  * check_cycle_budget — the budget drains by real elapsed 68K cycles). */
 static uint32_t s_budget_cyc_seen = 0;
@@ -583,10 +772,13 @@ void glue_run_game_chunk(cc_u32f cycles)
     if (s_irq_cycle_debt) {
         if (s_irq_cycle_debt >= cycles) {
             s_irq_cycle_debt -= (uint32_t)cycles;
+            if (s_irq_cycle_debt == 0)
+                s_irq_cycle_debt_level = 0;
             return;
         }
         cycles -= s_irq_cycle_debt;
         s_irq_cycle_debt = 0;
+        s_irq_cycle_debt_level = 0;
     }
 
     s_chunk_cycles = cycles;
@@ -622,6 +814,14 @@ static void check_cycle_budget(void)
             s_cycle_budget -= (int32_t)(now - s_budget_cyc_seen);
         s_budget_cyc_seen = now;   /* also re-syncs after the per-frame reset */
         if (s_cycle_budget <= 0) {
+            /* This is a real cooperative yield to the scanline scheduler.
+             * Keep the bus watchdog's "without yield" window aligned with
+             * the instruction watchdog, which glue_run_game_chunk resets on
+             * every fiber return. Games such as RKA advance exclusively via
+             * this budget path rather than a recognized WaitForVBlank hook;
+             * without this reset, normal bus traffic accumulates over
+             * thousands of frames and eventually produces a false hang. */
+            s_watchdog_counter = 0;
             g_chunk_yield_count++;
             { char stack_marker; game_stack_note("cycle-budget", &stack_marker); }
             fiber_switch(s_main_fiber);
@@ -778,6 +978,8 @@ static void own_deliver_vint(GVDP *vdp)
 #endif
     if (g_game_spec.call_vblank) g_game_spec.call_vblank();
     s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
+    if (s_irq_cycle_debt)
+        s_irq_cycle_debt_level = 6;
 #ifdef GEN_DEV_TRACE
     /* [IRQ-DEBT] a V-int handler owing more than one full frame of raster
      * debt freezes the main loop for multiple wall frames (and with it the
@@ -826,7 +1028,12 @@ void glue_own_interrupt(int level, GVDP *vdp)
         /* Fire V_Int once per wall frame, exactly like hardware — NOT only when
          * the game has parked at WaitForVBlank. If the 68K currently has IRQs
          * masked, latch it and deliver when the mask drops instead of losing it. */
-        if (imask < 6) { s_own_vint_latched = 0; own_deliver_vint(vdp); }
+        if (s_irq_cycle_debt && s_irq_cycle_debt_level >= 6) {
+            /* The prior V-int still occupies the CPU on the raster timeline.
+             * Multiple assertions merge into one level-triggered pending
+             * interrupt, just as they do while SR masks level 6. */
+            s_own_vint_latched = 1;
+        } else if (imask < 6) { s_own_vint_latched = 0; own_deliver_vint(vdp); }
         else           {
 #ifdef GEN_DEV_TRACE
             /* [VINT-MASK] V-int latched because the main-context 68K has IRQs
@@ -858,6 +1065,8 @@ void glue_own_interrupt(int level, GVDP *vdp)
         uint32_t cyc_before = g_audio_cycle_counter;
         if (g_game_spec.call_hblank) g_game_spec.call_hblank();
         s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
+        if (s_irq_cycle_debt && s_irq_cycle_debt_level < 4)
+            s_irq_cycle_debt_level = 4;
         g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
         g_68k_stamp_rebase = saved_rebase;
         s_in_vblank_service = 0;
@@ -874,6 +1083,7 @@ void glue_own_interrupt(int level, GVDP *vdp)
 int glue_own_vint_service_latched(GVDP *vdp)
 {
     if (!s_own_vint_latched || !s_game_running) return 0;
+    if (s_irq_cycle_debt && s_irq_cycle_debt_level >= 6) return 0;
     if (((g_cpu.SR >> 8) & 7) >= 6) return 0;   /* still masked — keep latched */
     s_own_vint_latched = 0;
     own_deliver_vint(vdp);
@@ -1431,6 +1641,7 @@ void glue_restart_game_fiber(uint32_t resume_pc)
     s_cycle_budget = 0;
     s_chunk_cycles = 0;
     s_irq_cycle_debt = 0;
+    s_irq_cycle_debt_level = 0;
     s_watchdog_counter = 0;
     s_vblank_fired_this_frame = 0;
     s_vblank_executed_this_frame = 0;
@@ -1703,6 +1914,10 @@ void m68k_write16(uint32_t byte_addr, uint16_t val)
 #endif
     HYBRID_BUMP_CYCLES();
 #if OWN_BACKEND
+    if (g_mem_write_trace_fn) {
+        g_mem_write_trace_fn(byte_addr,      (uint8_t)(val >> 8), g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 1u, (uint8_t)val,        g_audio_cycle_counter);
+    }
     gbus_write16(&g_machine.bus, byte_addr, val);
 #else
     M68kWriteCallback(&s_cpu_data,
@@ -1732,6 +1947,8 @@ void m68k_write8(uint32_t byte_addr, uint8_t val)
     }
     HYBRID_BUMP_CYCLES();
 #if OWN_BACKEND
+    if (g_mem_write_trace_fn)
+        g_mem_write_trace_fn(byte_addr, val, g_audio_cycle_counter);
     gbus_write8(&g_machine.bus, byte_addr, val);
 #else
     cc_bool hi = (byte_addr & 1) == 0;
@@ -1763,6 +1980,12 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
      * them, the half-written command corrupts VDP state. */
     HYBRID_BUMP_CYCLES();
 #if OWN_BACKEND
+    if (g_mem_write_trace_fn) {
+        g_mem_write_trace_fn(byte_addr,      (uint8_t)(val >> 24), g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 1u, (uint8_t)(val >> 16), g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 2u, (uint8_t)(val >> 8),  g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 3u, (uint8_t)val,         g_audio_cycle_counter);
+    }
     gbus_write16(&g_machine.bus, byte_addr,     (uint16_t)(val >> 16));
     gbus_write16(&g_machine.bus, byte_addr + 2, (uint16_t)(val & 0xFFFF));
 #else

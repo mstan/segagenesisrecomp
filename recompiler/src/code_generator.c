@@ -4312,6 +4312,8 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         "}\n\n"
         "static void recomp_dispatch_once(uint32_t addr) {\n"
         "    addr = recomp_resolve_ram_trampoline(addr);\n"
+        "    if (recomp_dispatch_ram_stub(addr))\n"
+        "        return;\n"
         "    for (int i = 0; s_dispatch_table[i].fn; i++) {\n"
         "        if (s_dispatch_table[i].addr == addr) {\n"
         "            s_dispatch_table[i].fn();\n"
