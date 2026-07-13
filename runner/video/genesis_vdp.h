@@ -118,6 +118,44 @@ uint16_t gvdp_read_hv_counter(const GVDP *v);
  * save files. */
 uint32_t gvdp_consume_68k_stall(GVDP *v);
 
+/* ---- Always-on VDP event ring ---------------------------------------------
+ * Port-level flight recorder: every register write, completed control
+ * command, DMA execution/decline, and direct data-port write. Always
+ * compiled in (Release too); probes query backward via the debug server
+ * (cmd `vdp_events`) — never arm-then-record. Ring storage is file-static
+ * in genesis_vdp.c (exposed via these globals) so the GVDP struct and the
+ * raw save-state image keep their layout. */
+enum {
+    GVDP_EVT_REG          = 1,   /* code=reg index, value=reg value           */
+    GVDP_EVT_CMD          = 2,   /* completed control pair: code/addr/inc     */
+    GVDP_EVT_DATA         = 3,   /* data-port write: code/addr/value/inc      */
+    GVDP_EVT_DMA_68K      = 4,   /* executed 68k->VDP DMA: addr/inc/len/src   */
+    GVDP_EVT_DMA_FILL_ARM = 5,   /* VRAM fill armed                           */
+    GVDP_EVT_DMA_COPY     = 6,   /* executed VRAM copy                        */
+    GVDP_EVT_DMA_SKIP     = 7    /* DMA-bit command declined (see reason)     */
+};
+enum {
+    GVDP_SKIP_DMA_OFF      = 1,  /* reg1 M1 (DMA enable) clear                */
+    GVDP_SKIP_NO_BUSREAD   = 2,  /* no bus_read hook wired                    */
+    GVDP_SKIP_FILL_TRIGGER = 3   /* DATA event doubled as a fill trigger      */
+};
+typedef struct {
+    uint32_t seq;
+    uint8_t  kind;               /* GVDP_EVT_*                                */
+    uint8_t  code;               /* VDP code bits (or reg index for REG)      */
+    uint8_t  reason;             /* GVDP_SKIP_* where applicable              */
+    uint8_t  in_vblank;
+    uint16_t scanline;
+    uint16_t addr;               /* VDP address at the event                  */
+    uint16_t value;              /* data word / reg value / cmd second half   */
+    uint16_t inc;                /* auto-increment (reg 15) at the event      */
+    uint16_t len;                /* DMA length in words                       */
+    uint32_t src;                /* DMA source (68K byte address)             */
+} GVdpEvent;
+#define GVDP_EVENT_CAP 16384
+extern GVdpEvent g_gvdp_events[GVDP_EVENT_CAP];
+extern uint32_t  g_gvdp_event_seq;
+
 /* ---- Geometry / mode queries (from registers) ----------------------------- */
 int gvdp_screen_width (const GVDP *v);          /* 256 (H32) or 320 (H40)      */
 int gvdp_screen_height(const GVDP *v);          /* 224 (V28) or 240 (V30) — RASTER lines */

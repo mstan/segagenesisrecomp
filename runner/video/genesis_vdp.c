@@ -98,6 +98,34 @@ void gvdp_reset(GVDP *v)
     if (REG_AUTOINC(v) == 0) REG_AUTOINC(v) = 2;
 }
 
+/* ---- Always-on VDP event ring ---------------------------------------------
+ * Records every register write, completed control command, DMA execution /
+ * decline, and direct data-port write. This is the port-level flight recorder
+ * for "the game issued the command but VRAM never changed" investigations:
+ * probes connect and query backward (PRINCIPLES.md #17), they never arm.
+ * File-static (single own-backend VDP instance per process) so the GVDP
+ * struct — and with it the raw save-state image — keeps its layout. */
+GVdpEvent g_gvdp_events[GVDP_EVENT_CAP];
+uint32_t  g_gvdp_event_seq = 0;
+
+static void evt_push(const GVDP *v, uint8_t kind, uint8_t code, uint16_t addr,
+                     uint16_t value, uint16_t inc, uint16_t len, uint32_t src,
+                     uint8_t reason)
+{
+    GVdpEvent *e = &g_gvdp_events[g_gvdp_event_seq % GVDP_EVENT_CAP];
+    e->seq       = g_gvdp_event_seq++;
+    e->kind      = kind;
+    e->code      = code;
+    e->reason    = reason;
+    e->in_vblank = v->in_vblank;
+    e->scanline  = v->scanline;
+    e->addr      = addr;
+    e->value     = value;
+    e->inc       = inc;
+    e->len       = len;
+    e->src       = src;
+}
+
 /* ---- Geometry / mode queries ---------------------------------------------- */
 int gvdp_screen_width(const GVDP *v)  { return MODE4_H40(v) ? 320 : 256; }
 int gvdp_screen_height(const GVDP *v) { return MODE2_V30(v) ? 240 : 224; }
@@ -242,16 +270,29 @@ static void dma_run_vram_fill_data(GVDP *v, uint16_t value)
 
 static void maybe_start_dma(GVDP *v)
 {
-    if (!(v->code & CODE_DMA_BIT) || !MODE2_DMA_ON(v)) return;
+    if (!(v->code & CODE_DMA_BIT)) return;
+    if (!MODE2_DMA_ON(v)) {
+        evt_push(v, GVDP_EVT_DMA_SKIP, v->code, v->address, 0, REG_AUTOINC(v),
+                 (uint16_t)dma_length(v), dma_source_68k(v), GVDP_SKIP_DMA_OFF);
+        return;
+    }
     /* reg[23] bits 7-6 select the DMA flavour. */
     uint8_t mode = REG_DMA_SRC_HI(v) & 0xC0;
     if ((mode & 0x80) == 0) {            /* 68k -> VDP                         */
+        evt_push(v, GVDP_EVT_DMA_68K, v->code, v->address, 0, REG_AUTOINC(v),
+                 (uint16_t)dma_length(v), dma_source_68k(v),
+                 v->bus_read ? 0 : GVDP_SKIP_NO_BUSREAD);
         v->dma_active = 1;
         dma_run_68k_to_vdp(v);
         v->dma_active = 0;
     } else if ((mode & 0x40) == 0) {     /* VRAM fill (waits for data write)   */
+        evt_push(v, GVDP_EVT_DMA_FILL_ARM, v->code, v->address, 0, REG_AUTOINC(v),
+                 (uint16_t)dma_length(v), 0, 0);
         v->dma_fill_pending = 1;
     } else {                             /* VRAM copy                          */
+        evt_push(v, GVDP_EVT_DMA_COPY, v->code, v->address, 0, REG_AUTOINC(v),
+                 (uint16_t)dma_length(v),
+                 ((uint32_t)REG_DMA_SRC_LO(v)) | ((uint32_t)REG_DMA_SRC_MID(v) << 8), 0);
         v->dma_active = 1;
         dma_run_vram_copy(v);
         v->dma_active = 0;
@@ -270,6 +311,8 @@ void gvdp_write_control(GVDP *v, uint16_t value)
         if ((value & 0xC000) == 0x8000) {
             /* Register write: 10rr rrrr dddd dddd */
             set_register(v, (value >> 8) & 0x1F, (uint8_t)value);
+            evt_push(v, GVDP_EVT_REG, (uint8_t)((value >> 8) & 0x1F), 0,
+                     (uint16_t)(value & 0xFF), 0, 0, 0, 0);
             v->code = 0;            /* register writes reset the code         */
             return;
         }
@@ -282,6 +325,7 @@ void gvdp_write_control(GVDP *v, uint16_t value)
         v->address = (uint16_t)((v->address & 0x3FFF) | ((value & 0x0003) << 14));
         v->code = (uint8_t)((v->code & 0x03) | ((value >> 2) & 0x3C));
         v->control_pending = 0;
+        evt_push(v, GVDP_EVT_CMD, v->code, v->address, value, REG_AUTOINC(v), 0, 0, 0);
         maybe_start_dma(v);
     }
 }
@@ -289,6 +333,8 @@ void gvdp_write_control(GVDP *v, uint16_t value)
 void gvdp_write_data(GVDP *v, uint16_t value)
 {
     v->control_pending = 0;
+    evt_push(v, GVDP_EVT_DATA, v->code, v->address, value, REG_AUTOINC(v), 0, 0,
+             v->dma_fill_pending ? GVDP_SKIP_FILL_TRIGGER : 0);
     if (v->dma_fill_pending) { dma_run_vram_fill_data(v, value); return; }
 
     switch (v->code & 0x0F) {
