@@ -890,13 +890,19 @@ void glue_own_interrupt(int level, GVDP *vdp)
     if (level == 6) {
         /* Fire V_Int once per wall frame, exactly like hardware — NOT only when
          * the game has parked at WaitForVBlank. If the 68K currently has IRQs
-         * masked, latch it and deliver when the mask drops instead of losing it. */
-        if (s_irq_cycle_debt && s_irq_cycle_debt_level >= 6) {
-            /* The prior V-int still occupies the CPU on the raster timeline.
-             * Multiple assertions merge into one level-triggered pending
-             * interrupt, just as they do while SR masks level 6. */
-            s_own_vint_latched = 1;
-        } else if (imask < 6) { s_own_vint_latched = 0; own_deliver_vint(vdp); }
+         * masked, latch it and deliver when the mask drops instead of losing it.
+         *
+         * NOTE: we deliver even when a prior handler's raster debt is still
+         * outstanding (s_irq_cycle_debt > 0). Deferring on debt deadlocks a game
+         * that busy-waits on V-int-driven state: Sonic 1's SEGA screen runs a
+         * ~1-frame V_Int handler (the "SEEE-GAAA" PCM DAC feed), so debt is >=1
+         * frame every time it fires; latching the *next* V-int behind that debt
+         * meant Sega_WaitEnd's V-int-decremented $F614 countdown never advanced,
+         * the game went off the rails, and its fiber stack ran away. The debt is
+         * still charged/drained (glue_run_game_chunk) for raster/audio cycle
+         * stamping — it just no longer gates *delivery*. Merging across truly
+         * masked spans is preserved by the imask>=6 latch path below. */
+        if (imask < 6) { s_own_vint_latched = 0; own_deliver_vint(vdp); }
         else           {
 #ifdef GEN_DEV_TRACE
             /* [VINT-MASK] V-int latched because the main-context 68K has IRQs
@@ -946,7 +952,9 @@ void glue_own_interrupt(int level, GVDP *vdp)
 int glue_own_vint_service_latched(GVDP *vdp)
 {
     if (!s_own_vint_latched || !s_game_running) return 0;
-    if (s_irq_cycle_debt && s_irq_cycle_debt_level >= 6) return 0;
+    /* Deliver as soon as the mask drops; do NOT hold behind outstanding raster
+     * debt (that indefinitely-deferred S1's SEGA-screen V-int — see
+     * glue_own_interrupt). Debt is still charged/drained for cycle stamping. */
     if (((g_cpu.SR >> 8) & 7) >= 6) return 0;   /* still masked — keep latched */
     s_own_vint_latched = 0;
     own_deliver_vint(vdp);
