@@ -233,6 +233,11 @@ typedef struct {
      * Manual jump_table directives are always honored regardless of
      * this flag. Default: false. */
     bool           jump_table_autodiscovery;
+    /* Opt-in shared-body treatment for branch-proven overlapping callable
+     * entries. Disabled by default until a game's runtime regression suite
+     * validates its candidate alias set. The analyzer still reports candidates
+     * when disabled; established function boundaries remain unchanged. */
+    bool           function_aliases;
     /* Widescreen (16:9) injection sites, from [[widescreen_site]] in game.toml.
      * Consumed at codegen time (not emitted to the runtime layout). Empty =>
      * no widescreen injection for this game. */

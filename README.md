@@ -26,7 +26,7 @@ A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries
 | `recompiler/src/` | The recompiler tool — analyzes ROM binary, emits native C |
 | `runner/include/` | Shared runtime headers (`genesis_runtime.h`) |
 | `clownmdemu-core/` | [clownmdemu](https://github.com/Clownacy/clownmdemu) emulator core — **pinned submodule, development only**. Conformance oracle for the unshipped `_oracle` builds; AGPL-3.0. Native (release) targets compile and link **zero** code from it — enforced by the CMake include lists; see `RELEASING.md` / `LICENSING.md` |
-| `sonicthehedgehog/generated/` | Generated output for Sonic 1 — 530+ native C functions (**READ-ONLY**) |
+| `<game build>/generated/<prefix>/` | Ignored output regenerated from the ROM, config, and current recompiler |
 | `sonicthehedgehog/game.cfg` | Recompiler config — 530 extra_func entries |
 
 ## How It Works
@@ -74,10 +74,14 @@ ninja -C build
 
 ```bash
 cd sonicthehedgehog
-../recompiler/build/Release/GenesisRecomp.exe <path-to-sonic.bin> --game game.cfg
+../recompiler/build/Release/GenesisRecomp.exe sonic.bin --game game.toml --output-dir generated
 ```
 
-This overwrites `generated/sonic_full.c` and `sonic_dispatch.c`. After regenerating, rebuild the game runner.
+The manual command writes ignored files under `generated/`. Normal game CMake
+builds isolate them under that build tree's `generated/<prefix>/` directory
+and rebuild whenever the ROM, game config, discovery inputs, annotations,
+recompiler, or generation options change. Generated C is deliberately not
+tracked in Git.
 
 ## Building and Running the Game
 
@@ -161,8 +165,8 @@ With thanks to the Sonic Retro community for maintaining these disassemblies.
 | `recompiler/src/code_generator.c` | Main codegen — 68K → C translation, `_sp_popped` pattern, cycle estimation |
 | `recompiler/src/m68k_decoder.c` | 68K instruction decoder |
 | `runner/include/genesis_runtime.h` | Shared interface: `M68KState`, `g_rte_pending`, `g_early_return`, bus access |
-| `sonicthehedgehog/generated/sonic_full.c` | 530+ generated functions (**READ-ONLY**, regenerate with recompiler) |
-| `sonicthehedgehog/generated/sonic_dispatch.c` | Dispatch table + interior label accessors (**READ-ONLY**) |
+| `<game build>/generated/<prefix>/*_full.c` | Ignored build output containing generated functions |
+| `<game build>/generated/<prefix>/*_dispatch.c` | Ignored build output containing the dispatch table |
 | `sonicthehedgehog/game.cfg` | 530 extra_func entries — discovered via runtime logging + interpreter coverage |
 
 ## License

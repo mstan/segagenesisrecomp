@@ -364,6 +364,7 @@ bool game_config_load(GameConfig *cfg, const char *path) {
         cfg->vblank_yield_addr        = toml_u32_or(game, "vblank_yield_addr", 0);
         cfg->allow_68020_branch       = toml_bool_or(game, "allow_68020_branch", false);
         cfg->jump_table_autodiscovery = toml_bool_or(game, "jump_table_autodiscovery", false);
+        cfg->function_aliases         = toml_bool_or(game, "function_aliases", false);
         cfg->runtime_table_promotions = toml_bool_or(game, "runtime_table_promotions", false);
 
         /* code_addrs_file: flat text list (one hex instruction-start addr per

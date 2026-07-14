@@ -8,6 +8,7 @@
 #include "code_generator.h"
 #include "codegen_diag.h"
 #include "m68k_decoder.h"
+#include "m68k_validator.h"
 #include "function_finder.h"
 #include "annotations.h"
 #include "game_config.h"
@@ -233,6 +234,10 @@ static bool s_reverse_debug = false;
  * without dragging the whole GameConfig into every emit signature. */
 static const uint32_t *s_extra_seeds      = NULL;
 static int             s_extra_seed_count = 0;
+/* Set by scan_function for ownership planning. A host whose unbounded CFG
+ * touches an illegal encoding is not allowed to absorb later entries: that is
+ * the classic code-running-into-data shape, not proof of overlap. */
+static bool            s_scan_hit_invalid = false;
 /* Set by codegen_emit after boundary splitting so JSR emission can verify
  * that the target is in the function table. Targets not present fall back
  * to recomp_call_addr() to avoid undeclared-identifier build errors. */
@@ -271,6 +276,8 @@ static const WsSite *ws_site_for_kind(uint32_t addr, WsSiteKind k0, WsSiteKind k
  * disasm label set, to read off heuristic misses (T\H) and false positives
  * (H\T) without per-entry provenance plumbing. */
 static const char *s_dump_functions_path = NULL;
+static uint32_t   *s_candidate_owners = NULL;
+static int         s_candidate_owner_count = 0;
 void codegen_set_dump_functions_path(const char *path) {
     s_dump_functions_path = path;
 }
@@ -1063,6 +1070,19 @@ static bool addr_is_function_entry(uint32_t addr, const uint32_t *sorted_funcs,
     return false;
 }
 
+/* Exact-match index lookup in a sorted entry array. */
+static int function_entry_index(uint32_t addr, const uint32_t *sorted_funcs,
+                                int nfuncs) {
+    int lo = 0, hi = nfuncs - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (sorted_funcs[mid] == addr) return mid;
+        if (sorted_funcs[mid] < addr) lo = mid + 1;
+        else                          hi = mid - 1;
+    }
+    return -1;
+}
+
 /* Report (once per entry per run) a discovered function entry that lands
  * MID-INSTRUCTION relative to a decoded stream — a data-shadowed / falsely
  * discovered entry. The stream decodes through it (see the linear-scan rule
@@ -1325,15 +1345,19 @@ static void seed_pc_idx_dispatch_targets(const GenesisRom *rom,
 }
 
 static void scan_function(const GenesisRom *rom, uint32_t start_addr,
-                          AddrSet *instrs, AddrSet *labels,
-                          const uint32_t *sorted_funcs, int nfuncs,
-                          AddrSet *extern_targets,
+                           AddrSet *instrs, AddrSet *labels,
+                           const uint32_t *sorted_funcs, int nfuncs,
+                           const uint32_t *all_entries, int nentries,
+                           AddrSet *extern_targets,
                           const uint32_t *extra_seeds, int extra_seed_count,
                           const GameConfig *cfg) {
     /* Worklist-based CFG walk */
+    s_scan_hit_invalid = false;
     AddrSet worklist;
     addrset_init(&worklist);
     addrset_insert(&worklist, start_addr);
+    M68KValidatorOptions vopts = {0};
+    vopts.allow_68020_branch = cfg ? cfg->allow_68020_branch : false;
 
     /* Disasm-extracted interior PCs that the CFG walker would otherwise
      * miss — e.g. local labels reached only via `JMP (PC,Dn.W)` (Sonic 2
@@ -1385,9 +1409,20 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
             M68KInstr instr;
             if (!m68k_decode(rom, pc, &instr)) break;
 
-            report_misaligned_entries_in_range(pc, instr.byte_length,
-                                               instr.words[0], instr.mnemonic,
-                                               start_addr, sorted_funcs, nfuncs);
+            /* The decoder is intentionally permissive; legality is the proof
+             * that a speculative CFG path is still code.  The finder already
+             * applies this gate, but codegen historically did not, allowing a
+             * branch/table seed to walk arbitrary data and manufacture later
+             * boundaries. */
+            if (m68k_validate(&instr, &vopts) != M68K_LEGAL) {
+                s_scan_hit_invalid = true;
+                break;
+            }
+
+            if (all_entries && nentries > 0)
+                report_misaligned_entries_in_range(pc, instr.byte_length,
+                                                   instr.words[0], instr.mnemonic,
+                                                   start_addr, all_entries, nentries);
 
             addrset_insert(instrs, pc);
 
@@ -1479,6 +1514,158 @@ static void scan_function(const GenesisRom *rom, uint32_t start_addr,
     }
 
     addrset_free(&worklist);
+}
+
+/* A callable address is not necessarily a new function boundary. Shared
+ * epilogues and branch-entered suffixes can be both reachable inside a host
+ * routine and valid dispatch entries. Treating every
+ * such address as a hard boundary truncates the host. psxrecomp models these
+ * as overlapping aliases; this is the 68000 counterpart.
+ *
+ * Walk every entry without entry boundaries, then select as an alias host the
+ * reachable entry with the largest CFG. A strict size improvement is required
+ * (equal-size cycles use the lower address as a deterministic tie break).
+ * Unrelated adjacent routines separated by RTS/JMP never overlap and remain
+ * hard boundaries. */
+static uint32_t *build_entry_owners(const GenesisRom *rom,
+                                    const AddrSet *all_funcs,
+                                    const GameConfig *cfg,
+                                    AddrSet *hard_boundaries,
+                                    bool verbose) {
+    int n = all_funcs->count;
+    uint32_t *owners = (uint32_t *)malloc((size_t)n * sizeof(uint32_t));
+    int *sizes = (int *)calloc((size_t)n, sizeof(int));
+    int *best_sizes = (int *)calloc((size_t)n, sizeof(int));
+    bool *safe = (bool *)calloc((size_t)n, sizeof(bool));
+    if (!owners || !sizes || !best_sizes || !safe) {
+        free(owners); free(sizes); free(best_sizes); free(safe);
+        return NULL;
+    }
+
+    /* Pass 1: establish each entry's own unbounded reachable-CFG size. */
+    for (int i = 0; i < n; i++) {
+        AddrSet instrs, labels;
+        addrset_init(&instrs); addrset_init(&labels);
+        scan_function(rom, all_funcs->addrs[i], &instrs, &labels,
+                      NULL, 0, NULL, 0, NULL, NULL, 0, cfg);
+        sizes[i] = instrs.count;
+        safe[i] = !s_scan_hit_invalid;
+        best_sizes[i] = instrs.count;
+        owners[i] = all_funcs->addrs[i];
+        addrset_free(&instrs); addrset_free(&labels);
+    }
+
+    /* Pass 2: every exact entry reached by a larger CFG is an alias candidate. */
+    for (int i = 0; i < n; i++) {
+        if (!safe[i]) continue;
+        AddrSet instrs, labels;
+        addrset_init(&instrs); addrset_init(&labels);
+        scan_function(rom, all_funcs->addrs[i], &instrs, &labels,
+                      NULL, 0, NULL, 0, NULL, NULL, 0, cfg);
+        for (int k = 0; k < instrs.count; k++) {
+            int j = function_entry_index(instrs.addrs[k], all_funcs->addrs, n);
+            if (j < 0 || j == i) continue;
+            /* Mere sequential decoding across an entry is not proof that the
+             * earlier routine owns it: some ROMs place data or a new routine
+             * after code with no syntactic terminator. Require an actual
+             * intra-CFG branch/JMP edge to the entry. scan_function records
+             * those exact static targets in labels. */
+            if (!addrset_contains(&labels, instrs.addrs[k])) continue;
+            bool larger = sizes[i] > sizes[j];
+            bool equal_tie = sizes[i] == sizes[j]
+                          && all_funcs->addrs[i] < all_funcs->addrs[j];
+            if (!larger && !equal_tie) continue;
+            if (sizes[i] > best_sizes[j]
+                    || (sizes[i] == best_sizes[j]
+                        && all_funcs->addrs[i] < owners[j])) {
+                owners[j] = all_funcs->addrs[i];
+                best_sizes[j] = sizes[i];
+            }
+        }
+        addrset_free(&instrs); addrset_free(&labels);
+    }
+
+    /* Collapse chains so every alias names the canonical host directly. */
+    for (int i = 0; i < n; i++) {
+        uint32_t owner = owners[i];
+        for (int guard = 0; guard < n; guard++) {
+            int oi = function_entry_index(owner, all_funcs->addrs, n);
+            if (oi < 0 || owners[oi] == owner) break;
+            owner = owners[oi];
+        }
+        owners[i] = owner;
+    }
+
+    addrset_init(hard_boundaries);
+    for (int i = 0; i < n; i++) {
+        if (owners[i] == all_funcs->addrs[i])
+            addrset_insert(hard_boundaries, all_funcs->addrs[i]);
+    }
+    addrset_sort(hard_boundaries);
+
+    /* Removing aliases from the boundary set can expose a host CFG, but other
+     * canonical boundaries may still cut that walk before a proposed alias.
+     * Prove every final host->entry route under the actual boundary policy;
+     * promote any unreachable proposal back to a canonical function. Repeat
+     * because each promotion can introduce a new boundary for another host. */
+    for (;;) {
+        bool changed = false;
+        for (int h = 0; h < n; h++) {
+            uint32_t host = all_funcs->addrs[h];
+            if (owners[h] != host) continue;
+            AddrSet instrs, labels;
+            addrset_init(&instrs); addrset_init(&labels);
+            scan_function(rom, host, &instrs, &labels,
+                          hard_boundaries->addrs, hard_boundaries->count,
+                          NULL, 0, NULL, NULL, 0, cfg);
+            for (int j = 0; j < n; j++) {
+                if (owners[j] != host || j == h) continue;
+                if (!addrset_contains(&instrs, all_funcs->addrs[j])) {
+                    owners[j] = all_funcs->addrs[j];
+                    addrset_insert(hard_boundaries, all_funcs->addrs[j]);
+                    changed = true;
+                }
+            }
+            addrset_free(&instrs); addrset_free(&labels);
+        }
+        if (!changed) break;
+        addrset_sort(hard_boundaries);
+    }
+
+    int aliases = n - hard_boundaries->count;
+    bool enabled = cfg && cfg->function_aliases;
+    if (verbose) {
+        free(s_candidate_owners);
+        s_candidate_owners = (uint32_t *)malloc((size_t)n * sizeof(uint32_t));
+        s_candidate_owner_count = s_candidate_owners ? n : 0;
+        if (s_candidate_owners)
+            memcpy(s_candidate_owners, owners, (size_t)n * sizeof(uint32_t));
+    }
+    if (!enabled) {
+        /* Analysis is useful before rollout, but candidate aliases must not
+         * perturb a proven game until its runtime suite accepts them. */
+        for (int i = 0; i < n; i++) owners[i] = all_funcs->addrs[i];
+        addrset_free(hard_boundaries);
+        addrset_init(hard_boundaries);
+        for (int i = 0; i < n; i++)
+            addrset_insert(hard_boundaries, all_funcs->addrs[i]);
+        addrset_sort(hard_boundaries);
+    }
+    if (verbose) {
+        if (enabled)
+            printf("[Codegen] Entry ownership: %d canonical functions, %d "
+                   "overlapping aliases (aliases do not split hosts)\n",
+                   hard_boundaries->count, aliases);
+        else
+            printf("[Codegen] Entry ownership audit: %d branch-proven alias "
+                   "candidates (disabled; established boundaries retained)\n",
+                   aliases);
+    }
+
+    free(sizes);
+    free(best_sizes);
+    free(safe);
+    return owners;
 }
 
 /* =========================================================================
@@ -3952,6 +4139,9 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                   const AnnotationTable *at, const GameConfig *cfg,
                   bool reverse_debug) {
     s_reverse_debug = reverse_debug;
+    free(s_candidate_owners);
+    s_candidate_owners = NULL;
+    s_candidate_owner_count = 0;
     s_extra_seeds      = cfg ? cfg->extra_seeds      : NULL;
     s_extra_seed_count = cfg ? cfg->extra_seed_count : 0;
     s_ws_sites      = cfg ? cfg->ws_sites      : NULL;
@@ -3992,17 +4182,48 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         AddrSet extern_targets;
         addrset_init(&extern_targets);
 
-        for (int i = 0; i < all_funcs.count; i++) {
+        AddrSet hard_boundaries;
+        uint32_t *iter_owners = NULL;
+        if (cfg && cfg->function_aliases) {
+            iter_owners = build_entry_owners(rom, &all_funcs, cfg,
+                                             &hard_boundaries, false);
+        } else {
+            /* Default path: retain the established boundary set. Alias
+             * candidates are audited once after this fixed point, not on
+             * every discovery iteration. */
+            iter_owners = (uint32_t *)malloc((size_t)all_funcs.count
+                                             * sizeof(uint32_t));
+            addrset_init(&hard_boundaries);
+            if (iter_owners) {
+                for (int i = 0; i < all_funcs.count; i++) {
+                    iter_owners[i] = all_funcs.addrs[i];
+                    addrset_insert(&hard_boundaries, all_funcs.addrs[i]);
+                }
+            }
+        }
+        if (!iter_owners) {
+            addrset_free(&extern_targets);
+            fclose(f_full); fclose(f_dispatch);
+            addrset_free(&all_funcs);
+            return false;
+        }
+
+        /* Alias bodies are already reachable from their canonical host. Scan
+         * canonical hosts only, and let only canonical entries bound them. */
+        for (int i = 0; i < hard_boundaries.count; i++) {
             AddrSet instrs, labels;
             addrset_init(&instrs);
             addrset_init(&labels);
-            scan_function(rom, all_funcs.addrs[i], &instrs, &labels,
+            scan_function(rom, hard_boundaries.addrs[i], &instrs, &labels,
+                          hard_boundaries.addrs, hard_boundaries.count,
                           all_funcs.addrs, all_funcs.count, &extern_targets,
                           cfg ? cfg->extra_seeds : NULL,
                           cfg ? cfg->extra_seed_count : 0, cfg);
             addrset_free(&instrs);
             addrset_free(&labels);
         }
+        free(iter_owners);
+        addrset_free(&hard_boundaries);
 
         /* Add any external targets that aren't already function entries.
          * Skip blacklisted addresses (game.cfg `blacklist` directive) —
@@ -4045,6 +4266,15 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
 
     printf("[Codegen] Final function count after boundary splitting: %d\n", all_funcs.count);
 
+    AddrSet hard_boundaries;
+    uint32_t *entry_owners = build_entry_owners(rom, &all_funcs, cfg,
+                                                &hard_boundaries, true);
+    if (!entry_owners) {
+        fclose(f_full); fclose(f_dispatch);
+        addrset_free(&all_funcs);
+        return false;
+    }
+
     if (s_dump_functions_path) {
         FILE *df = fopen(s_dump_functions_path, "w");
         if (df) {
@@ -4052,6 +4282,18 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
                         "%d entries. One hex address per line.\n", all_funcs.count);
             for (int i = 0; i < all_funcs.count; i++)
                 fprintf(df, "%06X\n", all_funcs.addrs[i]);
+            fprintf(df, "# Branch-proven alias candidates (entry -> host).\n");
+            if (s_candidate_owner_count == all_funcs.count) {
+                for (int i = 0; i < all_funcs.count; i++)
+                    if (s_candidate_owners[i] != all_funcs.addrs[i])
+                        fprintf(df, "# candidate %06X -> %06X\n",
+                                all_funcs.addrs[i], s_candidate_owners[i]);
+            }
+            fprintf(df, "# Overlapping entry aliases (entry -> canonical host).\n");
+            for (int i = 0; i < all_funcs.count; i++)
+                if (entry_owners[i] != all_funcs.addrs[i])
+                    fprintf(df, "# alias %06X -> %06X\n",
+                            all_funcs.addrs[i], entry_owners[i]);
             fclose(df);
             printf("[Codegen] Dumped %d function addresses to %s\n",
                    all_funcs.count, s_dump_functions_path);
@@ -4075,6 +4317,13 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
     /* Emit each function body */
     for (int i = 0; i < all_funcs.count; i++) {
         uint32_t func_addr = all_funcs.addrs[i];
+        uint32_t walk_start = entry_owners[i];
+        if (walk_start != func_addr)
+            continue; /* emitted by the canonical host's shared body below */
+        int group_count = 0;
+        for (int a = 0; a < all_funcs.count; a++)
+            if (entry_owners[a] == func_addr) group_count++;
+        bool has_aliases = group_count > 1;
 
         /* Annotation comment */
         const char *name = annotations_get_name(at, func_addr);
@@ -4085,7 +4334,8 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         AddrSet instrs, labels;
         addrset_init(&instrs);
         addrset_init(&labels);
-        scan_function(rom, func_addr, &instrs, &labels,
+        scan_function(rom, walk_start, &instrs, &labels,
+                      hard_boundaries.addrs, hard_boundaries.count,
                       all_funcs.addrs, all_funcs.count, NULL,
                       cfg ? cfg->extra_seeds : NULL,
                       cfg ? cfg->extra_seed_count : 0, cfg);
@@ -4135,6 +4385,14 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             }
         }
 
+        /* Every alias wrapper enters this shared body through a label at its
+         * exact instruction address. The canonical body is emitted once. */
+        if (has_aliases) {
+            for (int a = 0; a < all_funcs.count; a++)
+                if (entry_owners[a] == func_addr && all_funcs.addrs[a] != func_addr)
+                    addrset_insert(&labels, all_funcs.addrs[a]);
+        }
+
         /* If the entry address is not the first sorted instruction (e.g. because
          * the function's CFG reaches backward addresses like NemDec callbacks),
          * emit a goto at function start so execution actually begins at func_addr.
@@ -4143,10 +4401,19 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         if (entry_not_first)
             addrset_insert(&labels, func_addr);
 
-        fprintf(f_full, "void func_%06X(void) {\n", func_addr);
+        if (has_aliases)
+            fprintf(f_full, "static void func_body_%06X(uint32_t _entry) {\n",
+                    func_addr);
+        else
+            fprintf(f_full, "void func_%06X(void) {\n", func_addr);
         if (s_reverse_debug) {
-            fprintf(f_full, "  g_rdb_current_func = 0x%06Xu;\n", func_addr);
-            fprintf(f_full, "  rdb_on_block(0x%06Xu);\n",        func_addr);
+            if (has_aliases) {
+                fprintf(f_full, "  g_rdb_current_func = _entry;\n");
+                fprintf(f_full, "  rdb_on_block(_entry);\n");
+            } else {
+                fprintf(f_full, "  g_rdb_current_func = 0x%06Xu;\n", func_addr);
+                fprintf(f_full, "  rdb_on_block(0x%06Xu);\n",        func_addr);
+            }
         }
 
         /* Pre-scan: check if any instruction is ADDQ/ADDA to A7 (sp).
@@ -4196,10 +4463,10 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
          *      func_003384, and (by inspection) virtually every other
          *      Genesis disasm port. Detecting the shape statically means
          *      we don't need a per-game cfg directive for any future port. */
-        bool yield_via_cfg = (cfg->vblank_yield_addr &&
+        bool yield_via_cfg = (!has_aliases && cfg->vblank_yield_addr &&
                               func_addr == cfg->vblank_yield_addr);
         bool yield_via_pattern = false;
-        if (!yield_via_cfg && instrs.count == 4) {
+        if (!has_aliases && !yield_via_cfg && instrs.count == 4) {
             M68KInstr di[4];
             bool ok = true;
             for (int k = 0; k < 4 && ok; k++) {
@@ -4234,8 +4501,21 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
             continue;
         }
 
-        if (entry_not_first)
+        if (has_aliases) {
+            fprintf(f_full, "  switch (_entry) {\n");
+            for (int a = 0; a < all_funcs.count; a++) {
+                uint32_t entry = all_funcs.addrs[a];
+                if (entry_owners[a] == func_addr && entry != func_addr)
+                    fprintf(f_full, "    case 0x%06Xu: goto label_%06X;\n",
+                            entry, entry);
+            }
+            if (entry_not_first)
+                fprintf(f_full, "    case 0x%06Xu: goto label_%06X;\n",
+                        func_addr, func_addr);
+            fprintf(f_full, "    default: break;\n  }\n");
+        } else if (entry_not_first) {
             fprintf(f_full, "  goto label_%06X;\n", func_addr);
+        }
 
         bool skip_until_label = false;
 
@@ -4351,6 +4631,22 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         }
 
         fprintf(f_full, "}\n\n");
+
+        if (has_aliases) {
+            /* Thin dispatchable wrappers preserve every original entry while
+             * sharing one host CFG/body. No wrapper changes the host extent. */
+            for (int a = 0; a < all_funcs.count; a++) {
+                uint32_t entry = all_funcs.addrs[a];
+                if (entry_owners[a] != func_addr) continue;
+                const char *alias_name = annotations_get_name(at, entry);
+                if (alias_name)
+                    fprintf(f_full, "/* %s */\n", alias_name);
+                fprintf(f_full,
+                        "void func_%06X(void) { func_body_%06X(0x%06Xu); }\n",
+                        entry, func_addr, entry);
+            }
+            fprintf(f_full, "\n");
+        }
 
         addrset_free(&instrs);
         addrset_free(&labels);
@@ -4617,6 +4913,11 @@ bool codegen_emit(const GenesisRom *rom, const FunctionList *funcs,
         }
     }
 
+    free(entry_owners);
+    free(s_candidate_owners);
+    s_candidate_owners = NULL;
+    s_candidate_owner_count = 0;
+    addrset_free(&hard_boundaries);
     addrset_free(&all_funcs);
     fclose(f_full);
     fclose(f_dispatch);

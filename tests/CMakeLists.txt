@@ -86,20 +86,37 @@ endif()
 # generated code references.
 # ---------------------------------------------------------------------------
 
-set(SONIC_GEN_DIR "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog/generated")
+if(DEFINED GENESIS_SONIC_GENERATED_DIR)
+    set(SONIC_GEN_DIR "${GENESIS_SONIC_GENERATED_DIR}")
+else()
+    set(SONIC_GEN_DIR "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog/generated")
+endif()
 set(RUNNER_INC   "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
 set(CLOWN68_DIR  "${CMAKE_CURRENT_LIST_DIR}/../clownmdemu-core/libraries/clown68000")
+
+# The generated files are supplied by the parent game build. They are absent
+# in a clean clone and must not be mistaken for checked-in source inputs.
+set_source_files_properties(
+    "${SONIC_GEN_DIR}/sonic_full.c"
+    "${SONIC_GEN_DIR}/sonic_dispatch.c"
+    PROPERTIES GENERATED TRUE)
 
 add_executable(l3_oracle_test
     harness/l3_oracle_test.c
     "${SONIC_GEN_DIR}/sonic_full.c"
     "${SONIC_GEN_DIR}/sonic_dispatch.c"
 )
+if(TARGET genesisrecomp_generate_sonic)
+    add_dependencies(l3_oracle_test genesisrecomp_generate_sonic)
+endif()
 target_include_directories(l3_oracle_test PRIVATE
     "${RUNNER_INC}"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner"
     "${CLOWN68_DIR}/source/interpreter"
     "${CLOWN68_DIR}/libraries/clowncommon"
 )
+target_compile_definitions(l3_oracle_test PRIVATE
+    $<$<BOOL:${SONIC_REVERSE_DEBUG}>:SONIC_REVERSE_DEBUG=1>)
 # clown68000-interpreter + clown68000-common are built by the outer
 # project's add_subdirectory(clownmdemu-core, ...). We rebuild this
 # target as part of the same configure so the static-lib targets are

@@ -48,9 +48,9 @@ F:\Projects\segagenesisrecomp-release\
     │   ├── external/SDL2/            ← bundled SDL2
     │   └── include/genesis_runtime.h ← shared interface header
     ├── tools\                        ← shared genesis-agnostic tooling
-    ├── sonicthehedgehog\             ← Sonic 1 game.toml + generated/ + sonic1_spec.c
+    ├── sonicthehedgehog\             ← Sonic 1 game.toml + sonic1_spec.c
     │                                   + sonic1_hybrid_table.c + sonic_extras.{c,h}
-    ├── sonicthehedgehog2\            ← Sonic 2 game.toml + generated/ + sonic2_spec.c
+    ├── sonicthehedgehog2\            ← Sonic 2 game.toml + sonic2_spec.c
     │                                   + sonic2_hybrid_table.c
     ├── sonic3k\                      ← Sonic 3 & Knuckles game files
     ├── tests\
@@ -59,10 +59,10 @@ F:\Projects\segagenesisrecomp-release\
 ```
 
 **Topology invariant**: shared runner is at `segagenesisrecomp/runner/`.
-Per-game code (`<game>_spec.c`, `<game>_hybrid_table.c`, `<game>_extras.{c,h}`)
-lives next to that game's `generated/` directory. Sonic 2's release repo
-has no runner of its own — it reaches through Sonic 1's release repo only
-to get to the submodule.
+Per-game handwritten code (`<game>_spec.c`, `<game>_hybrid_table.c`,
+`<game>_extras.{c,h}`) lives in the engine game directory. Generated C lives
+only in each CMake build tree. Sonic 2's release repo has no runner of its own
+— it reaches through Sonic 1's release repo only to get to the submodule.
 
 When in doubt about "which runner is built": grep the relevant
 `CMakeLists.txt` for `RUNNER_ROOT` — that's the source of truth.
@@ -130,27 +130,20 @@ PRINCIPLES.md #17.
 powershell.exe -NoProfile -Command "& 'F:/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/segagenesisrecomp/recompiler/_build_recomp.bat'"
 ```
 
-### Sonic 1 — regen + native build
+### Sonic 1 — native build (regeneration is automatic)
 
 ```bash
 cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/segagenesisrecomp/sonicthehedgehog
-python ../tests/tools/gen_disasm_seeds.py      -o sonic1.disasm_seeds.toml
-python ../tests/tools/gen_disasm_subs.py       -o sonic1.disasm_subs.toml
-python ../tests/tools/gen_disasm_jumptables.py -o sonic1.disasm_jumptables.toml
-"/f/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/segagenesisrecomp/recompiler/build/Release/GenesisRecomp.exe" sonic.bin --game game.toml
 powershell.exe -NoProfile -Command "& 'F:/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/_build_native.bat'"
 /c/Windows/System32/taskkill.exe //F //IM SonicTheHedgehogRecomp.exe 2>/dev/null
 cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/build/Release
 cmd.exe //C "start /B SonicTheHedgehogRecomp.exe sonic.bin --port 4380 > native_run.log 2>&1"
 ```
 
-### Sonic 2 — regen + native + oracle
+### Sonic 2 — native + oracle (regeneration is automatic)
 
 ```bash
 cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/segagenesisrecomp/sonicthehedgehog2
-python ../tests/tools/gen_disasm_labels.py     s2disasm/s2.lst > sonic2.disasm_labels.toml
-python ../tests/tools/gen_disasm_jumptables.py --lst s2disasm/s2.lst --code-addrs ../tests/fixtures/sonic2/l1/code_addresses.txt --prefix sonic2 --rom-max 0x100000 -o sonic2.disasm_jumptables.toml
-"/f/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/segagenesisrecomp/recompiler/build/Release/GenesisRecomp.exe" sonic2.bin --game game.toml
 powershell.exe -NoProfile -Command "& 'F:/Projects/segagenesisrecomp-release/SonicTheHedgehog2Recomp/_build_native.bat'"
 /c/Windows/System32/taskkill.exe //F //IM SonicTheHedgehog2Recomp.exe 2>/dev/null
 cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehog2Recomp/build/Release
@@ -169,7 +162,8 @@ already use the right one.
   not `dispatch_misses.log` feedback.
 - Always-on rings, never arm-then-attach (#17). No pause/step.
 - No printf telemetry in hot paths (#18).
-- Never edit generated C (#19). Fix recompiler → regenerate.
+- Never edit generated C (#19). It is ignored build output; fix the
+  recompiler/config and let CMake regenerate it from the supplied ROM.
 - Submodule commit order: this submodule first → release repos second
   (#20).
 - Per-game data through `g_game_spec` / `g_game_layout`, never literal

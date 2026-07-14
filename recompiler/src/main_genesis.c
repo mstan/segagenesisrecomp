@@ -1,12 +1,18 @@
 /*
  * main_genesis.c — GenesisRecomp entry point
  * Usage: GenesisRecomp.exe <rom.md|rom.bin> [--game <path/to/game.toml>]
- * Output: generated/<prefix>_full.c + generated/<prefix>_dispatch.c
+ *        [--output-dir <directory>]
+ * Output: <output-dir>/<prefix>_full.c + <output-dir>/<prefix>_dispatch.c
  */
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/stat.h>
+#ifdef _WIN32
+#include <direct.h>
+#endif
 #include "rom_parser.h"
 #include "function_finder.h"
 #include "code_generator.h"
@@ -15,21 +21,47 @@
 #include "game_config.h"
 #include "cycle_probe.h"
 
+static bool ensure_output_directory(const char *path) {
+    struct stat info;
+    if (!path || !path[0]) return false;
+    if (stat(path, &info) == 0)
+        return (info.st_mode & S_IFDIR) != 0;
+#ifdef _WIN32
+    if (_mkdir(path) == 0) return true;
+#else
+    if (mkdir(path, 0777) == 0) return true;
+#endif
+    return errno == EEXIST && stat(path, &info) == 0 &&
+           (info.st_mode & S_IFDIR) != 0;
+}
+
+static bool make_output_path(char *dst, size_t dst_size,
+                             const char *directory, const char *prefix,
+                             const char *suffix) {
+    int written = snprintf(dst, dst_size, "%s/%s_%s.c",
+                           directory, prefix, suffix);
+    return written >= 0 && (size_t)written < dst_size;
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr,
             "Usage: GenesisRecomp <rom.md|rom.bin> [--game <path/to/game.toml>] "
-            "[--reverse-debug] [--fail-on-unsupported]\n");
+            "[--output-dir <directory>] [--reverse-debug] "
+            "[--fail-on-unsupported]\n");
         return 1;
     }
 
     const char *rom_path  = argv[1];
     const char *game_path = NULL;
+    const char *output_dir = "generated";
     bool reverse_debug = false;
     bool fail_on_unsupported = false;
 
     for (int i = 2; i < argc; i++) {
         if (strcmp(argv[i], "--game") == 0 && i+1 < argc) game_path = argv[++i];
+        else if (strcmp(argv[i], "--output-dir") == 0 && i+1 < argc)
+            output_dir = argv[++i];
         else if (strcmp(argv[i], "--reverse-debug") == 0) reverse_debug = true;
         else if (strcmp(argv[i], "--fail-on-unsupported") == 0) fail_on_unsupported = true;
         else if (strcmp(argv[i], "--dump-functions") == 0 && i+1 < argc)
@@ -116,17 +148,30 @@ int main(int argc, char *argv[]) {
             printf("[GenesisRecomp] Annotations: %d entries from %s\n", at.count, ann_path);
     }
 
+    if (!ensure_output_directory(output_dir)) {
+        fprintf(stderr, "[GenesisRecomp] Could not create output directory '%s'\n",
+                output_dir);
+        rom_free(&rom);
+        annotations_free(&at);
+        return 1;
+    }
+
     /* Find all functions via BSR/JSR/RTS graph walk */
     static FunctionList funcs = {0};
-    function_finder_run(&rom, &funcs, &cfg);
+    function_finder_run(&rom, &funcs, &cfg, output_dir);
     printf("[GenesisRecomp] Found %d functions\n", funcs.count);
 
     /* Emit C */
-    char out_full[256], out_dispatch[256], out_layout[256], out_cycles[256];
-    snprintf(out_full,     sizeof(out_full),     "generated/%s_full.c",     output_prefix);
-    snprintf(out_dispatch, sizeof(out_dispatch), "generated/%s_dispatch.c", output_prefix);
-    snprintf(out_layout,   sizeof(out_layout),   "generated/%s_layout.c",   output_prefix);
-    snprintf(out_cycles,   sizeof(out_cycles),   "generated/%s_cycles.c",   output_prefix);
+    char out_full[1024], out_dispatch[1024], out_layout[1024], out_cycles[1024];
+    if (!make_output_path(out_full, sizeof(out_full), output_dir, output_prefix, "full") ||
+        !make_output_path(out_dispatch, sizeof(out_dispatch), output_dir, output_prefix, "dispatch") ||
+        !make_output_path(out_layout, sizeof(out_layout), output_dir, output_prefix, "layout") ||
+        !make_output_path(out_cycles, sizeof(out_cycles), output_dir, output_prefix, "cycles")) {
+        fprintf(stderr, "[GenesisRecomp] Output path is too long\n");
+        rom_free(&rom);
+        function_list_free(&funcs);
+        return 1;
+    }
 
     if (!codegen_emit(&rom, &funcs, out_full, out_dispatch, &at, &cfg, reverse_debug)) {
         fprintf(stderr, "[GenesisRecomp] Code generation failed\n");

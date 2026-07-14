@@ -107,12 +107,6 @@ level_modes    = [0x08, 0x0C]
 # any dispatch_misses.log entry after a run is a coverage gap to root-cause in
 # the gen_disasm pipeline, NOT to hand-add here (Principle 16).
 [functions]
-blacklist = [
-    0x00043A,   # Test_Checksum (confirmed @ $43A in byte-perfect .lst). Prior
-                # session blacklisted it for an init-time infinite loop (ROM-end
-                # check never converges). The .lst notes the checksum call is
-                # NOPed; revisit whether this blacklist is still needed once the
-                # boot path runs under the corrected disasm. Kept for now.
-]
+blacklist = []
 extra = [
 ]

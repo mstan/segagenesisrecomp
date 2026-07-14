@@ -54,7 +54,7 @@ static int s_jt_jsr_word_tables       = 0;  /* word-offset jsr tables found    *
 static int s_jt_runtime_promotions    = 0;  /* targets added via runtime oracle */
 
 /* Per-site record for every dispatch we couldn't enumerate. Dumped to
- * generated/<prefix>.unresolved_jumptables.log so the user can grep
+ * <diagnostics_dir>/<prefix>.unresolved_jumptables.log so the user can grep
  * disasm for these PCs and either add manual jump_table directives or
  * confirm the dispatch is OK to leave dynamic. */
 typedef struct {
@@ -101,7 +101,32 @@ static void record_unresolved(uint32_t pc, uint32_t base, uint16_t ext, uint8_t 
 
 /* Forward decl — defined later, but jt_enumerate needs to call it. */
 static void add_function(FunctionList *list, uint32_t addr);
-static void add_function_impl(FunctionList *list, uint32_t addr, bool queue);
+static void add_function_impl(FunctionList *list, uint32_t addr, bool queue,
+                              uint32_t evidence);
+
+static int cmp_u32(const void *a, const void *b) {
+    uint32_t av = *(const uint32_t *)a, bv = *(const uint32_t *)b;
+    return (av > bv) - (av < bv);
+}
+
+static int cmp_function_entry(const void *a, const void *b) {
+    uint32_t av = ((const FunctionEntry *)a)->addr;
+    uint32_t bv = ((const FunctionEntry *)b)->addr;
+    return (av > bv) - (av < bv);
+}
+
+static const FunctionEntry *find_function_entry(const FunctionList *list,
+                                                uint32_t addr) {
+    int lo = 0, hi = list->count - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        uint32_t a = list->entries[mid].addr;
+        if (a == addr) return &list->entries[mid];
+        if (a < addr) lo = mid + 1;
+        else          hi = mid - 1;
+    }
+    return NULL;
+}
 
 static const JumpTableEntry *
 jt_lookup_manual(const GameConfig *cfg, uint32_t base) {
@@ -344,7 +369,7 @@ jt_enumerate_long(const GenesisRom *rom, const GameConfig *cfg,
              * entry without reopening phase-0 heuristic discovery. Codegen's
              * CFG walk still emits its body and closes separately-proven
              * direct calls. */
-            add_function_impl(list, raw, false);
+            add_function_impl(list, raw, false, FUNC_EVIDENCE_AUTO);
             pushed++;
             s_jt_targets_pushed++;
             continue;
@@ -430,7 +455,7 @@ jt_enumerate_jsr_word_table(const GenesisRom *rom, const GameConfig *cfg,
         /* Same precision rule as the runtime-gated long-table extension:
          * register the proven callable case body without recursively running
          * speculative table detectors from it. */
-        add_function_impl(list, target, false);
+        add_function_impl(list, target, false, FUNC_EVIDENCE_AUTO);
         pushed++;
         s_jt_targets_pushed++;
         if (game_config_runtime_observed(cfg, target))
@@ -496,7 +521,8 @@ static void push_addr(uint32_t addr) {
  * (jt_enumerate, bra-ladder, the CFG walk). NULL => no gating. */
 static const GameConfig *s_ff_cfg = NULL;
 
-static void add_function_impl(FunctionList *list, uint32_t addr, bool queue) {
+static void add_function_impl(FunctionList *list, uint32_t addr, bool queue,
+                              uint32_t evidence) {
     if (addr >= 0x400000) return;
     /* Data-gate: when a code-address oracle is loaded, never register a target
      * the disasm assembles as DATA (or a mid-instruction address). Explicit
@@ -505,8 +531,12 @@ static void add_function_impl(FunctionList *list, uint32_t addr, bool queue) {
      * walk targets that fell into data. No-op when no code_addrs_file is set. */
     if (!game_config_is_known_code(s_ff_cfg, addr)) return;
     /* Check if already in list */
-    for (int i = 0; i < list->count; i++)
-        if (list->entries[i].addr == addr) return;
+    for (int i = 0; i < list->count; i++) {
+        if (list->entries[i].addr == addr) {
+            list->entries[i].evidence |= evidence;
+            return;
+        }
+    }
 
     if (list->count >= list->capacity) {
         int new_cap = list->capacity ? list->capacity * 2 : 256;
@@ -517,11 +547,20 @@ static void add_function_impl(FunctionList *list, uint32_t addr, bool queue) {
     }
     FunctionEntry *e = &list->entries[list->count++];
     e->addr = addr;
+    e->evidence = evidence;
     if (queue) push_addr(addr);
 }
 
 static void add_function(FunctionList *list, uint32_t addr) {
-    add_function_impl(list, addr, true);
+    add_function_impl(list, addr, true, FUNC_EVIDENCE_AUTO);
+}
+
+/* Register an explicit root while retaining its provenance. A loaded code-
+ * address oracle still has veto power: discovery side files can contain data
+ * labels, and safety against data-as-code is stronger than root completeness. */
+static void add_explicit_root(FunctionList *list, uint32_t addr,
+                              uint32_t evidence) {
+    add_function_impl(list, addr, true, evidence);
 }
 
 /* True if the routine at `start` captures its caller's return address off the
@@ -601,7 +640,8 @@ bool function_finder_pops_return_unconditionally(const GenesisRom *rom, uint32_t
     return false;
 }
 
-void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameConfig *cfg) {
+void function_finder_run(const GenesisRom *rom, FunctionList *list,
+                         const GameConfig *cfg, const char *diagnostics_dir) {
     s_ff_cfg = cfg;
     memset(addr_seen, 0, sizeof(addr_seen));
     s_work_top = 0;
@@ -623,21 +663,25 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
 
     /* Seed from vector table at $000000 */
     /* Offset 4 = initial PC (RESET handler) */
-    add_function(list, rom_read32(rom, 4) & 0xFFFFFF);
+    add_explicit_root(list, rom_read32(rom, 4) & 0xFFFFFF,
+                      FUNC_EVIDENCE_VECTOR);
 
     /* Common interrupt vectors (68K vector table at $000000) */
     /* Bus error=$8, Address error=$C, Illegal=$10 ... H-blank=$70, V-blank=$78 */
     for (int vec = 2; vec < 64; vec++) {
         uint32_t handler = rom_read32(rom, (uint32_t)vec * 4) & 0xFFFFFF;
         if (handler != 0 && handler != 0xFFFFFF && handler < rom->rom_size)
-            add_function(list, handler);
+            /* Unused vector slots are ROM data in several games. Keep every
+             * optional exception vector behind the code-address oracle so a
+             * plausible-looking data longword cannot become code. */
+            add_function_impl(list, handler, true, FUNC_EVIDENCE_VECTOR);
     }
 
     /* Seeds from game.toml [functions].extra entries — but skip any
      * blacklisted addresses, even if a discovery_files merge added them. */
     for (int i = 0; i < cfg->extra_func_count; i++) {
         if (game_config_is_blacklisted(cfg, cfg->extra_funcs[i])) continue;
-        add_function(list, cfg->extra_funcs[i]);
+        add_explicit_root(list, cfg->extra_funcs[i], FUNC_EVIDENCE_CONFIG);
     }
 
     /* Two discovery phases:
@@ -650,7 +694,8 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
         if (discovery_phase == 1) {
             for (int i = 0; cfg && i < cfg->late_extra_func_count; i++) {
                 if (game_config_is_blacklisted(cfg, cfg->late_extra_funcs[i])) continue;
-                add_function(list, cfg->late_extra_funcs[i]);
+                add_explicit_root(list, cfg->late_extra_funcs[i],
+                                  FUNC_EVIDENCE_CONFIG | FUNC_EVIDENCE_LATE);
             }
         }
 
@@ -937,7 +982,38 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
     }
     }
 
+    qsort(list->entries, (size_t)list->count, sizeof(FunctionEntry),
+          cmp_function_entry);
     printf("[FunctionFinder] %d functions found\n", list->count);
+    {
+        int raw_count = (cfg ? cfg->extra_func_count + cfg->late_extra_func_count : 0);
+        uint32_t *roots = raw_count
+                        ? (uint32_t *)malloc((size_t)raw_count * sizeof(uint32_t))
+                        : NULL;
+        int nr = 0;
+        if (roots) {
+            for (int i = 0; i < cfg->extra_func_count; i++)
+                roots[nr++] = cfg->extra_funcs[i];
+            for (int i = 0; i < cfg->late_extra_func_count; i++)
+                roots[nr++] = cfg->late_extra_funcs[i];
+            qsort(roots, (size_t)nr, sizeof(uint32_t), cmp_u32);
+        }
+        int unique = 0, emitted = 0, independently_found = 0;
+        for (int i = 0; i < nr; i++) {
+            if (i > 0 && roots[i] == roots[i - 1]) continue;
+            unique++;
+            const FunctionEntry *e = find_function_entry(list, roots[i]);
+            if (!e) continue;
+            emitted++;
+            if (e->evidence & (FUNC_EVIDENCE_AUTO | FUNC_EVIDENCE_VECTOR))
+                independently_found++;
+        }
+        printf("[FunctionFinder] Config coverage: emitted %d/%d unique TOML "
+               "entries; %d independently discovered; %d rejected by "
+               "blacklist/code gate\n",
+               emitted, unique, independently_found, unique - emitted);
+        free(roots);
+    }
     printf("[FunctionFinder] %d speculative paths terminated by validator\n",
            s_invalid_terminations);
     printf("[FunctionFinder] Jump-table discovery: pc_indexed=%d "
@@ -958,10 +1034,14 @@ void function_finder_run(const GenesisRom *rom, FunctionList *list, const GameCo
      * a runtime dynamic-dispatch path for these — they don't break
      * correctness — but a non-zero count is a signal that gen_disasm_
      * jumptables.py left some tables on the table. */
-    if (s_jt_unresolved > 0 && cfg && cfg->output_prefix[0]) {
-        char log_path[256];
-        snprintf(log_path, sizeof(log_path),
-                 "generated/%s.unresolved_jumptables.log", cfg->output_prefix);
+    if (cfg && cfg->output_prefix[0] && diagnostics_dir && diagnostics_dir[0]) {
+        char log_path[1024];
+        int path_len = snprintf(log_path, sizeof(log_path), "%s/%s.unresolved_jumptables.log",
+                                diagnostics_dir, cfg->output_prefix);
+        if (path_len < 0 || (size_t)path_len >= sizeof(log_path)) {
+            fprintf(stderr, "[FunctionFinder] Diagnostic output path is too long\n");
+            return;
+        }
         FILE *lf = fopen(log_path, "w");
         if (lf) {
             fprintf(lf, "# %d PC-indexed JMP dispatch sites with no static "

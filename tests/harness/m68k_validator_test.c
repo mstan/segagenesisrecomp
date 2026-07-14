@@ -26,6 +26,7 @@ static int g_failures = 0;
 
 static void make_rom(GenesisRom *rom, const uint8_t *bytes, uint32_t nbytes) {
     static uint8_t buffer[0x1000];
+    memset(rom, 0, sizeof(*rom));
     memset(buffer, 0, sizeof(buffer));
     if (nbytes > sizeof(buffer)) nbytes = sizeof(buffer);
     memcpy(buffer, bytes, nbytes);

@@ -14,7 +14,7 @@ appears after every function it calls. With leaves validated first, a
 non-leaf failure can be attributed to that function alone (its callees
 are already known-good).
 
-Reads:   segagenesisrecomp/sonicthehedgehog/generated/sonic_full.c
+Reads:   a sonic_full.c path supplied as argv[1] (legacy source path by default)
 Writes:  segagenesisrecomp/tests/fixtures/sonic1/l3/manifest.txt
 
 Manifest format: one func address per line (hex, no prefix), grouped
@@ -27,7 +27,8 @@ import sys
 from pathlib import Path
 
 SUB_ROOT  = Path(__file__).resolve().parents[2]
-FULL_C    = SUB_ROOT / "sonicthehedgehog" / "generated" / "sonic_full.c"
+FULL_C    = (Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else
+             SUB_ROOT / "sonicthehedgehog" / "generated" / "sonic_full.c")
 OUT_PATH  = SUB_ROOT / "tests" / "fixtures" / "sonic1" / "l3" / "manifest.txt"
 
 FUNC_DEF_RE = re.compile(r"^void (func_([0-9A-Fa-f]+))\(void\)\s*\{", re.MULTILINE)

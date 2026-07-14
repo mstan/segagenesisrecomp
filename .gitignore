@@ -13,6 +13,7 @@ build/
 **/__pycache__/
 tests/last_run/
 **/*.unresolved_jumptables.log
+**/generated/
 
 # Local decoder comparison worktrees/build products. These contain copied ROMs,
 # disassembly trees, and hundreds of MB of generated C; keep the small handoff

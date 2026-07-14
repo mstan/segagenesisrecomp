@@ -56,6 +56,17 @@ uint8_t   g_rom[0x400000];
 uint8_t   g_ram[0x010000];
 M68KState g_cpu;
 
+#if SONIC_REVERSE_DEBUG
+/* The semantic harness does not need debugger behavior, but reverse-debug
+ * generated C calls the inline hooks. Keep those hooks inert here. */
+uint32_t g_rdb_current_func = 0;
+int g_rdb_break_pending = 0;
+int g_rdb_insn_pending = 0;
+void rdb_on_block_slow(uint32_t block_id) { (void)block_id; }
+void rdb_on_insn_slow(uint32_t pc) { (void)pc; }
+void crash_report_record_block(uint32_t block_addr) { (void)block_addr; }
+#endif
+
 static uint8_t  s_initial_ram[0x010000];
 static M68KState s_initial_cpu;
 
