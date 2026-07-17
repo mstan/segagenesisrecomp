@@ -39,7 +39,7 @@
 extern ClownMDEmu g_clownmdemu;
 #endif
 
-/* ---- Recompiled entry points (defined in generated/sonic2_full.c) ---- */
+/* ---- Recompiled entry points (defined across generated/sonic2_partNN.c) ---- */
 extern void func_000206(void);   /* EntryPoint    ($000206) */
 extern void func_000408(void);   /* VBlank IRQ6   ($000408) */
 extern void func_000F54(void);   /* HBlank IRQ4   ($000F54) */

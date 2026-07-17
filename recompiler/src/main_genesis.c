@@ -2,7 +2,9 @@
  * main_genesis.c — GenesisRecomp entry point
  * Usage: GenesisRecomp.exe <rom.md|rom.bin> [--game <path/to/game.toml>]
  *        [--output-dir <directory>]
- * Output: <output-dir>/<prefix>_full.c + <output-dir>/<prefix>_dispatch.c
+ * Output: <output-dir>/<prefix>_decls.h
+ *       + <output-dir>/<prefix>_part00.c .. _part{N-1}.c (GENESIS_SPLIT_PART_COUNT TUs)
+ *       + <output-dir>/<prefix>_dispatch.c
  */
 #include <errno.h>
 #include <stdio.h>
@@ -161,10 +163,14 @@ int main(int argc, char *argv[]) {
     function_finder_run(&rom, &funcs, &cfg, output_dir);
     printf("[GenesisRecomp] Found %d functions\n", funcs.count);
 
-    /* Emit C */
-    char out_full[1024], out_dispatch[1024], out_layout[1024], out_cycles[1024];
-    if (!make_output_path(out_full, sizeof(out_full), output_dir, output_prefix, "full") ||
-        !make_output_path(out_dispatch, sizeof(out_dispatch), output_dir, output_prefix, "dispatch") ||
+    /* Emit C. The full-translation-unit path is gone: codegen_emit now
+     * writes <output_dir>/<output_prefix>_decls.h plus
+     * GENESIS_SPLIT_PART_COUNT balanced <output_prefix>_partNN.c TUs
+     * directly (it needs output_dir/output_prefix, not one precomputed
+     * path, since it owns N+1 output filenames). Dispatch/layout/cycles
+     * are unaffected. */
+    char out_dispatch[1024], out_layout[1024], out_cycles[1024];
+    if (!make_output_path(out_dispatch, sizeof(out_dispatch), output_dir, output_prefix, "dispatch") ||
         !make_output_path(out_layout, sizeof(out_layout), output_dir, output_prefix, "layout") ||
         !make_output_path(out_cycles, sizeof(out_cycles), output_dir, output_prefix, "cycles")) {
         fprintf(stderr, "[GenesisRecomp] Output path is too long\n");
@@ -173,7 +179,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (!codegen_emit(&rom, &funcs, out_full, out_dispatch, &at, &cfg, reverse_debug)) {
+    if (!codegen_emit(&rom, &funcs, output_dir, output_prefix, out_dispatch, &at, &cfg, reverse_debug)) {
         fprintf(stderr, "[GenesisRecomp] Code generation failed\n");
         rom_free(&rom);
         function_list_free(&funcs);
@@ -198,8 +204,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("[GenesisRecomp] Done. Output:\n  %s\n  %s\n  %s\n",
-           out_full, out_dispatch, out_layout);
+    printf("[GenesisRecomp] Done. Output:\n"
+           "  %s/%s_decls.h\n"
+           "  %s/%s_part00.c .. %s_part%02d.c  (%d files)\n"
+           "  %s\n  %s\n",
+           output_dir, output_prefix,
+           output_dir, output_prefix, output_prefix, GENESIS_SPLIT_PART_COUNT - 1,
+           GENESIS_SPLIT_PART_COUNT,
+           out_dispatch, out_layout);
 
     /* Always print the unsupported summary so coverage misses are visible
      * without grepping the generated C. --fail-on-unsupported turns any

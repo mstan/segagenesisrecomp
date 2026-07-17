@@ -79,11 +79,12 @@ if(MSVC)
 endif()
 
 # ---------------------------------------------------------------------------
-# L3 oracle. Links against the same generated sonic_full.c +
-# sonic_dispatch.c that ship in the game binary, plus clown68000 as the
-# semantic ground truth. NO SDL, NO clownmdemu-core, NO runner — the
-# harness provides sandbox-backed stubs for every runtime symbol the
-# generated code references.
+# L3 oracle. Links against the same generated sonic_part*.c (function
+# bodies, pre-split across GENESIS_SPLIT_PART_COUNT balanced translation
+# units — see code_generator.h) + sonic_dispatch.c that ship in the game
+# binary, plus clown68000 as the semantic ground truth. NO SDL, NO
+# clownmdemu-core, NO runner — the harness provides sandbox-backed stubs
+# for every runtime symbol the generated code references.
 # ---------------------------------------------------------------------------
 
 if(DEFINED GENESIS_SONIC_GENERATED_DIR)
@@ -96,14 +97,18 @@ set(CLOWN68_DIR  "${CMAKE_CURRENT_LIST_DIR}/../clownmdemu-core/libraries/clown68
 
 # The generated files are supplied by the parent game build. They are absent
 # in a clean clone and must not be mistaken for checked-in source inputs.
+# sonic_decls.h (the shared header every sonic_partNN.c #includes) is
+# expected alongside them in the same directory but is not itself compiled.
+file(GLOB SONIC_GEN_PARTS "${SONIC_GEN_DIR}/sonic_part*.c")
+list(SORT SONIC_GEN_PARTS)
 set_source_files_properties(
-    "${SONIC_GEN_DIR}/sonic_full.c"
+    ${SONIC_GEN_PARTS}
     "${SONIC_GEN_DIR}/sonic_dispatch.c"
     PROPERTIES GENERATED TRUE)
 
 add_executable(l3_oracle_test
     harness/l3_oracle_test.c
-    "${SONIC_GEN_DIR}/sonic_full.c"
+    ${SONIC_GEN_PARTS}
     "${SONIC_GEN_DIR}/sonic_dispatch.c"
 )
 if(TARGET genesisrecomp_generate_sonic)

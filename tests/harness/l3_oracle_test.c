@@ -18,7 +18,7 @@
  * RTSed. If it never does within a cycle budget, we report "infinite
  * loop / timeout" rather than hanging.
  *
- * This file links against the recompiled sonic_full.c +
+ * This file links against the recompiled sonic_part*.c (split TUs) +
  * sonic_dispatch.c, so the recompiled side runs the actual code that
  * ships in the game binary. The runtime stubs below provide
  * sandbox-backed implementations of every symbol the generated code

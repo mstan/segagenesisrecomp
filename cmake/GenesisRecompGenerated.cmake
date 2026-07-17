@@ -28,17 +28,42 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
     # reverse-debug, and concurrent build trees from overwriting one another.
     set(_gen  "${CMAKE_CURRENT_BINARY_DIR}/generated/${PREFIX}")
 
-    set(_full     "${_gen}/${PREFIX}_full.c")
+    # The recompiler emits function bodies pre-split across a FIXED number
+    # of balanced-size translation units (never one ~10+ MB monolith) so the
+    # build can compile them in parallel. CMake must know every shard
+    # filename at CONFIGURE time (generation is a build step), hence the
+    # fixed count here — it MUST match GENESIS_SPLIT_PART_COUNT in
+    # recompiler/src/code_generator.h.
+    set(_split_part_count 32)
+    math(EXPR _split_part_last "${_split_part_count} - 1")
+    set(_part_indices "")
+    foreach(_i RANGE 0 ${_split_part_last})
+        if(_i LESS 10)
+            list(APPEND _part_indices "0${_i}")
+        else()
+            list(APPEND _part_indices "${_i}")
+        endif()
+    endforeach()
+
+    set(_header   "${_gen}/${PREFIX}_decls.h")
+    set(_parts    "")
+    foreach(_ii ${_part_indices})
+        list(APPEND _parts "${_gen}/${PREFIX}_part${_ii}.c")
+    endforeach()
     set(_dispatch "${_gen}/${PREFIX}_dispatch.c")
     set(_layout   "${_gen}/${PREFIX}_layout.c")
     set(_cycles   "${_gen}/${PREFIX}_cycles.c")
-    set(_sources  "${_full}" "${_dispatch}" "${_layout}")
-    set(_outputs  ${_sources} "${_cycles}")
+    set(_sources  ${_parts} "${_dispatch}" "${_layout}")
+    set(_outputs  ${_sources} "${_header}" "${_cycles}")
     set(_audit    "${_gen}/${PREFIX}_dispatch_audit.log")
     set(_unresolved "${_gen}/${PREFIX}.unresolved_jumptables.log")
 
     set(_stage "${CMAKE_CURRENT_BINARY_DIR}/generation-stage/${PREFIX}")
-    set(_stage_full       "${_stage}/${PREFIX}_full.c")
+    set(_stage_header     "${_stage}/${PREFIX}_decls.h")
+    set(_stage_parts      "")
+    foreach(_ii ${_part_indices})
+        list(APPEND _stage_parts "${_stage}/${PREFIX}_part${_ii}.c")
+    endforeach()
     set(_stage_dispatch   "${_stage}/${PREFIX}_dispatch.c")
     set(_stage_layout     "${_stage}/${PREFIX}_layout.c")
     set(_stage_cycles     "${_stage}/${PREFIX}_cycles.c")
@@ -85,7 +110,8 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
     add_custom_command(
         OUTPUT "${_stamp}"
         BYPRODUCTS
-            "${_stage_full}" "${_stage_dispatch}" "${_stage_layout}"
+            "${_stage_header}" ${_stage_parts}
+            "${_stage_dispatch}" "${_stage_layout}"
             "${_stage_cycles}" "${_stage_audit}" "${_stage_unresolved}"
             "${_audit}" "${_unresolved}"
         # Invalidate the old stamp and compiled outputs before doing any work.
@@ -115,10 +141,22 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
         VERBATIM
         COMMAND_EXPAND_LISTS)
 
-    add_custom_command(OUTPUT "${_full}"
-        COMMAND "${CMAKE_COMMAND}" -E copy "${_stage_full}" "${_full}"
-        COMMAND "${CMAKE_COMMAND}" -E touch "${_full}"
+    # The shared header must land in ${_gen} before any part TU that
+    # #include "${PREFIX}_decls.h"s it (quote-include resolves against the
+    # including file's own directory) is compiled. Each part's copy rule
+    # below DEPENDS on this OUTPUT too, which orders "copy header" before
+    # "copy part" before "compile part" in the Ninja/MSBuild graph.
+    add_custom_command(OUTPUT "${_header}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${_stage_header}" "${_header}"
+        COMMAND "${CMAKE_COMMAND}" -E touch "${_header}"
         DEPENDS "${_stamp}" VERBATIM)
+    foreach(_ii ${_part_indices})
+        add_custom_command(OUTPUT "${_gen}/${PREFIX}_part${_ii}.c"
+            COMMAND "${CMAKE_COMMAND}" -E copy
+                "${_stage}/${PREFIX}_part${_ii}.c" "${_gen}/${PREFIX}_part${_ii}.c"
+            COMMAND "${CMAKE_COMMAND}" -E touch "${_gen}/${PREFIX}_part${_ii}.c"
+            DEPENDS "${_stamp}" "${_header}" VERBATIM)
+    endforeach()
     add_custom_command(OUTPUT "${_dispatch}"
         COMMAND "${CMAKE_COMMAND}" -E copy "${_stage_dispatch}" "${_dispatch}"
         COMMAND "${CMAKE_COMMAND}" -E touch "${_dispatch}"
@@ -132,10 +170,13 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
         COMMAND "${CMAKE_COMMAND}" -E touch "${_cycles}"
         DEPENDS "${_stamp}" VERBATIM)
 
+    # The header is a build product too (freshness/regen tracking) but is
+    # deliberately excluded from ${OUT_VAR}: it's #include-d by every part,
+    # never compiled or listed as a target source itself.
     set_source_files_properties(${_outputs} PROPERTIES GENERATED TRUE)
     add_custom_target("genesisrecomp_generate_${PREFIX}" DEPENDS ${_outputs})
     set(${OUT_VAR} ${_sources} PARENT_SCOPE)
-    set(${OUT_VAR}_FULL "${_full}" PARENT_SCOPE)
+    set(${OUT_VAR}_HEADER "${_header}" PARENT_SCOPE)
     set(${OUT_VAR}_CYCLES "${_cycles}" PARENT_SCOPE)
     set(${OUT_VAR}_DIR "${_gen}" PARENT_SCOPE)
     set(${OUT_VAR}_TARGET "genesisrecomp_generate_${PREFIX}" PARENT_SCOPE)

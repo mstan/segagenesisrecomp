@@ -5,7 +5,7 @@
 #pragma once
 #include "game_extras.h"
 
-/* Recompiled entry points (defined in generated/sonic_full.c) */
+/* Recompiled entry points (defined across generated/sonic_partNN.c) */
 void func_000206(void);   /* EntryPoint     ($000206) */
 void func_000B10(void);   /* VBlank IRQ6    ($000B10) */
 void func_001126(void);   /* HBlank IRQ4    ($001126) */
