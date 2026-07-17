@@ -1526,6 +1526,7 @@ int main(int argc, char *argv[])
                     ls.widescreen       = g_app_config.widescreen;
                     ls.widescreen_cells = g_app_config.widescreen_cells;
                     ls.enable_audio     = 1;
+                    ls.audio_freq       = 48000;   /* engine device rate (audio.c want.freq) */
                     ls.volume           = g_app_config.volume;
                     ls.skip_launcher    = g_app_config.skip_launcher;
                     for (int p = 0; p < 2; p++) {
