@@ -119,6 +119,13 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
 #if GENESIS_LAUNCHER
 #include "launcher_capi.h"
 #endif
+#if RECOMP_LAUNCHER
+/* Shared recomp-ui launcher C ABI. The header is supplied through the game
+ * target's include dirs (recomp-ui/src) via recomp_ui.cmake — the engine repo
+ * itself does NOT vendor recomp-ui, so this is only reachable when a game opts
+ * in by defining RECOMP_LAUNCHER. Mutually exclusive with GENESIS_LAUNCHER. */
+#include "recomp_launcher.h"
+#endif
 #if SONIC_REVERSE_DEBUG
 #include "reverse_debug.h"
 #endif
@@ -1484,7 +1491,7 @@ int main(int argc, char *argv[])
                           mem_write_log_spec || wav_path || s_script_start_frame ||
                           s_script_right_frame || debug_port_cli || start_turbo ||
                           no_launcher || getenv("GENESIS_NO_LAUNCHER") != NULL);
-#if GENESIS_LAUNCHER
+#if RECOMP_LAUNCHER || GENESIS_LAUNCHER
         if (!positional_rom && !automation) {
             static char cached_rom[600];
             int booted_cached = 0;
@@ -1496,47 +1503,149 @@ int main(int argc, char *argv[])
             if (!booted_cached) {
                 char initial_rom[600] = "";
                 rom_cfg_read(rom_cfg_path, initial_rom, sizeof initial_rom);
-
-                GenesisLauncherCSettings ls;
-                ls.window_scale     = g_app_config.window_scale;
-                ls.fullscreen       = g_app_config.fullscreen;
-                ls.linear_filter    = g_app_config.linear_filter;
-                ls.widescreen       = g_app_config.widescreen;
-                ls.widescreen_cells = g_app_config.widescreen_cells;
-                ls.volume           = g_app_config.volume;
-                ls.skip_launcher    = g_app_config.skip_launcher;
-
-                GenesisLauncherCGameInfo gi;
-                memset(&gi, 0, sizeof gi);
-                gi.name                 = g_game_spec.display_name;
-                gi.short_name           = g_game_spec.short_name;
-                gi.region               = "NTSC-U (USA)";
-                gi.expected_crc         = g_game_spec.expected_rom_crc32;
-                gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
-                gi.expected_size        = g_game_spec.expected_rom_size;
-                gi.uses_sram            = g_game_spec.sram_start != 0;
-                gi.widescreen_supported = g_game_layout.ws_capable;
-
-                char assets_dir[600], ltitle[200];
-                snprintf(assets_dir, sizeof assets_dir, "%slauncher", s_exe_dir);
+                char ltitle[200];
                 snprintf(ltitle, sizeof ltitle, "%s — Sega Genesis Launcher",
                          g_game_spec.display_name ? g_game_spec.display_name : "Genesis");
                 static char picked[600] = "";
-                int lr = genesis_launcher_run_window(ltitle, &ls, &gi, assets_dir,
-                                                     initial_rom, picked, sizeof picked);
-                if (lr == 1) return 0;          /* user closed the launcher */
-                if (lr == 0) {                  /* PLAY */
-                    if (picked[0]) rom_path = picked;
-                    g_app_config.window_scale     = ls.window_scale;
-                    g_app_config.fullscreen       = ls.fullscreen;
-                    g_app_config.linear_filter    = ls.linear_filter;
-                    g_app_config.widescreen       = ls.widescreen;
-                    g_app_config.widescreen_cells = ls.widescreen_cells;
-                    g_app_config.volume           = ls.volume;
-                    g_app_config.skip_launcher    = ls.skip_launcher;
-                    app_config_save(settings_ini);    /* persists g_input_map too */
-                    if (rom_path) rom_cfg_write(rom_cfg_path, rom_path);
+                int lr = 2;   /* default UNAVAILABLE -> legacy picker below */
+
+#if RECOMP_LAUNCHER
+                /* ---- shared recomp-ui (Dear ImGui) launcher ------------------
+                 * The new cross-console launcher (recomp_launcher.h, linked via
+                 * the game target + recomp_ui.cmake). It persists key/pad rebinds
+                 * straight into the engine's own settings.ini [input.pN] through
+                 * its genesis bridge; the display/audio/device knobs round-trip
+                 * through the settings struct below. */
+                {
+                    RecompLauncherCSettings ls;
+                    memset(&ls, 0, sizeof ls);
+                    ls.output_method    = 2;   /* OpenGL (matches the launcher) */
+                    ls.window_scale     = g_app_config.window_scale;
+                    ls.fullscreen       = g_app_config.fullscreen;
+                    ls.linear_filter    = g_app_config.linear_filter;
+                    ls.widescreen       = g_app_config.widescreen;
+                    ls.widescreen_cells = g_app_config.widescreen_cells;
+                    ls.enable_audio     = 1;
+                    ls.volume           = g_app_config.volume;
+                    ls.skip_launcher    = g_app_config.skip_launcher;
+                    for (int p = 0; p < 2; p++) {
+                        int dev = g_input_map.p[p].device;
+                        ls.player_src[p] = (dev == INPUT_DEV_NONE)    ? 0
+                                         : (dev & INPUT_DEV_KEYBOARD) ? 1 : 2;
+                        ls.pad_mode[p]   = (g_input_map.p[p].pad_type == PAD_6BUTTON) ? 1 : 0;
+                        ls.deadzone[p]   = g_input_map.p[p].deadzone_pct;
+                    }
+
+                    RecompLauncherCGameInfo gi;
+                    memset(&gi, 0, sizeof gi);
+                    gi.name                 = g_game_spec.display_name;
+                    gi.region               = "NTSC-U (USA)";
+                    gi.expected_crc         = g_game_spec.expected_rom_crc32;
+                    gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
+                    gi.widescreen_supported = g_game_layout.ws_capable;
+                    gi.num_players          = 2;   /* both controller ports configurable */
+                    gi.platform             = "SEGA GENESIS";  /* infers the genesis profile */
+                    gi.theme                = "genesis";
+                    gi.rom_noun             = "ROM";
+                    gi.pad_mode_supported   = 1;   /* 3-Button / 6-Button selector */
+                    gi.pad_mode_selectable  = 1;
+                    /* Point the launcher's bind bridge at the engine's OWN
+                     * settings.ini (not a separate keybinds.ini) so key/pad
+                     * rebinds land where app_config_load() reads them. */
+                    gi.keybinds_path        = settings_ini;
+                    /* SRAM panel: the engine names its battery file
+                     * <rom-basename>.srm next to the exe (runner_sram_init_and_load,
+                     * ~main.c:1024). Mirror that from the current ROM so the
+                     * launcher's Import/Clear act on the real save file. */
+                    static char sram_path[600];
+                    if (g_game_spec.sram_start != 0 && initial_rom[0]) {
+                        const char *b = initial_rom;
+                        const char *s1 = strrchr(initial_rom, '/');
+                        const char *s2 = strrchr(initial_rom, '\\');
+                        const char *sep = (s2 > s1) ? s2 : s1;
+                        if (sep) b = sep + 1;
+                        char nm[256]; snprintf(nm, sizeof nm, "%s", b);
+                        char *dot = strrchr(nm, '.'); if (dot) *dot = '\0';
+                        strncat(nm, ".srm", sizeof(nm) - strlen(nm) - 1);
+                        snprintf(sram_path, sizeof sram_path, "%s", exe_relative(nm));
+                        gi.sram_path = sram_path;
+                    }
+
+                    char assets_dir[600];
+                    snprintf(assets_dir, sizeof assets_dir, "%sassets", s_exe_dir);
+                    lr = recomp_launcher_run_window(ltitle, &ls, &gi, assets_dir,
+                                                    initial_rom, picked, sizeof picked);
+                    if (lr == 0) {                  /* PLAY */
+                        if (picked[0]) rom_path = picked;
+                        /* Ordering matters. Re-load settings.ini FIRST so the
+                         * key/pad rebinds the launcher just wrote reach
+                         * g_input_map; THEN copy this session's display/audio +
+                         * device/pad_type/deadzone over the top; THEN persist all
+                         * of it together (app_config_save writes g_input_map too). */
+                        app_config_load(settings_ini);
+                        g_app_config.window_scale     = ls.window_scale;
+                        g_app_config.fullscreen       = ls.fullscreen;
+                        g_app_config.linear_filter    = ls.linear_filter;
+                        g_app_config.widescreen       = ls.widescreen;
+                        g_app_config.widescreen_cells = ls.widescreen_cells;
+                        g_app_config.volume           = ls.volume;
+                        g_app_config.skip_launcher    = ls.skip_launcher;
+                        for (int p = 0; p < 2; p++) {
+                            int src = ls.player_src[p];
+                            g_input_map.p[p].device       = (src == 1) ? INPUT_DEV_KEYBOARD
+                                                          : (src == 2) ? INPUT_DEV_GAMEPAD
+                                                          : INPUT_DEV_NONE;
+                            g_input_map.p[p].pad_type     = (ls.pad_mode[p] == 1) ? PAD_6BUTTON : PAD_3BUTTON;
+                            g_input_map.p[p].deadzone_pct = ls.deadzone[p];
+                        }
+                        app_config_save(settings_ini);
+                        if (rom_path) rom_cfg_write(rom_cfg_path, rom_path);
+                    }
                 }
+#elif GENESIS_LAUNCHER
+                /* ---- legacy RmlUi launcher (fallback during transition) ------
+                 * Unchanged from before recomp-ui: edits g_input_map directly and
+                 * round-trips only display/audio/skip through the settings struct. */
+                {
+                    GenesisLauncherCSettings ls;
+                    ls.window_scale     = g_app_config.window_scale;
+                    ls.fullscreen       = g_app_config.fullscreen;
+                    ls.linear_filter    = g_app_config.linear_filter;
+                    ls.widescreen       = g_app_config.widescreen;
+                    ls.widescreen_cells = g_app_config.widescreen_cells;
+                    ls.volume           = g_app_config.volume;
+                    ls.skip_launcher    = g_app_config.skip_launcher;
+
+                    GenesisLauncherCGameInfo gi;
+                    memset(&gi, 0, sizeof gi);
+                    gi.name                 = g_game_spec.display_name;
+                    gi.short_name           = g_game_spec.short_name;
+                    gi.region               = "NTSC-U (USA)";
+                    gi.expected_crc         = g_game_spec.expected_rom_crc32;
+                    gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
+                    gi.expected_size        = g_game_spec.expected_rom_size;
+                    gi.uses_sram            = g_game_spec.sram_start != 0;
+                    gi.widescreen_supported = g_game_layout.ws_capable;
+
+                    char assets_dir[600];
+                    snprintf(assets_dir, sizeof assets_dir, "%slauncher", s_exe_dir);
+                    lr = genesis_launcher_run_window(ltitle, &ls, &gi, assets_dir,
+                                                     initial_rom, picked, sizeof picked);
+                    if (lr == 0) {                  /* PLAY */
+                        if (picked[0]) rom_path = picked;
+                        g_app_config.window_scale     = ls.window_scale;
+                        g_app_config.fullscreen       = ls.fullscreen;
+                        g_app_config.linear_filter    = ls.linear_filter;
+                        g_app_config.widescreen       = ls.widescreen;
+                        g_app_config.widescreen_cells = ls.widescreen_cells;
+                        g_app_config.volume           = ls.volume;
+                        g_app_config.skip_launcher    = ls.skip_launcher;
+                        app_config_save(settings_ini);    /* persists g_input_map too */
+                        if (rom_path) rom_cfg_write(rom_cfg_path, rom_path);
+                    }
+                }
+#endif
+                if (lr == 1) return 0;   /* user closed the launcher */
                 /* lr == 2 (unavailable) -> fall through to the legacy picker. */
             }
         }
