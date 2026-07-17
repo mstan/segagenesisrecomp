@@ -1570,6 +1570,14 @@ int main(int argc, char *argv[])
                         snprintf(sram_path, sizeof sram_path, "%s", exe_relative(nm));
                         gi.sram_path = sram_path;
                     }
+                    /* Per-mode box art: a repo that builds several game modes
+                     * into ONE exe dir (Sonic3AndKnucklesRecomp) sets g_game_spec.boxart
+                     * so each mode shows its own; NULL keeps the shared boxart.tga. */
+                    static char boxart_rel[128];
+                    if (g_game_spec.boxart && g_game_spec.boxart[0]) {
+                        snprintf(boxart_rel, sizeof boxart_rel, "assets/img/%s", g_game_spec.boxart);
+                        gi.boxart_path = boxart_rel;
+                    }
 
                     char assets_dir[600];
                     snprintf(assets_dir, sizeof assets_dir, "%sassets", s_exe_dir);

@@ -229,6 +229,7 @@ static const GameDebugCommand s3_commands[] = {
 const GameSpec g_game_spec = {
     .display_name           = "Sonic 3",
     .short_name             = "Sonic3",
+    .boxart                 = "boxart-sonic3.tga",
 
     /* Sonic 3 USA standalone. The launcher computes CRC32 over the RAW ROM file
      * (No-Intro CRC = 0x9BC192CE) and shows a MATCH badge — this is independent

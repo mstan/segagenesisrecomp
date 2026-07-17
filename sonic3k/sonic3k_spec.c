@@ -206,6 +206,7 @@ static const GameDebugCommand s3k_commands[] = {
 const GameSpec g_game_spec = {
     .display_name           = "Sonic 3 & Knuckles",
     .short_name             = "Sonic3K",
+    .boxart                 = "boxart-sonic3k.tga",
 
     /* S&K+S3 World — skip CRC (combined ROM checksum is non-standard) */
     .expected_rom_crc32     = 0u,

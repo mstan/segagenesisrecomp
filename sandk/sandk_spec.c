@@ -227,6 +227,7 @@ static const GameDebugCommand sandk_commands[] = {
 const GameSpec g_game_spec = {
     .display_name           = "Sonic & Knuckles",
     .short_name             = "SonicK",
+    .boxart                 = "boxart-sonick.tga",
 
     /* S&K standalone — CRC check skipped (runner CRC calc vs file byteswap
      * unverified); ROM identity is gated by size + external hash check.

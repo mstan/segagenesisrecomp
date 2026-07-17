@@ -52,6 +52,12 @@ typedef struct GameSpec {
     /* ---- Identity ---- */
     const char *display_name;        /* "Sonic the Hedgehog" — window title */
     const char *short_name;          /* "Sonic1" — shows up in info / ping */
+    /* Box-art file staged next to the exe under assets/img/, e.g.
+     * "boxart-sonic3.tga". NULL => the shared "boxart.tga" (single-boxart
+     * repos). Needed when several game modes build into ONE exe dir (the
+     * Sonic3AndKnucklesRecomp repo's 3 modes) so each shows its own art —
+     * the pre-boot launcher reads this into RecompLauncherCGameInfo.boxart_path. */
+    const char *boxart;
 
     /* Expected CRC32 of the raw ROM (0 = skip verification). The
      * launcher checks this before starting the game and re-prompts
