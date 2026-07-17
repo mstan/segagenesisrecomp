@@ -3,9 +3,11 @@
 **Release (native) binaries are AGPL-free.** They run the clean-room own
 backend: recompiled 68K, own VDP/bus/machine scheduler, ymfm FM (BSD-3),
 superzazu Z80 (MIT), clean-room SN76489, SDL2 (zlib), clowncommon helpers
-(ISC, vendored). The native target also bundles the pre-boot launcher UI —
-RmlUi (MIT), FreeType (FTL), stb_image (public domain), Lato font (OFL-1.1),
-all permissive. They link **zero** clownmdemu/clown68000/clownz80 objects
+(ISC, vendored). The native target also bundles the shared recomp-ui pre-boot
+launcher UI — Dear ImGui (MIT), stb_image / stb_truetype (public domain),
+tinyfiledialogs (zlib), Lato font (OFL-1.1), all permissive. (This replaced the
+old RmlUi/FreeType launcher; no FreeType is linked any more.) They link **zero**
+clownmdemu/clown68000/clownz80 objects
 AND compile **zero** AGPL headers — the native targets build with no
 `clownmdemu-core` include paths at all (enforced in each game repo's
 CMakeLists; any reintroduced AGPL include is a compile error).
@@ -32,9 +34,9 @@ third-party notices — NOT under AGPL.
    1.0.0) is inside the zip as `LICENSE`.
 3. **Attribution.** `THIRD-PARTY-LICENSES.md` is in the zip (ymfm BSD-3,
    superzazu MIT, clowncommon ISC, SDL2 zlib, plus the launcher deps —
-   RmlUi MIT, FreeType FTL, stb_image public-domain, Lato OFL-1.1 — full
-   texts ship with the vendored components). The `launcher/` assets folder
-   (launcher.rml + fonts/ + img/) ships next to the exe so the GUI can load.
+   Dear ImGui MIT, stb_image/stb_truetype public-domain, tinyfiledialogs zlib,
+   Lato OFL-1.1 — full texts ship with the vendored components). The `assets/`
+   folder (fonts/ + img/) ships next to the exe so the launcher can load.
 4. **No ROM, no dumps, no junk.** The zip contains **no** `*.bin/*.gen/*.smd`
    (ROM), `ramdump*`, `*_save_*.bin` / `savestate*` / `*.srm` (saves),
    `*.log`, or `*.map`. Users bring their own ROM.
@@ -53,13 +55,22 @@ is present:
 
 ```
 python segagenesisrecomp/tools/package_release.py \
-    --exe     build/Release/<Game>.exe \
-    --extra   build/Release/SDL2.dll \
-    --license LICENSE \
-    --notices segagenesisrecomp/THIRD-PARTY-LICENSES.md \
-    --readme  release/README.txt \
-    --out     <Game>-vX.Y.Z-win64.zip
+    --exe       build/Release/<Game>.exe \
+    --extra     build/Release/SDL2.dll \
+    --asset-dir build/Release/assets \
+    --license   LICENSE \
+    --notices   segagenesisrecomp/THIRD-PARTY-LICENSES.md \
+    --readme    release/README.txt \
+    --out       <Game>-vX.Y.Z-win64.zip
 ```
+
+`--asset-dir build/Release/assets` stages the recomp-ui launcher's runtime
+assets (`assets/fonts/*.ttf`, `assets/img/*.tga`) into the zip preserving the
+`assets/` top folder, so the exe finds them next to itself. (This replaced the
+old RmlUi `--asset-dir build/Release/launcher`.) The 3-mode
+Sonic3AndKnucklesRecomp repo packages each exe separately; its per-mode box art
+(`boxart-<mode>.tga`) all live under the one `assets/img/`, so the same
+`--asset-dir` covers every mode.
 
 ## Quick pre-publish audit
 
@@ -70,7 +81,8 @@ python segagenesisrecomp/tools/package_release.py \
   `clownmdemu-core` paths (`grep clownmdemu-core CMakeLists.txt` → only the
   `_ORACLE` include list and the oracle-only `add_subdirectory`).
 - Open the final zip and confirm it contains **only**: the exe, `SDL2.dll`,
-  `README`, `LICENSE` (PolyForm Noncommercial), `THIRD-PARTY-LICENSES.md`.
+  `README`, `LICENSE` (PolyForm Noncommercial), `THIRD-PARTY-LICENSES.md`, and
+  the launcher's `assets/` folder (`assets/fonts/*.ttf`, `assets/img/*.tga`).
 
 ## History
 

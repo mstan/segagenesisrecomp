@@ -52,8 +52,9 @@ def main():
                     help="additional allowlisted files (e.g. SDL2.dll)")
     ap.add_argument("--asset-dir", nargs="*", default=[],
                     help="directories staged recursively into the zip preserving "
-                         "their top folder name (e.g. build/Release/launcher -> "
-                         "launcher/...). Used for the pre-boot launcher UI assets.")
+                         "their top folder name (e.g. build/Release/assets -> "
+                         "assets/...). Used for the recomp-ui pre-boot launcher UI "
+                         "assets (assets/fonts + assets/img).")
     args = ap.parse_args()
 
     allow = [args.exe, args.license, args.notices, args.readme] + list(args.extra)
@@ -64,7 +65,7 @@ def main():
         fail("missing required files:\n  " + "\n  ".join(missing))
 
     # 1b) gather asset-dir files as (abspath, arcname), preserving each dir's own
-    #     top folder name -> launcher/launcher.rml, launcher/fonts/*, launcher/img/*
+    #     top folder name -> assets/fonts/*, assets/img/*
     asset_files = []  # (src_path, arcname)
     for d in args.asset_dir:
         if not os.path.isdir(d):
