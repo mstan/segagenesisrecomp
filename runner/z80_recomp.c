@@ -13,12 +13,14 @@
 #include "external/superzazu/z80.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 Z80State g_z80;
 
 static uint64_t s_fallback_steps;
-static uint16_t s_fallback_pc;
+static uint8_t s_fallback_seen[0x10000 / 8];
+static int s_log_misses = -1;
 
 static uint8_t pack_flags(const z80 *z)
 {
@@ -118,8 +120,12 @@ void sms_dispatch_miss(uint16_t addr)
     fallback->int_pending = int_pending;
     fallback->nmi_pending = nmi_pending;
     s_fallback_steps++;
-    if (addr != s_fallback_pc || s_fallback_steps == 1) {
-        s_fallback_pc = addr;
+    if (s_log_misses < 0)
+        s_log_misses = getenv("GENESIS_Z80_AOT_LOG_MISSES") ? 1 : 0;
+    unsigned byte = addr >> 3;
+    uint8_t bit = (uint8_t)(1u << (addr & 7));
+    if (s_log_misses && !(s_fallback_seen[byte] & bit)) {
+        s_fallback_seen[byte] |= bit;
         fprintf(stderr, "[Z80-AOT] dispatch miss at $%04X; interpreter fallback (total=%llu)\n",
                 addr, (unsigned long long)s_fallback_steps);
     }
@@ -162,7 +168,8 @@ void z80_recomp_init(void)
     memset(&g_z80,0,sizeof(g_z80));
     g_z80.a=0xFF; g_z80.f=0xFF; g_z80.sp=0xFFFF;
     z80_recomp_reset();
-    s_fallback_steps=0; s_fallback_pc=0xFFFF;
+    s_fallback_steps=0;
+    memset(s_fallback_seen, 0, sizeof(s_fallback_seen));
 }
 
 void z80_recomp_reset(void)

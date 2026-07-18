@@ -59,3 +59,7 @@ during their initial uploads and no later fallback in the tested windows.
 Sonic 3&K additionally exercises the fallback for code sequences that cannot
 be represented by a finite set of static snapshots; matching instructions
 continue to execute through the generated backend.
+
+Fallback diagnostics are silent by default because a self-modifying hot loop
+can miss many times per frame. Set `GENESIS_Z80_AOT_LOG_MISSES=1` to log the
+first miss at each distinct PC for debugging.
