@@ -51,6 +51,8 @@ boot while keeping runtime opcode decode out of the matching path.
 The experiment was regression-tested in turbo mode against the interpreter:
 
 - Sonic the Hedgehog: 1,800 frames, byte-identical WAV output.
+- Sonic the Hedgehog 2: 300 frames with byte-identical WAV output, followed by
+  a normal-speed listening pass.
 - Sonic 3 standalone: byte-identical WAV, chip stream, and final Z80 RAM.
 - Sonic 3 & Knuckles lock-on: 7,300 frames with a WAV SHA-256 byte-identical
   to the archived known-good interpreter golden, including its self-modifying
@@ -58,9 +60,11 @@ The experiment was regression-tested in turbo mode against the interpreter:
 - Rocket Knight Adventures: 1,800 frames with byte-identical WAV output and
   identical framebuffer hashes.
 
-All tested games used only seven interpreter fallback instructions during
-their initial uploads and no later fallback in the tested windows.
+Sonic 1, Sonic 3, Sonic 3 & Knuckles, and Rocket Knight Adventures used only
+seven interpreter fallback instructions during their initial uploads and no
+later fallback in the tested windows. Sonic 2 additionally exercised one
+recurring self-modified PC through the faithful interpreter fallback.
 
-Fallback diagnostics are silent by default because a self-modifying hot loop
-can miss many times per frame. Set `GENESIS_Z80_AOT_LOG_MISSES=1` to log the
-first miss at each distinct PC for debugging.
+Fallback diagnostics are structured and silent: the `z80_state` TCP command
+reports `z80_recomp.fallback_steps` and
+`z80_recomp.fallback_unique_pcs` without writing per-instruction logs.

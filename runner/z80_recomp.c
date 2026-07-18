@@ -4,7 +4,7 @@
  * Generated code comes from SmsRecomp --flat-step and operates on the same
  * packed-flag Z80State / z80_ops semantics from z80-recomp-core.
  * This adapter supplies the Genesis bus, explicit interrupt acceptance, and a
- * loud interpreter fallback for a PC outside the generated driver image.
+ * counted interpreter fallback for a PC outside the generated driver image.
  */
 #include "z80_recomp.h"
 
@@ -12,15 +12,13 @@
 #include "video/genesis_machine.h"
 #include "external/superzazu/z80.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 Z80State g_z80;
 
 static uint64_t s_fallback_steps;
+static uint32_t s_fallback_unique_pcs;
 static uint8_t s_fallback_seen[0x10000 / 8];
-static int s_log_misses = -1;
 
 static uint8_t pack_flags(const z80 *z)
 {
@@ -120,14 +118,11 @@ void sms_dispatch_miss(uint16_t addr)
     fallback->int_pending = int_pending;
     fallback->nmi_pending = nmi_pending;
     s_fallback_steps++;
-    if (s_log_misses < 0)
-        s_log_misses = getenv("GENESIS_Z80_AOT_LOG_MISSES") ? 1 : 0;
     unsigned byte = addr >> 3;
     uint8_t bit = (uint8_t)(1u << (addr & 7));
-    if (s_log_misses && !(s_fallback_seen[byte] & bit)) {
+    if (!(s_fallback_seen[byte] & bit)) {
         s_fallback_seen[byte] |= bit;
-        fprintf(stderr, "[Z80-AOT] dispatch miss at $%04X; interpreter fallback (total=%llu)\n",
-                addr, (unsigned long long)s_fallback_steps);
+        s_fallback_unique_pcs++;
     }
 }
 
@@ -169,6 +164,7 @@ void z80_recomp_init(void)
     g_z80.a=0xFF; g_z80.f=0xFF; g_z80.sp=0xFFFF;
     z80_recomp_reset();
     s_fallback_steps=0;
+    s_fallback_unique_pcs=0;
     memset(s_fallback_seen, 0, sizeof(s_fallback_seen));
 }
 
@@ -194,3 +190,5 @@ void z80_recomp_assert_irq(void) { g_machine.z80.int_pending=1; }
 uint16_t z80_recomp_pc(void) { return g_z80.pc; }
 int z80_recomp_irq_pending(void) { return g_machine.z80.int_pending ? 1:0; }
 int z80_recomp_iff1(void) { return g_z80.iff1 ? 1:0; }
+uint64_t z80_recomp_fallback_steps(void) { return s_fallback_steps; }
+uint32_t z80_recomp_fallback_unique_pcs(void) { return s_fallback_unique_pcs; }

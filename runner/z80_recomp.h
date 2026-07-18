@@ -17,6 +17,8 @@ void z80_recomp_assert_irq(void);
 uint16_t z80_recomp_pc(void);
 int z80_recomp_irq_pending(void);
 int z80_recomp_iff1(void);
+uint64_t z80_recomp_fallback_steps(void);
+uint32_t z80_recomp_fallback_unique_pcs(void);
 
 /* Keep the legacy SuperZazu-shaped state synchronized for existing debug,
  * frame-record, and co-sim consumers while the AOT experiment is opt-in. */

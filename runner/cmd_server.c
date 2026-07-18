@@ -64,6 +64,9 @@ typedef int sock_t;
  * VDP-internal *snapshots* have no own-backend equivalent yet and are stubbed
  * (see the per-command guards below + the de-clown plan in LICENSING.md). */
 #include "genesis_machine.h"   /* g_machine (our VDP/bus), GVDP */
+#ifdef GENESIS_Z80_RECOMP
+#include "z80_recomp.h"
+#endif
 extern uint8_t  g_ram[0x010000];
 extern uint8_t  g_rom[0x400000];
 extern M68KState g_cpu;
@@ -1534,6 +1537,12 @@ static void handle_z80_state(int id, const char *json)
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
     json_z80(&j, &z, with_ram);
+#ifdef GENESIS_Z80_RECOMP
+    jb_printf(&j,
+        ",\"z80_recomp\":{\"fallback_steps\":%" PRIu64
+        ",\"fallback_unique_pcs\":%u}",
+        z80_recomp_fallback_steps(), z80_recomp_fallback_unique_pcs());
+#endif
     jb_printf(&j, "}");
     cmd_send_response(j.buf);
     jb_free(&j);
