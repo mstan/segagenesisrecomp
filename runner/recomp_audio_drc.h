@@ -109,6 +109,10 @@ void rab_config_defaults(rab_config *c);
 /* Allocate internal buffers and build the polyphase filter bank. Returns 0 on
  * success, non-zero on allocation/parameter failure. */
 int  rab_init(rab_bridge *b, const rab_config *cfg);
+/* Discard queued/history audio and return the initialized bridge to its
+ * pre-roll state without reallocating its ring or filter bank. The caller must
+ * synchronize producer/consumer access while resetting. */
+void rab_reset(rab_bridge *b);
 void rab_free(rab_bridge *b);
 
 /* Producer: append `frames` interleaved int16 source samples. Thread: emu side. */
@@ -221,20 +225,30 @@ int rab_init(rab_bridge *b, const rab_config *cfg) {
     b->ring = (float *)calloc((size_t)b->cap * cfg->channels, sizeof(float));
     if (!b->ring) { free(b->coeffs); b->coeffs = NULL; return 7; }
 
+    rab_reset(b);
+    return 0;
+}
+
+void rab_reset(rab_bridge *b) {
+    if (!b) return;
+    if (b->ring)
+        memset(b->ring, 0, (size_t)b->cap * (size_t)b->cfg.channels * sizeof(float));
     b->in_count = 0;
     /* Start the read cursor half a window in so the polyphase filter always has
      * valid history behind it; otherwise the first half-1 outputs can't be
      * computed and the cursor would never advance. */
     b->out_pos  = (double)(b->half - 1);
-    b->cur_step = cfg->source_rate / cfg->host_rate;
+    b->cur_step = b->cfg.source_rate / b->cfg.host_rate;
     b->err_lp   = 0.0;
     b->corr     = 0.0;
     b->gain     = 0.0;
     b->primed   = 0;
-    b->prime_ms = (cfg->preroll_ms > cfg->target_ms) ? cfg->preroll_ms : cfg->target_ms;
+    b->prime_ms = (b->cfg.preroll_ms > b->cfg.target_ms)
+                    ? b->cfg.preroll_ms : b->cfg.target_ms;
     b->concealing = 0;
     b->loop_start = b->loop_len = b->loop_pos = 0.0;
-    return 0;
+    memset(b->last_out, 0, sizeof(b->last_out));
+    memset(&b->stats, 0, sizeof(b->stats));
 }
 
 void rab_free(rab_bridge *b) {

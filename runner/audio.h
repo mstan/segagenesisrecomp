@@ -16,6 +16,12 @@ void audio_close(void);
  * the WAV capture tap stays bit-exact. */
 void audio_set_master_volume(int pct);
 
+/* Pause speaker delivery during uncapped turbo. Re-enabling discards stale
+ * pre-turbo audio and primes the clock-domain bridge from the current game
+ * state, so turbo is silent and normal-speed playback resumes cleanly. WAV
+ * capture is independent and remains active. */
+void audio_set_playback_enabled(int enabled);
+
 /*
  * Mix one video frame and push to the SDL ring buffer.
  *
