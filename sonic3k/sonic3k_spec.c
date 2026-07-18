@@ -16,6 +16,9 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdint.h>
+#ifdef GENESIS_Z80_RECOMP
+#include "s3kz80_step.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -211,6 +214,9 @@ const GameSpec g_game_spec = {
     /* S&K+S3 World — skip CRC (combined ROM checksum is non-standard) */
     .expected_rom_crc32     = 0u,
     .expected_rom_size      = 0x400000u,   /* 4 MB combined cart */
+#ifdef GENESIS_Z80_RECOMP
+    .z80_step               = s3kz80_step,
+#endif
 
     /* Battery SRAM is a lock-on feature: the combined cart's header is S&K's
      * (CartRAM_Type = "No SRAM"), but the board saves at $200001-$203FFF (odd

@@ -20,6 +20,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#ifdef GENESIS_Z80_RECOMP
+#include "rkaz80_step.h"
+#endif
 
 /* ---- Entry-point / interrupt dispatchers (canonical org-0 addresses) ---- */
 static void rka_call_entry_point(void) { recomp_call_addr(0x000208u); }
@@ -39,6 +42,9 @@ const GameSpec g_game_spec = {
     /* CRC check skipped (0); identity gated by size. USA file is 1 MB. */
     .expected_rom_crc32     = 0u,
     .expected_rom_size      = 0x100000u,   /* 1 MB */
+#ifdef GENESIS_Z80_RECOMP
+    .z80_step               = rkaz80_step,
+#endif
 
     /* RKA has no community disasm, so static discovery is heuristic and
      * WILL have holes (state-table case bodies never reached during attract

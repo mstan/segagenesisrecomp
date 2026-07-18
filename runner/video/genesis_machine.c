@@ -4,6 +4,9 @@
  * Z80, and our VDP, delivering V/H interrupts. Original implementation.
  */
 #include "genesis_machine.h"
+#ifdef GENESIS_Z80_RECOMP
+#include "../z80_recomp.h"
+#endif
 #include "genesis_dac.h"  /* authentic Genesis output-DAC color ladder */
 #include "chip_trace.h"   /* [CHIP-TRACE] shared FM/PSG stream ring + g_snd_* globals */
 #include <string.h>
@@ -135,7 +138,11 @@ void z80_ram_dump(const char *path)
  * sets g_snd_pcz from this at each push site; cheap scalar, all builds). */
 uint32_t machine_z80_pc(void)
 {
+#ifdef GENESIS_Z80_RECOMP
+    return (uint32_t)z80_recomp_pc();
+#else
     return (uint32_t)g_machine.z80.pc;
+#endif
 }
 
 /* glue.c hooks (recompiled-68K fiber + own-backend interrupt delivery). */
@@ -218,6 +225,10 @@ void machine_init(void)
     z80_init(&g_machine.z80);       /* superzazu power-on defaults */
     z80_own_reset(&g_machine.z80);
     machine_wire_pointers();
+#ifdef GENESIS_Z80_RECOMP
+    z80_recomp_init();
+    z80_recomp_mirror_to_interpreter(&g_machine.z80);
+#endif
     /* Widescreen black-bar pillarbox colour (opaque black). */
     s_cram_argb[GVDP_WS_BAR_INDEX] = 0xFF000000u;
 }
@@ -229,13 +240,23 @@ void machine_init(void)
  * private to a build. main.c owns the file container. */
 int machine_save_state(FILE *f)
 {
-    return fwrite(&g_machine, sizeof g_machine, 1, f) == 1;
+    if (fwrite(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
+#ifdef GENESIS_Z80_RECOMP
+    if (fwrite(&g_z80, sizeof g_z80, 1, f) != 1) return 0;
+#endif
+    return 1;
 }
 
 int machine_load_state(FILE *f)
 {
     if (fread(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
+#ifdef GENESIS_Z80_RECOMP
+    if (fread(&g_z80, sizeof g_z80, 1, f) != 1) return 0;
+#endif
     machine_wire_pointers();
+#ifdef GENESIS_Z80_RECOMP
+    z80_recomp_mirror_to_interpreter(&g_machine.z80);
+#endif
     /* Rebuild the ARGB palette cache from restored CRAM (the cache is a
      * derived file-static, not part of the snapshot). */
     for (unsigned i = 0; i < GVDP_CRAM_ENTRIES; i++)
@@ -316,24 +337,46 @@ static void step_z80(GenesisMachine *m, uint32_t target)
      * $0000 now that it's released, so it runs the freshly-uploaded driver
      * from its entry point (not from a stale, pre-upload PC). */
     if (m->bus.z80_reset_pending) {
+#ifdef GENESIS_Z80_RECOMP
+        z80_recomp_reset();
+        z80_recomp_mirror_to_interpreter(&m->z80);
+#else
         z80_own_reset(&m->z80);
+#endif
         m->bus.z80_reset_pending = 0;
     }
-    int pend_before = m->z80.int_pending ? 1 : 0;   /* [SND-TRACE] */
+    int pend_before =
+#ifdef GENESIS_Z80_RECOMP
+        z80_recomp_irq_pending();
+#else
+        m->z80.int_pending ? 1 : 0;
+#endif
     uint32_t done = m->z80_cycle_debt;
+#ifndef GENESIS_Z80_RECOMP
     m->z80.cyc = 0;            /* per-slice t-state counter (kept bounded) */
+#endif
     while (done < target) {
         /* Stamp chip writes made by this instruction at its start cycle
          * (master) — machine_z80_stamp() reads this for the event queue. */
         s_z80_off = done * MASTER_PER_Z80;
+#ifdef GENESIS_Z80_RECOMP
+        done += z80_recomp_step_one();
+#else
         unsigned long c0 = m->z80.cyc;
         z80_step(&m->z80);     /* one instruction, then interrupt processing */
         done += (uint32_t)(m->z80.cyc - c0);
+#endif
     }
     m->z80_cycle_debt = done - target;
 #ifdef GEN_DEV_TRACE
     /* [SND-TRACE] V-int acceptance: pending fell 1->0 during this slice. */
-    if (g_snd_trace && pend_before && !m->z80.int_pending && g_snd_frame >= SND_TRACE_START_FRAME)
+    if (g_snd_trace && pend_before &&
+#ifdef GENESIS_Z80_RECOMP
+        !z80_recomp_irq_pending() &&
+#else
+        !m->z80.int_pending &&
+#endif
+        g_snd_frame >= SND_TRACE_START_FRAME)
         snd_evt(SND_VACCEPT);
 #else
     (void)pend_before;
@@ -380,11 +423,20 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
              * accepted (sticky stack-up) — the suspected phase divergence. */
             if (g_snd_trace && g_snd_frame >= SND_TRACE_START_FRAME) {
                 SndEvt *e = snd_evt(SND_VASSERT);
+#ifdef GENESIS_Z80_RECOMP
+                e->v1 = z80_recomp_irq_pending();
+                e->v2 = z80_recomp_iff1();
+#else
                 e->v1 = m->z80.int_pending ? 1 : 0;   /* pending_was */
                 e->v2 = m->z80.iff1        ? 1 : 0;   /* iff1        */
+#endif
             }
 #endif
+#ifdef GENESIS_Z80_RECOMP
+            z80_recomp_assert_irq();
+#else
             m->z80.int_pending = 1;   /* level-triggered vblank IRQ assert */
+#endif
             glue_own_interrupt(6, &m->vdp);
         }
 

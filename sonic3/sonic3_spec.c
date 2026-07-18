@@ -19,6 +19,9 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdint.h>
+#ifdef GENESIS_Z80_RECOMP
+#include "s3z80_step.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -236,6 +239,9 @@ const GameSpec g_game_spec = {
      * of the runner's internal byteswapped-buffer CRC path. */
     .expected_rom_crc32     = 0x9BC192CEu,
     .expected_rom_size      = 0x200000u,   /* 2 MB standalone cart */
+#ifdef GENESIS_Z80_RECOMP
+    .z80_step               = s3z80_step,
+#endif
 
     .call_entry_point       = s3_call_entry_point,
     .call_vblank            = s3_call_vblank,

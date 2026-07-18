@@ -18,6 +18,7 @@ A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries
 | Per-instruction cycle costs | ✅ Estimated | Drives VBlank timing via `glue_check_vblank` |
 | Generated code correctness | ✅ GHZ verified | All 3 acts completable, boss fight works |
 | Later zones | ⚠️ Partial | Functions discovered progressively via gameplay |
+| Sound Z80 static recompilation | Experimental | Optional flat-step backend; see [docs/Z80_STATIC_RECOMP.md](docs/Z80_STATIC_RECOMP.md) |
 
 ## What's In This Repo
 
