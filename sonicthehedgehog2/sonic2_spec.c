@@ -26,6 +26,9 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdint.h>
+#ifdef GENESIS_Z80_RECOMP
+#include "s2z80_step.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -240,6 +243,9 @@ const GameSpec g_game_spec = {
      * verifies this CRC32 of the raw ROM file and shows a MATCH badge. */
     .expected_rom_crc32     = 0x7B905383u,
     .expected_rom_size      = 0x100000u,    /* 1 MB cart */
+#ifdef GENESIS_Z80_RECOMP
+    .z80_step               = s2z80_step,
+#endif
 
     .call_entry_point       = s2_call_entry_point,
     .call_vblank            = s2_call_vblank,

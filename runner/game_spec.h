@@ -78,6 +78,14 @@ typedef struct GameSpec {
      * coverage and keep it off so a miss stays a loud regression). */
     int         tier3_floor_default;
 
+    /* Optional statically-recompiled Z80 coprocessor backend. The generated
+     * function executes exactly one instruction from the explicit Z80 PC and
+     * returns; the shared Genesis scheduler remains responsible for cycle
+     * slices, reset, BUSREQ, and interrupts. NULL keeps the verified
+     * SuperZazu interpreter path. This is deliberately per game because every
+     * cartridge uploads a different sound-driver image into Z80 RAM. */
+    void      (*z80_step)(void);
+
     /* ---- Battery SRAM override ---- */
     /* Explicit SRAM geometry for carts whose standard header ($1B0 "RA"
      * + BE start/end longwords) does NOT declare it. The Sonic 3 &

@@ -32,6 +32,7 @@ void audio_set_master_volume(int pct)
 }
 
 static SDL_AudioDeviceID s_dev = 0;
+static int               s_playback_enabled = 0;
 
 /* DRC bridge state. Producer (rab_push) runs on the emulation/main thread inside
  * audio_flush under SDL_LockAudioDevice; consumer (rab_pull) runs on the SDL
@@ -154,6 +155,7 @@ int audio_init(int psg_sample_rate)
         return -1;
     }
     s_bridge_ready   = 1;
+    s_playback_enabled = 1;
     s_prev_underruns = 0;
     s_stats.min_queued_bytes = UINT32_MAX;  /* low-water: nothing sampled yet */
 
@@ -176,7 +178,32 @@ void audio_close(void)
         SDL_CloseAudioDevice(s_dev);
         s_dev = 0;
         rab_free(&s_bridge);
+        s_playback_enabled = 0;
     }
+}
+
+void audio_set_playback_enabled(int enabled)
+{
+    enabled = enabled != 0;
+    if (s_dev == 0 || enabled == s_playback_enabled)
+        return;
+
+    /* Pausing waits for an in-flight callback. Reset under the device lock so
+     * neither the producer nor consumer can retain pre-turbo samples. Without
+     * this, the bridge's stall-concealment loop audibly repeats the final
+     * normal-speed waveform for the duration of turbo. */
+    if (!enabled)
+        SDL_PauseAudioDevice(s_dev, 1);
+
+    SDL_LockAudioDevice(s_dev);
+    rab_reset(&s_bridge);
+    s_prev_underruns = 0;
+    s_last_flush_pc = 0;
+    SDL_UnlockAudioDevice(s_dev);
+
+    s_playback_enabled = enabled;
+    if (enabled)
+        SDL_PauseAudioDevice(s_dev, 0);
 }
 
 void audio_flush(uint32_t wall_frame, int realtime,
@@ -271,7 +298,7 @@ void audio_flush(uint32_t wall_frame, int realtime,
      * callback. The bridge's P-only controller + faded/pitch-preserving conceal
      * replace the old ±0.5% nearest-neighbor servo and the >8-frame hard drop
      * (every one of which was a discard = a click/crackle). */
-    if (realtime && s_bridge_ready) {
+    if (realtime && s_playback_enabled && s_bridge_ready) {
         SDL_LockAudioDevice(s_dev);
         rab_push(&s_bridge, s_out, (int)psg_frames);
         SDL_UnlockAudioDevice(s_dev);

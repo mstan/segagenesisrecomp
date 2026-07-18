@@ -2094,6 +2094,7 @@ int main(int argc, char *argv[])
     /* --- Main loop --- */
     int running = 1;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
+    audio_set_playback_enabled(!turbo);
     uint32_t frame_num = 0;
     int      mode_prev = -1;     /* --hash-on-mode: last Game_Mode seen (-1 = none yet) */
     uint32_t mode_seq  = 0;      /* --hash-on-mode: transition sequence counter */
@@ -2214,7 +2215,8 @@ int main(int argc, char *argv[])
         /* Tab OR controller Back = hold for turbo */
         { const Uint8 *ks = SDL_GetKeyboardState(NULL);
           int held = ks[SDL_SCANCODE_TAB] || gamepad_turbo_held();
-          turbo = held ? 1 : (start_turbo ? 1 : 0); }
+          turbo = held ? 1 : (start_turbo ? 1 : 0);
+          audio_set_playback_enabled(!turbo); }
 
         /* Zero accum buffers before Iterate(): PSG_Update (and FM_OutputSamples)
          * use += to accumulate into the provided buffer, not overwrite.

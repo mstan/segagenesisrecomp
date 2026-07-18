@@ -1,0 +1,70 @@
+# Statically recompiled Genesis sound Z80
+
+The native Genesis backend can optionally execute a cartridge's uploaded sound
+driver through statically generated Z80 C instead of decoding every opcode in
+SuperZazu at runtime. The Genesis scheduler remains authoritative for Z80
+reset, BUSREQ, interrupt delivery, per-scanline cycle slices, save states, and
+the YM2612/PSG bus.
+
+The generator lives in [`smsggrecomp`](https://github.com/mstan/smsggrecomp)
+and reuses its Z80 decoder and emitter. The packed state, generated host ABI,
+and verified instruction semantics live in the pinned
+[`z80-recomp-core`](https://github.com/mstan/z80-recomp-core) submodule shared
+by SMS/GG and Genesis. `SmsRecomp --flat-step` emits a single `<prefix>_step()`
+entry point that executes one instruction and returns to the Genesis scheduler.
+
+## Local generation workflow
+
+1. Build the game normally with `GEN_DEV_TRACE=ON`.
+2. Run far enough for the cartridge to upload and initialize its sound driver,
+   then use `--snd-dump-frame N` to produce `z80_ram.bin`.
+3. Point a minimal SMS/GG `game.toml` at that 8 KiB image, set a unique
+   `output_prefix`, and run:
+
+   ```sh
+   SmsRecomp --game path/to/game.toml --flat-step
+   ```
+
+   Games that replace or patch their driver later can supply additional RAM
+   captures with repeated `--flat-step-variant path/to/z80_ram.bin` arguments.
+
+4. Configure the game with `GENESIS_Z80_RECOMP=ON` and the generated C source.
+   The game consumes the framework's pinned `external/z80-recomp-core`
+   submodule and exposes `GENESIS_Z80_AOT_SOURCE` as a cache variable.
+
+The ROM-derived RAM image and generated C are local build artifacts and must
+not be committed. Ordinary builds leave `GENESIS_Z80_RECOMP` off and retain the
+existing interpreter path.
+
+## Correctness and fallback
+
+The generated output contains a case for every byte address in the captured
+image (plus any captured variants) and validates the live opcode bytes for the
+selected instruction. Common self-modified immediate, absolute-address, and
+indexed-displacement operands are read live while their opcode shape remains
+statically decoded. During the initial 68K-to-Z80 RAM upload, or if code does
+not match any compiled shape, execution falls back for that instruction to
+SuperZazu. Once the live driver matches, execution resumes in generated code
+automatically. This avoids running a final captured image prematurely during
+boot while keeping runtime opcode decode out of the matching path.
+
+The experiment was regression-tested in turbo mode against the interpreter:
+
+- Sonic the Hedgehog: 1,800 frames, byte-identical WAV output.
+- Sonic the Hedgehog 2: 300 frames with byte-identical WAV output, followed by
+  a normal-speed listening pass.
+- Sonic 3 standalone: byte-identical WAV, chip stream, and final Z80 RAM.
+- Sonic 3 & Knuckles lock-on: 7,300 frames with a WAV SHA-256 byte-identical
+  to the archived known-good interpreter golden, including its self-modifying
+  loop and later attract states.
+- Rocket Knight Adventures: 1,800 frames with byte-identical WAV output and
+  identical framebuffer hashes.
+
+Sonic 1, Sonic 3, Sonic 3 & Knuckles, and Rocket Knight Adventures used only
+seven interpreter fallback instructions during their initial uploads and no
+later fallback in the tested windows. Sonic 2 additionally exercised one
+recurring self-modified PC through the faithful interpreter fallback.
+
+Fallback diagnostics are structured and silent: the `z80_state` TCP command
+reports `z80_recomp.fallback_steps` and
+`z80_recomp.fallback_unique_pcs` without writing per-instruction logs.

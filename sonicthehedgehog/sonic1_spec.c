@@ -22,6 +22,9 @@
 #include "hybrid.h"
 
 #include <stdint.h>
+#ifdef GENESIS_Z80_RECOMP
+#include "s1z80_step.h"
+#endif
 #include <stddef.h>   /* NULL — not pulled in transitively under gcc/glibc */
 
 /* ---- 68K RAM shadow (defined in glue.c) ---- */
@@ -112,6 +115,9 @@ const GameSpec g_game_spec = {
     /* JUE REV00 — verified against s1disasm reference ROM */
     .expected_rom_crc32     = 0xF9394E97u,
     .expected_rom_size      = 0x80000u,
+#ifdef GENESIS_Z80_RECOMP
+    .z80_step               = s1z80_step,
+#endif
 
     .call_entry_point       = s1_call_entry_point,
     .call_vblank            = s1_call_vblank,
