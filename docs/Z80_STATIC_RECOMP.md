@@ -37,28 +37,27 @@ existing interpreter path.
 ## Correctness and fallback
 
 The generated output contains a case for every byte address in the captured
-image (plus any captured variants) and validates the live bytes for the selected instruction. During the
-initial 68K-to-Z80 RAM upload, or if code is modified or does not match the
-capture, execution falls back for that instruction to SuperZazu. Once the live
-driver matches, execution resumes in generated code automatically. This avoids
-running a final captured image prematurely during boot while keeping runtime
-opcode decode out of the matching path.
+image (plus any captured variants) and validates the live opcode bytes for the
+selected instruction. Common self-modified immediate, absolute-address, and
+indexed-displacement operands are read live while their opcode shape remains
+statically decoded. During the initial 68K-to-Z80 RAM upload, or if code does
+not match any compiled shape, execution falls back for that instruction to
+SuperZazu. Once the live driver matches, execution resumes in generated code
+automatically. This avoids running a final captured image prematurely during
+boot while keeping runtime opcode decode out of the matching path.
 
 The experiment was regression-tested in turbo mode against the interpreter:
 
 - Sonic the Hedgehog: 1,800 frames, byte-identical WAV output.
 - Sonic 3 standalone: byte-identical WAV, chip stream, and final Z80 RAM.
-- Sonic 3 & Knuckles lock-on: 1,800 frames with byte-identical WAV output and
-  framebuffer hashes using seven observed driver snapshots. Its continuously
-  self-modifying upper-RAM routine uses transparent one-instruction fallback.
-- Rocket Knight Adventures: 600 frames with identical framebuffer hashes,
-  WAV, chip stream, and final Z80 RAM.
+- Sonic 3 & Knuckles lock-on: 7,300 frames with a WAV SHA-256 byte-identical
+  to the archived known-good interpreter golden, including its self-modifying
+  loop and later attract states.
+- Rocket Knight Adventures: 1,800 frames with byte-identical WAV output and
+  identical framebuffer hashes.
 
-Sonic 1, Sonic 3, and RKA used only seven interpreter fallback instructions
-during their initial uploads and no later fallback in the tested windows.
-Sonic 3&K additionally exercises the fallback for code sequences that cannot
-be represented by a finite set of static snapshots; matching instructions
-continue to execute through the generated backend.
+All tested games used only seven interpreter fallback instructions during
+their initial uploads and no later fallback in the tested windows.
 
 Fallback diagnostics are silent by default because a self-modifying hot loop
 can miss many times per frame. Set `GENESIS_Z80_AOT_LOG_MISSES=1` to log the
