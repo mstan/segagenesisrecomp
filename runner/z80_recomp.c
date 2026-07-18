@@ -105,10 +105,18 @@ void sms_dispatch_miss(uint16_t addr)
 {
     z80 *fallback = &g_machine.z80;
     z80_recomp_mirror_to_interpreter(fallback);
+    /* z80_step() also services the interpreter's interrupt latches. Interrupt
+     * acceptance belongs to accept_interrupts() after this generated/fallback
+     * instruction boundary, so suppress it for the one-instruction capsule
+     * without losing a pending level asserted by the Genesis scheduler. */
+    int int_pending = fallback->int_pending;
+    int nmi_pending = fallback->nmi_pending;
     fallback->int_pending = 0;
     fallback->nmi_pending = 0;
     z80_step(fallback);
     z80_recomp_restore_from_interpreter(fallback);
+    fallback->int_pending = int_pending;
+    fallback->nmi_pending = nmi_pending;
     s_fallback_steps++;
     if (addr != s_fallback_pc || s_fallback_steps == 1) {
         s_fallback_pc = addr;

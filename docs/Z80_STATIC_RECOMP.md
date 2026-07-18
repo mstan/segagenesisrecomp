@@ -23,6 +23,9 @@ to the Genesis scheduler.
    SmsRecomp --game path/to/game.toml --flat-step
    ```
 
+   Games that replace or patch their driver later can supply additional RAM
+   captures with repeated `--flat-step-variant path/to/z80_ram.bin` arguments.
+
 4. Configure the game with `GENESIS_Z80_RECOMP=ON`, the SMS/GG framework root,
    and the generated C source. Each game repository's feature branch exposes
    `GENESIS_Z80_CORE_ROOT` and `GENESIS_Z80_AOT_SOURCE` cache variables.
@@ -34,7 +37,7 @@ existing interpreter path.
 ## Correctness and fallback
 
 The generated output contains a case for every byte address in the captured
-image and validates the live bytes for the selected instruction. During the
+image (plus any captured variants) and validates the live bytes for the selected instruction. During the
 initial 68K-to-Z80 RAM upload, or if code is modified or does not match the
 capture, execution falls back for that instruction to SuperZazu. Once the live
 driver matches, execution resumes in generated code automatically. This avoids
@@ -45,10 +48,14 @@ The experiment was regression-tested in turbo mode against the interpreter:
 
 - Sonic the Hedgehog: 1,800 frames, byte-identical WAV output.
 - Sonic 3 standalone: byte-identical WAV, chip stream, and final Z80 RAM.
-- Sonic 3 & Knuckles lock-on: byte-identical WAV, chip stream, and final Z80
-  RAM using its own distinct captured driver.
+- Sonic 3 & Knuckles lock-on: 1,800 frames with byte-identical WAV output and
+  framebuffer hashes using seven observed driver snapshots. Its continuously
+  self-modifying upper-RAM routine uses transparent one-instruction fallback.
 - Rocket Knight Adventures: 600 frames with identical framebuffer hashes,
   WAV, chip stream, and final Z80 RAM.
 
-All four cases used only seven interpreter fallback instructions during the
-initial upload and no fallback after the final driver image became live.
+Sonic 1, Sonic 3, and RKA used only seven interpreter fallback instructions
+during their initial uploads and no later fallback in the tested windows.
+Sonic 3&K additionally exercises the fallback for code sequences that cannot
+be represented by a finite set of static snapshots; matching instructions
+continue to execute through the generated backend.
