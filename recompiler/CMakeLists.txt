@@ -3,6 +3,12 @@ project(GenesisRecomp C)
 
 set(CMAKE_C_STANDARD 11)
 
+set(M68K_RECOMP_CORE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../external/m68k-recomp-core")
+include("${M68K_RECOMP_CORE_DIR}/cmake/M68kRecompCore.cmake")
+m68k_recomp_core_sources(M68K_RECOMP_CORE_SOURCES genesis)
+m68k_recomp_core_include_dirs(M68K_RECOMP_CORE_INCLUDE_DIRS genesis)
+
 # We link clown68000 into the recompiler so cycle_probe can single-step each
 # instruction at codegen time and emit the interpreter's own cycle count. Our
 # clown68000 changes are committed in the mstan fork directly (no patch step);
@@ -13,12 +19,7 @@ set(C68K_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../clownmdemu-core/libraries/clown6800
 add_executable(GenesisRecomp
     src/main_genesis.c
     src/rom_parser.c
-    src/m68k_decoder.c
-    src/m68k_validator.c
-    src/function_finder.c
-    src/code_generator.c
-    src/codegen_diag.c
-    src/annotations.c
+    ${M68K_RECOMP_CORE_SOURCES}
     src/game_config.c
     src/cycle_probe.c
     src/toml.c
@@ -32,6 +33,7 @@ target_compile_definitions(GenesisRecomp PRIVATE
 
 target_include_directories(GenesisRecomp PRIVATE
     src
+    ${M68K_RECOMP_CORE_INCLUDE_DIRS}
     "${C68K_DIR}/interpreter"
     "${C68K_DIR}/common"
     "${CMAKE_CURRENT_SOURCE_DIR}/../clownmdemu-core/libraries/clowncommon"
