@@ -26,6 +26,7 @@ A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries
 |-----------|---------|
 | `recompiler/src/` | The recompiler tool — analyzes ROM binary, emits native C |
 | `runner/include/` | Shared runtime headers (`genesis_runtime.h`) |
+| `external/z80-recomp-core/` | [Shared Z80 generated-code ABI and verified instruction semantics](https://github.com/mstan/z80-recomp-core) — pinned submodule shared with SMS/GG Recomp |
 | `clownmdemu-core/` | [clownmdemu](https://github.com/Clownacy/clownmdemu) emulator core — **pinned submodule, development only**. Conformance oracle for the unshipped `_oracle` builds; AGPL-3.0. Native (release) targets compile and link **zero** code from it — enforced by the CMake include lists; see `RELEASING.md` / `LICENSING.md` |
 | `<game build>/generated/<prefix>/` | Ignored output regenerated from the ROM, config, and current recompiler |
 | `sonicthehedgehog/game.cfg` | Recompiler config — 530 extra_func entries |

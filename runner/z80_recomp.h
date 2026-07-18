@@ -1,4 +1,4 @@
-/* z80_recomp.h - Genesis adapter for the shared SMS/GG Z80 AOT semantics. */
+/* z80_recomp.h - Genesis adapter for the shared z80-recomp-core semantics. */
 #pragma once
 
 #include <stdint.h>

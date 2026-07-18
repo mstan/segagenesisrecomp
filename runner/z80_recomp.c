@@ -2,7 +2,7 @@
  * z80_recomp.c - statically-recompiled Genesis Z80 coprocessor adapter.
  *
  * Generated code comes from SmsRecomp --flat-step and operates on the same
- * packed-flag Z80State / z80_ops semantic core proven by the SMS/GG projects.
+ * packed-flag Z80State / z80_ops semantics from z80-recomp-core.
  * This adapter supplies the Genesis bus, explicit interrupt acceptance, and a
  * loud interpreter fallback for a PC outside the generated driver image.
  */

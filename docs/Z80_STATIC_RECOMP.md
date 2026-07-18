@@ -6,10 +6,12 @@ SuperZazu at runtime. The Genesis scheduler remains authoritative for Z80
 reset, BUSREQ, interrupt delivery, per-scanline cycle slices, save states, and
 the YM2612/PSG bus.
 
-The generator lives in `smsggrecomp` and reuses its Z80 decoder, semantic
-emitters, packed flag state, and timing tables. `SmsRecomp --flat-step` emits a
-single `<prefix>_step()` entry point that executes one instruction and returns
-to the Genesis scheduler.
+The generator lives in [`smsggrecomp`](https://github.com/mstan/smsggrecomp)
+and reuses its Z80 decoder and emitter. The packed state, generated host ABI,
+and verified instruction semantics live in the pinned
+[`z80-recomp-core`](https://github.com/mstan/z80-recomp-core) submodule shared
+by SMS/GG and Genesis. `SmsRecomp --flat-step` emits a single `<prefix>_step()`
+entry point that executes one instruction and returns to the Genesis scheduler.
 
 ## Local generation workflow
 
@@ -26,9 +28,9 @@ to the Genesis scheduler.
    Games that replace or patch their driver later can supply additional RAM
    captures with repeated `--flat-step-variant path/to/z80_ram.bin` arguments.
 
-4. Configure the game with `GENESIS_Z80_RECOMP=ON`, the SMS/GG framework root,
-   and the generated C source. Each game repository's feature branch exposes
-   `GENESIS_Z80_CORE_ROOT` and `GENESIS_Z80_AOT_SOURCE` cache variables.
+4. Configure the game with `GENESIS_Z80_RECOMP=ON` and the generated C source.
+   The game consumes the framework's pinned `external/z80-recomp-core`
+   submodule and exposes `GENESIS_Z80_AOT_SOURCE` as a cache variable.
 
 The ROM-derived RAM image and generated C are local build artifacts and must
 not be committed. Ordinary builds leave `GENESIS_Z80_RECOMP` off and retain the
