@@ -101,7 +101,11 @@ int app_config_load(const char *path)
 
         if (section == 0) {
             if      (!strcmp(key, "window_scale"))     g_app_config.window_scale     = atoi(val);
-            else if (!strcmp(key, "fullscreen"))       g_app_config.fullscreen       = atoi(val);
+            else if (!strcmp(key, "fullscreen")) {
+                /* Tri-state (launcher vocabulary): 0 off, 1 borderless, 2 exclusive. */
+                int fs = atoi(val);
+                g_app_config.fullscreen = (fs < 0) ? 0 : (fs > 2) ? 2 : fs;
+            }
             else if (!strcmp(key, "linear_filter"))    g_app_config.linear_filter    = atoi(val);
             else if (!strcmp(key, "widescreen"))       g_app_config.widescreen       = atoi(val);
             else if (!strcmp(key, "widescreen_cells")) g_app_config.widescreen_cells = atoi(val);

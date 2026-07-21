@@ -1808,7 +1808,10 @@ int main(int argc, char *argv[])
         win_h = win_w * WS_ASPECT_H / WS_ASPECT_W;   /* true 16:9 */
     }
     Uint32 win_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-    if (g_app_config.fullscreen) win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    /* Launcher tri-state: 1 = borderless (desktop resolution, letterboxed by
+     * SDL_RenderSetLogicalSize), 2 = exclusive (real mode change). */
+    if (g_app_config.fullscreen == 2)      win_flags |= SDL_WINDOW_FULLSCREEN;
+    else if (g_app_config.fullscreen == 1) win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     SDL_Window *window = SDL_CreateWindow(
         window_title,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -2147,10 +2150,17 @@ int main(int argc, char *argv[])
                     int cmd_f = (ev.key.keysym.sym == SDLK_f) &&
                                 (mod & (KMOD_GUI | KMOD_CTRL));
                     if (ev.key.keysym.sym == SDLK_F11 || alt_enter || cmd_f) {
+                        /* Toggle between windowed and the CONFIGURED fullscreen
+                         * mode (2 = exclusive, otherwise borderless-desktop) so
+                         * the hotkey respects the launcher's tri-state choice.
+                         * SDL_WINDOW_FULLSCREEN_DESKTOP contains the
+                         * SDL_WINDOW_FULLSCREEN bit, so one mask covers both. */
                         Uint32 is_fs = SDL_GetWindowFlags(window) &
                                        SDL_WINDOW_FULLSCREEN_DESKTOP;
-                        SDL_SetWindowFullscreen(window,
-                            is_fs ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+                        Uint32 want = (g_app_config.fullscreen == 2)
+                                          ? SDL_WINDOW_FULLSCREEN
+                                          : SDL_WINDOW_FULLSCREEN_DESKTOP;
+                        SDL_SetWindowFullscreen(window, is_fs ? 0 : want);
                         update_render_logical_size(renderer);
                         continue;   /* don't also treat Enter/F-key as a save slot */
                     }
