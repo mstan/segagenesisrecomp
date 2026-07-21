@@ -18,16 +18,20 @@ cmake_minimum_required(VERSION 3.16)
 
 set(RECOMP_SRC "${CMAKE_CURRENT_LIST_DIR}/../recompiler/src")
 
+function(genesisrecomp_configure_test TARGET)
+    target_include_directories(${TARGET} PRIVATE "${RECOMP_SRC}")
+    if(MSVC)
+        target_compile_definitions(${TARGET} PRIVATE _CRT_SECURE_NO_WARNINGS)
+        target_compile_options(${TARGET} PRIVATE /W3 /wd4996)
+    endif()
+endfunction()
+
 add_executable(l1_decoder_test
     harness/l1_decoder_test.c
     "${RECOMP_SRC}/m68k_decoder.c"
     "${RECOMP_SRC}/rom_parser.c"
 )
-target_include_directories(l1_decoder_test PRIVATE "${RECOMP_SRC}")
-if(MSVC)
-    target_compile_definitions(l1_decoder_test PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_compile_options(l1_decoder_test PRIVATE /W3 /wd4996)
-endif()
+genesisrecomp_configure_test(l1_decoder_test)
 
 # ---------------------------------------------------------------------------
 # m68k_validator_test — synthetic legality fixtures (Phase 5).
@@ -38,11 +42,7 @@ add_executable(m68k_validator_test
     "${RECOMP_SRC}/m68k_validator.c"
     "${RECOMP_SRC}/rom_parser.c"
 )
-target_include_directories(m68k_validator_test PRIVATE "${RECOMP_SRC}")
-if(MSVC)
-    target_compile_definitions(m68k_validator_test PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_compile_options(m68k_validator_test PRIVATE /W3 /wd4996)
-endif()
+genesisrecomp_configure_test(m68k_validator_test)
 
 # ---------------------------------------------------------------------------
 # m68k_decoder_synth_test — synthetic decoder fixtures for instruction
@@ -54,11 +54,7 @@ add_executable(m68k_decoder_synth_test
     "${RECOMP_SRC}/m68k_decoder.c"
     "${RECOMP_SRC}/rom_parser.c"
 )
-target_include_directories(m68k_decoder_synth_test PRIVATE "${RECOMP_SRC}")
-if(MSVC)
-    target_compile_definitions(m68k_decoder_synth_test PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_compile_options(m68k_decoder_synth_test PRIVATE /W3 /wd4996)
-endif()
+genesisrecomp_configure_test(m68k_decoder_synth_test)
 
 # ---------------------------------------------------------------------------
 # codegen_diag_test — unit smoke test for the diagnostics module.
@@ -72,11 +68,7 @@ add_executable(codegen_diag_test
     "${RECOMP_SRC}/m68k_decoder.c"
     "${RECOMP_SRC}/rom_parser.c"
 )
-target_include_directories(codegen_diag_test PRIVATE "${RECOMP_SRC}")
-if(MSVC)
-    target_compile_definitions(codegen_diag_test PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_compile_options(codegen_diag_test PRIVATE /W3 /wd4996)
-endif()
+genesisrecomp_configure_test(codegen_diag_test)
 
 # ---------------------------------------------------------------------------
 # L3 oracle. Links against the same generated sonic_part*.c (function

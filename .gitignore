@@ -23,3 +23,6 @@ scratch/decoder_old_worktree/
 
 # Internal licensing/teardown working note — never commit
 LICENSING.md
+
+# Local configure transcript for the offline synth parity harness.
+tools/synth_replay/config.log
