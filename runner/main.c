@@ -1944,6 +1944,11 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_CreateTexture: %s\n", SDL_GetError());
         return 1;
     }
+    /* Created lazily at the exact peer-view dimensions. An isolated texture
+     * prevents linear filtering from sampling across the stacked split edge. */
+    SDL_Texture *peer_view_texture = NULL;
+    int peer_view_texture_w = 0;
+    int peer_view_texture_h = 0;
 
     /* Output at PSG rate (~223721 Hz NTSC) — matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
@@ -2725,31 +2730,58 @@ int main(int argc, char *argv[])
                                 MAX_SCREEN_WIDTH);
             present_src = s_present_buf;
         }
-        SDL_UpdateTexture(texture, NULL, present_src,
-                          MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
-
         update_render_logical_size(renderer);
         SDL_RenderClear(renderer);
 
         /* Only show the active area the VDP reported. For opted-in split-screen
          * netplay, select the local peer's stacked half at presentation time. */
         SDL_Rect src = { 0, 0, s_screen_width, s_screen_height };
+        SDL_Texture *frame_texture = texture;
         {
             static int peer_view_was_active = 0;
             int peer_view_is_active = netplay_peer_view_active();
             if (peer_view_is_active) {
 #if GENESIS_HAS_RECOMP_NET
                 int slot = genesis_netplay_local_slot() == 1 ? 1 : 0;
+                int peer_source_y;
                 src.h = s_screen_height / 2;
-                src.y = slot * src.h;
+                peer_source_y = slot * src.h;
+                if (!peer_view_texture ||
+                    peer_view_texture_w != src.w ||
+                    peer_view_texture_h != src.h) {
+                    SDL_DestroyTexture(peer_view_texture);
+                    peer_view_texture = SDL_CreateTexture(
+                        renderer, SDL_PIXELFORMAT_ARGB8888,
+                        SDL_TEXTUREACCESS_STREAMING, src.w, src.h);
+                    peer_view_texture_w = src.w;
+                    peer_view_texture_h = src.h;
+                    if (!peer_view_texture)
+                        fprintf(stderr, "[NETVIEW] texture create failed: %s\n",
+                                SDL_GetError());
+                }
+                if (peer_view_texture) {
+                    SDL_UpdateTexture(
+                        peer_view_texture, NULL,
+                        present_src + peer_source_y * MAX_SCREEN_WIDTH,
+                        MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
+                    frame_texture = peer_view_texture;
+                    src.y = 0;
+                } else {
+                    SDL_UpdateTexture(texture, NULL, present_src,
+                                      MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
+                    src.y = peer_source_y;
+                }
                 if (!peer_view_was_active)
                     fprintf(stderr, "[NETVIEW] slot=%d crop=%d,%d %dx%d\n",
-                            slot, src.x, src.y, src.w, src.h);
+                            slot, src.x, peer_source_y, src.w, src.h);
 #endif
+            } else {
+                SDL_UpdateTexture(texture, NULL, present_src,
+                                  MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
             }
             peer_view_was_active = peer_view_is_active;
         }
-        SDL_RenderCopy(renderer, texture, &src, NULL);
+        SDL_RenderCopy(renderer, frame_texture, &src, NULL);
 #if GENESIS_HAS_RECOMP_NET
         /* Process the peer INPUT and emit our CONFIRM before the blocking
          * present, so confirmation delivery overlaps vsync as well. */
@@ -2839,6 +2871,7 @@ int main(int argc, char *argv[])
     glue_shutdown();
 #endif
     audio_close();
+    SDL_DestroyTexture(peer_view_texture);
     SDL_DestroyTexture(texture);
     gamepad_shutdown();
     SDL_DestroyRenderer(renderer);
