@@ -34,6 +34,7 @@ void genesis_netplay_shutdown(void);
 int  genesis_netplay_needs_local_sample(void);
 void genesis_netplay_stage_local(uint16_t buttons);
 int  genesis_netplay_poll_admit(void);
+void genesis_netplay_wait_recv(int timeout_ms);
 void genesis_netplay_finish_frame(void);
 
 uint16_t genesis_netplay_published_pad(int slot);

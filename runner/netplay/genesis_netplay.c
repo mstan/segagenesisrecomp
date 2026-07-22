@@ -283,6 +283,12 @@ int genesis_netplay_poll_admit(void)
     return 1;
 }
 
+void genesis_netplay_wait_recv(int timeout_ms)
+{
+    if (!genesis_netplay_active()) return;
+    (void)rnet_session_wait_recv(g_np.session, timeout_ms);
+}
+
 void genesis_netplay_finish_frame(void)
 {
     if (!genesis_netplay_active() || !g_np.needs_advance) return;

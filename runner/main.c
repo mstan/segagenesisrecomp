@@ -2341,7 +2341,11 @@ int main(int argc, char *argv[])
                 continue;
             }
             if (!genesis_netplay_poll_admit()) {
-                SDL_Delay(1);
+                /* Wake as soon as peer UDP arrives. SDL_Delay(1) can stretch
+                 * several milliseconds under two-process render/audio load,
+                 * putting every input-confirm round trip outside the frame
+                 * budget and visibly slowing the game. */
+                genesis_netplay_wait_recv(1);
                 continue;
             }
         }
@@ -2496,6 +2500,15 @@ int main(int argc, char *argv[])
         check_ramdump();
 #if GENESIS_HAS_RECOMP_NET
         genesis_netplay_finish_frame();
+        if (genesis_netplay_active()) {
+            /* Kick off the next tick immediately. Audio mixing, texture upload,
+             * and the blocking vsync present below then overlap the peer's
+             * INPUT/CONFIRM work instead of serialising it after vblank. */
+            if (genesis_netplay_needs_local_sample())
+                genesis_netplay_stage_local(
+                    collect_pad_mask(genesis_netplay_input_player()));
+            (void)genesis_netplay_poll_admit();
+        }
 #endif
 
 #ifdef GEN_DEV_TRACE
@@ -2706,7 +2719,20 @@ int main(int argc, char *argv[])
         /* Only show the active area the VDP reported */
         SDL_Rect src = { 0, 0, s_screen_width, s_screen_height };
         SDL_RenderCopy(renderer, texture, &src, NULL);
+#if GENESIS_HAS_RECOMP_NET
+        /* Process the peer INPUT and emit our CONFIRM before the blocking
+         * present, so confirmation delivery overlaps vsync as well. */
+        if (genesis_netplay_active())
+            (void)genesis_netplay_poll_admit();
+#endif
         SDL_RenderPresent(renderer);
+
+#if GENESIS_HAS_RECOMP_NET
+        /* Confirmation normally arrived during vsync. The top-of-loop barrier
+         * remains authoritative if either peer missed this opportunity. */
+        if (genesis_netplay_active())
+            (void)genesis_netplay_poll_admit();
+#endif
 
         /* NTSC frame cap.  ClownMDEmu's chip emulation runs cycles_per_frame
          * computed for 59.94 Hz (matches real NTSC Genesis: 60/1.001).
