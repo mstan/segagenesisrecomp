@@ -126,6 +126,13 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
  * in by defining RECOMP_LAUNCHER. Mutually exclusive with GENESIS_LAUNCHER. */
 #include "recomp_launcher.h"
 #endif
+#if GENESIS_HAS_RECOMP_NET
+#include "genesis_netplay.h"
+#include "genesis_launcher_netplay.h"
+#ifndef GENESIS_GAME_VERSION
+#define GENESIS_GAME_VERSION "dev"
+#endif
+#endif
 #if SONIC_REVERSE_DEBUG
 #include "reverse_debug.h"
 #endif
@@ -470,6 +477,9 @@ static uint32_t s_current_frame_for_input = 0;
 /* TCP debug server input override (set_input command) */
 static int      s_tcp_input_active = 0;
 static uint8_t  s_tcp_input_keys   = 0;  /* Genesis: Up=0,Down=1,Left=2,Right=3,B=4,C=5,A=6,Start=7 */
+#if GENESIS_HAS_RECOMP_NET
+static int      s_sampling_netplay_local = 0;
+#endif
 
 #include "input_script.h"
 
@@ -480,6 +490,28 @@ static cc_bool input_requested_cb(void *user_data,
     (void)user_data;
     if (player_id > 1)
         return cc_false;    /* P1 + P2 */
+
+#if GENESIS_HAS_RECOMP_NET
+    /* During a locked tick the published two-peer input is authoritative.
+     * The staging helper temporarily bypasses this branch to sample the one
+     * local device that belongs to this process. */
+    if (genesis_netplay_active() && !s_sampling_netplay_local) {
+        uint16_t net_mask = genesis_netplay_published_pad((int)player_id);
+        GenesisButton net_button;
+        switch (button_id) {
+            case CLOWNMDEMU_BUTTON_UP:    net_button = GB_UP;    break;
+            case CLOWNMDEMU_BUTTON_DOWN:  net_button = GB_DOWN;  break;
+            case CLOWNMDEMU_BUTTON_LEFT:  net_button = GB_LEFT;  break;
+            case CLOWNMDEMU_BUTTON_RIGHT: net_button = GB_RIGHT; break;
+            case CLOWNMDEMU_BUTTON_A:     net_button = GB_A;     break;
+            case CLOWNMDEMU_BUTTON_B:     net_button = GB_B;     break;
+            case CLOWNMDEMU_BUTTON_C:     net_button = GB_C;     break;
+            case CLOWNMDEMU_BUTTON_START: net_button = GB_START; break;
+            default: return cc_false;
+        }
+        return (net_mask & input_button_bit(net_button)) ? cc_true : cc_false;
+    }
+#endif
 
     /* Dev-driven sources ((.input scripts, --script-* flags, TCP set_input)
      * MERGE with the live keyboard/gamepad instead of replacing it: a button
@@ -564,6 +596,33 @@ static cc_bool input_requested_cb(void *user_data,
         default:                      return cc_false;
     }
     return (mask & input_button_bit(gb)) ? cc_true : cc_false;
+}
+
+static uint16_t collect_pad_mask(int player)
+{
+    static const ClownMDEmu_Button buttons[8] = {
+        CLOWNMDEMU_BUTTON_UP, CLOWNMDEMU_BUTTON_DOWN,
+        CLOWNMDEMU_BUTTON_LEFT, CLOWNMDEMU_BUTTON_RIGHT,
+        CLOWNMDEMU_BUTTON_B, CLOWNMDEMU_BUTTON_C,
+        CLOWNMDEMU_BUTTON_A, CLOWNMDEMU_BUTTON_START
+    };
+    static const uint16_t bits[8] = {
+        GPAD_UP, GPAD_DOWN, GPAD_LEFT, GPAD_RIGHT,
+        GPAD_B, GPAD_C, GPAD_A, GPAD_START
+    };
+    uint16_t mask = 0;
+    int i;
+#if GENESIS_HAS_RECOMP_NET
+    s_sampling_netplay_local = 1;
+#endif
+    for (i = 0; i < 8; ++i)
+        if (input_requested_cb(NULL, (cc_u8f)player, buttons[i])) mask |= bits[i];
+    if (g_input_map.p[player].pad_type == PAD_6BUTTON)
+        mask |= input_current_mask(player) & (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
+#if GENESIS_HAS_RECOMP_NET
+    s_sampling_netplay_local = 0;
+#endif
+    return mask;
 }
 
 /*
@@ -1325,6 +1384,11 @@ int main(int argc, char *argv[])
 {
     init_exe_dir(argv[0]);
     input_map_init_defaults();   /* today's mapping; app_config_load may override */
+#if GENESIS_HAS_RECOMP_NET
+    GenesisNetplayConfig netplay_config;
+    genesis_netplay_config_defaults(&netplay_config);
+    genesis_netplay_apply_env(&netplay_config);
+#endif
 
     /* --- Parse arguments --- */
     const char *rom_path = NULL;
@@ -1480,6 +1544,10 @@ int main(int argc, char *argv[])
     }
     app_config_defaults();
     app_config_load(settings_ini);   /* also seeds g_input_map controller bindings */
+#if GENESIS_HAS_RECOMP_NET && RECOMP_LAUNCHER
+    genesis_launcher_netplay_init(g_game_spec.display_name, GENESIS_GAME_VERSION,
+                                  exe_relative("genesis-netplay-room.txt"));
+#endif
 
     {
         /* The GUI launcher only runs for a plain double-click: no positional
@@ -1550,6 +1618,10 @@ int main(int argc, char *argv[])
                     gi.rom_noun             = "ROM";
                     gi.pad_mode_supported   = 1;   /* 3-Button / 6-Button selector */
                     gi.pad_mode_selectable  = 1;
+#if GENESIS_HAS_RECOMP_NET
+                    gi.netplay_supported    = 1;
+                    gi.netplay              = genesis_launcher_netplay_callbacks();
+#endif
                     /* Point the launcher's bind bridge at the engine's OWN
                      * settings.ini (not a separate keybinds.ini) so key/pad
                      * rebinds land where app_config_load() reads them. */
@@ -1586,6 +1658,10 @@ int main(int argc, char *argv[])
                                                     initial_rom, picked, sizeof picked);
                     if (lr == 0) {                  /* PLAY */
                         if (picked[0]) rom_path = picked;
+#if GENESIS_HAS_RECOMP_NET
+                        genesis_launcher_netplay_apply_host_caps(&ls);
+                        genesis_launcher_netplay_config_from_launch(&ls, &netplay_config);
+#endif
                         /* Ordering matters. Re-load settings.ini FIRST so the
                          * key/pad rebinds the launcher just wrote reach
                          * g_input_map; THEN copy this session's display/audio +
@@ -1940,6 +2016,13 @@ int main(int argc, char *argv[])
 
     free(rom_raw);   /* glue_init copied what it needs */
 
+#if GENESIS_HAS_RECOMP_NET
+    if (netplay_config.enabled && genesis_netplay_start(&netplay_config) != 0) {
+        fprintf(stderr, "genesis_netplay: failed to start session\n");
+        return 1;
+    }
+#endif
+
     /* TCP debug server — only if debug.ini exists next to the exe.
      * Port resolution (highest priority first):
      *   1. --port N                  command-line flag
@@ -2179,10 +2262,13 @@ int main(int argc, char *argv[])
 #else
                         snprintf(slot_name, sizeof(slot_name), "interp_save_%d.bin", slot);
 #endif
-                        if (is_save)
-                            runner_save_state_file(slot_name);
-                        else
-                            runner_load_state_file(slot_name);
+#if GENESIS_HAS_RECOMP_NET
+                        if (genesis_netplay_active()) {
+                            fprintf(stderr, "genesis_netplay: save/load disabled during netplay\n");
+                        } else
+#endif
+                        if (is_save) runner_save_state_file(slot_name);
+                        else runner_load_state_file(slot_name);
                     }
                 }
 #if HYBRID_RECOMPILED_CODE
@@ -2217,8 +2303,13 @@ int main(int argc, char *argv[])
 #else
                 snprintf(slot_name, sizeof(slot_name), "interp_save_%d.bin", slot);
 #endif
+#if GENESIS_HAS_RECOMP_NET
+                if (genesis_netplay_active())
+                    fprintf(stderr, "genesis_netplay: quicksave/load disabled during netplay\n");
+                else
+#endif
                 if (save_slot) runner_save_state_file(slot_name);
-                else           runner_load_state_file(slot_name);
+                else runner_load_state_file(slot_name);
             }
         }
 
@@ -2226,7 +2317,35 @@ int main(int argc, char *argv[])
         { const Uint8 *ks = SDL_GetKeyboardState(NULL);
           int held = ks[SDL_SCANCODE_TAB] || gamepad_turbo_held();
           turbo = held ? 1 : (start_turbo ? 1 : 0);
+#if GENESIS_HAS_RECOMP_NET
+          if (genesis_netplay_active()) turbo = 0;
+#endif
           audio_set_playback_enabled(!turbo); }
+
+#if GENESIS_HAS_RECOMP_NET
+        if (genesis_netplay_active()) {
+            uint32_t desync_tick = 0, local_hash = 0, remote_hash = 0;
+            if (genesis_netplay_needs_local_sample())
+                genesis_netplay_stage_local(
+                    collect_pad_mask(genesis_netplay_input_player()));
+            if (genesis_netplay_input_desync(&desync_tick, &local_hash, &remote_hash)) {
+                fprintf(stderr,
+                        "genesis_netplay: input desync tick=%u local=%08X remote=%08X\n",
+                        desync_tick, local_hash, remote_hash);
+                running = 0;
+                continue;
+            }
+            if (genesis_netplay_peer_disconnected(1500)) {
+                fprintf(stderr, "genesis_netplay: peer disconnected\n");
+                running = 0;
+                continue;
+            }
+            if (!genesis_netplay_poll_admit()) {
+                SDL_Delay(1);
+                continue;
+            }
+        }
+#endif
 
         /* Zero accum buffers before Iterate(): PSG_Update (and FM_OutputSamples)
          * use += to accumulate into the provided buffer, not overwrite.
@@ -2279,8 +2398,15 @@ int main(int argc, char *argv[])
                       if (input_requested_cb(NULL, (cc_u8f)port, own_btns[b]))
                           pad_mask |= own_bits[b];
                   if (g_input_map.p[port].pad_type == PAD_6BUTTON)
+#if GENESIS_HAS_RECOMP_NET
+                      pad_mask |= (genesis_netplay_active()
+                                       ? genesis_netplay_published_pad(port)
+                                       : input_current_mask(port)) &
+                                  (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
+#else
                       pad_mask |= input_current_mask(port) &
                                   (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
+#endif
                   machine_set_pad(port, pad_mask);
               }
           }
@@ -2368,6 +2494,9 @@ int main(int argc, char *argv[])
 #endif
 #endif
         check_ramdump();
+#if GENESIS_HAS_RECOMP_NET
+        genesis_netplay_finish_frame();
+#endif
 
 #ifdef GEN_DEV_TRACE
         /* [POLL-DIAG] measure how often the 256-poll bounded fallback fires
@@ -2429,7 +2558,11 @@ int main(int argc, char *argv[])
         cmd_server_mem_write_log_tick();
 
         /* Handle run_extra_frames from debug server */
-        if (cmd_cr.run_extra_frames > 0) {
+        if (cmd_cr.run_extra_frames > 0
+#if GENESIS_HAS_RECOMP_NET
+            && !genesis_netplay_active()
+#endif
+        ) {
             for (int ef = 0; ef < cmd_cr.run_extra_frames; ef++) {
                 frame_num++;
                 s_current_frame_for_input = frame_num;
@@ -2637,6 +2770,9 @@ int main(int argc, char *argv[])
 #endif
 
     /* --- Cleanup --- */
+#if GENESIS_HAS_RECOMP_NET
+    genesis_netplay_shutdown();
+#endif
     if (s_sram_dirty) runner_sram_flush();  /* final flush of any pending save */
     if (s_debug_enabled) cmd_server_shutdown();
     if (s_framelog_file) fclose(s_framelog_file);
