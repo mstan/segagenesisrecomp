@@ -27,7 +27,8 @@ publish both slot inputs, run exactly one emulated frame, then advance. During
 a locked session the published inputs are the only controller source. Save
 states are disabled because this first milestone does not synchronize state.
 
-The initial Sonic 2 implementation renders the complete native image on both
-peers, including the complete two-player split-screen view. Per-peer viewport
-presentation is intentionally reserved for the fast-follow milestone and must
-remain presentation-only.
+Games whose two-player mode uses a stacked double-height framebuffer can pass
+`PEER_VIEW` to `genesisrecomp_enable_netplay`. While netplay is active and a
+double-height frame is present, slot 0 displays the top half and slot 1 the
+bottom half. This is presentation-only: the complete native framebuffer is
+still used for hashes, screenshots, synchronization, and savestates.

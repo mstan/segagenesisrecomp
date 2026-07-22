@@ -250,6 +250,19 @@ static uint32_t s_cram[192];
 static int s_screen_width  = 320;
 static int s_screen_height = 224;
 
+/* Some games render two local views as stacked halves of a double-height VDP
+ * frame. Opted-in netplay targets may present only the local peer's half. The
+ * raw framebuffer remains complete for hashing, screenshots, and state. */
+static int netplay_peer_view_active(void)
+{
+#if GENESIS_HAS_RECOMP_NET && GENESIS_NETPLAY_PEER_VIEW
+    return genesis_netplay_active() && s_screen_height > 240 &&
+           (s_screen_height & 1) == 0;
+#else
+    return 0;
+#endif
+}
+
 typedef enum InterlaceDisplayMode {
     INTERLACE_DISPLAY_TV,
     INTERLACE_DISPLAY_RAW,
@@ -278,6 +291,8 @@ static void set_interlace_display_mode(const char *value)
 
 static int display_logical_height(void)
 {
+    if (netplay_peer_view_active())
+        return s_screen_height / 2;
     if (s_screen_height > 240 && s_interlace_display_mode == INTERLACE_DISPLAY_TV)
         return (s_screen_height + 1) / 2;
     return s_screen_height;
@@ -2716,8 +2731,24 @@ int main(int argc, char *argv[])
         update_render_logical_size(renderer);
         SDL_RenderClear(renderer);
 
-        /* Only show the active area the VDP reported */
+        /* Only show the active area the VDP reported. For opted-in split-screen
+         * netplay, select the local peer's stacked half at presentation time. */
         SDL_Rect src = { 0, 0, s_screen_width, s_screen_height };
+        {
+            static int peer_view_was_active = 0;
+            int peer_view_is_active = netplay_peer_view_active();
+            if (peer_view_is_active) {
+#if GENESIS_HAS_RECOMP_NET
+                int slot = genesis_netplay_local_slot() == 1 ? 1 : 0;
+                src.h = s_screen_height / 2;
+                src.y = slot * src.h;
+                if (!peer_view_was_active)
+                    fprintf(stderr, "[NETVIEW] slot=%d crop=%d,%d %dx%d\n",
+                            slot, src.x, src.y, src.w, src.h);
+#endif
+            }
+            peer_view_was_active = peer_view_is_active;
+        }
         SDL_RenderCopy(renderer, texture, &src, NULL);
 #if GENESIS_HAS_RECOMP_NET
         /* Process the peer INPUT and emit our CONFIRM before the blocking

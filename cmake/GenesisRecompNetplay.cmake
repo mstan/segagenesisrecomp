@@ -8,7 +8,7 @@ option(GENESISRECOMP_NET_ICE
     "Enable recomp-net ICE/libjuice transport for Genesis games" OFF)
 
 function(genesisrecomp_enable_netplay target)
-    set(options ICE)
+    set(options ICE PEER_VIEW)
     set(one_value_args GAME_VERSION)
     cmake_parse_arguments(GEN_NET "${options}" "${one_value_args}" "" ${ARGN})
 
@@ -47,6 +47,10 @@ function(genesisrecomp_enable_netplay target)
     target_compile_definitions(${target} PRIVATE
         GENESIS_HAS_RECOMP_NET=1
         GENESIS_HAS_LOBBY_CLIENT=1)
+    if(GEN_NET_PEER_VIEW)
+        target_compile_definitions(${target} PRIVATE
+            GENESIS_NETPLAY_PEER_VIEW=1)
+    endif()
     if(GEN_NET_GAME_VERSION)
         target_compile_definitions(${target} PRIVATE
             GENESIS_GAME_VERSION="${GEN_NET_GAME_VERSION}")
@@ -57,5 +61,6 @@ function(genesisrecomp_enable_netplay target)
 
     message(STATUS
         "Genesis netplay enabled for ${target} "
-        "(version=${GEN_NET_GAME_VERSION}, ICE=${RNET_ENABLE_ICE})")
+        "(version=${GEN_NET_GAME_VERSION}, ICE=${RNET_ENABLE_ICE}, "
+        "peer_view=${GEN_NET_PEER_VIEW})")
 endfunction()
