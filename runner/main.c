@@ -125,6 +125,7 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
  * itself does NOT vendor recomp-ui, so this is only reachable when a game opts
  * in by defining RECOMP_LAUNCHER. Mutually exclusive with GENESIS_LAUNCHER. */
 #include "recomp_launcher.h"
+#include "recomp_runtime_ui.h"
 #endif
 #if GENESIS_HAS_RECOMP_NET
 #include "genesis_netplay.h"
@@ -191,6 +192,52 @@ static int s_ws_user_on    = 0;   /* user requested widescreen */
 static int s_ws_user_cells = 8;   /* requested extra 8px cells per side */
 static int s_ws_bgdiag_on  = 0;   /* GENESIS_WS_BGDIAG: Plane B parallax diagnostic */
 static int s_ws_bar_black  = 1;   /* pillarbox bars: black (default); GENESIS_WS_BARS=backdrop for seamless */
+#if RECOMP_LAUNCHER
+typedef struct RuntimeUiContext {
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    SDL_Texture *texture;
+    RecompRuntimeUi *ui;
+    int view_mode;
+} RuntimeUiContext;
+static RuntimeUiContext s_runtime_ui;
+static int runtime_ui_get(void *p, const RecompRuntimeUiItem *i, int *out) {
+    RuntimeUiContext *c = (RuntimeUiContext *)p;
+    if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_FULLSCREEN)) *out = g_app_config.fullscreen;
+    else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_WINDOW_SCALE)) *out = g_app_config.window_scale;
+    else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VIEW_MODE)) *out = c->view_mode;
+    else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_LINEAR_FILTER)) *out = g_app_config.linear_filter;
+    else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VOLUME)) *out = g_app_config.volume;
+    else return 0; return 1;
+}
+static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
+    RuntimeUiContext *c = (RuntimeUiContext *)p;
+    if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_FULLSCREEN)) {
+        g_app_config.fullscreen = v;
+        SDL_SetWindowFullscreen(c->window, v == 2 ? SDL_WINDOW_FULLSCREEN : v == 1 ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+    } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_WINDOW_SCALE)) {
+        g_app_config.window_scale = v;
+        if (!(SDL_GetWindowFlags(c->window) & SDL_WINDOW_FULLSCREEN)) SDL_SetWindowSize(c->window, 320*v, 224*v);
+    } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VIEW_MODE)) {
+        c->view_mode = v; s_ws_user_on = v != RECOMP_RUNTIME_UI_VIEW_NATIVE;
+        if (v == RECOMP_RUNTIME_UI_VIEW_FIXED_16_9) s_ws_user_cells = 8;
+    } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_LINEAR_FILTER)) {
+        g_app_config.linear_filter = v; SDL_SetTextureScaleMode(c->texture, v ? SDL_ScaleModeLinear : SDL_ScaleModeNearest);
+    } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VOLUME)) {
+        g_app_config.volume = v; audio_set_master_volume(v);
+    } else return 0; return 1;
+}
+static int runtime_ui_action(void *p, const RecompRuntimeUiItem *i) {
+    RuntimeUiContext *c = (RuntimeUiContext *)p;
+    if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_RESUME)) { recomp_runtime_ui_close(c->ui); return 1; }
+    return 0;
+}
+static int runtime_ui_key(SDL_Keycode k) {
+    switch (k) { case SDLK_UP:return RECOMP_RUNTIME_UI_INPUT_UP; case SDLK_DOWN:return RECOMP_RUNTIME_UI_INPUT_DOWN;
+    case SDLK_LEFT:return RECOMP_RUNTIME_UI_INPUT_LEFT; case SDLK_RIGHT:return RECOMP_RUNTIME_UI_INPUT_RIGHT;
+    case SDLK_RETURN:case SDLK_SPACE:return RECOMP_RUNTIME_UI_INPUT_ACCEPT; case SDLK_ESCAPE:return RECOMP_RUNTIME_UI_INPUT_BACK; default:return -1; }
+}
+#endif
 
 static void widescreen_setup(void)
 {
@@ -1954,6 +2001,22 @@ int main(int argc, char *argv[])
      * PSG never needs resampling; FM is upsampled to this rate. */
     audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
     audio_set_master_volume(g_app_config.volume);   /* settings.ini / launcher */
+#if RECOMP_LAUNCHER
+    {
+        RecompRuntimeUiStandardConfig cfg = {0};
+        s_runtime_ui.window = window; s_runtime_ui.renderer = renderer; s_runtime_ui.texture = texture;
+        s_runtime_ui.view_mode = s_ws_user_on ? RECOMP_RUNTIME_UI_VIEW_FIXED_16_9 : RECOMP_RUNTIME_UI_VIEW_NATIVE;
+        cfg.menu.title = g_game_spec.display_name; cfg.menu.subtitle = "Genesis runtime settings"; cfg.menu.theme = "genesis";
+        cfg.menu.callbacks.context = &s_runtime_ui; cfg.menu.callbacks.get_value = runtime_ui_get;
+        cfg.menu.callbacks.set_value = runtime_ui_set; cfg.menu.callbacks.run_action = runtime_ui_action;
+        cfg.features = RECOMP_RUNTIME_UI_STANDARD_FULLSCREEN | RECOMP_RUNTIME_UI_STANDARD_WINDOW_SCALE |
+            RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE | RECOMP_RUNTIME_UI_STANDARD_LINEAR_FILTER |
+            RECOMP_RUNTIME_UI_STANDARD_VOLUME | RECOMP_RUNTIME_UI_STANDARD_RESUME;
+        cfg.view_modes = RECOMP_RUNTIME_UI_VIEW_MODE_NATIVE | RECOMP_RUNTIME_UI_VIEW_MODE_FIXED_16_9 |
+            RECOMP_RUNTIME_UI_VIEW_MODE_ADAPTIVE;
+        s_runtime_ui.ui = recomp_runtime_ui_create_standard(&cfg);
+    }
+#endif
 
     /* --- clownmdemu init (debug/oracle backend only) ---
      * The own backend uses machine_init() below and links ZERO clownmdemu
@@ -2239,9 +2302,20 @@ int main(int argc, char *argv[])
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
             gamepad_handle_event(&ev);
+#if RECOMP_LAUNCHER
+            if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE && !recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
+                recomp_runtime_ui_open(s_runtime_ui.ui); continue;
+            }
+            if (recomp_runtime_ui_is_open(s_runtime_ui.ui) && (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)) {
+                int k = runtime_ui_key(ev.key.keysym.sym); if (k >= 0) recomp_runtime_ui_handle_input(s_runtime_ui.ui, k, ev.type == SDL_KEYDOWN, ev.key.repeat);
+                continue;
+            }
+#endif
             if (ev.type == SDL_QUIT) running = 0;
             if (ev.type == SDL_KEYDOWN) {
+#if !RECOMP_LAUNCHER
                 if (ev.key.keysym.sym == SDLK_ESCAPE) running = 0;
+#endif
 
                 /* Fullscreen toggle: F11, Alt+Enter, or Cmd/Ctrl+F.
                  * FULLSCREEN_DESKTOP keeps the desktop resolution and lets
@@ -2730,6 +2804,17 @@ int main(int argc, char *argv[])
                                 MAX_SCREEN_WIDTH);
             present_src = s_present_buf;
         }
+#if RECOMP_LAUNCHER
+        if (s_runtime_ui.view_mode == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE) {
+            int ow, oh; SDL_GetRendererOutputSize(renderer, &ow, &oh);
+            if (oh > 0) { int cells = (((224 * ow + oh/2) / oh) - 320 + 15) / 16; if (cells < 1) cells = 1; if (cells > 12) cells = 12; s_ws_user_cells = cells; s_ws_user_on = 1; }
+        }
+        if (recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
+            if (present_src != s_present_buf) memcpy(s_present_buf, present_src, sizeof(s_present_buf));
+            recomp_runtime_ui_render_argb8888(s_runtime_ui.ui, s_present_buf, s_screen_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
+            present_src = s_present_buf;
+        }
+#endif
         update_render_logical_size(renderer);
         SDL_RenderClear(renderer);
 
