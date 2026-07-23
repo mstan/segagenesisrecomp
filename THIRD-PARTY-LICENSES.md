@@ -37,8 +37,7 @@ carry their license text in-header),
 The launcher dependencies (Dear ImGui MIT, stb public-domain, tinyfiledialogs
 zlib, Lato OFL-1.1) are all permissive and ship in the native release binaries.
 They are linked **only into the native (shipped) target** — the dev-only
-`_oracle` target does not build the launcher. (This replaced the old
-RmlUi/FreeType launcher; no FreeType is linked any more.)
+`_oracle` target does not build the launcher.
 
 ## Our changes to clownmdemu / clown68000
 

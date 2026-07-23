@@ -116,14 +116,11 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
 #include "gamepad.h"
 #include "input_map.h"
 #include "app_config.h"
-#if GENESIS_LAUNCHER
-#include "launcher_capi.h"
-#endif
 #if RECOMP_LAUNCHER
 /* Shared recomp-ui launcher C ABI. The header is supplied through the game
  * target's include dirs (recomp-ui/src) via recomp_ui.cmake — the engine repo
  * itself does NOT vendor recomp-ui, so this is only reachable when a game opts
- * in by defining RECOMP_LAUNCHER. Mutually exclusive with GENESIS_LAUNCHER. */
+ * in by defining RECOMP_LAUNCHER. */
 #include "recomp_launcher.h"
 #include "recomp_runtime_ui.h"
 #endif
@@ -1621,7 +1618,7 @@ int main(int argc, char *argv[])
                           mem_write_log_spec || wav_path || s_script_start_frame ||
                           s_script_right_frame || debug_port_cli || start_turbo ||
                           no_launcher || getenv("GENESIS_NO_LAUNCHER") != NULL);
-#if RECOMP_LAUNCHER || GENESIS_LAUNCHER
+#if RECOMP_LAUNCHER
         if (!positional_rom && !automation) {
             static char cached_rom[600];
             int booted_cached = 0;
@@ -1637,9 +1634,8 @@ int main(int argc, char *argv[])
                 snprintf(ltitle, sizeof ltitle, "%s — Sega Genesis Launcher",
                          g_game_spec.display_name ? g_game_spec.display_name : "Genesis");
                 static char picked[600] = "";
-                int lr = 2;   /* default UNAVAILABLE -> legacy picker below */
+                int lr = 2;   /* default UNAVAILABLE -> native picker below */
 
-#if RECOMP_LAUNCHER
                 /* ---- shared recomp-ui (Dear ImGui) launcher ------------------
                  * The new cross-console launcher (recomp_launcher.h, linked via
                  * the game target + recomp_ui.cmake). It persists key/pad rebinds
@@ -1749,51 +1745,8 @@ int main(int argc, char *argv[])
                         if (rom_path) rom_cfg_write(rom_cfg_path, rom_path);
                     }
                 }
-#elif GENESIS_LAUNCHER
-                /* ---- legacy RmlUi launcher (fallback during transition) ------
-                 * Unchanged from before recomp-ui: edits g_input_map directly and
-                 * round-trips only display/audio/skip through the settings struct. */
-                {
-                    GenesisLauncherCSettings ls;
-                    ls.window_scale     = g_app_config.window_scale;
-                    ls.fullscreen       = g_app_config.fullscreen;
-                    ls.linear_filter    = g_app_config.linear_filter;
-                    ls.widescreen       = g_app_config.widescreen;
-                    ls.widescreen_cells = g_app_config.widescreen_cells;
-                    ls.volume           = g_app_config.volume;
-                    ls.skip_launcher    = g_app_config.skip_launcher;
-
-                    GenesisLauncherCGameInfo gi;
-                    memset(&gi, 0, sizeof gi);
-                    gi.name                 = g_game_spec.display_name;
-                    gi.short_name           = g_game_spec.short_name;
-                    gi.region               = "NTSC-U (USA)";
-                    gi.expected_crc         = g_game_spec.expected_rom_crc32;
-                    gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
-                    gi.expected_size        = g_game_spec.expected_rom_size;
-                    gi.uses_sram            = g_game_spec.sram_start != 0;
-                    gi.widescreen_supported = g_game_layout.ws_capable;
-
-                    char assets_dir[600];
-                    snprintf(assets_dir, sizeof assets_dir, "%slauncher", s_exe_dir);
-                    lr = genesis_launcher_run_window(ltitle, &ls, &gi, assets_dir,
-                                                     initial_rom, picked, sizeof picked);
-                    if (lr == 0) {                  /* PLAY */
-                        if (picked[0]) rom_path = picked;
-                        g_app_config.window_scale     = ls.window_scale;
-                        g_app_config.fullscreen       = ls.fullscreen;
-                        g_app_config.linear_filter    = ls.linear_filter;
-                        g_app_config.widescreen       = ls.widescreen;
-                        g_app_config.widescreen_cells = ls.widescreen_cells;
-                        g_app_config.volume           = ls.volume;
-                        g_app_config.skip_launcher    = ls.skip_launcher;
-                        app_config_save(settings_ini);    /* persists g_input_map too */
-                        if (rom_path) rom_cfg_write(rom_cfg_path, rom_path);
-                    }
-                }
-#endif
                 if (lr == 1) return 0;   /* user closed the launcher */
-                /* lr == 2 (unavailable) -> fall through to the legacy picker. */
+                /* lr == 2 (unavailable) -> fall through to the native picker. */
             }
         }
 #else

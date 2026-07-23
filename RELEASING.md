@@ -5,8 +5,7 @@ backend: recompiled 68K, own VDP/bus/machine scheduler, ymfm FM (BSD-3),
 superzazu Z80 (MIT), clean-room SN76489, SDL2 (zlib), clowncommon helpers
 (ISC, vendored). The native target also bundles the shared recomp-ui pre-boot
 launcher UI — Dear ImGui (MIT), stb_image / stb_truetype (public domain),
-tinyfiledialogs (zlib), Lato font (OFL-1.1), all permissive. (This replaced the
-old RmlUi/FreeType launcher; no FreeType is linked any more.) They link **zero**
+tinyfiledialogs (zlib), Lato font (OFL-1.1), all permissive. They link **zero**
 clownmdemu/clown68000/clownz80 objects
 AND compile **zero** AGPL headers — the native targets build with no
 `clownmdemu-core` include paths at all (enforced in each game repo's
@@ -66,8 +65,7 @@ python segagenesisrecomp/tools/package_release.py \
 
 `--asset-dir build/Release/assets` stages the recomp-ui launcher's runtime
 assets (`assets/fonts/*.ttf`, `assets/img/*.tga`) into the zip preserving the
-`assets/` top folder, so the exe finds them next to itself. (This replaced the
-old RmlUi `--asset-dir build/Release/launcher`.) The 3-mode
+`assets/` top folder, so the exe finds them next to itself. The 3-mode
 Sonic3AndKnucklesRecomp repo packages each exe separately; its per-mode box art
 (`boxart-<mode>.tga`) all live under the one `assets/img/`, so the same
 `--asset-dir` covers every mode.

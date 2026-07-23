@@ -47,8 +47,7 @@ from pathlib import Path
 PER_GAME_FILES_EXCLUDE: set[str] = set()
 
 # Files we never want to scan (artifacts, third-party, generated).
-# "deps" excludes the vendored RmlUi/FreeType launcher dependency tree
-# (runner/launcher/deps) — permissive third-party, not our runner code.
+# "deps" excludes vendored permissive third-party dependency trees.
 PATH_EXCLUDE_DIRS = {"build", "external", "audio/external", "deps"}
 
 # File extensions we scan.
