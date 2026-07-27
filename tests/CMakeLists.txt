@@ -77,7 +77,19 @@ genesisrecomp_configure_test(codegen_diag_test)
 # binary, plus clown68000 as the semantic ground truth. NO SDL, NO
 # clownmdemu-core, NO runner — the harness provides sandbox-backed stubs
 # for every runtime symbol the generated code references.
+#
+# clown68000 makes this target DEV-ONLY: it is skipped unless the opt-in
+# clownmdemu-core submodule is checked out. Every test above builds without
+# it. See cmake/GenesisOracle.cmake.
 # ---------------------------------------------------------------------------
+
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/GenesisOracle.cmake")
+genesis_oracle_resolve("${CMAKE_CURRENT_LIST_DIR}/..")
+
+if(NOT GENESIS_ORACLE)
+    message(STATUS "tests: skipping l3_oracle_test (oracle off)")
+    return()
+endif()
 
 if(DEFINED GENESIS_SONIC_GENERATED_DIR)
     set(SONIC_GEN_DIR "${GENESIS_SONIC_GENERATED_DIR}")

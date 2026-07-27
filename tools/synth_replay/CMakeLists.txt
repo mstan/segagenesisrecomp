@@ -10,6 +10,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(RUNNER "${CMAKE_CURRENT_SOURCE_DIR}/../../runner")
 set(CORE   "${CMAKE_CURRENT_SOURCE_DIR}/../../clownmdemu-core")
 
+# This harness exists to compare our synth against clownmdemu's, so it cannot
+# be built without it. clownmdemu-core is an OPT-IN submodule (AGPL, private
+# fork) — fail with the fix rather than a wall of missing-source errors.
+if(NOT EXISTS "${CORE}/source/fm.c")
+    message(FATAL_ERROR
+        "synth_replay needs the optional clownmdemu-core submodule, which is "
+        "not checked out at:\n    ${CORE}\n\n"
+        "Fetch it with:\n"
+        "    git submodule update --init --checkout --recursive clownmdemu-core\n\n"
+        "Nothing that ships requires it; see cmake/GenesisOracle.cmake.")
+endif()
+
 add_executable(synth_replay
     synth_replay.cpp
     # OURS

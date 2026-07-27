@@ -1,6 +1,12 @@
 /*
- * cycle_probe.c — runs clown68000 on a stub bus at codegen time to measure
- * the exact per-instruction cycle cost.
+ * cycle_probe.c — runs clown68000 on a stub bus to measure the per-instruction
+ * cycle cost. VALIDATION ONLY (see cycle_probe.h): the result is compared
+ * against the clean-room model by the GENESIS_CYCLE_DIAG census and never
+ * stamped into generated code.
+ *
+ * Compiled only when GENESIS_CYCLE_ORACLE is defined, which requires the
+ * optional clownmdemu-core submodule. Otherwise this file provides stubs so
+ * the recompiler links with no AGPL dependency whatsoever.
  *
  * Mechanism (clown68000.c:2461-2515):
  *   state->leftover_cycles = 0;
@@ -17,6 +23,17 @@
  */
 
 #include "cycle_probe.h"
+
+#ifndef GENESIS_CYCLE_ORACLE
+
+/* No clownmdemu-core checkout — the oracle is unavailable. The census logs
+ * -1 for `measured`; emitted costs are unaffected either way. */
+int  cycle_probe_init(const GenesisRom *rom) { (void)rom; return -1; }
+int  cycle_probe_measure(uint32_t addr)      { (void)addr; return -1; }
+void cycle_probe_shutdown(void)              { }
+
+#else
+
 #include "clown68000.h"
 #include <stdint.h>
 #include <string.h>
@@ -100,3 +117,5 @@ int cycle_probe_measure(uint32_t addr)
     Clown68000_DoCycles(&st, &s_cb, 0);
     return (int)st.leftover_cycles;
 }
+
+#endif /* GENESIS_CYCLE_ORACLE */

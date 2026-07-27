@@ -10,8 +10,13 @@ A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROMs
 into native C, paired with a runner whose NATIVE (release) targets run the
 generated C on a clean-room backend (own VDP/bus/Z80 scheduling, ymfm FM,
 superzazu z80) — zero clownmdemu code compiled or linked. clownmdemu-core
-is a pinned submodule used ONLY by the unshipped `_oracle` builds as a
-conformance reference (AGPL, dev-only). Currently used by:
+is an OPT-IN submodule (`update = none`, NOT fetched by `clone --recursive`)
+used ONLY by the unshipped `_oracle` builds as a conformance reference
+(AGPL, dev-only). Gate every consumer on `cmake/GenesisOracle.cmake` —
+never test for the directory yourself. To get it:
+`git submodule update --init --checkout --recursive clownmdemu-core`
+(`--checkout` is mandatory; `--init` alone silently skips it).
+Currently used by:
 
 - **SonicTheHedgehogRecomp** — Sonic 1 release; Green Hill Zone fully
   playable.
@@ -55,7 +60,7 @@ F:\Projects\segagenesisrecomp-release\
     ├── sonic3k\                      ← Sonic 3 & Knuckles game files
     ├── tests\
     │   └── tools\                    ← gen_disasm_*, recompiler-side
-    └── clownmdemu-core\              ← embedded emulator
+    └── clownmdemu-core\              ← OPT-IN oracle submodule (usually absent)
 ```
 
 **Topology invariant**: shared runner is at `segagenesisrecomp/runner/`.
