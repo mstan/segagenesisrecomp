@@ -154,8 +154,9 @@ static int np_local_address_get(void *ctx, int index,
     return 1;
 }
 
-static int np_create(void *ctx, const char *lobby_name, const char *host_endpoint,
-                     const char *password, const RecompLauncherCSettings *settings)
+static int np_create(void *ctx, const char *lobby_name, char *host_endpoint,
+                     const char *password, const RecompLauncherCSettings *settings,
+                     int lan_only)
 {
     GenesisLobbyMatchCaps caps = caps_from_settings(settings);
     RNetLanLobby lan;
@@ -171,14 +172,19 @@ static int np_create(void *ctx, const char *lobby_name, const char *host_endpoin
     snprintf(lan.host_name, sizeof(lan.host_name), "%s",
              genesis_lobby_display_name()[0] ? genesis_lobby_display_name() : "Host");
     snprintf(lan.password, sizeof(lan.password), "%s", password ? password : "");
-    if (rnet_lan_lobby_publish(g_launcher_np.registry_path, &lan) == RNET_LAN_LOBBY_OK)
+    if (lan_only) {
+        int rc = rnet_lan_lobby_publish(g_launcher_np.registry_path, &lan);
+        if (rc != RNET_LAN_LOBBY_OK) return rc;
         g_launcher_np.hosting_lan = 1;
+        return 0;
+    }
     return genesis_lobby_create(lan.name, g_launcher_np.game_name,
                                 g_launcher_np.game_version, password ? password : "",
                                 endpoint, &caps);
 }
 
-static int np_join(void *ctx, const char *lobby_id, const char *password)
+static int np_join(void *ctx, const char *lobby_id, const char *password,
+                   char *guest_bind)
 {
     (void)ctx;
     if (lobby_id && !strncmp(lobby_id, "lan:", 4)) {
@@ -194,7 +200,8 @@ static int np_join(void *ctx, const char *lobby_id, const char *password)
         g_launcher_np.joined_lan = 1;
         return 0;
     }
-    return genesis_lobby_join(lobby_id, password ? password : "", "0.0.0.0:0");
+    return genesis_lobby_join(lobby_id, password ? password : "",
+                              guest_bind && guest_bind[0] ? guest_bind : "0.0.0.0:0");
 }
 
 static int np_leave(void *ctx)
