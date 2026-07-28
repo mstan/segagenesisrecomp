@@ -473,13 +473,11 @@ static void game_stack_note(const char *reason, const void *stack_marker)
     }
 }
 
-#ifdef GENESIS_COSIM
 static void check_cycle_budget(void);   /* fwd: defined below, drains the chunk budget */
 
 /* GENESIS_FORCE_INTERP (env): make the game fiber interpret the WHOLE program
- * via m68k_interp — pairing #1 B-side. The recompiled backend is A; the ONLY
- * variable is how the 68K advances + stamps writes, which is exactly what
- * pairing #1 isolates (chips stay the identical ymfm/sn76489). */
+ * via m68k_interp. In a co-sim build this is pairing #1 B-side; in a normal
+ * native build it provides clean-room whole-program execution and coverage. */
 int genesis_force_interp(void) {
     static int v = -1;
     if (v < 0) {
@@ -542,7 +540,6 @@ static void interp_drive_mainloop(uint32_t entry_pc) {
          * cadence keeps the two backends' VDP raster phase aligned. */
     }
 }
-#endif /* GENESIS_COSIM */
 
 /* Game fiber entry point. */
 static void game_fiber_func(void *param)
@@ -573,13 +570,11 @@ static void game_fiber_func(void *param)
                   |  (uint32_t)g_rom[3];
     g_cpu.SR  = 0x2700u;
 
-#ifdef GENESIS_COSIM
     if (genesis_force_interp()) {
         uint32_t entry = m68k_read32(4) & 0xFFFFFFu;   /* 68K reset vector */
         fprintf(stderr, "[FORCE_INTERP] driving from reset PC $%06X\n", entry);
         interp_drive_mainloop(entry);   /* never returns */
     }
-#endif
 
     g_game_spec.call_entry_point();
 
@@ -805,13 +800,11 @@ static void own_deliver_vint(GVDP *vdp)
     uint8_t vbla_routine_at_entry =
         m68k_read8(g_game_layout.vint_routine_addr & 0xFFFFFF);
 #endif
-#ifdef GENESIS_COSIM
     if (genesis_force_interp()) {
         /* Interpret the V-int handler body from the level-6 autovector; delivery
          * (A7/stack save-restore, stamp rebase, cycle charging) is identical. */
         m68k_interp_run_handler(m68k_read32(0x78) & 0xFFFFFFu);
     } else
-#endif
     if (g_game_spec.call_vblank) g_game_spec.call_vblank();
     s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
     if (s_irq_cycle_debt)
@@ -875,11 +868,9 @@ static void own_run_handler_interleaved(int level, GVDP *vdp)
     s_irq_in_progress = 1;
     uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
     g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
-#ifdef GENESIS_COSIM
     if (genesis_force_interp()) {
         m68k_interp_run_handler(m68k_read32(level == 6 ? 0x78 : 0x70) & 0xFFFFFFu);
     } else
-#endif
     if (level == 6) { if (g_game_spec.call_vblank) g_game_spec.call_vblank(); }
     else            { if (g_game_spec.call_hblank) g_game_spec.call_hblank(); }
     g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
@@ -961,12 +952,10 @@ void glue_own_interrupt(int level, GVDP *vdp)
         g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
         /* H-int handler cycles owe raster time too (same rule as V-int). */
         uint32_t cyc_before = g_audio_cycle_counter;
-#ifdef GENESIS_COSIM
         if (genesis_force_interp()) {
             /* Interpret the H-int handler body from the level-4 autovector. */
             m68k_interp_run_handler(m68k_read32(0x70) & 0xFFFFFFu);
         } else
-#endif
         if (g_game_spec.call_hblank) g_game_spec.call_hblank();
         s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
         if (s_irq_cycle_debt && s_irq_cycle_debt_level < 4)
@@ -2140,4 +2129,3 @@ void hybrid_call_interpret(uint32_t target_pc)
     g_interp_total_calls++;
     call_by_address(target_pc);
 }
-

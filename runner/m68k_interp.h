@@ -77,12 +77,10 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
  */
 M68kiStatus m68k_interp_step(void);
 
-#ifdef GENESIS_COSIM
 /* Interpret an interrupt HANDLER BODY from its autovector entry, stopping at the
- * handler's own depth-0 RTE (peeked, not executed). FORCE_INTERP / pairing #1:
- * the interpreted twin of g_game_spec.call_vblank()/call_hblank(). */
+ * handler's own depth-0 RTE (peeked, not executed). In FORCE_INTERP mode this
+ * is the interpreted twin of g_game_spec.call_vblank()/call_hblank(). */
 M68kiStatus m68k_interp_run_handler(uint32_t entry_pc);
-#endif
 
 /* --- Executed-PC coverage -------------------------------------------------
  * Always-on: every instruction the interpreter retires is recorded, from

@@ -1413,9 +1413,8 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
     }
 }
 
-#ifdef GENESIS_COSIM
 /* ---------------------------------------------------------------------------
- * Interrupt-handler run (FORCE_INTERP / pairing #1).
+ * Interrupt-handler run (FORCE_INTERP; also used by co-sim pairing #1).
  *
  * Interprets an interrupt HANDLER BODY from its autovector entry, stopping at
  * the handler's own depth-0 RTE — the exact analog of what the recompiled
@@ -1469,7 +1468,6 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
         }
     }
 }
-#endif /* GENESIS_COSIM */
 
 /* ---------------------------------------------------------------------------
  * RAM-handler capsule — execute RAM-RESIDENT code from LIVE memory.

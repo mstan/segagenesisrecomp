@@ -1267,11 +1267,10 @@ int main(int argc, char *argv[])
     const char *mem_write_log_spec = NULL;
     const char *wav_path = NULL;
 
-    /* --exec-coverage-out PATH — oracle build only. At exit, dump the
-     * always-on executed-PC coverage bitmaps (ROM + WRAM) to a binary
-     * file. This is the discovery runtime oracle's guaranteed-code
-     * positive set; tools/rka decode it into address lists. No-op on
-     * native (the interpreter that feeds the coverage isn't running). */
+    /* --exec-coverage-out PATH — at exit, dump the clean-room interpreter's
+     * always-on executed-PC set as text. With GENESIS_FORCE_INTERP=1 this is
+     * whole-program coverage; otherwise it contains only any Tier-3 floor
+     * capsules that ran during native execution. */
     const char *exec_cov_out = NULL;
 
     /* Headless smoke / framebuffer-hash assertion mode. When --hash-frames
@@ -2536,15 +2535,8 @@ int main(int argc, char *argv[])
      * the dump covers only what the Tier-3 floor executed. */
     if (exec_cov_out) {
         extern long m68k_interp_cov_dump(FILE *);        /* m68k_interp.c */
-        /* Whole-program interpretation (GENESIS_FORCE_INTERP) currently lives
-         * behind GENESIS_COSIM in glue.c, so a plain native build can only
-         * report floor-capsule coverage. See HANDOFF.md. */
-#ifdef GENESIS_COSIM
         extern int genesis_force_interp(void);           /* glue.c */
         const int _cov_forced = genesis_force_interp();
-#else
-        const int _cov_forced = 0;
-#endif
         FILE *cf = fopen(exec_cov_out, "w");
         if (!cf) {
             fprintf(stderr, "[EXECCOV] cannot open '%s' for writing\n", exec_cov_out);
