@@ -49,7 +49,14 @@ level_modes    = []
 # discovery (PRINCIPLES #13/#16), cross-checked against the ROM — NOT blind
 # seeding. late_extra stays empty until a run produces audited evidence.
 [functions]
-extra = [0x000200, 0x000524, 0x0006AC, 0x00050C]
+# $F90C is an audited mode dispatcher. Its `MOVEA.L $F926(PC,D0.W),A6;
+# JMP (A6)` table is validator-enumerated only during normal discovery, so it
+# must be an early root rather than arriving through a late handler closure.
+extra = [0x000200, 0x000524, 0x0006AC, 0x00050C, 0x00F90C]
+# $2A54/$2AB0 allocate object records and store the handler passed in A1.
+# Registering that helper semantic lets discovery follow every structurally
+# proven `LEA Handler,A1; BSR helper` edge without hand-listing 100+ handlers.
+function_pointer_helpers = [0x002A54, 0x002AB0]
 
 # Object-handler entries reached by `JSR (A1)` at $002A42, where A1 comes from
 # `MOVEA.L $0002(A0),A1` — a per-object function pointer, the same shape as
@@ -69,12 +76,42 @@ extra = [0x000200, 0x000524, 0x0006AC, 0x00050C]
 #   $00A528  4239 ....  CLR.B  (xxx).L
 #   $00A538  4EB9 ....  JSR    (xxx).L
 #
-# NOTE: these six are only the handlers the attract path happened to reach.
-# The real fix is to locate the ROM-side pointer table that populates
-# object+$02 and register it as a [[jump_table]] with format "abs" (RKA does
-# this at $0023D8), which would enumerate every handler statically instead of
-# discovering them one crash at a time.
+# `$002B1C` and `$002B26` capture their caller's return address into object+$02,
+# making each post-JSR continuation a later indirect-dispatch entry. Discovery
+# now promotes those continuations even when the caller came from late_extra;
+# that closes the A4AA state chain through $A59E without manual one-per-frame
+# additions.
+#
+# The remaining entries below are decode-validated roots/leads exercised by a
+# complete 1800-frame attract run. Initializer/state pairs such as
+# $A49E->$A4AA and $C960->$C96C pass a handler address in A1 to the allocation
+# helper at $2A54, so there is no literal pointer table to register.
 late_extra = [
   0x00A4AA, 0x00A4DC, 0x00A4EC, 0x00A510, 0x00A528, 0x00A538,
+  0x000FB8, 0x0021E2, 0x01DBB2, 0x00A49E, 0x00C960, 0x00C96C,
+  0x0029D6, 0x00CE58, 0x00D0F0, 0x00CEBC, 0x00CE9E, 0x010B6C,
+  0x000BA4, 0x00CA1E, 0x00D188, 0x010B8A,
+  0x00CE2A, 0x010D20, 0x010DA2, 0x010E7A, 0x010F8A,
+  0x00CA86, 0x00CAE8, 0x00CCFC,
+  0x010BF4, 0x010C28, 0x0014C2,
+  0x00CDB2, 0x00CDEE, 0x00CFE0, 0x00D040, 0x00CF06, 0x000C4C,
+  0x00CF48, 0x00051E, 0x000EB4, 0x000EF0, 0x000F7A, 0x000FAA,
+  0x00C9BA, 0x010560, 0x0105CC, 0x003006, 0x01048C, 0x00C9F0,
+  0x014CDA, 0x014CC0, 0x014CAA, 0x01062A,
+  0x010894, 0x0108B4, 0x003AE2, 0x003010,
+  0x0104A4, 0x010514,
+  0x0104CA, 0x01053A, 0x003B04, 0x00D27E, 0x00D2F2,
+  0x00445E, 0x0045AA, 0x004C0A, 0x01009C, 0x0101B2, 0x010136,
+  0x0048CE, 0x004C5C, 0x004624, 0x0049CC, 0x004A7A, 0x004A9C,
+  0x001214, 0x00D306, 0x004820, 0x00483E, 0x004FE4, 0x00D2E6,
+  0x002D34, 0x0047D2, 0x0047F8, 0x004724,
+  0x004450, 0x0049BE, 0x00D2F8, 0x0108E4, 0x01090A, 0x00D2EC,
+  0x0040BC, 0x0040C0, 0x0040C8, 0x0042BE, 0x0042C6, 0x0042CA,
+  0x010940, 0x01096A, 0x010984,
+  # Stage-1/menu path reached by puyo_menu_probe.input.
+  0x002EBA, 0x0011D0, 0x003056, 0x002A54, 0x002AB0,
+  0x0050AA, 0x00F57C, 0x003130, 0x003172, 0x005124, 0x0055A4,
+  # Successful Tier-3 subtree leads from the converged gameplay probe.
+  0x0087DA, 0x00C14A, 0x00C946, 0x00F5B6, 0x00F68E, 0x00F600,
 ]
 blacklist = []

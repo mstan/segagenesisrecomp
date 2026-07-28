@@ -1,0 +1,23 @@
+# Puyo Puyo attract-mode checkpoints. The 12,000-frame window covers repeated
+# title/attract transitions and is also the long dispatch-coverage smoke test.
+WAIT 1200
+SCREENSHOT puyo_attract_01200.png
+WAIT 1200
+SCREENSHOT puyo_attract_02400.png
+WAIT 1200
+SCREENSHOT puyo_attract_03600.png
+WAIT 1200
+SCREENSHOT puyo_attract_04800.png
+WAIT 1200
+SCREENSHOT puyo_attract_06000.png
+WAIT 1200
+SCREENSHOT puyo_attract_07200.png
+WAIT 1200
+SCREENSHOT puyo_attract_08400.png
+WAIT 1200
+SCREENSHOT puyo_attract_09600.png
+WAIT 1200
+SCREENSHOT puyo_attract_10800.png
+WAIT 1200
+SCREENSHOT puyo_attract_12000.png
+EXIT 0
