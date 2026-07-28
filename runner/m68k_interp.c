@@ -21,6 +21,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* ---- per-run diagnostics ---- */
@@ -608,7 +609,48 @@ static void do_movem(const M68KInstr *ins, M68KSize sz) {
  * Returns M68KI_OK and writes *next_pc on success; returns M68KI_HALT_UNIMPL
  * (with bad_pc/op recorded) for anything not yet implemented.
  * ========================================================================= */
+/* ---- Executed-PC coverage (always-on ring; queried, never armed) ---------
+ * Replaces the coverage the deleted clown68000 oracle used to provide. Every
+ * instruction the interpreter retires marks a bit here, so the record is
+ * complete from process start rather than from the moment a probe attached —
+ * whether the interpreter is driving the whole program (GENESIS_FORCE_INTERP)
+ * or only running Tier-3 floor capsules.
+ *
+ * One bit per word-aligned address over the 4 MB cart space = 256 KB, lazily
+ * allocated on first mark so a build that never interprets pays nothing. The
+ * hot path is a shift and an OR, not a printf. */
+#define M68KI_COV_WORDS  (0x400000u >> 1)          /* word-aligned PCs */
+#define M68KI_COV_BYTES  ((M68KI_COV_WORDS + 7u) >> 3)
+static uint8_t *s_exec_cov = NULL;
+
+static void cov_mark(uint32_t pc) {
+    if (pc >= 0x400000u) return;                   /* RAM-resident code: not cart */
+    if (!s_exec_cov) {
+        s_exec_cov = (uint8_t *)calloc(M68KI_COV_BYTES, 1);
+        if (!s_exec_cov) return;
+    }
+    uint32_t i = pc >> 1;
+    s_exec_cov[i >> 3] |= (uint8_t)(1u << (i & 7u));
+}
+
+int m68k_interp_cov_active(void) { return s_exec_cov != NULL; }
+
+/* Append the executed set, one hex address per line, ascending. Returns the
+ * count written, or -1 if nothing was ever interpreted. */
+long m68k_interp_cov_dump(FILE *f) {
+    if (!s_exec_cov) return -1;
+    long n = 0;
+    for (uint32_t i = 0; i < M68KI_COV_WORDS; i++) {
+        if (s_exec_cov[i >> 3] & (1u << (i & 7u))) {
+            fprintf(f, "%06X\n", i << 1);
+            n++;
+        }
+    }
+    return n;
+}
+
 static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
+    cov_mark(ins->addr);   /* every interpreted instruction, all entry paths */
     ExtR er; er_init(&er, ins);
     uint32_t fall = ins->addr + ins->byte_length;
     *next_pc = fall;

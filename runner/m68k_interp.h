@@ -84,6 +84,16 @@ M68kiStatus m68k_interp_step(void);
 M68kiStatus m68k_interp_run_handler(uint32_t entry_pc);
 #endif
 
+/* --- Executed-PC coverage -------------------------------------------------
+ * Always-on: every instruction the interpreter retires is recorded, from
+ * process start. Replaces the coverage the deleted clown68000 oracle gave.
+ * With GENESIS_FORCE_INTERP=1 the interpreter drives the whole program, so the
+ * dump is a complete executed-PC set for the run; otherwise it covers the
+ * Tier-3 floor capsules. Probes QUERY this — there is nothing to arm. */
+#include <stdio.h>
+int  m68k_interp_cov_active(void);      /* non-zero once anything was interpreted */
+long m68k_interp_cov_dump(FILE *f);     /* ascending hex addrs, one per line; -1 if empty */
+
 /* Per-run diagnostics (the manifest/floor layers read these). */
 extern uint32_t g_m68ki_bad_pc;      /* PC of the offending instruction (UNIMPL) */
 extern uint16_t g_m68ki_bad_op;      /* opcode word of the offending instruction */
