@@ -1785,8 +1785,9 @@ static void floor_blacklist_add(uint32_t a) {
  * mis-decode). Continuing would let native resume with a desynced stack. Per
  * the oracle-parity charter we never silently corrupt: record the full state
  * loudly so the first-divergence harness can classify it, then DECLINE (the old
- * no-op for that target). The capsule itself is A7-neutral, so declining leaves
- * the stack exactly as native expects. */
+ * no-op for that target). A successful framed return is A7-neutral. A halted
+ * capsule is not, so genesis_log_dispatch_miss restores its CPU checkpoint
+ * before declining. */
 static int s_floor_unsafe_count = 0;
 static void floor_unsafe_record(uint32_t miss_addr, uint32_t run_at,
                                 uint32_t exit_pc, uint32_t expected_ret,
@@ -1889,6 +1890,12 @@ void genesis_log_dispatch_miss(uint32_t addr)
 
         if (run_at && (run_at < rl || run_at >= RAM_BASE) && !(run_at & 1u)) {
             uint32_t exit_pc = 0;
+            /* A failed capsule may have executed many instructions before an
+             * unsupported opcode or guard stop. Its partial register/stack
+             * state is not a valid substitute for the historical no-op miss
+             * behavior. Keep the successful path, but roll CPU state back on
+             * every declined path so A7 and caller registers cannot leak. */
+            M68KState floor_cpu_checkpoint = g_cpu;
             s_in_floor = 1;
             M68kiStatus st = m68k_interp_run_framed(run_at, &exit_pc);
             s_in_floor = 0;
@@ -1906,11 +1913,13 @@ void genesis_log_dispatch_miss(uint32_t addr)
                 }
                 floor_unsafe_record(addr, run_at, exit_pc, expected_ret,
                                     "capsule exit_pc != native loose-A7 return");
+                g_cpu = floor_cpu_checkpoint;
                 floor_blacklist_add(addr);
             } else {
                 /* Not runnable as code (illegal/F-line first bytes => DATA
                  * target), or runaway/bad fetch. Decline + remember (the old
                  * no-op for that non-code target, which the game tolerates). */
+                g_cpu = floor_cpu_checkpoint;
                 floor_blacklist_add(addr);
                 fprintf(stderr, "[FLOOR] declined miss $%06X (ran $%06X, status %d, "
                         "opcode $%04X at $%06X) — target not runnable code; blacklisted\n",

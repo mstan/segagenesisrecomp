@@ -116,6 +116,47 @@ late_extra = [
   # Stage-1/menu path reached by puyo_menu_probe.input.
   0x002EBA, 0x0011D0, 0x003056, 0x002A54, 0x002AB0,
   0x0050AA, 0x00F57C, 0x003130, 0x003172, 0x005124, 0x0055A4,
+  # Alternate title-window Start path. $B160 is a decode-validated object
+  # initializer (MOVE.W immediates; BSR $B140; JSR $2B26) reached through the
+  # same object-handler slot populated by $1020.
+  0x00B160,
+  # First accepted Start edge creates this title-exit handler. The ROM begins
+  # with MOVE.W #$0060,$26(A0); JSR $2B26; BSR $4BF0 and then a normal state
+  # branch, so this is another proven object entry rather than an interior PC.
+  0x00C21A,
+  # Menu construction reaches this handler after the title exit. It starts
+  # CLR.W D0; MOVE.B $FF0113,D0; LSL.W #2,D0; LEA $E3CC,A1 and installs its
+  # continuation through $2B26.
+  0x00E0E2,
+  # Timed post-gameplay object handler. $A1D2 begins with TST.W $FF1892 and
+  # either RTS or initializes $0E/$16/$26(A0), calls the common state helper,
+  # and advances normally; the floor's later $334 stop is the main yield path.
+  0x00A1D2,
+  # Decode-validated menu/gameplay state cluster reached below the newly
+  # promoted title path. These include paired object initializers/handlers,
+  # the state-table dispatcher at $A2F4, its $A334 case, and the short $E24A
+  # arithmetic helper. Keeping the proven cluster together avoids repeated
+  # floor exits as each timed state becomes active.
+  0x00A1A4, 0x00A23A, 0x00A2AC, 0x00A2F4, 0x00A316, 0x00A334,
+  0x00A430, 0x00E24A,
+  # Paired left/right gameplay-panel handlers from the same successful floor
+  # subtree; all begin with ordinary TST/CLR/MOVE setup and valid state flow.
+  0x0093F4, 0x00958C, 0x0095FC, 0x009B7A, 0x009BDA, 0x009C3C,
+  # Long-running Stage-1/game-over progression. $6562 is its setup routine,
+  # $678E is the timed object state reached at frame 5438, and $2AFC is the
+  # decode-validated MOVEM-based object-table helper used by that subtree.
+  0x006562, 0x00678E, 0x002AFC,
+  # Post-game-over/title-transition object handler reached at frame 10230.
+  # $C826 begins MOVE.B $36(A0),D0; MOVE.W $38(A0),D1; JSR $1218 and has a
+  # balanced RTS at $C85E. Its hardware-polling subtree cannot safely finish
+  # inside one Tier-3 capsule, so compile the proven entry and let normal
+  # per-instruction VBlank yields service the wait.
+  0x00C826,
+  # Game-over transition handler installed by the initializer at $C6D0.
+  # $C6FC begins BSR $4BF4; BTST #7,D0 and follows ordinary timed state flow
+  # through a balanced RTS. Leaving it on the declined floor path produced
+  # 930 repeated misses and an all-black transition frame.
+  0x00C6FC,
   # Successful Tier-3 subtree leads from the converged gameplay probe.
   0x0087DA, 0x00C14A, 0x00C946, 0x00F5B6, 0x00F68E, 0x00F600,
 ]

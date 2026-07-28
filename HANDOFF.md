@@ -1,9 +1,10 @@
 # HANDOFF — Puyo Puyo (Japan) bring-up
 
 **Branch:** `feat/puyo-puyo-bringup`
-**Updated:** 2026-07-27
-**State:** attract and deterministic Stage-1 fuzz probes run natively with no
-dispatch/floor fallback artifacts.
+**Updated:** 2026-07-28
+**State:** attract and TCP-driven deterministic Stage-1 fuzz/game-over probes
+run in both native and forced-interpreter modes with no dispatch/floor fallback
+artifacts.
 
 ## Layout
 
@@ -77,6 +78,40 @@ Two shared 68000 correctness fixes were required after discovery was complete:
   `$015238`, Puyo requests `D3.L=$0000E040`; the bug read `$FEE04A` as
   `$FFFFFFFF` instead of the score at `$FFE04A`, corrupting every score digit.
   Native and interpreter paths share the tested W/L resolver.
+- A generated split-function tail call now transfers its carried net stack
+  delta into the next function's local stack accounting. Puyo's valid
+  `$2AFC->$2B02` MOVEM helper exposed the bug: the second function treated its
+  balanced local save/restore as a skipped JSR return and left A7 twelve bytes
+  low. The always-on generated JSR invariant caught it during boot.
+
+Declined Tier-3 capsules now restore their checkpointed CPU state. A guard stop
+inside the valid `$C826` hardware-polling subtree previously leaked its partial
+A7/register state into native execution before declining, which caused a later
+dynamic-JSR stack mismatch. The handler itself is now a compiled audited root;
+the rollback makes other declined misses preserve their documented no-op CPU
+semantics.
+
+## TCP gameplay fuzzer
+
+`puyo/puyo_tcp_fuzz.ps1` launches the game, connects to the native command
+server, uses repeated clean Start edges to traverse title/mode/level/intro,
+then exercises a deterministic corpus of movement, soft-drop, both rotations,
+and combined inputs. It saves screenshots every 20 events, queries audio
+telemetry, quits cleanly, and writes executed-PC coverage.
+
+```powershell
+.\puyo\puyo_tcp_fuzz.ps1 -Launch -GameplayIterations 160 -SettleFrames 900
+.\puyo\puyo_tcp_fuzz.ps1 -Launch -ForceInterpreter `
+    -CoverageOut tcp_fuzz_full.exec.txt `
+    -GameplayIterations 160 -SettleFrames 900
+```
+
+Late TCP runs promoted additional raw-ROM-validated object entries including
+`$B160`, `$C21A`, `$E0E2`, `$A1D2`, the paired gameplay-panel/state cluster,
+`$6562/$678E/$2AFC`, and the `$C826/$C6FC` game-over transitions. `$C6FC`
+was not a theoretical coverage gap: declining it 930 times produced an
+all-black transition screenshot. Compiling it restores the live Stage-1 board
+and the proper colorful `GAME OVER`/continue screen.
 
 ## Interpreter coverage
 
@@ -128,12 +163,18 @@ Results:
   v1.7.4 reference capture exactly. Later AI boards are visually coherent but
   not frame-deterministic across cores because interrupt/cycle timing changes
   RNG progression.
+- TCP native replay reached frame 12,288 after the `$C826` fix, then the final
+  `$C6FC` replay reached frame 7,811 with no floor/dispatch event. Audio
+  telemetry reported zero dropped, turbo-dropped, or underrun flushes.
+- The matching forced-interpreter TCP replay reached frame 7,805 with zero raw
+  dispatch misses and wrote 6,604 unique full-program executed PCs
+  (`tcp_fuzz_full.exec.txt`; three header lines make 6,607 file lines).
 
 Framework harness status: `m68k_effective_address_test`,
 `return_capture_test`, `m68k_validator_test`, and `codegen_diag_test` pass.
 `m68k_decoder_synth_test` still has the pre-existing three CMPM classification
-failures; this branch does not modify either decoder. The L1 Sonic fixture
-cannot run here because this worktree intentionally has only the Puyo ROM.
+failures; this branch does not modify either decoder. The Sonic L1 fixture
+passes 24,080/24,080 when pointed at the adjacent Sonic project ROM.
 
 ## Still worth doing
 
