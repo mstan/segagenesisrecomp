@@ -2825,6 +2825,7 @@ extra = [
     0x02BE5E,   # loc_2BE5E
     0x02BE9C,   # loc_2BE9C
     0x02BF24,   # SlotMachine
+    0x02BF4A,   # SlotMachine indexed RTS/default entry
     0x02BF32,   # SlotMachine_JmpTable
     0x02BF4C,   # SlotMachine_Routine1
     0x02BF9A,   # SlotMachine_Routine2
@@ -2841,11 +2842,13 @@ extra = [
     0x02C1EC,   # SlotMachine_Routine5_4
     0x02C1EE,   # SlotMachine_Routine6
     0x02C20A,   # SlotMachine_DrawSlot
+    0x02C22C,   # SlotMachine_DrawSlot indexed branch entry
     0x02C23A,   # SlotMachine_Subroutine1
     0x02C246,   # SlotMachine_Subroutine2
     0x02C2B8,   # SlotMachine_GetPixelRow
     0x02C2DE,   # SlotMachine_ChooseReward
     0x02C304,   # SlotMachine_ChooseReward_JmpTable
+    0x02C310,   # SlotMachine_ChooseReward indexed default entry
     0x02C31C,   # SlotMachine_Match13
     0x02C34A,   # SlotMachine_Match12
     0x02C374,   # SlotMachine_Unmatched1
