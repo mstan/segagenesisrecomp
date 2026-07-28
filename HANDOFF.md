@@ -166,9 +166,10 @@ Results:
 - TCP native replay reached frame 12,288 after the `$C826` fix, then the final
   `$C6FC` replay reached frame 7,811 with no floor/dispatch event. Audio
   telemetry reported zero dropped, turbo-dropped, or underrun flushes.
-- The matching forced-interpreter TCP replay reached frame 7,805 with zero raw
-  dispatch misses and wrote 6,604 unique full-program executed PCs
-  (`tcp_fuzz_full.exec.txt`; three header lines make 6,607 file lines).
+- The extended forced-interpreter TCP replay reached frame 12,323 with zero raw
+  dispatch misses and wrote 7,058 unique full-program executed PCs
+  (`tcp_fuzz_full_extended.exec.txt`; three header lines make 7,061 file
+  lines). It continued through game over into the next title/tutorial cycle.
 
 Framework harness status: `m68k_effective_address_test`,
 `return_capture_test`, `m68k_validator_test`, and `codegen_diag_test` pass.
