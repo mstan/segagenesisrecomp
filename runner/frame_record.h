@@ -182,12 +182,11 @@ typedef struct {
  * subsystem state into the corresponding snap struct. They never
  * allocate and they never block.
  * ---------------------------------------------------------------- */
-struct ClownMDEmu;          /* fwd */
 struct M68KState;           /* fwd; defined in clownmdemu_globals.h */
 
 void m68k_snapshot(M68KRegSnap *out);
-void z80_snapshot(Z80RegSnap *out, struct ClownMDEmu *emu);
-void vdp_snapshot(VdpSnap *out, struct ClownMDEmu *emu);
-void fm_snapshot (FmSnap  *out, struct ClownMDEmu *emu);
-void psg_snapshot(PsgSnap *out, struct ClownMDEmu *emu);
-void wram_snapshot(uint8_t out[0x10000], struct ClownMDEmu *emu);
+void z80_snapshot(Z80RegSnap *out);
+void vdp_snapshot(VdpSnap *out);
+void fm_snapshot (FmSnap  *out);
+void psg_snapshot(PsgSnap *out);
+void wram_snapshot(uint8_t out[0x10000]);

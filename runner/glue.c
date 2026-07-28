@@ -310,7 +310,6 @@ static void watchdog_check(uint32_t addr, int is_write, uint32_t val)
  * Internal glue state
  * ========================================================================= */
 
-static ClownMDEmu        *s_emu      = NULL;   /* NULL on the own backend */
 
 /* Bus cycle counter, bumped per bus access by HYBRID_BUMP_CYCLES() to pace the
  * interleave chunks (see check_cycle_budget). The "hybrid" in the name is
@@ -324,7 +323,7 @@ cc_u32f g_hybrid_cycle_counter;
 static uint16_t recomp_ram_read16_direct(uint32_t addr)
 {
     uint16_t off = (uint16_t)(addr & 0xFFFFu);
-    /* Own backend: g_ram IS the authoritative work RAM (s_emu is NULL here —
+    /* g_ram IS the authoritative work RAM (
      * reading through it returned $FFFF, so RAM JMP trampolines like S3's
      * H-int stub at $FFF608 never resolved and the handler dispatch missed). */
     return (uint16_t)(((uint16_t)g_ram[off] << 8) | g_ram[(uint16_t)(off + 1u)]);
@@ -1197,9 +1196,8 @@ void glue_resume_from_break(void)
  * glue_init / glue_signal_* / glue_wait_vblank_done / glue_shutdown
  * ========================================================================= */
 
-void glue_init(ClownMDEmu *emu, const cc_u8l *rom_bytes, cc_u32l rom_byte_len)
+void glue_init(const cc_u8l *rom_bytes, cc_u32l rom_byte_len)
 {
-    s_emu = emu;
 
 
     /* Copy ROM bytes into g_rom so recompiled code can inspect ROM data
@@ -1370,7 +1368,7 @@ void glue_shutdown(void)
 
 /* =========================================================================
  * Save state helpers — called from main.c F6/F7 handlers.
- * Saves/restores recompiled game state that lives outside ClownMDEmu.
+ * Saves/restores recompiled game state that lives outside the machine.
  * ========================================================================= */
 
 void glue_save_state(FILE *sf)
@@ -1522,22 +1520,6 @@ static inline void spin_check(uint32_t byte_addr, int is_write)
     }
 }
 
-#if PERMISSIVE_VDP
-#include "vdp_integration.h"   /* clean-room VDP shadow seam (toggle build) */
-/* Authoritative word read for the shadow VDP's DMA source: ROM from g_rom,
- * live work RAM from clownmdemu's state.m68k.ram (the word array the recompiled
- * code actually uses — g_ram is only a non-authoritative shadow). Phase-2 will
- * point RAM at our own memory once clownmdemu is gone. */
-uint16_t glue_bus_read_word(uint32_t addr)
-{
-    addr &= 0xFFFFFFu;
-    if (addr >= RAM_BASE)
-        return s_emu ? (uint16_t)s_emu->state.m68k.ram[(addr & 0xFFFFu) >> 1] : 0;
-    if (addr < 0x400000u)
-        return (uint16_t)((g_rom[addr] << 8) | g_rom[(addr + 1) & 0x3FFFFFu]);
-    return 0;
-}
-#endif
 
 uint16_t m68k_read16(uint32_t byte_addr)
 {
@@ -1647,9 +1629,6 @@ void m68k_write16(uint32_t byte_addr, uint16_t val)
         g_mem_write_trace_fn(byte_addr + 1u, (uint8_t)val,        g_audio_cycle_counter);
     }
     gbus_write16(&g_machine.bus, byte_addr, val);
-#if PERMISSIVE_VDP
-    gvdp_on_bus_write(byte_addr, (uint16_t)val);
-#endif
 }
 
 void m68k_write8(uint32_t byte_addr, uint8_t val)
@@ -1694,10 +1673,6 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
     }
     gbus_write16(&g_machine.bus, byte_addr,     (uint16_t)(val >> 16));
     gbus_write16(&g_machine.bus, byte_addr + 2, (uint16_t)(val & 0xFFFF));
-#if PERMISSIVE_VDP
-    gvdp_on_bus_write(byte_addr,     (uint16_t)(val >> 16));
-    gvdp_on_bus_write(byte_addr + 2, (uint16_t)(val & 0xFFFF));
-#endif
 }
 
 /* =========================================================================

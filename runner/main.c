@@ -360,9 +360,6 @@ static uint32_t md_colour_to_argb(cc_u16f colour)
     return genesis_dac_cram_to_argb((uint16_t)colour, GENESIS_DAC_NORMAL);
 }
 
-#if PERMISSIVE_VDP
-#include "vdp_integration.h"   /* clean-room VDP shadow seam (toggle build) */
-#endif
 
 /* =========================================================================
  * clownmdemu callbacks
@@ -395,14 +392,6 @@ static void scanline_rendered_cb(void *user_data,
 
     uint32_t *row = s_framebuf + (int)scanline * MAX_SCREEN_WIDTH;
 
-#if PERMISSIVE_VDP
-    /* Shadow VDP: substitute our clean-room renderer's output for this line. */
-    {
-        int w = gvdp_render_substitute((int)scanline, row, MAX_SCREEN_WIDTH);
-        if (w > 0) s_screen_width = w;
-        return;
-    }
-#endif
 
     /* pixels[0..count-1] are palette indices for columns
      * [left_boundary, right_boundary). */
@@ -533,7 +522,7 @@ static int      s_sampling_netplay_local = 0;
 
 static cc_bool input_requested_cb(void *user_data,
                                    cc_u8f player_id,
-                                   ClownMDEmu_Button button_id)
+                                   GenesisButton button_id)
 {
     (void)user_data;
     if (player_id > 1)
@@ -547,14 +536,14 @@ static cc_bool input_requested_cb(void *user_data,
         uint16_t net_mask = genesis_netplay_published_pad((int)player_id);
         GenesisButton net_button;
         switch (button_id) {
-            case CLOWNMDEMU_BUTTON_UP:    net_button = GB_UP;    break;
-            case CLOWNMDEMU_BUTTON_DOWN:  net_button = GB_DOWN;  break;
-            case CLOWNMDEMU_BUTTON_LEFT:  net_button = GB_LEFT;  break;
-            case CLOWNMDEMU_BUTTON_RIGHT: net_button = GB_RIGHT; break;
-            case CLOWNMDEMU_BUTTON_A:     net_button = GB_A;     break;
-            case CLOWNMDEMU_BUTTON_B:     net_button = GB_B;     break;
-            case CLOWNMDEMU_BUTTON_C:     net_button = GB_C;     break;
-            case CLOWNMDEMU_BUTTON_START: net_button = GB_START; break;
+            case GB_UP:    net_button = GB_UP;    break;
+            case GB_DOWN:  net_button = GB_DOWN;  break;
+            case GB_LEFT:  net_button = GB_LEFT;  break;
+            case GB_RIGHT: net_button = GB_RIGHT; break;
+            case GB_A:     net_button = GB_A;     break;
+            case GB_B:     net_button = GB_B;     break;
+            case GB_C:     net_button = GB_C;     break;
+            case GB_START: net_button = GB_START; break;
             default: return cc_false;
         }
         return (net_mask & input_button_bit(net_button)) ? cc_true : cc_false;
@@ -571,14 +560,14 @@ static cc_bool input_requested_cb(void *user_data,
     if (player_id == 0 && input_script_active()) {
         uint8_t mask = input_script_held_mask();
         switch (button_id) {
-            case CLOWNMDEMU_BUTTON_UP:    if (mask & 0x01) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_DOWN:  if (mask & 0x02) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_LEFT:  if (mask & 0x04) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_RIGHT: if (mask & 0x08) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_B:     if (mask & 0x10) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_C:     if (mask & 0x20) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_A:     if (mask & 0x40) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_START: if (mask & 0x80) return cc_true; break;
+            case GB_UP:    if (mask & 0x01) return cc_true; break;
+            case GB_DOWN:  if (mask & 0x02) return cc_true; break;
+            case GB_LEFT:  if (mask & 0x04) return cc_true; break;
+            case GB_RIGHT: if (mask & 0x08) return cc_true; break;
+            case GB_B:     if (mask & 0x10) return cc_true; break;
+            case GB_C:     if (mask & 0x20) return cc_true; break;
+            case GB_A:     if (mask & 0x40) return cc_true; break;
+            case GB_START: if (mask & 0x80) return cc_true; break;
             default: break;
         }
     }
@@ -586,16 +575,16 @@ static cc_bool input_requested_cb(void *user_data,
     /* Scripted inputs override keyboard when active (P1 only) */
     if (player_id == 0 && (s_script_start_frame || s_script_right_frame)) {
         uint32_t f = s_current_frame_for_input;
-        if (button_id == CLOWNMDEMU_BUTTON_START) {
+        if (button_id == GB_START) {
             /* Press Start for exactly 2 frames at the target frame */
             if (s_script_start_frame && f >= s_script_start_frame && f < s_script_start_frame + 2)
                 return cc_true;
         }
-        if (button_id == CLOWNMDEMU_BUTTON_RIGHT) {
+        if (button_id == GB_RIGHT) {
             if (s_script_right_frame && f >= s_script_right_frame)
                 return cc_true;
         }
-        if (button_id == CLOWNMDEMU_BUTTON_A) {
+        if (button_id == GB_A) {
             /* Press A (jump) for 2 frames, multiple attempts */
             uint32_t base = s_script_start_frame;
             if (base) {
@@ -613,14 +602,14 @@ static cc_bool input_requested_cb(void *user_data,
      * Bit mapping matches Genesis: Up=0,Down=1,Left=2,Right=3,B=4,C=5,A=6,Start=7 */
     if (player_id == 0 && s_tcp_input_active) {
         switch (button_id) {
-            case CLOWNMDEMU_BUTTON_UP:    if (s_tcp_input_keys & 0x01) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_DOWN:  if (s_tcp_input_keys & 0x02) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_LEFT:  if (s_tcp_input_keys & 0x04) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_RIGHT: if (s_tcp_input_keys & 0x08) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_B:     if (s_tcp_input_keys & 0x10) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_C:     if (s_tcp_input_keys & 0x20) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_A:     if (s_tcp_input_keys & 0x40) return cc_true; break;
-            case CLOWNMDEMU_BUTTON_START: if (s_tcp_input_keys & 0x80) return cc_true; break;
+            case GB_UP:    if (s_tcp_input_keys & 0x01) return cc_true; break;
+            case GB_DOWN:  if (s_tcp_input_keys & 0x02) return cc_true; break;
+            case GB_LEFT:  if (s_tcp_input_keys & 0x04) return cc_true; break;
+            case GB_RIGHT: if (s_tcp_input_keys & 0x08) return cc_true; break;
+            case GB_B:     if (s_tcp_input_keys & 0x10) return cc_true; break;
+            case GB_C:     if (s_tcp_input_keys & 0x20) return cc_true; break;
+            case GB_A:     if (s_tcp_input_keys & 0x40) return cc_true; break;
+            case GB_START: if (s_tcp_input_keys & 0x80) return cc_true; break;
             default: break;
         }
     }
@@ -628,19 +617,19 @@ static cc_bool input_requested_cb(void *user_data,
     /* Live input via the rebindable per-player map (keyboard + that player's
      * gamepad, device-gated; see input_map.c). Both players resolve here. The
      * 8 standard buttons map 1:1 onto GenesisButton; 6-button extras (X/Y/Z/
-     * Mode) are not expressible through the ClownMDEmu_Button callback and are
+     * Mode) are not expressible through the GenesisButton callback and are
      * OR'd in directly by the own-backend pad push. */
     uint16_t mask = input_current_mask((int)player_id);
     GenesisButton gb;
     switch (button_id) {
-        case CLOWNMDEMU_BUTTON_UP:    gb = GB_UP;    break;
-        case CLOWNMDEMU_BUTTON_DOWN:  gb = GB_DOWN;  break;
-        case CLOWNMDEMU_BUTTON_LEFT:  gb = GB_LEFT;  break;
-        case CLOWNMDEMU_BUTTON_RIGHT: gb = GB_RIGHT; break;
-        case CLOWNMDEMU_BUTTON_A:     gb = GB_A;     break;
-        case CLOWNMDEMU_BUTTON_B:     gb = GB_B;     break;
-        case CLOWNMDEMU_BUTTON_C:     gb = GB_C;     break;
-        case CLOWNMDEMU_BUTTON_START: gb = GB_START; break;
+        case GB_UP:    gb = GB_UP;    break;
+        case GB_DOWN:  gb = GB_DOWN;  break;
+        case GB_LEFT:  gb = GB_LEFT;  break;
+        case GB_RIGHT: gb = GB_RIGHT; break;
+        case GB_A:     gb = GB_A;     break;
+        case GB_B:     gb = GB_B;     break;
+        case GB_C:     gb = GB_C;     break;
+        case GB_START: gb = GB_START; break;
         default:                      return cc_false;
     }
     return (mask & input_button_bit(gb)) ? cc_true : cc_false;
@@ -648,11 +637,11 @@ static cc_bool input_requested_cb(void *user_data,
 
 static uint16_t collect_pad_mask(int player)
 {
-    static const ClownMDEmu_Button buttons[8] = {
-        CLOWNMDEMU_BUTTON_UP, CLOWNMDEMU_BUTTON_DOWN,
-        CLOWNMDEMU_BUTTON_LEFT, CLOWNMDEMU_BUTTON_RIGHT,
-        CLOWNMDEMU_BUTTON_B, CLOWNMDEMU_BUTTON_C,
-        CLOWNMDEMU_BUTTON_A, CLOWNMDEMU_BUTTON_START
+    static const GenesisButton buttons[8] = {
+        GB_UP, GB_DOWN,
+        GB_LEFT, GB_RIGHT,
+        GB_B, GB_C,
+        GB_A, GB_START
     };
     static const uint16_t bits[8] = {
         GPAD_UP, GPAD_DOWN, GPAD_LEFT, GPAD_RIGHT,
@@ -676,7 +665,7 @@ static uint16_t collect_pad_mask(int player)
 /*
  * Audio accumulation buffers.
  *
- * ClownMDEmu_Iterate() calls fm_audio_cb and psg_audio_cb multiple times
+ * The machine step calls fm_audio_cb and psg_audio_cb multiple times
  * per video frame (once per sync point).  We accumulate all callbacks into
  * these buffers and flush once per frame so we can mix FM + PSG together.
  *
@@ -728,12 +717,6 @@ extern uint64_t g_frame_count;
 extern uint32_t m68k_read32(uint32_t);
 extern uint8_t  m68k_read8 (uint32_t);
 
-/* Audio backend switch for A/B diagnosis:
- *   "ours"       (default) : our cycle-stamped YM2612/PSG via audio_mixer_drain
- *   "clownmdemu"           : clownmdemu's FM/PSG via its sync callbacks
- * Select with --audio-backend=ours|clownmdemu. */
-enum { AUDIO_BACKEND_OURS = 0, AUDIO_BACKEND_CLOWNMDEMU = 1 };
-static int s_audio_backend = AUDIO_BACKEND_OURS;
 
 
 /* =========================================================================
@@ -788,7 +771,7 @@ static cc_u16l *load_rom(const char *path,
 }
 
 /* =========================================================================
- * ClownMDEmu instance (static storage; oracle/hybrid builds only)
+ * (legacy note: the old emulator instance lived here)
  * ========================================================================= */
 
 
@@ -904,7 +887,7 @@ int runner_load_state_file(const char *path)
 /* =========================================================================
  * Battery-backed cartridge SRAM persistence (e.g. Sonic 3 save slots).
  *
- * ClownMDEmu holds cartridge SRAM in g_clownmdemu.state.external_ram.buffer
+ * The machine holds cartridge SRAM in its bus state
  * but never writes it to disk: its save_file_* callbacks drive Mega-CD
  * backup RAM only (bus-sub-m68k.c), not cartridge SRAM. So the runner owns
  * SRAM persistence — load the .srm at boot, auto-flush it shortly after the
@@ -913,7 +896,7 @@ int runner_load_state_file(const char *path)
  * Fully game-agnostic: cartridges without battery SRAM report size==0 /
  * non_volatile==false (Sonic 1 & 2), so every entry point below no-ops for
  * them. Nothing here knows a game-specific address — the SRAM geometry comes
- * from ClownMDEmu's parse of the ROM header (SetUpExternalRAM).
+ * from the ROM header parse.
  * ========================================================================= */
 
 static char     s_sram_path[512] = "";
@@ -968,7 +951,7 @@ static void runner_sram_flush(void)
 }
 
 /* Resolve <rom-basename>.srm next to the exe, then load it (if present) into
- * the cartridge SRAM buffer. Called once, right after ClownMDEmu_HardReset
+ * the cartridge SRAM buffer. Called once, right after hard reset
  * (which runs SetUpExternalRAM and so has populated size / non_volatile). */
 static void runner_sram_init_and_load(const char *rom_path)
 {
@@ -1204,7 +1187,7 @@ static void write_framelog(uint32_t frame)
 }
 
 #if SONIC_REVERSE_DEBUG
-/* Tier-2 park drain. Called after each ClownMDEmu_Iterate that may
+/* Tier-2 park drain. Called after each machine step that may
  * have parked the game fiber at a block-entry breakpoint. When the
  * game fiber is parked we own the main thread and must keep
  * cmd_server polling alive until a TCP command (rdb_step/continue/
@@ -1363,11 +1346,9 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[i], "--exec-coverage-out") == 0 && i + 1 < argc) {
             exec_cov_out = argv[++i];
         } else if (strncmp(argv[i], "--audio-backend=", 16) == 0) {
-            const char *v = argv[i] + 16;
-            if      (strcmp(v, "ours")       == 0) s_audio_backend = AUDIO_BACKEND_OURS;
-            else fprintf(stderr, "warning: unknown --audio-backend=%s (only 'ours' on this build)\n", v);
-            fprintf(stderr, "[audio] backend=%s\n",
-                    "ours");   /* only backend in the release build */
+            /* Vestigial: there is one audio path now. Accepted and ignored so
+             * existing scripts and shortcuts keep working. */
+            fprintf(stderr, "[audio] --audio-backend is obsolete (one backend)\n");
         } else if (argv[i][0] != '-') {
             rom_path = argv[i];
         }
@@ -1767,7 +1748,7 @@ int main(int argc, char *argv[])
     /* Step 2 / Hybrid: initialise glue (Step 2 also starts the game thread).
      * The own backend has no clownmdemu instance — glue keeps s_emu NULL and
      * routes everything through g_machine. */
-    glue_init(NULL, rom_raw, rom_raw_len);
+    glue_init(rom_raw, rom_raw_len);
 
     /* Audio arch overhaul: initialise our cycle-stamped YM2612 + PSG
      * instances. Safe to call on oracle too (init functions are idempotent
@@ -1936,7 +1917,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* --- Save state (quick & dirty: snapshot the entire ClownMDEmu struct).
+    /* --- Save state (quick & dirty: snapshot the entire machine struct).
      * Oracle/hybrid only; the own backend has the GROWNS file states. --- */
 
     /* --- Main loop --- */
@@ -2143,11 +2124,11 @@ int main(int argc, char *argv[])
                * P1 dev overrides (.input / TCP / scripted) still drive the game;
                * 6-button extras (X/Y/Z/Mode) — which the 8-button callback can't
                * express — are OR'd straight from the per-player input map. */
-              static const ClownMDEmu_Button own_btns[8] = {
-                  CLOWNMDEMU_BUTTON_UP,   CLOWNMDEMU_BUTTON_DOWN,
-                  CLOWNMDEMU_BUTTON_LEFT, CLOWNMDEMU_BUTTON_RIGHT,
-                  CLOWNMDEMU_BUTTON_B,    CLOWNMDEMU_BUTTON_C,
-                  CLOWNMDEMU_BUTTON_A,    CLOWNMDEMU_BUTTON_START };
+              static const GenesisButton own_btns[8] = {
+                  GB_UP,   GB_DOWN,
+                  GB_LEFT, GB_RIGHT,
+                  GB_B,    GB_C,
+                  GB_A,    GB_START };
               static const uint16_t own_bits[8] = {
                   GPAD_UP, GPAD_DOWN, GPAD_LEFT, GPAD_RIGHT,
                   GPAD_B,  GPAD_C,    GPAD_A,    GPAD_START };
@@ -2190,14 +2171,14 @@ int main(int argc, char *argv[])
            * tail advance past the last event fills silence/decay
            * correctly. */
           #define NTSC_WALL_FRAME_68K_CYCLES 127856u
-          if (s_audio_backend == AUDIO_BACKEND_OURS) {
+          {
               #define NTSC_WALL_FRAME_MASTER_CYCLES 895780u
-              /* Both backends now deliver chip writes through the cycle-
-               * stamped event queue; the mixer sorts by stamp, advances the
-               * chips between writes, and tail-advances to the wall-frame
-               * end. (The own backend's old per-scanline live advance is
-               * gone — it collapsed the 68K V-int handler's whole driver
-               * tick onto one chip cycle; see genesis_machine.c.) */
+              /* Chip writes arrive through the cycle-stamped event queue; the
+               * mixer sorts by stamp, advances the chips between writes, and
+               * tail-advances to the wall-frame end. (The old per-scanline
+               * live advance is gone — it collapsed the 68K V-int handler's
+               * whole driver tick onto one chip cycle; see
+               * genesis_machine.c.) */
               audio_mixer_drain(NTSC_WALL_FRAME_MASTER_CYCLES,
                                 s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
                                 s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count);
@@ -2499,7 +2480,7 @@ int main(int argc, char *argv[])
             (void)genesis_netplay_poll_admit();
 #endif
 
-        /* NTSC frame cap.  ClownMDEmu's chip emulation runs cycles_per_frame
+        /* NTSC frame cap.  the chip emulation runs cycles_per_frame
          * computed for 59.94 Hz (matches real NTSC Genesis: 60/1.001).
          * Pacing the runner at the same rate keeps audio sample generation
          * in lockstep with SDL playback — no slow drift between game and

@@ -172,7 +172,7 @@ uint32_t rdb_parked_pc(void);
  * cycle-pacing cap.
  *
  * Oracle is 1:1 by architecture (core calls RaiseVerticalInterruptIfNeeded
- * once per ClownMDEmu_Iterate). An Iterate counter exposed below lets us
+ * once per machine step). A step counter exposed below lets us
  * sanity-check that invariant rather than assume it.
  * ========================================================================= */
 

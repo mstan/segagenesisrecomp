@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
-/* Call after ClownMDEmu_Initialise() and ROM load.
+/* Call after machine init and ROM load.
  * Stores the emulator pointer for m68k_read/write routing, and
  * (when ENABLE_RECOMPILED_CODE is set) starts the game thread. */
-void glue_init(ClownMDEmu *emu, const cc_u8l *rom_bytes, cc_u32l rom_byte_len);
+void glue_init(const cc_u8l *rom_bytes, cc_u32l rom_byte_len);
 
 /* Called by stub_clown68000 when clownmdemu raises the VBlank interrupt
  * (level 6).  In Step 2, this signals the game thread to service VBlank. */
@@ -27,7 +27,7 @@ void glue_handle_interrupt(cc_u16f level);
 void glue_set_callbacks(const void *callbacks);
 
 /* Block until the game thread has finished servicing VBlank.
- * Called from the main loop after ClownMDEmu_Iterate(). */
+ * Called from the main loop after each machine step. */
 void glue_wait_vblank_done(void);
 
 /* Runner save-state support for recompiled/hybrid state that lives
@@ -78,7 +78,7 @@ void glue_yield_for_break(void);
 
 /* True if the most recent SwitchToFiber-return was triggered by a
  * block-entry break (not by a VBlank yield). Checked by main.c after
- * ClownMDEmu_Iterate so it knows to run the park-drain loop instead
+ * the machine step so it knows to run the park-drain loop instead
  * of servicing VBlank. Cleared when the game fiber resumes. */
 int  glue_game_yielded_for_break(void);
 

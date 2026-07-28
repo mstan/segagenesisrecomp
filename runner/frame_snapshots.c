@@ -61,10 +61,9 @@ void m68k_snapshot(M68KRegSnap *out)
 
 /* ---------------------------------------------------------------- Z80 */
 
-void z80_snapshot(Z80RegSnap *out, ClownMDEmu *emu)
+void z80_snapshot(Z80RegSnap *out)
 {
     memset(out, 0, sizeof(*out));
-    (void)emu;
     /* Live Z80 regs are canonical in g_machine.z80 (the embedded superzazu
      * core); RAM + bus-control in the bus. */
     const z80 *z = &g_machine.z80;
@@ -96,10 +95,9 @@ void z80_snapshot(Z80RegSnap *out, ClownMDEmu *emu)
 
 /* ---------------------------------------------------------------- VDP */
 
-void vdp_snapshot(VdpSnap *out, ClownMDEmu *emu)
+void vdp_snapshot(VdpSnap *out)
 {
     memset(out, 0, sizeof(*out));
-    (void)emu;
     /* Decode our GVDP register file into the SAME semantic fields the oracle
      * (clownmdemu) exposes, using the documented Genesis register layout, so
      * divergence_diff compares apples-to-apples. VRAM/VSRAM are raw byte/word
@@ -154,28 +152,26 @@ void vdp_snapshot(VdpSnap *out, ClownMDEmu *emu)
 
 /* ---------------------------------------------------------------- FM */
 
-void fm_snapshot(FmSnap *out, ClownMDEmu *emu)
+void fm_snapshot(FmSnap *out)
 {
     memset(out, 0, sizeof(*out));
     /* ymfm internals are not byte-comparable to clownmdemu's FM_State;
      * the FM/PSG register WRITE STREAM (chip_ring) is the cross-backend
      * audio comparable instead. */
-    (void)emu;
 }
 
 /* ---------------------------------------------------------------- PSG */
 
-void psg_snapshot(PsgSnap *out, ClownMDEmu *emu)
+void psg_snapshot(PsgSnap *out)
 {
     memset(out, 0, sizeof(*out));
-    (void)emu;   /* see fm_snapshot */
+
 }
 
 /* ---------------------------------------------------------------- WRAM */
 
-void wram_snapshot(uint8_t out[0x10000], ClownMDEmu *emu)
+void wram_snapshot(uint8_t out[0x10000])
 {
-    (void)emu;
     /* Own backend: g_ram IS the authoritative byte-addressed work RAM. */
     memcpy(out, g_ram, 0x10000);
     return;

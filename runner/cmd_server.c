@@ -1438,7 +1438,7 @@ static void handle_vdp_events(int id, const char *json)
 
 static void handle_z80_state(int id, const char *json)
 {
-    Z80RegSnap z; z80_snapshot(&z, (ClownMDEmu *)0);
+    Z80RegSnap z; z80_snapshot(&z);
     bool with_ram = json_get_int(json, "include_ram", 0) != 0;
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
@@ -1462,7 +1462,7 @@ static void handle_read_z80_ram(int id, const char *json)
         send_err(id, "addr/len out of Z80 RAM range");
         return;
     }
-    Z80RegSnap z; z80_snapshot(&z, (ClownMDEmu *)0);
+    Z80RegSnap z; z80_snapshot(&z);
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,\"addr\":%d,\"len\":%d,\"data\":", id, addr, len);
     jb_append_hex(&j, &z.ram[addr], len);
@@ -1483,7 +1483,7 @@ static void handle_psg_state(int id)
 
 static void handle_vdp_state(int id, const char *json)
 {
-    VdpSnap v; vdp_snapshot(&v, (ClownMDEmu *)0);
+    VdpSnap v; vdp_snapshot(&v);
     char include_buf[64] = {0};
     json_get_str(json, "include", include_buf, sizeof(include_buf));
     JBuf j; jb_init(&j);
@@ -2571,9 +2571,9 @@ void cmd_server_record_frame(uint32_t frame_num)
      * subsystems cross-backend. FM/PSG internal state isn't byte-comparable
      * to clownmdemu's (ymfm/sn76489 vs FM_State/PSG_State) so they stay zeroed
      * (memset above) — the chip_ring register stream is the audio comparable. */
-    z80_snapshot (&r->z80, (ClownMDEmu *)0);
-    vdp_snapshot (&r->vdp, (ClownMDEmu *)0);
-    wram_snapshot(r->wram, (ClownMDEmu *)0);
+    z80_snapshot (&r->z80);
+    vdp_snapshot (&r->vdp);
+    wram_snapshot(r->wram);
 
     /* Per-game tail. */
     if (g_game_spec.fill_frame_record)
