@@ -23,6 +23,11 @@ output_prefix = "puyo"
 # is off by default for the Sonic games (they seed tables from disasm) and is
 # what a table-driven game with no disasm needs. Validator-gated.
 jump_table_autodiscovery = true
+# Puyo's frame gate is not the common MOVE-SR/TST.B/BNE/RTS shape handled by
+# automatic detection. $00032C snapshots the V-int counter at $FF05C6, then
+# loops on CMP.W (A0),D0 / BEQ until IRQ6 at $000524 increments that word.
+# Replace the complete helper with the normal scheduler yield stub.
+vblank_yield_addr = 0x00032C
 
 # ---------------------------------------------------------------------------
 # Per-game RAM layout. Puyo Puyo is not Sonic, so the Sonic-shaped tracking
@@ -92,7 +97,7 @@ late_extra = [
   0x0029D6, 0x00CE58, 0x00D0F0, 0x00CEBC, 0x00CE9E, 0x010B6C,
   0x000BA4, 0x00CA1E, 0x00D188, 0x010B8A,
   0x00CE2A, 0x010D20, 0x010DA2, 0x010E7A, 0x010F8A,
-  0x00CA86, 0x00CAE8, 0x00CCFC,
+  0x00BC2C, 0x00CA86, 0x00CAD0, 0x00CAE8, 0x00CCFC,
   0x010BF4, 0x010C28, 0x0014C2,
   0x00CDB2, 0x00CDEE, 0x00CFE0, 0x00D040, 0x00CF06, 0x000C4C,
   0x00CF48, 0x00051E, 0x000EB4, 0x000EF0, 0x000F7A, 0x000FAA,

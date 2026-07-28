@@ -39,6 +39,7 @@ GAMES = {
     "s1": {"wt": "_wt-cosim-s1", "exe": "SonicTheHedgehogRecomp",  "waitvbl": "29a8", "rom": "sonic.bin"},
     "s2": {"wt": "_wt-cosim-s2", "exe": "SonicTheHedgehog2Recomp", "waitvbl": "3384", "rom": "sonic2.bin"},
     "s3": {"wt": "_wt-cosim-s3", "exe": "Sonic3KRecomp",           "waitvbl": "1d18", "rom": "sonic3k.bin"},
+    "puyo": {"wt": "_wt-puyo", "exe": "PuyoRecomp", "waitvbl": "32c", "rom": "puyo.bin"},
 }
 GAME = "s1"   # module-level selection; set by --game (or divergence_report)
 

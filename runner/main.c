@@ -1051,6 +1051,35 @@ static int runner_dump_ram_file(const char *path)
     return ok;
 }
 
+static int runner_dump_vram_file(const char *path)
+{
+    char full_path[512];
+    const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
+    FILE *df = fopen(resolved, "wb");
+    if (!df) {
+        fprintf(stderr, "[VRAMDUMP] failed to open %s\n", resolved);
+        return 0;
+    }
+
+    size_t wrote = fwrite(g_machine.vdp.vram, 1, 0x10000, df);
+    int ok = (wrote == 0x10000) && !ferror(df);
+    fclose(df);
+
+    if (ok)
+        fprintf(stderr,
+                "[VRAMDUMP] wrote %s (planeA=$%04X planeB=$%04X "
+                "window=$%04X sprites=$%04X hscroll=$%04X)\n",
+                resolved,
+                (unsigned)((g_machine.vdp.reg[2] & 0x38u) << 10),
+                (unsigned)((g_machine.vdp.reg[4] & 0x07u) << 13),
+                (unsigned)((g_machine.vdp.reg[3] & 0x3Eu) << 10),
+                (unsigned)((g_machine.vdp.reg[5] & 0x7Fu) << 9),
+                (unsigned)((g_machine.vdp.reg[13] & 0x3Fu) << 10));
+    else
+        fprintf(stderr, "[VRAMDUMP] failed while writing %s\n", resolved);
+    return ok;
+}
+
 int runner_write_screenshot_file(const char *path)
 {
     char full_path[512];
@@ -2345,6 +2374,8 @@ int main(int argc, char *argv[])
                     runner_load_state_file(state_path);
                 if (input_script_take_ram_dump(state_path, sizeof(state_path)))
                     runner_dump_ram_file(state_path);
+                if (input_script_take_vram_dump(state_path, sizeof(state_path)))
+                    runner_dump_vram_file(state_path);
                 if (input_script_take_screenshot(state_path, sizeof(state_path)))
                     runner_write_screenshot_file(state_path);
             }

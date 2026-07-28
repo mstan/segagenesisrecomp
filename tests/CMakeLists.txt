@@ -68,3 +68,29 @@ add_executable(codegen_diag_test
     "${RECOMP_SRC}/rom_parser.c"
 )
 genesisrecomp_configure_test(codegen_diag_test)
+
+# ---------------------------------------------------------------------------
+# return_capture_test — all-path proof for callees that consume JSR return PCs.
+# ---------------------------------------------------------------------------
+add_executable(return_capture_test
+    harness/return_capture_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../external/m68k-recomp-core/profiles/genesis/return_capture.c"
+    "${RECOMP_SRC}/m68k_decoder.c"
+    "${RECOMP_SRC}/rom_parser.c"
+)
+genesisrecomp_configure_test(return_capture_test)
+target_include_directories(return_capture_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../external/m68k-recomp-core/profiles/genesis"
+)
+
+# ---------------------------------------------------------------------------
+# m68k_effective_address_test — brief-extension W/L index semantics shared by
+# generated code and the clean-room Tier-3 interpreter.
+# ---------------------------------------------------------------------------
+add_executable(m68k_effective_address_test
+    harness/m68k_effective_address_test.c
+)
+genesisrecomp_configure_test(m68k_effective_address_test)
+target_include_directories(m68k_effective_address_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/include"
+)

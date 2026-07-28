@@ -159,8 +159,8 @@ static uint32_t read_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, 
     case 5: { int16_t d16 = (int16_t)er_next(er);
               return mem_read(sz, (uint32_t)(g_cpu.A[reg] + (int32_t)d16)); }
     case 6: { uint16_t ext = er_next(er);
-              int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-              int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+              int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+              uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
               return mem_read(sz, (uint32_t)(g_cpu.A[reg] + xv + (int32_t)d8)); }
     case 7:
         switch (reg) {
@@ -169,8 +169,8 @@ static uint32_t read_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, 
         case 2: { uint32_t pc = ins->addr + er->bp; int16_t d16 = (int16_t)er_next(er);
                   return mem_read(sz, (uint32_t)((int32_t)pc + (int32_t)d16)); }
         case 3: { uint32_t pc = ins->addr + er->bp; uint16_t ext = er_next(er);
-                  int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-                  int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+                  int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+                  uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
                   return mem_read(sz, (uint32_t)(pc + xv + (int32_t)d8)); }
         case 4: return er_next_imm(er, sz);
         default: return 0;
@@ -189,8 +189,8 @@ static uint32_t addr_ea(const M68KInstr *ins, int ea, ExtR *er) {
     case 2: return g_cpu.A[reg];
     case 5: { int16_t d16 = (int16_t)er_next(er); return (uint32_t)(g_cpu.A[reg] + (int32_t)d16); }
     case 6: { uint16_t ext = er_next(er);
-              int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-              int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+              int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+              uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
               return (uint32_t)(g_cpu.A[reg] + xv + (int32_t)d8); }
     case 7:
         switch (reg) {
@@ -199,8 +199,8 @@ static uint32_t addr_ea(const M68KInstr *ins, int ea, ExtR *er) {
         case 2: { uint32_t pc = ins->addr + er->bp; int16_t d16 = (int16_t)er_next(er);
                   return (uint32_t)((int32_t)pc + (int32_t)d16); }
         case 3: { uint32_t pc = ins->addr + er->bp; uint16_t ext = er_next(er);
-                  int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-                  int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+                  int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+                  uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
                   return (uint32_t)(pc + xv + (int32_t)d8); }
         default: return 0;
         }
@@ -220,8 +220,8 @@ static void write_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, uin
     case 5: { int16_t d16 = (int16_t)er_next(er);
               mem_write(sz, (uint32_t)(g_cpu.A[reg] + (int32_t)d16), val); break; }
     case 6: { uint16_t ext = er_next(er);
-              int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-              int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+              int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+              uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
               mem_write(sz, (uint32_t)(g_cpu.A[reg] + xv + (int32_t)d8), val); break; }
     case 7:
         switch (reg) {
@@ -547,8 +547,8 @@ static void do_movem(const M68KInstr *ins, M68KSize sz) {
     switch (mode) {
     case 2: case 3: case 4: base = g_cpu.A[reg]; break;
     case 5: { int16_t d16 = (int16_t)er_next(&er2); base = (uint32_t)(g_cpu.A[reg] + (int32_t)d16); break; }
-    case 6: { uint16_t ext = er_next(&er2); int xreg=(ext>>12)&7,xtype=(ext>>15)&1; int8_t d8=(int8_t)(ext&0xFF);
-              int32_t xv=(int32_t)(int16_t)(xtype?g_cpu.A[xreg]:g_cpu.D[xreg]);
+    case 6: { uint16_t ext = er_next(&er2); int xreg=(ext>>12)&7; int8_t d8=(int8_t)(ext&0xFF);
+              uint32_t xv=m68k_brief_index_value(ext,g_cpu.D[xreg],g_cpu.A[xreg]);
               base = (uint32_t)(g_cpu.A[reg] + xv + (int32_t)d8); break; }
     case 7:
         switch (reg) {
@@ -557,8 +557,8 @@ static void do_movem(const M68KInstr *ins, M68KSize sz) {
         case 2: { uint32_t pc = ins->addr + er2.bp; int16_t d16=(int16_t)er_next(&er2);
                   base = (uint32_t)((int32_t)pc + d16); break; }
         case 3: { uint32_t pc = ins->addr + er2.bp; uint16_t ext = er_next(&er2);   /* (d8,PC,Xn) */
-                  int xreg=(ext>>12)&7,xtype=(ext>>15)&1; int8_t d8=(int8_t)(ext&0xFF);
-                  int32_t xv=(int32_t)(int16_t)(xtype?g_cpu.A[xreg]:g_cpu.D[xreg]);
+                  int xreg=(ext>>12)&7; int8_t d8=(int8_t)(ext&0xFF);
+                  uint32_t xv=m68k_brief_index_value(ext,g_cpu.D[xreg],g_cpu.A[xreg]);
                   base = (uint32_t)(pc + xv + (int32_t)d8); break; }
         default: break;
         }
