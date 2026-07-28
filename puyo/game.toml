@@ -1,0 +1,80 @@
+# game.toml — Puyo Puyo (Compile / SEGA, 1992). Japan NTSC, 512 KB ROM.
+# 68000, flat $000000-$07FFFF, identity-mapped (no banks, no SRAM).
+#
+# Second non-Sonic bring-up, and like RKA there is NO community disassembly
+# in-tree: discovery is the recompiler's heuristic (vector-table scan +
+# BSR/JSR/RTS walk) seeded by the entry + interrupt handlers, then refined by
+# the dispatch-miss / Tier-3 floor / coverage-manifest loop. Every lead is
+# cross-checked against the raw ROM before becoming a seed (PRINCIPLES #16) —
+# never blind-seeded from dispatch_misses.log.
+#
+# ROM identity: header "PUYOPUYO", serial GM G-4082 -00, region "J" (NTSC),
+# (C)SEGA 1992.SEP, CRC32 7F26614E. Vectors (from $000000):
+#   SSP   $00FFFC00
+#   Entry $000200
+#   H-int $0006AC   (IRQ4)
+#   V-int $000524   (IRQ6)
+# Every other vector points at one shared handler, $00050C.
+
+[game]
+output_prefix = "puyo"
+# No annotations / discovery_files / code_addrs_file: pure-heuristic discovery,
+# same posture as rka/game.toml. Enable the pcrel16 jump-table auto-walk, which
+# is off by default for the Sonic games (they seed tables from disasm) and is
+# what a table-driven game with no disasm needs. Validator-gated.
+jump_table_autodiscovery = true
+
+# ---------------------------------------------------------------------------
+# Per-game RAM layout. Puyo Puyo is not Sonic, so the Sonic-shaped tracking
+# fields (game_mode / vint_routine / player_object) are UNKNOWN and left 0 —
+# those are cosmetic and only feed boot_smoke / telemetry. The LOAD-BEARING
+# stack fields use the real reset SSP $00FFFC00 from the vector table. Refine
+# the cosmetic addresses later from the V-int code at $000524.
+# ---------------------------------------------------------------------------
+[ram_layout]
+game_mode      = 0x000000     # unknown (cosmetic) — refine from disasm
+vint_runcount  = 0x000000     # unknown (divergence-diff sync only) — refine
+vint_routine   = 0x000000     # unknown (yield-gate tracing) — refine
+plc_pending    = 0x000000     # no Sonic-style PLC system
+initial_ssp    = 0x00FFFC00   # reset SSP (LOAD-BEARING)
+vbla_stack     = 0x00FFFC00   # V-int handler stack base (LOAD-BEARING)
+intr_stack     = 0x00FFFC00   # IRQ handler stack base (LOAD-BEARING)
+player_object  = 0x000000     # unknown (cosmetic)
+level_modes    = []
+
+# Heuristic discovery is seeded from the vector table automatically; list the
+# entry and both interrupt handlers explicitly as well. $00050C is the shared
+# error/unused-vector handler — a real function, so it is seeded too.
+# A dispatch_misses.log entry after a run is a coverage gap to root-cause in
+# discovery (PRINCIPLES #13/#16), cross-checked against the ROM — NOT blind
+# seeding. late_extra stays empty until a run produces audited evidence.
+[functions]
+extra = [0x000200, 0x000524, 0x0006AC, 0x00050C]
+
+# Object-handler entries reached by `JSR (A1)` at $002A42, where A1 comes from
+# `MOVEA.L $0002(A0),A1` — a per-object function pointer, the same shape as
+# RKA's object dispatcher. Heuristic discovery walked $007E68 for 0x7104 bytes
+# without finding a terminator and swallowed this whole cluster, so each target
+# landed *inside* a 29 KB function: undispatchable, and the Tier-3 floor
+# correctly declined them (capsule exit_pc $000324 != native return $002A44).
+#
+# Registered as late_extra so they become their own callable roots and split
+# that overrun, WITHOUT recursively reopening heuristic discovery.
+# Each one was decode-checked against the raw ROM before being listed here
+# (PRINCIPLES #16) — not seeded from dispatch_misses.log on faith:
+#   $00A4AA  007C 0700  ORI.W  #$0700,SR      (disable interrupts — prologue)
+#   $00A4DC  303C 0023  MOVE.W #$0023,D0
+#   $00A4EC  103C 0000  MOVE.B #$00,D0
+#   $00A510  6100 009E  BSR.W  +$9E
+#   $00A528  4239 ....  CLR.B  (xxx).L
+#   $00A538  4EB9 ....  JSR    (xxx).L
+#
+# NOTE: these six are only the handlers the attract path happened to reach.
+# The real fix is to locate the ROM-side pointer table that populates
+# object+$02 and register it as a [[jump_table]] with format "abs" (RKA does
+# this at $0023D8), which would enumerate every handler statically instead of
+# discovering them one crash at a time.
+late_extra = [
+  0x00A4AA, 0x00A4DC, 0x00A4EC, 0x00A510, 0x00A528, 0x00A538,
+]
+blacklist = []
