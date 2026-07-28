@@ -86,6 +86,20 @@ typedef struct { uint32_t lo; uint32_t hi; } ProtectedRange;
  *                    (the clamp path is taken for D[reg] <= 0 either way). Only valid
  *                    on a `bhi` (Bcc cond HI); otherwise ignored with a diagnostic.
  *                    Used for the RingsManager visible-window left edge.
+ *   WS_SITE_ADDMEM : at a word-size `cmp.w (An),Dn` or `move.w (An),Dn`, widen
+ *                    the VALUE READ FROM MEMORY by +(g_ws_margin>>shift) before
+ *                    it is compared/stored. If `base` != 0, cap the widened
+ *                    value at the word `base` bytes after the source operand,
+ *                    and never go below the original value. Built for the
+ *                    camera left-bound clamp ((a2) = Camera_Min_X_pos with
+ *                    Camera_Max_X_pos at +2, base=2): the camera then stops
+ *                    `margin` px inside the level's left boundary, so the
+ *                    widened window never reveals space beyond the level; at a
+ *                    boss lock (Min == Max) the cap degrades it to authentic
+ *                    behavior instead of overshooting. Apply the SAME site to
+ *                    the paired clamp `move` so it stores the value the `cmp`
+ *                    compared. Other src modes/sizes are ignored with a
+ *                    diagnostic. margin 0 => identical.
  * `scale` (default 1) multiplies the margin for addreg/subreg — e.g. scale=2 adds
  * 2*(margin>>shift), used where a single site must widen by both margins (the ring
  * window's right edge, which also undoes the left edge's -margin).
@@ -101,6 +115,7 @@ typedef enum {
     WS_SITE_SUBIMM = 5,
     WS_SITE_CALL_WIDEN = 6,
     WS_SITE_CULL_WINDOW_LEFT = 7,
+    WS_SITE_ADDMEM = 8,
 } WsSiteKind;
 
 typedef struct {
