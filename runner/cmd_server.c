@@ -36,29 +36,19 @@ typedef int sock_t;
 #include <inttypes.h>
 
 #include "cmd_server.h"
-#if OWN_BACKEND
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
-#else
-#include "clownmdemu.h"
-#endif
 #include "audio.h"
 #include "game_layout.h"
 #if SONIC_REVERSE_DEBUG
 #include "reverse_debug.h"
-#if defined(SONIC_ORACLE_BUILD)
-#include "oracle_trace.h"
-#endif
 #endif
 
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
 #include "genesis_runtime.h"
-#endif
 
 /* =========================================================================
  * External state we need to inspect
  * ========================================================================= */
 
-#if OWN_BACKEND
 /* Own backend: the debug server inspects OUR state, never clownmdemu (which is
  * neither linked nor populated here). RAM/CPU/VRAM/CRAM map cleanly; the FM/PSG/
  * VDP-internal *snapshots* have no own-backend equivalent yet and are stubbed
@@ -72,16 +62,10 @@ extern uint8_t  g_rom[0x400000];
 extern M68KState g_cpu;
 #define DBG_VRAM (g_machine.vdp.vram)   /* raw VRAM/CRAM dumps read our VDP   */
 #define DBG_CRAM (g_machine.vdp.cram)
-#else
-extern ClownMDEmu g_clownmdemu;       /* defined in main.c */
-#define DBG_VRAM (g_clownmdemu.vdp.state.vram)
-#define DBG_CRAM (g_clownmdemu.vdp.state.cram)
-#endif
 int runner_save_state_file(const char *path);
 int runner_load_state_file(const char *path);
 int runner_write_screenshot_file(const char *path);
 
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
 extern uint32_t   g_cycle_accumulator;
 extern uint32_t   g_vblank_threshold;
 extern uint64_t   g_frame_count;
@@ -89,7 +73,6 @@ extern uint64_t   g_frame_count;
 /* IO port logging control (defined in glue.c) */
 extern int s_io_log_enabled;
 extern int s_io_log_count;
-#endif
 
 /* =========================================================================
  * State
@@ -143,11 +126,7 @@ static uint64_t s_fm_trace_start_frame = 0;
  * tool need a uniform accessor. */
 static uint32_t fm_trace_current_a7(void)
 {
-#if ENABLE_RECOMPILED_CODE && !defined(SONIC_ORACLE_BUILD)
     return g_cpu.A[7];
-#else
-    return (uint32_t)g_clownmdemu.m68k.address_registers[7];
-#endif
 }
 
 /* Read 4 bytes big-endian from 68K work RAM ($FF0000-$FFFFFF).  Safe to
@@ -157,13 +136,8 @@ static uint32_t fm_trace_current_a7(void)
 static uint32_t fm_trace_stack_read32(uint32_t addr)
 {
     uint16_t offset = (uint16_t)(addr & 0xFFFF);
-#if OWN_BACKEND
     uint16_t hi = (uint16_t)((g_ram[offset] << 8) | g_ram[(uint16_t)(offset + 1)]);
     uint16_t lo = (uint16_t)((g_ram[(uint16_t)(offset + 2)] << 8) | g_ram[(uint16_t)(offset + 3)]);
-#else
-    uint16_t hi = g_clownmdemu.state.m68k.ram[offset / 2];
-    uint16_t lo = g_clownmdemu.state.m68k.ram[((offset + 2) & 0xFFFF) / 2];
-#endif
     return ((uint32_t)hi << 16) | (uint32_t)lo;
 }
 
@@ -253,7 +227,7 @@ static void mem_write_log_callback(uint32_t byte_address, uint8_t value, uint32_
     extern uint64_t g_chunk_yield_count;
     fprintf(s_mem_write_log_file,
             "%d %u %u 0x%06X 0x%02X 0x%06X 0x%06X 0x%06X 0x%06X 0x%06X %u %llu "
-#if SONIC_REVERSE_DEBUG && (ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE)
+#if SONIC_REVERSE_DEBUG
             "0x%06X 0x%06X "
             "D0=0x%08X D1=0x%08X D2=0x%08X D3=0x%08X D4=0x%08X D5=0x%08X D6=0x%08X D7=0x%08X "
             "A0=0x%08X A1=0x%08X A2=0x%08X A3=0x%08X A4=0x%08X A5=0x%08X A6=0x%08X A7=0x%08X"
@@ -267,7 +241,7 @@ static void mem_write_log_callback(uint32_t byte_address, uint8_t value, uint32_
             r2 & 0xFFFFFFu, r3 & 0xFFFFFFu,
             (unsigned)target_cycle,
             (unsigned long long)g_chunk_yield_count
-#if SONIC_REVERSE_DEBUG && (ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE)
+#if SONIC_REVERSE_DEBUG
             , (unsigned)(g_rdb_current_func & 0xFFFFFFu),
             (unsigned)(g_cpu.PC & 0xFFFFFFu),
             (unsigned)g_cpu.D[0], (unsigned)g_cpu.D[1],
@@ -305,7 +279,7 @@ int cmd_server_mem_write_log_start_ranges(const uint32_t *lo, const uint32_t *hi
 
     fprintf(s_mem_write_log_file,
         "# wall_frame internal_frame game_mode address value a7 ret0 ret1 ret2 ret3 target_cycle yield"
-#if SONIC_REVERSE_DEBUG && (ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE)
+#if SONIC_REVERSE_DEBUG
         " func pc D0 D1 D2 D3 D4 D5 D6 D7 A0 A1 A2 A3 A4 A5 A6 A7"
 #endif
         "\n");
@@ -379,22 +353,13 @@ static Watchpoint s_watchpoints[MAX_WATCHPOINTS];
 static uint8_t emu_read8(uint32_t addr)
 {
     uint16_t offset = (uint16_t)(addr & 0xFFFF);
-#if OWN_BACKEND
     return g_ram[offset];
-#else
-    uint16_t word = g_clownmdemu.state.m68k.ram[offset / 2];
-    return (offset & 1) ? (uint8_t)(word & 0xFF) : (uint8_t)(word >> 8);
-#endif
 }
 
 static uint16_t emu_read16(uint32_t addr)
 {
     uint16_t offset = (uint16_t)(addr & 0xFFFF);
-#if OWN_BACKEND
     return (uint16_t)((g_ram[offset] << 8) | g_ram[(uint16_t)(offset + 1)]);
-#else
-    return g_clownmdemu.state.m68k.ram[offset / 2];
-#endif
 }
 
 static int16_t emu_read16s(uint32_t addr)
@@ -560,7 +525,6 @@ static void handle_screenshot(int id, const char *json)
 
 static void handle_get_registers(int id)
 {
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     char buf[1024];
     snprintf(buf, sizeof(buf),
         "{\"id\":%d,\"ok\":true,"
@@ -585,9 +549,6 @@ static void handle_get_registers(int id)
         (g_cpu.SR & SR_S) ? 1 : 0,
         (int)((g_cpu.SR >> 8) & 7));
     send_response(buf);
-#else
-    send_err(id, "get_registers requires Step 2 or Hybrid build");
-#endif
 }
 
 static uint8_t bus_read8(uint32_t addr)
@@ -596,16 +557,7 @@ static uint8_t bus_read8(uint32_t addr)
     uint32_t masked = addr & 0xFFFFFF;
     if (masked >= 0xFF0000)
         return emu_read8(masked);
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     return m68k_read8(addr);
-#else
-    /* Step 0: ROM access via clownmdemu cartridge buffer */
-    if (masked < 0x400000) {
-        uint16_t word = g_clownmdemu.cartridge_buffer[masked / 2];
-        return (masked & 1) ? (uint8_t)(word & 0xFF) : (uint8_t)(word >> 8);
-    }
-    return 0xFF;
-#endif
 }
 
 static void handle_read_memory(int id, const char *json)
@@ -652,31 +604,11 @@ static void handle_write_memory(int id, const char *json)
     uint32_t addr = hex_to_u32(addr_str);
     int len = (int)strlen(hex) / 2;
 
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     for (int i = 0; i < len; i++) {
         char byte_str[3] = { hex[i*2], hex[i*2+1], '\0' };
         uint8_t val = (uint8_t)strtoul(byte_str, NULL, 16);
         m68k_write8(addr + i, val);
     }
-#else
-    /* Step 0: only support writing to work RAM */
-    uint32_t masked = addr & 0xFFFFFF;
-    if (masked < 0xFF0000) {
-        send_err(id, "write_memory only supports RAM ($FF0000+) in Step 0");
-        return;
-    }
-    for (int i = 0; i < len; i++) {
-        char byte_str[3] = { hex[i*2], hex[i*2+1], '\0' };
-        uint8_t val = (uint8_t)strtoul(byte_str, NULL, 16);
-        uint16_t off = (uint16_t)((masked + i) & 0xFFFF);
-        uint16_t word = g_clownmdemu.state.m68k.ram[off / 2];
-        if (off & 1)
-            word = (word & 0xFF00) | val;
-        else
-            word = (val << 8) | (word & 0xFF);
-        g_clownmdemu.state.m68k.ram[off / 2] = word;
-    }
-#endif
 
     char buf[128];
     snprintf(buf, sizeof(buf), "{\"id\":%d,\"ok\":true,\"bytes_written\":%d}", id, len);
@@ -887,7 +819,6 @@ static void handle_frame_range(int id, const char *json)
 
 static void handle_vblank_info(int id)
 {
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     char buf[256];
     snprintf(buf, sizeof(buf),
         "{\"id\":%d,\"ok\":true,\"cycle_accum\":%u,\"threshold\":%u,"
@@ -896,9 +827,6 @@ static void handle_vblank_info(int id)
         (int)((g_cpu.SR >> 8) & 7),
         (unsigned long long)g_frame_count);
     send_response(buf);
-#else
-    send_err(id, "vblank_info requires Step 2 or Hybrid build");
-#endif
 }
 
 /* object_table moved to runner/sonic_extras.c. */
@@ -1096,24 +1024,17 @@ static void handle_snd_dump(int id, const char *json)
     snprintf(snd_path,  sizeof(snd_path),  "%ssnd_ring.txt",  prefix);
     snprintf(z80_path,  sizeof(z80_path),  "%sz80_ram.bin",   prefix);
     { extern void chip_trace_dump(const char *path); chip_trace_dump(chip_path); }
-#if OWN_BACKEND
     { extern void snd_trace_dump(const char *path); snd_trace_dump(snd_path); }
     { extern void z80_ram_dump(const char *path); z80_ram_dump(z80_path); }
     char buf[1024];
     snprintf(buf, sizeof(buf),
         "{\"id\":%d,\"ok\":true,\"chip_ring\":\"%s\",\"snd_ring\":\"%s\",\"z80_ram\":\"%s\"}",
         id, chip_path, snd_path, z80_path);
-#else
-    char buf[1024];
-    snprintf(buf, sizeof(buf),
-        "{\"id\":%d,\"ok\":true,\"chip_ring\":\"%s\"}", id, chip_path);
-#endif
     send_response(buf);
 }
 
 static void handle_io_log(int id, const char *json)
 {
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     int enable = json_get_int(json, "enable", -1);
     if (enable >= 0) {
         s_io_log_enabled = enable;
@@ -1124,9 +1045,6 @@ static void handle_io_log(int id, const char *json)
         "{\"id\":%d,\"ok\":true,\"enabled\":%d,\"logged\":%d}",
         id, s_io_log_enabled, s_io_log_count);
     send_response(buf);
-#else
-    send_err(id, "io_log requires Step 2 or Hybrid build");
-#endif
 }
 
 static void handle_read_joypad_port(int id)
@@ -1135,7 +1053,6 @@ static void handle_read_joypad_port(int id)
      * Phase 1: write 0x00 to $A10003, read $A10003
      * Phase 2: write 0x40 to $A10003, read $A10003
      * Combine and invert. */
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     extern uint8_t m68k_read8(uint32_t);
     extern void m68k_write8(uint32_t, uint8_t);
 
@@ -1163,9 +1080,6 @@ static void handle_read_joypad_port(int id)
         "\"F604_held\":\"0x%02X\",\"F605_press\":\"0x%02X\"}",
         id, phase0, phase1, combined, buttons, f604, f605);
     send_response(buf);
-#else
-    send_err(id, "read_joypad_port requires Step 2 or Hybrid build");
-#endif
 }
 
 /* =========================================================================
@@ -1472,10 +1386,8 @@ static void handle_frame_timeseries(int id, const char *json)
  * which have no equivalent on the own backend (its FM is ymfm, Z80 is superzazu,
  * VDP is ours). Dev/oracle-only — stubbed in the own-backend (release) build.
  * See the de-clown plan in LICENSING.md for the own-backend snapshot TODO. */
-#if OWN_BACKEND
 #define OWN_BACKEND_SNAPSHOT_STUB(id) \
     send_err((id), "chip-state snapshot is dev/oracle-only (not on the own backend)")
-#endif
 
 /* vdp_events {count?, kind?} — dump the newest N entries of the always-on
  * VDP event ring (register writes, completed control commands, DMA
@@ -1483,7 +1395,6 @@ static void handle_frame_timeseries(int id, const char *json)
  * clean-room VDP. `kind` filters to one GVDP_EVT_* class. */
 static void handle_vdp_events(int id, const char *json)
 {
-#if OWN_BACKEND
     int count = json_get_int(json, "count", 256);
     int kind  = json_get_int(json, "kind", 0);
     if (count < 1) count = 1;
@@ -1523,15 +1434,10 @@ static void handle_vdp_events(int id, const char *json)
     jb_printf(&j, "],\"emitted\":%d}", emitted);
     cmd_send_response(j.buf);
     jb_free(&j);
-#else
-    (void)json;
-    send_err(id, "vdp_events requires the own-backend VDP");
-#endif
 }
 
 static void handle_z80_state(int id, const char *json)
 {
-#if OWN_BACKEND
     Z80RegSnap z; z80_snapshot(&z, (ClownMDEmu *)0);
     bool with_ram = json_get_int(json, "include_ram", 0) != 0;
     JBuf j; jb_init(&j);
@@ -1546,16 +1452,6 @@ static void handle_z80_state(int id, const char *json)
     jb_printf(&j, "}");
     cmd_send_response(j.buf);
     jb_free(&j);
-#else
-    Z80RegSnap z; z80_snapshot(&z, &g_clownmdemu);
-    bool with_ram = json_get_int(json, "include_ram", 0) != 0;
-    JBuf j; jb_init(&j);
-    jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
-    json_z80(&j, &z, with_ram);
-    jb_printf(&j, "}");
-    cmd_send_response(j.buf);
-    jb_free(&j);
-#endif
 }
 
 static void handle_read_z80_ram(int id, const char *json)
@@ -1566,7 +1462,6 @@ static void handle_read_z80_ram(int id, const char *json)
         send_err(id, "addr/len out of Z80 RAM range");
         return;
     }
-#if OWN_BACKEND
     Z80RegSnap z; z80_snapshot(&z, (ClownMDEmu *)0);
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,\"addr\":%d,\"len\":%d,\"data\":", id, addr, len);
@@ -1574,50 +1469,20 @@ static void handle_read_z80_ram(int id, const char *json)
     jb_printf(&j, "}");
     cmd_send_response(j.buf);
     jb_free(&j);
-#else
-    Z80RegSnap z; z80_snapshot(&z, &g_clownmdemu);
-    JBuf j; jb_init(&j);
-    jb_printf(&j, "{\"id\":%d,\"ok\":true,\"addr\":%d,\"len\":%d,\"data\":", id, addr, len);
-    jb_append_hex(&j, &z.ram[addr], len);
-    jb_printf(&j, "}");
-    cmd_send_response(j.buf);
-    jb_free(&j);
-#endif
 }
 
 static void handle_fm_state(int id)
 {
-#if OWN_BACKEND
     OWN_BACKEND_SNAPSHOT_STUB(id);
-#else
-    FmSnap fm; fm_snapshot(&fm, &g_clownmdemu);
-    JBuf j; jb_init(&j);
-    jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
-    json_fm(&j, &fm);
-    jb_printf(&j, "}");
-    cmd_send_response(j.buf);
-    jb_free(&j);
-#endif
 }
 
 static void handle_psg_state(int id)
 {
-#if OWN_BACKEND
     OWN_BACKEND_SNAPSHOT_STUB(id);
-#else
-    PsgSnap p; psg_snapshot(&p, &g_clownmdemu);
-    JBuf j; jb_init(&j);
-    jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
-    json_psg(&j, &p);
-    jb_printf(&j, "}");
-    cmd_send_response(j.buf);
-    jb_free(&j);
-#endif
 }
 
 static void handle_vdp_state(int id, const char *json)
 {
-#if OWN_BACKEND
     VdpSnap v; vdp_snapshot(&v, (ClownMDEmu *)0);
     char include_buf[64] = {0};
     json_get_str(json, "include", include_buf, sizeof(include_buf));
@@ -1627,32 +1492,16 @@ static void handle_vdp_state(int id, const char *json)
     jb_printf(&j, "}");
     cmd_send_response(j.buf);
     jb_free(&j);
-#else
-    VdpSnap v; vdp_snapshot(&v, &g_clownmdemu);
-    char include_buf[64] = {0};
-    json_get_str(json, "include", include_buf, sizeof(include_buf));
-    JBuf j; jb_init(&j);
-    jb_printf(&j, "{\"id\":%d,\"ok\":true,", id);
-    json_vdp(&j, &v, include_buf);
-    jb_printf(&j, "}");
-    cmd_send_response(j.buf);
-    jb_free(&j);
-#endif
 }
 
 static void handle_read_vsram(int id)
 {
     JBuf j; jb_init(&j);
     jb_printf(&j, "{\"id\":%d,\"ok\":true,\"vsram\":[", id);
-#if OWN_BACKEND
     const uint16_t *vs = g_machine.vdp.vsram;
     for (int i = 0; i < 64; i++)
         jb_printf(&j, "%s%u", i ? "," : "",
                   i < GVDP_VSRAM_ENTRIES ? (uint32_t)vs[i] : 0u);
-#else
-    const VDP_State *vs = &g_clownmdemu.vdp.state;
-    for (int i = 0; i < 64; i++) jb_printf(&j, "%s%u", i ? "," : "", (uint32_t)vs->vsram[i]);
-#endif
     jb_printf(&j, "]}");
     cmd_send_response(j.buf);
     jb_free(&j);
@@ -1660,7 +1509,6 @@ static void handle_read_vsram(int id)
 
 /* ---------- dispatch_miss_info ---------- */
 
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
 static void handle_dispatch_miss_info(int id)
 {
     JBuf j; jb_init(&j);
@@ -1675,7 +1523,6 @@ static void handle_dispatch_miss_info(int id)
     cmd_send_response(j.buf);
     jb_free(&j);
 }
-#endif
 
 #if SONIC_REVERSE_DEBUG
 /* =========================================================================
@@ -1796,11 +1643,7 @@ static void handle_rdb_dump(int id, const char *json)
  * "native only" error so tooling fails loudly rather than silently.
  * ========================================================================= */
 
-#if ENABLE_RECOMPILED_CODE
 #define RDB_TIER2_NATIVE 1
-#else
-#define RDB_TIER2_NATIVE 0
-#endif
 
 static void handle_rdb_break(int id, const char *json)
 {
@@ -2072,11 +1915,7 @@ static void handle_rdb_insn_counts(int id)
  * "native only" reply pattern).
  * ========================================================================= */
 
-#if defined(SONIC_ORACLE_BUILD)
-#define T3_ORACLE 1
-#else
 #define T3_ORACLE 0
-#endif
 
 static void handle_t3_range(int id, const char *json)
 {
@@ -2388,10 +2227,8 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         handle_vdp_events(id, json);
     } else if (strcmp(cmd, "read_vsram") == 0) {
         handle_read_vsram(id);
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     } else if (strcmp(cmd, "dispatch_miss_info") == 0) {
         handle_dispatch_miss_info(id);
-#endif
 #if SONIC_REVERSE_DEBUG
     } else if (strcmp(cmd, "rdb_range") == 0) {
         handle_rdb_range(id, json);
@@ -2445,20 +2282,7 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         handle_rdb_oracle_state(id);
 #endif
     } else if (strcmp(cmd, "coverage_dump") == 0) {
-#if !ENABLE_RECOMPILED_CODE
-        extern int clown68000_coverage_count(void);
-        extern void clown68000_coverage_dump(const char *);
-        extern const char *exe_relative(const char *);
-        const char *path = exe_relative("coverage.log");
-        clown68000_coverage_dump(path);
-        char buf[512];
-        snprintf(buf, sizeof(buf),
-            "{\"id\":%d,\"ok\":true,\"count\":%d,\"path\":\"%s\"}",
-            id, clown68000_coverage_count(), path);
-        send_response(buf);
-#else
         send_err(id, "coverage_dump only available in interpreter mode");
-#endif
     } else if (strcmp(cmd, "fm_trace") == 0) {
         /* {"cmd":"fm_trace","action":"on","frames":300}
          * {"cmd":"fm_trace","action":"off"}
@@ -2469,11 +2293,7 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
                 int max_f = json_get_int(json, "frames", 300);
                 if (max_f <= 0) max_f = 300;
                 const char *path =
-#if ENABLE_RECOMPILED_CODE
                     "fm_trace_native.log";
-#else
-                    "fm_trace_interp.log";
-#endif
                 if (s_fm_trace_file) fclose(s_fm_trace_file);
                 s_fm_trace_file = fopen(path, "w");
                 if (s_fm_trace_file) {
@@ -2541,11 +2361,7 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
                 int max_f = json_get_int(json, "frames", 600);
                 if (max_f <= 0) max_f = 600;
                 const char *path =
-#if ENABLE_RECOMPILED_CODE
                     "mem_write_log_native.log";
-#else
-                    "mem_write_log_oracle.log";
-#endif
                 if (s_mem_write_log_file) fclose(s_mem_write_log_file);
                 s_mem_write_log_file = fopen(path, "w");
                 if (!s_mem_write_log_file) { send_err(id, "failed to open log file"); return cr; }
@@ -2586,13 +2402,6 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
             send_response(buf);
         }
     } else if (strcmp(cmd, "quit") == 0) {
-#if !ENABLE_RECOMPILED_CODE
-        { extern int clown68000_coverage_count(void);
-          extern void clown68000_coverage_dump(const char *);
-          extern const char *exe_relative(const char *);
-          if (clown68000_coverage_count() > 0)
-              clown68000_coverage_dump(exe_relative("coverage.log")); }
-#endif
         send_ok(id);
         cr.should_quit = true;
     } else {
@@ -2757,7 +2566,6 @@ void cmd_server_record_frame(uint32_t frame_num)
 
     /* Subsystem snapshots (see frame_snapshots.c). */
     m68k_snapshot(&r->m68k);
-#if OWN_BACKEND
     /* Own backend: snapshot OUR state (g_machine + g_ram) into the same
      * FrameRecord fields the oracle fills, so divergence_diff compares all
      * subsystems cross-backend. FM/PSG internal state isn't byte-comparable
@@ -2766,13 +2574,6 @@ void cmd_server_record_frame(uint32_t frame_num)
     z80_snapshot (&r->z80, (ClownMDEmu *)0);
     vdp_snapshot (&r->vdp, (ClownMDEmu *)0);
     wram_snapshot(r->wram, (ClownMDEmu *)0);
-#else
-    z80_snapshot (&r->z80,  &g_clownmdemu);
-    vdp_snapshot (&r->vdp,  &g_clownmdemu);
-    fm_snapshot  (&r->fm,   &g_clownmdemu);
-    psg_snapshot (&r->psg,  &g_clownmdemu);
-    wram_snapshot(r->wram,  &g_clownmdemu);
-#endif
 
     /* Per-game tail. */
     if (g_game_spec.fill_frame_record)
@@ -2790,19 +2591,6 @@ void cmd_server_shutdown(void)
 #ifdef _WIN32
     WSACleanup();
 #endif
-#if !ENABLE_RECOMPILED_CODE
-    /* Auto-dump coverage on shutdown (interpreter mode only) */
-    { extern int clown68000_coverage_count(void);
-      extern void clown68000_coverage_dump(const char *);
-      extern const char *exe_relative(const char *);
-      int count = clown68000_coverage_count();
-      if (count > 0) {
-          clown68000_coverage_dump(exe_relative("coverage.log"));
-          fprintf(stderr, "[cmd] Dumped %d coverage entries to coverage.log\n", count);
-      }
-    }
-#endif
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     /* Dispatch-miss log per PRINCIPLES.md rule 13a — always write next to
      * the exe so the next session can find it. Empty file if no misses
      * (the principle's "is the file empty?" check still answers cleanly). */
@@ -2823,6 +2611,5 @@ void cmd_server_shutdown(void)
                       g_miss_unique_count, path);
       }
     }
-#endif
     fprintf(stderr, "[cmd] Shutdown\n");
 }

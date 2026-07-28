@@ -18,11 +18,7 @@
 #include "reverse_debug.h"
 #include "cmd_server.h"
 #include "glue.h"
-#if OWN_BACKEND
 #include "backend_decls.h"
-#else
-#include "clownmdemu.h"
-#endif
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -30,22 +26,12 @@
 /* Read $FFFExxxx as a longword from the 68K work-RAM mirror.
  * Used to capture Vint_runcount (the cross-binary state-sync key) in
  * every Tier-1 store ring entry. */
-#if OWN_BACKEND
 extern uint8_t g_ram[0x10000];
 static inline uint32_t rdb_read_wram32(uint16_t off)
 {
     return ((uint32_t)g_ram[off] << 24) | ((uint32_t)g_ram[(uint16_t)(off + 1)] << 16) |
            ((uint32_t)g_ram[(uint16_t)(off + 2)] << 8) | (uint32_t)g_ram[(uint16_t)(off + 3)];
 }
-#else
-extern ClownMDEmu g_clownmdemu;
-static inline uint32_t rdb_read_wram32(uint16_t off)
-{
-    uint16_t hi = g_clownmdemu.state.m68k.ram[off / 2];
-    uint16_t lo = g_clownmdemu.state.m68k.ram[(off + 2) / 2];
-    return ((uint32_t)hi << 16) | (uint32_t)lo;
-}
-#endif
 
 /* Shared hook slot in clownmdemu-core/source/bus-main-m68k.c. It is
  * defined unconditionally there; null when nobody has installed a tap. */
@@ -525,11 +511,7 @@ uint64_t rdb_iterate_count(void) { return s_iterate_count; }
  * is not linked; provide a weak fallback so the accessor still returns
  * 0 there. */
 extern uint64_t g_native_insn_count;
-#if defined(SONIC_ORACLE_BUILD)
-extern uint64_t g_oracle_insn_count;
-#else
 static uint64_t g_oracle_insn_count = 0;
-#endif
 
 uint64_t rdb_native_insn_count(void) { return g_native_insn_count; }
 uint64_t rdb_oracle_insn_count(void) { return g_oracle_insn_count; }

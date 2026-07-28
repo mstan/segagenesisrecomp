@@ -21,7 +21,6 @@
 #include "codegen_diag.h"
 #include "annotations.h"
 #include "game_config.h"
-#include "cycle_probe.h"
 
 static bool ensure_output_directory(const char *path) {
     struct stat info;
@@ -85,11 +84,6 @@ int main(int argc, char *argv[]) {
     }
     printf("[GenesisRecomp] ROM: %u bytes, \"%s\"\n", rom.rom_size, rom.domestic_name);
 
-    /* Cycle costs always come from the clean-room PRM model. The clown68000
-     * probe, when compiled in, only supplies the comparison column for the
-     * GENESIS_CYCLE_DIAG census — it never affects emitted code. */
-    if (cycle_probe_init(&rom) == 0)
-        printf("[GenesisRecomp] Cycle oracle available (validation only)\n");
     printf("[GenesisRecomp] Vectors: RESET_SSP=$%08X  RESET_PC=$%08X\n",
            rom.initial_sp, rom.initial_pc);
     printf("[GenesisRecomp] Checksum: $%04X (header), $%04X (computed)\n",
@@ -217,7 +211,6 @@ int main(int argc, char *argv[]) {
     codegen_diag_print_summary(stderr);
     int diag_total = codegen_diag_total();
 
-    cycle_probe_shutdown();
     rom_free(&rom);
     function_list_free(&funcs);
     annotations_free(&at);

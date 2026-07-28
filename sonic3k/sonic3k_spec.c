@@ -247,6 +247,4 @@ const GameSpec g_game_spec = {
     .commands               = s3k_commands,
     .command_count          = (int)(sizeof(s3k_commands) / sizeof(s3k_commands[0])),
 
-    .hybrid_table           = NULL,
-    .hybrid_table_size      = 0,
 };

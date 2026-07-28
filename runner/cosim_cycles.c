@@ -51,7 +51,6 @@ uint64_t g_cosim_work_insns  = 0;   /* instructions executed in the most recent 
 uint64_t g_cosim_fb_count    = 0;   /* oracle: instructions charged the FALLBACK cost
                                      * this frame (pc not in g_game_insn_costs); 0 own  */
 
-#if OWN_BACKEND
 /* -------- Own backend: park-to-park delta of the monotonic cosim axis. -----
  * glue_yield_for_vblank() calls this at the WaitForVBla park. We take the delta
  * of g_cosim_cycle (bumped per-instruction by GEN_COSIM_TICK for ALL executed
@@ -83,74 +82,3 @@ void cosim_cycles_note_park(void)
     ++g_cosim_park_count;
 }
 
-#else  /* -------- Oracle (clownmdemu): sum a per-instruction hook. ---------- */
-#include "clown68000.h"                 /* cc_u32l */
-
-/* The interpreter's per-instruction hook (hybrid_global.c), fired once per 68K
- * instruction from inside clown68000.c's DoCycles loop. We chain in front of
- * whatever is already installed (HybridInit's hybrid_pre_insn, set in
- * glue_init() which runs BEFORE cosim_init()). */
-extern void (*g_hybrid_pre_insn_fn)(cc_u32l pc);
-static void (*s_prev_fn)(cc_u32l) = 0;
-
-static uint32_t s_wait_pc      = 0;   /* WaitForVBla entry PC (GENESIS_COSIM_WAITVBL_PC) */
-static uint64_t s_last_park    = 0;   /* g_cosim_cum_cycles at the previous park          */
-static int      s_was_in_spin  = 0;   /* previous instruction was inside the spin window  */
-static int      s_primed       = 0;   /* first park only primes the baseline              */
-static uint64_t s_insn_total   = 0;   /* non-spin instructions charged so far             */
-static uint64_t s_fb_total     = 0;   /* of those, charged the fallback cost              */
-static uint64_t s_last_insn    = 0;   /* s_insn_total at the previous park                */
-static uint64_t s_last_fb      = 0;   /* s_fb_total   at the previous park                */
-
-/* Identifying the WaitForVBla idle poll PRECISELY (not by a fixed byte span,
- * which over-excludes the real routine that follows the idiom in memory — a
- * measured +40-cyc / +3-insn per-frame under-count of the oracle). The
- * recompiler replaces the whole idiom (move/tst.b/bne self/rts) with a yield
- * stub and emits NO cost-table entry for exactly those instructions. So a spin
- * instruction is: NEAR the wait entry AND absent from the cost table. Real code
- * after the idiom (e.g. 0x29B4) has a cost entry and is correctly counted; this
- * generalises across games regardless of the idiom's exact size. */
-#define SPIN_NEAR 0x10u
-
-static void oracle_pre_insn(cc_u32l pc)
-{
-    if (s_prev_fn) s_prev_fn(pc);
-
-    const uint32_t a = (uint32_t)pc & 0xFFFFFFu;
-    const int c = game_insn_cost(a);
-    const int in_spin = s_wait_pc && c < 0 &&
-                        a >= s_wait_pc && a <= s_wait_pc + SPIN_NEAR;
-
-    if (!in_spin) {
-        g_cosim_cum_cycles += (c >= 0) ? (uint64_t)c : 4u;  /* fallback for RAM code */
-        ++s_insn_total;
-        if (c < 0) ++s_fb_total;
-    }
-
-    /* Genuine park: reached the WaitForVBla entry from outside the spin window
-     * (i.e. the main loop's JSR), not a loop-back within the poll. First park
-     * only primes the baseline (its delta from boot is not a per-frame value). */
-    if (s_wait_pc && a == s_wait_pc && !s_was_in_spin) {
-        if (s_primed) {
-            g_cosim_work_cycles = g_cosim_cum_cycles - s_last_park;
-            g_cosim_work_insns  = s_insn_total - s_last_insn;
-            g_cosim_fb_count    = s_fb_total - s_last_fb;
-            ++g_cosim_park_count;
-        } else {
-            s_primed = 1;
-        }
-        s_last_park = g_cosim_cum_cycles;
-        s_last_insn = s_insn_total;
-        s_last_fb   = s_fb_total;
-    }
-    s_was_in_spin = in_spin;
-}
-
-void cosim_cycles_oracle_install(void)
-{
-    const char *e = getenv("GENESIS_COSIM_WAITVBL_PC");
-    s_wait_pc = (e && *e) ? (uint32_t)strtoul(e, 0, 16) & 0xFFFFFFu : 0;
-    s_prev_fn = g_hybrid_pre_insn_fn;     /* chain (usually hybrid_pre_insn)  */
-    g_hybrid_pre_insn_fn = oracle_pre_insn;
-}
-#endif /* OWN_BACKEND */

@@ -1039,7 +1039,6 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
     }
 }
 
-#if ENABLE_RECOMPILED_CODE
 /* =========================================================================
  * Per-instruction cycle accounting + VBlank servicing.
  *
@@ -1242,7 +1241,6 @@ static void interp_account_cycles(const M68KInstr *ins) {
      * same axis value. No-op unless GENESIS_COSIM. */
     GEN_COSIM_TICK(cyc);
 }
-#endif /* ENABLE_RECOMPILED_CODE */
 
 /* =========================================================================
  * Public entries.
@@ -1267,13 +1265,11 @@ M68kiStatus m68k_interp_step(void) {
         return M68KI_HALT_UNIMPL;
     }
     g_cpu.PC = next & 0xFFFFFFu;
-#if ENABLE_RECOMPILED_CODE
     /* Mirror the generated code's per-instruction cycle accounting + VBlank
      * servicing so a floor run keeps the 68K clock advancing and lets the VBla
      * handler fire / the game fiber yield between interpreted instructions,
      * exactly as it would between statically-recompiled ones. */
     interp_account_cycles(&ins);
-#endif
     return M68KI_OK;
 }
 
@@ -1360,9 +1356,7 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
             return M68KI_HALT_UNIMPL;
         }
         g_cpu.PC = next & 0xFFFFFFu;
-#if ENABLE_RECOMPILED_CODE
         interp_account_cycles(&ins);
-#endif
         /* Net-depth bookkeeping (after exec). A nested RTS/RTR balances a prior
          * JSR/BSR within the capsule; depth never goes below 0 because a
          * depth-0 return is intercepted above. */
@@ -1422,9 +1416,7 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
             return M68KI_HALT_UNIMPL;
         }
         g_cpu.PC = next & 0xFFFFFFu;
-#if ENABLE_RECOMPILED_CODE
         interp_account_cycles(&ins);
-#endif
         if (ins.mnemonic == MN_JSR || ins.mnemonic == MN_BSR)
             depth++;
         else if (ins.mnemonic == MN_RTS || ins.mnemonic == MN_RTR)
@@ -1460,7 +1452,6 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
  * Cycle accounting runs per instruction (interp_account_cycles), the same
  * tail the generated code emits.
  * ------------------------------------------------------------------------- */
-#if ENABLE_RECOMPILED_CODE
 M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc)
 {
     g_cpu.PC = entry_pc & 0xFFFFFFu;
@@ -1495,9 +1486,7 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
         if (ins.mnemonic == MN_RTE) {
             g_cpu.A[7] += 4u * (uint32_t)depth;
             g_rte_pending = 1;
-#if ENABLE_RECOMPILED_CODE
             interp_account_cycles(&ins);
-#endif
             return M68KI_OK;
         }
 
@@ -1522,4 +1511,3 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
         }
     }
 }
-#endif /* ENABLE_RECOMPILED_CODE */

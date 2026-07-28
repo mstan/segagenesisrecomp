@@ -23,11 +23,7 @@
 
 #include <SDL2/SDL.h>
 
-#if OWN_BACKEND
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
-#else
-#include "clownmdemu.h"
-#endif
 #include "genesis_clocks.h"
 #include "audio.h"
 #include "png_write.h"
@@ -102,13 +98,8 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
 }
 #endif
 
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
 #include "glue.h"
-#endif
 
-#if HYBRID_RECOMPILED_CODE
-#include "verify.h"
-#endif
 
 #include "cmd_server.h"
 #include "game_spec.h"
@@ -424,7 +415,6 @@ static void scanline_rendered_cb(void *user_data,
     }
 }
 
-#if OWN_BACKEND
 #include "genesis_machine.h"
 /* Own-backend scanline sink: copy our VDP's rendered ARGB row to the framebuf. */
 static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width)
@@ -526,7 +516,6 @@ static void widescreen_update_for_frame(void)
         s_prev_ws_extra = extra_px;
     }
 }
-#endif
 
 /* Scripted input: --script "start@700,right@800" */
 static uint32_t s_script_start_frame = 0;  /* frame to press Start (0=disabled) */
@@ -746,81 +735,6 @@ extern uint8_t  m68k_read8 (uint32_t);
 enum { AUDIO_BACKEND_OURS = 0, AUDIO_BACKEND_CLOWNMDEMU = 1 };
 static int s_audio_backend = AUDIO_BACKEND_OURS;
 
-#if !OWN_BACKEND
-/* clownmdemu sync/CD/save callbacks — referenced only by the (gated)
- * ClownMDEmu_Initialise callbacks table. The own backend's audio comes from
- * audio_mixer_drain and its persistence from the bus SRAM accessors. */
-static void fm_audio_cb(void *user_data, ClownMDEmu *clownmdemu,
-                         size_t total_frames,
-                         void (*generate)(ClownMDEmu*, cc_s16l*, size_t))
-{
-    (void)user_data;
-#if ENABLE_RECOMPILED_CODE
-    if (s_audio_backend == AUDIO_BACKEND_OURS) {
-        /* Our mixer is the source; clownmdemu's callback is a no-op. */
-        (void)clownmdemu; (void)total_frames; (void)generate;
-        return;
-    }
-#endif
-    size_t avail = FM_ACCUM_FRAMES - s_fm_count;
-    if (total_frames > avail) total_frames = avail;
-    if (total_frames > 0) {
-        generate(clownmdemu, s_fm_accum + s_fm_count * 2, total_frames);
-        s_fm_count += total_frames;
-    }
-}
-
-static void psg_audio_cb(void *user_data, ClownMDEmu *clownmdemu,
-                          size_t total_frames,
-                          void (*generate)(ClownMDEmu*, cc_s16l*, size_t))
-{
-    (void)user_data;
-#if ENABLE_RECOMPILED_CODE
-    if (s_audio_backend == AUDIO_BACKEND_OURS) {
-        (void)clownmdemu; (void)total_frames; (void)generate;
-        return;
-    }
-#endif
-    size_t avail = PSG_ACCUM_FRAMES - s_psg_count;
-    if (total_frames > avail) total_frames = avail;
-    if (total_frames > 0) {
-        generate(clownmdemu, s_psg_accum + s_psg_count, total_frames);
-        s_psg_count += total_frames;
-    }
-}
-
-static void pcm_audio_cb(void *user_data, ClownMDEmu *c, size_t f,
-                          void (*g)(ClownMDEmu*, cc_s16l*, size_t))
-{ (void)user_data; (void)c; (void)f; (void)g; }
-
-static void cdda_audio_cb(void *user_data, ClownMDEmu *c, size_t f,
-                           void (*g)(ClownMDEmu*, cc_s16l*, size_t))
-{ (void)user_data; (void)c; (void)f; (void)g; }
-
-/* CD and save-file stubs (cartridge-only game) */
-static void    cd_seeked_cb(void *u, cc_u32f s)
-               { (void)u; (void)s; }
-static void    cd_sector_read_cb(void *u, cc_u16l *b)
-               { (void)u; (void)b; }
-static cc_bool cd_track_seeked_cb(void *u, cc_u16f t, ClownMDEmu_CDDAMode m)
-               { (void)u; (void)t; (void)m; return cc_false; }
-static size_t  cd_audio_read_cb(void *u, cc_s16l *b, size_t f)
-               { (void)u; (void)b; return (size_t)0; (void)f; }
-static cc_bool save_opened_read_cb(void *u, const char *n)
-               { (void)u; (void)n; return cc_false; }
-static cc_s16f save_read_cb(void *u)
-               { (void)u; return -1; }
-static cc_bool save_opened_write_cb(void *u, const char *n)
-               { (void)u; (void)n; return cc_false; }
-static void    save_written_cb(void *u, cc_u8f b)
-               { (void)u; (void)b; }
-static void    save_closed_cb(void *u)
-               { (void)u; }
-static cc_bool save_removed_cb(void *u, const char *n)
-               { (void)u; (void)n; return cc_false; }
-static cc_bool save_size_cb(void *u, const char *n, size_t *sz)
-               { (void)u; (void)n; (void)sz; return cc_false; }
-#endif /* !OWN_BACKEND */
 
 /* =========================================================================
  * ROM loading
@@ -877,9 +791,6 @@ static cc_u16l *load_rom(const char *path,
  * ClownMDEmu instance (static storage; oracle/hybrid builds only)
  * ========================================================================= */
 
-#if !OWN_BACKEND
-ClownMDEmu g_clownmdemu;
-#endif
 
 static int path_is_absolute(const char *path)
 {
@@ -900,7 +811,6 @@ static const char *resolve_runner_path(const char *path, char *buf, size_t buf_l
     return buf;
 }
 
-#if OWN_BACKEND
 /* Own-backend save container: versioned magic, then the glue blob (M68K regs,
  * frame count, cycle accumulators, V-int latch), WRAM, the whole machine
  * (VDP + bus incl. Z80 RAM/SRAM + the full embedded superzazu Z80 core), and
@@ -990,78 +900,6 @@ int runner_load_state_file(const char *path)
         fprintf(stderr, "[LOAD] failed/truncated %s\n", resolved);
     return ok;
 }
-#else /* !OWN_BACKEND — clownmdemu-path save states (unchanged) */
-int runner_save_state_file(const char *path)
-{
-    char full_path[512];
-    const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
-    FILE *sf = fopen(resolved, "wb");
-    if (!sf) {
-        fprintf(stderr, "[SAVE] failed to open %s\n", resolved);
-        return 0;
-    }
-
-    size_t wrote = fwrite(&g_clownmdemu, 1, sizeof(g_clownmdemu), sf);
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
-    glue_save_state(sf);
-#endif
-    int ok = (wrote == sizeof(g_clownmdemu)) && !ferror(sf);
-    fclose(sf);
-
-    if (ok)
-        fprintf(stderr, "[SAVE] saved %s\n", resolved);
-    else
-        fprintf(stderr, "[SAVE] failed while writing %s\n", resolved);
-    return ok;
-}
-
-int runner_load_state_file(const char *path)
-{
-    char full_path[512];
-    const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
-    FILE *sf = fopen(resolved, "rb");
-    if (!sf) {
-        fprintf(stderr, "[LOAD] empty/missing %s\n", resolved);
-        return 0;
-    }
-
-    const ClownMDEmu_Callbacks *cb = g_clownmdemu.callbacks;
-    const cc_u16l *cart = g_clownmdemu.cartridge_buffer;
-    cc_u32l cart_len = g_clownmdemu.cartridge_buffer_length;
-    size_t read = fread(&g_clownmdemu, 1, sizeof(g_clownmdemu), sf);
-    g_clownmdemu.callbacks = cb;
-    g_clownmdemu.cartridge_buffer = cart;
-    g_clownmdemu.cartridge_buffer_length = cart_len;
-
-    if (read == sizeof(g_clownmdemu)) {
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
-        glue_load_state(sf);
-#endif
-    }
-    int ok = (read == sizeof(g_clownmdemu)) && !ferror(sf);
-    fclose(sf);
-
-#if ENABLE_RECOMPILED_CODE
-    if (ok) {
-        /* Mode-aware resume (see the own-backend path above). */
-        uint32_t resume_pc = g_game_spec.resume_main_loop_pc;
-        if (g_game_spec.save_resume_pc && g_game_layout.game_mode_addr) {
-            uint32_t pc = g_game_spec.save_resume_pc(
-                m68k_read8(g_game_layout.game_mode_addr));
-            if (pc) resume_pc = pc;
-        }
-        if (resume_pc)
-            glue_restart_game_fiber(resume_pc);
-    }
-#endif
-
-    if (ok)
-        fprintf(stderr, "[LOAD] loaded %s\n", resolved);
-    else
-        fprintf(stderr, "[LOAD] failed/truncated %s\n", resolved);
-    return ok;
-}
-#endif /* OWN_BACKEND */
 
 /* =========================================================================
  * Battery-backed cartridge SRAM persistence (e.g. Sonic 3 save slots).
@@ -1088,19 +926,9 @@ static uint32_t s_sram_dirty_at  = 0;  /* frame the pending change was seen */
  * (header-parsed geometry, genesis_bus.c); the clownmdemu path keeps it in
  * g_clownmdemu.state.external_ram. The persistence layer below is otherwise
  * identical for both. */
-#if OWN_BACKEND
 static unsigned char *sram_buf(void)  { return gbus_sram_buffer(&g_machine.bus); }
 static size_t         sram_size(void) { return (size_t)gbus_sram_size(&g_machine.bus); }
 static int            sram_battery_present(void) { return sram_size() != 0; }
-#else
-static unsigned char *sram_buf(void)  { return g_clownmdemu.state.external_ram.buffer; }
-static size_t         sram_size(void) { return (size_t)g_clownmdemu.state.external_ram.size; }
-static int            sram_battery_present(void)
-{
-    return g_clownmdemu.state.external_ram.non_volatile &&
-           g_clownmdemu.state.external_ram.size != 0;
-}
-#endif
 
 static uint64_t sram_content_hash(void)
 {
@@ -1211,13 +1039,8 @@ static void runner_sram_autosave_tick(uint32_t frame_num)
 static uint8_t runner_ram_byte(uint32_t addr)
 {
     uint16_t off = (uint16_t)(addr & 0xFFFFu);
-#if OWN_BACKEND
     extern uint8_t g_ram[0x010000];   /* own bus's authoritative WRAM */
     return g_ram[off];
-#else
-    uint16_t word = g_clownmdemu.state.m68k.ram[off / 2u];
-    return (off & 1u) ? (uint8_t)(word & 0xFFu) : (uint8_t)(word >> 8);
-#endif
 }
 
 static int runner_dump_ram_file(const char *path)
@@ -1271,13 +1094,8 @@ static void check_ramdump(void)
     /* Align by game state: dump when in a gameplay mode (per-game
      * level_modes from g_game_layout) with the player object active
      * (obj_id byte = $01 = Sonic) and 50 frames into stable state. */
-#if OWN_BACKEND
     extern uint8_t g_ram[0x10000];
     #define EMU_BYTE_D(a) (g_ram[(a) & 0xFFFF])
-#else
-    #define EMU_BYTE_D(a) ((uint8_t)(g_clownmdemu.state.m68k.ram[((a) & 0xFFFF) / 2] >> \
-                   (((a) & 1) ? 0 : 8)))
-#endif
     uint8_t mode = EMU_BYTE_D(g_game_layout.game_mode_addr);
     uint8_t obj0 = EMU_BYTE_D(g_game_layout.player_object_addr);
     static uint32_t s_gameplay_frames = 0;
@@ -1294,18 +1112,10 @@ static void check_ramdump(void)
         static int s_dumped = 0;
         if (!s_dumped) {
             s_dumped = 1;
-#if ENABLE_RECOMPILED_CODE
             const char *path = exe_relative("ramdump_native.bin");
-#else
-            const char *path = exe_relative("ramdump_interp.bin");
-#endif
             FILE *df = fopen(path, "wb");
             if (df) {
-#if OWN_BACKEND
                 fwrite(g_ram, 1, 0x10000, df);
-#else
-                fwrite(g_clownmdemu.state.m68k.ram, 2, 0x8000, df);
-#endif
                 fclose(df);
                 fprintf(stderr, "[RAMDUMP] Wrote %s (50 gameplay frames in)\n", path);
             }
@@ -1323,21 +1133,11 @@ static void write_framelog(uint32_t frame)
      * in our byte array (g_ram). Reading the wrong one yields a stale/blank
      * log — which is why the own-backend framelog must source g_ram so the
      * two logs are directly diffable (clean-room A/B against the oracle). */
-#if OWN_BACKEND
     extern uint8_t g_ram[0x010000];
     #define EMU_BYTE(addr) ((uint8_t)g_ram[(addr) & 0xFFFF])
     #define EMU_WORD(addr) ((uint16_t)((g_ram[(addr) & 0xFFFF] << 8) | \
                                         g_ram[((addr) + 1) & 0xFFFF]))
     #define EMU_LONG(addr) (((uint32_t)EMU_WORD(addr) << 16) | EMU_WORD((addr)+2))
-#else
-    #define EMU_BYTE(addr) \
-        ((uint8_t)(g_clownmdemu.state.m68k.ram[((addr) & 0xFFFF) / 2] >> \
-                   (((addr) & 1) ? 0 : 8)))
-    #define EMU_WORD(addr) \
-        ((uint16_t)(g_clownmdemu.state.m68k.ram[((addr) & 0xFFFF) / 2]))
-    #define EMU_LONG(addr) \
-        (((uint32_t)EMU_WORD(addr) << 16) | EMU_WORD((addr)+2))
-#endif
 
     /* Universal fields come from g_game_layout. Game-specific fields
      * (cnt $F628, scrl $F700, plc $F680, P1 ctrl mirrors, Sonic-1
@@ -1347,7 +1147,7 @@ static void write_framelog(uint32_t frame)
      * specific debug data. */
     uint32_t player = g_game_layout.player_object_addr;
     uint32_t rdb_func = 0;
-#if SONIC_REVERSE_DEBUG && ENABLE_RECOMPILED_CODE
+#if SONIC_REVERSE_DEBUG
     rdb_func = g_rdb_current_func;
 #endif
 
@@ -1403,7 +1203,7 @@ static void write_framelog(uint32_t frame)
     #undef EMU_LONG
 }
 
-#if SONIC_REVERSE_DEBUG && ENABLE_RECOMPILED_CODE
+#if SONIC_REVERSE_DEBUG
 /* Tier-2 park drain. Called after each ClownMDEmu_Iterate that may
  * have parked the game fiber at a block-entry breakpoint. When the
  * game fiber is parked we own the main thread and must keep
@@ -1565,21 +1365,9 @@ int main(int argc, char *argv[])
         } else if (strncmp(argv[i], "--audio-backend=", 16) == 0) {
             const char *v = argv[i] + 16;
             if      (strcmp(v, "ours")       == 0) s_audio_backend = AUDIO_BACKEND_OURS;
-#if !OWN_BACKEND
-            /* The clownmdemu audio backend is a dev/oracle-only A/B path; it is
-             * absent from the own-backend (release) build, so neither it nor its
-             * name is compiled in here. */
-            else if (strcmp(v, "clownmdemu") == 0) s_audio_backend = AUDIO_BACKEND_CLOWNMDEMU;
-            else fprintf(stderr, "warning: unknown --audio-backend=%s (use ours|clownmdemu)\n", v);
-#else
             else fprintf(stderr, "warning: unknown --audio-backend=%s (only 'ours' on this build)\n", v);
-#endif
             fprintf(stderr, "[audio] backend=%s\n",
-#if OWN_BACKEND
                     "ours");   /* only backend in the release build */
-#else
-                    s_audio_backend == AUDIO_BACKEND_OURS ? "ours" : "clownmdemu");
-#endif
         } else if (argv[i][0] != '-') {
             rom_path = argv[i];
         }
@@ -1858,15 +1646,7 @@ int main(int argc, char *argv[])
      * visually distinguishable from the INTERPRETER (oracle) window when both
      * run side by side — otherwise both show the bare game name and can't be
      * told apart. */
-#if defined(SONIC_ORACLE_BUILD)
-    const char *build_tag = "INTERPRETER - oracle";
-#elif ENABLE_RECOMPILED_CODE
     const char *build_tag = "RECOMPILED - native";
-#elif HYBRID_RECOMPILED_CODE
-    const char *build_tag = "HYBRID";
-#else
-    const char *build_tag = "interpreter";
-#endif
     char window_title[256];
     {
         const char *base = g_game_spec.display_name ? g_game_spec.display_name
@@ -1976,43 +1756,7 @@ int main(int argc, char *argv[])
      * code, so its entire emulator lifecycle (Constant_Initialise / Initialise
      * / SetCartridge / HardReset) is skipped. ROM still reaches g_rom via
      * glue_init() further down, which is backend-independent. */
-#if !OWN_BACKEND
-    ClownMDEmu_Constant_Initialise();
-
-    ClownMDEmu_InitialConfiguration config;
-    memset(&config, 0, sizeof(config));
-    config.general.region       = CLOWNMDEMU_REGION_OVERSEAS;
-    config.general.tv_standard  = CLOWNMDEMU_TV_STANDARD_NTSC;
-
-    static const ClownMDEmu_Callbacks cbs = {
-        NULL,                       /* user_data */
-        colour_updated_cb,
-        scanline_rendered_cb,
-        input_requested_cb,
-        fm_audio_cb,
-        psg_audio_cb,
-        pcm_audio_cb,
-        cdda_audio_cb,
-        cd_seeked_cb,
-        cd_sector_read_cb,
-        cd_track_seeked_cb,
-        cd_audio_read_cb,
-        save_opened_read_cb,
-        save_read_cb,
-        save_opened_write_cb,
-        save_written_cb,
-        save_closed_cb,
-        save_removed_cb,
-        save_size_cb,
-    };
-
-    ClownMDEmu_Initialise(&g_clownmdemu, &config, &cbs);
-    ClownMDEmu_SetCartridge(&g_clownmdemu, rom_buf, rom_words);
-    ClownMDEmu_HardReset(&g_clownmdemu, cc_true, cc_false);
-#endif /* !OWN_BACKEND */
-#if OWN_BACKEND
     machine_init();   /* clean-room own backend (VDP + bus + Z80) */
-#endif
 
     /* Battery-backed cartridge SRAM (Sonic 3 save slots): HardReset has run
      * SetUpExternalRAM, so size / non_volatile are now valid. Load the .srm
@@ -2020,16 +1764,10 @@ int main(int argc, char *argv[])
     /* (battery-SRAM init moved below glue_init — the own backend parses SRAM
      * geometry from g_rom, which glue_init populates.) */
 
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     /* Step 2 / Hybrid: initialise glue (Step 2 also starts the game thread).
      * The own backend has no clownmdemu instance — glue keeps s_emu NULL and
      * routes everything through g_machine. */
-#if OWN_BACKEND
     glue_init(NULL, rom_raw, rom_raw_len);
-#else
-    glue_init(&g_clownmdemu, rom_raw, rom_raw_len);
-#endif
-#endif
 
     /* Audio arch overhaul: initialise our cycle-stamped YM2612 + PSG
      * instances. Safe to call on oracle too (init functions are idempotent
@@ -2040,14 +1778,12 @@ int main(int argc, char *argv[])
     /* widescreen_setup() was hoisted above window creation (it sizes the 16:9
      * window); nothing else here depends on it. */
 
-#if OWN_BACKEND
     gbus_sram_setup(&g_machine.bus);   /* g_rom is populated now (glue_init) */
     /* Per-game SRAM override for lock-on carts whose header carries no "RA"
      * marker (S3&K combined, standalone S&K). No-op when the header already
      * declared SRAM or the spec leaves sram_start at 0. */
     gbus_sram_set_geometry(&g_machine.bus,
                            g_game_spec.sram_start, g_game_spec.sram_end);
-#endif
     runner_sram_init_and_load(rom_path);
 
     free(rom_raw);   /* glue_init copied what it needs */
@@ -2177,11 +1913,7 @@ int main(int argc, char *argv[])
             tok = strtok(NULL, ",");
         }
         const char *path =
-#if ENABLE_RECOMPILED_CODE
             exe_relative("mem_write_log_native.log");
-#else
-            exe_relative("mem_write_log_oracle.log");
-#endif
         if (!cmd_server_mem_write_log_start_ranges(addrs_lo, addrs_hi, n_addrs, frames, path))
             fprintf(stderr, "[MEM-WRITE-LOG] failed to arm (spec=%s)\n", mem_write_log_spec);
     }
@@ -2195,7 +1927,6 @@ int main(int argc, char *argv[])
     if (framelog_path)
         s_framelog_file = fopen(framelog_path, "w");
 
-#if ENABLE_RECOMPILED_CODE
     {
         extern FILE *g_yield_log_file;
         const char *yp = exe_relative("yield_log_native.log");
@@ -2204,14 +1935,9 @@ int main(int argc, char *argv[])
             fprintf(g_yield_log_file, "# frame cycle_acc v_vblank_count vbla_routine\n");
         }
     }
-#endif
 
     /* --- Save state (quick & dirty: snapshot the entire ClownMDEmu struct).
      * Oracle/hybrid only; the own backend has the GROWNS file states. --- */
-#if !OWN_BACKEND
-    static ClownMDEmu s_savestate;
-    int s_savestate_valid = 0;
-#endif
 
     /* --- Main loop --- */
     int running = 1;
@@ -2304,11 +2030,7 @@ int main(int argc, char *argv[])
                     if (slot >= 1 && slot <= 9) {
                         int is_save = (ev.key.keysym.mod & KMOD_SHIFT) != 0;
                         char slot_name[48];
-#if ENABLE_RECOMPILED_CODE
                         snprintf(slot_name, sizeof(slot_name), "native_save_%d.bin", slot);
-#else
-                        snprintf(slot_name, sizeof(slot_name), "interp_save_%d.bin", slot);
-#endif
 #if GENESIS_HAS_RECOMP_NET
                         if (genesis_netplay_active()) {
                             fprintf(stderr, "genesis_netplay: save/load disabled during netplay\n");
@@ -2318,20 +2040,13 @@ int main(int argc, char *argv[])
                         else runner_load_state_file(slot_name);
                     }
                 }
-#if HYBRID_RECOMPILED_CODE
-                if (ev.key.keysym.sym == SDLK_F8) {
-                    VerifyTogglePhase();
-                }
-#endif
                 /* [SND-TRACE] F12 = dump the sound-command lifecycle ring AND
                  * the [CHIP-TRACE] FM/PSG register-write stream, coincidentally
                  * so the two snapshots line up for native-vs-oracle A/B. */
                 if (ev.key.keysym.sym == SDLK_F12) {
                     /* chip_ring = shared stream (both builds); snd_ring = own only. */
                     { extern void chip_trace_dump(const char *path); chip_trace_dump("chip_ring.txt"); }
-#if OWN_BACKEND
                     { extern void snd_trace_dump(const char *path); snd_trace_dump("snd_ring.txt"); }
-#endif
                 }
             }
         }
@@ -2345,11 +2060,7 @@ int main(int argc, char *argv[])
             if (save_slot || load_slot) {
                 int slot = save_slot ? save_slot : load_slot;
                 char slot_name[48];
-#if ENABLE_RECOMPILED_CODE
                 snprintf(slot_name, sizeof(slot_name), "native_save_%d.bin", slot);
-#else
-                snprintf(slot_name, sizeof(slot_name), "interp_save_%d.bin", slot);
-#endif
 #if GENESIS_HAS_RECOMP_NET
                 if (genesis_netplay_active())
                     fprintf(stderr, "genesis_netplay: quicksave/load disabled during netplay\n");
@@ -2407,7 +2118,6 @@ int main(int argc, char *argv[])
         s_fm_count  = 0;
         s_psg_count = 0;
 
-#if ENABLE_RECOMPILED_CODE
         /* Single-threaded fiber loop:
          * 1. Run game code until WaitForVBlank yields
          * 2. Service VBlank: run handlers (palette DMA, joypad, PLC)
@@ -2422,7 +2132,6 @@ int main(int argc, char *argv[])
           extern void glue_reset_frame_sync(void);
           glue_reset_frame_sync();
           glue_run_game_frame();   /* prepares game fiber state */
-#if OWN_BACKEND
           {
               /* Own-backend input: build each port's pad mask from the same
                * sources clownmdemu queries (keyboard / gamepad / .input
@@ -2470,9 +2179,6 @@ int main(int argc, char *argv[])
            * the existing interlace display modes (tv squash / raw) take over
            * from here, same as the clownmdemu path. */
           s_screen_height = gvdp_output_height(&g_machine.vdp);
-#else
-          ClownMDEmu_Iterate(&g_clownmdemu);  /* DoCycles interleaves game */
-#endif
           /* Audio arch overhaul: fill s_fm_accum + s_psg_accum from our
            * cycle-stamped mixer. Drain to NTSC wall-frame cycle count
            * (not g_audio_cycle_counter): the game fiber stops running
@@ -2517,33 +2223,9 @@ int main(int argc, char *argv[])
            * ruler. Oracle (pairing #2): no g_machine — use the wall-frame number
            * (both backends run one frame per checkpoint; the chain folds the
            * ordinal, so the clock value is report-only). */
-#if OWN_BACKEND
           cosim_frame_checkpoint(g_machine.master_cycle);
-#else
-          cosim_frame_checkpoint((uint64_t)frame_num);
-#endif
 #endif
           }
-#else
-        s_current_frame_for_input = frame_num;
-        /* [CHIP-TRACE] stamp the oracle's FM/PSG write stream with the current
-         * wall frame so its chip_ring.txt aligns with the own-backend dump.
-         * (Writes happen inside Iterate; g_snd_line is set per-write in the
-         * audio_event_push tap.) */
-        { extern unsigned long g_snd_frame, g_snd_vint;
-          g_snd_frame = (unsigned long)frame_num;
-          g_snd_vint  = (unsigned long)m68k_read32(0xFFFE0C); }  /* [CHIP-TRACE] sync stamp */
-        ClownMDEmu_Iterate(&g_clownmdemu);
-#if SONIC_REVERSE_DEBUG
-        rdb_record_iterate();
-#endif
-#ifdef GENESIS_COSIM
-        /* Pairing #2 (oracle) FRAME checkpoint: ClownMDEmu_Iterate ran one full
-         * wall frame. No g_machine here — key on the wall-frame number (the chain
-         * folds the ordinal, so the clock value is report-only). */
-        cosim_frame_checkpoint((uint64_t)frame_num);
-#endif
-#endif
         check_ramdump();
 #if GENESIS_HAS_RECOMP_NET
         genesis_netplay_finish_frame();
@@ -2569,11 +2251,6 @@ int main(int argc, char *argv[])
         }
 #endif
 
-#if HYBRID_RECOMPILED_CODE
-        { extern void glue_log_frame_state(uint64_t);
-          static uint64_t hybrid_frame = 0;
-          glue_log_frame_state(hybrid_frame++); }
-#endif
 
         /* --framelog: works in ALL build modes */
         write_framelog(frame_num);
@@ -2586,10 +2263,8 @@ int main(int argc, char *argv[])
              * own backend and the oracle capture it, so dump in BOTH builds for
              * the native-vs-oracle stream diff. */
             { extern void chip_trace_dump(const char *path); chip_trace_dump("chip_ring.txt"); }
-#if OWN_BACKEND   /* snd_ring (SndEvt) + z80_ram dump are own-backend only (genesis_machine.c) */
             { extern void snd_trace_dump(const char *path); snd_trace_dump("snd_ring.txt"); }
             { extern void z80_ram_dump(const char *path); z80_ram_dump("z80_ram.bin"); }
-#endif
             fprintf(stderr, "[CHIP-TRACE] auto-dumped chip_ring at frame %u\n", (unsigned)frame_num);
         }
 
@@ -2629,18 +2304,13 @@ int main(int argc, char *argv[])
                 memset(s_fm_accum,  0, sizeof(s_fm_accum));
                 memset(s_psg_accum, 0, sizeof(s_psg_accum));
                 s_fm_count = 0; s_psg_count = 0;
-#if ENABLE_RECOMPILED_CODE
                 { extern void glue_run_game_frame(void);
                   extern void glue_service_vblank(void);
                   extern void glue_reset_frame_sync(void);
                   glue_reset_frame_sync();
                   glue_run_game_frame();
-#if OWN_BACKEND
                   widescreen_update_for_frame();   /* set VDP margin + game RAM word */
                   machine_run_frame(own_scanline_sink, NULL);
-#else
-                  ClownMDEmu_Iterate(&g_clownmdemu);
-#endif
 #if SONIC_REVERSE_DEBUG
                   rdb_record_iterate();
                   rdb_park_drain();
@@ -2648,12 +2318,6 @@ int main(int argc, char *argv[])
 #endif
                   glue_service_vblank();
           glue_end_of_wall_frame(); }
-#else
-                ClownMDEmu_Iterate(&g_clownmdemu);
-#if SONIC_REVERSE_DEBUG
-                rdb_record_iterate();
-#endif
-#endif
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
             }
             if (s_debug_enabled) cmd_server_send_frame_result(cmd_cr.run_extra_frames);
@@ -2867,7 +2531,6 @@ int main(int argc, char *argv[])
     if (max_frames)
         fprintf(stderr, "[DONE] %u frames completed\n", frame_num);
 
-#if ENABLE_RECOMPILED_CODE
     { extern int glue_interp_total_calls(void);
       extern int glue_interp_seen_count(void);
       extern uint64_t glue_miss_count_any(void);
@@ -2882,19 +2545,11 @@ int main(int argc, char *argv[])
       fprintf(stderr, "[VBLA] cvblank_fires=%llu VBla_Exit=%d VBla_Music=%d loc_B88=%d\n",
               (unsigned long long)g_cvblank_fires_total,
               g_dbg_b64_count, g_dbg_b5e_count, g_dbg_b88_count); }
-#endif
 
     /* --- Discovery runtime oracle: dump executed-PC coverage --- */
-#if SONIC_REVERSE_DEBUG && defined(SONIC_ORACLE_BUILD)
-    if (exec_cov_out) {
-        extern void oracle_exec_coverage_write(const char *path);
-        oracle_exec_coverage_write(exec_cov_out);
-    }
-#else
     if (exec_cov_out)
         fprintf(stderr, "[EXECCOV] --exec-coverage-out requires the oracle "
                         "build (interpreter coverage); ignored\n");
-#endif
 
     /* --- Cleanup --- */
 #if GENESIS_HAS_RECOMP_NET
@@ -2905,9 +2560,7 @@ int main(int argc, char *argv[])
     if (s_framelog_file) fclose(s_framelog_file);
     { extern int audio_wav_active(void); extern void audio_wav_stop(void);
       if (audio_wav_active()) audio_wav_stop(); }
-#if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
     glue_shutdown();
-#endif
     audio_close();
     SDL_DestroyTexture(peer_view_texture);
     SDL_DestroyTexture(texture);

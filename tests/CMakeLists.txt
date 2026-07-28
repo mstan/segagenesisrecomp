@@ -5,11 +5,10 @@
 #                      Reads fixture + ROM, runs m68k_decode per row,
 #                      buckets failures by (level, expected, got).
 #
-#   l3_oracle_test   — per-function semantic correctness harness.
-#                      Runs each translated function via clown68000 and
-#                      via the recompiled C from the same initial state,
-#                      diffs registers + RAM. Catches codegen bugs the
-#                      structural L2 invariants can't see.
+# l3_oracle_test is gone: it diffed each translated function against the
+# clown68000 interpreter, and that interpreter left with the oracle. The
+# surviving cross-check is the cosim harness (recomp vs the clean-room Tier-3
+# interpreter, GENESIS_BUILD_COSIM) — see COSIM.md.
 #
 # Depends on the recompiler sources (decoder, rom parser). Configured by
 # including this directory from the parent project's CMakeLists.
@@ -69,72 +68,3 @@ add_executable(codegen_diag_test
     "${RECOMP_SRC}/rom_parser.c"
 )
 genesisrecomp_configure_test(codegen_diag_test)
-
-# ---------------------------------------------------------------------------
-# L3 oracle. Links against the same generated sonic_part*.c (function
-# bodies, pre-split across GENESIS_SPLIT_PART_COUNT balanced translation
-# units — see code_generator.h) + sonic_dispatch.c that ship in the game
-# binary, plus clown68000 as the semantic ground truth. NO SDL, NO
-# clownmdemu-core, NO runner — the harness provides sandbox-backed stubs
-# for every runtime symbol the generated code references.
-#
-# clown68000 makes this target DEV-ONLY: it is skipped unless the opt-in
-# clownmdemu-core submodule is checked out. Every test above builds without
-# it. See cmake/GenesisOracle.cmake.
-# ---------------------------------------------------------------------------
-
-include("${CMAKE_CURRENT_LIST_DIR}/../cmake/GenesisOracle.cmake")
-genesis_oracle_resolve("${CMAKE_CURRENT_LIST_DIR}/..")
-
-if(NOT GENESIS_ORACLE)
-    message(STATUS "tests: skipping l3_oracle_test (oracle off)")
-    return()
-endif()
-
-if(DEFINED GENESIS_SONIC_GENERATED_DIR)
-    set(SONIC_GEN_DIR "${GENESIS_SONIC_GENERATED_DIR}")
-else()
-    set(SONIC_GEN_DIR "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog/generated")
-endif()
-set(RUNNER_INC   "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
-set(CLOWN68_DIR  "${CMAKE_CURRENT_LIST_DIR}/../clownmdemu-core/libraries/clown68000")
-
-# The generated files are supplied by the parent game build. They are absent
-# in a clean clone and must not be mistaken for checked-in source inputs.
-# sonic_decls.h (the shared header every sonic_partNN.c #includes) is
-# expected alongside them in the same directory but is not itself compiled.
-file(GLOB SONIC_GEN_PARTS "${SONIC_GEN_DIR}/sonic_part*.c")
-list(SORT SONIC_GEN_PARTS)
-set_source_files_properties(
-    ${SONIC_GEN_PARTS}
-    "${SONIC_GEN_DIR}/sonic_dispatch.c"
-    PROPERTIES GENERATED TRUE)
-
-add_executable(l3_oracle_test
-    harness/l3_oracle_test.c
-    ${SONIC_GEN_PARTS}
-    "${SONIC_GEN_DIR}/sonic_dispatch.c"
-)
-if(TARGET genesisrecomp_generate_sonic)
-    add_dependencies(l3_oracle_test genesisrecomp_generate_sonic)
-endif()
-target_include_directories(l3_oracle_test PRIVATE
-    "${RUNNER_INC}"
-    "${CMAKE_CURRENT_LIST_DIR}/../runner"
-    "${CLOWN68_DIR}/source/interpreter"
-    "${CLOWN68_DIR}/libraries/clowncommon"
-)
-target_compile_definitions(l3_oracle_test PRIVATE
-    $<$<BOOL:${SONIC_REVERSE_DEBUG}>:SONIC_REVERSE_DEBUG=1>)
-# clown68000-interpreter + clown68000-common are built by the outer
-# project's add_subdirectory(clownmdemu-core, ...). We rebuild this
-# target as part of the same configure so the static-lib targets are
-# already available.
-target_link_libraries(l3_oracle_test PRIVATE
-    clown68000-interpreter
-    clown68000-common
-)
-if(MSVC)
-    target_compile_definitions(l3_oracle_test PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_compile_options(l3_oracle_test PRIVATE /W3 /wd4996 /wd4244 /wd4267)
-endif()

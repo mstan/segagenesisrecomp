@@ -33,12 +33,7 @@ extern void wram_snapshot(uint8_t out[0x10000], struct ClownMDEmu *emu);
  * from the shared audio_event_push history ring (event_queue.c). */
 extern uint64_t audio_event_cosim_stream_hash(uint64_t *out_count);
 
-#if OWN_BACKEND
 #  define COSIM_EMU NULL
-#else
-extern struct ClownMDEmu g_clownmdemu;
-#  define COSIM_EMU (&g_clownmdemu)
-#endif
 
 static uint64_t hash_cpu_visible(void) {
     M68KRegSnap s; m68k_snapshot(&s);
@@ -153,13 +148,3 @@ int cosim_visible_region_chunks(const char *region, int nchunks, uint64_t *out)
     return nchunks;
 }
 
-#if !OWN_BACKEND
-/* The injection/reset entry points that cosim.c calls live in cosim_state.c,
- * which the ORACLE build cannot compile (it reads own-backend globals). Gate-3
- * fault injection targets the own-backend A-side only, so stub them here for the
- * oracle B-side. */
-void cosim_inject_ram(uint32_t addr, uint8_t xor_val) { (void)addr; (void)xor_val; }
-void cosim_inject_reg(int reg_index, uint32_t xor_val) { (void)reg_index; (void)xor_val; }
-void cosim_state_apply_pending_injection(void) {}
-void cosim_state_reset(void) {}
-#endif

@@ -28,11 +28,7 @@
 
 #include <stdint.h>
 #include "clowncommon.h"
-#if OWN_BACKEND
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
-#else
-#include "clownmdemu.h"
-#endif
 
 union SDL_Event;
 typedef union SDL_Event SDL_Event;

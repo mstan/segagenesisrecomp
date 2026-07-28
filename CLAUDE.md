@@ -9,14 +9,12 @@ Genesis static recompiler. It assumes you've also read `PRINCIPLES.md` and
 A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROMs
 into native C, paired with a runner whose NATIVE (release) targets run the
 generated C on a clean-room backend (own VDP/bus/Z80 scheduling, ymfm FM,
-superzazu z80) — zero clownmdemu code compiled or linked. clownmdemu-core
-is an OPT-IN submodule (`update = none`, NOT fetched by `clone --recursive`)
-used ONLY by the unshipped `_oracle` builds as a conformance reference
-(AGPL, dev-only). Gate every consumer on `cmake/GenesisOracle.cmake` —
-never test for the directory yourself. To get it:
-`git submodule update --init --checkout --recursive clownmdemu-core`
-(`--checkout` is mandatory; `--init` alone silently skips it).
-Currently used by:
+superzazu z80). There is ONE backend and it is ours: clownmdemu, the
+`_oracle` targets, the `OWN_BACKEND`/`HYBRID_RECOMPILED_CODE` conditionals
+and the hybrid dispatch layer were all removed on 2026-07-27. Do not
+reintroduce a second backend or a conditional to select one. The surviving
+cross-check is the cosim harness (recomp vs our own Tier-3 interpreter,
+`-DGENESIS_BUILD_COSIM=ON`) — see COSIM.md. Currently used by:
 
 - **SonicTheHedgehogRecomp** — Sonic 1 release; Green Hill Zone fully
   playable.
@@ -47,25 +45,23 @@ F:\Projects\segagenesisrecomp-release\
     ├── DEBUG.md                      ← ring inventory + TCP commands
     ├── recompiler\                   ← C++ tool; builds GenesisRecomp.exe
     ├── runner\                       ← SHARED ENGINE; consumed by both releases
-    │   ├── glue.c, cmd_server.c, oracle_trace.c, frame_snapshots.c, ...
-    │   ├── main.c, audio.c, audio/, crash_report.c, hybrid*.c, ...
-    │   ├── stub_clown68000.c         ← native-only (linked into native target)
+    │   ├── glue.c, cmd_server.c, frame_snapshots.c, ...
+    │   ├── main.c, audio.c, audio/, crash_report.c, ...
+    │   ├── m68k_interp.c             ← clean-room Tier-3 interpreter floor
     │   ├── external/SDL2/            ← bundled SDL2
     │   └── include/genesis_runtime.h ← shared interface header
     ├── tools\                        ← shared genesis-agnostic tooling
     ├── sonicthehedgehog\             ← Sonic 1 game.toml + sonic1_spec.c
-    │                                   + sonic1_hybrid_table.c + sonic_extras.{c,h}
+    │                                   + sonic_extras.{c,h}
     ├── sonicthehedgehog2\            ← Sonic 2 game.toml + sonic2_spec.c
-    │                                   + sonic2_hybrid_table.c
     ├── sonic3k\                      ← Sonic 3 & Knuckles game files
     ├── tests\
     │   └── tools\                    ← gen_disasm_*, recompiler-side
-    └── clownmdemu-core\              ← OPT-IN oracle submodule (usually absent)
 ```
 
 **Topology invariant**: shared runner is at `segagenesisrecomp/runner/`.
-Per-game handwritten code (`<game>_spec.c`, `<game>_hybrid_table.c`,
-`<game>_extras.{c,h}`) lives in the engine game directory. Generated C lives
+Per-game handwritten code (`<game>_spec.c`, `<game>_extras.{c,h}`) lives in
+the engine game directory. Generated C lives
 only in each CMake build tree. Sonic 2's release repo has no runner of its own
 — it reaches through Sonic 1's release repo only to get to the submodule.
 
@@ -84,7 +80,7 @@ TU defining `const GameSpec g_game_spec` (e.g.
 Fields include identity (name, CRC32, ROM size), entry/IRQ/periodic
 callbacks, lifecycle hooks (`on_post_reset`, `on_frame_pre/post`), CLI
 handler, dispatch override, frame-record packer, per-game TCP commands,
-and hybrid table for oracle build.
+and per-game TCP commands.
 
 ### `g_game_layout` (WRAM addresses)
 
@@ -145,7 +141,7 @@ cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/build/Release
 cmd.exe //C "start /B SonicTheHedgehogRecomp.exe sonic.bin --port 4380 > native_run.log 2>&1"
 ```
 
-### Sonic 2 — native + oracle (regeneration is automatic)
+### Sonic 2 — native (regeneration is automatic)
 
 ```bash
 cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/segagenesisrecomp/sonicthehedgehog2
@@ -153,8 +149,6 @@ powershell.exe -NoProfile -Command "& 'F:/Projects/segagenesisrecomp-release/Son
 /c/Windows/System32/taskkill.exe //F //IM SonicTheHedgehog2Recomp.exe 2>/dev/null
 cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehog2Recomp/build/Release
 cmd.exe //C "start /B SonicTheHedgehog2Recomp.exe sonic2.bin --port 4380 > native_run.log 2>&1"
-# oracle (paired)
-cmd.exe //C "start /B SonicTheHedgehog2Recomp_oracle.exe sonic2.bin --port 4381 > oracle_run.log 2>&1"
 ```
 
 VS-bundled cmake is required. PATH-resolved cmake from devkitPro/msys2
@@ -181,13 +175,12 @@ already use the right one.
 - **Never commit without explicit user instruction.** The user runs
   `git status` themselves and asks for commits when ready.
 - **Never publish a binary release without following `RELEASING.md`.** Release
-  (native) binaries are AGPL-free — clean-room own backend, zero clownmdemu
-  objects linked AND zero clownmdemu headers compiled (native include lists
-  contain no clownmdemu-core paths). They ship under the project license
+  (native) binaries are AGPL-free by construction — there is no emulator core
+  in the tree at all. They ship under the project license
   (PolyForm Noncommercial 1.0.0) + `THIRD-PARTY-LICENSES.md` (ymfm BSD-3,
   superzazu MIT, clowncommon ISC, SDL2 zlib) and contain NO ROM / dumps /
-  saves / logs. NEVER ship an `_oracle` exe or `GenesisRecomp.exe` — those
-  statically link AGPL code and are dev-only. Package with
+  saves / logs. Never ship `GenesisRecomp.exe` — it is a build tool, not a
+  release artifact. Package with
   `tools/package_release.py` (it refuses if a ROM/junk slips in) — never zip
   a build folder by hand.
 
