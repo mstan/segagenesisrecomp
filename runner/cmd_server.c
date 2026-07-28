@@ -80,6 +80,7 @@ extern ClownMDEmu g_clownmdemu;       /* defined in main.c */
 int runner_save_state_file(const char *path);
 int runner_load_state_file(const char *path);
 int runner_write_screenshot_file(const char *path);
+int runner_ws_set_user(int on);   /* arm/disarm the widescreen user request */
 
 #if ENABLE_RECOMPILED_CODE || HYBRID_RECOMPILED_CODE
 extern uint32_t   g_cycle_accumulator;
@@ -2302,6 +2303,14 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         handle_load_state(id, json);
     } else if (strcmp(cmd, "screenshot") == 0) {
         handle_screenshot(id, json);
+    } else if (strcmp(cmd, "ws_set") == 0) {
+        /* Arm/disarm the user widescreen request at runtime (engine state
+         * only, same effect as the runtime-overlay view toggle). Lets probes
+         * script the mid-level 16:9 arm transition. {"on":0|1} */
+        int now = runner_ws_set_user(json_get_int(json, "on", 1));
+        char resp[96];
+        snprintf(resp, sizeof(resp), "{\"id\":%d,\"ok\":true,\"ws_user_on\":%d}", id, now);
+        send_response(resp);
     } else if (strcmp(cmd, "get_registers") == 0) {
         handle_get_registers(id);
     } else if (strcmp(cmd, "read_memory") == 0) {
