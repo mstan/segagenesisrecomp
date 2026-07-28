@@ -473,13 +473,11 @@ static void game_stack_note(const char *reason, const void *stack_marker)
     }
 }
 
-#ifdef GENESIS_COSIM
 static void check_cycle_budget(void);   /* fwd: defined below, drains the chunk budget */
 
 /* GENESIS_FORCE_INTERP (env): make the game fiber interpret the WHOLE program
- * via m68k_interp — pairing #1 B-side. The recompiled backend is A; the ONLY
- * variable is how the 68K advances + stamps writes, which is exactly what
- * pairing #1 isolates (chips stay the identical ymfm/sn76489). */
+ * via m68k_interp. In a co-sim build this is pairing #1 B-side; in a normal
+ * native build it provides clean-room whole-program execution and coverage. */
 int genesis_force_interp(void) {
     static int v = -1;
     if (v < 0) {
@@ -542,7 +540,6 @@ static void interp_drive_mainloop(uint32_t entry_pc) {
          * cadence keeps the two backends' VDP raster phase aligned. */
     }
 }
-#endif /* GENESIS_COSIM */
 
 /* Game fiber entry point. */
 static void game_fiber_func(void *param)
@@ -573,13 +570,11 @@ static void game_fiber_func(void *param)
                   |  (uint32_t)g_rom[3];
     g_cpu.SR  = 0x2700u;
 
-#ifdef GENESIS_COSIM
     if (genesis_force_interp()) {
         uint32_t entry = m68k_read32(4) & 0xFFFFFFu;   /* 68K reset vector */
         fprintf(stderr, "[FORCE_INTERP] driving from reset PC $%06X\n", entry);
         interp_drive_mainloop(entry);   /* never returns */
     }
-#endif
 
     g_game_spec.call_entry_point();
 
@@ -805,13 +800,11 @@ static void own_deliver_vint(GVDP *vdp)
     uint8_t vbla_routine_at_entry =
         m68k_read8(g_game_layout.vint_routine_addr & 0xFFFFFF);
 #endif
-#ifdef GENESIS_COSIM
     if (genesis_force_interp()) {
         /* Interpret the V-int handler body from the level-6 autovector; delivery
          * (A7/stack save-restore, stamp rebase, cycle charging) is identical. */
         m68k_interp_run_handler(m68k_read32(0x78) & 0xFFFFFFu);
     } else
-#endif
     if (g_game_spec.call_vblank) g_game_spec.call_vblank();
     s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
     if (s_irq_cycle_debt)
@@ -875,11 +868,9 @@ static void own_run_handler_interleaved(int level, GVDP *vdp)
     s_irq_in_progress = 1;
     uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
     g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
-#ifdef GENESIS_COSIM
     if (genesis_force_interp()) {
         m68k_interp_run_handler(m68k_read32(level == 6 ? 0x78 : 0x70) & 0xFFFFFFu);
     } else
-#endif
     if (level == 6) { if (g_game_spec.call_vblank) g_game_spec.call_vblank(); }
     else            { if (g_game_spec.call_hblank) g_game_spec.call_hblank(); }
     g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
@@ -961,12 +952,10 @@ void glue_own_interrupt(int level, GVDP *vdp)
         g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
         /* H-int handler cycles owe raster time too (same rule as V-int). */
         uint32_t cyc_before = g_audio_cycle_counter;
-#ifdef GENESIS_COSIM
         if (genesis_force_interp()) {
             /* Interpret the H-int handler body from the level-4 autovector. */
             m68k_interp_run_handler(m68k_read32(0x70) & 0xFFFFFFu);
         } else
-#endif
         if (g_game_spec.call_hblank) g_game_spec.call_hblank();
         s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
         if (s_irq_cycle_debt && s_irq_cycle_debt_level < 4)
@@ -1796,8 +1785,9 @@ static void floor_blacklist_add(uint32_t a) {
  * mis-decode). Continuing would let native resume with a desynced stack. Per
  * the oracle-parity charter we never silently corrupt: record the full state
  * loudly so the first-divergence harness can classify it, then DECLINE (the old
- * no-op for that target). The capsule itself is A7-neutral, so declining leaves
- * the stack exactly as native expects. */
+ * no-op for that target). A successful framed return is A7-neutral. A halted
+ * capsule is not, so genesis_log_dispatch_miss restores its CPU checkpoint
+ * before declining. */
 static int s_floor_unsafe_count = 0;
 static void floor_unsafe_record(uint32_t miss_addr, uint32_t run_at,
                                 uint32_t exit_pc, uint32_t expected_ret,
@@ -1900,6 +1890,12 @@ void genesis_log_dispatch_miss(uint32_t addr)
 
         if (run_at && (run_at < rl || run_at >= RAM_BASE) && !(run_at & 1u)) {
             uint32_t exit_pc = 0;
+            /* A failed capsule may have executed many instructions before an
+             * unsupported opcode or guard stop. Its partial register/stack
+             * state is not a valid substitute for the historical no-op miss
+             * behavior. Keep the successful path, but roll CPU state back on
+             * every declined path so A7 and caller registers cannot leak. */
+            M68KState floor_cpu_checkpoint = g_cpu;
             s_in_floor = 1;
             M68kiStatus st = m68k_interp_run_framed(run_at, &exit_pc);
             s_in_floor = 0;
@@ -1917,11 +1913,13 @@ void genesis_log_dispatch_miss(uint32_t addr)
                 }
                 floor_unsafe_record(addr, run_at, exit_pc, expected_ret,
                                     "capsule exit_pc != native loose-A7 return");
+                g_cpu = floor_cpu_checkpoint;
                 floor_blacklist_add(addr);
             } else {
                 /* Not runnable as code (illegal/F-line first bytes => DATA
                  * target), or runaway/bad fetch. Decline + remember (the old
                  * no-op for that non-code target, which the game tolerates). */
+                g_cpu = floor_cpu_checkpoint;
                 floor_blacklist_add(addr);
                 fprintf(stderr, "[FLOOR] declined miss $%06X (ran $%06X, status %d, "
                         "opcode $%04X at $%06X) — target not runnable code; blacklisted\n",
@@ -2140,4 +2138,3 @@ void hybrid_call_interpret(uint32_t target_pc)
     g_interp_total_calls++;
     call_by_address(target_pc);
 }
-

@@ -1051,6 +1051,35 @@ static int runner_dump_ram_file(const char *path)
     return ok;
 }
 
+static int runner_dump_vram_file(const char *path)
+{
+    char full_path[512];
+    const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
+    FILE *df = fopen(resolved, "wb");
+    if (!df) {
+        fprintf(stderr, "[VRAMDUMP] failed to open %s\n", resolved);
+        return 0;
+    }
+
+    size_t wrote = fwrite(g_machine.vdp.vram, 1, 0x10000, df);
+    int ok = (wrote == 0x10000) && !ferror(df);
+    fclose(df);
+
+    if (ok)
+        fprintf(stderr,
+                "[VRAMDUMP] wrote %s (planeA=$%04X planeB=$%04X "
+                "window=$%04X sprites=$%04X hscroll=$%04X)\n",
+                resolved,
+                (unsigned)((g_machine.vdp.reg[2] & 0x38u) << 10),
+                (unsigned)((g_machine.vdp.reg[4] & 0x07u) << 13),
+                (unsigned)((g_machine.vdp.reg[3] & 0x3Eu) << 10),
+                (unsigned)((g_machine.vdp.reg[5] & 0x7Fu) << 9),
+                (unsigned)((g_machine.vdp.reg[13] & 0x3Fu) << 10));
+    else
+        fprintf(stderr, "[VRAMDUMP] failed while writing %s\n", resolved);
+    return ok;
+}
+
 int runner_write_screenshot_file(const char *path)
 {
     char full_path[512];
@@ -1267,11 +1296,10 @@ int main(int argc, char *argv[])
     const char *mem_write_log_spec = NULL;
     const char *wav_path = NULL;
 
-    /* --exec-coverage-out PATH — oracle build only. At exit, dump the
-     * always-on executed-PC coverage bitmaps (ROM + WRAM) to a binary
-     * file. This is the discovery runtime oracle's guaranteed-code
-     * positive set; tools/rka decode it into address lists. No-op on
-     * native (the interpreter that feeds the coverage isn't running). */
+    /* --exec-coverage-out PATH — at exit, dump the clean-room interpreter's
+     * always-on executed-PC set as text. With GENESIS_FORCE_INTERP=1 this is
+     * whole-program coverage; otherwise it contains only any Tier-3 floor
+     * capsules that ran during native execution. */
     const char *exec_cov_out = NULL;
 
     /* Headless smoke / framebuffer-hash assertion mode. When --hash-frames
@@ -2346,6 +2374,8 @@ int main(int argc, char *argv[])
                     runner_load_state_file(state_path);
                 if (input_script_take_ram_dump(state_path, sizeof(state_path)))
                     runner_dump_ram_file(state_path);
+                if (input_script_take_vram_dump(state_path, sizeof(state_path)))
+                    runner_dump_vram_file(state_path);
                 if (input_script_take_screenshot(state_path, sizeof(state_path)))
                     runner_write_screenshot_file(state_path);
             }
@@ -2527,10 +2557,37 @@ int main(int argc, char *argv[])
               (unsigned long long)g_cvblank_fires_total,
               g_dbg_b64_count, g_dbg_b5e_count, g_dbg_b88_count); }
 
-    /* --- Discovery runtime oracle: dump executed-PC coverage --- */
-    if (exec_cov_out)
-        fprintf(stderr, "[EXECCOV] --exec-coverage-out requires the oracle "
-                        "build (interpreter coverage); ignored\n");
+    /* --- Discovery runtime oracle: dump executed-PC coverage ---
+     * Sourced from the clean-room Tier-3 interpreter's always-on coverage
+     * bitmap. This used to require the clown68000 oracle build, which was
+     * deleted with the emulator core; m68k_interp now provides it with no
+     * third-party code. Run with GENESIS_FORCE_INTERP=1 for a COMPLETE
+     * executed-PC set (the interpreter drives the whole program); without it
+     * the dump covers only what the Tier-3 floor executed. */
+    if (exec_cov_out) {
+        extern long m68k_interp_cov_dump(FILE *);        /* m68k_interp.c */
+        extern int genesis_force_interp(void);           /* glue.c */
+        const int _cov_forced = genesis_force_interp();
+        FILE *cf = fopen(exec_cov_out, "w");
+        if (!cf) {
+            fprintf(stderr, "[EXECCOV] cannot open '%s' for writing\n", exec_cov_out);
+        } else {
+            fprintf(cf, "# executed-PC coverage from the Tier-3 interpreter "
+                        "(m68k_interp). One word-aligned address per line.\n");
+            fprintf(cf, "# force_interp=%d — with GENESIS_FORCE_INTERP=1 this is the\n"
+                        "# complete set for the run; otherwise it is floor capsules only.\n",
+                    _cov_forced);
+            long n = m68k_interp_cov_dump(cf);
+            fclose(cf);
+            if (n < 0)
+                fprintf(stderr, "[EXECCOV] nothing was interpreted this run; "
+                                "'%s' has no addresses. Set GENESIS_FORCE_INTERP=1 "
+                                "to interpret the whole program.\n", exec_cov_out);
+            else
+                fprintf(stderr, "[EXECCOV] wrote %ld executed PCs to %s\n",
+                        n, exec_cov_out);
+        }
+    }
 
     /* --- Cleanup --- */
 #if GENESIS_HAS_RECOMP_NET

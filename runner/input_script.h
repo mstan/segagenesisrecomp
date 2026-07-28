@@ -21,6 +21,7 @@
  *   SAVE_STATE  <path>   save a native/interpreter state file
  *   LOAD_STATE  <path>   load a native/interpreter state file
  *   DUMP_RAM    <path>   dump canonical 68K byte-ordered work RAM
+ *   DUMP_VRAM   <path>   dump the VDP's raw 64KB VRAM
  *   EXIT [code]          exit cleanly with optional status code
  *
  * BUTTON names: UP DOWN LEFT RIGHT A B C START
@@ -78,6 +79,7 @@ bool    input_script_take_save_state(char *out, size_t out_cap);
 bool    input_script_take_screenshot(char *out, size_t out_cap);
 bool    input_script_take_load_state(char *out, size_t out_cap);
 bool    input_script_take_ram_dump(char *out, size_t out_cap);
+bool    input_script_take_vram_dump(char *out, size_t out_cap);
 
 /* True iff a script is currently loaded and active. Lets callers
  * branch (e.g. ignore SDL input when scripted). */

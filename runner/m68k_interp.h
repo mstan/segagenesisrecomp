@@ -77,12 +77,20 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
  */
 M68kiStatus m68k_interp_step(void);
 
-#ifdef GENESIS_COSIM
 /* Interpret an interrupt HANDLER BODY from its autovector entry, stopping at the
- * handler's own depth-0 RTE (peeked, not executed). FORCE_INTERP / pairing #1:
- * the interpreted twin of g_game_spec.call_vblank()/call_hblank(). */
+ * handler's own depth-0 RTE (peeked, not executed). In FORCE_INTERP mode this
+ * is the interpreted twin of g_game_spec.call_vblank()/call_hblank(). */
 M68kiStatus m68k_interp_run_handler(uint32_t entry_pc);
-#endif
+
+/* --- Executed-PC coverage -------------------------------------------------
+ * Always-on: every instruction the interpreter retires is recorded, from
+ * process start. Replaces the coverage the deleted clown68000 oracle gave.
+ * With GENESIS_FORCE_INTERP=1 the interpreter drives the whole program, so the
+ * dump is a complete executed-PC set for the run; otherwise it covers the
+ * Tier-3 floor capsules. Probes QUERY this — there is nothing to arm. */
+#include <stdio.h>
+int  m68k_interp_cov_active(void);      /* non-zero once anything was interpreted */
+long m68k_interp_cov_dump(FILE *f);     /* ascending hex addrs, one per line; -1 if empty */
 
 /* Per-run diagnostics (the manifest/floor layers read these). */
 extern uint32_t g_m68ki_bad_pc;      /* PC of the offending instruction (UNIMPL) */
