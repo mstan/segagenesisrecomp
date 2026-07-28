@@ -7,6 +7,21 @@ get_filename_component(GENESISRECOMP_NET_ENGINE_ROOT
 option(GENESISRECOMP_NET_ICE
     "Enable recomp-net ICE/libjuice transport for Genesis games" OFF)
 
+# Netplay is OPT-IN. A game calling genesisrecomp_enable_netplay() declares that
+# it *supports* netplay; it does not force every build to carry it. Building it
+# pulls in the recomp-net submodule, a full network stack, and (with ICE) a
+# libjuice FetchContent — none of which a dev doing single-player work needs.
+#
+# It used to be mandatory: the helper hard-errored when external/recomp-net was
+# absent, so a clone without that submodule could not configure Sonic 2 at all.
+# That is exactly how it failed for a user building on macOS.
+#
+# Turn it on with -DGENESISRECOMP_NETPLAY=ON (the submodule must be checked out;
+# `git submodule update --init --recursive external/recomp-net`). Release builds
+# that are supposed to ship netplay MUST pass it explicitly.
+option(GENESISRECOMP_NETPLAY
+    "Build netplay support (requires the recomp-net submodule)" OFF)
+
 function(genesisrecomp_enable_netplay target)
     set(options ICE PEER_VIEW)
     set(one_value_args GAME_VERSION)
@@ -17,10 +32,24 @@ function(genesisrecomp_enable_netplay target)
             "genesisrecomp_enable_netplay: '${target}' is not a CMake target")
     endif()
 
+    if(NOT GENESISRECOMP_NETPLAY)
+        # The runner already compiles fine without it: every call site is behind
+        # #if GENESIS_HAS_RECOMP_NET, which stays undefined here.
+        message(STATUS
+            "Genesis netplay: OFF for ${target} "
+            "(opt in with -DGENESISRECOMP_NETPLAY=ON)")
+        return()
+    endif()
+
     set(_rnet_root "${GENESISRECOMP_NET_ENGINE_ROOT}/external/recomp-net")
     if(NOT EXISTS "${_rnet_root}/CMakeLists.txt")
         message(FATAL_ERROR
-            "recomp-net is missing. Run git submodule update --init --recursive external/recomp-net")
+            "GENESISRECOMP_NETPLAY=ON but the recomp-net submodule is not checked "
+            "out at:\n    ${_rnet_root}\n\n"
+            "Fetch it with:\n"
+            "    git submodule update --init --recursive external/recomp-net\n\n"
+            "Or configure with -DGENESISRECOMP_NETPLAY=OFF (the default) to build "
+            "without netplay.")
     endif()
 
     if(GEN_NET_ICE OR GENESISRECOMP_NET_ICE)
