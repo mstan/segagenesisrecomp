@@ -67,6 +67,73 @@ non-gameplay screens). Mirrors snes/psxrecomp — the disasm/ROM is never edited
   the user widescreen request, engine state only) so probes can script arm
   transitions — see DEBUG.md.
 
+### Sonic 2 — 2026-07-28 play-test round (discontinuous left margins, phantom
+### bridge tiles, EHZ2 boss side-flipping) — FIXED (pending user confirm)
+Three user reports from the first real play-through of the 2026-07-27 build;
+all reproduced on macOS via TCP probes and fixed data-side (game.toml) plus
+two small recompiler-core extensions. Margin-0 regression green after each
+(boot_smoke f60/f300 + 63 zone_smoke fbhashes vs same-machine baselines,
+dispatch_misses empty).
+
+1. **Discontinuous ground / "Sonic floats" at level-start left margins.**
+   Two stacked causes:
+   - *Wrap content in the initial fill.* The title-card progressive screen
+     fill (`loc_15758`, 2 rows per step behind the title card) draws FULL
+     512px plane rows (d6=$1F into DrawBlockRow_CustomWidth) anchored at
+     `camera-16` — it was never widened. With the camera clamped at
+     Min+margin(64), the leftmost 48px of the 16:9 view held plane cells
+     whose content comes from 512px to the RIGHT (world x 512..560):
+     floating islands, cut columns, black voids (verified: plane-A name
+     table diff vs a 4:3 load — cols 0..5 blank/wrapped). And because the
+     clamped camera never scrolls at the wall, seam maintenance never
+     healed them. Applies to EVERY (re)load: level start, death restart,
+     act change, and checkpoint respawn — a mid-level respawn plants the
+     junk mid-level (the EHZ2 "bridge appears where it shouldn't" report:
+     bridge tiles from +512px wrapped into the respawn view). **Fix:** two
+     `subimm reg=5` sites at $1576E/$15778 anchor the same full-width row
+     at `camera-16-margin`; every visible cell then gets local content and
+     the wrap cells land at camera+432..496, past the visible right edge.
+     Verified: plane-A diff 16:9-load vs 4:3-load now ZERO cells.
+   - *Player level-bound not widened.* `Sonic_LevelBound` clamps at
+     `Camera_Min_X_pos + $10` (read at $1A984 via `move.w (abs).w,d0`), so
+     the player could walk `margin` px past the camera's rest point into
+     layout never meant to be playable (standing on invisible-collision
+     chunks = "floating"; confirmed CPZ1/MCZ1). **Fix:** `addmem base=2`
+     on the Min reads ($1A984 Sonic, $1C56A Tails) — bound becomes
+     min(Min+margin, Max) + $10, i.e. 16px inside the 4:3 sub-window,
+     authentic wall-to-camera geometry. Core gained abs.W source support
+     for addmem (was (An)-only).
+   - *Boss-arena gate.* S2 boss locks are NOT always Min == Max (EHZ2
+     locks $28F0/$2940), so the Max cap alone still ate 64px of arena.
+     New optional `gate` field on addmem: widen only while a RAM byte
+     reads 0 — gated on Current_Boss_ID ($FFF7AA), the same flag the
+     game's own right-bound check consults ($1A998). Verified in-fight:
+     F7AA=2, wall back at authentic $2900; EHZ2 clears Min with the flag
+     on defeat, so no post-fight snap.
+
+2. **EHZ2 boss rapidly switching sides before entering.** Sonic 2's toml
+   had NO `mask10` sites (Sonic 1 has four). The DrawSprite piece writers
+   mask sprite X with `andi #$1FF`; widened positions ≥512 (the right
+   margin band) wrapped to the LEFT edge, so the boss hovering off the
+   right edge ping-ponged between edges as it crossed the 512 threshold
+   (user screenshot: boss straddling both edges). **Fix:** `mask10` at
+   $16844/$16884/$168DC/$1692E (Normal/FlipX/FlipY/FlipXY), the exact
+   Sonic 1 recipe (D786/D7D4/D81A/D86E). BuildSprites_2P writers
+   ($16DE4+) untouched (widescreen off in 2P). Verified: boss entry
+   drill-nose pokes in from the right edge only, fight plays clean.
+
+3. Engine (shared runner, game-agnostic): TCP `set_input keys="off"` was a
+   silent no-op — `cmd_server_poll`'s line-merge dropped `input_release`
+   and main.c never cleared `s_tcp_input_active`. Fixed both; DEBUG.md's
+   documented semantics now actually hold. (Probe scripts that "worked
+   around" it by sending keys="00" still work.)
+
+**Audit note for Sonic 1 / Sonic 3:** check whether their level-load fills
+share the unwidened `camera-16` full-row anchor and whether their player
+level-bound reads are widened — S1/S3 tomls predate both findings. Their
+generated C is unaffected by the core changes until sites are added
+(addmem/gate only emit for configured sites).
+
 ### Sonic 2 — "stale artifact to the left of the starting areas" — FIXED (pending user confirm)
 - **Was:** at a level's left boundary the 16:9 view revealed area *beyond where
   the level exists* (the 512px plane wraps → stray terrain/black at the left
@@ -121,9 +188,13 @@ non-gameplay screens). Mirrors snes/psxrecomp — the disasm/ROM is never edited
 place), `cull_left` (widen a left-edge `bmi` non-mutatingly), `cull_window_left`
 (mutate + `bhi`→`bgt` for a ring-window left clamp), `call_widen` (preset a reg +
 retarget a call, for row counts whose callee resets the count), `addmem` (at a
-word `cmp.w (An),Dn` / `move.w (An),Dn`, widen the VALUE read from memory by
-+margin>>shift; `base` != 0 caps the result at the word `base` bytes after the
-operand and never below the original — the camera min-bound clamp: Min+margin
-capped at Max, authentic at a Min==Max boss lock). Multiple transforms
+word `cmp.w (An),Dn` / `move.w (An),Dn` — or their abs.W forms — widen the
+VALUE read from memory by +margin>>shift; `base` != 0 caps the result at the
+word `base` bytes after the operand and never below the original — the camera
+min-bound clamp: Min+margin capped at Max, authentic at a Min==Max boss lock;
+optional `gate` = RAM byte address applies the widen only while that byte
+reads 0 — the player level-bound uses gate = Current_Boss_ID so boss arenas
+stay authentic). Multiple transforms
 may share one instruction address (`ws_site_for_kind`). All are no-ops at
-`g_ws_margin == 0` ⇒ byte-identical authentic 4:3.
+`g_ws_margin == 0` ⇒ byte-identical authentic 4:3 (mask10 widens its mask
+statically, proven equivalent at 4:3 since bit 9 can't be set there).

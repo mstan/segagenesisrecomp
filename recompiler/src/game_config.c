@@ -112,12 +112,13 @@ static void append_jump_table(GameConfig *cfg, uint32_t start, uint32_t end,
 
 static void append_ws_site(GameConfig *cfg, uint32_t addr, WsSiteKind kind,
                            uint8_t reg, uint8_t shift, uint8_t scale,
-                           uint16_t base, uint32_t target) {
+                           uint16_t base, uint32_t target, uint32_t gate) {
     cfg->ws_sites = grow_to_fit(cfg->ws_sites, &cfg->ws_site_cap,
                                 cfg->ws_site_count, sizeof(WsSite));
     WsSite *s = &cfg->ws_sites[cfg->ws_site_count++];
     s->addr = addr; s->kind = kind; s->reg = reg; s->shift = shift;
     s->scale = scale ? scale : 1; s->base = base; s->target = target;
+    s->gate = gate;
 }
 
 const WsSite *game_config_ws_site(const GameConfig *cfg, uint32_t addr) {
@@ -528,7 +529,8 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                                (uint8_t)toml_u32_or(t, "shift", 0),
                                (uint8_t)toml_u32_or(t, "scale", 1),
                                (uint16_t)toml_u32_or(t, "base", 0),
-                               toml_u32_or(t, "target", 0));
+                               toml_u32_or(t, "target", 0),
+                               toml_u32_or(t, "gate", 0));
             }
             if (cfg->ws_site_count)
                 printf("[GameConfig] [[widescreen_site]] loaded: %d injection sites\n",
