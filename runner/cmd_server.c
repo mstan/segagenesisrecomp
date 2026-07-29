@@ -2730,6 +2730,7 @@ CmdResult cmd_server_poll(void)
             if (line_cr.should_quit) cr.should_quit = true;
             if (line_cr.run_extra_frames > 0) cr.run_extra_frames = line_cr.run_extra_frames;
             if (line_cr.input_override) { cr.input_override = true; cr.input_keys = line_cr.input_keys; }
+            if (line_cr.input_release)  { cr.input_release = true; }
         }
         int consumed = (int)(nl - s_recv_buf) + 1;
         s_recv_len -= consumed;

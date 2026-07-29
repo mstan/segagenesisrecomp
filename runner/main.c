@@ -2245,6 +2245,10 @@ int main(int argc, char *argv[])
             s_tcp_input_active = 1;
             s_tcp_input_keys = cmd_cr.input_keys;
         }
+        if (cmd_cr.input_release) {
+            s_tcp_input_active = 0;
+            s_tcp_input_keys = 0;
+        }
         /* run_extra_frames handled after normal frame */
 
         /* Pause loop — hold ring buffer steady for multi-fetch tools.
