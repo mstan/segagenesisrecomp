@@ -24,19 +24,11 @@
  *   - Debug-cmd handlers receive raw JSON strings, mirroring the
  *     existing game_handle_debug_cmd contract — no cJSON dependency.
  *
- *   - The hybrid table pointer is consulted only by the oracle
- *     build; native builds typically run with size=0. Keeping it in
- *     the spec means each game's verified-clean function list is
- *     declared next to the rest of its identity, not in a separate
- *     hybrid_table.c that has to be rebuilt per game.
  */
 #pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
-
-/* Forward decl from hybrid.h to avoid pulling in clownmdemu headers. */
-typedef struct HybridEntry HybridEntry;
 
 /*
  * One per-game TCP debug command. The handler receives the request id
@@ -197,14 +189,11 @@ typedef struct GameSpec {
     const GameDebugCommand *commands;
     int                     command_count;
 
-    /* ---- Hybrid dispatch (oracle build only) ---- */
     /* Verified-clean native overrides. Native builds typically run
      * with size=0 (everything stays as recompiled C); oracle builds
      * use this to swap interpreter execution for native execution
      * one function at a time during divergence hunting. NULL+0 is
      * legal and means "no overrides". */
-    const HybridEntry *hybrid_table;
-    int                hybrid_table_size;
 } GameSpec;
 
 /*

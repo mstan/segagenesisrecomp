@@ -1,0 +1,18 @@
+# Enter from the first title window and capture each navigation step. Hold
+# Start across the title's input window; a two-frame pulse can land during its
+# fade/transition boundary and be missed.
+WAIT 250
+SCREENSHOT puyo_menu_00_title.png
+HOLD START
+WAIT 120
+RELEASE START
+SCREENSHOT puyo_menu_01_after_start.png
+WAIT 120
+SCREENSHOT puyo_menu_02_mode_select.png
+PRESS A 2
+WAIT 120
+SCREENSHOT puyo_menu_03_after_a.png
+PRESS A 2
+WAIT 240
+SCREENSHOT puyo_menu_04_after_second_a.png
+EXIT 0

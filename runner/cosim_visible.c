@@ -21,24 +21,16 @@
 #include "cosim.h"
 #include "frame_record.h"   /* M68KRegSnap / Z80RegSnap / VdpSnap (normalized)   */
 
-/* frame_snapshots.c accessors (backend-branched inside). ClownMDEmu is opaque
+/* frame_snapshots.c accessors.
  * on the own-backend build (passed NULL there). */
-struct ClownMDEmu;
 extern void m68k_snapshot(M68KRegSnap *out);
-extern void z80_snapshot (Z80RegSnap *out, struct ClownMDEmu *emu);
-extern void vdp_snapshot (VdpSnap *out,   struct ClownMDEmu *emu);
-extern void wram_snapshot(uint8_t out[0x10000], struct ClownMDEmu *emu);
+extern void z80_snapshot (Z80RegSnap *out);
+extern void vdp_snapshot (VdpSnap *out);
+extern void wram_snapshot(uint8_t out[0x10000]);
 
 /* Cumulative FM/PSG write-stream hash (values+order, stamp-independent) + count,
  * from the shared audio_event_push history ring (event_queue.c). */
 extern uint64_t audio_event_cosim_stream_hash(uint64_t *out_count);
-
-#if OWN_BACKEND
-#  define COSIM_EMU NULL
-#else
-extern struct ClownMDEmu g_clownmdemu;
-#  define COSIM_EMU (&g_clownmdemu)
-#endif
 
 static uint64_t hash_cpu_visible(void) {
     M68KRegSnap s; m68k_snapshot(&s);
@@ -52,7 +44,7 @@ static uint64_t hash_cpu_visible(void) {
 
 static uint64_t hash_wram_visible(void) {
     static uint8_t wram[0x10000];
-    wram_snapshot(wram, COSIM_EMU);
+    wram_snapshot(wram);
     return cosim_fnv_bytes(cosim_fnv_init(), wram, sizeof wram);
 }
 
@@ -80,7 +72,7 @@ static uint64_t hash_z80_visible(Z80RegSnap *zs) {
 
 static uint64_t hash_vdp_visible(void) {
     static VdpSnap v;   /* 64KB+ — static to keep it off the stack */
-    vdp_snapshot(&v, COSIM_EMU);
+    vdp_snapshot(&v);
     uint64_t h = cosim_fnv_init();
     /* Semantic register-derived config (what the game programmed). */
     h = cosim_fnv_u32(h, v.plane_a_addr);      h = cosim_fnv_u32(h, v.plane_b_addr);
@@ -105,7 +97,7 @@ static uint64_t hash_vdp_visible(void) {
 
 uint64_t cosim_state_hash_visible(CosimSubHashes *sub) {
     CosimSubHashes s;
-    Z80RegSnap zs; z80_snapshot(&zs, COSIM_EMU);
+    Z80RegSnap zs; z80_snapshot(&zs);
 
     s.cpu68k    = hash_cpu_visible();
     s.ram       = hash_wram_visible();
@@ -139,9 +131,9 @@ int cosim_visible_region_chunks(const char *region, int nchunks, uint64_t *out)
     static VdpSnap s_v;
     Z80RegSnap zs;
     if (!region) return -1;
-    if (!strcmp(region, "z80ram")) { z80_snapshot(&zs, COSIM_EMU); buf = zs.ram; sz = sizeof zs.ram; }
-    else if (!strcmp(region, "wram")) { wram_snapshot(s_wram, COSIM_EMU); buf = s_wram; sz = sizeof s_wram; }
-    else if (!strcmp(region, "vram")) { vdp_snapshot(&s_v, COSIM_EMU); buf = s_v.vram; sz = sizeof s_v.vram; }
+    if (!strcmp(region, "z80ram")) { z80_snapshot(&zs); buf = zs.ram; sz = sizeof zs.ram; }
+    else if (!strcmp(region, "wram")) { wram_snapshot(s_wram); buf = s_wram; sz = sizeof s_wram; }
+    else if (!strcmp(region, "vram")) { vdp_snapshot(&s_v); buf = s_v.vram; sz = sizeof s_v.vram; }
     else return -1;
     if (nchunks < 1) nchunks = 1;
     size_t chunk = sz / (size_t)nchunks; if (chunk == 0) chunk = 1;
@@ -153,13 +145,3 @@ int cosim_visible_region_chunks(const char *region, int nchunks, uint64_t *out)
     return nchunks;
 }
 
-#if !OWN_BACKEND
-/* The injection/reset entry points that cosim.c calls live in cosim_state.c,
- * which the ORACLE build cannot compile (it reads own-backend globals). Gate-3
- * fault injection targets the own-backend A-side only, so stub them here for the
- * oracle B-side. */
-void cosim_inject_ram(uint32_t addr, uint8_t xor_val) { (void)addr; (void)xor_val; }
-void cosim_inject_reg(int reg_index, uint32_t xor_val) { (void)reg_index; (void)xor_val; }
-void cosim_state_apply_pending_injection(void) {}
-void cosim_state_reset(void) {}
-#endif

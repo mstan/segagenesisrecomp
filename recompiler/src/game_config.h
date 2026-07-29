@@ -201,6 +201,13 @@ typedef struct {
     uint32_t       *late_extra_funcs;
     int            late_extra_func_count;
     int            late_extra_func_cap;
+    /* Helpers that consume an absolute code pointer loaded into A1 by the
+     * immediately preceding instruction (for example, an object allocator
+     * that stores A1 as the new object's handler). The finder promotes that
+     * pointer as a function entry using this explicit per-game semantic edge. */
+    uint32_t       *function_pointer_helpers;
+    int            function_pointer_helper_count;
+    int            function_pointer_helper_cap;
     /* Additional INTERIOR PCs to seed scan_function's CFG-walk worklist.
      * Sourced from disasm local labels (asm68k `.foo` scoped under a
      * parent global label). NOT promoted to function entries — they're

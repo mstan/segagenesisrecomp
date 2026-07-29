@@ -264,6 +264,4 @@ const GameSpec g_game_spec = {
     .commands               = sandk_commands,
     .command_count          = (int)(sizeof(sandk_commands) / sizeof(sandk_commands[0])),
 
-    .hybrid_table           = NULL,
-    .hybrid_table_size      = 0,
 };

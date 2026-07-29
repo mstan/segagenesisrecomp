@@ -12,14 +12,12 @@
  *
  * The pointers below alias the existing implementations in
  *   runner/sonic_extras.c           (frame record + TCP commands)
- *   runner/hybrid_table.c           (verified-clean native overrides)
  *   sonicthehedgehog/generated/...  (recompiled func_NNNNNN bodies)
  * so flipping consumers from the old path to g_game_spec is a no-op
  * behaviorally — both go to the same code.
  */
 #include "game_spec.h"
 #include "genesis_runtime.h"
-#include "hybrid.h"
 
 #include <stdint.h>
 #ifdef GENESIS_Z80_RECOMP
@@ -63,9 +61,6 @@ extern void handle_object_table(int id, const char *json);
 /* ---- Frame-record packer (sonic_extras.c) ---- */
 extern void game_fill_frame_record(uint8_t game_data[256]);
 
-/* ---- Hybrid native overrides (hybrid_table.c) ---- */
-extern HybridEntry g_hybrid_table[];
-extern int         g_hybrid_table_size;
 
 /* ---- Lifecycle hooks ---- */
 
@@ -142,19 +137,5 @@ const GameSpec g_game_spec = {
     .commands               = s1_commands,
     .command_count          = (int)(sizeof(s1_commands) / sizeof(s1_commands[0])),
 
-    .hybrid_table           = NULL,             /* see note below */
-    .hybrid_table_size      = 0,
 };
 
-/*
- * NOTE on the hybrid table: g_hybrid_table is currently declared as
- * `HybridEntry g_hybrid_table[]` (non-const) in hybrid_table.c, so
- * we can't initialize a const-pointer field with it at file scope
- * without const-casting (illegal in C99 for static initializers).
- * Rather than const-casting at every reader, hybrid_table_size = 0
- * here means "consult the legacy g_hybrid_table directly". Step 3
- * will either: (a) make the table const-correct and point this
- * field at it, or (b) keep the current per-process global and have
- * consumers fall back when this field is NULL. Either way the
- * behavior is identical to what ships today.
- */

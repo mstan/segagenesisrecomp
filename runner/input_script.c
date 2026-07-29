@@ -42,6 +42,7 @@ typedef enum {
     OP_SAVE_STATE,
     OP_LOAD_STATE,
     OP_DUMP_RAM,
+    OP_DUMP_VRAM,
     OP_EXIT,
 } OpCode;
 
@@ -69,6 +70,7 @@ static char     s_pending_screenshot[260];
 static char     s_pending_save_state[260];
 static char     s_pending_load_state[260];
 static char     s_pending_ram_dump[260];
+static char     s_pending_vram_dump[260];
 
 /* PRESS auto-release tracking. Up to 4 simultaneous PRESS timers. */
 typedef struct { uint8_t mask; uint64_t release_frame; } PressTimer;
@@ -163,6 +165,9 @@ static int parse_line(char *line, int line_no) {
     } else if (!_stricmp(tok, "DUMP_RAM") && n >= 2) {
         o->op = OP_DUMP_RAM;
         snprintf(o->str, sizeof(o->str), "%s", a1);
+    } else if (!_stricmp(tok, "DUMP_VRAM") && n >= 2) {
+        o->op = OP_DUMP_VRAM;
+        snprintf(o->str, sizeof(o->str), "%s", a1);
     } else if (!_stricmp(tok, "EXIT")) {
         o->op    = OP_EXIT;
         o->arg32 = (n >= 2) ? (uint32_t)strtoul(a1, NULL, 0) : 0u;
@@ -188,6 +193,7 @@ int input_script_load(const char *path) {
     s_pending_save_state[0] = '\0';
     s_pending_load_state[0] = '\0';
     s_pending_ram_dump[0] = '\0';
+    s_pending_vram_dump[0] = '\0';
     memset(s_press_timers, 0, sizeof(s_press_timers));
     if (!path) return 0;
 
@@ -353,6 +359,13 @@ void input_script_tick(uint64_t frame,
                 s_pc++;
                 break;
 
+            case OP_DUMP_VRAM:
+                snprintf(s_pending_vram_dump, sizeof(s_pending_vram_dump), "%s", o->str);
+                fprintf(stderr, "[input_script] DUMP_VRAM requested at frame %llu (path=%s)\n",
+                        (unsigned long long)frame, o->str);
+                s_pc++;
+                break;
+
             case OP_EXIT:
                 s_exit_pending = 1;
                 s_exit_code    = (int)o->arg32;
@@ -397,4 +410,9 @@ bool input_script_take_load_state(char *out, size_t out_cap)
 bool input_script_take_ram_dump(char *out, size_t out_cap)
 {
     return take_pending_path(s_pending_ram_dump, out, out_cap);
+}
+
+bool input_script_take_vram_dump(char *out, size_t out_cap)
+{
+    return take_pending_path(s_pending_vram_dump, out, out_cap);
 }

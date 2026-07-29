@@ -27,7 +27,6 @@ A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries
 | `recompiler/src/` | The recompiler tool — analyzes ROM binary, emits native C |
 | `runner/include/` | Shared runtime headers (`genesis_runtime.h`) |
 | `external/z80-recomp-core/` | [Shared Z80 generated-code ABI and verified instruction semantics](https://github.com/mstan/z80-recomp-core) — pinned submodule shared with SMS/GG Recomp |
-| `clownmdemu-core/` | [clownmdemu](https://github.com/Clownacy/clownmdemu) emulator core — **pinned submodule, development only**. Conformance oracle for the unshipped `_oracle` builds; AGPL-3.0. Native (release) targets compile and link **zero** code from it — enforced by the CMake include lists; see `RELEASING.md` / `LICENSING.md` |
 | `<game build>/generated/<prefix>/` | Ignored output regenerated from the ROM, config, and current recompiler |
 | `sonicthehedgehog/game.cfg` | Recompiler config — 530 extra_func entries |
 
@@ -38,13 +37,16 @@ The recompiler (`recompiler/src/code_generator.c`) decodes every 68K instruction
 Key recompiler features:
 - **`addq.l #4,sp` early-exit detection**: Pre-scans each function for stack pointer adjustments. Emits local `_sp_popped` counter so `rts` propagates returns through the caller's post-JSR check via `g_rte_pending`.
 - **Dispatch table accessor generation**: `game_dispatch_table_size()` and `game_dispatch_table_addr()` enable runtime interior label detection.
-- **Per-instruction cycle estimation**: Each instruction emits `g_cycle_accumulator += N` for VBlank timing.
+- **Per-instruction cycle estimation**: Each instruction emits `g_cycle_accumulator += N` for VBlank timing. `N` comes from a clean-room MC68000 timing model (`estimate_cycles_prm` in the m68k-recomp-core genesis profile), so codegen is deterministic and needs no emulator. Validate it against clown68000 with `-DGENESIS_CYCLE_ORACLE=ON` plus `GENESIS_CYCLE_DIAG=<path>`, which logs both costs per instruction.
 
 ## Cloning
 
 ```bash
 git clone --recursive https://github.com/mstan/segagenesisrecomp.git
 ```
+
+Everything is public and permissively licensed. There is no emulator core to
+fetch: one backend (ours), no AGPL, no optional submodule.
 
 ## Platform Support
 

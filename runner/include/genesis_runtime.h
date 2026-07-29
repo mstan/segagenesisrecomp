@@ -24,6 +24,20 @@ extern M68KState g_cpu;
 extern uint8_t   g_rom[0x400000];   /* 4MB ROM map */
 extern uint8_t   g_ram[0x010000];   /* 64KB main RAM ($FF0000-$FFFFFF) */
 
+/* Resolve the index value encoded by a 68000 brief extension word.
+ * Bit 15 selects An/Dn and bit 11 selects the full long register or the
+ * sign-extended low word. Keeping this shared prevents native code and the
+ * Tier-3 interpreter from silently agreeing on the same wrong W/L behavior. */
+static inline uint32_t m68k_brief_index_value(uint16_t extension,
+                                              uint32_t dreg,
+                                              uint32_t areg)
+{
+    uint32_t value = (extension & 0x8000u) ? areg : dreg;
+    return (extension & 0x0800u)
+        ? value
+        : (uint32_t)(int32_t)(int16_t)value;
+}
+
 /* Widescreen (16:9) margin in extra pixels per side, set by the runner's
  * per-frame gate (0 = authentic 4:3). The recompiler's [[widescreen_site]]
  * injection reads this in the generated C to widen object-cull / tile-load /

@@ -118,15 +118,8 @@ extern uint64_t g_cosim_park_count;    /* WaitForVBla parks so far (comparabilit
 extern uint64_t g_cosim_work_insns;    /* instructions in the most recent frame     */
 extern uint64_t g_cosim_fb_count;      /* oracle: fallback-costed insns this frame  */
 
-#if OWN_BACKEND
 /* Own backend: called at each WaitForVBla park; captures the park-to-park delta
  * of the monotonic cosim axis (g_cosim_cycle) as this frame's work cycles. */
 void cosim_cycles_note_park(void);
-#else
-/* Oracle: install the per-instruction cycle-charging hook (chains onto the
- * existing g_hybrid_pre_insn_fn). Reads GENESIS_COSIM_WAITVBL_PC for the
- * spin-entry PC. Call once from cosim_init, AFTER glue_init/HybridInit. */
-void cosim_cycles_oracle_install(void);
-#endif
 
 #endif /* GENESIS_COSIM_H */

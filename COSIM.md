@@ -1,3 +1,13 @@
+> **2026-07-27 — pairing #2 is gone.** It compared the own backend against the
+> clownmdemu oracle, and that oracle has been deleted along with the emulator
+> core (see LICENSING.md). What survives is **pairing #1**: recompiled code vs
+> our own clean-room Tier-3 interpreter, selected with `GENESIS_FORCE_INTERP`.
+> It links no third-party emulator and remains the bit-exact gold standard.
+> References to `_oracle_cosim`, `cosim_visible`'s cross-backend role, and
+> "cross-backend" rulers below are historical. `cosim_visible.c` itself is
+> still built: its visible-surface hashes and the `memchunks` localizer are
+> useful within pairing #1.
+
 # Differential Co-Simulation & Divergence Tooling (Genesis)
 
 A full-state, first-divergence decision procedure for the Genesis recomp +

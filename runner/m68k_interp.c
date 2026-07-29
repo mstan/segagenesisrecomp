@@ -21,6 +21,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* ---- per-run diagnostics ---- */
@@ -158,8 +159,8 @@ static uint32_t read_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, 
     case 5: { int16_t d16 = (int16_t)er_next(er);
               return mem_read(sz, (uint32_t)(g_cpu.A[reg] + (int32_t)d16)); }
     case 6: { uint16_t ext = er_next(er);
-              int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-              int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+              int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+              uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
               return mem_read(sz, (uint32_t)(g_cpu.A[reg] + xv + (int32_t)d8)); }
     case 7:
         switch (reg) {
@@ -168,8 +169,8 @@ static uint32_t read_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, 
         case 2: { uint32_t pc = ins->addr + er->bp; int16_t d16 = (int16_t)er_next(er);
                   return mem_read(sz, (uint32_t)((int32_t)pc + (int32_t)d16)); }
         case 3: { uint32_t pc = ins->addr + er->bp; uint16_t ext = er_next(er);
-                  int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-                  int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+                  int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+                  uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
                   return mem_read(sz, (uint32_t)(pc + xv + (int32_t)d8)); }
         case 4: return er_next_imm(er, sz);
         default: return 0;
@@ -188,8 +189,8 @@ static uint32_t addr_ea(const M68KInstr *ins, int ea, ExtR *er) {
     case 2: return g_cpu.A[reg];
     case 5: { int16_t d16 = (int16_t)er_next(er); return (uint32_t)(g_cpu.A[reg] + (int32_t)d16); }
     case 6: { uint16_t ext = er_next(er);
-              int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-              int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+              int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+              uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
               return (uint32_t)(g_cpu.A[reg] + xv + (int32_t)d8); }
     case 7:
         switch (reg) {
@@ -198,8 +199,8 @@ static uint32_t addr_ea(const M68KInstr *ins, int ea, ExtR *er) {
         case 2: { uint32_t pc = ins->addr + er->bp; int16_t d16 = (int16_t)er_next(er);
                   return (uint32_t)((int32_t)pc + (int32_t)d16); }
         case 3: { uint32_t pc = ins->addr + er->bp; uint16_t ext = er_next(er);
-                  int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-                  int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+                  int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+                  uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
                   return (uint32_t)(pc + xv + (int32_t)d8); }
         default: return 0;
         }
@@ -219,8 +220,8 @@ static void write_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, uin
     case 5: { int16_t d16 = (int16_t)er_next(er);
               mem_write(sz, (uint32_t)(g_cpu.A[reg] + (int32_t)d16), val); break; }
     case 6: { uint16_t ext = er_next(er);
-              int xreg = (ext >> 12) & 7, xtype = (ext >> 15) & 1; int8_t d8 = (int8_t)(ext & 0xFF);
-              int32_t xv = (int32_t)(int16_t)(xtype ? g_cpu.A[xreg] : g_cpu.D[xreg]);
+              int xreg = (ext >> 12) & 7; int8_t d8 = (int8_t)(ext & 0xFF);
+              uint32_t xv = m68k_brief_index_value(ext, g_cpu.D[xreg], g_cpu.A[xreg]);
               mem_write(sz, (uint32_t)(g_cpu.A[reg] + xv + (int32_t)d8), val); break; }
     case 7:
         switch (reg) {
@@ -546,8 +547,8 @@ static void do_movem(const M68KInstr *ins, M68KSize sz) {
     switch (mode) {
     case 2: case 3: case 4: base = g_cpu.A[reg]; break;
     case 5: { int16_t d16 = (int16_t)er_next(&er2); base = (uint32_t)(g_cpu.A[reg] + (int32_t)d16); break; }
-    case 6: { uint16_t ext = er_next(&er2); int xreg=(ext>>12)&7,xtype=(ext>>15)&1; int8_t d8=(int8_t)(ext&0xFF);
-              int32_t xv=(int32_t)(int16_t)(xtype?g_cpu.A[xreg]:g_cpu.D[xreg]);
+    case 6: { uint16_t ext = er_next(&er2); int xreg=(ext>>12)&7; int8_t d8=(int8_t)(ext&0xFF);
+              uint32_t xv=m68k_brief_index_value(ext,g_cpu.D[xreg],g_cpu.A[xreg]);
               base = (uint32_t)(g_cpu.A[reg] + xv + (int32_t)d8); break; }
     case 7:
         switch (reg) {
@@ -556,8 +557,8 @@ static void do_movem(const M68KInstr *ins, M68KSize sz) {
         case 2: { uint32_t pc = ins->addr + er2.bp; int16_t d16=(int16_t)er_next(&er2);
                   base = (uint32_t)((int32_t)pc + d16); break; }
         case 3: { uint32_t pc = ins->addr + er2.bp; uint16_t ext = er_next(&er2);   /* (d8,PC,Xn) */
-                  int xreg=(ext>>12)&7,xtype=(ext>>15)&1; int8_t d8=(int8_t)(ext&0xFF);
-                  int32_t xv=(int32_t)(int16_t)(xtype?g_cpu.A[xreg]:g_cpu.D[xreg]);
+                  int xreg=(ext>>12)&7; int8_t d8=(int8_t)(ext&0xFF);
+                  uint32_t xv=m68k_brief_index_value(ext,g_cpu.D[xreg],g_cpu.A[xreg]);
                   base = (uint32_t)(pc + xv + (int32_t)d8); break; }
         default: break;
         }
@@ -608,7 +609,48 @@ static void do_movem(const M68KInstr *ins, M68KSize sz) {
  * Returns M68KI_OK and writes *next_pc on success; returns M68KI_HALT_UNIMPL
  * (with bad_pc/op recorded) for anything not yet implemented.
  * ========================================================================= */
+/* ---- Executed-PC coverage (always-on ring; queried, never armed) ---------
+ * Replaces the coverage the deleted clown68000 oracle used to provide. Every
+ * instruction the interpreter retires marks a bit here, so the record is
+ * complete from process start rather than from the moment a probe attached —
+ * whether the interpreter is driving the whole program (GENESIS_FORCE_INTERP)
+ * or only running Tier-3 floor capsules.
+ *
+ * One bit per word-aligned address over the 4 MB cart space = 256 KB, lazily
+ * allocated on first mark so a build that never interprets pays nothing. The
+ * hot path is a shift and an OR, not a printf. */
+#define M68KI_COV_WORDS  (0x400000u >> 1)          /* word-aligned PCs */
+#define M68KI_COV_BYTES  ((M68KI_COV_WORDS + 7u) >> 3)
+static uint8_t *s_exec_cov = NULL;
+
+static void cov_mark(uint32_t pc) {
+    if (pc >= 0x400000u) return;                   /* RAM-resident code: not cart */
+    if (!s_exec_cov) {
+        s_exec_cov = (uint8_t *)calloc(M68KI_COV_BYTES, 1);
+        if (!s_exec_cov) return;
+    }
+    uint32_t i = pc >> 1;
+    s_exec_cov[i >> 3] |= (uint8_t)(1u << (i & 7u));
+}
+
+int m68k_interp_cov_active(void) { return s_exec_cov != NULL; }
+
+/* Append the executed set, one hex address per line, ascending. Returns the
+ * count written, or -1 if nothing was ever interpreted. */
+long m68k_interp_cov_dump(FILE *f) {
+    if (!s_exec_cov) return -1;
+    long n = 0;
+    for (uint32_t i = 0; i < M68KI_COV_WORDS; i++) {
+        if (s_exec_cov[i >> 3] & (1u << (i & 7u))) {
+            fprintf(f, "%06X\n", i << 1);
+            n++;
+        }
+    }
+    return n;
+}
+
 static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
+    cov_mark(ins->addr);   /* every interpreted instruction, all entry paths */
     ExtR er; er_init(&er, ins);
     uint32_t fall = ins->addr + ins->byte_length;
     *next_pc = fall;
@@ -1039,7 +1081,6 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
     }
 }
 
-#if ENABLE_RECOMPILED_CODE
 /* =========================================================================
  * Per-instruction cycle accounting + VBlank servicing.
  *
@@ -1242,7 +1283,6 @@ static void interp_account_cycles(const M68KInstr *ins) {
      * same axis value. No-op unless GENESIS_COSIM. */
     GEN_COSIM_TICK(cyc);
 }
-#endif /* ENABLE_RECOMPILED_CODE */
 
 /* =========================================================================
  * Public entries.
@@ -1267,13 +1307,11 @@ M68kiStatus m68k_interp_step(void) {
         return M68KI_HALT_UNIMPL;
     }
     g_cpu.PC = next & 0xFFFFFFu;
-#if ENABLE_RECOMPILED_CODE
     /* Mirror the generated code's per-instruction cycle accounting + VBlank
      * servicing so a floor run keeps the 68K clock advancing and lets the VBla
      * handler fire / the game fiber yield between interpreted instructions,
      * exactly as it would between statically-recompiled ones. */
     interp_account_cycles(&ins);
-#endif
     return M68KI_OK;
 }
 
@@ -1360,9 +1398,7 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
             return M68KI_HALT_UNIMPL;
         }
         g_cpu.PC = next & 0xFFFFFFu;
-#if ENABLE_RECOMPILED_CODE
         interp_account_cycles(&ins);
-#endif
         /* Net-depth bookkeeping (after exec). A nested RTS/RTR balances a prior
          * JSR/BSR within the capsule; depth never goes below 0 because a
          * depth-0 return is intercepted above. */
@@ -1377,9 +1413,8 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
     }
 }
 
-#ifdef GENESIS_COSIM
 /* ---------------------------------------------------------------------------
- * Interrupt-handler run (FORCE_INTERP / pairing #1).
+ * Interrupt-handler run (FORCE_INTERP; also used by co-sim pairing #1).
  *
  * Interprets an interrupt HANDLER BODY from its autovector entry, stopping at
  * the handler's own depth-0 RTE — the exact analog of what the recompiled
@@ -1422,9 +1457,7 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
             return M68KI_HALT_UNIMPL;
         }
         g_cpu.PC = next & 0xFFFFFFu;
-#if ENABLE_RECOMPILED_CODE
         interp_account_cycles(&ins);
-#endif
         if (ins.mnemonic == MN_JSR || ins.mnemonic == MN_BSR)
             depth++;
         else if (ins.mnemonic == MN_RTS || ins.mnemonic == MN_RTR)
@@ -1435,7 +1468,6 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
         }
     }
 }
-#endif /* GENESIS_COSIM */
 
 /* ---------------------------------------------------------------------------
  * RAM-handler capsule — execute RAM-RESIDENT code from LIVE memory.
@@ -1460,7 +1492,6 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
  * Cycle accounting runs per instruction (interp_account_cycles), the same
  * tail the generated code emits.
  * ------------------------------------------------------------------------- */
-#if ENABLE_RECOMPILED_CODE
 M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc)
 {
     g_cpu.PC = entry_pc & 0xFFFFFFu;
@@ -1495,9 +1526,7 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
         if (ins.mnemonic == MN_RTE) {
             g_cpu.A[7] += 4u * (uint32_t)depth;
             g_rte_pending = 1;
-#if ENABLE_RECOMPILED_CODE
             interp_account_cycles(&ins);
-#endif
             return M68KI_OK;
         }
 
@@ -1522,4 +1551,3 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
         }
     }
 }
-#endif /* ENABLE_RECOMPILED_CODE */

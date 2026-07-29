@@ -1,6 +1,3 @@
-[submodule "clownmdemu-core"]
-	path = clownmdemu-core
-	url = https://github.com/mstan/clownmdemu
 [submodule "external/m68k-recomp-core"]
 	path = external/m68k-recomp-core
 	url = ../m68k-recomp-core.git

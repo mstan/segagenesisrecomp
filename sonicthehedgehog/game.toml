@@ -260,7 +260,10 @@ extra = [
     0x00DEAE,
     0x01010E,
     0x0103F2,
+    0x0103F4,   # FBlock_Action .type01 indexed entry
+    0x010400,   # FBlock_Action .type02 indexed entry
     0x010422,
+    0x010A68,   # BigSpikeBall .type03 indexed entry
     0x012310,   # Gargoyle object mapping
 
     # Sound driver â€” CoordFlag sub-handlers not in the dispatched table.

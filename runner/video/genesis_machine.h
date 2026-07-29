@@ -1,7 +1,7 @@
 /*
  * genesis_machine.h — clean-room own-backend: the Genesis "machine" that ties
  * our VDP + bus + superzazu Z80 together and runs the frame, replacing
- * ClownMDEmu_Iterate. AGPL-free runtime teardown items #4/#5. Built behind
+ * the machine step. AGPL-free runtime teardown items #4/#5. Built behind
  * OWN_BACKEND; brought up incrementally (video first, then audio/interrupt
  * timing) against the clownmdemu oracle.
  *

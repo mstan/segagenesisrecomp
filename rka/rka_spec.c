@@ -78,6 +78,4 @@ const GameSpec g_game_spec = {
     .commands               = NULL,
     .command_count          = 0,
 
-    .hybrid_table           = NULL,
-    .hybrid_table_size      = 0,
 };

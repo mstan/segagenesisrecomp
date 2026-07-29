@@ -17,7 +17,6 @@
  *                           normal recompiled flow; no RAM seeding
  *                           required for the native build.
  *   - call_periodic       — no PLC-style periodic hook wired yet.
- *   - hybrid_table        — empty (sonic2_hybrid_table.c size=0).
  */
 #include "game_spec.h"
 #include "genesis_runtime.h"
@@ -270,6 +269,4 @@ const GameSpec g_game_spec = {
     .commands               = sonic2_commands,
     .command_count          = (int)(sizeof(sonic2_commands) / sizeof(sonic2_commands[0])),
 
-    .hybrid_table           = NULL,
-    .hybrid_table_size      = 0,
 };

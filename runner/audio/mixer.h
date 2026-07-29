@@ -1,7 +1,7 @@
 /*
  * mixer.h — drain audio event queue and render samples via ym2612 + psg.
  *
- * Called once per wall frame after ClownMDEmu_Iterate returns. Walks the
+ * Called once per wall frame after the machine step returns. Walks the
  * queued (cycle_stamp, port, value) events in order, advancing the chips
  * between events so register writes land at accurate sub-sample cycle
  * positions. Fills caller-provided FM and PSG sample buffers.

@@ -27,9 +27,7 @@ static size_t     s_overflow_count = 0;
  * same" write on both backends. Never drained (distinct from the mixer queue);
  * a cosim `chiphist` command dumps the last N to diff stamp-vs-value drift. */
 #include "../cosim.h"
-#if OWN_BACKEND
 #include "../video/genesis_machine.h"   /* g_machine.master_cycle (raster ruler) */
-#endif
 #define HIST_N 131072u   /* power of two */
 typedef struct { uint64_t idx; uint32_t stamp; uint32_t mcyc; uint8_t port, value; } HistEnt;
 static HistEnt  s_hist[HIST_N];
@@ -42,11 +40,7 @@ static uint64_t s_stream_hash = COSIM_FNV_OFFSET;
 static void hist_record(uint32_t stamp, uint8_t port, uint8_t value) {
     HistEnt *h = &s_hist[s_hist_total & (HIST_N - 1u)];
     h->idx = s_hist_total; h->stamp = stamp;
-#if OWN_BACKEND
     h->mcyc = g_machine.master_cycle;   /* raster ruler (own-backend drill only) */
-#else
-    h->mcyc = 0;                        /* oracle: no master_cycle global */
-#endif
     h->port = port; h->value = value;
     s_hist_total++;
     s_stream_hash = cosim_fnv_u8(cosim_fnv_u8(s_stream_hash, port), value);

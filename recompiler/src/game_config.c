@@ -71,6 +71,15 @@ static void append_late_extra_func(GameConfig *cfg, uint32_t addr) {
     cfg->late_extra_funcs[cfg->late_extra_func_count++] = addr;
 }
 
+static void append_function_pointer_helper(GameConfig *cfg, uint32_t addr) {
+    cfg->function_pointer_helpers = grow_to_fit(
+        cfg->function_pointer_helpers,
+        &cfg->function_pointer_helper_cap,
+        cfg->function_pointer_helper_count,
+        sizeof(uint32_t));
+    cfg->function_pointer_helpers[cfg->function_pointer_helper_count++] = addr;
+}
+
 static void append_extra_seed(GameConfig *cfg, uint32_t addr) {
     cfg->extra_seeds = grow_to_fit(cfg->extra_seeds,
                                    &cfg->extra_seed_cap,
@@ -266,6 +275,16 @@ static bool merge_toml(GameConfig *cfg, toml_table_t *root, const char *src_path
                 if (d.ok) append_late_extra_func(cfg, (uint32_t)d.u.i);
             }
         }
+        toml_array_t *pointer_helpers =
+            toml_array_in(funcs, "function_pointer_helpers");
+        if (pointer_helpers) {
+            int n = toml_array_nelem(pointer_helpers);
+            for (int i = 0; i < n; i++) {
+                toml_datum_t d = toml_int_at(pointer_helpers, i);
+                if (d.ok)
+                    append_function_pointer_helper(cfg, (uint32_t)d.u.i);
+            }
+        }
         toml_array_t *bl = toml_array_in(funcs, "blacklist");
         if (bl) {
             int n = toml_array_nelem(bl);
@@ -320,6 +339,7 @@ void game_config_free(GameConfig *cfg) {
     free(cfg->jump_tables);
     free(cfg->extra_funcs);
     free(cfg->late_extra_funcs);
+    free(cfg->function_pointer_helpers);
     free(cfg->extra_seeds);
     free(cfg->blacklist);
     free(cfg->protected_ranges);

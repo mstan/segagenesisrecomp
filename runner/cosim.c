@@ -12,14 +12,12 @@
  */
 #include "cosim.h"
 #include "include/genesis_runtime.h"   /* g_cpu, g_cosim_cycle/next_cp, proto */
-#if OWN_BACKEND
 /* The timingfields/vdpfields drill commands + the full-state hash read the own-
  * backend globals (g_machine/GVDP), which don't exist in the oracle build. */
 #include "video/genesis_machine.h"     /* g_machine (master_cycle, z80_cycle_debt) */
 #include "video/genesis_vdp.h"         /* GVDP fields (raster vs content breakdown) */
 extern uint32_t g_68k_stamp_rebase;
 extern int      glue_cosim_vint_latched(void);
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -116,12 +114,8 @@ static void do_checkpoint(uint64_t clock)
     cosim_state_apply_pending_injection();
 
     CosimSubHashes sub;
-#if OWN_BACKEND
     uint64_t full = s_visible ? cosim_state_hash_visible(&sub)
                               : cosim_state_hash(&sub);
-#else
-    uint64_t full = cosim_state_hash_visible(&sub);   /* oracle: visible only */
-#endif
 
     uint64_t cp = s_cp + 1;            /* compute; do NOT publish s_cp yet */
     /* Fold the ORDINAL (both backends agree) + state hash — NOT the raw clock. */
@@ -281,16 +275,11 @@ static void handle(sock_t c, char *line) {
         send_str(c, out);
     } else if (!strcmp(line, "timingfields")) {
         wait_parked();
-#if OWN_BACKEND
         snprintf(out, sizeof out,
             "audio_cyc %u stamp_rebase %u vint_latched %d master_cycle %u z80_debt %u\n",
             g_audio_cycle_counter, g_68k_stamp_rebase, glue_cosim_vint_latched(),
             g_machine.master_cycle, g_machine.z80_cycle_debt);
-#else
-        snprintf(out, sizeof out, "n/a (oracle build)\n");
-#endif
         send_str(c, out);
-#if OWN_BACKEND
     } else if (!strcmp(line, "vdpfields")) {
         wait_parked();
         /* Separate the RASTER PHASE (scanline/status counters, which advance
@@ -313,7 +302,6 @@ static void handle(sock_t c, char *line) {
             (unsigned long long)hv, (unsigned long long)hc,
             (unsigned long long)hs, (unsigned long long)hr);
         send_str(c, out);
-#endif /* OWN_BACKEND (vdpfields) */
     } else if (!strcmp(line, "psgfields")) {
         wait_parked();
         char b[1024]; psg_cosim_dump(b, (int)sizeof b);
@@ -400,11 +388,7 @@ void cosim_init(void) {
      * build ALWAYS uses this (full state won't cross-compile against clownmdemu's
      * structs); the own-backend enables it via GENESIS_COSIM_VISIBLE=1. */
     const char *ev = getenv("GENESIS_COSIM_VISIBLE");
-#if !OWN_BACKEND
-    s_visible = 1;                          /* oracle: only the visible hash works */
-#else
     s_visible = (ev && *ev && *ev != '0');
-#endif
 
     const char *es = getenv("GENESIS_COSIM_STRIDE");
     s_stride = (es && *es) ? strtoull(es, 0, 10) : 1;
@@ -437,11 +421,6 @@ void cosim_init(void) {
         closesock(s_listen); s_listen = SOCK_INVALID; return;
     }
 
-#if !OWN_BACKEND
-    /* Oracle: chain the per-instruction cycle-charging hook onto the interpreter
-     * (runs after glue_init/HybridInit, which already set g_hybrid_pre_insn_fn). */
-    cosim_cycles_oracle_install();
-#endif
 
 #ifdef _WIN32
     _beginthreadex(0, 0, server_thread, 0, 0, 0);

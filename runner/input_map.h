@@ -6,7 +6,7 @@
  * buttons (3-button: U/D/L/R/A/B/C/Start; 6-button adds X/Y/Z/Mode). The launcher
  * edits this table; the runner consumes it; app_config persists it to settings.ini.
  *
- * One module so both input paths (the ClownMDEmu_Button input_requested_cb used by
+ * One module so both input paths (the GenesisButton input_requested_cb used by
  * the oracle, and the own-backend per-frame pad push to machine_set_pad) agree on
  * a single source of truth. Defaults reproduce today's mapping exactly, so a user
  * who never opens the launcher / never writes settings.ini sees no change.
