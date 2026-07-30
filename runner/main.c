@@ -264,6 +264,17 @@ static void widescreen_setup(void)
                 s_ws_user_cells, s_ws_bar_black ? "black" : "backdrop");
 }
 
+/* TCP debug hook (`ws_set` in cmd_server.c): arm/disarm the user widescreen
+ * request at runtime, exactly like the runtime-overlay view toggle. Lets
+ * probes script the mid-level 16:9 arm transition (margin 0 -> N) without a
+ * relaunch. Engine-side state only — no game RAM is touched. Returns the new
+ * value. The launcher overlay UI (if open) is not re-synced; cosmetic only. */
+int runner_ws_set_user(int on)
+{
+    s_ws_user_on = on ? 1 : 0;
+    return s_ws_user_on;
+}
+
 /* Widescreen window/output geometry (valid after widescreen_setup()). */
 #define WS_ASPECT_W 16
 #define WS_ASPECT_H 9
@@ -1968,6 +1979,10 @@ int main(int argc, char *argv[])
         if (cmd_cr.input_override) {
             s_tcp_input_active = 1;
             s_tcp_input_keys = cmd_cr.input_keys;
+        }
+        if (cmd_cr.input_release) {
+            s_tcp_input_active = 0;
+            s_tcp_input_keys = 0;
         }
         /* run_extra_frames handled after normal frame */
 

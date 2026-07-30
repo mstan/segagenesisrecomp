@@ -74,8 +74,21 @@ capable         = true
 max_extra_cells = 8         # 8 cells (64px)/side -> 448px (16:9). Capped so the
                            # widened tile-row redraw stays within Block_cache (32
                            # blocks): base 22 + 2*cells <= 32.
-eligible_modes     = [0x08, 0x0C]  # EXACT match (no 0x7F mask): GM_Demo, GM_Level
-level_started_addr = 0xFFF711       # Level_started_flag (byte): require != 0 to widen (read-only gate)
+# EXACT match (no 0x7F mask): GM_Demo, GM_Level, plus their 0x80-flagged
+# transition values (0x88/0x8C) so the margin is ALREADY armed while the
+# level-load sequence (Level_TtlCard -> DrawInitialBG + initial FG fill)
+# runs. That makes the initial fills margin-aware from frame 0: the BG
+# cameras all start ratio-aligned at load, so DrawInitialBG's full-512px
+# uniform fill is strip-correct including the revealed margins, and the
+# widened per-strip seam maintenance keeps them correct thereafter. This
+# replaces the old level_started_addr gate (removed below), which forced
+# the whole load to run at margin 0 and left Plane B's margins holding
+# wrap-around content on arm (the CPZ "diagonal corruption").
+eligible_modes     = [0x08, 0x0C, 0x88, 0x8C]
+# NO level_started_addr: the engine skips that gate when the field is absent.
+# The gate predated the redraw-flag/injection design (c583c0e pillarboxed the
+# title card by construction); with it, 16:9 armed only after the title card,
+# strictly later than the level's own margin-filling draws.
 two_player_addr    = 0xFFFFD8       # Two_player_mode (word): require == 0 to widen (read-only gate)
 redraw_flag_addr   = 0xFFF72C       # Screen_redraw_flag: the canonical ROM's OWN full-redraw
                                     # flag (s2.asm tst.b @ 18588; game sets it for WFZ piston etc).
@@ -196,6 +209,70 @@ addr = 0xDE64
 kind = "addimm"
 reg  = 5
 
+# Title-card progressive screen fill (loc_15758, the 2-rows-per-step draw that
+# paints the level behind the title card): each row is a FULL 512px plane row
+# (d6=$1F into DrawBlockRow_CustomWidth) anchored at camera-16. Unwidened, the
+# leftmost margin-16 px of the widescreen view showed plane cells whose content
+# wrapped from 512px to the RIGHT (world x 512..560 at a level start with the
+# camera clamped to Min+margin) — the "discontinuous ground" at level starts.
+# Widening both d5 seeds to -16-margin anchors the same full-width row one
+# margin further left, so every visible cell gets LOCAL content; the wrap cells
+# move to camera+432..496, past the visible right edge (camera+384). The count
+# ($1F) is untouched — still one full plane row. P2 copy ($1573A/$15744) left
+# alone (2P margin is always 0). margin 0 => byte-identical.
+[[widescreen_site]]
+addr = 0x1576E            # moveq #-16,d5 before CalculateVRAMAddress (P1 fill)
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0x15778            # moveq #-16,d5 before DrawBlockRow_CustomWidth
+kind = "subimm"
+reg  = 5
+
+# Sprite-X 10-bit mask (DrawSprite piece writers: Normal/FlipX/FlipY/FlipXY):
+# andi #$1FF -> #$3FF, same recipe as Sonic 1 (D786/D7D4/D81A/D86E). Without
+# it, widened sprite positions >= 512 (right margin band) wrapped to the LEFT
+# edge — the EHZ2 boss "rapidly switching sides" while hovering off the right
+# edge, and any right-margin object ghosting at screen-left. Static widen is
+# safe: at 4:3 sprite x never reaches 512, so $3FF == $1FF behaviorally.
+# BuildSprites_2P piece writers ($16DE4+) untouched (widescreen off in 2P).
+[[widescreen_site]]
+addr = 0x16844            # DrawSprite_Loop (no flip)
+kind = "mask10"
+[[widescreen_site]]
+addr = 0x16884            # DrawSprite_FlipX
+kind = "mask10"
+[[widescreen_site]]
+addr = 0x168DC            # DrawSprite_FlipY
+kind = "mask10"
+[[widescreen_site]]
+addr = 0x1692E            # DrawSprite_FlipXY
+kind = "mask10"
+
+# Player left level-bound (Sonic_LevelBound / Tails_LevelBound): the wall is
+# Camera_Min_X_pos + $10, read via `move.w (abs).w,d0`. Unwidened, the player
+# could walk `margin` px into the revealed left margin (the camera, clamped at
+# Min+margin, no longer follows) and stand over layout the designers never
+# meant to be playable — the "Sonic floats" report. addmem widens the bound
+# read to Min+margin, capped (base=2) at the Max word right after it, so a
+# boss lock (Min == Max) keeps the authentic arena width. The game's own
+# addi #$10 then lands on top: wall = min(Min+margin, Max) + $10 — 16px inside
+# the 4:3 window, exactly the authentic wall-to-camera geometry.
+# gate = Current_Boss_ID ($FFF7AA): while a boss is active the bound stays
+# fully authentic — S2 boss locks are NOT always Min == Max (EHZ2 locks
+# $28F0/$2940), so the Max cap alone would still eat `margin` px of arena.
+# The game's own right-bound check consults the same flag ($1A998).
+[[widescreen_site]]
+addr = 0x1A984            # Sonic_LevelBound: move.w (Camera_Min_X_pos).w,d0
+kind = "addmem"
+base = 2
+gate = 0xFFF7AA
+[[widescreen_site]]
+addr = 0x1C56A            # Tails_LevelBound: move.w (Tails Min copy).w,d0
+kind = "addmem"
+base = 2
+gate = 0xFFF7AA
+
 # FG/Draw_All per-row block count: retarget DrawBlockRow (DF92, resets d6=21) ->
 # DrawBlockRow_CustomWidth (DF8A) with d6 preset = 21 + margin/8. Only these 3
 # callers widen; the 6 BG-row DrawBlockRow callers keep 21 (matches the disasm).
@@ -244,6 +321,119 @@ addr  = 0x17040          # RingsManager_Main: right-window addi (inject 2*margin
 kind  = "addreg"
 reg   = 4
 scale = 2
+
+# BG vertical-scroll row draws: when the BG scrolls up/down, the new top/bottom
+# row is drawn 22 blocks wide from d5=-16 (Draw_BG1 simple rows @ DBCE/DBE4,
+# Draw_BG3_CPZ per-strip-camera rows @ DE24) — the disasm reference never
+# widened these, so vertical movement in 16:9 left margin-wide holes at the
+# revealed sides ("random missing sections" in CPZ, which scrolls vertically
+# everywhere). Same recipe as Draw_All: widen both d5 seeds (start -16-margin)
+# and retarget the DrawBlockRow call (DF92, resets d6=21) to
+# DrawBlockRow_CustomWidth (DF8A) with d6 preset 21 + margin/8.
+# Draw_BG1 scroll-up row (flag bit 0):
+[[widescreen_site]]
+addr = 0xDBD0            # moveq #-16,d5 before CalculateVRAMAddress
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDBD8            # moveq #-16,d5 before DrawBlockRow
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr   = 0xDBDA          # bsr DrawBlockRow -> CustomWidth, d6 = 21 + margin/8
+kind   = "call_widen"
+reg    = 6
+base   = 21
+shift  = 3
+target = 0xDF8A
+# Draw_BG1 scroll-down row (flag bit 1):
+[[widescreen_site]]
+addr = 0xDBE8
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr = 0xDBF2
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr   = 0xDBF4
+kind   = "call_widen"
+reg    = 6
+base   = 21
+shift  = 3
+target = 0xDF8A
+# Draw_BG3_CPZ scroll-up/down row (shared tail @ DE24; per-row camera from the
+# DDD1 strip table, so the widened row is drawn at the OWNING strip's offset):
+[[widescreen_site]]
+addr = 0xDE3C            # moveq #-16,d5 (pushed, feeds both E286 and the row draw)
+kind = "subimm"
+reg  = 5
+[[widescreen_site]]
+addr   = 0xDE4A
+kind   = "call_widen"
+reg    = 6
+base   = 21
+shift  = 3
+target = 0xDF8A
+
+# ---------------------------------------------------------------------------
+# HUD anchor: BuildHUD_P1 positions every 1P HUD piece with a `move.w #x,d3`
+# immediate right before its sprite-piece draw call. subimm shifts each X left
+# by the margin, so the HUD keeps its authentic 16px inset from the TRUE
+# widescreen left edge (margin 0 => authentic positions, byte-identical).
+# BuildHUD_P2/P2_Continued (2P split HUD, $409C6+) are untouched — widescreen
+# is gated off in 2P anyway.
+[[widescreen_site]]
+addr = 0x40836           # BuildHUD ring-flash piece (x=$90)
+kind = "subimm"
+reg  = 3
+[[widescreen_site]]
+addr = 0x4088C           # BuildHUD_P1_Continued: SCORE/TIME/RINGS block (x=$90)
+kind = "subimm"
+reg  = 3
+[[widescreen_site]]
+addr = 0x408AC           # time digits (x=$B8)
+kind = "subimm"
+reg  = 3
+[[widescreen_site]]
+addr = 0x408D0           # ring digits (x=$C0)
+kind = "subimm"
+reg  = 3
+[[widescreen_site]]
+addr = 0x408F2           # conditional timer sub-field (x=$110)
+kind = "subimm"
+reg  = 3
+[[widescreen_site]]
+addr = 0x4090A           # lives block (x=$90)
+kind = "subimm"
+reg  = 3
+
+# ---------------------------------------------------------------------------
+# Camera left-bound clamp: ScrollHoriz compares/loads Camera_Min_X_pos through
+# (a2). addmem widens that bound to Min+margin, capped at Camera_Max_X_pos
+# (the word at (a2)+2 — base=2), never below authentic Min. The camera then
+# stops `margin` px inside the level's left boundary, so the revealed left
+# margin is always REAL level data — no more wrap artifact at level starts —
+# while a boss lock (Min == Max) degrades to authentic behavior (no snap or
+# oscillation). Both the cmp and its clamp store carry the site so they agree.
+# Right/Max side deliberately NOT clamped: LevEvents boss triggers wait for
+# the camera to REACH Camera_Max_X_pos; shrinking it risks softlocks.
+[[widescreen_site]]
+addr = 0xD750            # cmp.w (a2),d0 — left-bound check
+kind = "addmem"
+base = 2
+[[widescreen_site]]
+addr = 0xD754            # move.w (a2),d0 — left-bound clamp store
+kind = "addmem"
+base = 2
+# Initial camera at level load (LevelSizeLoad): the clamp-to-zero of
+# `player_x - $A0` becomes clamp-to-margin, so the level fades in already
+# clamped (no post-fade snap). Starts deeper than $A0+margin are untouched
+# (authentic camera) — ScrollHoriz's clamp above covers any residue.
+[[widescreen_site]]
+addr = 0xC19C            # moveq #0,d1 — initial camera X clamp
+kind = "addimm"
+reg  = 1
 
 # ---------------------------------------------------------------------------
 # Interrupt vectors (from 68K vector table)

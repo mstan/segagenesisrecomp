@@ -86,9 +86,29 @@ typedef struct { uint32_t lo; uint32_t hi; } ProtectedRange;
  *                    (the clamp path is taken for D[reg] <= 0 either way). Only valid
  *                    on a `bhi` (Bcc cond HI); otherwise ignored with a diagnostic.
  *                    Used for the RingsManager visible-window left edge.
+ *   WS_SITE_ADDMEM : at a word-size `cmp.w (An),Dn` / `move.w (An),Dn` (or
+ *                    their abs.W-source forms, e.g. the player level-bound's
+ *                    `move.w (Camera_Min_X_pos).w,d0`), widen
+ *                    the VALUE READ FROM MEMORY by +(g_ws_margin>>shift) before
+ *                    it is compared/stored. If `base` != 0, cap the widened
+ *                    value at the word `base` bytes after the source operand,
+ *                    and never go below the original value. Built for the
+ *                    camera left-bound clamp ((a2) = Camera_Min_X_pos with
+ *                    Camera_Max_X_pos at +2, base=2): the camera then stops
+ *                    `margin` px inside the level's left boundary, so the
+ *                    widened window never reveals space beyond the level; at a
+ *                    boss lock (Min == Max) the cap degrades it to authentic
+ *                    behavior instead of overshooting. Apply the SAME site to
+ *                    the paired clamp `move` so it stores the value the `cmp`
+ *                    compared. Other src modes/sizes are ignored with a
+ *                    diagnostic. margin 0 => identical.
  * `scale` (default 1) multiplies the margin for addreg/subreg — e.g. scale=2 adds
  * 2*(margin>>shift), used where a single site must widen by both margins (the ring
  * window's right edge, which also undoes the left edge's -margin).
+ * `gate` (addmem only, optional): RAM byte address; the widening applies only
+ * while that byte reads 0. Built for the player left level-bound: gated on the
+ * game's boss-active flag so boss arenas keep their authentic playfield (the
+ * game's own right-bound check consults the same flag). 0 = ungated.
  * reg indexes a data register (0..7); A-registers are out of scope (the
  * widened bounds are all computed in D-registers in these games).
  */
@@ -101,6 +121,7 @@ typedef enum {
     WS_SITE_SUBIMM = 5,
     WS_SITE_CALL_WIDEN = 6,
     WS_SITE_CULL_WINDOW_LEFT = 7,
+    WS_SITE_ADDMEM = 8,
 } WsSiteKind;
 
 typedef struct {
@@ -111,6 +132,7 @@ typedef struct {
     uint8_t    scale;   /* addreg/subreg margin multiplier (default 1; e.g. 2)*/
     uint16_t   base;    /* call_widen: count the callee would set (e.g. 21)   */
     uint32_t   target;  /* call_widen: retarget call address (e.g. 0xDF8A)    */
+    uint32_t   gate;    /* addmem: widen only while RAM byte here == 0 (0 = ungated) */
 } WsSite;
 
 /*

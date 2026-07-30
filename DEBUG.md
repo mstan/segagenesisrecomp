@@ -39,6 +39,10 @@ Reference for probe authors. All commands take a JSON request like
 - `ping` — sanity check.
 - `pause`, `continue` — suspend / resume the game thread.
 - `run_frames N` — single-step N frames forward.
+- `ws_set {"on":0|1}` — arm/disarm the user widescreen request at runtime
+  (engine state only, same as the runtime-overlay view toggle; the per-frame
+  eligibility gates still apply). Lets probes script the mid-level 16:9 arm
+  transition without a relaunch.
 
 ### State queries (current)
 - `get_registers` — current M68K + Z80 + cycle counters.

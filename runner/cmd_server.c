@@ -65,6 +65,7 @@ extern M68KState g_cpu;
 int runner_save_state_file(const char *path);
 int runner_load_state_file(const char *path);
 int runner_write_screenshot_file(const char *path);
+int runner_ws_set_user(int on);   /* arm/disarm the widescreen user request */
 
 extern uint32_t   g_cycle_accumulator;
 extern uint32_t   g_vblank_threshold;
@@ -2141,6 +2142,14 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         handle_load_state(id, json);
     } else if (strcmp(cmd, "screenshot") == 0) {
         handle_screenshot(id, json);
+    } else if (strcmp(cmd, "ws_set") == 0) {
+        /* Arm/disarm the user widescreen request at runtime (engine state
+         * only, same effect as the runtime-overlay view toggle). Lets probes
+         * script the mid-level 16:9 arm transition. {"on":0|1} */
+        int now = runner_ws_set_user(json_get_int(json, "on", 1));
+        char resp[96];
+        snprintf(resp, sizeof(resp), "{\"id\":%d,\"ok\":true,\"ws_user_on\":%d}", id, now);
+        send_response(resp);
     } else if (strcmp(cmd, "get_registers") == 0) {
         handle_get_registers(id);
     } else if (strcmp(cmd, "read_memory") == 0) {
@@ -2530,6 +2539,7 @@ CmdResult cmd_server_poll(void)
             if (line_cr.should_quit) cr.should_quit = true;
             if (line_cr.run_extra_frames > 0) cr.run_extra_frames = line_cr.run_extra_frames;
             if (line_cr.input_override) { cr.input_override = true; cr.input_keys = line_cr.input_keys; }
+            if (line_cr.input_release)  { cr.input_release = true; }
         }
         int consumed = (int)(nl - s_recv_buf) + 1;
         s_recv_len -= consumed;
