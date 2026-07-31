@@ -19,6 +19,10 @@
 #include <string.h>
 #ifndef _WIN32
 #include <unistd.h>   /* readlink, ssize_t — exe-dir resolution + popen picker */
+#ifdef __ANDROID__
+#include <dirent.h>   /* ROM scan of the app files dir (no file dialogs) */
+#include <strings.h>  /* strcasecmp */
+#endif
 #endif
 
 #include <SDL2/SDL.h>
@@ -48,6 +52,22 @@ static void init_exe_dir(const char *argv0)
      * the .AppImage's path, so config/saves anchor next to it. Order:
      * $APPIMAGE, then /proc/self/exe, then argv0. */
     s_exe_dir[0] = '\0';
+#ifdef __ANDROID__
+    /* Android: the process image is the system app_process and its directory
+     * is read-only. Anchor config/saves in the app's external files dir
+     * (/sdcard/Android/data/<pkg>/files — user- and adb-visible), and chdir
+     * there so cwd-relative outputs (dispatch_misses.log) land with them. */
+    {
+        const char *ext = SDL_AndroidGetExternalStoragePath();
+        if (ext && ext[0]) {
+            snprintf(s_exe_dir, sizeof(s_exe_dir), "%s/", ext);
+            if (chdir(ext) != 0)
+                fprintf(stderr, "chdir(%s) failed\n", ext);
+            (void)argv0;
+            return;
+        }
+    }
+#endif
     {
         const char *appimg = getenv("APPIMAGE");
         if (appimg && appimg[0]) {
@@ -76,7 +96,25 @@ const char *exe_relative(const char *filename)
     return buf;
 }
 
-#ifndef _WIN32
+#ifdef __ANDROID__
+/* The app files dir also holds savestates and RAM dumps with ROM-ish
+ * extensions (native_save_N.bin, ramdump_native.bin) — a bare extension
+ * scan can boot one as a "ROM" and abort. Genesis carts carry "SEGA" at
+ * 0x100; require it for .bin/.md/.gen (interleaved .smd is exempt). */
+static int rom_has_sega_header(const char *path)
+{
+    FILE *f = fopen(path, "rb");
+    char hdr[4];
+    int ok = 0;
+    if (!f) return 0;
+    if (fseek(f, 0x100, SEEK_SET) == 0 && fread(hdr, 1, 4, f) == 4)
+        ok = memcmp(hdr, "SEGA", 4) == 0;
+    fclose(f);
+    return ok;
+}
+#endif
+
+#if !defined(_WIN32) && !defined(__ANDROID__)
 /* Run one shell-wrapped native file chooser; read the selected path from its
  * stdout. Each command is gated on `command -v <tool>` so an absent tool
  * prints nothing and we fall through. Returns 1 and fills `out` only on a
@@ -1587,6 +1625,45 @@ int main(int argc, char *argv[])
             ofn.Flags = 0x00080000 | 0x00001000;
             if (GetOpenFileNameA(&ofn))
                 rom_path = picked_path;
+        }
+#elif defined(__ANDROID__)
+        /* No file-picker processes on Android. Boot the ROM cached in
+         * rom-<short_name>.cfg when it still exists, else the first Genesis
+         * ROM (*.bin/*.md/*.gen/*.smd) in the app files dir (cwd — see
+         * init_exe_dir). */
+        static char droid_rom[600];
+        if (rom_cfg_read(rom_cfg_path, droid_rom, sizeof droid_rom)) {
+            FILE *probe = fopen(droid_rom, "rb");
+            if (probe) {
+                fclose(probe);
+                /* Same header gate as the scan below: a cfg written before
+                 * the gate existed (or hand-edited) may point at a
+                 * savestate/dump; booting it aborts. */
+                const char *dot = strrchr(droid_rom, '.');
+                if ((dot && strcasecmp(dot, ".smd") == 0) ||
+                    rom_has_sega_header(droid_rom))
+                    rom_path = droid_rom;
+            }
+        }
+        if (!rom_path) {
+            DIR *d = opendir(".");
+            if (d) {
+                struct dirent *e;
+                while ((e = readdir(d)) != NULL) {
+                    const char *dot = strrchr(e->d_name, '.');
+                    if (!dot) continue;
+                    if (strcasecmp(dot, ".bin") != 0 && strcasecmp(dot, ".md") != 0 &&
+                        strcasecmp(dot, ".gen") != 0 && strcasecmp(dot, ".smd") != 0)
+                        continue;
+                    if (strcasecmp(dot, ".smd") != 0 && !rom_has_sega_header(e->d_name))
+                        continue;
+                    snprintf(droid_rom, sizeof droid_rom, "%s", e->d_name);
+                    rom_path = droid_rom;
+                    rom_cfg_write(rom_cfg_path, rom_path);
+                    break;
+                }
+                closedir(d);
+            }
         }
 #else
         /* Native graphical chooser, preference order; each gated on

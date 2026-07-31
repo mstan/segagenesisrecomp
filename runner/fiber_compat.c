@@ -54,10 +54,27 @@ void fiber_revert_thread(void)
 #  define _DARWIN_C_SOURCE 1
 #endif
 
-#include <ucontext.h>
+#ifdef __ANDROID__
+/* bionic declares the ucontext API in headers but ships no implementation
+ * (makecontext/swapcontext are absent from libc). The Android build links
+ * the vendored libucontext (ISC), which provides the same contract under a
+ * prefix; alias it in so the branch below stays one implementation. */
+#  include <libucontext/libucontext.h>
+#  define ucontext_t  libucontext_ucontext_t
+#  define getcontext  libucontext_getcontext
+#  define makecontext libucontext_makecontext
+#  define swapcontext libucontext_swapcontext
+#else
+#  include <ucontext.h>
+#endif
 #include <stdlib.h>
 #include <stdint.h>
+#ifndef __ANDROID__
+/* bionic's signal.h pulls in sys/ucontext.h, whose struct sigcontext and
+ * ucontext_t typedefs collide with the vendored libucontext's — and Android
+ * only needs the SIGSTKSZ fallback below anyway. */
 #include <signal.h>     /* SIGSTKSZ — minimum fiber stack floor */
+#endif
 
 /* glibc >= 2.34 no longer exposes SIGSTKSZ as a compile-time constant under
  * _XOPEN_SOURCE (it becomes sysconf(_SC_SIGSTKSZ), or is hidden entirely),
