@@ -263,6 +263,42 @@ slower:
 The optimization was reverted; retaining the unconditional optimized clears
 is measurably faster on this workload.
 
+### Z80 and audio attribution
+
+A 12,000-frame Sonic 3 & Knuckles gameplay run was sampled at 4 kHz with the
+Visual Studio Diagnostics CPU agent. WPA exported 84,926 process samples, of
+which 81,144 (95.55%) were in the game executable. MinGW symbols embedded in
+the PE are not resolved by WPA, so `tools/attribute_cpu_samples.py` reverses
+the module's ASLR relocation and maps each leaf address to the nearest defined
+GNU `nm` text symbol. All 81,144 executable samples were attributed.
+
+Grouping those leaf symbols by subsystem gives:
+
+| Bucket | Executable samples |
+| --- | ---: |
+| VDP | 68.138% |
+| YM2612 | 12.109% |
+| Z80 execution and bus access | 5.733% |
+| PSG | 1.257% |
+| Audio observability | 0.801% |
+| Mixer | 0.304% |
+| Event routing | 0.149% |
+| Resampler and device delivery | 0.000% |
+
+The zero delivery result is expected: the finite uncapped benchmark excludes
+host pacing and presentation. It establishes that delivery cannot affect this
+throughput result, but does not close the separate audio-enabled correctness
+and pacing measurement. The event queue is also not a useful throughput
+target at 0.149%; it remains functional state required by Sonic's bursty
+one-handler PCM traffic.
+
+The largest named audio/Z80 leaf functions were YMFM chip clocking (3.989%),
+YMFM 4-op output (2.727%), FM operator volume calculation (2.684%), Z80 opcode
+execution (2.801%), YM2612 sample generation (2.078%), PSG advancement
+(1.252%), Z80 stepping (1.028%), and Z80 bus reads (1.038%). The always-on
+audio anomaly detector consumed 0.801%, making it the first production
+observability candidate to measure independently.
+
 ## Burn-down
 
 ### P0 — harness and attribution
@@ -319,7 +355,7 @@ is measurably faster on this workload.
 
 ### P4 — Z80 and audio
 
-- [ ] Attribute Z80 stepping, YM2612, PSG, event routing, mixing, and resampling
+- [x] Attribute Z80 stepping, YM2612, PSG, event routing, mixing, and resampling
   independently.
 - [ ] Benchmark host-throughput mode separately from audio-enabled correctness.
 - [ ] Preserve the large functional event queue required by Sonic's one-handler
