@@ -128,13 +128,17 @@ pre-change and candidate engines:
   Attract added 200/200 exact hashes and 20/20 exact PNGs through frame
   12,001. Active Emerald Hill fuzz added 67/67 exact hashes and an exact final
   PNG at native width, then another 67/67 exact hashes and exact PNG at
-  448x224 widescreen resolution.
+  448x224 widescreen resolution. The binary-dispatch candidate repeated both
+  67/67 active-gameplay comparisons, including the native and 448x224 PNGs,
+  against the linear control.
 - Sonic 3 & Knuckles attract: 20/20 hashes and 19/19 PNGs were byte-identical.
   Gameplay fuzz added 97/97 exact hashes and 3/3 exact PNGs through frame
   5,856, with identical SRAM. The binary-dispatch candidate repeated the
   97/97, 3/3, and SRAM exact comparison against the linear control.
 - Rocket Knight Adventures attract: 200/200 hashes and 20/20 PNGs were exact.
   The longer input route added 280/280 exact hashes and 10/10 exact PNGs.
+  The binary-dispatch candidate repeated the longer 280/280 and 10/10 exact
+  comparison against the linear control with no bad diagnostics.
   Both builds exhibit the same pre-existing white/static screen after the
   Konami logo, so this proves regression neutrality for the observable route,
   not gameplay coverage.
