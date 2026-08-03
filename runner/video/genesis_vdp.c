@@ -612,6 +612,13 @@ static int plane_tiles(unsigned code2)
  * opaque flag (pixel != 0), and the tile's priority bit.
  * In interlace mode 2 (im2), py is in double-res lines: cells are 8x16
  * (64-byte patterns) and the plane covers ht*16 double-res lines. */
+typedef struct PlanePixelCache {
+    uint32_t nt_addr;
+    uint32_t pattern_addr;
+    uint16_t attr;
+    uint8_t pattern_byte;
+} PlanePixelCache;
+
 #if defined(NDEBUG) && defined(_MSC_VER)
 #define GVDP_HOT_INLINE __forceinline
 #elif defined(NDEBUG) && (defined(__GNUC__) || defined(__clang__))
@@ -620,7 +627,8 @@ static int plane_tiles(unsigned code2)
 #define GVDP_HOT_INLINE
 #endif
 static GVDP_HOT_INLINE void
-fetch_plane_pixel(const GVDP *v, uint16_t base, int wt, int ht,
+fetch_plane_pixel(const GVDP *v, PlanePixelCache *cache,
+                  uint16_t base, int wt, int ht,
                   int px, int py, int im2,
                   uint8_t *idx, int *opaque, int *hi)
 {
@@ -630,13 +638,27 @@ fetch_plane_pixel(const GVDP *v, uint16_t base, int wt, int ht,
     int wpx = wt * 8, hpx = ht << cell_h_shift;
     px &= (wpx - 1); py &= (hpx - 1);
     uint16_t nt = (uint16_t)(base + (uint16_t)(((py >> cell_h_shift) * wt + (px >> 3)) * 2));
-    uint16_t e  = vram_read_word(v, nt);
+    uint16_t e;
+    if (cache->nt_addr == nt) {
+        e = cache->attr;
+    } else {
+        e = vram_read_word(v, nt);
+        cache->nt_addr = nt;
+        cache->attr = e;
+    }
     int ti = e & 0x07FF;
     int fx = px & 7, fy = py & fy_mask;
     if (e & 0x0800) fx ^= 7;        /* H flip */
     if (e & 0x1000) fy ^= fy_mask;  /* V flip */
     uint16_t pa = (uint16_t)(ti * tile_bytes + fy * 4 + (fx >> 1));
-    uint8_t byte = v->vram[pa & 0xFFFF];
+    uint8_t byte;
+    if (cache->pattern_addr == pa) {
+        byte = cache->pattern_byte;
+    } else {
+        byte = v->vram[pa];
+        cache->pattern_addr = pa;
+        cache->pattern_byte = byte;
+    }
     int nib = (fx & 1) ? (byte & 0x0F) : (byte >> 4);
     *opaque = (nib != 0);
     *hi     = (e & 0x8000) != 0;
@@ -714,6 +736,14 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     /* Sprite layer for this output row (placed in centered output-column space). */
     sprite_render_line(v, line, total, offset);
 
+    /* A name-table entry covers eight adjacent pixels and each pattern byte
+     * covers two. Rendering runs after the line's CPU/Z80 slice, so VRAM
+     * cannot change underneath this row; keep separate caches for A, B, and
+     * window addressing so their independent tables never alias each other. */
+    PlanePixelCache cache_a = { ~0u, ~0u, 0, 0 };
+    PlanePixelCache cache_b = { ~0u, ~0u, 0, 0 };
+    PlanePixelCache cache_w = { ~0u, ~0u, 0, 0 };
+
     for (int xo = 0; xo < total; xo++) {
         /* xo is the output column; x is the original-screen column (centered
          * via `offset`). Columns within [-content_extra, w+content_extra) are
@@ -748,13 +778,14 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
          * The window is unscrolled and cell-addressed: in IM2 its vertical
          * addressing is still double-res (8x16 cells over the output rows). */
         if (x >= 0 && x < w && in_window(v, x, rline)) {
-            fetch_plane_pixel(v, base_w, win_wt, ht, x, line, im2, &a_idx, &a_op, &a_hi);
+            fetch_plane_pixel(v, &cache_w, base_w, win_wt, ht,
+                              x, line, im2, &a_idx, &a_op, &a_hi);
         } else {
-            fetch_plane_pixel(v, base_a, wt, ht,
+            fetch_plane_pixel(v, &cache_a, base_a, wt, ht,
                               (x - hs_a), (line + vs_a), im2, &a_idx, &a_op, &a_hi);
         }
         /* Plane B. */
-        fetch_plane_pixel(v, base_b, wt, ht,
+        fetch_plane_pixel(v, &cache_b, base_b, wt, ht,
                           (x - hs_b), (line + vs_b), im2, &b_idx, &b_op, &b_hi);
 
         /* Sprite layer (indexed in output-column space). */
