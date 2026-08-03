@@ -381,6 +381,26 @@ The source-level operation count did not predict the optimized inlined
 register/layout result. The two-negative stop rule applies, so the expression
 was reverted.
 
+### Address-free adjacent pattern-byte reuse
+
+The consecutive-coordinate attribute hit was also tested as proof that the
+second raw pixel of a pair could reuse the first pixel's packed pattern byte.
+Unlike the older pattern-byte cache, this variant did not compute or compare a
+pattern address before reuse; on eligible hits it skipped tile/row address
+construction, vertical flip, and the VRAM load.
+
+Sonic 3 & Knuckles remained exact across 97 gameplay-fuzz framebuffer
+checkpoints and matched full-state/audio hashes, but the extra branch and
+cache state grew release `.text` by 1,344 bytes and were decisively slower:
+
+- Pair 1: **-10.712%**.
+- Pair 2: **-11.185%**.
+- Median **-10.949%**, 0.472-point spread.
+
+The candidate was reverted. Together with the earlier pattern-address cache
+and pattern-row experiments, this closes additional per-pixel pattern caching
+as a diminishing-return family on the current renderer.
+
 ### Conditional sprite-operator clears
 
 An experiment skipped clearing the sprite shadow/highlight operator arrays on
