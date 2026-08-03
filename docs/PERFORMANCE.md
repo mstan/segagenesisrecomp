@@ -181,6 +181,19 @@ was reverted and is not retained. The likely explanation is unfavorable code
 layout/cache movement, but that hypothesis is not sufficient reason to keep a
 measured regression.
 
+### Plane name-table row cache
+
+An experiment cached each plane's `cell_y * width` name-table row offset.
+Although Sonic 1 remained exact across 62 Green Hill framebuffer checkpoints,
+the added cache comparisons and state traffic outweighed the removed multiply:
+
+- Pair 1: baseline 594.741 FPS, candidate 556.663 FPS (**-6.402%**).
+- Pair 2: candidate 539.852 FPS, baseline 595.281 FPS (**-9.311%**).
+- The 2.909-point spread passed the variance gate, while release `.text` grew
+  by 384 bytes and the executable grew by 512 bytes.
+
+Both orderings were decisively negative, so the row cache was reverted.
+
 ## Burn-down
 
 ### P0 — harness and attribution
