@@ -67,12 +67,17 @@ caches the name-table and pattern-row fetches shared by adjacent pixels. It
 does not cull scanlines, DMA, sprites, planes, or widescreen work.
 
 - Sonic 1 retained roughly **+10.5%** across order-reversed paired runs.
+- Sonic 2 retained **+9.755%** median across order-reversed 6,000-frame
+  gameplay pairs (**+8.896%**, **+10.615%**); the 1.719 percentage-point
+  spread passed the 3-point acceptance gate despite unrelated work on another
+  core.
 - Sonic 3 & Knuckles was positive in both pairs (**+5.685%** and
   **+9.849%**), but the 4.164 percentage-point spread exceeded the 3-point
   acceptance gate. This corroborates direction only; it is not an accepted
   precise effect size.
-- Executable growth was 970 bytes for Sonic 1, 970 bytes for Sonic 3 &
-  Knuckles, and 1,482 bytes for Rocket Knight Adventures.
+- Executable growth was 970 bytes for Sonic 1, 1,482 bytes for Sonic 2,
+  970 bytes for Sonic 3 & Knuckles, and 1,482 bytes for Rocket Knight
+  Adventures.
 
 Timing remains paused whenever the paired-variance gate fails. Deterministic
 correctness comparisons do not depend on idle-machine timing and continue
@@ -88,6 +93,10 @@ pre-change and candidate engines:
 - Sonic 1 widescreen Green Hill gameplay: 62/62 448x224 framebuffer hashes
   were exact through frame 3,742; strict checks were clean.
 - Sonic 2: the strict 63-checkpoint, 3,780-frame golden route was exact.
+  Attract added 200/200 exact hashes and 20/20 exact PNGs through frame
+  12,001. Active Emerald Hill fuzz added 67/67 exact hashes and an exact final
+  PNG at native width, then another 67/67 exact hashes and exact PNG at
+  448x224 widescreen resolution.
 - Sonic 3 & Knuckles attract: 20/20 hashes and 19/19 PNGs were byte-identical.
   Gameplay fuzz added 97/97 exact hashes and 3/3 exact PNGs through frame
   5,856, with identical SRAM.
