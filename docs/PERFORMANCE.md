@@ -361,6 +361,26 @@ was not used. Release `.text` grew by 640 bytes and the executable by 512
 bytes. The candidate was reverted rather than retain an unproven,
 instruction-cache-costly change.
 
+### Algebraic palette-index packing
+
+The plane pixel palette index
+`((attribute >> 13) & 3) * 16 + pixel` was rewritten as the equivalent
+`((attribute >> 9) & 0x30) | pixel`. This removes one operation in the local
+instruction sequence, remained exact across all 97 Sonic 3 & Knuckles
+gameplay-fuzz framebuffer checkpoints, and matched the benchmark full-state
+and audio hashes. Text, data, BSS, and executable size were unchanged.
+
+The same-binary calibration passed with a 1.391-point spread, but the
+18,000-frame order-balanced pairs were both decisively slower:
+
+- Pair 1: **-7.597%**.
+- Pair 2: **-6.785%**.
+- Median **-7.191%**, 0.812-point spread.
+
+The source-level operation count did not predict the optimized inlined
+register/layout result. The two-negative stop rule applies, so the expression
+was reverted.
+
 ### Conditional sprite-operator clears
 
 An experiment skipped clearing the sprite shadow/highlight operator arrays on
