@@ -1315,6 +1315,7 @@ int main(int argc, char *argv[])
     const char *framelog_path = NULL;
     uint32_t max_frames  = 0;   /* 0 = unlimited */
     int start_turbo      = 0;   /* --turbo: skip frame delay + audio */
+    uint32_t benchmark_frames = 0; /* finite uncapped core workload */
     uint32_t snd_dump_frame = 0; /* [SND-TRACE] headless auto-dump of both rings at this frame (0=off, use F12) */
     uint32_t snd_dump_vint  = 0; /* [CHIP-TRACE] dump chip_ring when vint_runcount hits N (0=off) */
     int      snd_dump_done  = 0;
@@ -1375,6 +1376,15 @@ int main(int argc, char *argv[])
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--max-frames") == 0 && i + 1 < argc) {
             max_frames = (uint32_t)atol(argv[++i]);
+        } else if (strcmp(argv[i], "--benchmark") == 0 && i + 1 < argc) {
+            benchmark_frames = (uint32_t)atol(argv[++i]);
+            if (benchmark_frames == 0) {
+                fprintf(stderr, "--benchmark requires a positive frame count\n");
+                return 2;
+            }
+        } else if (strcmp(argv[i], "--benchmark") == 0) {
+            fprintf(stderr, "--benchmark requires a positive frame count\n");
+            return 2;
         } else if (strcmp(argv[i], "--framelog") == 0 && i + 1 < argc) {
             framelog_path = argv[++i];
         } else if (strcmp(argv[i], "--turbo") == 0) {
@@ -1429,6 +1439,12 @@ int main(int argc, char *argv[])
         } else if (argv[i][0] != '-') {
             rom_path = argv[i];
         }
+    }
+
+    if (benchmark_frames) {
+        max_frames = benchmark_frames;
+        start_turbo = 1;
+        no_launcher = 1;
     }
 
     /* ---- Settings + pre-boot launcher ------------------------------------
@@ -1775,11 +1791,14 @@ int main(int argc, char *argv[])
         win_w = ws_canvas_w() * win_scale;
         win_h = win_w * WS_ASPECT_H / WS_ASPECT_W;   /* true 16:9 */
     }
-    Uint32 win_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+    Uint32 win_flags = (benchmark_frames ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN)
+                     | SDL_WINDOW_RESIZABLE;
     /* Launcher tri-state: 1 = borderless (desktop resolution, letterboxed by
      * SDL_RenderSetLogicalSize), 2 = exclusive (real mode change). */
-    if (g_app_config.fullscreen == 2)      win_flags |= SDL_WINDOW_FULLSCREEN;
-    else if (g_app_config.fullscreen == 1) win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    if (!benchmark_frames) {
+        if (g_app_config.fullscreen == 2)      win_flags |= SDL_WINDOW_FULLSCREEN;
+        else if (g_app_config.fullscreen == 1) win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
     SDL_Window *window = SDL_CreateWindow(
         window_title,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -1800,15 +1819,24 @@ int main(int argc, char *argv[])
      * manual frame pacer still bounds the rate, so on a 60/120 Hz display the
      * two simply settle on whichever is slower. Fall back to no-vsync if the
      * driver can't provide it. */
-    SDL_Renderer *renderer = SDL_CreateRenderer(
-        window, -1,
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    Uint32 renderer_flags = SDL_RENDERER_ACCELERATED;
+    if (!benchmark_frames)
+        renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, renderer_flags);
     if (!renderer) {
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     }
     if (!renderer) {
         fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
         return 1;
+    }
+    if (benchmark_frames) {
+        SDL_RendererInfo ri;
+        memset(&ri, 0, sizeof(ri));
+        SDL_GetRendererInfo(renderer, &ri);
+        fprintf(stderr, "GENESISRECOMP_BENCHMARK_RENDERER name=%s vsync=%d\n",
+                ri.name ? ri.name : "(unknown)",
+                (ri.flags & SDL_RENDERER_PRESENTVSYNC) != 0);
     }
     update_render_logical_size(renderer);
 
@@ -1829,8 +1857,10 @@ int main(int argc, char *argv[])
 
     /* Output at PSG rate (~223721 Hz NTSC) — matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
-    audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
-    audio_set_master_volume(g_app_config.volume);   /* settings.ini / launcher */
+    if (!benchmark_frames) {
+        audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
+        audio_set_master_volume(g_app_config.volume); /* settings.ini / launcher */
+    }
 #if RECOMP_LAUNCHER
     {
         RecompRuntimeUiStandardConfig cfg = {0};
@@ -2045,6 +2075,7 @@ int main(int argc, char *argv[])
     uint32_t mode_seq  = 0;      /* --hash-on-mode: transition sequence counter */
     Uint32 frame_start = SDL_GetTicks();
     const Uint32 frame_ms = 1000u / 60u;   /* ~16 ms at 60 Hz */
+    Uint64 benchmark_start = benchmark_frames ? SDL_GetPerformanceCounter() : 0;
 
     while (running) {
         if (max_frames && frame_num >= max_frames) break;
@@ -2511,12 +2542,14 @@ int main(int argc, char *argv[])
             }
         }
 
-        /* Persist battery SRAM to disk shortly after the game writes a save. */
-        runner_sram_autosave_tick(frame_num);
+        /* Benchmarks are read-only and exclude host persistence work. */
+        if (!benchmark_frames)
+            runner_sram_autosave_tick(frame_num);
 
         /* Upload framebuffer to GPU texture. When a present-time color model
          * is enabled, transform a COPY into s_present_buf and upload that —
          * s_framebuf (the verified/hashed raw VDP output) is never modified. */
+        if (!benchmark_frames) {
         const uint32_t *present_src = s_framebuf;
         if (s_color_lut_on) {
             color_lut_map_frame(&s_color_lut, s_framebuf, s_present_buf,
@@ -2594,6 +2627,7 @@ int main(int argc, char *argv[])
             (void)genesis_netplay_poll_admit();
 #endif
         SDL_RenderPresent(renderer);
+        }
 
 #if GENESIS_HAS_RECOMP_NET
         /* Confirmation normally arrived during vsync. The top-of-loop barrier
@@ -2633,6 +2667,19 @@ int main(int argc, char *argv[])
 
     if (max_frames)
         fprintf(stderr, "[DONE] %u frames completed\n", frame_num);
+    if (benchmark_frames) {
+        Uint64 benchmark_end = SDL_GetPerformanceCounter();
+        double seconds = (double)(benchmark_end - benchmark_start)
+                       / (double)SDL_GetPerformanceFrequency();
+        double fps = seconds > 0.0 ? (double)frame_num / seconds : 0.0;
+        printf("GENESISRECOMP_BENCHMARK "
+               "{\"game\":\"%s\",\"frames\":%u,\"seconds\":%.9f,"
+               "\"fps\":%.3f,\"ms_per_frame\":%.6f}\n",
+               g_game_spec.short_name ? g_game_spec.short_name : "game",
+               frame_num, seconds, fps,
+               frame_num ? seconds * 1000.0 / (double)frame_num : 0.0);
+        fflush(stdout);
+    }
 
     { extern int glue_interp_total_calls(void);
       extern int glue_interp_seen_count(void);
