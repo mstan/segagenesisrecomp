@@ -61,6 +61,18 @@ def parse_benchmark(stdout: str, stderr: str) -> dict:
     raise RuntimeError("runner produced no GENESISRECOMP_BENCHMARK record")
 
 
+def parse_env_overrides(values: list[str]) -> dict[str, str]:
+    overrides: dict[str, str] = {}
+    for value in values:
+        name, separator, setting = value.partition("=")
+        if not separator or not name:
+            raise ValueError(
+                f"environment override must be NAME=VALUE, got {value!r}"
+            )
+        overrides[name] = setting
+    return overrides
+
+
 def run_once(
     label: str,
     exe: Path,
@@ -69,13 +81,17 @@ def run_once(
     frames: int,
     cpu: int,
     timeout: float,
+    env_overrides: dict[str, str],
 ) -> dict:
     command = [str(exe), "--benchmark", str(frames), str(rom)]
     if input_script is not None:
         command += ["--input-script", str(input_script)]
+    child_env = os.environ.copy()
+    child_env.update(env_overrides)
     proc = subprocess.Popen(
         command,
         cwd=exe.parent,
+        env=child_env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -120,6 +136,20 @@ def main() -> int:
     parser.add_argument("--cpu", type=int, required=True)
     parser.add_argument("--timeout", type=float, default=300.0)
     parser.add_argument(
+        "--baseline-env",
+        action="append",
+        default=[],
+        metavar="NAME=VALUE",
+        help="environment override for baseline runs; may be repeated",
+    )
+    parser.add_argument(
+        "--candidate-env",
+        action="append",
+        default=[],
+        metavar="NAME=VALUE",
+        help="environment override for candidate runs; may be repeated",
+    )
+    parser.add_argument(
         "--max-pair-spread",
         type=float,
         default=3.0,
@@ -139,6 +169,11 @@ def main() -> int:
     candidate = args.candidate.resolve(strict=True)
     rom = args.rom.resolve(strict=True)
     input_script = args.input.resolve(strict=True) if args.input else None
+    try:
+        baseline_env = parse_env_overrides(args.baseline_env)
+        candidate_env = parse_env_overrides(args.candidate_env)
+    except ValueError as exc:
+        parser.error(str(exc))
 
     print(
         f"[paired_benchmark] cpu={args.cpu} frames={args.frames} "
@@ -153,6 +188,7 @@ def main() -> int:
         args.warmup_frames,
         args.cpu,
         args.timeout,
+        baseline_env,
     )
     warm_candidate = run_once(
         "candidate-warmup",
@@ -162,6 +198,7 @@ def main() -> int:
         args.warmup_frames,
         args.cpu,
         args.timeout,
+        candidate_env,
     )
     if warm_baseline["game"] != warm_candidate["game"]:
         raise RuntimeError(
@@ -174,16 +211,22 @@ def main() -> int:
     candidate_fps = []
     for pair_index in range(args.pairs):
         order = (
-            [("baseline", baseline), ("candidate", candidate)]
+            [
+                ("baseline", baseline, baseline_env),
+                ("candidate", candidate, candidate_env),
+            ]
             if pair_index % 2 == 0
-            else [("candidate", candidate), ("baseline", baseline)]
+            else [
+                ("candidate", candidate, candidate_env),
+                ("baseline", baseline, baseline_env),
+            ]
         )
         results = {}
         print(
             f"[paired_benchmark] pair {pair_index + 1}: "
-            + " then ".join(label for label, _ in order)
+            + " then ".join(label for label, _, _ in order)
         )
-        for label, exe in order:
+        for label, exe, env_overrides in order:
             result = run_once(
                 label,
                 exe,
@@ -192,6 +235,7 @@ def main() -> int:
                 args.frames,
                 args.cpu,
                 args.timeout,
+                env_overrides,
             )
             if result["game"] != warm_baseline["game"]:
                 raise RuntimeError(
@@ -211,7 +255,7 @@ def main() -> int:
         pair_results.append(
             {
                 "pair": pair_index + 1,
-                "order": [label for label, _ in order],
+                "order": [label for label, _, _ in order],
                 "baseline_fps": base_fps,
                 "candidate_fps": cand_fps,
                 "delta_pct": delta,
