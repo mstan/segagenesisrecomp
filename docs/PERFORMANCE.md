@@ -131,6 +131,20 @@ name-table address calculation. This is enough to direct shared plane-fetch
 work, but window, scrolling, palette, DMA, and widescreen-policy costs still
 need independent buckets before the broader attribution item is complete.
 
+After consecutive-pixel attribute reuse landed, a fresh 18,000-frame Sonic 3
+& Knuckles sample attributed all 29,003 executable leaves. The VDP scanline
+renderer still dominated at 19,582 samples (**67.517%**); the next named
+functions were YMFM clocking at 4.041%, tail dispatch at 3.007%, Z80 opcode
+execution at 2.941%, and frame scheduling at 2.920%.
+
+For line attribution, the optimized VDP source was rebuilt with debug lines
+and its `.text` was verified byte-identical to the sampled object
+(`1022F406...8585`). Within `gvdp_render_scanline`, the largest individual
+source lines were packed-nibble extraction (10.581%), palette-index output
+(7.149%), tile/pattern-row address construction (6.475%), adjacency-cache
+state (6.281%), and vertical flip (5.745%). These percentages are of scanline
+samples, not whole-process samples.
+
 ### Scanline-invariant VDP state
 
 Window boundaries, full-screen vertical scroll values, and shadow/highlight
@@ -327,6 +341,25 @@ removed:
 The candidate was reverted. A preliminary comparison against an older,
 differently configured control was discarded before this result; the retained
 numbers use same-configuration binaries with identical data and BSS sizes.
+
+### Adjacent pattern-row address cache
+
+A follow-up to consecutive-pixel attribute reuse also retained the computed
+pattern-row address on the existing adjacency hit. It added no comparison or
+branch and removed tile-index, vertical-flip, and row-address work from cache
+hits. Sonic 3 & Knuckles remained exact across 97 gameplay-fuzz framebuffer
+checkpoints, and the benchmark full-state and audio hashes matched, but two
+independent order-balanced runs both failed the variance gate:
+
+- Run 1: **+4.484%**, then **-0.288%** (4.772-point spread).
+- Run 2: **-0.419%**, then **+4.160%** (4.579-point spread).
+
+The candidate throughput stayed near 630 FPS while the controls varied, so
+there is no accepted effect size. Logical CPU 11 passed a same-binary
+calibration before the first run; CPU 13 later failed its own calibration and
+was not used. Release `.text` grew by 640 bytes and the executable by 512
+bytes. The candidate was reverted rather than retain an unproven,
+instruction-cache-costly change.
 
 ### Conditional sprite-operator clears
 
