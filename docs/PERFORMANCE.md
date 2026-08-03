@@ -199,6 +199,21 @@ the added cache comparisons and state traffic outweighed the removed multiply:
 
 Both orderings were decisively negative, so the row cache was reverted.
 
+### Conditional sprite-operator clears
+
+An experiment skipped clearing the sprite shadow/highlight operator arrays on
+scanlines where shadow/highlight mode was disabled. S3K remained exact across
+97 gameplay hashes, three PNGs, and final SRAM, but both timed orderings were
+slower:
+
+- Pair 1: baseline 588.425 FPS, candidate 559.738 FPS (**-4.875%**).
+- Pair 2: candidate 557.614 FPS, baseline 581.412 FPS (**-4.093%**).
+- The 0.782-point spread passed the variance gate. Release `.text` grew by 64
+  bytes and the executable grew by 512 bytes.
+
+The optimization was reverted; retaining the unconditional optimized clears
+is measurably faster on this workload.
+
 ## Burn-down
 
 ### P0 — harness and attribution
