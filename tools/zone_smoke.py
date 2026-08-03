@@ -98,10 +98,14 @@ def resolve_exe(game: str, override: str | None) -> Path:
 FBHASH_RE = re.compile(
     r"^\[FBHASH\]\s+frame=(\d+)\s+w=\d+\s+h=\d+\s+hash=0x([0-9A-Fa-f]+)\s*$"
 )
+INTERP_RE = re.compile(
+    r"^\[INTERP\]\s+hybrid_jmp/call_interpret:\s+(\d+)\s+total calls,\s+"
+    r"(\d+)\s+unique true-miss addrs,\s+(\d+)\s+raw miss events\s*$"
+)
 
 
 def run_smoke(game: str, input_script, hash_frames: int,
-              max_frames: int, timeout: float, keep_log: bool,
+              max_frames: int, benchmark: bool, timeout: float, keep_log: bool,
               exe_override=None):
     cfg = GAMES[game]
     exe: Path = resolve_exe(game, exe_override)
@@ -120,7 +124,10 @@ def run_smoke(game: str, input_script, hash_frames: int,
         # deterministic and unattended.
         args += ["--no-launcher", "--turbo"]
     if max_frames > 0:
-        args += ["--max-frames", str(max_frames)]
+        args += [
+            "--benchmark" if benchmark else "--max-frames",
+            str(max_frames),
+        ]
 
     print(f"[zone_smoke] launching: {' '.join(args[1:])}")
     print(f"[zone_smoke] cwd: {exe.parent}")
@@ -152,13 +159,26 @@ def run_smoke(game: str, input_script, hash_frames: int,
         print(f"[zone_smoke] wrote runner log: {log_path}")
 
     fbhashes = []
+    interp = None
+    stack_mismatches = []
     for line in stderr.splitlines():
-        m = FBHASH_RE.match(line.strip())
+        stripped = line.strip()
+        m = FBHASH_RE.match(stripped)
         if m:
             fbhashes.append({
                 "frame": int(m.group(1)),
                 "hash": f"0x{m.group(2).upper()}",
             })
+            continue
+        m = INTERP_RE.match(stripped)
+        if m:
+            interp = {
+                "total_calls": int(m.group(1)),
+                "unique_true_miss_addrs": int(m.group(2)),
+                "raw_miss_events": int(m.group(3)),
+            }
+        if "JSR stack mismatch" in stripped:
+            stack_mismatches.append(stripped)
 
     if proc.returncode not in (0, None) and proc.returncode != 0:
         # The .input script exits 0 by convention; non-zero from the runner
@@ -173,7 +193,11 @@ def run_smoke(game: str, input_script, hash_frames: int,
                 f"see stderr above"
             )
 
-    return fbhashes, proc.returncode
+    diagnostics = {
+        "interp": interp,
+        "stack_mismatches": stack_mismatches,
+    }
+    return fbhashes, diagnostics, proc.returncode
 
 
 def diff_fbhashes(baseline, current):
@@ -211,6 +235,9 @@ def main(argv):
                    help="--hash-frames N passed to the runner (default 60)")
     p.add_argument("--max-frames", type=int, default=0,
                    help="--max-frames N safety cap; 0 relies on the script's EXIT")
+    p.add_argument("--benchmark", action="store_true",
+                   help="run the max-frame route through finite uncapped "
+                        "--benchmark mode (requires --max-frames)")
     p.add_argument("--timeout", type=float, default=300.0,
                    help="seconds to wait for the runner to exit (default 300)")
     p.add_argument("--keep-log", action="store_true",
@@ -218,6 +245,10 @@ def main(argv):
     p.add_argument("--exe", default=None,
                    help="explicit path to the runner exe (overrides auto-resolve)")
     args = p.parse_args(argv)
+
+    if args.benchmark and args.max_frames <= 0:
+        print("[zone_smoke] --benchmark requires --max-frames", file=sys.stderr)
+        return 2
 
     if args.input is not None:
         input_path = Path(args.input).resolve()
@@ -240,8 +271,9 @@ def main(argv):
         baseline_path = game_dir / f"{args.game}_boot_smoke_baseline.json"
 
     try:
-        fbhashes, rc = run_smoke(
+        fbhashes, diagnostics, rc = run_smoke(
             args.game, input_path, args.hash_frames, args.max_frames,
+            args.benchmark,
             args.timeout, args.keep_log, args.exe,
         )
     except (FileNotFoundError, RuntimeError) as e:
@@ -261,11 +293,12 @@ def main(argv):
 
     snap = {
         "tool": "zone_smoke.py",
-        "version": 1,
+        "version": 2,
         "game": args.game,
         "input_script": input_path.name if input_path is not None else "(boot)",
         "hash_frames": args.hash_frames,
         "fbhashes": fbhashes,
+        "diagnostics": diagnostics,
     }
 
     if args.write_baseline:
@@ -283,6 +316,11 @@ def main(argv):
 
     baseline = json.loads(baseline_path.read_text())
     diffs = diff_fbhashes(baseline.get("fbhashes", []), fbhashes)
+    if "diagnostics" in baseline and baseline["diagnostics"] != diagnostics:
+        diffs.append(
+            "diagnostics: "
+            f"baseline {baseline['diagnostics']!r} -> current {diagnostics!r}"
+        )
     if not diffs:
         print(f"[zone_smoke] OK — {len(fbhashes)} fbhashes match {baseline_path.name}")
         return 0

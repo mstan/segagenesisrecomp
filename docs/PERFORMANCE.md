@@ -113,6 +113,22 @@ Post-change S3K sampling confirms attribution moved as intended:
 `recomp_drain_tailcalls` fell to 2.495% of 91,445 in-executable samples, while
 `gvdp_render_scanline` became the new dominant ceiling at 70.969%.
 
+### Scanline attribution
+
+Fresh post-dispatch Sonic 2 sampling collected 42,033 in-executable samples.
+`gvdp_render_scanline` accounted for 70.537%. Within that renderer:
+
+- `fetch_plane_pixel` accounted for 65.321%.
+- The non-inlined `gvdp_render_scanline` body accounted for 26.659%.
+- Inlined `vram_read_word` work accounted for 4.253%.
+- `sprite_render_line` accounted for 3.730%.
+
+Line attribution inside `fetch_plane_pixel` put the hottest samples on packed
+nibble extraction, the pattern-byte load, pattern-address calculation, and
+name-table address calculation. This is enough to direct shared plane-fetch
+work, but window, scrolling, palette, DMA, and widescreen-policy costs still
+need independent buckets before the broader attribution item is complete.
+
 ### Scanline-invariant VDP state
 
 Window boundaries, full-screen vertical scroll values, and shadow/highlight
@@ -127,6 +143,26 @@ scroll behavior.
   3-point acceptance gate while pinned to logical CPU 15.
 - Release `.text` grew by 64 bytes; executable file size was unchanged.
 
+### Remove the adjacent pattern-byte cache
+
+The retained plane-fetch cache originally memoized both the name-table
+attribute and the packed pattern byte shared by two adjacent pixels. Sampling
+showed that the extra pattern-address comparison, branch, and cache state cost
+more than directly loading the already-hot VRAM byte. The name-table cache is
+still retained; only the two-pixel pattern-byte memoization is removed.
+
+- Sonic 1's order-reversed 12,000-frame attract pairs were **+7.984%** and
+  **+8.533%** (median **+8.259%**, 0.548-point spread) on logical CPU 11.
+- Baseline and candidate CVs were 0.376% and 0.629%; the result passed the
+  3-point acceptance gate.
+- Sonic 2 was positive in four isolated orderings (**+3.568%**, **+7.301%**,
+  **+13.693%**, and **+8.509%**), but both two-pair runs exceeded the
+  3-point spread gate. These runs corroborate direction only; Sonic 1 supplies
+  the accepted effect size.
+- Release `.text` shrank by 448 bytes in Sonic 1, Sonic 2, Sonic 3 & Knuckles,
+  and Rocket Knight Adventures. Executable files shrank by 512 bytes where PE
+  section alignment permitted it; Sonic 3 & Knuckles' file size was unchanged.
+
 ## Differential validation
 
 All comparisons below used the same title revision and input on the
@@ -139,6 +175,8 @@ pre-change and candidate engines:
   route was exact again for the binary-dispatch candidate versus its
   current-core linear control, then again for the scanline-invariant
   candidate versus the pre-change binary-dispatch build.
+  The pattern-byte-cache removal additionally matched 100/100 hashes over the
+  6,000-frame active Green Hill route at both native width and widescreen.
 - Sonic 2: the strict 63-checkpoint, 3,780-frame golden route was exact.
   Attract added 200/200 exact hashes and 20/20 exact PNGs through frame
   12,001. Active Emerald Hill fuzz added 67/67 exact hashes and an exact final
@@ -148,18 +186,23 @@ pre-change and candidate engines:
   against the linear control. The scanline-invariant candidate also repeated
   67/67 exact hashes and the exact final PNG at both native width and 448x224,
   with no bad diagnostics.
+  The pattern-byte-cache removal additionally matched 100/100 hashes over the
+  6,000-frame active Emerald Hill route at both native width and widescreen.
 - Sonic 3 & Knuckles attract: 20/20 hashes and 19/19 PNGs were byte-identical.
   Gameplay fuzz added 97/97 exact hashes and 3/3 exact PNGs through frame
   5,856, with identical SRAM. The binary-dispatch candidate repeated the
   97/97, 3/3, and SRAM exact comparison against the linear control. The
   scanline-invariant candidate repeated all 97 hashes, three PNGs, and final
   SRAM exactly against the pre-change binary-dispatch build.
+  The pattern-byte-cache removal repeated all 97 gameplay-fuzz hashes at both
+  native width and widescreen.
 - Rocket Knight Adventures attract: 200/200 hashes and 20/20 PNGs were exact.
   The longer input route added 280/280 exact hashes and 10/10 exact PNGs.
   The binary-dispatch candidate repeated the longer 280/280 and 10/10 exact
   comparison against the linear control with no bad diagnostics. The
   scanline-invariant candidate repeated the same 280/280 and 10/10 exact
   comparison against the pre-change build.
+  The pattern-byte-cache removal repeated all 280 hashes exactly.
   Both builds exhibit the same pre-existing white/static screen after the
   Konami logo, so this proves regression neutrality for the observable route,
   not gameplay coverage.
@@ -167,6 +210,12 @@ pre-change and candidate engines:
 Puyo Puyo is excluded: neither the authenticated repository inventory nor
 public-remote search found a title repository. Its engine-local bring-up is
 not a reproducible public regression target.
+
+For the pattern-cache gate, `zone_smoke.py --benchmark --max-frames N` ran
+these routes through the finite uncapped path. Version 2 of the smoke snapshot
+also records and compares interpreter call/miss totals and any strict JSR-stack
+mismatch lines. All seven native/widescreen comparisons matched diagnostics
+and reported no stack mismatches.
 
 ## Rejected experiments
 
@@ -223,10 +272,13 @@ is measurably faster on this workload.
   gate.
 - [ ] Add optional timing buckets for 68K, VDP, Z80, sound synthesis, host
   presentation, and non-hardware diagnostics.
-- [ ] Add framebuffer/state hashes directly to benchmark output.
-- [ ] Establish Sonic 1 native-width and widescreen controls, then add
-  representative public workloads for raster effects, DMA-heavy scenes, and
-  Z80/audio-heavy titles.
+- [x] Allow framebuffer hashes and regression diagnostics to run through the
+  finite benchmark path.
+- [ ] Add state and audio hashes directly to benchmark output.
+- [x] Establish native-width and widescreen controls for every capable public
+  title.
+- [ ] Add explicitly tagged representative workloads for raster effects,
+  DMA-heavy scenes, and Z80/audio-heavy titles.
 
 ### P1 — production observability
 
@@ -248,16 +300,19 @@ is measurably faster on this workload.
 - [x] Replace the profiled Genesis linear tail-dispatch scan with the
   SCC68070 backend's binary-search pattern. Preserve RAM dispatch, return
   capture, split-stack state, overrides, and fallback behavior.
-- [ ] Track generated code size and reject instruction-cache-hostile wins.
+- [x] Track generated and runtime code size alongside throughput; reject
+  instruction-cache-hostile wins.
 
 ### P3 — VDP, DMA, and widescreen
 
 - [x] Establish scanline rendering as the dominant sampled bucket.
-- [ ] Attribute scanline time further among background fetch, sprites, windows,
-  scrolling, palette conversion, DMA, and widescreen policy.
+- [x] Attribute scanline time further between background fetch, renderer body,
+  VRAM reads, and sprites.
+- [ ] Finish independent attribution for windows, scrolling, palette
+  conversion, DMA, and widescreen policy.
 - [x] Hoist invariant tile/row work out of per-pixel loops only where the
   measured path permits it.
-- [ ] Keep the faithful shared VDP as the floor. Do not replace it with
+- [x] Keep the faithful shared VDP as the floor. Do not replace it with
   title-specific rendering.
 - [ ] Gate inactive enhancement work early while proving native and enabled
   widescreen behavior independently.
@@ -272,14 +327,15 @@ is measurably faster on this workload.
 
 ### P5 — regression sweep
 
-- [ ] Enumerate title repositories with public remotes; local-only titles are
+- [x] Enumerate title repositories with public remotes; local-only titles are
   skippable.
-- [ ] Build each public title in a linked worktree at BelowNormal priority with
+- [x] Build each public title in a linked worktree at BelowNormal priority with
   one job.
-- [ ] Run complete attract/demo coverage plus deterministic basic input fuzz.
+- [x] Run complete attract/demo coverage plus deterministic basic input fuzz.
 - [ ] Compare framebuffer/state/audio hashes, strict-stack results, and
   dispatch/interpreter misses. Investigate every new miss.
-- [ ] Include native width and enabled widescreen in the release gate.
+- [x] Include native width and enabled widescreen in the release gate for every
+  capable public title.
 
 ## Stop conditions
 
