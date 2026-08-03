@@ -165,6 +165,13 @@ extern int g_dbg_b88_count;   /* incremented at start of func_000B88 */
 extern int *g_rte_pending_ptr;
 #define g_rte_pending (*g_rte_pending_ptr)
 
+/* Stack-slot accounting carried between generated functions joined by a
+ * tail-dispatch edge. Generated code defines this alongside its dispatch
+ * table. Runtime re-entry (most importantly an IRQ handler executed while the
+ * game fiber is suspended) must isolate its own split chain and restore the
+ * interrupted chain's value before resuming it. */
+extern int g_split_sp_popped;
+
 /* ---- Early return (addq.l #4,sp + rts pattern) ---- */
 /* 68K code uses "addq.l #4,sp" to discard a return address, then "rts" to
  * return to the caller's caller (skipping the rest of the current routine).
