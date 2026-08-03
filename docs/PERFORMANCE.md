@@ -401,6 +401,29 @@ The candidate was reverted. Together with the earlier pattern-address cache
 and pattern-row experiments, this closes additional per-pixel pattern caching
 as a diminishing-return family on the current renderer.
 
+### SuperZazu direct low-RAM read window
+
+An optional side-effect-free read window was added to the interpreter and
+mapped to the Genesis Z80's mirrored 8 KiB RAM. Reads below `$4000` could then
+load RAM directly instead of taking the indirect memory callback; YM2612,
+bank-register, and 68K-window reads retained the normal bus path. Writes were
+deliberately unchanged so sound tracing and debug watchpoints remained intact.
+
+Sonic 3 & Knuckles matched framebuffer, full-state, and audio-state hashes at
+1,200, 3,000, and 6,000 frames. Throughput did not justify the extra branch
+and interpreter state:
+
+- Eight alternating 1,200-frame pairs had a **-0.364%** median.
+- Aggregate baseline and candidate throughput were effectively equal, with
+  2.647% baseline CV and 2.249% candidate CV.
+- Longer trials were also noise-dominated and failed the strict spread gate;
+  total system utilization remained 22-38%, but individual pinned runs saw
+  transient interference.
+
+The source change was reverted. The robust median gives no evidence that
+adding a conditional fast window improves this MSVC release build, so the
+candidate is rejected independently of the unstable longer measurements.
+
 ### Conditional sprite-operator clears
 
 An experiment skipped clearing the sprite shadow/highlight operator arrays on
@@ -559,7 +582,7 @@ A 6,000-frame Sonic 2 audio-enabled capture produced byte-identical
 - [x] Build each public title in a linked worktree at BelowNormal priority with
   one job.
 - [x] Run complete attract/demo coverage plus deterministic basic input fuzz.
-- [ ] Compare framebuffer/state/audio hashes, strict-stack results, and
+- [x] Compare framebuffer/state/audio hashes, strict-stack results, and
   dispatch/interpreter misses. Investigate every new miss.
 - [x] Include native width and enabled widescreen in the release gate for every
   capable public title.
