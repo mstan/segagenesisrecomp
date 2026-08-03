@@ -17,6 +17,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <time.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 #ifndef _WIN32
 #include <unistd.h>   /* readlink, ssize_t — exe-dir resolution + popen picker */
 #ifdef __ANDROID__
@@ -41,11 +46,41 @@
 
 static char s_exe_dir[512] = "";
 
+static double benchmark_process_cpu_seconds(void)
+{
+#ifdef _WIN32
+    FILETIME created, exited, kernel, user;
+    ULARGE_INTEGER k, u;
+    if (!GetProcessTimes(GetCurrentProcess(), &created, &exited, &kernel, &user))
+        return 0.0;
+    k.LowPart = kernel.dwLowDateTime; k.HighPart = kernel.dwHighDateTime;
+    u.LowPart = user.dwLowDateTime;   u.HighPart = user.dwHighDateTime;
+    return (double)(k.QuadPart + u.QuadPart) / 10000000.0;
+#elif defined(CLOCK_PROCESS_CPUTIME_ID)
+    struct timespec ts;
+    if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) != 0)
+        return 0.0;
+    return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
+#else
+    return (double)clock() / (double)CLOCKS_PER_SEC;
+#endif
+}
+
+static uint64_t benchmark_process_cpu_cycles(void)
+{
+#ifdef _WIN32
+    ULONG64 cycles = 0;
+    return QueryProcessCycleTime(GetCurrentProcess(), &cycles)
+         ? (uint64_t)cycles : 0;
+#else
+    return 0;
+#endif
+}
+
 static void init_exe_dir(const char *argv0)
 {
     /* Try platform API first */
 #ifdef _WIN32
-    extern unsigned long __stdcall GetModuleFileNameA(void*, char*, unsigned long);
     GetModuleFileNameA(NULL, s_exe_dir, sizeof(s_exe_dir) - 1);
 #else
     /* Inside an AppImage /proc/self/exe is the read-only squashfs mount and
@@ -2119,6 +2154,10 @@ int main(int argc, char *argv[])
     Uint32 frame_start = SDL_GetTicks();
     const Uint32 frame_ms = 1000u / 60u;   /* ~16 ms at 60 Hz */
     Uint64 benchmark_start = benchmark_frames ? SDL_GetPerformanceCounter() : 0;
+    double benchmark_cpu_start =
+        benchmark_frames ? benchmark_process_cpu_seconds() : 0.0;
+    uint64_t benchmark_cycles_start =
+        benchmark_frames ? benchmark_process_cpu_cycles() : 0;
 
     while (running) {
         if (max_frames && frame_num >= max_frames) break;
@@ -2715,6 +2754,12 @@ int main(int argc, char *argv[])
         double seconds = (double)(benchmark_end - benchmark_start)
                        / (double)SDL_GetPerformanceFrequency();
         double fps = seconds > 0.0 ? (double)frame_num / seconds : 0.0;
+        double cpu_seconds = benchmark_process_cpu_seconds() - benchmark_cpu_start;
+        double cpu_fps = cpu_seconds > 0.0 ? (double)frame_num / cpu_seconds : 0.0;
+        uint64_t cpu_cycles =
+            benchmark_process_cpu_cycles() - benchmark_cycles_start;
+        double cycles_per_frame =
+            frame_num ? (double)cpu_cycles / (double)frame_num : 0.0;
         /* Hash after the timer stops: correctness metadata must not reduce
          * the throughput being measured. The audio fingerprint folds the
          * complete FM, PSG, and pending event-queue state from the same
@@ -2728,11 +2773,15 @@ int main(int argc, char *argv[])
         printf("GENESISRECOMP_BENCHMARK "
                "{\"game\":\"%s\",\"frames\":%u,\"seconds\":%.9f,"
                "\"fps\":%.3f,\"ms_per_frame\":%.6f,"
+               "\"cpu_seconds\":%.9f,\"cpu_fps\":%.3f,"
+               "\"cpu_cycles\":%llu,\"cycles_per_frame\":%.3f,"
                "\"state_fnv1a64\":\"%016llX\","
                "\"audio_state_fnv1a64\":\"%016llX\"}\n",
                g_game_spec.short_name ? g_game_spec.short_name : "game",
                frame_num, seconds, fps,
                frame_num ? seconds * 1000.0 / (double)frame_num : 0.0,
+               cpu_seconds, cpu_fps,
+               (unsigned long long)cpu_cycles, cycles_per_frame,
                (unsigned long long)state_hash,
                (unsigned long long)audio_hash);
         fflush(stdout);

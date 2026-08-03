@@ -55,6 +55,45 @@ def set_process_affinity(pid: int, cpu: int) -> None:
         raise RuntimeError(f"CPU affinity is unsupported on {sys.platform}")
 
 
+def set_process_priority(pid: int, priority: str) -> None:
+    if priority == "normal":
+        return
+    if sys.platform != "win32":
+        if hasattr(os, "setpriority") and hasattr(os, "PRIO_PROCESS"):
+            nice_value = -5 if priority == "above-normal" else -10
+            os.setpriority(os.PRIO_PROCESS, pid, nice_value)
+            return
+        raise RuntimeError(f"--priority {priority} is unsupported on this host")
+
+    classes = {
+        "above-normal": 0x00008000,
+        "high": 0x00000080,
+    }
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.OpenProcess.argtypes = [
+        ctypes.c_uint32,
+        ctypes.c_int,
+        ctypes.c_uint32,
+    ]
+    kernel32.OpenProcess.restype = ctypes.c_void_p
+    kernel32.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    kernel32.SetPriorityClass.restype = ctypes.c_int
+    kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
+
+    process_set_information = 0x0200
+    process_query_information = 0x0400
+    handle = kernel32.OpenProcess(
+        process_set_information | process_query_information, 0, pid
+    )
+    if not handle:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        if not kernel32.SetPriorityClass(handle, classes[priority]):
+            raise ctypes.WinError(ctypes.get_last_error())
+    finally:
+        kernel32.CloseHandle(handle)
+
+
 def parse_benchmark(stdout: str, stderr: str) -> dict:
     for line in (stdout + "\n" + stderr).splitlines():
         if line.startswith(BENCHMARK_PREFIX):
@@ -81,6 +120,7 @@ def run_once(
     input_script: Path | None,
     frames: int,
     cpu: int,
+    priority: str,
     timeout: float,
     env_overrides: dict[str, str],
 ) -> dict:
@@ -99,6 +139,7 @@ def run_once(
     )
     try:
         set_process_affinity(proc.pid, cpu)
+        set_process_priority(proc.pid, priority)
         stdout, stderr = proc.communicate(timeout=timeout)
     except BaseException:
         proc.kill()
@@ -158,6 +199,18 @@ def main() -> int:
     parser.add_argument("--warmup-frames", type=int, default=600)
     parser.add_argument("--pairs", type=int, default=2)
     parser.add_argument("--cpu", type=int, required=True)
+    parser.add_argument(
+        "--metric",
+        choices=("fps", "cpu_fps", "cycles_per_frame"),
+        default="fps",
+        help="throughput metric used for paired deltas and variance",
+    )
+    parser.add_argument(
+        "--priority",
+        choices=("normal", "above-normal", "high"),
+        default="normal",
+        help="priority class/nice level for each pinned benchmark child",
+    )
     parser.add_argument("--timeout", type=float, default=300.0)
     parser.add_argument(
         "--baseline-env",
@@ -206,7 +259,7 @@ def main() -> int:
 
     print(
         f"[paired_benchmark] cpu={args.cpu} frames={args.frames} "
-        f"pairs={args.pairs}"
+        f"pairs={args.pairs} priority={args.priority} metric={args.metric}"
     )
     print("[paired_benchmark] warming baseline and candidate")
     warm_baseline = run_once(
@@ -216,6 +269,7 @@ def main() -> int:
         input_script,
         args.warmup_frames,
         args.cpu,
+        args.priority,
         args.timeout,
         baseline_env,
     )
@@ -226,6 +280,7 @@ def main() -> int:
         input_script,
         args.warmup_frames,
         args.cpu,
+        args.priority,
         args.timeout,
         candidate_env,
     )
@@ -242,8 +297,8 @@ def main() -> int:
     )
 
     pair_results = []
-    baseline_fps = []
-    candidate_fps = []
+    baseline_values = []
+    candidate_values = []
     for pair_index in range(args.pairs):
         order = (
             [
@@ -269,6 +324,7 @@ def main() -> int:
                 input_script,
                 args.frames,
                 args.cpu,
+                args.priority,
                 args.timeout,
                 env_overrides,
             )
@@ -284,21 +340,34 @@ def main() -> int:
 
         base_fps = float(results["baseline"]["fps"])
         cand_fps = float(results["candidate"]["fps"])
+        if args.metric not in results["baseline"] or args.metric not in results["candidate"]:
+            raise RuntimeError(
+                f"selected metric {args.metric} is missing; rebuild both runners "
+                "with benchmark CPU accounting support"
+            )
+        base_value = float(results["baseline"][args.metric])
+        cand_value = float(results["candidate"][args.metric])
         verify_hashes(
             results["baseline"],
             results["candidate"],
             f"pair {pair_index + 1}",
             args.allow_missing_hashes,
         )
-        delta = (cand_fps / base_fps - 1.0) * 100.0
-        baseline_fps.append(base_fps)
-        candidate_fps.append(cand_fps)
+        delta = (
+            (base_value / cand_value - 1.0) * 100.0
+            if args.metric == "cycles_per_frame"
+            else (cand_value / base_value - 1.0) * 100.0
+        )
+        baseline_values.append(base_value)
+        candidate_values.append(cand_value)
         pair_results.append(
             {
                 "pair": pair_index + 1,
                 "order": [label for label, _, _ in order],
                 "baseline_fps": base_fps,
                 "candidate_fps": cand_fps,
+                "baseline_metric": base_value,
+                "candidate_metric": cand_value,
                 "delta_pct": delta,
             }
         )
@@ -309,13 +378,15 @@ def main() -> int:
     summary = {
         "game": warm_baseline["game"],
         "cpu": args.cpu,
+        "priority": args.priority,
+        "metric": args.metric,
         "frames": args.frames,
         "input_script": str(input_script) if input_script else None,
         "pairs": pair_results,
         "median_delta_pct": statistics.median(deltas),
         "pair_spread_pct_points": spread,
-        "baseline_cv_pct": coefficient_of_variation(baseline_fps),
-        "candidate_cv_pct": coefficient_of_variation(candidate_fps),
+        "baseline_cv_pct": coefficient_of_variation(baseline_values),
+        "candidate_cv_pct": coefficient_of_variation(candidate_values),
         "state_fnv1a64": pair_results and results["baseline"].get("state_fnv1a64"),
         "audio_state_fnv1a64": (
             pair_results and results["baseline"].get("audio_state_fnv1a64")
