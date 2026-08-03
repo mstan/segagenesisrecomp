@@ -614,9 +614,7 @@ static int plane_tiles(unsigned code2)
  * (64-byte patterns) and the plane covers ht*16 double-res lines. */
 typedef struct PlanePixelCache {
     uint32_t nt_addr;
-    uint32_t pattern_addr;
     uint16_t attr;
-    uint8_t pattern_byte;
 } PlanePixelCache;
 
 #if defined(NDEBUG) && defined(_MSC_VER)
@@ -651,14 +649,7 @@ fetch_plane_pixel(const GVDP *v, PlanePixelCache *cache,
     if (e & 0x0800) fx ^= 7;        /* H flip */
     if (e & 0x1000) fy ^= fy_mask;  /* V flip */
     uint16_t pa = (uint16_t)(ti * tile_bytes + fy * 4 + (fx >> 1));
-    uint8_t byte;
-    if (cache->pattern_addr == pa) {
-        byte = cache->pattern_byte;
-    } else {
-        byte = v->vram[pa];
-        cache->pattern_addr = pa;
-        cache->pattern_byte = byte;
-    }
+    uint8_t byte = v->vram[pa];
     int nib = (fx & 1) ? (byte & 0x0F) : (byte >> 4);
     *opaque = (nib != 0);
     *hi     = (e & 0x8000) != 0;
@@ -738,9 +729,9 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
      * covers two. Rendering runs after the line's CPU/Z80 slice, so VRAM
      * cannot change underneath this row; keep separate caches for A, B, and
      * window addressing so their independent tables never alias each other. */
-    PlanePixelCache cache_a = { ~0u, ~0u, 0, 0 };
-    PlanePixelCache cache_b = { ~0u, ~0u, 0, 0 };
-    PlanePixelCache cache_w = { ~0u, ~0u, 0, 0 };
+    PlanePixelCache cache_a = { ~0u, 0 };
+    PlanePixelCache cache_b = { ~0u, 0 };
+    PlanePixelCache cache_w = { ~0u, 0 };
 
     for (int xo = 0; xo < total; xo++) {
         /* xo is the output column; x is the original-screen column (centered
