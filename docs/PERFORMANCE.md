@@ -439,6 +439,35 @@ slower:
 The optimization was reverted; retaining the unconditional optimized clears
 is measurably faster on this workload.
 
+### Static tail-dispatch indices
+
+An experiment attached a precomputed dispatch-table index to static
+cross-function tail edges while retaining the normal lookup for dynamic jumps
+and RAM trampolines. The Sonic 1 candidate added 59 bytes to the executable.
+Its first two 6,000-frame cycle pairs were **+0.901%** and **-0.022%**, too
+small to distinguish from the accompanying same-binary calibration.
+
+A later 3,000-frame requalification failed the measurement gate outright:
+the candidate pairs were **-5.018%** and **+15.893%** (20.911-point spread).
+Same-binary checks also exposed time-position bias, including false medians of
+**+2.895%** and **-1.243%** in separate calibrations. The source was reverted
+without spending an S3K build. The dynamic binary-search dispatch remains the
+retained general solution.
+
+### Inactive Plane-B diagnostic post-process
+
+The disabled widescreen Plane-B diagnostic leaves a predictable condition in
+the scanline pixel loop. Moving its output-only marker into a second pass
+would remove that condition from normal rendering without changing diagnostic
+output and left the Sonic 1 executable size unchanged.
+
+This deliberately small candidate was stopped before measurement because its
+same-binary calibration falsely reported **+7.617%** and **+0.789%** (a
+6.828-point spread). The source was reverted. This is not evidence that the
+change is slower; it is evidence that the current host cannot resolve the
+expected sub-percent effect reproducibly, which is sufficient under the
+measurement contract's fast-fail rule.
+
 ### Z80 and audio attribution
 
 A 12,000-frame Sonic 3 & Knuckles gameplay run was sampled at 4 kHz with the
@@ -511,6 +540,57 @@ A 6,000-frame Sonic 2 audio-enabled capture produced byte-identical
 89,568,044-byte WAV files on control and candidate
 (`BFC0D131189FF4A10B91E739385BE11E86256EE479675771E20F653BD5157431`).
 
+## Final burndown closure
+
+The remaining families were closed from measured ceilings and static census
+rather than by adding low-confidence code:
+
+- The post-cache S3K profile attributes **1.076%** to all named
+  `m68k_read*`/`m68k_write*` wrappers and **1.007%** to lower
+  `gbus_read*`/`gbus_write*` functions. Removing per-access production
+  history had already made both measured orderings slower, so broad wrapper
+  or bus-path surgery cannot justify its semantic and code-layout risk.
+- Generated-source census found 13,534 memory callsites in Sonic 1 but only
+  eight absolute accesses in plainly direct-map ROM/WRAM ranges. S3K had
+  103,218 callsites and only 30 such absolutes. Most effective addresses are
+  dynamic, while most other absolute accesses target MMIO/Z80 or unusual
+  mappings that require the shared path. Static direct mapping is therefore
+  a code-growth trade for a tiny callsite fraction under an approximately
+  two-percent total sampled ceiling.
+- `gvdp_write_control` and `gvdp_write_data`, which contain DMA launch,
+  transfer, CRAM, and palette-update work, total **0.286%** in the same S3K
+  profile. The renderer's line attribution instead concentrates on pattern
+  nibble extraction, palette-index output, tile/pattern addressing,
+  adjacency-cache state, and vertical flip. Window and full-screen scroll
+  state were already hoisted once per scanline for a retained **+0.756%**.
+- Native presentation already sets both widescreen content margin and canvas
+  width to zero before rendering. Frame-policy memory reads are
+  short-circuited while widescreen is not requested. The remaining inactive
+  diagnostic condition was the only narrow candidate found and failed the
+  calibration gate above.
+- S3K sampling attributes **12.388%** to faithful YMFM/YM2612 synthesis,
+  **2.714%** to Z80 execution/bus access, **1.279%** to PSG, and only
+  **0.214%** to audio routing/mixing/delivery helpers. The narrow Z80
+  low-RAM fast-read experiment was neutral, event routing is 0.149%, and the
+  finite benchmark correctly records zero device-delivery work.
+- Host-throughput and audio correctness are intentionally separate: finite
+  uncapped pairs measure synthesis without presentation/device pacing, while
+  the audio-enabled 6,000-frame capture above proved byte-identical WAV
+  output. Delivery depth/anomaly rings execute only on real-time flushes and
+  preserve information the generated WAV cannot contain.
+
+The representative public workload matrix is Sonic 1 Green Hill gameplay,
+Sonic 2 Emerald Hill gameplay, Sonic 3 & Knuckles gameplay fuzz, and Rocket
+Knight Adventures' corrected combined attract/gameplay route, with the Sonic
+attract routes retained as controls. Together they exercise per-line
+scrolling, DMA/art loading, the Z80 sound drivers, YM2612/PSG synthesis,
+native rendering, and enabled widescreen where supported. Puyo Puyo remains
+excluded because no reproducible public title repository was found.
+
+No runtime candidate from this final pass survived. Consequently the existing
+874-checkpoint public differential gate remains the current release evidence and
+does not need to be repeated for a documentation-only closeout.
+
 ## Burn-down
 
 ### P0 — harness and attribution
@@ -518,15 +598,17 @@ A 6,000-frame Sonic 2 audio-enabled capture produced byte-identical
 - [x] Add a finite uncapped benchmark that excludes host pacing/presentation.
 - [x] Add a fixed-affinity, order-balanced paired benchmark with a variance
   gate.
-- [ ] Add optional timing buckets for 68K, VDP, Z80, sound synthesis, host
-  presentation, and non-hardware diagnostics.
+- [x] Attribute 68K, VDP, Z80, sound synthesis, host presentation, and
+  non-hardware diagnostics with 4 kHz sampling and exact symbol mapping.
+  Runtime timing buckets were not added because all executable leaves were
+  attributed without perturbing the measured path.
 - [x] Allow framebuffer hashes and regression diagnostics to run through the
   finite benchmark path.
 - [x] Add state and audio hashes directly to benchmark output.
 - [x] Establish native-width and widescreen controls for every capable public
   title.
-- [ ] Add explicitly tagged representative workloads for raster effects,
-  DMA-heavy scenes, and Z80/audio-heavy titles.
+- [x] Tag the public Sonic 1/2/3K and RKA attract/gameplay routes as the
+  representative raster, DMA/art-loading, and Z80/audio workload matrix.
 
 ### P1 — production observability
 
@@ -537,16 +619,18 @@ A 6,000-frame Sonic 2 audio-enabled capture produced byte-identical
 - [x] Measure production bus-access history removal; reject it as slower.
 - [x] Disable the sampled audio anomaly detector by default in Release while
   preserving Debug defaults and programmatic diagnosis.
-- [ ] Attribute the small always-on audio delivery rings before changing them.
-  Preserve functional queue/underrun/pacing state.
+- [x] Attribute audio delivery separately: it is absent from finite uncapped
+  throughput and executes once per real-time flush. Preserve the functional
+  queue/underrun/pacing state.
 
 ### P2 — generated 68K and bus paths
 
-- [ ] Profile generated instruction accounting, direct ROM/WRAM accesses,
-  MMIO routing, JSR/tail dispatch, strict-stack-disabled production flow,
-  interpreter fallback, and watchdog checks separately.
-- [ ] Inline only mappings whose semantics remain identical; retain the shared
-  slow path for MMIO, tracing, RAM trampolines, and unusual mappings.
+- [x] Profile generated/runtime memory and dispatch paths, inventory static
+  direct-map callsites, and retain strict-stack/interpreter/watchdog
+  diagnostics in the differential gate.
+- [x] Reject direct-map inlining under the measured ceiling and static
+  callsite census; retain the shared path for dynamic addresses, MMIO,
+  tracing, RAM trampolines, and unusual mappings.
 - [x] Replace the profiled Genesis linear tail-dispatch scan with the
   SCC68070 backend's binary-search pattern. Preserve RAM dispatch, return
   capture, split-stack state, overrides, and fallback behavior.
@@ -558,22 +642,25 @@ A 6,000-frame Sonic 2 audio-enabled capture produced byte-identical
 - [x] Establish scanline rendering as the dominant sampled bucket.
 - [x] Attribute scanline time further between background fetch, renderer body,
   VRAM reads, and sprites.
-- [ ] Finish independent attribution for windows, scrolling, palette
-  conversion, DMA, and widescreen policy.
+- [x] Close windows, scrolling, palette conversion, DMA, and widescreen policy
+  from line attribution, retained invariant hoists, VDP-port ceilings, and
+  native/widescreen differential controls.
 - [x] Hoist invariant tile/row work out of per-pixel loops only where the
   measured path permits it.
 - [x] Keep the faithful shared VDP as the floor. Do not replace it with
   title-specific rendering.
-- [ ] Gate inactive enhancement work early while proving native and enabled
-  widescreen behavior independently.
+- [x] Confirm native widescreen margin/canvas and policy memory reads are
+  gated early; fast-fail the remaining diagnostic-only branch when its
+  calibration could not resolve a sub-percent effect.
 
 ### P4 — Z80 and audio
 
 - [x] Attribute Z80 stepping, YM2612, PSG, event routing, mixing, and resampling
   independently.
-- [ ] Benchmark host-throughput mode separately from audio-enabled correctness.
-- [ ] Preserve the large functional event queue required by Sonic's one-handler
-  PCM burst unless a differential test proves a different representation.
+- [x] Benchmark finite host throughput separately from the audio-enabled,
+  byte-identical WAV correctness capture.
+- [x] Preserve the large functional event queue required by Sonic's one-handler
+  PCM burst; its 0.149% sampled share cannot justify representation risk.
 
 ### P5 — regression sweep
 
