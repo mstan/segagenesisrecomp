@@ -612,9 +612,17 @@ static int plane_tiles(unsigned code2)
  * opaque flag (pixel != 0), and the tile's priority bit.
  * In interlace mode 2 (im2), py is in double-res lines: cells are 8x16
  * (64-byte patterns) and the plane covers ht*16 double-res lines. */
-static void fetch_plane_pixel(const GVDP *v, uint16_t base, int wt, int ht,
-                              int px, int py, int im2,
-                              uint8_t *idx, int *opaque, int *hi)
+#if defined(NDEBUG) && defined(_MSC_VER)
+#define GVDP_HOT_INLINE __forceinline
+#elif defined(NDEBUG) && (defined(__GNUC__) || defined(__clang__))
+#define GVDP_HOT_INLINE inline __attribute__((always_inline))
+#else
+#define GVDP_HOT_INLINE
+#endif
+static GVDP_HOT_INLINE void
+fetch_plane_pixel(const GVDP *v, uint16_t base, int wt, int ht,
+                  int px, int py, int im2,
+                  uint8_t *idx, int *opaque, int *hi)
 {
     int cell_h_shift = im2 ? 4 : 3;
     int fy_mask      = (1 << cell_h_shift) - 1;
@@ -634,6 +642,7 @@ static void fetch_plane_pixel(const GVDP *v, uint16_t base, int wt, int ht,
     *hi     = (e & 0x8000) != 0;
     *idx    = (uint8_t)(((e >> 13) & 0x3) * 16 + nib);
 }
+#undef GVDP_HOT_INLINE
 
 /* Is screen pixel (x,line) inside the window region? Window X is in 2-cell
  * (16px) units, Y in 1-cell (8px) units; bit7 flips the covered side. */
