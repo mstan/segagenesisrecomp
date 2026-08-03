@@ -40,7 +40,15 @@ static int32_t  s_psg_peaks[OBS_BASELINE_WIN];
 static int      s_win_head = 0;
 static int      s_win_filled = 0;
 
+#ifdef NDEBUG
+/* The detector scans every generated FM/PSG sample and sorts two 120-entry
+ * windows per frame. Keep it programmatically available in production for
+ * field diagnosis, but do not charge normal Release builds for debug
+ * observability. */
+static int s_enabled = 0;
+#else
 static int s_enabled = 1;
+#endif
 
 void audio_obs_init(void)
 {

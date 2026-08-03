@@ -11,6 +11,9 @@
  * Usage: audio_obs_ingest_fm / audio_obs_ingest_psg feeds samples after
  * each wall frame's render. audio_obs_tick_frame flushes and (optionally)
  * emits a report line for anomalous frames.
+ *
+ * Debug builds enable the detector by default. Release builds leave it
+ * available but disabled until enabled programmatically.
  */
 #ifndef AUDIO_OBSERVABILITY_H
 #define AUDIO_OBSERVABILITY_H
@@ -36,8 +39,7 @@ void audio_obs_tick_frame(uint64_t frame_num,
 /* Call once at init. */
 void audio_obs_init(void);
 
-/* Enable/disable reporting (off by default until --boop-detect flag or
- * programmatic enable). */
+/* Enable/disable detection and reporting programmatically. */
 void audio_obs_set_enabled(int on);
 
 #endif

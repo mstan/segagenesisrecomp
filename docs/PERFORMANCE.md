@@ -18,7 +18,9 @@ measurement.
   other cores is acceptable; reject the measurement when paired deltas spread
   by more than 3 percentage points (or when broader thermal/memory pressure
   makes the pinned results unstable). `tools/paired_benchmark.py` enforces
-  affinity, balanced order, title identity, and this variance gate.
+  affinity, balanced order, title identity, and this variance gate. Its
+  per-side environment overrides also permit same-binary feature isolation
+  without introducing a code-layout difference.
 - Use exactly one title per A/B experiment. Rotate representative experiments
   across Sonic 1, Sonic 2, Sonic 3 & Knuckles, and Rocket Knight Adventures;
   never compare raw throughput between different games.
@@ -299,6 +301,42 @@ execution (2.801%), YM2612 sample generation (2.078%), PSG advancement
 audio anomaly detector consumed 0.801%, making it the first production
 observability candidate to measure independently.
 
+### Release audio anomaly detection
+
+The audio anomaly detector reads every FM and PSG sample and insertion-sorts
+two rolling 120-frame windows. It is diagnostic state: it does not feed the
+sound chips, mixer, or guest-visible state. A same-binary Sonic 2 experiment
+used per-side environment overrides to isolate only the detector state:
+
+- Detector enabled, then disabled: **+10.992%**.
+- Detector disabled, then enabled: **+9.197%**.
+- Median **+10.094%**, 1.795-point spread.
+
+The first source candidate added a Release environment-variable override.
+Although functionally correct, its 128-byte `.text` growth shifted the large
+generated executable enough to regress both paired orderings (**-5.919%** and
+**-5.750%**). That implementation was rejected.
+
+The retained implementation changes only the detector's static default:
+Debug builds remain enabled, while Release builds start disabled and retain
+`audio_obs_set_enabled()` for programmatic diagnosis. It adds no executable,
+`.text`, `.data`, or `.rdata` size. Sonic 2's final order-balanced
+18,000-frame pairs were:
+
+- Baseline 628.355 FPS, candidate 641.613 FPS: **+2.110%**.
+- Candidate 628.597 FPS, baseline 624.996 FPS: **+0.576%**.
+- Median **+1.343%**, 1.534-point spread; baseline CV 0.268%, candidate CV
+  1.025%.
+
+All public-title release routes remained exact: Sonic 1 100/100 native and
+100/100 widescreen checkpoints, Sonic 2 100/100 in each mode, Sonic 3 &
+Knuckles 97/97 in each mode, and Rocket Knight Adventures 280/280 native
+(874/874 total). Fresh control comparisons also matched interpreter totals,
+reported zero true/raw misses, and had zero strict-stack mismatch lines.
+A 6,000-frame Sonic 2 audio-enabled capture produced byte-identical
+89,568,044-byte WAV files on control and candidate
+(`BFC0D131189FF4A10B91E739385BE11E86256EE479675771E20F653BD5157431`).
+
 ## Burn-down
 
 ### P0 — harness and attribution
@@ -323,6 +361,8 @@ observability candidate to measure independently.
 - [x] Confirm chip, sound-command, and co-simulation histories are already
   compile-time gated.
 - [x] Measure production bus-access history removal; reject it as slower.
+- [x] Disable the sampled audio anomaly detector by default in Release while
+  preserving Debug defaults and programmatic diagnosis.
 - [ ] Attribute the small always-on audio delivery rings before changing them.
   Preserve functional queue/underrun/pacing state.
 
