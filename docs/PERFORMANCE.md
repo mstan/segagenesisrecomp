@@ -61,7 +61,7 @@ about 100 seconds of guest time and reaches attract/gameplay.
 
 ### Adjacent VDP plane-fetch caching
 
-CPU sampling attributed about 72% of the current workload to
+Earlier Sonic 1 CPU sampling attributed about 72% of its workload to
 `gvdp_render_scanline`. The retained change inlines the hot VDP helpers and
 caches the name-table and pattern-row fetches shared by adjacent pixels. It
 does not cull scanlines, DMA, sprites, planes, or widescreen work.
@@ -83,6 +83,36 @@ Timing remains paused whenever the paired-variance gate fails. Deterministic
 correctness comparisons do not depend on idle-machine timing and continue
 independently.
 
+### Binary-search generated tail dispatch
+
+Fresh Sonic 3 & Knuckles leaf sampling exposed a title-scaling bottleneck
+hidden by Sonic 1's much smaller generated program. Its 30,476-entry function
+table was scanned linearly on every recompiled tail call. Of 328,636 samples
+inside the executable, 71.401% landed in `recomp_drain_tailcalls` and 19.999%
+in `gvdp_render_scanline`.
+
+The SCC68070 generator already used binary search for the same sorted-table
+problem. Porting that lookup to Genesis reduces an average successful lookup
+from roughly 15,000 address comparisons to about 15, while preserving RAM
+trampoline/stub resolution, overrides, miss logging, and tail-frame behavior.
+The generated table's strict sort order was verified for both Sonic 1 (2,080
+entries) and Sonic 3 & Knuckles (30,476 entries).
+
+- Sonic 1's clean dispatch-only pairs were **+2.168%** and **+0.162%**
+  (median **+1.165%**, 2.006-point spread): a small accepted win for the small
+  table.
+- Sonic 3 & Knuckles' 12,000-frame pairs were **+256.150%** and
+  **+241.544%**. Baseline and candidate CVs were only 1.060% and 1.034%, but
+  ratio amplification produced a 14.606-point spread, so the exact median is
+  not accepted under the 3-point gate. The conservative retained claim is
+  that both orderings exceeded **+241%**.
+- The lookup changes release `.text` by +28 bytes in Sonic 1 and +64 bytes in
+  Sonic 3 & Knuckles. The S3K executable file was 101 bytes smaller.
+
+Post-change S3K sampling confirms attribution moved as intended:
+`recomp_drain_tailcalls` fell to 2.495% of 91,445 in-executable samples, while
+`gvdp_render_scanline` became the new dominant ceiling at 70.969%.
+
 ## Differential validation
 
 All comparisons below used the same title revision and input on the
@@ -91,7 +121,9 @@ pre-change and candidate engines:
 - Sonic 1 native: 100/100 framebuffer hashes and the final RAM snapshot were
   exact over 6,000 frames; strict dispatch/stack checks were clean.
 - Sonic 1 widescreen Green Hill gameplay: 62/62 448x224 framebuffer hashes
-  were exact through frame 3,742; strict checks were clean.
+  were exact through frame 3,742; strict checks were clean. The same 62/62
+  route was exact again for the binary-dispatch candidate versus its
+  current-core linear control.
 - Sonic 2: the strict 63-checkpoint, 3,780-frame golden route was exact.
   Attract added 200/200 exact hashes and 20/20 exact PNGs through frame
   12,001. Active Emerald Hill fuzz added 67/67 exact hashes and an exact final
@@ -99,7 +131,8 @@ pre-change and candidate engines:
   448x224 widescreen resolution.
 - Sonic 3 & Knuckles attract: 20/20 hashes and 19/19 PNGs were byte-identical.
   Gameplay fuzz added 97/97 exact hashes and 3/3 exact PNGs through frame
-  5,856, with identical SRAM.
+  5,856, with identical SRAM. The binary-dispatch candidate repeated the
+  97/97, 3/3, and SRAM exact comparison against the linear control.
 - Rocket Knight Adventures attract: 200/200 hashes and 20/20 PNGs were exact.
   The longer input route added 280/280 exact hashes and 10/10 exact PNGs.
   Both builds exhibit the same pre-existing white/static screen after the
@@ -159,8 +192,9 @@ measured regression.
   interpreter fallback, and watchdog checks separately.
 - [ ] Inline only mappings whose semantics remain identical; retain the shared
   slow path for MMIO, tracing, RAM trampolines, and unusual mappings.
-- [ ] Measure direct/cached dispatch only where profiles show repeated lookup
-  cost. Preserve return capture, split-stack state, and fallback behavior.
+- [x] Replace the profiled Genesis linear tail-dispatch scan with the
+  SCC68070 backend's binary-search pattern. Preserve RAM dispatch, return
+  capture, split-stack state, overrides, and fallback behavior.
 - [ ] Track generated code size and reject instruction-cache-hostile wins.
 
 ### P3 — VDP, DMA, and widescreen
