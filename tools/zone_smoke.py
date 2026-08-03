@@ -73,6 +73,7 @@ CANDIDATE_ROOTS = [
 GAMES = {
     "sonic1": {"repo": "SonicTheHedgehogRecomp",  "exe_name": "SonicTheHedgehogRecomp.exe",  "rom_name": "sonic.bin",  "game_dir": "sonicthehedgehog"},
     "sonic2": {"repo": "SonicTheHedgehog2Recomp", "exe_name": "SonicTheHedgehog2Recomp.exe", "rom_name": "sonic2.bin", "game_dir": "sonicthehedgehog2"},
+    "sonic3k": {"repo": "Sonic3AndKnucklesRecomp", "exe_name": "Sonic3KRecomp.exe", "rom_name": "sonic3k.bin", "game_dir": "sonic3k"},
     "rka":    {"repo": "RocketKnightAdventuresRecomp", "exe_name": "RKARecomp.exe", "rom_name": "rka.bin", "game_dir": "rka"},
 }
 

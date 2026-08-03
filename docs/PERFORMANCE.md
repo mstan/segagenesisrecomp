@@ -14,6 +14,14 @@ measurement.
   while retaining guest CPU, VDP, Z80, and sound-chip execution.
 - Warm both binaries, then use order-balanced A/B pairs over a workload long
   enough to reach attract/gameplay. Report paired deltas and raw results.
+- Run both sides of a pair on the same fixed logical CPU. Ordinary work on
+  other cores is acceptable; reject the measurement when paired deltas spread
+  by more than 3 percentage points (or when broader thermal/memory pressure
+  makes the pinned results unstable). `tools/paired_benchmark.py` enforces
+  affinity, balanced order, title identity, and this variance gate.
+- Use exactly one title per A/B experiment. Rotate representative experiments
+  across Sonic 1, Sonic 2, Sonic 3 & Knuckles, and Rocket Knight Adventures;
+  never compare raw throughput between different games.
 - Measure native and widescreen configurations separately.
 - Pin framebuffer/state hashes, dispatch/interpreter misses, and strict guest
   stack invariants before retaining a candidate.
@@ -49,6 +57,50 @@ The initial warmed 6,000-frame Sonic 1 baseline samples were 362.193, 368.031,
 382.239, 352.423, and 372.899 FPS (median 368.031 FPS). Each sample represents
 about 100 seconds of guest time and reaches attract/gameplay.
 
+## Retained experiments
+
+### Adjacent VDP plane-fetch caching
+
+CPU sampling attributed about 72% of the current workload to
+`gvdp_render_scanline`. The retained change inlines the hot VDP helpers and
+caches the name-table and pattern-row fetches shared by adjacent pixels. It
+does not cull scanlines, DMA, sprites, planes, or widescreen work.
+
+- Sonic 1 retained roughly **+10.5%** across order-reversed paired runs.
+- Sonic 3 & Knuckles was positive in both pairs (**+5.685%** and
+  **+9.849%**), but the 4.164 percentage-point spread exceeded the 3-point
+  acceptance gate. This corroborates direction only; it is not an accepted
+  precise effect size.
+- Executable growth was 970 bytes for Sonic 1, 970 bytes for Sonic 3 &
+  Knuckles, and 1,482 bytes for Rocket Knight Adventures.
+
+Timing remains paused whenever the paired-variance gate fails. Deterministic
+correctness comparisons do not depend on idle-machine timing and continue
+independently.
+
+## Differential validation
+
+All comparisons below used the same title revision and input on the
+pre-change and candidate engines:
+
+- Sonic 1 native: 100/100 framebuffer hashes and the final RAM snapshot were
+  exact over 6,000 frames; strict dispatch/stack checks were clean.
+- Sonic 1 widescreen Green Hill gameplay: 62/62 448x224 framebuffer hashes
+  were exact through frame 3,742; strict checks were clean.
+- Sonic 2: the strict 63-checkpoint, 3,780-frame golden route was exact.
+- Sonic 3 & Knuckles attract: 20/20 hashes and 19/19 PNGs were byte-identical.
+  Gameplay fuzz added 97/97 exact hashes and 3/3 exact PNGs through frame
+  5,856, with identical SRAM.
+- Rocket Knight Adventures attract: 200/200 hashes and 20/20 PNGs were exact.
+  The longer input route added 280/280 exact hashes and 10/10 exact PNGs.
+  Both builds exhibit the same pre-existing white/static screen after the
+  Konami logo, so this proves regression neutrality for the observable route,
+  not gameplay coverage.
+
+Puyo Puyo is excluded: neither the authenticated repository inventory nor
+public-remote search found a title repository. Its engine-local bring-up is
+not a reproducible public regression target.
+
 ## Rejected experiments
 
 ### Production bus-access history culling
@@ -72,6 +124,8 @@ measured regression.
 ### P0 — harness and attribution
 
 - [x] Add a finite uncapped benchmark that excludes host pacing/presentation.
+- [x] Add a fixed-affinity, order-balanced paired benchmark with a variance
+  gate.
 - [ ] Add optional timing buckets for 68K, VDP, Z80, sound synthesis, host
   presentation, and non-hardware diagnostics.
 - [ ] Add framebuffer/state hashes directly to benchmark output.
@@ -102,7 +156,8 @@ measured regression.
 
 ### P3 — VDP, DMA, and widescreen
 
-- [ ] Attribute scanline time among background fetch, sprites, windows,
+- [x] Establish scanline rendering as the dominant sampled bucket.
+- [ ] Attribute scanline time further among background fetch, sprites, windows,
   scrolling, palette conversion, DMA, and widescreen policy.
 - [ ] Hoist invariant tile/row work out of per-pixel loops only where the
   measured path permits it.

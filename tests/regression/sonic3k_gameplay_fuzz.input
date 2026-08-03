@@ -1,0 +1,63 @@
+# Deterministic Sonic 3 & Knuckles gameplay exercise.
+# Enter a no-save game, traverse right with varied jumps, then exercise
+# crouch/spindash and reverse-direction input. The exact route is less
+# important than sustained CPU/VDP/DMA/sprite activity without a crash.
+WAIT 700
+PRESS START 2
+WAIT 90
+PRESS START 2
+WAIT 400
+PRESS START 2
+WAIT_RAM8 FFF600 8C
+WAIT_RAM8 FFF600 0C
+WAIT 30
+SCREENSHOT sonic3k_fuzz_start.png
+
+HOLD RIGHT
+WAIT 90
+PRESS A 6
+WAIT 137
+PRESS B 4
+WAIT 211
+PRESS C 8
+WAIT 173
+PRESS A 3
+WAIT 257
+PRESS C 10
+WAIT 149
+PRESS B 5
+WAIT 283
+PRESS A 7
+WAIT 191
+PRESS C 4
+WAIT 239
+PRESS B 9
+WAIT 167
+SCREENSHOT sonic3k_fuzz_forward.png
+
+RELEASE RIGHT
+HOLD DOWN
+WAIT 45
+PRESS A 8
+WAIT 20
+PRESS A 8
+WAIT 20
+PRESS A 8
+WAIT 30
+RELEASE DOWN
+HOLD RIGHT
+WAIT 420
+PRESS C 6
+WAIT 260
+RELEASE RIGHT
+HOLD LEFT
+WAIT 180
+PRESS A 5
+WAIT 180
+RELEASE LEFT
+HOLD RIGHT
+WAIT 900
+PRESS B 6
+WAIT 600
+SCREENSHOT sonic3k_fuzz_end.png
+EXIT 0
