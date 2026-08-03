@@ -137,7 +137,8 @@ pre-change and candidate engines:
 - Sonic 1 widescreen Green Hill gameplay: 62/62 448x224 framebuffer hashes
   were exact through frame 3,742; strict checks were clean. The same 62/62
   route was exact again for the binary-dispatch candidate versus its
-  current-core linear control.
+  current-core linear control, then again for the scanline-invariant
+  candidate versus the pre-change binary-dispatch build.
 - Sonic 2: the strict 63-checkpoint, 3,780-frame golden route was exact.
   Attract added 200/200 exact hashes and 20/20 exact PNGs through frame
   12,001. Active Emerald Hill fuzz added 67/67 exact hashes and an exact final
@@ -150,11 +151,15 @@ pre-change and candidate engines:
 - Sonic 3 & Knuckles attract: 20/20 hashes and 19/19 PNGs were byte-identical.
   Gameplay fuzz added 97/97 exact hashes and 3/3 exact PNGs through frame
   5,856, with identical SRAM. The binary-dispatch candidate repeated the
-  97/97, 3/3, and SRAM exact comparison against the linear control.
+  97/97, 3/3, and SRAM exact comparison against the linear control. The
+  scanline-invariant candidate repeated all 97 hashes, three PNGs, and final
+  SRAM exactly against the pre-change binary-dispatch build.
 - Rocket Knight Adventures attract: 200/200 hashes and 20/20 PNGs were exact.
   The longer input route added 280/280 exact hashes and 10/10 exact PNGs.
   The binary-dispatch candidate repeated the longer 280/280 and 10/10 exact
-  comparison against the linear control with no bad diagnostics.
+  comparison against the linear control with no bad diagnostics. The
+  scanline-invariant candidate repeated the same 280/280 and 10/10 exact
+  comparison against the pre-change build.
   Both builds exhibit the same pre-existing white/static screen after the
   Konami logo, so this proves regression neutrality for the observable route,
   not gameplay coverage.
