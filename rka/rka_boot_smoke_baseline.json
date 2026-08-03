@@ -1,6 +1,6 @@
 {
   "tool": "zone_smoke.py",
-  "version": 1,
+  "version": 2,
   "game": "rka",
   "input_script": "(boot)",
   "hash_frames": 60,
@@ -11,47 +11,55 @@
     },
     {
       "frame": 120,
-      "hash": "0x1CAF9283EB7F14E5"
+      "hash": "0xB8FEE9EE1D7A691D"
     },
     {
       "frame": 180,
-      "hash": "0x1CAF9283EB7F14E5"
+      "hash": "0xB8FEE9EE1D7A691D"
     },
     {
       "frame": 240,
-      "hash": "0x1CAF9283EB7F14E5"
+      "hash": "0xB8FEE9EE1D7A691D"
     },
     {
       "frame": 300,
-      "hash": "0x158AF381BE42E7B1"
+      "hash": "0x603C52765EA09777"
     },
     {
       "frame": 360,
-      "hash": "0xAB6F6FDD5C1F54A9"
+      "hash": "0x287994984A30CDDA"
     },
     {
       "frame": 420,
-      "hash": "0xAB6F6FDD5C1F54A9"
+      "hash": "0x287994984A30CDDA"
     },
     {
       "frame": 480,
-      "hash": "0xC4CE11D2917D3F3D"
+      "hash": "0x4FAAAB484B8812A5"
     },
     {
       "frame": 540,
-      "hash": "0x5A22F9EE16A5658D"
+      "hash": "0x1B21FE88A51DAEE9"
     },
     {
       "frame": 600,
-      "hash": "0x7A30039C88C0BFC5"
+      "hash": "0x369C7C044796B58D"
     },
     {
       "frame": 660,
-      "hash": "0x953F443DF1FD3FE1"
+      "hash": "0x3C4D961BDAC650C1"
     },
     {
       "frame": 720,
-      "hash": "0xDBCE57A6310A2CBD"
+      "hash": "0x36039674D8CD109D"
     }
-  ]
+  ],
+  "diagnostics": {
+    "interp": {
+      "total_calls": 1286,
+      "unique_true_miss_addrs": 0,
+      "raw_miss_events": 0
+    },
+    "stack_mismatches": []
+  }
 }

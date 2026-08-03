@@ -65,6 +65,11 @@ fiber_t fiber_create(size_t commit, size_t reserve,
  * something fiber_switch'es back to it. */
 void fiber_switch(fiber_t target);
 
+/* Return the currently-running fiber on this thread, or NULL when the
+ * thread has not been converted. Useful for diagnostics that must not
+ * compare stack addresses belonging to different fibers. */
+fiber_t fiber_current(void);
+
 /* Destroy a fiber created by fiber_create and free its stack. Must not be
  * the currently-running fiber. */
 void fiber_destroy(fiber_t fiber);

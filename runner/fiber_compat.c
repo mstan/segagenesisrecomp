@@ -31,6 +31,11 @@ void fiber_switch(fiber_t target)
     SwitchToFiber((LPVOID)target);
 }
 
+fiber_t fiber_current(void)
+{
+    return IsThreadAFiber() ? (fiber_t)GetCurrentFiber() : NULL;
+}
+
 void fiber_destroy(fiber_t fiber)
 {
     if (fiber)
@@ -165,6 +170,11 @@ void fiber_switch(fiber_t target)
     s_current = to;
     swapcontext(&from->ctx, &to->ctx);
     /* Resumed: s_current was restored to `from` by whoever switched back. */
+}
+
+fiber_t fiber_current(void)
+{
+    return (fiber_t)s_current;
 }
 
 void fiber_destroy(fiber_t fiber)

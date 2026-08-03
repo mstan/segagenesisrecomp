@@ -7,7 +7,8 @@
 # dispatch-miss / floor / coverage-manifest loop. Each lead is cross-checked
 # against the raw ROM in a disassembler before becoming a seed (PRINCIPLES #16).
 #
-# ROM identity (USA): header "ROCKET KNIGHT ADVENTURES", serial GM T-95046-00,
+# ROM identity (USA): SHA-256 85831D4F7D35BF233B5581C3ED8C05BAC64721F65713426BFA00D2F9A792A7AA,
+# CRC32 A6EFEC47, header "ROCKET KNIGHT ADVENTURES", serial GM T-95046-00,
 # region "U" (NTSC), 1993 Konami. Vectors (from $000000):
 #   SSP   $FFFFFF00   (reset; the entry does NOT override it — uses it directly)
 #   Entry $000208

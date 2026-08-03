@@ -462,7 +462,7 @@ static size_t    s_game_stack_last_report = 0;
 
 static void game_stack_note(const char *reason, const void *stack_marker)
 {
-    if (!s_game_stack_top || !stack_marker)
+    if (!s_game_stack_top || !stack_marker || fiber_current() != s_game_fiber)
         return;
 
     uintptr_t marker = (uintptr_t)stack_marker;

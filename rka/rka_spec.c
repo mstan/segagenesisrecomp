@@ -39,8 +39,9 @@ const GameSpec g_game_spec = {
     .display_name           = "Rocket Knight Adventures",
     .short_name             = "RKA",
 
-    /* CRC check skipped (0); identity gated by size. USA file is 1 MB. */
-    .expected_rom_crc32     = 0u,
+    /* Rocket Knight Adventures (USA), no-intro CRC32 A6EFEC47. Regional
+     * variants have different code/data layouts and cannot share this recomp. */
+    .expected_rom_crc32     = 0xA6EFEC47u,
     .expected_rom_size      = 0x100000u,   /* 1 MB */
 #ifdef GENESIS_Z80_RECOMP
     .z80_step               = rkaz80_step,

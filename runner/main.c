@@ -772,6 +772,17 @@ extern uint8_t  m68k_read8 (uint32_t);
  * ROM loading
  * ========================================================================= */
 
+static uint32_t rom_crc32(const uint8_t *data, size_t len)
+{
+    uint32_t crc = 0xFFFFFFFFu;
+    for (size_t i = 0; i < len; ++i) {
+        crc ^= data[i];
+        for (int bit = 0; bit < 8; ++bit)
+            crc = (crc >> 1) ^ (0xEDB88320u & (uint32_t)-(int32_t)(crc & 1u));
+    }
+    return ~crc;
+}
+
 /* Reads the ROM file at path.  Allocates and returns a cc_u16l[] buffer
  * (host-native 16-bit, values byte-swapped from the big-endian ROM file).
  * *out_words receives the number of 16-bit words; *raw_bytes receives the
@@ -1718,6 +1729,37 @@ int main(int argc, char *argv[])
     cc_u32l rom_raw_len = 0;
     cc_u16l *rom_buf  = load_rom(rom_path, &rom_words, &rom_raw, &rom_raw_len);
     if (!rom_buf) return 1;
+
+    /* Recompiled code is tied to one exact ROM layout. A same-size regional
+     * variant can boot far enough to look plausible while executing the wrong
+     * data and code addresses, so enforce identity on CLI/headless paths too
+     * (the launcher already exposes the expected CRC to its picker). */
+    if (g_game_spec.expected_rom_size &&
+        rom_raw_len != g_game_spec.expected_rom_size) {
+        fprintf(stderr,
+                "ROM identity mismatch for %s: size=%u, expected=%u. "
+                "Refusing to execute address-specific recompiled code.\n",
+                g_game_spec.display_name ? g_game_spec.display_name : "game",
+                (unsigned)rom_raw_len,
+                (unsigned)g_game_spec.expected_rom_size);
+        free(rom_buf);
+        free(rom_raw);
+        return 1;
+    }
+    if (g_game_spec.expected_rom_crc32) {
+        uint32_t actual_crc = rom_crc32(rom_raw, rom_raw_len);
+        if (actual_crc != g_game_spec.expected_rom_crc32) {
+            fprintf(stderr,
+                    "ROM identity mismatch for %s: CRC32=%08X, expected=%08X. "
+                    "Refusing to execute address-specific recompiled code.\n",
+                    g_game_spec.display_name ? g_game_spec.display_name : "game",
+                    (unsigned)actual_crc,
+                    (unsigned)g_game_spec.expected_rom_crc32);
+            free(rom_buf);
+            free(rom_raw);
+            return 1;
+        }
+    }
 
     /* --- Load input script (if requested) before the SDL window opens
      * so any parse error fails fast without a flash of black window. */
