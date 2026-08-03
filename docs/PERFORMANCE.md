@@ -113,6 +113,20 @@ Post-change S3K sampling confirms attribution moved as intended:
 `recomp_drain_tailcalls` fell to 2.495% of 91,445 in-executable samples, while
 `gvdp_render_scanline` became the new dominant ceiling at 70.969%.
 
+### Scanline-invariant VDP state
+
+Window boundaries, full-screen vertical scroll values, and shadow/highlight
+mode are fixed while a completed scanline is rendered. Resolving them once per
+row removes redundant register/VSRAM loads and window arithmetic from the
+per-pixel loop without skipping any pixels or changing two-cell vertical
+scroll behavior.
+
+- Sonic 2's order-reversed 6,000-frame gameplay pairs were **+0.710%** and
+  **+0.801%** (median **+0.756%**, 0.091-point spread).
+- Baseline and candidate CVs were 0.216% and 0.261%; the result passed the
+  3-point acceptance gate while pinned to logical CPU 15.
+- Release `.text` grew by 64 bytes; executable file size was unchanged.
+
 ## Differential validation
 
 All comparisons below used the same title revision and input on the
@@ -130,7 +144,9 @@ pre-change and candidate engines:
   PNG at native width, then another 67/67 exact hashes and exact PNG at
   448x224 widescreen resolution. The binary-dispatch candidate repeated both
   67/67 active-gameplay comparisons, including the native and 448x224 PNGs,
-  against the linear control.
+  against the linear control. The scanline-invariant candidate also repeated
+  67/67 exact hashes and the exact final PNG at both native width and 448x224,
+  with no bad diagnostics.
 - Sonic 3 & Knuckles attract: 20/20 hashes and 19/19 PNGs were byte-identical.
   Gameplay fuzz added 97/97 exact hashes and 3/3 exact PNGs through frame
   5,856, with identical SRAM. The binary-dispatch candidate repeated the
@@ -206,7 +222,7 @@ measured regression.
 - [x] Establish scanline rendering as the dominant sampled bucket.
 - [ ] Attribute scanline time further among background fetch, sprites, windows,
   scrolling, palette conversion, DMA, and widescreen policy.
-- [ ] Hoist invariant tile/row work out of per-pixel loops only where the
+- [x] Hoist invariant tile/row work out of per-pixel loops only where the
   measured path permits it.
 - [ ] Keep the faithful shared VDP as the floor. Do not replace it with
   title-specific rendering.

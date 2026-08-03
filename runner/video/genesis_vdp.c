@@ -666,19 +666,6 @@ fetch_plane_pixel(const GVDP *v, PlanePixelCache *cache,
 }
 #undef GVDP_HOT_INLINE
 
-/* Is screen pixel (x,line) inside the window region? Window X is in 2-cell
- * (16px) units, Y in 1-cell (8px) units; bit7 flips the covered side. */
-static int in_window(const GVDP *v, int x, int line)
-{
-    unsigned wx = REG_WINDOW_X(v), wy = REG_WINDOW_Y(v);
-    int cell_x = x >> 3;
-    int hx = (wx & 0x1F) * 2;                 /* boundary in cells            */
-    int vy = (wy & 0x1F) * 8;                  /* boundary in lines            */
-    int h_in = (wx & 0x80) ? (cell_x >= hx) : (cell_x < hx);
-    int v_in = (wy & 0x80) ? (line   >= vy) : (line   < vy);
-    return h_in || v_in;
-}
-
 /* Render one OUTPUT row. `line` is a raster line normally; in interlace
  * mode 2 it is a double-res row (0..447) — the scheduler calls this twice
  * per raster line. Raster-indexed lookups (hscroll table, window boundary)
@@ -732,6 +719,17 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
      * double-res units (the game scrolls each split-screen viewport with
      * these). */
     int vs_mask = im2 ? 0x7FF : 0x3FF;
+    int full_vs_a = v->vsram[0] & vs_mask;
+    int full_vs_b = v->vsram[1] & vs_mask;
+
+    /* These registers cannot change while a completed scanline is rendered.
+     * Resolve their row-invariant portions once rather than once per pixel. */
+    unsigned wx = REG_WINDOW_X(v), wy = REG_WINDOW_Y(v);
+    int window_x = (wx & 0x1F) * 16;
+    int window_y = (wy & 0x1F) * 8;
+    int window_h_right = (wx & 0x80) != 0;
+    int window_v_in = (wy & 0x80) ? (rline >= window_y) : (rline < window_y);
+    int sh_mode = MODE4_SHI(v) != 0;
 
     /* Sprite layer for this output row (placed in centered output-column space). */
     sprite_render_line(v, line, total, offset);
@@ -768,8 +766,8 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
             vs_a = v->vsram[(col + 0) % GVDP_VSRAM_ENTRIES] & vs_mask;
             vs_b = v->vsram[(col + 1) % GVDP_VSRAM_ENTRIES] & vs_mask;
         } else {
-            vs_a = v->vsram[0] & vs_mask;
-            vs_b = v->vsram[1] & vs_mask;
+            vs_a = full_vs_a;
+            vs_b = full_vs_b;
         }
 
         uint8_t a_idx, b_idx; int a_op, a_hi, b_op, b_hi;
@@ -777,7 +775,8 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         /* Plane A — or the window plane (unscrolled) where the window covers.
          * The window is unscrolled and cell-addressed: in IM2 its vertical
          * addressing is still double-res (8x16 cells over the output rows). */
-        if (x >= 0 && x < w && in_window(v, x, rline)) {
+        int window_h_in = window_h_right ? (x >= window_x) : (x < window_x);
+        if (x >= 0 && x < w && (window_h_in || window_v_in)) {
             fetch_plane_pixel(v, &cache_w, base_w, win_wt, ht,
                               x, line, im2, &a_idx, &a_op, &a_hi);
         } else {
@@ -805,7 +804,7 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         /* Shadow/highlight: when enabled, a pixel with no high-priority layer
          * is shadowed; operator sprites (pal3 colours 14/15) force highlight or
          * shadow on the underlying pixel. */
-        if (MODE4_SHI(v)) {
+        if (sh_mode) {
             int hi_present = (s_op && s_hi) || (a_op && a_hi) || (b_op && b_hi);
             int sh = !hi_present;
             int hl = 0;
