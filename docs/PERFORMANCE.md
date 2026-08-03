@@ -165,6 +165,24 @@ still retained; only the two-pixel pattern-byte memoization is removed.
   and Rocket Knight Adventures. Executable files shrank by 512 bytes where PE
   section alignment permitted it; Sonic 3 & Knuckles' file size was unchanged.
 
+### Consecutive-pixel plane-attribute reuse
+
+The retained name-table cache used to recompute the name-table address for
+every pixel and compare that address to the previous fetch. The renderer now
+records only the next packed `(y, x)` coordinate that can reuse the attribute.
+Reuse is limited to the immediately adjacent pixel within the same 8-pixel
+cell; tile boundaries explicitly invalidate it, and scroll/window/row
+discontinuities naturally miss.
+
+- Sonic 1's order-reversed 18,000-frame gameplay pairs were **+5.550%** and
+  **+5.636%** (median **+5.593%**, 0.085-point spread) on logical CPU 11.
+- A same-binary calibration immediately before the retained run passed with a
+  0.687-point spread. Absolute throughput moved with unrelated host activity,
+  but the paired candidate/control ratios remained consistent.
+- Release `.text`, data, BSS, and executable size were unchanged.
+- Sonic 1 matched all 100/100 framebuffer checkpoints in both native and
+  widescreen gameplay routes.
+
 ## Differential validation
 
 All comparisons below used the same title revision and input on the
@@ -205,9 +223,28 @@ pre-change and candidate engines:
   scanline-invariant candidate repeated the same 280/280 and 10/10 exact
   comparison against the pre-change build.
   The pattern-byte-cache removal repeated all 280 hashes exactly.
-  Both builds exhibit the same pre-existing white/static screen after the
-  Konami logo, so this proves regression neutrality for the observable route,
-  not gameplay coverage.
+  That older comparison predated the RKA ROM/corruption fix: both builds
+  reached the same white/static screen after the Konami logo, so it proved
+  regression neutrality only. The corrected gameplay route below supersedes
+  it as the current release gate.
+
+The consecutive-pixel plane-attribute candidate repeated the public gate
+against same-revision controls:
+
+- Sonic 1 and Sonic 2 each matched 200/200 attract hashes plus 100/100
+  gameplay hashes at both native width and widescreen.
+- Sonic 3 & Knuckles matched 200/200 attract hashes plus 97/97 gameplay-fuzz
+  hashes at both native width and widescreen.
+- Rocket Knight Adventures matched 280/280 hashes over the corrected build's
+  combined full-attract and gameplay-fuzz route.
+- The 6,000-frame benchmark workloads also matched the full architectural and
+  audio-state fingerprints for all four titles.
+
+The stored pre-candidate S3K baseline differed only during an early menu
+transition, and the stored RKA baseline contained the old broken build's
+constant static-screen hash. Fresh controls built from the candidate's exact
+parent revision matched the candidate, so those obsolete baselines were not
+used as evidence of a renderer regression.
 
 Puyo Puyo is excluded: neither the authenticated repository inventory nor
 public-remote search found a title repository. Its engine-local bring-up is
@@ -273,6 +310,23 @@ the added cache comparisons and state traffic outweighed the removed multiply:
   by 384 bytes and the executable grew by 512 bytes.
 
 Both orderings were decisively negative, so the row cache was reverted.
+
+### Stateful plane-row geometry cache
+
+A broader follow-up cached plane masks, strides, tile-row offsets, and
+vertical-flip coordinates in each A/B/window fetch context. Sonic 1 remained
+exact across all 100 checkpoints of the 6,000-frame active Green Hill route,
+but the added state and row-change checks outweighed the arithmetic they
+removed:
+
+- Pair 1: baseline 572.544 FPS, candidate 549.151 FPS (**-4.086%**).
+- Pair 2: candidate 580.637 FPS, baseline 609.895 FPS (**-4.797%**).
+- The 0.711-point spread passed the variance gate, while release `.text` and
+  the executable each grew by 512 bytes.
+
+The candidate was reverted. A preliminary comparison against an older,
+differently configured control was discarded before this result; the retained
+numbers use same-configuration binaries with identical data and BSS sizes.
 
 ### Conditional sprite-operator clears
 

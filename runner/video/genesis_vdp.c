@@ -613,7 +613,7 @@ static int plane_tiles(unsigned code2)
  * In interlace mode 2 (im2), py is in double-res lines: cells are 8x16
  * (64-byte patterns) and the plane covers ht*16 double-res lines. */
 typedef struct PlanePixelCache {
-    uint32_t nt_addr;
+    uint32_t next_coord;
     uint16_t attr;
 } PlanePixelCache;
 
@@ -635,15 +635,19 @@ fetch_plane_pixel(const GVDP *v, PlanePixelCache *cache,
     int tile_bytes   = im2 ? 64 : 32;
     int wpx = wt * 8, hpx = ht << cell_h_shift;
     px &= (wpx - 1); py &= (hpx - 1);
-    uint16_t nt = (uint16_t)(base + (uint16_t)(((py >> cell_h_shift) * wt + (px >> 3)) * 2));
+    uint32_t coord = ((uint32_t)(uint16_t)py << 16) | (uint16_t)px;
     uint16_t e;
-    if (cache->nt_addr == nt) {
+    if (cache->next_coord == coord) {
         e = cache->attr;
     } else {
+        uint16_t nt = (uint16_t)(base + (uint16_t)(((py >> cell_h_shift) * wt + (px >> 3)) * 2));
         e = vram_read_word(v, nt);
-        cache->nt_addr = nt;
         cache->attr = e;
     }
+    /* Reuse is valid only for the immediately adjacent pixel within this
+     * name-table cell. Invalidate at each 8-pixel boundary; a row/scroll or
+     * window discontinuity naturally fails the packed-coordinate comparison. */
+    cache->next_coord = ((px & 7) != 7) ? coord + 1u : ~0u;
     int ti = e & 0x07FF;
     int fx = px & 7, fy = py & fy_mask;
     if (e & 0x0800) fx ^= 7;        /* H flip */
