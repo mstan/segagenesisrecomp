@@ -218,11 +218,10 @@ int psg_save_state(FILE *f)
     return 1;
 }
 
-#ifdef GENESIS_COSIM
 #include "cosim.h"
-/* Full PSG state hashed for differential co-sim (field-by-field to dodge
- * struct padding). Includes the noise LFSR + counters + sample-clock leftover
- * — the surface frame_snapshots.c zeroes. */
+/* Full PSG state hashed for benchmark regression and differential co-sim
+ * (field-by-field to dodge struct padding). Includes the noise LFSR + counters
+ * + sample-clock leftover — the surface frame_snapshots.c zeroes. */
 uint64_t psg_cosim_hash(void)
 {
     if (!s_inited) psg_init();
@@ -243,6 +242,7 @@ uint64_t psg_cosim_hash(void)
     return h;
 }
 
+#ifdef GENESIS_COSIM
 #include <stdio.h>
 /* Human-readable PSG field dump for co-sim drill (which field diverges?). */
 int psg_cosim_dump(char *buf, int cap) {

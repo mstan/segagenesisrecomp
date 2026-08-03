@@ -1,5 +1,5 @@
 /* cosim_state.c — full architectural-state FNV-1a hasher for the Genesis
- * differential co-simulation. Compiled only under GENESIS_COSIM.
+ * benchmark and differential co-simulation paths.
  *
  * Genesis RAM is tiny (64 KB work + 8 KB Z80 + 64 KB VRAM ~= 136 KB), so we
  * FULL-HASH every checkpoint rather than incremental page-hashing. This drops

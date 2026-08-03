@@ -157,7 +157,6 @@ size_t audio_event_queue_count(void)
     return (s_head >= s_tail) ? (s_head - s_tail) : (QUEUE_CAP - s_tail + s_head);
 }
 
-#ifdef GENESIS_COSIM
 #include "../cosim.h"
 /* Hash the PENDING (undrained) cycle-stamped writes, in FIFO order, plus the
  * queue depth. A phase error in the 68K-side stamp path shows up here as an
@@ -174,4 +173,3 @@ uint64_t audio_event_cosim_hash(void)
     }
     return h;
 }
-#endif /* GENESIS_COSIM */

@@ -20,6 +20,7 @@
  */
 #include "cosim.h"
 #include "frame_record.h"   /* M68KRegSnap / Z80RegSnap / VdpSnap (normalized)   */
+#include <string.h>
 
 /* frame_snapshots.c accessors.
  * on the own-backend build (passed NULL there). */
@@ -144,4 +145,3 @@ int cosim_visible_region_chunks(const char *region, int nchunks, uint64_t *out)
     }
     return nchunks;
 }
-

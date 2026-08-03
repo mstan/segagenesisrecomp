@@ -30,6 +30,7 @@
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
 #include "genesis_clocks.h"
 #include "audio.h"
+#include "cosim.h"
 #include "png_write.h"
 
 /* =========================================================================
@@ -2714,12 +2715,26 @@ int main(int argc, char *argv[])
         double seconds = (double)(benchmark_end - benchmark_start)
                        / (double)SDL_GetPerformanceFrequency();
         double fps = seconds > 0.0 ? (double)frame_num / seconds : 0.0;
+        /* Hash after the timer stops: correctness metadata must not reduce
+         * the throughput being measured. The audio fingerprint folds the
+         * complete FM, PSG, and pending event-queue state from the same
+         * pointer-free architectural surface as differential co-simulation. */
+        CosimSubHashes benchmark_sub;
+        uint64_t state_hash = cosim_state_hash(&benchmark_sub);
+        uint64_t audio_hash = cosim_fnv_init();
+        audio_hash = cosim_fold(audio_hash, benchmark_sub.fm);
+        audio_hash = cosim_fold(audio_hash, benchmark_sub.psg);
+        audio_hash = cosim_fold(audio_hash, benchmark_sub.evq);
         printf("GENESISRECOMP_BENCHMARK "
                "{\"game\":\"%s\",\"frames\":%u,\"seconds\":%.9f,"
-               "\"fps\":%.3f,\"ms_per_frame\":%.6f}\n",
+               "\"fps\":%.3f,\"ms_per_frame\":%.6f,"
+               "\"state_fnv1a64\":\"%016llX\","
+               "\"audio_state_fnv1a64\":\"%016llX\"}\n",
                g_game_spec.short_name ? g_game_spec.short_name : "game",
                frame_num, seconds, fps,
-               frame_num ? seconds * 1000.0 / (double)frame_num : 0.0);
+               frame_num ? seconds * 1000.0 / (double)frame_num : 0.0,
+               (unsigned long long)state_hash,
+               (unsigned long long)audio_hash);
         fflush(stdout);
     }
 

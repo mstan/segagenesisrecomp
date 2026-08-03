@@ -219,6 +219,30 @@ also records and compares interpreter call/miss totals and any strict JSR-stack
 mismatch lines. All seven native/widescreen comparisons matched diagnostics
 and reported no stack mismatches.
 
+### Benchmark end-state fingerprints
+
+Finite benchmark records now include a pointer-free full architectural-state
+FNV-1a hash plus an audio-state hash that folds the complete YM2612, SN76489,
+and pending cycle-stamped event-queue state. The existing differential co-sim
+hasher supplies both values, avoiding a second serialization surface.
+
+The benchmark timer stops before hashing, so correctness metadata does not
+reduce the reported throughput. `paired_benchmark.py` requires both hashes and
+rejects a pair on any mismatch; `--allow-missing-hashes` is available only for
+deliberate comparisons against historical binaries. Two independent
+6,000-frame proof runs per public title produced identical full-state and audio
+hashes:
+
+- Sonic 1: state `B73909CF3B280638`, audio `5F095FF7D29387A5`.
+- Sonic 2: state `E10EAA6208809C77`, audio `429C24252EAC6445`.
+- Sonic 3 & Knuckles: state `A264222BFEA48B7B`, audio
+  `0C1CC3CCE3BEE875`.
+- Rocket Knight Adventures: state `A992AD2156377560`, audio
+  `87031C3CDFDD70C9`.
+
+The Sonic proofs also retained identical interpreter totals and zero true/raw
+misses.
+
 ## Rejected experiments
 
 ### Production bus-access history culling
@@ -348,7 +372,7 @@ A 6,000-frame Sonic 2 audio-enabled capture produced byte-identical
   presentation, and non-hardware diagnostics.
 - [x] Allow framebuffer hashes and regression diagnostics to run through the
   finite benchmark path.
-- [ ] Add state and audio hashes directly to benchmark output.
+- [x] Add state and audio hashes directly to benchmark output.
 - [x] Establish native-width and widescreen controls for every capable public
   title.
 - [ ] Add explicitly tagged representative workloads for raster effects,

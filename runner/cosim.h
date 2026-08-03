@@ -1,8 +1,9 @@
-/* cosim.h — Genesis differential co-simulation: full-state hashing + lockstep.
+/* cosim.h — Genesis full-state hashing + differential co-simulation.
  *
- * Compiled ONLY into the genesis-cosim build target (GENESIS_COSIM). Zero
- * effect on the shipping native / oracle builds. Mirrors psxrecomp's
- * cosim.c / cosim_state.c (see F:\Projects\recomp-template\
+ * The side-effect-free full-state hasher is also linked into normal builds so
+ * finite benchmarks can report an end-state fingerprint after timing stops.
+ * The lockstep server and checkpoint machinery remain GENESIS_COSIM-only.
+ * Mirrors psxrecomp's cosim.c / cosim_state.c (see F:\Projects\recomp-template\
  * DIFFERENTIAL-COSIMULATION.md and .../GENESIS/DIFFERENTIAL-COSIM-PROPOSAL.md).
  *
  * Method: two deterministic instances of the SAME machine (A = recompiled

@@ -18,6 +18,7 @@ from pathlib import Path
 
 
 BENCHMARK_PREFIX = "GENESISRECOMP_BENCHMARK "
+HASH_FIELDS = ("state_fnv1a64", "audio_state_fnv1a64")
 
 
 def set_process_affinity(pid: int, cpu: int) -> None:
@@ -120,6 +121,29 @@ def coefficient_of_variation(values: list[float]) -> float:
     return 0.0 if not mean else statistics.pstdev(values) / mean * 100.0
 
 
+def verify_hashes(
+    baseline: dict,
+    candidate: dict,
+    context: str,
+    allow_missing: bool,
+) -> None:
+    for field in HASH_FIELDS:
+        base_hash = baseline.get(field)
+        cand_hash = candidate.get(field)
+        if base_hash is None or cand_hash is None:
+            if allow_missing:
+                continue
+            raise RuntimeError(
+                f"{context}: missing {field}; rebuild both runners with "
+                "benchmark hash support or pass --allow-missing-hashes"
+            )
+        if base_hash != cand_hash:
+            raise RuntimeError(
+                f"{context}: {field} mismatch: baseline={base_hash}, "
+                f"candidate={cand_hash}"
+            )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True)
@@ -154,6 +178,11 @@ def main() -> int:
         type=float,
         default=3.0,
         help="maximum difference between paired deltas, in percentage points",
+    )
+    parser.add_argument(
+        "--allow-missing-hashes",
+        action="store_true",
+        help="permit historical runners that predate benchmark state hashes",
     )
     args = parser.parse_args()
 
@@ -205,6 +234,12 @@ def main() -> int:
             "baseline and candidate report different games: "
             f"{warm_baseline['game']} vs {warm_candidate['game']}"
         )
+    verify_hashes(
+        warm_baseline,
+        warm_candidate,
+        "warmup",
+        args.allow_missing_hashes,
+    )
 
     pair_results = []
     baseline_fps = []
@@ -249,6 +284,12 @@ def main() -> int:
 
         base_fps = float(results["baseline"]["fps"])
         cand_fps = float(results["candidate"]["fps"])
+        verify_hashes(
+            results["baseline"],
+            results["candidate"],
+            f"pair {pair_index + 1}",
+            args.allow_missing_hashes,
+        )
         delta = (cand_fps / base_fps - 1.0) * 100.0
         baseline_fps.append(base_fps)
         candidate_fps.append(cand_fps)
@@ -275,6 +316,10 @@ def main() -> int:
         "pair_spread_pct_points": spread,
         "baseline_cv_pct": coefficient_of_variation(baseline_fps),
         "candidate_cv_pct": coefficient_of_variation(candidate_fps),
+        "state_fnv1a64": pair_results and results["baseline"].get("state_fnv1a64"),
+        "audio_state_fnv1a64": (
+            pair_results and results["baseline"].get("audio_state_fnv1a64")
+        ),
         "stable": spread <= args.max_pair_spread,
     }
     print("GENESISRECOMP_PAIRED " + json.dumps(summary, separators=(",", ":")))

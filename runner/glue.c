@@ -1008,12 +1008,10 @@ int glue_own_vint_service_latched(GVDP *vdp)
     return 1;
 }
 
-#ifdef GENESIS_COSIM
-/* Non-clearing read of the masked-V-int latch for the co-sim state hash
+/* Non-clearing read of the masked-V-int latch for full-state hashing
  * (glue_own_vint_service_latched() would consume it — must not, during a
  * side-effect-free snapshot). */
 int glue_cosim_vint_latched(void) { return s_own_vint_latched; }
-#endif
 
 /* Yield-site cycle-accumulator log.  Each line records the state of
  * g_cycle_accumulator at the moment the game fiber yields for VBlank.
