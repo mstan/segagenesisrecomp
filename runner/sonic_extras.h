@@ -2,7 +2,7 @@
  * sonic_extras.h — Sonic 1 view onto FrameRecord.game_data.
  *
  * The game-agnostic ring buffer reserves 256 bytes per frame for the
- * game project to fill (see game_extras.h). This header declares the
+ * GameSpec callback to fill (see game_spec.h). This header declares the
  * Sonic 1 layout that we cast onto that buffer so other modules
  * (e.g. cmd_server.c's frame_range walker) can decode it.
  */

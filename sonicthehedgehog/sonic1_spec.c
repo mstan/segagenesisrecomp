@@ -49,7 +49,7 @@ extern void handle_sonic_state(int id);
 extern void handle_object_table(int id, const char *json);
 
 /* ---- Frame-record packer (sonic_extras.c) ---- */
-extern void game_fill_frame_record(uint8_t game_data[256]);
+extern void s1_fill_frame_record(uint8_t game_data[256]);
 
 
 /* ---- Lifecycle hooks ---- */
@@ -121,7 +121,7 @@ const GameSpec g_game_spec = {
     .arg_usage              = NULL,
     .dispatch_override      = NULL,
 
-    .fill_frame_record      = game_fill_frame_record,
+    .fill_frame_record      = s1_fill_frame_record,
     .frame_record_version   = 2,                /* SONIC_GAME_DATA_VERSION */
 
     .commands               = s1_commands,

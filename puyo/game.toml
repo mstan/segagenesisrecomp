@@ -6,7 +6,7 @@
 # BSR/JSR/RTS walk) seeded by the entry + interrupt handlers, then refined by
 # the dispatch-miss / Tier-3 floor / coverage-manifest loop. Every lead is
 # cross-checked against the raw ROM before becoming a seed (PRINCIPLES #16) —
-# never blind-seeded from dispatch_misses.log.
+# never blind-seeded from dispatch_misses.toml.
 #
 # ROM identity: header "PUYOPUYO", serial GM G-4082 -00, region "J" (NTSC),
 # (C)SEGA 1992.SEP, CRC32 7F26614E. Vectors (from $000000):
@@ -50,7 +50,7 @@ level_modes    = []
 # Heuristic discovery is seeded from the vector table automatically; list the
 # entry and both interrupt handlers explicitly as well. $00050C is the shared
 # error/unused-vector handler — a real function, so it is seeded too.
-# A dispatch_misses.log entry after a run is a coverage gap to root-cause in
+# A dispatch_misses.toml entry after a run is a coverage gap to root-cause in
 # discovery (PRINCIPLES #13/#16), cross-checked against the ROM — NOT blind
 # seeding. late_extra stays empty until a run produces audited evidence.
 [functions]
@@ -73,7 +73,7 @@ function_pointer_helpers = [0x002A54, 0x002AB0]
 # Registered as late_extra so they become their own callable roots and split
 # that overrun, WITHOUT recursively reopening heuristic discovery.
 # Each one was decode-checked against the raw ROM before being listed here
-# (PRINCIPLES #16) — not seeded from dispatch_misses.log on faith:
+# (PRINCIPLES #16) — not seeded from dispatch_misses.toml on faith:
 #   $00A4AA  007C 0700  ORI.W  #$0700,SR      (disable interrupts — prologue)
 #   $00A4DC  303C 0023  MOVE.W #$0023,D0
 #   $00A4EC  103C 0000  MOVE.B #$00,D0

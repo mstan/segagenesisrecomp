@@ -1,23 +1,19 @@
 /*
- * sonic_extras.c — Sonic 1 implementation of game_extras hooks.
+ * sonic_extras.c — Sonic 1 frame-record and debug-command helpers.
  *
  * Provides:
- *   - game_fill_frame_record(): packs Sonic-specific RAM bytes into the
+ *   - s1_fill_frame_record(): packs Sonic-specific RAM bytes into the
  *     FrameRecord.game_data tail every frame.
- *   - game_handle_debug_cmd(): dispatches "sonic_state", "object_table"
- *     to Sonic-specific handlers. (sonic_history is served by the
- *     framework's frame_range using sonic_extras_view().)
- *   - game_extras_name(): identifier surfaced by ping/info responses.
+ *   - handle_sonic_state() and handle_object_table(): handlers registered in
+ *     g_game_spec.commands. sonic_history remains a shared ring query.
  */
 
-#include "game_extras.h"
 #include "sonic_extras.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #if OWN_BACKEND
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
@@ -97,11 +93,8 @@ static uint32_t emu_read32(uint32_t addr)
 #define ADDR_SONIC_ANGLE  (SONIC_OBJ_BASE + 0x26)
 
 /* ---------------------------------------------------------------- */
-/* game_extras hook implementations */
-
-const char *game_extras_name(void) { return "Sonic1"; }
-
-void game_fill_frame_record(uint8_t game_data[256])
+/* GameSpec frame-record callback. */
+void s1_fill_frame_record(uint8_t game_data[256])
 {
     SonicGameData *sd = (SonicGameData *)game_data;
     memset(sd, 0, sizeof(*sd));
@@ -203,11 +196,4 @@ void handle_object_table(int id, const char *json)
     pos += snprintf(buf + pos, cap - pos, "]}");
     cmd_send_response(buf);
     free(buf);
-}
-
-bool game_handle_debug_cmd(int id, const char *cmd, const char *json)
-{
-    if (strcmp(cmd, "sonic_state") == 0)   { handle_sonic_state(id);          return true; }
-    if (strcmp(cmd, "object_table") == 0)  { handle_object_table(id, json);   return true; }
-    return false;
 }

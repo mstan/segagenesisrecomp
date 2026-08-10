@@ -100,10 +100,10 @@ Defined in `runner/game_layout.h`. Populated from `[ram_layout]` in
 
 ## The dispatch-miss loop
 
-After EVERY game run, check `dispatch_misses.log` next to the executable.
+After EVERY game run, check `dispatch_misses.toml` next to the executable.
 
 ```bash
-cat /f/Projects/segagenesisrecomp-release/SonicTheHedgehog2Recomp/build/Release/dispatch_misses.log
+cat /f/Projects/segagenesisrecomp-release/SonicTheHedgehog2Recomp/build/Release/dispatch_misses.toml
 ```
 
 Empty file → done. Non-empty → resolve via the disasm-driven pipeline
@@ -158,7 +158,7 @@ already use the right one.
 ## Hard rules (PRINCIPLES.md cheat sheet)
 
 - Disasm is ground truth (#16). Function discovery via `gen_disasm_*`,
-  not `dispatch_misses.log` feedback.
+  not `dispatch_misses.toml` feedback.
 - Always-on rings, never arm-then-attach (#17). No pause/step.
 - No printf telemetry in hot paths (#18).
 - Never edit generated C (#19). It is ignored build output; fix the

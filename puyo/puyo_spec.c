@@ -30,8 +30,6 @@ static void puyo_call_vblank(void)      { recomp_call_addr(0x000524u); }
 static void puyo_call_hblank(void)      { recomp_call_addr(0x0006ACu); }
 
 /* Generated-dispatch override hook (global symbol, mirrors rka_spec.c). */
-int game_dispatch_override(uint32_t addr) { (void)addr; return 0; }
-
 const GameSpec g_game_spec = {
     .display_name           = "Puyo Puyo",
     .short_name             = "PUYO",
@@ -42,7 +40,7 @@ const GameSpec g_game_spec = {
 
     /* No community disasm for Puyo Puyo, so static discovery is heuristic and
      * will have holes. Run the tier-3 miss fallback always-on: a miss executes
-     * correctly on the interpreter capsule and feeds floor_coverage.txt for the
+     * correctly on the interpreter capsule and feeds floor_coverage.toml for the
      * next regen — the same posture RKA needed. */
     .tier3_floor_default    = 1,
 

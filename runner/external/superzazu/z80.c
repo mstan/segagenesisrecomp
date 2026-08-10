@@ -248,8 +248,8 @@ static inline uint8_t subb(z80* const z, uint8_t a, uint8_t b, bool cy) {
 
 // ADD Word: adds two words together
 static inline uint16_t addw(z80* const z, uint16_t a, uint16_t b, bool cy) {
-  uint8_t lsb = addb(z, a, b, cy);
-  uint8_t msb = addb(z, a >> 8, b >> 8, z->cf);
+  uint8_t lsb = addb(z, (uint8_t)a, (uint8_t)b, cy);
+  uint8_t msb = addb(z, (uint8_t)(a >> 8), (uint8_t)(b >> 8), z->cf);
 
   uint16_t result = (msb << 8) | lsb;
   z->zf = result == 0;
@@ -259,8 +259,8 @@ static inline uint16_t addw(z80* const z, uint16_t a, uint16_t b, bool cy) {
 
 // SUBstract Word: substracts two words (with optional carry)
 static inline uint16_t subw(z80* const z, uint16_t a, uint16_t b, bool cy) {
-  uint8_t lsb = subb(z, a, b, cy);
-  uint8_t msb = subb(z, a >> 8, b >> 8, z->cf);
+  uint8_t lsb = subb(z, (uint8_t)a, (uint8_t)b, cy);
+  uint8_t msb = subb(z, (uint8_t)(a >> 8), (uint8_t)(b >> 8), z->cf);
 
   uint16_t result = (msb << 8) | lsb;
   z->zf = result == 0;

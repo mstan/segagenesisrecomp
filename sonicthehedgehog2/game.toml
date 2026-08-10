@@ -463,5 +463,5 @@ extra = [
 #             therefore present in sonic2.disasm_labels.toml's
 #             [functions].extra, so call_by_address resolves correctly
 #             at runtime. This site fires every frame during title-
-#             screen art decompression; an empty dispatch_misses.log
+#             screen art decompression; an empty dispatch_misses.toml
 #             after a multi-second run confirms coverage.

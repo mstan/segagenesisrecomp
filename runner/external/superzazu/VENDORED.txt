@@ -1,1 +1,10 @@
 superzazu/z80 vendored from https://github.com/superzazu/z80 @ d64fe10a2274e5e40019b1086bf7d8990cbc5f23
+
+Local patches:
+
+- BIT b,(HL) skips the upstream unconditional memory write-back. BIT is
+  read-only; the write-back corrupts the YM2612 address latch when HL points
+  at its status port.
+- addw/subw explicitly select the low and high bytes passed to addb/subb.
+  This is behavior-preserving and documents the intentional narrowing for
+  MSVC's conversion diagnostics.

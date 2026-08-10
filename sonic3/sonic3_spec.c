@@ -65,8 +65,6 @@ static uint32_t s3_save_resume_pc(uint8_t game_mode)
     }
 }
 
-int game_dispatch_override(uint32_t addr) { (void)addr; return 0; }
-
 /* ---- 68K work-RAM accessors ---- */
 
 #if OWN_BACKEND

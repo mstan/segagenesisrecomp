@@ -52,7 +52,7 @@ level_modes    = []
 
 # Heuristic discovery is seeded from the vector table automatically; list the
 # entry + V-int explicitly too. The H-int target is RAM ($FFE010), not seedable.
-# A dispatch_misses.log entry after a run is a coverage gap to root-cause in
+# A dispatch_misses.toml entry after a run is a coverage gap to root-cause in
 # discovery (Principle #13/#16), cross-checked against the ROM — NOT blind seeding.
 [functions]
 extra = [0x000208, 0x0003D4]

@@ -202,7 +202,10 @@ def main(argv: list[str] | None = None) -> int:
                    help="Print every hit with full snippet.")
     args = p.parse_args(argv)
 
-    here = Path(__file__).resolve().parent          # segagenesisrecomp/tools
+    # MSYS Python treats a PowerShell-provided backslash path as one literal
+    # filename component.  Normalise __file__ first so either invocation form
+    # (tools/audit_... or tools\audit_...) resolves inside this checkout.
+    here = Path(__file__.replace("\\", "/")).resolve().parent
     submodule_root = here.parent                    # segagenesisrecomp/
     runner_root = args.root or (submodule_root / "runner")
 
@@ -251,6 +254,11 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  per-game funcs harvested: {len(per_game_funcs)}")
     print(f"  total hits:     {total_hits}")
     print()
+
+    if files_scanned == 0:
+        print("FAIL — the runner directory contained no scannable files.",
+              file=sys.stderr)
+        return 2
 
     if not by_file:
         print("PASS — no hits.")

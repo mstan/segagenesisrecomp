@@ -34,4 +34,10 @@ set_target_properties(GenesisRecomp PROPERTIES
 
 if(MSVC)
     target_compile_options(GenesisRecomp PRIVATE /W3 /WX-)
+    # tomlc99 is vendored unchanged from upstream. Its parser intentionally
+    # narrows buffer lengths and pointer differences to its int-sized API.
+    # Keep those reviewed warnings scoped to the vendor translation unit so
+    # first-party recompiler warnings remain visible.
+    set_property(SOURCE src/toml.c APPEND PROPERTY COMPILE_OPTIONS
+        /wd4244 /wd4267)
 endif()

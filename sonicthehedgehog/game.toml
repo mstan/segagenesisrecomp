@@ -227,7 +227,7 @@ extra = [
     0x01C33C,   # AniArt_Ending_Flower3
     0x01C37A,   # AniArt_Ending_Flower4
 
-    # Misc object/handler entries that runtime dispatch_misses.log
+    # Misc object/handler entries that runtime dispatch_misses.toml
     # surfaced but no extractor catches statically. Most likely indexed
     # via a table shape we don't yet recognize (RAM-pointer-driven
     # dispatch, dc.b stride-1 tables, etc.).

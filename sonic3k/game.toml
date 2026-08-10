@@ -104,7 +104,7 @@ level_modes    = [0x08, 0x0C]
 # and $201FA2 are all present as labels). Per the project philosophy (cf. Sonic
 # 1/2 game.toml), [functions].extra carries only IRREDUCIBLE residual — entries
 # the disasm label set + heuristic finder can't supply. It is currently empty;
-# any dispatch_misses.log entry after a run is a coverage gap to root-cause in
+# any dispatch_misses.toml entry after a run is a coverage gap to root-cause in
 # the gen_disasm pipeline, NOT to hand-add here (Principle 16).
 [functions]
 blacklist = []

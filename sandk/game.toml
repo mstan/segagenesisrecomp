@@ -56,7 +56,7 @@ level_modes    = [0x08, 0x0C]
 
 # Discovery comes entirely from the byte-perfect sonic3k.lst label set + the
 # heuristic finder. extra/blacklist are IRREDUCIBLE residual only (Principle 16);
-# a dispatch_misses.log entry after a run is a coverage gap to root-cause in the
+# a dispatch_misses.toml entry after a run is a coverage gap to root-cause in the
 # gen_disasm pipeline, NOT to hand-add here.
 [functions]
 blacklist = [

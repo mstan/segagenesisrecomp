@@ -65,12 +65,6 @@ static uint32_t s2_save_resume_pc(uint8_t game_mode)
     }
 }
 
-/* ---- Legacy stub still required by generated sonic2_dispatch.c ---- */
-int game_dispatch_override(uint32_t addr) {
-    (void)addr;
-    return 0;
-}
-
 /* ---- 68K work-RAM accessors (mirror sonic_extras.c) ---- */
 
 #if OWN_BACKEND

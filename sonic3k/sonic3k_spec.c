@@ -42,8 +42,6 @@ static void s3k_call_entry_point(void) { recomp_call_addr(0x000206u); }
 static void s3k_call_vblank(void)      { recomp_call_addr(0x000584u); }
 static void s3k_call_hblank(void)      { recomp_call_addr(0x000D0Cu); }
 
-int game_dispatch_override(uint32_t addr) { (void)addr; return 0; }
-
 /* ---- 68K work-RAM accessors ---- */
 
 #if OWN_BACKEND

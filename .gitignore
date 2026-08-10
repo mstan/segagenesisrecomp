@@ -35,10 +35,12 @@ tests/last_run/
 # Runtime convergence/diagnostic output. Curated evidence uses named fixture,
 # CSV, TOML, or executed-PC files instead of these append-mode session logs.
 **/dispatch_misses.log
+**/dispatch_misses.toml
 **/interp_fallbacks.log
 **/interior_label_misses.log
 **/floor_unsafe.log
 **/floor_coverage.txt
+**/floor_coverage.toml
 **/*.flog
 
 # Local decoder comparison worktrees/build products. These contain copied ROMs,

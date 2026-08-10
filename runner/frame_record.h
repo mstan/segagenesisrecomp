@@ -163,7 +163,7 @@ typedef struct {
     /* 68K work RAM ($FF0000-$FFFFFF) */
     uint8_t        wram[0x10000];
 
-    /* Game-specific tail filled by game_fill_frame_record() */
+    /* Game-specific tail filled by g_game_spec.fill_frame_record() */
     uint8_t        game_data[256];
     char           last_func[64];
 

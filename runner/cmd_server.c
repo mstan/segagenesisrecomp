@@ -331,7 +331,6 @@ void cmd_server_mem_write_log_tick(void)
  * ========================================================================= */
 
 #include "frame_record.h"
-#include "game_extras.h"
 #include "game_spec.h"
 #include "sonic_extras.h"
 
@@ -648,8 +647,8 @@ static void handle_read_ram(int id, const char *json)
     free(resp);
 }
 
-/* sonic_state and object_table moved to runner/sonic_extras.c — they
- * are dispatched via game_handle_debug_cmd(). sonic_history stays here
+/* sonic_state and object_table live in the Sonic 1 helper TU and are
+ * registered through g_game_spec.commands. sonic_history stays here
  * because it walks the framework ring buffer; it just casts game_data
  * to SonicGameData (see sonic_extras.h) to decode each frame. */
 
@@ -2601,25 +2600,14 @@ void cmd_server_shutdown(void)
 #ifdef _WIN32
     WSACleanup();
 #endif
-    /* Dispatch-miss log per PRINCIPLES.md rule 13a — always write next to
-     * the exe so the next session can find it. Empty file if no misses
-     * (the principle's "is the file empty?" check still answers cleanly). */
-    { extern const char *exe_relative(const char *);
-      const char *path = exe_relative("dispatch_misses.log");
-      FILE *f = fopen(path, "w");
-      if (f) {
-          fprintf(f, "# dispatch_misses.log — addresses the recompiled binary\n");
-          fprintf(f, "# called via call_by_address() that have no generated function.\n");
-          fprintf(f, "# Legacy evidence format; vet and convert into game.toml [functions].extra.\n");
-          fprintf(f, "# Total misses (any address): %u\n", (unsigned)g_miss_count_any);
-          fprintf(f, "# Unique missing addresses: %d\n", g_miss_unique_count);
-          for (int i = 0; i < g_miss_unique_count; i++)
-              fprintf(f, "extra_func 0x%06X\n", (unsigned)g_miss_unique_addrs[i]);
-          fclose(f);
-          if (g_miss_unique_count > 0)
-              fprintf(stderr, "[cmd] %d unique dispatch misses written to %s\n",
-                      g_miss_unique_count, path);
-      }
+    /* Always leave a valid, current-session TOML evidence file next to the
+     * executable, including an empty [functions].extra array when clean. */
+    {
+        int miss_count = genesis_write_dispatch_miss_evidence();
+        if (miss_count > 0)
+            fprintf(stderr,
+                    "[cmd] %d unique dispatch misses written to dispatch_misses.toml\n",
+                    miss_count);
     }
     fprintf(stderr, "[cmd] Shutdown\n");
 }

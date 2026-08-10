@@ -9,17 +9,14 @@
  *
  * Design notes:
  *
- *   - Runtime lifecycle and dispatch call sites use this struct. A small
- *     compatibility surface remains for frame/debug helpers and generated
- *     dispatch overrides; removing it requires coordinated game-repository
- *     source-list changes.
+ *   - Runtime lifecycle, frame/debug, and generated dispatch call sites use
+ *     this struct. There is no parallel free-function hook interface.
  *
  *   - Function-pointer fields are NULL when the game doesn't need
  *     that hook. The runner checks before dispatching so a minimal
  *     spec can boot with just entry/vblank/hblank populated.
  *
- *   - Debug-cmd handlers receive raw JSON strings, mirroring the
- *     existing game_handle_debug_cmd contract — no cJSON dependency.
+ *   - Debug-command handlers receive raw JSON strings; no cJSON dependency.
  *
  */
 #pragma once
@@ -60,7 +57,7 @@ typedef struct GameSpec {
     /* Tier-3 interpreter floor default for THIS game (0 = off). When on,
      * every computed-dispatch miss executes CORRECTLY on the A7-neutral
      * interpreter capsule instead of silently no-op'ing, and the executed
-     * subtree is appended to floor_coverage.txt as `extra_func` leads for
+     * subtree is written to floor_coverage.toml as [functions].extra leads for
      * the next regen — the psxrecomp-style fallback + feedback loop. The
      * GENESIS_FLOOR env var still overrides in either direction. Enable
      * per game once validated (RKA: on; Sonics ship with full disasm

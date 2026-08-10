@@ -15,12 +15,11 @@ no-ops instead of running the object code.
 
 ### Authoritative baseline measurement
 
-The miss log (`runner/glue.c` opens it in append mode, `fopen(...,"a")`) spans
-builds — stale pre-detector entries pollute any triage that reads it without
-clearing first. **Always delete `dispatch_misses.log` and
-`interior_label_misses.log` before a measurement run.** A fresh 4000-frame
-headless turbo run on the 934-function baseline yields **7 distinct miss
-addresses over 11,745 fires**:
+At the time of this measurement the miss log was append-only, so stale entries
+could pollute triage. The current runner rewrites `dispatch_misses.toml` from
+the current session's true-miss set and keeps interior-label failures separate
+in `interior_label_misses.log`. A fresh 4000-frame headless turbo run on the
+934-function baseline yielded **7 distinct miss addresses over 11,745 fires**:
 
 | Miss addr | Producer / shape |
 | --- | --- |

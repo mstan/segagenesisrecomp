@@ -33,7 +33,7 @@
 
 /* =========================================================================
  * Path helper: resolve filenames relative to the exe directory.
- * This ensures savestate.bin, dispatch_misses.log, etc. always land
+ * This ensures savestate.bin, dispatch_misses.toml, etc. always land
  * next to the exe regardless of the user's working directory.
  * ========================================================================= */
 
@@ -85,7 +85,7 @@ static void init_exe_dir(const char *argv0)
     /* Android: the process image is the system app_process and its directory
      * is read-only. Anchor config/saves in the app's external files dir
      * (/sdcard/Android/data/<pkg>/files — user- and adb-visible), and chdir
-     * there so cwd-relative outputs (dispatch_misses.log) land with them. */
+     * there so cwd-relative outputs (dispatch_misses.toml) land with them. */
     {
         const char *ext = SDL_AndroidGetExternalStoragePath();
         if (ext && ext[0]) {

@@ -1,0 +1,7 @@
+tomlc99 vendored from https://github.com/cktan/tomlc99 @ 29076dfd095bbbbd50a3c1b2760d29f4b83e74ac
+
+The vendored toml.c and toml.h are kept byte-for-byte identical to upstream.
+On MSVC, recompiler/CMakeLists.txt disables C4244 and C4267 only for toml.c:
+the upstream parser intentionally narrows buffer lengths and pointer
+differences to its int-sized public/internal interfaces. First-party sources
+retain the normal warning policy.

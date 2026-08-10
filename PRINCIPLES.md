@@ -169,13 +169,13 @@ That code never executes. The game skips entire subroutines.
 
 **After EVERY game run (manual, scripted, or test):**
 
-1. Check `dispatch_misses.log` next to the executable
-2. If it contains entries: add them to `game.toml` `[functions].extra`
-   (or supply via the disasm-driven `gen_disasm_*` pipeline; never hand-add
-   from runtime feedback alone — see Principle 16)
+1. Check `dispatch_misses.toml` next to the executable
+2. If `[functions].extra` contains entries, validate them against disassembly
+   and update the appropriate `gen_disasm_*` pipeline or discovery TOML; never
+   hand-add runtime feedback alone — see Principle 16
 3. Regenerate (`GenesisRecomp.exe <rom> --game game.toml`)
 4. Rebuild and re-run
-5. Repeat until `dispatch_misses.log` is empty
+5. Repeat until `dispatch_misses.toml` has an empty `functions.extra` array
 
 This is not optional. This is not a "later" task.
 A game with dispatch misses is FUNDAMENTALLY BROKEN.
@@ -220,7 +220,7 @@ Use the `gen_disasm_*` Python tools under `tests/tools/`:
 - `gen_disasm_subs.py` — subroutine boundaries
 
 Adding `[[extra_func]]` entries to `game.toml` based on
-`dispatch_misses.log` alone is a FALLBACK — every entry must be cross-
+`dispatch_misses.toml` alone is a FALLBACK — every entry must be cross-
 checked against the disasm source. Runtime feedback can identify *that*
 a function exists; only the disasm tells you *where it begins* and which
 labels are interior vs standalone.

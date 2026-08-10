@@ -32,9 +32,6 @@ static void rka_call_vblank(void)      { recomp_call_addr(0x0003D4u); }
  * later (it won't fire during early boot). */
 static void rka_call_hblank(void)      { recomp_call_addr(0xFFFFE010u); }
 
-/* Generated-dispatch override hook (global symbol, mirrors sandk_spec.c). */
-int game_dispatch_override(uint32_t addr) { (void)addr; return 0; }
-
 const GameSpec g_game_spec = {
     .display_name           = "Rocket Knight Adventures",
     .short_name             = "RKA",
@@ -51,7 +48,7 @@ const GameSpec g_game_spec = {
      * WILL have holes (state-table case bodies never reached during attract
      * capture — the full-charge ricochet spin-lock at $00D84C). Run the
      * tier-3 miss fallback always-on: a miss executes correctly on the
-     * interpreter capsule and feeds floor_coverage.txt for the next regen. */
+     * interpreter capsule and feeds floor_coverage.toml for the next regen. */
     .tier3_floor_default    = 1,
 
     /* No battery SRAM (header carries no "RA"); sram_start/end stay 0. */

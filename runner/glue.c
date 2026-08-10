@@ -143,6 +143,34 @@ uint64_t  g_miss_last_frame   = 0;
 uint32_t  g_miss_unique_addrs[MAX_MISS_UNIQUE];
 int       g_miss_unique_count  = 0;
 
+/* Write runtime-discovered function leads as a valid GameConfig discovery
+ * file. The metadata is ignored by the recompiler, while [functions].extra
+ * can be merged directly after every address is checked against disassembly. */
+static int write_function_evidence_file(const char *filename,
+                                        const char *evidence_kind,
+                                        const uint32_t *addresses,
+                                        int count)
+{
+    extern const char *exe_relative(const char *);
+    FILE *f = fopen(exe_relative(filename), "w");
+    if (!f) return 0;
+
+    fprintf(f,
+            "# Runtime evidence only. Validate every address against disassembly "
+            "before adding this file to game.discovery_files.\n"
+            "format_version = 1\n"
+            "evidence_kind = \"%s\"\n\n"
+            "[functions]\n"
+            "extra = [\n",
+            evidence_kind);
+    for (int i = 0; i < count; i++)
+        fprintf(f, "  0x%06X%s\n", addresses[i] & 0xFFFFFFu,
+                i + 1 < count ? "," : "");
+    fprintf(f, "]\n");
+    fclose(f);
+    return count;
+}
+
 /* g_rte_pending via pointer indirection (see genesis_runtime.h).
  * During VBlank service, we redirect to s_rte_dummy so RTE propagation
  * inside the handler chain is suppressed — the handler's stack management
@@ -1201,7 +1229,16 @@ void glue_resume_from_break(void)
 
 void glue_init(const cc_u8l *rom_bytes, cc_u32l rom_byte_len)
 {
-
+    /* Start each run with valid, empty evidence files so a crash or a clean
+     * run cannot leave stale candidates from an earlier process. */
+    write_function_evidence_file("dispatch_misses.toml", "dispatch_miss",
+                                 NULL, 0);
+    write_function_evidence_file("floor_coverage.toml", "tier3_floor",
+                                 NULL, 0);
+    {
+        extern const char *exe_relative(const char *);
+        remove(exe_relative("interp_fallbacks.log"));
+    }
 
     /* Copy ROM bytes into g_rom so recompiled code can inspect ROM data
      * directly (e.g. tables copied from ROM to RAM at startup). */
@@ -1737,10 +1774,10 @@ static int s_in_floor = 0;
 
 /* ── Coverage manifest ──────────────────────────────────────────────────────
  * Records every in-ROM address the floor executed (the missed entry + the
- * JSR/BSR/JMP subtree it traversed) to floor_coverage.txt, deduplicated for the
+ * JSR/BSR/JMP subtree it traversed) to floor_coverage.toml, deduplicated for the
  * session. These are LEADS to grow static coverage: validate each against the
  * disasm (PRINCIPLES.md #16), then fold confirmed entries into game.toml
- * [funcs] extra_funcs / the gen_disasm seed pipeline so the recompiler discovers
+ * [functions].extra / the gen_disasm seed pipeline so the recompiler discovers
  * them and they become Tier-1 native. (Interior-label misses are deliberately
  * NOT here — they live in interior_label_misses.log and need a codegen fix, not
  * a seed.) The subtree matters because the interpreter runs callees inline, so
@@ -1748,8 +1785,7 @@ static int s_in_floor = 0;
  * place it surfaces. */
 #define FLOOR_COV_MAX 8192
 static uint32_t s_floor_cov[FLOOR_COV_MAX];
-static int      s_floor_cov_count  = 0;
-static int      s_floor_cov_header = 0;
+static int      s_floor_cov_count = 0;
 static void floor_record_coverage(uint32_t addr)
 {
     addr &= 0xFFFFFFu;
@@ -1760,21 +1796,8 @@ static void floor_record_coverage(uint32_t addr)
     if (s_floor_cov_count >= FLOOR_COV_MAX) return;
     s_floor_cov[s_floor_cov_count++] = addr;
 
-    extern const char *exe_relative(const char *);
-    FILE *f = fopen(exe_relative("floor_coverage.txt"), "a");
-    if (!f) return;
-    if (!s_floor_cov_header) {
-        s_floor_cov_header = 1;
-        fprintf(f,
-            "# floor_coverage.txt — addresses executed by the Tier-3 interpreter\n"
-            "# floor (a missed function entry, or a JSR/BSR/JMP target in its\n"
-            "# subtree). LEADS to grow static coverage: validate each against the\n"
-            "# disasm (PRINCIPLES.md #16 — disasm is ground truth), then fold the\n"
-            "# confirmed code entries into game.toml [funcs] extra_funcs / the\n"
-            "# gen_disasm seed pipeline so they recompile to Tier-1 native.\n");
-    }
-    fprintf(f, "extra_func 0x%06X\n", addr);
-    fclose(f);
+    write_function_evidence_file("floor_coverage.toml", "tier3_floor",
+                                 s_floor_cov, s_floor_cov_count);
 }
 
 /* Halt blacklist: a missed address the floor could not run (its first/early
@@ -1848,7 +1871,7 @@ static int floor_enabled(void) {
                     e ? "ENABLED" : "DISABLED", v);
         } else {
             /* Per-game default: games without full disasm coverage (RKA) run
-             * the miss-fallback + floor_coverage.txt feedback loop always-on;
+             * the miss-fallback + floor_coverage.toml feedback loop always-on;
              * disasm-complete games keep misses loud-and-fatal-ish. */
             e = g_game_spec.tier3_floor_default ? 1 : 0;
             if (e) fprintf(stderr, "[FLOOR] ENABLED by game spec default\n");
@@ -1951,8 +1974,8 @@ void genesis_log_dispatch_miss(uint32_t addr)
      * is the JMP-into-uniform-sequence (Duff's device) class of bug.
      *
      * Log to a SEPARATE file + stderr so the failure is loud without
-     * polluting dispatch_misses.log (which the recompiler consumes as
-     * extra_func candidates).  bra.w trampolines fall through to the
+     * polluting dispatch_misses.toml (which carries vetted function-entry
+     * candidates). bra.w trampolines fall through to the
      * regular path — they ARE valid extra_func seeds. */
     if (is_interior_label(addr) && !is_bra_w_trampoline(addr)) {
         /* Per-address dedup so we don't spam: same s_miss_unique_addrs[]
@@ -2004,17 +2027,7 @@ void genesis_log_dispatch_miss(uint32_t addr)
     if (g_miss_unique_count < MAX_MISS_UNIQUE)
         g_miss_unique_addrs[g_miss_unique_count++] = addr;
 
-    /* Append one legacy `extra_func` evidence line. Consumer tooling still
-     * parses this stable format and converts vetted candidates into the
-     * [functions].extra array in game.toml. */
-    extern const char *exe_relative(const char *);
-    FILE *mf = fopen(exe_relative("dispatch_misses.log"), "a");
-    if (mf) {
-        fprintf(mf, "extra_func 0x%06X\n", addr);
-        fclose(mf);
-    }
-
-    /* Also log to interp_fallbacks.log (same format, for convergence tools) */
+    /* Record a true-miss lead separately from the shared interior-label pool. */
     log_true_miss(addr);
 }
 
@@ -2116,7 +2129,7 @@ extern void call_by_address(uint32_t addr);
  * new extra_func entries).  Addresses that dispatch successfully
  * are interior labels of existing functions — logging them would
  * cause the recompiler to split functions incorrectly. */
-#define MAX_INTERP_SEEN 1024
+#define MAX_INTERP_SEEN MAX_MISS_UNIQUE
 static uint32_t s_interp_seen[MAX_INTERP_SEEN];
 static int      s_interp_seen_count = 0;
 int             g_interp_total_calls = 0;
@@ -2128,9 +2141,13 @@ static void log_true_miss(uint32_t target_pc)
         if (s_interp_seen[i] == target_pc) return;
     if (s_interp_seen_count < MAX_INTERP_SEEN)
         s_interp_seen[s_interp_seen_count++] = target_pc;
-    extern const char *exe_relative(const char *);
-    FILE *f = fopen(exe_relative("interp_fallbacks.log"), "a");
-    if (f) { fprintf(f, "extra_func 0x%06X\n", target_pc); fclose(f); }
+    genesis_write_dispatch_miss_evidence();
+}
+
+int genesis_write_dispatch_miss_evidence(void)
+{
+    return write_function_evidence_file("dispatch_misses.toml", "dispatch_miss",
+                                        s_interp_seen, s_interp_seen_count);
 }
 
 int glue_interp_seen_count(void) { return s_interp_seen_count; }
