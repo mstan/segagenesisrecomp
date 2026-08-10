@@ -1660,6 +1660,7 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
         static char picked_path[512] = {0};
         {
+            char picker_title[256];
             extern int __stdcall GetOpenFileNameA(void *);
             typedef struct {
                 unsigned long lStructSize; void *hwndOwner; void *hInstance;
@@ -1677,7 +1678,10 @@ int main(int argc, char *argv[])
             ofn.lpstrFilter = "Genesis/Mega Drive ROM\0*.bin;*.md;*.gen;*.smd\0All Files\0*.*\0";
             ofn.lpstrFile = picked_path;
             ofn.nMaxFile = sizeof(picked_path);
-            ofn.lpstrTitle = "Select Sonic the Hedgehog ROM";
+            snprintf(picker_title, sizeof(picker_title), "Select %s ROM",
+                     g_game_spec.display_name ? g_game_spec.display_name
+                                              : "Genesis/Mega Drive");
+            ofn.lpstrTitle = picker_title;
             ofn.Flags = 0x00080000 | 0x00001000;
             if (GetOpenFileNameA(&ofn))
                 rom_path = picked_path;
@@ -1746,7 +1750,7 @@ int main(int argc, char *argv[])
             }
 #endif
         if (!rom_path) {
-            fprintf(stderr, "Usage: %s <sonic.bin>  "
+            fprintf(stderr, "Usage: %s <rom.bin>  "
                     "(or install zenity/kdialog for a file picker)\n", argv[0]);
             return 1;
         }
