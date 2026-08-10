@@ -2,19 +2,9 @@
  * sonic1_spec.c — instantiates the GameSpec for Sonic the Hedgehog
  * (Genesis, 1991, JUE REV00).
  *
- * Step 2 of the runner-parameterization migration. This file is
- * compiled and linked but no consumer reads g_game_spec yet — the
- * runner still calls func_NNNNNN directly through glue.c, and the
- * legacy game_extras hooks (game_fill_frame_record,
- * game_handle_debug_cmd, game_extras_name) continue to provide the
- * per-game data. Step 3 will switch consumers over; once that lands
- * the legacy hooks can be deleted.
- *
- * The pointers below alias the existing implementations in
- *   runner/sonic_extras.c           (frame record + TCP commands)
- *   sonicthehedgehog/generated/...  (recompiled func_NNNNNN bodies)
- * so flipping consumers from the old path to g_game_spec is a no-op
- * behaviorally — both go to the same code.
+ * Runtime lifecycle and dispatch enter through g_game_spec. Sonic-specific
+ * frame/debug helpers remain in sonic_extras.c until their compatibility API
+ * is removed together with consumer game source lists.
  */
 #include "game_spec.h"
 #include "genesis_runtime.h"
@@ -138,4 +128,3 @@ const GameSpec g_game_spec = {
     .command_count          = (int)(sizeof(s1_commands) / sizeof(s1_commands[0])),
 
 };
-

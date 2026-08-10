@@ -9,7 +9,7 @@ Reads:   _s1disasm/sonic.lst
 Writes:  segagenesisrecomp/sonicthehedgehog/sonic1.disasm_subs.toml
 
 The strategy of this whole project is "the disasm is the ground truth
-for what's a subroutine; the cfg is the coverage gap our discoverer
+for what's a subroutine; game.toml records the coverage gap our discoverer
 hasn't closed yet." This tool extracts every disasm-labeled entry
 that looks like a real subroutine (proper name, code at that address)
 and emits them all as seeds. As function_finder gets smarter at
@@ -22,7 +22,7 @@ Filtering:
   SKIP  — `.foo` (leading-dot local labels, e.g. `.loop`, `.end`)
   SKIP  — `j_<hex>` (compiler-generated thunks if any)
   SKIP  — addresses that aren't code per the L1 fixture
-  SKIP  — addresses already in game.cfg or sonic1.disasm_seeds.txt
+  SKIP  — addresses already in game.toml or sonic1.disasm_seeds.toml
 """
 from __future__ import annotations
 
@@ -103,12 +103,13 @@ def main() -> int:
                     help="AS .lst listing produced by the disasm build")
     ap.add_argument("--code-addrs", type=Path, default=CODE_ADDR_PATH,
                     help="code_addresses.txt fixture (from gen_l1_fixtures.py)")
-    ap.add_argument("--game-cfg", type=Path, default=GAME_CFG,
-                    help="game.cfg to dedupe against (its extra_func entries are skipped)")
+    ap.add_argument("--game-cfg", "--game-toml", dest="game_cfg", type=Path,
+                    default=GAME_CFG,
+                    help="game.toml to dedupe against (its [functions].extra entries are skipped)")
     ap.add_argument("--disasm-seeds", type=Path, default=DISASM_SEEDS,
-                    help="disasm_seeds.txt to dedupe against")
+                    help="disasm_seeds TOML file to dedupe against")
     ap.add_argument("-o", "--output", type=Path, default=OUT_PATH,
-                    help="output .disasm_subs.txt")
+                    help="output .disasm_subs.toml")
     ap.add_argument("--header", type=str, default=None,
                     help="override the file's header comment")
     args = ap.parse_args()

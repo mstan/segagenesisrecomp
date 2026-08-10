@@ -1,5 +1,9 @@
 # HANDOFF — Puyo Puyo (Japan) bring-up
 
+> **Historical snapshot (July 2026).** This handoff preserves the investigation
+> state at that time; it is not the authoritative framework build or test guide.
+> Use the repository [README](../../README.md) and current `puyo/game.toml`.
+
 **Branch:** `feat/puyo-puyo-bringup`
 **Updated:** 2026-07-28
 **State:** attract and TCP-driven deterministic Stage-1 fuzz/game-over probes

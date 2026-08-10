@@ -1,66 +1,54 @@
-# Third-Party Components & Licenses
+# Third-Party Components and Licenses
 
-This project links and/or bundles third-party code. Their licenses are
-**separate from** this project's own license and continue to apply.
+Third-party licenses remain separate from the project's
+[PolyForm Noncommercial license](LICENSE.md). Current source, recompiler, and
+native release paths contain no clownmdemu, clown68000, or clownz80 dependency.
+Those retired oracle components exist only in Git history.
 
-> **clownmdemu is a development dependency — absent from production release
-> builds.** clownmdemu and its CPU cores (clown68000, clownz80; all AGPL-3.0)
-> are used only by the debug/oracle targets and the recompiler tool. The
-> release binaries (Sonic 1/2/3) run the clean-room own backend and neither
-> link any clownmdemu object **nor compile any clownmdemu header** — the
-> native targets build with no `clownmdemu-core` include paths (enforced in
-> each game repo's CMakeLists).
+## Framework dependencies
 
-| Component | Role | Author | License | Source |
-|---|---|---|---|---|
-| **ymfm** (`runner/external/ymfm/`) | YM2612 FM synthesis — **in release builds** | Aaron Giles | BSD-3-Clause | <https://github.com/aaronsgiles/ymfm> |
-| **superzazu/z80** (`runner/external/superzazu/`) | Z80 core (SMPS sound CPU), embedded by the own-backend machine — **in release builds** | Nicolas Allemand | MIT | <https://github.com/superzazu/z80> |
-| **clowncommon** (`runner/external/clowncommon/`, vendored from clownmdemu-core) | Integer typedefs / small C helpers — **in release builds** | Clownacy | Permissive (ISC/0BSD-style) | <https://github.com/Clownacy/clowncommon> (unmodified) |
-| **SDL2** (`runner/external/SDL2/`) | Windowing, input, audio output — **in release builds** | SDL community | zlib | <https://libsdl.org> |
-| **Dear ImGui** (`recomp-ui/src/third_party/imgui/`) | Pre-boot launcher UI (immediate-mode GUI) — **in release builds** (native target only) | Omar Cornut & contributors | MIT | <https://github.com/ocornut/imgui> |
-| **stb** (`recomp-ui/src/third_party/stb_image.h`, `stb_truetype.h`, `stb_image_write.h`) | Image decode + font rasterisation for the launcher UI — **in release builds** (native target only) | Sean Barrett | Public Domain (MIT alt) | <https://github.com/nothings/stb> |
-| **tinyfiledialogs** (`recomp-ui/src/third_party/tinyfiledialogs.c`) | Native "Change ROM" file dialog for the launcher — **in release builds** (native target only) | Guillaume Vareille | zlib | <https://sourceforge.net/projects/tinyfiledialogs/> |
-| **Lato** (`recomp-ui/assets/common/fonts/`) | Launcher UI typeface — **in release builds** (native target only) | Łukasz Dziedzic | SIL Open Font License 1.1 | <https://www.latofonts.com> |
-| **ShadowVerifier + color-science core** (`runner/audio/audio_shadow.{c,h}`, CIE core in `runner/video/color_lut.c`) | Verified-enhancement shadow self-check + present-time color LUT — **in release builds**, opt-in/default-off | Jrickey (algorithm); our C port | MIT OR Apache-2.0 | <https://github.com/JRickey/gba-recomp> (`crates/gba-core/src/shadow.rs`, `crates/screen/src/{color,profile,lut}.rs`), via the gbarecomp C++ / snesrecomp C ports, used with permission |
-| **clownmdemu** (`clownmdemu-core/`) | Mega Drive hardware emulation. **Dev only** — the `_oracle` targets' ground-truth reference; not in any release binary | Clownacy | **AGPL-3.0** | upstream: <https://github.com/Clownacy/clownmdemu> · our fork: `mstan/clownmdemu` (private) |
-| **clown68000** (`clownmdemu-core/libraries/clown68000/`) | 68000 interpreter. **Dev only** — oracle targets and the recompiler's `cycle_probe`; not in any release binary | Clownacy | **AGPL-3.0** | upstream: <https://github.com/Clownacy/clown68000> · our fork: `mstan/clown68000` (private) |
-| **clownz80** (`clownmdemu-core/libraries/clownz80/`) | Z80 interpreter. **Dev only** — oracle targets; release builds run superzazu instead | Clownacy | **AGPL-3.0** | <https://github.com/Clownacy/clownz80> (upstream, unmodified) |
+| Component | Role | License | Source |
+|---|---|---|---|
+| **ymfm** (`runner/external/ymfm/`) | YM2612 FM synthesis in native releases | BSD-3-Clause | <https://github.com/aaronsgiles/ymfm> |
+| **superzazu/z80** (`runner/external/superzazu/`) | Z80 sound-CPU core in native releases | MIT | <https://github.com/superzazu/z80> |
+| **clowncommon** (`runner/external/clowncommon/`) | Integer types and small C helpers | ISC | <https://github.com/Clownacy/clowncommon> |
+| **SDL2** (`runner/external/SDL2/`) | Windowing, input, rendering, and audio delivery | zlib | <https://libsdl.org> |
+| **tomlc99** (`recompiler/src/toml.{c,h}`) | TOML parsing for game configuration | MIT | <https://github.com/cktan/tomlc99> |
+| **recomp-net** (`external/recomp-net/`) | Optional netplay transport and lobby support | MIT | <https://github.com/TechnicallyComputers/recomp-net> |
+| **ShadowVerifier and color-science core** (`runner/audio/audio_shadow.{c,h}`, `runner/video/color_lut.{c,h}`) | Opt-in verified audio/video enhancements | MIT OR Apache-2.0 | <https://github.com/JRickey/gba-recomp>, ported through the gbarecomp/snesrecomp implementations with permission |
 
-Full license texts ship with each component:
-`runner/external/ymfm/LICENSE`, `runner/external/superzazu/LICENSE`,
-`runner/external/clowncommon/LICENCE.txt`,
-`runner/external/SDL2/SDL2-2.28.5/COPYING.txt`,
-`recomp-ui/src/third_party/imgui/LICENSE.txt` (Dear ImGui MIT; stb + tinyfiledialogs
-carry their license text in-header),
-`clownmdemu-core/LICENCE.txt`, `clownmdemu-core/libraries/*/LICEN*.txt`.
+License texts are retained with the vendored or submodule sources:
 
-The launcher dependencies (Dear ImGui MIT, stb public-domain, tinyfiledialogs
-zlib, Lato OFL-1.1) are all permissive and ship in the native release binaries.
-They are linked **only into the native (shipped) target** — the dev-only
-`_oracle` target does not build the launcher.
+- `runner/external/ymfm/LICENSE`
+- `runner/external/superzazu/LICENSE`
+- `runner/external/clowncommon/LICENCE.txt`
+- `runner/external/SDL2/SDL2-2.28.5/COPYING.txt`
+- the MIT notice embedded at the top of `recompiler/src/toml.c` and `toml.h`
+- `external/recomp-net/LICENSE`
 
-## Our changes to clownmdemu / clown68000
+`m68k-recomp-core` and `z80-recomp-core` are project-owned shared components
+and carry their own license and provenance files in their submodules.
 
-We maintain modifications (runner integration hooks: audio event-queue/cycle
-stamps, scanline/interrupt path, hybrid pre-instruction hook, etc.). These live
-**committed directly in the `mstan/clownmdemu` and `mstan/clown68000` forks** —
-there is no build-time patch step. Because the upstream code is AGPL-3.0, our
-modifications to it are also AGPL-3.0. This only creates obligations if a
-binary containing that code is distributed — which release binaries do not.
+## Game-repository launcher dependencies
+
+Game repositories normally add the shared `recomp-ui` launcher at build time;
+it is not vendored by this framework repository. A release that enables it also
+contains the following permissive components and must ship their notices and
+assets from the selected `recomp-ui` revision:
+
+| Component | Role | License |
+|---|---|---|
+| **Dear ImGui** | Immediate-mode launcher UI | MIT |
+| **stb_image / stb_truetype / stb_image_write** | Image, font, and image-write helpers | Public domain or MIT |
+| **tinyfiledialogs** | Native ROM file picker | zlib |
+| **Lato** | Launcher typeface | SIL Open Font License 1.1 |
 
 ## Compliance notes
 
-- **Release binaries (Sonic 1/2/3 native)** contain no AGPL code and were
-  compiled from translation units that include no AGPL headers. They are not
-  AGPL combined works; they ship under the project license
-  (PolyForm Noncommercial 1.0.0) with the permissive notices above.
-- **Oracle (`*_oracle`) binaries and the recompiler (`GenesisRecomp`)**
-  statically link AGPL code. They are dev tools; distributing either would
-  trigger AGPL-3.0 obligations (license + complete corresponding source,
-  including the private forks). Do not ship them — see `RELEASING.md`.
-- The shipped binary does **not** contain the game ROM — users supply their
-  own (`*.bin` is gitignored; the loader reads it at runtime). The recompiled
-  C (`<game>_full.c`) compiled into the binary is, however, a machine
-  translation of the ROM's code — the same derivative-work gray area every
-  recomp/decomp operates in; our own license cannot grant rights to it.
-- This is informational, not legal advice.
+- Native release binaries contain no AGPL code. Release packaging must still
+  follow [RELEASING.md](RELEASING.md) and include every applicable notice.
+- The shipped binary must not contain a game ROM. Users supply their own ROM;
+  `*.bin` is ignored and the runtime loads it separately.
+- Generated C compiled into a game executable is a machine translation of ROM
+  code. The project's own license cannot grant rights to third-party game code.
+- This inventory is informational, not legal advice.

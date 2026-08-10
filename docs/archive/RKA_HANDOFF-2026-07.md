@@ -1,5 +1,9 @@
 # Rocket Knight Adventures support handoff
 
+> **Historical snapshot (July 2026).** This handoff preserves an unfinished
+> investigation state. Use the repository [README](../../README.md), current
+> `rka/game.toml`, and open Beads issues for authoritative work status.
+
 ## Objective and acceptance gate
 
 This branch is bringing **Rocket Knight Adventures (USA)** up as the fourth
@@ -316,4 +320,3 @@ static screenshot is insufficient.
 - RKA real-time final audio acceptance: pending.
 - Sonic runtime regressions: intentionally pending.
 - Git worktree: clean; large local scratch audit directories ignored.
-

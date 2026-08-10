@@ -5,9 +5,8 @@
  * decoder (m68k_decoder.c) and MIRRORS code_generator.c's per-mnemonic
  * semantics exactly, executing on the g_cpu / m68k_read*-write* runtime ABI.
  * Every EA-resolution and flag formula here is a direct "emit C" -> "execute"
- * port of the corresponding code_generator.c helper, so the interpreter and
- * the static path are parity-by-construction; clown68000 is the runtime oracle
- * that proves it (see runner/tests/m68k_interp_diff.c).
+ * port of the corresponding code_generator.c helper. The supported production
+ * parity check is recomp-vs-interpreter co-simulation; see COSIM.md.
  *
  * Precision over recall: anything not implemented HALTS LOUDLY (returns
  * M68KI_HALT_UNIMPL with g_m68ki_bad_pc/op set) — it never silently

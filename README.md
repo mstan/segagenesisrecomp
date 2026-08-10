@@ -4,40 +4,50 @@
 
 # Genesis 68K Static Recompiler
 
-A static recompiler that translates Sega Genesis (Mega Drive) 68000 ROM binaries into native C code. Paired with the [SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp) runner, **Green Hill Zone (all 3 acts + boss) is fully playable** with correct jumping, audio, sprite art, and object interactions.
+A static-recompilation framework that translates Sega Genesis (Mega Drive)
+68000 ROM code into native C and runs it against a clean-room Genesis runtime.
+Game repositories such as
+[SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp)
+provide the ROM-specific build, assets, and release packaging.
 
 ## Status
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| 68K instruction coverage | ✅ Comprehensive | All common instructions and addressing modes |
-| `addq.l #4,sp` + `rts` pattern | ✅ Fixed | Function-local `_sp_popped` tracking for early-exit stack manipulation |
-| Function discovery | ✅ 530+ functions | Static analysis + runtime dispatch miss logging + interpreter coverage |
-| Interior label detection | ✅ Automated | Binary search on dispatch table prevents split-function bugs |
-| JMP/JSR table dispatch | ✅ Works | Computed jumps route through `call_by_address` |
-| Per-instruction cycle costs | ✅ Estimated | Drives VBlank timing via `glue_check_vblank` |
-| Generated code correctness | ✅ GHZ verified | All 3 acts completable, boss fight works |
-| Later zones | ⚠️ Partial | Functions discovered progressively via gameplay |
-| Sound Z80 static recompilation | Experimental | Optional flat-step backend; see [docs/Z80_STATIC_RECOMP.md](docs/Z80_STATIC_RECOMP.md) |
+| 68K frontend | Active | Shared decoder, validator, discovery, and emitter from `m68k-recomp-core` |
+| Runtime fallback | Active | Clean-room Tier-3 interpreter handles supported static-dispatch misses |
+| Runtime hardware | Active | Own VDP, bus, scheduler, YM2612, SN76489, and Z80 integration |
+| Function discovery | Evidence-driven | Static analysis plus disassembly and runtime evidence declared by `game.toml` |
+| Validation | Local | Synthetic harnesses, boot/regression scripts, and recomp-vs-interpreter cosim |
+| Sound Z80 static recompilation | Experimental | Optional backend; see [docs/Z80_STATIC_RECOMP.md](docs/Z80_STATIC_RECOMP.md) |
+| Widescreen injection | Per game | Current status and remaining conversions are in [WIDESCREEN_ISSUES.md](WIDESCREEN_ISSUES.md) |
 
 ## What's In This Repo
 
 | Directory | Purpose |
 |-----------|---------|
-| `recompiler/src/` | The recompiler tool — analyzes ROM binary, emits native C |
-| `runner/include/` | Shared runtime headers (`genesis_runtime.h`) |
+| `recompiler/` | Genesis-specific CLI, ROM parser, and TOML configuration loader |
+| `external/m68k-recomp-core/` | Shared 68000 decoder, validator, discovery, and code-emission profiles |
 | `external/z80-recomp-core/` | [Shared Z80 generated-code ABI and verified instruction semantics](https://github.com/mstan/z80-recomp-core) — pinned submodule shared with SMS/GG Recomp |
+| `runner/` | Clean-room runtime, debugger, audio, video, input, and netplay integration |
+| `tests/` | ROM-independent synthetic harnesses plus optional ROM-backed decoder fixtures |
+| `sonicthehedgehog/`, `sonicthehedgehog2/`, `sonic3/`, `sandk/`, `sonic3k/`, `puyo/`, `rka/` | Per-game configuration, evidence, and hooks |
 | `<game build>/generated/<prefix>/` | Ignored output regenerated from the ROM, config, and current recompiler |
-| `sonicthehedgehog/game.cfg` | Recompiler config — 530 extra_func entries |
 
 ## How It Works
 
-The recompiler (`recompiler/src/code_generator.c`) decodes every 68K instruction in the ROM and emits equivalent C code. Each 68K subroutine becomes a C function operating on the same `M68KState` (D0–D7, A0–A7, SR) and memory layout as the original.
+The Genesis CLI loads a ROM and `game.toml`, then invokes the Genesis profile in
+`m68k-recomp-core`. Discovered 68K routines become C functions operating on the
+shared `M68KState` and runtime bus. Generated dispatch code falls back to the
+clean-room interpreter for supported dynamic targets that were not statically
+materialized.
 
 Key recompiler features:
 - **`addq.l #4,sp` early-exit detection**: Pre-scans each function for stack pointer adjustments. Emits local `_sp_popped` counter so `rts` propagates returns through the caller's post-JSR check via `g_rte_pending`.
 - **Dispatch table accessor generation**: `game_dispatch_table_size()` and `game_dispatch_table_addr()` enable runtime interior label detection.
-- **Per-instruction cycle estimation**: Each instruction emits `g_cycle_accumulator += N` for VBlank timing. `N` comes from a clean-room MC68000 timing model (`estimate_cycles_prm` in the m68k-recomp-core genesis profile), so codegen is deterministic and needs no emulator. Validate it against clown68000 with `-DGENESIS_CYCLE_ORACLE=ON` plus `GENESIS_CYCLE_DIAG=<path>`, which logs both costs per instruction.
+- **Per-instruction cycle estimation**: Emitted costs come from the clean-room
+  MC68000 timing model in the shared Genesis profile, so generation has no
+  emulator dependency.
 
 ## Cloning
 
@@ -45,8 +55,8 @@ Key recompiler features:
 git clone --recursive https://github.com/mstan/segagenesisrecomp.git
 ```
 
-Everything is public and permissively licensed. There is no emulator core to
-fetch: one backend (ours), no AGPL, no optional submodule.
+The recursive clone checks out the shared 68000, Z80, and netplay submodules.
+There is no emulator-core or AGPL dependency in the repository.
 
 ## Platform Support
 
@@ -60,7 +70,7 @@ README for per-platform build steps.
 
 ## Building the Recompiler
 
-The recompiler is portable C++ and builds on any platform with a C++ toolchain.
+The recompiler is C11 and builds with CMake and a C toolchain.
 
 ```bash
 cd recompiler
@@ -73,6 +83,20 @@ cmake --build build --config Release
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
+
+## Running Framework Tests
+
+The ROM-independent harnesses can be configured directly:
+
+```bash
+cmake -S tests -B build/tests
+cmake --build build/tests --config Release
+ctest --test-dir build/tests -C Release --output-on-failure
+```
+
+`l1_decoder_test` is built but not registered with CTest because it requires a
+user-supplied Sonic ROM. Its `--help` output documents the fixture and ROM
+arguments.
 
 ## Regenerating Output
 
@@ -146,9 +170,10 @@ is per-game and gameplay-gated — authentic 4:3 on menus, title cards, and
 (S3-alone and S&K-alone; the combined S3&K build is bring-up). See the
 `[widescreen]` block in each `game.toml`.
 
-The widening lives in the **game's 68K source**, so a widescreen build
-reassembles a community disassembly into a patched ROM and recompiles that. With
-widescreen off, that reassembly is byte-identical to the original ROM.
+Converted games ingest the canonical ROM and apply declarative
+`[[widescreen_site]]` transforms while emitting C. The original ROM is not
+patched. See [WIDESCREEN_ISSUES.md](WIDESCREEN_ISSUES.md) for games that still
+use the older patched-disassembly path.
 
 #### Disassembly sources
 
@@ -166,18 +191,19 @@ With thanks to the Sonic Retro community for maintaining these disassemblies.
 
 | File | Purpose |
 |------|---------|
-| `recompiler/src/code_generator.c` | Main codegen — 68K → C translation, `_sp_popped` pattern, cycle estimation |
-| `recompiler/src/m68k_decoder.c` | 68K instruction decoder |
+| `external/m68k-recomp-core/profiles/genesis/code_generator.c` | Genesis 68K → C emitter and timing profile |
+| `external/m68k-recomp-core/common/m68k_decoder.c` | Shared 68K instruction decoder |
+| `recompiler/src/game_config.c` | Genesis `game.toml` loader and validation |
 | `runner/include/genesis_runtime.h` | Shared interface: `M68KState`, `g_rte_pending`, `g_early_return`, bus access |
-| `<game build>/generated/<prefix>/*_full.c` | Ignored build output containing generated functions |
+| `<game build>/generated/<prefix>/*_partNN.c` | Ignored build output containing generated functions |
 | `<game build>/generated/<prefix>/*_dispatch.c` | Ignored build output containing the dispatch table |
-| `sonicthehedgehog/game.cfg` | 530 extra_func entries — discovered via runtime logging + interpreter coverage |
+| `sonicthehedgehog/game.toml` | Sonic 1 configuration, evidence inputs, and optional transforms |
 
 ## License
 
 [PolyForm Noncommercial 1.0.0](LICENSE.md) — free for non-commercial use.
-
-`clownmdemu-core/` is third-party code with its own license. See `clownmdemu-core/LICENCE.txt`.
+Third-party notices are collected in
+[THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).
 
 ---
 

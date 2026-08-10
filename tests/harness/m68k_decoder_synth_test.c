@@ -153,15 +153,16 @@ static void test_imm_to_ccr_sr(void) {
  * Phase 3C — CMPM (Ay)+,(Ax)+
  * --------------------------------------------------------------------- */
 static void test_cmpm(void) {
-    /* Pattern: 1011 xxx 1 ss 011 yyy   (mode=011=(An)+)
+    /* Pattern: 1011 xxx 1 ss 001 yyy. CMPM uses the otherwise-illegal
+     * An-direct mode bits (001); post-increment is implicit in the mnemonic.
      * Encodings here:
-     *   B7 19 = CMPM.B (A1)+,(A3)+   xxx=011 (Ax=A3), ss=00, yyy=001
-     *   B5 59 = CMPM.W (A1)+,(A2)+   xxx=010 (Ax=A2), ss=01, yyy=001
-     *   B3 99 = CMPM.L (A1)+,(A1)+   xxx=001 (Ax=A1), ss=10, yyy=001  */
+     *   B7 09 = CMPM.B (A1)+,(A3)+   xxx=011 (Ax=A3), ss=00, yyy=001
+     *   B5 49 = CMPM.W (A1)+,(A2)+   xxx=010 (Ax=A2), ss=01, yyy=001
+     *   B3 89 = CMPM.L (A1)+,(A1)+   xxx=001 (Ax=A1), ss=10, yyy=001  */
     uint8_t bytes[] = {
-        0xB7, 0x19,    /* CMPM.B (A1)+,(A3)+ */
-        0xB5, 0x59,    /* CMPM.W (A1)+,(A2)+ */
-        0xB3, 0x99,    /* CMPM.L (A1)+,(A1)+ */
+        0xB7, 0x09,    /* CMPM.B (A1)+,(A3)+ */
+        0xB5, 0x49,    /* CMPM.W (A1)+,(A2)+ */
+        0xB3, 0x89,    /* CMPM.L (A1)+,(A1)+ */
     };
     GenesisRom rom; make_rom(&rom, bytes, sizeof(bytes));
 
@@ -171,7 +172,8 @@ static void test_cmpm(void) {
     CHECK(a.size     == M68K_SIZE_B,       "CMPM.B size=B");
     CHECK(a.byte_length == 2,              "CMPM.B length=2");
     CHECK((a.src_ea & 7) == 1,             "CMPM.B Ay=A1 (src_ea low bits)");
-    CHECK(((a.src_ea >> 3) & 7) == EA_An_POST, "CMPM.B src EA mode=(An)+");
+    CHECK(((a.src_ea >> 3) & 7) == EA_An,
+          "CMPM.B carries the special An-direct encoding bits");
     CHECK(a.reg == 3,                      "CMPM.B Ax=A3");
 
     M68KInstr b = {0};

@@ -9,13 +9,10 @@
  *
  * Design notes:
  *
- *   - This struct supersedes the legacy free-function hooks in
- *     game_extras.h (game_fill_frame_record, game_handle_debug_cmd,
- *     game_extras_name) and the per-call externs in glue.c
- *     (func_000206, func_000B10, func_001126, etc.). Existing code
- *     continues to use the free-function form during the migration;
- *     once all call sites read g_game_spec, the legacy header can
- *     be removed.
+ *   - Runtime lifecycle and dispatch call sites use this struct. A small
+ *     compatibility surface remains for frame/debug helpers and generated
+ *     dispatch overrides; removing it requires coordinated game-repository
+ *     source-list changes.
  *
  *   - Function-pointer fields are NULL when the game doesn't need
  *     that hook. The runner checks before dispatching so a minimal

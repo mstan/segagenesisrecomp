@@ -1,16 +1,9 @@
 /*
- * main.c — SDL2 frontend for clownmdemu-core running Sonic the Hedgehog.
+ * main.c — shared SDL2 frontend for native Genesis recompilation targets.
  *
- * Step 0 / Step 1  (ENABLE_RECOMPILED_CODE not defined):
- *   Plain emulator: clownmdemu drives the 68K interpreter.
- *   The SEGA logo → title screen should be visible.
- *
- * Step 2  (ENABLE_RECOMPILED_CODE defined, stub_clown68000.c linked):
- *   Recompiled code drives the 68K on a separate game thread.
- *   clownmdemu_Iterate() still renders VDP scanlines and generates audio;
- *   the stub's Clown68000_DoCycles is a no-op.
- *
- * Usage: SonicTheHedgehogRecomp <sonic.md>
+ * A game repository supplies g_game_spec, generated 68000 code, ROM identity,
+ * and launcher metadata. This frontend owns the clean-room machine runtime,
+ * presentation, input, audio delivery, saves, and developer instrumentation.
  */
 
 #include <stdio.h>

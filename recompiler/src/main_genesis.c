@@ -133,7 +133,8 @@ int main(int argc, char *argv[]) {
                 size_t n = (size_t)(dot - rom_path);
                 if (n >= sizeof(ann_path) - 20) n = sizeof(ann_path) - 20;
                 memcpy(ann_path, rom_path, n);
-                strcpy(ann_path + n, "_annotations.csv");
+                snprintf(ann_path + n, sizeof(ann_path) - n,
+                         "_annotations.csv");
             } else {
                 snprintf(ann_path, sizeof(ann_path), "%s_annotations.csv", rom_path);
             }

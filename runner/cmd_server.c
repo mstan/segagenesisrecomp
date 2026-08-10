@@ -2610,7 +2610,7 @@ void cmd_server_shutdown(void)
       if (f) {
           fprintf(f, "# dispatch_misses.log — addresses the recompiled binary\n");
           fprintf(f, "# called via call_by_address() that have no generated function.\n");
-          fprintf(f, "# Add each as `extra_func 0xADDR` to game.cfg, regenerate, rebuild.\n");
+          fprintf(f, "# Legacy evidence format; vet and convert into game.toml [functions].extra.\n");
           fprintf(f, "# Total misses (any address): %u\n", (unsigned)g_miss_count_any);
           fprintf(f, "# Unique missing addresses: %d\n", g_miss_unique_count);
           for (int i = 0; i < g_miss_unique_count; i++)

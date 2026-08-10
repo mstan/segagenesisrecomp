@@ -2,9 +2,8 @@
  * m68k_interp.h — Tier-3 clean-room 68000 interpreter (the floor).
  *
  * This is the runtime correctness floor for the static recompiler: when an
- * indirect dispatch reaches an address that was NOT statically discovered
- * (a "dispatch miss"), the native build today silently no-ops it. This
- * interpreter runs that missed function CORRECTLY instead, then the
+ * indirect dispatch reaches an address that was not statically discovered
+ * (a "dispatch miss"), this interpreter runs the supported target, then the
  * coverage-manifest layer records it so a future regen folds it into the
  * statically-recompiled Tier-1 set.
  *
@@ -17,8 +16,8 @@
  *     exactly (same flag formulas, same EA math, same size masking).
  *   - It operates on the SAME runtime ABI the generated C uses: the global
  *     g_cpu (M68KState) and the m68k_read/write{8,16,32} bus.
- *   - It is validated against clown68000 (the AGPL oracle, dev-only) via a
- *     same-state differential before it is trusted — 0 divergences required.
+ *   - Generated and interpreted execution are cross-checked by the supported
+ *     recomp-vs-interpreter cosim workflow.
  *
  * Safety contract (precision over recall): the interpreter is the floor, so
  * it cannot "decline" like a JIT. Any instruction it cannot execute must HALT
@@ -72,8 +71,8 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
 
 /*
  * Execute exactly one instruction at g_cpu.PC and advance g_cpu.PC. Used by
- * the lockstep differential harness (so it can compare register/RAM state
- * after every instruction against clown68000). Returns M68KI_OK or a HALT_*.
+ * interpreter driving and diagnostic lockstep paths. Returns M68KI_OK or a
+ * HALT_* status.
  */
 M68kiStatus m68k_interp_step(void);
 

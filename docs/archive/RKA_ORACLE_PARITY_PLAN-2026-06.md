@@ -1,5 +1,9 @@
 # RKA oracle-parity plan (feat/rka-oracle-parity)
 
+> **Historical snapshot (June 2026).** The clownmdemu oracle described here was
+> retired in July 2026. Current validation uses the clean-room interpreter and
+> cosim workflow documented in [COSIM.md](../../COSIM.md).
+
 Strategy adopted 2026-06-21 after conferring with ChatGPT. Supersedes the
 "keep the screenshot green" framing for RKA *gameplay* (see the project memory
 `project_rka_oracle_parity`).

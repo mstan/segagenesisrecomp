@@ -184,12 +184,6 @@ already use the right one.
   `tools/package_release.py` (it refuses if a ROM/junk slips in) — never zip
   a build folder by hand.
 
-## Active improvement plan
-
-The `humming-wibbling-hammock.md` plan (in the user's `.claude/plans/`
-directory) lays out waves 0A → 5 of tooling/discipline upgrades. We are
-currently in Wave 0A (this docs landing).
-
 ## Pointers
 
 - `PRINCIPLES.md` — full rule set (25 principles).

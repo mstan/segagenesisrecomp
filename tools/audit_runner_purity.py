@@ -16,8 +16,8 @@ that violate that contract:
 Per-game files no longer live in `runner/` after the runner-promotion
 refactor; they're under `sonicthehedgehog/` and `sonicthehedgehog2/`.
 
-Hits are reported, not failed. The audit is a manual pre-commit gate
-when touching shared runner code.
+Hits are reported, not failed. The audit is a manual review aid when touching
+shared runner code; comments and intentional compatibility seams can be hits.
 
 There is no GitHub Actions / cloud CI for this project (the build needs a
 ROM that can't be checked in upstream). All checks are local.
@@ -240,7 +240,11 @@ def main(argv: list[str] | None = None) -> int:
                     by_kind[kind] = by_kind.get(kind, 0) + 1
 
     # Report.
-    rel = lambda p: p.relative_to(release_root) if release_root in p.parents else p
+    def rel(path: Path) -> Path:
+        try:
+            return path.relative_to(submodule_root)
+        except ValueError:
+            return path
 
     print(f"audit_runner_purity.py — scanning {runner_root}")
     print(f"  files scanned:  {files_scanned}")
@@ -269,10 +273,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {len(hits):5d}  {rel(path)}")
 
     print()
-    print("These hits are the agreed cleanup baseline (Wave 4 fixes).")
-    print("Audit is non-fatal in Wave 0A; flips to exit-1 hard-fail post-Wave 4.")
-    print("Run manually before committing changes to shared runner code.")
-    # Non-fatal exit. Wave 4+ will flip this.
+    print("Review these hits for per-game leakage before committing shared runner changes.")
+    print("The audit remains non-fatal because comments and compatibility seams can match.")
     return 0
 
 

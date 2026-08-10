@@ -1,9 +1,25 @@
 build/
+build-*/
+_build*/
 *.bin
+
+# CMake and compiler by-products from accidental in-source/local builds.
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+install_manifest.txt
+Testing/
+.vs/
+*.obj
+*.pdb
+*.suo
+*.user
 
 # External disasm clones (sibling repos under per-game dirs).
 # Sonic 1 keeps its disasm outside the tree; Sonic 2 / future ports
-# clone alongside game.cfg for the regen pipeline. Track *.cfg and
+# clone alongside game.toml for the regen pipeline. Track configuration and
 # tooling output, not the disasm source tree itself.
 **/s1disasm/
 **/s2disasm/
@@ -12,8 +28,18 @@ build/
 # Per-run / generated artifacts.
 **/__pycache__/
 tests/last_run/
+**/tests/*.exe
 **/*.unresolved_jumptables.log
 **/generated/
+
+# Runtime convergence/diagnostic output. Curated evidence uses named fixture,
+# CSV, TOML, or executed-PC files instead of these append-mode session logs.
+**/dispatch_misses.log
+**/interp_fallbacks.log
+**/interior_label_misses.log
+**/floor_unsafe.log
+**/floor_coverage.txt
+**/*.flog
 
 # Local decoder comparison worktrees/build products. These contain copied ROMs,
 # disassembly trees, and hundreds of MB of generated C; keep the small handoff

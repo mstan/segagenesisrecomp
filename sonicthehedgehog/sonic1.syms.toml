@@ -5,7 +5,7 @@
 # Sections:
 #   subroutines   — labels with S U B R O U T I N E banner in s1disasm
 #   table_targets — ptr_* labels used in jump/dispatch tables
-#   extra_seeds   — addresses from game.cfg not found in disasm labels
+#   extra_seeds   — addresses from game.toml not found in disasm labels
 
 [[section]]
 name = "subroutines"
@@ -421,7 +421,7 @@ functions = [
 
 [[section]]
 name = "extra_seeds"
-source = "game.cfg extra_func (runtime discovery / manual)"
+source = "game.toml [functions].extra (runtime discovery / manual)"
 functions = [
     { name = "EntryPoint", addr = 0x000206 },
     { name = "Art_Text_End", addr = 0x000B10 },

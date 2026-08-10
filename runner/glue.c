@@ -1,16 +1,9 @@
 /*
- * glue.c — bridges genesis_runtime.h with clownmdemu-core.
+ * glue.c — generated-code and clean-room Genesis runtime integration.
  *
- * Step 1 (ENABLE_RECOMPILED_CODE not set):
- *   Provides all symbols required by genesis_runtime.h so the generated code
- *   links.  Memory functions call through clownmdemu's bus layer.  No game
- *   thread is started; the interpreter still drives 68K execution.
- *
- * Step 2 (ENABLE_RECOMPILED_CODE defined):
- *   Starts the game thread that calls func_000206() continuously.
- *   m68k_read/write go through clownmdemu's M68kReadCallback / M68kWriteCallback.
- *   VBlank is cooperative: main thread sets g_vblank_pending, game thread checks
- *   it at every memory access and calls service_vblank() when it fires.
+ * Provides the genesis_runtime.h ABI, cooperative game fiber, interrupt
+ * delivery, bus access, dispatch fallback, cycle accounting, and diagnostics
+ * shared by every game-specific GameSpec.
  */
 
 #include "glue.h"
@@ -30,8 +23,8 @@
 
 /* Tier-3 clean-room 68000 interpreter — the runtime correctness floor. On a
  * dispatch miss the native build used to silently no-op the missed function;
- * the floor runs it correctly instead (validated 0-divergence vs clown68000).
- * Permissive/AGPL-free: reuses the recompiler's own decoder. */
+ * the floor runs it correctly instead. It reuses the shared clean-room decoder
+ * and is cross-checked against generated execution through cosim. */
 #include "m68k_interp.h"
 
 /* clownmdemu bus layer (oracle/hybrid builds only — native has no
@@ -2011,8 +2004,9 @@ void genesis_log_dispatch_miss(uint32_t addr)
     if (g_miss_unique_count < MAX_MISS_UNIQUE)
         g_miss_unique_addrs[g_miss_unique_count++] = addr;
 
-    /* Append to dispatch_misses.log (one address per line).
-     * This file can be fed back to the recompiler via game.cfg extra_func. */
+    /* Append one legacy `extra_func` evidence line. Consumer tooling still
+     * parses this stable format and converts vetted candidates into the
+     * [functions].extra array in game.toml. */
     extern const char *exe_relative(const char *);
     FILE *mf = fopen(exe_relative("dispatch_misses.log"), "a");
     if (mf) {
