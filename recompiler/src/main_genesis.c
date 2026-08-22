@@ -22,7 +22,11 @@
 #include "annotations.h"
 #include "game_config.h"
 
-static bool ensure_output_directory(const char *path) {
+static bool is_path_separator(char ch) {
+    return ch == '/' || ch == '\\';
+}
+
+static bool create_one_directory(const char *path) {
     struct stat info;
     if (!path || !path[0]) return false;
     if (stat(path, &info) == 0)
@@ -34,6 +38,35 @@ static bool ensure_output_directory(const char *path) {
 #endif
     return errno == EEXIST && stat(path, &info) == 0 &&
            (info.st_mode & S_IFDIR) != 0;
+}
+
+static bool ensure_output_directory(const char *path) {
+    if (!path || !path[0]) return false;
+
+    char tmp[1024];
+    size_t len = strlen(path);
+    if (len >= sizeof(tmp)) return false;
+    memcpy(tmp, path, len + 1);
+
+    while (len > 1 && is_path_separator(tmp[len - 1])) {
+#ifdef _WIN32
+        if (len == 3 && tmp[1] == ':') break;
+#endif
+        tmp[--len] = '\0';
+    }
+
+    for (size_t i = 1; i < len; i++) {
+        if (!is_path_separator(tmp[i])) continue;
+#ifdef _WIN32
+        if (i == 2 && tmp[1] == ':') continue;
+#endif
+        char saved = tmp[i];
+        tmp[i] = '\0';
+        if (tmp[0] && !create_one_directory(tmp)) return false;
+        tmp[i] = saved;
+    }
+
+    return create_one_directory(tmp);
 }
 
 static bool make_output_path(char *dst, size_t dst_size,

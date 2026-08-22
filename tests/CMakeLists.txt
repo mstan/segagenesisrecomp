@@ -43,6 +43,12 @@ set(GENESISRECOMP_DECODER_SOURCES
     "${RECOMP_SRC}/rom_parser.c"
 )
 
+add_executable(rom_parser_test
+    harness/rom_parser_test.c
+    "${RECOMP_SRC}/rom_parser.c"
+)
+genesisrecomp_register_test(rom_parser_test)
+
 add_executable(l1_decoder_test
     harness/l1_decoder_test.c
     ${GENESISRECOMP_DECODER_SOURCES}

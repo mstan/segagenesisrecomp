@@ -69,8 +69,17 @@ bool rom_parse(const char *path, GenesisRom *out) {
 
     /* Validate "SEGA" magic in system type field */
     if (memcmp(out->rom_data + HDR_SYSTEM_TYPE, "SEGA", 4) != 0) {
-        fprintf(stderr, "rom_parser: no SEGA magic at $100 — not a Genesis ROM?\n");
-        /* Warn but continue — some ROMs have unusual headers */
+        fprintf(stderr,
+                "rom_parser: no SEGA magic at $100 - not a Genesis ROM\n");
+        fprintf(stderr,
+                "rom_parser: refusing to generate code from '%s' (%ld bytes). "
+                "If this file was downloaded, verify it is the raw ROM and "
+                "not an HTML/error page saved as a .bin file.\n",
+                path, file_size);
+        free(out->rom_data);
+        out->rom_data = NULL;
+        out->rom_size = 0;
+        return false;
     }
 
     /* Read vector table (big-endian 32-bit values at $000000) */
