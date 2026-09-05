@@ -683,12 +683,14 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     /* Pillarbox bar fill: per-scanline backdrop (seamless) or the black
      * sentinel the host maps to opaque black. */
     uint8_t bar_idx = s_ws_bar_black ? (uint8_t)GVDP_WS_BAR_INDEX : backdrop;
+    int content_start = pillar;
+    int content_end = pillar + content_block;
+    int right_bar = total - content_end;
 
     if (!gvdp_display_enabled(v)) {
-        for (int xo = 0; xo < total; xo++) {
-            int x = xo - offset;
-            out[xo] = (x < -content_extra || x >= w + content_extra) ? bar_idx : backdrop;
-        }
+        if (pillar > 0) memset(out, bar_idx, (size_t)pillar);
+        memset(out + content_start, backdrop, (size_t)content_block);
+        if (right_bar > 0) memset(out + content_end, bar_idx, (size_t)right_bar);
         return total;
     }
 
@@ -737,19 +739,12 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     PlanePixelCache cache_b = { ~0u, 0 };
     PlanePixelCache cache_w = { ~0u, 0 };
 
-    for (int xo = 0; xo < total; xo++) {
-        /* xo is the output column; x is the original-screen column (centered
-         * via `offset`). Columns within [-content_extra, w+content_extra) are
-         * the authentic view plus any genuine widescreen margins (the planes
-         * wrap-sample for the margins via fetch_plane_pixel masks). Everything
-         * outside that is pillarbox: fill the bar colour and skip all layer
-         * compositing so no wrapped/garbage tiles or off-screen sprites bleed
-         * into the bars. */
-        int x = xo - offset;
-        if (x < -content_extra || x >= w + content_extra) {
-            out[xo] = bar_idx;
-            continue;
-        }
+    if (pillar > 0) memset(out, bar_idx, (size_t)pillar);
+    if (right_bar > 0) memset(out + content_end, bar_idx, (size_t)right_bar);
+
+    for (int x = -content_extra, xo = content_start; xo < content_end; x++, xo++) {
+        /* Bars were prefilled above. This loop covers only the authentic view
+         * plus genuine widescreen margins, which the planes wrap-sample. */
         /* Vertical scroll per plane (full, or per-16px-column 2-cell). */
         int vs_a, vs_b;
         if (vmode_2cell) {

@@ -1,0 +1,18 @@
+python.exe : [paired_benchmark] unstable: pair spread 8.316 exceeds 3.000 percentage points
+At line:4 char:1
++ & $py 'F:\Projects\segagenesisrecomp\segagenesisrecomp\tools\paired_b ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([paired_benchma...rcentage points:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+[paired_benchmark] cpu=11 frames=6000 pairs=2 priority=normal metric=fps
+[paired_benchmark] warming baseline and candidate
+[paired_benchmark] pair 1: baseline then candidate
+  baseline: 1339.443 FPS (4.479475s)
+  candidate: 1343.164 FPS (4.467065s)
+  paired delta: +0.278%
+[paired_benchmark] pair 2: candidate then baseline
+  candidate: 1325.076 FPS (4.528042s)
+  baseline: 1220.209 FPS (4.917189s)
+  paired delta: +8.594%
+GENESISRECOMP_PAIRED {"game":"Sonic1","cpu":11,"priority":"normal","metric":"fps","frames":6000,"input_script":"F:\\Projects\\segagenesisrecomp\\segagenesisrecomp\\tests\\regression\\sonic1_benchmark_gameplay.input","pairs":[{"pair":1,"order":["baseline","candidate"],"baseline_fps":1339.443,"candidate_fps":1343.164,"baseline_metric":1339.443,"candidate_metric":1343.164,"delta_pct":0.27780204159491007},{"pair":2,"order":["candidate","baseline"],"baseline_fps":1220.209,"candidate_fps":1325.076,"baseline_metric":1220.209,"candidate_metric":1325.076,"delta_pct":8.594183455457216}],"median_delta_pct":4.435992748526063,"pair_spread_pct_points":8.316381413862306,"baseline_cv_pct":4.65821135060547,"candidate_cv_pct":0.6779000389770024,"state_fnv1a64":"B73909CF3B280638","audio_state_fnv1a64":"5F095FF7D29387A5","stable":false}

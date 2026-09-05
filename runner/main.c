@@ -247,6 +247,7 @@ static int s_ws_user_on    = 0;   /* user requested widescreen */
 static int s_ws_user_cells = 8;   /* requested extra 8px cells per side */
 static int s_ws_bgdiag_on  = 0;   /* GENESIS_WS_BGDIAG: Plane B parallax diagnostic */
 static int s_ws_bar_black  = 1;   /* pillarbox bars: black (default); GENESIS_WS_BARS=backdrop for seamless */
+static int s_frame_texture_filtered = 0; /* actual SDL texture scale mode */
 #if RECOMP_LAUNCHER
 typedef struct RuntimeUiContext {
     SDL_Window *window;
@@ -277,7 +278,10 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
         c->view_mode = v; s_ws_user_on = v != RECOMP_RUNTIME_UI_VIEW_NATIVE;
         if (v == RECOMP_RUNTIME_UI_VIEW_FIXED_16_9) s_ws_user_cells = 8;
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_LINEAR_FILTER)) {
-        g_app_config.linear_filter = v; SDL_SetTextureScaleMode(c->texture, v ? SDL_ScaleModeLinear : SDL_ScaleModeNearest);
+        SDL_ScaleMode mode = v ? SDL_ScaleModeLinear : SDL_ScaleModeNearest;
+        g_app_config.linear_filter = v;
+        if (SDL_SetTextureScaleMode(c->texture, mode) == 0)
+            s_frame_texture_filtered = mode != SDL_ScaleModeNearest;
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VOLUME)) {
         g_app_config.volume = v; audio_set_master_volume(v);
     } else return 0; return 1;
@@ -413,15 +417,31 @@ static int display_logical_height(void)
 
 static void update_render_logical_size(SDL_Renderer *renderer)
 {
+    static SDL_Renderer *s_last_renderer = NULL;
+    static int s_last_w = 0;
+    static int s_last_h = 0;
+    int w;
+    int h;
+
     /* Widescreen: present on a true 16:9 logical canvas (canvas_w × 16:9 height)
      * so the content fills the 16:9 window with no SDL letterbox. The authentic
      * 224-line frame scales into the 16:9 height; gameplay is full-bleed and
      * non-gameplay screens carry their pillarbox bars within the canvas. */
     if (ws_armed()) {
-        SDL_RenderSetLogicalSize(renderer, ws_canvas_w(), ws_canvas_h());
-        return;
+        w = ws_canvas_w();
+        h = ws_canvas_h();
+    } else {
+        w = s_screen_width;
+        h = display_logical_height();
     }
-    SDL_RenderSetLogicalSize(renderer, s_screen_width, display_logical_height());
+
+    if (renderer != s_last_renderer || w != s_last_w || h != s_last_h) {
+        if (SDL_RenderSetLogicalSize(renderer, w, h) == 0) {
+            s_last_renderer = renderer;
+            s_last_w = w;
+            s_last_h = h;
+        }
+    }
 }
 
 /* Convert a Genesis CRAM value to ARGB8888.
@@ -1924,6 +1944,13 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_CreateTexture: %s\n", SDL_GetError());
         return 1;
     }
+    {
+        SDL_ScaleMode mode = SDL_ScaleModeNearest;
+        if (SDL_GetTextureScaleMode(texture, &mode) == 0)
+            s_frame_texture_filtered = mode != SDL_ScaleModeNearest;
+        else
+            s_frame_texture_filtered = 1;
+    }
     /* Created lazily at the exact peer-view dimensions. An isolated texture
      * prevents linear filtering from sampling across the stacked split edge. */
     SDL_Texture *peer_view_texture = NULL;
@@ -2148,8 +2175,6 @@ int main(int argc, char *argv[])
     uint32_t frame_num = 0;
     int      mode_prev = -1;     /* --hash-on-mode: last Game_Mode seen (-1 = none yet) */
     uint32_t mode_seq  = 0;      /* --hash-on-mode: transition sequence counter */
-    Uint32 frame_start = SDL_GetTicks();
-    const Uint32 frame_ms = 1000u / 60u;   /* ~16 ms at 60 Hz */
     Uint64 benchmark_start = benchmark_frames ? SDL_GetPerformanceCounter() : 0;
     double benchmark_cpu_start =
         benchmark_frames ? benchmark_process_cpu_seconds() : 0.0;
@@ -2650,9 +2675,13 @@ int main(int argc, char *argv[])
         update_render_logical_size(renderer);
         SDL_RenderClear(renderer);
 
-        /* Only show the active area the VDP reported. For opted-in split-screen
-         * netplay, select the local peer's stacked half at presentation time. */
+        /* Nearest-filtered presentation uploads only the active area the VDP
+         * reported. Linear filtering keeps the full upload so edge sampling
+         * after frame-size transitions never sees stale texture contents. */
         SDL_Rect src = { 0, 0, s_screen_width, s_screen_height };
+        SDL_Rect upload_rect = src;
+        const SDL_Rect *base_upload_rect =
+            s_frame_texture_filtered ? NULL : &upload_rect;
         SDL_Texture *frame_texture = texture;
         {
             static int peer_view_was_active = 0;
@@ -2684,7 +2713,7 @@ int main(int argc, char *argv[])
                     frame_texture = peer_view_texture;
                     src.y = 0;
                 } else {
-                    SDL_UpdateTexture(texture, NULL, present_src,
+                    SDL_UpdateTexture(texture, base_upload_rect, present_src,
                                       MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
                     src.y = peer_source_y;
                 }
@@ -2693,7 +2722,7 @@ int main(int argc, char *argv[])
                             slot, src.x, peer_source_y, src.w, src.h);
 #endif
             } else {
-                SDL_UpdateTexture(texture, NULL, present_src,
+                SDL_UpdateTexture(texture, base_upload_rect, present_src,
                                   MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
             }
             peer_view_was_active = peer_view_is_active;
@@ -2741,7 +2770,6 @@ int main(int argc, char *argv[])
                 s_next_frame = now;
             }
         }
-        frame_start = SDL_GetTicks();
     }
 
     if (max_frames)

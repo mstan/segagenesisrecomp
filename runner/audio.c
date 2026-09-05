@@ -74,7 +74,8 @@ static struct {
 } s_depth_ring[DEPTH_RING_SIZE];
 static uint32_t s_depth_head = 0;   /* next write slot */
 static uint32_t s_depth_count = 0;  /* total entries ever written */
-static uint64_t s_last_flush_pc = 0;
+static Uint64   s_last_flush_pc = 0;
+static Uint64   s_perf_freq = 0;
 
 #define EVT_RING_SIZE 256
 static AudioDeliveryEvent s_evt_ring[EVT_RING_SIZE];
@@ -157,6 +158,7 @@ int audio_init(int psg_sample_rate)
     s_bridge_ready   = 1;
     s_playback_enabled = 1;
     s_prev_underruns = 0;
+    s_perf_freq = SDL_GetPerformanceFrequency();
     s_stats.min_queued_bytes = UINT32_MAX;  /* low-water: nothing sampled yet */
 
     /* No manual silence prime: the bridge holds output muted until its ring
@@ -222,11 +224,11 @@ void audio_flush(uint32_t wall_frame, int realtime,
      * generated WAV stream can never show). The queued_bytes field now carries
      * ring fill in milliseconds. */
     if (realtime) {
-        uint64_t pc_now = SDL_GetPerformanceCounter();
+        Uint64 pc_now = SDL_GetPerformanceCounter();
         uint32_t dt_us = 0;
         if (s_last_flush_pc)
             dt_us = (uint32_t)((pc_now - s_last_flush_pc) * 1000000ull
-                               / SDL_GetPerformanceFrequency());
+                               / s_perf_freq);
         s_last_flush_pc = pc_now;
         rab_stats bst; rab_get_stats(&s_bridge, &bst);
         uint32_t fill_ms = (uint32_t)(rab_fill_ms(&s_bridge) + 0.5);

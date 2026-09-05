@@ -1,0 +1,34 @@
+Sonic 1 diagnostic timing inputs
+baseline_exe=F:\Projects\segagenesisrecomp\SonicTheHedgehogRecomp\build-codex-baseline\Release\SonicTheHedgehogRecomp.exe
+candidate_exe=F:\Projects\segagenesisrecomp\SonicTheHedgehogRecomp\build-codex-perf\Release\SonicTheHedgehogRecomp.exe
+sha256 B04634CD389C3B72B6ADC3040F92238585033AED80D3EEDC4ECE2390F90E2F86  F:\Projects\segagenesisrecomp\SonicTheHedgehogRecomp\build-codex-baseline\Release\SonicTheHedgehogRecomp.exe
+sha256 4318070DC50688467ACF45E4F1C0DE8685481650406635E0CF4B7FFACAAAB976  F:\Projects\segagenesisrecomp\SonicTheHedgehogRecomp\build-codex-perf\Release\SonicTheHedgehogRecomp.exe
+size 4558848  F:\Projects\segagenesisrecomp\SonicTheHedgehogRecomp\build-codex-baseline\Release\SonicTheHedgehogRecomp.exe
+size 4558848  F:\Projects\segagenesisrecomp\SonicTheHedgehogRecomp\build-codex-perf\Release\SonicTheHedgehogRecomp.exe
+candidate_build=Visual Studio 17 2022 x64 Release GEN_ENABLE_TRACE=OFF GENESIS_RECOMP_ROOT=F:/Projects/segagenesisrecomp/segagenesisrecomp
+baseline_build=Visual Studio 17 2022 x64 Release GEN_ENABLE_TRACE=OFF GENESIS_RECOMP_ROOT=F:/Projects/segagenesisrecomp/_wt_codex_diag_baseline
+baseline_framework_head=997bd1f1c754f38dd598318661b2a52553d33cc0
+baseline_pe_text_virtual=0x3E333F
+candidate_pe_text_virtual=0x3E332F
+pe_text_virtual_delta=-16
+baseline_pe_text_raw=0x3E3400
+candidate_pe_text_raw=0x3E3400
+pe_text_raw_delta=0
+baseline_pe_data_virtual=0xEECCC8
+candidate_pe_data_virtual=0xEECCE8
+pe_data_virtual_delta=+32
+baseline_pe_data_raw=0x2200
+candidate_pe_data_raw=0x2200
+pe_data_raw_delta=0
+baseline_pe_rdata_virtual=0x5DCF0
+candidate_pe_rdata_virtual=0x5DCEA
+pe_rdata_virtual_delta=-6
+baseline_pe_rdata_raw=0x5DE00
+candidate_pe_rdata_raw=0x5DE00
+pe_rdata_raw_delta=0
+calibration_cpu11=scratch/perf_reports/diag_calibration_sonic1_native_6000_cpu11.txt unstable spread 8.316pp
+calibration_cpu15=scratch/perf_reports/diag_calibration_sonic1_native_6000_cpu15.txt unstable spread 7.350pp
+candidate_timing=not run because same-binary calibration failed twice
+final_cross_state=PASS build/runtime-validation/sonic1-cross-state-final2/summary.txt
+strict_cross_state=PASS build/runtime-validation/sonic1-cross-state-strict3 zero true/raw misses; no JSR stack errors; candidate interpreter calls 18503
+beads_tracking=active beads-3vb.3; framework integration pending at report capture

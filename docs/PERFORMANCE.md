@@ -540,6 +540,94 @@ A 6,000-frame Sonic 2 audio-enabled capture produced byte-identical
 89,568,044-byte WAV files on control and candidate
 (`BFC0D131189FF4A10B91E739385BE11E86256EE479675771E20F653BD5157431`).
 
+### September 2026 presentation and diagnostic pass
+
+This pass reopened normal runtime overhead that the finite `--benchmark` path
+does not time: presentation, audio delivery bookkeeping, and miscellaneous
+host diagnostics. The baseline framework source for the Sonic 1 comparison was
+an isolated detached worktree at
+`997bd1f1c754f38dd598318661b2a52553d33cc0`, built with Visual Studio 17 2022
+x64, Release, `GEN_ENABLE_TRACE=OFF`, and the same Sonic 1 ROM/config inputs as
+the candidate. The candidate build used the patched canonical framework checkout
+with the same compiler and flags.
+
+Retained source changes from the diagnostic side of the pass are deliberately
+small:
+
+- Cache `SDL_RenderSetLogicalSize` inputs and only remember the new logical size
+  after SDL reports success, so transient failures retry on the next frame.
+- Remove dead `SDL_GetTicks` frame bookkeeping that was written but never read.
+- Cache `SDL_GetPerformanceFrequency` after successful audio initialization and
+  reuse it for audio-delivery `dt_us` ring entries.
+- Upload only the active VDP rectangle for the frame texture when the actual SDL
+  texture scale mode is nearest. A normal 320x224 frame uploads 286,720 bytes
+  instead of the 512x480 backing texture's 983,040 bytes, a 696,320-byte
+  reduction per presented frame (**70.833% fewer bytes**) on that path.
+
+The active-rectangle transfer is intentionally nearest-only. Validation with
+`tests/runtime/sdl_texture_rect_test.c` reproduced stale right/bottom edge
+texels on the Direct3D renderer when raw active-rectangle uploads were combined
+with linear filtering after a shrink. The runner therefore tracks the actual
+SDL texture scale mode: it initializes the cache from `SDL_GetTextureScaleMode`,
+falls back to "filtered" if that query fails, and updates the cache only after a
+successful `SDL_SetTextureScaleMode`. Any filtered/non-nearest mode keeps the
+full texture upload. The synthetic SDL upload timing sanity check reported
+20,000 320x224 updates at 0.0755 s for active-rectangle upload versus 0.7769 s
+for full upload, but that is an isolated transfer test, not a whole-game speedup
+claim.
+
+The Sonic 1 same-binary calibration failed before any baseline-vs-candidate
+timing was accepted:
+
+- CPU 11, baseline vs the same baseline, 6,000 frames: phantom deltas
+  **+0.278%** and **+8.594%**, spread **8.316 percentage points**.
+- CPU 15, baseline vs the same baseline, 6,000 frames: phantom deltas
+  **+12.839%** and **+5.489%**, spread **7.350 percentage points**.
+
+Both calibration runs preserved the expected benchmark fingerprints
+(`state_fnv1a64=B73909CF3B280638`,
+`audio_state_fnv1a64=5F095FF7D29387A5`), so they are evidence of host timing
+noise rather than state divergence. Raw logs and executable hashes are under
+`scratch/perf_reports/`. Because the calibration gate failed twice, no
+end-to-end speedup is accepted from the finite benchmark, and no original Xbox
+hardware validation has been performed locally.
+
+A duplicated native renderer fastpath was rejected from retention. The
+replacement structural renderer keeps one compositor path: it pre-fills pillar
+bars, renders only the authentic+widescreen content columns, and preserves the
+asymmetric right bar case. The VDP renderer differential harness in
+`tests/runtime/` passed for this shape. In the MinGW `-O2 -DNDEBUG` harness,
+the VDP object `.text` fell from 8,080 to 7,320 bytes (-760),
+`gvdp_render_scanline` fell from 4,752 to 4,048 bytes (-704), and BSS stayed
+396,384 bytes. In the final MSVC Sonic 1 Release build, total executable size
+stayed 4,558,848 bytes; `.text` virtual size moved from `0x3E333F` to
+`0x3E332F` (-16 bytes), `.text` raw size stayed `0x3E3400`, `.data` virtual
+grew by 32 bytes with raw size unchanged, and `.rdata` virtual shrank by 6
+bytes with raw size unchanged.
+
+Final Sonic 1 cross-state validation passed with
+`tests/runtime/run_sonic1_cross_state.py`; the retained summary is
+`build/runtime-validation/sonic1-cross-state-final2/summary.txt`. The matrix
+created baseline and candidate save states, loaded each save state in both
+executables, and then repeated the candidate-on-baseline load with linear
+filtering and with `linear_filter = 0` plus `SDL_RENDER_SCALE_QUALITY=1`. All
+main runs ended `PASS` with matching final RAM (`149d63...e87a`) and screenshot
+(`fc63b3...6420`) hashes; the Green Hill screenshot was also visually reviewed.
+A strict `GENESIS_STRICT_JSR_STACK=1` bidirectional pair also passed from
+`build/runtime-validation/sonic1-cross-state-strict3`: candidate loading the
+baseline save and baseline loading the candidate save both exited successfully,
+matched post-input RAM and screenshots, reported zero true/raw dispatch misses,
+and reported no JSR stack errors. The candidate strict run used 18,503
+interpreter calls. These are desktop validation results; no original Xbox
+hardware validation was available locally. The SDL texture-rectangle and VDP
+renderer harness commands are documented in `tests/runtime/README.md`.
+
+Manual desktop review also passed on the current canonical-framework Release
+builds for Sonic 1, Sonic 2, Sonic 3 & Knuckles, and Rocket Knight Adventures:
+the user verified recomp-ui launch, gameplay visuals, and audio for all four.
+This is a visual/audio acceptance check, not an original Xbox performance
+measurement.
+
 ## Final burndown closure
 
 The remaining families were closed from measured ceilings and static census
