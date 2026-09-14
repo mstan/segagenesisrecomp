@@ -21,6 +21,7 @@
 #include "game_spec.h"
 #include "genesis_runtime.h"
 #include "sonic_extras.h"
+#include "sonic2_video.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -47,7 +48,7 @@ extern void func_000408(void);   /* VBlank IRQ6   ($000408) */
 extern void func_000F54(void);   /* HBlank IRQ4   ($000F54) */
 
 static void s2_call_entry_point(void) { recomp_call_addr(0x000206u); }
-static void s2_call_vblank(void)      { recomp_call_addr(0x000408u); }
+static void s2_call_vblank(void)      { s2_video_vblank(); recomp_call_addr(0x000408u); }
 static void s2_call_hblank(void)      { recomp_call_addr(0x000F54u); }
 
 /* Mode-aware save-state resume (s2disasm s2.asm: GameModeID_Demo $08 /
@@ -224,11 +225,15 @@ static void sonic2_cmd_object_table(int id, const char *json)
 }
 
 static const GameDebugCommand sonic2_commands[] = {
+    { "custom_video", s2_video_command },
     { "sonic_state",  sonic2_cmd_state },
     { "object_table", sonic2_cmd_object_table },
 };
 
 const GameSpec g_game_spec = {
+    .video                  = &sonic2_video,
+    .instruction_hook       = s2_video_hook,
+    .main_cpu_divisor       = s2_video_main_cpu_divisor,
     .display_name           = "Sonic the Hedgehog 2",
     .short_name             = "Sonic2",
 

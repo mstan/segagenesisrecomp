@@ -171,6 +171,12 @@ typedef struct GameSpec {
      * without configured sites incur no calls or behavior changes. */
     int       (*instruction_hook)(uint32_t pc);
 
+    /* Opt-in main-program CPU headroom, queried at each scheduler slice.
+     * NULL / <=1 = exact native timing. IRQ, DMA, raster and sound clocks
+     * stay native. A game must retain its real VBlank wait as the tick gate.
+     * Use only for enhanced simulation, never as a native accuracy fix. */
+    unsigned  (*main_cpu_divisor)(void);
+
     /* ---- Frame-record packing (debug ring buffer) ---- */
     /* Pack game-specific telemetry into the 256-byte tail of each
      * FrameRecord. Called from cmd_server_record_frame() once per

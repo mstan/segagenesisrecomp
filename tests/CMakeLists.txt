@@ -30,6 +30,12 @@ target_include_directories(sonic1_video_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog")
 add_test(NAME sonic1_video COMMAND sonic1_video_test)
 
+add_executable(sonic2_video_test runtime/sonic2_video_test.c)
+target_include_directories(sonic2_video_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../runner"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
+add_test(NAME sonic2_video COMMAND sonic2_video_test)
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
     add_executable(video_mod_test runtime/video_mod_test.c "${CMAKE_CURRENT_LIST_DIR}/../runner/app_config.c")
     # Exercise the real launcher model with the consumer's actual compile gate:
@@ -43,7 +49,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
         "${CMAKE_SOURCE_DIR}/recomp-ui/src/consoles/psx/memcard_format.c")
     target_compile_definitions(video_mod_test PRIVATE RECOMP_LAUNCHER=1
         RECOMP_UI_ENABLE_MODS=$<BOOL:${RECOMP_UI_ENABLE_MODS}>)
-    if(TARGET SonicTheHedgehogRecomp)
+    if(TARGET SonicTheHedgehogRecomp OR TARGET SonicTheHedgehog2Recomp)
         target_compile_definitions(video_mod_test PRIVATE EXPECT_CUSTOM_VIDEO_MODS=1)
     endif()
     target_include_directories(video_mod_test PRIVATE
@@ -55,6 +61,13 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
 endif()
 
 set(RECOMP_SRC "${CMAKE_CURRENT_LIST_DIR}/../recompiler/src")
+add_executable(main_cpu_clock_test runtime/main_cpu_clock_test.c)
+if(MSVC)
+    target_compile_options(main_cpu_clock_test PRIVATE /UNDEBUG)
+else()
+    target_compile_options(main_cpu_clock_test PRIVATE -UNDEBUG)
+endif()
+add_test(NAME main_cpu_clock COMMAND main_cpu_clock_test)
 
 function(genesisrecomp_configure_test TARGET)
     target_include_directories(${TARGET} PRIVATE "${RECOMP_SRC}")

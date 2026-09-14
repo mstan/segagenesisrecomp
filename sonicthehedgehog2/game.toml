@@ -49,6 +49,217 @@ discovery_files = [
 #   - player_object is $FFB000 (Object_RAM start), not $FFD000.
 #   - plc_pending is 0 (call_periodic is NULL on Sonic 2; gate isn't read).
 # ---------------------------------------------------------------------------
+# Opt-in custom renderer sites: canonical REV01 s2_canonical.lst.
+[[widescreen_site]]
+addr = 0x16F16 # ChkObjectVisible
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x16F3E # ChkPartiallyVisible
+kind = "game_hook"
+
+# 44 culls are CMP.W #$280,D0 after SUB.W (Camera_X_pos_coarse),D0;
+# original flags/deletion code still executes with a rebased D0.
+[[widescreen_site]]
+addr = 0xF7E8
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x10022
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x103F8
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x105C6
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x12276
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x12314
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x15D22
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x163E8
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1641C
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x16452
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x16484
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x16604
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x16712
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1671A
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x170D0
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x17AA4
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x17B84
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1F6C4
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1F6EC
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1FADA
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x20376
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x204E4
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x20506
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2051C
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x20BFC
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x20E58
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x20F5C
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x214E6
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x220DC
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x23F18
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x23F2A
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2615E
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x269E2
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x26C5A
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x27038
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2804E
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x28498
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x28508
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x286F4
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x28B52
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x28D54
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x294A6
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x294B8
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x295B4
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2A1D2
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2A716
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2C5DA
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2C5EC
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x36910
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x39198
+kind = "game_hook"
+
 [ram_layout]
 game_mode      = 0xFFF600   # Game_Mode
 vint_runcount  = 0xFFFE0C   # Vint_runcount (longword, +1 per VBla)

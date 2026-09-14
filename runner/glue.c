@@ -647,6 +647,11 @@ static int create_game_fiber(uint32_t resume_pc)
 }
 
 /* Scanline interleave state */
+#include "main_cpu_clock.h"
+static MainCpuClock s_main_cpu_clock;
+static unsigned s_main_cpu_divisor = 1;
+static uint32_t s_main_cpu_stalls;
+static int s_irq_in_progress = 0; /* also excludes interleaved IRQs from acceleration */
 static int32_t s_cycle_budget = 0;
 static int     s_game_yielded_vblank = 0;
 /* 68K cycles spent inside an interrupt handler (V-int/H-int), still owed to
@@ -713,6 +718,11 @@ void glue_run_game_chunk(cc_u32f cycles)
     }
 
     s_chunk_cycles = cycles;
+    unsigned divisor = g_game_spec.main_cpu_divisor ? g_game_spec.main_cpu_divisor() : 1;
+    if (!divisor) divisor = 1;
+    if (divisor != s_main_cpu_divisor) s_main_cpu_clock.remainder = 0;
+    s_main_cpu_divisor = divisor;
+    s_main_cpu_stalls = 0;
     s_cycle_budget = (int32_t)cycles;
     s_budget_cyc_seen = g_audio_cycle_counter;  /* drain from here (see check_cycle_budget) */
     s_interleave_active = 1;
@@ -741,6 +751,16 @@ static void check_cycle_budget(void)
 {
     if (s_interleave_active && !s_in_vblank_service) {
         uint32_t now = g_audio_cycle_counter;
+        if (s_main_cpu_divisor > 1 && !s_irq_in_progress && now > s_budget_cyc_seen) {
+            uint32_t elapsed = now - s_budget_cyc_seen;
+            uint32_t scaled = main_cpu_elapsed(&s_main_cpu_clock, elapsed,
+                                               s_main_cpu_stalls, s_main_cpu_divisor);
+            /* Normalize BEFORE the bus operation stamps sound writes. Merely
+             * enlarging the budget would send audio events into future frames. */
+            g_audio_cycle_counter -= elapsed - scaled;
+            now = g_audio_cycle_counter;
+        }
+        s_main_cpu_stalls = 0;
         if (now > s_budget_cyc_seen)
             s_cycle_budget -= (int32_t)(now - s_budget_cyc_seen);
         s_budget_cyc_seen = now;   /* also re-syncs after the per-frame reset */
@@ -768,6 +788,8 @@ static void check_cycle_budget(void)
 void glue_charge_68k_stall(uint32_t cycles)
 {
     g_audio_cycle_counter += cycles;
+    if (s_interleave_active && !s_in_vblank_service)
+        s_main_cpu_stalls += cycles;
 }
 
 /* Called from Clown68000_Interrupt during Iterate when VBlank/HBlank fires. */
@@ -796,7 +818,6 @@ static int s_own_vint_latched = 0;
  * main program already uses; matches hardware/clownmdemu. Default OFF. */
 static int s_interleave_irq  = -1;   /* -1 = unread env; 0/1 after */
 static int s_pending_irq     = 0;    /* level (4/6) flagged by scheduler, run by game fiber */
-static int s_irq_in_progress = 0;    /* an interleaved handler is running on the game fiber */
 static int interleave_irq_on(void) {
     if (s_interleave_irq < 0) {
         const char *e = getenv("GENESIS_INTERLEAVE_IRQ");
@@ -1456,6 +1477,8 @@ void glue_restart_game_fiber(uint32_t resume_pc)
 #endif
     s_interleave_active = 0;
     s_cycle_budget = 0;
+    s_main_cpu_divisor = 1;
+    s_main_cpu_clock.remainder = s_main_cpu_stalls = 0;
     s_chunk_cycles = 0;
     s_irq_cycle_debt = 0;
     s_irq_cycle_debt_level = 0;
