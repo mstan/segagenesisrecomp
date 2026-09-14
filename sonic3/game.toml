@@ -167,3 +167,240 @@ blacklist = [
 ]
 extra = [
 ]
+
+# Opt-in host renderer. Stock skdisasm 1e1b5af S3 cartridge verified byte-perfect.
+[[widescreen_site]]
+addr = 0x19CF2 # Reset placement lifetime
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x19DD0 # Opt-in object streaming
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1938E # Capture queued object mappings
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x194B8 # Publish completed SAT
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xF6D8 # Ring collision range
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xF6E2 # Ring status pointer
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x19018 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x19BF6 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x19C1A # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x19C42 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x19C6E # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x19CD0 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1C762 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1C85C # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1D146 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1D1AA # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1D20E # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1D2D4 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1D338 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1D39C # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x20384 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x20838 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2379C # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x23C88 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x25658 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x25672 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x25F32 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2AA0C # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2ADBE # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2B088 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2E27E # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x321F8 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x37E44 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x44414 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x4D1A6 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x524F4 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53710 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53742 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53774 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53788 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x537BC # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x537F4 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53814 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53834 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x5384E # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53882 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x538BE # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x538DC # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53908 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53928 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53942 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x53962 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x5397C # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x5399C # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x539B6 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x539D0 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x5400E # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x5A5B0 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x5A6A8 # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"

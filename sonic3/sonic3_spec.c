@@ -15,6 +15,7 @@
 #include "game_spec.h"
 #include "genesis_runtime.h"
 #include "sonic_extras.h"
+#include "../sonic3k/sonic3_video.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -42,7 +43,7 @@ extern void func_000F9E(void);  /* JmpTo_HInt   ($000F9E) */
 extern void func_000FA2(void);  /* HInt         ($000FA2) */
 
 static void s3_call_entry_point(void) { recomp_call_addr(0x000206u); }
-static void s3_call_vblank(void)      { recomp_call_addr(0x000802u); }
+static void s3_call_vblank(void)      { s3_video_vblank(); recomp_call_addr(0x000802u); }
 static void s3_call_hblank(void)      { recomp_call_addr(0x000F9Eu); }
 
 /* Mode-aware save-state resume (s3.asm, addresses from s3.lst org 0):
@@ -223,11 +224,15 @@ static void s3_cmd_object_table(int id, const char *json) {
 }
 
 static const GameDebugCommand s3_commands[] = {
+    { "custom_video", s3_video_command },
     { "sonic_state",  s3_cmd_state },
     { "object_table", s3_cmd_object_table },
 };
 
 const GameSpec g_game_spec = {
+    .video                  = &sonic3_video,
+    .instruction_hook       = s3_video_hook,
+    .main_cpu_divisor       = s3_video_main_cpu_divisor,
     .display_name           = "Sonic 3",
     .short_name             = "Sonic3",
     .boxart                 = "boxart-sonic3.tga",

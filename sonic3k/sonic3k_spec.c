@@ -12,6 +12,7 @@
 #include "game_spec.h"
 #include "genesis_runtime.h"
 #include "sonic_extras.h"
+#include "sonic3_video.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -39,7 +40,7 @@ extern void func_000D0C(void);  /* JmpTo_HInt   ($000D0C) */
 extern void func_000D10(void);  /* HInt         ($000D10) */
 
 static void s3k_call_entry_point(void) { recomp_call_addr(0x000206u); }
-static void s3k_call_vblank(void)      { recomp_call_addr(0x000584u); }
+static void s3k_call_vblank(void)      { s3_video_vblank(); recomp_call_addr(0x000584u); }
 static void s3k_call_hblank(void)      { recomp_call_addr(0x000D0Cu); }
 
 /* ---- 68K work-RAM accessors ---- */
@@ -200,11 +201,15 @@ static void s3k_cmd_object_table(int id, const char *json) {
 }
 
 static const GameDebugCommand s3k_commands[] = {
+    { "custom_video", s3_video_command },
     { "sonic_state",  s3k_cmd_state },
     { "object_table", s3k_cmd_object_table },
 };
 
 const GameSpec g_game_spec = {
+    .video                  = &sonic3_video,
+    .instruction_hook       = s3_video_hook,
+    .main_cpu_divisor       = s3_video_main_cpu_divisor,
     .display_name           = "Sonic 3 & Knuckles",
     .short_name             = "Sonic3K",
     .boxart                 = "boxart-sonic3k.tga",

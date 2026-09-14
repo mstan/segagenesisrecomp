@@ -36,6 +36,19 @@ target_include_directories(sonic2_video_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
 add_test(NAME sonic2_video COMMAND sonic2_video_test)
 
+add_executable(sonic3_video_test runtime/sonic3_video_test.c)
+target_include_directories(sonic3_video_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../runner"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
+add_test(NAME sonic3_video COMMAND sonic3_video_test)
+
+add_executable(sonic3_standalone_video_test runtime/sonic3_video_test.c)
+target_compile_definitions(sonic3_standalone_video_test PRIVATE SONIC3_STANDALONE=1)
+target_include_directories(sonic3_standalone_video_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../runner"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
+add_test(NAME sonic3_standalone_video COMMAND sonic3_standalone_video_test)
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
     add_executable(video_mod_test runtime/video_mod_test.c "${CMAKE_CURRENT_LIST_DIR}/../runner/app_config.c")
     # Exercise the real launcher model with the consumer's actual compile gate:
@@ -49,7 +62,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
         "${CMAKE_SOURCE_DIR}/recomp-ui/src/consoles/psx/memcard_format.c")
     target_compile_definitions(video_mod_test PRIVATE RECOMP_LAUNCHER=1
         RECOMP_UI_ENABLE_MODS=$<BOOL:${RECOMP_UI_ENABLE_MODS}>)
-    if(TARGET SonicTheHedgehogRecomp OR TARGET SonicTheHedgehog2Recomp)
+    if(TARGET SonicTheHedgehogRecomp OR TARGET SonicTheHedgehog2Recomp OR TARGET Sonic3KRecomp)
         target_compile_definitions(video_mod_test PRIVATE EXPECT_CUSTOM_VIDEO_MODS=1)
     endif()
     target_include_directories(video_mod_test PRIVATE

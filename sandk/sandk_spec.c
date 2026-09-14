@@ -18,6 +18,7 @@
 #include "game_spec.h"
 #include "genesis_runtime.h"
 #include "sonic_extras.h"
+#include "../sonic3k/sonic3_video.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -42,7 +43,7 @@ extern void func_000D0C(void);  /* JmpTo_HInt   ($000D0C) */
 extern void func_000D10(void);  /* HInt         ($000D10) */
 
 static void sandk_call_entry_point(void) { recomp_call_addr(0x000206u); }
-static void sandk_call_vblank(void)      { recomp_call_addr(0x000584u); }
+static void sandk_call_vblank(void)      { s3_video_vblank(); recomp_call_addr(0x000584u); }
 static void sandk_call_hblank(void)      { recomp_call_addr(0x000D0Cu); }
 
 /* Mode-aware save-state resume (sonic3k.lst, org 0):
@@ -218,11 +219,15 @@ static void sandk_cmd_object_table(int id, const char *json) {
 }
 
 static const GameDebugCommand sandk_commands[] = {
+    { "custom_video", s3_video_command },
     { "sonic_state",  sandk_cmd_state },
     { "object_table", sandk_cmd_object_table },
 };
 
 const GameSpec g_game_spec = {
+    .video                  = &sonic3_video,
+    .instruction_hook       = s3_video_hook,
+    .main_cpu_divisor       = s3_video_main_cpu_divisor,
     .display_name           = "Sonic & Knuckles",
     .short_name             = "SonicK",
     .boxart                 = "boxart-sonick.tga",
