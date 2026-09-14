@@ -49,6 +49,13 @@ target_include_directories(sonic3_standalone_video_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
 add_test(NAME sonic3_standalone_video COMMAND sonic3_standalone_video_test)
 
+# Blue Spheres' projection uses the C math library. Unlike the Windows
+# CRT, Unix toolchains require this dependency explicitly at link time.
+if(UNIX)
+    target_link_libraries(sonic3_video_test PRIVATE m)
+    target_link_libraries(sonic3_standalone_video_test PRIVATE m)
+endif()
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
     add_executable(video_mod_test runtime/video_mod_test.c "${CMAKE_CURRENT_LIST_DIR}/../runner/app_config.c")
     # Exercise the real launcher model with the consumer's actual compile gate:
