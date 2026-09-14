@@ -2141,6 +2141,13 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         handle_load_state(id, json);
     } else if (strcmp(cmd, "screenshot") == 0) {
         handle_screenshot(id, json);
+    } else if (strcmp(cmd, "video_configure") == 0) {
+        extern int runner_custom_video_set(const char *, int, int);
+        char mode[64] = {0};
+        json_get_str(json, "mode", mode, sizeof(mode));
+        if (runner_custom_video_set(mode, json_get_int(json, "window_width", 0),
+                                    json_get_int(json, "window_height", 0))) send_ok(id);
+        else send_err(id, "invalid custom video mode or window dimensions");
     } else if (strcmp(cmd, "ws_set") == 0) {
         /* Arm/disarm the user widescreen request at runtime (engine state
          * only, same effect as the runtime-overlay view toggle). Lets probes

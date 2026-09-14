@@ -3,6 +3,7 @@
  */
 #include "app_config.h"
 #include "input_map.h"
+#include "game_video.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +18,8 @@ void app_config_defaults(void)
     g_app_config.linear_filter    = 0;
     g_app_config.widescreen       = 0;
     g_app_config.widescreen_cells = 8;
+    g_app_config.custom_widescreen = 0;
+    g_app_config.custom_aspect = 0;
     g_app_config.volume           = 100;
     g_app_config.skip_launcher    = 0;
 }
@@ -87,6 +90,7 @@ int app_config_load(const char *path)
             if      (!strcmp(name, "video"))    section = 0;
             else if (!strcmp(name, "audio"))    section = 1;
             else if (!strcmp(name, "launcher")) section = 2;
+            else if (!strcmp(name, "mods.widescreen")) section = 3;
             else if (!strcmp(name, "input.p1")) section = 10;
             else if (!strcmp(name, "input.p2")) section = 11;
             else section = -1;
@@ -113,6 +117,12 @@ int app_config_load(const char *path)
             if (!strcmp(key, "volume")) g_app_config.volume = atoi(val);
         } else if (section == 2) {
             if (!strcmp(key, "skip_launcher")) g_app_config.skip_launcher = atoi(val);
+        } else if (section == 3) {
+            if (!strcmp(key, "enabled")) g_app_config.custom_widescreen = atoi(val)==1;
+            else if (!strcmp(key, "aspect")) {
+                int aspect=app_config_aspect_index(val);
+                g_app_config.custom_aspect=aspect<0?0:aspect;
+            }
         } else if (section == 10 || section == 11) {
             PlayerInput *pi = &g_input_map.p[section == 10 ? 0 : 1];
             if      (!strcmp(key, "device"))   pi->device       = atoi(val);
@@ -167,13 +177,121 @@ int app_config_save(const char *path)
     fprintf(f, "volume = %d\n\n",         g_app_config.volume);
     fprintf(f, "[launcher]\n");
     fprintf(f, "skip_launcher = %d\n\n",  g_app_config.skip_launcher);
+    fprintf(f, "[mods.widescreen]\nenabled = %d\naspect = %s\n\n",
+            g_app_config.custom_widescreen, app_config_aspect_mode(g_app_config.custom_aspect));
 
     write_player(f, 0);
     write_player(f, 1);
 
-    fclose(f);
-    return 1;
+    int ok=!ferror(f);
+    if(fclose(f)!=0)ok=0;
+    return ok;
 }
+
+static const char *const custom_aspects[]={"fit","16:9","21:9","32:9"};
+const char *app_config_aspect_mode(int aspect)
+{
+    return custom_aspects[aspect>=0 && aspect<4?aspect:0];
+}
+int app_config_aspect_index(const char *mode)
+{
+    if(!mode)return -1;
+    if(!strcmp(mode,"adaptive"))return 0;
+    for(int i=0;i<4;++i)if(!strcmp(mode,custom_aspects[i]))return i;
+    return -1;
+}
+void app_config_apply_video(const GameVideo *video)
+{
+    if(video)video->configure(g_app_config.custom_widescreen?
+        app_config_aspect_mode(g_app_config.custom_aspect):"off");
+}
+
+#if RECOMP_LAUNCHER
+#include "recomp_launcher.h"
+/* Same built-in feature-provider contract as Super Metroid/F-Zero. It is
+ * offered only when the game supplies a custom renderer; no external archive
+ * or game-specific addresses belong in the shared settings bridge. */
+static char s_mod_settings[600],s_mod_error[128];
+static int video_mod_identity(const char *package,const char *feature)
+{
+    return package && feature && !strcmp(package,"custom-widescreen") && !strcmp(feature,"widescreen");
+}
+static int video_mod_count(void *ctx) { (void)ctx;return 1; }
+#define MOD_COPY(dst,src) snprintf(dst,sizeof(dst),"%s",src)
+static int video_mod_package(void *ctx,int i,RecompLauncherCModPackage *out)
+{
+    (void)ctx;if(!out || i!=0)return 0;
+    memset(out,0,sizeof(*out));
+    MOD_COPY(out->id,"custom-widescreen");MOD_COPY(out->name,"Widescreen");MOD_COPY(out->version,"1");
+    MOD_COPY(out->author,"GenesisRecomp contributors");
+    MOD_COPY(out->description,"Opt-in custom scene renderer with expanded scenery, objects and screen-anchored HUD.");
+    MOD_COPY(out->license,"PolyForm Noncommercial 1.0.0");
+    out->enabled=g_app_config.custom_widescreen;out->option_count=1;return 1;
+}
+static int video_mod_feature(void *ctx,int i,RecompLauncherCModFeature *out)
+{
+    (void)ctx;if(!out || i!=0)return 0;
+    memset(out,0,sizeof(*out));
+    MOD_COPY(out->id,"widescreen");MOD_COPY(out->package_id,"custom-widescreen");
+    MOD_COPY(out->package_name,"Widescreen");MOD_COPY(out->package_version,"1");
+    MOD_COPY(out->name,"Widescreen");MOD_COPY(out->group,"Presentation");
+    MOD_COPY(out->author,"GenesisRecomp contributors");
+    MOD_COPY(out->description,"Use the custom scene renderer. Adaptive follows the entire window without a 32:9 cap. Disabled restores native rendering.");
+    out->enabled=g_app_config.custom_widescreen;out->option_count=1;
+    MOD_COPY(out->status,out->enabled?"Enabled (experimental)":"Disabled (native renderer)");return 1;
+}
+static int video_mod_option(void *ctx,const char *package,const char *feature,int i,RecompLauncherCModOption *out)
+{
+    (void)ctx;if(!out || i!=0 || !video_mod_identity(package,feature))return 0;
+    memset(out,0,sizeof(*out));out->type=RECOMP_MOD_OPTION_CHOICE;out->step=1;out->choice_count=4;
+    MOD_COPY(out->id,"aspect");MOD_COPY(out->label,"Aspect ratio");
+    MOD_COPY(out->description,"Fixed 16:9, 21:9, 32:9, or Adaptive to fit the window. Pixels are not stretched.");
+    MOD_COPY(out->value,app_config_aspect_mode(g_app_config.custom_aspect));MOD_COPY(out->default_value,"fit");return 1;
+}
+static int video_mod_choice(void *ctx,const char *package,const char *feature,const char *option,int i,RecompLauncherCModChoice *out)
+{
+    (void)ctx;if(!out || !option || strcmp(option,"aspect") || i<0 || i>=4 || !video_mod_identity(package,feature))return 0;
+    memset(out,0,sizeof(*out));MOD_COPY(out->value,custom_aspects[i]);
+    MOD_COPY(out->label,i?custom_aspects[i]:"Adaptive (fit window)");return 1;
+}
+static int video_mod_enable(void *ctx,const char *package,const char *feature,int on)
+{
+    (void)ctx;if(!video_mod_identity(package,feature))return 0;
+    g_app_config.custom_widescreen=on!=0;return 1;
+}
+static int video_mod_set(void *ctx,const char *package,const char *feature,const char *option,const char *value)
+{
+    (void)ctx;int aspect=app_config_aspect_index(value);
+    if(!video_mod_identity(package,feature) || !option || strcmp(option,"aspect") || aspect<0)return 0;
+    g_app_config.custom_aspect=aspect;return 1;
+}
+static int video_mod_commit(void *ctx,const char *image)
+{
+    (void)ctx;(void)image;s_mod_error[0]=0;
+    /* Keep any controller rebindings the launcher already persisted. */
+    int on=g_app_config.custom_widescreen,aspect=g_app_config.custom_aspect;
+    app_config_load(s_mod_settings);
+    g_app_config.custom_widescreen=on;g_app_config.custom_aspect=aspect;
+    if(app_config_save(s_mod_settings))return 1;
+    MOD_COPY(s_mod_error,"Unable to save widescreen settings.ini");return 0;
+}
+static const char *video_mod_error(void *ctx) { (void)ctx;return s_mod_error; }
+const RecompLauncherCModProvider *app_config_video_mods(const GameVideo *video,const char *path)
+{
+    static RecompLauncherCModProvider provider;
+    if(!video)return NULL;
+    snprintf(s_mod_settings,sizeof s_mod_settings,"%s",path?path:"");s_mod_error[0]=0;
+    memset(&provider,0,sizeof provider);
+    provider.package_count=video_mod_count;provider.package_get=video_mod_package;
+    provider.feature_count=video_mod_count;provider.feature_get=video_mod_feature;
+    provider.feature_option_get=video_mod_option;provider.feature_choice_get=video_mod_choice;
+    provider.feature_enable=video_mod_enable;provider.feature_set_option=video_mod_set;
+    provider.commit=video_mod_commit;provider.last_error=video_mod_error;
+    provider.archive_extension=".genmod";provider.archive_description="GenesisRecomp mod package";
+    return &provider;
+}
+#undef MOD_COPY
+#endif
 
 /* ---- rom.cfg ------------------------------------------------------------- */
 

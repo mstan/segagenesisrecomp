@@ -55,6 +55,9 @@ bool cmd_server_is_paused(void);
 /* Cleanup sockets. */
 void cmd_server_shutdown(void);
 
+/* GameSpec command handlers send one complete JSON response. */
+void cmd_send_response(const char *json);
+
 /* ---- Shared accessors for in-tree tracers ---- */
 /* Wall-frame counter (incremented by cmd_server_record_frame). */
 uint32_t cmd_server_current_frame(void);

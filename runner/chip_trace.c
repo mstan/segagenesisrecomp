@@ -7,6 +7,8 @@
  */
 #include "chip_trace.h"
 #include <stdio.h>
+#include "genesis_runtime.h"
+#include "reverse_debug.h"
 
 /* Stamp globals stay in all builds — plain scalar assignments on the write
  * path, used by the (gated) rings and harmless otherwise. */
@@ -34,7 +36,11 @@ void chip_trace_dump(const char *path)
  * not the one-time init blast. Must match genesis_machine.c's gate. */
 #define SND_TRACE_START_FRAME 90u
 
-typedef struct { uint32_t frame, wall, mc; uint16_t line, pcz; uint8_t kind, port, val, pad; } ChipEvt;
+typedef struct {
+    uint32_t frame, wall, mc, m68k_func, a5, a6, d6;
+    uint16_t line, pcz;
+    uint8_t kind, port, val, pad;
+} ChipEvt;
 #define CHIP_RING_N 262144u          /* ~16 s of history at peak DAC rate */
 static ChipEvt   g_chip_ring[CHIP_RING_N];
 static unsigned  g_chip_head = 0;
@@ -49,6 +55,14 @@ void snd_trace_chip(int kind, uint8_t port, uint8_t val)
     e->wall  = (uint32_t)g_snd_frame;
     e->mc    = (uint32_t)g_snd_mc;
     e->pcz   = (uint16_t)g_snd_pcz;
+    /* Capture the issuing CPU context now, before the mixer drains the
+     * queue and another CPU can replace the attribution globals. */
+#if SONIC_REVERSE_DEBUG
+    e->m68k_func = g_snd_pcz == 0xFFFFu ? g_rdb_current_func : 0;
+#else
+    e->m68k_func = 0;
+#endif
+    e->a5 = g_cpu.A[5]; e->a6 = g_cpu.A[6]; e->d6 = g_cpu.D[6];
     e->kind  = (uint8_t)kind; e->port = port; e->val = val; e->pad = 0;
 }
 
@@ -62,11 +76,13 @@ void chip_trace_dump(const char *path)
         /* mc=/wf=/pcz= go LAST so the existing parsers (chip_stream_diff.py
          * FM_RE, synth_replay sscanf) keep matching their prefix. */
         if (e->kind == CHIP_FM)
-            fprintf(f, "f=%u sl=%u FM  p%u $%02X mc=%u wf=%u pcz=$%04X\n",
+            fprintf(f, "f=%u sl=%u FM  p%u $%02X mc=%u wf=%u pcz=$%04X",
                     e->frame, e->line, e->port, e->val, e->mc, e->wall, e->pcz);
         else
-            fprintf(f, "f=%u sl=%u PSG $%02X mc=%u wf=%u pcz=$%04X\n",
+            fprintf(f, "f=%u sl=%u PSG $%02X mc=%u wf=%u pcz=$%04X",
                     e->frame, e->line, e->val, e->mc, e->wall, e->pcz);
+        fprintf(f, " pc68k=$%06X a5=$%08X a6=$%08X d6=$%08X\n",
+                e->m68k_func, e->a5, e->a6, e->d6);
     }
     fclose(f);
     fprintf(stderr, "[CHIP] dumped %u events to %s\n", n, path);

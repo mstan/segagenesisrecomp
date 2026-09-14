@@ -22,6 +22,38 @@ endif()
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
 
+add_executable(sonic1_video_test runtime/sonic1_video_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog/sonic1_video.c")
+target_include_directories(sonic1_video_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../runner"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/include"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog")
+add_test(NAME sonic1_video COMMAND sonic1_video_test)
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
+    add_executable(video_mod_test runtime/video_mod_test.c "${CMAKE_CURRENT_LIST_DIR}/../runner/app_config.c")
+    # Exercise the real launcher model with the consumer's actual compile gate:
+    # a working provider alone does not guarantee the Mods entry is visible.
+    target_sources(video_mod_test PRIVATE
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/launcher_model.c"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/crc32.c"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/sha256.c"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/sha1.c"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/ips_patch.c"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/consoles/psx/memcard_format.c")
+    target_compile_definitions(video_mod_test PRIVATE RECOMP_LAUNCHER=1
+        RECOMP_UI_ENABLE_MODS=$<BOOL:${RECOMP_UI_ENABLE_MODS}>)
+    if(TARGET SonicTheHedgehogRecomp)
+        target_compile_definitions(video_mod_test PRIVATE EXPECT_CUSTOM_VIDEO_MODS=1)
+    endif()
+    target_include_directories(video_mod_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/external/clowncommon"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src")
+    add_test(NAME video_mod COMMAND video_mod_test "${CMAKE_CURRENT_BINARY_DIR}/video-mod-test.ini")
+endif()
+
 set(RECOMP_SRC "${CMAKE_CURRENT_LIST_DIR}/../recompiler/src")
 
 function(genesisrecomp_configure_test TARGET)

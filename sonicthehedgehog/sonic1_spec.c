@@ -8,6 +8,7 @@
  */
 #include "game_spec.h"
 #include "genesis_runtime.h"
+#include "sonic1_video.h"
 
 #include <stdint.h>
 #ifdef GENESIS_Z80_RECOMP
@@ -87,6 +88,7 @@ static void cmd_object_table(int id, const char *json) {
 }
 
 static const GameDebugCommand s1_commands[] = {
+    { "custom_video", s1_video_command },
     { "sonic_state",  cmd_sonic_state  },
     { "object_table", cmd_object_table },
 };
@@ -94,6 +96,7 @@ static const GameDebugCommand s1_commands[] = {
 /* ---- The spec ---- */
 
 const GameSpec g_game_spec = {
+    .video                  = &sonic1_video,
     .display_name           = "Sonic the Hedgehog",
     .short_name             = "Sonic1",
 
@@ -120,6 +123,7 @@ const GameSpec g_game_spec = {
     .handle_arg             = NULL,
     .arg_usage              = NULL,
     .dispatch_override      = NULL,
+    .instruction_hook       = s1_video_hook,
 
     .fill_frame_record      = s1_fill_frame_record,
     .frame_record_version   = 2,                /* SONIC_GAME_DATA_VERSION */

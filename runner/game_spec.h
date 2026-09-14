@@ -23,6 +23,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "game_video.h"
 
 /*
  * One per-game TCP debug command. The handler receives the request id
@@ -35,6 +36,7 @@ typedef struct {
 } GameDebugCommand;
 
 typedef struct GameSpec {
+    const GameVideo *video;          /* NULL = native VDP presentation only */
     /* ---- Identity ---- */
     const char *display_name;        /* "Sonic the Hedgehog" — window title */
     const char *short_name;          /* "Sonic1" — shows up in info / ping */
@@ -162,6 +164,12 @@ typedef struct GameSpec {
      * if the game handled it, 0 to fall through to the dispatch-miss
      * log. NULL = always fall through. */
     int       (*dispatch_override)(uint32_t addr);
+
+    /* Opt-in, audited pre-instruction sites from game.toml. Returning 0
+     * continues normal generated code; returning 1 replaces this routine.
+     * A replacing hook owns the routine's register/stack contract. Games
+     * without configured sites incur no calls or behavior changes. */
+    int       (*instruction_hook)(uint32_t pc);
 
     /* ---- Frame-record packing (debug ring buffer) ---- */
     /* Pack game-specific telemetry into the 256-byte tail of each

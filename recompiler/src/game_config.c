@@ -538,9 +538,10 @@ bool game_config_load(GameConfig *cfg, const char *path) {
                 else if (strcmp(kindstr, "call_widen") == 0) kind = WS_SITE_CALL_WIDEN;
                 else if (strcmp(kindstr, "cull_window_left") == 0) kind = WS_SITE_CULL_WINDOW_LEFT;
                 else if (strcmp(kindstr, "addmem") == 0)    kind = WS_SITE_ADDMEM;
+                else if (strcmp(kindstr, "game_hook") == 0) kind = WS_SITE_GAME_HOOK;
                 else {
                     fprintf(stderr, "[GameConfig] [[widescreen_site]] #%d: unknown kind '%s' "
-                            "(expected mask10|addreg|subreg|cull_left|addimm|subimm|call_widen|cull_window_left|addmem) — skipped\n",
+                            "(expected mask10|addreg|subreg|cull_left|addimm|subimm|call_widen|cull_window_left|addmem|game_hook) — skipped\n",
                             i, kindstr);
                     continue;
                 }

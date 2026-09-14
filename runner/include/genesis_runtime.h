@@ -158,9 +158,10 @@ extern int g_dbg_b5e_count;   /* incremented at start of func_000B5E */
 extern int g_dbg_b88_count;   /* incremented at start of func_000B88 */
 
 /* ---- RTE propagation ---- */
-/* Set to 1 by RTE; checked after every call_by_address / JSR to propagate
- * the exception-return back up the C call chain.  Cleared by the VBlank
- * service routine after the handler chain completes. */
+/* Set to 1 by RTE, or to the number of discarded return slots by a
+ * stack-skipping RTS. Each generated JSR/BSR caller consumes one level
+ * before returning; tail dispatch preserves the count. Cleared by the
+ * VBlank service routine after the handler chain completes. */
 /* g_rte_pending is accessed via a pointer so the runner can redirect it
  * to a dummy variable during VBlank service, suppressing RTE propagation
  * inside the interrupt handler chain.  The handler's MOVEM + RTE stack
@@ -179,9 +180,12 @@ extern int g_split_sp_popped;
 /* 68K code uses "addq.l #4,sp" to discard a return address, then "rts" to
  * return to the caller's caller (skipping the rest of the current routine).
  * In C, "return" always goes to the immediate caller.  g_early_return counts
- * how many extra return levels to propagate.  At RTS, if > 0, it decrements
- * and sets g_rte_pending so the caller's post-JSR check triggers a return. */
+ * how many extra return levels to propagate (legacy symbol). Generated
+ * stack-skip accounting now transfers the full count to g_rte_pending. */
 extern int g_early_return;
+
+/* Sparse game-owned pre-instruction extension (only configured PCs call it). */
+int genesis_game_instruction_hook(uint32_t pc);
 
 /* ---- Frame counter ---- */
 extern uint64_t g_frame_count;

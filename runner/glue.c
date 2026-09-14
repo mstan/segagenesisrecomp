@@ -42,6 +42,11 @@
 #include "game_layout.h"
 #include "game_spec.h"
 
+int genesis_game_instruction_hook(uint32_t pc)
+{
+    return g_game_spec.instruction_hook ? g_game_spec.instruction_hook(pc) : 0;
+}
+
 void recomp_push_return(uint32_t ret_addr)
 {
     if (g_game_layout.initial_ssp && g_cpu.A[7] > g_game_layout.initial_ssp)

@@ -102,13 +102,13 @@ void audio_event_push(uint32_t cycle_stamp, uint8_t port, uint8_t value)
         }
         if (s_wd) {
             if (port == AUDIO_PORT_PSG)
-                fprintf(s_wd, "f=%lu sl=%u PSG $%02X mc=%lu wf=%lu\n",
+                fprintf(s_wd, "f=%lu sl=%u PSG $%02X mc=%lu wf=%lu pcz=$%04X\n",
                         g_snd_frame, (unsigned)(cycle_stamp/3420u), value,
-                        (unsigned long)cycle_stamp, g_snd_frame);
+                        (unsigned long)cycle_stamp, g_snd_frame, g_snd_pcz);
             else
-                fprintf(s_wd, "f=%lu sl=%u FM  p%u $%02X mc=%lu wf=%lu\n",
+                fprintf(s_wd, "f=%lu sl=%u FM  p%u $%02X mc=%lu wf=%lu pcz=$%04X\n",
                         g_snd_frame, (unsigned)(cycle_stamp/3420u), port, value,
-                        (unsigned long)cycle_stamp, g_snd_frame);
+                        (unsigned long)cycle_stamp, g_snd_frame, g_snd_pcz);
         }
     }
 

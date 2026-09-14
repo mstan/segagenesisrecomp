@@ -1,5 +1,29 @@
 # Genesis Audio Fidelity Scorecard — 2026-07-05
 
+## September 13, 2026: Sonic 1 jump-tail correction
+
+The historical scores below do not establish that the jump-tail boop was fixed.
+A new source-attributed trace identifies a concrete control-flow defect: the
+jump PSG1 SFX track (A5=$FFF2B0) writes `$8F $0E $90` at full volume 26 ticks
+after the jump begins, after its stop command. This is not the waterfall.
+
+`cfStopTrack` at $072D58 ends through $072E02 (`addq.w #8,sp; rts`), discarding
+two return slots. Codegen collapsed the unwind count to a boolean and skipped
+only one caller. `PSGUpdateTrack` consequently resumed note/volume processing
+for the stopped track. The Genesis generator now propagates the full count and
+consumes one per real JSR/BSR caller; tail-dispatch edges preserve it. No generated
+C or sound data was hand-patched.
+
+In matched 2,300-frame jump captures, all seven actual jumps restarted that
+unwanted tone before the correction; none did afterward. Both runs had zero
+dispatch misses. `tests/runtime/check_sonic1_jump.py` checks that write signature.
+`tests/tools/test_stack_skip.py` executes real generated C for 0/1/2 discarded
+return slots, both direct and split-tail cases; all six pass. Source attribution
+was added to the existing opt-in chip ring and write dump, not hot-path printing.
+Owner listening confirmation remains separate from these automated checks.
+
+## Historical July measurement
+
 Replication of the snesrecomp audio exercise (SNES_ACCURACY_BURNDOWN Axis 5 +
 issue-#4 sample-drop hunt + snes-cosim audio verdict) on segagenesisrecomp.
 Everything here is measured on **clean engine `master` (1dc6efe)** builds made

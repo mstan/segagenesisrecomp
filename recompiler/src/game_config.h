@@ -122,6 +122,7 @@ typedef enum {
     WS_SITE_CALL_WIDEN = 6,
     WS_SITE_CULL_WINDOW_LEFT = 7,
     WS_SITE_ADDMEM = 8,
+    WS_SITE_GAME_HOOK = 9, /* audited game-owned pre-instruction callback */
 } WsSiteKind;
 
 typedef struct {

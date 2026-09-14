@@ -24,6 +24,9 @@ typedef struct AppConfig {
     int linear_filter;      /* 0 nearest, 1 bilinear */
     int widescreen;         /* 0 = 4:3, 1 = 16:9 (only if the game is ws_capable) */
     int widescreen_cells;   /* extra 8px cells per side in widescreen */
+    /* Opt-in custom scene renderer, independent of the legacy VDP view. */
+    int custom_widescreen;
+    int custom_aspect;      /* 0 adaptive, 1 16:9, 2 21:9, 3 32:9 */
     /* audio */
     int volume;             /* 0..100 */
     /* launcher */
@@ -42,6 +45,15 @@ int  app_config_load(const char *path);
 /* Write g_app_config + g_input_map to settings.ini at `path`. Returns 1 on
  * success. */
 int  app_config_save(const char *path);
+
+struct GameVideo;
+struct RecompLauncherCModProvider;
+const char *app_config_aspect_mode(int aspect);
+int app_config_aspect_index(const char *mode); /* -1 if not a UI preset */
+void app_config_apply_video(const struct GameVideo *video);
+/* Built-in recomp-ui provider; available on launcher-enabled targets. */
+const struct RecompLauncherCModProvider *app_config_video_mods(
+    const struct GameVideo *video, const char *settings_path);
 
 /* rom.cfg: one line holding the absolute path of the last ROM played, used by
  * skip-launcher to boot straight in. */

@@ -186,6 +186,282 @@ reg  = 6
 shift = 3
 
 # ---------------------------------------------------------------------------
+# Sonic 1 REV00 custom scene hooks. No effect while custom video is off.
+# Entries are canonical s1disasm instruction PCs, not generated-C patches.
+# BuildSprites entry/returns, ObjPosLoad/OPL_Next, visibility helpers,
+ # SS_ShowLayout after animation, then out_of_range macro CMP sites.
+# Cull sites verified by canonical bytes: sub.w d1,d0; cmpi.w #$280,d0; bhi.
+
+[[widescreen_site]]
+addr = 0x1ADE4
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1B286
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1B28E
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD65E
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD746
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD74E
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD8DA
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD980
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD87E
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD8A6
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1B156
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x78F2
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x7C14
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x7DBE
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x80EE
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x8822
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x88D0
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x9C36
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x9E82
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x9F2C
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xA29A
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xB0DC
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xB3C2
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xB82A
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xBABC
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xBE12
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xBFDC
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xBFFC
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xCF3C
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD0B4
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD104
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xDAE6
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xE246
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xE3EE
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xE5B0
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xE866
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xE976
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xEAD0
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xEB5A
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xEFAE
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xF178
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xF6C2
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xFEDA
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xFFC4
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x103CA
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x10926
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x10A0C
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x10AF6
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x10D3E
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x10D7E
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x10EB4
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1149C
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x11606
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x11E16
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x120A2
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x12360
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x12936
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x15674
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x156E2
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x159F6
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x15D58
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1628E
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x165CC
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1668C
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x16A9C
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x17204
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x17236
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1AB46
+kind = "game_hook"
+
 # Residual extras — dispatch targets the auto-extractors don't yet identify.
 # Each is a coverage gap; ideally this list shrinks to zero as extractors
 # improve. Names are from s1disasm where known.

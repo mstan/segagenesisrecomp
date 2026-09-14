@@ -1,0 +1,25 @@
+# Original start, scrolling, jumps, then a return towards the left edge.
+WAIT 720
+PRESS START 2
+WAIT 400
+SCREENSHOT custom-start.png
+DUMP_RAM custom-start.ram.bin
+DUMP_VRAM custom-start.vram.bin
+HOLD RIGHT
+WAIT 150
+PRESS C 12
+WAIT 90
+PRESS C 12
+WAIT 90
+PRESS C 12
+WAIT 30
+SCREENSHOT custom-scroll.png
+DUMP_RAM custom-scroll.ram.bin
+DUMP_VRAM custom-scroll.vram.bin
+WAIT 90
+RELEASE
+HOLD LEFT
+WAIT 160
+RELEASE
+SCREENSHOT custom-left.png
+WAIT 5
