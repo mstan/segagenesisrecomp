@@ -18,6 +18,9 @@
 #endif
 static int active, inside_player, actor = -1;
 static uint8_t previous_input[4];
+/* The native character decides whether to submit a sprite, including hurt
+ * flashing. Reuse that decision instead of approximating its timer phase. */
+static uint8_t displayed[4];
 static unsigned outside[4];
 static S2CharacterState characters[4];
 static uint8_t physics[4][6];
@@ -125,7 +128,7 @@ static uint8_t companion_input(unsigned p, unsigned object)
     }
     return held;
 }
-static void respawn(unsigned object, unsigned p)
+static void respawn(unsigned object, unsigned p, int recovery)
 {
     /* CPU/local companions share P1's checkpoint and never spend a life. */
     memset(g_ram+object,0,0x40);
@@ -133,7 +136,10 @@ static void respawn(unsigned object, unsigned p)
     putword(object+8,word(0xB008)-24*p);
     putword(object+12,word(0xB00C)-16);
     g_ram[object+0x22]=2;
-    putword(object+0x30,120);
+    /* Ordinary level/SS-return spawning is not a hurt animation. Catch-up
+     * and death recovery still need a short native protection interval. */
+    putword(object+0x30,recovery?120:0);
+    if (p>=2) memset(solid_flags[p-2],0,sizeof solid_flags[p-2]);
     outside[p]=0;
     s2_character_reset(&characters[p],kind(p));
 }
@@ -147,7 +153,7 @@ static void reserve_extras(void)
         unsigned o=0xCFC0;
         while (o>=0xB400 && g_ram[o]) o-=0x40;
         if (o<0xB400) { fprintf(stderr,"Sonic 2 party: no native object slot for P%u\n",p+1); exit(2); }
-        objects[p]=o; respawn(o,p);
+        objects[p]=o; respawn(o,p,0);
         unsigned k=kind(p);
         if (k<2 && !native_banks[k].count) {
             S2DonorLayout l=k==0?(S2DonorLayout){214,0x6FBE0,0x714E0,0x50000,0x29E2,8,0,0}:
@@ -258,8 +264,9 @@ static int update_player(unsigned p, uint32_t entry)
         int dx=(int16_t)(word(object+8)-word(0xB008));
         int dy=(int16_t)(word(object+12)-word(0xB00C));
         if (dx < -480 || dx > 480 || dy < -320 || dy > 320) ++outside[p]; else outside[p]=0;
-        if (g_ram[object+0x24]>=6 || outside[p]>120) respawn(object,p);
+        if (g_ram[object+0x24]>=6 || outside[p]>120) respawn(object,p,1);
     }
+    displayed[p]=0;
     M68KState cpu=g_cpu;
     uint8_t inputs[12]; memcpy(inputs,g_ram+0xF600,sizeof inputs);
     uint16_t mode=word(0xFF70), bias=word(0xEED8);
@@ -389,6 +396,7 @@ int s2_runtime_hook(uint32_t pc)
         if (!active) return 0;
         s2_roster_validate(&s2_party.roster);
         memset(previous_input,0,sizeof previous_input); memset(outside,0,sizeof outside);
+        memset(displayed,0,sizeof displayed);
         for (unsigned p=0;p<4;++p) {
             s2_character_reset(&characters[p],kind(p));
             const uint8_t defaults[]={6,0,0,12,0,128}; memcpy(physics[p],defaults,6);
@@ -397,6 +405,18 @@ int s2_runtime_hook(uint32_t pc)
         return 1;
     }
     if (!level()) return 0;
+    if ((pc==0x19FE6 || pc==0x1B96E) && inside_player && actor>0 && !word(0xFFD8)) {
+        /* Obj01/02_Init_Continued, before the first movement/collision query.
+         * Obj01 skips art/plane initialization at checkpoints; Obj79_LoadData
+         * restores only MainCharacter. Every companion spawns in P1's current
+         * plane, including catch-up on a secondary layer with no checkpoint.
+         * Doing this at the init tail also avoids native fresh-start defaults
+         * overwriting a plane that was seeded before Obj01_Init. */
+        unsigned o=g_cpu.A[0]&0xFFFF;
+        putword(o+0x3E,word(0xB03E));
+        putword(o+2,(native_id((unsigned)actor)==2?0x7A0:0x780)|(word(0xB002)&0x8000));
+        return 0;
+    }
     if ((pc==0x1296A || pc==0x129E0 || pc==0x12A2C) && !word(0xFFD8)) {
         static int reward;
         if (reward) return 0;
@@ -456,7 +476,10 @@ int s2_runtime_hook(uint32_t pc)
     if (pc==0x1BAD4) return inside_player && actor>0; /* character-independent companion control */
     if (pc==0x1ABA6 || pc==0x1AB38)
         return inside_player && (actor>0 || imported()); /* P1 Sonic progression only */
-    if (pc==0x164F4 && inside_player && actor>=2) return 1;
+    if (pc==0x164F4 && inside_player) {
+        if ((g_cpu.A[0]&0xFFFF)==objects[actor]) displayed[actor]=1;
+        if (actor>=2 || imported()) return 1;
+    }
     if (pc==0x3F73C && inside_player) {
         unsigned o=g_cpu.A[0]&0xFFFF, monitor=g_cpu.A[1]&0xFFFF;
         unsigned animation=characters[actor].animation;
@@ -481,7 +504,7 @@ int s2_runtime_hook(uint32_t pc)
         g_cpu.D[3]=(uint16_t)(word(o+12)-26); g_cpu.D[4]=34; g_cpu.D[5]=50;
         return 0;
     }
-    if (pc==0x164F4 || pc==0x1B848) return 1; /* donor art is host-rendered, not native DMA/SAT */
+    if (pc==0x1B848) return 1; /* donor art is host-rendered, not native DMA/SAT */
     if (pc==0x1AC3E && kind(actor)==S2_CHAR_AMY) return 1;
     if (pc==0x1B350) {
         S2Motion m=motion(o); S2Contacts c=contacts(o);
@@ -551,7 +574,7 @@ void s2_runtime_overlay(const GVDP *v, int line, uint32_t *out, int width)
     if (!fade) return;
     for (int p=3;p>=0;--p) {
         unsigned o=objects[p];
-        if (!o || (p<2 && kind(p)<S2_CHAR_AMY) || !g_ram[o] || (word(o+0x30) && !(word(o+0x30)&8))) continue;
+        if (!o || (p<2 && kind(p)<S2_CHAR_AMY) || !g_ram[o] || !displayed[p]) continue;
         const S2DonorBank *b=bank(p); unsigned frame=g_ram[o+0x1A];
         if (!b || frame>=b->count) continue;
         const S2DonorFrame *f=&b->frames[frame];

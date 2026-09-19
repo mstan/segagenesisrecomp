@@ -29,6 +29,9 @@ int main(int argc,char **argv)
     CHECK(app_config_load(path));
     CHECK(g_input_map.p[2].key[GB_B]==SDL_SCANCODE_Q && g_input_map.p[3].key[GB_B]==SDL_SCANCODE_W);
     CHECK(g_input_map.p[3].pad[GB_A].kind==GP_BIND_AXIS);
+    /* Keep attached owner hardware out of this synthetic four-pad fixture.
+     * SDL_JoystickAttachVirtual uses VID/PID 0000/0000. Test-local only. */
+    SDL_SetHint(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,"0x0000/0x0000");
     CHECK(SDL_Init(SDL_INIT_GAMECONTROLLER|SDL_INIT_EVENTS)==0);
     /* Virtual pads exercise the real SDL assignment and disconnect paths. */
     SDL_Joystick *joystick[4]; int device[4];

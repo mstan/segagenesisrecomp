@@ -114,6 +114,12 @@ kind = "game_hook"
 addr = 0x1B8A4 # Obj02: Tails character / host player role adapter
 kind = "game_hook"
 [[widescreen_site]]
+addr = 0x19FE6 # Obj01_Init_Continued: inherit companion spawn collision plane
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1B96E # Obj02_Init_Continued: same role-independent spawn environment
+kind = "game_hook"
+[[widescreen_site]]
 addr = 0x1BAD4 # TailsCPU_Control
 kind = "game_hook"
 [[widescreen_site]]

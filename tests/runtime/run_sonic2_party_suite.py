@@ -23,6 +23,8 @@ for character,donor in (("amy",a.amy),("knuckles",a.s3k)):
 for scene in ("spring","combat","monitor","recovery","boss","climb","special"):
     cases.append((scene,"run_sonic2_interactions.py",donors+["--scene",scene]))
 cases.append(("special-swap","run_sonic2_interactions.py",donors+["--scene","special","--swap"]))
+cases.append(("checkpoint","run_sonic2_checkpoint.py",donors))
+cases.append(("checkpoint-native-extras","run_sonic2_checkpoint.py",donors+["--native-extras"]))
 results=[]
 for name,script,extra in cases:
     command=[sys.executable,str(root/script)]+common+extra+["--out",str(a.out.resolve()/name)]
