@@ -676,5 +676,20 @@ void s2_video_command(int id, const char *json)
         s_tick_samples,s_tick_updates,s_tick_lag,s_tick_multi,s_publication_lag);
     cmd_send_response(reply);
 }
+void s2_video_actor_origin(const GVDP *v, int line, int width, int *left, int *top)
+{
+    int mode=v->reg[11]&3, row=mode==0?0:mode==2?line&~7:line;
+    if (!g_ram[0xFE10] && row>=222) row=221;
+    unsigned base=(v->reg[13]&63u)<<10;
+    int camera=unwrap(-(int16_t)vram16(v,base+row*4),ram16(0xEE60));
+    *left=enabled()?view_left(camera,width):camera-(width-320)/2;
+    *top=unwrap(v->vsram[0],ram16(0xEE64));
+}
+int s2_video_actor_pixel_visible(const GVDP *v, int wx, int wy, int high)
+{
+    if (high) return 1;
+    uint16_t attr=world_attr(g_ram,wx,wy,0);
+    return !(attr&0x8000) || !pattern_pixel(v,attr,wx,wy);
+}
 extern void s2_options_overlay(const GVDP *, int, uint32_t *, int);
 const GameVideo sonic2_video = { configure, enabled, width, scanline, s2_options_overlay };

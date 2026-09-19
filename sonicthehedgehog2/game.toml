@@ -50,6 +50,137 @@ discovery_files = [
 #   - plc_pending is 0 (call_periodic is NULL on Sonic 2; gate isn't read).
 # ---------------------------------------------------------------------------
 # Opt-in custom renderer sites: canonical REV01 s2_canonical.lst.
+[[widescreen_site]]
+addr = 0x1296A # super_ring: campaign party shares P1 ring/life rewards
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x129E0 # super_shoes: independent character physics
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x12A2C # shield_monitor: independent extra-player shield objects
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x4F64 # SpecialStage: role-independent native mode
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x5152 # SS player IDs have been initialized
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x338EC # Obj09: native half-pipe Sonic controller
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x347EC # Obj10: native half-pipe Tails controller
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x3399E # Obj09 shadow initialization after loading A1
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x34888 # Obj10 shadow initialization after loading A1
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x34972 # SSTailsCPU_Control
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x33E44 # SSPlayerSwapPositions
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x33AB2 # LoadSSSonicDynPLC: imported actor owns no native DMA tiles
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x189CA # spring launch: relinquish imported special-move trajectory
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x18AEE
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x18CC6
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x18DB4
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x18EE6
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x4450 # Level_SetPlayerMode
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x446E # InitPlayers
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x19F50 # Obj01: Sonic character / host player role adapter
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1B8A4 # Obj02: Tails character / host player role adapter
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1BAD4 # TailsCPU_Control
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1A15C # Sonic_RecordPos: P1 history only
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1ABA6 # Sonic_Super: P1 progression only
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1AB38 # Sonic_CheckGoSuper: P1 progression only
+kind = "game_hook"
+
+# Additive roster page: verified stock REV01 routine entry points. These
+[[widescreen_site]]
+addr = 0x15F9C # RunObjects: track native solid slot generations
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x18888 # Obj41: native spring once, collision/launch for extra players
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x3F5A0 # Touch_Loop: donor-defined grounded hammer attack extent
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x3F69C # Touch_Boss_Loop: same hammer attack extent
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x3F73C # Touch_Monitor: stable party reward ownership / Amy hammer
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x19718 # SolidObject
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x19778 # SolidObject_Always
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x197D0 # SlopedSolid
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x19880 # SolidObject45
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x19C32 # PlatformObject
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x19C8A # SlopedPlatform
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x19CE2 # PlatformObject2
+kind = "game_hook"
+
+# Additive roster page: verified stock REV01 routine entry points. These
+[[widescreen_site]]
+addr = 0x164F4 # DisplaySprite: imported actors use normalized donor art
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1B848 # LoadSonicDynPLC
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1AC3E # Sonic_CheckSpindash
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1B350 # Sonic_Animate
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x3F554 # TouchResponse
+kind = "game_hook"
+
 # Additive roster page: verified stock REV01 routine entry points. These
 # game-owned callbacks do not depend on whether widescreen is enabled.
 [[widescreen_site]]

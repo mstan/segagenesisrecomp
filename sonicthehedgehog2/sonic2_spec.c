@@ -23,6 +23,8 @@
 #include "sonic_extras.h"
 #include "sonic2_video.h"
 #include "sonic2_options.h"
+#include "sonic2_mods.h"
+#include "sonic2_runtime.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -234,6 +236,18 @@ static const GameDebugCommand sonic2_commands[] = {
 static int s2_instruction_hook(uint32_t pc)
 {
     switch (pc) {
+    case 0x4F64: case 0x5152: case 0x338EC: case 0x347EC:
+    case 0x3399E: case 0x34888: case 0x34972: case 0x33E44: case 0x33AB2:
+    case 0x189CA: case 0x18AEE: case 0x18CC6: case 0x18DB4: case 0x18EE6:
+    case 0x4450: case 0x446E: case 0x19F50: case 0x1B8A4:
+    case 0x1BAD4: case 0x1A15C: case 0x1ABA6: case 0x1AB38:
+    case 0x164F4: case 0x1B848: case 0x1AC3E: case 0x1B350: case 0x3F554:
+    case 0x15F9C: case 0x19718: case 0x19778: case 0x197D0: case 0x19880:
+    case 0x19C32: case 0x19C8A: case 0x19CE2:
+    case 0x18888: case 0x3F5A0:
+    case 0x3F73C: case 0x3F69C:
+    case 0x1296A: case 0x129E0: case 0x12A2C:
+        return s2_runtime_hook(pc);
     case 0x3CF6: case 0x8FCC: case 0x90E0: case 0x9186: case 0x91F8: case 0x909A:
         return s2_options_hook(pc);
     default: return s2_video_hook(pc);
@@ -245,7 +259,9 @@ const GameSpec g_game_spec = {
     .instruction_hook       = s2_instruction_hook,
     .logical_players        = 4,
     .load_settings          = s2_options_load,
+    .mods                   = s2_mods,
     .netplay_allowed        = s2_options_netplay_allowed,
+    .state_unavailable_reason = s2_runtime_state_unavailable_reason,
     .main_cpu_divisor       = s2_video_main_cpu_divisor,
     .display_name           = "Sonic the Hedgehog 2",
     .short_name             = "Sonic2",

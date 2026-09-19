@@ -1002,6 +1002,8 @@ static const char OWN_SAVE_MAGIC[8] = "GROWNS2\0";
 
 int runner_save_state_file(const char *path)
 {
+    const char *reason=g_game_spec.state_unavailable_reason?g_game_spec.state_unavailable_reason():NULL;
+    if (reason) { fprintf(stderr,"[SAVE] unavailable: %s\n",reason); return 0; }
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
     FILE *sf = fopen(resolved, "wb");
@@ -1029,6 +1031,8 @@ int runner_save_state_file(const char *path)
 
 int runner_load_state_file(const char *path)
 {
+    const char *reason=g_game_spec.state_unavailable_reason?g_game_spec.state_unavailable_reason():NULL;
+    if (reason) { fprintf(stderr,"[LOAD] unavailable: %s\n",reason); return 0; }
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
     FILE *sf = fopen(resolved, "rb");
@@ -1688,6 +1692,7 @@ int main(int argc, char *argv[])
                     gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
                     gi.widescreen_supported = !g_game_spec.video && g_game_layout.ws_capable;
                     gi.mods = app_config_video_mods(g_game_spec.video,settings_ini);
+                    if (g_game_spec.mods) gi.mods = g_game_spec.mods(gi.mods);
                     gi.num_players = g_game_spec.logical_players ? (int)g_game_spec.logical_players : 2;
                     if (gi.num_players > INPUT_MAX_PLAYERS) gi.num_players = INPUT_MAX_PLAYERS;
                     gi.platform             = "SEGA GENESIS";  /* infers the genesis profile */

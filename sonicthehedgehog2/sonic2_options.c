@@ -1,5 +1,7 @@
 #include "sonic2_options.h"
 #include "sonic2_party.h"
+#include "sonic2_resources.h"
+#include "sonic2_runtime.h"
 #include "genesis_runtime.h"
 #include "video/genesis_vdp.h"
 #include "video/genesis_dac.h"
@@ -16,6 +18,9 @@ static const char *s_notice;
 void s2_options_load(const char *settings_path)
 {
     s2_party_load(settings_path);
+    s2_resources_load(settings_path);
+    if (!s2_resource_verified(S2_RESOURCE_SK)) s2_party.s3k_enabled = 0;
+    s2_runtime_load();
     s2_roster_validate(&s2_party.roster);
 }
 
@@ -124,6 +129,7 @@ void s2_options_overlay(const GVDP *v, int line, uint32_t *out, int width)
 #if GENESIS_HAS_RECOMP_NET
     if (genesis_netplay_active()) return;
 #endif
+    s2_runtime_overlay(v, line, out, width);
     if (g_ram[0xF600] != 0x24 || !s_ready) return;
     int left = (width - 288) / 2;
     if (line >= 16 && line < 208) {

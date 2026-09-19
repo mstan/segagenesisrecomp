@@ -82,6 +82,31 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
         "${CMAKE_CURRENT_LIST_DIR}/../runner/video"
         "${CMAKE_SOURCE_DIR}/recomp-ui/src/common")
     if(TARGET SDL2::SDL2 AND TARGET SonicTheHedgehog2Recomp)
+        add_executable(sonic2_character_test runtime/sonic2_character_test.c
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_character.c")
+        target_include_directories(sonic2_character_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2")
+        if(MSVC)
+            target_compile_options(sonic2_character_test PRIVATE /UNDEBUG)
+        else()
+            target_compile_options(sonic2_character_test PRIVATE -UNDEBUG)
+        endif()
+        add_test(NAME sonic2_character COMMAND sonic2_character_test)
+        add_executable(sonic2_resources_test runtime/sonic2_resources_test.c
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_party.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_resources.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_donor_assets.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_mods.c"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/sha256.c")
+        target_compile_definitions(sonic2_resources_test PRIVATE RECOMP_LAUNCHER=1)
+        target_include_directories(sonic2_resources_test PRIVATE
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src" "${CMAKE_SOURCE_DIR}/recomp-ui/src/common")
+        if(MSVC)
+            target_compile_options(sonic2_resources_test PRIVATE /UNDEBUG)
+        else()
+            target_compile_options(sonic2_resources_test PRIVATE -UNDEBUG)
+        endif()
+        add_test(NAME sonic2_resources COMMAND sonic2_resources_test "${CMAKE_CURRENT_BINARY_DIR}/resource-test-absent.ini")
         add_executable(party_input_test runtime/party_input_test.c
             "${CMAKE_CURRENT_LIST_DIR}/../runner/input_map.c"
             "${CMAKE_CURRENT_LIST_DIR}/../runner/gamepad.c"
