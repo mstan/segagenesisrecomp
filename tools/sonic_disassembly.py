@@ -71,7 +71,7 @@ def export(game: str, rom: bytes, names: dict[int, list[str]], out: Path, source
         "symbols": [{"address": f"{a:08x}", "name": n[0], "namespace": "Global", "symbolType": "Label", "primary": True} for a, n in names.items()],
         "comments": [], "bookmarks": [], "functionSignatures": [], "compositeTypes": [],
     }
-    (out / f"{game}.annotations.json").write_text(json.dumps(annotation, indent=2) + "\n", encoding="utf-8")
+    (out / f"{game}.annotations.json").write_text(json.dumps(annotation, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def main() -> None:
@@ -130,7 +130,7 @@ def main() -> None:
         export("sonic3k", rom, names, out, metadata)
         results["sonic3k"] = {**metadata, "code_labels": len(names)}
         print(f"sonic3k: byte-identical lock-on, {len(names)} code labels", flush=True)
-    (out / "provenance.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
+    (out / "provenance.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8", newline="\n")
     if args.install:
         import shutil
         target = ROOT / "ghidra/annotations"
