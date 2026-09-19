@@ -104,7 +104,7 @@ void s2_save_draw_line(const S2SaveAssets *a,const S2SaveView *v,int line,uint32
         sprite(a,v,4,x,136,line,out,width);
         for (unsigned e=0;e<7;++e) if (slot->emeralds&(1u<<e)) sprite(a,v,16+e,x,136,line,out,width);
         char label[20]; snprintf(label,sizeof label,"FILE %u",i+1);
-        centered(a,x+8,174,label,line,out,width);
+        centered(a,x,174,label,line,out,width);
         if (slot->state && slot->stage<S2_CAMPAIGN_STAGES) {
             /* Replace the S3 level thumbnail with the requested S2 zone/act. */
             if (line>=16 && line<72) for (int px=x-40;px<x+40;++px)
@@ -119,27 +119,25 @@ void s2_save_draw_line(const S2SaveAssets *a,const S2SaveView *v,int line,uint32
             } else centered(a,x,28,s->name,line,out,width);
             snprintf(label,sizeof label,"ACT %u",s->act);
             centered(a,x,52,label,line,out,width);
-            if (slot->state==S2_SAVE_COMPLETE) centered(a,x+8,158,"CLEAR",line,out,width);
+            if (slot->state==S2_SAVE_COMPLETE) centered(a,x,158,"CLEAR",line,out,width);
         }
         if (v->selection==i+1 && slot->state==S2_SAVE_COMPLETE && !v->erase && (v->frame&16))
             sprite(a,v,15,x,136,line,out,width);
     }
-    sprite(a,v,13,base+968,88,line,out,width);
     centered(a,base+968,96,"DELETE",line,out,width);
-    /* Same native selector positions, 104px spacing, and 8px scroll steps. */
-    int selector=v->selection?144+(int)(v->selection-1)*104:48;
-    if (v->selection==9) selector=968;
-    if (!(v->frame&4)) sprite(a,v,v->selection==0 || v->selection==9?2:1,
-        base+selector,98,line,out,width);
+    /* Obj_SaveScreen_Selector moves the cursor before scrolling its camera.
+     * The small end cards offset that cursor by +8/-8 pixels. */
+    int selector=base+v->cursor+(v->selection==0?8:v->selection==9?-8:0);
+    if (v->frame&4) sprite(a,v,selector-left<112 || selector-left>200?2:1,
+        selector,98,line,out,width);
+    /* Native Delete has a body AND a sign child at the same anchor. D912
+     * cycles the body every six frames; D94A turns the sign every four.
+     * Frame 12 is the donor's left=YES / right=NO confirmation sign. */
+    static const unsigned body[]={13,14,13,14,13,14,13,14,13,14,13,13,13,13};
+    unsigned tick=v->delete_frame?v->delete_frame-1:0;
+    unsigned sign=v->confirm?12:v->erase?8+((tick/4+1)&3):8;
+    sprite(a,v,v->erase?body[(tick/6)%14]:13,base+v->delete_x,88,line,out,width);
+    sprite(a,v,sign,base+v->delete_x,88,line,out,width);
     sprite(a,v,3,left+160,204,line,out,width);
-    const char *hint=v->notice;
-    if (!hint || !*hint) {
-        if (v->confirm) hint="A CONFIRM DELETE   B CANCEL";
-        else if (v->erase) hint="CHOOSE FILE TO DELETE   B CANCEL";
-        else if (v->read_only) hint="SAVE FILE PROTECTED   NO SAVE OK";
-        else if (v->selection>=1 && v->selection<=8 && v->data.slots[v->selection-1].state)
-            hint=s2_campaign_stages[v->data.slots[v->selection-1].stage].name;
-        else hint="LEFT RIGHT SELECT   A START   B BACK";
-    }
-    centered(a,left+160,216,hint,line,out,width);
+    if (v->notice && *v->notice) s2_save_draw_notice(a,v->notice,line,out,width);
 }

@@ -66,6 +66,7 @@ static void begin_menu(void)
 {
     menu=1; menu_ready=exit_action=0; session=-1;
     view.selection=1; view.scroll=0; view.frame=0; view.erase=view.confirm=0;
+    view.cursor=144; view.delete_x=968; view.delete_frame=0;
     replay_zone=view.data.slots[0].state?s2_campaign_stages[view.data.slots[0].stage].zone:0;
     if (!store.ready) view.notice="SAVE FILE INVALID   USE NO SAVE";
     else if (store.read_only) view.notice="SAVE FILE PROTECTED   NO SAVE OK";
@@ -91,23 +92,45 @@ static void launch(void)
      * The following native Level route owns object and party initialization. */
     g_ram[0xF600]=12; menu=menu_ready=exit_action=0;
 }
+static int approach(int position,int target)
+{
+    if (position<target) { position+=8; if (position>target) position=target; }
+    if (position>target) { position-=8; if (position<target) position=target; }
+    return position;
+}
 static void controls(void)
 {
     ++view.frame; menu_ready=1;
     unsigned press=g_ram[0xF605];
     /* Consume both native Start bits; only a deliberate host exit sets one. */
     g_ram[0xF605]&=0x7F; g_ram[0xF607]&=0x7F;
-    int target=(int)view.selection*104-120;
-    if (target<0) target=0; if (target>704) target=704;
-    if (view.scroll<target) { view.scroll+=8; if (view.scroll>target) view.scroll=target; }
-    if (view.scroll>target) { view.scroll-=8; if (view.scroll<target) view.scroll=target; }
+    int target=40+(int)view.selection*104;
+    view.cursor=approach(view.cursor,target);
+    view.scroll=view.cursor-160;
+    if (view.scroll<0) view.scroll=0; if (view.scroll>704) view.scroll=704;
+    if (view.erase) {
+        view.delete_x=view.cursor-(view.selection==9?8:0);
+        ++view.delete_frame;
+    } else {
+        view.delete_x=approach(view.delete_x,968); view.delete_frame=0;
+    }
     if (press&16) {
         if (view.confirm) view.confirm=0;
         else if (view.erase) view.erase=0;
         else { exit_action=1; g_ram[0xF605]|=128; }
         return;
     }
-    if (view.scroll!=target) return;
+    if (view.cursor!=target) return;
+    if (view.confirm) {
+        /* Match the original YES/NO sign, retaining A/C/Start and B aliases. */
+        if (press&8) { view.confirm=0; return; }
+        if (!(press&(4|0xE0))) return;
+        S2CampaignData candidate=view.data;
+        s2_campaign_delete(&candidate,view.selection-1);
+        if (!s2_campaign_commit(&store,&candidate)) { view.notice="DELETE FAILED   FILE PRESERVED"; return; }
+        view.data=candidate; dirty=0; view.erase=view.confirm=0; view.notice=NULL;
+        return;
+    }
     if (!view.confirm && (press&12)) {
         unsigned old=view.selection;
         if ((press&12)==4 && view.selection>(view.erase?1u:0u)) --view.selection;
@@ -129,11 +152,7 @@ static void controls(void)
     if (view.selection==9) { view.erase=!view.erase; view.confirm=0; return; }
     if (view.erase) {
         if (!view.selection || store.read_only || !view.data.slots[view.selection-1].state) return;
-        if (!view.confirm) { view.confirm=1; return; }
-        S2CampaignData candidate=view.data;
-        s2_campaign_delete(&candidate,view.selection-1);
-        if (!s2_campaign_commit(&store,&candidate)) { view.notice="DELETE FAILED   FILE PRESERVED"; return; }
-        view.data=candidate; dirty=0; view.erase=view.confirm=0; view.notice=NULL;
+        view.confirm=1;
         return;
     }
     if (!view.selection) { session=-1; exit_action=2; g_ram[0xF605]|=128; return; }

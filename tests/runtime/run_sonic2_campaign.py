@@ -150,6 +150,18 @@ run(out,"delete-confirm",erase_menu+["PRESS A 2","WAIT 10"]+capture("deleted"))
 assert read_save(out)[0]==(0,0,0)
 assert read_save(out)[7]==(1,0,0)
 
+out=setup("delete-directions")
+seed(out,slot=1,stage=3,emeralds=3)
+before=(out/"sonic2-campaign.sav").read_bytes()
+to_second=sum((["PRESS LEFT 2","WAIT 20"] for _ in range(7)),[])
+confirm_second=MENU+to_delete+["PRESS A 2","WAIT 10"]+to_second+["PRESS A 2","WAIT 10"]
+run(out,"delete-right-no",confirm_second+capture("yes-no")+[
+    "PRESS RIGHT 2","WAIT 10"]+capture("spinning")+[
+    "PRESS B 2","WAIT 120"]+capture("returned"))
+assert (out/"sonic2-campaign.sav").read_bytes()==before
+run(out,"delete-left-yes",confirm_second+["PRESS LEFT 2","WAIT 10"]+capture("erased"))
+assert read_save(out)==[(0,0,0)]*8
+
 out=setup("vs")
 seed(out,stage=1,emeralds=3); before=(out/"sonic2-campaign.sav").read_bytes()
 run(out,"vs-entry",TITLE+["PRESS DOWN 2","WAIT 8","PRESS START 2","WAIT 100",
