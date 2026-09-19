@@ -1,4 +1,5 @@
 #include "sonic2_save_menu.h"
+#include "sonic2_campaign_file.h"
 #include "sonic2_save_draw.h"
 #include "sonic2_party.h"
 #include "sonic2_resources.h"
@@ -9,7 +10,7 @@
 #include "netplay/genesis_netplay.h"
 #endif
 
-static S2CampaignStore store;
+static const S2CampaignStore *store;
 static S2SaveView view;
 static int menu,menu_ready,exit_action,session=-1,dirty;
 static unsigned replay_zone;
@@ -25,15 +26,9 @@ int s2_save_menu_enabled(void)
 void s2_save_menu_load(const char *settings)
 {
     menu=menu_ready=exit_action=dirty=0; session=-1;
-    memset(&view,0,sizeof view); memset(&store,0,sizeof store);
-    char path[1024]; int length=snprintf(path,sizeof path,"%s",settings?settings:"settings.ini");
-    if (length<0 || length>=(int)sizeof path) { store.read_only=1; return; }
-    char *slash=strrchr(path,'/'),*back=strrchr(path,'\\');
-    char *base=back && (!slash || back>slash)?back+1:slash?slash+1:path;
-    length=snprintf(base,sizeof path-(size_t)(base-path),"sonic2-campaign.sav");
-    if (length<0 || length>=(int)(sizeof path-(size_t)(base-path))) { store.read_only=1; return; }
-    s2_campaign_open(&store,path); view.data=store.data;
-    view.read_only=store.read_only;
+    memset(&view,0,sizeof view);
+    s2_campaign_file_load(settings); store=s2_campaign_file_store();
+    view.data=store->data; view.read_only=store->read_only;
 }
 static unsigned emeralds(void)
 {
@@ -44,9 +39,9 @@ static unsigned emeralds(void)
 static int flush(void)
 {
     if (!dirty) return 1;
-    if (!s2_campaign_commit(&store,&view.data)) {
+    if (!s2_campaign_file_commit(&view.data)) {
         view.notice="SAVE FAILED   SELECT FILE TO RETRY";
-        view.read_only=store.read_only; return 0;
+        view.read_only=store->read_only; return 0;
     }
     dirty=0; view.notice=NULL; return 1;
 }
@@ -65,11 +60,14 @@ static void save_transition(uint16_t destination)
 static void begin_menu(void)
 {
     menu=1; menu_ready=exit_action=0; session=-1;
+    /* The launcher may have selected a different file after settings loaded. */
+    if (!dirty) view.data=store->data;
+    view.read_only=store->read_only;
     view.selection=1; view.scroll=0; view.frame=0; view.erase=view.confirm=0;
     view.cursor=144; view.delete_x=968; view.delete_frame=0;
     replay_zone=view.data.slots[0].state?s2_campaign_stages[view.data.slots[0].stage].zone:0;
-    if (!store.ready) view.notice="SAVE FILE INVALID   USE NO SAVE";
-    else if (store.read_only) view.notice="SAVE FILE PROTECTED   NO SAVE OK";
+    if (!store->ready) view.notice="SAVE FILE INVALID   USE NO SAVE";
+    else if (store->read_only) view.notice="SAVE FILE PROTECTED   NO SAVE OK";
     g_ram[0xF600]=0x24; /* Native MenuScreen initializes input/music/frame pacing. */
 }
 static void launch(void)
@@ -127,7 +125,7 @@ static void controls(void)
         if (!(press&(4|0xE0))) return;
         S2CampaignData candidate=view.data;
         s2_campaign_delete(&candidate,view.selection-1);
-        if (!s2_campaign_commit(&store,&candidate)) { view.notice="DELETE FAILED   FILE PRESERVED"; return; }
+        if (!s2_campaign_file_commit(&candidate)) { view.notice="DELETE FAILED   CHECK SAVE PATH"; return; }
         view.data=candidate; dirty=0; view.erase=view.confirm=0; view.notice=NULL;
         return;
     }
@@ -151,22 +149,22 @@ static void controls(void)
     if (!(press&0xE0)) return;
     if (view.selection==9) { view.erase=!view.erase; view.confirm=0; return; }
     if (view.erase) {
-        if (!view.selection || store.read_only || !view.data.slots[view.selection-1].state) return;
+        if (!view.selection || store->read_only || !view.data.slots[view.selection-1].state) return;
         view.confirm=1;
         return;
     }
     if (!view.selection) { session=-1; exit_action=2; g_ram[0xF605]|=128; return; }
-    if (!store.ready) return;
+    if (!store->ready) return;
     unsigned selected=view.selection-1;
     S2CampaignData before=view.data;
     if (!view.data.slots[selected].state) {
-        if (store.read_only) return;
+        if (store->read_only) return;
         s2_campaign_new(&view.data,selected); dirty=1;
     } else if (view.data.slots[selected].state==S2_SAVE_COMPLETE) {
         s2_campaign_select_zone(&view.data.slots[selected],replay_zone);
-        if (!store.read_only && memcmp(&before,&view.data,sizeof before)) dirty=1;
+        if (!store->read_only && memcmp(&before,&view.data,sizeof before)) dirty=1;
     }
-    if (!store.read_only && !flush()) return;
+    if (!store->read_only && !flush()) return;
     session=(int)selected; exit_action=2; g_ram[0xF605]|=128;
 }
 int s2_save_menu_hook(uint32_t pc)

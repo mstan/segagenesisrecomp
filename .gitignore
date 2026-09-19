@@ -3,6 +3,7 @@ build-*/
 _build*/
 *.bin
 sonic2-campaign.sav*
+sonic2-campaign.srm*
 
 # CMake and compiler by-products from accidental in-source/local builds.
 CMakeCache.txt

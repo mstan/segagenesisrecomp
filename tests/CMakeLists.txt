@@ -32,6 +32,18 @@ else()
 endif()
 add_test(NAME sonic2_campaign COMMAND sonic2_campaign_test)
 
+add_executable(sonic2_campaign_file_test runtime/sonic2_campaign_file_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign_store.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign_file.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_party.c")
+if(MSVC)
+    target_compile_options(sonic2_campaign_file_test PRIVATE /UNDEBUG)
+else()
+    target_compile_options(sonic2_campaign_file_test PRIVATE -UNDEBUG)
+endif()
+add_test(NAME sonic2_campaign_file COMMAND sonic2_campaign_file_test)
+
 add_executable(sonic2_party_test runtime/sonic2_party_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_party.c")
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/party-fixtures")
@@ -112,6 +124,9 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
         add_test(NAME sonic2_character COMMAND sonic2_character_test)
         add_executable(sonic2_resources_test runtime/sonic2_resources_test.c
             "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_party.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign_store.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign_file.c"
             "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_resources.c"
             "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_save_assets.c"
             "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_donor_assets.c"

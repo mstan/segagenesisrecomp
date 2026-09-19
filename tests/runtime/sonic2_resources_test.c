@@ -1,6 +1,7 @@
 #include "sonic2_resources.h"
 #include "sonic2_party.h"
 #include "sonic2_mods.h"
+#include "sonic2_campaign_file.h"
 #include "recomp_launcher.h"
 #include <assert.h>
 #include <stdio.h>
@@ -13,6 +14,7 @@ int main(int argc, char **argv)
 {
     assert(argc == 2 || argc == 4);
     s2_party_load(argv[1]); s2_resources_load(argv[1]);
+    s2_campaign_file_load(argv[1]);
     assert(s2_party.amy_enabled && !s2_party.s3k_enabled && !s2_party.save_menu_enabled);
     RecompLauncherCModProvider base = {0}; base.ctx=&delegated; base.package_count=count; base.feature_count=count; base.feature_enable=enable;
     const RecompLauncherCModProvider *p=s2_mods(&base);
@@ -29,6 +31,14 @@ int main(int argc, char **argv)
     assert(p->feature_get(p->ctx,1,&f) && !f.enabled && !strcmp(f.package_name,"S3&K"));
     assert(p->feature_get(p->ctx,2,&f) && !f.enabled && !strcmp(f.id,"save-menu"));
     assert(p->feature_resource_count(p->ctx,"sonic2.s3k","knuckles")==1);
+    assert(p->feature_resource_count(p->ctx,"sonic2.s3k","save-menu")==2);
+    RecompLauncherCModResource resource;
+    assert(p->feature_resource_get(p->ctx,"sonic2.s3k","save-menu",1,&resource));
+    assert(!strcmp(resource.id,"campaign-sram") && !resource.required && !resource.path[0]);
+    assert(!p->feature_resource_get(p->ctx,"sonic2.s3k","knuckles",1,&resource));
+    assert(!p->feature_resource_set_path(p->ctx,"sonic2.s3k","save-menu","campaign-sram","missing-campaign.srm"));
+    assert(*p->last_error(p->ctx) && !s2_party.campaign_path[0]);
+    assert(p->feature_resource_set_path(p->ctx,"sonic2.s3k","save-menu","campaign-sram",""));
     if (argc==4) {
         assert(s2_resource_set(S2_RESOURCE_AMY,argv[2]));
         assert(s2_resource_set(S2_RESOURCE_SK,argv[3]));
@@ -56,7 +66,7 @@ int main(int argc, char **argv)
         assert(!p->commit_netplay(p->ctx,"unused") && *p->last_error(p->ctx));
         assert(p->feature_get(p->ctx,1,&f) && !f.enabled);
         assert(p->feature_get(p->ctx,2,&f) && f.enabled);
-        assert(p->feature_resource_count(p->ctx,"sonic2.s3k","save-menu")==1);
+        assert(p->feature_resource_count(p->ctx,"sonic2.s3k","save-menu")==2);
         assert(p->feature_enable(p->ctx,"sonic2.s3k","save-menu",0));
         assert(p->set_enabled(p->ctx,"sonic2.s3k",1));
         assert(s2_party.s3k_enabled && s2_party.save_menu_enabled);

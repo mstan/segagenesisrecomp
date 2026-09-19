@@ -22,6 +22,7 @@ typedef struct S2PartyConfig {
     int save_menu_enabled; /* independent default-OFF S3&K feature */
     char amy_path[1024];
     char s3k_path[1024];
+    char campaign_path[1024]; /* empty until selected or first save; exe-relative */
 } S2PartyConfig;
 
 extern S2PartyConfig s2_party;

@@ -37,12 +37,12 @@ def setup(name,roster=("sonic","tails","none","none"),enabled=True,donor=True):
         "".join(f"player{i+1}={c}\n" for i,c in enumerate(roster)))
     return out
 
-def run(out,name,lines,max_frames=8500):
+def run(out,name,lines,max_frames=8500,cwd=None):
     (out/f"{name}.input").write_text("\n".join(lines+["EXIT"])+"\n")
     with (out/f"{name}.log").open("w") as log:
         result=subprocess.run([str(out/a.exe.name),str(a.rom.resolve()),"--no-launcher",
-            "--widescreen","off","--input-script",f"{name}.input","--max-frames",str(max_frames),
-            "--target-fps","1000"],cwd=out,env=env,stdout=log,stderr=log,timeout=180,
+            "--widescreen","off","--input-script",str(out/f"{name}.input"),"--max-frames",str(max_frames),
+            "--target-fps","1000"],cwd=cwd or out,env=env,stdout=log,stderr=log,timeout=180,
             creationflags=subprocess.CREATE_NO_WINDOW if os.name=="nt" else 0)
     misses=tomllib.loads((out/"dispatch_misses.toml").read_text()).get("functions",{}).get("extra")
     assert not misses,(name,misses)
@@ -50,8 +50,14 @@ def run(out,name,lines,max_frames=8500):
     assert "[input_script] EXIT" in (out/f"{name}.log").read_text(), f"{name} did not finish its input script"
     results.append(name)
 
+def save_path(out):
+    config=dict(line.split("=",1) for line in (out/"sonic2-party.ini").read_text().splitlines() if "=" in line)
+    if config.get("campaign_path"):
+        return out/Path(config["campaign_path"])
+    return out/("sonic2-campaign.sav" if (out/"sonic2-campaign.sav").exists() else "sonic2-campaign.srm")
+
 def read_save(out):
-    b=(out/"sonic2-campaign.sav").read_bytes(); assert len(b)==128
+    b=save_path(out).read_bytes(); assert len(b)==128
     assert b[:8]==b"S2SAVE\r\n" and b[24:56]==identity
     c=bytearray(b); c[60:64]=bytes(4)
     assert struct.unpack_from(">I",b,60)[0]==zlib.crc32(c)
@@ -71,6 +77,7 @@ def object(at,identity,routine):
 out=setup("new-resume")
 run(out,"new",MENU+capture("menu")+START+capture("new-game"))
 assert read_save(out)[0]==(1,0,0)
+assert "campaign_path=sonic2-campaign.srm\n" in (out/"sonic2-party.ini").read_text()
 run(out,"act-transition",MENU+START+object(0xB800,0x3A,0x10)+[
     "WAIT 400","ASSERT_RAM16 FFFE10 0001"]+capture("act-two"))
 assert read_save(out)[0]==(1,1,0)
@@ -80,14 +87,17 @@ out=setup("no-save")
 run(out,"no-save",MENU+["PRESS LEFT 2","WAIT 20"]+START+
     object(0xB800,0x3A,0x10)+["WAIT 400","ASSERT_RAM16 FFFE10 0001"])
 assert not (out/"sonic2-campaign.sav").exists()
+assert not (out/"sonic2-campaign.srm").exists()
 out=setup("back")
 run(out,"back",MENU+["PRESS B 2","WAIT 100","ASSERT_RAM8 FFF600 04"])
 assert not (out/"sonic2-campaign.sav").exists()
+assert not (out/"sonic2-campaign.srm").exists()
 
 for name,enabled,donor in (("disabled",False,True),("missing-donor",True,False)):
     out=setup(name,enabled=enabled,donor=donor)
     run(out,name,TITLE+START)
     assert not (out/"sonic2-campaign.sav").exists()
+    assert not (out/"sonic2-campaign.srm").exists()
 
 out=setup("emerald-resume",("amy","knuckles","sonic","tails"))
 seed(out,stage=1,emeralds=0x15)
@@ -173,10 +183,44 @@ run(out,"options-entry",TITLE+["PRESS DOWN 2","WAIT 8","PRESS DOWN 2","WAIT 8",
     "PRESS START 2","WAIT 90","ASSERT_RAM8 FFF600 04"])
 assert "slots=3\n" in (out/"sonic2-party.ini").read_text()
 assert not (out/"sonic2-campaign.sav").exists()
+assert not (out/"sonic2-campaign.srm").exists()
 
 out=setup("invalid-save")
 (out/"sonic2-campaign.sav").write_bytes(b"future or corrupt data")
 run(out,"invalid-no-save",MENU+["PRESS LEFT 2","WAIT 20"]+START)
 assert (out/"sonic2-campaign.sav").read_bytes()==b"future or corrupt data"
+
+# Selected files are live destinations, not imported copies. CWD differs from
+# the executable folder; both relative and absolute configured paths are used.
+out=setup("selected-path")
+seed(out,stage=1,emeralds=3)
+library=root/"save library"; library.mkdir()
+chosen=library/"my campaign.sav"
+chosen.write_bytes((out/"sonic2-campaign.sav").read_bytes())
+default_before=(out/"sonic2-campaign.sav").read_bytes()
+with (out/"sonic2-party.ini").open("a") as f: f.write("campaign_path=../save library/my campaign.sav\n")
+run(out,"selected-relative",MENU+START+["ASSERT_RAM16 FFFE10 0001","ASSERT_RAM8 FFFFB1 2"]+
+    object(0xB800,0x3A,0x10)+["WAIT 400","ASSERT_RAM16 FFFE10 0D00"],cwd=root)
+assert read_save(out)[0]==(1,2,3)
+assert (out/"sonic2-campaign.sav").read_bytes()==default_before
+assert chosen.with_suffix(".sav.bak").exists()
+with (out/"sonic2-party.ini").open("a") as f: f.write(f"campaign_path={chosen.as_posix()}\n")
+run(out,"selected-absolute-reload",MENU+START+["ASSERT_RAM16 FFFE10 0D00","ASSERT_RAM8 FFFFB1 2"],cwd=root)
+assert read_save(out)[0]==(1,2,3)
+
+# A selected path whose parent is missing must not start a new slot or write
+# another save somewhere convenient. The menu remains available for No Save.
+out=setup("selected-write-failure")
+with (out/"sonic2-party.ini").open("a") as f: f.write("campaign_path=missing-folder/selected.srm\n")
+run(out,"selected-write-failure",MENU+["PRESS START 2","WAIT 40","ASSERT_RAM8 FFF600 24"]+
+    ["PRESS LEFT 2","WAIT 20"]+START)
+assert not (out/"sonic2-campaign.srm").exists() and not (out/"sonic2-campaign.sav").exists()
+assert "campaign_path=missing-folder/selected.srm\n" in (out/"sonic2-party.ini").read_text()
+
+# Moving the whole game folder retains the relative default path.
+out=root/"new-resume"
+moved=root/"moved game"; out.rename(moved)
+run(moved,"moved-folder-reload",MENU+START+["ASSERT_RAM16 FFFE10 0001"],cwd=root)
+assert read_save(moved)[0]==(1,1,0)
 
 print(f"PASS {len(results)} campaign fixtures: {', '.join(results)}")

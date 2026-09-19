@@ -135,6 +135,7 @@ void s2_party_load(const char *settings_path)
         else if (!strcmp(line, "save_menu_enabled")) s2_party.save_menu_enabled = atoi(value) == 1;
         else if (!strcmp(line, "amy_path")) snprintf(s2_party.amy_path, sizeof s2_party.amy_path, "%s", value);
         else if (!strcmp(line, "s3k_path")) snprintf(s2_party.s3k_path, sizeof s2_party.s3k_path, "%s", value);
+        else if (!strcmp(line, "campaign_path")) snprintf(s2_party.campaign_path, sizeof s2_party.campaign_path, "%s", value);
         else for (unsigned i = 0; i < S2_MAX_PLAYERS; ++i) {
             char key[16]; snprintf(key, sizeof key, "player%u", i + 1);
             if (!strcmp(line, key)) snprintf(s2_party.roster.character[i], S2_CHARACTER_ID_SIZE, "%s", value);
@@ -153,6 +154,7 @@ int s2_party_save(void)
         s2_party.roster.slots, s2_party.amy_enabled, s2_party.s3k_enabled, s2_party.amy_path, s2_party.s3k_path);
     for (unsigned i = 0; i < S2_MAX_PLAYERS; ++i) fprintf(file, "player%u=%s\n", i + 1, s2_party.roster.character[i]);
     fprintf(file, "save_menu_enabled=%d\n", s2_party.save_menu_enabled);
+    fprintf(file, "campaign_path=%s\n", s2_party.campaign_path);
     int ok = !ferror(file);
     if (fclose(file)) ok = 0;
 #ifdef _WIN32

@@ -2,6 +2,7 @@
 #include "sonic2_mods.h"
 #include "sonic2_party.h"
 #include "sonic2_resources.h"
+#include "sonic2_campaign_file.h"
 #if RECOMP_LAUNCHER
 #include "recomp_launcher.h"
 #include <stdio.h>
@@ -87,13 +88,26 @@ static int set_option(void *ctx, const char *p, const char *f, const char *o, co
 { (void)ctx; return owner(p,NULL)<0 && base && base->feature_set_option && base->feature_set_option(base->ctx, p, f, o, v); }
 static int resource_count(void *ctx, const char *p, const char *f)
 {
-    (void)ctx; if (owner(p, f) >= 0) return 1;
+    (void)ctx; int i=owner(p,f); if (i>=0) return i==2?2:1;
     return owner(p,NULL)<0 && base && base->feature_resource_count ? base->feature_resource_count(base->ctx, p, f) : 0;
 }
 static int resource_get(void *ctx, const char *p, const char *f, int n, RecompLauncherCModResource *out)
 {
     (void)ctx; int i = owner(p, f);
     if (i < 0) return owner(p,NULL)<0 && base && base->feature_resource_get && base->feature_resource_get(base->ctx, p, f, n, out);
+    if (n==1 && i==2 && out) {
+        const S2CampaignStore *save=s2_campaign_file_store();
+        memset(out,0,sizeof *out); COPY(out->id,"campaign-sram");
+        COPY(out->label,"Campaign SRAM (optional)");
+        COPY(out->description,"Load and update a Sonic 2 campaign save. With none selected, the first save creates sonic2-campaign.srm beside the game. Clear selection keeps your files.");
+        COPY(out->path,s2_party.campaign_path);
+        COPY(out->file_patterns,"*.srm,*.sav"); COPY(out->file_description,"Sonic 2 campaign SRAM");
+        out->verified=save->ready && !save->read_only && save->exists;
+        COPY(out->status,!save->ready || save->read_only ? s2_campaign_file_error() :
+            !*s2_party.campaign_path ? "No file selected; uses the default on first save" :
+            !save->exists ? "File will be created here on the first save" : "Campaign verified; saves update this file");
+        return 1;
+    }
     if (n || !out) return 0;
     memset(out, 0, sizeof *out); COPY(out->id, "owner-rom");
     COPY(out->label, i ? "Sonic 3 & Knuckles combined ROM" : "Amy in Sonic 2 Rev 1.7.1 ROM");
@@ -107,6 +121,10 @@ static int resource_set(void *ctx, const char *p, const char *f, const char *r, 
 {
     (void)ctx; int i = owner(p, f); error[0] = 0;
     if (i < 0) return owner(p,NULL)<0 && base && base->feature_resource_set_path && base->feature_resource_set_path(base->ctx, p, f, r, path);
+    if (i==2 && r && !strcmp(r,"campaign-sram")) {
+        if (s2_campaign_file_select(path)) return 1;
+        COPY(error,s2_campaign_file_error()); return 0;
+    }
     if (!r || strcmp(r, "owner-rom")) return 0;
     int ok = s2_resource_set(i?1:0, path);
     if (!ok) COPY(error, s2_resource_error(i?1:0));
