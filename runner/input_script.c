@@ -58,12 +58,15 @@ typedef struct {
 /* ---- State ---- */
 
 #define MAX_OPS 4096
+#define SCRIPT_PLAYERS 4
 static ScriptOp s_ops[MAX_OPS];
 static int      s_op_count = 0;
 static int      s_pc       = 0;     /* next op to execute */
 static int      s_active   = 0;
 static uint64_t s_wait_until_frame = 0;
-static uint8_t  s_held_mask        = 0;
+static uint8_t  s_held_mask[SCRIPT_PLAYERS];
+static uint8_t  s_players_used[SCRIPT_PLAYERS];
+static unsigned s_parse_player;
 static int      s_exit_pending     = 0;
 static int      s_exit_code        = 0;
 static char     s_pending_screenshot[260];
@@ -72,9 +75,8 @@ static char     s_pending_load_state[260];
 static char     s_pending_ram_dump[260];
 static char     s_pending_vram_dump[260];
 
-/* PRESS auto-release tracking. Up to 4 simultaneous PRESS timers. */
-typedef struct { uint8_t mask; uint64_t release_frame; } PressTimer;
-static PressTimer s_press_timers[4];
+/* One deadline per button/player: presses cannot exhaust a small timer pool. */
+static uint64_t s_press_until[SCRIPT_PLAYERS][8];
 
 /* ---- Button name parsing ---- */
 
@@ -115,14 +117,24 @@ static int parse_line(char *line, int line_no) {
     int n = sscanf(p, "%63s %259s %259s", tok, a1, a2);
     if (n < 1) return 1;
 
+    if (!_stricmp(tok, "PLAYER")) {
+        if (n != 2 || strlen(a1) != 1 || a1[0] < '1' || a1[0] > '4') goto bad;
+        s_parse_player = (unsigned)(a1[0] - '1');
+        s_players_used[s_parse_player] = 1;
+        return 1;
+    }
+
     if (!_stricmp(tok, "WAIT") && n >= 2) {
         o->op    = OP_WAIT;
         o->arg32 = (uint32_t)strtoul(a1, NULL, 0);
     } else if (!_stricmp(tok, "HOLD") && n >= 2) {
         if (!parse_button(a1, &o->button_mask)) goto bad;
         o->op = OP_HOLD;
+        o->arg32 = s_parse_player;
+        s_players_used[s_parse_player] = 1;
     } else if (!_stricmp(tok, "RELEASE")) {
         o->op = OP_RELEASE;
+        o->arg32 = s_parse_player;
         if (n >= 2) {
             if (!parse_button(a1, &o->button_mask)) goto bad;
         } else {
@@ -131,6 +143,8 @@ static int parse_line(char *line, int line_no) {
     } else if (!_stricmp(tok, "PRESS") && n >= 3) {
         if (!parse_button(a1, &o->button_mask)) goto bad;
         o->op     = OP_PRESS;
+        o->arg32 = s_parse_player;
+        s_players_used[s_parse_player] = 1;
         o->arg32b = (uint32_t)strtoul(a2, NULL, 0);
     } else if ((!_stricmp(tok, "ASSERT_RAM8") || !_stricmp(tok, "WAIT_RAM8")) && n >= 3) {
         o->op     = !_stricmp(tok, "ASSERT_RAM8") ? OP_ASSERT_RAM8 : OP_WAIT_RAM8;
@@ -187,14 +201,16 @@ int input_script_load(const char *path) {
     s_pc = 0;
     s_active = 0;
     s_wait_until_frame = 0;
-    s_held_mask = 0;
+    memset(s_held_mask, 0, sizeof s_held_mask);
+    memset(s_players_used, 0, sizeof s_players_used);
+    s_parse_player = 0;
     s_exit_pending = 0;
     s_pending_screenshot[0] = '\0';
     s_pending_save_state[0] = '\0';
     s_pending_load_state[0] = '\0';
     s_pending_ram_dump[0] = '\0';
     s_pending_vram_dump[0] = '\0';
-    memset(s_press_timers, 0, sizeof(s_press_timers));
+    memset(s_press_until, 0, sizeof s_press_until);
     if (!path) return 0;
 
     FILE *f = fopen(path, "r");
@@ -224,10 +240,12 @@ void input_script_tick(uint64_t frame,
     if (!s_active) return;
 
     /* Auto-release any PRESS that has timed out. */
-    for (int i = 0; i < 4; i++) {
-        if (s_press_timers[i].mask && frame >= s_press_timers[i].release_frame) {
-            s_held_mask &= (uint8_t)~s_press_timers[i].mask;
-            s_press_timers[i].mask = 0;
+    for (unsigned p = 0; p < SCRIPT_PLAYERS; ++p) {
+        for (unsigned b = 0; b < 8; ++b) {
+            if (s_press_until[p][b] && frame >= s_press_until[p][b]) {
+                s_held_mask[p] &= (uint8_t)~(1u << b);
+                s_press_until[p][b] = 0;
+            }
         }
     }
 
@@ -245,23 +263,25 @@ void input_script_tick(uint64_t frame,
                 break;
 
             case OP_HOLD:
-                s_held_mask |= o->button_mask;
+                s_held_mask[o->arg32] |= o->button_mask;
+                for (unsigned b = 0; b < 8; ++b)
+                    if (o->button_mask & (1u << b)) s_press_until[o->arg32][b] = 0;
                 s_pc++;
                 break;
 
             case OP_RELEASE:
-                if (o->button_mask == 0xFF) s_held_mask = 0;
-                else                         s_held_mask &= (uint8_t)~o->button_mask;
+                s_held_mask[o->arg32] &= (uint8_t)~o->button_mask;
+                for (unsigned b = 0; b < 8; ++b)
+                    if (o->button_mask & (1u << b)) s_press_until[o->arg32][b] = 0;
                 s_pc++;
                 break;
 
             case OP_PRESS: {
-                s_held_mask |= o->button_mask;
-                int slot = -1;
-                for (int i = 0; i < 4; i++) if (!s_press_timers[i].mask) { slot = i; break; }
-                if (slot >= 0) {
-                    s_press_timers[slot].mask = o->button_mask;
-                    s_press_timers[slot].release_frame = frame + o->arg32b;
+                for (unsigned b = 0; b < 8; ++b) {
+                    if (!(o->button_mask & (1u << b))) continue;
+                    if (o->arg32b) s_held_mask[o->arg32] |= o->button_mask;
+                    else s_held_mask[o->arg32] &= (uint8_t)~o->button_mask;
+                    s_press_until[o->arg32][b] = o->arg32b ? frame + o->arg32b : 0;
                 }
                 s_pc++;
                 break;
@@ -377,7 +397,13 @@ void input_script_tick(uint64_t frame,
     }
 }
 
-uint8_t input_script_held_mask(void) { return s_held_mask;     }
+uint8_t input_script_player_mask(int player) {
+    return s_active && player >= 0 && player < SCRIPT_PLAYERS ? s_held_mask[player] : 0;
+}
+bool input_script_player_used(int player) {
+    return s_active && player >= 0 && player < SCRIPT_PLAYERS && s_players_used[player];
+}
+uint8_t input_script_held_mask(void) { return input_script_player_mask(0); }
 bool    input_script_should_exit(void){ return s_exit_pending != 0; }
 int     input_script_exit_code  (void){ return s_exit_code;    }
 bool    input_script_active     (void){ return s_active != 0;  }

@@ -22,6 +22,7 @@
 #include "genesis_runtime.h"
 #include "sonic_extras.h"
 #include "sonic2_video.h"
+#include "sonic2_options.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -230,9 +231,21 @@ static const GameDebugCommand sonic2_commands[] = {
     { "object_table", sonic2_cmd_object_table },
 };
 
+static int s2_instruction_hook(uint32_t pc)
+{
+    switch (pc) {
+    case 0x3CF6: case 0x8FCC: case 0x90E0: case 0x9186: case 0x91F8: case 0x909A:
+        return s2_options_hook(pc);
+    default: return s2_video_hook(pc);
+    }
+}
+
 const GameSpec g_game_spec = {
     .video                  = &sonic2_video,
-    .instruction_hook       = s2_video_hook,
+    .instruction_hook       = s2_instruction_hook,
+    .logical_players        = 4,
+    .load_settings          = s2_options_load,
+    .netplay_allowed        = s2_options_netplay_allowed,
     .main_cpu_divisor       = s2_video_main_cpu_divisor,
     .display_name           = "Sonic the Hedgehog 2",
     .short_name             = "Sonic2",

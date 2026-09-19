@@ -93,6 +93,8 @@ int app_config_load(const char *path)
             else if (!strcmp(name, "mods.widescreen")) section = 3;
             else if (!strcmp(name, "input.p1")) section = 10;
             else if (!strcmp(name, "input.p2")) section = 11;
+            else if (!strcmp(name, "input.p3")) section = 12;
+            else if (!strcmp(name, "input.p4")) section = 13;
             else section = -1;
             continue;
         }
@@ -123,8 +125,8 @@ int app_config_load(const char *path)
                 int aspect=app_config_aspect_index(val);
                 g_app_config.custom_aspect=aspect<0?0:aspect;
             }
-        } else if (section == 10 || section == 11) {
-            PlayerInput *pi = &g_input_map.p[section == 10 ? 0 : 1];
+        } else if (section >= 10 && section < 10 + INPUT_MAX_PLAYERS) {
+            PlayerInput *pi = &g_input_map.p[section - 10];
             if      (!strcmp(key, "device"))   pi->device       = atoi(val);
             else if (!strcmp(key, "pad_type")) pi->pad_type     = atoi(val);
             else if (!strcmp(key, "deadzone")) pi->deadzone_pct = atoi(val);
@@ -180,8 +182,7 @@ int app_config_save(const char *path)
     fprintf(f, "[mods.widescreen]\nenabled = %d\naspect = %s\n\n",
             g_app_config.custom_widescreen, app_config_aspect_mode(g_app_config.custom_aspect));
 
-    write_player(f, 0);
-    write_player(f, 1);
+    for (int p = 0; p < INPUT_MAX_PLAYERS; ++p) write_player(f, p);
 
     int ok=!ferror(f);
     if(fclose(f)!=0)ok=0;

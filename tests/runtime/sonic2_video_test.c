@@ -3,6 +3,8 @@
 
 uint8_t g_ram[65536],g_rom[0x400000];
 M68KState g_cpu;
+void s2_options_overlay(const GVDP *v,int line,uint32_t *out,int width)
+{ (void)v; (void)line; (void)out; (void)width; }
 void m68k_write8(uint32_t a,uint8_t v){g_ram[a&65535]=v;}
 void m68k_write16(uint32_t a,uint16_t v){m68k_write8(a,v>>8);m68k_write8(a+1,v);}
 void m68k_write32(uint32_t a,uint32_t v){m68k_write16(a,v>>16);m68k_write16(a+2,v);}

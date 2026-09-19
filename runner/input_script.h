@@ -7,8 +7,9 @@
  * Format (one directive per line, # comments, blank lines OK):
  *
  *   WAIT N               wait N frames before processing the next line
+ *   PLAYER N             target logical player 1..4 (initially 1)
  *   HOLD <BUTTON>        start holding the button (until RELEASE or EXIT)
- *   RELEASE [BUTTON]     release one button; with no arg, release all
+ *   RELEASE [BUTTON]     release one button; no arg releases this player's buttons
  *   PRESS <BUTTON> N     hold for N frames then auto-release
  *   ASSERT_RAM8 <addr> <value>    fail-fast if RAM byte != value
  *   WAIT_RAM8   <addr> <value>    block until RAM byte == value
@@ -66,6 +67,8 @@ void input_script_tick(uint64_t frame,
  *   bit 3 RIGHT bit 7 START
  */
 uint8_t input_script_held_mask(void);
+uint8_t input_script_player_mask(int player);
+bool input_script_player_used(int player);
 
 /* True iff the script ran an EXIT directive. The caller should
  * cleanly tear down (close TCP server, flush logs, exit). */

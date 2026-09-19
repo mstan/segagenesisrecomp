@@ -15,4 +15,8 @@ typedef struct GameVideo {
     void (*scanline)(const struct GVDP *vdp, int line,
                      const uint32_t *native, int native_w,
                      uint32_t *out, int width);
+    /* Additive game UI/actors after native OR custom rendering. Independent
+     * of aspect mode; must not advance simulation or mutate the guest. */
+    void (*overlay_scanline)(const struct GVDP *vdp, int line,
+                             uint32_t *out, int width);
 } GameVideo;

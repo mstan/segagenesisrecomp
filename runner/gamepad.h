@@ -12,7 +12,7 @@
  *   gamepad_handle_event(ev) — call for every SDL_Event the runner polls.
  *                              Handles add/remove and shoulder-edge taps.
  *   gamepad_player_mask(p)        — GPAD_* bit mask of held buttons for player
- *                                   p (0/1), resolved through g_input_map's
+ *                                   p (0..3), resolved through g_input_map's
  *                                   per-player bindings + deadzone + pad type.
  *   gamepad_turbo_held()          — 1 while Back/View is held.
  *   gamepad_consume_quicksave()   — returns slot 1..9 once per LB press,
@@ -37,10 +37,11 @@ void gamepad_init(void);
 void gamepad_shutdown(void);
 void gamepad_handle_event(const SDL_Event *ev);
 
-/* GPAD_* (genesis_bus.h) bit mask of currently-held buttons for player 0/1,
+/* GPAD_* (genesis_bus.h) bit mask of currently-held buttons for player 0..3,
  * resolved via that player's bindings in g_input_map. Returns 0 when no
  * controller is assigned to that player. */
 uint16_t gamepad_player_mask(int player);
+int gamepad_player_connected(int player);
 
 int     gamepad_turbo_held(void);
 int     gamepad_consume_quicksave(void);

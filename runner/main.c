@@ -543,10 +543,12 @@ static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
     if (s_custom_width && g_game_spec.video) {
         g_game_spec.video->scanline(&g_machine.vdp, line, argb, width, row, s_custom_width);
-        return;
+    } else {
+        int n = width < MAX_SCREEN_WIDTH ? width : MAX_SCREEN_WIDTH;
+        for (int x = 0; x < n; x++) row[x] = argb[x];
     }
-    int n = width < MAX_SCREEN_WIDTH ? width : MAX_SCREEN_WIDTH;
-    for (int x = 0; x < n; x++) row[x] = argb[x];
+    if (g_game_spec.video && g_game_spec.video->overlay_scanline)
+        g_game_spec.video->overlay_scanline(&g_machine.vdp, line, row, s_screen_width);
 }
 
 static void custom_video_prepare(void)
@@ -738,9 +740,10 @@ static cc_bool input_requested_cb(void *user_data,
      * (nobody typing ⇒ identical stream), but a human can always grab the
      * controls mid-script — previously a script parked on WAIT_RAM16 or a
      * finished TCP probe locked the keyboard out entirely. Sources can only
-     * ADD buttons, never mask a live press. P1-only (dev/regression tooling). */
-    if (player_id == 0 && input_script_active()) {
-        uint8_t mask = input_script_held_mask();
+     * ADD buttons, never mask a live press. Timeline scripts address both
+     * native ports; enhanced actors can read the independent P3/P4 masks. */
+    if (input_script_active()) {
+        uint8_t mask = input_script_player_mask(player_id);
         switch (button_id) {
             case GB_UP:    if (mask & 0x01) return cc_true; break;
             case GB_DOWN:  if (mask & 0x02) return cc_true; break;
@@ -1616,6 +1619,7 @@ int main(int argc, char *argv[])
     }
     app_config_defaults();
     app_config_load(settings_ini);   /* also seeds g_input_map controller bindings */
+    if (g_game_spec.load_settings) g_game_spec.load_settings(settings_ini);
 #if GENESIS_HAS_RECOMP_NET && RECOMP_LAUNCHER
     genesis_launcher_netplay_init(g_game_spec.display_name, GENESIS_GAME_VERSION,
                                   exe_relative("genesis-netplay-room.txt"));
@@ -1668,7 +1672,7 @@ int main(int argc, char *argv[])
                     ls.audio_freq       = 48000;   /* engine device rate (audio.c want.freq) */
                     ls.volume           = g_app_config.volume;
                     ls.skip_launcher    = g_app_config.skip_launcher;
-                    for (int p = 0; p < 2; p++) {
+                    for (int p = 0; p < INPUT_MAX_PLAYERS; p++) {
                         int dev = g_input_map.p[p].device;
                         ls.player_src[p] = (dev == INPUT_DEV_NONE)    ? 0
                                          : (dev & INPUT_DEV_KEYBOARD) ? 1 : 2;
@@ -1684,7 +1688,8 @@ int main(int argc, char *argv[])
                     gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
                     gi.widescreen_supported = !g_game_spec.video && g_game_layout.ws_capable;
                     gi.mods = app_config_video_mods(g_game_spec.video,settings_ini);
-                    gi.num_players          = 2;   /* both controller ports configurable */
+                    gi.num_players = g_game_spec.logical_players ? (int)g_game_spec.logical_players : 2;
+                    if (gi.num_players > INPUT_MAX_PLAYERS) gi.num_players = INPUT_MAX_PLAYERS;
                     gi.platform             = "SEGA GENESIS";  /* infers the genesis profile */
                     gi.theme                = "genesis";
                     gi.rom_noun             = "ROM";
@@ -1747,7 +1752,7 @@ int main(int argc, char *argv[])
                         g_app_config.widescreen_cells = ls.widescreen_cells;
                         g_app_config.volume           = ls.volume;
                         g_app_config.skip_launcher    = ls.skip_launcher;
-                        for (int p = 0; p < 2; p++) {
+                        for (int p = 0; p < gi.num_players; p++) {
                             int src = ls.player_src[p];
                             g_input_map.p[p].device       = (src == 1) ? INPUT_DEV_KEYBOARD
                                                           : (src == 2) ? INPUT_DEV_GAMEPAD
@@ -2133,6 +2138,10 @@ int main(int argc, char *argv[])
     free(rom_raw);   /* glue_init copied what it needs */
 
 #if GENESIS_HAS_RECOMP_NET
+    if (netplay_config.enabled && g_game_spec.netplay_allowed && !g_game_spec.netplay_allowed()) {
+        fprintf(stderr, "genesis_netplay: this local enhancement/roster is not supported online\n");
+        return 1;
+    }
     if (netplay_config.enabled && genesis_netplay_start(&netplay_config) != 0) {
         fprintf(stderr, "genesis_netplay: failed to start session\n");
         return 1;

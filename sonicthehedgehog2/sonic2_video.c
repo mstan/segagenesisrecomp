@@ -676,4 +676,5 @@ void s2_video_command(int id, const char *json)
         s_tick_samples,s_tick_updates,s_tick_lag,s_tick_multi,s_publication_lag);
     cmd_send_response(reply);
 }
-const GameVideo sonic2_video = { configure, enabled, width, scanline };
+extern void s2_options_overlay(const GVDP *, int, uint32_t *, int);
+const GameVideo sonic2_video = { configure, enabled, width, scanline, s2_options_overlay };

@@ -5,7 +5,7 @@
  * path covers XInput (Xbox pads on Windows), HID (PS / Switch Pro), and SDL's
  * controller database.
  *
- * Up to two controllers are opened and assigned to player 0 / player 1 in plug
+ * Up to four controllers are opened and assigned to logical players in plug
  * order. Each player's button mask is resolved through g_input_map's rebindable
  * per-player bindings (set in the launcher), plus an always-on left-analog-stick
  * -> d-pad convenience. The quicksave / quickload / turbo shortcuts live on
@@ -19,9 +19,8 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
-/* Up to two controllers, indexed by player. */
-static SDL_GameController *s_pad[2]     = { NULL, NULL };
-static SDL_JoystickID      s_pad_jid[2] = { -1, -1 };
+static SDL_GameController *s_pad[INPUT_MAX_PLAYERS];
+static SDL_JoystickID s_pad_jid[INPUT_MAX_PLAYERS] = { -1, -1, -1, -1 };
 
 /* Edge-triggered shoulder latches (consumed by main loop once per press). */
 static int s_pending_save = 0;
@@ -31,10 +30,10 @@ static void open_pad_index(int joystick_index)
 {
     if (!SDL_IsGameController(joystick_index)) return;
 
-    /* Find a free player slot (0 then 1). */
+    /* Preserve other assignments on disconnect; fill the first empty slot. */
     int slot = -1;
-    for (int i = 0; i < 2; i++) if (!s_pad[i]) { slot = i; break; }
-    if (slot < 0) return;                    /* both players already have a pad */
+    for (int i = 0; i < INPUT_MAX_PLAYERS; i++) if (!s_pad[i]) { slot = i; break; }
+    if (slot < 0) return;
 
     SDL_GameController *c = SDL_GameControllerOpen(joystick_index);
     if (!c) {
@@ -44,7 +43,7 @@ static void open_pad_index(int joystick_index)
     }
     /* Don't open the same physical device twice (event + initial scan race). */
     SDL_JoystickID jid = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(c));
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < INPUT_MAX_PLAYERS; i++) {
         if (s_pad[i] && s_pad_jid[i] == jid) { SDL_GameControllerClose(c); return; }
     }
     s_pad[slot]     = c;
@@ -54,7 +53,7 @@ static void open_pad_index(int joystick_index)
 
 static void close_pad_by_jid(SDL_JoystickID jid)
 {
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < INPUT_MAX_PLAYERS; i++) {
         if (s_pad[i] && s_pad_jid[i] == jid) {
             fprintf(stderr, "[gamepad] P%d removed: %s\n", i + 1,
                     SDL_GameControllerName(s_pad[i]));
@@ -75,7 +74,7 @@ void gamepad_init(void)
 
 void gamepad_shutdown(void)
 {
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < INPUT_MAX_PLAYERS; i++) {
         if (s_pad[i]) SDL_GameControllerClose(s_pad[i]);
         s_pad[i]     = NULL;
         s_pad_jid[i] = -1;
@@ -135,7 +134,7 @@ static int bind_held(SDL_GameController *c, const GamepadBind *bind, int deadzon
 
 uint16_t gamepad_player_mask(int player)
 {
-    if (player < 0 || player > 1) return 0;
+    if (player < 0 || player >= INPUT_MAX_PLAYERS) return 0;
     SDL_GameController *c = s_pad[player];
     if (!c) return 0;
 
@@ -159,6 +158,12 @@ uint16_t gamepad_player_mask(int player)
     if (ly >  dz) m |= input_button_bit(GB_DOWN);
 
     return m;
+}
+
+int gamepad_player_connected(int player)
+{
+    return player >= 0 && player < INPUT_MAX_PLAYERS && s_pad[player] &&
+        SDL_GameControllerGetAttached(s_pad[player]);
 }
 
 int gamepad_turbo_held(void)

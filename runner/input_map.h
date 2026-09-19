@@ -60,8 +60,10 @@ typedef struct PlayerInput {
     GamepadBind pad[GB_COUNT];     /* gamepad binding per button */
 } PlayerInput;
 
+enum { INPUT_MAX_PLAYERS = 4 };
 typedef struct InputMap {
-    PlayerInput p[2];
+    /* Host logical players; the Genesis bus still exposes two physical ports. */
+    PlayerInput p[INPUT_MAX_PLAYERS];
 } InputMap;
 
 /* The single live instance the runner + launcher read/write. */
@@ -90,6 +92,8 @@ const char *input_button_name(GenesisButton b);
 
 /* Whether a player currently contributes input (device != NONE). */
 cc_bool input_player_enabled(int player);
+/* True when a configured local device exists, not just when buttons are held. */
+cc_bool input_player_connected(int player);
 
 #ifdef __cplusplus
 }

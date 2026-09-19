@@ -50,6 +50,27 @@ discovery_files = [
 #   - plc_pending is 0 (call_periodic is NULL on Sonic 2; gate isn't read).
 # ---------------------------------------------------------------------------
 # Opt-in custom renderer sites: canonical REV01 s2_canonical.lst.
+# Additive roster page: verified stock REV01 routine entry points. These
+# game-owned callbacks do not depend on whether widescreen is enabled.
+[[widescreen_site]]
+addr = 0x3CF6 # TitleScreen_CheckIfChose2P: require a non-NONE P2
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x8FCC # MenuScreen_Options: reset host cursor, retain native init
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x90E0 # OptionScreen_Controls: six-row roster navigation
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x9186 # OptionScreen_DrawSelected
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x91F8 # OptionScreen_DrawUnselected
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x909A # OptionScreen_Select: persist and return to title
+kind = "game_hook"
+
 [[widescreen_site]]
 addr = 0x16F16 # ChkObjectVisible
 kind = "game_hook"

@@ -86,11 +86,16 @@ void input_map_init_defaults(void)
     set_btn(p2, GB_Y,     SDL_SCANCODE_O,      SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
     set_btn(p2, GB_Z,     SDL_SCANCODE_P,      SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
     set_btn(p2, GB_MODE,  SDL_SCANCODE_SLASH,  SDL_CONTROLLER_BUTTON_BACK);
+    for (int p = 2; p < INPUT_MAX_PLAYERS; ++p) {
+        g_input_map.p[p] = *p1;
+        g_input_map.p[p].device = INPUT_DEV_GAMEPAD;
+        memset(g_input_map.p[p].key, 0, sizeof g_input_map.p[p].key);
+    }
 }
 
 uint16_t input_map_key_mask(int player)
 {
-    if (player < 0 || player > 1) return 0;
+    if (player < 0 || player >= INPUT_MAX_PLAYERS) return 0;
     const Uint8 *ks = SDL_GetKeyboardState(NULL);
     if (!ks) return 0;
     const PlayerInput *pi = &g_input_map.p[player];
@@ -105,7 +110,7 @@ uint16_t input_map_key_mask(int player)
 
 uint16_t input_current_mask(int player)
 {
-    if (player < 0 || player > 1) return 0;
+    if (player < 0 || player >= INPUT_MAX_PLAYERS) return 0;
     const PlayerInput *pi = &g_input_map.p[player];
     uint16_t m = 0;
     if (pi->device & INPUT_DEV_KEYBOARD) m |= input_map_key_mask(player);
@@ -115,6 +120,14 @@ uint16_t input_current_mask(int player)
 
 cc_bool input_player_enabled(int player)
 {
-    if (player < 0 || player > 1) return cc_false;
+    if (player < 0 || player >= INPUT_MAX_PLAYERS) return cc_false;
     return g_input_map.p[player].device != INPUT_DEV_NONE ? cc_true : cc_false;
+}
+
+cc_bool input_player_connected(int player)
+{
+    if (player < 0 || player >= INPUT_MAX_PLAYERS) return cc_false;
+    int device = g_input_map.p[player].device;
+    return ((device & INPUT_DEV_KEYBOARD) ||
+        ((device & INPUT_DEV_GAMEPAD) && gamepad_player_connected(player))) ? cc_true : cc_false;
 }

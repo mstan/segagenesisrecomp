@@ -37,6 +37,10 @@ typedef struct {
 
 typedef struct GameSpec {
     const GameVideo *video;          /* NULL = native VDP presentation only */
+    unsigned logical_players;       /* 0 = native two ports; host input/UI capacity */
+    void (*load_settings)(const char *settings_path);
+    /* Optional local-only enhancement guard, also checked for CLI netplay. */
+    int (*netplay_allowed)(void);
     /* ---- Identity ---- */
     const char *display_name;        /* "Sonic the Hedgehog" — window title */
     const char *short_name;          /* "Sonic1" — shows up in info / ping */

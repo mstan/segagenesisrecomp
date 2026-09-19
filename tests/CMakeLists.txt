@@ -22,6 +22,22 @@ endif()
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
 
+add_executable(sonic2_party_test runtime/sonic2_party_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_party.c")
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/party-fixtures")
+add_test(NAME sonic2_party COMMAND sonic2_party_test)
+set_tests_properties(sonic2_party PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/party-fixtures")
+
+add_executable(input_script_party_test runtime/input_script_party_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/input_script.c")
+target_include_directories(input_script_party_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
+add_test(NAME input_script_party COMMAND input_script_party_test "${CMAKE_CURRENT_LIST_DIR}/runtime/input_script_party.input")
+
+add_executable(sonic2_donor_test runtime/sonic2_donor_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_donor_assets.c")
+add_test(NAME sonic2_donor COMMAND sonic2_donor_test)
+
 add_executable(sonic1_video_test runtime/sonic1_video_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog/sonic1_video.c")
 target_include_directories(sonic1_video_test PRIVATE
@@ -57,6 +73,35 @@ if(UNIX)
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
+    add_executable(sonic2_donor_inspect "${CMAKE_CURRENT_LIST_DIR}/../tools/sonic2_donor_inspect.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_donor_assets.c"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/sha256.c")
+    target_include_directories(sonic2_donor_inspect PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/video"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common")
+    if(TARGET SDL2::SDL2 AND TARGET SonicTheHedgehog2Recomp)
+        add_executable(party_input_test runtime/party_input_test.c
+            "${CMAKE_CURRENT_LIST_DIR}/../runner/input_map.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../runner/gamepad.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../runner/app_config.c"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src/consoles/genesis/genesis_binds.c")
+        target_include_directories(party_input_test PRIVATE
+            "${CMAKE_CURRENT_LIST_DIR}/../runner"
+            "${CMAKE_CURRENT_LIST_DIR}/../runner/include"
+            "${CMAKE_CURRENT_LIST_DIR}/../runner/external/clowncommon"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src/common"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src/platform"
+            ${SDL2_PARENT_INCLUDE_DIRS})
+        target_link_libraries(party_input_test PRIVATE SDL2::SDL2)
+        if(WIN32)
+            add_custom_command(TARGET party_input_test POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${SDL2_BUNDLED}/lib/x64/SDL2.dll" "$<TARGET_FILE_DIR:party_input_test>")
+        endif()
+        add_test(NAME party_input COMMAND party_input_test "${CMAKE_CURRENT_BINARY_DIR}/party-input-test.ini")
+    endif()
     add_executable(video_mod_test runtime/video_mod_test.c "${CMAKE_CURRENT_LIST_DIR}/../runner/app_config.c")
     # Exercise the real launcher model with the consumer's actual compile gate:
     # a working provider alone does not guarantee the Mods entry is visible.
