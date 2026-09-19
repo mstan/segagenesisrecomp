@@ -7,7 +7,8 @@
 
 [game]
 output_prefix = "sonic"
-# Annotations: full s1disasm REV00 label set (~7300 entries).
+# Verified s1disasm REV00 code labels (includes nested 68000 source files).
+# Regenerate with tools/sonic_disassembly.py --install.
 annotations = "annotations_from_disasm.csv"
 
 # Auto-generated discovery files (regen via tests/tools/gen_disasm_*.py).

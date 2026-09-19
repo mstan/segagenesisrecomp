@@ -55,7 +55,9 @@ Key recompiler features:
 git clone --recursive https://github.com/mstan/segagenesisrecomp.git
 ```
 
-The recursive clone checks out the shared 68000, Z80, and netplay submodules.
+The recursive clone checks out the shared 68000, Z80, netplay, and Sonic
+disassembly submodules. See [DISASSEMBLIES.md](docs/DISASSEMBLIES.md) for
+ROM-verified annotation regeneration and headless Ghidra imports.
 There is no emulator-core or AGPL dependency in the repository.
 
 ## Platform Support
