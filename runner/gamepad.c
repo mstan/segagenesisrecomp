@@ -5,7 +5,7 @@
  * path covers XInput (Xbox pads on Windows), HID (PS / Switch Pro), and SDL's
  * controller database.
  *
- * Up to four controllers are opened and assigned to logical players in plug
+ * Two controllers by default; games may opt into up to four logical players in plug
  * order. Each player's button mask is resolved through g_input_map's rebindable
  * per-player bindings (set in the launcher), plus an always-on left-analog-stick
  * -> d-pad convenience. The quicksave / quickload / turbo shortcuts live on
@@ -21,6 +21,7 @@
 
 static SDL_GameController *s_pad[INPUT_MAX_PLAYERS];
 static SDL_JoystickID s_pad_jid[INPUT_MAX_PLAYERS] = { -1, -1, -1, -1 };
+static unsigned s_player_limit = 2;
 
 /* Edge-triggered shoulder latches (consumed by main loop once per press). */
 static int s_pending_save = 0;
@@ -32,7 +33,7 @@ static void open_pad_index(int joystick_index)
 
     /* Preserve other assignments on disconnect; fill the first empty slot. */
     int slot = -1;
-    for (int i = 0; i < INPUT_MAX_PLAYERS; i++) if (!s_pad[i]) { slot = i; break; }
+    for (unsigned i = 0; i < s_player_limit; i++) if (!s_pad[i]) { slot = (int)i; break; }
     if (slot < 0) return;
 
     SDL_GameController *c = SDL_GameControllerOpen(joystick_index);
@@ -66,6 +67,13 @@ static void close_pad_by_jid(SDL_JoystickID jid)
 
 void gamepad_init(void)
 {
+    gamepad_init_players(2);
+}
+
+void gamepad_init_players(unsigned logical_players)
+{
+    s_player_limit = logical_players ? logical_players : 2;
+    if (s_player_limit > INPUT_MAX_PLAYERS) s_player_limit = INPUT_MAX_PLAYERS;
     /* Walk the already-attached joysticks so pads plugged in before the window
      * opened still work without waiting for a re-plug. */
     int n = SDL_NumJoysticks();
@@ -81,6 +89,7 @@ void gamepad_shutdown(void)
     }
     s_pending_save = 0;
     s_pending_load = 0;
+    s_player_limit = 2;
 }
 
 void gamepad_handle_event(const SDL_Event *ev)

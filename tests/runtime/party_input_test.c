@@ -41,6 +41,14 @@ int main(int argc,char **argv)
         joystick[p]=SDL_JoystickOpen(device[p]); CHECK(joystick[p]);
     }
     gamepad_init(); events();
+    CHECK(gamepad_player_connected(0) && gamepad_player_connected(1));
+    CHECK(!gamepad_player_connected(2) && !gamepad_player_connected(3));
+    gamepad_shutdown();
+    gamepad_init_players(0); events();
+    CHECK(gamepad_player_connected(0) && gamepad_player_connected(1));
+    CHECK(!gamepad_player_connected(2) && !gamepad_player_connected(3));
+    gamepad_shutdown();
+    gamepad_init_players(4); events();
     for (int p=0;p<4;++p) CHECK(gamepad_player_connected(p));
     CHECK(!gamepad_player_connected(4) && !gamepad_player_connected(-1));
     CHECK(SDL_JoystickSetVirtualButton(joystick[2],SDL_CONTROLLER_BUTTON_A,1)==0);
@@ -63,6 +71,6 @@ int main(int argc,char **argv)
         if (index>=0) CHECK(SDL_JoystickDetachVirtual(index)==0);
     }
     SDL_Quit(); remove(path);
-    puts("party_input: four-device masks, disconnect isolation, UI/engine settings round-trip OK");
+    puts("party_input: default two-pad limit, opt-in four-device masks, disconnect isolation, UI/engine settings round-trip OK");
     return 0;
 }

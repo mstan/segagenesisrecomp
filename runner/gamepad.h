@@ -34,6 +34,9 @@ union SDL_Event;
 typedef union SDL_Event SDL_Event;
 
 void gamepad_init(void);
+/* Explicit game capability, before polling events. Zero retains two players.
+ * Call only at startup or after gamepad_shutdown(). */
+void gamepad_init_players(unsigned logical_players);
 void gamepad_shutdown(void);
 void gamepad_handle_event(const SDL_Event *ev);
 

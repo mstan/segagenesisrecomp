@@ -1950,7 +1950,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         return 1;
     }
-    gamepad_init();
+    gamepad_init_players(g_game_spec.logical_players);
 
     /* Build-type-aware window title so the RECOMPILED (native) window is
      * visually distinguishable from the INTERPRETER (oracle) window when both
