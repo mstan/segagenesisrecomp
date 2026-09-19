@@ -14,7 +14,10 @@ p = argparse.ArgumentParser(description=__doc__)
 for name in ("exe", "rom", "amy", "s3k", "out"):
     p.add_argument(f"--{name}", type=Path, required=True)
 p.add_argument("--scene", choices=("spring", "combat", "monitor", "special", "recovery", "boss", "climb"), required=True)
-p.add_argument("--swap", action="store_true", help="Special-stage P1 Tails/P2 Sonic")
+special_roster = p.add_mutually_exclusive_group()
+special_roster.add_argument("--swap", action="store_true", help="Campaign P1 Tails/P2 Sonic")
+special_roster.add_argument("--solo", action="store_true", help="Solo Amy campaign; special stage must still contain both native characters")
+special_roster.add_argument("--stock", action="store_true", help="Default Sonic/Tails roster; native special-stage reference")
 a = p.parse_args()
 out = a.out.resolve()
 out.mkdir(parents=True, exist_ok=False)
@@ -22,7 +25,14 @@ exe = out / a.exe.name
 shutil.copy2(a.exe, exe)
 shutil.copy2(a.exe.parent / "SDL2.dll", out / "SDL2.dll")
 roster = ["amy", "knuckles", "sonic", "tails"] if a.scene == "special" and not a.swap else ["tails", "sonic", "knuckles", "amy"]
-(out / "sonic2-party.ini").write_text("slots=4\namy_enabled=1\ns3k_enabled=1\n" +
+slots = 4
+if a.solo:
+    assert a.scene == "special"
+    slots, roster = 1, ["amy", "none", "none", "none"]
+elif a.stock:
+    assert a.scene == "special"
+    slots, roster = 2, ["sonic", "tails", "none", "none"]
+(out / "sonic2-party.ini").write_text(f"slots={slots}\namy_enabled=1\ns3k_enabled=1\n" +
     f"amy_path={a.amy.resolve().as_posix()}\ns3k_path={a.s3k.resolve().as_posix()}\n" +
     "".join(f"player{i+1}={name}\n" for i, name in enumerate(roster)))
 script = ["WAIT 600", "PRESS START 2", "WAIT 40", "PRESS START 2", "WAIT 220", "ASSERT_RAM8 FFF600 0C"]
@@ -152,9 +162,13 @@ signed = lambda r, at: int.from_bytes(r[at:at+2], "big", signed=True)
 before = ram("before")
 if a.scene == "special":
     ss, moved, returned = ram("halfpipe"), ram("input"), ram("return")
-    assert [ss[0xb000],ss[0xb040]] == ([0x10,9] if a.swap else [9,9])
+    assert [ss[0xb000],ss[0xb040]] == [9,0x10], "Special stages must always use native Sonic/Tails"
+    assert word(ss,0xff70) == 0, "Special-stage mode must include both native characters"
     assert ss[0xb066] != moved[0xb066], "P2 half-pipe input did not change angle"
-    assert [returned[o] for o in (0xb000,0xb040,0xcfc0,0xcf80)] == ([2,1,1,1] if a.swap else [1,1,1,2])
+    ids = {"sonic":1,"tails":2,"amy":1,"knuckles":1,"none":0}
+    assert [returned[o] for o in (0xb000,0xb040,0xcfc0,0xcf80)] == [ids[c] for c in roster]
+    saved = (out/"sonic2-party.ini").read_text()
+    assert f"slots={slots}\n" in saved and all(f"player{i+1}={c}\n" in saved for i,c in enumerate(roster))
     assert returned[0xfe12] == before[0xfe12], "SS round-trip spent a life"
 elif a.scene not in ("boss", "climb"):
     after = ram("after")

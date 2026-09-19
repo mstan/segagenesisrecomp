@@ -23,6 +23,8 @@ for character,donor in (("amy",a.amy),("knuckles",a.s3k)):
 for scene in ("spring","combat","monitor","recovery","boss","climb","special"):
     cases.append((scene,"run_sonic2_interactions.py",donors+["--scene",scene]))
 cases.append(("special-swap","run_sonic2_interactions.py",donors+["--scene","special","--swap"]))
+cases.append(("special-solo","run_sonic2_interactions.py",donors+["--scene","special","--solo"]))
+cases.append(("special-stock","run_sonic2_interactions.py",donors+["--scene","special","--stock"]))
 cases.append(("checkpoint","run_sonic2_checkpoint.py",donors))
 cases.append(("checkpoint-native-extras","run_sonic2_checkpoint.py",donors+["--native-extras"]))
 results=[]
@@ -33,4 +35,10 @@ for name,script,extra in cases:
     (a.out/"results.json").write_text(json.dumps(results,indent=2)+"\n")
     if result.returncode:
         raise SystemExit(f"FAILED {name}; retained diagnostics under {a.out/name}")
+# Identical native half-pipe presentation, including after P2 input, regardless
+# of campaign characters, swapped roles, or a solo roster with P2=NONE.
+for frame in ("halfpipe.png","input.png"):
+    reference=(a.out/"special-stock"/frame).read_bytes()
+    for case in ("special","special-swap","special-solo"):
+        assert (a.out/case/frame).read_bytes()==reference, f"{case}: non-native SS presentation at {frame}"
 print(f"PASS {len(results)} serial live party cases; human visual/audio/controller approval still required")

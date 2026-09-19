@@ -88,6 +88,8 @@ ram = lambda name: (out/(name+'.bin')).read_bytes()
 word = lambda r, at: int.from_bytes(r[at:at+2],'big')
 assert ram('checkpoint')[0xfe30]==2 and word(ram('checkpoint'),0xfe3e)==0x0c0d
 assert ram('halfpipe')[0xf600]==16
+assert [ram('halfpipe')[0xb000],ram('halfpipe')[0xb040]]==[9,0x10]
+assert word(ram('halfpipe'),0xff70)==0
 for name in ('return-early','return','settled','checkpoint-recovery','secondary-recovery'):
     r=ram(name)
     assert r[0xfe12]==ram('before')[0xfe12], f'{name}: companion spent P1 life'

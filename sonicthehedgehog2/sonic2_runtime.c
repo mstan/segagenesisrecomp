@@ -106,7 +106,6 @@ const char *s2_runtime_state_unavailable_reason(void)
     return vanilla()?NULL:"Experimental party controllers are not serialized by machine quickstates; use a fresh native game.";
 }
 static int level(void) { return active && ((g_ram[0xF600]&0x7F)==12); }
-static int special_stage(void) { return active && g_ram[0xF600]==16; }
 static unsigned native_id(unsigned p)
 {
     const S2Character *c=s2_character_find(s2_party.roster.character[p]);
@@ -334,63 +333,21 @@ static int update_player(unsigned p, uint32_t entry)
     g_cpu=cpu;
     return 1;
 }
-static int special_hook(uint32_t pc)
-{
-    if (pc==0x5152) {
-        objects[2]=objects[3]=0; /* SS reserves a different native object pool. */
-        g_ram[0xB000]=native_id(0)==2?0x10:9;
-        g_ram[0xB040]=native_id(1)?(native_id(1)==2?0x10:9):0;
-        return 0;
-    }
-    if (pc==0x338EC || pc==0x347EC) {
-        unsigned o=g_cpu.A[0]&0xFFFF;
-        if (inside_player || (o!=0xB000 && o!=0xB040)) return 0;
-        unsigned p=o==0xB040; int init=!g_ram[o+0x24];
-        M68KState before=g_cpu;
-        uint16_t mode=word(0xFF70), controls=word(0xF602);
-        actor=p; inside_player=1;
-        /* Role and character remain separate in the native half-pipe rules. */
-        putword(0xFF70,p==0 && pc==0x347EC?2:mode);
-        if (p && pc==0x338EC) {
-            if (!input_player_connected(1) && !input_script_player_used(1)) host_call(0x34972);
-            putword(0xF602,word(0xF66A));
-        }
-        recomp_call_addr(pc);
-        if (init) { putword(o+0x34,p?0x80:0x6E); g_ram[o+0x18]=p?2:3; }
-        putword(0xFF70,mode); putword(0xF602,controls);
-        inside_player=0; actor=-1; g_cpu=before; return 1;
-    }
-    if (!inside_player) return 0;
-    if (pc==0x33AB2 && imported()) {
-        unsigned o=g_cpu.A[0]&0xFFFF;
-        if (g_ram[o+0x23]) --g_ram[o+0x23];
-        return 1; /* don't overwrite a real Sonic's shared SS DMA tiles */
-    }
-    if (pc==0x3399E || pc==0x34888) {
-        /* Each ROLE owns a distinct shadow, including two Obj09-based imports. */
-        g_cpu.A[1]=actor?0xFFFFB180u:0xFFFFB140u; return 0;
-    }
-    if (pc==0x34972)
-        return actor==0 || input_player_connected(1) || input_script_player_used(1);
-    if (pc==0x33E44 && actor==0 && kind(0)==S2_CHAR_TAILS) {
-        static int swapping;
-        if (swapping) return 0;
-        uint16_t mode=word(0xFF70); putword(0xFF70,native_id(1)?0:1);
-        swapping=1; recomp_call_addr(pc); swapping=0; putword(0xFF70,mode); return 1;
-    }
-    return pc==0x164F4 && imported();
-}
 int s2_runtime_hook(uint32_t pc)
 {
 #if GENESIS_HAS_RECOMP_NET
     if (genesis_netplay_active()) return 0;
 #endif
     if (pc==0x4F64) {
-        active=!vanilla();
-        if (active) putword(0xFF70,native_id(1)?0:1);
+        /* Special stages ALWAYS use stock Sonic + Tails, even for a solo
+         * campaign roster. Native controllers, art, shadows and CPU follow
+         * run unmodified. Keep the persisted roster untouched: level init
+         * restores it after the native special-stage return. */
+        active=inside_player=0; actor=-1;
+        objects[2]=objects[3]=0;
+        putword(0xFF70,0);
         return 0;
     }
-    if (special_stage()) return special_hook(pc);
     if (pc==0x4450) { /* Level_SetPlayerMode: attract demos remain byte-identical */
         active=g_ram[0xF600]!=0x88 && !vanilla();
         if (!active) return 0;
@@ -525,37 +482,8 @@ int s2_runtime_hook(uint32_t pc)
     }
     return 0;
 }
-static void special_overlay(const GVDP *v, int line, uint32_t *out, int width)
-{
-    /* Half-pipe collision, rings, jumps, bombs and progress stay native. The
-     * imports use a rotated/perspective-scaled gameplay-art adapter, not a
-     * replacement special stage or assets from either donor's title screen. */
-    if (!(v->reg[1]&64) || (v->reg[12]&1)) return; /* exclude the results screen */
-    for (int p=1;p>=0;--p) {
-        unsigned o=objects[p];
-        if (kind(p)<S2_CHAR_AMY || g_ram[o]!=9 || !g_ram[o+0x24] || (g_ram[o+0x23]&1)) continue;
-        const S2DonorBank *b=bank(p); if (!b) continue;
-        unsigned anim=g_ram[o+0x24]==4?2:1;
-        unsigned count=anim==2?4:4, frame=b->animations[anim][1+(word(0xFE0E)/3)%count];
-        if (frame>=b->count) continue;
-        const S2DonorFrame *f=&b->frames[frame];
-        int angle=(g_ram[o+0x26]-64)&255, sn=sine(angle), cs=sine(angle+64);
-        int x=word(o+8)+(width-256)/2,y=word(o+12);
-        int scale=word(o+0x34)>=0x77?384:352; /* nearer player is larger */
-        int dy=(line-y)*256/scale;
-        for (int dx=-64;dx<64;++dx) {
-            int dest=x+dx; if (dest<0 || dest>=width) continue;
-            int sx=dx*256/scale;
-            int fx=(sx*cs+dy*sn)/256-f->x,fy=(-sx*sn+dy*cs)/256-f->y;
-            if (fx<0 || fy<0 || fx>=f->width || fy>=f->height) continue;
-            unsigned color=f->pixels[fy*f->width+fx];
-            if (color) out[dest]=genesis_dac_cram_to_argb(b->palette[color],GENESIS_DAC_NORMAL);
-        }
-    }
-}
 void s2_runtime_overlay(const GVDP *v, int line, uint32_t *out, int width)
 {
-    if (special_stage()) { special_overlay(v,line,out,width); return; }
     if (!level() || !g_ram[0xF711] || !(v->reg[1]&64)) return;
     int left,top;
     if (word(0xFFD8)) {

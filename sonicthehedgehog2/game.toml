@@ -60,31 +60,7 @@ kind = "game_hook"
 addr = 0x12A2C # shield_monitor: independent extra-player shield objects
 kind = "game_hook"
 [[widescreen_site]]
-addr = 0x4F64 # SpecialStage: role-independent native mode
-kind = "game_hook"
-[[widescreen_site]]
-addr = 0x5152 # SS player IDs have been initialized
-kind = "game_hook"
-[[widescreen_site]]
-addr = 0x338EC # Obj09: native half-pipe Sonic controller
-kind = "game_hook"
-[[widescreen_site]]
-addr = 0x347EC # Obj10: native half-pipe Tails controller
-kind = "game_hook"
-[[widescreen_site]]
-addr = 0x3399E # Obj09 shadow initialization after loading A1
-kind = "game_hook"
-[[widescreen_site]]
-addr = 0x34888 # Obj10 shadow initialization after loading A1
-kind = "game_hook"
-[[widescreen_site]]
-addr = 0x34972 # SSTailsCPU_Control
-kind = "game_hook"
-[[widescreen_site]]
-addr = 0x33E44 # SSPlayerSwapPositions
-kind = "game_hook"
-[[widescreen_site]]
-addr = 0x33AB2 # LoadSSSonicDynPLC: imported actor owns no native DMA tiles
+addr = 0x4F64 # SpecialStage: always native Sonic + Tails, independent of roster
 kind = "game_hook"
 [[widescreen_site]]
 addr = 0x189CA # spring launch: relinquish imported special-move trajectory

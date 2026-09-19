@@ -236,8 +236,7 @@ static const GameDebugCommand sonic2_commands[] = {
 static int s2_instruction_hook(uint32_t pc)
 {
     switch (pc) {
-    case 0x4F64: case 0x5152: case 0x338EC: case 0x347EC:
-    case 0x3399E: case 0x34888: case 0x34972: case 0x33E44: case 0x33AB2:
+    case 0x4F64:
     case 0x189CA: case 0x18AEE: case 0x18CC6: case 0x18DB4: case 0x18EE6:
     case 0x4450: case 0x446E: case 0x19F50: case 0x1B8A4:
     case 0x19FE6: case 0x1B96E:
