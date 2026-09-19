@@ -51,6 +51,27 @@ discovery_files = [
 # ---------------------------------------------------------------------------
 # Opt-in custom renderer sites: canonical REV01 s2_canonical.lst.
 [[widescreen_site]]
+addr = 0x3998 # TitleScreen: reset campaign session ownership
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x3CF4 # title 1 PLAYER reset complete, before RTS
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x142AE # results next act + inactive flag committed
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x3A898 # Sky Chase -> Wing Fortress destination committed
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x3AC54 # Wing Fortress -> Death Egg inactive flag committed
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x36198 # native SS Emerald flags/count committed
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x9C7C # EndingSequence entry, before clearing state
+kind = "game_hook"
+[[widescreen_site]]
 addr = 0x1296A # super_ring: campaign party shares P1 ring/life rewards
 kind = "game_hook"
 [[widescreen_site]]

@@ -2,6 +2,7 @@
 #include "sonic2_party.h"
 #include "sonic2_resources.h"
 #include "sonic2_runtime.h"
+#include "sonic2_save_menu.h"
 #include "genesis_runtime.h"
 #include "video/genesis_vdp.h"
 #include "video/genesis_dac.h"
@@ -20,6 +21,8 @@ void s2_options_load(const char *settings_path)
     s2_party_load(settings_path);
     s2_resources_load(settings_path);
     if (!s2_resource_verified(S2_RESOURCE_SK)) s2_party.s3k_enabled = 0;
+    if (!s2_resource_save_assets()) s2_party.save_menu_enabled=0;
+    s2_save_menu_load(settings_path);
     s2_runtime_load();
     s2_roster_validate(&s2_party.roster);
 }
@@ -27,7 +30,7 @@ void s2_options_load(const char *settings_path)
 int s2_options_netplay_allowed(void)
 {
     const S2Roster *r = &s2_party.roster;
-    return r->slots == 2 && !strcmp(r->character[0], "sonic") &&
+    return !s2_party.save_menu_enabled && r->slots == 2 && !strcmp(r->character[0], "sonic") &&
         !strcmp(r->character[1], "tails");
 }
 
@@ -130,6 +133,7 @@ void s2_options_overlay(const GVDP *v, int line, uint32_t *out, int width)
     if (genesis_netplay_active()) return;
 #endif
     s2_runtime_overlay(v, line, out, width);
+    if (s2_save_menu_overlay(line,out,width)) return;
     if (g_ram[0xF600] != 0x24 || !s_ready) return;
     int left = (width - 288) / 2;
     if (line >= 16 && line < 208) {

@@ -19,6 +19,7 @@ typedef struct S2PartyConfig {
     S2Roster roster;
     int amy_enabled;
     int s3k_enabled;
+    int save_menu_enabled; /* independent default-OFF S3&K feature */
     char amy_path[1024];
     char s3k_path[1024];
 } S2PartyConfig;

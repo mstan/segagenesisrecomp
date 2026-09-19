@@ -233,8 +233,10 @@ static const GameDebugCommand sonic2_commands[] = {
     { "object_table", sonic2_cmd_object_table },
 };
 
+#include "sonic2_save_menu.h"
 static int s2_instruction_hook(uint32_t pc)
 {
+    if (s2_save_menu_hook(pc)) return 1;
     switch (pc) {
     case 0x4F64:
     case 0x189CA: case 0x18AEE: case 0x18CC6: case 0x18DB4: case 0x18EE6:

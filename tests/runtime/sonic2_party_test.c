@@ -12,7 +12,7 @@ int main(void)
     s2_party_load("party-test-settings.ini");
     s2_party_defaults();
     S2Roster *r = &s2_party.roster;
-    CHECK(r->slots == 2 && s2_party.amy_enabled && !s2_party.s3k_enabled);
+    CHECK(r->slots == 2 && s2_party.amy_enabled && !s2_party.s3k_enabled && !s2_party.save_menu_enabled);
     CHECK(!strcmp(r->character[0],"sonic") && !strcmp(r->character[1],"tails"));
     CHECK(!strcmp(r->character[2],"none") && !strcmp(r->character[3],"none"));
     CHECK(!s2_roster_validate(r));
@@ -26,8 +26,10 @@ int main(void)
     CHECK(s2_roster_cycle(r,3,-1) && !strcmp(r->character[3],"knuckles"));
     CHECK(!s2_roster_cycle(r,0,1)); /* every other character already used */
     CHECK(!s2_roster_set(r,1,"amy"));
+    s2_party.save_menu_enabled=1;
     CHECK(s2_party_save());
     s2_party_load("party-test-settings.ini");
+    CHECK(s2_party.save_menu_enabled && !s2_party.s3k_enabled);
     CHECK(s2_character_register(&amy) && s2_character_register(&knuckles));
     CHECK(!s2_roster_validate(r) && !strcmp(r->character[3],"knuckles"));
     available = 0;

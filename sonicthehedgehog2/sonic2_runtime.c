@@ -103,6 +103,7 @@ static int vanilla(void)
 }
 const char *s2_runtime_state_unavailable_reason(void)
 {
+    if (s2_party.save_menu_enabled) return "Campaign save sessions are not serialized by machine quickstates; load a campaign file from Data Select.";
     return vanilla()?NULL:"Experimental party controllers are not serialized by machine quickstates; use a fresh native game.";
 }
 static int level(void) { return active && ((g_ram[0xF600]&0x7F)==12); }

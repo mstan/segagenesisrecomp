@@ -22,6 +22,16 @@ endif()
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
 
+add_executable(sonic2_campaign_test runtime/sonic2_campaign_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign_store.c")
+if(MSVC)
+    target_compile_options(sonic2_campaign_test PRIVATE /UNDEBUG)
+else()
+    target_compile_options(sonic2_campaign_test PRIVATE -UNDEBUG)
+endif()
+add_test(NAME sonic2_campaign COMMAND sonic2_campaign_test)
+
 add_executable(sonic2_party_test runtime/sonic2_party_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_party.c")
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/party-fixtures")
@@ -73,6 +83,15 @@ if(UNIX)
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
+    add_executable(sonic2_save_preview "${CMAKE_CURRENT_LIST_DIR}/../tools/sonic2_save_preview.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_save_assets.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_save_draw.c"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/sha256.c")
+    target_include_directories(sonic2_save_preview PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner"
+        "${CMAKE_SOURCE_DIR}/recomp-ui/src/common")
     add_executable(sonic2_donor_inspect "${CMAKE_CURRENT_LIST_DIR}/../tools/sonic2_donor_inspect.c"
         "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_donor_assets.c"
         "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/sha256.c")
@@ -94,6 +113,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
         add_executable(sonic2_resources_test runtime/sonic2_resources_test.c
             "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_party.c"
             "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_resources.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_save_assets.c"
             "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_donor_assets.c"
             "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_mods.c"
             "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/sha256.c")
