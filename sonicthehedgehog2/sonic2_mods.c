@@ -53,7 +53,7 @@ static int feature_get(void *ctx, int i, RecompLauncherCModFeature *out)
     memset(out, 0, sizeof *out); COPY(out->id, features[i]); COPY(out->package_id, p.id);
     COPY(out->package_name, p.name); COPY(out->package_version, p.version);
     COPY(out->name, i==2 ? "Sonic 3-style Save Menu" : i ? "Knuckles" : "Amy Rose"); COPY(out->author, p.author);
-    COPY(out->description, i==2 ? "Eight campaign files plus No Save. Resume zone/act and Chaos Emeralds with current Options characters. Clear a file to select zones. Local play only." : p.description);
+    COPY(out->description, i==2 ? "Eight campaign files plus No Save. Resume zone/act and Chaos Emeralds with current Options characters. Clear a file to select zones. Saves use a separate file; your ROM stays unchanged. Local play only." : p.description);
     COPY(out->group, i==2 ? "Campaign" : "Characters"); COPY(out->status, status(i));
     out->enabled = *flag(i); return 1;
 }
