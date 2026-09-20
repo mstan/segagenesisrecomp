@@ -225,8 +225,22 @@ void s2_character_animate(S2CharacterState *s, S2Motion *m, const S2DonorBank *b
         unsigned sector=(angle>>4)&6;
         animation=speed>=0x600?1:0;
         sequence=bank->animations[animation]; length=bank->animation_length[animation];
-        add=sector*(animation?4:8);
         delay=speed<0x800?(0x800-speed)>>8:0;
+        if (s->kind==S2_CHAR_KNUCKLES) {
+            /* S3&K Animate_Knuckles $17E42-$17E82: its directional banks
+             * have half Sonic's frame stride. Select the surface pose every
+             * tick; only advancing the gait index is gated by the timer. */
+            add=sector*(animation?2:4);
+            if (s->animation_index+1>=length) s->animation_index=0;
+            unsigned code=sequence[1+s->animation_index];
+            if (code==0xFF) { s->animation_index=0; code=sequence[1]; }
+            if (code<0xFC && code+add<bank->count) s->frame=(uint8_t)(code+add);
+            m->frame=s->frame;
+            if (s->animation_timer) --s->animation_timer;
+            else { s->animation_timer=delay; ++s->animation_index; }
+            return;
+        }
+        add=sector*(animation?4:8);
     } else if (delay==0xFE) {
         animation=speed>=0x550?3:2; sequence=bank->animations[animation]; length=bank->animation_length[animation];
         delay=speed<0x400?(0x400-speed)>>8:0;
