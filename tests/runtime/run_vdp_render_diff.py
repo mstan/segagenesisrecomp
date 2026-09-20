@@ -28,6 +28,7 @@ SYMBOLS = [
     "gvdp_display_enabled",
     "gvdp_interlace_double",
     "gvdp_output_height",
+    "gvdp_set_unlimited_sprites",
     "gvdp_set_ws_extra",
     "gvdp_set_ws_canvas",
     "gvdp_set_ws_bar_black",

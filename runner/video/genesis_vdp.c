@@ -441,6 +441,9 @@ static uint8_t s_spr_hilite_op[GVDP_MAX_WIDTH]; /* operator: highlight        */
  * note in the header). The engine sets it per frame from per-game config; the
  * recompiled 68K independently widens its own object-cull / tile-load bounds
  * via a game-RAM word the engine writes (see runner/main.c). */
+/* Host presentation option, independent of serialized VDP hardware state. */
+static int s_unlimited_sprites;
+void gvdp_set_unlimited_sprites(int enabled) { s_unlimited_sprites=!!enabled; }
 static int s_ws_extra = 0;
 
 /* Clamp the requested extra to what the output buffer can hold for width `w`
@@ -540,7 +543,7 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
         int next   = v->vram[(uint16_t)(e + 3)] & 0x7F;
 
         if (line >= y && line < y + height) {
-            if (++on_line > max_per_line) { v->sprite_overflow = 1; break; }
+            if (++on_line > max_per_line && !s_unlimited_sprites) { v->sprite_overflow = 1; break; }
 
             uint16_t attr = vram_read_word(v, (uint16_t)(e + 4));
             /* 10-bit sprite X (was 0x1FF). The centered widescreen view needs
@@ -594,7 +597,7 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
             }
 
             pixels_budget -= width;
-            if (pixels_budget <= 0) { v->sprite_overflow = 1; break; }
+            if (pixels_budget <= 0 && !s_unlimited_sprites) { v->sprite_overflow = 1; break; }
         }
 
         if (next == 0) break;     /* link 0 terminates the list */

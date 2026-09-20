@@ -68,6 +68,11 @@ target_include_directories(sonic1_video_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog")
 add_test(NAME sonic1_video COMMAND sonic1_video_test)
 
+add_executable(vdp_sprite_limit_test runtime/vdp_sprite_limit_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")
+target_include_directories(vdp_sprite_limit_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
+add_test(NAME vdp_sprite_limit COMMAND vdp_sprite_limit_test)
+
 add_executable(sonic2_video_test runtime/sonic2_video_test.c)
 target_include_directories(sonic2_video_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner"

@@ -100,6 +100,9 @@ typedef struct GVDP {
 /* ---- Lifecycle ------------------------------------------------------------ */
 void gvdp_init(GVDP *v);
 void gvdp_reset(GVDP *v);
+/* Draw the complete SAT without per-scanline sprite/pixel dropout. Sprite
+ * ordering, priority and deliberate X=0 masking remain intact. Default off. */
+void gvdp_set_unlimited_sprites(int enabled);
 
 /* ---- 68K port interface ($C00000 data, $C00004 control) ------------------ */
 void     gvdp_write_data   (GVDP *v, uint16_t value);

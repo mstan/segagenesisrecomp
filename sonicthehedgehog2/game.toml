@@ -117,6 +117,12 @@ kind = "game_hook"
 addr = 0x1B96E # Obj02_Init_Continued: same role-independent spawn environment
 kind = "game_hook"
 [[widescreen_site]]
+addr = 0x1B21C # CheckGameOver: use native P2 recovery for companions
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x1CC6C # Obj02_CheckGameOver: preserve P1 camera/level ownership
+kind = "game_hook"
+[[widescreen_site]]
 addr = 0x1BAD4 # TailsCPU_Control
 kind = "game_hook"
 [[widescreen_site]]

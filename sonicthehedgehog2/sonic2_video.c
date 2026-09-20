@@ -685,10 +685,10 @@ void s2_video_actor_origin(const GVDP *v, int line, int width, int *left, int *t
     *left=enabled()?view_left(camera,width):camera-(width-320)/2;
     *top=unwrap(v->vsram[0],ram16(0xEE64));
 }
-int s2_video_actor_pixel_visible(const GVDP *v, int wx, int wy, int high)
+int s2_video_actor_pixel_visible(const GVDP *v, int wx, int wy, int high, const unsigned char *world)
 {
     if (high) return 1;
-    uint16_t attr=world_attr(g_ram,wx,wy,0);
+    uint16_t attr=world_attr(world,wx,wy,0);
     return !(attr&0x8000) || !pattern_pixel(v,attr,wx,wy);
 }
 extern void s2_options_overlay(const GVDP *, int, uint32_t *, int);

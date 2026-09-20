@@ -237,11 +237,13 @@ static const GameDebugCommand sonic2_commands[] = {
 static int s2_instruction_hook(uint32_t pc)
 {
     if (s2_save_menu_hook(pc)) return 1;
+    if (pc==0x16604) s2_runtime_capture();
     switch (pc) {
     case 0x4F64:
     case 0x189CA: case 0x18AEE: case 0x18CC6: case 0x18DB4: case 0x18EE6:
     case 0x4450: case 0x446E: case 0x19F50: case 0x1B8A4:
     case 0x19FE6: case 0x1B96E:
+    case 0x1B21C: case 0x1CC6C:
     case 0x1BAD4: case 0x1A15C: case 0x1ABA6: case 0x1AB38:
     case 0x164F4: case 0x1B848: case 0x1AC3E: case 0x1B350: case 0x3F554:
     case 0x15F9C: case 0x19718: case 0x19778: case 0x197D0: case 0x19880:
