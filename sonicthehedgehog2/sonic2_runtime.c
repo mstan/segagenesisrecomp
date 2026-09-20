@@ -142,13 +142,49 @@ static void companion_control(unsigned p, unsigned o)
     int visible=x>=-(int)g_ram[o+0x19] && x<320+g_ram[o+0x19] &&
         y>=-32 && y<256;
     g_ram[o+1]=(g_ram[o+1]&0x7F)|(visible?0x80:0);
+    int human=human_companion(p);
     /* Preserve the party's explicit controller ownership; the CPU must not
      * take over an idle connected controller after the stock ten seconds. */
-    if (human_companion(p)) putword(0xF702,600);
+    if (human) putword(0xF702,600);
+    uint16_t index=word(0xEED2),frame=word(0xFE04),record_x=0;
+    unsigned record=0;
+    int varied=p>=2 && !human && word(0xF708)==6 && !g_ram[o+0x2A];
+    if (varied) {
+        /* Keep P2 authentic. P3/P4 react seven/thirteen frames later and use
+         * separate native jump-retry phases. Only normal following varies:
+         * waiting, flying, and the safe re-entry target stay native. */
+        unsigned delayed=(index&0xFF00)|((index-4*(p==2?7:13))&255);
+        putword(0xEED2,delayed);
+        putword(0xFE04,frame+(p==2?13:37));
+        unsigned at=(delayed-0x44)&255;
+        unsigned status=g_ram[0xE402+at];
+        if (!(status&0xDA)) { /* grounded terrain, not an object/water/respawn lock */
+            unsigned gap=(p==2?28:72)+(((frame>>8)*13+p*7)&7);
+            unsigned address=0xE500+at;
+            int target=word(address)+((status&1)?(int)gap:-(int)gap);
+            if (target>=word(0xEEC8)+16 && target<=word(0xEECA)+288) {
+                record=address; record_x=word(record); putword(record,target);
+            }
+        }
+    }
     inside_companion_cpu=1;
-    native_helper(0x1BAD4); /* TailsCPU_Control: 17-frame P1 history, safe flight */
+    native_helper(0x1BAD4); /* TailsCPU_Control: delayed P1 history, safe flight */
     inside_companion_cpu=0;
-    if (!human_companion(p)) {
+    if (varied) {
+        if (record) putword(record,record_x);
+        putword(0xEED2,index); putword(0xFE04,frame);
+        /* Briefly coast at distinct, repeatable intervals. Never discard a
+         * brake, jump, airborne steering, or input during object control. */
+        unsigned direction=g_ram[0xF66A]&12;
+        int inertia=(int16_t)word(o+0x14);
+        int driving=(direction==8 && inertia>0)||(direction==4 && inertia<0);
+        unsigned phase=(frame+(p==2?7:19))&31;
+        if (word(0xF708)==6 && !g_ram[o+0x2A] && !(g_ram[o+0x22]&0x2E) &&
+            !g_ram[o+0x39] && driving && phase<(p==2?1u:2u)) {
+            g_ram[0xF66A]&=~12; g_ram[0xF66B]&=~12;
+        }
+    }
+    if (!human) {
         /* CPU ABC means an ordinary jump. Amy's A is a hammer and Knuckles'
          * repeated airborne jump is a glide, so never synthesize those moves. */
         for (unsigned at=0xF66A;at<=0xF66B;++at)
