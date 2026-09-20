@@ -1119,6 +1119,10 @@ static uint64_t sram_content_hash(void)
     size_t n = sram_size();
     uint64_t h = 0xCBF29CE484222325ULL;  /* FNV-1a-64, as in [FBHASH] */
     for (size_t i = 0; i < n; i++) { h ^= buf[i]; h *= 0x100000001B3ULL; }
+    if (g_game_spec.sram_generation) {
+        h ^= g_game_spec.sram_generation();
+        h *= 0x100000001B3ULL;
+    }
     return h;
 }
 
@@ -1141,6 +1145,11 @@ static uint64_t framebuf_active_hash(void)
 static void runner_sram_flush(void)
 {
     if (!s_sram_active) return;
+    if (g_game_spec.sram_save) {
+        if (g_game_spec.sram_save(s_sram_path,sram_buf(),sram_size()))
+            s_sram_dirty=0;
+        return;
+    }
     FILE *f = fopen(s_sram_path, "wb");
     if (!f) { fprintf(stderr, "[SRAM] flush failed to open %s\n", s_sram_path); return; }
     size_t n = sram_size();
@@ -1171,6 +1180,14 @@ static void runner_sram_init_and_load(const char *rom_path)
     if (dot) *dot = '\0';
     strncat(name, ".srm", sizeof(name) - strlen(name) - 1);
     snprintf(s_sram_path, sizeof(s_sram_path), "%s", exe_relative(name));
+
+    if (g_game_spec.sram_load) {
+        if (!g_game_spec.sram_load(s_sram_path,sram_buf(),sram_size()))
+            fprintf(stderr,"[SRAM] save could not be loaded; original file protected\n");
+        s_sram_hash=sram_content_hash();
+        s_sram_dirty=0;
+        return;
+    }
 
     FILE *f = fopen(s_sram_path, "rb");
     if (f) {
@@ -1215,8 +1232,11 @@ static void runner_sram_autosave_tick(uint32_t frame_num)
         s_sram_dirty    = 1;
         s_sram_dirty_at = frame_num;
     }
-    if (s_sram_dirty && (frame_num - s_sram_dirty_at) >= 30)
+    if (s_sram_dirty && (frame_num - s_sram_dirty_at) >= 30) {
         runner_sram_flush();
+        /* A busy or protected save should not trigger file I/O every frame. */
+        if (s_sram_dirty) s_sram_dirty_at = frame_num;
+    }
 }
 
 static uint8_t runner_ram_byte(uint32_t addr)

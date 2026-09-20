@@ -380,3 +380,77 @@ kind = "game_hook"
 [[widescreen_site]]
 addr = 0x9029C # CMP.W #$280,D0 after native coarse-camera subtraction
 kind = "game_hook"
+
+# Trilogy experiment: verified stock S&K function entries, gated by game hook.
+
+[[widescreen_site]]
+addr = 0xC3E4 # Write_SaveGame: synchronize existing extensions, including mod-off
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD624 # New native Data Select slot: detach previous expansion identity
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x5FB2 # Level
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1BC60 # Get_LevelSizeStart
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x7812 # LoadLevelLoadBlock
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1C2B0 # LoadLevelLoadBlock2
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x76A6 # LoadSolids
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x7892 # CheckLevelForWater
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x4E35C # LevelSetup
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x4E408 # ScreenEvents
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1C38A # Do_ResizeEvents
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x28C80 # Animate_Init
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x27758 # Animate_Tiles
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x3BB8 # Animate_Palette
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x4F33C # SpecialEvents
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xE8AA # Load_Rings
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x85FDE # PLCLoad_AnimalsAndExplosion
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xEFF0 # Find_Tile_FG
+kind = "game_hook"

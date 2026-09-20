@@ -22,6 +22,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "game_video.h"
 struct RecompLauncherCModProvider;
@@ -103,6 +104,15 @@ typedef struct GameSpec {
     uint32_t    sram_start;
     uint32_t    sram_end;
 
+    /* Optional owner-file container. Only the native prefix enters cartridge
+     * SRAM; the game can preserve appended expansion records outside it.
+     * Hooks remain installed with enhancements disabled to retain that tail.
+     * A failed save must leave the original intact; generation tracks changes
+     * to extensions which do not touch the guest SRAM buffer. */
+    int       (*sram_load)(const char *path,uint8_t *native,size_t size);
+    int       (*sram_save)(const char *path,const uint8_t *native,size_t size);
+    uint64_t  (*sram_generation)(void);
+
     /* ---- Entry points (recompiled C) ---- */
     /* Called once on the game thread. Must contain the game's main
      * loop and not return — typically wraps func_NNNNNN(). NULL means
@@ -181,6 +191,11 @@ typedef struct GameSpec {
      * A replacing hook owns the routine's register/stack contract. Games
      * without configured sites incur no calls or behavior changes. */
     int       (*instruction_hook)(uint32_t pc);
+
+    /* Optional read-only CPU data provider for imported game resources.
+     * Return 1 with a big-endian word to service a read, 0 for the bus.
+     * This does not patch instructions, map DMA, or change cartridge SRAM. */
+    int       (*data_read16)(uint32_t address,uint16_t *word);
 
     /* Opt-in main-program CPU headroom, queried at each scheduler slice.
      * NULL / <=1 = exact native timing. IRQ, DMA, raster and sound clocks

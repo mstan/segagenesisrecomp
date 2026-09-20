@@ -1589,6 +1589,12 @@ static inline void spin_check(uint32_t byte_addr, int is_write)
 }
 
 
+static uint16_t game_data_read16(uint32_t address)
+{
+    uint16_t value;
+    if(g_game_spec.data_read16 && g_game_spec.data_read16(address & 0xFFFFFFu,&value))return value;
+    return gbus_read16(&g_machine.bus,address);
+}
 uint16_t m68k_read16(uint32_t byte_addr)
 {
     byte_addr &= 0xFFFFFFu;
@@ -1596,7 +1602,7 @@ uint16_t m68k_read16(uint32_t byte_addr)
     bus_ring_push(byte_addr, 1);
     spin_check(byte_addr, 0);
     HYBRID_BUMP_CYCLES();
-    return gbus_read16(&g_machine.bus, byte_addr);
+    return game_data_read16(byte_addr);
 }
 
 /* IO port access logging for joypad debugging */
@@ -1654,7 +1660,7 @@ uint8_t m68k_read8(uint32_t byte_addr)
     HYBRID_BUMP_CYCLES();
     cc_bool hi = (byte_addr & 1) == 0;
     cc_bool lo = !hi;
-    cc_u16f word = gbus_read16(&g_machine.bus, byte_addr & ~1u);
+    cc_u16f word = game_data_read16(byte_addr & ~1u);
     (void)lo;
     uint8_t result = hi ? (uint8_t)(word >> 8) : (uint8_t)(word & 0xFF);
     if (s_io_log_enabled && byte_addr >= 0xA10000u && byte_addr <= 0xA1001Fu) {
@@ -1676,8 +1682,8 @@ uint32_t m68k_read32(uint32_t byte_addr)
     /* Bump once for the whole 32-bit op — both halves at same cycle.
      * Prevents VDP/Z80 sync between the two 16-bit reads. */
     HYBRID_BUMP_CYCLES();
-    uint16_t hi = gbus_read16(&g_machine.bus, byte_addr);
-    uint16_t lo = gbus_read16(&g_machine.bus, byte_addr + 2);
+    uint16_t hi = game_data_read16(byte_addr);
+    uint16_t lo = game_data_read16(byte_addr + 2);
     return ((uint32_t)hi << 16) | (uint32_t)lo;
 }
 

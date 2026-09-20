@@ -22,6 +22,38 @@ endif()
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
 
+add_executable(trilogy_campaign_test runtime/trilogy_campaign_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_campaign.c")
+add_executable(trilogy_sram_test runtime/trilogy_sram_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_sram.c")
+add_executable(trilogy_progress_test runtime/trilogy_progress_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_campaign.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_sram.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_progress.c")
+add_executable(trilogy_assets_test runtime/trilogy_assets_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_assets.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_codecs.c")
+target_compile_definitions(trilogy_assets_test PRIVATE TRILOGY_ASSETS_TRACE=1)
+if(MSVC)
+    target_compile_options(trilogy_campaign_test PRIVATE /UNDEBUG)
+    target_compile_options(trilogy_sram_test PRIVATE /UNDEBUG)
+    target_compile_options(trilogy_progress_test PRIVATE /UNDEBUG)
+    target_compile_options(trilogy_assets_test PRIVATE /UNDEBUG)
+else()
+    target_compile_options(trilogy_campaign_test PRIVATE -UNDEBUG)
+    target_compile_options(trilogy_sram_test PRIVATE -UNDEBUG)
+    target_compile_options(trilogy_progress_test PRIVATE -UNDEBUG)
+    target_compile_options(trilogy_assets_test PRIVATE -UNDEBUG)
+endif()
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/trilogy-fixtures")
+add_test(NAME trilogy_campaign COMMAND trilogy_campaign_test)
+set_tests_properties(trilogy_campaign PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/trilogy-fixtures")
+add_test(NAME trilogy_sram COMMAND trilogy_sram_test)
+add_test(NAME trilogy_progress COMMAND trilogy_progress_test)
+add_test(NAME trilogy_codecs COMMAND trilogy_assets_test)
+set_tests_properties(trilogy_sram PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/trilogy-fixtures")
+set_tests_properties(trilogy_progress PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/trilogy-fixtures")
+
 add_executable(sonic2_campaign_test runtime/sonic2_campaign_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign.c"
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign_store.c")

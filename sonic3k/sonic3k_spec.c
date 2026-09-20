@@ -13,6 +13,8 @@
 #include "genesis_runtime.h"
 #include "sonic_extras.h"
 #include "sonic3_video.h"
+#include "trilogy_sram.h"
+#include "trilogy_runtime.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -206,9 +208,30 @@ static const GameDebugCommand s3k_commands[] = {
     { "object_table", s3k_cmd_object_table },
 };
 
+static int s3k_instruction_hook(uint32_t pc)
+{
+    switch(pc){
+    case 0x5FB2:case 0x1BC60:case 0x7812:case 0x1C2B0:case 0x76A6:
+    case 0x7892:case 0x4E35C:case 0x4E408:case 0x1C38A:case 0x28C80:
+    case 0x27758:case 0x3BB8:case 0x4F33C:case 0xE8AA:case 0x85FDE:case 0xEFF0:
+    case 0xC3E4:case 0xD624:
+        return tr_runtime_hook(pc);
+    default:
+        if(tr_runtime_hook(pc))return 1;
+        return s3_video_hook(pc);
+    }
+}
+static int s3k_sram_load(const char *path,uint8_t *native,size_t size)
+{
+    int ok=tr_sram_load(path,native,size);tr_runtime_sram_loaded();return ok;
+}
 const GameSpec g_game_spec = {
     .video                  = &sonic3_video,
-    .instruction_hook       = s3_video_hook,
+    .instruction_hook       = s3k_instruction_hook,
+    .data_read16            = tr_runtime_read16,
+    .load_settings          = tr_runtime_settings,
+    .state_unavailable_reason = tr_runtime_state_reason,
+    .netplay_allowed        = tr_runtime_netplay_allowed,
     .main_cpu_divisor       = s3_video_main_cpu_divisor,
     .display_name           = "Sonic 3 & Knuckles",
     .short_name             = "Sonic3K",
@@ -227,6 +250,9 @@ const GameSpec g_game_spec = {
      * sonic3k.constants.asm: SRAM_access_flag=$A130F1, phase $200001. */
     .sram_start             = 0x200001u,
     .sram_end               = 0x203FFFu,
+    .sram_load              = s3k_sram_load,
+    .sram_save              = tr_sram_save,
+    .sram_generation        = tr_sram_generation,
 
     .call_entry_point       = s3k_call_entry_point,
     .call_vblank            = s3k_call_vblank,
