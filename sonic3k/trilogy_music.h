@@ -1,4 +1,6 @@
 #pragma once
+#include "trilogy_state.h"
+void tr_audio_state(TrStateIO *io);
 #include <stddef.h>
 #include <stdint.h>
 

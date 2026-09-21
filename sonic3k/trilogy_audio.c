@@ -37,6 +37,12 @@ static void restore(void)
 }
 void tr_audio_reset(void)
 {restore();for(unsigned i=0;i<2;++i){free(music[i]);music[i]=NULL;}saved=0;g_machine.bus.audio_read8=NULL;}
+void tr_audio_state(TrStateIO *io)
+{
+    TR_STATE(io,native_banks);TR_STATE(io,native_pointers);TR_STATE(io,native_envelopes);
+    TR_STATE(io,native_drums);TR_STATE(io,native_fill);TR_STATE(io,installed);TR_STATE(io,saved);
+    if(io->mode==2)g_machine.bus.audio_read8=read8;
+}
 int tr_audio_load(unsigned pack,const uint8_t *rom,size_t size)
 {
     if(pack<1||pack>2)return 0;

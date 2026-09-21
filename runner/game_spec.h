@@ -53,6 +53,11 @@ typedef struct GameSpec {
     /* NULL/NULL result = supported. Host enhancements may reject raw machine
      * snapshots until their extra state has a compatible serialization format. */
     const char *(*state_unavailable_reason)(void);
+    /* Optional pointer-free host payload. Validate before changing machine
+     * state; apply only after RAM, video and audio have been restored. */
+    size_t (*state_size)(void);
+    int (*state_save)(void *data,size_t size);
+    int (*state_load)(const void *data,size_t size,int apply);
     /* ---- Identity ---- */
     const char *display_name;        /* "Sonic the Hedgehog" — window title */
     const char *short_name;          /* "Sonic1" — shows up in info / ping */

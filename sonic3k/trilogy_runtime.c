@@ -6,6 +6,7 @@
 #include "trilogy_progress.h"
 #include "trilogy_objects.h"
 #include "trilogy_music.h"
+#include "sonic3_video.h"
 #include "genesis_runtime.h"
 #include "video/genesis_machine.h"
 #include "video/genesis_dac.h"
@@ -27,15 +28,17 @@ static uint8_t title_tiles[0x1000],title_map[128],title_three[512];
 static unsigned title_bytes;
 static void prepare_previews(void);
 static TrProgress progress;
-/* SPCL v1 is optional, independent of chapter availability. Eight entries:
+/* SPCL v2 is optional, independent of chapter availability. Eight entries:
  * slot token:u32 and four act entrance masks:u32, all big endian. */
 static uint8_t special_records[TR_SLOTS*20];
 static uint32_t special_no_save[4];
 static int special_read_only;
 static unsigned special_return,special_restore_objects,special_ring_guest;
+static unsigned special_goal_entered,special_after_goal;
 static unsigned ram(unsigned a);
 static void put(unsigned a,unsigned n);
 static void putlong(unsigned a,uint32_t n);
+static void save_import(void);
 static void store_progress(void)
 {
     if(progress.dirty&&!tr_progress_store(&progress,tr_sram_current()))
@@ -46,8 +49,10 @@ void tr_runtime_sram_loaded(void)
     TrSram *s=tr_sram_current();tr_progress_load(&progress,s);
     unsigned version;size_t size;const uint8_t *p=tr_sram_get(s,"SPCL",&version,&size);
     memset(special_records,0,sizeof special_records);
-    special_read_only=s->read_only||!s->extensions_valid||(p&&(version!=1||size!=sizeof special_records));
-    if(p&&!special_read_only)memcpy(special_records,p,size);
+    special_read_only=s->read_only||!s->extensions_valid||(p&&((version!=1&&version!=2)||size!=sizeof special_records));
+    /* v1 used synthetic start/checkpoint rings. Their bits do not identify
+     * the restored donor entrances; migrate lazily to an empty v2 mask. */
+    if(p&&!special_read_only&&version==2)memcpy(special_records,p,size);
 }
 static void sync_native_saves(uint32_t pc)
 {
@@ -90,32 +95,41 @@ static void special_used(unsigned number)
         uint8_t *p=special_records+session_slot*20;
         if(getlong(p)!=progress.tokens[session_slot]){memset(p,0,20);savelong(p,progress.tokens[session_slot]);}
         savelong(p+4+special_index()*4,mask);
-        if(!tr_sram_set(tr_sram_current(),"SPCL",1,special_records,sizeof special_records))
+        if(!tr_sram_set(tr_sram_current(),"SPCL",2,special_records,sizeof special_records))
             fprintf(stderr,"[Trilogy special] Cannot save ring collection: %s\n",tr_sram_current()->error);
     }
     putlong(0xFF92,mask);
 }
 static void special_spawn(void)
 {
-    if((session_slot>=0&&special_read_only)||tr_objects_results_started())return;
+    if(stage->id>=0x2000||(session_slot>=0&&special_read_only)||tr_objects_results_started()||special_goal_entered)return;
     if(special_ring_guest){unsigned a=special_ring_guest;uint32_t c=getlong(g_ram+a);
         if((c>=0x6166A&&c<0x61990)||(c==0x85AD2&&getlong(g_ram+a+0x34)==0x61682))return;
         special_ring_guest=0;
     }
-    /* A visible optional ring near the start and above each donor checkpoint.
-     * Both positions are reachable by an ordinary jump; terrain is unchanged. */
-    unsigned number=0;uint32_t collected=special_mask();
-    for(unsigned i=0;i<=stage->object_count&&number<32;++i){
-        int x,y;
-        if(!i){x=stage->start_x+128;y=stage->start_y-56;}
-        else{const TrPlacement *p=stage->objects+i-1;if(p->id!=0x79)continue;x=p->x;y=p->y-64;}
-        unsigned id=number++;if(collected&(1u<<id))continue;
+    /* Use S1's actual object $4B placements: GHZ1/2 goals only, no boss-act
+     * ring. The shared S3 emerald set has seven entries instead of S1's six. */
+    if(ram(0xFE20)<50||g_ram[0xFFB0]>=7||special_mask()&1)return;
+    for(unsigned i=0;i<stage->object_count;++i){
+        const TrPlacement *p=stage->objects+i;if(p->id!=0x4B)continue;int x=p->x,y=p->y;
         if(x<(int)ram(0xEE78)-64||x>(int)ram(0xEE78)+384||y<(int)ram(0xEE7C)-32||y>(int)ram(0xEE7C)+256)continue;
         for(unsigned a=0xB0DE;a<0xCAE2;a+=0x4A)if(!getlong(g_ram+a)){
-            memset(g_ram+a,0,0x4A);putlong(a,0x6166A);put(a+0x10,x);put(a+0x14,y);g_ram[a+0x2C]=(uint8_t)id;
+            memset(g_ram+a,0,0x4A);putlong(a,0x6166A);put(a+0x10,x);put(a+0x14,y);g_ram[a+0x2C]=0;
             special_ring_guest=a;return;
         }
     }
+}
+void tr_runtime_checkpoint_special(unsigned guest,unsigned number)
+{
+    if(!active||!stage||stage->id!=0x2000||g_ram[0xF600]!=12||special_return||g_ram[0xB005]>=6)return;
+    M68KState saved=g_cpu;
+    special_used(number);save_import();tr_objects_special_save();special_return=stage->id;
+    /* S2's stars switch straight into the special stage. Use the checkpoint
+     * position for S3's return bookkeeping, and native Blue Spheres itself. */
+    g_cpu.A[0]=0xFF0000|guest;recomp_call_addr(0x2D1CC);
+    put(0xFE4C,ram(0xFE2E));put(0xFE4E,ram(0xFE30)-20);
+    recomp_call_addr(0x1BB7E);g_ram[0xFFBB]=0;g_ram[0xFE48]=1;g_ram[0xFF97]=1;g_ram[0xF600]=0x34;
+    fprintf(stderr,"[Trilogy special] Checkpoint %u -> Blue Spheres from 2000\n",number);g_cpu=saved;
 }
 static void special_ring_display(void)
 {
@@ -164,6 +178,7 @@ void tr_runtime_settings(const char *settings)
 {
     tr_audio_reset();
     special_return=special_restore_objects=special_ring_guest=0;memset(special_no_save,0,sizeof special_no_save);
+    special_goal_entered=special_after_goal=0;
     tr_objects_reset(NULL);for(unsigned i=0;i<4;++i){free(imports[i]);imports[i]=NULL;}
     stage=NULL;selected=active=session_started=0;available=forced_stage=pending_stage=resume_checkpoint=0;session_slot=-1;
     char paths[2][1024]={{0}},line[1200];int enabled=0,section=0;
@@ -192,7 +207,45 @@ void tr_runtime_settings(const char *settings)
     selected=1;
 }
 const char *tr_runtime_state_reason(void)
-{return selected?"Trilogy stage experiment has host state; machine snapshots are unavailable":NULL;}
+{return NULL;}
+static void runtime_state(TrStateIO *io)
+{
+    unsigned header[7]={0x54524932,1,sizeof(TrProgress),available,stage?stage->id:0,progress.protected_records,(unsigned)special_read_only};
+    if(io->mode&&io->data&&io->size>=sizeof header)memcpy(header,io->data,sizeof header);
+    if(header[0]!=0x54524932||header[1]!=1||header[2]!=sizeof(TrProgress)||header[3]!=available||!selected||header[5]!=progress.protected_records||header[6]!=(unsigned)special_read_only)io->ok=0;
+    TrStageAssets *restored=NULL;for(unsigned i=0;i<4;++i)if(imports[i]&&imports[i]->id==header[4])restored=imports[i];
+    if(header[4]&&!restored)io->ok=0;
+    TR_STATE(io,header);if(io->mode==2)stage=restored;
+    TR_STATE(io,active);TR_STATE(io,forced_stage);TR_STATE(io,pending_stage);TR_STATE(io,resume_checkpoint);
+    TR_STATE(io,session_started);TR_STATE(io,session_slot);TR_STATE(io,menu_stage);TR_STATE(io,menu_text_object);
+    TR_STATE(io,menu_text_map);TR_STATE(io,title_tiles);TR_STATE(io,title_map);TR_STATE(io,title_three);TR_STATE(io,title_bytes);
+    TR_STATE(io,progress);TR_STATE(io,special_records);TR_STATE(io,special_no_save);TR_STATE(io,special_read_only);
+    TR_STATE(io,special_return);TR_STATE(io,special_restore_objects);TR_STATE(io,special_ring_guest);
+    TR_STATE(io,special_goal_entered);TR_STATE(io,special_after_goal);
+    tr_objects_state(io,imports);tr_audio_state(io);s3_video_state(io);
+}
+size_t tr_runtime_state_size(void)
+{if(!selected)return 0;TrStateIO io={0};runtime_state(&io);return io.pos;}
+int tr_runtime_state_save(void *data,size_t size)
+{
+    unsigned mode=g_ram[0xF600];
+    if((mode!=12&&mode!=0x34&&mode!=0x48)||size!=tr_runtime_state_size())return 0;
+    TrStateIO io={(uint8_t *)data,size,0,0,1};runtime_state(&io);return io.ok&&io.pos==size;
+}
+int tr_runtime_state_load(const void *data,size_t size,int apply)
+{
+    if(!selected||size!=tr_runtime_state_size())return 0;
+    TrStateIO io={(uint8_t *)data,size,0,1,1};runtime_state(&io);
+    if(!io.ok||io.pos!=size)return 0;
+    if(apply){io.pos=0;io.mode=2;runtime_state(&io);
+        /* A quickload rewinds native SRAM and its understood extensions as
+         * one save image. Keep the current file path, writer baseline and
+         * unrelated/unknown extension records. */
+        progress.dirty|=progress.present&~progress.protected_records;store_progress();
+        if(!special_read_only)tr_sram_set(tr_sram_current(),"SPCL",2,special_records,sizeof special_records);
+    }
+    return io.ok;
+}
 int tr_runtime_netplay_allowed(void){return !selected;}
 unsigned tr_runtime_stage_id(void){return active&&stage?stage->id:0;}
 int tr_runtime_scene_required(void){return active&&stage&&(g_ram[0xF600]&127)==12;}
@@ -449,6 +502,9 @@ static void begin_level(void)
             }
         }else if(session_slot<0)pending_stage=tr_first_stage(available);
     }
+    if(special_after_goal&&pending_stage){
+        special_after_goal=special_goal_entered=0;g_ram[0xFE2A]=g_ram[0xFE48]=g_ram[0xFF97]=0;resume_checkpoint=0;
+    }
     if(pending_stage){
         unsigned wanted=pending_stage;pending_stage=0;const TrStage *target=tr_stage(wanted);
         stage=wanted>=0x1000&&wanted<=0x1002?imports[wanted-0x1000]:wanted==0x2000?imports[3]:NULL;
@@ -470,7 +526,7 @@ static void save_import(void)
 {
     if(session_slot<0||!stage)return;
     unsigned slot=(unsigned)session_slot,cp=g_ram[0xFE2A]&127,ch=stage->id==0x2000?TR_CHAPTER_S2:TR_CHAPTER_S1;
-    if(progress.chapters[ch][slot].stage!=stage->id||progress.chapters[ch][slot].checkpoint!=cp){
+    if(!special_after_goal&&(progress.chapters[ch][slot].stage!=stage->id||progress.chapters[ch][slot].checkpoint!=cp)){
         if(cp||!progress.chapters[ch][slot].checkpoint)tr_progress_checkpoint(&progress,slot,stage->id,cp);
     }
     unsigned chaos=0,supers=0;
@@ -494,6 +550,11 @@ static void finish_level(void)
     pending_stage=next;g_ram[0xFE2A]=0;put(0xFE02,1);
     g_ram[0xFAA8]=0;g_ram[0xF7CA]=g_ram[0xF7CB]=0;
     fprintf(stderr,"[Trilogy] Stage %04X cleared; next %04X\n",stage->id,next);
+    if(special_goal_entered){
+        special_after_goal=next;put(0xFE02,0);g_ram[0xFFBB]=0;g_ram[0xFE48]=1;
+        put(0xFE4A,ram(0xFE10));g_ram[0xF600]=0x34;
+        fprintf(stderr,"[Trilogy special] Goal -> Blue Spheres after %04X; next %04X\n",stage->id,next);
+    }
 }
 static unsigned native_card(unsigned id)
 {
@@ -632,6 +693,7 @@ int tr_runtime_hook(uint32_t pc)
     if(session_started&&(g_ram[0xF600]&127)==4){
         active=session_started=0;stage=NULL;pending_stage=resume_checkpoint=0;session_slot=-1;tr_objects_reset(NULL);
         special_return=special_restore_objects=special_ring_guest=0;memset(special_no_save,0,sizeof special_no_save);
+        special_goal_entered=special_after_goal=0;
     }
     if(pc==0xC812&&!forced_stage){menu_input();return 0;}
     if(pc==0xD42C&&!forced_stage)return menu_slot_hook();
@@ -639,6 +701,7 @@ int tr_runtime_hook(uint32_t pc)
     if(pc==0xC570){
         active=session_started=0;pending_stage=resume_checkpoint=0;session_slot=-1;tr_objects_reset(NULL);
         special_return=special_restore_objects=special_ring_guest=0;memset(special_no_save,0,sizeof special_no_save);
+        special_goal_entered=special_after_goal=0;
         menu_text_object=0;
         for(unsigned i=0;i<TR_SLOTS;++i){TrResume r;menu_stage[i]=tr_progress_resolve(&progress,i,available,&r)?r.stage:0;}
         return 0;
@@ -648,12 +711,19 @@ int tr_runtime_hook(uint32_t pc)
     switch(pc){
     case 0x6170A:if(g_ram[0xB005]<6)special_used(g_ram[(g_cpu.A[0]&65535)+0x2C]);return 0;
     case 0x6185C:
-        save_import();special_return=stage->id;tr_objects_special_save();
-        fprintf(stderr,"[Trilogy special] Entering Blue Spheres from %04X\n",stage->id);return 0;
+        if(stage->id<0x2000){
+            special_goal_entered=1;save_import();tr_objects_start_results();
+            M68KState saved=g_cpu;recomp_call_addr(0x851D8);g_cpu=saved;
+            fprintf(stderr,"[Trilogy special] Goal ring collected in %04X; act results first\n",stage->id);return 1;
+        }
+        return 0;
     case 0x618FC:special_ring_display();return 1;
-    /* Donor checkpoints lead to the nearby giant ring. Native bonus stars
-     * would try to reload an S3 bonus-zone ID through the donor level loader. */
-    case 0x2D3C8:return 1;
+    case 0x2D3C8:
+        if(stage->id==0x2000&&ram(0xFE20)>=50&&g_ram[0xFFB0]<7&&!(session_slot>=0&&special_read_only)){
+            unsigned a=g_cpu.A[0]&65535,id=g_ram[a+0x2C]&127;
+            if(id<32&&!(special_mask()&(1u<<id)))tr_objects_checkpoint_stars(a);
+        }
+        return 1;
     case 0x1BC60:size_start();return 1;
     case 0x7812:memcpy(g_machine.vdp.vram,stage->tiles,stage->tile_bytes);return 1;
     case 0x1C2B0:

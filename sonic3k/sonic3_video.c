@@ -547,6 +547,20 @@ int s3_video_hook(uint32_t pc)
 
 #include "sonic3_blue_spheres.inc"
 
+/* Sprite publication and native object-loader history live outside 68K RAM.
+ * Keep them with a quickstate; derived projection buffers regenerate at line 0.
+ * Never serialize GVDP or presentation-buffer pointers here. */
+void s3_video_state(TrStateIO *io)
+{
+    TR_STATE(io,s_build);TR_STATE(io,s_history);TR_STATE(io,s_display_frame);
+    TR_STATE(io,s_serial);TR_STATE(io,s_scene_tick);
+    TR_STATE(io,s_visible_objects);TR_STATE(io,s_visible_count);
+    TR_STATE(io,s_placements);TR_STATE(io,s_placement_count);TR_STATE(io,s_placement_base);
+    TR_STATE(io,s_loader_active);TR_STATE(io,s_background_frame);TR_STATE(io,s_frame_special);
+    TR_STATE(io,ss_state);TR_STATE(io,ss_latched);
+    if(io->mode==2){s_display=NULL;ss_ready=0;memset(ss_texture_ready,0,sizeof ss_texture_ready);}
+}
+
 static uint8_t *s_priority;
 static int s_priority_capacity;
 static void select_scene(const GVDP *v)

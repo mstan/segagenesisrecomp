@@ -227,6 +227,10 @@ static int s3k_sram_load(const char *path,uint8_t *native,size_t size)
 {
     int ok=tr_sram_load(path,native,size);tr_runtime_sram_loaded();return ok;
 }
+static uint32_t s3k_save_resume_pc(uint8_t mode)
+{
+    switch(mode){case 8:case 12:return 0x650C;case 0x34:return 0x84C2;case 0x48:return 0x2E24C;default:return 0;}
+}
 const GameSpec g_game_spec = {
     .scene_required = tr_runtime_scene_required,
     .scene_sprite_palette = tr_runtime_sprite_palette,
@@ -235,6 +239,9 @@ const GameSpec g_game_spec = {
     .data_read16            = tr_runtime_read16,
     .load_settings          = tr_runtime_settings,
     .state_unavailable_reason = tr_runtime_state_reason,
+    .state_size             = tr_runtime_state_size,
+    .state_save             = tr_runtime_state_save,
+    .state_load             = tr_runtime_state_load,
     .netplay_allowed        = tr_runtime_netplay_allowed,
     .main_cpu_divisor       = s3_video_main_cpu_divisor,
     .display_name           = "Sonic 3 & Knuckles",
@@ -262,6 +269,7 @@ const GameSpec g_game_spec = {
     .call_vblank            = s3k_call_vblank,
     .call_hblank            = s3k_call_hblank,
     .resume_main_loop_pc    = 0x0004B6u,   /* GameLoop (S&K master, World ROM) — save-state fiber restart */
+    .save_resume_pc         = s3k_save_resume_pc,
     .dispatch_main_loop_pc  = 0x0004B6u,   /* GameLoop (actual World ROM addr) */
     .call_periodic          = NULL,
 

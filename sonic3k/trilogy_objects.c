@@ -1,6 +1,7 @@
 /* Donor objects use native S3 object slots, collision response and abilities.
  * The donor's five/eight-byte sprite maps are converted by the asset loader. */
 #include "trilogy_objects.h"
+#include "trilogy_runtime.h"
 #include "genesis_runtime.h"
 #include "video/genesis_machine.h"
 #include <string.h>
@@ -86,6 +87,7 @@ static void begin_results(void)
     put(0xEE14,ram(0xEE78));put(0xEE16,ram(0xEE78));
     fprintf(stderr,"[Trilogy] Stage %04X results\n",assets->id);
 }
+void tr_objects_start_results(void){begin_results();}
 static int allocate_art(unsigned art)
 {
     if(art==NO_ART)return 1;
@@ -103,6 +105,7 @@ static int allocate_art(unsigned art)
 }
 static unsigned donor_art(unsigned id)
 {
+    if(id==0x279)return TR_ART_SPECIAL_STARS;
     switch(id){
     case 0x11:return TR_ART_BRIDGE;case 0x18:return TR_ART_PLATFORM;
     case 0x1C:return assets->id==0x2000?TR_ART_STAKE:TR_ART_BRIDGE;
@@ -184,6 +187,16 @@ void tr_objects_reset(TrStageAssets *a)
         tr_nemesis(g_rom+art[i][0],0x400000-art[i][0],g_machine.vdp.vram+art[i][1]*32,0x10000-art[i][1]*32);
 }
 unsigned tr_objects_live(void){return live;}
+void tr_objects_checkpoint_stars(unsigned checkpoint)
+{
+    int x=(int)ram(checkpoint+0x10),y=(int)ram(checkpoint+0x14)-48;
+    for(unsigned n=0;n<4;++n){
+        unsigned owner=BOSS_OWNER-12-(g_ram[checkpoint+0x2C]&31)*4-n;
+        if(spawn(owner,0x279,g_ram[checkpoint+0x2C]&127,0,x,y))
+            for(unsigned j=0;j<OBJECT_COUNT;++j)if(objects[j].guest&&objects[j].owner==owner&&objects[j].kind==0x279){
+                objects[j].angle=(int)n*64;objects[j].parent=checkpoint;break;}
+    }
+}
 void tr_objects_special_save(void)
 {special_assets=assets;memcpy(special_finished,finished,sizeof finished);}
 void tr_objects_special_restore(void)
@@ -519,6 +532,50 @@ static void crab(Object *o)
     g_ram[a+4]=(uint8_t)(4|(o->flags&1));g_ram[a+0x28]=6;
     g_ram[a+0x22]=(uint8_t)(o->phase==3?4:o->phase==2&&o->ticks%48<32?1:0);
 }
+static int moto(Object *o)
+{
+    unsigned a=o->guest;int ready=o->phase!=0;g_ram[a+0x1E]=14;g_ram[a+0x1F]=8;
+    /* S1 Moto_Main drops to the floor before starting its walking cycle.
+     * At an edge it pauses for 60 ticks, then turns; it never flips each frame. */
+    if(!o->phase){
+        o->y+=o->vy;o->vy+=0x38;put(a+0x14,o->y/256);
+        call(0xF938,a);int dy=(int16_t)g_cpu.D[1];
+        if(dy<0){o->y+=dy*256;o->vy=0;o->phase=1;o->timer=0;o->flags^=1;}
+    }else if(o->phase==1){
+        if(o->timer)--o->timer;
+        else{o->phase=2;o->flags^=1;o->vx=(o->flags&1)?0x100:-0x100;}
+    }else{
+        o->x+=o->vx;put(a+0x10,o->x/256);call(0xF938,a);int dy=(int16_t)g_cpu.D[1];
+        if(dy>=-8&&dy<12)o->y+=dy*256;
+        else{o->phase=1;o->timer=59;o->vx=0;}
+    }
+    put(a+0x10,o->x/256);put(a+0x14,o->y/256);
+    g_ram[a+4]=(uint8_t)(4|(o->flags&1));g_ram[a+0x2A]=(uint8_t)((g_ram[a+0x2A]&~1u)|(o->flags&1));
+    g_ram[a+0x22]=(uint8_t)(o->phase==2?(o->ticks/8)%3:0);g_ram[a+0x28]=0xC;
+    /* Moto_Main does not display or collide until it has found a floor.
+     * The original C50/34C placement is inside the cliff and stays hidden. */
+    return ready;
+}
+static void checkpoint_star(Object *o)
+{
+    unsigned a=o->guest;
+    if(g_ram[a+0x29]&1){tr_runtime_checkpoint_special(a,o->subtype);return;}
+    g_ram[a+0x29]=0;
+    /* Obj79_Star from S2: 128-tick expansion, 256-tick active circle,
+     * 128-tick contraction; four stars orbit the checkpoint's upper pole. */
+    o->angle+=10;int sn=sine((unsigned)o->angle&255)>>5,cs=sine(((unsigned)o->angle+64)&255)>>3;
+    int segment=(o->angle&0x3E0)>>5,delta=0,add=cs;
+    if(segment>16)add=-add;segment&=15;if(segment>8)segment=(-segment)&7;
+    for(unsigned i=0;i<3;++i){segment>>=1;if(segment)delta+=add;add*=2;}
+    sn+=delta>>4;int scale=(int)o->ticks;
+    if(scale==128)g_ram[a+0x28]=0xD8;
+    if(scale>384)scale=512-scale;
+    if(scale<0){memset(g_ram+a,0,OBJECT_SIZE);return;}
+    if(scale<128){sn=sn*scale>>7;cs=cs*scale>>7;}
+    put(a+0x10,o->origin_x+cs);put(a+0x14,o->origin_y+sn);
+    unsigned f=(o->ticks&6)>>1;g_ram[a+0x22]=(uint8_t)(f==3?1:f);
+    g_ram[a+7]=g_ram[a+6]=8;
+}
 int tr_objects_dispatch(uint32_t address)
 {
     if(address!=HOST_CODE||!assets)return 0;
@@ -526,6 +583,7 @@ int tr_objects_dispatch(uint32_t address)
     Object *o=&objects[(a-OBJECT_BASE)/OBJECT_SIZE];if(o->guest!=a)return 0;
     M68KState saved=g_cpu;int old_x=(int)ram(a+0x10);++o->ticks;
     switch(o->kind){
+    case 0x279:checkpoint_star(o);break;
     case 0x200:
         if(o->timer){--o->timer;g_ram[a+0x22]=(uint8_t)((o->ticks/8)&1);}
         else{o->x+=o->vx;o->y+=o->vy;o->vy+=(int)o->phase;put(a+0x10,o->x/256);put(a+0x14,o->y/256);
@@ -576,12 +634,7 @@ int tr_objects_dispatch(uint32_t address)
         else solid(a,27,32,old_x,1);break;}
     case 0x17:case 0x217:helix(o);break;
     case 0x1F:crab(o);break;
-    case 0x40:{
-        o->x+=o->vx;put(a+0x10,o->x/256);g_ram[a+0x1E]=16;
-        call(0xF938,a);int dy=(int16_t)g_cpu.D[1];
-        if(dy>=-8&&dy<=12){o->y+=dy*256;put(a+0x14,o->y/256);}else{o->vx=-o->vx;o->x+=o->vx;put(a+0x10,o->x/256);}
-        if(o->ticks%128==0)o->vx=-o->vx;
-        g_ram[a+4]=(uint8_t)(4|(o->vx>0));g_ram[a+0x22]=(uint8_t)((o->ticks/8)%3);g_ram[a+0x28]=6;break;}
+    case 0x40:if(!moto(o)){g_cpu=saved;return 1;}break;
     case 0x2B:case 0x5C:
         o->y+=o->vy;o->vy+=0x18;
         if(o->y>=o->origin_y*256){o->y=o->origin_y*256;o->vy=o->kind==0x5C?-0x400:-0x700;}
@@ -596,4 +649,19 @@ int tr_objects_dispatch(uint32_t address)
     if(o->art!=NO_ART&&g_ram[a+0x22]>=assets->art[o->art].frames)g_ram[a+0x22]=0;
     if(g_ram[a+0x28])call(0x1040C,a);
     call(0x1ABC6,a);g_cpu=saved;return 1;
+}
+void tr_objects_state(TrStateIO *io,TrStageAssets *const imports[4])
+{
+    unsigned ids[2]={assets?assets->id:0,special_assets?special_assets->id:0};
+    if(io->mode==1&&io->data&&io->pos+sizeof ids<=io->size)memcpy(ids,io->data+io->pos,sizeof ids);
+    TR_STATE(io,ids);
+    for(unsigned i=0;i<2;++i){TrStageAssets *found=NULL;
+        for(unsigned j=0;j<4;++j)if(imports[j]&&imports[j]->id==ids[i])found=imports[j];
+        if(ids[i]&&!found)io->ok=0;
+        if(io->mode==2){if(i)special_assets=found;else assets=found;}}
+    TR_STATE(io,objects);TR_STATE(io,finished);TR_STATE(io,special_finished);
+    TR_STATE(io,art_tile);TR_STATE(io,bridge_bytes);TR_STATE(io,bridge_maps);TR_STATE(io,bridge_offsets);
+    TR_STATE(io,composite_maps);TR_STATE(io,frame);TR_STATE(io,live);TR_STATE(io,boss_started);
+    TR_STATE(io,boss_defeated);TR_STATE(io,capsule_open);TR_STATE(io,results_started);
+    TR_STATE(io,previous_x);TR_STATE(io,previous_y);
 }

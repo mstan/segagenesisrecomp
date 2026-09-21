@@ -132,11 +132,10 @@ mode retains native behavior. Save loading retains unavailable chapter progress.
 Existing slots explicitly add chapters using the native menu's advertised B action.
 
 This is a first gameplay playtest, not the complete accepted campaign. Hidden
-bonuses remain unfinished. Sonic 3 giant rings and Blue Spheres serve each
-imported act. Bridge sag, ledge fragments and some
+bonuses remain unfinished. Donor entrance rules lead to Sonic 3 Blue Spheres. Bridge sag, ledge fragments and some
 object timings need more faithful ports. Full human routes/all-character clears
-and end-to-end native campaign completion remain unvalidated. Machine snapshots
-and netplay are disabled while this experiment is enabled.
+and end-to-end native campaign completion remain unvalidated. Netplay remains disabled.
+Quickstates serialize the host state as described below.
 
 The consumer's `PLAYTEST.md` describes the isolated launch folder and eight
 starter slots. `prepare_trilogy_playtest.py` creates native slots via real menu
@@ -234,33 +233,55 @@ note-fill tables against the native title baseline upon reaching AIZ.
 
 ## Shared special stages and cleared-slot browsing
 
-Imported acts spawn native Sonic 3 giant rings near the start and above donor
-checkpoints. Blue Spheres, emerald awards and results use native S3 code/assets.
-Returning restores the act, entrance position, checkpoint, rings, collected
-donor objects and donor music. Chaos Emeralds and the next special-stage index
-are shared with the native chapter. As in S3, seven Chaos Emeralds turn these
-rings into 50-ring bonuses; Super Emerald progression begins in S&K.
-Donor checkpoints do not spawn the separate native bonus-stage star portals;
-their nearby giant rings provide the special-stage route. Native S3K portals
-remain unchanged.
+Imported stages use donor entrance conditions with native Sonic 3 Blue Spheres:
+GHZ1/2 use the original S1 goal-ring placements, visible with 50+ rings and
+fewer than seven Chaos Emeralds. GHZ3 has no goal ring. Entering the ring runs
+act results before Blue Spheres, then starts the next act on success or failure.
+EHZ uses S2's four orbiting checkpoint stars, original art and expansion/expiry
+timing. A fresh checkpoint requires 50+ rings and fewer than seven emeralds;
+touching its stars enters Blue Spheres and returns to that checkpoint.
+No starting giant rings or invented checkpoint giant rings remain. Native S3K
+entrances remain unchanged. Seven Chaos Emeralds are shared across chapters.
 
-The optional `SPCL` v1 SRAM extension has eight 20-byte entries: a slot token
-and four 32-bit act entrance masks. It preserves absent-chapter data and rejects
-unsupported versions without replacing them. Slot tokens prevent entrance usage
-from attaching to a deleted/recreated save. No Save keeps its masks in memory.
+The optional `SPCL` v2 SRAM extension has eight 20-byte entries: a slot token
+and four 32-bit act entrance masks. Old v1 synthetic entrance masks migrate to
+empty v2 masks without changing earned progress or emeralds. Unsupported versions
+remain protected. Absent-chapter data is preserved, and slot tokens prevent
+usage attaching to a deleted/recreated save. No Save keeps its masks in memory.
 The native SRAM prefix and existing chapter codecs retain their formats.
 
-Cleared saves can browse every available act using Up/Down in native Data Select.
-Native zone-only SRAM synchronization preserves the chosen act. The private
-`trilogy_cleared_save` tool updates a requested offline slot with all current
-chapters cleared and seven Chaos Emeralds, recalculating both native checksums.
-The delivered slot 8 replaces only that slot; the prior live save is backed up.
+Cleared saves browse available acts using Up/Down in native Data Select.
+The existing cleared slot 8 is retained; subsequent updates preserve every slot.
 
-`run_trilogy_special.py` checks all four acts, win/failure, checkpoint entry,
-emerald/entrance persistence, rings, music and process-exit/reload. Player
-positions and the last-sphere state are explicit fixtures; this is not a full
-Blue Spheres clear. Separate controller-only jumps reach the starting ring in
-each act in No Save. `run_trilogy_cleared.py` verifies preservation of the other
-seven slots and launches GHZ2, GHZ3, EHZ1, AIZ2 and Doomsday through Data Select.
-Final artifacts are `build/trilogy-special-final`, `build/trilogy-cleared-final`
-and `build/trilogy-special-final-native` (16 native PNG/RAM/VRAM matches).
+## Quickstates and enemy correction
+
+Shift+F1..F9 saves and F1..F9 loads. Controller LB/L1 saves slot 1; RB/R1 loads it.
+Files are `native_save_1.bin` through `native_save_9.bin` beside the executable.
+States are private to a compatible build and require the same enabled donor set.
+They restore machine RAM/SRAM, audio chips, campaign/extensions, imported object
+positions/timers/art allocation, donor music tables and sprite publication state.
+ROM buffers and host pointers are rebound, never serialized. CRC and compatibility
+checks run before machine mutation; writes use a temporary file and atomic replace.
+The game resumes at the level, Blue Spheres or results loop rather than reloading
+the mode. Save during gameplay or special-stage gameplay/results; menu and loading
+screens are not supported save points. Loading also rewinds the save's progress.
+
+Motobug now follows S1's fall-to-floor initialization and 60-tick edge pause/turn.
+The previous constant movement and repeated direction reversal could leave it
+below the surface and oscillating in place. Initialization now also follows
+S1 in withholding rendering/collision until a floor is found: the original
+C50/34C placement inside the cliff is invisible in Sonic 1, verified against
+the donor runner. It should not be moved onto an invented surface.
+
+`run_trilogy_special.py` checks goal/checkpoint eligibility, no start rings,
+Blue Spheres quickloads, outcomes, next-act/checkpoint return, emerald/entrance
+persistence and process-exit reload. Positions and last-sphere outcomes are
+fixtures; the goal approach/jump and checkpoint jump use normal inputs.
+`run_trilogy_states.py` checks object replay, cross-process/cross-stage restoration,
+and rejection of damaged or missing-donor states before mutation. It captures
+Motobug sequences for visual review. These are not full human playthroughs.
+
+Validation artifacts: `build/trilogy-donor-rules-v4`, `build/trilogy-states-final`,
+`build/trilogy-results-state-final`, `build/trilogy-moto-final` and original S1
+comparison `build/trilogy-moto-original-v1`. All 21 CTests pass, and
+`build/trilogy-donor-native-v1` matches 16 baseline PNG/RAM/VRAM captures.
