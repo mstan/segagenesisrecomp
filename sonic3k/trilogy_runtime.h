@@ -7,3 +7,5 @@ int tr_runtime_read16(uint32_t address,uint16_t *word);
 const char *tr_runtime_state_reason(void);
 int tr_runtime_netplay_allowed(void);
 unsigned tr_runtime_stage_id(void);
+int tr_runtime_scene_required(void);
+const uint32_t *tr_runtime_sprite_palette(uint32_t mapping);

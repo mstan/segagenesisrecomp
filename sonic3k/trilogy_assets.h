@@ -16,6 +16,10 @@ enum { TR_ART_PLATFORM,TR_ART_BRIDGE,TR_ART_ROCK,TR_ART_SWING,TR_ART_LEDGE,
 typedef struct TrObjectArt { unsigned mapping,frames,tile_bytes; uint16_t palette; uint8_t tiles[4096]; } TrObjectArt;
 typedef struct TrPlacement { uint16_t x,y; uint8_t id,subtype,flags; } TrPlacement;
 typedef struct TrRing { uint16_t x,y; } TrRing;
+typedef struct TrTileAnimation {
+    unsigned tile,tiles,frames;
+    uint8_t offset[8],duration[8],data[0x500];
+} TrTileAnimation;
 typedef struct TrStageAssets {
     unsigned id, chunk_count, block_count, tile_bytes, object_count, ring_count;
     uint16_t start_x,start_y,max_x,max_y;
@@ -27,6 +31,9 @@ typedef struct TrStageAssets {
     uint8_t collision[0xC00]; /* big-endian 16-bit indexes, primary then secondary */
     uint8_t heights[0x1000], widths[0x1000], angles[256];
     uint16_t palette[48];
+    uint16_t sprite_palette[16],water_palette[16];
+    TrTileAnimation animations[5];
+    unsigned animation_count;
     TrPlacement objects[TR_MAX_OBJECTS];
     TrRing rings[TR_MAX_RINGS];
     unsigned map_bytes;
@@ -37,6 +44,7 @@ typedef struct TrStageAssets {
     uint8_t spiral_y[416],spiral_flip[52];
 } TrStageAssets;
 int tr_object_assets(const uint8_t *rom,size_t size,TrStageAssets *out);
+void tr_stage_animate(const TrStageAssets *assets,unsigned frame,uint8_t *vram);
 /* Requires the exact supported, independently verified donor revision. */
 int tr_stage_decode(unsigned id,const uint8_t *rom,size_t size,TrStageAssets *out,
                     char *error,size_t error_size);

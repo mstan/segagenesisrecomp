@@ -2,7 +2,12 @@
 #include "../../sonic3k/sonic3_video.c"
 static int test_data_read16(uint32_t address,uint16_t *value)
 {if(address!=0x480000)return 0;*value=0xABCD;return 1;}
-const GameSpec g_game_spec={.data_read16=test_data_read16};
+static int test_required;
+static uint32_t test_palette[64];
+static int test_scene_required(void){return test_required;}
+static const uint32_t *test_sprite_palette(uint32_t map){return map==0x410000?test_palette:NULL;}
+const GameSpec g_game_spec={.data_read16=test_data_read16,.scene_required=test_scene_required,
+    .scene_sprite_palette=test_sprite_palette};
 uint8_t g_ram[65536],g_rom[0x400000];
 M68KState g_cpu;
 void m68k_write8(uint32_t a,uint8_t v){g_ram[a&65535]=v;}
@@ -42,6 +47,8 @@ int main(int argc,char **argv)
     const uint8_t invalid[]={2,0,0xFF,0xFA};
     CHECK(!art_kos(invalid,sizeof invalid,decoded,sizeof decoded,&used));
     CHECK(!enabled());CHECK(!width(2560,720,320,224));CHECK(s3_video_main_cpu_divisor()==1);
+    test_required=1;CHECK(enabled());CHECK(width(2560,720,320,224)==320);
+    test_required=0;CHECK(!enabled());
     write32(0xB000,0x123456);g_ram[0xF600]=12;g_ram[0xF711]=1;
     word(g_ram,0x8000,16);word(g_ram,0x8002,4);
     CHECK(stage_width()==2048);CHECK(configure("fit"));CHECK(width(4000,500,320,224)==1792);
@@ -87,6 +94,12 @@ int main(int argc,char **argv)
     s_build.sprites[1]=(SceneSprite){700,0,0x8001,0,0};
     publish_sprites();memcpy(v.vram+0xF800,g_ram+0xF800,640);
     scanline(&v,0,native,320,out,796);CHECK(out[16]==0xFFFF0000 && out[700]==0xFFFF0000);
+    /* A donor sprite has its own colors; native sprites and terrain CRAM
+     * remain unchanged even when the mappings share a palette index. */
+    test_palette[1]=0xFF00FF00;s_build.sprites[1].mapping=0x410000;
+    publish_sprites();scanline(&v,0,native,320,out,796);
+    CHECK(out[16]==0xFFFF0000&&out[700]==0xFF00FF00&&v.cram[1]==0xE);
+    s_build.sprites[1].mapping=0;publish_sprites();scanline(&v,0,native,320,out,796);
     v.vram[0xF806]^=1;scanline(&v,0,native,320,out,796);
     CHECK(out[16]==0xFFFF0000 && out[700]==0xFFFF0000 && s_scene_holds==1);
     word(g_ram,0xEE80,500);word(v.vram,0xF000,(uint16_t)-500);

@@ -228,6 +228,8 @@ static int s3k_sram_load(const char *path,uint8_t *native,size_t size)
     int ok=tr_sram_load(path,native,size);tr_runtime_sram_loaded();return ok;
 }
 const GameSpec g_game_spec = {
+    .scene_required = tr_runtime_scene_required,
+    .scene_sprite_palette = tr_runtime_sprite_palette,
     .video                  = &sonic3_video,
     .instruction_hook       = s3k_instruction_hook,
     .data_read16            = tr_runtime_read16,

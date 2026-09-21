@@ -7,6 +7,7 @@
 #include "trilogy_objects.h"
 #include "genesis_runtime.h"
 #include "video/genesis_machine.h"
+#include "video/genesis_dac.h"
 #include "sha256.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,6 +120,32 @@ const char *tr_runtime_state_reason(void)
 {return selected?"Trilogy stage experiment has host state; machine snapshots are unavailable":NULL;}
 int tr_runtime_netplay_allowed(void){return !selected;}
 unsigned tr_runtime_stage_id(void){return active&&stage?stage->id:0;}
+int tr_runtime_scene_required(void){return active&&stage&&(g_ram[0xF600]&127)==12;}
+const uint32_t *tr_runtime_sprite_palette(uint32_t mapping)
+{
+    if(!tr_runtime_scene_required())return NULL;
+    /* Terrain keeps the exact donor CRAM. Its sprites keep their donor
+     * palette too; S3 players/common objects have a separate presentation
+     * palette instead of forcing either game's pixels into the other's. */
+    static uint32_t donor[64],native[64];
+    static uint16_t previous[64];static const TrStageAssets *previous_stage;
+    const uint16_t *cram=g_machine.vdp.cram;
+    if(previous_stage!=stage||memcmp(previous,cram,sizeof previous)){
+        previous_stage=stage;memcpy(previous,cram,sizeof previous);
+        for(unsigned i=0;i<64;++i){
+            unsigned d=i<16?stage->sprite_palette[i]:cram[i];
+            unsigned n=i<16?cram[i]:word(g_rom+0xA8B7C+(i-16)*2);
+            /* Native fade-in/out uses palette zero's white as its ceiling. */
+            unsigned white=cram[1],df=0,nf=0;
+            for(unsigned shift=0;shift<=8;shift+=4){unsigned limit=(white>>shift)&14;
+                unsigned dc=(d>>shift)&14,nc=(n>>shift)&14;
+                df|=(dc<limit?dc:limit)<<shift;nf|=(nc<limit?nc:limit)<<shift;}
+            donor[i]=genesis_dac_cram_to_argb((uint16_t)df,GENESIS_DAC_NORMAL);
+            native[i]=genesis_dac_cram_to_argb((uint16_t)nf,GENESIS_DAC_NORMAL);
+        }
+    }
+    return mapping>=0x410000&&mapping<0x480000?donor:native;
+}
 int tr_runtime_read16(uint32_t a,uint16_t *value)
 {
     if(selected&&(g_ram[0xF600]&127)==0x4C&&a>=0x480000&&a+1<0x480000+sizeof menu_text_map){*value=(uint16_t)word(menu_text_map+a-0x480000);return 1;}
@@ -162,7 +189,7 @@ static void prepare_previews(void)
         unsigned top=data->start_y>144?data->start_y-144:0;
         for(unsigned y=0;y<56;++y)for(unsigned x=0;x<80;++x){
             unsigned worldx=x*3,worldy=top+y*3,p=preview_pixel(data,worldx,worldy,0);
-            if(!p)p=preview_pixel(data,worldx,top/8+y*3,1);
+            if(!p)p=preview_pixel(data,worldx,data->id==0x2000?y*3:38-top/32+y*3,1);
             unsigned c=p>=16?data->palette[p-16]:0;
             pixels[y*80+x]=(uint16_t)c;
             unsigned compact=((c>>1)&7)|((c>>2)&56)|((c>>3)&448);++frequency[compact];
@@ -233,19 +260,55 @@ static void title_name(void)
     putlong(a,0x2D95C);putlong(a+0xC,0x480200);put(a+0xA,0);g_ram[a+0x22]=1;
     recomp_call_addr(0x2D95C);g_cpu=saved;
 }
+static int bg_scroll(unsigned id,unsigned x,unsigned line,unsigned bgy,unsigned frame)
+{
+    if(id!=0x2000){
+        unsigned y=line+bgy;
+        if(y<112)return (int)x*3/8;
+        if(y<152)return (int)x/2;
+        /* Verified Sonic 1 REV00 water-perspective fixed-point formula. */
+        int hill=(int)x/2,step=((int)x-512-hill)*256/104;
+        return hill+(int)((int64_t)step*(y-152)>>8);
+    }
+    static const int ripple[]={1,2,1,3,1,2,2,1,2,3,1,2,1,2,0,0,2,0,3,2,2,3,2,2,1,3,0,0,1,0,1,3};
+    if(line<22)return 0;
+    int slow=((int)x+63)/64;
+    if(line<80)return slow;
+    if(line<101)return slow-ripple[(line-80-(frame/8+1))&31];
+    if(line<112)return 0;
+    if(line<128)return ((int)x+15)/16;
+    if(line<144){int n=-((int)x+15)/16;return -(n+(n>>1));}
+    int n=-(int)x,step=((n>>1)-(n>>3))*256/48,index=(int)line-144;
+    if(index>=33)index=33+(index-33)/3*3;else if(index>=15)index=15+(index-15)/2*2;
+    return -((n>>3)+(int)((int64_t)step*index>>8));
+}
 static void screen(void)
 {
-    GVDP *v=&g_machine.vdp;unsigned x=ram(0xEE78),y=ram(0xEE7C),bgx=x/4,bgy=y/8;
+    GVDP *v=&g_machine.vdp;unsigned x=ram(0xEE78),y=ram(0xEE7C),frame=ram(0xFE04);
+    unsigned bgy=stage->id==0x2000?0:38-((y&2047)>>5),bgx=x*3/8;
+    if(bgy>38)bgy=0;
+    tr_stage_animate(stage,frame,v->vram);
     put(0xEE80,x);put(0xEE84,y);put(0xEE8C,bgx);put(0xEE90,bgy);
     put(0xF616,y);put(0xF618,bgy);put(0xF100,0);putlong(0xEF74,0);
-    for(unsigned line=0;line<224;++line){put(0xE000+line*4,0u-x);put(0xE002+line*4,0u-bgx);}
+    for(unsigned line=0;line<224;++line){put(0xE000+line*4,0u-x);put(0xE002+line*4,-bg_scroll(stage->id,x,line,bgy,frame));}
     for(unsigned plane=0;plane<2;++plane){
         unsigned px=plane?bgx:x,py=plane?bgy:y,base=plane?0xE000:0xC000;
-        for(unsigned yy=py/8;yy<py/8+29;++yy)for(unsigned xx=px/8;xx<px/8+41;++xx){
+        for(unsigned yy=py/8;yy<py/8+29;++yy){
+            int start=(int)px/8,count=41;
+            if(plane){unsigned line=yy*8>py?yy*8-py:0;start=bg_scroll(stage->id,x,line,bgy,frame)/8-8;count=64;}
+            for(int xx=start;xx<start+count;++xx){
             unsigned a=base+((yy&31)*64+(xx&63))*2,value=asset_tile(stage,xx*8,yy*8,plane);
             v->vram[a]=(uint8_t)(value>>8);v->vram[a+1]=(uint8_t)value;
-        }
+        }}
     }
+}
+static void palette_cycle(void)
+{
+    unsigned frame=ram(0xFE04),cycle=(frame/(stage->id==0x2000?8:6))&3;
+    if(stage->id==0x2000){
+        put(0xFC26,stage->water_palette[cycle*4]);put(0xFC28,stage->water_palette[cycle*4+1]);
+        put(0xFC3C,stage->water_palette[cycle*4+2]);put(0xFC3E,stage->water_palette[cycle*4+3]);
+    }else for(unsigned i=0;i<4;++i)put(0xFC50+i*2,stage->water_palette[cycle*4+i]);
 }
 static void size_start(void)
 {
@@ -506,7 +569,7 @@ int tr_runtime_hook(uint32_t pc)
     case 0x7892:g_ram[0xF730]=0;return 1;
     case 0x4E35C:g_ram[0xF664]=0;put(0xEEAA,0xFFF);put(0xEEAC,0xFF0);put(0xEEAE,0x7C);screen();return 1;
     case 0x4E408:screen();return 1;
-    case 0x3BB8:return ram(0xEE50)==0; /* retain the native fade-in, suppress AIZ cycling */
+    case 0x3BB8:if(ram(0xEE50))return 0;palette_cycle();return 1;
     case 0x1B690:
         if(!g_ram[0xF76C]){tr_objects_reset(stage);g_ram[0xF76C]=4;}
         tr_objects_load();save_import();return 1;

@@ -10,6 +10,22 @@
 
 static unsigned word(const uint8_t *p){return (unsigned)p[0]<<8|p[1];}
 static void putword(uint8_t *p,unsigned v){p[0]=(uint8_t)(v>>8);p[1]=(uint8_t)v;}
+static void animation(TrStageAssets *a,const uint8_t *r,unsigned address,unsigned tile,unsigned tiles,
+                      unsigned frames,const uint8_t *offset,const uint8_t *duration,unsigned bytes)
+{
+    TrTileAnimation *p=&a->animations[a->animation_count++];
+    p->tile=tile;p->tiles=tiles;p->frames=frames;
+    memcpy(p->offset,offset,frames);memcpy(p->duration,duration,frames);memcpy(p->data,r+address,bytes);
+    unsigned end=(tile+tiles)*32;if(end>a->tile_bytes)a->tile_bytes=end;
+}
+void tr_stage_animate(const TrStageAssets *a,unsigned frame,uint8_t *vram)
+{
+    for(unsigned n=0;n<a->animation_count;++n){const TrTileAnimation *p=&a->animations[n];
+        unsigned period=0,i=0;for(unsigned f=0;f<p->frames;++f)period+=p->duration[f];
+        unsigned t=frame%period;while(t>=p->duration[i])t-=p->duration[i++];
+        memcpy(vram+p->tile*32,p->data+p->offset[i]*32,p->tiles*32);
+    }
+}
 static int ring(TrStageAssets *a,int x,int y)
 {
     if(a->ring_count==TR_MAX_RINGS||x<0||x>32767||y<0||y>4095)return TR_FAIL;
@@ -105,6 +121,13 @@ static int decode_s1(unsigned act,const uint8_t *r,TrStageAssets *a)
     if(first!=0x39A0)return TR_FAIL;
     size_t second=tr_nemesis(r+0x3DCF2,5031,a->tiles+first,sizeof a->tiles-first);
     if(second!=0x2E20)return TR_FAIL;a->tile_bytes=(unsigned)(first+second);
+    /* The main PLC ends before the stalk and animated flowers/waterfall.
+     * These tile slots are stage art, never free space for object graphics. */
+    if(tr_nemesis(r+0x2F41E,0x80000-0x2F41E,a->tiles+0x358*32,4*32)!=4*32)return TR_FAIL;
+    {const uint8_t offsets[]={0,8},duration[]={6,6};animation(a,r,0x66AD6,0x378,8,2,offsets,duration,0x200);}
+    {const uint8_t offsets[]={0,16},duration[]={16,16};animation(a,r,0x66CD6,0x35C,16,2,offsets,duration,0x400);}
+    {const uint8_t offsets[]={0,12,24,12},duration[]={128,8,128,8};animation(a,r,0x670D6,0x36C,12,4,offsets,duration,0x480);}
+    tr_stage_animate(a,0,a->tiles);
     n=tr_kosinski(r+0x3F09A,8464,chunks,sizeof chunks);if(!n||n%512)return TR_FAIL;
     /* Explicit blank chunk; S1's chunk zero never indexes its chunk table. */
     a->chunk_count=1;
@@ -114,6 +137,7 @@ static int decode_s1(unsigned act,const uint8_t *r,TrStageAssets *a)
     for(unsigned i=0;i<410;++i){a->collision[i*2]=r[0x64A00+i];a->collision[0x600+i*2]=r[0x64A00+i];}
     memcpy(a->angles,r+0x62900,256);memcpy(a->heights,r+0x62A00,4096);memcpy(a->widths,r+0x63A00,4096);
     for(unsigned i=0;i<48;++i)a->palette[i]=(uint16_t)word(r+0x23A8+i*2);
+    for(unsigned i=0;i<16;++i){a->sprite_palette[i]=(uint16_t)word(r+0x2388+i*2);a->water_palette[i]=(uint16_t)word(r+0x1B86+i*2);}
     a->start_x=(uint16_t)word(r+0x6112+act*4);a->start_y=(uint16_t)word(r+0x6114+act*4);
     a->max_x=(uint16_t)word(r+0x5F20+act*12);a->max_y=(uint16_t)word(r+0x5F24+act*12);
     return placements(a,r+objs[act],act==0?1290:act==1?1470:0x800,1);
@@ -125,6 +149,12 @@ static int decode_s2(const uint8_t *r,TrStageAssets *a)
     uint8_t layout[0x1000],primary[0x600],secondary[0x600];
     size_t n=tr_kosinski(r+0x94E74,3504,a->blocks,sizeof a->blocks);if(!n||n%8)return TR_FAIL;a->block_count=(unsigned)n/8;
     n=tr_kosinski(r+0x95C24,10624,a->tiles,sizeof a->tiles);if(!n)return TR_FAIL;a->tile_bytes=(unsigned)n;
+    {const uint8_t offsets[]={0,2,0,2,0,2},duration[]={128,20,8,8,8,8};animation(a,r,0x49714,0x394,2,6,offsets,duration,0x80);}
+    {const uint8_t offsets[]={2,0,2,0,2,0,2,0},duration[]={128,12,12,12,6,6,6,6};animation(a,r,0x49794,0x396,2,8,offsets,duration,0x80);}
+    {const uint8_t offsets[]={0,2},duration[]={8,8};animation(a,r,0x49814,0x398,2,2,offsets,duration,0x80);}
+    {const uint8_t offsets[]={0,2,0,2,0,2,0,2},duration[]={128,8,8,8,8,12,12,12};animation(a,r,0x49894,0x39A,2,8,offsets,duration,0x80);}
+    {const uint8_t offsets[]={0,2,4,6,4,2},duration[]={24,10,12,24,12,10};animation(a,r,0x49914,0x39C,2,6,offsets,duration,0x100);}
+    tr_stage_animate(a,0,a->tiles);
     n=tr_kosinski(r+0x99D34,12960,a->chunks,sizeof a->chunks);if(!n||n%128)return TR_FAIL;a->chunk_count=(unsigned)n/128;
     n=tr_kosinski(r+0x45AC4,448,layout,sizeof layout);if(n!=0x1000)return TR_FAIL;
     /* S2's fixed 128-byte FG/BG rows become S3's interleaved row pointers. */
@@ -148,6 +178,7 @@ static int decode_s2(const uint8_t *r,TrStageAssets *a)
     for(unsigned i=0;i<a->block_count;++i){a->collision[i*2]=primary[i];a->collision[0x600+i*2]=secondary[i];}
     memcpy(a->angles,r+0x42D50,256);memcpy(a->heights,r+0x42E50,4096);memcpy(a->widths,r+0x43E50,4096);
     for(unsigned i=0;i<48;++i)a->palette[i]=(uint16_t)word(r+0x2A22+i*2);
+    for(unsigned i=0;i<16;++i){a->sprite_palette[i]=(uint16_t)word(r+0x2902+i*2);a->water_palette[i]=(uint16_t)word(r+0x1E7A+i*2);}
     a->start_x=(uint16_t)word(r+0xC1D0);a->start_y=(uint16_t)word(r+0xC1D2);a->max_x=0x29A0;a->max_y=0x320;
     for(unsigned pos=0;pos+2<=550;pos+=4){unsigned x=word(r+0xE4344+pos);if(x&0x8000)break;
         if(pos+4>550)return TR_FAIL;unsigned packed=word(r+0xE4346+pos),y=packed&0xFFF,count=((packed>>12)&7)+1;

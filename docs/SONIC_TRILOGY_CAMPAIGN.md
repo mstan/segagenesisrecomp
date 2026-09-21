@@ -109,10 +109,10 @@ Private-ROM decode results:
 
 | Stage | Chunks | Blocks | Tiles | Non-ring placements | Rings |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| GHZ1 | 165 | 439 | 830 | 132 | 155 |
-| GHZ2 | 169 | 439 | 830 | 170 | 123 |
-| GHZ3 | 165 | 439 | 830 | 212 | 123 |
-| EHZ1 | 256 | 500 | 914 | 135 | 226 |
+| GHZ1 | 165 | 439 | 896 | 132 | 155 |
+| GHZ2 | 169 | 439 | 896 | 170 | 123 |
+| GHZ3 | 165 | 439 | 896 | 212 | 123 |
+| EHZ1 | 256 | 500 | 926 | 135 | 226 |
 
 ## Gameplay playtest boundary
 
@@ -174,3 +174,33 @@ Private executable checks:
 
 Runtime artifacts remain under the private `build/trilogy-*` directories.
 A renderer PASS reports rendering/execution assertions, never a stage clear.
+
+## First playtest visual correction
+
+The initial handoff contained obvious flower/waterfall corruption, wrong HUD
+and ring colors, and misplaced backgrounds. Its launch/save tests passed, but
+the screenshot review failed to identify these defects. Those automation results
+were not evidence of graphical correctness.
+
+The corrected importer reserves and fills the original GHZ stalk, flower and
+waterfall slots and all five EHZ animation slots from the verified donor ROMs.
+It also runs their water palette cycles and original background scroll formulas
+(Sonic 1 REV00 for the supported donor). These are original assets, not S3-style
+redraws. A required host scene at native width separates donor sprite palettes
+from S3 player/common-object palettes while preserving the original terrain CRAM.
+The same palette handling works in 16:9. The stock game remains unchanged when
+the experiment is disabled.
+
+Reference captures from the original S1/S2 runners are in the private
+`build/trilogy-visual-references-v1` directory. Nine GHZ/EHZ route positions were
+captured; starting scenes and several later positions were inspected alongside
+those references. GHZ's static upper-right 180x75 region matches the donor
+capture pixel for pixel. That is a bounded region check, not whole-game fidelity
+validation. GHZ2/3 starts, boss, capsule and title were also visually inspected.
+Native regression still matches all 16 PNG/RAM/VRAM captures. Checkpoint/reload,
+boss/act-transition chain, GHZ/EHZ 4:3 and 16:9 checks pass. Asset tests compare
+animation frames directly with donor bytes; renderer tests cover independent
+sprite palettes and forced native width.
+
+The owner additionally requested original donor music. Sound-driver conversion
+and stage/boss/results cue integration are the next implementation work.

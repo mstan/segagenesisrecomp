@@ -184,7 +184,8 @@ static int configure(const char *mode)
     scene_mode_changed(was_enabled);
     return 1;
 }
-static int enabled(void) { return s_mode != VIDEO_OFF; }
+static int required(void) { return g_game_spec.scene_required && g_game_spec.scene_required(); }
+static int enabled(void) { return s_mode != VIDEO_OFF || required(); }
 unsigned s3_video_main_cpu_divisor(void)
 {
     /* LevelLoop ($650C) still waits for the real V-int every tick.
@@ -202,7 +203,7 @@ static int width(int dw, int dh, int nw, int nh)
         result = s_stage_width > nw ? s_stage_width : nw;
     }
     else if (s_mode == VIDEO_RATIO) result = nh * s_ratio;
-    else if (dw > 0 && dh > 0) result = (double)nh * dw / dh;
+    else if (s_mode == VIDEO_FIT && dw > 0 && dh > 0) result = (double)nh * dw / dh;
     /* Bound by representable dimensions and the SDL texture limit (runner),
      * never by an aspect preset. Even a stage-length viewport is supported. */
     if (result > INT_MAX - 1.0) result = INT_MAX - 1.0;
@@ -270,7 +271,7 @@ static uint16_t plane_attr(const GVDP *v, unsigned base, int x, int y)
  * ceiling, or 20-sprites-per-line ceiling. Native BuildSprites still executes
  * for the hardware pass and publishes a signature used to align our list
  * with the exact VBlank upload displayed by the VDP. */
-typedef struct { int x, y; uint16_t attr; uint8_t size, hud; } SceneSprite;
+typedef struct { int x, y; uint16_t attr; uint8_t size, hud; uint32_t mapping; } SceneSprite;
 enum { SCENE_SPRITES = 32768, SCENE_PLACEMENTS = 1024 };
 typedef struct {
     SceneSprite sprites[SCENE_SPRITES];
@@ -365,6 +366,7 @@ static void add_mapping(unsigned map,unsigned frame,unsigned gfx,unsigned flags,
         if(y+dy>=224 || y+dy+((size&3)+1)*8<=0)continue;
         SceneSprite *q=&s_build.sprites[s_build.count++];
         q->x=x+dx;q->y=y+dy;q->attr=attr;q->size=(uint8_t)size;q->hud=(uint8_t)anchor;
+        q->mapping=map;
     }
 }
 
@@ -458,7 +460,7 @@ static void capture_objects(void)
         unsigned frame=blink*((ram16(0xFE20)==0?1:0)+(g_ram[0xFE23]==9?2:0));
         int hudx=(int8_t)g_ram[0xF711];if(hudx<0)hudx+=8;
         add_mapping(S3_HUD_MAP,frame,0x86CA,0,15+hudx,136,1,0);
-        unsigned base=rings_base(),end=rings_end();
+        unsigned base=rings_base(),end=required()?base:rings_end();
         for(unsigned p=base+4;p<end;p+=4) {
             unsigned status=0xE700+(p-base)/2;
             if(ram16(status)&0x8000)continue;
@@ -470,6 +472,7 @@ static void capture_objects(void)
                 SceneSprite *q=&s_build.sprites[s_build.count++];
                 q->x=x-cam+(int16_t)scene_read16(m+6);q->y=y+(int16_t)scene_read16(m);
                 q->attr=scene_read16(m+4);q->size=(uint8_t)scene_read16(m+2);q->hud=0;
+                q->mapping=S3_RING_MAP;
             }
         }
     }
@@ -596,6 +599,8 @@ static void draw_scene_sprites(const GVDP *v,int line,uint32_t *out,int width,
          * coordinates; otherwise stationary rings jitter with the camera. */
         if(world)base+=s_display->camera_x-s_camera;
         int iy=line-y;
+        const uint32_t *colors=g_game_spec.scene_sprite_palette?g_game_spec.scene_sprite_palette(s->mapping):NULL;
+        if(!colors)colors=palette;
         if(s->attr&0x1000)iy=ch*8-1-iy;
         for(int i=0;i<cw*8;++i) {
             int x=base+i;
@@ -606,7 +611,7 @@ static void draw_scene_sprites(const GVDP *v,int line,uint32_t *out,int width,
             uint8_t p=pattern_pixel(v,cell,ix,iy);
             if(!p)continue;
             s_priority[x]|=2;
-            if(s->hud || (s->attr&0x8000) || !(s_priority[x]&1))out[x]=palette[p];
+            if(s->hud || (s->attr&0x8000) || !(s_priority[x]&1))out[x]=colors[p];
         }
     }
 }

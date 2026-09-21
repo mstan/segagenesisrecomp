@@ -18,6 +18,25 @@ int main(int argc,char **argv)
             if(!tr_stage_decode(id,rom,size,a,error,sizeof error)){fprintf(stderr,"stage %04X: %s\n",id,error);return 1;}
             assert(a->id==id&&a->chunk_count<=256&&a->block_count<=768&&a->object_count&&a->ring_count);
             assert(a->start_x<a->max_x&&a->start_y<word(a->layout+4)*128);
+            uint8_t animation_vram[65536]={0};
+            tr_stage_animate(a,0,animation_vram);
+            if(!game){
+                assert(a->tile_bytes>=0x380*32&&a->animation_count==3);
+                assert(!memcmp(animation_vram+0x378*32,rom+0x66AD6,0x100));
+                tr_stage_animate(a,6,animation_vram);
+                assert(!memcmp(animation_vram+0x378*32,rom+0x66BD6,0x100));
+                tr_stage_animate(a,16,animation_vram);
+                assert(!memcmp(animation_vram+0x35C*32,rom+0x66ED6,0x200));
+                tr_stage_animate(a,136,animation_vram);
+                assert(!memcmp(animation_vram+0x36C*32,rom+0x673D6,0x180));
+                assert(a->sprite_palette[12]==0xE);
+            }else{
+                assert(a->tile_bytes>=0x39E*32&&a->animation_count==5);
+                assert(!memcmp(animation_vram+0x396*32,rom+0x497D4,64));
+                tr_stage_animate(a,128,animation_vram);
+                assert(!memcmp(animation_vram+0x394*32,rom+0x49754,64));
+                assert(a->sprite_palette[12]==0xE);
+            }
             for(unsigned y=0;y<32;++y)for(unsigned plane=0;plane<2;++plane){
                 unsigned row=word(a->layout+8+y*4+plane*2),w=word(a->layout+plane*2);
                 assert(row>=0x8088&&row+w<=0x9000);

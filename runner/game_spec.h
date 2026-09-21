@@ -39,6 +39,10 @@ typedef struct {
 
 typedef struct GameSpec {
     const GameVideo *video;          /* NULL = native VDP presentation only */
+    /* A mixed-asset scene may need host presentation even at native width,
+     * and independent sprite palettes without changing its terrain CRAM. */
+    int (*scene_required)(void);
+    const uint32_t *(*scene_sprite_palette)(uint32_t mapping);
     unsigned logical_players;       /* 0 = native two ports; host input/UI capacity */
     void (*load_settings)(const char *settings_path);
     /* Game-owned additive features may compose with the common video provider. */
