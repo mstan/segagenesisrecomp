@@ -440,9 +440,15 @@ uint8_t gbus_z80_read(GenesisBus *b, uint16_t addr)
         ym_timer_update(b, ym_abs_z80_stamp());
         return b->ym_status;
     }
-    if (addr < 0x8000u) return 0xFFu;                               /* bank/PSG   */
+    if (addr < 0x8000u) {
+        uint8_t value;
+        if (b->audio_read8 && b->audio_read8(0xA00000u+addr,&value)) return value;
+        return 0xFFu;
+    }
     /* $8000-$FFFF: banked window into the 68K bus. */
     uint32_t a68 = ((uint32_t)b->z80_bank << 15) + (uint32_t)(addr - 0x8000u);
+    uint8_t value;
+    if (b->audio_read8 && b->audio_read8(a68,&value)) return value;
     return gbus_read8(b, a68);
 }
 

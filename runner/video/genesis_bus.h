@@ -26,6 +26,9 @@ enum {
 
 typedef struct GenesisBus {
     GVDP    *vdp;
+    /* Optional read-only host cartridge/audio extension. Called for the
+     * Z80 ROM window and unmapped $6000-$7FFF (as $A06000-$A07FFF). */
+    int (*audio_read8)(uint32_t address,uint8_t *value);
 
     /* Z80 subsystem (the CPU core itself lives in the scheduler; here we hold
      * its RAM and the 68K-visible bus-control state). */

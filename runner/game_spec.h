@@ -22,6 +22,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "game_video.h"
 struct RecompLauncherCModProvider;
@@ -38,6 +39,10 @@ typedef struct {
 
 typedef struct GameSpec {
     const GameVideo *video;          /* NULL = native VDP presentation only */
+    /* A mixed-asset scene may need host presentation even at native width,
+     * and independent sprite palettes without changing its terrain CRAM. */
+    int (*scene_required)(void);
+    const uint32_t *(*scene_sprite_palette)(uint32_t mapping);
     unsigned logical_players;       /* 0 = native two ports; host input/UI capacity */
     void (*load_settings)(const char *settings_path);
     /* Game-owned additive features may compose with the common video provider. */
@@ -48,6 +53,11 @@ typedef struct GameSpec {
     /* NULL/NULL result = supported. Host enhancements may reject raw machine
      * snapshots until their extra state has a compatible serialization format. */
     const char *(*state_unavailable_reason)(void);
+    /* Optional pointer-free host payload. Validate before changing machine
+     * state; apply only after RAM, video and audio have been restored. */
+    size_t (*state_size)(void);
+    int (*state_save)(void *data,size_t size);
+    int (*state_load)(const void *data,size_t size,int apply);
     /* ---- Identity ---- */
     const char *display_name;        /* "Sonic the Hedgehog" — window title */
     const char *short_name;          /* "Sonic1" — shows up in info / ping */
@@ -102,6 +112,15 @@ typedef struct GameSpec {
      * cart). */
     uint32_t    sram_start;
     uint32_t    sram_end;
+
+    /* Optional owner-file container. Only the native prefix enters cartridge
+     * SRAM; the game can preserve appended expansion records outside it.
+     * Hooks remain installed with enhancements disabled to retain that tail.
+     * A failed save must leave the original intact; generation tracks changes
+     * to extensions which do not touch the guest SRAM buffer. */
+    int       (*sram_load)(const char *path,uint8_t *native,size_t size);
+    int       (*sram_save)(const char *path,const uint8_t *native,size_t size);
+    uint64_t  (*sram_generation)(void);
 
     /* ---- Entry points (recompiled C) ---- */
     /* Called once on the game thread. Must contain the game's main
@@ -181,6 +200,11 @@ typedef struct GameSpec {
      * A replacing hook owns the routine's register/stack contract. Games
      * without configured sites incur no calls or behavior changes. */
     int       (*instruction_hook)(uint32_t pc);
+
+    /* Optional read-only CPU data provider for imported game resources.
+     * Return 1 with a big-endian word to service a read, 0 for the bus.
+     * This does not patch instructions, map DMA, or change cartridge SRAM. */
+    int       (*data_read16)(uint32_t address,uint16_t *word);
 
     /* Opt-in main-program CPU headroom, queried at each scheduler slice.
      * NULL / <=1 = exact native timing. IRQ, DMA, raster and sound clocks

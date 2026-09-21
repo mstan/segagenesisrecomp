@@ -999,6 +999,8 @@ static const char *resolve_runner_path(const char *path, char *buf, size_t buf_l
  * layout (superzazu z80 embedded in g_machine, no side ext blob); GROWNS1
  * saves are rejected with a clear message rather than misloaded. */
 static const char OWN_SAVE_MAGIC[8] = "GROWNS2\0";
+static const char HOST_SAVE_MAGIC[8] = "GRHOST1\0";
+static uint32_t s_state_rom_crc;
 
 int runner_save_state_file(const char *path)
 {
@@ -1006,21 +1008,44 @@ int runner_save_state_file(const char *path)
     if (reason) { fprintf(stderr,"[SAVE] unavailable: %s\n",reason); return 0; }
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
-    FILE *sf = fopen(resolved, "wb");
+    size_t host_size=g_game_spec.state_size?g_game_spec.state_size():0;
+    uint8_t *host=host_size?malloc(host_size):NULL;
+    if(host_size&&(!host||!g_game_spec.state_save||!g_game_spec.state_save(host,host_size))){
+        free(host);fprintf(stderr,"[SAVE] game state is not ready\n");return 0;}
+    char temporary[544];snprintf(temporary,sizeof temporary,"%s.tmp",resolved);
+    FILE *sf = fopen(temporary, "w+b");
     if (!sf) {
         fprintf(stderr, "[SAVE] failed to open %s\n", resolved);
-        return 0;
+        free(host);return 0;
     }
 
     extern uint8_t g_ram[0x010000];
-    int ok = fwrite(OWN_SAVE_MAGIC, 1, sizeof(OWN_SAVE_MAGIC), sf) == sizeof(OWN_SAVE_MAGIC);
+    uint32_t header[4]={(uint32_t)host_size,0,s_state_rom_crc,0};
+    int ok = fwrite(host_size?HOST_SAVE_MAGIC:OWN_SAVE_MAGIC,1,8,sf)==8;
+    if(host_size)ok=ok&&fwrite(header,sizeof header,1,sf)==1&&fwrite(host,1,host_size,sf)==host_size;
+    free(host);
     glue_save_state(sf);
     ok = ok && fwrite(g_ram, 1, 0x10000, sf) == 0x10000;
     ok = ok && machine_save_state(sf);
     ok = ok && ym2612_save_state(sf);
     ok = ok && psg_save_state(sf);
     ok = ok && !ferror(sf);
-    fclose(sf);
+    if(ok&&host_size){
+        long end=ftell(sf);size_t n=end>24?(size_t)end-24:0;uint8_t *body=n?malloc(n):NULL;
+        ok=body&&n<=32*1024*1024&&fseek(sf,24,SEEK_SET)==0&&fread(body,1,n,sf)==n;
+        if(ok){header[1]=(uint32_t)n;header[3]=rom_crc32(body,n);
+            ok=fseek(sf,8,SEEK_SET)==0&&fwrite(header,sizeof header,1,sf)==1;}
+        free(body);
+    }
+    if(fclose(sf))ok=0;
+    if(ok){
+#ifdef _WIN32
+        ok=MoveFileExA(temporary,resolved,MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)!=0;
+#else
+        ok=rename(temporary,resolved)==0;
+#endif
+    }
+    if(!ok)remove(temporary);
 
     if (ok)
         fprintf(stderr, "[SAVE] saved %s\n", resolved);
@@ -1041,12 +1066,23 @@ int runner_load_state_file(const char *path)
         return 0;
     }
 
-    char magic[8];
+    char magic[8];uint8_t *host=NULL;size_t host_size=0;
     if (fread(magic, 1, sizeof(magic), sf) != sizeof(magic) ||
-        memcmp(magic, OWN_SAVE_MAGIC, sizeof(magic)) != 0) {
+        (memcmp(magic, OWN_SAVE_MAGIC, sizeof(magic)) && memcmp(magic,HOST_SAVE_MAGIC,8))) {
         fprintf(stderr, "[LOAD] %s is not an own-backend save (old format?)\n", resolved);
         fclose(sf);
         return 0;
+    }
+    if(!memcmp(magic,HOST_SAVE_MAGIC,8)){
+        uint32_t h[4];int valid=fread(h,sizeof h,1,sf)==1;
+        if(valid)valid=h[0]>0&&h[0]<h[1]&&h[1]<=32*1024*1024&&h[2]==s_state_rom_crc;
+        if(valid){host=malloc(h[1]);valid=host&&fread(host,1,h[1],sf)==h[1]&&fgetc(sf)==EOF;
+            if(valid)valid=rom_crc32(host,h[1])==h[3]&&g_game_spec.state_load&&g_game_spec.state_load(host,h[0],0);
+            host_size=h[0];}
+        if(!valid){free(host);fclose(sf);fprintf(stderr,"[LOAD] incompatible or damaged host state: %s\n",resolved);return 0;}
+        fseek(sf,24+(long)host_size,SEEK_SET);
+    }else if(g_game_spec.state_size&&g_game_spec.state_size()){
+        fclose(sf);fprintf(stderr,"[LOAD] this state lacks the enabled mod's host data\n");return 0;
     }
 
     extern uint8_t g_ram[0x010000];
@@ -1058,6 +1094,8 @@ int runner_load_state_file(const char *path)
     ok = ok && psg_load_state(sf);
     ok = ok && !ferror(sf);
     fclose(sf);
+    if(ok&&host_size)ok=g_game_spec.state_load(host,host_size,1);
+    free(host);
 
     /* Drop any chip writes queued by the frame the save interrupted; the
      * restored chips already contain their effect. */
@@ -1119,6 +1157,10 @@ static uint64_t sram_content_hash(void)
     size_t n = sram_size();
     uint64_t h = 0xCBF29CE484222325ULL;  /* FNV-1a-64, as in [FBHASH] */
     for (size_t i = 0; i < n; i++) { h ^= buf[i]; h *= 0x100000001B3ULL; }
+    if (g_game_spec.sram_generation) {
+        h ^= g_game_spec.sram_generation();
+        h *= 0x100000001B3ULL;
+    }
     return h;
 }
 
@@ -1141,6 +1183,11 @@ static uint64_t framebuf_active_hash(void)
 static void runner_sram_flush(void)
 {
     if (!s_sram_active) return;
+    if (g_game_spec.sram_save) {
+        if (g_game_spec.sram_save(s_sram_path,sram_buf(),sram_size()))
+            s_sram_dirty=0;
+        return;
+    }
     FILE *f = fopen(s_sram_path, "wb");
     if (!f) { fprintf(stderr, "[SRAM] flush failed to open %s\n", s_sram_path); return; }
     size_t n = sram_size();
@@ -1171,6 +1218,14 @@ static void runner_sram_init_and_load(const char *rom_path)
     if (dot) *dot = '\0';
     strncat(name, ".srm", sizeof(name) - strlen(name) - 1);
     snprintf(s_sram_path, sizeof(s_sram_path), "%s", exe_relative(name));
+
+    if (g_game_spec.sram_load) {
+        if (!g_game_spec.sram_load(s_sram_path,sram_buf(),sram_size()))
+            fprintf(stderr,"[SRAM] save could not be loaded; original file protected\n");
+        s_sram_hash=sram_content_hash();
+        s_sram_dirty=0;
+        return;
+    }
 
     FILE *f = fopen(s_sram_path, "rb");
     if (f) {
@@ -1215,8 +1270,11 @@ static void runner_sram_autosave_tick(uint32_t frame_num)
         s_sram_dirty    = 1;
         s_sram_dirty_at = frame_num;
     }
-    if (s_sram_dirty && (frame_num - s_sram_dirty_at) >= 30)
+    if (s_sram_dirty && (frame_num - s_sram_dirty_at) >= 30) {
         runner_sram_flush();
+        /* A busy or protected save should not trigger file I/O every frame. */
+        if (s_sram_dirty) s_sram_dirty_at = frame_num;
+    }
 }
 
 static uint8_t runner_ram_byte(uint32_t addr)
@@ -2121,6 +2179,7 @@ int main(int argc, char *argv[])
     /* Step 2 / Hybrid: initialise glue (Step 2 also starts the game thread).
      * The own backend has no clownmdemu instance — glue keeps s_emu NULL and
      * routes everything through g_machine. */
+    s_state_rom_crc=rom_crc32(rom_raw,rom_raw_len);
     glue_init(rom_raw, rom_raw_len);
 
     /* Audio arch overhaul: initialise our cycle-stamped YM2612 + PSG

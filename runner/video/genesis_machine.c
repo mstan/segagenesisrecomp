@@ -210,6 +210,9 @@ static void machine_wire_pointers(void)
     g_machine.vdp.bus_read       = vdp_bus_read;
     g_machine.vdp.colour_updated = colour_cb;
     g_machine.bus.vdp            = &g_machine.vdp;
+    /* Host audio extensions rebind through the game state-load hook.
+     * Never restore a process-local callback address from a snapshot. */
+    g_machine.bus.audio_read8    = NULL;
     g_machine.z80.read_byte      = z80_read;
     g_machine.z80.write_byte     = z80_write;
     g_machine.z80.port_in        = z80_port_in;

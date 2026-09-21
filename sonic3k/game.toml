@@ -114,6 +114,27 @@ extra = [
 # Opt-in host renderer hooks. Verified using stock skdisasm 1e1b5af;
 # its assembled S&K half matches the combined ROM byte-for-byte.
 [[widescreen_site]]
+addr = 0x6170A # Imported giant-ring collection memory
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x6185C # Preserve imported object collection across Blue Spheres
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x618FC # Native giant-ring graphics with donor terrain palettes
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0xC4D2 # Shared emerald progress after special-stage results
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2D3C8 # Donor checkpoints use the nearby Blue Spheres giant ring
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1358 # Select donor/native audio tables before native music queue
+kind = "game_hook"
+
+[[widescreen_site]]
 addr = 0x1B690 # Reset native object placement lifetime
 kind = "game_hook"
 
@@ -379,4 +400,114 @@ kind = "game_hook"
 
 [[widescreen_site]]
 addr = 0x9029C # CMP.W #$280,D0 after native coarse-camera subtraction
+kind = "game_hook"
+
+# Trilogy experiment: verified stock S&K function entries, gated by game hook.
+
+[[widescreen_site]]
+addr = 0xC570 # native Data Select lifecycle
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD42C # native Data Select saved slot update
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xC812 # native Data Select before global input handling
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xC818 # native Data Select after object processing
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2DCE2 # native results finished counting and leaving screen
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2F77C # donor stages own enemy pattern loading
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2D92C # reuse native title card, with donor names in S3 lettering
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2D95C # keep donor title letters current through queued native pattern loads
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2DC36 # native results wait, including the imported act 3 numeral
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xC3E4 # Write_SaveGame: synchronize existing extensions, including mod-off
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xD624 # New native Data Select slot: detach previous expansion identity
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x5FB2 # Level
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1BC60 # Get_LevelSizeStart
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x7812 # LoadLevelLoadBlock
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1C2B0 # LoadLevelLoadBlock2
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x76A6 # LoadSolids
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x7892 # CheckLevelForWater
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x4E35C # LevelSetup
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x4E408 # ScreenEvents
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x1C38A # Do_ResizeEvents
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x28C80 # Animate_Init
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x27758 # Animate_Tiles
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x3BB8 # Animate_Palette
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x4F33C # SpecialEvents
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xE8AA # Load_Rings
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x85FDE # PLCLoad_AnimalsAndExplosion
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0xEFF0 # Find_Tile_FG
 kind = "game_hook"

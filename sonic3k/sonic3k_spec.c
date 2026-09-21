@@ -13,6 +13,9 @@
 #include "genesis_runtime.h"
 #include "sonic_extras.h"
 #include "sonic3_video.h"
+#include "trilogy_sram.h"
+#include "trilogy_runtime.h"
+#include "trilogy_objects.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -141,7 +144,7 @@ static void s3k_cmd_state(int id, const char *json) {
         "\"angle\":%u,\"char_id\":%u,\"game_mode\":%u,"
         "\"joy_held\":%u,\"joy_press\":%u,"
         "\"vint_routine\":%u,\"internal_frame\":%u,"
-        "\"camera_x\":%u}",
+        "\"camera_x\":%u,\"campaign_stage\":%u}",
         id,
         (uint32_t)s3k_read16(S3K_OBJECT_BASE + S3K_OBJ_X_POS),
         (uint32_t)s3k_read16(S3K_OBJECT_BASE + S3K_OBJ_Y_POS),
@@ -157,7 +160,7 @@ static void s3k_cmd_state(int id, const char *json) {
         (uint32_t)s3k_read8(S3K_CTRL_1_PRESS),
         (uint32_t)s3k_read8(S3K_VINT_ROUTINE),
         (uint32_t)s3k_read32(S3K_VINT_RUNCOUNT),
-        (uint32_t)s3k_read16(S3K_CAMERA_X_POS));
+        (uint32_t)s3k_read16(S3K_CAMERA_X_POS),tr_runtime_stage_id());
     cmd_send_response(buf);
 }
 
@@ -206,9 +209,40 @@ static const GameDebugCommand s3k_commands[] = {
     { "object_table", s3k_cmd_object_table },
 };
 
+static int s3k_instruction_hook(uint32_t pc)
+{
+    switch(pc){
+    case 0x5FB2:case 0x1BC60:case 0x7812:case 0x1C2B0:case 0x76A6:
+    case 0x7892:case 0x4E35C:case 0x4E408:case 0x1C38A:case 0x28C80:
+    case 0x27758:case 0x3BB8:case 0x4F33C:case 0xE8AA:case 0x85FDE:case 0xEFF0:
+    case 0xC3E4:case 0xD624:case 0xC570:case 0x2DCE2:case 0xD42C:case 0xC818:case 0x2F77C:
+    case 0x2D92C:case 0x2D95C:case 0x2DC36:case 0xC812:
+        return tr_runtime_hook(pc);
+    default:
+        if(tr_runtime_hook(pc))return 1;
+        return s3_video_hook(pc);
+    }
+}
+static int s3k_sram_load(const char *path,uint8_t *native,size_t size)
+{
+    int ok=tr_sram_load(path,native,size);tr_runtime_sram_loaded();return ok;
+}
+static uint32_t s3k_save_resume_pc(uint8_t mode)
+{
+    switch(mode){case 8:case 12:return 0x650C;case 0x34:return 0x84C2;case 0x48:return 0x2E24C;default:return 0;}
+}
 const GameSpec g_game_spec = {
+    .scene_required = tr_runtime_scene_required,
+    .scene_sprite_palette = tr_runtime_sprite_palette,
     .video                  = &sonic3_video,
-    .instruction_hook       = s3_video_hook,
+    .instruction_hook       = s3k_instruction_hook,
+    .data_read16            = tr_runtime_read16,
+    .load_settings          = tr_runtime_settings,
+    .state_unavailable_reason = tr_runtime_state_reason,
+    .state_size             = tr_runtime_state_size,
+    .state_save             = tr_runtime_state_save,
+    .state_load             = tr_runtime_state_load,
+    .netplay_allowed        = tr_runtime_netplay_allowed,
     .main_cpu_divisor       = s3_video_main_cpu_divisor,
     .display_name           = "Sonic 3 & Knuckles",
     .short_name             = "Sonic3K",
@@ -227,11 +261,15 @@ const GameSpec g_game_spec = {
      * sonic3k.constants.asm: SRAM_access_flag=$A130F1, phase $200001. */
     .sram_start             = 0x200001u,
     .sram_end               = 0x203FFFu,
+    .sram_load              = s3k_sram_load,
+    .sram_save              = tr_sram_save,
+    .sram_generation        = tr_sram_generation,
 
     .call_entry_point       = s3k_call_entry_point,
     .call_vblank            = s3k_call_vblank,
     .call_hblank            = s3k_call_hblank,
     .resume_main_loop_pc    = 0x0004B6u,   /* GameLoop (S&K master, World ROM) — save-state fiber restart */
+    .save_resume_pc         = s3k_save_resume_pc,
     .dispatch_main_loop_pc  = 0x0004B6u,   /* GameLoop (actual World ROM addr) */
     .call_periodic          = NULL,
 
@@ -242,7 +280,7 @@ const GameSpec g_game_spec = {
 
     .handle_arg             = NULL,
     .arg_usage              = NULL,
-    .dispatch_override      = NULL,
+    .dispatch_override      = tr_objects_dispatch,
 
     .fill_frame_record      = s3k_fill_frame_record,
     .frame_record_version   = SONIC_GAME_DATA_VERSION,
