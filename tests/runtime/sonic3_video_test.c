@@ -1,5 +1,8 @@
 /* Test the actual renderer's row-pointer layout and host publication helpers. */
 #include "../../sonic3k/sonic3_video.c"
+static int test_data_read16(uint32_t address,uint16_t *value)
+{if(address!=0x480000)return 0;*value=0xABCD;return 1;}
+const GameSpec g_game_spec={.data_read16=test_data_read16};
 uint8_t g_ram[65536],g_rom[0x400000];
 M68KState g_cpu;
 void m68k_write8(uint32_t a,uint8_t v){g_ram[a&65535]=v;}
@@ -11,6 +14,7 @@ static void word(uint8_t *p,unsigned a,unsigned v){p[a]=(uint8_t)(v>>8);p[a+1]=(
 static void longword(uint8_t *p,unsigned a,unsigned v){word(p,a,v>>16);word(p,a+2,v);}
 int main(int argc,char **argv)
 {
+    CHECK(scene_read8(0x480000)==0xAB&&scene_read8(0x480001)==0xCD);
     if(argc==2) {
         FILE *rom=fopen(argv[1],"rb");CHECK(rom);
         CHECK(fread(g_rom,1,sizeof g_rom,rom)==S3_ART_BANK+0x200000u);fclose(rom);

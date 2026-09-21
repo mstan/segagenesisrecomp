@@ -15,6 +15,7 @@
 #include "sonic3_video.h"
 #include "trilogy_sram.h"
 #include "trilogy_runtime.h"
+#include "trilogy_objects.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -143,7 +144,7 @@ static void s3k_cmd_state(int id, const char *json) {
         "\"angle\":%u,\"char_id\":%u,\"game_mode\":%u,"
         "\"joy_held\":%u,\"joy_press\":%u,"
         "\"vint_routine\":%u,\"internal_frame\":%u,"
-        "\"camera_x\":%u}",
+        "\"camera_x\":%u,\"campaign_stage\":%u}",
         id,
         (uint32_t)s3k_read16(S3K_OBJECT_BASE + S3K_OBJ_X_POS),
         (uint32_t)s3k_read16(S3K_OBJECT_BASE + S3K_OBJ_Y_POS),
@@ -159,7 +160,7 @@ static void s3k_cmd_state(int id, const char *json) {
         (uint32_t)s3k_read8(S3K_CTRL_1_PRESS),
         (uint32_t)s3k_read8(S3K_VINT_ROUTINE),
         (uint32_t)s3k_read32(S3K_VINT_RUNCOUNT),
-        (uint32_t)s3k_read16(S3K_CAMERA_X_POS));
+        (uint32_t)s3k_read16(S3K_CAMERA_X_POS),tr_runtime_stage_id());
     cmd_send_response(buf);
 }
 
@@ -214,7 +215,8 @@ static int s3k_instruction_hook(uint32_t pc)
     case 0x5FB2:case 0x1BC60:case 0x7812:case 0x1C2B0:case 0x76A6:
     case 0x7892:case 0x4E35C:case 0x4E408:case 0x1C38A:case 0x28C80:
     case 0x27758:case 0x3BB8:case 0x4F33C:case 0xE8AA:case 0x85FDE:case 0xEFF0:
-    case 0xC3E4:case 0xD624:
+    case 0xC3E4:case 0xD624:case 0xC570:case 0x2DCE2:case 0xD42C:case 0xC818:case 0x2F77C:
+    case 0x2D92C:case 0x2D95C:case 0x2DC36:case 0xC812:
         return tr_runtime_hook(pc);
     default:
         if(tr_runtime_hook(pc))return 1;
@@ -268,7 +270,7 @@ const GameSpec g_game_spec = {
 
     .handle_arg             = NULL,
     .arg_usage              = NULL,
-    .dispatch_override      = NULL,
+    .dispatch_override      = tr_objects_dispatch,
 
     .fill_frame_record      = s3k_fill_frame_record,
     .frame_record_version   = SONIC_GAME_DATA_VERSION,

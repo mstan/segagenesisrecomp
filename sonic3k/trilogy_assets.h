@@ -9,6 +9,11 @@ size_t tr_enigma(const uint8_t *src,size_t size,uint16_t *out,size_t capacity,un
 size_t tr_nemesis(const uint8_t *src,size_t size,uint8_t *out,size_t capacity);
 
 enum { TR_MAX_OBJECTS=512, TR_MAX_RINGS=1024 };
+enum { TR_ART_PLATFORM,TR_ART_BRIDGE,TR_ART_ROCK,TR_ART_SWING,TR_ART_LEDGE,
+    TR_ART_WALL,TR_ART_POLE,TR_ART_EDGE,TR_ART_CRAB,TR_ART_BUZZ,TR_ART_CHOP,
+    TR_ART_NEWT,TR_ART_MOTO,TR_ART_EGGMAN,TR_ART_BOSS_ITEMS,TR_ART_BALL,
+    TR_ART_CAPSULE,TR_ART_STAKE,TR_ART_WATERFALL,TR_ART_COCO,TR_ART_SIGN,TR_ART_MISSILE,TR_ART_COUNT };
+typedef struct TrObjectArt { unsigned mapping,frames,tile_bytes; uint16_t palette; uint8_t tiles[4096]; } TrObjectArt;
 typedef struct TrPlacement { uint16_t x,y; uint8_t id,subtype,flags; } TrPlacement;
 typedef struct TrRing { uint16_t x,y; } TrRing;
 typedef struct TrStageAssets {
@@ -24,7 +29,14 @@ typedef struct TrStageAssets {
     uint16_t palette[48];
     TrPlacement objects[TR_MAX_OBJECTS];
     TrRing rings[TR_MAX_RINGS];
+    unsigned map_bytes;
+    uint8_t object_maps[0x8000];
+    TrObjectArt art[TR_ART_COUNT];
+    uint8_t s1_chunks[128*8]; /* original 256px IDs for loop/path logic */
+    unsigned s1_width,s1_height;
+    uint8_t spiral_y[416],spiral_flip[52];
 } TrStageAssets;
+int tr_object_assets(const uint8_t *rom,size_t size,TrStageAssets *out);
 /* Requires the exact supported, independently verified donor revision. */
 int tr_stage_decode(unsigned id,const uint8_t *rom,size_t size,TrStageAssets *out,
                     char *error,size_t error_size);

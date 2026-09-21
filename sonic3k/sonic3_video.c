@@ -4,6 +4,7 @@
  * Host scene publication follows the actual native SAT upload.
  */
 #include "sonic3_video.h"
+#include "game_spec.h"
 #include "genesis_runtime.h"
 #include "video/genesis_vdp.h"
 #include "video/genesis_dac.h"
@@ -310,6 +311,8 @@ static int s_loader_active;
 static uint8_t scene_read8(unsigned a)
 {
     a &= 0xFFFFFFu;
+    uint16_t value;
+    if(g_game_spec.data_read16&&g_game_spec.data_read16(a&~1u,&value))return (uint8_t)((a&1)?value:value>>8);
     return a < 0x400000u ? g_rom[a] : a >= 0xFF0000u ? g_ram[a & 65535u] : 0;
 }
 static uint16_t scene_read16(unsigned a) { return (uint16_t)((scene_read8(a)<<8)|scene_read8(a+1)); }

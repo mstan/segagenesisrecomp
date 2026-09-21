@@ -2,7 +2,7 @@
 
 Tracking: central Beads `beads-tdq.3.2`. Work solo. Engine and consumer branch:
 `feature/sonic-trilogy-campaign`, in `_wt-sonic-trilogy-engine` and
-`_wt-sonic-trilogy-game`. Engine baseline `35620e2`, consumer `924fa3b`.
+`_wt-sonic-trilogy-game`. Previous foundation commits: engine `0d3c182`, consumer `efd682c`.
 
 ## Accepted direction
 
@@ -84,7 +84,8 @@ matching extension slot; the native new-slot hook detaches its old identity.
 Boot-time native checksum repair is not treated as a player deleting a slot.
 These hooks create no campaign records for ordinary unextended play. They
 preserve imported chapter checkpoints during native play without donor ROMs.
-Imported stage checkpoints/menu selection are not yet connected to gameplay.
+Native Data Select now launches donor stages, retains their independent checkpoints,
+and updates lives/emeralds in the native slot without advancing the native chapter.
 
 Compatibility is with this updated recomp. Older executables currently reject
 extended sizes and can overwrite files after rejection. An external emulator
@@ -100,8 +101,9 @@ S1's one-based 256px chunks are split/deduplicated into S3's 128px chunks;
 flip/solidity bits are converted. Alternate loop chunks are retained in a
 parallel collision layout. S2's fixed FG/BG rows become S3 row pointers.
 Both collision indexes are expanded to S3's byte-at-word-stride representation.
-Placements and ring groups are decoded separately; placements are not yet
-instantiated as working objects.
+Placements and ring groups are decoded separately. Common objects use native S3
+routines; donor objects use native object slots, collision response and player abilities.
+S1/S2 sprite maps are converted to S3 maps and art is allocated while objects are live.
 
 Private-ROM decode results:
 
@@ -112,46 +114,63 @@ Private-ROM decode results:
 | GHZ3 | 165 | 439 | 830 | 212 | 123 |
 | EHZ1 | 256 | 500 | 914 | 135 | 226 |
 
-## Current integration boundary
+## Gameplay playtest boundary
 
-This is **not yet the accepted playable campaign**. A developer-only terrain
-harness is selected with `SONIC_TRILOGY_STAGE` (`1000`, `1001`, `1002`, `2000`)
-and `SONIC_TRILOGY_ROM` (the appropriate verified donor). It enters through
-native Data Select, keeps native S3 player logic, installs converted resources,
-and substitutes stage drawing/collision data at verified hooks. Base and donor
-ROM hashes are checked. Native saving is disabled in the terrain harness.
-Machine snapshots and netplay are guarded while the harness is selected.
+GHZ1-3 and EHZ1 are available through native Data Select, including eight saved
+slots and No Save. Settings use `[trilogy]`, `enabled=1`, `sonic1_rom=...` and
+`sonic2_rom=...`. Independently verified donors decode once at startup.
+`SONIC_TRILOGY_S1_ROM` / `SONIC_TRILOGY_S2_ROM` provide local automation overrides.
+`SONIC_TRILOGY_STAGE` plus `SONIC_TRILOGY_ROM` remains a developer-only No Save
+stage fixture; ordinary play does not need it.
 
-Still required: objects/platforms/hazards and loop path switching, checkpoint
-restore, rings, stage art animation and music, GHZ boss/capsule, title cards,
-pack picker and complete campaign/SRAM-slot integration, Blue Spheres return,
-all-character traversal, all transitions, and widescreen integration. Do not
-describe terrain screenshots or the generic native renderer harness's PASS as
-validation of these missing behaviors.
+Implemented: native rings/monitors/springs/spikes/starposts, platforms, bridges,
+swinging platforms, ledges, breakable walls, rotating spike poles, badniks and
+projectiles, GHZ loops/forced roll, EHZ layer triggers/corkscrew, GHZ boss/ball/
+capsule, native signposts/results, chapter transitions, donor previews and
+native S3 title lettering. The stock S3K chapter resumes after EHZ1. Attract
+mode retains native behavior. Save loading retains unavailable chapter progress.
+Existing slots explicitly add chapters using the native menu's advertised B action.
 
-## Validation so far
+This is a first gameplay playtest, not the complete accepted campaign. Original
+stage music, donor tile/palette animations, hidden bonuses and giant-ring/Blue
+Spheres entry/return are still unfinished. Bridge sag, ledge fragments and some
+object timings need more faithful ports. Full human routes/all-character clears
+and end-to-end native campaign completion remain unvalidated. Machine snapshots
+and netplay are disabled while this experiment is enabled.
 
-`trilogy_campaign_test`: stage graph/pack combinations, roster/emerald bounds,
-replay gating, fixed-endian codec and transactional malformed-save rejection.
-`trilogy_sram_test`: plain prefix, all pack permutations, unknown records,
-replacement sizes, extension generation, every tail-byte corruption,
-preservation during native writes, atomic backup path, stale writer rejection.
-`trilogy_assets_test`: malformed compressed input and optional private donor
-decodes. Raw outputs remain private build artifacts.
+The consumer's `PLAYTEST.md` describes the isolated launch folder and eight
+starter slots. `prepare_trilogy_playtest.py` creates native slots via real menu
+input; `trilogy_playtest_seed` advances two fresh fixture slots using the same
+campaign API. Every preset is then reopened through Data Select and checked.
+No existing user save is used to prepare those fixtures.
 
-`trilogy_progress_test`: all 16 enrolled/available pack combinations, eight
-slots, retained checkpoints, native-only completion with unfinished imports,
-explicit enrollment, replay gating, slot reuse, native emerald/zone decoding,
-and independent future-version preservation. All four trilogy unit targets pass.
+## Validation
 
-Combined native executable builds with MSVC. Initial mod-off input run passed
-16 checkpoints without dispatch misses. GHZ1 terrain has visible converted
-scenery and native S3 movement; its route stops at missing platform objects.
-After adding terrain hooks, the mod-off run matched the original 16 screenshots,
-RAM and VRAM checkpoints byte-for-byte. `run_trilogy_sram.py` additionally ran
-all four appended chapter combinations through the executable with no donors,
-forced normal native SRAM writes, verified the entire appended tail survived,
-and compared the resulting native save and all 16 gameplay checkpoints across
-the four cases. Every case passed with no dispatch misses.
-A fifth executable case damaged both native campaign copies and verified that
-the game's boot-time checksum repair preserved all appended chapter progress.
+Four trilogy unit targets pass: campaign graph/roster/replay/codec, SRAM
+permutations/corruption/unknown data/stale writers, progress/token/checkpoint/
+missing-donor rules, and bounded asset decoders. The verified private donors
+decode all four acts. S3K and standalone S3 renderer unit tests also pass,
+including host-supplied sprite-map reads.
+
+Private executable checks:
+
+- `run_trilogy_campaign.py`: new/reloaded campaigns, each missing-donor case,
+  restored donors, and explicit enrollment of an existing native save.
+- `run_trilogy_characters.py`: Sonic & Tails, Sonic, Tails and Knuckles launch
+  in each donor chapter; No Save does not create campaign records.
+- `run_trilogy_checkpoint.py`: an actual donor post touch, death, retry, quit
+  and native-menu reload preserve checkpoint and lives (positions are fixtures).
+- `run_trilogy_transitions.py`: GHZ1 -> GHZ2 -> GHZ3 -> EHZ1 -> native AIZ1;
+  native results, eight normal-collision boss hits, capsule and saved clears.
+  Position/velocity fixtures are explicit; no boss HP/progress flags are injected.
+- `run_trilogy_route.py`: GHZ1 completed with controller inputs only and zero
+  deaths. Other automated route attempts remain incomplete; they do not prove
+  a stage is blocked, nor do they count as successful full playthroughs.
+- Native renderer regression: 16 screenshots, RAM and VRAM captures still match
+  the original mod-off reference byte for byte. Native save writes retain all
+  four chapter-record permutations; native checksum repair preserves the tail.
+- Imported GHZ1 and EHZ1 renderer checks pass at 4:3 and 16:9 with zero dispatch
+  misses. Wider imported object activation has not been validated.
+
+Runtime artifacts remain under the private `build/trilogy-*` directories.
+A renderer PASS reports rendering/execution assertions, never a stage clear.

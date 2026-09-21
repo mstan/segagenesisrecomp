@@ -65,6 +65,9 @@ static int s1_layout(TrStageAssets *a,const uint8_t *fg,size_t size,const uint8_
     unsigned width=(fg[0]+1)*2,height=(fg[1]+1)*2,bgwidth=(bg[0]+1)*2,bgheight=(bg[1]+1)*2;
     if(width>256||height>32||bgwidth>256||bgheight>32||size<2+(width/2)*(height/2))return TR_FAIL;
     unsigned pos=0x88;
+    a->s1_width=width/2;a->s1_height=height/2;
+    if(a->s1_width*a->s1_height>sizeof a->s1_chunks)return TR_FAIL;
+    memcpy(a->s1_chunks,fg+2,a->s1_width*a->s1_height);
     putword(a->layout,width);putword(a->layout+2,bgwidth);putword(a->layout+4,height);putword(a->layout+6,bgheight);
     memcpy(a->alternate_layout,a->layout,8);
     for(unsigned row=0;row<32;++row){
@@ -117,6 +120,8 @@ static int decode_s1(unsigned act,const uint8_t *r,TrStageAssets *a)
 }
 static int decode_s2(const uint8_t *r,TrStageAssets *a)
 {
+    memcpy(a->spiral_y,r+0x21668,sizeof a->spiral_y);
+    memcpy(a->spiral_flip,r+0x21634,sizeof a->spiral_flip);
     uint8_t layout[0x1000],primary[0x600],secondary[0x600];
     size_t n=tr_kosinski(r+0x94E74,3504,a->blocks,sizeof a->blocks);if(!n||n%8)return TR_FAIL;a->block_count=(unsigned)n/8;
     n=tr_kosinski(r+0x95C24,10624,a->tiles,sizeof a->tiles);if(!n)return TR_FAIL;a->tile_bytes=(unsigned)n;
@@ -156,6 +161,7 @@ int tr_stage_decode(unsigned id,const uint8_t *r,size_t size,TrStageAssets *out,
     if(!((id>=0x1000&&id<=0x1002&&size==0x80000)||(id==0x2000&&size==0x100000)))goto fail;
     TrStageAssets *a=calloc(1,sizeof *a);if(!a){why="Cannot allocate imported stage";goto fail;}
     a->id=id;int ok=id==0x2000?decode_s2(r,a):decode_s1(id-0x1000,r,a);
+    if(ok)ok=tr_object_assets(r,size,a);
     if(!ok){free(a);why="Donor stage data failed bounded conversion";goto fail;}
     qsort(a->rings,a->ring_count,sizeof *a->rings,sort_rings);*out=*a;free(a);
     if(error&&cap)*error=0;return 1;
