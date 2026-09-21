@@ -3,6 +3,7 @@
 Tracking: central Beads `beads-tdq.3.2`. Work solo. Engine and consumer branch:
 `feature/sonic-trilogy-campaign`, in `_wt-sonic-trilogy-engine` and
 `_wt-sonic-trilogy-game`. Previous foundation commits: engine `0d3c182`, consumer `efd682c`.
+Remaining campaign work: central Beads `beads-3ixl`; draft publication: `beads-odyg`.
 
 ## Accepted direction
 
@@ -285,3 +286,39 @@ Validation artifacts: `build/trilogy-donor-rules-v4`, `build/trilogy-states-fina
 `build/trilogy-results-state-final`, `build/trilogy-moto-final` and original S1
 comparison `build/trilogy-moto-original-v1`. All 21 CTests pass, and
 `build/trilogy-donor-native-v1` matches 16 baseline PNG/RAM/VRAM captures.
+
+## Original-act comparison checkpoint
+
+The installed build was compared with an independent Sonic 1 runner entering
+each act through its original level-select menu. The port used native S3 Data
+Select. All three starting player/camera coordinates match. Original and port
+screenshots were inspected together; the owner reviewed the GHZ2/3 comparisons.
+
+The actual loaded foreground maps match the original game's RAM after normalizing
+the chunk format: 61,440 GHZ1, 50,688 GHZ2 and 73,728 GHZ3 blocks, with zero
+differences in block IDs, flips or primary solidity. The decompressed 16x16 art
+mappings also match byte for byte. This verifies terrain and starting positions;
+it does not establish complete object or boss behavior. Private captures and
+`audit.json` are in `build/trilogy-act-layout-before`; audit tracking is `beads-l53c`.
+
+## Remaining work for the full campaign
+
+The draft checkpoint contains GHZ1-3, its boss/capsule and EHZ1. It is ready for
+continued playtesting, not a completed Sonic 1/2 campaign. `beads-3ixl` tracks:
+
+- EHZ2 and its boss, followed by the remaining Sonic 1/2 zones, objects, bosses
+  and stage events, with their original layouts, art and music.
+- Source-faithful bridge sag, collapsing ledges/fragments, hidden bonuses and
+  remaining enemy/object timing in the current acts.
+- A larger stage catalog and backward-compatible progress/entrance-mask codecs
+  as more acts arrive; existing native and absent-donor progress must survive.
+- Complete input-only routes for every supported character, plus all bosses,
+  death/checkpoint/reload paths, chapter transitions and full campaign clear/replay.
+- Shared emerald and quickstate coverage throughout the expanded campaign,
+  wider object activation, and packaging validation beyond the tested Windows build.
+
+Blue Spheres remains the agreed special-stage system. Original Sonic 1/2 special
+stages and netplay are deferred. Quickstates currently require a compatible build
+and donor set; extended SRAM compatibility with older executables/emulators is
+limited as described above. Private ROMs, binaries, saves and comparison images
+are not included in the source checkpoint.
