@@ -240,6 +240,7 @@ void tr_objects_load(void)
     if(assets->id==0x1002&&!boss_started&&camera>=0x2960){
         if(spawn(BOSS_OWNER,0x3D,0,0,0x2A60,0x280)){
             boss_started=1;put(0xEE14,0x2960);put(0xEE16,0x2960);
+            g_cpu.D[0]=0x19;recomp_call_addr(0x1358);
             fprintf(stderr,"[Trilogy] Green Hill boss entered\n");
         }
     }

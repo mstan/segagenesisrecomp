@@ -114,6 +114,10 @@ extra = [
 # Opt-in host renderer hooks. Verified using stock skdisasm 1e1b5af;
 # its assembled S&K half matches the combined ROM byte-for-byte.
 [[widescreen_site]]
+addr = 0x1358 # Select donor/native audio tables before native music queue
+kind = "game_hook"
+
+[[widescreen_site]]
 addr = 0x1B690 # Reset native object placement lifetime
 kind = "game_hook"
 

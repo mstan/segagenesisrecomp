@@ -131,9 +131,9 @@ native S3 title lettering. The stock S3K chapter resumes after EHZ1. Attract
 mode retains native behavior. Save loading retains unavailable chapter progress.
 Existing slots explicitly add chapters using the native menu's advertised B action.
 
-This is a first gameplay playtest, not the complete accepted campaign. Original
-stage music, donor tile/palette animations, hidden bonuses and giant-ring/Blue
-Spheres entry/return are still unfinished. Bridge sag, ledge fragments and some
+This is a first gameplay playtest, not the complete accepted campaign. Hidden
+bonuses and giant-ring/Blue Spheres entry/return are still unfinished. Sonic 3
+special stages are the accepted shared design for every chapter. Bridge sag, ledge fragments and some
 object timings need more faithful ports. Full human routes/all-character clears
 and end-to-end native campaign completion remain unvalidated. Machine snapshots
 and netplay are disabled while this experiment is enabled.
@@ -202,5 +202,32 @@ boss/act-transition chain, GHZ/EHZ 4:3 and 16:9 checks pass. Asset tests compare
 animation frames directly with donor bytes; renderer tests cover independent
 sprite palettes and forced native width.
 
-The owner additionally requested original donor music. Sound-driver conversion
-and stage/boss/results cue integration are the next implementation work.
+## Original donor music
+
+`trilogy_music.c` reads seven cues per verified ROM: GHZ/EHZ, boss, act clear,
+1-up, invincibility, game over and drowning. The S1 music is read directly;
+S2 compressed music and its driver use a bounded Saxman decoder. A bounded
+control-flow converter relocates branches/calls/loops, translates coordination
+commands and tempo, preserves the original FM voices and PSG envelopes, and
+copies original DPCM drums. Converted data lives only in private host memory.
+The unmodified base ROM and the single campaign SRAM retain their hashes/layouts.
+
+`trilogy_audio.c` gives the native S&K Z80 driver read-only virtual song/drum
+banks and bank-independent donor envelopes. Native music selection installs the
+donor tables before queuing a cue, and restores the original tables for native
+stages, menus and special stages. S3 sound-effect envelopes are preserved. A
+small Z80 compatibility handler preserves donor note-fill ticks without changing
+S3 sound-effect semantics. The GHZ boss now requests its original boss cue.
+This is a driver-format port, not a bit-identical recreation of either original
+sound driver; speed-shoe behavior remains Sonic 3's.
+
+Validation: all 14 converted cues pass the private-ROM decoder check and execute
+in the real Z80 driver. `run_trilogy_music.py` captures full-rate audio, checks
+non-silent/unclipped output, preserves all S3 SFX envelope pointers and verifies
+1-up return. Final captures are in `build/trilogy-music-ghz-v3` and
+`build/trilogy-music-ehz-v2`. Earlier GHZ/EHZ stage captures were compared with
+original game captures over 25 seconds using phase-independent log-frequency
+spectra (cosine similarity 0.935/0.925 at the matching offset). This numerical
+comparison is not a claim of a human listening review or exact audio identity.
+The transition test also checks restoration of music, envelope, drum and
+note-fill tables against the native title baseline upon reaching AIZ.

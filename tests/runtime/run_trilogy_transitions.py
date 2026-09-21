@@ -10,7 +10,10 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import socket
+import time
 from run_trilogy_campaign import records
+from run_sonic1_custom_video import command
 
 
 def main():
@@ -24,6 +27,7 @@ def main():
     shutil.copy2(exe,runtime/exe.name)
     shutil.copy2(exe.parent/'SDL2.dll',runtime/'SDL2.dll')
     (runtime/'settings.ini').write_text('[trilogy]\nenabled=1\n')
+    (runtime/'debug.ini').write_text('[debug]\nenabled=1\nport=4395\n')
     script=[]
     def emit(text):script.append(text+'\n')
     def shot(name):emit(f'SCREENSHOT {(out/(name+".png")).as_posix()}\nDUMP_RAM {(out/(name+".ram.bin")).as_posix()}\nWAIT 1')
@@ -59,11 +63,37 @@ def main():
     for k in ('SONIC_TRILOGY_STAGE','SONIC_TRILOGY_ROM'):env.pop(k,None)
     env.update(SONIC_TRILOGY_S1_ROM=str(args.sonic1.resolve()),SONIC_TRILOGY_S2_ROM=str(args.sonic2.resolve()),
                SDL_VIDEODRIVER='dummy',SDL_AUDIODRIVER='dummy',SDL_RENDER_DRIVER='software')
+    native_audio=None;restored=False;sock=None
     with (out/'run.log').open('w') as log:
-        subprocess.run([str(runtime/exe.name),str(rom),'--no-launcher','--target-fps','1000',
+        proc=subprocess.Popen([str(runtime/exe.name),str(rom),'--no-launcher','--target-fps','1000','--port','4395',
                         '--widescreen','off','--max-frames','12000','--input-script',str(out/'input.txt')],
-                       cwd=out,env=env,stdout=log,stderr=log,check=True,timeout=180,
+                       cwd=out,env=env,stdout=log,stderr=log,
                        creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
+        try:
+            deadline=time.monotonic()+180
+            while proc.poll() is None:
+                if time.monotonic()>deadline:raise RuntimeError('transition probe timed out')
+                if sock is None:
+                    try:sock=socket.create_connection(('127.0.0.1',4395),timeout=1);sock.settimeout(5)
+                    except OSError:time.sleep(.03);continue
+                try:
+                    state=command(sock,{'cmd':'sonic_state'})
+                    if state.get('game_mode')==4 or (state.get('game_mode')==12 and state.get('campaign_stage')==0):
+                        z=bytes.fromhex(command(sock,{'cmd':'read_z80_ram','addr':0,'len':8192})['data'])
+                        if z[0x1300:0x1302]==b'\x18\x16':
+                            tables=b''.join(z[a:a+n] for a,n in ((0xB65,51),(0x1618,102),(0x1387,78),(0xD6,18),(0xC0D,2)))
+                            if state.get('game_mode')==4:native_audio=tables
+                            elif native_audio is not None:
+                                assert tables==native_audio,'donor audio tables leaked into native AIZ'
+                                assert z[0x1C3E]<0x80,'donor song still active in AIZ'
+                                restored=True
+                except (OSError,RuntimeError):break
+                time.sleep(.04)
+            proc.wait(timeout=15);assert proc.returncode==0
+        finally:
+            if sock:sock.close()
+            if proc.poll() is None:proc.terminate();proc.wait(timeout=10)
+    assert native_audio is not None and restored,'native audio restoration was not observed'
     log=(out/'run.log').read_text(errors='replace')
     assert '0 unique true-miss addrs, 0 raw miss events' in log and 'FATAL' not in log
     assert '[Trilogy] Green Hill boss defeated' in log,'boss defeat missing'

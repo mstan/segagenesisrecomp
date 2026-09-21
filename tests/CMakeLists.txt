@@ -34,6 +34,11 @@ add_executable(trilogy_playtest_seed "${CMAKE_CURRENT_LIST_DIR}/../tools/trilogy
     "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_campaign.c"
     "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_sram.c"
     "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_progress.c")
+add_executable(trilogy_music_test runtime/trilogy_music_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_music.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_codecs.c")
+target_compile_options(trilogy_music_test PRIVATE $<$<C_COMPILER_ID:MSVC>:/UNDEBUG>)
+target_compile_options(trilogy_music_test PRIVATE $<$<NOT:$<C_COMPILER_ID:MSVC>>:-UNDEBUG>)
 add_executable(trilogy_assets_test runtime/trilogy_assets_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_assets.c"
     "${CMAKE_CURRENT_LIST_DIR}/../sonic3k/trilogy_object_assets.c"

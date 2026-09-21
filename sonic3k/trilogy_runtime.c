@@ -5,6 +5,7 @@
 #include "trilogy_campaign.h"
 #include "trilogy_progress.h"
 #include "trilogy_objects.h"
+#include "trilogy_music.h"
 #include "genesis_runtime.h"
 #include "video/genesis_machine.h"
 #include "video/genesis_dac.h"
@@ -82,6 +83,7 @@ static int load_donor(const char *path,unsigned pack)
         if(candidate&&tr_stage_decode(id,r,size,candidate,error,sizeof error))imports[i]=candidate;
         else{free(candidate);ok=0;break;}
     }
+    if(ok)ok=tr_audio_load(pack,r,size);
     free(r);
     if(!ok){for(unsigned i=first;i<end;++i){free(imports[i]);imports[i]=NULL;}return 0;}
     available|=pack;fprintf(stderr,"[Trilogy] Verified Sonic %u chapter decoded\n",pack==1?1:2);return 1;
@@ -89,6 +91,7 @@ static int load_donor(const char *path,unsigned pack)
 /* Private donor paths stay in local settings.ini, never in a patch or save. */
 void tr_runtime_settings(const char *settings)
 {
+    tr_audio_reset();
     tr_objects_reset(NULL);for(unsigned i=0;i<4;++i){free(imports[i]);imports[i]=NULL;}
     stage=NULL;selected=active=session_started=0;available=forced_stage=pending_stage=resume_checkpoint=0;session_slot=-1;
     char paths[2][1024]={{0}},line[1200];int enabled=0,section=0;
@@ -544,6 +547,7 @@ int tr_runtime_hook(uint32_t pc)
         return 0;
     }
     if(!selected)return 0;
+    if(pc==0x1358){tr_audio_cue(active&&stage&&(g_ram[0xF600]&127)==12?tr_stage(stage->id)->pack:0,g_cpu.D[0]&255);return 0;}
     if(session_started&&(g_ram[0xF600]&127)==4){
         active=session_started=0;stage=NULL;pending_stage=resume_checkpoint=0;session_slot=-1;tr_objects_reset(NULL);
     }
