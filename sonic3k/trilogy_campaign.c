@@ -80,7 +80,7 @@ int tr_campaign_complete(TrSlot *s)
 int tr_campaign_select_zone(TrSlot *s,unsigned id)
 {
     const TrStage *stage=tr_stage(id);
-    if(!tr_slot_valid(s)||s->state!=TR_COMPLETE||!stage||stage->act!=1)return 0;
+    if(!tr_slot_valid(s)||s->state!=TR_COMPLETE||!stage)return 0;
     return tr_campaign_advance(s,id);
 }
 static void put32(uint8_t *p,uint32_t v)

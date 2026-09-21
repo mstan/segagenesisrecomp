@@ -22,7 +22,8 @@ int main(void)
         assert(tr_campaign_select_zone(&d.slots[0],0x1000)==((packs&1)!=0));
         assert(tr_campaign_select_zone(&d.slots[0],0x2000)==((packs&2)!=0));
         assert(tr_campaign_select_zone(&d.slots[0],0x3000));
-        assert(!tr_campaign_select_zone(&d.slots[0],0x1001));
+        assert(tr_campaign_select_zone(&d.slots[0],0x1001)==((packs&1)!=0));
+        assert(tr_campaign_select_zone(&d.slots[0],0x3001));
         assert(tr_campaign_encode(&d,42,bytes));
         assert(tr_campaign_decode(bytes,sizeof bytes,&copy,&sequence,NULL,0));
         assert(sequence==42 && !memcmp(&d,&copy,sizeof d));

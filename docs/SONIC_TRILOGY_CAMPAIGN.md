@@ -132,8 +132,8 @@ mode retains native behavior. Save loading retains unavailable chapter progress.
 Existing slots explicitly add chapters using the native menu's advertised B action.
 
 This is a first gameplay playtest, not the complete accepted campaign. Hidden
-bonuses and giant-ring/Blue Spheres entry/return are still unfinished. Sonic 3
-special stages are the accepted shared design for every chapter. Bridge sag, ledge fragments and some
+bonuses remain unfinished. Sonic 3 giant rings and Blue Spheres serve each
+imported act. Bridge sag, ledge fragments and some
 object timings need more faithful ports. Full human routes/all-character clears
 and end-to-end native campaign completion remain unvalidated. Machine snapshots
 and netplay are disabled while this experiment is enabled.
@@ -231,3 +231,36 @@ spectra (cosine similarity 0.935/0.925 at the matching offset). This numerical
 comparison is not a claim of a human listening review or exact audio identity.
 The transition test also checks restoration of music, envelope, drum and
 note-fill tables against the native title baseline upon reaching AIZ.
+
+## Shared special stages and cleared-slot browsing
+
+Imported acts spawn native Sonic 3 giant rings near the start and above donor
+checkpoints. Blue Spheres, emerald awards and results use native S3 code/assets.
+Returning restores the act, entrance position, checkpoint, rings, collected
+donor objects and donor music. Chaos Emeralds and the next special-stage index
+are shared with the native chapter. As in S3, seven Chaos Emeralds turn these
+rings into 50-ring bonuses; Super Emerald progression begins in S&K.
+Donor checkpoints do not spawn the separate native bonus-stage star portals;
+their nearby giant rings provide the special-stage route. Native S3K portals
+remain unchanged.
+
+The optional `SPCL` v1 SRAM extension has eight 20-byte entries: a slot token
+and four 32-bit act entrance masks. It preserves absent-chapter data and rejects
+unsupported versions without replacing them. Slot tokens prevent entrance usage
+from attaching to a deleted/recreated save. No Save keeps its masks in memory.
+The native SRAM prefix and existing chapter codecs retain their formats.
+
+Cleared saves can browse every available act using Up/Down in native Data Select.
+Native zone-only SRAM synchronization preserves the chosen act. The private
+`trilogy_cleared_save` tool updates a requested offline slot with all current
+chapters cleared and seven Chaos Emeralds, recalculating both native checksums.
+The delivered slot 8 replaces only that slot; the prior live save is backed up.
+
+`run_trilogy_special.py` checks all four acts, win/failure, checkpoint entry,
+emerald/entrance persistence, rings, music and process-exit/reload. Player
+positions and the last-sphere state are explicit fixtures; this is not a full
+Blue Spheres clear. Separate controller-only jumps reach the starting ring in
+each act in No Save. `run_trilogy_cleared.py` verifies preservation of the other
+seven slots and launches GHZ2, GHZ3, EHZ1, AIZ2 and Doomsday through Data Select.
+Final artifacts are `build/trilogy-special-final`, `build/trilogy-cleared-final`
+and `build/trilogy-special-final-native` (16 native PNG/RAM/VRAM matches).

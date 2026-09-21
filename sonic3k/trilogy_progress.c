@@ -229,7 +229,10 @@ int tr_progress_sync_native(TrProgress *p,unsigned slot,const uint8_t bytes[10])
     if(c.stage!=native.stage)c.checkpoint=0;
     c.stage=native.stage;c.cleared=native.state==TR_COMPLETE;
     p->chapters[2][slot]=c;
-    if(!tr_stage(s->stage)->pack)s->stage=native.stage;
+    /* A cleared slot's browser choice includes individual acts. Native SRAM
+     * has only a zone card, and its launch-time write must not replace that
+     * choice with the previous native card (often Doomsday). */
+    if(s->state!=TR_COMPLETE&&!tr_stage(s->stage)->pack)s->stage=native.stage;
     s->state=complete(p,slot)?TR_COMPLETE:TR_ACTIVE;
     if(memcmp(&before.campaign,&p->campaign,sizeof p->campaign)||
        memcmp(before.chapters[2],p->chapters[2],sizeof p->chapters[2]))p->dirty|=TR_RECORD_CAMP;

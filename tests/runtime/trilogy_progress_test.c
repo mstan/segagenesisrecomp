@@ -54,6 +54,10 @@ int main(void)
         if(enrolled){assert(tr_progress_resolve(&copy,0,enrolled,&resume));
             assert(resume.stage==tr_first_stage(enrolled));assert(resume.checkpoint==1);}
         finish_imports(&copy,0,3);assert(copy.campaign.slots[0].state==TR_COMPLETE);
+        assert(tr_progress_select_zone(&copy,0,0x3001,3));
+        uint8_t cleared_native[10]={2,0,0,14,0,0,0x55,0x54,3,0};
+        assert(tr_progress_sync_native(&copy,0,cleared_native));
+        assert(tr_progress_resolve(&copy,0,3,&resume)&&resume.stage==0x3001);
         assert(tr_progress_select_zone(&copy,0,0x3000,0));
         assert(tr_progress_select_zone(&copy,0,0x1000,3)==((enrolled&1)!=0));
         assert(!tr_progress_select_zone(&copy,0,0x1000,0));

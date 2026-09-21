@@ -114,6 +114,23 @@ extra = [
 # Opt-in host renderer hooks. Verified using stock skdisasm 1e1b5af;
 # its assembled S&K half matches the combined ROM byte-for-byte.
 [[widescreen_site]]
+addr = 0x6170A # Imported giant-ring collection memory
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x6185C # Preserve imported object collection across Blue Spheres
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0x618FC # Native giant-ring graphics with donor terrain palettes
+kind = "game_hook"
+[[widescreen_site]]
+addr = 0xC4D2 # Shared emerald progress after special-stage results
+kind = "game_hook"
+
+[[widescreen_site]]
+addr = 0x2D3C8 # Donor checkpoints use the nearby Blue Spheres giant ring
+kind = "game_hook"
+
+[[widescreen_site]]
 addr = 0x1358 # Select donor/native audio tables before native music queue
 kind = "game_hook"
 

@@ -20,6 +20,8 @@ typedef struct Object {
 static TrStageAssets *assets;
 static Object objects[OBJECT_COUNT];
 static uint8_t finished[TR_MAX_OBJECTS+TR_MAX_RINGS];
+static uint8_t special_finished[TR_MAX_OBJECTS+TR_MAX_RINGS];
+static TrStageAssets *special_assets;
 static unsigned art_tile[TR_ART_COUNT],bridge_bytes;
 static uint8_t bridge_maps[0x4000];
 static unsigned bridge_offsets[33];
@@ -182,6 +184,10 @@ void tr_objects_reset(TrStageAssets *a)
         tr_nemesis(g_rom+art[i][0],0x400000-art[i][0],g_machine.vdp.vram+art[i][1]*32,0x10000-art[i][1]*32);
 }
 unsigned tr_objects_live(void){return live;}
+void tr_objects_special_save(void)
+{special_assets=assets;memcpy(special_finished,finished,sizeof finished);}
+void tr_objects_special_restore(void)
+{if(special_assets==assets)memcpy(finished,special_finished,sizeof finished);special_assets=NULL;}
 int tr_objects_results_started(void){return results_started!=0;}
 static void paths(void)
 {

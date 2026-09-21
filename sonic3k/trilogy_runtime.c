@@ -27,6 +27,12 @@ static uint8_t title_tiles[0x1000],title_map[128],title_three[512];
 static unsigned title_bytes;
 static void prepare_previews(void);
 static TrProgress progress;
+/* SPCL v1 is optional, independent of chapter availability. Eight entries:
+ * slot token:u32 and four act entrance masks:u32, all big endian. */
+static uint8_t special_records[TR_SLOTS*20];
+static uint32_t special_no_save[4];
+static int special_read_only;
+static unsigned special_return,special_restore_objects,special_ring_guest;
 static unsigned ram(unsigned a);
 static void put(unsigned a,unsigned n);
 static void putlong(unsigned a,uint32_t n);
@@ -36,7 +42,13 @@ static void store_progress(void)
         fprintf(stderr,"[Trilogy SRAM] %s\n",progress.error);
 }
 void tr_runtime_sram_loaded(void)
-{tr_progress_load(&progress,tr_sram_current());}
+{
+    TrSram *s=tr_sram_current();tr_progress_load(&progress,s);
+    unsigned version;size_t size;const uint8_t *p=tr_sram_get(s,"SPCL",&version,&size);
+    memset(special_records,0,sizeof special_records);
+    special_read_only=s->read_only||!s->extensions_valid||(p&&(version!=1||size!=sizeof special_records));
+    if(p&&!special_read_only)memcpy(special_records,p,size);
+}
 static void sync_native_saves(uint32_t pc)
 {
     if(!(progress.present&TR_RECORD_CAMP)||(progress.protected_records&TR_RECORD_CAMP))return;
@@ -61,6 +73,65 @@ static unsigned word(const uint8_t *p){return (unsigned)p[0]<<8|p[1];}
 static unsigned ram(unsigned a){return word(g_ram+(a&65535));}
 static void put(unsigned a,unsigned n){g_ram[a]=(uint8_t)(n>>8);g_ram[a+1]=(uint8_t)n;}
 static void putlong(unsigned a,uint32_t n){put(a,n>>16);put(a+2,n);}
+static uint32_t getlong(const uint8_t *p){return (uint32_t)word(p)*65536+word(p+2);}
+static void savelong(uint8_t *p,uint32_t n){p[0]=(uint8_t)(n>>24);p[1]=(uint8_t)(n>>16);p[2]=(uint8_t)(n>>8);p[3]=(uint8_t)n;}
+static unsigned special_index(void){return stage->id==0x2000?3:stage->id-0x1000;}
+static uint32_t special_mask(void)
+{
+    if(session_slot<0)return special_no_save[special_index()];
+    const uint8_t *p=special_records+session_slot*20;
+    return getlong(p)==progress.tokens[session_slot]?getlong(p+4+special_index()*4):0;
+}
+static void special_used(unsigned number)
+{
+    if(number>=32)return;uint32_t mask=special_mask()|(1u<<number);
+    if(session_slot<0)special_no_save[special_index()]=mask;
+    else if(!special_read_only){
+        uint8_t *p=special_records+session_slot*20;
+        if(getlong(p)!=progress.tokens[session_slot]){memset(p,0,20);savelong(p,progress.tokens[session_slot]);}
+        savelong(p+4+special_index()*4,mask);
+        if(!tr_sram_set(tr_sram_current(),"SPCL",1,special_records,sizeof special_records))
+            fprintf(stderr,"[Trilogy special] Cannot save ring collection: %s\n",tr_sram_current()->error);
+    }
+    putlong(0xFF92,mask);
+}
+static void special_spawn(void)
+{
+    if((session_slot>=0&&special_read_only)||tr_objects_results_started())return;
+    if(special_ring_guest){unsigned a=special_ring_guest;uint32_t c=getlong(g_ram+a);
+        if((c>=0x6166A&&c<0x61990)||(c==0x85AD2&&getlong(g_ram+a+0x34)==0x61682))return;
+        special_ring_guest=0;
+    }
+    /* A visible optional ring near the start and above each donor checkpoint.
+     * Both positions are reachable by an ordinary jump; terrain is unchanged. */
+    unsigned number=0;uint32_t collected=special_mask();
+    for(unsigned i=0;i<=stage->object_count&&number<32;++i){
+        int x,y;
+        if(!i){x=stage->start_x+128;y=stage->start_y-56;}
+        else{const TrPlacement *p=stage->objects+i-1;if(p->id!=0x79)continue;x=p->x;y=p->y-64;}
+        unsigned id=number++;if(collected&(1u<<id))continue;
+        if(x<(int)ram(0xEE78)-64||x>(int)ram(0xEE78)+384||y<(int)ram(0xEE7C)-32||y>(int)ram(0xEE7C)+256)continue;
+        for(unsigned a=0xB0DE;a<0xCAE2;a+=0x4A)if(!getlong(g_ram+a)){
+            memset(g_ram+a,0,0x4A);putlong(a,0x6166A);put(a+0x10,x);put(a+0x14,y);g_ram[a+0x2C]=(uint8_t)id;
+            special_ring_guest=a;return;
+        }
+    }
+}
+static void special_ring_display(void)
+{
+    unsigned a=g_cpu.A[0]&65535;M68KState saved=g_cpu;
+    int x=(int)ram(a+0x10)-(int)ram(0xEE78),y=(int)ram(a+0x14)-(int)ram(0xEE7C);
+    if((g_ram[a+0x38]&32)||x < -256||x>576||y < -128||y>384){
+        /* Native cleanup also edits AIZ's palette. Restore only its shared
+         * explosion graphics here, keeping the donor's terrain colors. */
+        tr_nemesis(g_rom+0x19200A,0x400000-0x19200A,g_machine.vdp.vram+0x5A0*32,0x40*32);
+        recomp_call_addr(0x851CC);
+    }else{
+        if(g_ram[a+4]&128){g_cpu.A[2]=0x619B2;recomp_call_addr(0x85022);}
+        g_cpu.A[0]=saved.A[0];recomp_call_addr(0x1ABC6);
+    }
+    g_cpu=saved;
+}
 static int hash_matches(const uint8_t *p,size_t n,const char *expected)
 {
     uint8_t digest[32];char hex[65];recompui_sha256_compute(p,n,digest);
@@ -92,6 +163,7 @@ static int load_donor(const char *path,unsigned pack)
 void tr_runtime_settings(const char *settings)
 {
     tr_audio_reset();
+    special_return=special_restore_objects=special_ring_guest=0;memset(special_no_save,0,sizeof special_no_save);
     tr_objects_reset(NULL);for(unsigned i=0;i<4;++i){free(imports[i]);imports[i]=NULL;}
     stage=NULL;selected=active=session_started=0;available=forced_stage=pending_stage=resume_checkpoint=0;session_slot=-1;
     char paths[2][1024]={{0}},line[1200];int enabled=0,section=0;
@@ -386,7 +458,12 @@ static void begin_level(void)
         else{fprintf(stderr,"[Trilogy] Requested stage unavailable\n");active=0;}
         fprintf(stderr,"[Trilogy] Starting stage %04X slot %d\n",wanted,session_slot);
     }
-    if(active)putlong(0xE660,0); /* native chapter stays at its own checkpoint */
+    if(active){
+        putlong(0xE660,0); /* native chapter stays at its own checkpoint */
+        putlong(0xFF92,special_mask());special_ring_guest=0;
+        if(special_return==stage->id){special_return=0;special_restore_objects=1;
+            fprintf(stderr,"[Trilogy special] Returning to %04X\n",stage->id);}
+    }
     else if(session_slot>=0)putlong(0xE660,0xFFFFE6AC+session_slot*10);
 }
 static void save_import(void)
@@ -402,8 +479,9 @@ static void save_import(void)
         tr_progress_collect(&progress,slot,chaos,supers);
     unsigned native=0xE6AC+slot*10,emeralds=0;
     for(unsigned i=0;i<7;++i)emeralds|=(g_ram[0xFFB2+i]&3)<<(14-i*2);
-    if(ram(native+6)!=emeralds||g_ram[native+8]!=g_ram[0xFE12]){
-        put(native+6,emeralds);g_ram[native+8]=g_ram[0xFE12];
+    unsigned special=(g_ram[native+2]&0xF0)|(g_ram[0xFE16]&15);
+    if(ram(native+6)!=emeralds||g_ram[native+8]!=g_ram[0xFE12]||g_ram[native+2]!=special||g_ram[native+9]!=g_ram[0xFE18]){
+        put(native+6,emeralds);g_ram[native+8]=g_ram[0xFE12];g_ram[native+2]=(uint8_t)special;g_ram[native+9]=g_ram[0xFE18];
         M68KState saved=g_cpu;recomp_call_addr(0xC3E4);g_cpu=saved;
     }
     store_progress();
@@ -507,12 +585,14 @@ static void menu_frame(void)
         const TrStage *s=tr_stage(menu_stage[slot]);if(!s)continue;
         char caption[12];
         if(s->pack)snprintf(caption,sizeof caption,"%s %u",s->pack==1?"GHZ":"EHZ",s->act);
-        else snprintf(caption,sizeof caption,"ZONE %u",native_card(s->id)+1);
+        else{static const char *names[]={"AIZ","HCZ","MGZ","CNZ","ICZ","LBZ","MHZ","FBZ","SOZ","LRZ","HPZ","SSZ","DEZ","DDZ"};
+            snprintf(caption,sizeof caption,"%s %u",names[native_card(s->id)],s->act);}
         menu_caption(0xCA1E+slot*26,caption,7);
     }
     if(focused>=1&&focused<=8){unsigned slot=focused-1,native=0xE6AC+slot*10;
         if(progress.tokens[slot]&&!(g_ram[native]&128)){
             if(available&~progress.campaign.slots[slot].packs)snprintf(footer,sizeof footer,"B ADD CHAPTERS");
+            else if(progress.campaign.slots[slot].state==TR_COMPLETE)snprintf(footer,sizeof footer,"UP DOWN SELECT STAGE");
         }else if(!(g_ram[native]&128)&&available)snprintf(footer,sizeof footer,"B ADD CHAPTERS");
     }
     /* Reuse the original title area for the enrollment hint, without
@@ -547,15 +627,18 @@ int tr_runtime_hook(uint32_t pc)
         return 0;
     }
     if(!selected)return 0;
+    if(pc==0xC4D2&&active&&stage){save_import();fprintf(stderr,"[Trilogy special] Results saved, emerald mask %02X\n",session_slot<0?0:progress.campaign.slots[session_slot].chaos);return 1;}
     if(pc==0x1358){tr_audio_cue(active&&stage&&(g_ram[0xF600]&127)==12?tr_stage(stage->id)->pack:0,g_cpu.D[0]&255);return 0;}
     if(session_started&&(g_ram[0xF600]&127)==4){
         active=session_started=0;stage=NULL;pending_stage=resume_checkpoint=0;session_slot=-1;tr_objects_reset(NULL);
+        special_return=special_restore_objects=special_ring_guest=0;memset(special_no_save,0,sizeof special_no_save);
     }
     if(pc==0xC812&&!forced_stage){menu_input();return 0;}
     if(pc==0xD42C&&!forced_stage)return menu_slot_hook();
     if(pc==0xC818&&!forced_stage){menu_frame();return 0;}
     if(pc==0xC570){
         active=session_started=0;pending_stage=resume_checkpoint=0;session_slot=-1;tr_objects_reset(NULL);
+        special_return=special_restore_objects=special_ring_guest=0;memset(special_no_save,0,sizeof special_no_save);
         menu_text_object=0;
         for(unsigned i=0;i<TR_SLOTS;++i){TrResume r;menu_stage[i]=tr_progress_resolve(&progress,i,available,&r)?r.stage:0;}
         return 0;
@@ -563,6 +646,14 @@ int tr_runtime_hook(uint32_t pc)
     if(pc==0x5FB2 && (g_ram[0xF600]&127)==12)begin_level();
     if(!active||(g_ram[0xF600]&127)!=12)return 0;
     switch(pc){
+    case 0x6170A:if(g_ram[0xB005]<6)special_used(g_ram[(g_cpu.A[0]&65535)+0x2C]);return 0;
+    case 0x6185C:
+        save_import();special_return=stage->id;tr_objects_special_save();
+        fprintf(stderr,"[Trilogy special] Entering Blue Spheres from %04X\n",stage->id);return 0;
+    case 0x618FC:special_ring_display();return 1;
+    /* Donor checkpoints lead to the nearby giant ring. Native bonus stars
+     * would try to reload an S3 bonus-zone ID through the donor level loader. */
+    case 0x2D3C8:return 1;
     case 0x1BC60:size_start();return 1;
     case 0x7812:memcpy(g_machine.vdp.vram,stage->tiles,stage->tile_bytes);return 1;
     case 0x1C2B0:
@@ -575,8 +666,8 @@ int tr_runtime_hook(uint32_t pc)
     case 0x4E408:screen();return 1;
     case 0x3BB8:if(ram(0xEE50))return 0;palette_cycle();return 1;
     case 0x1B690:
-        if(!g_ram[0xF76C]){tr_objects_reset(stage);g_ram[0xF76C]=4;}
-        tr_objects_load();save_import();return 1;
+        if(!g_ram[0xF76C]){tr_objects_reset(stage);if(special_restore_objects){tr_objects_special_restore();special_restore_objects=0;}g_ram[0xF76C]=4;}
+        tr_objects_load();special_spawn();save_import();return 1;
     case 0x1B7F2:tr_objects_load();return 1;
     case 0x1C38A:resize();return 1;
     case 0x28C80:case 0x27758:case 0x4F33C:case 0x2F77C:
