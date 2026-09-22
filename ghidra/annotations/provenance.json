@@ -9,14 +9,6 @@
     },
     "code_labels": 1793
   },
-  "sonic2": {
-    "source": "sonicthehedgehog2/s2disasm",
-    "commit": "65ddcc24250af08ddfdf58e36351374ace998e66",
-    "rom_sha256": "193bc4064ce0daf27ea9e908ed246d87ec576cc294833badebb590b6ad8e8f6b",
-    "build": "build.lua",
-    "options": {},
-    "code_labels": 2952
-  },
   "sonic3": {
     "source": "sonic3k/skdisasm",
     "commit": "1e1b5aff82c21175c593e42c966a6ff8b1586ff3",

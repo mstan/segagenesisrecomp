@@ -14,7 +14,8 @@ that violate that contract:
     `dynamic_object_ram`, `kosinski`, `enigma`, `saxman`).
 
 Per-game files no longer live in `runner/` after the runner-promotion
-refactor; they're under `sonicthehedgehog/` and `sonicthehedgehog2/`.
+refactor; migrated adapters live in their consuming game repositories.
+Legacy engine-owned game directories are being retired separately.
 
 Hits are reported, not failed. The audit is a manual review aid when touching
 shared runner code; comments and intentional compatibility seams can be hits.
@@ -216,7 +217,6 @@ def main(argv: list[str] | None = None) -> int:
     # Harvest per-game function names from the spec files we know about.
     spec_paths = [
         submodule_root / "sonicthehedgehog"  / "sonic1_spec.c",
-        submodule_root / "sonicthehedgehog2" / "sonic2_spec.c",
     ]
     per_game_funcs = harvest_func_names(spec_paths)
 

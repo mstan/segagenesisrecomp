@@ -277,9 +277,8 @@ def cycle_drift(frames, sample_every=30, tol=64, start_frame=0):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--game", default="s1", choices=list(G.GAMES),
-                    help="which game's cosim build to score (default s1). s2/s3 need their "
-                         "_wt-cosim-<g> worktree + _cosim/_oracle_cosim targets built first.")
+    ap.add_argument("--game", default="s1", help="game identity (default s1)")
+    ap.add_argument("--game-config", help="caller-owned JSON: wt, exe, waitvbl (hex), rom")
     ap.add_argument("--frames", type=int, default=600,
                     help="pairing #2 (vs oracle) frame-clock checkpoints")
     ap.add_argument("--cycles", type=int, default=2_000_000,
@@ -295,7 +294,10 @@ def main():
                          "(skip a known-divergent prologue like the Sega scream, ~frames "
                          "0-130, to probe whether the runner is faithful in STEADY STATE)")
     args = ap.parse_args()
-    G.GAME = args.game
+    try:
+        G.select_game(args.game, args.game_config)
+    except (OSError, ValueError) as error:
+        ap.error(str(error))
     t0 = time.time()
 
     print("=" * 74)

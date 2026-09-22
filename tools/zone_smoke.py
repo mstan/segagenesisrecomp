@@ -15,7 +15,7 @@ Sample baseline JSON:
   {
     "tool": "zone_smoke.py",
     "version": 1,
-    "game": "sonic2",
+    "game": "mygame",
     "input_script": "tools/smoke_enter_level_run_right.input",
     "hash_frames": 60,
     "fbhashes": [
@@ -28,16 +28,16 @@ Sample baseline JSON:
 Usage:
 
   # First run — write the baseline:
-  python tools/zone_smoke.py --game sonic2 \
+  python tools/zone_smoke.py --game mygame --exe /path/to/game.exe --rom /path/to/owner.bin \
       --input tools/smoke_enter_level_run_right.input \
       --write-baseline
 
   # Subsequent runs — assert against baseline:
-  python tools/zone_smoke.py --game sonic2 \
+  python tools/zone_smoke.py --game mygame --exe /path/to/game.exe --rom /path/to/owner.bin \
       --input tools/smoke_enter_level_run_right.input
 
   # Diagnostic — keep the runner's stderr around:
-  python tools/zone_smoke.py --game sonic2 \
+  python tools/zone_smoke.py --game mygame --exe /path/to/game.exe --rom /path/to/owner.bin \
       --input tools/smoke_enter_level_run_right.input \
       --keep-log
 
@@ -72,7 +72,6 @@ CANDIDATE_ROOTS = [
 
 GAMES = {
     "sonic1": {"repo": "SonicTheHedgehogRecomp",  "exe_name": "SonicTheHedgehogRecomp.exe",  "rom_name": "sonic.bin",  "game_dir": "sonicthehedgehog"},
-    "sonic2": {"repo": "SonicTheHedgehog2Recomp", "exe_name": "SonicTheHedgehog2Recomp.exe", "rom_name": "sonic2.bin", "game_dir": "sonicthehedgehog2"},
     "sonic3k": {"repo": "Sonic3AndKnucklesRecomp", "exe_name": "Sonic3KRecomp.exe", "rom_name": "sonic3k.bin", "game_dir": "sonic3k"},
     "rka":    {"repo": "RocketKnightAdventuresRecomp", "exe_name": "RKARecomp.exe", "rom_name": "rka.bin", "game_dir": "rka"},
 }
@@ -106,16 +105,16 @@ INTERP_RE = re.compile(
 
 def run_smoke(game: str, input_script, hash_frames: int,
               max_frames: int, benchmark: bool, timeout: float, keep_log: bool,
-              exe_override=None):
-    cfg = GAMES[game]
+              exe_override=None, rom_override=None):
+    cfg = GAMES.get(game, {})
     exe: Path = resolve_exe(game, exe_override)
-    rom = exe.parent / cfg["rom_name"]
+    rom = Path(rom_override).resolve() if rom_override else exe.parent / cfg["rom_name"]
     if not rom.is_file():
         raise FileNotFoundError(
-            f"ROM {cfg['rom_name']} not next to exe at {rom}"
+            f"ROM not found at {rom}"
         )
 
-    args = [str(exe), cfg["rom_name"], "--hash-frames", str(hash_frames)]
+    args = [str(exe), str(rom), "--hash-frames", str(hash_frames)]
     if input_script is not None:
         args += ["--input-script", str(input_script.resolve())]
     else:
@@ -222,7 +221,8 @@ def diff_fbhashes(baseline, current):
 
 def main(argv):
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("--game", choices=sorted(GAMES), required=True)
+    p.add_argument("--game", required=True, help="Game identity; new consumers supply --exe and --rom")
+    p.add_argument("--rom", help="Caller-owned ROM path")
     p.add_argument("--input", default=None,
                    help="path to .input script (relative to repo or absolute). "
                         "Omit for a no-input boot/title golden test (requires "
@@ -245,6 +245,11 @@ def main(argv):
     p.add_argument("--exe", default=None,
                    help="explicit path to the runner exe (overrides auto-resolve)")
     args = p.parse_args(argv)
+
+    if args.game not in GAMES and (not args.exe or not args.rom):
+        p.error("A caller-owned game requires --exe and --rom")
+    if args.game not in GAMES and not args.baseline and not args.input:
+        p.error("A caller-owned boot test requires --baseline (or an --input script)")
 
     if args.benchmark and args.max_frames <= 0:
         print("[zone_smoke] --benchmark requires --max-frames", file=sys.stderr)
@@ -274,7 +279,7 @@ def main(argv):
         fbhashes, diagnostics, rc = run_smoke(
             args.game, input_path, args.hash_frames, args.max_frames,
             args.benchmark,
-            args.timeout, args.keep_log, args.exe,
+            args.timeout, args.keep_log, args.exe, args.rom,
         )
     except (FileNotFoundError, RuntimeError) as e:
         print(f"[zone_smoke] {e}", file=sys.stderr)

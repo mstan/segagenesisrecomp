@@ -20,10 +20,10 @@ import tarfile
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = {
     "sonic1": ("sonicthehedgehog/s1disasm", "d343882f75b13646ba50ae06b1486f4bd05cb738", "build.lua", "s1built.bin", "sonic.lst", "sonicthehedgehog/sonic.bin"),
-    "sonic2": ("sonicthehedgehog2/s2disasm", "65ddcc24250af08ddfdf58e36351374ace998e66", "build.lua", "s2built.bin", "s2.lst", "sonicthehedgehog2/sonic2.bin"),
     "sonic3": ("sonic3k/skdisasm", "1e1b5aff82c21175c593e42c966a6ff8b1586ff3", "buildS3.lua", "s3built.bin", "s3.lst", "sonic3/sonic3.bin"),
     "sandk": ("sonic3k/skdisasm", "1e1b5aff82c21175c593e42c966a6ff8b1586ff3", "buildSK.lua", "skbuilt.bin", "sonic3k.lst", "sandk/sandk.bin"),
 }
+FOLDERS = {"sonic1": "sonicthehedgehog", "sonic3": "sonic3", "sandk": "sandk", "sonic3k": "sonic3k"}
 
 # Include-file depth is not a CPU indicator: much of Sonic 1's 68000 code lives
 # in (1)/(2) records. Require a known 68000 mnemonic and matching ROM bytes.
@@ -135,9 +135,8 @@ def main() -> None:
         import shutil
         target = ROOT / "ghidra/annotations"
         target.mkdir(parents=True, exist_ok=True)
-        folders = {"sonic1": "sonicthehedgehog", "sonic2": "sonicthehedgehog2", "sonic3": "sonic3", "sandk": "sandk", "sonic3k": "sonic3k"}
         for game in results:
-            shutil.copyfile(out / f"{game}.annotations.csv", ROOT / folders[game] / "annotations_from_disasm.csv")
+            shutil.copyfile(out / f"{game}.annotations.csv", ROOT / FOLDERS[game] / "annotations_from_disasm.csv")
             shutil.copyfile(out / f"{game}.annotations.json", target / f"{game}.annotations.json")
         shutil.copyfile(out / "provenance.json", target / "provenance.json")
 

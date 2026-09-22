@@ -226,7 +226,7 @@ typedef struct GameSpec {
 
 /*
  * The single per-game spec instance. Each game project defines this
- * exactly once (sonicthehedgehog/sonic1_spec.c, sonicthehedgehog2/
- * sonic2_spec.c, etc.). The runner picks it up at link time.
+ * exactly once in the consuming game's adapter. The runner picks it up at
+ * link time; game-specific implementation belongs in the game repository.
  */
 extern const GameSpec g_game_spec;

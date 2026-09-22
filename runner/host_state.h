@@ -49,7 +49,7 @@ static int host_state_save_now(const char *path)
     if (!size || size>HOST_STATE_LIMIT) return 0;
     uint8_t *host=malloc(size); if (!host) return 0;
     int ok=g_game_spec.state_save(host,size);
-    if (!ok) { free(host); host_state_notice("Save failed: wait for gameplay"); fprintf(stderr,"[SAVE] Wait for playable level or special-stage gameplay.\n"); return 0; }
+    if (!ok) { free(host); host_state_notice("Save failed: wait for supported gameplay"); fprintf(stderr,"[SAVE] The game adapter cannot save in its current mode.\n"); return 0; }
     char tmp[640]; snprintf(tmp,sizeof tmp,"%s.tmp.%llu",path,(unsigned long long)SDL_GetPerformanceCounter());
     FILE *f=fopen(tmp,"w+b");
     if (!f) { free(host); return 0; }
@@ -102,8 +102,8 @@ static void host_state_tick(void)
     if (glue_state_boundary_ready()) {
         host_state_save_now(host_state_pending);
     } else if (++host_state_pending_frames<120) return;
-    else { host_state_notice("Save unavailable in menus/loading/results");
-        fprintf(stderr,"[SAVE] unavailable during menus/loading/results; previous state retained.\n"); }
+    else { host_state_notice("Save unavailable in the current game mode");
+        fprintf(stderr,"[SAVE] no resumable game boundary; previous state retained.\n"); }
     host_state_pending[0]=0; glue_state_boundary_request(0);
 }
 static int host_state_load(const char *path)
@@ -150,7 +150,7 @@ static int host_state_load(const char *path)
     if (pc) glue_restart_game_fiber(pc);
 done:
     if (f) fclose(f); if (backup) fclose(backup); if (staged) fclose(staged); free(body);
-    fprintf(stderr,"[LOAD] %s %s\n",ok?"loaded":"rejected: missing, damaged, incompatible build/roster/campaign",path);
+    fprintf(stderr,"[LOAD] %s %s\n",ok?"loaded":"rejected: missing, damaged, incompatible build or configuration",path);
     host_state_notice(ok?"State loaded":"Load rejected: file missing, damaged, or setup/build mismatch");
     return ok;
 }

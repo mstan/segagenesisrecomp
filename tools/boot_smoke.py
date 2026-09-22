@@ -25,7 +25,7 @@ any baseline change commits alongside the code change that justifies it.
 
 Usage:
   python tools/boot_smoke.py --game sonic1
-  python tools/boot_smoke.py --game sonic2 --port 4380
+  python tools/boot_smoke.py --game mygame --game-toml /path/to/game.toml --port 4380
   python tools/boot_smoke.py --game sonic1 --write-baseline
   python tools/boot_smoke.py --game sonic1 --frames 300 --dump-on-diff
 
@@ -56,7 +56,6 @@ SUBMODULE_ROOT = SCRIPT_DIR.parent  # segagenesisrecomp/
 
 GAMES = {
     "sonic1": {"dir": SUBMODULE_ROOT / "sonicthehedgehog",  "default_port": 4378},
-    "sonic2": {"dir": SUBMODULE_ROOT / "sonicthehedgehog2", "default_port": 4378},
 }
 
 
@@ -230,7 +229,7 @@ def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser(
         description="Deterministic boot-state snapshot + baseline check."
     )
-    p.add_argument("--game", choices=sorted(GAMES), required=True)
+    p.add_argument("--game", required=True, help="Game identity for the report; new consumers also pass --game-toml")
     p.add_argument("--port", type=int, default=None,
                    help="TCP port (default 4378; build commands use 4380)")
     p.add_argument("--host", default="127.0.0.1")
@@ -248,7 +247,11 @@ def main(argv: list[str]) -> int:
                    help="seconds to wait for the target frame (default 120)")
     args = p.parse_args(argv)
 
-    game = GAMES[args.game]
+    game = GAMES.get(args.game)
+    if game is None:
+        if not args.game_toml:
+            p.error("A caller-owned game requires --game-toml")
+        game = {"dir": Path(args.game_toml).resolve().parent, "default_port": 4378}
     port = args.port if args.port is not None else int(game["default_port"])
     game_dir: Path = game["dir"]
     toml_path = Path(args.game_toml) if args.game_toml else game_dir / "game.toml"

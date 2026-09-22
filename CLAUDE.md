@@ -25,6 +25,12 @@ cross-check is the cosim harness (recomp vs our own Tier-3 interpreter,
 
 ## Repo topology (read this first)
 
+Owner boundary (2026-09-22): game-specific implementation belongs in the GAME
+repository, not this engine repository. Sonic 2 has been migrated to its own
+`game/`, `tests/`, `tools/` and `docs/` directories and pinned disassembly.
+Existing Sonic 1/3/other engine game directories are legacy pending separate
+migrations; never use them as precedent for new game-specific engine code.
+
 There are THREE repos in play:
 
 ```
@@ -36,7 +42,8 @@ F:\Projects\segagenesisrecomp-release\
 │
 ├── SonicTheHedgehog2Recomp\          (Sonic 2 release repo)
 │   ├── CMakeLists.txt                ← references segagenesisrecomp/runner/
-│   │                                   (via ../SonicTheHedgehogRecomp/segagenesisrecomp/)
+│   ├── game\                         ← owns adapter, ROM config and s2disasm
+│   ├── segagenesisrecomp\            ← pinned shared engine submodule
 │   └── tools\                        ← Sonic-2 probes (cleaner, fewer)
 │
 └── (this submodule, checked out as SonicTheHedgehogRecomp/segagenesisrecomp/)
@@ -53,17 +60,16 @@ F:\Projects\segagenesisrecomp-release\
     ├── tools\                        ← shared genesis-agnostic tooling
     ├── sonicthehedgehog\             ← Sonic 1 game.toml + sonic1_spec.c
     │                                   + sonic_extras.{c,h}
-    ├── sonicthehedgehog2\            ← Sonic 2 game.toml + sonic2_spec.c
     ├── sonic3k\                      ← Sonic 3 & Knuckles game files
     ├── tests\
     │   └── tools\                    ← gen_disasm_*, recompiler-side
 ```
 
 **Topology invariant**: shared runner is at `segagenesisrecomp/runner/`.
-Per-game handwritten code (`<game>_spec.c`, `<game>_extras.{c,h}`) lives in
-the engine game directory. Generated C lives
-only in each CMake build tree. Sonic 2's release repo has no runner of its own
-— it reaches through Sonic 1's release repo only to get to the submodule.
+Per-game handwritten code (`<game>_spec.c`, `<game>_extras.{c,h}`) belongs in
+the consuming game repository. Generated C lives only in each CMake build
+tree. Sonic 2 consumes its own pinned engine submodule, or an explicit
+GENESIS_RECOMP_ROOT development override; it does not depend on Sonic 1.
 
 When in doubt about "which runner is built": grep the relevant
 `CMakeLists.txt` for `RUNNER_ROOT` — that's the source of truth.
@@ -144,7 +150,7 @@ cmd.exe //C "start /B SonicTheHedgehogRecomp.exe sonic.bin --port 4380 > native_
 ### Sonic 2 — native (regeneration is automatic)
 
 ```bash
-cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehogRecomp/segagenesisrecomp/sonicthehedgehog2
+cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehog2Recomp
 powershell.exe -NoProfile -Command "& 'F:/Projects/segagenesisrecomp-release/SonicTheHedgehog2Recomp/_build_native.bat'"
 /c/Windows/System32/taskkill.exe //F //IM SonicTheHedgehog2Recomp.exe 2>/dev/null
 cd /f/Projects/segagenesisrecomp-release/SonicTheHedgehog2Recomp/build/Release

@@ -177,11 +177,15 @@ Manual invocation (from the submodule):
 ```bash
 # First capture (or after an intentional change):
 python tools/zone_smoke.py --game sonic2 \
+    --exe ../../SonicTheHedgehog2Recomp/build/Release/SonicTheHedgehog2Recomp.exe \
+    --rom ../../SonicTheHedgehog2Recomp/game/sonic2.bin \
     --input ../../SonicTheHedgehog2Recomp/tools/smoke_enter_level_run_right.input \
     --hash-frames 60 --write-baseline
 
 # Subsequent regression check:
 python tools/zone_smoke.py --game sonic2 \
+    --exe ../../SonicTheHedgehog2Recomp/build/Release/SonicTheHedgehog2Recomp.exe \
+    --rom ../../SonicTheHedgehog2Recomp/game/sonic2.bin \
     --input ../../SonicTheHedgehog2Recomp/tools/smoke_enter_level_run_right.input \
     --hash-frames 60
 ```
@@ -249,7 +253,8 @@ python tools/boot_smoke.py --game sonic1 --port 4380 --frames 300
 Baselines live next to each game's `game.toml`:
 
 - `segagenesisrecomp/sonicthehedgehog/boot_smoke_baseline.json`
-- `segagenesisrecomp/sonicthehedgehog2/boot_smoke_baseline.json`
+- `SonicTheHedgehog2Recomp/game/boot_smoke_baseline.json` (pass the game-owned
+  `--game-toml` path to `boot_smoke.py`; there is no engine Sonic 2 preset)
 
 Exit codes: `0` match (or write-baseline OK); `1` divergence vs baseline;
 `2` connection / runner / ring-eviction error; `3` no baseline file present.

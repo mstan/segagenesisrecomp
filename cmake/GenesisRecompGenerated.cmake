@@ -22,7 +22,13 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
     set(one_value_args REVERSE_DEBUG)
     cmake_parse_arguments(GRG "" "${one_value_args}" "" ${ARGN})
 
-    set(_game "${RECOMP_ROOT}/${GAME_DIR}")
+    # New consumers own their game sources/configuration and pass an absolute
+    # directory. Preserve engine-relative paths for unmigrated consumers.
+    if(IS_ABSOLUTE "${GAME_DIR}")
+        set(_game "${GAME_DIR}")
+    else()
+        set(_game "${RECOMP_ROOT}/${GAME_DIR}")
+    endif()
     set(_rom  "${_game}/${ROM_NAME}")
     # Each configured build owns its generated C. This prevents normal,
     # reverse-debug, and concurrent build trees from overwriting one another.

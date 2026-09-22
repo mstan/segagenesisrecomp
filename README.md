@@ -31,8 +31,15 @@ provide the ROM-specific build, assets, and release packaging.
 | `external/z80-recomp-core/` | [Shared Z80 generated-code ABI and verified instruction semantics](https://github.com/mstan/z80-recomp-core) — pinned submodule shared with SMS/GG Recomp |
 | `runner/` | Clean-room runtime, debugger, audio, video, input, and netplay integration |
 | `tests/` | ROM-independent synthetic harnesses plus optional ROM-backed decoder fixtures |
-| `sonicthehedgehog/`, `sonicthehedgehog2/`, `sonic3/`, `sandk/`, `sonic3k/`, `puyo/`, `rka/` | Per-game configuration, evidence, and hooks |
+| `sonicthehedgehog/`, `sonic3/`, `sandk/`, `sonic3k/`, `puyo/`, `rka/` | Legacy game implementations awaiting separate ownership migrations; not a pattern for new work |
 | `<game build>/generated/<prefix>/` | Ignored output regenerated from the ROM, config, and current recompiler |
+
+Game-specific adapters, ROM addresses/layouts, mods, campaign formats, assets,
+disassembly pins and game tests belong in the consuming game repository.
+Sonic 2 now owns these under `SonicTheHedgehog2Recomp/game/`, `tests/`, `tools/`
+and `docs/`. The shared engine provides reusable opt-in interfaces only.
+`genesisrecomp_add_generated_sources` accepts an absolute caller-owned game
+directory; legacy engine-relative paths remain supported for other consumers.
 
 ## How It Works
 

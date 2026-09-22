@@ -22,7 +22,7 @@ Validation gates:
 Usage:
   python genesis_cosim.py --a recomp --b recomp --stride 1 --max 2000
 """
-import argparse, os, socket, subprocess, sys, time
+import argparse, json, os, socket, subprocess, sys, time
 
 SUBS = ["cpu68k","timing","ram","z80","z80ram","handshake","vdp","fm","psg","evq"]
 
@@ -30,18 +30,32 @@ SUBS = ["cpu68k","timing","ram","z80","z80ram","handshake","vdp","fm","psg","evq
 # PC via GENESIS_COSIM_WAITVBL_PC; regions via g_game_spec/g_game_layout; the
 # clown-measured cost table is per-game generated). Only the TOOLING needs to
 # know each game's build-worktree dir, exe base name, and WaitForVBla entry PC.
-#   waitvbl: WaitForVBla func entry PC (pattern-detected in code_generator.c) —
-#            s1 func_0029A8, s2 func_003384 (verified in each game's generated C).
-# s2/s3 configs are prefilled but UNVERIFIED-BY-RUN here (their game repos are not
-# checked out); building/running them needs the _wt-cosim-<g> worktree + ROM + the
-# _cosim/_oracle_cosim CMake targets (copy Sonic 1's — see COSIM.md).
+# Legacy presets remain for unmigrated consumers. New consumers supply their
+# own metadata with --game-config; no game addresses belong in shared tooling.
+# Builds require the _cosim/_oracle_cosim targets (see COSIM.md).
 GAMES = {
     "s1": {"wt": "_wt-cosim-s1", "exe": "SonicTheHedgehogRecomp",  "waitvbl": "29a8", "rom": "sonic.bin"},
-    "s2": {"wt": "_wt-cosim-s2", "exe": "SonicTheHedgehog2Recomp", "waitvbl": "3384", "rom": "sonic2.bin"},
     "s3": {"wt": "_wt-cosim-s3", "exe": "Sonic3KRecomp",           "waitvbl": "1d18", "rom": "sonic3k.bin"},
     "puyo": {"wt": "_wt-puyo", "exe": "PuyoRecomp", "waitvbl": "32c", "rom": "puyo.bin"},
 }
 GAME = "s1"   # module-level selection; set by --game (or divergence_report)
+
+def select_game(game, config=None):
+    """Load caller-owned metadata without launching or altering the runtime."""
+    global GAME
+    if config:
+        with open(config, encoding="utf-8") as source:
+            metadata = json.load(source)
+        if not isinstance(metadata, dict) or any(
+                not isinstance(metadata.get(key), str) or not metadata[key].strip()
+                for key in ("wt", "exe", "waitvbl", "rom")):
+            raise ValueError("game config requires nonempty wt, exe, waitvbl and rom strings")
+        if not 0 <= int(metadata["waitvbl"], 16) <= 0xffffff:
+            raise ValueError("waitvbl must be a 24-bit hex address")
+        GAMES[game] = metadata
+    if game not in GAMES:
+        raise ValueError(f"unknown game {game!r}; supply its --game-config JSON")
+    GAME = game
 
 def game_waitvbl():
     return GAMES[GAME]["waitvbl"]
@@ -263,9 +277,8 @@ def run_profile(a, b, args, pairing2):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--game", default="s1", choices=list(GAMES),
-                    help="which game's cosim build to drive (default s1). s2/s3 need "
-                         "their _wt-cosim-<g> worktree + _cosim/_oracle_cosim targets built.")
+    ap.add_argument("--game", default="s1", help="game identity (default s1)")
+    ap.add_argument("--game-config", help="caller-owned JSON: wt, exe, waitvbl (hex), rom")
     ap.add_argument("--exe")
     ap.add_argument("--exe-oracle")
     ap.add_argument("--a", default="recomp", choices=["recomp","interp","oracle"])
@@ -282,8 +295,8 @@ def main():
     ap.add_argument("--inject-at", type=int, default=0, help="apply injection at cp K (gate 3)")
     ap.add_argument("--inject", default="", help="reg:IDX:XOR or ram:OFF:XOR")
     ap.add_argument("--waitvbl-pc", default="",
-                    help="hex PC of the game's WaitForVBla stub (default: per --game; "
-                         "s1=29a8, s2=3384). The interp yields there like the recomp, and the "
+                    help="hex PC of the game's WaitForVBla stub (default: game metadata). "
+                         "The interp yields there like the recomp, and the "
                          "oracle samples work cycles there, so the backends stay program-aligned.")
     ap.add_argument("--subs", default="",
                     help="comma list of sub-hashes to compare instead of the full chain. "
@@ -296,8 +309,10 @@ def main():
                          "the first-divergence checkpoint + how many checkpoints matched vs "
                          "diverged. Answers 'across all systems, how divergent is this demo'.")
     args = ap.parse_args()
-    global GAME
-    GAME = args.game
+    try:
+        select_game(args.game, args.game_config)
+    except (OSError, ValueError) as error:
+        ap.error(str(error))
     if not args.waitvbl_pc:
         args.waitvbl_pc = game_waitvbl()
 

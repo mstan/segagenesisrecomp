@@ -1,8 +1,12 @@
 # Reproducible Sonic disassembly evidence
 
-The engine pins Sonic Retro sources as submodules beside the game configs:
-Sonic 1 (`sonicthehedgehog/s1disasm`), Sonic 2
-(`sonicthehedgehog2/s2disasm`), and Sonic 3 / S&K (`sonic3k/skdisasm`).
+The engine retains legacy Sonic Retro source pins for Sonic 1
+(`sonicthehedgehog/s1disasm`) and Sonic 3 / S&K (`sonic3k/skdisasm`).
+Sonic 2's pin and annotation exports are now owned by
+`SonicTheHedgehog2Recomp/game/s2disasm` and its `ghidra/annotations/` directory.
+Run that game's `tools/sonic2_disassembly.py --install` to regenerate its
+evidence (optionally `--engine <checkout>`). New game source pins belong in
+game repositories; the legacy pins above await separate migrations.
 The pinned commits and supported ROM SHA-256 hashes are recorded in
 `ghidra/annotations/provenance.json`.
 
