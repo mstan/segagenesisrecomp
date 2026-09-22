@@ -55,6 +55,7 @@ static unsigned glyph(char c)
 {
     if (c>='A' && c<='Z') return 30+c-'A';
     if (c>='0' && c<='9') return 16+c-'0';
+    if (c=='.') return 29; /* skdisasm LEVELSELECT charset */
     return 0;
 }
 static void text(const S2SaveAssets *a,int x,int y,const char *s,int line,
@@ -72,6 +73,39 @@ static void text(const S2SaveAssets *a,int x,int y,const char *s,int line,
 }
 static void centered(const S2SaveAssets *a,int x,int y,const char *s,int line,uint32_t *out,int width)
 { text(a,x-(int)strlen(s)*4,y,s,line,out,width); }
+static void counter_tile(const S2SaveAssets *a,unsigned offset,int x,int y,int line,uint32_t *out,int width)
+{
+    if (line<y || line>=y+8) return;
+    unsigned tile=0x2454+offset; /* skdisasm ArtTile_Save_Extra, palette 1 */
+    for (int px=0;px<8;++px) if (x+px>=0 && x+px<width) {
+        unsigned ink=pixel(a,tile,px,line-y);
+        if (ink) out[x+px]=color(a,tile,ink,1);
+    }
+}
+static void counter_number(const S2SaveAssets *a,unsigned value,int x,int y,int line,uint32_t *out,int width)
+{
+    char digits[4]; snprintf(digits,sizeof digits,"%u",value);
+    unsigned length=(unsigned)strlen(digits);
+    /* Native 8x16 digits: right-align one/two digits, allow all byte values. */
+    if (length<2) x+=8;
+    for (unsigned i=0;i<length;++i) {
+        unsigned tile=0x46+2*(digits[i]-'0');
+        counter_tile(a,tile,x+i*8,y,line,out,width);
+        counter_tile(a,tile+1,x+i*8,y+8,line,out,width);
+    }
+}
+static void counters(const S2SaveAssets *a,const S2CampaignSlot *slot,int x,int line,uint32_t *out,int width)
+{
+    /* Original Map_DataSelect_Player_LivesContinues Sonic block (DAAA),
+     * loc_C97A's row18 destination and loc_C9CC's row21 continue counter.
+     * Icons are cosmetic Sonic regardless of the selected gameplay roster. */
+    static const unsigned tiles[15]={0x6E,0x70,0x5A,0x6F,0x71,0x5B,
+        0x5C,0x5F,0,0x5D,0x60,0x5A,0x5E,0x61,0x5B};
+    for (unsigned i=0;i<15;++i) if (tiles[i])
+        counter_tile(a,tiles[i],x-16+(i%3)*8,144+(i/3)*8,line,out,width);
+    counter_number(a,slot->lives,x+8,144,line,out,width);
+    counter_number(a,slot->continues,x+8,168,line,out,width);
+}
 void s2_save_draw_notice(const S2SaveAssets *a,const char *message,int line,uint32_t *out,int width)
 {
     if (!a || line<212 || line>=224) return;
@@ -103,26 +137,21 @@ void s2_save_draw_line(const S2SaveAssets *a,const S2SaveView *v,int line,uint32
         const S2CampaignSlot *slot=&v->data.slots[i];
         sprite(a,v,4,x,136,line,out,width);
         for (unsigned e=0;e<7;++e) if (slot->emeralds&(1u<<e)) sprite(a,v,16+e,x,136,line,out,width);
-        char label[20]; snprintf(label,sizeof label,"FILE %u",i+1);
-        centered(a,x,174,label,line,out,width);
+        char label[20];
         if (slot->state && slot->stage<S2_CAMPAIGN_STAGES) {
-            /* Replace the S3 level thumbnail with the requested S2 zone/act. */
-            if (line>=16 && line<72) for (int px=x-40;px<x+40;++px)
-                if (px>=0 && px<width) out[px]=color(a,0,0,1);
+            int picked=slot->state!=S2_SAVE_COMPLETE ||
+                (v->selection==i+1 && v->replay_selected && !v->erase);
+            /* Exact stock S2 terrain, keeping the donor card's 80x56 window.
+             * Put readable zone/act labels below, not over the artwork. */
+            if (picked && line>=16 && line<72) for (int px=x-40;px<x+40;++px)
+                if (px>=0 && px<width) out[px]=a->stages_ready?
+                    genesis_dac_cram_to_argb(a->stages[slot->stage][(line-16)*80+px-x+40],GENESIS_DAC_NORMAL):color(a,0,0,1);
             const S2CampaignStage *s=&s2_campaign_stages[slot->stage];
-            const char *space=strchr(s->name,' ');
-            if (space) {
-                size_t first=(size_t)(space-s->name);
-                snprintf(label,sizeof label,"%.*s",(int)first,s->name);
-                centered(a,x,22,label,line,out,width);
-                centered(a,x,34,space+1,line,out,width);
-            } else centered(a,x,28,s->name,line,out,width);
-            snprintf(label,sizeof label,"ACT %u",s->act);
-            centered(a,x,52,label,line,out,width);
-            if (slot->state==S2_SAVE_COMPLETE) centered(a,x,158,"CLEAR",line,out,width);
+            if (picked) snprintf(label,sizeof label,"ZONE %02u",s->zone+1);
+            else snprintf(label,sizeof label,"CLEAR");
+            centered(a,x,80,label,line,out,width);
+            counters(a,slot,x,line,out,width);
         }
-        if (v->selection==i+1 && slot->state==S2_SAVE_COMPLETE && !v->erase && (v->frame&16))
-            sprite(a,v,15,x,136,line,out,width);
     }
     centered(a,base+968,96,"DELETE",line,out,width);
     /* Obj_SaveScreen_Selector moves the cursor before scrolling its camera.

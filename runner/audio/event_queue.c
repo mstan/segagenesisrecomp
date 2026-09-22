@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>   /* getenv for the write-stream dump */
+#include <string.h>
 
 /* Capacity sized for the worst REAL case, not the steady state: steady state
  * is ~280 events/frame (Z80 DAC pairs + music), but Sonic 1's Sega-scream
@@ -19,6 +20,31 @@ static AudioEvent s_ring[QUEUE_CAP];
 static size_t     s_head = 0;  /* producer writes here */
 static size_t     s_tail = 0;  /* consumer reads here */
 static size_t     s_overflow_count = 0;
+size_t audio_event_state_size(void) { return sizeof(uint32_t)+sizeof s_ring; }
+int audio_event_state_save(void *data,size_t size)
+{
+    if (!data || size!=audio_event_state_size()) return 0;
+    uint32_t n=(uint32_t)audio_event_queue_count();
+    memset(data,0,size); memcpy(data,&n,sizeof n);
+    for (uint32_t i=0;i<n;++i)
+        memcpy((uint8_t *)data+sizeof n+i*sizeof(AudioEvent),&s_ring[(s_tail+i)%QUEUE_CAP],sizeof(AudioEvent));
+    return 1;
+}
+int audio_event_state_load(const void *data,size_t size,int apply)
+{
+    if (!data || size!=audio_event_state_size()) return 0;
+    uint32_t n; memcpy(&n,data,sizeof n);
+    if (n>=QUEUE_CAP) return 0;
+    for (uint32_t i=0;i<n;++i) {
+        AudioEvent e; memcpy(&e,(const uint8_t *)data+sizeof n+i*sizeof e,sizeof e);
+        if (e.port>AUDIO_PORT_PSG) return 0;
+    }
+    if (apply) {
+        memcpy(s_ring,(const uint8_t *)data+sizeof n,n*sizeof(AudioEvent));
+        s_tail=0; s_head=n;
+    }
+    return 1;
+}
 
 #ifdef GENESIS_COSIM
 /* Always-on chip-write history ring (co-sim drill): records EVERY FM/PSG write

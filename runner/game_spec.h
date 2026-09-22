@@ -22,6 +22,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "game_video.h"
 struct RecompLauncherCModProvider;
@@ -48,6 +49,14 @@ typedef struct GameSpec {
     /* NULL/NULL result = supported. Host enhancements may reject raw machine
      * snapshots until their extra state has a compatible serialization format. */
     const char *(*state_unavailable_reason)(void);
+    /* Opt-in, build-bound host snapshots. Validate (apply=0) must not mutate
+     * simulation state. NULL leaves the legacy machine-only format intact. */
+    const char *state_build_id;
+    size_t (*state_size)(void);
+    int (*state_save)(void *data, size_t size);
+    int (*state_load)(const void *data, size_t size, int apply);
+    /* At the game's real WaitForVint: is its caller a resumable loop? */
+    int (*state_at_boundary)(void);
     /* ---- Identity ---- */
     const char *display_name;        /* "Sonic the Hedgehog" — window title */
     const char *short_name;          /* "Sonic1" — shows up in info / ping */

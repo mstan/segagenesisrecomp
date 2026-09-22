@@ -819,6 +819,7 @@ extra = [
                 # #GameModeID_SpecialStage,(Game_Mode) / ... / bsr SSTrack_Draw").
                 # Needed as a dispatch entry so save-state loads can resume
                 # the special stage moment-in-time (GameSpec save_resume_pc).
+    0x005250,   # SS started loop: s2.asm line 6695, after SpecStageBombs PLC.
 ]
 
 # ---------------------------------------------------------------------------

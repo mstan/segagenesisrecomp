@@ -21,6 +21,8 @@ void audio_set_master_volume(int pct);
  * state, so turbo is silent and normal-speed playback resumes cleanly. WAV
  * capture is independent and remains active. */
 void audio_set_playback_enabled(int enabled);
+/* Discard device/DRC samples from the timeline abandoned by a quickload. */
+void audio_discard_playback(void);
 
 /*
  * Mix one video frame and push to the SDL ring buffer.

@@ -25,6 +25,7 @@
 #include "sonic2_options.h"
 #include "sonic2_mods.h"
 #include "sonic2_runtime.h"
+#include "sonic2_state_build.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -64,7 +65,7 @@ static uint32_t s2_save_resume_pc(uint8_t game_mode)
     switch (game_mode) {
         case 0x08:
         case 0x0C: return 0x004360u;   /* Level_MainLoop      */
-        case 0x10: return 0x0051FCu;   /* SS per-frame loop   */
+        case 0x10: return g_ram[0xDB23]?0x005250u:0x0051FCu; /* started / intro SS loops */
         default:   return 0u;
     }
 }
@@ -266,6 +267,11 @@ const GameSpec g_game_spec = {
     .mods                   = s2_mods,
     .netplay_allowed        = s2_options_netplay_allowed,
     .state_unavailable_reason = s2_runtime_state_unavailable_reason,
+    .state_build_id = SONIC2_STATE_BUILD_ID,
+    .state_size = s2_runtime_state_size,
+    .state_save = s2_runtime_state_save,
+    .state_load = s2_runtime_state_load,
+    .state_at_boundary = s2_runtime_state_at_boundary,
     .main_cpu_divisor       = s2_video_main_cpu_divisor,
     .display_name           = "Sonic the Hedgehog 2",
     .short_name             = "Sonic2",

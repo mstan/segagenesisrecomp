@@ -29,7 +29,7 @@ roster = ["amy", "knuckles", "sonic", "tails"] if a.native_extras else ["sonic",
     "PLAYER 4\nHOLD RIGHT\nWAIT 32\nRELEASE\nPRESS A 2\nWAIT 16\n"
     "SCREENSHOT four-p4.png\nDUMP_RAM four-p4.bin\n"
     "PLAYER 1\nHOLD RIGHT\nWAIT 140\nRELEASE\n"
-    "SCREENSHOT four-move.png\nDUMP_RAM four-move.bin\nSAVE_STATE party-rejected.bin\nWAIT 2\nEXIT\n")
+    "SCREENSHOT four-move.png\nDUMP_RAM four-move.bin\nSAVE_STATE party.state\nWAIT 8\nEXIT\n")
 env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy",
            SDL_RENDER_DRIVER="software", GENESIS_STRICT_JSR_STACK="1")
 with (out / "run.log").open("w") as log:
@@ -47,8 +47,8 @@ assert word(ram[1],0xcfc8) > word(ram[0],0xcfc8)+8, "P3 did not move"
 assert word(ram[1],0xcf88) == word(ram[0],0xcf88), "P3 input leaked into P4"
 assert word(ram[2],0xcf88) > word(ram[1],0xcf88)+8, "P4 did not move"
 assert all(r[0xfe12] == ram[0][0xfe12] for r in ram), "Companion consumed P1 lives"
-assert not (out / "party-rejected.bin").exists(), "Incomplete host state was serialized"
-assert "[SAVE] unavailable:" in (out / "run.log").read_text()
+assert (out / "party.state").read_bytes()[:8]==b"GRHOST2\0", "Missing host-inclusive quickstate"
+assert "[SAVE] saved" in (out / "run.log").read_text()
 for prev, following, frames in zip(ram,ram[1:],(63,48,140)):
     delta=(word(following,0xfe04)-word(prev,0xfe04))%65536
     # Widescreen's existing variable V-int/DMA debt can put an end-of-output-

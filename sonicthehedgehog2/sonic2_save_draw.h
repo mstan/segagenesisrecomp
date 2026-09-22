@@ -7,6 +7,7 @@ typedef struct S2SaveView {
     int cursor, scroll, erase, confirm, read_only;
     int delete_x;
     unsigned delete_frame;
+    int replay_selected; /* Completed file: static/CLEAR until a destination is picked. */
     const char *notice;
 } S2SaveView;
 /* 320x224 donor composition centered in any output width. Host-only pixels. */

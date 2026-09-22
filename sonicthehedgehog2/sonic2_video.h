@@ -1,4 +1,6 @@
 #pragma once
+#include "sonic2_state_io.h"
+void s2_video_state(S2StateIO *io);
 unsigned s2_video_main_cpu_divisor(void);
 void s2_video_vblank(void);
 #include "game_video.h"

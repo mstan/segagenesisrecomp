@@ -37,7 +37,8 @@ unsigned s2_campaign_emerald_count(unsigned mask)
 static int valid_slot(const S2CampaignSlot *s)
 {
     return s && s->state<=S2_SAVE_COMPLETE && s->stage<S2_CAMPAIGN_STAGES &&
-        s->emeralds<=0x7F && (s->state!=S2_SAVE_EMPTY || (!s->stage && !s->emeralds));
+        s->emeralds<=0x7F && (s->state!=S2_SAVE_EMPTY ||
+        (!s->stage && !s->emeralds && !s->lives && !s->continues));
 }
 int s2_campaign_valid(const S2CampaignData *d)
 {
@@ -48,7 +49,7 @@ int s2_campaign_valid(const S2CampaignData *d)
 int s2_campaign_new(S2CampaignData *d, unsigned i)
 {
     if (!d || i>=S2_SAVE_SLOTS || d->slots[i].state!=S2_SAVE_EMPTY) return 0;
-    d->slots[i]=(S2CampaignSlot){S2_SAVE_ACTIVE,0,0}; return 1;
+    d->slots[i]=(S2CampaignSlot){S2_SAVE_ACTIVE,0,0,3,0}; return 1;
 }
 int s2_campaign_delete(S2CampaignData *d, unsigned i)
 {
@@ -74,7 +75,11 @@ int s2_campaign_complete(S2CampaignSlot *s)
 int s2_campaign_select_zone(S2CampaignSlot *s, unsigned zone)
 {
     int stage=s2_campaign_zone_start(zone);
-    if (!valid_slot(s) || s->state!=S2_SAVE_COMPLETE || stage<0) return 0;
+    return stage>=0 && s2_campaign_select_stage(s,(unsigned)stage);
+}
+int s2_campaign_select_stage(S2CampaignSlot *s, unsigned stage)
+{
+    if (!valid_slot(s) || s->state!=S2_SAVE_COMPLETE || stage>=S2_CAMPAIGN_STAGES) return 0;
     s->stage=(uint8_t)stage; return 1;
 }
 static uint32_t read32(const uint8_t *p)
@@ -99,10 +104,11 @@ int s2_campaign_encode(const S2CampaignData *d, uint32_t seq, uint8_t b[S2_SAVE_
 {
     if (!b || !s2_campaign_valid(d)) return 0;
     memset(b,0,S2_SAVE_BYTES); memcpy(b,"S2SAVE\r\n",8);
-    write32(b+8,1); write32(b+12,S2_SAVE_BYTES); write32(b+16,S2_SAVE_SLOTS);
+    write32(b+8,2); write32(b+12,S2_SAVE_BYTES); write32(b+16,S2_SAVE_SLOTS);
     write32(b+20,seq); memcpy(b+24,identity,32);
     for (unsigned i=0;i<S2_SAVE_SLOTS;++i) {
         b[64+8*i]=d->slots[i].state; b[65+8*i]=d->slots[i].stage; b[66+8*i]=d->slots[i].emeralds;
+        b[67+8*i]=d->slots[i].lives; b[68+8*i]=d->slots[i].continues;
     }
     write32(b+60,checksum(b)); return 1;
 }
@@ -113,15 +119,17 @@ int s2_campaign_decode(const uint8_t *b, size_t size, S2CampaignData *d,
     S2CampaignData temp={0};
     if (!b || !d || !seq || size!=S2_SAVE_BYTES) why="Save size is invalid";
     else if (memcmp(b,"S2SAVE\r\n",8)) why="Unrecognized save file";
-    else if (read32(b+8)!=1) why="Unsupported save version; file preserved";
+    else if (read32(b+8)!=1 && read32(b+8)!=2) why="Unsupported save version; file preserved";
     else if (memcmp(b+24,identity,32)) why="Save belongs to a different game or ROM revision";
     else if (read32(b+12)!=S2_SAVE_BYTES || read32(b+16)!=S2_SAVE_SLOTS || read32(b+56)) why="Invalid save header";
     else if (read32(b+60)!=checksum(b)) why="Save checksum mismatch";
     else {
         for (unsigned i=0;i<S2_SAVE_SLOTS;++i) {
             const uint8_t *p=b+64+8*i;
-            temp.slots[i]=(S2CampaignSlot){p[0],p[1],p[2]};
-            for (unsigned j=3;j<8;++j) if (p[j]) why="Unsupported save slot fields";
+            unsigned version=read32(b+8);
+            temp.slots[i]=(S2CampaignSlot){p[0],p[1],p[2],
+                version==1?(p[0]?3:0):p[3],version==1?0:p[4]};
+            for (unsigned j=version==1?3:5;j<8;++j) if (p[j]) why="Unsupported save slot fields";
         }
         if (!s2_campaign_valid(&temp)) why="Invalid campaign destination or Emerald state";
     }

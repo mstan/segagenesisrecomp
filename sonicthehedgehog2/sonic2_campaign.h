@@ -11,7 +11,7 @@ typedef struct S2CampaignStage {
     const char *name;
 } S2CampaignStage;
 typedef struct S2CampaignSlot {
-    uint8_t state, stage, emeralds;
+    uint8_t state, stage, emeralds, lives, continues;
 } S2CampaignSlot;
 typedef struct S2CampaignData { S2CampaignSlot slots[S2_SAVE_SLOTS]; } S2CampaignData;
 
@@ -28,6 +28,7 @@ int s2_campaign_advance(S2CampaignSlot *slot, uint16_t next_native_id);
 int s2_campaign_collect(S2CampaignSlot *slot, unsigned emerald_mask);
 int s2_campaign_complete(S2CampaignSlot *slot);
 int s2_campaign_select_zone(S2CampaignSlot *slot, unsigned zone);
+int s2_campaign_select_stage(S2CampaignSlot *slot, unsigned stage);
 
 /* Fixed endian, CRC-protected, exact Sonic 2 REV01 identity; never raw structs.
  * Decoding is transactional: output and sequence are unchanged on failure. */

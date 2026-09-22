@@ -654,6 +654,10 @@ static uint32_t s_main_cpu_stalls;
 static int s_irq_in_progress = 0; /* also excludes interleaved IRQs from acceleration */
 static int32_t s_cycle_budget = 0;
 static int     s_game_yielded_vblank = 0;
+static int s_state_requested,s_state_parked;
+void glue_state_boundary_request(int requested)
+{ s_state_requested=requested; if (!requested) s_state_parked=0; }
+int glue_state_boundary_ready(void) { return s_state_parked; }
 /* 68K cycles spent inside an interrupt handler (V-int/H-int), still owed to
  * the raster. own_deliver_vint runs the whole handler atomically at the
  * vblank scanline with budget yields gated (s_in_vblank_service), so without
@@ -687,6 +691,9 @@ static cc_u32f s_chunk_cycles = 0;  /* budget for current chunk */
 
 void glue_run_game_chunk(cc_u32f cycles)
 {
+    /* An opt-in quicksave completes the native tick, then keeps its WaitForVint
+     * parked until this wall frame's VDP/Z80/audio drain has completed. */
+    if (s_state_parked) return;
     if (!s_game_running || !s_game_fiber)
         return;
     if (s_game_yielded_vblank)
@@ -1108,6 +1115,8 @@ void glue_yield_for_vblank(void)
     if (g_cpu.A[7] > g_game_layout.initial_ssp)
         g_cpu.A[7] = g_game_layout.initial_ssp;
     s_game_yielded_vblank = 1;
+    if (s_state_requested && g_game_spec.state_at_boundary && g_game_spec.state_at_boundary())
+        s_state_parked=1;
     { char stack_marker; game_stack_note("WaitForVint", &stack_marker); }
     fiber_switch(s_main_fiber);
     /* STAGE 1 interleaved IRQ: the scheduler flagged a V-int/H-int while we were
@@ -2082,13 +2091,19 @@ void     vdp_render_frame(uint32_t *fb) { (void)fb; /* rendering via clownmdemu 
  * ========================================================================= */
 
 static FILE *s_framelog = NULL;
+static int s_framelog_initialized;
 
 void glue_log_frame_state(uint64_t frame)
 {
-    if (!s_framelog) {
-        s_framelog = fopen("framelog_step2.txt", "w");
-        if (!s_framelog) return;
+    if (!s_framelog_initialized) {
+        s_framelog_initialized=1;
+        /* The retrospective FrameRecord ring is the normal diagnostic path.
+         * Synchronous per-frame fflush can stall a real game for hundreds of
+         * milliseconds on a busy disk. Stream only when explicitly requested. */
+        const char *path=getenv("GENESIS_FRAME_LOG");
+        if (path && *path) s_framelog=fopen(path,"w");
     }
+    if (!s_framelog) return;
     if (frame > 9999) return;  /* cap framelog at 10000 frames */
 
     /* Own backend: g_ram is the authoritative WRAM (byte array, big-endian). */

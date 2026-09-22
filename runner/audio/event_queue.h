@@ -48,5 +48,9 @@ void audio_event_requeue(const AudioEvent *evs, size_t n);
 
 /* Diagnostic: current fill level. */
 size_t audio_event_queue_count(void);
+/* Opt-in host quickstates. Fixed capacity, pointer-free, validate-before-apply. */
+size_t audio_event_state_size(void);
+int audio_event_state_save(void *data,size_t size);
+int audio_event_state_load(const void *data,size_t size,int apply);
 
 #endif

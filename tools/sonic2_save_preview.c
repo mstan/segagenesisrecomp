@@ -2,12 +2,13 @@
 #include "sonic2_save_assets.h"
 #include "sonic2_save_draw.h"
 #include "sha256.h"
+#include "video/genesis_dac.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 int main(int argc,char **argv)
 {
-    if (argc<3 || argc>6) { fprintf(stderr,"usage: sonic2_save_preview donor.bin output.ppm [selection [frame [normal|empty|delete|confirm]]]\n"); return 2; }
+    if (argc<3 || argc>7) { fprintf(stderr,"usage: sonic2_save_preview donor.bin output.ppm [selection [frame [normal|empty|delete|confirm [sonic2.bin]]]]\n"); return 2; }
     FILE *f=fopen(argv[1],"rb"); if (!f) return 2;
     uint8_t *rom=malloc(0x400000); if (!rom) { fclose(f); return 2; }
     size_t n=fread(rom,1,0x400000,f); int extra=fgetc(f); fclose(f);
@@ -20,6 +21,25 @@ int main(int argc,char **argv)
     S2SaveAssets *a=NULL; char error[192];
     int ok=s2_save_assets_decode(rom,n,&a,error,sizeof error); free(rom);
     if (!ok) { fprintf(stderr,"%s\n",error); return 1; }
+    if (argc>6) {
+        f=fopen(argv[6],"rb"); rom=malloc(0x100000);
+        if (!f || !rom) return 2;
+        n=fread(rom,1,0x100000,f); extra=fgetc(f); fclose(f);
+        ok=n==0x100000 && extra==EOF && s2_stage_images_decode(rom,n,a); free(rom);
+        if (!ok) { fprintf(stderr,"Sonic 2 thumbnail decode failed\n"); return 1; }
+    }
+    if (argc>5 && !strcmp(argv[5],"gallery")) {
+        if (!a->stages_ready) return 2;
+        f=fopen(argv[2],"wb"); if (!f) return 2;
+        fprintf(f,"P6\n640 560\n255\n");
+        for (unsigned y=0;y<560;++y) for (unsigned x=0;x<640;++x) {
+            unsigned stage=(y/112)*4+x/160;
+            uint32_t c=genesis_dac_cram_to_argb(a->stages[stage][((y%112)/2)*80+(x%160)/2],GENESIS_DAC_NORMAL);
+            fputc(c>>16&255,f); fputc(c>>8&255,f); fputc(c&255,f);
+        }
+        ok=!ferror(f); if (fclose(f)) ok=0;
+        s2_save_assets_free(&a); return ok?0:1;
+    }
     S2SaveView v={0}; v.selection=argc>3?(unsigned)atoi(argv[3]):1; v.frame=argc>4?(unsigned)atoi(argv[4]):4;
     if (v.selection>9) { s2_save_assets_free(&a); return 2; }
     v.cursor=40+(int)v.selection*104; v.scroll=v.cursor-160;
@@ -27,8 +47,9 @@ int main(int argc,char **argv)
     v.erase=argc>5 && (!strcmp(argv[5],"delete") || !strcmp(argv[5],"confirm"));
     v.confirm=argc>5 && !strcmp(argv[5],"confirm"); v.delete_frame=v.frame;
     v.delete_x=v.erase?v.cursor-(v.selection==9?8:0):968;
-    s2_campaign_new(&v.data,0); v.data.slots[0]=(S2CampaignSlot){S2_SAVE_COMPLETE,1,0x7F};
-    s2_campaign_new(&v.data,1); v.data.slots[1]=(S2CampaignSlot){S2_SAVE_ACTIVE,3,0x15};
+    s2_campaign_new(&v.data,0); v.data.slots[0]=(S2CampaignSlot){S2_SAVE_COMPLETE,1,0x7F,3,0};
+    s2_campaign_new(&v.data,1); v.data.slots[1]=(S2CampaignSlot){S2_SAVE_ACTIVE,3,0x15,12,4};
+    v.replay_selected=argc>5 && !strcmp(argv[5],"picked");
     if (argc>5 && !strcmp(argv[5],"empty")) memset(&v.data,0,sizeof v.data);
     f=fopen(argv[2],"wb"); if (!f) { s2_save_assets_free(&a); return 2; }
     fprintf(f,"P6\n320 224\n255\n");

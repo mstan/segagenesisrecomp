@@ -28,6 +28,10 @@ void cmd_server_send_frame_result(int frames_run);
 
 /* Record per-frame state into the history ring buffer. Call after each frame. */
 void cmd_server_record_frame(uint32_t frame_num);
+/* Always-recorded host phase timings when the debug ring is enabled.
+ * input, machine, chip audio, bookkeeping, device audio, persistence, present,
+ * VBlank bookkeeping (including any explicitly requested legacy frame log). */
+void cmd_server_record_timing(uint32_t frame_num, const uint32_t us[8]);
 
 /* Tick FM trace (check frame limit). Call once per frame. */
 void cmd_server_fm_trace_tick(void);

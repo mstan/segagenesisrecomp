@@ -1,4 +1,5 @@
 #pragma once
+int s2_resources_prepare_stage_images(const unsigned char *rom,unsigned size);
 #include "sonic2_donor_assets.h"
 #include "sonic2_save_assets.h"
 enum { S2_RESOURCE_AMY, S2_RESOURCE_SK, S2_RESOURCE_COUNT };

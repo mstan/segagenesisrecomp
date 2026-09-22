@@ -1,4 +1,6 @@
 #pragma once
+#include "sonic2_state_io.h"
+void s2_save_menu_state(S2StateIO *io);
 #include <stdint.h>
 void s2_save_menu_load(const char *settings_path);
 int s2_save_menu_hook(uint32_t pc);

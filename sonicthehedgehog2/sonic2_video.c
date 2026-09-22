@@ -193,6 +193,24 @@ typedef struct { unsigned address; uint16_t x, y; uint8_t id, subtype, state, lo
 static Placement s_placements[SCENE_PLACEMENTS];
 static unsigned s_placement_count, s_placement_base;
 static int s_loader_active;
+void s2_video_state(S2StateIO *io)
+{
+    /* SceneFrame is pointer-free. Preserve the published frame history and
+     * expanded object-loader ownership; scanline scratch is rebuilt at y=0. */
+    struct { int mode,width; double ratio; } config={s_mode,s_requested_width,s_ratio},saved=config;
+    if (io->mode) {
+        if (io->pos>io->size || sizeof saved>io->size-io->pos) { io->ok=0; return; }
+        memcpy(&saved,io->data+io->pos,sizeof saved);
+        if (saved.mode!=config.mode || saved.ratio!=config.ratio) io->ok=0;
+    }
+    S2_STATE(io,saved);
+    S2_STATE(io,s_build); S2_STATE(io,s_history); S2_STATE(io,s_display_frame);
+    int display=s_display!=NULL; S2_STATE(io,display);
+    S2_STATE(io,s_serial); S2_STATE(io,s_scene_tick);
+    S2_STATE(io,s_placements); S2_STATE(io,s_placement_count); S2_STATE(io,s_placement_base);
+    S2_STATE(io,s_loader_active); S2_STATE(io,s_visible_objects); S2_STATE(io,s_visible_count);
+    if (io->mode==2) s_display=display?&s_display_frame:NULL;
+}
 
 static uint8_t scene_read8(unsigned a)
 {

@@ -1,4 +1,5 @@
 #include "sonic2_save_assets.h"
+#include "sonic2_campaign.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +25,7 @@ static unsigned kbit(Kos *k)
     if (!--k->bits) { unsigned lo=byte(k),hi=byte(k); k->desc=lo|(hi<<8); k->bits=16; }
     return v;
 }
-static int kosinski(const uint8_t *src,size_t size,uint8_t *out,size_t cap)
+static int kosinski_size(const uint8_t *src,size_t size,uint8_t *out,size_t cap)
 {
     if (size<2) return 0;
     Kos k={src,size,2,(unsigned)src[0]|((unsigned)src[1]<<8),16,0}; size_t n=0;
@@ -35,7 +36,7 @@ static int kosinski(const uint8_t *src,size_t size,uint8_t *out,size_t cap)
             unsigned lo=byte(&k),hi=byte(&k); distance=(int)((hi&248)*32+lo)-8192; count=hi&7;
             if (!count) {
                 count=byte(&k);
-                if (!count) return !k.bad && n==cap;
+                if (!count) return k.bad?0:(int)n;
                 if (count==1) continue;
                 ++count;
             } else count+=2;
@@ -46,6 +47,140 @@ static int kosinski(const uint8_t *src,size_t size,uint8_t *out,size_t cap)
         while (count--) { out[n]=out[n+distance]; ++n; }
     }
     return 0;
+}
+static int kosinski(const uint8_t *src,size_t size,uint8_t *out,size_t cap)
+{ return kosinski_size(src,size,out,cap)==(int)cap; }
+
+typedef struct StageArt {
+    /* ARZ's source deliberately includes $320 blocks, exceeding the native
+     * $300-block table with empty padding (s2.asm BM16_ARZ comment). */
+    uint8_t tiles[65536],blocks[0x2000],chunks[0x8000],layout[0x1000];
+    uint16_t palette[64];
+} StageArt;
+static int nemesis(const uint8_t *p,size_t size,uint8_t *out,size_t cap);
+static int stage_tornado(const uint8_t *r,StageArt *a,uint16_t *pixels)
+{
+    /* ObjB2 frame 0, ArtNem_Tornado, and its source-selected Tails pilot $10.
+     * A 2:1 icon is intentional: a terrain-only Sky Chase card is empty sky. */
+    if (!nemesis(r+0x8CC44,0x100000-0x8CC44,a->tiles+0xA000,0x6000)) return 0;
+    unsigned dp=0x7446C+be16(r+0x7446C+0x10*2),dest=0x7A0*32;
+    if (dp>0xFFFFE) return 0;
+    unsigned cues=be16(r+dp); dp+=2;
+    if (cues>64 || dp+cues*2>0x100000) return 0;
+    while (cues--) {
+        unsigned code=be16(r+dp),bytes=((code>>12)+1)*32,source=0x64320+(code&4095)*32; dp+=2;
+        if (source>0x100000-bytes || dest>65536-bytes) return 0;
+        memcpy(a->tiles+dest,r+source,bytes); dest+=bytes;
+    }
+    unsigned map=0x3AFF2+be16(r+0x3AFF2),count=be16(r+map); map+=2;
+    if (count>20 || map+count*8>0x100000) return 0;
+    for (int i=(int)count-1;i>=0;--i) {
+        const uint8_t *p=r+map+i*8;
+        int x=(int16_t)be16(p+6),y=(int8_t)p[0];
+        unsigned w=(((p[1]>>2)&3)+1)*8,h=((p[1]&3)+1)*8,tile=be16(p+2)+0x500;
+        for (unsigned py=0;py<h;py+=2) for (unsigned px=0;px<w;px+=2) {
+            int dx=58+(x+(int)px)/2,dy=24+(y+(int)py)/2;
+            if (dx<0 || dx>=80 || dy<0 || dy>=56) continue;
+            unsigned sx=tile&0x800?w-1-px:px,sy=tile&0x1000?h-1-py:py;
+            unsigned t=(tile&2047)+(sx/8)*(h/8)+sy/8;
+            if (t>=2048) return 0;
+            unsigned ink=(a->tiles[t*32+(sy&7)*4+(sx&7)/2]>>((sx&1)?0:4))&15;
+            if (ink) pixels[dy*80+dx]=a->palette[((tile>>13)&3)*16+ink];
+        }
+    }
+    return 1;
+}
+static int stage_kos(const uint8_t *rom,unsigned at,uint8_t *out,size_t cap)
+{
+    int ok=at<0x100000 && kosinski_size(rom+at,0x100000-at,out,cap)>0;
+    if (!ok) fprintf(stderr,"[NOTE] Stage art decode at $%06X exceeds %zu-byte destination or has invalid data.\n",at,cap);
+    return ok;
+}
+static unsigned stage_pixel(const StageArt *a,unsigned x,unsigned y,unsigned plane)
+{
+    if (x>=16384) return 0;
+    unsigned chunk=a->layout[((y>>7)&15)*256+(plane?128:0)+(x>>7)];
+    unsigned block=be16(a->chunks+chunk*128+(y&112)+(x&112)/8);
+    unsigned tx=((x>>3)&1)^((block>>10)&1),ty=((y>>3)&1)^((block>>11)&1);
+    unsigned at=(block&1023)*8+(ty*2+tx)*2;
+    if (at+1>=sizeof a->blocks) return 0;
+    unsigned t=be16(a->blocks+at)^((block&0xC00)<<1);
+    tx=(x&7)^((t&0x800)?7:0); ty=(y&7)^((t&0x1000)?7:0);
+    unsigned p=(a->tiles[(t&2047)*32+ty*4+tx/2]>>((tx&1)?0:4))&15;
+    return p?((t>>13)&3)*16+p:0;
+}
+int s2_stage_images_decode(const uint8_t *r,size_t size,S2SaveAssets *assets)
+{
+    if (!r || size!=0x100000 || !assets) return 0;
+    if (assets->stages_ready) return 1;
+    StageArt *a=malloc(sizeof *a); if (!a) return 0;
+    int ok=1;
+    /* REV01 source ledger: LevelArtPointers $42594, Off_Level $45A80,
+     * StartLocations $C1D0, PalPointers $2782, LoadZoneTiles $4E90.
+     * No ROM instructions execute and no live machine state is touched. */
+    static const unsigned animations[17]={0x3FF94,0,0,0,0x3FFF8,0x3FFF8,0,0x40038,0,0,
+        0x400C8,0,0x4010E,0x401B2,0x401C4,0x401D6,0};
+    for (unsigned stage=0;stage<S2_CAMPAIGN_STAGES && ok;++stage) {
+        memset(a,0,sizeof *a);
+        unsigned id=s2_campaign_stages[stage].native_id,zone=id>>8,act=id&1;
+        unsigned table=0x42594+zone*12,tiles=be32(r+table)&0xFFFFFF;
+        unsigned blocks=be32(r+table+4)&0xFFFFFF,chunks=be32(r+table+8)&0xFFFFFF;
+        unsigned layout=0x45A80+be16(r+0x45A80+zone*4+act*2);
+        ok=stage_kos(r,tiles,a->tiles,sizeof a->tiles) && stage_kos(r,blocks,a->blocks,sizeof a->blocks) &&
+            stage_kos(r,chunks,a->chunks,sizeof a->chunks) && stage_kos(r,layout,a->layout,sizeof a->layout);
+        if (zone==7) ok=ok && stage_kos(r,0x985A4,a->blocks+0x980,sizeof a->blocks-0x980) &&
+            stage_kos(r,0x98AB4,a->tiles+0x1FC*32,sizeof a->tiles-0x1FC*32);
+        if (zone==6) ok=ok && stage_kos(r,0xC7EC4,a->tiles+0x307*32,sizeof a->tiles-0x307*32);
+        unsigned palette=be32(r+0x2782+r[table+8]*8);
+        if (palette>size-96) { ok=0; break; }
+        for (unsigned p=0;p<48;++p) a->palette[16+p]=(uint16_t)be16(r+palette+p*2);
+        for (unsigned p=0;p<16;++p) a->palette[p]=(uint16_t)be16(r+0x29E2+p*2);
+        /* Dynamic_Normal: use the first frame of each source animation script. */
+        unsigned script=animations[zone];
+        if (script) {
+            unsigned count=be16(r+script)+1; script+=2;
+            if (count>16) { ok=0; break; }
+            while (count-- && ok) {
+                if (script>size-10) { ok=0; break; }
+                unsigned source=(be32(r+script)&0xFFFFFF)+r[script+8]*32;
+                unsigned dest=be16(r+script+4),bytes=r[script+7]*32;
+                if (source>size || bytes>size-source || dest>65536-bytes) { ok=0; break; }
+                memcpy(a->tiles+dest,r+source,bytes);
+                unsigned frames=r[script+6]*(r[script]&128?2:1);
+                script+=8+((frames+1)&~1u);
+            }
+        }
+        unsigned start=0xC1D0+zone*8+act*4;
+        unsigned sx=be16(r+start),sy=be16(r+start+2);
+        unsigned left=sx>128?sx-128:0,top=sy>96?sy-96:0;
+        /* Thumbnail framing uses the native camera bias and InitCam_* BG
+         * transforms. The preview is a static 320x224 view sampled at 4:1. */
+        int bg_top=0;
+        if (zone==4 || zone==5 || zone==13) bg_top=(int)top/4;
+        if (zone==10) bg_top=(int)top/8+0x50;
+        if (zone==11) bg_top=act?(int)top/6-0x10:(int)top/3-0x140;
+        if (zone==15) bg_top=act?((int)top-0xE0)/2:(int)top-0x180;
+        if (zone==14) bg_top=(int)top;
+        if (zone==16) top=0;
+        if (zone==6) {
+            /* The start is an airborne Tornado approach. Frame the first
+             * actual ship chunk, discovered from the stock layout itself. */
+            unsigned best=~0u;
+            for (unsigned cy=0;cy<16;++cy) for (unsigned cx=0;cx<128;++cx) {
+                if (!a->layout[cy*256+cx]) continue;
+                unsigned d=(unsigned)abs((int)(cx*128)-(int)sx)+(unsigned)abs((int)(cy*128)-(int)sy);
+                if (d<best) { best=d; left=cx*128; top=cy*128; }
+            }
+            bg_top=(int)top;
+        }
+        for (unsigned y=0;y<56;++y) for (unsigned x=0;x<80;++x) {
+            unsigned p=stage_pixel(a,left+x*4,top+y*4,0);
+            if (!p) p=stage_pixel(a,x*4,(unsigned)(bg_top+(int)y*4),1);
+            assets->stages[stage][y*80+x]=a->palette[p?p:32];
+        }
+        if (zone==16) ok=ok && stage_tornado(r,a,assets->stages[stage]);
+    }
+    free(a); assets->stages_ready=ok; return ok;
 }
 static unsigned literal(Bits *b,unsigned flags,unsigned width)
 {

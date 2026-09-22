@@ -207,6 +207,13 @@ void audio_set_playback_enabled(int enabled)
     if (enabled)
         SDL_PauseAudioDevice(s_dev, 0);
 }
+void audio_discard_playback(void)
+{
+    if (!s_dev) return;
+    SDL_LockAudioDevice(s_dev);
+    rab_reset(&s_bridge); s_prev_underruns=0; s_last_flush_pc=0;
+    SDL_UnlockAudioDevice(s_dev);
+}
 
 void audio_flush(uint32_t wall_frame, int realtime,
                  const int16_t *fm_buf,  size_t fm_frames,

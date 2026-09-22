@@ -335,6 +335,12 @@ void cmd_server_mem_write_log_tick(void)
 #include "sonic_extras.h"
 
 static FrameRecord s_frame_history[FRAME_HISTORY_CAP];
+static uint32_t s_frame_timing[FRAME_HISTORY_CAP][9],s_timing_count;
+void cmd_server_record_timing(uint32_t frame_num,const uint32_t us[8])
+{
+    uint32_t *row=s_frame_timing[s_timing_count++%FRAME_HISTORY_CAP];
+    row[0]=frame_num; memcpy(row+1,us,8*sizeof *us);
+}
 static uint32_t s_history_count = 0;  /* total frames recorded */
 
 /* Watchpoints */
@@ -1270,6 +1276,17 @@ static void json_game_data(JBuf *j, const uint8_t *gd)
 }
 
 /* ---------- get_frame ---------- */
+static void handle_frame_performance(int id)
+{
+    JBuf j; jb_init(&j);
+    jb_printf(&j,"{\"id\":%d,\"ok\":true,\"columns\":[\"frame\",\"input_us\",\"machine_us\",\"chips_us\",\"bookkeeping_us\",\"device_us\",\"persistence_us\",\"present_us\",\"vblank_us\"],\"rows\":[",id);
+    unsigned first=s_timing_count>FRAME_HISTORY_CAP?s_timing_count-FRAME_HISTORY_CAP:0;
+    for (unsigned i=first;i<s_timing_count;++i) {
+        const uint32_t *r=s_frame_timing[i%FRAME_HISTORY_CAP];
+        jb_printf(&j,"%s[%u,%u,%u,%u,%u,%u,%u,%u,%u]",i==first?"":",",r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8]);
+    }
+    jb_printf(&j,"]}"); cmd_send_response(j.buf); jb_free(&j);
+}
 
 static void handle_get_frame(int id, const char *json)
 {
@@ -2224,6 +2241,8 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
     } else if (strcmp(cmd, "read_joypad_port") == 0) {
         handle_read_joypad_port(id);
     /* ---- Phase 4: full ring-buffer queries + live snapshots ---- */
+    } else if (strcmp(cmd, "frame_performance") == 0) {
+        handle_frame_performance(id);
     } else if (strcmp(cmd, "get_frame") == 0) {
         handle_get_frame(id, json);
     } else if (strcmp(cmd, "frame_timeseries") == 0) {

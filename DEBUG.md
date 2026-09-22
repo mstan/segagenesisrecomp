@@ -68,9 +68,18 @@ Reference for probe authors. All commands take a JSON request like
 ### Frame ring (Tier-2 frame)
 - `get_frame <frame_idx>` — single-frame snapshot.
 - `frame_info` — current frame index + ring health.
+- `frame_performance` — last 600 frames of host phase durations in microseconds,
+  with named columns for input, simulation, chip audio, bookkeeping, device
+  audio, persistence, presentation and VBlank bookkeeping. Recorded alongside
+  the debug ring in trace builds; query retrospectively without arming a probe.
 - `frame_range <lo> <hi>` — bulk-fetch a range.
 - `frame_timeseries <field> <lo> <hi>` — extract one field across frames
   (e.g., Vint_runcount per wall frame).
+
+The legacy synchronous frame text stream is off by default. Set
+`GENESIS_FRAME_LOG=<output path>` before launch only when that old format is
+specifically needed. Its per-frame flush can itself stall gameplay on a busy
+disk; use the retrospective rings for normal diagnosis.
 
 ### Tier-1 reverse-debug ring
 - `rdb_range <addr_lo> <addr_hi>` — set capture filter (legacy; the ring

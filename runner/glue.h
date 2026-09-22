@@ -64,6 +64,8 @@ extern GluePacingMode g_pacing_mode;
  * 1-VBla-per-wall-frame invariant holds. Also resets the per-wall-frame
  * fired latch either way. */
 void glue_end_of_wall_frame(void);
+void glue_state_boundary_request(int requested);
+int glue_state_boundary_ready(void);
 
 #if SONIC_REVERSE_DEBUG
 /* Tier-2 reverse debugger: yield the game fiber for a breakpoint /

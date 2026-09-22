@@ -28,6 +28,7 @@ CmdResult cmd_server_poll(void) {
 }
 void cmd_server_send_frame_result(int frames_run) { (void)frames_run; }
 void cmd_server_record_frame(uint32_t frame_num) { (void)frame_num; }
+void cmd_server_record_timing(uint32_t frame_num, const uint32_t us[8]) { (void)frame_num; (void)us; }
 void cmd_server_fm_trace_tick(void) {}
 void cmd_server_mem_write_log_tick(void) {}
 int cmd_server_mem_write_log_start(const uint32_t *addrs, int n_addrs,

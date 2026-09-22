@@ -46,7 +46,10 @@ int main(int argc, char **argv)
     S2CampaignData d={0}, decoded={0};
     assert(s2_campaign_valid(&d)); assert(!s2_campaign_new(&d,8));
     assert(s2_campaign_new(&d,0)); assert(!s2_campaign_new(&d,0));
+    assert(d.slots[0].lives==3 && !d.slots[0].continues);
+    d.slots[0].lives=27; d.slots[0].continues=14;
     assert(!s2_campaign_select_zone(&d.slots[0],10));
+    assert(!s2_campaign_select_stage(&d.slots[0],1));
     assert(!s2_campaign_complete(&d.slots[0]));
     assert(!s2_campaign_advance(&d.slots[0],0xD00));
     assert(s2_campaign_collect(&d.slots[0],0x21));
@@ -56,6 +59,11 @@ int main(int argc, char **argv)
     for (unsigned i=1;i<S2_CAMPAIGN_STAGES;++i) assert(s2_campaign_advance(&d.slots[0],expected[i]));
     assert(!s2_campaign_advance(&d.slots[0],0));
     assert(s2_campaign_complete(&d.slots[0]));
+    for (unsigned stage=0;stage<S2_CAMPAIGN_STAGES;++stage) {
+        assert(s2_campaign_select_stage(&d.slots[0],stage));
+        assert(d.slots[0].stage==stage && d.slots[0].state==S2_SAVE_COMPLETE);
+    }
+    assert(!s2_campaign_select_stage(&d.slots[0],S2_CAMPAIGN_STAGES));
     for (unsigned z=0;z<11;++z) {
         assert(s2_campaign_select_zone(&d.slots[0],z));
         assert(s2_campaign_stages[d.slots[0].stage].act==1);
@@ -78,11 +86,25 @@ int main(int argc, char **argv)
         assert(!memcmp(&d,&decoded,sizeof d) && seq==27 && *error);
     }
     assert(!s2_campaign_decode(bytes,sizeof bytes-1,&decoded,&seq,error,sizeof error));
-    const unsigned invalid_offsets[]={64,65,66,67,56};
+    const unsigned invalid_offsets[]={64,65,66,69,56};
     for (unsigned i=0;i<sizeof invalid_offsets/sizeof *invalid_offsets;++i) {
         memcpy(changed,bytes,sizeof bytes); changed[invalid_offsets[i]]=255; repair_crc(changed);
         assert(!s2_campaign_decode(changed,sizeof changed,&decoded,&seq,error,sizeof error));
     }
+    /* Version 1 migration supplies 3/0 for occupied slots only and does not
+     * alter the source bytes. Version 2 preserves the full byte counters. */
+    memcpy(changed,bytes,sizeof bytes); changed[11]=1;
+    for (unsigned i=0;i<8;++i) memset(changed+67+i*8,0,5);
+    repair_crc(changed);
+    assert(s2_campaign_decode(changed,sizeof changed,&decoded,&seq,error,sizeof error));
+    assert(decoded.slots[0].lives==3 && !decoded.slots[0].continues);
+    assert(!decoded.slots[1].lives && !decoded.slots[1].continues);
+    assert(changed[67]==0 && changed[11]==1);
+    changed[67]=1; repair_crc(changed);
+    assert(!s2_campaign_decode(changed,sizeof changed,&decoded,&seq,error,sizeof error));
+    memcpy(changed,bytes,sizeof bytes); changed[67]=255; changed[68]=255; repair_crc(changed);
+    assert(s2_campaign_decode(changed,sizeof changed,&decoded,&seq,error,sizeof error));
+    assert(decoded.slots[0].lives==255 && decoded.slots[0].continues==255);
     char dir[80], path[128], backup[140];
 #ifdef _WIN32
     snprintf(dir,sizeof dir,"campaign-test-%lu-%llu",(unsigned long)GetCurrentProcessId(),(unsigned long long)GetTickCount64());
@@ -131,7 +153,7 @@ int main(int argc, char **argv)
     assert(s2_campaign_open(&reopened,path) && reopened.recovered && reopened.read_only);
     assert(!remove(backup));
     /* Future version and foreign ROM are never silently initialized. */
-    assert(s2_campaign_encode(&d,30,bytes)); bytes[11]=2; repair_crc(bytes);
+    assert(s2_campaign_encode(&d,30,bytes)); bytes[11]=3; repair_crc(bytes);
     write_bytes(path,bytes,sizeof bytes);
     assert(!s2_campaign_open(&reopened,path) && reopened.read_only);
     assert(!s2_campaign_commit(&reopened,&d));

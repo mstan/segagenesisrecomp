@@ -262,10 +262,18 @@ typedef struct RuntimeUiContext {
     int view_mode;
 } RuntimeUiContext;
 static RuntimeUiContext s_runtime_ui;
+static int s_quickstate_slot=1;
+int runner_save_state_file(const char *path);
+int runner_load_state_file(const char *path);
 static const char *const s_mod_aspects[]={"Adaptive","16:9","21:9","32:9"};
 static const RecompRuntimeUiItem s_video_mod_items[]={
     {"mods.widescreen.enabled","Mods","Widescreen","Opt-in custom scene renderer with expanded objects and screen-anchored HUD.",RECOMP_RUNTIME_UI_BOOL,0,1,1},
     {"mods.widescreen.aspect","Mods","Aspect ratio","Adaptive follows the whole window without a 32:9 cap.",RECOMP_RUNTIME_UI_CHOICE,0,3,1,s_mod_aspects,4}
+};
+static const RecompRuntimeUiItem s_quickstate_items[]={
+    {"states.slot","Save states","Slot","Separate from campaign files. Shift+F1..F9 saves; F1..F9 loads.",RECOMP_RUNTIME_UI_INT,1,9,1},
+    {"states.save","Save states","Save state","Capture the next completed gameplay tick in this slot (overwrites its previous quickstate).",RECOMP_RUNTIME_UI_ACTION},
+    {"states.load","Save states","Load state","Restore this build's quickstate. Character/mod/video setup must match. Unsaved gameplay is replaced.",RECOMP_RUNTIME_UI_ACTION}
 };
 static int runtime_ui_get(void *p, const RecompRuntimeUiItem *i, int *out) {
     RuntimeUiContext *c = (RuntimeUiContext *)p;
@@ -276,10 +284,12 @@ static int runtime_ui_get(void *p, const RecompRuntimeUiItem *i, int *out) {
     else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VOLUME)) *out = g_app_config.volume;
     else if (!strcmp(i->key,"mods.widescreen.enabled")) *out = g_game_spec.video && g_game_spec.video->enabled();
     else if (!strcmp(i->key,"mods.widescreen.aspect")) *out = g_app_config.custom_aspect;
+    else if (!strcmp(i->key,"states.slot")) *out = s_quickstate_slot;
     else return 0; return 1;
 }
 static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
     RuntimeUiContext *c = (RuntimeUiContext *)p;
+    if (!strcmp(i->key,"states.slot")) { if (v<1 || v>9) return 0; s_quickstate_slot=v; return 1; }
     if (!strncmp(i->key,"mods.widescreen.",16)) {
 #if GENESIS_HAS_RECOMP_NET
         if(genesis_netplay_active())return 0;
@@ -317,6 +327,12 @@ static void runtime_ui_save(void *p) {
 static int runtime_ui_action(void *p, const RecompRuntimeUiItem *i) {
     RuntimeUiContext *c = (RuntimeUiContext *)p;
     if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_RESUME)) { recomp_runtime_ui_close(c->ui); return 1; }
+    if (g_game_spec.state_size && (!strcmp(i->key,"states.save") || !strcmp(i->key,"states.load"))) {
+        char path[32]; snprintf(path,sizeof path,"native_save_%d.bin",s_quickstate_slot);
+        int ok=!strcmp(i->key,"states.save")?runner_save_state_file(path):runner_load_state_file(path);
+        if (ok) recomp_runtime_ui_close(c->ui);
+        return ok;
+    }
     return 0;
 }
 static int runtime_ui_key(SDL_Keycode k) {
@@ -999,6 +1015,7 @@ static const char *resolve_runner_path(const char *path, char *buf, size_t buf_l
  * layout (superzazu z80 embedded in g_machine, no side ext blob); GROWNS1
  * saves are rejected with a clear message rather than misloaded. */
 static const char OWN_SAVE_MAGIC[8] = "GROWNS2\0";
+#include "host_state.h"
 
 int runner_save_state_file(const char *path)
 {
@@ -1006,6 +1023,7 @@ int runner_save_state_file(const char *path)
     if (reason) { fprintf(stderr,"[SAVE] unavailable: %s\n",reason); return 0; }
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
+    if (g_game_spec.state_size) return host_state_save(resolved);
     FILE *sf = fopen(resolved, "wb");
     if (!sf) {
         fprintf(stderr, "[SAVE] failed to open %s\n", resolved);
@@ -1035,6 +1053,7 @@ int runner_load_state_file(const char *path)
     if (reason) { fprintf(stderr,"[LOAD] unavailable: %s\n",reason); return 0; }
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
+    if (g_game_spec.state_size) return host_state_load(resolved);
     FILE *sf = fopen(resolved, "rb");
     if (!sf) {
         fprintf(stderr, "[LOAD] empty/missing %s\n", resolved);
@@ -2101,6 +2120,14 @@ int main(int argc, char *argv[])
             cfg.extra_items=s_video_mod_items;
             cfg.extra_item_count=sizeof s_video_mod_items/sizeof s_video_mod_items[0];
         }
+        if (g_game_spec.state_size) {
+            static RecompRuntimeUiItem items[5]; unsigned count=0;
+            if (g_game_spec.video) {
+                memcpy(items,s_video_mod_items,sizeof s_video_mod_items); count=2;
+            }
+            memcpy(items+count,s_quickstate_items,sizeof s_quickstate_items);
+            cfg.extra_items=items; cfg.extra_item_count=count+3;
+        }
         s_runtime_ui.ui = recomp_runtime_ui_create_standard(&cfg);
     }
 #endif
@@ -2312,6 +2339,13 @@ int main(int argc, char *argv[])
 
     while (running) {
         if (max_frames && frame_num >= max_frames) break;
+#if GEN_ENABLE_TRACE
+        Uint64 phase_start=SDL_GetPerformanceCounter();
+        uint32_t phase_us[8]={0};
+#define FRAME_PHASE(n) do { Uint64 now=SDL_GetPerformanceCounter(); phase_us[n]=(uint32_t)((now-phase_start)*1000000ull/SDL_GetPerformanceFrequency()); phase_start=now; } while (0)
+#else
+#define FRAME_PHASE(n) ((void)0)
+#endif
 
         /* Poll TCP debug server */
         CmdResult cmd_cr = {0};
@@ -2474,6 +2508,7 @@ int main(int argc, char *argv[])
         }
 #endif
 
+        FRAME_PHASE(0);
         /* Zero accum buffers before Iterate(): PSG_Update (and FM_OutputSamples)
          * use += to accumulate into the provided buffer, not overwrite.
          * Without this, each frame adds to the previous frame's leftovers,
@@ -2539,6 +2574,7 @@ int main(int argc, char *argv[])
             g_snd_vint = (unsigned long)m68k_read32(0xFFFE0C); }
           widescreen_update_for_frame();   /* set VDP margin + game RAM word */
           machine_run_frame(own_scanline_sink, NULL);
+          FRAME_PHASE(1);
           s_screen_width  = s_custom_width ? s_custom_width : gvdp_active_width(&g_machine.vdp);
           /* Output height doubles in interlace mode 2 (S2 2P split-screen);
            * the existing interlace display modes (tv squash / raw) take over
@@ -2581,7 +2617,9 @@ int main(int argc, char *argv[])
           rdb_park_drain();
           if (s_quit_via_park_drain) { running = 0; break; }
 #endif
+          FRAME_PHASE(2);
           glue_service_vblank();
+          FRAME_PHASE(7);
           glue_end_of_wall_frame();
 #ifdef GENESIS_COSIM
           /* Differential co-sim FRAME checkpoint. Own-backend: master_cycle is the
@@ -2688,6 +2726,7 @@ int main(int argc, char *argv[])
             if (s_debug_enabled) cmd_server_send_frame_result(cmd_cr.run_extra_frames);
         }
 
+        FRAME_PHASE(3);
         /* audio_flush is normally gated off in turbo (no SDL playback), but
          * WAV capture lives inside audio_flush — keep flushing while a WAV
          * is being recorded so --wav works with --turbo for headless
@@ -2698,6 +2737,7 @@ int main(int argc, char *argv[])
                         (const int16_t *)s_fm_accum, s_fm_count,
                         (const int16_t *)s_psg_accum, s_psg_count); }
 
+        FRAME_PHASE(4);
         /* Audio queue drift monitor — log every 300 frames (~5 seconds) */
         if (s_debug_enabled && !turbo && (frame_num % 300) == 0 && frame_num > 0) {
             Uint32 qb = audio_queued_bytes();
@@ -2709,6 +2749,8 @@ int main(int argc, char *argv[])
         }
 
         frame_num++;
+
+        if (g_game_spec.state_size) host_state_tick();
 
         /* Tick the input script (if loaded). RAM read helpers route
          * through clownmdemu's main RAM via emu_read8/16 — same
@@ -2779,6 +2821,7 @@ int main(int argc, char *argv[])
         if (!benchmark_frames)
             runner_sram_autosave_tick(frame_num);
 
+        FRAME_PHASE(5);
         /* Upload framebuffer to GPU texture. When a present-time color model
          * is enabled, transform a COPY into s_present_buf and upload that —
          * s_framebuf (the verified/hashed raw VDP output) is never modified. */
@@ -2866,6 +2909,11 @@ int main(int argc, char *argv[])
 #endif
         SDL_RenderPresent(renderer);
         }
+        FRAME_PHASE(6);
+#if GEN_ENABLE_TRACE
+        if (s_debug_enabled) cmd_server_record_timing(frame_num-1,phase_us);
+#endif
+#undef FRAME_PHASE
 
 #if GENESIS_HAS_RECOMP_NET
         /* Confirmation normally arrived during vsync. The top-of-loop barrier

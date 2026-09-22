@@ -8,6 +8,8 @@
 static S2DonorBank banks[S2_RESOURCE_COUNT];
 static int owner_verified[S2_RESOURCE_COUNT];
 static S2SaveAssets *save_assets;
+int s2_resources_prepare_stage_images(const unsigned char *rom,unsigned size)
+{ return s2_stage_images_decode(rom,size,save_assets); }
 static char errors[S2_RESOURCE_COUNT][192];
 static const char *hashes[S2_RESOURCE_COUNT] = {
     "9c028944730128f6b9999fc74babf69694b0edab50e3f42cc6b60a185d0b1457",

@@ -5,6 +5,9 @@
 #include "sonic2_resources.h"
 #include "sonic2_character.h"
 #include "sonic2_video.h"
+#include "sonic2_state_io.h"
+#include "sonic2_save_menu.h"
+#include "audio/event_queue.h"
 #include "video/genesis_vdp.h"
 #include "video/genesis_dac.h"
 #include "genesis_runtime.h"
@@ -114,8 +117,10 @@ static int vanilla(void)
 }
 const char *s2_runtime_state_unavailable_reason(void)
 {
-    if (s2_party.save_menu_enabled) return "Campaign save sessions are not serialized by machine quickstates; load a campaign file from Data Select.";
-    return vanilla()?NULL:"Experimental party controllers are not serialized by machine quickstates; use a fresh native game.";
+#if GENESIS_HAS_RECOMP_NET
+    if (genesis_netplay_active()) return "Quickstates are local-only; disconnect netplay first.";
+#endif
+    return NULL;
 }
 static int level(void) { return active && ((g_ram[0xF600]&0x7F)==12); }
 static unsigned native_id(unsigned p)
@@ -146,21 +151,23 @@ static void companion_control(unsigned p, unsigned o)
     /* Preserve the party's explicit controller ownership; the CPU must not
      * take over an idle connected controller after the stock ten seconds. */
     if (human) putword(0xF702,600);
-    uint16_t index=word(0xEED2),frame=word(0xFE04),record_x=0;
+    uint16_t index=word(0xEED2),record_x=0;
     unsigned record=0;
-    int varied=p>=2 && !human && word(0xF708)==6 && !g_ram[o+0x2A];
+    int varied=p>=2 && !human && word(0xF708)==6 && !g_ram[o+0x2A] &&
+        visible && !(g_ram[o+0x22]&0x2E);
     if (varied) {
-        /* Keep P2 authentic. P3/P4 react seven/thirteen frames later and use
-         * separate native jump-retry phases. Only normal following varies:
-         * waiting, flying, and the safe re-entry target stay native. */
-        unsigned delayed=(index&0xFF00)|((index-4*(p==2?7:13))&255);
-        putword(0xEED2,delayed);
-        putword(0xFE04,frame+(p==2?13:37));
-        unsigned at=(delayed-0x44)&255;
+        /* Retain native history timing, jump retries and acceleration. Only
+         * separate nearby grounded followers slightly; a lagging, airborne
+         * or recovering companion follows the exact native target. */
+        unsigned at=(index-0x44)&255;
         unsigned status=g_ram[0xE402+at];
-        if (!(status&0xDA)) { /* grounded terrain, not an object/water/respawn lock */
-            unsigned gap=(p==2?28:72)+(((frame>>8)*13+p*7)&7);
-            unsigned address=0xE500+at;
+        unsigned address=0xE500+at;
+        int dx=(int16_t)(word(address)-word(o+8));
+        int dy=(int16_t)(word(address+2)-word(o+12));
+        if (!(status&0xDA) && dx>-64 && dx<64 && dy>-16 && dy<16) {
+            /* Native following ignores errors below 16 pixels. Keep offsets
+             * just beyond that deadband so a rejoined actor can separate. */
+            unsigned gap=p==2?24:40;
             int target=word(address)+((status&1)?(int)gap:-(int)gap);
             if (target>=word(0xEEC8)+16 && target<=word(0xEECA)+288) {
                 record=address; record_x=word(record); putword(record,target);
@@ -170,20 +177,7 @@ static void companion_control(unsigned p, unsigned o)
     inside_companion_cpu=1;
     native_helper(0x1BAD4); /* TailsCPU_Control: delayed P1 history, safe flight */
     inside_companion_cpu=0;
-    if (varied) {
-        if (record) putword(record,record_x);
-        putword(0xEED2,index); putword(0xFE04,frame);
-        /* Briefly coast at distinct, repeatable intervals. Never discard a
-         * brake, jump, airborne steering, or input during object control. */
-        unsigned direction=g_ram[0xF66A]&12;
-        int inertia=(int16_t)word(o+0x14);
-        int driving=(direction==8 && inertia>0)||(direction==4 && inertia<0);
-        unsigned phase=(frame+(p==2?7:19))&31;
-        if (word(0xF708)==6 && !g_ram[o+0x2A] && !(g_ram[o+0x22]&0x2E) &&
-            !g_ram[o+0x39] && driving && phase<(p==2?1u:2u)) {
-            g_ram[0xF66A]&=~12; g_ram[0xF66B]&=~12;
-        }
-    }
+    if (record) putword(record,record_x);
     if (!human) {
         /* CPU ABC means an ordinary jump. Amy's A is a hammer and Knuckles'
          * repeated airborne jump is a glide, so never synthesize those moves. */
@@ -229,6 +223,84 @@ static void reserve_extras(void)
             }
         }
     }
+}
+static void runtime_state(S2StateIO *io)
+{
+    unsigned header[10]={1,g_ram[0xF600],s2_party.roster.slots,
+        0,0,0,0,(unsigned)s2_party.amy_enabled,(unsigned)s2_party.s3k_enabled,
+        (unsigned)s2_party.save_menu_enabled};
+    for (unsigned p=0;p<4;++p) header[3+p]=!strcmp(s2_party.roster.character[p],"none")?4:kind(p);
+    if (io->mode) {
+        unsigned saved[10];
+        if (!io->data || io->size<sizeof saved) { io->ok=0; return; }
+        memcpy(saved,io->data,sizeof saved);
+        if (saved[1]!=12 && saved[1]!=16) io->ok=0;
+        header[1]=saved[1];
+        if (memcmp(saved,header,sizeof saved)) io->ok=0;
+    }
+    S2_STATE(io,header); S2_STATE(io,active);
+    S2_STATE(io,previous_input); S2_STATE(io,displayed); S2_STATE(io,companion_cpu);
+    S2_STATE(io,characters); S2_STATE(io,physics); S2_STATE(io,objects);
+    S2_STATE(io,solid_flags); S2_STATE(io,solid_ids); S2_STATE(io,published_sprites);
+    s2_save_menu_state(io); s2_video_state(io);
+    size_t audio_size=audio_event_state_size();
+    if (io->data) {
+        if (io->pos>io->size || audio_size>io->size-io->pos) { io->ok=0; return; }
+        int ok=io->mode?audio_event_state_load(io->data+io->pos,audio_size,io->mode==2):
+            audio_event_state_save(io->data+io->pos,audio_size);
+        if (!ok) io->ok=0;
+    }
+    io->pos+=audio_size;
+}
+size_t s2_runtime_state_size(void)
+{ S2StateIO io={0}; runtime_state(&io); return io.pos; }
+int s2_runtime_state_at_boundary(void)
+{
+    unsigned sp=g_cpu.A[7]&65535,mode=g_ram[0xF600];
+    if (sp>65532 || inside_player || inside_solid || inside_companion_cpu) return 0;
+    unsigned caller=((unsigned)word(sp)<<16)|word(sp+2);
+    /* Byte-matched REV01 listing: Level_MainLoop, both half-pipe loops,
+     * and Pause_Loop. Fades/loading/results intentionally do not qualify. */
+    if (mode==12 && g_ram[0xF711]) return caller==0x436E || caller==0x13BC;
+    if (mode==16) return caller==0x5220 || caller==0x5268 || caller==0x13BC;
+    return 0;
+}
+int s2_runtime_state_save(void *data,size_t size)
+{
+    /* Host C stacks are not portable snapshots. Only established native
+     * per-frame gameplay loops have source-grounded resume entry points. */
+    unsigned mode=g_ram[0xF600];
+    if ((mode!=12 && mode!=16) || (mode==12 && !g_ram[0xF711]) ||
+        inside_player || inside_solid || inside_companion_cpu || size!=s2_runtime_state_size()) {
+        fprintf(stderr,"[SAVE] scene=%02X ready=%u player=%d solid=%d cpu=%d pc=%06X\n",
+            mode,g_ram[0xF711],inside_player,inside_solid,inside_companion_cpu,g_cpu.PC);
+        return 0;
+    }
+    S2StateIO io={data,size,0,0,1}; runtime_state(&io); return io.ok && io.pos==size;
+}
+int s2_runtime_state_load(const void *data,size_t size,int apply)
+{
+    if (size!=s2_runtime_state_size()) return 0;
+    S2StateIO io={(uint8_t *)data,size,0,1,1}; runtime_state(&io);
+    if (!io.ok || io.pos!=size) return 0;
+    /* Rebind ROM-derived art for a load in a fresh process. These immutable
+     * caches are not saved, nor can a state enable an unverified donor. */
+    for (unsigned p=0;p<4;++p) {
+        const S2Character *c=s2_character_find(s2_party.roster.character[p]);
+        if (c && !c->available()) return 0;
+        unsigned k=kind(p);
+        if (p<2 || k>=2 || native_banks[k].count) continue;
+        S2DonorLayout l=k==0?(S2DonorLayout){214,0x6FBE0,0x714E0,0x50000,0x29E2,8,0,0}:
+            (S2DonorLayout){139,0x739E2,0x7446C,0x64320,0x29E2,8,0,0};
+        char error[160];
+        if (!s2_donor_decode(g_rom,0x100000,&l,&native_banks[k],error,sizeof error)) return 0;
+    }
+    if (apply) {
+        io.pos=0; io.mode=2; runtime_state(&io);
+        inside_player=inside_solid=inside_companion_cpu=0; actor=-1;
+        gvdp_set_unlimited_sprites(active);
+    }
+    return io.ok;
 }
 static uint32_t solid_single(uint32_t pc)
 {

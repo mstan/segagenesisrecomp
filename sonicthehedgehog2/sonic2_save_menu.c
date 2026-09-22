@@ -13,7 +13,38 @@
 static const S2CampaignStore *store;
 static S2SaveView view;
 static int menu,menu_ready,exit_action,session=-1,dirty;
-static unsigned replay_zone;
+static unsigned replay_stage; /* S2_CAMPAIGN_STAGES is the unpicked CLEAR card. */
+void s2_save_menu_state(S2StateIO *io)
+{
+    /* Only the active campaign slot is rewound. The current path, writer
+     * baseline, protection flags and other seven slots are never restored
+     * from a quickstate. No filesystem writes happen during quickload. */
+    struct { int session; S2CampaignSlot slot; uint64_t path; } saved={0};
+    saved.session=session;
+    if (session>=0 && store) {
+        saved.slot=view.data.slots[session]; saved.path=14695981039346656037ull;
+        for (const unsigned char *p=(const unsigned char *)store->path;*p;++p)
+            saved.path=(saved.path^*p)*1099511628211ull;
+    }
+    uint64_t current_path=14695981039346656037ull;
+    if (store) for (const unsigned char *p=(const unsigned char *)store->path;*p;++p)
+        current_path=(current_path^*p)*1099511628211ull;
+    if (io->mode) {
+        if (io->pos>io->size || sizeof saved>io->size-io->pos) { io->ok=0; return; }
+        memcpy(&saved,io->data+io->pos,sizeof saved);
+        S2CampaignData test={0}; test.slots[0]=saved.slot;
+        if (saved.session < -1 || saved.session>=S2_SAVE_SLOTS || !s2_campaign_valid(&test) ||
+            (saved.session>=0 && (!s2_save_menu_enabled() || !store || !store->ready ||
+             store->read_only || saved.path!=current_path || !saved.slot.state))) io->ok=0;
+    }
+    S2_STATE(io,saved);
+    if (io->mode==2 && io->ok) {
+        session=saved.session; menu=menu_ready=exit_action=0;
+        view.data=store->data; view.read_only=store->read_only; view.notice=NULL;
+        dirty=session>=0;
+        if (session>=0) view.data.slots[session]=saved.slot;
+    }
+}
 static uint16_t word(unsigned a) { return (uint16_t)((g_ram[a]<<8)|g_ram[a+1]); }
 static void putword(unsigned a,unsigned v) { g_ram[a]=(uint8_t)(v>>8); g_ram[a+1]=(uint8_t)v; }
 int s2_save_menu_enabled(void)
@@ -36,6 +67,14 @@ static unsigned emeralds(void)
     for (unsigned i=0;i<7;++i) if (g_ram[0xFFB2+i]) mask|=1u<<i;
     return mask;
 }
+static void save_counters(void)
+{
+    if (session<0) return;
+    /* REV01 Life_count=$FE12, Continue_count=$FE18. These are captured with
+     * campaign progress, never flushed every frame or on companion respawn. */
+    view.data.slots[session].lives=g_ram[0xFE12];
+    view.data.slots[session].continues=g_ram[0xFE18];
+}
 static int flush(void)
 {
     if (!dirty) return 1;
@@ -55,17 +94,19 @@ static void save_transition(uint16_t destination)
     if (!campaign_mode(12)) return;
     S2CampaignSlot *slot=&view.data.slots[session];
     if (!s2_campaign_advance(slot,destination)) return;
-    s2_campaign_collect(slot,emeralds()); dirty=1; flush();
+    s2_campaign_collect(slot,emeralds()); save_counters(); dirty=1; flush();
 }
 static void begin_menu(void)
 {
+    if (!s2_resources_prepare_stage_images(g_rom,0x100000))
+        fprintf(stderr,"[NOTE] Sonic 2 stage thumbnail decoding failed.\n");
     menu=1; menu_ready=exit_action=0; session=-1;
     /* The launcher may have selected a different file after settings loaded. */
     if (!dirty) view.data=store->data;
     view.read_only=store->read_only;
     view.selection=1; view.scroll=0; view.frame=0; view.erase=view.confirm=0;
     view.cursor=144; view.delete_x=968; view.delete_frame=0;
-    replay_zone=view.data.slots[0].state?s2_campaign_stages[view.data.slots[0].stage].zone:0;
+    replay_stage=S2_CAMPAIGN_STAGES;
     if (!store->ready) view.notice="SAVE FILE INVALID   USE NO SAVE";
     else if (store->read_only) view.notice="SAVE FILE PROTECTED   NO SAVE OK";
     g_ram[0xF600]=0x24; /* Native MenuScreen initializes input/music/frame pacing. */
@@ -85,9 +126,15 @@ static void launch(void)
     for (unsigned i=0;i<7;++i) if (mask&(1u<<i)) g_ram[0xFFB2+i]=0xFF;
     while (next<7 && (mask&(1u<<next))) ++next;
     putword(0xFE16,(next%7)<<8);
-    /* TitleScreen already supplied native 3 lives / zero score, rings, timer,
-     * continues and extra-life thresholds before it entered this menu.
-     * The following native Level route owns object and party initialization. */
+    /* Keep the title's fresh score/rings/timer/thresholds. No Save retains its
+     * native 3/0 defaults; saved campaigns restore P1's checkpoint counters.
+     * A zero-life checkpoint is restarted with three lives, not a dead actor. */
+    if (session>=0) {
+        const S2CampaignSlot *slot=&view.data.slots[session];
+        g_ram[0xFE12]=slot->lives?slot->lives:3;
+        g_ram[0xFE18]=slot->continues;
+        g_ram[0xFE1C]=1; /* Update_HUD_lives */
+    }
     g_ram[0xF600]=12; menu=menu_ready=exit_action=0;
 }
 static int approach(int position,int target)
@@ -134,16 +181,15 @@ static void controls(void)
         if ((press&12)==4 && view.selection>(view.erase?1u:0u)) --view.selection;
         if ((press&12)==8 && view.selection<9) ++view.selection;
         if (old!=view.selection && view.selection>=1 && view.selection<=8) {
-            const S2CampaignSlot *s=&view.data.slots[view.selection-1];
-            replay_zone=s->state?s2_campaign_stages[s->stage].zone:0;
+            replay_stage=S2_CAMPAIGN_STAGES;
         }
         return;
     }
     if (!view.erase && view.selection>=1 && view.selection<=8) {
         S2CampaignSlot *s=&view.data.slots[view.selection-1];
         if (s->state==S2_SAVE_COMPLETE) {
-            if ((press&3)==1) replay_zone=(replay_zone+1)%S2_CAMPAIGN_ZONES;
-            if ((press&3)==2) replay_zone=(replay_zone+S2_CAMPAIGN_ZONES-1)%S2_CAMPAIGN_ZONES;
+            if ((press&3)==1) replay_stage=(replay_stage+1)%(S2_CAMPAIGN_STAGES+1);
+            if ((press&3)==2) replay_stage=(replay_stage+S2_CAMPAIGN_STAGES)%(S2_CAMPAIGN_STAGES+1);
         }
     }
     if (!(press&0xE0)) return;
@@ -160,8 +206,8 @@ static void controls(void)
     if (!view.data.slots[selected].state) {
         if (store->read_only) return;
         s2_campaign_new(&view.data,selected); dirty=1;
-    } else if (view.data.slots[selected].state==S2_SAVE_COMPLETE) {
-        s2_campaign_select_zone(&view.data.slots[selected],replay_zone);
+    } else if (view.data.slots[selected].state==S2_SAVE_COMPLETE && replay_stage<S2_CAMPAIGN_STAGES) {
+        s2_campaign_select_stage(&view.data.slots[selected],replay_stage);
         if (!store->read_only && memcmp(&before,&view.data,sizeof before)) dirty=1;
     }
     if (!store->read_only && !flush()) return;
@@ -184,12 +230,12 @@ int s2_save_menu_hook(uint32_t pc)
         return 0;
     case 0x36198: /* Emerald flags/count already committed; no destination write. */
         if (campaign_mode(16)) {
-            s2_campaign_collect(&view.data.slots[session],emeralds()); dirty=1; flush();
+            s2_campaign_collect(&view.data.slots[session],emeralds()); save_counters(); dirty=1; flush();
         }
         return 0;
     case 0x9C7C: /* Native EndingSequence, before any clear/reset. */
         if (campaign_mode(0x20) && s2_campaign_complete(&view.data.slots[session])) {
-            s2_campaign_collect(&view.data.slots[session],emeralds()); dirty=1; flush();
+            s2_campaign_collect(&view.data.slots[session],emeralds()); save_counters(); dirty=1; flush();
         }
         return 0;
     default: break;
@@ -209,13 +255,16 @@ int s2_save_menu_overlay(int line,uint32_t *out,int width)
 {
     if (!s2_save_menu_enabled()) return 0;
     if (!menu || !menu_ready || g_ram[0xF600]!=0x24) {
-        if (dirty && session>=0) s2_save_draw_notice(s2_resource_save_assets(),"CAMPAIGN SAVE FAILED",line,out,width);
+        /* A quickload dirties the checkpoint without attempting a disk write.
+         * Only a failed flush sets a notice; pending progress is not failure. */
+        if (dirty && view.notice && session>=0) s2_save_draw_notice(s2_resource_save_assets(),"CAMPAIGN SAVE FAILED",line,out,width);
         return 0;
     }
     S2SaveView display=view;
-    if (!view.erase && view.selection>=1 && view.selection<=8 &&
+    display.replay_selected=0;
+    if (!view.erase && replay_stage<S2_CAMPAIGN_STAGES && view.selection>=1 && view.selection<=8 &&
         display.data.slots[view.selection-1].state==S2_SAVE_COMPLETE)
-        s2_campaign_select_zone(&display.data.slots[view.selection-1],replay_zone);
+        display.replay_selected=s2_campaign_select_stage(&display.data.slots[view.selection-1],replay_stage);
     s2_save_draw_line(s2_resource_save_assets(),&display,line,out,width);
     return 1;
 }

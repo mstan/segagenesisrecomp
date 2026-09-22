@@ -146,6 +146,33 @@ halfpipe=(out/"halfpipe.bin").read_bytes()
 assert [halfpipe[0xB000],halfpipe[0xB040]]==[9,16]
 run(out,"post-clear-reload",MENU+START+["ASSERT_RAM8 FFFFB1 4","ASSERT_RAM8 FFFFB3 FF"])
 
+# Cleared files browse every act, including MTZ3's separate native zone ID.
+for name,direction,steps,native,expected in (
+    ('ehz-act-two','UP',2,0x0001,1),
+    ('cpz-act-two','UP',4,0x0D01,3),
+    ('metropolis-act-three','UP',17,0x0500,16),
+    ('wrap-last','DOWN',1,0x0E00,19),
+    ('wrap-first','UP',22,0x0000,0)):
+    out=setup(name); seed(out,state=2,stage=19,emeralds=0x7F)
+    browse=sum(([f'PRESS {direction} 2','WAIT 20'] for _ in range(steps)),[])
+    run(out,name,MENU+capture('clear-default')+browse+capture('selected')+START+[
+        f'ASSERT_RAM16 FFFE10 {native:04X}'])
+    assert read_save(out)[0]==(2,expected,0x7F)
+
+# Both native resource counters travel with the zone checkpoint. Version 1
+# loads 3/0; the first checkpoint upgrades to v2 with exact counter values.
+out=setup('lives-continues'); seed(out)
+before=save_path(out).read_bytes()
+run(out,'legacy-counters',MENU+START+['ASSERT_RAM8 FFFE12 03','ASSERT_RAM8 FFFE18 00'])
+assert save_path(out).read_bytes()==before, 'Opening a v1 file must not rewrite it'
+run(out,'counter-checkpoint',MENU+START+['WRITE_RAM8 FFFE12 0C','WRITE_RAM8 FFFE18 04']+
+    object(0xB800,0x3A,0x10)+['WAIT 400','ASSERT_RAM16 FFFE10 0001'])
+b=save_path(out).read_bytes()
+assert b[11]==2 and tuple(b[67:69])==(12,4)
+assert save_path(out).with_suffix('.sav.bak').read_bytes()==before
+run(out,'counter-reload',MENU+capture('counters')+START+[
+    'ASSERT_RAM8 FFFE12 0C','ASSERT_RAM8 FFFE18 04'])
+
 out=setup("delete")
 seed(out,emeralds=3)
 to_eighth=sum((["PRESS RIGHT 2","WAIT 20"] for _ in range(7)),[])

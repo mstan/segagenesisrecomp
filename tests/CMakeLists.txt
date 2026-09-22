@@ -32,6 +32,17 @@ else()
 endif()
 add_test(NAME sonic2_campaign COMMAND sonic2_campaign_test)
 
+add_executable(sonic2_save_draw_test runtime/sonic2_save_draw_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_save_draw.c")
+target_include_directories(sonic2_save_draw_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+if(MSVC)
+    target_compile_options(sonic2_save_draw_test PRIVATE /UNDEBUG)
+else()
+    target_compile_options(sonic2_save_draw_test PRIVATE -UNDEBUG)
+endif()
+add_test(NAME sonic2_save_draw COMMAND sonic2_save_draw_test)
+
 add_executable(sonic2_campaign_file_test runtime/sonic2_campaign_file_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign.c"
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog2/sonic2_campaign_store.c"
