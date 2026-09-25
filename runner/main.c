@@ -627,9 +627,6 @@ int runner_custom_video_set(const char *mode, int window_w, int window_h)
 static void widescreen_update_for_frame(void)
 {
     custom_video_prepare();
-    extern uint8_t  m68k_read8 (uint32_t);
-    extern uint16_t m68k_read16(uint32_t);
-    extern void     m68k_write16(uint32_t, uint16_t);
     extern int      g_ws_margin;   /* runtime widening signal (defined in glue.c) */
     int extra_px = 0;
     if (!s_custom_width && s_ws_user_on && g_game_layout.ws_capable) {
@@ -647,7 +644,7 @@ static void widescreen_update_for_frame(void)
             int n = g_game_layout.ws_eligible_mode_count
                 ? g_game_layout.ws_eligible_mode_count : g_game_layout.level_mode_count;
             if (n > 0) {
-                uint8_t mode = m68k_read8(g_game_layout.game_mode_addr);
+                uint8_t mode = glue_peek8(g_game_layout.game_mode_addr);
                 eligible = 0;
                 for (int i = 0; i < n; i++)
                     if (modes[i] == mode) { eligible = 1; break; }
@@ -656,11 +653,11 @@ static void widescreen_update_for_frame(void)
         /* Require the level to have actually started (excludes the title card /
          * act transitions that share the gameplay game-mode). */
         if (eligible && g_game_layout.ws_level_started_addr &&
-            m68k_read8(g_game_layout.ws_level_started_addr) == 0)
+            glue_peek8(g_game_layout.ws_level_started_addr) == 0)
             eligible = 0;
         /* Never widen 2-player split-screen. */
         if (eligible && g_game_layout.ws_two_player_addr &&
-            m68k_read16(g_game_layout.ws_two_player_addr) != 0)
+            glue_peek16(g_game_layout.ws_two_player_addr) != 0)
             eligible = 0;
 
         if (eligible) extra_px = cells * 8;
@@ -690,7 +687,7 @@ static void widescreen_update_for_frame(void)
      * (patched-disasm) recompiled 68K read. A ROM recompiled unmodified never
      * reads it; harmless to keep during the migration. */
     if (g_game_layout.ws_extra_ram_addr)
-        m68k_write16(g_game_layout.ws_extra_ram_addr, (uint16_t)extra_px);
+        glue_poke16(g_game_layout.ws_extra_ram_addr, (uint16_t)extra_px);
 
     /* On the frame widescreen first turns on (extra 0 -> nonzero), force one
      * full-screen tile redraw so the just-revealed side margins are filled.
@@ -699,8 +696,7 @@ static void widescreen_update_for_frame(void)
     {
         static int s_prev_ws_extra = 0;
         if (extra_px > 0 && s_prev_ws_extra == 0 && g_game_layout.ws_redraw_flag_addr) {
-            extern void m68k_write8(uint32_t, uint8_t);
-            m68k_write8(g_game_layout.ws_redraw_flag_addr, 1);
+            glue_poke8(g_game_layout.ws_redraw_flag_addr, 1);
         }
         s_prev_ws_extra = extra_px;
     }
@@ -1089,7 +1085,7 @@ int runner_load_state_file(const char *path)
         uint32_t resume_pc = g_game_spec.resume_main_loop_pc;
         if (g_game_spec.save_resume_pc && g_game_layout.game_mode_addr) {
             uint32_t pc = g_game_spec.save_resume_pc(
-                m68k_read8(g_game_layout.game_mode_addr));
+                glue_peek8(g_game_layout.game_mode_addr));
             if (pc) resume_pc = pc;
         }
         if (resume_pc)
@@ -2571,7 +2567,8 @@ int main(int argc, char *argv[])
               }
           }
           { extern unsigned long g_snd_vint;       /* [CHIP-TRACE] cross-backend sync stamp */
-            g_snd_vint = (unsigned long)m68k_read32(0xFFFE0C); }
+            g_snd_vint = g_game_layout.vint_runcount_addr
+                ? (unsigned long)glue_peek32(g_game_layout.vint_runcount_addr) : 0ul; }
           widescreen_update_for_frame();   /* set VDP margin + game RAM word */
           machine_run_frame(own_scanline_sink, NULL);
           FRAME_PHASE(1);
@@ -2610,8 +2607,10 @@ int main(int argc, char *argv[])
           audio_obs_ingest_fm ((const int16_t *)s_fm_accum,  s_fm_count);
           audio_obs_ingest_psg((const int16_t *)s_psg_accum, s_psg_count);
           audio_obs_tick_frame(g_frame_count,
-                               m68k_read32(0xFFFE0C),
-                               m68k_read8 (0xFFF600));
+                               g_game_layout.vint_runcount_addr
+                                   ? glue_peek32(g_game_layout.vint_runcount_addr) : 0u,
+                               g_game_layout.game_mode_addr
+                                   ? glue_peek8(g_game_layout.game_mode_addr) : 0u);
 #if SONIC_REVERSE_DEBUG
           rdb_record_iterate();
           rdb_park_drain();
@@ -2676,7 +2675,8 @@ int main(int argc, char *argv[])
          * sync key — both builds reach a given vint at the SAME logical sound
          * state (unlike wall frame, which misaligns across native/oracle). */
         if (snd_dump_vint && !snd_dump_done) {
-            uint32_t vint = m68k_read32(0xFFFE0C);
+            uint32_t vint = g_game_layout.vint_runcount_addr
+                ? glue_peek32(g_game_layout.vint_runcount_addr) : 0u;
             if (vint >= snd_dump_vint) {
                 { extern void chip_trace_dump(const char *path); chip_trace_dump("chip_ring.txt"); }
                 snd_dump_done = 1;
@@ -2757,13 +2757,8 @@ int main(int argc, char *argv[])
          * accessors the cmd_server uses. Auto-exit if the script
          * ran an EXIT directive. */
         if (input_script_active()) {
-            extern uint8_t  m68k_read8 (uint32_t);
-            extern uint16_t m68k_read16(uint32_t);
-            extern void     m68k_write8 (uint32_t, uint8_t);
-            extern void     m68k_write16(uint32_t, uint16_t);
-            extern void     m68k_write32(uint32_t, uint32_t);
-            input_script_tick(frame_num, m68k_read8, m68k_read16,
-                              m68k_write8, m68k_write16, m68k_write32);
+            input_script_tick(frame_num, glue_peek8, glue_peek16,
+                              glue_poke8, glue_poke16, glue_poke32);
             {
                 char state_path[260];
                 if (input_script_take_save_state(state_path, sizeof(state_path)))
@@ -2805,7 +2800,7 @@ int main(int argc, char *argv[])
          * Tag carries the sequence index + the mode so the harness compares
          * like-for-like (seq, mode), never absolute frame. */
         if (hash_on_mode && g_game_layout.game_mode_addr) {
-            int mode = (int)m68k_read8(g_game_layout.game_mode_addr);
+            int mode = (int)glue_peek8(g_game_layout.game_mode_addr);
             if (mode != mode_prev) {
                 fprintf(stderr,
                         "[MODEHASH] seq=%u mode=0x%02X frame=%u w=%d h=%d hash=0x%016llX\n",

@@ -368,6 +368,33 @@ uint16_t gvdp_read_data(GVDP *v)
     return out;
 }
 
+uint16_t gvdp_peek_data(const GVDP *v)
+{
+    switch (v->code & 0x0F) {
+        case CODE_CRAM_READ:
+            return v->cram[(v->address >> 1) & (GVDP_CRAM_ENTRIES - 1)];
+        case CODE_VSRAM_READ: {
+            unsigned idx = (v->address >> 1);
+            return (idx < GVDP_VSRAM_ENTRIES) ? v->vsram[idx] : 0;
+        }
+        case CODE_VRAM_READ:
+        default:
+            return vram_read_word(v, v->address);
+    }
+}
+
+uint16_t gvdp_peek_status(const GVDP *v)
+{
+    uint16_t s = 0x3400 | 0x0200;        /* open-bus high bits + FIFO empty    */
+    if (v->vint_pending)     s |= 0x0080;
+    if (v->sprite_overflow)  s |= 0x0040;
+    if (v->sprite_collision) s |= 0x0020;
+    if (v->in_vblank)        s |= 0x0008;
+    if (v->in_hblank)        s |= 0x0004;
+    if (v->dma_active)       s |= 0x0002;
+    return s;
+}
+
 uint16_t gvdp_read_control(GVDP *v)
 {
     /* Reading the control port resets the write FSM and clears the V-int flag. */

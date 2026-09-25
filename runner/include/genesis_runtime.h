@@ -74,6 +74,8 @@ void     m68k_write8 (uint32_t addr, uint8_t  val);
 void     m68k_write16(uint32_t addr, uint16_t val);
 void     m68k_write32(uint32_t addr, uint32_t val);
 
+#include "genesis_host_mem.h"   /* glue_peek* / glue_poke*: host-side access */
+
 /* ---- Dispatch ---- */
 /* Called for JMP (An) and indexed jump tables — dispatch to the correct recompiled function */
 void call_by_address(uint32_t addr);
@@ -85,6 +87,16 @@ typedef void (*RecompFuncPtr)(void);
 void recomp_tail_call(uint32_t addr);
 void recomp_call_addr(uint32_t addr);
 void recomp_call_func(RecompFuncPtr fn);
+/* Tail-dispatch frame list (defined in the generated <prefix>_dispatch.c).
+ * Each active recomp_call_func/recomp_call_addr owns one frame on the GAME
+ * FIBER stack; the head pointer is therefore execution state that must travel
+ * with a fiber snapshot (get/set). walk visits frames innermost-first with
+ * their guest-visible fields only (pending flag, pending 24-bit target), so
+ * digests can hash the chain without host addresses. */
+void *recomp_tail_frame_get(void);
+void  recomp_tail_frame_set(void *frame);
+void  recomp_tail_frame_walk(void (*visit)(int pending, uint32_t addr, void *user),
+                             void *user);
 void recomp_push_return(uint32_t ret_addr);
 uint32_t recomp_resolve_ram_trampoline(uint32_t addr);
 /* Execute terminal one-instruction RAM stubs whose semantics are represented by

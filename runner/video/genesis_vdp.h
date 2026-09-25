@@ -113,6 +113,15 @@ uint16_t gvdp_read_control (GVDP *v);          /* status register             */
 /* H/V counter read ($C00008). */
 uint16_t gvdp_read_hv_counter(const GVDP *v);
 
+/* Side-effect-free views of the two stateful ports, for HOST inspection
+ * (debuggers, scripts, rollback digests) only — never for emulated 68K
+ * accesses. peek_data returns the word the next data-port read would return
+ * without advancing the address or resetting the control FSM; peek_status
+ * returns the status word without clearing the V-int flag or advancing the
+ * phantom H-blank toggle that gvdp_read_control performs. */
+uint16_t gvdp_peek_data  (const GVDP *v);
+uint16_t gvdp_peek_status(const GVDP *v);
+
 /* Fetch-and-clear the 68K freeze cycles owed by the last 68K->VDP DMA
  * (hardware freezes the 68K for the whole transfer; fill/copy run in
  * background and don't stall). Kept OUTSIDE the GVDP struct: it is transient
