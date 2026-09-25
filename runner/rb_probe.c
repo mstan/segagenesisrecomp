@@ -46,6 +46,30 @@
 
 #define RB_PROBE_MAX_DEPTH 64
 
+/* Cost of the rollback primitives, measured on every probe pass (the
+ * capability matrix's "snapshot fast path" row). */
+#include <time.h>
+static double now_ms(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double)ts.tv_sec * 1000.0 + (double)ts.tv_nsec / 1e6;
+}
+#define RB_PROBE_TIMES 8192
+typedef struct { double v[RB_PROBE_TIMES]; unsigned n; } TimeSet;
+static TimeSet s_t_save, s_t_load, s_t_digest, s_t_tick;
+static size_t s_bytes_min = (size_t)-1, s_bytes_max;
+static void tset_add(TimeSet *t, double ms) { if (t->n < RB_PROBE_TIMES) t->v[t->n++] = ms; }
+static int dcmp(const void *a, const void *b)
+{ double x = *(const double *)a, y = *(const double *)b; return (x > y) - (x < y); }
+static void tset_print(const char *name, TimeSet *t)
+{
+    if (!t->n) return;
+    qsort(t->v, t->n, sizeof t->v[0], dcmp);
+    fprintf(stderr, "rb_probe: cost %-6s n=%u p50=%.3fms p99=%.3fms max=%.3fms\n", name, t->n,
+            t->v[t->n / 2], t->v[(t->n * 99) / 100], t->v[t->n - 1]);
+}
+
 static int s_period = -1;          /* -1 unread, 0 disarmed */
 static int s_depth = 8;
 static int s_statics, s_stackscan;
@@ -203,9 +227,15 @@ void rb_probe_pre_tick(void)
         if (!nb) return;
         s_s0 = nb; s_s0_cap = need;
     }
+    double t0 = now_ms();
     s_s0_len = genesis_rb_save(s_s0, s_s0_cap);
+    tset_add(&s_t_save, now_ms() - t0);
+    if (s_s0_len < s_bytes_min) s_bytes_min = s_s0_len;
+    if (s_s0_len > s_bytes_max) s_bytes_max = s_s0_len;
     if (!s_s0_len) { fprintf(stderr, "rb_probe: save failed at tick %u\n", s_ticks_seen); return; }
+    t0 = now_ms();
     genesis_rb_digest(&s_s0_digest);
+    tset_add(&s_t_digest, now_ms() - t0);
     if (s_statics) statics_grab();
     s_recording = 1;   /* armed: the next live tick is recorded as step 0 */
 }
@@ -223,7 +253,10 @@ void rb_probe_post_tick(void)
     unsigned pass = ++s_passes;
     uint32_t at = s_ticks_seen - (uint32_t)s_depth;
     s_recording = 0;
-    if (!genesis_rb_load(s_s0, s_s0_len)) {
+    double t0 = now_ms();
+    int loaded = genesis_rb_load(s_s0, s_s0_len);
+    tset_add(&s_t_load, now_ms() - t0);
+    if (!loaded) {
         fprintf(stderr, "rb_probe: DIVERGE pass=%u tick=%u restore failed\n", pass, at);
         s_fails++;
         return;
@@ -241,7 +274,9 @@ void rb_probe_post_tick(void)
     }
     int diverged = -1;
     for (int i = 0; i < s_depth; i++) {
+        double ts = now_ms();
         genesis_sim_step(&s_rec_in[i], NULL, s_resim_hooks);
+        tset_add(&s_t_tick, now_ms() - ts);
         genesis_rb_digest(&d);
         if (d.master != s_rec_dig[i].master && diverged < 0) {
             diverged = i;
@@ -258,6 +293,11 @@ void rb_probe_post_tick(void)
 void rb_probe_summary(void)
 {
     if (s_period <= 0) return;
+    tset_print("save", &s_t_save);
+    tset_print("load", &s_t_load);
+    tset_print("digest", &s_t_digest);
+    tset_print("resim", &s_t_tick);
+    if (s_bytes_max) fprintf(stderr, "rb_probe: snapshot bytes min=%zu max=%zu\n", s_bytes_min, s_bytes_max);
     fprintf(stderr, "rb_probe: summary passes=%u divergences=%u asymmetric=%u period=%d depth=%d\n",
             s_passes, s_fails, s_sym_fails, s_period, s_depth);
 }

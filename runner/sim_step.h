@@ -21,9 +21,9 @@
  * including a replayed one; a replay passes scratch buffers so what it
  * produces is never played twice (the device stream is never rewound).
  *
- * The scanline sink is PRESENTATION: NULL skips rendering entirely
- * (gvdp_render_scanline has no state side effects -- it only reads VDP
- * state), which is what a replayed tick uses.
+ * The scanline SINK is presentation: NULL (a replayed tick) skips the ARGB
+ * conversion and the sink. Rendering itself still runs, because sprite
+ * evaluation sets the VDP status flags the 68K reads (genesis_machine.c).
  */
 #include <stddef.h>
 #include <stdint.h>
@@ -63,7 +63,7 @@ typedef struct GenesisSimHooks {
      * session-pinned simulation parameters (widescreen margin) and trace
      * stamps. Optional. */
     void (*pre_raster)(void *ctx);
-    /* Scanline sink; NULL = do not render (replay). */
+    /* Scanline sink; NULL = render for status only, present nothing. */
     GenesisScanlineSink sink;
     void *sink_user;
     /* After the audio drain, before V-blank bookkeeping (pre-resample

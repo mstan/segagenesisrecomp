@@ -90,7 +90,7 @@ echo "exe=$(basename "$EXE") scenario=$SCEN frames=$FRAMES probe=$PD rc=$rc"
 echo "summary: ${summary:-<none>}"
 [ -n "$self" ] && echo "selftest: $self"
 grep -m5 'rb_probe: DIVERGE\|rb_probe: ASYMMETRIC' stderr.log
-grep 'rb_probe: statics pass=.*not-restored\|rb_probe: stackscan' stderr.log | head -6
+grep 'rb_probe: statics pass=.*not-restored\|rb_probe: stackscan\|rb_probe: cost\|rb_probe: snapshot bytes' stderr.log | head -12
 echo "dispatch_misses extra: $misses"
 if [ "$rc" -eq 0 ] && [ -n "$passes" ] && [ "$passes" -gt 0 ] && [ "$div" = 0 ] && [ "$asym" = 0 ] \
    && { [ -z "$self" ] || echo "$self" | grep -q PASS; } && [ "$misses" = 0 ]; then

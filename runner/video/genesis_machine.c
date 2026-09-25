@@ -524,11 +524,19 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
         /* Render + emit active scanlines. In interlace mode 2 each raster
          * line yields TWO output rows (the even and odd fields' lines,
          * rendered progressively into a 448-row frame). */
-        if (line < active_h && sink) {
+        /* Rendering is NOT presentation-only: sprite evaluation sets the
+         * status register's sprite-overflow and sprite-collision flags, which
+         * the 68K reads. A NULL sink (a rollback replay) therefore still
+         * renders every line into the index buffer and only skips the ARGB
+         * conversion and the sink (found by the determinism probe,
+         * 2026-09-25: replays without rendering forked in the vdp partition
+         * in 1-2 of 691 dense probe passes per game). */
+        if (line < active_h) {
             int dbl = gvdp_interlace_double(&m->vdp);
             for (int sub = 0; sub <= dbl; sub++) {
                 int row = (line << dbl) + sub;
                 int n = gvdp_render_scanline(&m->vdp, row, idxbuf);
+                if (!sink) continue;
                 for (int x = 0; x < n; x++) rowbuf[x] = s_cram_argb[idxbuf[x]];
                 sink(user, row, rowbuf, n);
             }
