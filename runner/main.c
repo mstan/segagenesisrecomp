@@ -2569,6 +2569,7 @@ int main(int argc, char *argv[])
           { extern unsigned long g_snd_vint;       /* [CHIP-TRACE] cross-backend sync stamp */
             g_snd_vint = g_game_layout.vint_runcount_addr
                 ? (unsigned long)glue_peek32(g_game_layout.vint_runcount_addr) : 0ul; }
+          glue_sched_frame_begin();        /* scheduler rule: busy-wait streaks restart */
           widescreen_update_for_frame();   /* set VDP margin + game RAM word */
           machine_run_frame(own_scanline_sink, NULL);
           FRAME_PHASE(1);
@@ -2646,10 +2647,11 @@ int main(int argc, char *argv[])
         /* [POLL-DIAG] measure how often the 256-poll bounded fallback fires
          * (own-backend vs oracle). Dev builds only. */
         {
-            extern unsigned long g_z80poll_fallback_hits, g_z80poll_yields;
+            extern unsigned long g_z80poll_fallback_hits, g_z80poll_yields, g_spin_yields;
             if ((frame_num % 120u) == 0)
-                fprintf(stderr, "[POLL-DIAG] frame=%u fallback_hits=%lu yields=%lu\n",
-                        (unsigned)frame_num, g_z80poll_fallback_hits, g_z80poll_yields);
+                fprintf(stderr, "[POLL-DIAG] frame=%u fallback_hits=%lu yields=%lu spin_yields=%lu\n",
+                        (unsigned)frame_num, g_z80poll_fallback_hits, g_z80poll_yields,
+                        g_spin_yields);
         }
 #endif
 

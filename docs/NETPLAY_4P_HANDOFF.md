@@ -73,8 +73,8 @@ S1, S2, S3-alone, S&K, S3K, RKA and Puyo.
 | # | Step | State |
 |---|---|---|
 | 1 | Generator emits `recomp_tail_frame_get/set/walk` (m68k-recomp-core `profiles/genesis/code_generator.c`). `g_recomp_tail_frame` points into the game fiber stack and was the only generated mutable static. | **Green** |
-| 2 | `runner/fiber_compat.{h,c}` on vendored minicoro (Unlicense/MIT-0, `runner/external/minicoro`). Engine-owned 32 MB stack with a guard page; the Windows TIB is kept consistent for `__chkstk`. New `fiber_reset`, `fiber_snapshot_bound/save/load`, `fiber_stack_range`. Startup check that shadow stacks are off, plus `/CETCOMPAT:NO`. `glue_restart_game_fiber` resets in place. The yield site is recorded at all 9 game→main switches. | **Green**. `tests/runtime/fiber_snapshot_test.c` passes on MSVC, mingw gcc, clang, and WSL gcc/clang/ASan; aarch64 compiles and links only (not run). |
-| 3 | Side-effect-free host memory access (`runner/include/genesis_host_mem.h`: `glue_peek/poke*`, `gbus_peek*`, `gvdp_peek_*`). All host-side reads and writes are converted: main.c, glue.c, host_state.h, cmd_server.c, S1/S3 video. The Sonic-1 RAM literals in main.c now come from `g_game_layout`. | **Red** (see below) |
+| 2 | `runner/fiber_compat.{h,c}` on vendored minicoro (Unlicense/MIT-0, `runner/external/minicoro`). Engine-owned 32 MB stack with a guard page; the Windows TIB is kept consistent for `__chkstk`. New `fiber_reset`, `fiber_snapshot_bound/save/load`, `fiber_stack_range`. Startup check that shadow stacks are off, plus `/CETCOMPAT:NO`. `glue_restart_game_fiber` resets in place. The yield site is recorded at all 9 game→main switches. | **Green (corrected 2026-09-25).** The original claim here -- "passes on MSVC, mingw gcc, clang, and WSL gcc/clang/ASan" -- was **refuted** on Linux gcc 16 / clang 22: the test failed in Release and RelWithDebInfo. Two causes: (1) test UB, `acc * 6364136223846793005LL` is signed overflow and gcc -O3 used it to collapse the reference recursion ("max depth 2"), fixed with unsigned arithmetic; (2) a real hazard, the 8 KB frames of the overflow child stepped over the single 4 KB guard page and faulted *outside* it (exit 43), i.e. into memory below the guard -- where the coroutine header lives. Fixed: `FIBER_GUARD_BYTES` = 64 KB guard, and gcc/clang runner targets build with `-fstack-clash-protection`, asserted by a new `--overflow-huge` case (a 128 KB frame must fault in the guard; negative control without the flag fails as expected). Now green on gcc and clang at -O0/-O2/-O2 -g/-O3 and in the gate's Release (gcc) and RelWithDebInfo (clang) ctest runs; aarch64 still compile-only. |
+| 3 | Side-effect-free host memory access (`runner/include/genesis_host_mem.h`: `glue_peek/poke*`, `gbus_peek*`, `gvdp_peek_*`). All host-side reads and writes are converted: main.c, glue.c, host_state.h, cmd_server.c, S1/S3 video. The Sonic-1 RAM literals in main.c now come from `g_game_layout`. | **Green (2026-09-25)** after `glue_sched_frame_begin()` (see below) |
 | 4 | `runner/sim_step.{c,h}`: `genesis_sim_step(const GenesisSimInput*, const GenesisSimOutput*)` extracted from the inline frame in main.c; `genesis_sim_pad(p)` / `genesis_sim_human_mask()`; status-only VDP render mode. | Not started |
 | 5 | `runner/rb_state.c`: one section table driving both snapshot and digest (exec, cpu, sched, ram, machine, fm, psg, compact evq, GameSpec hook), plus a byte-budgeted snapshot ring. | Not started |
 | 6 | Partitioned digest reusing `cosim_state_hash`; add the missing YM-timer / VDP-stall / scheduler fields; `static_assert(sizeof)` drift guards; mutation test. | Not started |
@@ -82,7 +82,24 @@ S1, S2, S3-alone, S&K, S3K, RKA and Puyo.
 | 8 | `GENESIS_RB_PROBE`: live vs resim and load vs uninterrupted, at every tick; `_STATICS` and `_STACKSCAN` carrier finders. | Not started |
 | 9 | Game repos migrate to `cmake/GenesisRecompRunner.cmake`. It already fills in missing runner sources for unmigrated consumers, so no game-repo edit is needed to build. | Partial |
 
-**Step 3 red, the open investigation.**
+**Step 3 red -- RESOLVED 2026-09-25 (root cause measured).** The carrier is
+the same-address **spin streak** (`s_spin_addr`/`s_spin_count` in glue.c's
+`spin_check`), not the Z80 poll streak and not the 256-poll fallback. The
+baseline's per-frame host reads `m68k_read32(0xFFFE0C)` (before and after
+`machine_run_frame`) went through the emulated bus and so restarted the spin
+streak every frame; the peeks do not. Measured, Linux gcc 16, 18000-frame
+attract: spin yields S3K 22 -> 33, S&K 22 -> 39 (S2 0 -> 0); Z80 poll yields
+identical (604 / 419 / 22) and `g_z80poll_fallback_hits` = 0 in base and
+candidate alike. Resetting only the Z80 poll streak at the frame boundary
+leaves S3K/S&K red; resetting the spin streak (before the frame, after it, or
+both) restores all fingerprints. The reset is now an explicit, documented
+scheduler rule (`glue_sched_frame_begin()`, called right before
+`machine_run_frame`), and the streak variables are part of the rollback
+scheduler section. Gate after the fix: S1, S2, S3, S3K, S&K identical in all
+three scenarios; RKA and Puyo are not available in this workspace (no repo, no
+ROM) and were **not** gated. The text below is the investigation as it stood.
+
+**Step 3 red, the open investigation (historical).**
 - S1, S2, S3 and RKA stay identical. Puyo, S3K and S&K differ in all three
   scenarios.
 - S3K and S&K have identical framebuffers but different state and audio, so the

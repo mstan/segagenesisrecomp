@@ -40,6 +40,11 @@ void glue_load_state(FILE *sf);
  * called from the scheduler (main) fiber. */
 void glue_restart_game_fiber(uint32_t resume_pc);
 
+/* Scheduler rule (see glue.c): the same-address spin streak and the Z80
+ * sync-poll streak restart at every wall-frame boundary. The tick driver
+ * calls this immediately before machine_run_frame(). */
+void glue_sched_frame_begin(void);
+
 /* Why the game fiber last switched to the scheduler. Recorded immediately
  * before every game->main switch, so while the game fiber is suspended it
  * names the yield point it will resume from. Part of the rollback

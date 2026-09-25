@@ -1615,6 +1615,8 @@ static inline void spin_check(uint32_t byte_addr, int is_write)
             if (s_main_fiber)
                 { char stack_marker; game_stack_note("spin-read", &stack_marker); }
             if (s_main_fiber)
+                { extern unsigned long g_spin_yields; g_spin_yields++; }
+            if (s_main_fiber)
                 yield_to_main(GLUE_YIELD_SPIN);
             s_spin_count = 0;
         }
@@ -1639,6 +1641,7 @@ uint16_t m68k_read16(uint32_t byte_addr)
 int s_io_log_enabled = 0;  /* set via TCP command */
 int s_io_log_count   = 0;
 
+unsigned long g_spin_yields = 0;          /* [POLL-DIAG] spin_check yields */
 unsigned long g_z80poll_fallback_hits = 0; /* [POLL-DIAG] 256-poll bound fired */
 unsigned long g_z80poll_yields = 0;        /* [POLL-DIAG] total z80-poll yields */
 /* Z80 sync-poll streak (m68k_read8). Scheduler state that decides when the
@@ -1780,6 +1783,32 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
     }
     gbus_write16(&g_machine.bus, byte_addr,     (uint16_t)(val >> 16));
     gbus_write16(&g_machine.bus, byte_addr + 2, (uint16_t)(val & 0xFFFF));
+}
+
+/* Scheduler rule: busy-wait detectors restart at every wall-frame boundary.
+ *
+ * spin_check's same-address streak (s_spin_addr/s_spin_count) and the Z80
+ * sync-poll streak (s_z80poll_last_addr/s_z80poll_streak) decide WHEN the
+ * 68K yields to the raster scheduler. Until 2026-09-25 they were reset at
+ * every frame boundary only as a SIDE EFFECT of the frame loop's host reads
+ * (main.c read $FFFE0C/$FFF600 through m68k_read32/m68k_read8, i.e. through
+ * the emulated bus). Converting those host reads to side-effect-free peeks
+ * let the streaks carry across frames: S3K and S&K then took 33/39 spin
+ * yields instead of 22 over the 18000-frame attract run and their audio and
+ * state fingerprints changed (framebuffers identical). Resetting the spin
+ * streak here restores every fingerprint; resetting only the Z80 poll streak
+ * does not (docs/NETPLAY.md, finding A).
+ *
+ * So the reset is now an explicit rule, called by the tick driver
+ * immediately before machine_run_frame(), and the four variables are part of
+ * the rollback scheduler section (glue_rb_*). The Z80 poll streak is reset
+ * with it because the baseline's post-frame m68k_read8 reset it too. */
+void glue_sched_frame_begin(void)
+{
+    s_spin_addr         = 0;
+    s_spin_count        = 0;
+    s_z80poll_last_addr = 0;
+    s_z80poll_streak    = 0;
 }
 
 /* =========================================================================
