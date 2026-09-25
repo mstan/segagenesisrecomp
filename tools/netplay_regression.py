@@ -43,15 +43,29 @@ import sys
 import time
 from pathlib import Path
 
+IS_WINDOWS = os.name == "nt"
+
 # Workspace holding the game repos side by side; override with
-# GENESIS_WORKSPACE when the checkout lives elsewhere.
-WORKSPACE = Path(os.environ.get("GENESIS_WORKSPACE", r"F:/Projects/segagenesisrecomp"))
+# GENESIS_WORKSPACE when the checkout lives elsewhere.  Windows keeps the
+# historical F:/ default; elsewhere the default is the directory that holds
+# this engine checkout (game repos sit beside it).
+_DEFAULT_WS = (r"F:/Projects/segagenesisrecomp" if IS_WINDOWS
+               else str(Path(__file__).resolve().parents[2]))
+WORKSPACE = Path(os.environ.get("GENESIS_WORKSPACE", _DEFAULT_WS))
 _VS_CMAKE = Path(r"C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/"
                  r"Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe")
-# GENESIS_CMAKE / GENESIS_CMAKE_GENERATOR override the VS2022 BuildTools default.
+# GENESIS_CMAKE / GENESIS_CMAKE_GENERATOR override the platform default
+# (Windows: VS2022 BuildTools cmake + "Visual Studio 17 2022"; elsewhere: the
+# PATH cmake + Ninja, single-config Release).
 CMAKE = Path(os.environ.get("GENESIS_CMAKE") or
-             (str(_VS_CMAKE) if _VS_CMAKE.exists() else (shutil.which("cmake") or "cmake")))
-GENERATOR = os.environ.get("GENESIS_CMAKE_GENERATOR", "Visual Studio 17 2022")
+             (str(_VS_CMAKE) if (IS_WINDOWS and _VS_CMAKE.exists())
+              else (shutil.which("cmake") or "cmake")))
+GENERATOR = os.environ.get("GENESIS_CMAKE_GENERATOR",
+                           "Visual Studio 17 2022" if IS_WINDOWS else "Ninja")
+# Visual Studio (and Ninja Multi-Config / Xcode) put binaries in <bdir>/Release;
+# single-config generators put them in <bdir> and need CMAKE_BUILD_TYPE.
+MULTI_CONFIG = GENERATOR.startswith(("Visual Studio", "Xcode")) or "Multi-Config" in GENERATOR
+EXE_SUFFIX = ".exe" if IS_WINDOWS else ""
 
 # Build trees.  "source" is the game repo; puyo has no GENESIS_RECOMP_ROOT
 # override (it only honours an `engine-local` link next to its CMakeLists), so
@@ -91,7 +105,7 @@ ROM_SOURCES = {
 # Files a runner may leave next to its exe; never copied into a run dir.
 SKIP_SUFFIXES = {".pdb", ".ilk", ".map", ".lib", ".exp", ".log", ".srm",
                  ".toml", ".cfg", ".ini", ".txt", ".wav", ".png", ".s16"}
-SKIP_NAMES = {"GenesisRecomp.exe"}
+SKIP_NAMES = {"GenesisRecomp.exe", "GenesisRecomp", "genesis-recompiler"}
 
 
 def log(msg: str) -> None:
@@ -103,6 +117,7 @@ def log(msg: str) -> None:
 # --------------------------------------------------------------------------
 
 def _junction(link: Path, target: Path) -> None:
+    """Directory link: an NTFS junction on Windows, a symlink elsewhere."""
     if link.exists() or os.path.islink(link):
         try:
             cur = Path(os.path.realpath(link))
@@ -110,9 +125,15 @@ def _junction(link: Path, target: Path) -> None:
             cur = None
         if cur and cur.resolve() == target.resolve():
             return
-        subprocess.run(["cmd", "/c", "rmdir", str(link)], check=True)
-    subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)],
-                   check=True, stdout=subprocess.DEVNULL)
+        if IS_WINDOWS:
+            subprocess.run(["cmd", "/c", "rmdir", str(link)], check=True)
+        else:
+            os.unlink(link)
+    if IS_WINDOWS:
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)],
+                       check=True, stdout=subprocess.DEVNULL)
+    else:
+        os.symlink(target, link, target_is_directory=True)
 
 
 def _puyo_source(out: Path, engine: Path) -> Path:
@@ -139,10 +160,20 @@ def _puyo_compat(out: Path) -> Path:
 
 def build_repo(repo: str, engine: Path, out: Path, jobs: int) -> dict:
     info = REPOS[repo]
+    if not (info["source"] / "CMakeLists.txt").exists():
+        # A game repo (or its ROM) that is not present locally is recorded as
+        # unavailable, never silently dropped: the gate report names it.
+        log(f"[build] {repo}: UNAVAILABLE (no checkout at {info['source']})")
+        return {"repo": repo, "ok": False, "unavailable": True,
+                "log": "", "inject": ""}
     bdir = out / repo
     bdir.mkdir(parents=True, exist_ok=True)
     source = info["source"] if info["override"] else _puyo_source(out, engine)
-    cfg = [str(CMAKE), "-S", str(source), "-B", str(bdir), "-G", GENERATOR, "-A", "x64"]
+    cfg = [str(CMAKE), "-S", str(source), "-B", str(bdir), "-G", GENERATOR]
+    if GENERATOR.startswith("Visual Studio"):
+        cfg += ["-A", "x64"]
+    if not MULTI_CONFIG:
+        cfg.append("-DCMAKE_BUILD_TYPE=Release")
     if info["override"]:
         cfg.append(f"-DGENESIS_RECOMP_ROOT={engine.as_posix()}")
     inject = ""
@@ -187,7 +218,7 @@ def cmd_build(a) -> int:
             "engine_dirty": _git_dirty(engine), "engine_submodules": _git_subs(engine),
             "builds": [prev[k] for k in sorted(prev)]}
     (out / "build_meta.json").write_text(json.dumps(meta, indent=2))
-    return 0 if all(r["ok"] for r in res) else 1
+    return 0 if all(r["ok"] or r.get("unavailable") for r in res) else 1
 
 
 def _git_head(p: Path) -> str:
@@ -235,10 +266,26 @@ def _sha256(p: Path) -> str:
     return h.hexdigest()
 
 
-def _prepare_run_dir(release: Path, run_dir: Path) -> None:
+def _release_dir(out: Path, repo: str) -> Path:
+    return out / repo / "Release" if MULTI_CONFIG else out / repo
+
+
+def _prepare_run_dir(release: Path, run_dir: Path, exe_name: str = "",
+                     rom: str = "") -> None:
     if run_dir.exists():
         shutil.rmtree(run_dir)
     run_dir.mkdir(parents=True)
+    if not MULTI_CONFIG:
+        # Single-config trees mix binaries with build files (build.ninja,
+        # generated/, CMakeFiles/...): stage an explicit allow-list instead.
+        for e in release.iterdir():
+            keep = (e.name in (exe_name, rom, "annotations_from_disasm.csv")
+                    or e.suffix.lower() in (".so", ".dylib", ".dll"))
+            if e.is_dir() and e.name == "assets":
+                shutil.copytree(e, run_dir / e.name)
+            elif e.is_file() and keep:
+                shutil.copy2(e, run_dir / e.name)
+        return
     for e in release.iterdir():
         if e.name in SKIP_NAMES:
             continue
@@ -285,15 +332,15 @@ def run_target(name: str, out: Path, frames: int, every: int, run_tag: str,
                timeout: int, engine: str, extra_env: dict,
                scenario: str = "attract") -> dict:
     repo, exe_name, rom, port = TARGETS[name]
-    release = out / repo / "Release"
-    exe = release / f"{exe_name}.exe"
+    release = _release_dir(out, repo)
+    exe = release / f"{exe_name}{EXE_SUFFIX}"
     res: dict = {"target": name, "exe": str(exe)}
     if not exe.exists():
         res["error"] = "exe missing"
         return res
     res["exe_sha256"] = _sha256(exe)
     run_dir = out / "runs" / run_tag / name
-    _prepare_run_dir(release, run_dir)
+    _prepare_run_dir(release, run_dir, exe.name, rom)
     if not (run_dir / rom).exists() and engine:
         src = Path(ROM_SOURCES[name].format(engine=engine))
         if src.exists():
@@ -309,7 +356,10 @@ def run_target(name: str, out: Path, frames: int, every: int, run_tag: str,
     env["GENESIS_AUDIO_PREDRC"] = str(run_dir / "predrc")
     env["GENESIS_NO_LAUNCHER"] = "1"
     res["extra_env"] = dict(sorted(extra_env.items()))
-    args = [str(run_dir / f"{exe_name}.exe"), rom, "--benchmark", str(frames),
+    if not IS_WINDOWS:
+        env.setdefault("SDL_VIDEODRIVER", "dummy")
+        env.setdefault("SDL_AUDIODRIVER", "dummy")
+    args = [str(run_dir / f"{exe_name}{EXE_SUFFIX}"), rom, "--benchmark", str(frames),
             "--hash-frames", str(every), "--hash-on-mode", "--port", str(port)]
     res["scenario"] = scenario
     if scenario != "attract":
@@ -394,6 +444,11 @@ def cmd_run(a) -> int:
     # Never fingerprint stale executables: every build tree the requested
     # targets live in must have built successfully in its latest build.
     built = {b["repo"]: b.get("ok") for b in meta.get("builds", [])}
+    unavailable = {b["repo"] for b in meta.get("builds", []) if b.get("unavailable")}
+    skipped = [t for t in a.targets if TARGETS[t][0] in unavailable]
+    for t in skipped:
+        log(f"[run] {t}: UNAVAILABLE (repo {TARGETS[t][0]} not checked out) - not gated")
+    a.targets = [t for t in a.targets if t not in skipped]
     stale = sorted({TARGETS[t][0] for t in a.targets if not built.get(TARGETS[t][0])})
     if stale:
         log(f"[run] REFUSED: last build of {', '.join(stale)} failed or is missing "
@@ -407,6 +462,7 @@ def cmd_run(a) -> int:
         for t, f in futs.items():
             results[t] = f.result()
     doc = {"tool": "netplay_regression", "version": 1, "frames": a.frames,
+           "unavailable": skipped,
            "scenario": a.scenario,
            "hash_every": a.hash_every, "run_tag": tag, "build": meta,
            "targets": results}
@@ -473,6 +529,8 @@ def cmd_compare(a) -> int:
     for d in diffs:
         if d[0] == "*":
             log(f"  workload mismatch: {d[2]}")
+    for t in sorted(set(da.get("unavailable", [])) | set(db.get("unavailable", []))):
+        log(f"  {t:5s} UNAVAILABLE (not built/run; not covered by this gate)")
     log("GATE: " + ("GREEN (all targets fingerprint-identical)" if not diffs else "RED"))
     return 0 if not diffs else 1
 
