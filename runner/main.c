@@ -166,6 +166,7 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
 #endif
 
 #include "glue.h"
+#include "sim_step.h"
 
 
 #include "cmd_server.h"
@@ -859,6 +860,46 @@ static uint16_t collect_pad_mask(int player)
     return mask;
 }
 
+/* The sealed inputs of one tick (sim_step.h), from the same sources the
+ * frame loop always used: ports 0/1 through input_requested_cb (published
+ * netplay pads, scripts, TCP, live map) plus the 6-button extras; players 2/3
+ * (adapter-only, e.g. the Sonic 2 party) from their live map and script. */
+static void collect_sim_input(GenesisSimInput *in)
+{
+    static const GenesisButton own_btns[8] = {
+        GB_UP,   GB_DOWN,
+        GB_LEFT, GB_RIGHT,
+        GB_B,    GB_C,
+        GB_A,    GB_START };
+    static const uint16_t own_bits[8] = {
+        GPAD_UP, GPAD_DOWN, GPAD_LEFT, GPAD_RIGHT,
+        GPAD_B,  GPAD_C,    GPAD_A,    GPAD_START };
+    memset(in, 0, sizeof *in);
+    for (int port = 0; port < 2; port++) {
+        in->pad_type[port] = g_input_map.p[port].pad_type == PAD_6BUTTON ? 1 : 0;
+        uint16_t pad_mask = 0;
+        for (int b = 0; b < 8; b++)
+            if (input_requested_cb(NULL, (cc_u8f)port, own_btns[b]))
+                pad_mask |= own_bits[b];
+        if (g_input_map.p[port].pad_type == PAD_6BUTTON)
+#if GENESIS_HAS_RECOMP_NET
+            pad_mask |= (genesis_netplay_active()
+                             ? genesis_netplay_published_pad(port)
+                             : input_current_mask(port)) &
+                        (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
+#else
+            pad_mask |= input_current_mask(port) &
+                        (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
+#endif
+        in->pad[port] = pad_mask;
+    }
+    for (int p = 2; p < GENESIS_SIM_MAX_PLAYERS; p++)
+        in->pad[p] = (uint16_t)(input_current_mask(p) | input_script_player_mask(p));
+    for (int p = 0; p < GENESIS_SIM_MAX_PLAYERS; p++)
+        if (input_player_connected(p) || input_script_player_used(p))
+            in->human_mask |= 1u << p;
+}
+
 /*
  * Audio accumulation buffers.
  *
@@ -1461,6 +1502,56 @@ static void rdb_park_drain(void)
     }
 }
 #endif
+
+/* ---- host hooks of one live tick (sim_step.h) ---------------------------- */
+
+/* Pre-raster, debugger extra frames: the widescreen margin only. */
+static void widescreen_pre_raster(void *ctx)
+{
+    (void)ctx;
+    widescreen_update_for_frame();   /* set VDP margin + game RAM word */
+}
+
+/* Pre-raster, live tick: the chip-trace stamp, then the widescreen margin. */
+static void live_pre_raster(void *ctx)
+{
+    (void)ctx;
+    { extern unsigned long g_snd_vint;       /* [CHIP-TRACE] cross-backend sync stamp */
+      g_snd_vint = g_game_layout.vint_runcount_addr
+          ? (unsigned long)glue_peek32(g_game_layout.vint_runcount_addr) : 0ul; }
+    widescreen_update_for_frame();   /* set VDP margin + game RAM word */
+}
+
+/* Post-drain, debugger extra frames: the reverse-debug park only. */
+static int rdb_post_drain(void *ctx)
+{
+    (void)ctx;
+#if SONIC_REVERSE_DEBUG
+    rdb_record_iterate();
+    rdb_park_drain();
+    if (s_quit_via_park_drain) return 0;
+#endif
+    return 1;
+}
+
+/* Post-drain, live tick: pre-resample capture and observability over the
+ * tick's audio, then the reverse-debug park. */
+static int live_post_drain(void *ctx)
+{
+    (void)ctx;
+    /* Tier-3: deterministic pre-resample mixer capture (env-gated). */
+    dump_predrc(s_fm_accum, s_fm_count, s_psg_accum, s_psg_count);
+    /* Observability runs regardless — we want to detect boops in
+     * whichever backend is providing samples. */
+    audio_obs_ingest_fm ((const int16_t *)s_fm_accum,  s_fm_count);
+    audio_obs_ingest_psg((const int16_t *)s_psg_accum, s_psg_count);
+    audio_obs_tick_frame(g_frame_count,
+                         g_game_layout.vint_runcount_addr
+                             ? glue_peek32(g_game_layout.vint_runcount_addr) : 0u,
+                         g_game_layout.game_mode_addr
+                             ? glue_peek8(g_game_layout.game_mode_addr) : 0u);
+    return rdb_post_drain(NULL);
+}
 
 /* =========================================================================
  * main
@@ -2523,104 +2614,23 @@ int main(int argc, char *argv[])
          * DoCycles switches to game fiber for each scanline's worth of
          * cycles. Game code and VDP rendering interleave naturally. */
         s_current_frame_for_input = frame_num;
-        { extern void glue_run_game_frame(void);
-          extern void glue_service_vblank(void);
-          extern void glue_reset_frame_sync(void);
-          glue_reset_frame_sync();
-          glue_run_game_frame();   /* prepares game fiber state */
-          {
-              /* Own-backend input: build each port's pad mask from the same
-               * sources clownmdemu queries (keyboard / gamepad / .input
-               * script / TCP) via input_requested_cb, and hand it to our bus
-               * before running the frame. The recompiled ReadJoypads reads it
-               * back through the controller protocol in gbus pad_read().
-               *
-               * The 8 standard buttons route through input_requested_cb so the
-               * P1 dev overrides (.input / TCP / scripted) still drive the game;
-               * 6-button extras (X/Y/Z/Mode) — which the 8-button callback can't
-               * express — are OR'd straight from the per-player input map. */
-              static const GenesisButton own_btns[8] = {
-                  GB_UP,   GB_DOWN,
-                  GB_LEFT, GB_RIGHT,
-                  GB_B,    GB_C,
-                  GB_A,    GB_START };
-              static const uint16_t own_bits[8] = {
-                  GPAD_UP, GPAD_DOWN, GPAD_LEFT, GPAD_RIGHT,
-                  GPAD_B,  GPAD_C,    GPAD_A,    GPAD_START };
-              for (int port = 0; port < 2; port++) {
-                  machine_set_pad_type(port, g_input_map.p[port].pad_type);
-                  uint16_t pad_mask = 0;
-                  for (int b = 0; b < 8; b++)
-                      if (input_requested_cb(NULL, (cc_u8f)port, own_btns[b]))
-                          pad_mask |= own_bits[b];
-                  if (g_input_map.p[port].pad_type == PAD_6BUTTON)
-#if GENESIS_HAS_RECOMP_NET
-                      pad_mask |= (genesis_netplay_active()
-                                       ? genesis_netplay_published_pad(port)
-                                       : input_current_mask(port)) &
-                                  (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
-#else
-                      pad_mask |= input_current_mask(port) &
-                                  (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
-#endif
-                  machine_set_pad(port, pad_mask);
-              }
-          }
-          { extern unsigned long g_snd_vint;       /* [CHIP-TRACE] cross-backend sync stamp */
-            g_snd_vint = g_game_layout.vint_runcount_addr
-                ? (unsigned long)glue_peek32(g_game_layout.vint_runcount_addr) : 0ul; }
-          glue_sched_frame_begin();        /* scheduler rule: busy-wait streaks restart */
-          widescreen_update_for_frame();   /* set VDP margin + game RAM word */
-          machine_run_frame(own_scanline_sink, NULL);
+        {
+          GenesisSimInput sim_in;
+          collect_sim_input(&sim_in);
+          GenesisSimAudio sim_audio = {
+              (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
+              (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
+          GenesisSimHooks sim_hooks = { live_pre_raster, own_scanline_sink, NULL,
+                                        live_post_drain, NULL };
+          int completed = genesis_sim_step(&sim_in, &sim_audio, &sim_hooks);
           FRAME_PHASE(1);
           s_screen_width  = s_custom_width ? s_custom_width : gvdp_active_width(&g_machine.vdp);
           /* Output height doubles in interlace mode 2 (S2 2P split-screen);
            * the existing interlace display modes (tv squash / raw) take over
            * from here, same as the clownmdemu path. */
           s_screen_height = gvdp_output_height(&g_machine.vdp);
-          /* Audio arch overhaul: fill s_fm_accum + s_psg_accum from our
-           * cycle-stamped mixer. Drain to NTSC wall-frame cycle count
-           * (not g_audio_cycle_counter): the game fiber stops running
-           * after WaitForVBlank yields, so g_audio_cycle_counter only
-           * tracks ~30-50% of a wall's cycles. The YM/PSG chips must
-           * still advance the full wall-frame span to generate the
-           * expected ~887 FM + ~3732 PSG samples per frame. Handler
-           * cycles carry accurate stamps inside [0, wall_cycles];
-           * tail advance past the last event fills silence/decay
-           * correctly. */
-          #define NTSC_WALL_FRAME_68K_CYCLES 127856u
-          {
-              #define NTSC_WALL_FRAME_MASTER_CYCLES 895780u
-              /* Chip writes arrive through the cycle-stamped event queue; the
-               * mixer sorts by stamp, advances the chips between writes, and
-               * tail-advances to the wall-frame end. (The old per-scanline
-               * live advance is gone — it collapsed the 68K V-int handler's
-               * whole driver tick onto one chip cycle; see
-               * genesis_machine.c.) */
-              audio_mixer_drain(NTSC_WALL_FRAME_MASTER_CYCLES,
-                                s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
-                                s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count);
-          }
-          /* Tier-3: deterministic pre-resample mixer capture (env-gated). */
-          dump_predrc(s_fm_accum, s_fm_count, s_psg_accum, s_psg_count);
-          /* Observability runs regardless — we want to detect boops in
-           * whichever backend is providing samples. */
-          audio_obs_ingest_fm ((const int16_t *)s_fm_accum,  s_fm_count);
-          audio_obs_ingest_psg((const int16_t *)s_psg_accum, s_psg_count);
-          audio_obs_tick_frame(g_frame_count,
-                               g_game_layout.vint_runcount_addr
-                                   ? glue_peek32(g_game_layout.vint_runcount_addr) : 0u,
-                               g_game_layout.game_mode_addr
-                                   ? glue_peek8(g_game_layout.game_mode_addr) : 0u);
-#if SONIC_REVERSE_DEBUG
-          rdb_record_iterate();
-          rdb_park_drain();
-          if (s_quit_via_park_drain) { running = 0; break; }
-#endif
-          FRAME_PHASE(2);
-          glue_service_vblank();
+          if (!completed) { running = 0; break; }   /* reverse-debug quit */
           FRAME_PHASE(7);
-          glue_end_of_wall_frame();
 #ifdef GENESIS_COSIM
           /* Differential co-sim FRAME checkpoint. Own-backend: master_cycle is the
            * ruler. Oracle (pairing #2): no g_machine — use the wall-frame number
@@ -2628,7 +2638,7 @@ int main(int argc, char *argv[])
            * ordinal, so the clock value is report-only). */
           cosim_frame_checkpoint(g_machine.master_cycle);
 #endif
-          }
+        }
         check_ramdump();
 #if GENESIS_HAS_RECOMP_NET
         genesis_netplay_finish_frame();
@@ -2709,20 +2719,18 @@ int main(int argc, char *argv[])
                 memset(s_fm_accum,  0, sizeof(s_fm_accum));
                 memset(s_psg_accum, 0, sizeof(s_psg_accum));
                 s_fm_count = 0; s_psg_count = 0;
-                { extern void glue_run_game_frame(void);
-                  extern void glue_service_vblank(void);
-                  extern void glue_reset_frame_sync(void);
-                  glue_reset_frame_sync();
-                  glue_run_game_frame();
-                  widescreen_update_for_frame();   /* set VDP margin + game RAM word */
-                  machine_run_frame(own_scanline_sink, NULL);
-#if SONIC_REVERSE_DEBUG
-                  rdb_record_iterate();
-                  rdb_park_drain();
-                  if (s_quit_via_park_drain) { running = 0; break; }
-#endif
-                  glue_service_vblank();
-          glue_end_of_wall_frame(); }
+                /* The same tick as the main loop (sim_step.h). Before
+                 * 2026-09-25 this debugger path ran machine_run_frame without
+                 * the audio drain, so its extra frames left the chips behind
+                 * the raster; it now advances them like every other tick. */
+                { GenesisSimInput sim_in;
+                  collect_sim_input(&sim_in);
+                  GenesisSimAudio sim_audio = {
+                      (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
+                      (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
+                  GenesisSimHooks sim_hooks = { widescreen_pre_raster, own_scanline_sink, NULL,
+                                                rdb_post_drain, NULL };
+                  if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
             }
             if (s_debug_enabled) cmd_server_send_frame_result(cmd_cr.run_extra_frames);
