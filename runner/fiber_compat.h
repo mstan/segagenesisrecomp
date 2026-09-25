@@ -12,8 +12,9 @@
  *     also swaps the TIB stack fields (StackBase/StackLimit/
  *     DeallocationStack), so __chkstk and SEH unwinding see the fiber stack.
  *   - the ENGINE owns the stack memory: one VirtualAlloc/mmap mapping per
- *     fiber, fully committed on Windows, with a no-access guard page between
- *     the coroutine header and the lowest usable stack byte. A fiber's stack
+ *     fiber, fully committed on Windows, with a no-access guard region
+ *     (FIBER_GUARD_BYTES, below) between the coroutine header and the lowest
+ *     usable stack byte. A fiber's stack
  *     never moves for its lifetime, so a snapshot restored into the same
  *     fiber puts every saved frame pointer / return address / pointer-to-
  *     local back at the address it was captured from.
@@ -62,6 +63,19 @@
 extern "C" {
 #endif
 
+/* Size of the no-access guard region under every created fiber's stack
+ * (rounded up to whole pages). One 4 KB page is NOT enough: a function whose
+ * frame is larger than the guard can move the stack pointer straight past it
+ * and its first store then lands in the coroutine header below (minicoro's
+ * saved context) instead of faulting. Measured 2026-09-25 on Linux gcc 16 /
+ * clang 22 at -O2: an 8 KB frame skipped the single 4 KB guard page and
+ * faulted outside it. 64 KB covers every frame the runner and generated
+ * code use; gcc/clang runner builds additionally compile with
+ * -fstack-clash-protection (cmake/GenesisRecompRunner.cmake), which probes
+ * each page of a large frame so even a frame larger than the guard faults
+ * inside it. MSVC's __chkstk already probes page by page. */
+#define FIBER_GUARD_BYTES ((size_t)64u * 1024u)
+
 /* Opaque handle to a fiber. */
 typedef void *fiber_t;
 
@@ -79,7 +93,7 @@ fiber_t fiber_convert_thread(void);
 
 /* Create a new fiber with its own engine-owned stack of max(commit,
  * reserve) usable bytes (rounded up to the page size), fully committed,
- * guard page below. Returns NULL on failure. The fiber does not run until
+ * FIBER_GUARD_BYTES no-access guard below. Returns NULL on failure. The fiber does not run until
  * fiber_switch'd to. */
 fiber_t fiber_create(size_t commit, size_t reserve,
                      fiber_entry_fn entry, void *arg);
@@ -107,7 +121,7 @@ void fiber_revert_thread(void);
 
 /* Re-initialise a created fiber IN PLACE: its next switch-in starts
  * entry(arg) from the top, on the same stack mapping (no free/alloc, the
- * stack range and guard page are unchanged). Returns 0, or -1 on misuse. */
+ * stack range and guard region are unchanged). Returns 0, or -1 on misuse. */
 int fiber_reset(fiber_t fiber, fiber_entry_fn entry, void *arg);
 
 /* Exact byte count fiber_snapshot_save needs for the fiber's CURRENT

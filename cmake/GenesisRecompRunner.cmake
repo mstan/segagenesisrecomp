@@ -111,6 +111,20 @@ function(genesisrecomp_runner_target target)
         target_compile_options(${target} PRIVATE
             "$<$<COMPILE_LANGUAGE:C,CXX>:-fcf-protection=none>")
     endif()
+    # Page-by-page stack probes for large frames on the game fiber, so a frame
+    # bigger than the fiber guard region (FIBER_GUARD_BYTES, fiber_compat.h)
+    # faults inside the guard instead of jumping over it into the coroutine
+    # header. MSVC's __chkstk already does this. The define lets
+    # tests/runtime/fiber_snapshot_test.c assert it (--overflow-huge).
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang" AND NOT MSVC)
+        include(CheckCCompilerFlag)
+        check_c_compiler_flag(-fstack-clash-protection GENESIS_HAVE_STACK_CLASH)
+        if(GENESIS_HAVE_STACK_CLASH)
+            target_compile_options(${target} PRIVATE
+                "$<$<COMPILE_LANGUAGE:C,CXX>:-fstack-clash-protection>")
+            target_compile_definitions(${target} PRIVATE GENESIS_STACK_CLASH_PROTECTION=1)
+        endif()
+    endif()
 endfunction()
 
 function(_genesisrecomp_norm out path base)
