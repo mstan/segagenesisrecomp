@@ -217,6 +217,20 @@ typedef struct GameSpec {
     const GameDebugCommand *commands;
     int                     command_count;
 
+    /* ---- Rollback state (runner/rb_state.c, section "game") ----
+     * Everything the game adapter keeps OUTSIDE guest memory that a tick
+     * reads or writes: reentrancy flags (inside_*), hoisted function-local
+     * statics, party/character runtime tables. Unlike state_save above,
+     * these are called at ANY tick boundary (mid-frame, menus, loading,
+     * lag frames) -- the game fiber may be suspended inside an adapter hook,
+     * so reentrancy flags are routinely non-zero and must round-trip.
+     * rb_state_save returns bytes written (dst NULL = bytes needed); the
+     * bytes are also the digest domain, so they must be pointer-free and
+     * deterministic (no padding garbage). rb_state_load returns 1 on
+     * success. NULL = the adapter keeps no simulation state of its own. */
+    size_t    (*rb_state_save)(void *dst, size_t cap);
+    int       (*rb_state_load)(const void *src, size_t len);
+
     /* Verified-clean native overrides. Native builds typically run
      * with size=0 (everything stays as recompiled C); oracle builds
      * use this to swap interpreter execution for native execution

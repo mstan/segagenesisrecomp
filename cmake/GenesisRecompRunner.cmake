@@ -32,6 +32,8 @@ get_filename_component(GENESIS_RUNNER_ENGINE_ROOT "${CMAKE_CURRENT_LIST_DIR}/.."
 set(GENESIS_RUNNER_CORE_SOURCES
     main.c
     sim_step.c
+    rb_state.c
+    rb_probe.c
     audio.c
     glue.c
     fiber_compat.c
@@ -66,7 +68,9 @@ set(GENESIS_RUNNER_CORE_SOURCES
 # deliberate divergence the reconciler must not paper over.
 set(GENESIS_RUNNER_RECONCILED_SOURCES
     cosim_state.c
-    sim_step.c)
+    sim_step.c
+    rb_state.c
+    rb_probe.c)
 
 function(genesisrecomp_runner_sources out_var)
     cmake_parse_arguments(GRS "" "TRACE;REVERSE_DEBUG" "" ${ARGN})

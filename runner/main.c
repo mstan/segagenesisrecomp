@@ -167,6 +167,8 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
 
 #include "glue.h"
 #include "sim_step.h"
+#include "rb_probe.h"
+#include "rb_state.h"
 
 
 #include "cmd_server.h"
@@ -1522,6 +1524,12 @@ static void live_pre_raster(void *ctx)
     widescreen_update_for_frame();   /* set VDP margin + game RAM word */
 }
 
+/* A REPLAYED tick (rollback resim, determinism probe): only the pre-raster
+ * work that sets simulation parameters (the widescreen margin and its RAM
+ * word -- session-pinned online), no rendering, no observation hooks. */
+static const GenesisSimHooks s_resim_hooks = { widescreen_pre_raster, NULL, NULL, NULL, NULL };
+const GenesisSimHooks *genesis_main_resim_hooks(void) { return &s_resim_hooks; }
+
 /* Post-drain, debugger extra frames: the reverse-debug park only. */
 static int rdb_post_drain(void *ctx)
 {
@@ -2412,6 +2420,7 @@ int main(int argc, char *argv[])
      * Oracle/hybrid only; the own backend has the GROWNS file states. --- */
 
     /* --- Main loop --- */
+    rb_probe_set_resim_hooks(&s_resim_hooks);
     int running = 1;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
     audio_set_playback_enabled(!turbo);
@@ -2622,7 +2631,9 @@ int main(int argc, char *argv[])
               (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
           GenesisSimHooks sim_hooks = { live_pre_raster, own_scanline_sink, NULL,
                                         live_post_drain, NULL };
+          if (rb_probe_armed()) rb_probe_pre_tick();
           int completed = genesis_sim_step(&sim_in, &sim_audio, &sim_hooks);
+          if (completed && rb_probe_armed()) rb_probe_post_tick();
           FRAME_PHASE(1);
           s_screen_width  = s_custom_width ? s_custom_width : gvdp_active_width(&g_machine.vdp);
           /* Output height doubles in interlace mode 2 (S2 2P split-screen);
@@ -2954,6 +2965,7 @@ int main(int argc, char *argv[])
             }
         }
     }
+    rb_probe_summary();
 
     if (max_frames)
         fprintf(stderr, "[DONE] %u frames completed\n", frame_num);

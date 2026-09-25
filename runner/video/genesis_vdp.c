@@ -233,6 +233,11 @@ static void dma_run_68k_to_vdp(GVDP *v)
     }
 }
 
+/* Rollback (rb_state.c): the owed stall is state between a DMA and the
+ * 68K access that pays it, so a snapshot carries it. */
+uint32_t gvdp_rb_pending_stall(void) { return s_pending_68k_stall; }
+void gvdp_rb_set_pending_stall(uint32_t v) { s_pending_68k_stall = v; }
+
 uint32_t gvdp_consume_68k_stall(GVDP *v)
 {
     (void)v;

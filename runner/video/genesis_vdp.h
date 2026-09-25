@@ -128,6 +128,8 @@ uint16_t gvdp_peek_status(const GVDP *v);
  * (consumed right after the triggering port write) and the save states
  * snapshot GVDP as a raw struct image — a new field would break existing
  * save files. */
+uint32_t gvdp_rb_pending_stall(void);
+void     gvdp_rb_set_pending_stall(uint32_t v);
 uint32_t gvdp_consume_68k_stall(GVDP *v);
 
 /* ---- Always-on VDP event ring ---------------------------------------------
