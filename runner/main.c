@@ -187,7 +187,8 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
 #endif
 #if GENESIS_HAS_RECOMP_NET
 #include "genesis_netplay.h"
-#include "genesis_launcher_netplay.h"
+#include "genesis_netplay_identity.h"
+#include "genesis_host_lobby.h"
 #ifndef GENESIS_GAME_VERSION
 #define GENESIS_GAME_VERSION "dev"
 #endif
@@ -309,6 +310,11 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
         g_app_config.window_scale = v;
         if (!(SDL_GetWindowFlags(c->window) & SDL_WINDOW_FULLSCREEN)) SDL_SetWindowSize(c->window, 320*v, 224*v);
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VIEW_MODE)) {
+#if GENESIS_HAS_RECOMP_NET
+        /* The view mode changes the simulated width (widescreen margin and its
+         * RAM word): session-pinned online (config seal). */
+        if (genesis_netplay_active()) return 0;
+#endif
         c->view_mode = v; s_ws_user_on = v != RECOMP_RUNTIME_UI_VIEW_NATIVE;
         if (g_game_spec.video)
             g_game_spec.video->configure(v == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE ? "fit" : "off");
@@ -1199,6 +1205,15 @@ static uint64_t framebuf_active_hash(void)
 static void runner_sram_flush(void)
 {
     if (!s_sram_active) return;
+#if GENESIS_HAS_RECOMP_NET
+    /* Guest sandbox: during a session only the host (the SRAM authority)
+     * persists the battery save; a guest's SRAM holds the host's image and
+     * must never overwrite the guest's own file. */
+    if (!genesis_netplay_sram_writes_allowed()) {
+        s_sram_dirty = 0;
+        return;
+    }
+#endif
     FILE *f = fopen(s_sram_path, "wb");
     if (!f) { fprintf(stderr, "[SRAM] flush failed to open %s\n", s_sram_path); return; }
     size_t n = sram_size();
@@ -1530,6 +1545,112 @@ static void live_pre_raster(void *ctx)
 static const GenesisSimHooks s_resim_hooks = { widescreen_pre_raster, NULL, NULL, NULL, NULL };
 const GenesisSimHooks *genesis_main_resim_hooks(void) { return &s_resim_hooks; }
 
+#if GENESIS_HAS_RECOMP_NET
+/* A replayed tick for the rollback driver (INLINE replay): the same
+ * genesis_sim_step as live, with the resim hooks (no sink, no observation)
+ * and sim_step's scratch audio -- the device stream is never rewound. */
+static void netplay_replay_tick(const GenesisSimInput *in)
+{
+    genesis_sim_step(in, NULL, &s_resim_hooks);
+}
+static int s_netplay_match_over = 0;
+static uint8_t s_rom_sha256[32];
+/* Headless rounds (GENESIS_LOBBY_SELFTEST_FRAMES): drain each match here. */
+static uint32_t s_netplay_match_frames = 0;
+#endif
+
+/* ---- cold reset (rematch / offline Play after netplay) -------------------- */
+static uint8_t *s_cold_blob;
+static size_t   s_cold_len;
+
+static void genesis_session_capture_cold(void)
+{
+    if (s_cold_blob) return;
+    size_t need = genesis_rb_bound();
+    s_cold_blob = (uint8_t *)malloc(need);
+    s_cold_len = s_cold_blob ? genesis_rb_save(s_cold_blob, need) : 0;
+    if (!s_cold_len)
+        fprintf(stderr, "[session] could not capture the cold machine; rematch will be refused\n");
+}
+
+static void runner_sram_init_and_load(const char *rom_path);
+/* session_reset: cold power-on in-process. Every piece of simulation state
+ * is in the rb_state section table (the determinism probe's _STATICS pass
+ * finds no carrier outside it), so restoring the pre-first-tick snapshot IS
+ * the cold boot; then the battery save is re-read from disk exactly as a
+ * fresh process reads it, and host-side playback is flushed. */
+static int genesis_session_reset(const char *rom_path)
+{
+    if (!s_cold_len || !genesis_rb_load(s_cold_blob, s_cold_len)) {
+        fprintf(stderr, "[session] cold reset FAILED\n");
+        return 0;
+    }
+    if (rom_path) runner_sram_init_and_load(rom_path);
+    s_sram_dirty = 0;
+    audio_discard_playback();
+    fprintf(stderr, "[session] cold reset: machine restored to its pre-boot state\n");
+    return 1;
+}
+
+#if GENESIS_HAS_RECOMP_NET
+/* This build's own session configuration (captured once, before any
+ * adoption could overwrite the live settings). */
+static const GenesisSessionConfig *local_session_config(void)
+{
+    static GenesisSessionConfig c;
+    static int have;
+    if (!have) {
+        memset(&c, 0, sizeof c);
+        c.pad_type[0] = (uint8_t)(g_input_map.p[0].pad_type == PAD_6BUTTON);
+        c.pad_type[1] = (uint8_t)(g_input_map.p[1].pad_type == PAD_6BUTTON);
+        const char *pt = getenv("GENESIS_NET_PAD_TYPES");   /* "a,b", 0/1 */
+        if (pt && pt[0]) {
+            c.pad_type[0] = (uint8_t)(pt[0] == '1');
+            c.pad_type[1] = (uint8_t)(strchr(pt, ',') && strchr(pt, ',')[1] == '1');
+        }
+        c.ws_on = (uint8_t)(s_ws_user_on != 0);
+        c.ws_cells = (uint8_t)(s_ws_user_cells > 0 && s_ws_user_cells < 256 ? s_ws_user_cells : 0);
+        if (g_game_spec.netplay_config_image)
+            g_game_spec.netplay_config_image(c.game, sizeof c.game);
+        have = 1;
+    }
+    return &c;
+}
+
+/* After a match: the next session, if any. Headless rooms rematch from the
+ * waiting room (GENESIS_LOBBY_SELFTEST_ROUNDS) or take the room's Offline
+ * Play (GENESIS_LOBBY_SELFTEST_THEN_OFFLINE); anything else exits. */
+static int netplay_next_session(GenesisNetplayConfig *cfg, int round)
+{
+    int role = genesis_host_lobby_selftest_role();
+    const char *v = getenv("GENESIS_LOBBY_SELFTEST_ROUNDS");
+    int rounds = v && v[0] ? atoi(v) : 1;
+    if (!role) return 0;
+    genesis_host_lobby_prepare_rematch();
+    genesis_host_lobby_selftest_report_room(round + 1);
+    if (round < rounds) {
+        RecompLauncherCNetplayLaunch l;
+        if (genesis_host_lobby_selftest_room(round + 1, &l) != 0) return 0;
+        genesis_netplay_config_defaults(cfg);
+        genesis_netplay_apply_env(cfg);
+        if (genesis_host_lobby_config_from_launch(&l, cfg) != 0) return 0;
+        fprintf(stderr, "[lobby-selftest] round %d: rematch session=%u\n", round + 1,
+                (unsigned)cfg->session_id);
+        return 1;
+    }
+    v = getenv("GENESIS_LOBBY_SELFTEST_THEN_OFFLINE");
+    if (v && v[0] && v[0] != '0') {
+        cfg->enabled = 0;
+        genesis_netplay_adopt_session_config(NULL);
+        if (g_game_spec.netplay_config_adopt)
+            g_game_spec.netplay_config_adopt(local_session_config()->game);
+        fprintf(stderr, "[lobby-selftest] offline Play after %d match(es)\n", round);
+        return 1;
+    }
+    return 0;
+}
+#endif
+
 /* Post-drain, debugger extra frames: the reverse-debug park only. */
 static int rdb_post_drain(void *ctx)
 {
@@ -1739,8 +1860,39 @@ int main(int argc, char *argv[])
     app_config_load(settings_ini);   /* also seeds g_input_map controller bindings */
     if (g_game_spec.load_settings) g_game_spec.load_settings(settings_ini);
 #if GENESIS_HAS_RECOMP_NET && RECOMP_LAUNCHER
-    genesis_launcher_netplay_init(g_game_spec.display_name, GENESIS_GAME_VERSION,
-                                  exe_relative("genesis-netplay-room.txt"));
+    {
+        /* Content identity for the lobby: the ROM's SHA-256, when a ROM is
+         * already known (command line or the remembered rom.cfg). */
+        static char rom_hex[65];
+        char known[600] = "";
+        if (rom_path) snprintf(known, sizeof known, "%s", rom_path);
+        else rom_cfg_read(rom_cfg_path, known, sizeof known);
+        rom_hex[0] = 0;
+        if (known[0]) {
+            FILE *rf = fopen(known, "rb");
+            if (rf) {
+                fseek(rf, 0, SEEK_END);
+                long n = ftell(rf);
+                fseek(rf, 0, SEEK_SET);
+                uint8_t *b = n > 0 ? (uint8_t *)malloc((size_t)n) : NULL;
+                if (b && fread(b, 1, (size_t)n, rf) == (size_t)n) {
+                    uint8_t d[32];
+                    genesis_identity_sha256(b, (size_t)n, d);
+                    genesis_identity_hex(d, 32, rom_hex);
+                }
+                free(b);
+                fclose(rf);
+            }
+        }
+        GenesisHostLobbyIdentity lid;
+        memset(&lid, 0, sizeof lid);
+        lid.game_name = g_game_spec.display_name;
+        lid.release_version = GENESIS_GAME_VERSION;
+        lid.rom_sha256_hex = rom_hex;
+        lid.lan_registry_path = exe_relative("genesis-netplay-room.txt");
+        lid.max_players = g_game_spec.logical_players ? (int)g_game_spec.logical_players : 2;
+        genesis_host_lobby_init(&lid);
+    }
 #endif
 
     {
@@ -1816,7 +1968,7 @@ int main(int argc, char *argv[])
                     gi.pad_mode_selectable  = 1;
 #if GENESIS_HAS_RECOMP_NET
                     gi.netplay_supported    = 1;
-                    gi.netplay              = genesis_launcher_netplay_callbacks();
+                    gi.netplay              = genesis_host_lobby_callbacks();
 #endif
                     /* Point the launcher's bind bridge at the engine's OWN
                      * settings.ini (not a separate keybinds.ini) so key/pad
@@ -1855,8 +2007,9 @@ int main(int argc, char *argv[])
                     if (lr == 0) {                  /* PLAY */
                         if (picked[0]) rom_path = picked;
 #if GENESIS_HAS_RECOMP_NET
-                        genesis_launcher_netplay_apply_host_caps(&ls);
-                        genesis_launcher_netplay_config_from_launch(&ls, &netplay_config);
+                        if (ls.netplay_launch.enabled &&
+                            genesis_host_lobby_config_from_launch(&ls.netplay_launch, &netplay_config) != 0)
+                            fprintf(stderr, "genesis_netplay: launch refused\n");
 #endif
                         /* Ordering matters. Re-load settings.ini FIRST so the
                          * key/pad rebinds the launcher just wrote reach
@@ -2262,18 +2415,10 @@ int main(int argc, char *argv[])
                            g_game_spec.sram_start, g_game_spec.sram_end);
     runner_sram_init_and_load(rom_path);
 
-    free(rom_raw);   /* glue_init copied what it needs */
-
 #if GENESIS_HAS_RECOMP_NET
-    if (netplay_config.enabled && g_game_spec.netplay_allowed && !g_game_spec.netplay_allowed()) {
-        fprintf(stderr, "genesis_netplay: this local enhancement/roster is not supported online\n");
-        return 1;
-    }
-    if (netplay_config.enabled && genesis_netplay_start(&netplay_config) != 0) {
-        fprintf(stderr, "genesis_netplay: failed to start session\n");
-        return 1;
-    }
+    genesis_identity_sha256(rom_raw, rom_raw_len, s_rom_sha256);
 #endif
+    free(rom_raw);   /* glue_init copied what it needs */
 
     /* TCP debug server — only if debug.ini exists next to the exe.
      * Port resolution (highest priority first):
@@ -2421,6 +2566,53 @@ int main(int argc, char *argv[])
 
     /* --- Main loop --- */
     rb_probe_set_resim_hooks(&s_resim_hooks);
+    /* The cold machine: the state a fresh process has before its first tick
+     * (after glue/machine init and the battery-save load). A rematch or an
+     * offline Play after netplay restores it in-process (genesis_session_reset:
+     * NETPLAY.md section 3, every session starts from a deterministic cold
+     * boot), so nothing a previous session left behind reaches the next. */
+    genesis_session_capture_cold();
+    int session_round = 1;
+session_begin:;
+#if GENESIS_HAS_RECOMP_NET
+    if (netplay_config.enabled && g_game_spec.netplay_allowed && !g_game_spec.netplay_allowed()) {
+        fprintf(stderr, "genesis_netplay: this local enhancement/roster is not supported online\n");
+        return 1;
+    }
+    genesis_netplay_set_tick_runner(netplay_replay_tick);
+    if (session_round == 1 && genesis_host_lobby_selftest_role()) {
+        RecompLauncherCNetplayLaunch l;
+        const char *f = getenv("GENESIS_LOBBY_SELFTEST_FRAMES");
+        s_netplay_match_frames = f && f[0] ? (uint32_t)atoi(f) : 1200u;
+        genesis_netplay_set_local_session_config(local_session_config());
+        if (genesis_host_lobby_selftest_room(1, &l) != 0) return 3;
+        if (genesis_host_lobby_config_from_launch(&l, &netplay_config) != 0) return 3;
+    }
+    if (netplay_config.enabled) {
+        const GenesisSessionConfig *sc;
+        genesis_netplay_set_local_session_config(local_session_config());
+        sc = genesis_netplay_session_config();
+        /* Apply the settled session configuration (the host's, online). */
+        s_ws_user_on = sc->ws_on;
+        if (sc->ws_on && sc->ws_cells) s_ws_user_cells = sc->ws_cells;
+        if (g_game_spec.netplay_config_adopt && g_game_spec.netplay_config_adopt(sc->game) != 0) {
+            fprintf(stderr, "genesis_netplay: cannot run the host's configuration (%s) — refusing\n",
+                    sc->game);
+            return 1;
+        }
+        genesis_netplay_config_seal();
+        genesis_netplay_set_identity(genesis_identity_build_fp(), s_rom_sha256);
+        genesis_netplay_set_sram(sram_battery_present() ? sram_buf() : NULL,
+                                 sram_battery_present() ? (uint32_t)sram_size() : 0u);
+        if (rb_probe_armed())
+            fprintf(stderr, "genesis_netplay: GENESIS_RB_PROBE ignored online (it would simulate "
+                            "ticks the peers never see)\n");
+    }
+    if (netplay_config.enabled && genesis_netplay_start(&netplay_config) != 0) {
+        fprintf(stderr, "genesis_netplay: failed to start session\n");
+        return 1;
+    }
+#endif
     int running = 1;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
     audio_set_playback_enabled(!turbo);
@@ -2485,7 +2677,7 @@ int main(int argc, char *argv[])
                 continue;
             }
 #endif
-            if (ev.type == SDL_QUIT) running = 0;
+            if (ev.type == SDL_QUIT) { fprintf(stderr, "[session] SDL_QUIT received\n"); running = 0; }
             if (ev.type == SDL_KEYDOWN) {
 #if !RECOMP_LAUNCHER
                 if (ev.key.keysym.sym == SDLK_ESCAPE) running = 0;
@@ -2585,11 +2777,31 @@ int main(int argc, char *argv[])
                 fprintf(stderr,
                         "genesis_netplay: input desync tick=%u local=%08X remote=%08X\n",
                         desync_tick, local_hash, remote_hash);
+                genesis_netplay_request_return_to_lobby();
+            }
+            /* The rollback driver's coordinated stop (SIGUSR1 in harnesses)
+             * finished: leave. */
+            if (genesis_netplay_quiesced()) {
+                fprintf(stderr, "genesis_netplay: coordinated stop complete — leaving the match\n");
+                s_netplay_match_over = 1;
                 running = 0;
                 continue;
             }
-            if (genesis_netplay_peer_disconnected(1500)) {
-                fprintf(stderr, "genesis_netplay: peer disconnected\n");
+            /* Headless rounds end by draining at a fixed tick count. */
+            if (s_netplay_match_frames && genesis_netplay_sim_tick() >= s_netplay_match_frames)
+                genesis_netplay_request_quiesce();
+            /* A peer that left (BYE / silence) ends the match; while the
+             * driver drains it must keep polling on a dead session. */
+            if (!genesis_netplay_rollback_active() || !genesis_netplay_draining())
+                if (genesis_netplay_peer_disconnected(3000)) {
+                    fprintf(stderr, "genesis_netplay: peer gone — ending the match\n");
+                    genesis_netplay_request_return_to_lobby();
+                }
+            if (genesis_netplay_return_to_lobby_requested()) {
+                const char *why = genesis_netplay_refusal();
+                fprintf(stderr, "genesis_netplay: match over (%s) — return to lobby\n",
+                        why ? why : "peer left or local request");
+                s_netplay_match_over = 1;
                 running = 0;
                 continue;
             }
@@ -2625,22 +2837,35 @@ int main(int argc, char *argv[])
         s_current_frame_for_input = frame_num;
         {
           GenesisSimInput sim_in;
+#if GENESIS_HAS_RECOMP_NET
+          /* Online the tick reads PUBLISHED rows only (NETPLAY.md section 2). */
+          if (genesis_netplay_active()) genesis_netplay_sim_input(&sim_in);
+          else
+#endif
           collect_sim_input(&sim_in);
           GenesisSimAudio sim_audio = {
               (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
               (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
           GenesisSimHooks sim_hooks = { live_pre_raster, own_scanline_sink, NULL,
                                         live_post_drain, NULL };
-          if (rb_probe_armed()) rb_probe_pre_tick();
+          int probing = rb_probe_armed()
+#if GENESIS_HAS_RECOMP_NET
+                        && !genesis_netplay_active()
+#endif
+                        ;
+          if (probing) rb_probe_pre_tick();
           int completed = genesis_sim_step(&sim_in, &sim_audio, &sim_hooks);
-          if (completed && rb_probe_armed()) rb_probe_post_tick();
+          if (completed && probing) rb_probe_post_tick();
           FRAME_PHASE(1);
           s_screen_width  = s_custom_width ? s_custom_width : gvdp_active_width(&g_machine.vdp);
           /* Output height doubles in interlace mode 2 (S2 2P split-screen);
            * the existing interlace display modes (tv squash / raw) take over
            * from here, same as the clownmdemu path. */
           s_screen_height = gvdp_output_height(&g_machine.vdp);
-          if (!completed) { running = 0; break; }   /* reverse-debug quit */
+          if (!completed) {                        /* reverse-debug quit */
+              fprintf(stderr, "[session] tick stopped by the post-drain hook (reverse-debug quit)\n");
+              running = 0; break;
+          }
           FRAME_PHASE(7);
 #ifdef GENESIS_COSIM
           /* Differential co-sim FRAME checkpoint. Own-backend: master_cycle is the
@@ -2653,10 +2878,12 @@ int main(int argc, char *argv[])
         check_ramdump();
 #if GENESIS_HAS_RECOMP_NET
         genesis_netplay_finish_frame();
-        if (genesis_netplay_active()) {
-            /* Kick off the next tick immediately. Audio mixing, texture upload,
-             * and the blocking vsync present below then overlap the peer's
-             * INPUT/CONFIRM work instead of serialising it after vblank. */
+        if (genesis_netplay_active() && !genesis_netplay_rollback_active()) {
+            /* Delay-sync: kick off the next tick immediately. Audio mixing,
+             * texture upload, and the blocking vsync present below then
+             * overlap the peer's INPUT/CONFIRM work instead of serialising it
+             * after vblank. (Rollback runs ahead of the wire by design and
+             * admits once per loop at the top.) */
             if (genesis_netplay_needs_local_sample())
                 genesis_netplay_stage_local(
                     collect_pad_mask(genesis_netplay_input_player()));
@@ -2834,7 +3061,14 @@ int main(int argc, char *argv[])
         }
 
         /* Benchmarks are read-only and exclude host persistence work. */
-        if (!benchmark_frames)
+        if (!benchmark_frames
+#if GENESIS_HAS_RECOMP_NET
+            /* Online the save is written once, by the host, at the end of the
+             * match: an autosave mid-match could persist a PREDICTED tick
+             * that a rollback later rewrites. */
+            && !genesis_netplay_active()
+#endif
+            )
             runner_sram_autosave_tick(frame_num);
 
         FRAME_PHASE(5);
@@ -2850,7 +3084,12 @@ int main(int argc, char *argv[])
             present_src = s_present_buf;
         }
 #if RECOMP_LAUNCHER
-        if (!g_game_spec.video && s_runtime_ui.view_mode == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE) {
+        if (!g_game_spec.video && s_runtime_ui.view_mode == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE
+#if GENESIS_HAS_RECOMP_NET
+            /* window-size-dependent simulation: pinned online (config seal) */
+            && !genesis_netplay_active()
+#endif
+            ) {
             int ow, oh; SDL_GetRendererOutputSize(renderer, &ow, &oh);
             if (oh > 0) { int cells = (((224 * ow + oh/2) / oh) - 320 + 15) / 16; if (cells < 1) cells = 1; if (cells > 12) cells = 12; s_ws_user_cells = cells; s_ws_user_on = 1; }
         }
@@ -2920,7 +3159,7 @@ int main(int argc, char *argv[])
 #if GENESIS_HAS_RECOMP_NET
         /* Process the peer INPUT and emit our CONFIRM before the blocking
          * present, so confirmation delivery overlaps vsync as well. */
-        if (genesis_netplay_active())
+        if (genesis_netplay_active() && !genesis_netplay_rollback_active())
             (void)genesis_netplay_poll_admit();
 #endif
         SDL_RenderPresent(renderer);
@@ -2934,7 +3173,7 @@ int main(int argc, char *argv[])
 #if GENESIS_HAS_RECOMP_NET
         /* Confirmation normally arrived during vsync. The top-of-loop barrier
          * remains authoritative if either peer missed this opportunity. */
-        if (genesis_netplay_active())
+        if (genesis_netplay_active() && !genesis_netplay_rollback_active())
             (void)genesis_netplay_poll_admit();
 #endif
 
@@ -2965,7 +3204,41 @@ int main(int argc, char *argv[])
             }
         }
     }
+    fprintf(stderr, "[session] loop ended: running=%d frame=%u\n", running, (unsigned)frame_num);
+    {
+        /* GENESIS_SCREENSHOT_AT_EXIT=path.png: the last presented framebuffer
+         * (the engine's own dump), per session round -- what a harness shows
+         * as "what each peer had on screen". */
+        const char *shot = getenv("GENESIS_SCREENSHOT_AT_EXIT");
+        if (shot && shot[0]) {
+            char path[600];
+            if (session_round > 1) {
+                const char *dot = strrchr(shot, '.');
+                int stem = dot ? (int)(dot - shot) : (int)strlen(shot);
+                snprintf(path, sizeof path, "%.*s.round%d%s", stem, shot, session_round, dot ? dot : "");
+            } else {
+                snprintf(path, sizeof path, "%s", shot);
+            }
+            runner_write_screenshot_file(path);
+        }
+    }
     rb_probe_summary();
+#if GENESIS_HAS_RECOMP_NET
+    if (s_netplay_match_over) {
+        s_netplay_match_over = 0;
+        genesis_netplay_print_summary();
+        const char *refusal = genesis_netplay_refusal();
+        genesis_netplay_shutdown();
+        /* The host is the SRAM authority: its save is written once, now. */
+        if (s_sram_dirty || sram_battery_present()) runner_sram_flush();
+        if (refusal) genesis_host_lobby_set_runtime_error(refusal);
+        if (netplay_next_session(&netplay_config, session_round)) {
+            genesis_session_reset(rom_path);
+            session_round++;
+            goto session_begin;
+        }
+    }
+#endif
 
     if (max_frames)
         fprintf(stderr, "[DONE] %u frames completed\n", frame_num);
@@ -3056,6 +3329,7 @@ int main(int argc, char *argv[])
 
     /* --- Cleanup --- */
 #if GENESIS_HAS_RECOMP_NET
+    genesis_netplay_print_summary();
     genesis_netplay_shutdown();
 #endif
     if (s_sram_dirty) runner_sram_flush();  /* final flush of any pending save */

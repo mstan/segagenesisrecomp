@@ -231,6 +231,19 @@ typedef struct GameSpec {
     size_t    (*rb_state_save)(void *dst, size_t cap);
     int       (*rb_state_load)(const void *src, size_t len);
 
+    /* ---- Netplay session config seal ----
+     * Write the game's simulation-affecting configuration (roster, character
+     * set, custom-video width, enabled mods...) as text lines into out. The
+     * engine prepends its own lines and the result is the session config
+     * image every peer must match exactly (runner/netplay/genesis_netplay.h).
+     * NULL = nothing game-specific affects the simulation. */
+    void      (*netplay_config_image)(char *out, size_t cap);
+    /* Adopt a configuration line (the lobby host's, or this build's own to
+     * restore it) for the next session, WITHOUT persisting it. Return 0, or
+     * non-zero when this build cannot run it (missing owner assets...): the
+     * launch is then refused. NULL = nothing to adopt. */
+    int       (*netplay_config_adopt)(const char *line);
+
     /* Verified-clean native overrides. Native builds typically run
      * with size=0 (everything stays as recompiled C); oracle builds
      * use this to swap interpreter execution for native execution
