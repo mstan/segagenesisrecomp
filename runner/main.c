@@ -1621,23 +1621,37 @@ static int genesis_session_reset(const char *rom_path)
 }
 
 #if GENESIS_HAS_RECOMP_NET
-/* This build's own session configuration (captured once, before any
- * adoption could overwrite the live settings). */
-static const GenesisSessionConfig *local_session_config(void)
+/* Retain local preferences separately from the adopted match configuration.
+ * A launcher can CREATE/START before the renderer and machine exist, and its
+ * controls can change between those two actions. Capture from preferences,
+ * not from initialized simulation state or a once-only startup cache. */
+static GenesisSessionConfig s_local_session_config;
+static int s_have_local_session_config;
+static void capture_local_session_config(const RecompLauncherCSettings *settings,
+                                         GenesisSessionConfig *out)
 {
-    static GenesisSessionConfig c;
-    static int have;
-    if (!have) {
+    GenesisSessionConfig c;
+    {
         memset(&c, 0, sizeof c);
-        c.pad_type[0] = (uint8_t)(g_input_map.p[0].pad_type == PAD_6BUTTON);
-        c.pad_type[1] = (uint8_t)(g_input_map.p[1].pad_type == PAD_6BUTTON);
+        for (int p = 0; p < 2; ++p)
+            c.pad_type[p] = (uint8_t)(settings ? settings->pad_mode[p] == 1
+                                               : g_input_map.p[p].pad_type == PAD_6BUTTON);
         const char *pt = getenv("GENESIS_NET_PAD_TYPES");   /* "a,b", 0/1 */
         if (pt && pt[0]) {
             c.pad_type[0] = (uint8_t)(pt[0] == '1');
             c.pad_type[1] = (uint8_t)(strchr(pt, ',') && strchr(pt, ',')[1] == '1');
         }
-        c.ws_on = (uint8_t)(s_ws_user_on != 0);
-        if (g_game_spec.video && g_game_spec.video->enabled()) {
+        int ws_on = settings ? settings->widescreen : g_app_config.widescreen;
+        int ws_cells = settings ? settings->widescreen_cells : g_app_config.widescreen_cells;
+        const char *ws = getenv("GENESIS_WIDESCREEN");
+        const char *cols = getenv("GENESIS_WIDESCREEN_COLUMNS");
+        if (ws && (ws[0] == '1' || ws[0] == 'y' || ws[0] == 'Y' ||
+                   ws[0] == 't' || ws[0] == 'T' ||
+                   ((ws[0] == 'o' || ws[0] == 'O') && (ws[1] == 'n' || ws[1] == 'N'))))
+            ws_on = 1;
+        if (cols && atoi(cols) > 0) ws_cells = atoi(cols);
+        c.ws_on = (uint8_t)(!g_game_spec.video && ws_on != 0);
+        if (g_game_spec.video) {
             /* The host's custom-video mode, window-independent. */
             const char *m = s_custom_video_cli ? s_custom_video_cli
                           : g_app_config.custom_widescreen ? app_config_aspect_mode(g_app_config.custom_aspect)
@@ -1652,12 +1666,19 @@ static const GenesisSessionConfig *local_session_config(void)
                 snprintf(c.video, sizeof c.video, "%s", m);
             }
         }
-        c.ws_cells = (uint8_t)(s_ws_user_cells > 0 && s_ws_user_cells < 256 ? s_ws_user_cells : 0);
+        c.ws_cells = (uint8_t)(ws_cells > 0 && ws_cells < 256 ? ws_cells : 0);
         if (g_game_spec.netplay_config_image)
             g_game_spec.netplay_config_image(c.game, sizeof c.game);
-        have = 1;
     }
-    return &c;
+    s_local_session_config = c;
+    s_have_local_session_config = 1;
+    if (out) *out = c;
+}
+
+static const GenesisSessionConfig *local_session_config(void)
+{
+    if (!s_have_local_session_config) capture_local_session_config(NULL, NULL);
+    return &s_local_session_config;
 }
 
 /* After a match: the next session, if any. Headless rooms rematch from the
@@ -1676,6 +1697,11 @@ static int netplay_next_session(GenesisNetplayConfig *cfg, int round)
          * netplay launch is a rematch; PLAY without one is offline Play;
          * both boot cold in this process. Closing it exits. */
         const char *picked_rom = NULL;
+        /* Restore the guest's own roster before the next launcher can edit
+         * or advertise it. The host's settings stay session-only. */
+        if (g_game_spec.netplay_config_adopt)
+            g_game_spec.netplay_config_adopt(local_session_config()->game);
+        genesis_netplay_adopt_session_config(NULL);
         GenesisNetplayConfig next;
         genesis_netplay_config_defaults(&next);
         genesis_netplay_apply_env(&next);
@@ -1857,12 +1883,17 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         /* Soft return: reopen on the waiting room of the match that just ended
          * (recomp-ui HOST_NETPLAY.md: prepare_rematch + resume_netplay_room). */
         if (soft_return) genesis_host_lobby_begin_soft_return(&gi);
+        capture_local_session_config(&ls, NULL);
+        genesis_netplay_set_local_session_config(local_session_config());
     #endif
         lr = recomp_launcher_run_window(ltitle, &ls, &gi, assets_dir,
                                         initial_rom, picked, picked_cap);
         if (lr == 0) {                  /* PLAY */
             if (picked[0]) *rom_path_io = picked;
     #if GENESIS_HAS_RECOMP_NET
+            /* Save guest-local preferences before adopting the host's image. */
+            capture_local_session_config(&ls, NULL);
+            genesis_netplay_set_local_session_config(local_session_config());
             if (ls.netplay_launch.enabled &&
                 genesis_host_lobby_config_from_launch(&ls.netplay_launch, netplay_config_v) != 0)
                 fprintf(stderr, "genesis_netplay: launch refused\n");
@@ -2106,7 +2137,16 @@ int main(int argc, char *argv[])
         lid.rom_sha256_hex = rom_hex;
         lid.lan_registry_path = exe_relative("genesis-netplay-room.txt");
         lid.max_players = g_game_spec.logical_players ? (int)g_game_spec.logical_players : 2;
+        lid.capture_local_config = capture_local_session_config;
         genesis_host_lobby_init(&lid);
+    }
+    /* Exercise the same pre-machine lobby ordering as the graphical launcher.
+     * The usual headless selftest joins only after machine initialization. */
+    if (genesis_host_lobby_selftest_role() && getenv("GENESIS_LOBBY_SELFTEST_PREBOOT")) {
+        RecompLauncherCNetplayLaunch l;
+        fprintf(stderr, "[lobby-selftest] preboot launcher ordering\n");
+        if (genesis_host_lobby_selftest_room(1, &l) != 0) return 3;
+        if (genesis_host_lobby_config_from_launch(&l, &netplay_config) != 0) return 3;
     }
 #endif
 
@@ -2391,7 +2431,9 @@ int main(int argc, char *argv[])
         win_w = ws_canvas_w() * win_scale;
         win_h = win_w * WS_ASPECT_H / WS_ASPECT_W;   /* true 16:9 */
     }
-    Uint32 win_flags = (benchmark_frames ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN)
+    /* Scripted launcher tests must stay hidden after the handoff to gameplay. */
+    int test_hidden = getenv("LNG_SCRIPT") && getenv("LNG_TEST_HIDDEN");
+    Uint32 win_flags = ((benchmark_frames || test_hidden) ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN)
                      | SDL_WINDOW_RESIZABLE;
     /* Launcher tri-state: 1 = borderless (desktop resolution, letterboxed by
      * SDL_RenderSetLogicalSize), 2 = exclusive (real mode change). */
@@ -2710,9 +2752,11 @@ session_begin:;
         RecompLauncherCNetplayLaunch l;
         const char *f = getenv("GENESIS_LOBBY_SELFTEST_FRAMES");
         s_netplay_match_frames = f && f[0] ? (uint32_t)atoi(f) : 1200u;
-        genesis_netplay_set_local_session_config(local_session_config());
-        if (genesis_host_lobby_selftest_room(1, &l) != 0) return 3;
-        if (genesis_host_lobby_config_from_launch(&l, &netplay_config) != 0) return 3;
+        if (!getenv("GENESIS_LOBBY_SELFTEST_PREBOOT")) {
+            genesis_netplay_set_local_session_config(local_session_config());
+            if (genesis_host_lobby_selftest_room(1, &l) != 0) return 3;
+            if (genesis_host_lobby_config_from_launch(&l, &netplay_config) != 0) return 3;
+        }
     }
     if (netplay_config.enabled) {
         const GenesisSessionConfig *sc;
