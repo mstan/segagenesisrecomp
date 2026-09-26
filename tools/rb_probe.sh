@@ -33,6 +33,9 @@ rm -rf "$OUT"; mkdir -p "$OUT"
 cp "$EXE" "$OUT/"; cp "$ROM" "$OUT/"
 [ -f "$(dirname "$EXE")/annotations_from_disasm.csv" ] && cp "$(dirname "$EXE")/annotations_from_disasm.csv" "$OUT/"
 [ -d "$(dirname "$EXE")/assets" ] && cp -r "$(dirname "$EXE")/assets" "$OUT/"
+# RB_PROBE_FILES="src[:dest] ...": extra files staged beside the executable
+# (e.g. a game's party/roster settings).
+for f in ${RB_PROBE_FILES:-}; do cp "${f%%:*}" "$OUT/$( [ "${f#*:}" != "$f" ] && echo "${f#*:}" || basename "${f%%:*}")"; done
 
 script="$OUT/scenario.input"
 {

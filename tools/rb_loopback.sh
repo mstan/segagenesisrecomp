@@ -59,6 +59,7 @@
 #   RB_LOOPBACK_TEST_PAD=spec    scripted input on seat 0 (GENESIS_NET_TEST_PAD,
 #                                "<period>[:<hold>[:<mask-hex>]]"): organic
 #                                mispredicts the scene can see
+#   RB_LOOPBACK_FILES="src[:dest] .."  files staged beside every peer's exe
 #   RB_LOOPBACK_PORTS=a,b[,c,d]  UDP ports of seat 1, seat 0, seat 2, seat 3
 #                                (default 9700,9701,9702,9703)
 #
@@ -134,6 +135,12 @@ for ((s = 0; s < SEATS; s++)); do
     cp "$EXE" "$ROM" "$dir/"
     [ -f "$(dirname "$EXE")/annotations_from_disasm.csv" ] && cp "$(dirname "$EXE")/annotations_from_disasm.csv" "$dir/"
     [ -d "$(dirname "$EXE")/assets" ] && cp -r "$(dirname "$EXE")/assets" "$dir/"
+    # RB_LOOPBACK_FILES="src[:dest] ...": staged beside EVERY peer's
+    # executable (e.g. a party roster: every peer must run the same one, or
+    # the config seal refuses the match).
+    for f in ${RB_LOOPBACK_FILES:-}; do
+        cp "${f%%:*}" "$dir/$( [ "${f#*:}" != "$f" ] && echo "${f#*:}" || basename "${f%%:*}")"
+    done
     mapfile -t args < <(role_args "$role")
     bind=127.0.0.1:$(port_of $s)
     # Two seats dial each other; with more, every seat dials seat 0 (the

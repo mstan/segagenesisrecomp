@@ -672,6 +672,11 @@ int genesis_netplay_peer_disconnected(uint32_t timeout_ms)
 static char s_config_image[512];
 static GenesisSessionConfig s_local_cfg, s_session_cfg;
 static int s_session_cfg_adopted;
+static char s_engine_knobs[256];
+void genesis_netplay_set_engine_knobs(const char *line)
+{
+    snprintf(s_engine_knobs, sizeof s_engine_knobs, "%s", line ? line : "");
+}
 
 void genesis_netplay_set_local_session_config(const GenesisSessionConfig *c)
 {
@@ -694,9 +699,10 @@ void genesis_netplay_config_seal(void)
     g_np.pad_type[0] = c->pad_type[0] ? 1 : 0;
     g_np.pad_type[1] = c->pad_type[1] ? 1 : 0;
     snprintf(s_config_image, sizeof s_config_image,
-             "genesis-config/1\npad=%u,%u\nws=%u cells=%u\ngame=%s\n",
+             "genesis-config/1\npad=%u,%u\nws=%u cells=%u\ngame=%s\nknobs=%s\n",
              (unsigned)g_np.pad_type[0], (unsigned)g_np.pad_type[1],
-             (unsigned)(c->ws_on ? 1 : 0), (unsigned)(c->ws_on ? c->ws_cells : 0), c->game);
+             (unsigned)(c->ws_on ? 1 : 0), (unsigned)(c->ws_on ? c->ws_cells : 0), c->game,
+             s_engine_knobs);
     genesis_netplay_rb_set_config_image(s_config_image);
     fprintf(stderr, "genesis_netplay: session config (%s):\n%s",
             s_session_cfg_adopted ? "adopted from the host" : "local", s_config_image);

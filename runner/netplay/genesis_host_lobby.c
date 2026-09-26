@@ -217,6 +217,7 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
     int is_host = role == 1;
     const char *rname = is_host ? "host" : "guest";
     int players = atoi(env_or("GENESIS_LOBBY_SELFTEST_PLAYERS", "2"));
+    int spectators = atoi(env_or("GENESIS_LOBBY_SELFTEST_SPECTATORS", "0"));
     int lan = atoi(env_or("GENESIS_LOBBY_SELFTEST_LAN", "0"));
     int lan_port = atoi(env_or("GENESIS_LOBBY_SELFTEST_LAN_PORT", "17790"));
     const char *lobby = env_or("GENESIS_LOBBY_SELFTEST_LOBBY", "genesis-selftest");
@@ -247,6 +248,7 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
         }
         if (is_host) {
             char ep[64];
+            if (spectators > 0 && cb->allow_spectators_set) cb->allow_spectators_set(NULL, 1);
             snprintf(ep, sizeof ep, lan ? "127.0.0.1:%d" : "0.0.0.0:%d", lan ? lan_port : 7777);
             int rc = cb->create(NULL, lobby, ep, "", &settings, lan ? 1 : 0, lan ? 2 : players);
             fprintf(stderr, "[lobby-selftest] host round=1 %s create rc=%d seats=%d\n",
@@ -285,7 +287,7 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
                 }
             }
         }
-        int need = lan ? 2 : players;
+        int need = lan ? 2 : players + spectators;
         if (joined && cb->in_lobby(NULL) && !ready_sent && (!is_host || cb->member_count(NULL) >= need))
             ready_sent = cb->set_ready(NULL, 1) == 0;
         if (is_host && !started && cb->member_count(NULL) >= need && cb->all_ready(NULL)) {
@@ -296,9 +298,10 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
         if (cb->launch_pending(NULL)) {
             int ok = cb->fill_launch(NULL, out);
             fprintf(stderr, "[lobby-selftest] %s round=%d fill_launch=%d slot=%d players=%d "
-                            "session=%u bind=%s peer=%s occupied=%x\n", rname, round, ok,
+                            "session=%u bind=%s peer=%s occupied=%x spectator=%d wire=%d\n", rname, round, ok,
                     out->local_slot, out->player_count, (unsigned)out->session_id,
-                    out->bind_hostport, out->peer_hostport, (unsigned)out->occupied_mask);
+                    out->bind_hostport, out->peer_hostport, (unsigned)out->occupied_mask,
+                    out->is_spectator, out->spectator_wire_slot);
             return ok ? 0 : -11;
         }
         hl_sleep_ms(10);

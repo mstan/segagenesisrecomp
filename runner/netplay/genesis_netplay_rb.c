@@ -50,7 +50,25 @@ static struct {
     int           in_resim;
     const char   *config_image;
     uint32_t      replayed_ticks;
+    uint64_t      pre_resim_master;   /* live (mispredicted) state at the tip */
+    uint32_t      replays, replays_changed;
 } g_rb;
+
+/* Cost of ticks, live and replayed (NETPLAY_FIELDS line; rb_sweep reads it). */
+#define RB_COST_N 16384
+typedef struct { uint32_t us[RB_COST_N]; uint32_t n; uint64_t total; } RbCost;
+static RbCost s_cost_live, s_cost_replay;
+static void cost_add(RbCost *c, uint32_t us) { c->total++; if (c->n < RB_COST_N) c->us[c->n++] = us; }
+static int u32cmp(const void *a, const void *b) { uint32_t x = *(const uint32_t *)a, y = *(const uint32_t *)b; return (x > y) - (x < y); }
+static void cost_pct(RbCost *c, uint32_t *p50, uint32_t *p99)
+{
+    *p50 = *p99 = 0;
+    if (!c->n) return;
+    qsort(c->us, c->n, sizeof c->us[0], u32cmp);
+    *p50 = c->us[c->n / 2];
+    *p99 = c->us[(c->n * 99) / 100];
+}
+void genesis_netplay_rb_note_live_tick_us(uint32_t us) { cost_add(&s_cost_live, us); }
 
 static int rb_env_int(const char *name, const char *generic, int def, int lo, int hi)
 {
@@ -107,26 +125,90 @@ static void h_snap_drop_after(void *c, uint32_t t) { (void)c; if (g_rb.snaps) (v
 
 /* ---- one tick --------------------------------------------------------------------- */
 
+static uint32_t s_last_tick;   /* the tick last published (live or replay) */
+
 static void h_publish(void *ctx, uint32_t tick, const RNetRbFrame *rows, int slots, int replay)
 {
     (void)ctx; (void)replay;
+    s_last_tick = tick;
     for (int i = 0; i < RB_MAX_SLOTS; i++) g_rb.rows[i] = 0;
     for (int i = 0; i < slots && i < RB_MAX_SLOTS; i++)
         g_rb.rows[i] = (uint16_t)(rows[i].buttons & RB_PAD_MASK);
     if (g_rb.b.publish) g_rb.b.publish(tick, g_rb.rows, slots);
 }
 
+#include <time.h>
+static uint64_t rb_now_us(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000000u + (uint64_t)ts.tv_nsec / 1000u;
+}
+
+/* GENESIS_NET_TIMELINE_EVERY=n: every n-th tick's digest, printed once that
+ * tick is CONFIRMED (every peer's hash chain has it), as the value its last
+ * run -- live or replayed -- left. "TIMELINE t=<tick> d=<master>". Two peers'
+ * lines must agree tick for tick; a rematch that did not boot cold shows up
+ * here first (rb_lobby.sh compares matches). */
+#define RB_TL_N 512
+static struct { uint32_t tick; uint32_t d; uint8_t used; } s_tl[RB_TL_N];
+static uint32_t s_tl_every = (uint32_t)-1, s_tl_printed;
+static void timeline_record(uint32_t tick)
+{
+    if (s_tl_every == (uint32_t)-1) {
+        const char *e = getenv("GENESIS_NET_TIMELINE_EVERY");
+        s_tl_every = e && e[0] ? (uint32_t)atoi(e) : 0;
+    }
+    if (!s_tl_every || tick % s_tl_every) return;
+    GenesisRbDigest d;
+    genesis_rb_digest(&d);
+    s_tl[(tick / s_tl_every) % RB_TL_N].tick = tick;
+    s_tl[(tick / s_tl_every) % RB_TL_N].d = genesis_rb_fold32(d.master);
+    s_tl[(tick / s_tl_every) % RB_TL_N].used = 1;
+}
+static void timeline_flush(void)
+{
+    if (!s_tl_every || !g_rb.drv) return;
+    uint32_t conf = rnet_rb_driver_confirmed_through(g_rb.drv);
+    for (uint32_t t = s_tl_printed + s_tl_every; t <= conf; t += s_tl_every) {
+        unsigned i = (t / s_tl_every) % RB_TL_N;
+        if (s_tl[i].used && s_tl[i].tick == t)
+            fprintf(stderr, "TIMELINE t=%u d=%08x\n", (unsigned)t, (unsigned)s_tl[i].d);
+        s_tl_printed = t;
+    }
+}
+
 static int h_run_tick(void *ctx, uint32_t tick)
 {
-    (void)ctx; (void)tick;
+    (void)ctx;
     if (!g_rb.b.run_tick) return 0;
+    uint64_t t0 = rb_now_us();
     g_rb.b.run_tick();
+    cost_add(&s_cost_replay, (uint32_t)(rb_now_us() - t0));
     g_rb.replayed_ticks++;
+    timeline_record(tick + 1u);   /* the state after tick = before tick+1 */
     return 1;
 }
 
-static void h_resim_begin(void *ctx) { (void)ctx; g_rb.in_resim = 1; }
-static void h_resim_end(void *ctx)   { (void)ctx; g_rb.in_resim = 0; }
+/* Whether a correction was guest-visible: the live (mispredicted) state at
+ * the tip, before the rewind, against the replayed state at the same tip. */
+static void h_resim_begin(void *ctx)
+{
+    GenesisRbDigest d;
+    (void)ctx;
+    g_rb.in_resim = 1;
+    genesis_rb_digest(&d);
+    g_rb.pre_resim_master = d.master;
+}
+static void h_resim_end(void *ctx)
+{
+    GenesisRbDigest d;
+    (void)ctx;
+    g_rb.in_resim = 0;
+    genesis_rb_digest(&d);
+    g_rb.replays++;
+    if (d.master != g_rb.pre_resim_master) g_rb.replays_changed++;
+}
 
 /* ---- digests ---------------------------------------------------------------------- */
 
@@ -344,6 +426,11 @@ int genesis_netplay_rb_start(void)
     }
     s_quiesce_signalled = 0;
     rb_install_quiesce_signal();
+    memset(s_tl, 0, sizeof s_tl);
+    s_tl_printed = 0;
+    s_last_tick = 0;
+    memset(&s_cost_live, 0, sizeof s_cost_live);
+    memset(&s_cost_replay, 0, sizeof s_cost_replay);
     return 1;
 }
 
@@ -381,7 +468,13 @@ int genesis_netplay_rb_poll_admit(void)
     return live;
 }
 
-void genesis_netplay_rb_finish_frame(void) { if (g_rb.drv) rnet_rb_driver_finish_frame(g_rb.drv); }
+void genesis_netplay_rb_finish_frame(void)
+{
+    if (!g_rb.drv) return;
+    timeline_record(s_last_tick + 1u);
+    rnet_rb_driver_finish_frame(g_rb.drv);
+    timeline_flush();
+}
 int  genesis_netplay_rb_in_resim(void) { return g_rb.in_resim; }
 uint32_t genesis_netplay_rb_sim_tick(void) { return g_rb.drv ? rnet_rb_driver_sim_tick(g_rb.drv) : 0; }
 const char *genesis_netplay_rb_refusal(void) { return g_rb.drv ? rnet_rb_driver_refusal(g_rb.drv) : NULL; }
@@ -396,15 +489,21 @@ int genesis_netplay_rb_last_fork(uint32_t *tick, const char **partition,
 
 void genesis_netplay_rb_print_summary(void)
 {
+    uint32_t l50, l99, r50, r99;
     if (!g_rb.drv) return;
+    cost_pct(&s_cost_live, &l50, &l99);
+    cost_pct(&s_cost_replay, &r50, &r99);
+    fprintf(stderr, "NETPLAY_FIELDS live=%llu live_us p50=%u p99=%u replay=%llu replay_us p50=%u p99=%u\n",
+            (unsigned long long)s_cost_live.total, l50, l99,
+            (unsigned long long)s_cost_replay.total, r50, r99);
     fprintf(stderr, "NETPLAY_DRIVER sim=%u episodes=%u invents=%u promotes=%u resim_ticks=%llu "
-                    "replayed=%u desyncs=%u rtt_ms=%u confirmed=%u refusal=%s\n",
+                    "replayed=%u replays=%u replays_changed=%u desyncs=%u rtt_ms=%u confirmed=%u refusal=%s\n",
             (unsigned)rnet_rb_driver_sim_tick(g_rb.drv),
             (unsigned)rnet_rb_driver_episode_count(g_rb.drv),
             (unsigned)rnet_rb_driver_invent_count(g_rb.drv),
             (unsigned)rnet_rb_driver_promote_count(g_rb.drv),
             (unsigned long long)rnet_rb_driver_resim_ticks(g_rb.drv),
-            (unsigned)g_rb.replayed_ticks,
+            (unsigned)g_rb.replayed_ticks, (unsigned)g_rb.replays, (unsigned)g_rb.replays_changed,
             (unsigned)rnet_rb_driver_desync_count(g_rb.drv),
             (unsigned)rnet_rb_driver_rtt_estimate_ms(g_rb.drv),
             (unsigned)rnet_rb_driver_confirmed_through(g_rb.drv),

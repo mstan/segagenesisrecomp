@@ -151,6 +151,10 @@ const GenesisSessionConfig *genesis_netplay_session_config(void);
 /* Build the image from genesis_netplay_session_config() and seal it (call
  * before start). */
 void genesis_netplay_config_seal(void);
+/* Engine knobs that change the simulation but are not session settings
+ * (developer environment switches, the pacing mode). They are sealed into the
+ * image as-is and never adopted: two peers with different knobs refuse. */
+void genesis_netplay_set_engine_knobs(const char *line);
 const char *genesis_netplay_config_image(void);
 
 /* Identity (set before start): build fingerprint = hash of the executable,

@@ -55,6 +55,9 @@ int  genesis_netplay_rb_last_fork(uint32_t *tick, const char **partition,
 void genesis_netplay_rb_set_identity(uint32_t build_fp, uint32_t content_fp);
 void genesis_netplay_rb_set_config_image(const char *text);
 
+/* The host loop reports each live tick's cost (NETPLAY_FIELDS). */
+void genesis_netplay_rb_note_live_tick_us(uint32_t us);
+
 /* One NETPLAY_DRIVER summary line (harness ledger reads it). */
 void genesis_netplay_rb_print_summary(void);
 
