@@ -476,6 +476,7 @@ static uint8_t s_spr_hilite_op[GVDP_MAX_WIDTH]; /* operator: highlight        */
 /* Host presentation option, independent of serialized VDP hardware state. */
 static int s_unlimited_sprites;
 void gvdp_set_unlimited_sprites(int enabled) { s_unlimited_sprites=!!enabled; }
+int  gvdp_unlimited_sprites(void) { return s_unlimited_sprites; }
 static int s_ws_extra = 0;
 
 /* Clamp the requested extra to what the output buffer can hold for width `w`

@@ -280,6 +280,7 @@ typedef struct MachineRbTail {
     uint64_t snd_frame;       /* YM timer clock (see machine_save_state) */
     uint32_t snd_line;
     uint32_t pending_stall;   /* VDP DMA stall owed to the 68K */
+    uint32_t unlimited_sprites; /* game-set sprite-limit bypass (status flags) */
 } MachineRbTail;
 
 static void machine_scrub_pointers(GenesisMachine *m)
@@ -309,6 +310,7 @@ size_t machine_rb_save(void *dst, size_t cap)
     t.snd_frame = (uint64_t)g_snd_frame;
     t.snd_line = (uint32_t)g_snd_line;
     t.pending_stall = gvdp_rb_pending_stall();
+    t.unlimited_sprites = (uint32_t)gvdp_unlimited_sprites();
     memcpy(o, &t, sizeof t);
     o += sizeof t;
 #ifdef GENESIS_Z80_RECOMP
@@ -336,6 +338,7 @@ int machine_rb_load(const void *src, size_t len)
     g_snd_frame = (unsigned long)t.snd_frame;
     g_snd_line = t.snd_line;
     gvdp_rb_set_pending_stall(t.pending_stall);
+    gvdp_set_unlimited_sprites((int)t.unlimited_sprites);
 #ifdef GENESIS_Z80_RECOMP
     memcpy(&g_z80, i, sizeof g_z80);
     z80_recomp_mirror_to_interpreter(&g_machine.z80);
