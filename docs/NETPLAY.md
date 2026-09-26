@@ -108,12 +108,12 @@ the path and counted it above zero. Sonic 2 unless a row says otherwise.
 | episode FSM | present | **measured** | recomp-net | sweep 14/14 PASS, 0 forks, residual 0 |
 | tip-hold / tip-extend | ported | **measured** | recomp-net | mean hold 3.3-9.0 ticks per cell; 62 tip-extends in STRESS |
 | stage watchdogs + cooldowns | ported | **measured** | recomp-net | 1 watchdog (5% loss cell; disconnect cell), 1 (4 seats 2% loss); ledger exact |
-| baseline_fork_cap | ported | lifted | recomp-net | not exercised here |
-| lockstep_no_invent | ported | lifted | recomp-net | not exercised here |
+| baseline_fork_cap | ported | **measured** | recomp-net | `GENESIS_RB_FORCE_FORK=4` (synthetic baseline fork, local = peer digest), D=8, 30 ms: cap set 10x; with `LOCKSTEP_TICKS=0` + ring 120 the cap CLAMPED later loads (mismatch 75 -> load 59, 150 -> 134; replayed 32 ticks) and was lifted on commit; ledger 76/76, confirmed timelines identical on both peers |
+| lockstep_no_invent | ported | **measured** | recomp-net | same run, default 60-tick lockstep: entered 10x, released 9x, 9 injected mispredicts cancelled ("lockstep forbids invent"); ledger 40/40, timelines identical |
 | boot-digest gate | built | **measured** | recomp-net | FORCE_BOOT_FORK via the online room: both peers refuse `boot_digest_mismatch` at sim 1, soft-return, room shows `last_error` |
 | rematch cold reset | start only | **measured** | engine + driver | online 4 players, sessions 11 -> 12, one boot digest across 8 match starts, 0 forks; LAN sessions 958048809 -> 958048810; offline Play after the room == a fresh process (`RUN_DONE state=96d43a0dff200343` on all 4 peers) |
 | FRAME_COMMIT chain | advisory | advisory | recomp-net | 0 chain stalls in 13 of 14 cells; 4 in STRESS |
-| N seats | 2 only | **measured** | recomp-net + engine | 3 seats: 0 ms 106 ep ledger 212/212, 200 ms 72 ep 144/144, 2% loss 104 ep 208/208; 4 seats: 164 ep 492/492, 91 ep 273/273, 151 ep 453/453; 0 forks, all drained (LAN hub, party roster) |
+| N seats | 2 only | **measured** | recomp-net + engine | 4 HUMAN players (roster Sonic / Tails / Knuckles / Sonic, every seat human, seat 0 and seat 3 scripted controllers, seat 1 injector): 0 ms 221 ep ledger 663/663; 200 ms 122 ep 366/366; 2% loss 190 ep 570/570 (3 watchdogs); 0 forks, all drained, tick-aligned screenshots of the confirmed state byte-identical on all 4 peers at t=1100/1150/1200 in every cell. 3 seats (Sonic / Tails / Knuckles, all human): 0 ms 151 ep 302/302, 200 ms 100 ep 200/200, 2% loss 149 ep 298/298, screenshots identical at t=1100/1200. Probe with the 4-player duplicate roster: 691 passes x 12, 0 divergences |
 | replay ownership | n/a | **inline** (justified) | engine | replayed tick p50 0.7-0.85 / p99 0.96-1.65 ms |
 | **Engine** |  |  |  |  |
 | rollback snapshot fast path | n/a | **measured** | rb_state | raw save p50 0.011-0.016 / p99 0.029-0.048 ms, load 0.009-0.013 / 0.027-0.046 ms (probe, 5 games) |
@@ -121,13 +121,13 @@ the path and counted it above zero. Sonic 2 unless a row says otherwise.
 | resync after restore | ported | **measured** | rb_state + game hook | probe: S1, S2, S3, S3K, S&K and the S2 party, 691 passes x 12 ticks each, 0 divergences, 0 asymmetric; `_STATICS` 0 carrier candidates on all five |
 | determinism probe | present | **measured** | rb_probe | carriers found and fixed: `g_split_sp_popped` (generated), VDP status flags from rendering, the unlimited-sprites switch, 6 S2 function-local guards; negative controls detected for every section |
 | per-tick host loop, netplay-off identical | n/a | **measured** | sim_step | gate: S1, S2, S3, S3K, S&K identical to `c5d40a6` in attract / savestate / gameplay (S2 with netplay compiled in); RKA and Puyo not available here |
-| config seal | n/a | **measured** | engine + S2 | image = pads, widescreen, S2 roster + owner features, sim-affecting dev knobs; host's adopted; a different image: MOD SETS DIFFER, 0 episodes; scripts that write RAM / load state, TCP execution control, quickstates, turbo, the view-mode toggle and the adaptive (window-size) width are refused online |
+| config seal | n/a | **measured** | engine + S2 | image = pads, widescreen margin, custom-video mode, S2 roster + owner features, sim-affecting dev knobs; host's adopted (online guest without widescreen adopted the host's 16:9, 0 forks); a different image (16:9 vs 21:9): MOD SETS DIFFER, 0 episodes; scripts that write RAM / load state, TCP execution control, quickstates, turbo and the view-mode toggle are refused online; an adaptive (window-size) custom-video width is pinned to the host's width as `W:224` |
 | host-authoritative SRAM + guest sandbox | ported | **built** | engine | host ships SRAM before tick 0 (`RNET_STATE_OP_SRAM`); guests never write; host writes once per match. Not exercised: Sonic 2 has no battery SRAM |
 | **Product** |  |  |  |  |
 | recomp-ui lobby | present | **measured (headless)** | engine + recomp-ui | online create/join/launch 2 and 4 players; LAN 2 players; soft return with `last_error`; rematch; launcher screens not seen on a display |
 | spectators | yes | **measured** | recomp-net relay | 2 players + 1 spectator online: wire slot 2, same session, same confirmed timeline, drained |
-| two-process harness + sweep | in tree | **measured** | tools | `rb_sweep.sh` 14/14 PASS (pre-flight probe 99 passes + digest transparency); `rb_lobby.sh` PASS in every mode above |
-| screenshots | -- | **checked** | engine PNG | 4 seats, 200 ms: all four peers' frames at tick 1200 byte-identical (md5 92ad33cf...), live digest 57a8f067 = confirmed TIMELINE digest on every peer; EHZ 1, 0:04, Tails and Knuckles on screen (P1 Sonic not visible in the frame, presumably behind Knuckles at spawn -- not verified) |
+| two-process harness + sweep | in tree | **measured** | tools | `rb_sweep.sh` 14/14 PASS on isolated ports (pre-flight probe 99 passes + digest transparency; residual 0 in every cell); `rb_lobby.sh` PASS in every mode above |
+| screenshots | -- | **measured, tick-aligned** | engine PNG + rb_loopback | `GENESIS_SCREENSHOT_AT_TICK` writes each peer's frame at sealed tick T with the digest of the state shown; the harness grades PNG identity only where every peer's live digest equals the CONFIRMED TIMELINE digest (a frame that showed a later-corrected prediction is reported, not graded). End-of-run captures are now `*.exit.png` and labelled NOT tick-aligned. **Correction:** an earlier version of this row compared the `runs/nseat/s4_200ms_shot` tick-1200 set but also let the end-of-run PNGs of `runs/nseat/s4_200ms` stand as if comparable; they are not (peers stop at different ticks while draining), and in those frames P1 Sonic IS visible (jumping, top-left of Knuckles). "Not visible" was wrong for them; in idle runs P1 and P4 Sonic are hidden BEHIND Knuckles because extra actors spawn at P1's position and the party overlay draws on top. Seat 4 control: P4 (second Sonic) visibly steps out right of Knuckles when only seat 3 presses RIGHT (`runs/seat4/move` vs `control`, t=1100, 4 peers each identical) |
 
 ## Findings (2026-09-25)
 
@@ -171,16 +171,32 @@ was in no savestate while the timer deadlines in the bus are absolute in it.
 
 - Nobody has played it; no two-machine or internet run; ICE not run.
 - The launcher's netplay screens (soft return, rematch) not seen on a display.
-- Four Sonic 2 characters need the Amy donor ROM, which is not available here:
-  4-seat runs use Sonic / Tails / Knuckles / none.
-- Custom video (the widescreen scene renderer) is forced off online and the
-  width pinned to 320; carrying the host's width is not built (its tables are
-  already in the rollback state when on). The campaign save menu stays
-  local-only and refuses netplay.
-- Driver behaviour to look at in recomp-net (not root-caused): episodes log
-  "rewind N frames, replay 1" -- only the mismatch tick is replayed; in the
-  300 ms cells one peer's `confirmed_through` stays far behind its sim (180 vs
-  1828) while the ledger balances.
+- Without the Amy donor ROM there are three distinct characters, so players 3
+  and 4 may now repeat a character (the party roster rule changed: P1/P2 stay
+  distinct; P3/P4 are independent actors). A human in seat 4 plays e.g. a
+  second Sonic; both Sonics look the same.
+- Custom video online: carried as session config (above). Enabling it made
+  the probe fork in the game partition (74 of 460 passes) because the
+  scanline renderer's scene selection was in the rollback section; the
+  presentation half is now excluded (0 divergences in 460 passes with 16:9).
+  `custom_video_prepare` clamps the width to the GPU's max texture width -- a
+  host-dependent bound that only matters for widths above ~4096 ("stage").
+- The campaign save menu stays local-only and refuses netplay.
+- Harness port collision (found 2026-09-25): the NES/SNES/N64 harnesses on
+  this machine use UDP 9700..9703 and session id 1, which Genesis shared; a
+  concurrent NES soak cross-delivered datagrams and wedged Genesis runs
+  (pcap_freeze, "peer gone"). rb_loopback now uses 9810..9813 and a random
+  session id per run (the session drops foreign session ids), rb_lobby
+  18965/18977/17890. Earlier Genesis results were re-run on the isolated
+  ports where they are cited as current.
+- Driver: "rewind N frames, replay 1" is NOT a bug. The replay covers the
+  sealed span load..target (inclusive); the driver then sets sim =
+  target + 1 and the discarded ticks after it are re-run as Live ticks
+  (rnet_rb_driver.c: rb_log_raw "RESIM episode", and sim = target + 1 at the
+  end of the replay). Measured: per peer, live ticks - sim ticks = sum over
+  episodes of (rewind - replay) exactly (300 ms: 2194 - 1841 = 353 = 353;
+  200 ms: 2465 - 2094 = 371 = 371). The "confirmed 180 vs 1828" was my own
+  output truncation (`cut -c1-150` cut "confirmed=1800"); refuted, no defect.
 - Host SRAM push is not exercised (Sonic 2 has no battery SRAM).
 - Android runner list updated, not built. Windows/MSVC not built.
 - RKA and Puyo: no repository and no ROM in this workspace -- not gated.

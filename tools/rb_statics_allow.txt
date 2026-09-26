@@ -67,3 +67,23 @@
 # unnamed bytes between diagnostic ring cursors (compiler-placed locals of
 # the ring code; resolved to the gap because they carry no symbol)
 ^<gap after (s_bus_ring_head|s_block_head|g_rdb_current_func|g_snd_pcz)>$
+# the probe's own cost samples
+^s_t_(save|load|digest|tick)$
+^s_bytes_(min|max)$
+# Sonic 2 custom video: presentation (chosen/drawn by the scanline renderer,
+# which a replay does not run) and its counters
+^s_display(_frame)?$
+^s_(frames|fallbacks|scene_misses|scene_holds|width|left|camera|camera_y|native_x)$
+^s_(terrain|bg)_(checks|errors|unstreamed)$
+^s_uninitialized_scroll_lines$
+^s_bad_[a-z_]+$
+^s_video_frame$
+^s_world_frame$
+^s_frame_(level|special|fg_x|fg_y|bg_y|zone)$
+^s_priority(_capacity)?$
+^s_tick_(samples|updates|lag|multi)$
+^s_publication_lag$
+^(was_active)\.[0-9]+$
+# input script cursors: the LOCAL controller (a script is an input device;
+# its output is sealed like any pad), not simulation
+^s_(press_until|held_mask)$

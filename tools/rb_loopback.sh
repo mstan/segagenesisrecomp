@@ -60,8 +60,9 @@
 #                                "<period>[:<hold>[:<mask-hex>]]"): organic
 #                                mispredicts the scene can see
 #   RB_LOOPBACK_FILES="src[:dest] .."  files staged beside every peer's exe
+#   RB_LOOPBACK_SEAT<s>_ARGS="..."     extra arguments for seat s only
 #   RB_LOOPBACK_PORTS=a,b[,c,d]  UDP ports of seat 1, seat 0, seat 2, seat 3
-#                                (default 9700,9701,9702,9703)
+#                                (default 9810,9811,9812,9813; see below)
 #
 # Stopping. At the deadline every peer gets SIGUSR1, which asks the driver to
 # DRAIN; the ledger is graded only when every peer logged "RB quiesced".
@@ -92,8 +93,15 @@ rm -rf "$OUT"/initiator.* "$OUT"/follower.* "$OUT"/follower[0-9].*
 # role and port of each seat. Seat 1 is the initiator; the port list is in
 # the order seat 1, seat 0, seat 2, seat 3, so two seats keep 9700/9701.
 role_of() { case "$1" in 1) echo initiator;; 0) echo follower;; *) echo "follower$1";; esac; }
-IFS=, read -r -a PORTL <<<"${RB_LOOPBACK_PORTS:-9700,9701,9702,9703}"
-port_of() { case "$1" in 1) echo "${PORTL[0]}";; 0) echo "${PORTL[1]}";; *) echo "${PORTL[$1]:-$((9700 + $1))}";; esac; }
+# Genesis defaults 9810..9813, NOT the 9700 block: the NES/SNES/N64
+# harnesses on this machine use 9700..9703, and two harnesses sharing ports
+# cross-deliver datagrams (measured 2026-09-25: a concurrent NES soak on
+# 9700/9701 wedged Genesis runs in pcap_freeze and "peer gone"). A random
+# session id per run makes the session drop anything foreign that still
+# arrives.
+IFS=, read -r -a PORTL <<<"${RB_LOOPBACK_PORTS:-9810,9811,9812,9813}"
+SESSION_ID="${RB_LOOPBACK_SESSION_ID:-$(( (RANDOM << 15 | RANDOM) + 2 ))}"
+port_of() { case "$1" in 1) echo "${PORTL[0]}";; 0) echo "${PORTL[1]}";; *) echo "${PORTL[$1]:-$((9810 + $1))}";; esac; }
 ROLES=()
 for ((s = 0; s < SEATS; s++)); do ROLES+=("$(role_of $s)"); done
 # initiator first in every table, as before
@@ -103,6 +111,9 @@ for ((s = 2; s < SEATS; s++)); do ORDER+=("$(role_of $s)"); done
 common=(SDL_VIDEODRIVER="${RB_LOOPBACK_VIDEO:-dummy}" SDL_AUDIODRIVER=dummy
         GENESIS_NO_LAUNCHER=1
         GENESIS_NETPLAY=1 GENESIS_NET_SLOTS=$SEATS GENESIS_NET_MODE=rollback
+        GENESIS_NET_SESSION_ID="$SESSION_ID"
+        GENESIS_NET_TIMELINE_EVERY="${GENESIS_NET_TIMELINE_EVERY:-50}"
+        GENESIS_SCREENSHOT_AT_TICK="${RB_LOOPBACK_SHOT_TICKS:-600,900,1200}"
         GENESIS_NET_DELAY="${GENESIS_NET_DELAY:-8}"
         GENESIS_NET_PREDICTION="${GENESIS_NET_PREDICTION:-12}")
 [ "$SEATS" -gt 2 ] && common+=(GENESIS_NET_TRANSPORT=hub)
@@ -142,6 +153,10 @@ for ((s = 0; s < SEATS; s++)); do
         cp "${f%%:*}" "$dir/$( [ "${f#*:}" != "$f" ] && echo "${f#*:}" || basename "${f%%:*}")"
     done
     mapfile -t args < <(role_args "$role")
+    # RB_LOOPBACK_SEAT<s>_ARGS="..": extra arguments for seat s only (e.g. an
+    # input-only script: that seat's local controller).
+    sv="RB_LOOPBACK_SEAT${s}_ARGS"
+    [ -n "${!sv:-}" ] && { read -r -a sa <<<"${!sv}"; args+=("${sa[@]}"); }
     bind=127.0.0.1:$(port_of $s)
     # Two seats dial each other; with more, every seat dials seat 0 (the
     # relay), and seat 0's own peer address is unused.
@@ -158,7 +173,7 @@ for ((s = 0; s < SEATS; s++)); do
             && knobs+=(GENESIS_NET_TEST_PAD="$RB_LOOPBACK_TEST_PAD")
     fi
     ( cd "$dir" && exec env "${common[@]}" GENESIS_NET_SLOT=$s GENESIS_NET_BIND=$bind \
-        GENESIS_NET_PEER=$peer GENESIS_SCREENSHOT_AT_EXIT="$OUT/$role.png" \
+        GENESIS_NET_PEER=$peer GENESIS_SCREENSHOT_AT_EXIT="$OUT/$role.exit.png" \
         "${knobs[@]}" "./$(basename "$EXE")" "${args[@]}" "${EXTRA[@]}" ) >"$OUT/$role.log" 2>&1 &
     PID[$role]=$!
 done
@@ -326,8 +341,42 @@ ep_i=$(count_all 'RESIM episode.*initiator')
 echo "ledger     initiated=$ep_expect followed=$ep_f refused=$nack_i watchdog=$timeout_i residual=$resid"
 # Screenshots: what each peer last presented (the verdict is not taken from
 # them, but a claim about what was on screen is -- look at them).
+# Screenshots. The *.exit.png files are each peer's LAST frame: peers stop
+# at different ticks during the drain, so those are NOT comparable. The
+# comparison uses tick-aligned captures (GENESIS_SCREENSHOT_AT_TICK,
+# RB_LOOPBACK_SHOT_TICKS): at tick T every peer writes <role>.exit.png.tT.png
+# and "SHOT t=T live=<digest of the state it shows>"; the confirmed
+# "TIMELINE t=T d=<digest>" says whether that frame showed the agreed state.
+# Graded: at every T where each peer's live digest equals the confirmed one,
+# every peer's PNG must be byte-identical. A frame that showed a prediction
+# (live != confirmed) is reported, not graded -- rollback corrects it later.
+shot_fail=0
+for t in $(echo "${RB_LOOPBACK_SHOT_TICKS:-600,900,1200}" | tr ',' ' '); do
+    have=0; agreed=1; md5s=""
+    for r in "${ORDER[@]}"; do
+        f="$OUT/$r.exit.png.t$t.png"
+        [ -f "$f" ] || continue
+        have=$((have + 1))
+        live=$(grep -ao "SHOT t=$t live=[0-9a-f]*" "$OUT/$r.log" | head -1 | sed 's/.*live=//')
+        conf=$(grep -ao "^TIMELINE t=$t d=[0-9a-f]*" "$OUT/$r.log" | head -1 | sed 's/.*d=//')
+        [ -n "$live" ] && [ "$live" = "$conf" ] || agreed=0
+        md5s="$md5s $(md5sum < "$f" | cut -c1-8)"
+    done
+    [ "$have" -eq 0 ] && { echo "screenshot t=$t: not reached"; continue; }
+    distinct=$(echo $md5s | tr ' ' '\n' | sort -u | wc -l)
+    if [ "$have" -lt "${#ORDER[@]}" ]; then
+        echo "screenshot t=$t: only $have of ${#ORDER[@]} peers reached it"
+    elif [ "$agreed" -eq 1 ] && [ "$distinct" -eq 1 ]; then
+        echo "screenshot t=$t: $have peers, confirmed state, byte-identical ($md5s )"
+    elif [ "$agreed" -eq 1 ]; then
+        echo "screenshot t=$t: $have peers showed the CONFIRMED state but the PNGs differ ($md5s ) -- presentation divergence"
+        shot_fail=1
+    else
+        echo "screenshot t=$t: a peer showed a predicted frame (live != confirmed); not graded ($md5s )"
+    fi
+done
 for r in "${ORDER[@]}"; do
-    [ -f "$OUT/$r.png" ] && echo "screenshot $r: $OUT/$r.png"
+    [ -f "$OUT/$r.exit.png" ] && echo "screenshot $r (end of run, NOT tick-aligned): $OUT/$r.exit.png"
 done
 # Dispatch misses after every run (project law): each peer's
 # dispatch_misses.toml must list no extra function.
@@ -366,6 +415,8 @@ elif [ "$KILL_AT" -gt 0 ] 2>/dev/null; then
     fi
 elif [ "$miss_total" -ne 0 ]; then
     echo "FAIL: $miss_total dispatch miss(es) -- resolve them before anything else"; rc=1
+elif [ "$shot_fail" -ne 0 ]; then
+    echo "FAIL: tick-aligned screenshots of the confirmed state differ between peers"; rc=1
 elif [ "$fk_all" -ne 0 ]; then
     echo "FAIL: $fk_all fork(s) — the peers disagreed on state"; rc=1
 elif [ "$drain_ok" -ne 1 ]; then

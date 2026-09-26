@@ -160,6 +160,11 @@ static void host_sample_local(rnet_u32 tick, RNetInputSample *out, void *ctx)
 
 static void apply_published(const uint16_t *rows, int slots)
 {
+    { static int dbg = -1; if (dbg < 0) dbg = getenv("GENESIS_NET_DEBUG_STAGE") != NULL;
+      static uint16_t last[GENESIS_NETPLAY_MAX_SLOTS];
+      for (int i = 0; dbg && rows && i < slots && i < GENESIS_NETPLAY_MAX_SLOTS; i++)
+          if (rows[i] != last[i]) { fprintf(stderr, "[publish] sim=%u slot=%d rows=%03x\n",
+                                            (unsigned)genesis_netplay_sim_tick(), i, rows[i]); last[i] = rows[i]; } }
     memset(g_np.published, 0, sizeof g_np.published);
     for (int i = 0; rows && i < slots && i < GENESIS_NETPLAY_MAX_SLOTS; i++)
         g_np.published[i] = rows[i] & GENESIS_NETPLAY_PAD_MASK;
@@ -556,6 +561,8 @@ void genesis_netplay_stage_local(uint16_t buttons)
     uint32_t tick;
     if (!genesis_netplay_active()) return;
     buttons &= GENESIS_NETPLAY_PAD_MASK;
+    { static uint16_t last; if (getenv("GENESIS_NET_DEBUG_STAGE") && buttons != last) {
+        fprintf(stderr, "[stage] sim=%u buttons=%03x\n", (unsigned)genesis_netplay_sim_tick(), buttons); last = buttons; } }
     if (g_np.rollback) {
         g_np.staged_buttons = buttons;
         g_np.staged_valid = 1;
@@ -689,6 +696,7 @@ void genesis_netplay_adopt_session_config(const GenesisSessionConfig *host)
     s_session_cfg_adopted = host != NULL;
     s_session_cfg = host ? *host : s_local_cfg;
     s_session_cfg.game[sizeof s_session_cfg.game - 1] = 0;
+    s_session_cfg.video[sizeof s_session_cfg.video - 1] = 0;
 }
 
 const GenesisSessionConfig *genesis_netplay_session_config(void) { return &s_session_cfg; }
@@ -699,10 +707,10 @@ void genesis_netplay_config_seal(void)
     g_np.pad_type[0] = c->pad_type[0] ? 1 : 0;
     g_np.pad_type[1] = c->pad_type[1] ? 1 : 0;
     snprintf(s_config_image, sizeof s_config_image,
-             "genesis-config/1\npad=%u,%u\nws=%u cells=%u\ngame=%s\nknobs=%s\n",
+             "genesis-config/1\npad=%u,%u\nws=%u cells=%u\nvideo=%s\ngame=%s\nknobs=%s\n",
              (unsigned)g_np.pad_type[0], (unsigned)g_np.pad_type[1],
-             (unsigned)(c->ws_on ? 1 : 0), (unsigned)(c->ws_on ? c->ws_cells : 0), c->game,
-             s_engine_knobs);
+             (unsigned)(c->ws_on ? 1 : 0), (unsigned)(c->ws_on ? c->ws_cells : 0),
+             c->video[0] ? c->video : "off", c->game, s_engine_knobs);
     genesis_netplay_rb_set_config_image(s_config_image);
     fprintf(stderr, "genesis_netplay: session config (%s):\n%s",
             s_session_cfg_adopted ? "adopted from the host" : "local", s_config_image);

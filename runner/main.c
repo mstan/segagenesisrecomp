@@ -1564,6 +1564,7 @@ static uint32_t s_netplay_match_frames = 0;
 static int s_offline_after_netplay = 0;
 
 static int s_digest_every = -1;
+static const char *s_custom_video_cli;   /* --widescreen, if given */
 
 /* What reopening the launcher for a soft return needs (set on first use). */
 static struct {
@@ -1622,6 +1623,21 @@ static const GenesisSessionConfig *local_session_config(void)
             c.pad_type[1] = (uint8_t)(strchr(pt, ',') && strchr(pt, ',')[1] == '1');
         }
         c.ws_on = (uint8_t)(s_ws_user_on != 0);
+        if (g_game_spec.video && g_game_spec.video->enabled()) {
+            /* The host's custom-video mode, window-independent. */
+            const char *m = s_custom_video_cli ? s_custom_video_cli
+                          : g_app_config.custom_widescreen ? app_config_aspect_mode(g_app_config.custom_aspect)
+                          : "off";
+            if (!strcmp(m, "adaptive") || !strcmp(m, "fit")) {
+                int dw = 0, dh = 0, w = 398;   /* no window yet: 16:9 */
+                if (s_video_renderer) SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
+                if (dw > 0 && dh > 0) w = (int)((double)224 * dw / dh + 0.5);
+                if (w < 320) w = 320;
+                snprintf(c.video, sizeof c.video, "%d:224", w);
+            } else {
+                snprintf(c.video, sizeof c.video, "%s", m);
+            }
+        }
         c.ws_cells = (uint8_t)(s_ws_user_cells > 0 && s_ws_user_cells < 256 ? s_ws_user_cells : 0);
         if (g_game_spec.netplay_config_image)
             g_game_spec.netplay_config_image(c.game, sizeof c.game);
@@ -1662,6 +1678,10 @@ static int netplay_next_session(GenesisNetplayConfig *cfg, int round)
         *cfg = next;
         if (!cfg->enabled) {
             genesis_netplay_adopt_session_config(NULL);
+            if (g_game_spec.video) {
+                if (s_custom_video_cli) g_game_spec.video->configure(s_custom_video_cli);
+                else app_config_apply_video(g_game_spec.video);
+            }
             if (g_game_spec.netplay_config_adopt)
                 g_game_spec.netplay_config_adopt(local_session_config()->game);
         }
@@ -1686,6 +1706,10 @@ static int netplay_next_session(GenesisNetplayConfig *cfg, int round)
         cfg->enabled = 0;
         s_offline_after_netplay = 1;
         genesis_netplay_adopt_session_config(NULL);
+        if (g_game_spec.video) {   /* back to this build's own video mode */
+            if (s_custom_video_cli) g_game_spec.video->configure(s_custom_video_cli);
+            else app_config_apply_video(g_game_spec.video);
+        }
         if (g_game_spec.netplay_config_adopt)
             g_game_spec.netplay_config_adopt(local_session_config()->game);
         fprintf(stderr, "[lobby-selftest] offline Play after %d match(es)\n", round);
@@ -2005,6 +2029,7 @@ int main(int argc, char *argv[])
                 return 2;
             }
             custom_video_cli = argv[++i];
+            s_custom_video_cli = custom_video_cli;
         } else if (argv[i][0] != '-') {
             rom_path = argv[i];
         }
@@ -2334,7 +2359,8 @@ int main(int argc, char *argv[])
          * legacy VDP toggle. Other games retain their original view controls. */
         s_ws_user_on=0;
 #if GENESIS_HAS_RECOMP_NET
-        if(netplay_config.enabled)g_game_spec.video->configure("off");
+        /* Online the custom-video mode is session configuration (sealed and
+         * adopted from the lobby host at session start), not forced off. */
 #endif
     }
 
@@ -2679,6 +2705,11 @@ session_begin:;
         genesis_netplay_set_local_session_config(local_session_config());
         sc = genesis_netplay_session_config();
         /* Apply the settled session configuration (the host's, online). */
+        if (g_game_spec.video && !g_game_spec.video->configure(sc->video[0] ? sc->video : "off")) {
+            fprintf(stderr, "genesis_netplay: cannot run the host's custom-video mode (%s) — refusing\n",
+                    sc->video);
+            return 1;
+        }
         s_ws_user_on = sc->ws_on;
         if (sc->ws_on && sc->ws_cells) s_ws_user_cells = sc->ws_cells;
         if (g_game_spec.netplay_config_adopt && g_game_spec.netplay_config_adopt(sc->game) != 0) {
@@ -3018,13 +3049,21 @@ session_begin:;
              * it shows. Peers compare their PNGs; "SHOT t=T live=D" against
              * the confirmed "TIMELINE t=T d=D" says whether the frame showed
              * the agreed state or a prediction that was later corrected. */
-            static long shot_tick = -2;
-            if (shot_tick == -2) {
+            /* GENESIS_SCREENSHOT_AT_TICK=T[,T2,...] (up to 16 ticks). */
+            static long shot_ticks[16];
+            static int shot_n = -1, shot_i;
+            if (shot_n < 0) {
                 const char *e = getenv("GENESIS_SCREENSHOT_AT_TICK");
-                shot_tick = e && e[0] ? atol(e) : -1;
+                shot_n = 0;
+                for (const char *p = e; p && *p && shot_n < 16; ) {
+                    shot_ticks[shot_n++] = atol(p);
+                    p = strchr(p, ',');
+                    if (p) p++;
+                }
             }
-            if (shot_tick > 0 && genesis_netplay_active() &&
-                genesis_netplay_sim_tick() == (uint32_t)shot_tick) {
+            if (shot_i < shot_n && genesis_netplay_active() &&
+                genesis_netplay_sim_tick() == (uint32_t)shot_ticks[shot_i]) {
+                long shot_tick = shot_ticks[shot_i++];
                 const char *base = getenv("GENESIS_SCREENSHOT_AT_EXIT");
                 char path[600];
                 GenesisRbDigest dd;
@@ -3033,7 +3072,6 @@ session_begin:;
                 runner_write_screenshot_file(path);
                 fprintf(stderr, "SHOT t=%ld live=%08x path=%s\n", shot_tick,
                         genesis_rb_fold32(dd.master), path);
-                shot_tick = -1;
             }
         }
         if (genesis_netplay_active() && !genesis_netplay_rollback_active()) {

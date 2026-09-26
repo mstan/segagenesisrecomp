@@ -49,9 +49,11 @@ static int caps_write(const RNetLobbyMatchCaps *caps, char *out, size_t cap, voi
     (void)ctx;
     if (!e->valid) return 0;
     rnet_lobby_json_escape(e->cfg.game, esc, sizeof esc);
-    int n = snprintf(out, cap, ",\"gen_pads\":\"%u%u\",\"gen_ws\":%u,\"gen_cells\":%u,\"gen_game\":\"%s\"",
+    char vesc[2 * sizeof e->cfg.video + 8];
+    rnet_lobby_json_escape(e->cfg.video, vesc, sizeof vesc);
+    int n = snprintf(out, cap, ",\"gen_pads\":\"%u%u\",\"gen_ws\":%u,\"gen_cells\":%u,\"gen_game\":\"%s\",\"gen_video\":\"%s\"",
                      (unsigned)e->cfg.pad_type[0], (unsigned)e->cfg.pad_type[1],
-                     (unsigned)e->cfg.ws_on, (unsigned)e->cfg.ws_cells, esc);
+                     (unsigned)e->cfg.ws_on, (unsigned)e->cfg.ws_cells, esc, vesc);
     return (n < 0 || (size_t)n >= cap) ? -1 : n;
 }
 
@@ -68,6 +70,7 @@ static void caps_parse(const char *json, RNetLobbyMatchCaps *caps, void *ctx)
     e->cfg.ws_on = (uint8_t)(rnet_lobby_json_get_int(json, "gen_ws", 0) != 0);
     e->cfg.ws_cells = (uint8_t)rnet_lobby_json_get_int(json, "gen_cells", 0);
     rnet_lobby_json_get_str(json, "gen_game", e->cfg.game, sizeof e->cfg.game);
+    rnet_lobby_json_get_str(json, "gen_video", e->cfg.video, sizeof e->cfg.video);
     e->valid = 1;
 }
 
@@ -91,9 +94,11 @@ static void apply_caps(void *ctx, const RNetLobbyMatchCaps *caps, RecompLauncher
     if (e->valid) {
         s_host_cfg = e->cfg;
         s_host_cfg.game[sizeof s_host_cfg.game - 1] = 0;
-        snprintf(s_host_cfg_text, sizeof s_host_cfg_text, "pad=%u,%u ws=%u cells=%u game=%s",
+        s_host_cfg.video[sizeof s_host_cfg.video - 1] = 0;
+        snprintf(s_host_cfg_text, sizeof s_host_cfg_text, "pad=%u,%u ws=%u cells=%u video=%s game=%s",
                  (unsigned)s_host_cfg.pad_type[0], (unsigned)s_host_cfg.pad_type[1],
-                 (unsigned)s_host_cfg.ws_on, (unsigned)s_host_cfg.ws_cells, s_host_cfg.game);
+                 (unsigned)s_host_cfg.ws_on, (unsigned)s_host_cfg.ws_cells,
+                 s_host_cfg.video[0] ? s_host_cfg.video : "off", s_host_cfg.game);
     }
 }
 

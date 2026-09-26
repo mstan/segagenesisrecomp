@@ -139,7 +139,13 @@ typedef struct GenesisSessionConfig {
     uint8_t pad_type[2];     /* 0 = 3-button, 1 = 6-button */
     uint8_t ws_on;           /* engine widescreen margin on */
     uint8_t ws_cells;        /* its width in 8-px cells per side */
-    char    game[56];        /* the game's line (GameSpec netplay_config_image) */
+    char    game[48];        /* the game's line (GameSpec netplay_config_image) */
+    /* Game custom-video mode (GameVideo configure string): "" / "off",
+     * "stage", or a window-independent ratio "W:H". The custom renderer
+     * changes the simulation (Sonic 2: object activation width and the main
+     * CPU divisor), so the mode is session configuration; an adaptive
+     * (window-size) mode is pinned to the host's width as "W:224". */
+    char    video[8];
 } GenesisSessionConfig;
 
 /* This build's own configuration (what it publishes when hosting). */

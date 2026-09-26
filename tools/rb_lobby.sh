@@ -44,6 +44,8 @@
 #                               boot_digest_mismatch): every peer must refuse
 #                               with that code and show it in the room
 #   RB_LOBBY_FILES="src[:dest]" staged beside every peer's exe (party roster)
+#   RB_LOBBY_HOST_ARGS="..."    extra arguments for the host only (e.g. a
+#                               --widescreen mode the guests must adopt)
 #   RB_LOBBY_THEN_OFFLINE=1     after the last match every peer takes the room's
 #                               Offline Play: one more cold boot in the same
 #                               process, no netplay, `frames` ticks -- and its
@@ -80,7 +82,7 @@ EXE=$(cd "$(dirname "$EXE")" && pwd)/$(basename "$EXE")
 ROM=$(cd "$(dirname "$ROM")" && pwd)/$(basename "$ROM")
 mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
 rm -rf "$OUT"/host "$OUT"/guest* "$OUT"/server "$OUT"/fresh "$OUT"/*.log "$OUT"/*.png
-IFS=, read -r WS_PORT RELAY_PORT <<<"${RB_LOBBY_PORTS:-18865,18877}"
+IFS=, read -r WS_PORT RELAY_PORT <<<"${RB_LOBBY_PORTS:-18965,18977}"   # not n64lle's 18865/18877
 MISPREDICT="${RB_LOBBY_MISPREDICT:-45}"
 WALL="${RB_LOBBY_WALL:-$(( 90 + 60 * ROUNDS + FRAMES * ROUNDS / 20 ))}"
 
@@ -122,7 +124,7 @@ if [ "$MODE" = online ]; then
     done
     common+=(RNET_LOBBY_URL=ws://127.0.0.1:$WS_PORT)
 else
-    common+=(GENESIS_LOBBY_SELFTEST_LAN=1 GENESIS_LOBBY_SELFTEST_LAN_PORT="${RB_LOBBY_LAN_PORT:-17790}")
+    common+=(GENESIS_LOBBY_SELFTEST_LAN=1 GENESIS_LOBBY_SELFTEST_LAN_PORT="${RB_LOBBY_LAN_PORT:-17890}")
 fi
 
 off=(GENESIS_RB_FORCE_MISPREDICT=0 GENESIS_RB_FORCE_FORK=0 GENESIS_RB_FORCE_BOOT_FORK=0
@@ -138,9 +140,11 @@ for role in "${ROLES[@]}"; do
                    GENESIS_LOBBY_SELFTEST=guest) ;;
     *)      knobs=("${off[@]}" GENESIS_LOBBY_SELFTEST=guest) ;;
     esac
+    ra=()
+    [ "$role" = host ] && [ -n "${RB_LOBBY_HOST_ARGS:-}" ] && read -r -a ra <<<"$RB_LOBBY_HOST_ARGS"
     (cd "$OUT/$role" && exec env "${common[@]}" "${knobs[@]}" \
         GENESIS_LOBBY_SELFTEST_NAME="$role" GENESIS_SCREENSHOT_AT_EXIT="$OUT/$role.png" \
-        "./$(basename "$EXE")" "$(basename "$ROM")" "${EXTRA[@]}") >"$OUT/$role.log" 2>&1 &
+        "./$(basename "$EXE")" "$(basename "$ROM")" "${EXTRA[@]}" ${ra[@]+"${ra[@]}"}) >"$OUT/$role.log" 2>&1 &
     PID[$role]=$!
     [ "$role" = host ] && sleep 1
     # Spectators join after every player seat is taken, so the room puts
