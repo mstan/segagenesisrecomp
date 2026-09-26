@@ -481,9 +481,20 @@ int genesis_netplay_rb_poll_admit(void)
         if (now - since >= 2000u && now - said >= 2000u) {
             const char *tag = rnet_rb_driver_stall_tag(g_rb.drv);
             said = now;
-            fprintf(stderr, "genesis_netplay: stalled %u ms at sim=%u (%s)\n",
+            char tips[96] = "";
+            if (g_rb.b.session && *g_rb.b.session) {
+                size_t n = 0;
+                int seats = g_rb.b.slot_count ? *g_rb.b.slot_count : 2;
+                for (int i = 0; i < seats && n < sizeof tips; i++) {
+                    uint32_t tip = 0;
+                    int have = rnet_session_remote_tip(*g_rb.b.session, i, &tip);
+                    n += (size_t)snprintf(tips + n, sizeof tips - n, " s%d=%s%u", i,
+                                          have ? "" : "-", (unsigned)tip);
+                }
+            }
+            fprintf(stderr, "genesis_netplay: stalled %u ms at sim=%u (%s) remote tips:%s\n",
                     (unsigned)(now - since), (unsigned)rnet_rb_driver_sim_tick(g_rb.drv),
-                    tag ? tag : "?");
+                    tag ? tag : "?", tips);
         }
     }
     return live;

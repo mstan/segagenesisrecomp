@@ -311,6 +311,13 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
         }
         hl_sleep_ms(10);
     }
-    fprintf(stderr, "[lobby-selftest] %s round=%d TIMED OUT waiting for a launch\n", rname, round);
+    {
+        const RNetLobbyJoinInfo *ji = rnet_lobby_join_info();
+        fprintf(stderr, "[lobby-selftest] %s round=%d TIMED OUT waiting for a launch "
+                        "(in_lobby=%d members=%d all_ready=%d session=%u join_error=\"%s\" room_error=\"%s\")\n",
+                rname, round, cb->in_lobby(NULL), cb->member_count(NULL), cb->all_ready(NULL),
+                ji ? (unsigned)ji->session_id : 0u, ji ? ji->last_error : "",
+                cb->last_error && cb->last_error(NULL) ? cb->last_error(NULL) : "");
+    }
     return -10;
 }

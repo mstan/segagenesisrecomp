@@ -14,11 +14,12 @@ internet run. ICE is compiled in but has not run (no STUN/TURN here). The
 recomp-ui launcher's netplay screens were driven through the same callback
 table headlessly, never looked at on a display. Windows/MSVC was not built.
 
-Libraries: recomp-net `03ee1b1` (RetroPortingToolKit
-`feat/rb-sparse-seats-and-ws-backlog` = main `a9d20e2` + sparse-room
-`occupied_mask` + the frame-atomic WebSocket buffer), rbengine `2a03e73`,
-recomp-ui `9edc243` (RetroPortingToolKit `feat/genesis-netplay-4p`: master
-`b688ca7` + Genesis `max_players` 4). No library change was needed.
+Libraries: recomp-net `588059c` (RetroPortingToolKit
+`feat/genesis-spectator-ready`, on `feat/nes-spectator` bdc58b6 = PR #17, on
+`03ee1b1` = main `a9d20e2` + sparse-room `occupied_mask` + the frame-atomic
+WebSocket buffer), rbengine `2a03e73`, recomp-ui `b9ef2f5` (RetroPortingToolKit
+`feat/nes-lan-rematch` = PR #64, on `feat/genesis-netplay-4p` 9edc243: master
+`b688ca7` + Genesis `max_players` 4 + the Direct IP START fix).
 
 ## How it fits together
 
@@ -111,7 +112,7 @@ the path and counted it above zero. Sonic 2 unless a row says otherwise.
 | baseline_fork_cap | ported | **measured** | recomp-net | `GENESIS_RB_FORCE_FORK=4` (synthetic baseline fork, local = peer digest), D=8, 30 ms: cap set 10x; with `LOCKSTEP_TICKS=0` + ring 120 the cap CLAMPED later loads (mismatch 75 -> load 59, 150 -> 134; replayed 32 ticks) and was lifted on commit; ledger 76/76, confirmed timelines identical on both peers |
 | lockstep_no_invent | ported | **measured** | recomp-net | same run, default 60-tick lockstep: entered 10x, released 9x, 9 injected mispredicts cancelled ("lockstep forbids invent"); ledger 40/40, timelines identical |
 | boot-digest gate | built | **measured** | recomp-net | FORCE_BOOT_FORK via the online room: both peers refuse `boot_digest_mismatch` at sim 1, soft-return, room shows `last_error` |
-| rematch cold reset | start only | **measured** | engine + driver | online 4 players, sessions 11 -> 12, one boot digest across 8 match starts, 0 forks; LAN sessions 958048809 -> 958048810; offline Play after the room == a fresh process (`RUN_DONE state=96d43a0dff200343` on all 4 peers) |
+| rematch cold reset | start only | **measured** | engine + driver | online 4 players + 1 spectator, sessions 2 -> 3, one boot digest across 10 match starts, 0 forks (recomp-net 588059c, recomp-ui b9ef2f5); LAN rematch twice: sessions 280921172 -> 280921173 and 1028161760 -> 1028161761, fresh per START, both PASS; offline Play after the room == a fresh process (`RUN_DONE state=96d43a0dff200343` on all 4 peers, earlier pin) |
 | FRAME_COMMIT chain | advisory | advisory | recomp-net | 0 chain stalls in 13 of 14 cells; 4 in STRESS |
 | N seats | 2 only | **measured** | recomp-net + engine | 4 HUMAN players (roster Sonic / Tails / Knuckles / Sonic, every seat human, seat 0 and seat 3 scripted controllers, seat 1 injector): 0 ms 221 ep ledger 663/663; 200 ms 122 ep 366/366; 2% loss 190 ep 570/570 (3 watchdogs); 0 forks, all drained, tick-aligned screenshots of the confirmed state byte-identical on all 4 peers at t=1100/1150/1200 in every cell. 3 seats (Sonic / Tails / Knuckles, all human): 0 ms 151 ep 302/302, 200 ms 100 ep 200/200, 2% loss 149 ep 298/298, screenshots identical at t=1100/1200. Probe with the 4-player duplicate roster: 691 passes x 12, 0 divergences |
 | replay ownership | n/a | **inline** (justified) | engine | replayed tick p50 0.7-0.85 / p99 0.96-1.65 ms |
@@ -125,8 +126,8 @@ the path and counted it above zero. Sonic 2 unless a row says otherwise.
 | host-authoritative SRAM + guest sandbox | ported | **built** | engine | host ships SRAM before tick 0 (`RNET_STATE_OP_SRAM`); guests never write; host writes once per match. Not exercised: Sonic 2 has no battery SRAM |
 | **Product** |  |  |  |  |
 | recomp-ui lobby | present | **measured (headless)** | engine + recomp-ui | online create/join/launch 2 and 4 players; LAN 2 players; soft return with `last_error`; rematch; launcher screens not seen on a display |
-| spectators | yes | **measured** | recomp-net relay | 2 players + 1 spectator online: wire slot 2, same session, same confirmed timeline, drained |
-| two-process harness + sweep | in tree | **measured** | tools | `rb_sweep.sh` 14/14 PASS on isolated ports (pre-flight probe 99 passes + digest transparency; residual 0 in every cell); `rb_lobby.sh` PASS in every mode above |
+| spectators | yes | **measured** | recomp-net relay | 4 players + 1 spectator online, 2 rounds (sessions 2 -> 3), twice: the spectator predicts nothing and opens/follows no episode (bdc58b6 observer path: episodes=0 invents=0 in both matches), keeps level (sim 1207-1211 vs 1200 drained), and its confirmed TIMELINE equals every player's (identical files); one boot digest across all 10 match starts. Found on the way and fixed in recomp-net `588059c`: a spectator re-armed `set_ready` on every `lobby_update`, the server (which keeps ready in the player table only) answered each with another update -- an unbounded storm behind which the rematch's `op:launch` was never read (round 2: no peer launched, 6 of 7 runs); `lobby_client_test` case added (fails on bdc58b6) |
+| two-process harness + sweep | in tree | **measured** | tools | `rb_sweep.sh` 14/14 PASS on isolated ports with recomp-net 588059c + recomp-ui b9ef2f5 (pre-flight probe 99 passes + digest transparency; residual 0 in every cell); `rb_lobby.sh` PASS in every mode above |
 | screenshots | -- | **measured, tick-aligned** | engine PNG + rb_loopback | `GENESIS_SCREENSHOT_AT_TICK` writes each peer's frame at sealed tick T with the digest of the state shown; the harness grades PNG identity only where every peer's live digest equals the CONFIRMED TIMELINE digest (a frame that showed a later-corrected prediction is reported, not graded). End-of-run captures are now `*.exit.png` and labelled NOT tick-aligned. **Correction:** an earlier version of this row compared the `runs/nseat/s4_200ms_shot` tick-1200 set but also let the end-of-run PNGs of `runs/nseat/s4_200ms` stand as if comparable; they are not (peers stop at different ticks while draining), and in those frames P1 Sonic IS visible (jumping, top-left of Knuckles). "Not visible" was wrong for them; in idle runs P1 and P4 Sonic are hidden BEHIND Knuckles because extra actors spawn at P1's position and the party overlay draws on top. Seat 4 control: P4 (second Sonic) visibly steps out right of Knuckles when only seat 3 presses RIGHT (`runs/seat4/move` vs `control`, t=1100, 4 peers each identical) |
 
 ## Findings (2026-09-25)
