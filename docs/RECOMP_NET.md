@@ -32,3 +32,17 @@ Games whose two-player mode uses a stacked double-height framebuffer can pass
 double-height frame is present, slot 0 displays the top half and slot 1 the
 bottom half. This is presentation-only: the complete native framebuffer is
 still used for hashes, screenshots, synchronization, and savestates.
+## Launcher startup regression
+
+Online CREATE and START occur before the game machine and renderer are
+initialized. `GenesisHostLobbyIdentity.capture_local_config` supplies the
+current local settings at both points; it must not read an adopted peer's
+configuration or depend on the first gameplay tick. The launcher captures the
+guest's own preferences separately before adopting the host's configuration.
+
+Set `GENESIS_LOBBY_SELFTEST_PREBOOT=1` alongside the existing
+`GENESIS_LOBBY_SELFTEST=host|guest` to run the room callbacks before machine
+initialization. This reproduces the online startup ordering that the ordinary
+post-initialization selftest and LAN rooms did not cover. Sonic 2 provides
+`tools/validate_netplay_launch.py` for release ZIP validation, including
+rematches, four seats, simulated network conditions and state digest checks.

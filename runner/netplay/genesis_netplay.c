@@ -700,6 +700,7 @@ void genesis_netplay_adopt_session_config(const GenesisSessionConfig *host)
 }
 
 const GenesisSessionConfig *genesis_netplay_session_config(void) { return &s_session_cfg; }
+const GenesisSessionConfig *genesis_netplay_local_session_config(void) { return &s_local_cfg; }
 
 void genesis_netplay_config_seal(void)
 {
