@@ -41,6 +41,7 @@ typedef struct GenesisCapsExt {
 static GenesisSessionConfig s_host_cfg;
 static int s_host_cfg_valid;
 static char s_host_cfg_text[160];
+static void (*s_capture_local_config)(const RecompLauncherCSettings *, GenesisSessionConfig *);
 
 static int caps_write(const RNetLobbyMatchCaps *caps, char *out, size_t cap, void *ctx)
 {
@@ -79,11 +80,16 @@ static const RNetLobbyCapsCodec k_codec = { caps_write, caps_parse, NULL };
 static void fill_caps(void *ctx, const RecompLauncherCSettings *settings, RNetLobbyMatchCaps *caps)
 {
     GenesisCapsExt *e = (GenesisCapsExt *)caps->ext.bytes;
-    (void)ctx; (void)settings;
+    (void)ctx;
     memset(e, 0, sizeof *e);
     e->valid = 1;
     /* The host publishes its OWN configuration, never one it adopted. */
-    e->cfg = *genesis_netplay_session_config();
+    if (s_capture_local_config) {
+        s_capture_local_config(settings, &e->cfg);
+        genesis_netplay_set_local_session_config(&e->cfg);
+    } else {
+        e->cfg = *genesis_netplay_local_session_config();
+    }
 }
 
 static void apply_caps(void *ctx, const RNetLobbyMatchCaps *caps, RecompLauncherCNetplayLaunch *launch)
@@ -119,6 +125,7 @@ int genesis_host_lobby_init(const GenesisHostLobbyIdentity *id)
 {
     RecompNetplayHostHooks h;
     if (!id || !id->game_name || !id->game_name[0]) return -1;
+    s_capture_local_config = id->capture_local_config;
     snprintf(s_version, sizeof s_version, "%s", genesis_identity_game_version(id->release_version));
     snprintf(s_sha, sizeof s_sha, "%s", id->rom_sha256_hex ? id->rom_sha256_hex : "");
     memset(&h, 0, sizeof h);
@@ -228,7 +235,6 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
     const char *lobby = env_or("GENESIS_LOBBY_SELFTEST_LOBBY", "genesis-selftest");
     const char *name = env_or("GENESIS_LOBBY_SELFTEST_NAME", is_host ? "HostTest" : "GuestTest");
     uint32_t deadline = rbe_mono_ms() + 90000u;
-    RecompLauncherCSettings settings;
     int joined = 0, ready_sent = 0, started = 0;
     uint32_t next_list = 0;
 
@@ -236,7 +242,6 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
     if (players < 2) players = 2;
     if (players > 4) players = 4;
     memset(out, 0, sizeof *out);
-    memset(&settings, 0, sizeof settings);
 
     if (round == 1) {
         cb->set_player_name(NULL, name);
@@ -255,7 +260,7 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
             char ep[64];
             if (spectators > 0 && cb->allow_spectators_set) cb->allow_spectators_set(NULL, 1);
             snprintf(ep, sizeof ep, lan ? "127.0.0.1:%d" : "0.0.0.0:%d", lan ? lan_port : 7777);
-            int rc = cb->create(NULL, lobby, ep, "", &settings, lan ? 1 : 0, lan ? 2 : players);
+            int rc = cb->create(NULL, lobby, ep, "", NULL, lan ? 1 : 0, lan ? 2 : players);
             fprintf(stderr, "[lobby-selftest] host round=1 %s create rc=%d seats=%d\n",
                     lan ? "lan" : "online", rc, lan ? 2 : players);
             if (rc != 0) return -5;
@@ -296,7 +301,7 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
         if (joined && cb->in_lobby(NULL) && !ready_sent && (!is_host || cb->member_count(NULL) >= need))
             ready_sent = cb->set_ready(NULL, 1) == 0;
         if (is_host && !started && cb->member_count(NULL) >= need && cb->all_ready(NULL)) {
-            started = cb->request_start(NULL, &settings) == 0;
+            started = cb->request_start(NULL, NULL) == 0;
             fprintf(stderr, "[lobby-selftest] host round=%d start=%d members=%d\n", round, started,
                     cb->member_count(NULL));
         }

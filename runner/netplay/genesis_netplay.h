@@ -150,6 +150,7 @@ typedef struct GenesisSessionConfig {
 
 /* This build's own configuration (what it publishes when hosting). */
 void genesis_netplay_set_local_session_config(const GenesisSessionConfig *c);
+const GenesisSessionConfig *genesis_netplay_local_session_config(void);
 /* Adopt the host's configuration for the next session (NULL = use local). */
 void genesis_netplay_adopt_session_config(const GenesisSessionConfig *host);
 /* The configuration the next/current session runs with. */
