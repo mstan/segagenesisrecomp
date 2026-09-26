@@ -580,14 +580,23 @@ static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width
 static void custom_video_prepare(void)
 {
     s_custom_width = 0;
-    if (!s_video_renderer || !g_game_spec.video || !g_game_spec.video->enabled()) return;
+    if (!g_game_spec.video || !g_game_spec.video->enabled()) return;
     int dw = 0, dh = 0;
-    SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
+    if (s_video_renderer) SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
+    /* width() also sets the game's SIMULATION width from the configured mode
+     * (sealed online), so it runs whether or not this machine can present
+     * it; everything below only decides what this machine draws. */
     int width = g_game_spec.video->width(dw, dh, 320, 224);
-    if (width < 320) return;
+    if (!s_video_renderer || width < 320) return;
     SDL_RendererInfo info;
     if (SDL_GetRendererInfo(s_video_renderer, &info) == 0 && info.max_texture_width > 0 &&
         width > info.max_texture_width) width = info.max_texture_width;
+    {   /* Validation only: pretend this machine's GPU has a smaller texture
+         * limit (GENESIS_FORCE_MAX_TEXTURE_W), to prove the clamp stays
+         * presentation. */
+        const char *f = getenv("GENESIS_FORCE_MAX_TEXTURE_W");
+        if (f && f[0] && atoi(f) > 0 && width > atoi(f)) width = atoi(f);
+    }
     if (width < 320) return;
     if (width > s_frame_stride) {
         size_t count = (size_t)width * MAX_SCREEN_HEIGHT;
@@ -597,6 +606,11 @@ static void custom_video_prepare(void)
                                               SDL_TEXTUREACCESS_STREAMING, width, MAX_SCREEN_HEIGHT);
         if (!frame || !present || !next) {
             free(frame); free(present); SDL_DestroyTexture(next);
+#if GENESIS_HAS_RECOMP_NET
+            /* Online the mode is sealed simulation config: present natively
+             * this frame, never switch the mode off under the peers. */
+            if (!genesis_netplay_active())
+#endif
             g_game_spec.video->configure("off");
             fprintf(stderr, "[VIDEO] custom framebuffer allocation failed (%d pixels): %s\n", width, SDL_GetError());
             return;

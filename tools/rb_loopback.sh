@@ -61,6 +61,10 @@
 #                                mispredicts the scene can see
 #   RB_LOOPBACK_FILES="src[:dest] .."  files staged beside every peer's exe
 #   RB_LOOPBACK_SEAT<s>_ARGS="..."     extra arguments for seat s only
+#   RB_LOOPBACK_PRESENTATION_MAY_DIFFER="why"  a run that deliberately gives
+#                                peers different presentation (e.g. a forced
+#                                GPU texture limit): confirmed-state PNGs may
+#                                differ; the digests must still agree
 #   RB_LOOPBACK_PORTS=a,b[,c,d]  UDP ports of seat 1, seat 0, seat 2, seat 3
 #                                (default 9810,9811,9812,9813; see below)
 #
@@ -368,6 +372,8 @@ for t in $(echo "${RB_LOOPBACK_SHOT_TICKS:-600,900,1200}" | tr ',' ' '); do
         echo "screenshot t=$t: only $have of ${#ORDER[@]} peers reached it"
     elif [ "$agreed" -eq 1 ] && [ "$distinct" -eq 1 ]; then
         echo "screenshot t=$t: $have peers, confirmed state, byte-identical ($md5s )"
+    elif [ "$agreed" -eq 1 ] && [ -n "${RB_LOOPBACK_PRESENTATION_MAY_DIFFER:-}" ]; then
+        echo "screenshot t=$t: $have peers showed the CONFIRMED state; PNGs differ as the run intends ($md5s ) -- $RB_LOOPBACK_PRESENTATION_MAY_DIFFER"
     elif [ "$agreed" -eq 1 ]; then
         echo "screenshot t=$t: $have peers showed the CONFIRMED state but the PNGs differ ($md5s ) -- presentation divergence"
         shot_fail=1

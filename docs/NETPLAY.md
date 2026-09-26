@@ -179,8 +179,19 @@ was in no savestate while the timer deadlines in the bus are absolute in it.
   the probe fork in the game partition (74 of 460 passes) because the
   scanline renderer's scene selection was in the rollback section; the
   presentation half is now excluded (0 divergences in 460 passes with 16:9).
-  `custom_video_prepare` clamps the width to the GPU's max texture width -- a
-  host-dependent bound that only matters for widths above ~4096 ("stage").
+  **Corrected 2026-09-25:** the GPU max-texture clamp in `custom_video_prepare`
+  used to reach the simulation -- the Sonic 2 scanline renderer copied the
+  presented (clamped) width into `s_requested_width`, the width that drives
+  object activation -- so a peer with a smaller texture limit started from a
+  different state (forced 360-px limit on one peer: BOOT DIGEST MISMATCH at
+  tick 0). Now the simulation width comes only from the sealed mode
+  (`width()` runs even without a renderer), the clamp and allocation failures
+  change presentation only (online a failed allocation presents natively
+  instead of switching the mode off), and the same forced case plays: 51
+  episodes, ledger 51/51, 0 forks, confirmed digests equal on both peers at
+  t=1100/1150 while the PNGs differ by design; the unforced peer's frames are
+  byte-identical to a run without the knob. Knob:
+  `GENESIS_FORCE_MAX_TEXTURE_W` (validation only).
 - The campaign save menu stays local-only and refuses netplay.
 - Harness port collision (found 2026-09-25): the NES/SNES/N64 harnesses on
   this machine use UDP 9700..9703 and session id 1, which Genesis shared; a
