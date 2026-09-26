@@ -52,5 +52,11 @@ size_t audio_event_queue_count(void);
 size_t audio_event_state_size(void);
 int audio_event_state_save(void *data,size_t size);
 int audio_event_state_load(const void *data,size_t size,int apply);
+/* Rollback snapshots (runner/rb_state.c): COMPACT form, only the queued
+ * events (a count + n events), not the 2 MB fixed-capacity image. save: dst
+ * NULL -> bytes needed. load: 1 on success (validated before applying). The
+ * write-stream history hash is observation, not state, and is not included. */
+size_t audio_event_rb_save(void *dst, size_t cap);
+int    audio_event_rb_load(const void *src, size_t len);
 
 #endif

@@ -11,6 +11,10 @@ M68KState g_cpu;
 void m68k_write8(uint32_t a,uint8_t v) { g_ram[a&65535]=v; }
 void m68k_write16(uint32_t a,uint16_t v) { m68k_write8(a,v>>8);m68k_write8(a+1,v); }
 void m68k_write32(uint32_t a,uint32_t v) { m68k_write16(a,v>>16);m68k_write16(a+2,v); }
+/* Host-side writes from the video adapter (glue_poke*, genesis_host_mem.h). */
+void glue_poke8(uint32_t a,uint8_t v){m68k_write8(a,v);}
+void glue_poke16(uint32_t a,uint16_t v){m68k_write16(a,v);}
+void glue_poke32(uint32_t a,uint32_t v){m68k_write32(a,v);}
 static unsigned ring_calls;
 void recomp_call_addr(uint32_t a) { if(a==0x9C76)++ring_calls; }
 static char reply[1024];

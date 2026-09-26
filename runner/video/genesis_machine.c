@@ -238,9 +238,17 @@ void machine_init(void)
  * Z80 RAM + SRAM, full superzazu Z80 core state — the embedded struct now
  * carries everything, no side blob). The format is a raw struct image,
  * private to a build. main.c owns the file container. */
+/* g_snd_frame is the YM2612 timer-B clock (genesis_bus.c ym_abs_*_stamp:
+ * absolute time = g_snd_frame * frame + stamp) as well as a trace counter.
+ * Timer deadlines saved inside the bus are absolute in that clock, so a state
+ * that restored them without the clock put every timer in the wrong frame
+ * (found 2026-09-25, rollback audit). Both the quickstate and the rollback
+ * snapshot now carry it. */
 int machine_save_state(FILE *f)
 {
     if (fwrite(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
+    { uint64_t clk = (uint64_t)g_snd_frame;
+      if (fwrite(&clk, sizeof clk, 1, f) != 1) return 0; }
 #ifdef GENESIS_Z80_RECOMP
     if (fwrite(&g_z80, sizeof g_z80, 1, f) != 1) return 0;
 #endif
@@ -250,6 +258,9 @@ int machine_save_state(FILE *f)
 int machine_load_state(FILE *f)
 {
     if (fread(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
+    { uint64_t clk = 0;
+      if (fread(&clk, sizeof clk, 1, f) != 1) return 0;
+      g_snd_frame = (unsigned long)clk; }
 #ifdef GENESIS_Z80_RECOMP
     if (fread(&g_z80, sizeof g_z80, 1, f) != 1) return 0;
 #endif
@@ -261,6 +272,79 @@ int machine_load_state(FILE *f)
      * derived file-static, not part of the snapshot). */
     for (unsigned i = 0; i < GVDP_CRAM_ENTRIES; i++)
         colour_cb(NULL, i, g_machine.vdp.cram[i]);
+    return 1;
+}
+
+/* ---- Rollback snapshots (see genesis_machine.h) --------------------------- */
+typedef struct MachineRbTail {
+    uint64_t snd_frame;       /* YM timer clock (see machine_save_state) */
+    uint32_t snd_line;
+    uint32_t pending_stall;   /* VDP DMA stall owed to the 68K */
+    uint32_t unlimited_sprites; /* game-set sprite-limit bypass (status flags) */
+} MachineRbTail;
+
+static void machine_scrub_pointers(GenesisMachine *m)
+{
+    m->vdp.bus_read = NULL;       m->vdp.bus_read_user = NULL;
+    m->vdp.colour_updated = NULL; m->vdp.colour_updated_user = NULL;
+    m->bus.vdp = NULL;
+    m->z80.read_byte = NULL;  m->z80.write_byte = NULL;
+    m->z80.port_in = NULL;    m->z80.port_out = NULL;
+    m->z80.userdata = NULL;
+}
+
+size_t machine_rb_save(void *dst, size_t cap)
+{
+    size_t need = sizeof(GenesisMachine) + sizeof(MachineRbTail);
+#ifdef GENESIS_Z80_RECOMP
+    need += sizeof g_z80;
+#endif
+    if (!dst) return need;
+    if (cap < need) return 0;
+    uint8_t *o = (uint8_t *)dst;
+    memcpy(o, &g_machine, sizeof g_machine);
+    machine_scrub_pointers((GenesisMachine *)o);
+    o += sizeof g_machine;
+    MachineRbTail t;
+    memset(&t, 0, sizeof t);
+    t.snd_frame = (uint64_t)g_snd_frame;
+    t.snd_line = (uint32_t)g_snd_line;
+    t.pending_stall = gvdp_rb_pending_stall();
+    t.unlimited_sprites = (uint32_t)gvdp_unlimited_sprites();
+    memcpy(o, &t, sizeof t);
+    o += sizeof t;
+#ifdef GENESIS_Z80_RECOMP
+    memcpy(o, &g_z80, sizeof g_z80);
+#endif
+    return need;
+}
+
+int machine_rb_load(const void *src, size_t len)
+{
+    if (!src || len != machine_rb_save(NULL, 0)) return 0;
+    const uint8_t *i = (const uint8_t *)src;
+    GVDP_BusReadWord br = g_machine.vdp.bus_read;
+    void *bru = g_machine.vdp.bus_read_user;
+    GVDP_ColourUpdated cu = g_machine.vdp.colour_updated;
+    void *cuu = g_machine.vdp.colour_updated_user;
+    memcpy(&g_machine, i, sizeof g_machine);
+    i += sizeof g_machine;
+    machine_wire_pointers();
+    g_machine.vdp.bus_read = br;       g_machine.vdp.bus_read_user = bru;
+    g_machine.vdp.colour_updated = cu; g_machine.vdp.colour_updated_user = cuu;
+    MachineRbTail t;
+    memcpy(&t, i, sizeof t);
+    i += sizeof t;
+    g_snd_frame = (unsigned long)t.snd_frame;
+    g_snd_line = t.snd_line;
+    gvdp_rb_set_pending_stall(t.pending_stall);
+    gvdp_set_unlimited_sprites((int)t.unlimited_sprites);
+#ifdef GENESIS_Z80_RECOMP
+    memcpy(&g_z80, i, sizeof g_z80);
+    z80_recomp_mirror_to_interpreter(&g_machine.z80);
+#endif
+    for (unsigned c = 0; c < GVDP_CRAM_ENTRIES; c++)
+        colour_cb(NULL, c, g_machine.vdp.cram[c]);
     return 1;
 }
 
@@ -443,11 +527,19 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
         /* Render + emit active scanlines. In interlace mode 2 each raster
          * line yields TWO output rows (the even and odd fields' lines,
          * rendered progressively into a 448-row frame). */
-        if (line < active_h && sink) {
+        /* Rendering is NOT presentation-only: sprite evaluation sets the
+         * status register's sprite-overflow and sprite-collision flags, which
+         * the 68K reads. A NULL sink (a rollback replay) therefore still
+         * renders every line into the index buffer and only skips the ARGB
+         * conversion and the sink (found by the determinism probe,
+         * 2026-09-25: replays without rendering forked in the vdp partition
+         * in 1-2 of 691 dense probe passes per game). */
+        if (line < active_h) {
             int dbl = gvdp_interlace_double(&m->vdp);
             for (int sub = 0; sub <= dbl; sub++) {
                 int row = (line << dbl) + sub;
                 int n = gvdp_render_scanline(&m->vdp, row, idxbuf);
+                if (!sink) continue;
                 for (int x = 0; x < n; x++) rowbuf[x] = s_cram_argb[idxbuf[x]];
                 sink(user, row, rowbuf, n);
             }

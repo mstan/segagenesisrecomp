@@ -24,7 +24,8 @@ harnesses, and recomp-vs-interpreter co-simulation.
 2. **License.** The project license (`LICENSE.md`, PolyForm Noncommercial
    1.0.0) is inside the zip as `LICENSE`.
 3. **Attribution.** `THIRD-PARTY-LICENSES.md` is in the zip (ymfm BSD-3,
-   superzazu MIT, clowncommon ISC, SDL2 zlib, plus the launcher deps —
+   superzazu MIT, clowncommon ISC, minicoro Unlicense/MIT-0 (LuaCoco MIT asm),
+   SDL2 zlib, plus the launcher deps —
    Dear ImGui MIT, stb_image/stb_truetype public-domain, tinyfiledialogs zlib,
    Lato OFL-1.1 — full texts ship with the vendored components). The `assets/`
    folder (fonts/ + img/) ships next to the exe so the launcher can load.

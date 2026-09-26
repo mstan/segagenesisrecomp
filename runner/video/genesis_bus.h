@@ -90,6 +90,12 @@ void gbus_sram_set_geometry(GenesisBus *b, uint32_t start, uint32_t end);
 
 uint16_t gbus_read16 (GenesisBus *b, uint32_t addr);
 uint8_t  gbus_read8  (GenesisBus *b, uint32_t addr);
+/* Side-effect-free reads for HOST inspection (glue_peek*): same memory view
+ * as gbus_read*, but device ports return their current value without any
+ * read side effect (VDP FSM/flag clears, YM timer catch-up, trace hooks).
+ * Never used for emulated 68K accesses. */
+uint16_t gbus_peek16 (const GenesisBus *b, uint32_t addr);
+uint8_t  gbus_peek8  (const GenesisBus *b, uint32_t addr);
 void     gbus_write16(GenesisBus *b, uint32_t addr, uint16_t val);
 void     gbus_write8 (GenesisBus *b, uint32_t addr, uint8_t  val);
 

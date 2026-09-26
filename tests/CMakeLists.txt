@@ -43,6 +43,15 @@ target_include_directories(sonic1_video_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog")
 add_test(NAME sonic1_video COMMAND sonic1_video_test)
 
+# Snapshottable game fiber (runner/fiber_compat.c + vendored minicoro):
+# save/restore/reset contract the rollback netplay core depends on.
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/GenesisRecompRunner.cmake")
+add_executable(fiber_snapshot_test runtime/fiber_snapshot_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/fiber_compat.c")
+target_include_directories(fiber_snapshot_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+genesisrecomp_runner_target(fiber_snapshot_test)
+add_test(NAME fiber_snapshot COMMAND fiber_snapshot_test)
+
 add_executable(vdp_sprite_limit_test runtime/vdp_sprite_limit_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")
 target_include_directories(vdp_sprite_limit_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")

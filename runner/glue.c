@@ -478,8 +478,21 @@ static fiber_t s_game_fiber = NULL;
 static int    s_game_running = 0;   /* 1 once the game fiber has started */
 static uint32_t s_game_fiber_resume_pc = 0;
 
-#define GAME_FIBER_STACK_COMMIT  (1u * 1024u * 1024u)
-#define GAME_FIBER_STACK_RESERVE (32u * 1024u * 1024u)
+/* Last game->main yield reason (see GlueYieldSite in glue.h). Every switch
+ * from the game fiber to the scheduler goes through yield_to_main so the
+ * suspended fiber's resume point is always named. */
+static GlueYieldSite s_yield_site = GLUE_YIELD_NONE;
+GlueYieldSite glue_yield_site(void) { return s_yield_site; }
+
+static void yield_to_main(GlueYieldSite site)
+{
+    s_yield_site = site;
+    fiber_switch(s_main_fiber);
+}
+
+/* Engine-owned game fiber stack: fully committed, guard page below, never
+ * moved or reallocated for the life of the process (fiber_compat.h). */
+#define GAME_FIBER_STACK_SIZE    (32u * 1024u * 1024u)
 #define GAME_FIBER_STACK_WARN_STEP (1024u * 1024u)
 #define GAME_FIBER_STACK_ABORT     (28u * 1024u * 1024u)
 
@@ -572,7 +585,7 @@ static void interp_drive_mainloop(uint32_t entry_pc) {
             fprintf(stderr, "[FORCE_INTERP] HALT st=%d at PC=$%06X op=$%04X — parking "
                     "(unimplemented instruction: complete the interpreter)\n",
                     (int)st, g_m68ki_bad_pc, g_m68ki_bad_op);
-            for (;;) fiber_switch(s_main_fiber);
+            for (;;) yield_to_main(GLUE_YIELD_HALT);
         }
         /* NOTE: no per-instruction check_cycle_budget() here. The native recomp
          * does NOT yield per-scanline — it yields only at WaitForVBla
@@ -604,7 +617,7 @@ static void game_fiber_func(void *param)
         }
         fprintf(stderr, "[GAME] %s resume/dispatch returned unexpectedly!\n",
                 g_game_spec.short_name);
-        for (;;) fiber_switch(s_main_fiber);
+        for (;;) yield_to_main(GLUE_YIELD_HALT);
     }
 
     g_cpu.A[7] =   ((uint32_t)g_rom[0] << 24)
@@ -625,14 +638,14 @@ static void game_fiber_func(void *param)
      * If it does, just yield back to main forever. */
     fprintf(stderr, "[GAME] %s entry point returned unexpectedly!\n",
             g_game_spec.short_name);
-    for (;;) fiber_switch(s_main_fiber);
+    for (;;) yield_to_main(GLUE_YIELD_HALT);
 }
 
 static int create_game_fiber(uint32_t resume_pc)
 {
     s_game_fiber_resume_pc = resume_pc & 0xFFFFFFu;
-    s_game_fiber = fiber_create(GAME_FIBER_STACK_COMMIT,
-                                GAME_FIBER_STACK_RESERVE,
+    s_game_fiber = fiber_create(GAME_FIBER_STACK_SIZE,
+                                GAME_FIBER_STACK_SIZE,
                                 game_fiber_func,
                                 NULL);
     if (!s_game_fiber) {
@@ -782,7 +795,7 @@ static void check_cycle_budget(void)
             s_watchdog_counter = 0;
             g_chunk_yield_count++;
             { char stack_marker; game_stack_note("cycle-budget", &stack_marker); }
-            fiber_switch(s_main_fiber);
+            yield_to_main(GLUE_YIELD_BUDGET);
         }
     }
 }
@@ -870,7 +883,7 @@ static void own_deliver_vint(GVDP *vdp)
     /* Snapshot the VBlank routine byte BEFORE the handler consumes it — the
      * giant-spin probe needs to know whether the dispatch input was valid. */
     uint8_t vbla_routine_at_entry =
-        m68k_read8(g_game_layout.vint_routine_addr & 0xFFFFFF);
+        glue_peek8(g_game_layout.vint_routine_addr & 0xFFFFFF);
 #endif
     if (genesis_force_interp()) {
         /* Interpret the V-int handler body from the level-6 autovector; delivery
@@ -895,7 +908,7 @@ static void own_deliver_vint(GVDP *vdp)
                 g_snd_frame, hc,
                 (unsigned)s_irq_cycle_debt, (unsigned)(s_irq_cycle_debt / 127856u),
                 vbla_routine_at_entry,
-                m68k_read8(g_game_layout.game_mode_addr & 0xFFFFFF));
+                glue_peek8(g_game_layout.game_mode_addr & 0xFFFFFF));
         /* The one KNOWN legit multi-million-cycle handler is the Sega-screen
          * PCM scream (routine $14) — real hardware busy-feeds the DAC for
          * ~2s inside the V-int with everything else frozen. Only dump the
@@ -1096,8 +1109,8 @@ void glue_yield_for_vblank(void)
     { extern void cosim_cycles_note_park(void); cosim_cycles_note_park(); }
 #endif
     if (g_yield_log_file) {
-        uint32_t vbc = m68k_read32(g_game_layout.vint_runcount_addr & 0xFFFF);
-        uint8_t  vr  = m68k_read8 (g_game_layout.vint_routine_addr  & 0xFFFF);
+        uint32_t vbc = glue_peek32(g_game_layout.vint_runcount_addr & 0xFFFF);
+        uint8_t  vr  = glue_peek8 (g_game_layout.vint_routine_addr  & 0xFFFF);
         fprintf(g_yield_log_file,
                 "%llu %u %u %u\n",
                 (unsigned long long)g_frame_count,
@@ -1118,7 +1131,7 @@ void glue_yield_for_vblank(void)
     if (s_state_requested && g_game_spec.state_at_boundary && g_game_spec.state_at_boundary())
         s_state_parked=1;
     { char stack_marker; game_stack_note("WaitForVint", &stack_marker); }
-    fiber_switch(s_main_fiber);
+    yield_to_main(GLUE_YIELD_VBLANK);
     /* STAGE 1 interleaved IRQ: the scheduler flagged a V-int/H-int while we were
      * parked here. Run its handler NOW, on this (game) fiber — its bus accesses
      * yield via check_cycle_budget so it interleaves with the scanline scheduler
@@ -1167,9 +1180,8 @@ void glue_yield_for_vblank(void)
      * don't run the SMPS-style PLC system pay nothing. plc_pending=0
      * disables the gate and the hook never fires (Sonic 2 path). */
     {
-        extern uint16_t m68k_read16(uint32_t);
         if (g_game_spec.call_periodic && g_game_layout.plc_pending_addr &&
-            m68k_read16(g_game_layout.plc_pending_addr & 0xFFFF) != 0) {
+            glue_peek16(g_game_layout.plc_pending_addr & 0xFFFF) != 0) {
             M68KState plc_save = g_cpu;
             g_game_spec.call_periodic();
             g_cpu = plc_save;
@@ -1188,7 +1200,7 @@ void glue_yield_for_interrupt_poll(void)
 
     s_watchdog_counter = 0;
     { char stack_marker; game_stack_note("irq-poll", &stack_marker); }
-    fiber_switch(s_main_fiber);
+    yield_to_main(GLUE_YIELD_IRQPOLL);
 }
 
 /* Called from main loop: start the game frame. With interleave mode,
@@ -1235,7 +1247,7 @@ void glue_yield_for_break(void)
      * continue the interrupted function. Clear the flag on return so
      * the next yield can be detected. */
     s_game_yielded_break = 1;
-    fiber_switch(s_main_fiber);
+    yield_to_main(GLUE_YIELD_BREAK);
     s_game_yielded_break = 0;
 }
 
@@ -1292,8 +1304,12 @@ void glue_init(const cc_u8l *rom_bytes, cc_u32l rom_byte_len)
     if (!create_game_fiber(0)) {
         return;
     }
-    fprintf(stderr, "[fiber] game stack reserve=%u commit=%u bytes\n",
-            GAME_FIBER_STACK_RESERVE, GAME_FIBER_STACK_COMMIT);
+    {
+        uintptr_t lo = 0, top = 0;
+        fiber_stack_range(s_game_fiber, &lo, &top);
+        fprintf(stderr, "[fiber] game stack %zu bytes (engine-owned, committed, guard page)\n",
+                (size_t)(top - lo));
+    }
 }
 
 void glue_signal_vblank(void)
@@ -1473,10 +1489,9 @@ void glue_restart_game_fiber(uint32_t resume_pc)
 {
     if (!s_main_fiber)
         return;
-
-    if (s_game_fiber) {
-        fiber_destroy(s_game_fiber);
-        s_game_fiber = NULL;
+    if (fiber_current() != s_main_fiber) {
+        fprintf(stderr, "glue: glue_restart_game_fiber called off the scheduler fiber\n");
+        abort();
     }
 
     s_game_running = 0;
@@ -1499,11 +1514,23 @@ void glue_restart_game_fiber(uint32_t resume_pc)
     s_game_stack_top = 0;
     s_game_stack_last_report = 0;
     g_rte_pending = 0;
+    s_yield_site = GLUE_YIELD_NONE;
 
-    if (create_game_fiber(resume_pc)) {
-        fprintf(stderr, "[fiber] restarted game fiber at $%06X\n",
-                (unsigned)(resume_pc & 0xFFFFFFu));
+    /* Reset in place: same engine-owned stack mapping, so the fiber's stack
+     * range never changes for the life of the process (fiber snapshots are
+     * only valid against the stack they were taken from). */
+    if (s_game_fiber) {
+        if (fiber_reset(s_game_fiber, game_fiber_func, NULL) != 0) {
+            fprintf(stderr, "glue: game fiber reset failed\n");
+            return;
+        }
+        s_game_fiber_resume_pc = resume_pc & 0xFFFFFFu;
+        s_game_running = 1;
+    } else if (!create_game_fiber(resume_pc)) {
+        return;
     }
+    fprintf(stderr, "[fiber] restarted game fiber at $%06X\n",
+            (unsigned)(resume_pc & 0xFFFFFFu));
 }
 
 /* =========================================================================
@@ -1588,7 +1615,9 @@ static inline void spin_check(uint32_t byte_addr, int is_write)
             if (s_main_fiber)
                 { char stack_marker; game_stack_note("spin-read", &stack_marker); }
             if (s_main_fiber)
-                fiber_switch(s_main_fiber);
+                { extern unsigned long g_spin_yields; g_spin_yields++; }
+            if (s_main_fiber)
+                yield_to_main(GLUE_YIELD_SPIN);
             s_spin_count = 0;
         }
     } else {
@@ -1612,8 +1641,14 @@ uint16_t m68k_read16(uint32_t byte_addr)
 int s_io_log_enabled = 0;  /* set via TCP command */
 int s_io_log_count   = 0;
 
+unsigned long g_spin_yields = 0;          /* [POLL-DIAG] spin_check yields */
 unsigned long g_z80poll_fallback_hits = 0; /* [POLL-DIAG] 256-poll bound fired */
 unsigned long g_z80poll_yields = 0;        /* [POLL-DIAG] total z80-poll yields */
+/* Z80 sync-poll streak (m68k_read8). Scheduler state that decides when the
+ * 68K yields, so it lives at file scope with the other scheduler statics
+ * (rollback snapshots/digests must be able to reach it). */
+static uint32_t s_z80poll_last_addr = 0;
+static int      s_z80poll_streak    = 0;
 uint8_t m68k_read8(uint32_t byte_addr)
 {
     byte_addr &= 0xFFFFFFu;
@@ -1635,30 +1670,28 @@ uint8_t m68k_read8(uint32_t byte_addr)
      * Bounded fallback: if a single read polls > 256 times without
      * resolving (corrupted Z80 state, dead driver), return 0 so we
      * don't hang. Counter resets across distinct read addresses. */
-    static uint32_t last_poll_addr  = 0;
-    static int      poll_streak     = 0;
     if (byte_addr == 0xA01FFDu || byte_addr == 0xA01FFFu || byte_addr == 0xA11100u) {
         if (s_interleave_active && !s_in_vblank_service) {
-            if (byte_addr == last_poll_addr) {
-                if (++poll_streak > 256) {
+            if (byte_addr == s_z80poll_last_addr) {
+                if (++s_z80poll_streak > 256) {
                     extern unsigned long g_z80poll_fallback_hits; /* [POLL-DIAG] */
                     g_z80poll_fallback_hits++;
                     return 0x00u;
                 }
             } else {
-                last_poll_addr = byte_addr;
-                poll_streak    = 1;
+                s_z80poll_last_addr = byte_addr;
+                s_z80poll_streak    = 1;
             }
             { extern unsigned long g_z80poll_yields; g_z80poll_yields++; } /* [POLL-DIAG] */
             { char stack_marker; game_stack_note("z80-poll", &stack_marker); }
-            fiber_switch(s_main_fiber);
+            yield_to_main(GLUE_YIELD_Z80POLL);
             /* fall through to real read */
         } else {
             return 0x00u;  /* outside interleave: keep old shortcut */
         }
     } else {
-        last_poll_addr = 0;
-        poll_streak    = 0;
+        s_z80poll_last_addr = 0;
+        s_z80poll_streak    = 0;
     }
     HYBRID_BUMP_CYCLES();
     cc_bool hi = (byte_addr & 1) == 0;
@@ -1750,6 +1783,95 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
     }
     gbus_write16(&g_machine.bus, byte_addr,     (uint16_t)(val >> 16));
     gbus_write16(&g_machine.bus, byte_addr + 2, (uint16_t)(val & 0xFFFF));
+}
+
+/* Scheduler rule: busy-wait detectors restart at every wall-frame boundary.
+ *
+ * spin_check's same-address streak (s_spin_addr/s_spin_count) and the Z80
+ * sync-poll streak (s_z80poll_last_addr/s_z80poll_streak) decide WHEN the
+ * 68K yields to the raster scheduler. Until 2026-09-25 they were reset at
+ * every frame boundary only as a SIDE EFFECT of the frame loop's host reads
+ * (main.c read $FFFE0C/$FFF600 through m68k_read32/m68k_read8, i.e. through
+ * the emulated bus). Converting those host reads to side-effect-free peeks
+ * let the streaks carry across frames: S3K and S&K then took 33/39 spin
+ * yields instead of 22 over the 18000-frame attract run and their audio and
+ * state fingerprints changed (framebuffers identical). Resetting the spin
+ * streak here restores every fingerprint; resetting only the Z80 poll streak
+ * does not (docs/NETPLAY.md, finding A).
+ *
+ * So the reset is now an explicit rule, called by the tick driver
+ * immediately before machine_run_frame(), and the four variables are part of
+ * the rollback scheduler section (glue_rb_*). The Z80 poll streak is reset
+ * with it because the baseline's post-frame m68k_read8 reset it too. */
+void glue_sched_frame_begin(void)
+{
+    s_spin_addr         = 0;
+    s_spin_count        = 0;
+    s_z80poll_last_addr = 0;
+    s_z80poll_streak    = 0;
+}
+
+/* =========================================================================
+ * Host-side memory access (see genesis_runtime.h). No watchdog_check,
+ * bus_ring_push, spin_check, HYBRID_BUMP_CYCLES / check_cycle_budget, Z80
+ * poll-streak update or write-trace hook: none of those may observe host
+ * activity, or observing the machine would change its schedule.
+ * ========================================================================= */
+
+uint8_t glue_peek8(uint32_t addr)
+{
+    return gbus_peek8(&g_machine.bus, addr & 0xFFFFFFu);
+}
+
+uint16_t glue_peek16(uint32_t addr)
+{
+    return gbus_peek16(&g_machine.bus, addr & 0xFFFFFFu);
+}
+
+uint32_t glue_peek32(uint32_t addr)
+{
+    addr &= 0xFFFFFFu;
+    return ((uint32_t)gbus_peek16(&g_machine.bus, addr) << 16) |
+           (uint32_t)gbus_peek16(&g_machine.bus, (addr + 2u) & 0xFFFFFFu);
+}
+
+static int host_is_z80_ram(uint32_t addr)
+{
+    return addr >= 0xA00000u && addr < 0xA10000u && (addr & 0xFFFFu) < 0x2000u;
+}
+
+void glue_poke8(uint32_t addr, uint8_t val)
+{
+    addr &= 0xFFFFFFu;
+    if (addr >= 0xFF0000u) { g_ram[addr & 0xFFFFu] = val; return; }
+    if (host_is_z80_ram(addr)) { g_machine.bus.z80_ram[addr & 0x1FFFu] = val; return; }
+    /* SRAM (exact byte), ROM (ignored) and device ports: the bus's own write
+     * semantics, which touch no 68K scheduler state. */
+    gbus_write8(&g_machine.bus, addr, val);
+}
+
+void glue_poke16(uint32_t addr, uint16_t val)
+{
+    addr &= 0xFFFFFFu;
+    if (addr >= 0xFF0000u) {
+        uint16_t o = (uint16_t)(addr & 0xFFFFu);
+        g_ram[o] = (uint8_t)(val >> 8);
+        g_ram[(uint16_t)(o + 1u)] = (uint8_t)val;
+        return;
+    }
+    if (host_is_z80_ram(addr)) {
+        /* Z80 RAM is byte-wide: the word's high byte lands at addr (as the
+         * bus does for 68K word writes). */
+        g_machine.bus.z80_ram[addr & 0x1FFFu] = (uint8_t)(val >> 8);
+        return;
+    }
+    gbus_write16(&g_machine.bus, addr, val);
+}
+
+void glue_poke32(uint32_t addr, uint32_t val)
+{
+    glue_poke16(addr, (uint16_t)(val >> 16));
+    glue_poke16((addr + 2u) & 0xFFFFFFu, (uint16_t)val);
 }
 
 /* =========================================================================
@@ -1948,7 +2070,7 @@ void genesis_log_dispatch_miss(uint32_t addr)
                           ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
         /* The native loose-A7 return the caller (JSR site / enclosing JSR) is
          * about to pop — the capsule must return exactly here to be safe. */
-        uint32_t expected_ret = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;
+        uint32_t expected_ret = glue_peek32(g_cpu.A[7]) & 0xFFFFFFu;
         uint32_t run_at = addr;
 
         /* RAM-resident computed target: follow the JMP/JSR trampoline chain
@@ -2212,4 +2334,222 @@ void hybrid_call_interpret(uint32_t target_pc)
 {
     g_interp_total_calls++;
     call_by_address(target_pc);
+}
+
+/* =========================================================================
+ * Rollback state (runner/rb_state.c drives these; see rb_state.h).
+ *
+ * SCHED: every glue.c variable that decides when the 68K runs, yields or
+ * takes an interrupt, listed field by field. EXEC: the suspended game fiber
+ * (its register context and live stack) plus the generated tail-frame head
+ * that points into that stack. Diagnostics (bus ring, miss tables, pacing
+ * telemetry, watchdog counters that only ever abort) are not state and are
+ * deliberately absent. The _STATICS probe (GENESIS_RB_PROBE_STATICS) is what
+ * catches a static added here and forgotten below.
+ * ========================================================================= */
+#include "rb_state.h"
+#include "cosim.h"   /* cosim_fnv_* (address-free exec digest) */
+
+typedef struct GlueRbSched {
+    uint64_t frame_count;
+    uint32_t cycle_accumulator, vblank_threshold, audio_cycle_counter;
+    uint32_t stamp_rebase;
+    uint32_t hybrid_cycle_counter;
+    int32_t  ws_margin;
+    uint8_t  controller1, controller2;
+    int32_t  vblank_fired, vblank_executed;
+    int32_t  rte_real, rte_dummy, rte_ptr_is_dummy;
+    int32_t  early_return;
+    int32_t  in_vblank_service, game_running;
+    uint32_t game_fiber_resume_pc;
+    int32_t  yield_site;
+    uint32_t main_cpu_clock_remainder;
+    uint32_t main_cpu_divisor, main_cpu_stalls;
+    int32_t  irq_in_progress, cycle_budget, game_yielded_vblank;
+    uint32_t irq_cycle_debt;
+    int32_t  irq_cycle_debt_level;
+    uint32_t budget_cyc_seen;
+    int32_t  game_yielded_break, interleave_active;
+    uint32_t chunk_cycles;
+    int32_t  own_vint_latched, pending_irq;
+    int32_t  state_requested, state_parked;
+    uint32_t spin_addr;
+    int32_t  spin_count;
+    uint32_t z80poll_last_addr;
+    int32_t  z80poll_streak;
+    int32_t  in_floor;
+    uint32_t watchdog_counter;
+    /* Generated (m68k-recomp-core genesis profile, <prefix>_part00.c): the
+     * split-function SP-pop carry. A mutable generated global, found by the
+     * _STATICS probe on Sonic 3 (2026-09-25): omitting it forked the replay
+     * in cpu/sched/ram at step 1 in 5 of 149 probe passes. */
+    int32_t  split_sp_popped;
+} GlueRbSched;
+
+size_t glue_rb_sched_save(void *dst, size_t cap)
+{
+    GlueRbSched s;
+    if (!dst) return sizeof s;
+    if (cap < sizeof s) return 0;
+    memset(&s, 0, sizeof s);
+    s.frame_count          = g_frame_count;
+    s.cycle_accumulator    = g_cycle_accumulator;
+    s.vblank_threshold     = g_vblank_threshold;
+    s.audio_cycle_counter  = g_audio_cycle_counter;
+    s.stamp_rebase         = g_68k_stamp_rebase;
+    s.hybrid_cycle_counter = (uint32_t)g_hybrid_cycle_counter;
+    s.ws_margin            = g_ws_margin;
+    s.controller1          = g_controller1_buttons;
+    s.controller2          = g_controller2_buttons;
+    s.vblank_fired         = s_vblank_fired_this_frame;
+    s.vblank_executed      = s_vblank_executed_this_frame;
+    s.rte_real             = s_rte_real;
+    s.rte_dummy            = s_rte_dummy;
+    s.rte_ptr_is_dummy     = g_rte_pending_ptr == &s_rte_dummy;
+    s.early_return         = g_early_return;
+    s.in_vblank_service    = s_in_vblank_service;
+    s.game_running         = s_game_running;
+    s.game_fiber_resume_pc = s_game_fiber_resume_pc;
+    s.yield_site           = (int32_t)s_yield_site;
+    s.main_cpu_clock_remainder = s_main_cpu_clock.remainder;
+    s.main_cpu_divisor     = s_main_cpu_divisor;
+    s.main_cpu_stalls      = s_main_cpu_stalls;
+    s.irq_in_progress      = s_irq_in_progress;
+    s.cycle_budget         = s_cycle_budget;
+    s.game_yielded_vblank  = s_game_yielded_vblank;
+    s.irq_cycle_debt       = s_irq_cycle_debt;
+    s.irq_cycle_debt_level = s_irq_cycle_debt_level;
+    s.budget_cyc_seen      = s_budget_cyc_seen;
+#if SONIC_REVERSE_DEBUG
+    s.game_yielded_break   = s_game_yielded_break;
+#endif
+    s.interleave_active    = s_interleave_active;
+    s.chunk_cycles         = (uint32_t)s_chunk_cycles;
+    s.own_vint_latched     = s_own_vint_latched;
+    s.pending_irq          = s_pending_irq;
+    s.state_requested      = s_state_requested;
+    s.state_parked         = s_state_parked;
+    s.spin_addr            = s_spin_addr;
+    s.spin_count           = s_spin_count;
+    s.z80poll_last_addr    = s_z80poll_last_addr;
+    s.z80poll_streak       = s_z80poll_streak;
+    s.in_floor             = s_in_floor;
+    s.watchdog_counter     = s_watchdog_counter;
+    s.split_sp_popped      = g_split_sp_popped;
+    memcpy(dst, &s, sizeof s);
+    return sizeof s;
+}
+
+int glue_rb_sched_load(const void *src, size_t len)
+{
+    GlueRbSched s;
+    if (!src || len != sizeof s) return 0;
+    memcpy(&s, src, sizeof s);
+    g_frame_count               = s.frame_count;
+    g_cycle_accumulator         = s.cycle_accumulator;
+    g_vblank_threshold          = s.vblank_threshold;
+    g_audio_cycle_counter       = s.audio_cycle_counter;
+    g_68k_stamp_rebase          = s.stamp_rebase;
+    g_hybrid_cycle_counter      = s.hybrid_cycle_counter;
+    g_ws_margin                 = s.ws_margin;
+    g_controller1_buttons       = s.controller1;
+    g_controller2_buttons       = s.controller2;
+    s_vblank_fired_this_frame   = s.vblank_fired;
+    s_vblank_executed_this_frame= s.vblank_executed;
+    s_rte_real                  = s.rte_real;
+    s_rte_dummy                 = s.rte_dummy;
+    g_rte_pending_ptr           = s.rte_ptr_is_dummy ? &s_rte_dummy : &s_rte_real;
+    g_early_return              = s.early_return;
+    s_in_vblank_service         = s.in_vblank_service;
+    s_game_running              = s.game_running;
+    s_game_fiber_resume_pc      = s.game_fiber_resume_pc;
+    s_yield_site                = (GlueYieldSite)s.yield_site;
+    s_main_cpu_clock.remainder  = s.main_cpu_clock_remainder;
+    s_main_cpu_divisor          = s.main_cpu_divisor;
+    s_main_cpu_stalls           = s.main_cpu_stalls;
+    s_irq_in_progress           = s.irq_in_progress;
+    s_cycle_budget              = s.cycle_budget;
+    s_game_yielded_vblank       = s.game_yielded_vblank;
+    s_irq_cycle_debt            = s.irq_cycle_debt;
+    s_irq_cycle_debt_level      = s.irq_cycle_debt_level;
+    s_budget_cyc_seen           = s.budget_cyc_seen;
+#if SONIC_REVERSE_DEBUG
+    s_game_yielded_break        = s.game_yielded_break;
+#endif
+    s_interleave_active         = s.interleave_active;
+    s_chunk_cycles              = s.chunk_cycles;
+    s_own_vint_latched          = s.own_vint_latched;
+    s_pending_irq               = s.pending_irq;
+    s_state_requested           = s.state_requested;
+    s_state_parked              = s.state_parked;
+    s_spin_addr                 = s.spin_addr;
+    s_spin_count                = s.spin_count;
+    s_z80poll_last_addr         = s.z80poll_last_addr;
+    s_z80poll_streak            = s.z80poll_streak;
+    s_in_floor                  = s.in_floor;
+    s_watchdog_counter          = s.watchdog_counter;
+    g_split_sp_popped           = s.split_sp_popped;
+    return 1;
+}
+
+/* EXEC: [u64 tail-frame head][u32 fiber blob len][fiber blob]. The blob and
+ * the head carry host addresses of THIS process's fiber stack, so an EXEC
+ * section is only meaningful in the process that saved it (rollback is). */
+size_t glue_rb_exec_save(void *dst, size_t cap)
+{
+    size_t fb = s_game_fiber ? fiber_snapshot_bound(s_game_fiber) : 0;
+    size_t need = sizeof(uint64_t) + sizeof(uint32_t) + fb;
+    if (!dst) return need;
+    if (cap < need) return 0;
+    uint8_t *o = (uint8_t *)dst;
+    uint64_t head = (uint64_t)(uintptr_t)recomp_tail_frame_get();
+    uint32_t n = 0;
+    if (fb) {
+        n = (uint32_t)fiber_snapshot_save(s_game_fiber, o + sizeof head + sizeof n, fb);
+        if (n == 0) return 0;
+    }
+    memcpy(o, &head, sizeof head);
+    memcpy(o + sizeof head, &n, sizeof n);
+    return sizeof head + sizeof n + n;
+}
+
+int glue_rb_exec_load(const void *src, size_t len)
+{
+    const uint8_t *i = (const uint8_t *)src;
+    uint64_t head;
+    uint32_t n;
+    if (!src || len < sizeof head + sizeof n) return 0;
+    memcpy(&head, i, sizeof head);
+    memcpy(&n, i + sizeof head, sizeof n);
+    if (len != sizeof head + sizeof n + n) return 0;
+    if (n) {
+        if (!s_game_fiber || fiber_snapshot_load(s_game_fiber, i + sizeof head + sizeof n, n) != 0)
+            return 0;
+    }
+    recomp_tail_frame_set((void *)(uintptr_t)head);
+    return 1;
+}
+
+static void rb_exec_visit(int pending, uint32_t addr, void *user)
+{
+    uint64_t *h = (uint64_t *)user;
+    *h = cosim_fnv_u32(*h, (uint32_t)pending);
+    *h = cosim_fnv_u32(*h, addr & 0xFFFFFFu);
+}
+
+/* Address-free view of EXEC for digests: the yield site the fiber resumes
+ * from, whether it runs, and the guest-visible tail-frame chain. The raw
+ * stack bytes (host addresses) are compared only in-process, by the probe. */
+uint64_t glue_rb_exec_digest(uint64_t h)
+{
+    h = cosim_fnv_u32(h, (uint32_t)s_yield_site);
+    h = cosim_fnv_u32(h, (uint32_t)s_game_running);
+    h = cosim_fnv_u32(h, s_game_fiber_resume_pc);
+    recomp_tail_frame_walk(rb_exec_visit, &h);
+    return h;
+}
+
+int glue_rb_fiber_stack_range(uintptr_t *lo, uintptr_t *top)
+{
+    return s_game_fiber ? fiber_stack_range(s_game_fiber, lo, top) : -1;
 }

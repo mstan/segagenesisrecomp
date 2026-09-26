@@ -204,7 +204,7 @@ uint32_t gbus_sram_size(const GenesisBus *b)    { return b->sram_present ? b->sr
  *   c>=3,TH=1 -> ?1CB MXYZ     (Mode, X, Y, Z in the low nibble)
  *   c>=4,TH=0 -> ?0SA1111      (sequence terminator)
  */
-static uint8_t pad_read(GenesisBus *b, int port)
+static uint8_t pad_read(const GenesisBus *b, int port)
 {
     uint16_t p  = b->pad[port];                /* GPAD_* bits, 1 = pressed     */
     uint8_t  th = b->io_data[port] & 0x40;     /* TH select line               */
@@ -248,7 +248,7 @@ static uint8_t pad_read(GenesisBus *b, int port)
         | ((p & GPAD_DOWN)  ? 0 : 0x02) | ((p & GPAD_UP) ? 0 : 0x01));
 }
 
-static uint16_t io_read(GenesisBus *b, uint32_t a)
+static uint16_t io_read(const GenesisBus *b, uint32_t a)
 {
     switch (a & 0x1E) {
         case 0x00: return b->version;            /* $A10000/1 version          */
@@ -335,6 +335,51 @@ uint16_t gbus_read16(GenesisBus *b, uint32_t a)
         snd_trace_busreq("REQ-READack", ack ? 1 : 0); return ack; }  /* [SND-TRACE] */
     if (a == 0xA11200u) return (uint16_t)(b->z80_reset_off ? 0x0100 : 0x0000);
     return 0xFFFFu;
+}
+
+uint16_t gbus_peek16(const GenesisBus *b, uint32_t a)
+{
+    a &= 0xFFFFFFu;
+    if (sram_hit(b, a)) {
+        uint32_t o = a - b->sram_base;
+        return (uint16_t)((b->sram[o] << 8) | b->sram[(o + 1u) % b->sram_size]);
+    }
+    if (a < 0x400000u)
+        return (uint16_t)((g_rom[a] << 8) | g_rom[a + 1]);
+    if (a >= 0xFF0000u) {
+        uint16_t o = (uint16_t)(a & 0xFFFFu);
+        return (uint16_t)((g_ram[o] << 8) | g_ram[(uint16_t)(o + 1)]);
+    }
+    if (a >= 0xC00000u && a < 0xC00010u) {
+        if (a < 0xC00004u) return gvdp_peek_data(b->vdp);
+        if (a < 0xC00008u) return gvdp_peek_status(b->vdp);
+        return gvdp_read_hv_counter(b->vdp);
+    }
+    if (a >= 0xA00000u && a < 0xA10000u) {
+        if ((a & 0xFFFFu) < 0x2000u) {
+            unsigned off = a & 0x1FFFu;
+            return (uint16_t)(((uint16_t)b->z80_ram[off] << 8)
+                              | b->z80_ram[(off + 1u) & 0x1FFFu]);
+        }
+        if ((a & 0xFFFFu) < 0x6000u)             /* YM status, no timer catch-up */
+            return (uint16_t)((uint16_t)b->ym_status * 0x0101u);
+        return 0xFFFFu;
+    }
+    if (a >= 0xA10000u && a < 0xA10020u) return io_read(b, a);
+    if (a == 0xA11100u) return (uint16_t)(b->z80_busreq ? 0x0000 : 0x0100);
+    if (a == 0xA11200u) return (uint16_t)(b->z80_reset_off ? 0x0100 : 0x0000);
+    return 0xFFFFu;
+}
+
+uint8_t gbus_peek8(const GenesisBus *b, uint32_t a)
+{
+    a &= 0xFFFFFFu;
+    if (a >= 0xA00000u && a < 0xA10000u && (a & 0xFFFFu) < 0x2000u)
+        return b->z80_ram[a & 0x1FFFu];
+    if (sram_hit(b, a))
+        return b->sram[a - b->sram_base];
+    uint16_t w = gbus_peek16(b, a & ~1u);
+    return (a & 1) ? (uint8_t)w : (uint8_t)(w >> 8);
 }
 
 void gbus_write16(GenesisBus *b, uint32_t a, uint16_t v)
