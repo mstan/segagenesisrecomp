@@ -2,6 +2,7 @@
 #define GLUE_H
 
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
+#include "include/genesis_host_mem.h"   /* glue_peek* / glue_poke* */
 #include <stdio.h>
 #include <stdint.h>
 
@@ -34,7 +35,31 @@ void glue_wait_vblank_done(void);
  * outside the emulator core. */
 void glue_save_state(FILE *sf);
 void glue_load_state(FILE *sf);
+/* Re-enter the game at resume_pc (0 = cold entry) by resetting the game
+ * fiber IN PLACE (same engine-owned stack; see fiber_compat.h). Must be
+ * called from the scheduler (main) fiber. */
 void glue_restart_game_fiber(uint32_t resume_pc);
+
+/* Scheduler rule (see glue.c): the same-address spin streak and the Z80
+ * sync-poll streak restart at every wall-frame boundary. The tick driver
+ * calls this immediately before machine_run_frame(). */
+void glue_sched_frame_begin(void);
+
+/* Why the game fiber last switched to the scheduler. Recorded immediately
+ * before every game->main switch, so while the game fiber is suspended it
+ * names the yield point it will resume from. Part of the rollback
+ * execution state (hashed address-free; the fiber stack itself is not). */
+typedef enum {
+    GLUE_YIELD_NONE    = 0,  /* has not yielded since init / restart        */
+    GLUE_YIELD_VBLANK  = 1,  /* glue_yield_for_vblank (WaitForVBlank park)   */
+    GLUE_YIELD_BUDGET  = 2,  /* check_cycle_budget (scanline chunk spent)    */
+    GLUE_YIELD_SPIN    = 3,  /* spin_check same-address read streak          */
+    GLUE_YIELD_Z80POLL = 4,  /* m68k_read8 Z80 mailbox / bus-request poll    */
+    GLUE_YIELD_IRQPOLL = 5,  /* glue_yield_for_interrupt_poll                */
+    GLUE_YIELD_BREAK   = 6,  /* glue_yield_for_break (rdb Tier-2 park)       */
+    GLUE_YIELD_HALT    = 7,  /* parked forever (interp halt / entry return)  */
+} GlueYieldSite;
+GlueYieldSite glue_yield_site(void);
 
 /* Shutdown: signal game thread to stop (if running). */
 void glue_shutdown(void);

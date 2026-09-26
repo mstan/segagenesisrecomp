@@ -47,4 +47,12 @@ uint32_t ym2612_sample_rate(void);
 int ym2612_save_state(FILE *f);
 int ym2612_load_state(FILE *f);
 
+/* Rollback snapshots (runner/rb_state.c): the same chip + wrapper state as
+ * ym2612_save_state, in memory, PLUS the rendered-but-undrained output
+ * samples (so a restored tick drains exactly what the original drained).
+ * save: dst NULL -> returns the bytes needed; else writes and returns the
+ * bytes written (0 if cap is too small). load: 1 on success. */
+size_t ym2612_rb_save(void *dst, size_t cap);
+int    ym2612_rb_load(const void *src, size_t len);
+
 #endif

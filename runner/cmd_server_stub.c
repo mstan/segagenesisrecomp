@@ -14,6 +14,9 @@
  * cmd_server.c / cmd_server.h.
  */
 #include "cmd_server.h"
+
+/* The runner publishes session state even when the debug server is stripped. */
+int (*g_cmd_server_online)(void);
 #include <stdint.h>
 
 /* Per-game TCP command handlers (sonic_extras.c) emit replies via these two

@@ -21,6 +21,34 @@ static size_t     s_head = 0;  /* producer writes here */
 static size_t     s_tail = 0;  /* consumer reads here */
 static size_t     s_overflow_count = 0;
 size_t audio_event_state_size(void) { return sizeof(uint32_t)+sizeof s_ring; }
+size_t audio_event_rb_save(void *dst, size_t cap)
+{
+    uint32_t n = (uint32_t)audio_event_queue_count();
+    size_t need = sizeof n + (size_t)n * sizeof(AudioEvent);
+    if (!dst) return need;
+    if (cap < need) return 0;
+    memcpy(dst, &n, sizeof n);
+    for (uint32_t i = 0; i < n; ++i)
+        memcpy((uint8_t *)dst + sizeof n + (size_t)i * sizeof(AudioEvent),
+               &s_ring[(s_tail + i) % QUEUE_CAP], sizeof(AudioEvent));
+    return need;
+}
+int audio_event_rb_load(const void *src, size_t len)
+{
+    uint32_t n;
+    if (!src || len < sizeof n) return 0;
+    memcpy(&n, src, sizeof n);
+    if (n >= QUEUE_CAP || len != sizeof n + (size_t)n * sizeof(AudioEvent)) return 0;
+    for (uint32_t i = 0; i < n; ++i) {
+        AudioEvent e;
+        memcpy(&e, (const uint8_t *)src + sizeof n + (size_t)i * sizeof e, sizeof e);
+        if (e.port > AUDIO_PORT_PSG) return 0;
+    }
+    memcpy(s_ring, (const uint8_t *)src + sizeof n, (size_t)n * sizeof(AudioEvent));
+    s_tail = 0;
+    s_head = n;
+    return 1;
+}
 int audio_event_state_save(void *data,size_t size)
 {
     if (!data || size!=audio_event_state_size()) return 0;

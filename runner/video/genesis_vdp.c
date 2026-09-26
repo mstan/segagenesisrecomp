@@ -233,6 +233,11 @@ static void dma_run_68k_to_vdp(GVDP *v)
     }
 }
 
+/* Rollback (rb_state.c): the owed stall is state between a DMA and the
+ * 68K access that pays it, so a snapshot carries it. */
+uint32_t gvdp_rb_pending_stall(void) { return s_pending_68k_stall; }
+void gvdp_rb_set_pending_stall(uint32_t v) { s_pending_68k_stall = v; }
+
 uint32_t gvdp_consume_68k_stall(GVDP *v)
 {
     (void)v;
@@ -368,6 +373,33 @@ uint16_t gvdp_read_data(GVDP *v)
     return out;
 }
 
+uint16_t gvdp_peek_data(const GVDP *v)
+{
+    switch (v->code & 0x0F) {
+        case CODE_CRAM_READ:
+            return v->cram[(v->address >> 1) & (GVDP_CRAM_ENTRIES - 1)];
+        case CODE_VSRAM_READ: {
+            unsigned idx = (v->address >> 1);
+            return (idx < GVDP_VSRAM_ENTRIES) ? v->vsram[idx] : 0;
+        }
+        case CODE_VRAM_READ:
+        default:
+            return vram_read_word(v, v->address);
+    }
+}
+
+uint16_t gvdp_peek_status(const GVDP *v)
+{
+    uint16_t s = 0x3400 | 0x0200;        /* open-bus high bits + FIFO empty    */
+    if (v->vint_pending)     s |= 0x0080;
+    if (v->sprite_overflow)  s |= 0x0040;
+    if (v->sprite_collision) s |= 0x0020;
+    if (v->in_vblank)        s |= 0x0008;
+    if (v->in_hblank)        s |= 0x0004;
+    if (v->dma_active)       s |= 0x0002;
+    return s;
+}
+
 uint16_t gvdp_read_control(GVDP *v)
 {
     /* Reading the control port resets the write FSM and clears the V-int flag. */
@@ -444,6 +476,7 @@ static uint8_t s_spr_hilite_op[GVDP_MAX_WIDTH]; /* operator: highlight        */
 /* Host presentation option, independent of serialized VDP hardware state. */
 static int s_unlimited_sprites;
 void gvdp_set_unlimited_sprites(int enabled) { s_unlimited_sprites=!!enabled; }
+int  gvdp_unlimited_sprites(void) { return s_unlimited_sprites; }
 static int s_ws_extra = 0;
 
 /* Clamp the requested extra to what the output buffer can hold for width `w`

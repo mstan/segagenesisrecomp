@@ -144,7 +144,7 @@ static int host_state_load(const char *path)
     audio_discard_playback(); /* host payload restored deferred chip events */
     uint32_t pc=g_game_spec.resume_main_loop_pc;
     if (g_game_spec.save_resume_pc && g_game_layout.game_mode_addr) {
-        uint32_t mapped=g_game_spec.save_resume_pc(m68k_read8(g_game_layout.game_mode_addr));
+        uint32_t mapped=g_game_spec.save_resume_pc(glue_peek8(g_game_layout.game_mode_addr));
         if (mapped) pc=mapped;
     }
     if (pc) glue_restart_game_fiber(pc);

@@ -9,6 +9,10 @@
 
 include_guard(GLOBAL)
 
+# Runner source list + the build requirements the runner places on every
+# executable that links it (also completes unmigrated consumers).
+include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompRunner.cmake")
+
 if(NOT DEFINED RECOMP_ROOT)
     message(FATAL_ERROR "RECOMP_ROOT must name the segagenesisrecomp checkout")
 endif()

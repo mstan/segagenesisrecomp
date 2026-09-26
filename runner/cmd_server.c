@@ -559,11 +559,9 @@ static void handle_get_registers(int id)
 
 static uint8_t bus_read8(uint32_t addr)
 {
-    /* For work RAM range, use direct emu read (always available) */
-    uint32_t masked = addr & 0xFFFFFF;
-    if (masked >= 0xFF0000)
-        return emu_read8(masked);
-    return m68k_read8(addr);
+    /* Host inspection: side-effect free for every address (glue_peek8), so a
+     * TCP read can never perturb the running game's schedule or devices. */
+    return glue_peek8(addr);
 }
 
 static void handle_read_memory(int id, const char *json)
@@ -613,7 +611,7 @@ static void handle_write_memory(int id, const char *json)
     for (int i = 0; i < len; i++) {
         char byte_str[3] = { hex[i*2], hex[i*2+1], '\0' };
         uint8_t val = (uint8_t)strtoul(byte_str, NULL, 16);
-        m68k_write8(addr + i, val);
+        glue_poke8(addr + i, val);
     }
 
     char buf[128];
@@ -1058,17 +1056,26 @@ static void handle_read_joypad_port(int id)
     /* Manually read the joypad port the same way ReadJoypads does.
      * Phase 1: write 0x00 to $A10003, read $A10003
      * Phase 2: write 0x40 to $A10003, read $A10003
-     * Combine and invert. */
-    extern uint8_t m68k_read8(uint32_t);
-    extern void m68k_write8(uint32_t, uint8_t);
+     * Combine and invert.
+     * Driving TH is a real device write (it advances the 6-button protocol
+     * counter the game's own ReadJoypads depends on), so the port state is
+     * saved and restored around the probe: the query leaves no trace. */
+    GenesisBus *bus = &g_machine.bus;
+    uint8_t saved_data = bus->io_data[0];
+    uint8_t saved_cnt  = bus->pad_th_count[0];
+    uint8_t saved_prev = bus->pad_th_prev[0];
 
     /* TH=0 phase */
-    m68k_write8(0xA10003, 0x00);
-    uint8_t phase0 = m68k_read8(0xA10003);
+    glue_poke8(0xA10003, 0x00);
+    uint8_t phase0 = glue_peek8(0xA10003);
 
     /* TH=1 phase */
-    m68k_write8(0xA10003, 0x40);
-    uint8_t phase1 = m68k_read8(0xA10003);
+    glue_poke8(0xA10003, 0x40);
+    uint8_t phase1 = glue_peek8(0xA10003);
+
+    bus->io_data[0]      = saved_data;
+    bus->pad_th_count[0] = saved_cnt;
+    bus->pad_th_prev[0]  = saved_prev;
 
     /* Combine: phase0 bits 6-7 (shifted from Start,A), phase1 bits 0-5 (CBRLDU) */
     uint8_t combined = ((phase0 << 2) & 0xC0) | (phase1 & 0x3F);
@@ -2115,6 +2122,26 @@ static void handle_t3_dump(int id, const char *json)
  * Command dispatch
  * ========================================================================= */
 
+/* Online (a netplay session owns execution), only these READ-ONLY queries
+ * run: observers query the always-on rings, they never drive the machine
+ * (recomp-ai-rules/NETPLAY.md section 6: forbid execution control while a
+ * frontend owns execution). Pause/continue/run_frames/rdb stepping, state
+ * load/save, memory writes, input injection and every game command are
+ * refused. */
+int (*g_cmd_server_online)(void);
+static int online_allowed(const char *cmd)
+{
+    static const char *const ok[] = {
+        "ping", "screenshot", "get_registers", "read_memory", "read_ram", "sonic_history",
+        "vblank_info", "frame_info", "frame_range", "addr_history", "read_vram", "read_cram",
+        "audio_stats", "frame_performance", "get_frame", "frame_timeseries", "z80_state",
+        "read_z80_ram", "fm_state", "psg_state", "vdp_state", "vdp_events", "read_vsram",
+        "dispatch_miss_info", "rdb_range", "rdb_dump", "rdb_count", "coverage_dump", "quit" };
+    for (unsigned i = 0; i < sizeof ok / sizeof ok[0]; i++)
+        if (!strcmp(cmd, ok[i])) return 1;
+    return 0;
+}
+
 static CmdResult dispatch_command(const char *json, uint32_t frame_num)
 {
     CmdResult cr = {0};
@@ -2123,6 +2150,10 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
 
     if (!json_get_str(json, "cmd", cmd, sizeof(cmd))) {
         send_err(id, "missing cmd");
+        return cr;
+    }
+    if (g_cmd_server_online && g_cmd_server_online() && !online_allowed(cmd)) {
+        send_err(id, "refused: a netplay session owns execution (read-only queries only)");
         return cr;
     }
 

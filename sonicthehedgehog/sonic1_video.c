@@ -159,9 +159,9 @@ static uint8_t scene_read8(unsigned a)
 }
 static uint16_t scene_read16(unsigned a) { return (uint16_t)((scene_read8(a)<<8)|scene_read8(a+1)); }
 static uint32_t scene_read32(unsigned a) { return ((uint32_t)scene_read16(a)<<16)|scene_read16(a+2); }
-static void write8(unsigned a, unsigned v) { m68k_write8(0xFF0000u|(a&65535u),(uint8_t)v); }
-static void write16(unsigned a, unsigned v) { m68k_write16(0xFF0000u|(a&65535u),(uint16_t)v); }
-static void write32(unsigned a, unsigned v) { m68k_write32(0xFF0000u|(a&65535u),v); }
+static void write8(unsigned a, unsigned v) { glue_poke8(0xFF0000u|(a&65535u),(uint8_t)v); }
+static void write16(unsigned a, unsigned v) { glue_poke16(0xFF0000u|(a&65535u),(uint16_t)v); }
+static void write32(unsigned a, unsigned v) { glue_poke32(0xFF0000u|(a&65535u),v); }
 static int view_left(int camera, int w)
 {
     int end = stage_width()-w, left = camera-(w-320)/2;

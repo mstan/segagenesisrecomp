@@ -1,0 +1,11 @@
+minicoro vendored from https://github.com/edubart/minicoro @ 02dad0f8b7cbb12fe6e216ae7a76db15ca55cd7b
+(minicoro.h and LICENSE, unmodified).
+
+License: dual Unlicense (public domain) OR MIT No Attribution, see LICENSE.
+The x86-64 / aarch64 context-switch assembly inside minicoro.h is derived from
+LuaCoco by Mike Pall; its MIT notice is embedded in minicoro.h and is retained.
+
+Used by runner/fiber_compat.c only, with MCO_USE_ASM on every supported target
+(Win64, SysV x86-64, aarch64). The engine supplies the coroutine memory itself
+(mco_init on an engine-owned mapping with a no-access guard page) so the game
+fiber's stack can be snapshotted and restored in place. Local patches: none.

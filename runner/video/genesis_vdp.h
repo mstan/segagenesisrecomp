@@ -103,6 +103,9 @@ void gvdp_reset(GVDP *v);
 /* Draw the complete SAT without per-scanline sprite/pixel dropout. Sprite
  * ordering, priority and deliberate X=0 masking remain intact. Default off. */
 void gvdp_set_unlimited_sprites(int enabled);
+/* Simulation, not presentation: it decides when sprite evaluation raises the
+ * status register's overflow flag. Part of the rollback machine section. */
+int  gvdp_unlimited_sprites(void);
 
 /* ---- 68K port interface ($C00000 data, $C00004 control) ------------------ */
 void     gvdp_write_data   (GVDP *v, uint16_t value);
@@ -113,12 +116,23 @@ uint16_t gvdp_read_control (GVDP *v);          /* status register             */
 /* H/V counter read ($C00008). */
 uint16_t gvdp_read_hv_counter(const GVDP *v);
 
+/* Side-effect-free views of the two stateful ports, for HOST inspection
+ * (debuggers, scripts, rollback digests) only — never for emulated 68K
+ * accesses. peek_data returns the word the next data-port read would return
+ * without advancing the address or resetting the control FSM; peek_status
+ * returns the status word without clearing the V-int flag or advancing the
+ * phantom H-blank toggle that gvdp_read_control performs. */
+uint16_t gvdp_peek_data  (const GVDP *v);
+uint16_t gvdp_peek_status(const GVDP *v);
+
 /* Fetch-and-clear the 68K freeze cycles owed by the last 68K->VDP DMA
  * (hardware freezes the 68K for the whole transfer; fill/copy run in
  * background and don't stall). Kept OUTSIDE the GVDP struct: it is transient
  * (consumed right after the triggering port write) and the save states
  * snapshot GVDP as a raw struct image — a new field would break existing
  * save files. */
+uint32_t gvdp_rb_pending_stall(void);
+void     gvdp_rb_set_pending_stall(uint32_t v);
 uint32_t gvdp_consume_68k_stall(GVDP *v);
 
 /* ---- Always-on VDP event ring ---------------------------------------------

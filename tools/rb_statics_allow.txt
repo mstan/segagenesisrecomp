@@ -1,0 +1,89 @@
+# rb_statics_allow.txt -- statics the rollback restore is EXPECTED not to put
+# back, one regex per line, each with the reason. Everything not matched here
+# that tools/rb_statics_resolve.py reports is a carrier candidate and must be
+# classified (snapshot it, or add it here with a reason) before a probe run is
+# called clean. A new line here is a claim; keep the reason honest.
+#
+# observation rings / counters (always-on diagnostics, never read by a tick)
+^s_rdb$
+^g_gvdp_events$
+^g_gvdp_event_seq$
+^s_bus_ring
+^s_block_(ring|head|total)$
+^g_rdb_current_func$
+^g_native_insn_count$
+^g_pace_snap$
+^s_prev_(insns|bus_total)\.
+^g_interp_total_calls$
+^g_snd_pcz$
+^g_chunk_yield_count$
+^g_spin_yields$
+^g_z80poll_(yields|fallback_hits)$
+^g_cvblank_fires_total$
+^s_hist(_total)?$
+^s_stream_hash$
+# the probe's own bookkeeping
+^s_(rec_dig|rec_in|ticks_seen|passes|fails|sym_fails|recording|s0.*|img.*)$
+# presentation: framebuffer, host audio output buffers, render scratch
+^s_native_storage$
+^s_(fm|psg)_(accum|count)$
+^(rowbuf|idxbuf|drawn)\.[0-9]+$
+^s_spr_(idx|op|hi|shadow_op|hilite_op)$
+# snapshotted in a compact/re-based form, so the raw image differs by design:
+# the event ring (queued events re-based to index 0), the FM/PSG undrained
+# output (re-based to index 0), the mixer's per-drain scratch
+^s_ring$
+^s_scratch$
+^_ZN12_GLOBAL__N_1L9s_scratchE$
+^evs\.[0-9]+$
+# per-scanline cursors reset at the start of every line (machine_run_frame)
+^s_z80_off$
+^s_line_base$
+# host loop: the frame number scripted input is timed against, set before
+# every tick from the host frame counter
+^s_current_frame_for_input$
+# the rb_state digest scratch
+^s_dig_(buf|cap)$
+# event ring cursors: re-based to 0 by the compact restore (see s_ring)
+^s_(head|tail)$
+# the mixer's deferral scratch: filled and requeued inside one drain
+^defer\.[0-9]+$
+# chip-trace stamps (written by the host loop / trace taps, read only by
+# the trace rings)
+^g_snd_(vint|line)$
+# debug counters and the reverse-debugger's iterate count
+^g_dbg_b[0-9a-f]+_count$
+^s_iterate_count$
+# check_ramdump's diagnostic trigger (--ramdump), host-only
+^s_gameplay_frames\.[0-9]+$
+# Sonic 2 presentation: the party overlay's per-frame copies of the VDP and
+# RAM (read by the overlay renderer only) and the custom-video scene tick
+^frame_(vdp|world|sprites|active|vs)\.[0-9]+$
+^(left|top|vs_left|vs_top)\.[0-9]+$
+^last_(tick|zone|serial)\.[0-9]+$
+^g_snd_mc$
+# instruction watchdog origin: reset at every scheduler slice, only aborts
+^s_insn_watchdog_base$
+# unnamed bytes between diagnostic ring cursors (compiler-placed locals of
+# the ring code; resolved to the gap because they carry no symbol)
+^<gap after (s_bus_ring_head|s_block_head|g_rdb_current_func|g_snd_pcz)>$
+# the probe's own cost samples
+^s_t_(save|load|digest|tick)$
+^s_bytes_(min|max)$
+# Sonic 2 custom video: presentation (chosen/drawn by the scanline renderer,
+# which a replay does not run) and its counters
+^s_display(_frame)?$
+^s_(frames|fallbacks|scene_misses|scene_holds|width|left|camera|camera_y|native_x)$
+^s_(terrain|bg)_(checks|errors|unstreamed)$
+^s_uninitialized_scroll_lines$
+^s_bad_[a-z_]+$
+^s_video_frame$
+^s_world_frame$
+^s_frame_(level|special|fg_x|fg_y|bg_y|zone)$
+^s_priority(_capacity)?$
+^s_tick_(samples|updates|lag|multi)$
+^s_publication_lag$
+^(was_active)\.[0-9]+$
+# input script cursors: the LOCAL controller (a script is an input device;
+# its output is sealed like any pad), not simulation
+^s_(press_until|held_mask)$

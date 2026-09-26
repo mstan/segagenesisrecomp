@@ -166,6 +166,9 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
 #endif
 
 #include "glue.h"
+#include "sim_step.h"
+#include "rb_probe.h"
+#include "rb_state.h"
 
 
 #include "cmd_server.h"
@@ -184,7 +187,9 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
 #endif
 #if GENESIS_HAS_RECOMP_NET
 #include "genesis_netplay.h"
-#include "genesis_launcher_netplay.h"
+#include "genesis_netplay_identity.h"
+#include "genesis_netplay_rb.h"
+#include "genesis_host_lobby.h"
 #ifndef GENESIS_GAME_VERSION
 #define GENESIS_GAME_VERSION "dev"
 #endif
@@ -306,6 +311,11 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
         g_app_config.window_scale = v;
         if (!(SDL_GetWindowFlags(c->window) & SDL_WINDOW_FULLSCREEN)) SDL_SetWindowSize(c->window, 320*v, 224*v);
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VIEW_MODE)) {
+#if GENESIS_HAS_RECOMP_NET
+        /* The view mode changes the simulated width (widescreen margin and its
+         * RAM word): session-pinned online (config seal). */
+        if (genesis_netplay_active()) return 0;
+#endif
         c->view_mode = v; s_ws_user_on = v != RECOMP_RUNTIME_UI_VIEW_NATIVE;
         if (g_game_spec.video)
             g_game_spec.video->configure(v == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE ? "fit" : "off");
@@ -570,14 +580,23 @@ static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width
 static void custom_video_prepare(void)
 {
     s_custom_width = 0;
-    if (!s_video_renderer || !g_game_spec.video || !g_game_spec.video->enabled()) return;
+    if (!g_game_spec.video || !g_game_spec.video->enabled()) return;
     int dw = 0, dh = 0;
-    SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
+    if (s_video_renderer) SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
+    /* width() also sets the game's SIMULATION width from the configured mode
+     * (sealed online), so it runs whether or not this machine can present
+     * it; everything below only decides what this machine draws. */
     int width = g_game_spec.video->width(dw, dh, 320, 224);
-    if (width < 320) return;
+    if (!s_video_renderer || width < 320) return;
     SDL_RendererInfo info;
     if (SDL_GetRendererInfo(s_video_renderer, &info) == 0 && info.max_texture_width > 0 &&
         width > info.max_texture_width) width = info.max_texture_width;
+    {   /* Validation only: pretend this machine's GPU has a smaller texture
+         * limit (GENESIS_FORCE_MAX_TEXTURE_W), to prove the clamp stays
+         * presentation. */
+        const char *f = getenv("GENESIS_FORCE_MAX_TEXTURE_W");
+        if (f && f[0] && atoi(f) > 0 && width > atoi(f)) width = atoi(f);
+    }
     if (width < 320) return;
     if (width > s_frame_stride) {
         size_t count = (size_t)width * MAX_SCREEN_HEIGHT;
@@ -587,6 +606,11 @@ static void custom_video_prepare(void)
                                               SDL_TEXTUREACCESS_STREAMING, width, MAX_SCREEN_HEIGHT);
         if (!frame || !present || !next) {
             free(frame); free(present); SDL_DestroyTexture(next);
+#if GENESIS_HAS_RECOMP_NET
+            /* Online the mode is sealed simulation config: present natively
+             * this frame, never switch the mode off under the peers. */
+            if (!genesis_netplay_active())
+#endif
             g_game_spec.video->configure("off");
             fprintf(stderr, "[VIDEO] custom framebuffer allocation failed (%d pixels): %s\n", width, SDL_GetError());
             return;
@@ -627,9 +651,6 @@ int runner_custom_video_set(const char *mode, int window_w, int window_h)
 static void widescreen_update_for_frame(void)
 {
     custom_video_prepare();
-    extern uint8_t  m68k_read8 (uint32_t);
-    extern uint16_t m68k_read16(uint32_t);
-    extern void     m68k_write16(uint32_t, uint16_t);
     extern int      g_ws_margin;   /* runtime widening signal (defined in glue.c) */
     int extra_px = 0;
     if (!s_custom_width && s_ws_user_on && g_game_layout.ws_capable) {
@@ -647,7 +668,7 @@ static void widescreen_update_for_frame(void)
             int n = g_game_layout.ws_eligible_mode_count
                 ? g_game_layout.ws_eligible_mode_count : g_game_layout.level_mode_count;
             if (n > 0) {
-                uint8_t mode = m68k_read8(g_game_layout.game_mode_addr);
+                uint8_t mode = glue_peek8(g_game_layout.game_mode_addr);
                 eligible = 0;
                 for (int i = 0; i < n; i++)
                     if (modes[i] == mode) { eligible = 1; break; }
@@ -656,11 +677,11 @@ static void widescreen_update_for_frame(void)
         /* Require the level to have actually started (excludes the title card /
          * act transitions that share the gameplay game-mode). */
         if (eligible && g_game_layout.ws_level_started_addr &&
-            m68k_read8(g_game_layout.ws_level_started_addr) == 0)
+            glue_peek8(g_game_layout.ws_level_started_addr) == 0)
             eligible = 0;
         /* Never widen 2-player split-screen. */
         if (eligible && g_game_layout.ws_two_player_addr &&
-            m68k_read16(g_game_layout.ws_two_player_addr) != 0)
+            glue_peek16(g_game_layout.ws_two_player_addr) != 0)
             eligible = 0;
 
         if (eligible) extra_px = cells * 8;
@@ -690,7 +711,7 @@ static void widescreen_update_for_frame(void)
      * (patched-disasm) recompiled 68K read. A ROM recompiled unmodified never
      * reads it; harmless to keep during the migration. */
     if (g_game_layout.ws_extra_ram_addr)
-        m68k_write16(g_game_layout.ws_extra_ram_addr, (uint16_t)extra_px);
+        glue_poke16(g_game_layout.ws_extra_ram_addr, (uint16_t)extra_px);
 
     /* On the frame widescreen first turns on (extra 0 -> nonzero), force one
      * full-screen tile redraw so the just-revealed side margins are filled.
@@ -699,8 +720,7 @@ static void widescreen_update_for_frame(void)
     {
         static int s_prev_ws_extra = 0;
         if (extra_px > 0 && s_prev_ws_extra == 0 && g_game_layout.ws_redraw_flag_addr) {
-            extern void m68k_write8(uint32_t, uint8_t);
-            m68k_write8(g_game_layout.ws_redraw_flag_addr, 1);
+            glue_poke8(g_game_layout.ws_redraw_flag_addr, 1);
         }
         s_prev_ws_extra = extra_px;
     }
@@ -861,6 +881,46 @@ static uint16_t collect_pad_mask(int player)
     s_sampling_netplay_local = 0;
 #endif
     return mask;
+}
+
+/* The sealed inputs of one tick (sim_step.h), from the same sources the
+ * frame loop always used: ports 0/1 through input_requested_cb (published
+ * netplay pads, scripts, TCP, live map) plus the 6-button extras; players 2/3
+ * (adapter-only, e.g. the Sonic 2 party) from their live map and script. */
+static void collect_sim_input(GenesisSimInput *in)
+{
+    static const GenesisButton own_btns[8] = {
+        GB_UP,   GB_DOWN,
+        GB_LEFT, GB_RIGHT,
+        GB_B,    GB_C,
+        GB_A,    GB_START };
+    static const uint16_t own_bits[8] = {
+        GPAD_UP, GPAD_DOWN, GPAD_LEFT, GPAD_RIGHT,
+        GPAD_B,  GPAD_C,    GPAD_A,    GPAD_START };
+    memset(in, 0, sizeof *in);
+    for (int port = 0; port < 2; port++) {
+        in->pad_type[port] = g_input_map.p[port].pad_type == PAD_6BUTTON ? 1 : 0;
+        uint16_t pad_mask = 0;
+        for (int b = 0; b < 8; b++)
+            if (input_requested_cb(NULL, (cc_u8f)port, own_btns[b]))
+                pad_mask |= own_bits[b];
+        if (g_input_map.p[port].pad_type == PAD_6BUTTON)
+#if GENESIS_HAS_RECOMP_NET
+            pad_mask |= (genesis_netplay_active()
+                             ? genesis_netplay_published_pad(port)
+                             : input_current_mask(port)) &
+                        (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
+#else
+            pad_mask |= input_current_mask(port) &
+                        (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
+#endif
+        in->pad[port] = pad_mask;
+    }
+    for (int p = 2; p < GENESIS_SIM_MAX_PLAYERS; p++)
+        in->pad[p] = (uint16_t)(input_current_mask(p) | input_script_player_mask(p));
+    for (int p = 0; p < GENESIS_SIM_MAX_PLAYERS; p++)
+        if (input_player_connected(p) || input_script_player_used(p))
+            in->human_mask |= 1u << p;
 }
 
 /*
@@ -1089,7 +1149,7 @@ int runner_load_state_file(const char *path)
         uint32_t resume_pc = g_game_spec.resume_main_loop_pc;
         if (g_game_spec.save_resume_pc && g_game_layout.game_mode_addr) {
             uint32_t pc = g_game_spec.save_resume_pc(
-                m68k_read8(g_game_layout.game_mode_addr));
+                glue_peek8(g_game_layout.game_mode_addr));
             if (pc) resume_pc = pc;
         }
         if (resume_pc)
@@ -1160,6 +1220,15 @@ static uint64_t framebuf_active_hash(void)
 static void runner_sram_flush(void)
 {
     if (!s_sram_active) return;
+#if GENESIS_HAS_RECOMP_NET
+    /* Guest sandbox: during a session only the host (the SRAM authority)
+     * persists the battery save; a guest's SRAM holds the host's image and
+     * must never overwrite the guest's own file. */
+    if (!genesis_netplay_sram_writes_allowed()) {
+        s_sram_dirty = 0;
+        return;
+    }
+#endif
     FILE *f = fopen(s_sram_path, "wb");
     if (!f) { fprintf(stderr, "[SRAM] flush failed to open %s\n", s_sram_path); return; }
     size_t n = sram_size();
@@ -1466,6 +1535,367 @@ static void rdb_park_drain(void)
 }
 #endif
 
+/* ---- host hooks of one live tick (sim_step.h) ---------------------------- */
+
+/* Pre-raster, debugger extra frames: the widescreen margin only. */
+static void widescreen_pre_raster(void *ctx)
+{
+    (void)ctx;
+    widescreen_update_for_frame();   /* set VDP margin + game RAM word */
+}
+
+/* Pre-raster, live tick: the chip-trace stamp, then the widescreen margin. */
+static void live_pre_raster(void *ctx)
+{
+    (void)ctx;
+    { extern unsigned long g_snd_vint;       /* [CHIP-TRACE] cross-backend sync stamp */
+      g_snd_vint = g_game_layout.vint_runcount_addr
+          ? (unsigned long)glue_peek32(g_game_layout.vint_runcount_addr) : 0ul; }
+    widescreen_update_for_frame();   /* set VDP margin + game RAM word */
+}
+
+/* A REPLAYED tick (rollback resim, determinism probe): only the pre-raster
+ * work that sets simulation parameters (the widescreen margin and its RAM
+ * word -- session-pinned online), no rendering, no observation hooks. */
+static const GenesisSimHooks s_resim_hooks = { widescreen_pre_raster, NULL, NULL, NULL, NULL };
+const GenesisSimHooks *genesis_main_resim_hooks(void) { return &s_resim_hooks; }
+
+#if GENESIS_HAS_RECOMP_NET
+/* A replayed tick for the rollback driver (INLINE replay): the same
+ * genesis_sim_step as live, with the resim hooks (no sink, no observation)
+ * and sim_step's scratch audio -- the device stream is never rewound. */
+static void netplay_replay_tick(const GenesisSimInput *in)
+{
+    genesis_sim_step(in, NULL, &s_resim_hooks);
+}
+static int s_netplay_match_over = 0;
+static uint8_t s_rom_sha256[32];
+/* Headless rounds (GENESIS_LOBBY_SELFTEST_FRAMES): drain each match here. */
+static uint32_t s_netplay_match_frames = 0;
+#endif
+/* The offline Play a headless room takes after its matches: runs this many
+ * ticks, then prints RUN_DONE like a fresh process's --max-frames run. */
+static int s_offline_after_netplay = 0;
+
+static int s_digest_every = -1;
+static const char *s_custom_video_cli;   /* --widescreen, if given */
+
+/* What reopening the launcher for a soft return needs (set on first use). */
+static struct {
+    int  used;
+    char ltitle[200], initial_rom[600], picked[600];
+    const char *settings_ini, *rom_cfg_path;
+} s_launcher_ctx;
+
+/* ---- cold reset (rematch / offline Play after netplay) -------------------- */
+static uint8_t *s_cold_blob;
+static size_t   s_cold_len;
+
+static void genesis_session_capture_cold(void)
+{
+    if (s_cold_blob) return;
+    size_t need = genesis_rb_bound();
+    s_cold_blob = (uint8_t *)malloc(need);
+    s_cold_len = s_cold_blob ? genesis_rb_save(s_cold_blob, need) : 0;
+    if (!s_cold_len)
+        fprintf(stderr, "[session] could not capture the cold machine; rematch will be refused\n");
+}
+
+static void runner_sram_init_and_load(const char *rom_path);
+/* session_reset: cold power-on in-process. Every piece of simulation state
+ * is in the rb_state section table (the determinism probe's _STATICS pass
+ * finds no carrier outside it), so restoring the pre-first-tick snapshot IS
+ * the cold boot; then the battery save is re-read from disk exactly as a
+ * fresh process reads it, and host-side playback is flushed. */
+static int genesis_session_reset(const char *rom_path)
+{
+    if (!s_cold_len || !genesis_rb_load(s_cold_blob, s_cold_len)) {
+        fprintf(stderr, "[session] cold reset FAILED\n");
+        return 0;
+    }
+    if (rom_path) runner_sram_init_and_load(rom_path);
+    s_sram_dirty = 0;
+    audio_discard_playback();
+    fprintf(stderr, "[session] cold reset: machine restored to its pre-boot state\n");
+    return 1;
+}
+
+#if GENESIS_HAS_RECOMP_NET
+/* This build's own session configuration (captured once, before any
+ * adoption could overwrite the live settings). */
+static const GenesisSessionConfig *local_session_config(void)
+{
+    static GenesisSessionConfig c;
+    static int have;
+    if (!have) {
+        memset(&c, 0, sizeof c);
+        c.pad_type[0] = (uint8_t)(g_input_map.p[0].pad_type == PAD_6BUTTON);
+        c.pad_type[1] = (uint8_t)(g_input_map.p[1].pad_type == PAD_6BUTTON);
+        const char *pt = getenv("GENESIS_NET_PAD_TYPES");   /* "a,b", 0/1 */
+        if (pt && pt[0]) {
+            c.pad_type[0] = (uint8_t)(pt[0] == '1');
+            c.pad_type[1] = (uint8_t)(strchr(pt, ',') && strchr(pt, ',')[1] == '1');
+        }
+        c.ws_on = (uint8_t)(s_ws_user_on != 0);
+        if (g_game_spec.video && g_game_spec.video->enabled()) {
+            /* The host's custom-video mode, window-independent. */
+            const char *m = s_custom_video_cli ? s_custom_video_cli
+                          : g_app_config.custom_widescreen ? app_config_aspect_mode(g_app_config.custom_aspect)
+                          : "off";
+            if (!strcmp(m, "adaptive") || !strcmp(m, "fit")) {
+                int dw = 0, dh = 0, w = 398;   /* no window yet: 16:9 */
+                if (s_video_renderer) SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
+                if (dw > 0 && dh > 0) w = (int)((double)224 * dw / dh + 0.5);
+                if (w < 320) w = 320;
+                snprintf(c.video, sizeof c.video, "%d:224", w);
+            } else {
+                snprintf(c.video, sizeof c.video, "%s", m);
+            }
+        }
+        c.ws_cells = (uint8_t)(s_ws_user_cells > 0 && s_ws_user_cells < 256 ? s_ws_user_cells : 0);
+        if (g_game_spec.netplay_config_image)
+            g_game_spec.netplay_config_image(c.game, sizeof c.game);
+        have = 1;
+    }
+    return &c;
+}
+
+/* After a match: the next session, if any. Headless rooms rematch from the
+ * waiting room (GENESIS_LOBBY_SELFTEST_ROUNDS) or take the room's Offline
+ * Play (GENESIS_LOBBY_SELFTEST_THEN_OFFLINE); anything else exits. */
+static int run_recomp_launcher(const char *, const char *, char *, size_t, const char **,
+                               const char *, const char *, void *, int);
+static int netplay_next_session(GenesisNetplayConfig *cfg, int round)
+{
+    int role = genesis_host_lobby_selftest_role();
+    const char *v = getenv("GENESIS_LOBBY_SELFTEST_ROUNDS");
+    int rounds = v && v[0] ? atoi(v) : 1;
+#if RECOMP_LAUNCHER
+    if (!role && s_launcher_ctx.used) {
+        /* Soft return: the launcher reopens on the waiting room. PLAY with a
+         * netplay launch is a rematch; PLAY without one is offline Play;
+         * both boot cold in this process. Closing it exits. */
+        const char *picked_rom = NULL;
+        GenesisNetplayConfig next;
+        genesis_netplay_config_defaults(&next);
+        genesis_netplay_apply_env(&next);
+        next.enabled = 0;
+        int lr = run_recomp_launcher(s_launcher_ctx.ltitle, s_launcher_ctx.initial_rom,
+                                     s_launcher_ctx.picked, sizeof s_launcher_ctx.picked,
+                                     &picked_rom, s_launcher_ctx.settings_ini,
+                                     s_launcher_ctx.rom_cfg_path, &next, 1);
+        if (lr != 0) return 0;
+        if (picked_rom && s_launcher_ctx.initial_rom[0] &&
+            strcmp(picked_rom, s_launcher_ctx.initial_rom) != 0)
+            fprintf(stderr, "[session] a different ROM was picked; it runs from the next start "
+                            "(this process stays on the loaded cartridge)\n");
+        *cfg = next;
+        if (!cfg->enabled) {
+            genesis_netplay_adopt_session_config(NULL);
+            if (g_game_spec.video) {
+                if (s_custom_video_cli) g_game_spec.video->configure(s_custom_video_cli);
+                else app_config_apply_video(g_game_spec.video);
+            }
+            if (g_game_spec.netplay_config_adopt)
+                g_game_spec.netplay_config_adopt(local_session_config()->game);
+        }
+        return 1;
+    }
+#endif
+    if (!role) return 0;
+    genesis_host_lobby_prepare_rematch();
+    genesis_host_lobby_selftest_report_room(round + 1);
+    if (round < rounds) {
+        RecompLauncherCNetplayLaunch l;
+        if (genesis_host_lobby_selftest_room(round + 1, &l) != 0) return 0;
+        genesis_netplay_config_defaults(cfg);
+        genesis_netplay_apply_env(cfg);
+        if (genesis_host_lobby_config_from_launch(&l, cfg) != 0) return 0;
+        fprintf(stderr, "[lobby-selftest] round %d: rematch session=%u\n", round + 1,
+                (unsigned)cfg->session_id);
+        return 1;
+    }
+    v = getenv("GENESIS_LOBBY_SELFTEST_THEN_OFFLINE");
+    if (v && v[0] && v[0] != '0') {
+        cfg->enabled = 0;
+        s_offline_after_netplay = 1;
+        genesis_netplay_adopt_session_config(NULL);
+        if (g_game_spec.video) {   /* back to this build's own video mode */
+            if (s_custom_video_cli) g_game_spec.video->configure(s_custom_video_cli);
+            else app_config_apply_video(g_game_spec.video);
+        }
+        if (g_game_spec.netplay_config_adopt)
+            g_game_spec.netplay_config_adopt(local_session_config()->game);
+        fprintf(stderr, "[lobby-selftest] offline Play after %d match(es)\n", round);
+        return 1;
+    }
+    return 0;
+}
+#endif
+
+/* Post-drain, debugger extra frames: the reverse-debug park only. */
+static int rdb_post_drain(void *ctx)
+{
+    (void)ctx;
+#if SONIC_REVERSE_DEBUG
+    rdb_record_iterate();
+    rdb_park_drain();
+    if (s_quit_via_park_drain) return 0;
+#endif
+    return 1;
+}
+
+/* Post-drain, live tick: pre-resample capture and observability over the
+ * tick's audio, then the reverse-debug park. */
+static int live_post_drain(void *ctx)
+{
+    (void)ctx;
+    /* Tier-3: deterministic pre-resample mixer capture (env-gated). */
+    dump_predrc(s_fm_accum, s_fm_count, s_psg_accum, s_psg_count);
+    /* Observability runs regardless — we want to detect boops in
+     * whichever backend is providing samples. */
+    audio_obs_ingest_fm ((const int16_t *)s_fm_accum,  s_fm_count);
+    audio_obs_ingest_psg((const int16_t *)s_psg_accum, s_psg_count);
+    audio_obs_tick_frame(g_frame_count,
+                         g_game_layout.vint_runcount_addr
+                             ? glue_peek32(g_game_layout.vint_runcount_addr) : 0u,
+                         g_game_layout.game_mode_addr
+                             ? glue_peek8(g_game_layout.game_mode_addr) : 0u);
+    return rdb_post_drain(NULL);
+}
+
+#if RECOMP_LAUNCHER
+/* The shared recomp-ui launcher window, once before boot and again for every
+ * soft return to a netplay waiting room (soft_return = 1). Returns the
+ * launcher's result: 0 PLAY, 1 closed, 2 unavailable. On PLAY a netplay launch
+ * is folded into *netplay_config_v (a GenesisNetplayConfig). */
+static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char *picked,
+                               size_t picked_cap, const char **rom_path_io,
+                               const char *settings_ini, const char *rom_cfg_path,
+                               void *netplay_config_arg, int soft_return)
+{
+    int lr = 2;
+#if GENESIS_HAS_RECOMP_NET
+    GenesisNetplayConfig *netplay_config_v = (GenesisNetplayConfig *)netplay_config_arg;
+#else
+    (void)netplay_config_arg; (void)soft_return;
+#endif
+    {
+        RecompLauncherCSettings ls;
+        memset(&ls, 0, sizeof ls);
+        ls.output_method    = 2;   /* OpenGL (matches the launcher) */
+        ls.window_scale     = g_app_config.window_scale;
+        ls.fullscreen       = g_app_config.fullscreen;
+        ls.linear_filter    = g_app_config.linear_filter;
+        ls.widescreen       = g_app_config.widescreen;
+        ls.widescreen_cells = g_app_config.widescreen_cells;
+        ls.enable_audio     = 1;
+        ls.audio_freq       = 48000;   /* engine device rate (audio.c want.freq) */
+        ls.volume           = g_app_config.volume;
+        ls.skip_launcher    = g_app_config.skip_launcher;
+        for (int p = 0; p < INPUT_MAX_PLAYERS; p++) {
+            int dev = g_input_map.p[p].device;
+            ls.player_src[p] = (dev == INPUT_DEV_NONE)    ? 0
+                             : (dev & INPUT_DEV_KEYBOARD) ? 1 : 2;
+            ls.pad_mode[p]   = (g_input_map.p[p].pad_type == PAD_6BUTTON) ? 1 : 0;
+            ls.deadzone[p]   = g_input_map.p[p].deadzone_pct;
+        }
+
+        RecompLauncherCGameInfo gi;
+        memset(&gi, 0, sizeof gi);
+        gi.name                 = g_game_spec.display_name;
+        gi.region               = "NTSC-U (USA)";
+        gi.expected_crc         = g_game_spec.expected_rom_crc32;
+        gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
+        gi.widescreen_supported = !g_game_spec.video && g_game_layout.ws_capable;
+        gi.mods = app_config_video_mods(g_game_spec.video,settings_ini);
+        if (g_game_spec.mods) gi.mods = g_game_spec.mods(gi.mods);
+        gi.num_players = g_game_spec.logical_players ? (int)g_game_spec.logical_players : 2;
+        if (gi.num_players > INPUT_MAX_PLAYERS) gi.num_players = INPUT_MAX_PLAYERS;
+        gi.platform             = "SEGA GENESIS";  /* infers the genesis profile */
+        gi.theme                = "genesis";
+        gi.rom_noun             = "ROM";
+        gi.pad_mode_supported   = 1;   /* 3-Button / 6-Button selector */
+        gi.pad_mode_selectable  = 1;
+    #if GENESIS_HAS_RECOMP_NET
+        gi.netplay_supported    = 1;
+        gi.netplay              = genesis_host_lobby_callbacks();
+    #endif
+        /* Point the launcher's bind bridge at the engine's OWN
+         * settings.ini (not a separate keybinds.ini) so key/pad
+         * rebinds land where app_config_load() reads them. */
+        gi.keybinds_path        = settings_ini;
+        /* SRAM panel: the engine names its battery file
+         * <rom-basename>.srm next to the exe (runner_sram_init_and_load,
+         * ~main.c:1024). Mirror that from the current ROM so the
+         * launcher's Import/Clear act on the real save file. */
+        static char sram_path[600];
+        if (g_game_spec.sram_start != 0 && initial_rom[0]) {
+            const char *b = initial_rom;
+            const char *s1 = strrchr(initial_rom, '/');
+            const char *s2 = strrchr(initial_rom, '\\');
+            const char *sep = (s2 > s1) ? s2 : s1;
+            if (sep) b = sep + 1;
+            char nm[256]; snprintf(nm, sizeof nm, "%s", b);
+            char *dot = strrchr(nm, '.'); if (dot) *dot = '\0';
+            strncat(nm, ".srm", sizeof(nm) - strlen(nm) - 1);
+            snprintf(sram_path, sizeof sram_path, "%s", exe_relative(nm));
+            gi.sram_path = sram_path;
+        }
+        /* Per-mode box art: a repo that builds several game modes
+         * into ONE exe dir (Sonic3AndKnucklesRecomp) sets g_game_spec.boxart
+         * so each mode shows its own; NULL keeps the shared boxart.tga. */
+        static char boxart_rel[128];
+        if (g_game_spec.boxart && g_game_spec.boxart[0]) {
+            snprintf(boxart_rel, sizeof boxart_rel, "assets/img/%s", g_game_spec.boxart);
+            gi.boxart_path = boxart_rel;
+        }
+
+        char assets_dir[600];
+        snprintf(assets_dir, sizeof assets_dir, "%sassets", s_exe_dir);
+        #if GENESIS_HAS_RECOMP_NET
+        /* Soft return: reopen on the waiting room of the match that just ended
+         * (recomp-ui HOST_NETPLAY.md: prepare_rematch + resume_netplay_room). */
+        if (soft_return) genesis_host_lobby_begin_soft_return(&gi);
+    #endif
+        lr = recomp_launcher_run_window(ltitle, &ls, &gi, assets_dir,
+                                        initial_rom, picked, picked_cap);
+        if (lr == 0) {                  /* PLAY */
+            if (picked[0]) *rom_path_io = picked;
+    #if GENESIS_HAS_RECOMP_NET
+            if (ls.netplay_launch.enabled &&
+                genesis_host_lobby_config_from_launch(&ls.netplay_launch, netplay_config_v) != 0)
+                fprintf(stderr, "genesis_netplay: launch refused\n");
+    #endif
+            /* Ordering matters. Re-load settings.ini FIRST so the
+             * key/pad rebinds the launcher just wrote reach
+             * g_input_map; THEN copy this session's display/audio +
+             * device/pad_type/deadzone over the top; THEN persist all
+             * of it together (app_config_save writes g_input_map too). */
+            app_config_load(settings_ini);
+            g_app_config.window_scale     = ls.window_scale;
+            g_app_config.fullscreen       = ls.fullscreen;
+            g_app_config.linear_filter    = ls.linear_filter;
+            g_app_config.widescreen       = ls.widescreen;
+            g_app_config.widescreen_cells = ls.widescreen_cells;
+            g_app_config.volume           = ls.volume;
+            g_app_config.skip_launcher    = ls.skip_launcher;
+            for (int p = 0; p < gi.num_players; p++) {
+                int src = ls.player_src[p];
+                g_input_map.p[p].device       = (src == 1) ? INPUT_DEV_KEYBOARD
+                                              : (src == 2) ? INPUT_DEV_GAMEPAD
+                                              : INPUT_DEV_NONE;
+                g_input_map.p[p].pad_type     = (ls.pad_mode[p] == 1) ? PAD_6BUTTON : PAD_3BUTTON;
+                g_input_map.p[p].deadzone_pct = ls.deadzone[p];
+            }
+            app_config_save(settings_ini);
+            if (*rom_path_io) rom_cfg_write(rom_cfg_path, *rom_path_io);
+        }
+    }
+    return lr;
+}
+#endif
+
 /* =========================================================================
  * main
  * ========================================================================= */
@@ -1613,6 +2043,7 @@ int main(int argc, char *argv[])
                 return 2;
             }
             custom_video_cli = argv[++i];
+            s_custom_video_cli = custom_video_cli;
         } else if (argv[i][0] != '-') {
             rom_path = argv[i];
         }
@@ -1644,8 +2075,39 @@ int main(int argc, char *argv[])
     app_config_load(settings_ini);   /* also seeds g_input_map controller bindings */
     if (g_game_spec.load_settings) g_game_spec.load_settings(settings_ini);
 #if GENESIS_HAS_RECOMP_NET && RECOMP_LAUNCHER
-    genesis_launcher_netplay_init(g_game_spec.display_name, GENESIS_GAME_VERSION,
-                                  exe_relative("genesis-netplay-room.txt"));
+    {
+        /* Content identity for the lobby: the ROM's SHA-256, when a ROM is
+         * already known (command line or the remembered rom.cfg). */
+        static char rom_hex[65];
+        char known[600] = "";
+        if (rom_path) snprintf(known, sizeof known, "%s", rom_path);
+        else rom_cfg_read(rom_cfg_path, known, sizeof known);
+        rom_hex[0] = 0;
+        if (known[0]) {
+            FILE *rf = fopen(known, "rb");
+            if (rf) {
+                fseek(rf, 0, SEEK_END);
+                long n = ftell(rf);
+                fseek(rf, 0, SEEK_SET);
+                uint8_t *b = n > 0 ? (uint8_t *)malloc((size_t)n) : NULL;
+                if (b && fread(b, 1, (size_t)n, rf) == (size_t)n) {
+                    uint8_t d[32];
+                    genesis_identity_sha256(b, (size_t)n, d);
+                    genesis_identity_hex(d, 32, rom_hex);
+                }
+                free(b);
+                fclose(rf);
+            }
+        }
+        GenesisHostLobbyIdentity lid;
+        memset(&lid, 0, sizeof lid);
+        lid.game_name = g_game_spec.display_name;
+        lid.release_version = GENESIS_GAME_VERSION;
+        lid.rom_sha256_hex = rom_hex;
+        lid.lan_registry_path = exe_relative("genesis-netplay-room.txt");
+        lid.max_players = g_game_spec.logical_players ? (int)g_game_spec.logical_players : 2;
+        genesis_host_lobby_init(&lid);
+    }
 #endif
 
     {
@@ -1682,112 +2144,19 @@ int main(int argc, char *argv[])
                  * straight into the engine's own settings.ini [input.pN] through
                  * its genesis bridge; the display/audio/device knobs round-trip
                  * through the settings struct below. */
-                {
-                    RecompLauncherCSettings ls;
-                    memset(&ls, 0, sizeof ls);
-                    ls.output_method    = 2;   /* OpenGL (matches the launcher) */
-                    ls.window_scale     = g_app_config.window_scale;
-                    ls.fullscreen       = g_app_config.fullscreen;
-                    ls.linear_filter    = g_app_config.linear_filter;
-                    ls.widescreen       = g_app_config.widescreen;
-                    ls.widescreen_cells = g_app_config.widescreen_cells;
-                    ls.enable_audio     = 1;
-                    ls.audio_freq       = 48000;   /* engine device rate (audio.c want.freq) */
-                    ls.volume           = g_app_config.volume;
-                    ls.skip_launcher    = g_app_config.skip_launcher;
-                    for (int p = 0; p < INPUT_MAX_PLAYERS; p++) {
-                        int dev = g_input_map.p[p].device;
-                        ls.player_src[p] = (dev == INPUT_DEV_NONE)    ? 0
-                                         : (dev & INPUT_DEV_KEYBOARD) ? 1 : 2;
-                        ls.pad_mode[p]   = (g_input_map.p[p].pad_type == PAD_6BUTTON) ? 1 : 0;
-                        ls.deadzone[p]   = g_input_map.p[p].deadzone_pct;
-                    }
-
-                    RecompLauncherCGameInfo gi;
-                    memset(&gi, 0, sizeof gi);
-                    gi.name                 = g_game_spec.display_name;
-                    gi.region               = "NTSC-U (USA)";
-                    gi.expected_crc         = g_game_spec.expected_rom_crc32;
-                    gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
-                    gi.widescreen_supported = !g_game_spec.video && g_game_layout.ws_capable;
-                    gi.mods = app_config_video_mods(g_game_spec.video,settings_ini);
-                    if (g_game_spec.mods) gi.mods = g_game_spec.mods(gi.mods);
-                    gi.num_players = g_game_spec.logical_players ? (int)g_game_spec.logical_players : 2;
-                    if (gi.num_players > INPUT_MAX_PLAYERS) gi.num_players = INPUT_MAX_PLAYERS;
-                    gi.platform             = "SEGA GENESIS";  /* infers the genesis profile */
-                    gi.theme                = "genesis";
-                    gi.rom_noun             = "ROM";
-                    gi.pad_mode_supported   = 1;   /* 3-Button / 6-Button selector */
-                    gi.pad_mode_selectable  = 1;
+                s_launcher_ctx.used = 1;
+                snprintf(s_launcher_ctx.ltitle, sizeof s_launcher_ctx.ltitle, "%s", ltitle);
+                snprintf(s_launcher_ctx.initial_rom, sizeof s_launcher_ctx.initial_rom, "%s", initial_rom);
+                s_launcher_ctx.settings_ini = settings_ini;
+                s_launcher_ctx.rom_cfg_path = rom_cfg_path;
+                lr = run_recomp_launcher(ltitle, initial_rom, picked, sizeof picked, &rom_path,
+                                         settings_ini, rom_cfg_path,
 #if GENESIS_HAS_RECOMP_NET
-                    gi.netplay_supported    = 1;
-                    gi.netplay              = genesis_launcher_netplay_callbacks();
+                                         &netplay_config,
+#else
+                                         NULL,
 #endif
-                    /* Point the launcher's bind bridge at the engine's OWN
-                     * settings.ini (not a separate keybinds.ini) so key/pad
-                     * rebinds land where app_config_load() reads them. */
-                    gi.keybinds_path        = settings_ini;
-                    /* SRAM panel: the engine names its battery file
-                     * <rom-basename>.srm next to the exe (runner_sram_init_and_load,
-                     * ~main.c:1024). Mirror that from the current ROM so the
-                     * launcher's Import/Clear act on the real save file. */
-                    static char sram_path[600];
-                    if (g_game_spec.sram_start != 0 && initial_rom[0]) {
-                        const char *b = initial_rom;
-                        const char *s1 = strrchr(initial_rom, '/');
-                        const char *s2 = strrchr(initial_rom, '\\');
-                        const char *sep = (s2 > s1) ? s2 : s1;
-                        if (sep) b = sep + 1;
-                        char nm[256]; snprintf(nm, sizeof nm, "%s", b);
-                        char *dot = strrchr(nm, '.'); if (dot) *dot = '\0';
-                        strncat(nm, ".srm", sizeof(nm) - strlen(nm) - 1);
-                        snprintf(sram_path, sizeof sram_path, "%s", exe_relative(nm));
-                        gi.sram_path = sram_path;
-                    }
-                    /* Per-mode box art: a repo that builds several game modes
-                     * into ONE exe dir (Sonic3AndKnucklesRecomp) sets g_game_spec.boxart
-                     * so each mode shows its own; NULL keeps the shared boxart.tga. */
-                    static char boxart_rel[128];
-                    if (g_game_spec.boxart && g_game_spec.boxart[0]) {
-                        snprintf(boxart_rel, sizeof boxart_rel, "assets/img/%s", g_game_spec.boxart);
-                        gi.boxart_path = boxart_rel;
-                    }
-
-                    char assets_dir[600];
-                    snprintf(assets_dir, sizeof assets_dir, "%sassets", s_exe_dir);
-                    lr = recomp_launcher_run_window(ltitle, &ls, &gi, assets_dir,
-                                                    initial_rom, picked, sizeof picked);
-                    if (lr == 0) {                  /* PLAY */
-                        if (picked[0]) rom_path = picked;
-#if GENESIS_HAS_RECOMP_NET
-                        genesis_launcher_netplay_apply_host_caps(&ls);
-                        genesis_launcher_netplay_config_from_launch(&ls, &netplay_config);
-#endif
-                        /* Ordering matters. Re-load settings.ini FIRST so the
-                         * key/pad rebinds the launcher just wrote reach
-                         * g_input_map; THEN copy this session's display/audio +
-                         * device/pad_type/deadzone over the top; THEN persist all
-                         * of it together (app_config_save writes g_input_map too). */
-                        app_config_load(settings_ini);
-                        g_app_config.window_scale     = ls.window_scale;
-                        g_app_config.fullscreen       = ls.fullscreen;
-                        g_app_config.linear_filter    = ls.linear_filter;
-                        g_app_config.widescreen       = ls.widescreen;
-                        g_app_config.widescreen_cells = ls.widescreen_cells;
-                        g_app_config.volume           = ls.volume;
-                        g_app_config.skip_launcher    = ls.skip_launcher;
-                        for (int p = 0; p < gi.num_players; p++) {
-                            int src = ls.player_src[p];
-                            g_input_map.p[p].device       = (src == 1) ? INPUT_DEV_KEYBOARD
-                                                          : (src == 2) ? INPUT_DEV_GAMEPAD
-                                                          : INPUT_DEV_NONE;
-                            g_input_map.p[p].pad_type     = (ls.pad_mode[p] == 1) ? PAD_6BUTTON : PAD_3BUTTON;
-                            g_input_map.p[p].deadzone_pct = ls.deadzone[p];
-                        }
-                        app_config_save(settings_ini);
-                        if (rom_path) rom_cfg_write(rom_cfg_path, rom_path);
-                    }
-                }
+                                         0);
                 if (lr == 1) return 0;   /* user closed the launcher */
                 /* lr == 2 (unavailable) -> fall through to the native picker. */
             }
@@ -2004,7 +2373,8 @@ int main(int argc, char *argv[])
          * legacy VDP toggle. Other games retain their original view controls. */
         s_ws_user_on=0;
 #if GENESIS_HAS_RECOMP_NET
-        if(netplay_config.enabled)g_game_spec.video->configure("off");
+        /* Online the custom-video mode is session configuration (sealed and
+         * adopted from the lobby host at session start), not forced off. */
 #endif
     }
 
@@ -2167,18 +2537,10 @@ int main(int argc, char *argv[])
                            g_game_spec.sram_start, g_game_spec.sram_end);
     runner_sram_init_and_load(rom_path);
 
-    free(rom_raw);   /* glue_init copied what it needs */
-
 #if GENESIS_HAS_RECOMP_NET
-    if (netplay_config.enabled && g_game_spec.netplay_allowed && !g_game_spec.netplay_allowed()) {
-        fprintf(stderr, "genesis_netplay: this local enhancement/roster is not supported online\n");
-        return 1;
-    }
-    if (netplay_config.enabled && genesis_netplay_start(&netplay_config) != 0) {
-        fprintf(stderr, "genesis_netplay: failed to start session\n");
-        return 1;
-    }
+    genesis_identity_sha256(rom_raw, rom_raw_len, s_rom_sha256);
 #endif
+    free(rom_raw);   /* glue_init copied what it needs */
 
     /* TCP debug server — only if debug.ini exists next to the exe.
      * Port resolution (highest priority first):
@@ -2325,6 +2687,93 @@ int main(int argc, char *argv[])
      * Oracle/hybrid only; the own backend has the GROWNS file states. --- */
 
     /* --- Main loop --- */
+    rb_probe_set_resim_hooks(&s_resim_hooks);
+    if (s_digest_every < 0) {
+        const char *de = getenv("GENESIS_RB_DIGEST_EVERY");
+        s_digest_every = de && de[0] && de[0] != '0';
+    }
+    /* The cold machine: the state a fresh process has before its first tick
+     * (after glue/machine init and the battery-save load). A rematch or an
+     * offline Play after netplay restores it in-process (genesis_session_reset:
+     * NETPLAY.md section 3, every session starts from a deterministic cold
+     * boot), so nothing a previous session left behind reaches the next. */
+    genesis_session_capture_cold();
+    int session_round = 1;
+session_begin:;
+#if GENESIS_HAS_RECOMP_NET
+    if (netplay_config.enabled && g_game_spec.netplay_allowed && !g_game_spec.netplay_allowed()) {
+        fprintf(stderr, "genesis_netplay: this local enhancement/roster is not supported online\n");
+        return 1;
+    }
+    genesis_netplay_set_tick_runner(netplay_replay_tick);
+    if (session_round == 1 && genesis_host_lobby_selftest_role()) {
+        RecompLauncherCNetplayLaunch l;
+        const char *f = getenv("GENESIS_LOBBY_SELFTEST_FRAMES");
+        s_netplay_match_frames = f && f[0] ? (uint32_t)atoi(f) : 1200u;
+        genesis_netplay_set_local_session_config(local_session_config());
+        if (genesis_host_lobby_selftest_room(1, &l) != 0) return 3;
+        if (genesis_host_lobby_config_from_launch(&l, &netplay_config) != 0) return 3;
+    }
+    if (netplay_config.enabled) {
+        const GenesisSessionConfig *sc;
+        genesis_netplay_set_local_session_config(local_session_config());
+        sc = genesis_netplay_session_config();
+        /* Apply the settled session configuration (the host's, online). */
+        if (g_game_spec.video && !g_game_spec.video->configure(sc->video[0] ? sc->video : "off")) {
+            fprintf(stderr, "genesis_netplay: cannot run the host's custom-video mode (%s) — refusing\n",
+                    sc->video);
+            return 1;
+        }
+        s_ws_user_on = sc->ws_on;
+        if (sc->ws_on && sc->ws_cells) s_ws_user_cells = sc->ws_cells;
+        if (g_game_spec.netplay_config_adopt && g_game_spec.netplay_config_adopt(sc->game) != 0) {
+            fprintf(stderr, "genesis_netplay: cannot run the host's configuration (%s) — refusing\n",
+                    sc->game);
+            return 1;
+        }
+        {
+            /* Simulation-affecting developer knobs, sealed verbatim. */
+            static const char *const knob_env[] = {
+                "GENESIS_FORCE_INTERP", "GENESIS_INTERLEAVE_IRQ", "GENESIS_FLOOR",
+                "GENESIS_MIXER_NO_SPREAD", "GENESIS_MIXER_NO_PAIRGUARD",
+                "GENESIS_MIXER_NO_LEFTOVER", "GENESIS_MIXER_NO_CLAMP",
+                "GENESIS_COSIM_WAITVBL_PC" };
+            char knobs[256];
+            int n = snprintf(knobs, sizeof knobs, "pacing=%d", (int)g_pacing_mode);
+            for (unsigned k = 0; k < sizeof knob_env / sizeof knob_env[0]; k++) {
+                const char *v = getenv(knob_env[k]);
+                if (v && v[0] && n > 0 && (size_t)n < sizeof knobs)
+                    n += snprintf(knobs + n, sizeof knobs - (size_t)n, " %s=%s", knob_env[k] + 8, v);
+            }
+            genesis_netplay_set_engine_knobs(knobs);
+        }
+        genesis_netplay_config_seal();
+        genesis_netplay_set_identity(genesis_identity_build_fp(), s_rom_sha256);
+        genesis_netplay_set_sram(sram_battery_present() ? sram_buf() : NULL,
+                                 sram_battery_present() ? (uint32_t)sram_size() : 0u);
+        if (rb_probe_armed())
+            fprintf(stderr, "genesis_netplay: GENESIS_RB_PROBE ignored online (it would simulate "
+                            "ticks the peers never see)\n");
+    }
+    if (netplay_config.enabled) {
+        /* Online refusals (NETPLAY.md sections 3, 4 and 6): a script that
+         * mutates the machine, and TCP execution control. Quickstates, turbo,
+         * rewind-style debugger frames and the view-mode toggle are refused
+         * at their call sites; wall-clock audio catch-up does not exist in
+         * this runner (audio is a pure consumer: audio_flush queues what the
+         * tick produced and never drives the simulation). */
+        if (input_script_active() && input_script_mutates_state()) {
+            fprintf(stderr, "genesis_netplay: this input script writes RAM or loads/saves "
+                            "state; refused online (input-only scripts are allowed)\n");
+            return 1;
+        }
+        { extern int (*g_cmd_server_online)(void); g_cmd_server_online = genesis_netplay_active; }
+    }
+    if (netplay_config.enabled && genesis_netplay_start(&netplay_config) != 0) {
+        fprintf(stderr, "genesis_netplay: failed to start session\n");
+        return 1;
+    }
+#endif
     int running = 1;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
     audio_set_playback_enabled(!turbo);
@@ -2339,6 +2788,9 @@ int main(int argc, char *argv[])
 
     while (running) {
         if (max_frames && frame_num >= max_frames) break;
+#if GENESIS_HAS_RECOMP_NET
+        if (s_offline_after_netplay && frame_num >= s_netplay_match_frames) break;
+#endif
 #if GEN_ENABLE_TRACE
         Uint64 phase_start=SDL_GetPerformanceCounter();
         uint32_t phase_us[8]={0};
@@ -2364,7 +2816,11 @@ int main(int argc, char *argv[])
         /* Pause loop — hold ring buffer steady for multi-fetch tools.
          * Drain SDL events so the window stays responsive; spin on the
          * cmd server so "continue" / "quit" can break us out. */
-        if (s_debug_enabled && cmd_server_is_paused()) {
+        if (s_debug_enabled && cmd_server_is_paused()
+#if GENESIS_HAS_RECOMP_NET
+            && !genesis_netplay_active()   /* no pause online: it is refused at the server */
+#endif
+            ) {
             SDL_Event pev;
             while (SDL_PollEvent(&pev)) {
                 gamepad_handle_event(&pev);
@@ -2389,7 +2845,7 @@ int main(int argc, char *argv[])
                 continue;
             }
 #endif
-            if (ev.type == SDL_QUIT) running = 0;
+            if (ev.type == SDL_QUIT) { fprintf(stderr, "[session] SDL_QUIT received\n"); running = 0; }
             if (ev.type == SDL_KEYDOWN) {
 #if !RECOMP_LAUNCHER
                 if (ev.key.keysym.sym == SDLK_ESCAPE) running = 0;
@@ -2489,11 +2945,31 @@ int main(int argc, char *argv[])
                 fprintf(stderr,
                         "genesis_netplay: input desync tick=%u local=%08X remote=%08X\n",
                         desync_tick, local_hash, remote_hash);
+                genesis_netplay_request_return_to_lobby();
+            }
+            /* The rollback driver's coordinated stop (SIGUSR1 in harnesses)
+             * finished: leave. */
+            if (genesis_netplay_quiesced()) {
+                fprintf(stderr, "genesis_netplay: coordinated stop complete — leaving the match\n");
+                s_netplay_match_over = 1;
                 running = 0;
                 continue;
             }
-            if (genesis_netplay_peer_disconnected(1500)) {
-                fprintf(stderr, "genesis_netplay: peer disconnected\n");
+            /* Headless rounds end by draining at a fixed tick count. */
+            if (s_netplay_match_frames && genesis_netplay_sim_tick() >= s_netplay_match_frames)
+                genesis_netplay_request_quiesce();
+            /* A peer that left (BYE / silence) ends the match; while the
+             * driver drains it must keep polling on a dead session. */
+            if (!genesis_netplay_rollback_active() || !genesis_netplay_draining())
+                if (genesis_netplay_peer_disconnected(3000)) {
+                    fprintf(stderr, "genesis_netplay: peer gone — ending the match\n");
+                    genesis_netplay_request_return_to_lobby();
+                }
+            if (genesis_netplay_return_to_lobby_requested()) {
+                const char *why = genesis_netplay_refusal();
+                fprintf(stderr, "genesis_netplay: match over (%s) — return to lobby\n",
+                        why ? why : "peer left or local request");
+                s_netplay_match_over = 1;
                 running = 0;
                 continue;
             }
@@ -2527,100 +3003,49 @@ int main(int argc, char *argv[])
          * DoCycles switches to game fiber for each scanline's worth of
          * cycles. Game code and VDP rendering interleave naturally. */
         s_current_frame_for_input = frame_num;
-        { extern void glue_run_game_frame(void);
-          extern void glue_service_vblank(void);
-          extern void glue_reset_frame_sync(void);
-          glue_reset_frame_sync();
-          glue_run_game_frame();   /* prepares game fiber state */
-          {
-              /* Own-backend input: build each port's pad mask from the same
-               * sources clownmdemu queries (keyboard / gamepad / .input
-               * script / TCP) via input_requested_cb, and hand it to our bus
-               * before running the frame. The recompiled ReadJoypads reads it
-               * back through the controller protocol in gbus pad_read().
-               *
-               * The 8 standard buttons route through input_requested_cb so the
-               * P1 dev overrides (.input / TCP / scripted) still drive the game;
-               * 6-button extras (X/Y/Z/Mode) — which the 8-button callback can't
-               * express — are OR'd straight from the per-player input map. */
-              static const GenesisButton own_btns[8] = {
-                  GB_UP,   GB_DOWN,
-                  GB_LEFT, GB_RIGHT,
-                  GB_B,    GB_C,
-                  GB_A,    GB_START };
-              static const uint16_t own_bits[8] = {
-                  GPAD_UP, GPAD_DOWN, GPAD_LEFT, GPAD_RIGHT,
-                  GPAD_B,  GPAD_C,    GPAD_A,    GPAD_START };
-              for (int port = 0; port < 2; port++) {
-                  machine_set_pad_type(port, g_input_map.p[port].pad_type);
-                  uint16_t pad_mask = 0;
-                  for (int b = 0; b < 8; b++)
-                      if (input_requested_cb(NULL, (cc_u8f)port, own_btns[b]))
-                          pad_mask |= own_bits[b];
-                  if (g_input_map.p[port].pad_type == PAD_6BUTTON)
+        {
+          GenesisSimInput sim_in;
 #if GENESIS_HAS_RECOMP_NET
-                      pad_mask |= (genesis_netplay_active()
-                                       ? genesis_netplay_published_pad(port)
-                                       : input_current_mask(port)) &
-                                  (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
-#else
-                      pad_mask |= input_current_mask(port) &
-                                  (GPAD_X | GPAD_Y | GPAD_Z | GPAD_MODE);
+          /* Online the tick reads PUBLISHED rows only (NETPLAY.md section 2). */
+          if (genesis_netplay_active()) genesis_netplay_sim_input(&sim_in);
+          else
 #endif
-                  machine_set_pad(port, pad_mask);
-              }
-          }
-          { extern unsigned long g_snd_vint;       /* [CHIP-TRACE] cross-backend sync stamp */
-            g_snd_vint = (unsigned long)m68k_read32(0xFFFE0C); }
-          widescreen_update_for_frame();   /* set VDP margin + game RAM word */
-          machine_run_frame(own_scanline_sink, NULL);
+          collect_sim_input(&sim_in);
+          GenesisSimAudio sim_audio = {
+              (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
+              (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
+          GenesisSimHooks sim_hooks = { live_pre_raster, own_scanline_sink, NULL,
+                                        live_post_drain, NULL };
+          int probing = rb_probe_armed()
+#if GENESIS_HAS_RECOMP_NET
+                        && !genesis_netplay_active()
+#endif
+                        ;
+          if (probing) rb_probe_pre_tick();
+#if GENESIS_HAS_RECOMP_NET
+          Uint64 tick_t0 = SDL_GetPerformanceCounter();
+#endif
+          int completed = genesis_sim_step(&sim_in, &sim_audio, &sim_hooks);
+#if GENESIS_HAS_RECOMP_NET
+          if (genesis_netplay_rollback_active())
+              genesis_netplay_rb_note_live_tick_us((uint32_t)((SDL_GetPerformanceCounter() - tick_t0) *
+                                                   1000000ull / SDL_GetPerformanceFrequency()));
+#endif
+          if (completed && probing) rb_probe_post_tick();
+          /* GENESIS_RB_DIGEST_EVERY=1 (offline, rb_sweep pre-flight): digest
+           * every tick; the run must end on the undigested run's machine. */
+          if (completed && s_digest_every) { GenesisRbDigest dd; genesis_rb_digest(&dd); }
           FRAME_PHASE(1);
           s_screen_width  = s_custom_width ? s_custom_width : gvdp_active_width(&g_machine.vdp);
           /* Output height doubles in interlace mode 2 (S2 2P split-screen);
            * the existing interlace display modes (tv squash / raw) take over
            * from here, same as the clownmdemu path. */
           s_screen_height = gvdp_output_height(&g_machine.vdp);
-          /* Audio arch overhaul: fill s_fm_accum + s_psg_accum from our
-           * cycle-stamped mixer. Drain to NTSC wall-frame cycle count
-           * (not g_audio_cycle_counter): the game fiber stops running
-           * after WaitForVBlank yields, so g_audio_cycle_counter only
-           * tracks ~30-50% of a wall's cycles. The YM/PSG chips must
-           * still advance the full wall-frame span to generate the
-           * expected ~887 FM + ~3732 PSG samples per frame. Handler
-           * cycles carry accurate stamps inside [0, wall_cycles];
-           * tail advance past the last event fills silence/decay
-           * correctly. */
-          #define NTSC_WALL_FRAME_68K_CYCLES 127856u
-          {
-              #define NTSC_WALL_FRAME_MASTER_CYCLES 895780u
-              /* Chip writes arrive through the cycle-stamped event queue; the
-               * mixer sorts by stamp, advances the chips between writes, and
-               * tail-advances to the wall-frame end. (The old per-scanline
-               * live advance is gone — it collapsed the 68K V-int handler's
-               * whole driver tick onto one chip cycle; see
-               * genesis_machine.c.) */
-              audio_mixer_drain(NTSC_WALL_FRAME_MASTER_CYCLES,
-                                s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
-                                s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count);
+          if (!completed) {                        /* reverse-debug quit */
+              fprintf(stderr, "[session] tick stopped by the post-drain hook (reverse-debug quit)\n");
+              running = 0; break;
           }
-          /* Tier-3: deterministic pre-resample mixer capture (env-gated). */
-          dump_predrc(s_fm_accum, s_fm_count, s_psg_accum, s_psg_count);
-          /* Observability runs regardless — we want to detect boops in
-           * whichever backend is providing samples. */
-          audio_obs_ingest_fm ((const int16_t *)s_fm_accum,  s_fm_count);
-          audio_obs_ingest_psg((const int16_t *)s_psg_accum, s_psg_count);
-          audio_obs_tick_frame(g_frame_count,
-                               m68k_read32(0xFFFE0C),
-                               m68k_read8 (0xFFF600));
-#if SONIC_REVERSE_DEBUG
-          rdb_record_iterate();
-          rdb_park_drain();
-          if (s_quit_via_park_drain) { running = 0; break; }
-#endif
-          FRAME_PHASE(2);
-          glue_service_vblank();
           FRAME_PHASE(7);
-          glue_end_of_wall_frame();
 #ifdef GENESIS_COSIM
           /* Differential co-sim FRAME checkpoint. Own-backend: master_cycle is the
            * ruler. Oracle (pairing #2): no g_machine — use the wall-frame number
@@ -2628,14 +3053,47 @@ int main(int argc, char *argv[])
            * ordinal, so the clock value is report-only). */
           cosim_frame_checkpoint(g_machine.master_cycle);
 #endif
-          }
+        }
         check_ramdump();
 #if GENESIS_HAS_RECOMP_NET
         genesis_netplay_finish_frame();
-        if (genesis_netplay_active()) {
-            /* Kick off the next tick immediately. Audio mixing, texture upload,
-             * and the blocking vsync present below then overlap the peer's
-             * INPUT/CONFIRM work instead of serialising it after vblank. */
+        {
+            /* GENESIS_SCREENSHOT_AT_TICK=T (harness): the frame each peer
+             * presents when its sim reaches T, with the digest of the state
+             * it shows. Peers compare their PNGs; "SHOT t=T live=D" against
+             * the confirmed "TIMELINE t=T d=D" says whether the frame showed
+             * the agreed state or a prediction that was later corrected. */
+            /* GENESIS_SCREENSHOT_AT_TICK=T[,T2,...] (up to 16 ticks). */
+            static long shot_ticks[16];
+            static int shot_n = -1, shot_i;
+            if (shot_n < 0) {
+                const char *e = getenv("GENESIS_SCREENSHOT_AT_TICK");
+                shot_n = 0;
+                for (const char *p = e; p && *p && shot_n < 16; ) {
+                    shot_ticks[shot_n++] = atol(p);
+                    p = strchr(p, ',');
+                    if (p) p++;
+                }
+            }
+            if (shot_i < shot_n && genesis_netplay_active() &&
+                genesis_netplay_sim_tick() == (uint32_t)shot_ticks[shot_i]) {
+                long shot_tick = shot_ticks[shot_i++];
+                const char *base = getenv("GENESIS_SCREENSHOT_AT_EXIT");
+                char path[600];
+                GenesisRbDigest dd;
+                genesis_rb_digest(&dd);
+                snprintf(path, sizeof path, "%s.t%ld.png", base && base[0] ? base : "shot", shot_tick);
+                runner_write_screenshot_file(path);
+                fprintf(stderr, "SHOT t=%ld live=%08x path=%s\n", shot_tick,
+                        genesis_rb_fold32(dd.master), path);
+            }
+        }
+        if (genesis_netplay_active() && !genesis_netplay_rollback_active()) {
+            /* Delay-sync: kick off the next tick immediately. Audio mixing,
+             * texture upload, and the blocking vsync present below then
+             * overlap the peer's INPUT/CONFIRM work instead of serialising it
+             * after vblank. (Rollback runs ahead of the wire by design and
+             * admits once per loop at the top.) */
             if (genesis_netplay_needs_local_sample())
                 genesis_netplay_stage_local(
                     collect_pad_mask(genesis_netplay_input_player()));
@@ -2647,10 +3105,11 @@ int main(int argc, char *argv[])
         /* [POLL-DIAG] measure how often the 256-poll bounded fallback fires
          * (own-backend vs oracle). Dev builds only. */
         {
-            extern unsigned long g_z80poll_fallback_hits, g_z80poll_yields;
+            extern unsigned long g_z80poll_fallback_hits, g_z80poll_yields, g_spin_yields;
             if ((frame_num % 120u) == 0)
-                fprintf(stderr, "[POLL-DIAG] frame=%u fallback_hits=%lu yields=%lu\n",
-                        (unsigned)frame_num, g_z80poll_fallback_hits, g_z80poll_yields);
+                fprintf(stderr, "[POLL-DIAG] frame=%u fallback_hits=%lu yields=%lu spin_yields=%lu\n",
+                        (unsigned)frame_num, g_z80poll_fallback_hits, g_z80poll_yields,
+                        g_spin_yields);
         }
 #endif
 
@@ -2676,7 +3135,8 @@ int main(int argc, char *argv[])
          * sync key — both builds reach a given vint at the SAME logical sound
          * state (unlike wall frame, which misaligns across native/oracle). */
         if (snd_dump_vint && !snd_dump_done) {
-            uint32_t vint = m68k_read32(0xFFFE0C);
+            uint32_t vint = g_game_layout.vint_runcount_addr
+                ? glue_peek32(g_game_layout.vint_runcount_addr) : 0u;
             if (vint >= snd_dump_vint) {
                 { extern void chip_trace_dump(const char *path); chip_trace_dump("chip_ring.txt"); }
                 snd_dump_done = 1;
@@ -2707,20 +3167,18 @@ int main(int argc, char *argv[])
                 memset(s_fm_accum,  0, sizeof(s_fm_accum));
                 memset(s_psg_accum, 0, sizeof(s_psg_accum));
                 s_fm_count = 0; s_psg_count = 0;
-                { extern void glue_run_game_frame(void);
-                  extern void glue_service_vblank(void);
-                  extern void glue_reset_frame_sync(void);
-                  glue_reset_frame_sync();
-                  glue_run_game_frame();
-                  widescreen_update_for_frame();   /* set VDP margin + game RAM word */
-                  machine_run_frame(own_scanline_sink, NULL);
-#if SONIC_REVERSE_DEBUG
-                  rdb_record_iterate();
-                  rdb_park_drain();
-                  if (s_quit_via_park_drain) { running = 0; break; }
-#endif
-                  glue_service_vblank();
-          glue_end_of_wall_frame(); }
+                /* The same tick as the main loop (sim_step.h). Before
+                 * 2026-09-25 this debugger path ran machine_run_frame without
+                 * the audio drain, so its extra frames left the chips behind
+                 * the raster; it now advances them like every other tick. */
+                { GenesisSimInput sim_in;
+                  collect_sim_input(&sim_in);
+                  GenesisSimAudio sim_audio = {
+                      (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
+                      (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
+                  GenesisSimHooks sim_hooks = { widescreen_pre_raster, own_scanline_sink, NULL,
+                                                rdb_post_drain, NULL };
+                  if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
             }
             if (s_debug_enabled) cmd_server_send_frame_result(cmd_cr.run_extra_frames);
@@ -2757,13 +3215,8 @@ int main(int argc, char *argv[])
          * accessors the cmd_server uses. Auto-exit if the script
          * ran an EXIT directive. */
         if (input_script_active()) {
-            extern uint8_t  m68k_read8 (uint32_t);
-            extern uint16_t m68k_read16(uint32_t);
-            extern void     m68k_write8 (uint32_t, uint8_t);
-            extern void     m68k_write16(uint32_t, uint16_t);
-            extern void     m68k_write32(uint32_t, uint32_t);
-            input_script_tick(frame_num, m68k_read8, m68k_read16,
-                              m68k_write8, m68k_write16, m68k_write32);
+            input_script_tick(frame_num, glue_peek8, glue_peek16,
+                              glue_poke8, glue_poke16, glue_poke32);
             {
                 char state_path[260];
                 if (input_script_take_save_state(state_path, sizeof(state_path)))
@@ -2805,7 +3258,7 @@ int main(int argc, char *argv[])
          * Tag carries the sequence index + the mode so the harness compares
          * like-for-like (seq, mode), never absolute frame. */
         if (hash_on_mode && g_game_layout.game_mode_addr) {
-            int mode = (int)m68k_read8(g_game_layout.game_mode_addr);
+            int mode = (int)glue_peek8(g_game_layout.game_mode_addr);
             if (mode != mode_prev) {
                 fprintf(stderr,
                         "[MODEHASH] seq=%u mode=0x%02X frame=%u w=%d h=%d hash=0x%016llX\n",
@@ -2818,7 +3271,14 @@ int main(int argc, char *argv[])
         }
 
         /* Benchmarks are read-only and exclude host persistence work. */
-        if (!benchmark_frames)
+        if (!benchmark_frames
+#if GENESIS_HAS_RECOMP_NET
+            /* Online the save is written once, by the host, at the end of the
+             * match: an autosave mid-match could persist a PREDICTED tick
+             * that a rollback later rewrites. */
+            && !genesis_netplay_active()
+#endif
+            )
             runner_sram_autosave_tick(frame_num);
 
         FRAME_PHASE(5);
@@ -2834,7 +3294,12 @@ int main(int argc, char *argv[])
             present_src = s_present_buf;
         }
 #if RECOMP_LAUNCHER
-        if (!g_game_spec.video && s_runtime_ui.view_mode == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE) {
+        if (!g_game_spec.video && s_runtime_ui.view_mode == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE
+#if GENESIS_HAS_RECOMP_NET
+            /* window-size-dependent simulation: pinned online (config seal) */
+            && !genesis_netplay_active()
+#endif
+            ) {
             int ow, oh; SDL_GetRendererOutputSize(renderer, &ow, &oh);
             if (oh > 0) { int cells = (((224 * ow + oh/2) / oh) - 320 + 15) / 16; if (cells < 1) cells = 1; if (cells > 12) cells = 12; s_ws_user_cells = cells; s_ws_user_on = 1; }
         }
@@ -2904,7 +3369,7 @@ int main(int argc, char *argv[])
 #if GENESIS_HAS_RECOMP_NET
         /* Process the peer INPUT and emit our CONFIRM before the blocking
          * present, so confirmation delivery overlaps vsync as well. */
-        if (genesis_netplay_active())
+        if (genesis_netplay_active() && !genesis_netplay_rollback_active())
             (void)genesis_netplay_poll_admit();
 #endif
         SDL_RenderPresent(renderer);
@@ -2918,7 +3383,7 @@ int main(int argc, char *argv[])
 #if GENESIS_HAS_RECOMP_NET
         /* Confirmation normally arrived during vsync. The top-of-loop barrier
          * remains authoritative if either peer missed this opportunity. */
-        if (genesis_netplay_active())
+        if (genesis_netplay_active() && !genesis_netplay_rollback_active())
             (void)genesis_netplay_poll_admit();
 #endif
 
@@ -2949,6 +3414,57 @@ int main(int argc, char *argv[])
             }
         }
     }
+    fprintf(stderr, "[session] loop ended: running=%d frame=%u\n", running, (unsigned)frame_num);
+    {
+        /* RUN_DONE: one comparable line per session (GENESIS_RUN_DONE=1):
+         * the machine state fingerprint after the session's last tick. A
+         * fresh process's --max-frames N run and a room's offline Play of N
+         * ticks after its matches must print the same line. */
+        const char *rd = getenv("GENESIS_RUN_DONE");
+        if (rd && rd[0] && rd[0] != '0' && !
+#if GENESIS_HAS_RECOMP_NET
+            genesis_netplay_active()
+#else
+            0
+#endif
+            )
+            fprintf(stderr, "RUN_DONE frames=%u state=%016llx\n", (unsigned)frame_num,
+                    (unsigned long long)cosim_state_hash(NULL));
+    }
+    {
+        /* GENESIS_SCREENSHOT_AT_EXIT=path.png: the last presented framebuffer
+         * (the engine's own dump), per session round -- what a harness shows
+         * as "what each peer had on screen". */
+        const char *shot = getenv("GENESIS_SCREENSHOT_AT_EXIT");
+        if (shot && shot[0]) {
+            char path[600];
+            if (session_round > 1) {
+                const char *dot = strrchr(shot, '.');
+                int stem = dot ? (int)(dot - shot) : (int)strlen(shot);
+                snprintf(path, sizeof path, "%.*s.round%d%s", stem, shot, session_round, dot ? dot : "");
+            } else {
+                snprintf(path, sizeof path, "%s", shot);
+            }
+            runner_write_screenshot_file(path);
+        }
+    }
+    rb_probe_summary();
+#if GENESIS_HAS_RECOMP_NET
+    if (s_netplay_match_over) {
+        s_netplay_match_over = 0;
+        genesis_netplay_print_summary();
+        const char *refusal = genesis_netplay_refusal();
+        genesis_netplay_shutdown();
+        /* The host is the SRAM authority: its save is written once, now. */
+        if (s_sram_dirty || sram_battery_present()) runner_sram_flush();
+        if (refusal) genesis_host_lobby_set_runtime_error(refusal);
+        if (netplay_next_session(&netplay_config, session_round)) {
+            genesis_session_reset(rom_path);
+            session_round++;
+            goto session_begin;
+        }
+    }
+#endif
 
     if (max_frames)
         fprintf(stderr, "[DONE] %u frames completed\n", frame_num);
@@ -3039,6 +3555,7 @@ int main(int argc, char *argv[])
 
     /* --- Cleanup --- */
 #if GENESIS_HAS_RECOMP_NET
+    genesis_netplay_print_summary();
     genesis_netplay_shutdown();
 #endif
     if (s_sram_dirty) runner_sram_flush();  /* final flush of any pending save */

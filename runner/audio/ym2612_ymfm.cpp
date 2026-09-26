@@ -200,6 +200,53 @@ extern "C" uint64_t ym2612_cosim_hash(void) {
     return h;
 }
 
+extern "C" size_t ym2612_rb_save(void *dst, size_t cap) {
+    if (!s_inited) ym2612_init();
+    std::vector<uint8_t> buf;
+    ymfm::ymfm_saved_state st(buf, true);
+    s_chip->save_restore(st);
+    uint32_t n = (uint32_t)buf.size();
+    uint32_t pend = (uint32_t)(s_scratch_write - s_scratch_read);
+    size_t need = sizeof n + n + sizeof s_master_accum + sizeof s_fm_lpf_prev +
+                  sizeof s_fm_lpf_out + sizeof pend + (size_t)pend * 2u * sizeof(int16_t);
+    if (!dst) return need;
+    if (cap < need) return 0;
+    uint8_t *o = (uint8_t *)dst;
+    std::memcpy(o, &n, sizeof n); o += sizeof n;
+    if (n) { std::memcpy(o, buf.data(), n); o += n; }
+    std::memcpy(o, &s_master_accum, sizeof s_master_accum); o += sizeof s_master_accum;
+    std::memcpy(o, s_fm_lpf_prev, sizeof s_fm_lpf_prev); o += sizeof s_fm_lpf_prev;
+    std::memcpy(o, s_fm_lpf_out, sizeof s_fm_lpf_out); o += sizeof s_fm_lpf_out;
+    std::memcpy(o, &pend, sizeof pend); o += sizeof pend;
+    std::memcpy(o, &s_scratch[s_scratch_read * 2], (size_t)pend * 2u * sizeof(int16_t));
+    return need;
+}
+
+extern "C" int ym2612_rb_load(const void *src, size_t len) {
+    if (!s_inited) ym2612_init();
+    const uint8_t *i = (const uint8_t *)src;
+    const uint8_t *end = i + len;
+    uint32_t n = 0, pend = 0;
+    if (!src || len < sizeof n) return 0;
+    std::memcpy(&n, i, sizeof n); i += sizeof n;
+    size_t fixed = sizeof s_master_accum + sizeof s_fm_lpf_prev + sizeof s_fm_lpf_out + sizeof pend;
+    if (n > (1u << 20) || (size_t)(end - i) < (size_t)n + fixed) return 0;
+    std::memcpy(&pend, i + n + fixed - sizeof pend, sizeof pend);
+    if (pend > FM_SCRATCH_STEREO_SAMPLES ||
+        (size_t)(end - i) != (size_t)n + fixed + (size_t)pend * 2u * sizeof(int16_t)) return 0;
+    std::vector<uint8_t> buf(i, i + n); i += n;
+    ymfm::ymfm_saved_state st(buf, false);
+    s_chip->save_restore(st);
+    std::memcpy(&s_master_accum, i, sizeof s_master_accum); i += sizeof s_master_accum;
+    std::memcpy(s_fm_lpf_prev, i, sizeof s_fm_lpf_prev); i += sizeof s_fm_lpf_prev;
+    std::memcpy(s_fm_lpf_out, i, sizeof s_fm_lpf_out); i += sizeof s_fm_lpf_out;
+    i += sizeof pend;
+    std::memcpy(s_scratch, i, (size_t)pend * 2u * sizeof(int16_t));
+    s_scratch_read = 0;
+    s_scratch_write = pend;
+    return 1;
+}
+
 extern "C" int ym2612_load_state(FILE *f) {
     if (!s_inited) ym2612_init();
     uint32_t n = 0;

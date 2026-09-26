@@ -260,6 +260,41 @@ int psg_cosim_dump(char *buf, int cap) {
 }
 #endif /* GENESIS_COSIM */
 
+size_t psg_rb_save(void *dst, size_t cap)
+{
+    if (!s_inited) psg_init();
+    uint32_t pend = (uint32_t)(s_scratch_write - s_scratch_read);
+    size_t need = sizeof s_sn + sizeof s_leftover_master_cycles + sizeof pend +
+                  (size_t)pend * sizeof(int16_t);
+    if (!dst) return need;
+    if (cap < need) return 0;
+    uint8_t *o = (uint8_t *)dst;
+    memcpy(o, &s_sn, sizeof s_sn); o += sizeof s_sn;
+    memcpy(o, &s_leftover_master_cycles, sizeof s_leftover_master_cycles);
+    o += sizeof s_leftover_master_cycles;
+    memcpy(o, &pend, sizeof pend); o += sizeof pend;
+    memcpy(o, &s_scratch[s_scratch_read], (size_t)pend * sizeof(int16_t));
+    return need;
+}
+
+int psg_rb_load(const void *src, size_t len)
+{
+    if (!s_inited) psg_init();
+    const uint8_t *i = (const uint8_t *)src;
+    uint32_t pend = 0;
+    size_t fixed = sizeof s_sn + sizeof s_leftover_master_cycles + sizeof pend;
+    if (!src || len < fixed) return 0;
+    memcpy(&pend, i + sizeof s_sn + sizeof s_leftover_master_cycles, sizeof pend);
+    if (pend > PSG_SCRATCH_SAMPLES || len != fixed + (size_t)pend * sizeof(int16_t)) return 0;
+    memcpy(&s_sn, i, sizeof s_sn); i += sizeof s_sn;
+    memcpy(&s_leftover_master_cycles, i, sizeof s_leftover_master_cycles);
+    i += sizeof s_leftover_master_cycles + sizeof pend;
+    memcpy(s_scratch, i, (size_t)pend * sizeof(int16_t));
+    s_scratch_read = 0;
+    s_scratch_write = pend;
+    return 1;
+}
+
 int psg_load_state(FILE *f)
 {
     if (!s_inited) psg_init();

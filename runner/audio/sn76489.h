@@ -26,4 +26,10 @@ void   psg_reset_leftover(void);
 int psg_save_state(FILE *f);
 int psg_load_state(FILE *f);
 
+/* Rollback snapshots (runner/rb_state.c): psg_save_state's state plus the
+ * rendered-but-undrained samples, in memory. Same contract as ym2612_rb_*. */
+#include <stddef.h>
+size_t psg_rb_save(void *dst, size_t cap);
+int    psg_rb_load(const void *src, size_t len);
+
 #endif

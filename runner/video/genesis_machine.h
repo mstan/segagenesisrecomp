@@ -43,6 +43,15 @@ void machine_set_pad_type(int port, int six_button); /* 0 = 3-btn, 1 = 6-btn  */
 int machine_save_state(FILE *f);
 int machine_load_state(FILE *f);
 
+/* Rollback snapshots (runner/rb_state.c). The machine image with every host
+ * pointer zeroed (so the bytes are the digest domain as-is), the YM timer
+ * clock g_snd_frame, the VDP's owed 68K DMA stall and, in Z80-recomp builds,
+ * the recompiled Z80 state. save: dst NULL -> bytes needed. load rewires the
+ * pointers and rebuilds the ARGB palette cache, like machine_load_state. */
+#include <stddef.h>
+size_t machine_rb_save(void *dst, size_t cap);
+int    machine_rb_load(const void *src, size_t len);
+
 /* Run one full frame: per scanline, advance the 68K (fiber), step the Z80, tick
  * the VDP, deliver interrupts, and emit active scanlines via `sink`. */
 void machine_run_frame(GenesisScanlineSink sink, void *user);

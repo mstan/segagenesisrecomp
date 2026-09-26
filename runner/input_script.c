@@ -442,3 +442,15 @@ bool input_script_take_vram_dump(char *out, size_t out_cap)
 {
     return take_pending_path(s_pending_vram_dump, out, out_cap);
 }
+
+int input_script_mutates_state(void)
+{
+    for (int i = 0; i < s_op_count; i++)
+        switch (s_ops[i].op) {
+        case OP_WRITE_RAM8: case OP_WRITE_RAM16: case OP_WRITE_RAM32:
+        case OP_SAVE_STATE: case OP_LOAD_STATE:
+            return 1;
+        default: break;
+        }
+    return 0;
+}
