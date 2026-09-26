@@ -3012,6 +3012,30 @@ session_begin:;
         check_ramdump();
 #if GENESIS_HAS_RECOMP_NET
         genesis_netplay_finish_frame();
+        {
+            /* GENESIS_SCREENSHOT_AT_TICK=T (harness): the frame each peer
+             * presents when its sim reaches T, with the digest of the state
+             * it shows. Peers compare their PNGs; "SHOT t=T live=D" against
+             * the confirmed "TIMELINE t=T d=D" says whether the frame showed
+             * the agreed state or a prediction that was later corrected. */
+            static long shot_tick = -2;
+            if (shot_tick == -2) {
+                const char *e = getenv("GENESIS_SCREENSHOT_AT_TICK");
+                shot_tick = e && e[0] ? atol(e) : -1;
+            }
+            if (shot_tick > 0 && genesis_netplay_active() &&
+                genesis_netplay_sim_tick() == (uint32_t)shot_tick) {
+                const char *base = getenv("GENESIS_SCREENSHOT_AT_EXIT");
+                char path[600];
+                GenesisRbDigest dd;
+                genesis_rb_digest(&dd);
+                snprintf(path, sizeof path, "%s.t%ld.png", base && base[0] ? base : "shot", shot_tick);
+                runner_write_screenshot_file(path);
+                fprintf(stderr, "SHOT t=%ld live=%08x path=%s\n", shot_tick,
+                        genesis_rb_fold32(dd.master), path);
+                shot_tick = -1;
+            }
+        }
         if (genesis_netplay_active() && !genesis_netplay_rollback_active()) {
             /* Delay-sync: kick off the next tick immediately. Audio mixing,
              * texture upload, and the blocking vsync present below then

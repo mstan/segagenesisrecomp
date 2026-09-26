@@ -57,7 +57,7 @@ static struct {
 /* Cost of ticks, live and replayed (NETPLAY_FIELDS line; rb_sweep reads it). */
 #define RB_COST_N 16384
 typedef struct { uint32_t us[RB_COST_N]; uint32_t n; uint64_t total; } RbCost;
-static RbCost s_cost_live, s_cost_replay;
+static RbCost s_cost_live, s_cost_replay, s_cost_save, s_cost_load;
 static void cost_add(RbCost *c, uint32_t us) { c->total++; if (c->n < RB_COST_N) c->us[c->n++] = us; }
 static int u32cmp(const void *a, const void *b) { uint32_t x = *(const uint32_t *)a, y = *(const uint32_t *)b; return (x > y) - (x < y); }
 static void cost_pct(RbCost *c, uint32_t *p50, uint32_t *p99)
@@ -111,8 +111,27 @@ static int rb_snap_deserialize(void *ctx, uint32_t tick, const uint8_t *data, si
 
 static const RbeSnapVTable g_snap_vt = { NULL, rb_snap_serialize, rb_snap_deserialize };
 
-static int  h_snap_save(void *c, uint32_t t) { (void)c; return g_rb.snaps ? rbe_snap_ring_save(g_rb.snaps, t, &g_snap_vt) : 0; }
-static int  h_snap_load(void *c, uint32_t t) { (void)c; return g_rb.snaps ? rbe_snap_ring_load(g_rb.snaps, t, &g_snap_vt) : 0; }
+static uint64_t rb_now_us(void);
+/* Timed: the ring path as the driver uses it (serialize into a fresh blob,
+ * ring store / ring peek + restore), NETPLAY_FIELDS snap_save/snap_load. */
+static int h_snap_save(void *c, uint32_t t)
+{
+    (void)c;
+    if (!g_rb.snaps) return 0;
+    uint64_t t0 = rb_now_us();
+    int ok = rbe_snap_ring_save(g_rb.snaps, t, &g_snap_vt);
+    cost_add(&s_cost_save, (uint32_t)(rb_now_us() - t0));
+    return ok;
+}
+static int h_snap_load(void *c, uint32_t t)
+{
+    (void)c;
+    if (!g_rb.snaps) return 0;
+    uint64_t t0 = rb_now_us();
+    int ok = rbe_snap_ring_load(g_rb.snaps, t, &g_snap_vt);
+    cost_add(&s_cost_load, (uint32_t)(rb_now_us() - t0));
+    return ok;
+}
 static int  h_snap_has(void *c, uint32_t t)  { (void)c; return g_rb.snaps ? rbe_snap_ring_has(g_rb.snaps, t) : 0; }
 static int  h_snap_oldest(void *c, uint32_t *o)
 {
@@ -431,6 +450,8 @@ int genesis_netplay_rb_start(void)
     s_last_tick = 0;
     memset(&s_cost_live, 0, sizeof s_cost_live);
     memset(&s_cost_replay, 0, sizeof s_cost_replay);
+    memset(&s_cost_save, 0, sizeof s_cost_save);
+    memset(&s_cost_load, 0, sizeof s_cost_load);
     return 1;
 }
 
@@ -493,9 +514,15 @@ void genesis_netplay_rb_print_summary(void)
     if (!g_rb.drv) return;
     cost_pct(&s_cost_live, &l50, &l99);
     cost_pct(&s_cost_replay, &r50, &r99);
-    fprintf(stderr, "NETPLAY_FIELDS live=%llu live_us p50=%u p99=%u replay=%llu replay_us p50=%u p99=%u\n",
+    uint32_t s50, s99, d50, d99;
+    cost_pct(&s_cost_save, &s50, &s99);
+    cost_pct(&s_cost_load, &d50, &d99);
+    fprintf(stderr, "NETPLAY_FIELDS live=%llu live_us p50=%u p99=%u replay=%llu replay_us p50=%u p99=%u "
+                    "snap_save=%llu save_us p50=%u p99=%u snap_load=%llu load_us p50=%u p99=%u\n",
             (unsigned long long)s_cost_live.total, l50, l99,
-            (unsigned long long)s_cost_replay.total, r50, r99);
+            (unsigned long long)s_cost_replay.total, r50, r99,
+            (unsigned long long)s_cost_save.total, s50, s99,
+            (unsigned long long)s_cost_load.total, d50, d99);
     fprintf(stderr, "NETPLAY_DRIVER sim=%u episodes=%u invents=%u promotes=%u resim_ticks=%llu "
                     "replayed=%u replays=%u replays_changed=%u desyncs=%u rtt_ms=%u confirmed=%u refusal=%s\n",
             (unsigned)rnet_rb_driver_sim_tick(g_rb.drv),

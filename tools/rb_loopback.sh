@@ -329,6 +329,16 @@ echo "ledger     initiated=$ep_expect followed=$ep_f refused=$nack_i watchdog=$t
 for r in "${ORDER[@]}"; do
     [ -f "$OUT/$r.png" ] && echo "screenshot $r: $OUT/$r.png"
 done
+# Dispatch misses after every run (project law): each peer's
+# dispatch_misses.toml must list no extra function.
+miss_total=0
+for ((s = 0; s < SEATS; s++)); do
+    r=${ROLES[$s]}; f="$OUT/$r.run/dispatch_misses.toml"
+    n=0
+    [ -f "$f" ] && n=$(python3 -c "import re,sys;t=open(sys.argv[1]).read();m=re.search(r'extra\s*=\s*\[(.*?)\]',t,re.S);print(0 if not m else len([x for x in re.split(r'[,\n]',m[1]) if x.strip() and not x.strip().startswith('#')]))" "$f")
+    miss_total=$((miss_total + n))
+done
+echo "dispatch   misses (extra functions, all peers) = $miss_total"
 refused_boot=$(count_all 'BOOT DIGEST MISMATCH\|MOD SETS DIFFER\|MOD SET NOT AGREED')
 if [ "$refused_boot" -gt 0 ] && [ "$ep_i" -eq 0 ]; then
     why=$(grep -ohE 'BOOT DIGEST MISMATCH|MOD SETS DIFFER|MOD SET NOT AGREED' "${LOGS[@]}" \
@@ -354,6 +364,8 @@ elif [ "$KILL_AT" -gt 0 ] 2>/dev/null; then
              "noticed the follower going away and left by itself (exit $surv_rc)"
         rc=0
     fi
+elif [ "$miss_total" -ne 0 ]; then
+    echo "FAIL: $miss_total dispatch miss(es) -- resolve them before anything else"; rc=1
 elif [ "$fk_all" -ne 0 ]; then
     echo "FAIL: $fk_all fork(s) — the peers disagreed on state"; rc=1
 elif [ "$drain_ok" -ne 1 ]; then

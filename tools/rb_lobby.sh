@@ -252,6 +252,14 @@ if [ "${RB_LOBBY_THEN_OFFLINE:-0}" = 1 ]; then
         else echo "   $role: $got"; fail "$role's offline pass after the lobby differs from a fresh process"; fi
     done
 fi
+miss_total=0
+for d in "${ROLES[@]}"; do
+    f="$OUT/$d/dispatch_misses.toml"; n=0
+    [ -f "$f" ] && n=$(python3 -c "import re,sys;t=open(sys.argv[1]).read();m=re.search(r'extra\s*=\s*\[(.*?)\]',t,re.S);print(0 if not m else len([x for x in re.split(r'[,\n]',m[1]) if x.strip() and not x.strip().startswith('#')]))" "$f")
+    miss_total=$((miss_total + n))
+done
+echo "== dispatch misses (extra functions, all peers) = $miss_total"
+[ "$miss_total" -eq 0 ] || fail "$miss_total dispatch miss(es)"
 for f in "$OUT"/*.png; do [ -f "$f" ] && echo "screenshot: $f"; done
 [ $rc -eq 0 ] && echo "PASS: $ROUNDS match(es), $PLAYERS players, same session id on every peer, fresh each match, one boot digest, 0 forks, every match drained and soft-returned"
 echo "logs: $OUT/*.log"
