@@ -12,7 +12,14 @@ below is **two to five processes on one machine over loopback**, through the
 link simulator. Nobody has played it with a controller. No two-machine or
 internet run. ICE is compiled in but has not run (no STUN/TURN here). The
 recomp-ui launcher's netplay screens were driven through the same callback
-table headlessly, never looked at on a display. Windows/MSVC was not built.
+table headlessly, never looked at on a display. That pass did not build Windows/MSVC.
+
+Windows packaging follow-up (2026-09-25): Sonic 2 builds with MSVC 19.41,
+rollback/ICE enabled and all developer tracing disabled. The two cost timers
+use SDL's portable performance counter, and the stripped command-server stub
+exports the online callback required by the runner. A hidden 300-frame startup
+check passes with zero dispatch misses. This is a build/startup check only;
+multiplayer playtesting remains with the owner and another player.
 
 Libraries: recomp-net `588059c` (RetroPortingToolKit
 `feat/genesis-spectator-ready`, on `feat/nes-spectator` bdc58b6 = PR #17, on

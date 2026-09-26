@@ -156,12 +156,13 @@ static void h_publish(void *ctx, uint32_t tick, const RNetRbFrame *rows, int slo
     if (g_rb.b.publish) g_rb.b.publish(tick, g_rb.rows, slots);
 }
 
-#include <time.h>
+#include <SDL2/SDL.h>
 static uint64_t rb_now_us(void)
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (uint64_t)ts.tv_sec * 1000000u + (uint64_t)ts.tv_nsec / 1000u;
+    const uint64_t ticks = SDL_GetPerformanceCounter();
+    const uint64_t frequency = SDL_GetPerformanceFrequency();
+    return (ticks / frequency) * 1000000u +
+           (ticks % frequency) * 1000000u / frequency;
 }
 
 /* GENESIS_NET_TIMELINE_EVERY=n: every n-th tick's digest, printed once that

@@ -48,12 +48,11 @@
 
 /* Cost of the rollback primitives, measured on every probe pass (the
  * capability matrix's "snapshot fast path" row). */
-#include <time.h>
+#include <SDL2/SDL.h>
 static double now_ms(void)
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (double)ts.tv_sec * 1000.0 + (double)ts.tv_nsec / 1e6;
+    return (double)SDL_GetPerformanceCounter() * 1000.0 /
+           (double)SDL_GetPerformanceFrequency();
 }
 #define RB_PROBE_TIMES 8192
 typedef struct { double v[RB_PROBE_TIMES]; unsigned n; } TimeSet;
