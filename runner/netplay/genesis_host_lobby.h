@@ -27,6 +27,10 @@ typedef struct GenesisHostLobbyIdentity {
     const char *rom_sha256_hex;   /* 64 hex chars */
     const char *lan_registry_path;
     int         max_players;      /* 2..4 */
+    /* Capture local preferences at CREATE/START, before the machine boots.
+     * settings is NULL for the headless room helper. */
+    void (*capture_local_config)(const RecompLauncherCSettings *settings,
+                                 GenesisSessionConfig *out);
 } GenesisHostLobbyIdentity;
 
 int  genesis_host_lobby_init(const GenesisHostLobbyIdentity *id);
