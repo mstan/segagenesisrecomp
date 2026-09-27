@@ -150,12 +150,11 @@ extern void glue_run_game_chunk(uint32_t cycles);
 extern void glue_own_interrupt(int level, GVDP *vdp);
 extern int  glue_own_vint_service_latched(GVDP *vdp);  /* deliver a V-int latched while 68K IRQs were masked */
 
-/* ARGB palette cache (normal/shadow/highlight), fed by VDP CRAM writes. The
- * extra trailing slot (index GVDP_WS_BAR_INDEX) is a synthetic entry the VDP
- * emits for black-mode widescreen pillarbox columns; seeded to opaque black in
- * machine_init() so the index->ARGB conversion stays branch-free. CRAM writes
- * only ever touch indices < GVDP_TOTAL_PALETTE, so the slot is never clobbered. */
-static uint32_t s_cram_argb[GVDP_TOTAL_PALETTE + 1];
+/* ARGB palette cache: CRAM normal/shadow/highlight, the black-bar sentinel,
+ * then optional host-owned colors. Only the first 192 entries come from
+ * guest CRAM; host colors are copied after drawing each row. All output
+ * indices still use the same branch-free lookup. */
+static uint32_t s_cram_argb[GVDP_OUTPUT_PALETTE_SIZE];
 
 /* lvl: 0 = normal, 1 = shadow, 2 = highlight (matches GENESIS_DAC_*). Uses the
  * authentic nonlinear Genesis DAC ladder (genesis_dac.h), not linear ×36. */
@@ -540,6 +539,10 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
                 int row = (line << dbl) + sub;
                 int n = gvdp_render_scanline(&m->vdp, row, idxbuf);
                 if (!sink) continue;
+                const uint32_t *host_palette = gvdp_host_palette();
+                if (host_palette)
+                    memcpy(s_cram_argb + GVDP_HOST_PALETTE_BASE, host_palette,
+                           GVDP_HOST_PALETTE_SIZE * sizeof(uint32_t));
                 for (int x = 0; x < n; x++) rowbuf[x] = s_cram_argb[idxbuf[x]];
                 sink(user, row, rowbuf, n);
             }
