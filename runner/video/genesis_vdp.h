@@ -107,6 +107,23 @@ void gvdp_set_unlimited_sprites(int enabled);
  * status register's overflow flag. Part of the rollback machine section. */
 int  gvdp_unlimited_sprites(void);
 
+/* Host sprites: additive actors a game draws from its own pattern data into
+ * the sprite layer after every SAT sprite, so native sprites keep precedence
+ * and plane priority, CRAM (including mid-frame palette swaps) and
+ * shadow/highlight apply exactly as for hardware sprites. `line`, `total` and
+ * `offset` match the current output row (offset = output column of screen
+ * column 0). Write a pixel only where opaque[x] is 0. Presentation only: the
+ * callback must not mutate the guest, and never raises overflow/collision. */
+typedef struct GVDPSpriteLayer {
+    int line, total, offset;
+    uint8_t *index;   /* palette index 0..63 */
+    uint8_t *opaque;
+    uint8_t *high;    /* sprite priority bit */
+} GVDPSpriteLayer;
+typedef void (*GVDPHostSprites)(void *user, const struct GVDP *v,
+                                const GVDPSpriteLayer *layer);
+void gvdp_set_host_sprites(GVDPHostSprites draw, void *user);
+
 /* ---- 68K port interface ($C00000 data, $C00004 control) ------------------ */
 void     gvdp_write_data   (GVDP *v, uint16_t value);
 void     gvdp_write_control(GVDP *v, uint16_t value);
