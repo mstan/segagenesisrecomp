@@ -1,12 +1,15 @@
 # Reproducible Sonic disassembly evidence
 
-The engine retains legacy Sonic Retro source pins for Sonic 1
-(`sonicthehedgehog/s1disasm`) and Sonic 3 / S&K (`sonic3k/skdisasm`).
-Sonic 2's pin and annotation exports are now owned by
-`SonicTheHedgehog2Recomp/game/s2disasm` and its `ghidra/annotations/` directory.
-Run that game's `tools/sonic2_disassembly.py --install` to regenerate its
-evidence (optionally `--engine <checkout>`). New game source pins belong in
-game repositories; the legacy pins above await separate migrations.
+The engine retains the legacy Sonic Retro source pin for Sonic 1
+(`sonicthehedgehog/s1disasm`). Sonic 2's pin and annotation exports are now
+owned by `SonicTheHedgehog2Recomp/game/s2disasm` and its `ghidra/annotations/`
+directory; Sonic 3 / S&K / S3K's by `Sonic3AndKnucklesRecomp/game/skdisasm`
+and its `ghidra/annotations/` directory. Run the owning game's
+`tools/sonic2_disassembly.py --install` or `tools/sonic3_disassembly.py
+--install` to regenerate its evidence (optionally `--engine <checkout>`); both
+reuse this engine's listing parser/exporter (`SOURCES`, `FOLDERS` and the
+generic lock-on `COMPOSITES` hook). New game source pins belong in game
+repositories; the legacy Sonic 1 pin awaits a separate migration.
 The pinned commits and supported ROM SHA-256 hashes are recorded in
 `ghidra/annotations/provenance.json`.
 
@@ -21,8 +24,9 @@ pinned Git revision into an ignored, fresh build tree, uses its bundled Lua/AS
 tools on Windows (Lua 5.3+ on other systems), and requires byte-for-byte equality
 with the supplied ROM before installing any labels. The original ROM and
 submodule source files are never modified. Sonic 1 is explicitly built with
-`Revision = 0`; upstream defaults to REV01. S&K uses `Sonic3_Complete=0` and
-the combined game concatenates the stock S&K and Sonic 3 builds.
+`Revision = 0`; upstream defaults to REV01. (In the game repository, S&K uses
+`Sonic3_Complete=0` and the combined game concatenates the stock S&K and
+Sonic 3 builds through `COMPOSITES`.)
 
 Use `--out build/disassembly-second` for a fresh repeat, or `--reuse` to
 revalidate existing outputs. A successful invocation writes deterministic CSV

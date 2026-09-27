@@ -95,9 +95,9 @@ TARGETS = {
 ROM_SOURCES = {
     "s1":   "{engine}/sonicthehedgehog/sonic.bin",
     "s2":   str(WORKSPACE / "SonicTheHedgehog2Recomp/game/sonic2.bin"),
-    "s3":   "{engine}/sonic3/sonic3.bin",
-    "s3k":  "{engine}/sonic3k/sonic3k.bin",
-    "sk":   "{engine}/sandk/sandk.bin",
+    "s3":   str(WORKSPACE / "Sonic3AndKnucklesRecomp/game/sonic3/sonic3.bin"),
+    "s3k":  str(WORKSPACE / "Sonic3AndKnucklesRecomp/game/sonic3k/sonic3k.bin"),
+    "sk":   str(WORKSPACE / "Sonic3AndKnucklesRecomp/game/sandk/sandk.bin"),
     "rka":  "{engine}/rka/rka.bin",
     "puyo": "{engine}/puyo/puyo.bin",
 }
