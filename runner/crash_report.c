@@ -39,6 +39,15 @@ void crash_report_record_block(uint32_t block_addr) {
     s_block_total++;
 }
 
+unsigned crash_report_recent_blocks(uint32_t *out, unsigned max, uint32_t *total) {
+    uint32_t window = s_block_total < BLOCK_RING_SIZE ? s_block_total : BLOCK_RING_SIZE;
+    if (window > max) window = max;
+    for (uint32_t i = 0; i < window; i++)
+        out[i] = s_block_ring[(s_block_head - window + i) & (BLOCK_RING_SIZE - 1)];
+    if (total) *total = s_block_total;
+    return window;
+}
+
 /* ---- Persistent crash log ---- */
 
 static char s_log_path[256] = "last_error.log";

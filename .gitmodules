@@ -7,9 +7,6 @@
 [submodule "external/recomp-net"]
 	path = external/recomp-net
 	url = https://github.com/RetroPortingToolKit/recomp-net.git
-[submodule "sonic3k/skdisasm"]
-	path = sonic3k/skdisasm
-	url = https://github.com/sonicretro/skdisasm.git
 [submodule "sonicthehedgehog/s1disasm"]
 	path = sonicthehedgehog/s1disasm
 	url = https://github.com/sonicretro/s1disasm.git

@@ -21,10 +21,11 @@ Reports:
   F_full \\ T_code — false positives that survive into the REAL build (the
                   ones polluting generated C; root-cause these first).
 
-Usage (from sonic3k/):
-  python ../tests/tools/heuristic_coverage.py \\
-      --lst skdisasm/sonic3k.lst --lst-offset 0 \\
-      --lst skdisasm/s3.lst      --lst-offset 0x200000 \\
+Usage (example: from a lock-on game's caller-owned config directory, e.g.
+  Sonic3AndKnucklesRecomp/game/sonic3k/):
+  python <engine>/tests/tools/heuristic_coverage.py \\
+      --lst ../skdisasm/sonic3k.lst --lst-offset 0 \\
+      --lst ../skdisasm/s3.lst      --lst-offset 0x200000 \\
       --max-addr 0x200000 \\
       --pure  funcs_pure.txt \\
       --full  funcs_full.txt \\

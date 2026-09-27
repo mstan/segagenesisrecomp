@@ -20,10 +20,14 @@ import tarfile
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = {
     "sonic1": ("sonicthehedgehog/s1disasm", "d343882f75b13646ba50ae06b1486f4bd05cb738", "build.lua", "s1built.bin", "sonic.lst", "sonicthehedgehog/sonic.bin"),
-    "sonic3": ("sonic3k/skdisasm", "1e1b5aff82c21175c593e42c966a6ff8b1586ff3", "buildS3.lua", "s3built.bin", "s3.lst", "sonic3/sonic3.bin"),
-    "sandk": ("sonic3k/skdisasm", "1e1b5aff82c21175c593e42c966a6ff8b1586ff3", "buildSK.lua", "skbuilt.bin", "sonic3k.lst", "sandk/sandk.bin"),
 }
-FOLDERS = {"sonic1": "sonicthehedgehog", "sonic3": "sonic3", "sandk": "sandk", "sonic3k": "sonic3k"}
+FOLDERS = {"sonic1": "sonicthehedgehog"}
+# Multi-ROM images (lock-on carts) built by concatenating SOURCES outputs.
+# Game repositories supply their own entries, e.g. through a wrapper script:
+#   name: {"parts": [(game, offset), ...], "reference": "<repo-relative ROM>",
+#          "metadata": {extra provenance keys}}
+# Parts must be contiguous; labels of each part are relocated by its offset.
+COMPOSITES: dict[str, dict] = {}
 
 # Include-file depth is not a CPU indicator: much of Sonic 1's 68000 code lives
 # in (1)/(2) records. Require a known 68000 mnemonic and matching ROM bytes.
@@ -117,19 +121,26 @@ def main() -> None:
         export(game, rom, names, out, metadata)
         results[game] = {**metadata, "code_labels": len(names)}
         print(f"{game}: byte-identical, {len(names)} code labels", flush=True)
-    if "sandk" in results and "sonic3" in results:
-        sk = (out / "sandk/skbuilt.bin").read_bytes()
-        s3 = (out / "sonic3/s3built.bin").read_bytes()
-        rom = (ROOT / "sonic3k/sonic3k.bin").read_bytes()
-        if sk + s3 != rom:
-            raise RuntimeError("Sonic 3 & Knuckles does not match the concatenated stock ROMs")
-        names = symbols(out / "sandk/sonic3k.lst", sk)
-        names.update({a + 0x200000: n for a, n in symbols(out / "sonic3/s3.lst", s3).items()})
-        metadata = {"source": SOURCES["sandk"][0], "commit": SOURCES["sandk"][1], "rom_sha256": sha(rom),
-                    "build": "buildSK.lua + buildS3.lua", "s3_offset": "0x200000"}
-        export("sonic3k", rom, names, out, metadata)
-        results["sonic3k"] = {**metadata, "code_labels": len(names)}
-        print(f"sonic3k: byte-identical lock-on, {len(names)} code labels", flush=True)
+    for composite, spec in COMPOSITES.items():
+        parts = spec["parts"]
+        if not all(game in results for game, _ in parts):
+            continue
+        built, names = b"", {}
+        for game, offset in parts:
+            relative, revision, script, binary, listing, reference = SOURCES[game]
+            if offset != len(built):
+                raise RuntimeError(f"{composite}: {game} must start at {len(built):#x}, not {offset:#x}")
+            part = (out / game / binary).read_bytes()
+            names.update({a + offset: n for a, n in symbols(out / game / listing, part).items()})
+            built += part
+        rom = (ROOT / spec["reference"]).read_bytes()
+        if built != rom:
+            raise RuntimeError(f"{composite} does not match the concatenated stock ROMs")
+        first = SOURCES[parts[0][0]]
+        metadata = {"source": first[0], "commit": first[1], "rom_sha256": sha(rom), **spec["metadata"]}
+        export(composite, rom, names, out, metadata)
+        results[composite] = {**metadata, "code_labels": len(names)}
+        print(f"{composite}: byte-identical lock-on, {len(names)} code labels", flush=True)
     (out / "provenance.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8", newline="\n")
     if args.install:
         import shutil

@@ -333,6 +333,7 @@ void cmd_server_mem_write_log_tick(void)
 #include "frame_record.h"
 #include "game_spec.h"
 #include "sonic_extras.h"
+#include "crash_report.h"
 
 static FrameRecord s_frame_history[FRAME_HISTORY_CAP];
 static uint32_t s_frame_timing[FRAME_HISTORY_CAP][9],s_timing_count;
@@ -527,6 +528,28 @@ static void handle_screenshot(int id, const char *json)
     if (!json_get_str(json, "path", path, sizeof(path)))
         snprintf(path, sizeof(path), "tcp_screenshot.png");
     send_file_action_result(id, "screenshot", path, runner_write_screenshot_file(path));
+}
+
+/* Query the always-on crash_report block ring (recent recompiled block
+ * entries, oldest first) without waiting for a crash dump. */
+static void handle_crash_trail(int id)
+{
+    uint32_t blocks[64], total = 0;
+    unsigned n = crash_report_recent_blocks(blocks, 64, &total);
+    /* Symbol names are bounded only by the annotation CSV: append each entry
+     * whole or stop, never letting the write position pass the buffer. */
+    char buf[64 * 160 + 128], entry[192];
+    size_t pos = (size_t)snprintf(buf, sizeof buf, "{\"id\":%d,\"ok\":true,\"total\":%" PRIu32 ",\"blocks\":[", id, total);
+    for (unsigned i = 0; i < n; ++i) {
+        const char *name = crash_report_lookup(blocks[i]);
+        int len = snprintf(entry, sizeof entry, "%s{\"addr\":\"%06X\",\"name\":\"%.120s\"}",
+                           i ? "," : "", blocks[i], name ? name : "");
+        if (len < 0 || (size_t)len >= sizeof entry || pos + (size_t)len + 3 > sizeof buf) break;
+        memcpy(buf + pos, entry, (size_t)len);
+        pos += (size_t)len;
+    }
+    memcpy(buf + pos, "]}", 3);
+    send_response(buf);
 }
 
 static void handle_get_registers(int id)
@@ -2132,7 +2155,7 @@ int (*g_cmd_server_online)(void);
 static int online_allowed(const char *cmd)
 {
     static const char *const ok[] = {
-        "ping", "screenshot", "get_registers", "read_memory", "read_ram", "sonic_history",
+        "ping", "screenshot", "get_registers", "crash_trail", "read_memory", "read_ram", "sonic_history",
         "vblank_info", "frame_info", "frame_range", "addr_history", "read_vram", "read_cram",
         "audio_stats", "frame_performance", "get_frame", "frame_timeseries", "z80_state",
         "read_z80_ram", "fm_state", "psg_state", "vdp_state", "vdp_events", "read_vsram",
@@ -2206,6 +2229,8 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         send_response(resp);
     } else if (strcmp(cmd, "get_registers") == 0) {
         handle_get_registers(id);
+    } else if (strcmp(cmd, "crash_trail") == 0) {
+        handle_crash_trail(id);
     } else if (strcmp(cmd, "read_memory") == 0) {
         handle_read_memory(id, json);
     } else if (strcmp(cmd, "write_memory") == 0) {

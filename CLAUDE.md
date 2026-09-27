@@ -20,18 +20,21 @@ cross-check is the cosim harness (recomp vs our own Tier-3 interpreter,
   playable.
 - **SonicTheHedgehog2Recomp** — Sonic 2 release; playable bring-up (ships a
   `v0.1.0-linux` AppImage).
-- **sonic3k/** — Sonic 3 & Knuckles; builds as a native release target
-  (ships a `v0.1.0-linux` AppImage).
+- **Sonic3AndKnucklesRecomp** — Sonic 3 alone, Sonic 3 & Knuckles and
+  Sonic & Knuckles alone; native release targets (ships a `v0.1.0-linux`
+  AppImage).
 
 ## Repo topology (read this first)
 
 Owner boundary (2026-09-22): game-specific implementation belongs in the GAME
 repository, not this engine repository. Sonic 2 has been migrated to its own
 `game/`, `tests/`, `tools/` and `docs/` directories and pinned disassembly.
-Existing Sonic 1/3/other engine game directories are legacy pending separate
-migrations; never use them as precedent for new game-specific engine code.
+The Sonic 3 family followed (Sonic3AndKnucklesRecomp `game/common`,
+`game/sonic3`, `game/sonic3k`, `game/sandk`, `game/skdisasm`). Remaining
+Sonic 1/other engine game directories are legacy pending separate migrations;
+never use them as precedent for new game-specific engine code.
 
-There are THREE repos in play:
+There are FOUR repos in play:
 
 ```
 F:\Projects\segagenesisrecomp-release\
@@ -45,6 +48,10 @@ F:\Projects\segagenesisrecomp-release\
 │   ├── game\                         ← owns adapter, ROM config and s2disasm
 │   ├── segagenesisrecomp\            ← pinned shared engine submodule
 │   └── tools\                        ← Sonic-2 probes (cleaner, fewer)
+│
+├── Sonic3AndKnucklesRecomp\          (Sonic 3 family release repo)
+│   ├── game\                         ← owns S3/S3K/S&K adapters, configs, skdisasm
+│   └── segagenesisrecomp\            ← pinned shared engine submodule
 │
 └── (this submodule, checked out as SonicTheHedgehogRecomp/segagenesisrecomp/)
     ├── PRINCIPLES.md                 ← rules; READ FIRST
@@ -60,7 +67,6 @@ F:\Projects\segagenesisrecomp-release\
     ├── tools\                        ← shared genesis-agnostic tooling
     ├── sonicthehedgehog\             ← Sonic 1 game.toml + sonic1_spec.c
     │                                   + sonic_extras.{c,h}
-    ├── sonic3k\                      ← Sonic 3 & Knuckles game files
     ├── tests\
     │   └── tools\                    ← gen_disasm_*, recompiler-side
 ```
@@ -68,8 +74,9 @@ F:\Projects\segagenesisrecomp-release\
 **Topology invariant**: shared runner is at `segagenesisrecomp/runner/`.
 Per-game handwritten code (`<game>_spec.c`, `<game>_extras.{c,h}`) belongs in
 the consuming game repository. Generated C lives only in each CMake build
-tree. Sonic 2 consumes its own pinned engine submodule, or an explicit
-GENESIS_RECOMP_ROOT development override; it does not depend on Sonic 1.
+tree. Sonic 2 and the Sonic 3 family consume their own pinned engine
+submodule, or an explicit GENESIS_RECOMP_ROOT development override; neither
+depends on Sonic 1.
 
 When in doubt about "which runner is built": grep the relevant
 `CMakeLists.txt` for `RUNNER_ROOT` — that's the source of truth.
@@ -82,7 +89,7 @@ Shared runner code reads two tables:
 
 Defined in `runner/game_spec.h`. Each game project provides exactly one
 TU defining `const GameSpec g_game_spec` (e.g.
-`sonicthehedgehog/sonic1_spec.c`, `sonicthehedgehog2/sonic2_spec.c`).
+`sonicthehedgehog/sonic1_spec.c`, `SonicTheHedgehog2Recomp/game/sonic2_spec.c`).
 Fields include identity (name, CRC32, ROM size), entry/IRQ/periodic
 callbacks, lifecycle hooks (`on_post_reset`, `on_frame_pre/post`), CLI
 handler, dispatch override, frame-record packer, per-game TCP commands,

@@ -13,7 +13,7 @@
  * + ROM identity. No fill_frame_record / per-game TCP commands yet (RKA's WRAM
  * layout is not yet reverse-engineered). Dispatchers use recomp_call_addr(),
  * which routes through the generated dispatch table (and the Tier-3 floor on a
- * miss) — same pattern as sandk_spec.c.
+ * miss) — same pattern as Sonic3AndKnucklesRecomp's game/sandk/sandk_spec.c.
  */
 #include "game_spec.h"
 #include "genesis_runtime.h"
