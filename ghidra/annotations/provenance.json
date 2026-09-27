@@ -8,29 +8,5 @@
       "Revision": 0
     },
     "code_labels": 1793
-  },
-  "sonic3": {
-    "source": "sonic3k/skdisasm",
-    "commit": "1e1b5aff82c21175c593e42c966a6ff8b1586ff3",
-    "rom_sha256": "d6404843c5ba32486f4c8c744acb7e1932069376960d886b1de37969787d3f9c",
-    "build": "buildS3.lua",
-    "options": {},
-    "code_labels": 1817
-  },
-  "sandk": {
-    "source": "sonic3k/skdisasm",
-    "commit": "1e1b5aff82c21175c593e42c966a6ff8b1586ff3",
-    "rom_sha256": "6e12e6b33c26ebfcd0be433251d21cf6284eafe9f71b027bda3767ae59affec1",
-    "build": "buildSK.lua",
-    "options": {},
-    "code_labels": 2369
-  },
-  "sonic3k": {
-    "source": "sonic3k/skdisasm",
-    "commit": "1e1b5aff82c21175c593e42c966a6ff8b1586ff3",
-    "rom_sha256": "fba0677fde9f76df93f3e98d6310d8af68b9847bde16e253d73cd4dd8134ed23",
-    "build": "buildSK.lua + buildS3.lua",
-    "s3_offset": "0x200000",
-    "code_labels": 4186
   }
 }

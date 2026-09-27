@@ -477,6 +477,13 @@ static uint8_t s_spr_hilite_op[GVDP_MAX_WIDTH]; /* operator: highlight        */
 static int s_unlimited_sprites;
 void gvdp_set_unlimited_sprites(int enabled) { s_unlimited_sprites=!!enabled; }
 int  gvdp_unlimited_sprites(void) { return s_unlimited_sprites; }
+static GVDPHostSprites s_host_sprites;
+static void *s_host_sprites_user;
+void gvdp_set_host_sprites(GVDPHostSprites draw, void *user)
+{
+    s_host_sprites = draw;
+    s_host_sprites_user = user;
+}
 static int s_ws_extra = 0;
 
 /* Clamp the requested extra to what the output buffer can hold for width `w`
@@ -766,6 +773,10 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
 
     /* Sprite layer for this output row (placed in centered output-column space). */
     sprite_render_line(v, line, total, offset);
+    if (s_host_sprites) {
+        GVDPSpriteLayer layer = { line, total, offset, s_spr_idx, s_spr_op, s_spr_hi };
+        s_host_sprites(s_host_sprites_user, v, &layer);
+    }
 
     /* A name-table entry covers eight adjacent pixels and each pattern byte
      * covers two. Rendering runs after the line's CPU/Z80 slice, so VRAM

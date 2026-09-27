@@ -57,25 +57,10 @@ add_executable(vdp_sprite_limit_test runtime/vdp_sprite_limit_test.c
 target_include_directories(vdp_sprite_limit_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
 add_test(NAME vdp_sprite_limit COMMAND vdp_sprite_limit_test)
 
-add_executable(sonic3_video_test runtime/sonic3_video_test.c)
-target_include_directories(sonic3_video_test PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/../runner"
-    "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
-add_test(NAME sonic3_video COMMAND sonic3_video_test)
-
-add_executable(sonic3_standalone_video_test runtime/sonic3_video_test.c)
-target_compile_definitions(sonic3_standalone_video_test PRIVATE SONIC3_STANDALONE=1)
-target_include_directories(sonic3_standalone_video_test PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/../runner"
-    "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
-add_test(NAME sonic3_standalone_video COMMAND sonic3_standalone_video_test)
-
-# Blue Spheres' projection uses the C math library. Unlike the Windows
-# CRT, Unix toolchains require this dependency explicitly at link time.
-if(UNIX)
-    target_link_libraries(sonic3_video_test PRIVATE m)
-    target_link_libraries(sonic3_standalone_video_test PRIVATE m)
-endif()
+add_executable(vdp_host_sprite_test runtime/vdp_host_sprite_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")
+target_include_directories(vdp_host_sprite_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
+add_test(NAME vdp_host_sprite COMMAND vdp_host_sprite_test)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
     if(TARGET SDL2::SDL2)
