@@ -77,6 +77,9 @@ int      genesis_netplay_rollback_active(void);
 int      genesis_netplay_is_running(void);
 int      genesis_netplay_is_spectator(void);
 int      genesis_netplay_local_slot(void);
+/* Presentation ownership: logical player after slot_port mapping, or -1 for
+ * offline/spectators. Unlike input_player, this is NOT the local device. */
+int      genesis_netplay_local_player(void);
 int      genesis_netplay_slot_count(void);
 int      genesis_netplay_input_player(void);
 int      genesis_netplay_is_host(void);
