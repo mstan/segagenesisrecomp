@@ -1884,6 +1884,9 @@ static void log_true_miss(uint32_t target_pc);  /* forward decl — defined belo
  * Uses the dispatch table exported by game_dispatch_get_table(). */
 static int is_interior_label(uint32_t addr)
 {
+    uint32_t rom_limit = g_game_spec.expected_rom_size
+        ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
+    if (addr >= rom_limit) return 0;
     /* game_dispatch_get_table returns a NULL-terminated array of
      * {addr, fn} pairs sorted by address.  Check if addr falls
      * between two consecutive entries. */
