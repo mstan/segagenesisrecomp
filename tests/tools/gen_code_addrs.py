@@ -9,9 +9,9 @@ seed promotion: an extern target that lands on a known DATA address is never
 promoted to a function entry. That kills the data-as-code false-positive class
 (e.g. Eni_Decomp_Masks, sine tables) without per-address blacklisting.
 
-Run (lock-on halves):
-  python gen_code_addrs.py skdisasm/sonic3k.lst --max-addr 0x200000 --offset 0          >  sonic3k.code_addrs.txt
-  python gen_code_addrs.py skdisasm/s3.lst      --max-addr 0x200000 --offset 0x200000   >> sonic3k.code_addrs.txt
+Run (lock-on halves; e.g. from Sonic3AndKnucklesRecomp/game/sonic3k/):
+  python gen_code_addrs.py ../skdisasm/sonic3k.lst --max-addr 0x200000 --offset 0          >  sonic3k.code_addrs.txt
+  python gen_code_addrs.py ../skdisasm/s3.lst      --max-addr 0x200000 --offset 0x200000   >> sonic3k.code_addrs.txt
 """
 from __future__ import annotations
 import argparse

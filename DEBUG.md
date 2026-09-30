@@ -46,6 +46,10 @@ Reference for probe authors. All commands take a JSON request like
 
 ### State queries (current)
 - `get_registers` — current M68K + Z80 + cycle counters.
+- `crash_trail` — the crash_report block ring (last 64 block entries,
+  oldest first, with symbols) without waiting for a crash dump. Populated
+  only by reverse-debug codegen (`-DSONIC_REVERSE_DEBUG=ON`); the way to see
+  where a live game is spinning.
 - `read_memory <addr> <len>` — generic 24-bit read.
 - `write_memory <addr> <len> <hex>` — generic write (use sparingly; not
   state-history-aware).

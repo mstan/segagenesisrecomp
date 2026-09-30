@@ -171,7 +171,7 @@ generated C is unaffected by the core changes until sites are added
 
 ## Remaining work (next session)
 
-1. **SonicAndKnucklesRecomp (S&K alone):** swap `sandk/sandk.bin` → canonical slice
+1. **SonicAndKnucklesRecomp (S&K alone):** swap `Sonic3AndKnucklesRecomp/game/sandk/sandk.bin` → canonical slice
    (low 2MB of canonical S3K = `0658F691`); build canonical S&K `.lst` from skdisasm;
    restore/regen discovery + reconcile `extra[]`; clean `[widescreen]` (drop carved
    `extra_ram_addr`/`redraw_flag_addr`); author `[[widescreen_site]]` from the S&K

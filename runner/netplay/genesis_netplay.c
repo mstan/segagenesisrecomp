@@ -226,6 +226,12 @@ int genesis_netplay_is_running(void)
 }
 int genesis_netplay_is_spectator(void) { return genesis_netplay_active() && g_np.spectator; }
 int genesis_netplay_local_slot(void) { return genesis_netplay_active() ? g_np.local_slot : -1; }
+int genesis_netplay_local_player(void)
+{
+    int s = genesis_netplay_local_slot();
+    return !g_np.spectator && s >= 0 && s < g_np.slot_count && s < GENESIS_NETPLAY_MAX_SLOTS
+        ? g_np.slot_port[s] : -1;
+}
 int genesis_netplay_slot_count(void) { return genesis_netplay_active() ? g_np.slot_count : 2; }
 int genesis_netplay_input_player(void) { return genesis_netplay_active() ? g_np.input_player : 0; }
 int genesis_netplay_is_host(void) { return genesis_netplay_active() && g_np.local_slot == 0; }

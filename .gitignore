@@ -2,6 +2,11 @@ build/
 /sonicthehedgehog2/
 # Retired game location: preserve ignored owner ROM/build/disasm artifacts.
 # Tracked implementation now belongs in SonicTheHedgehog2Recomp/game/.
+/sonic3/
+/sonic3k/
+/sandk/
+# Retired Sonic 3 family locations: tracked implementation now belongs in
+# Sonic3AndKnucklesRecomp/game/.
 build-*/
 _build*/
 *.bin

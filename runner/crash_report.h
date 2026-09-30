@@ -41,6 +41,13 @@
 void crash_report_record_block(uint32_t block_addr);
 
 /*
+ * Copy the most recent block transitions, oldest first (at most `max`, and at
+ * most the ring size). *total receives the monotonic transition count. Empty
+ * unless the build emits rdb_on_block (reverse-debug codegen).
+ */
+unsigned crash_report_recent_blocks(uint32_t *out, unsigned max, uint32_t *total);
+
+/*
  * Load addr→name mappings from a CSV with `addr,name` rows (the
  * gen_annotations_csv.py output). Returns the number of symbols
  * loaded, or 0 on failure. Safe to call multiple times — the

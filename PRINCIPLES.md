@@ -321,7 +321,8 @@ Repository ownership (owner clarification, 2026-09-22): per-game adapters,
 configuration, disassembly, assets/decoders, features and tests belong in the
 consuming GAME repository. The engine exposes reusable opt-in contracts.
 Legacy game directories do not authorize new game-specific engine code.
-Sonic 2 is migrated; other game migrations are separately scoped work.
+Sonic 2 and the Sonic 3 family are migrated; other game migrations are
+separately scoped work.
 
 Shared runner code reads:
 - `g_game_spec.*` (function-pointer hooks — entry points, IRQ handlers,
