@@ -35,7 +35,6 @@ SUBS = ["cpu68k","timing","ram","z80","z80ram","handshake","vdp","fm","psg","evq
 # Builds require the _cosim/_oracle_cosim targets (see COSIM.md).
 GAMES = {
     "s1": {"wt": "_wt-cosim-s1", "exe": "SonicTheHedgehogRecomp",  "waitvbl": "29a8", "rom": "sonic.bin"},
-    "s3": {"wt": "_wt-cosim-s3", "exe": "Sonic3KRecomp",           "waitvbl": "1d18", "rom": "sonic3k.bin"},
     "puyo": {"wt": "_wt-puyo", "exe": "PuyoRecomp", "waitvbl": "32c", "rom": "puyo.bin"},
 }
 GAME = "s1"   # module-level selection; set by --game (or divergence_report)

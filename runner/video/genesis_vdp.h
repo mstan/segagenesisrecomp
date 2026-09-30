@@ -44,9 +44,14 @@
  * palette that the display path maps to a fixed bar colour (opaque black).
  * Emitted by gvdp_render_scanline for pillarbox columns ONLY when black-bar
  * mode is selected; backdrop-bar mode emits the real backdrop index instead,
- * so this stays branch-free in the index->ARGB conversion (the host sizes its
- * ARGB cache to GVDP_TOTAL_PALETTE+1 and seeds this slot with black). */
+ * so this stays branch-free in the index->ARGB conversion. The host sizes its
+ * ARGB cache to GVDP_OUTPUT_PALETTE_SIZE and seeds this slot with black. */
 #define GVDP_WS_BAR_INDEX       GVDP_TOTAL_PALETTE
+
+/* Optional presentation colors, separate from CRAM and the bar sentinel. */
+#define GVDP_HOST_PALETTE_BASE  (GVDP_WS_BAR_INDEX + 1)
+#define GVDP_HOST_PALETTE_SIZE  (256 - GVDP_HOST_PALETTE_BASE)
+#define GVDP_OUTPUT_PALETTE_SIZE 256
 
 /* ---- Callbacks the VDP needs from its host ------------------------------- */
 /* DMA 68k->VRAM/CRAM/VSRAM must read source words from the main bus. The host
@@ -106,6 +111,32 @@ void gvdp_set_unlimited_sprites(int enabled);
 /* Simulation, not presentation: it decides when sprite evaluation raises the
  * status register's overflow flag. Part of the rollback machine section. */
 int  gvdp_unlimited_sprites(void);
+
+/* Host sprites: additive actors a game draws from its own pattern data into
+ * the sprite layer after every SAT sprite, so native sprites keep precedence
+ * and plane priority, CRAM (including mid-frame palette swaps) and
+ * shadow/highlight apply exactly as for hardware sprites. `line`, `total` and
+ * `offset` match the current output row (offset = output column of screen
+ * column 0). Write a pixel only where opaque[x] is 0. Presentation only: the
+ * callback must not mutate the guest, and never raises overflow/collision.
+ * For independent colors, opt in with gvdp_set_host_palette below. */
+typedef struct GVDPSpriteLayer {
+    int line, total, offset;
+    uint8_t *index;   /* CRAM 0..63, or GVDP_HOST_PALETTE_BASE + host slot */
+    uint8_t *opaque;
+    uint8_t *high;    /* sprite priority bit */
+} GVDPSpriteLayer;
+typedef void (*GVDPHostSprites)(void *user, const struct GVDP *v,
+                                const GVDPSpriteLayer *layer);
+void gvdp_set_host_sprites(GVDPHostSprites draw, void *user);
+/* Copy up to GVDP_HOST_PALETTE_SIZE final ARGB colors. NULL clears the
+ * palette; unused slots are opaque black. Host colors obey sprite/plane
+ * priority but bypass hardware shadow/highlight (the caller owns shading).
+ * No guest CRAM, machine state or color callbacks are changed. Unregistering
+ * the host sprite callback clears these colors too. Returns 0 for oversize. */
+int gvdp_set_host_palette(const uint32_t *argb, unsigned count);
+/* Read-only color table for index-to-ARGB sinks; NULL when disabled. */
+const uint32_t *gvdp_host_palette(void);
 
 /* ---- 68K port interface ($C00000 data, $C00004 control) ------------------ */
 void     gvdp_write_data   (GVDP *v, uint16_t value);

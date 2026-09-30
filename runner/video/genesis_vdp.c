@@ -477,6 +477,28 @@ static uint8_t s_spr_hilite_op[GVDP_MAX_WIDTH]; /* operator: highlight        */
 static int s_unlimited_sprites;
 void gvdp_set_unlimited_sprites(int enabled) { s_unlimited_sprites=!!enabled; }
 int  gvdp_unlimited_sprites(void) { return s_unlimited_sprites; }
+static GVDPHostSprites s_host_sprites;
+static void *s_host_sprites_user;
+static uint32_t s_host_palette[GVDP_HOST_PALETTE_SIZE];
+static int s_host_palette_enabled;
+int gvdp_set_host_palette(const uint32_t *argb, unsigned count)
+{
+    if (count > GVDP_HOST_PALETTE_SIZE) return 0;
+    for (unsigned i = 0; i < GVDP_HOST_PALETTE_SIZE; ++i)
+        s_host_palette[i] = argb && i < count ? argb[i] : 0xFF000000u;
+    s_host_palette_enabled = argb && count;
+    return 1;
+}
+const uint32_t *gvdp_host_palette(void)
+{
+    return s_host_palette_enabled ? s_host_palette : NULL;
+}
+void gvdp_set_host_sprites(GVDPHostSprites draw, void *user)
+{
+    s_host_sprites = draw;
+    s_host_sprites_user = user;
+    if (!draw) gvdp_set_host_palette(NULL, 0);
+}
 static int s_ws_extra = 0;
 
 /* Clamp the requested extra to what the output buffer can hold for width `w`
@@ -766,6 +788,10 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
 
     /* Sprite layer for this output row (placed in centered output-column space). */
     sprite_render_line(v, line, total, offset);
+    if (s_host_sprites) {
+        GVDPSpriteLayer layer = { line, total, offset, s_spr_idx, s_spr_op, s_spr_hi };
+        s_host_sprites(s_host_sprites_user, v, &layer);
+    }
 
     /* A name-table entry covers eight adjacent pixels and each pattern byte
      * covers two. Rendering runs after the line's CPU/Z80 slice, so VRAM
@@ -830,7 +856,7 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         /* Shadow/highlight: when enabled, a pixel with no high-priority layer
          * is shadowed; operator sprites (pal3 colours 14/15) force highlight or
          * shadow on the underlying pixel. */
-        if (sh_mode) {
+        if (sh_mode && px < GVDP_CRAM_ENTRIES) {
             int hi_present = (s_op && s_hi) || (a_op && a_hi) || (b_op && b_hi);
             int sh = !hi_present;
             int hl = 0;
@@ -841,7 +867,7 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         }
 
         out[xo] = px;
-        if (s_ws_bgdiag) {
+        if (s_ws_bgdiag && px < GVDP_HOST_PALETTE_BASE) {
             int wpx = wt * 8;               /* Plane B wraps every plane-width px */
             if (((x - hs_b) & (wpx - 1)) == 0)   /* output column where B sampling hits 0 */
                 out[xo] = (uint8_t)((px & 0x3F) + GVDP_PALETTE_SHADOW);
