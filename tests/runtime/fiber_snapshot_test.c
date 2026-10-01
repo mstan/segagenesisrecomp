@@ -47,7 +47,10 @@ static int64_t descend(int depth, int64_t acc, volatile unsigned char *parent_pa
     volatile unsigned char pad[PAD_BYTES];
     for (int i = 0; i < PAD_BYTES; i++)
         pad[i] = (unsigned char)(depth * 31 + i * 7 + (int)(acc & 0xFF));
-    int64_t local = acc * 6364136223846793005LL + depth + 1442695040888963407LL;
+    /* LCG step in unsigned arithmetic: the signed form overflows (UB), and
+     * gcc/clang at -O2/-O3 exploited it (reference recursion collapsed). */
+    int64_t local = (int64_t)((uint64_t)acc * 6364136223846793005ULL +
+                              (uint64_t)depth + 1442695040888963407ULL);
     yield_value(local ^ (int64_t)depth, depth);
     for (int i = 0; i < PAD_BYTES; i++)
         if (pad[i] != (unsigned char)(depth * 31 + i * 7 + (int)(acc & 0xFF)))
@@ -55,8 +58,9 @@ static int64_t descend(int depth, int64_t acc, volatile unsigned char *parent_pa
     if (parent_pad && parent_pad[0] != parent_first)
         yield_value(-2000000 - depth, depth); /* stale pointer-to-stack */
     if (depth < MAX_DEPTH && ((local >> 9) & 15) != 0)   /* ~15/16: deep */
-        local += descend(depth + 1, local, pad, pad[0]);
-    yield_value(local + 17 * depth, depth);
+        local = (int64_t)((uint64_t)local +
+                          (uint64_t)descend(depth + 1, local, pad, pad[0]));
+    yield_value((int64_t)((uint64_t)local + 17u * (uint64_t)depth), depth);
     return local;
 }
 
@@ -64,7 +68,8 @@ static void fiber_entry(void *arg)
 {
     int64_t seed = (int64_t)(intptr_t)arg;
     for (uint32_t round = 0;; round++)
-        seed += descend(0, seed + round, NULL, 0);
+        seed = (int64_t)((uint64_t)seed +
+                         (uint64_t)descend(0, (int64_t)((uint64_t)seed + round), NULL, 0));
 }
 
 static void run(int n, int64_t *out, int *depths)
@@ -96,10 +101,21 @@ static uint64_t overflow_rec(uint64_t n)
     s_sink += big[0] + big[sizeof big - 1];
     return (n < s_overflow_limit ? overflow_rec(n + 1) : 0) + big[n & 1023];
 }
+/* A frame LARGER than the whole guard region: only page-by-page stack
+ * probing (MSVC __chkstk; gcc/clang -fstack-clash-protection) makes it touch
+ * the guard instead of jumping over it into the coroutine header. */
+static uint64_t overflow_rec_huge(uint64_t n)
+{
+    volatile unsigned char big[2 * FIBER_GUARD_BYTES];
+    big[0] = (unsigned char)n;
+    s_sink += big[0];
+    return (n < s_overflow_limit ? overflow_rec_huge(n + 1) : 0) + big[n & 1023];
+}
+static int s_overflow_huge;
 static void overflow_entry(void *arg)
 {
     (void)arg;
-    s_sink = overflow_rec(1);
+    s_sink = s_overflow_huge ? overflow_rec_huge(1) : overflow_rec(1);
     for (;;) fiber_switch(s_main);
 }
 #include <stdlib.h>
@@ -126,7 +142,12 @@ static int overflow_child(void)
 #if !defined(_WIN32)
     uintptr_t lo = 0, top = 0;
     fiber_stack_range(s_co, &lo, &top);
-    s_guard_lo = lo - (uintptr_t)sysconf(_SC_PAGESIZE);
+    {
+        size_t pg = (size_t)sysconf(_SC_PAGESIZE);
+        size_t guard = FIBER_GUARD_BYTES > pg ? FIBER_GUARD_BYTES : pg;
+        guard = (guard + pg - 1) / pg * pg;
+        s_guard_lo = lo - guard;
+    }
     s_guard_hi = lo;
     static unsigned char altstack[65536];
     stack_t ss;
@@ -145,10 +166,10 @@ static int overflow_child(void)
     return 0;   /* unreachable unless the guard failed to fault */
 }
 
-static int overflow_faults(const char *self)
+static int overflow_faults(const char *self, const char *mode)
 {
     char cmd[4096];
-    snprintf(cmd, sizeof cmd, "\"%s\" --overflow", self);
+    snprintf(cmd, sizeof cmd, "\"%s\" %s", self, mode);
 #if defined(_WIN32)
     STARTUPINFOA si;
     PROCESS_INFORMATION pi;
@@ -178,6 +199,10 @@ int main(int argc, char **argv)
     static int64_t ref[STEPS], got[STEPS];
     if (argc > 1 && strcmp(argv[1], "--overflow") == 0)
         return overflow_child();
+    if (argc > 1 && strcmp(argv[1], "--overflow-huge") == 0) {
+        s_overflow_huge = 1;
+        return overflow_child();
+    }
     static int ref_depth[STEPS];
 
     s_main = fiber_convert_thread();
@@ -323,7 +348,15 @@ int main(int argc, char **argv)
     fiber_destroy(s_co);
     fiber_revert_thread();
 
-    CHECK(overflow_faults(argv[0]), "unbounded recursion on the fiber did not fault on the guard page");
+    CHECK(overflow_faults(argv[0], "--overflow"),
+          "unbounded recursion on the fiber did not fault on the guard region");
+#if defined(_WIN32) || defined(GENESIS_STACK_CLASH_PROTECTION)
+    /* Frames bigger than the guard: requires page-by-page stack probes. */
+    CHECK(overflow_faults(argv[0], "--overflow-huge"),
+          "a frame larger than the guard skipped it (stack probes missing?)");
+#else
+    printf("  --overflow-huge skipped: built without -fstack-clash-protection\n");
+#endif
     free(blob);
     free(fresh);
     if (s_failures) {

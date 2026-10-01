@@ -31,6 +31,9 @@ get_filename_component(GENESIS_RUNNER_ENGINE_ROOT "${CMAKE_CURRENT_LIST_DIR}/.."
 
 set(GENESIS_RUNNER_CORE_SOURCES
     main.c
+    sim_step.c
+    rb_state.c
+    rb_probe.c
     audio.c
     glue.c
     fiber_compat.c
@@ -64,7 +67,10 @@ set(GENESIS_RUNNER_CORE_SOURCES
 # and is listed by every consumer; a consumer lacking one of those is a
 # deliberate divergence the reconciler must not paper over.
 set(GENESIS_RUNNER_RECONCILED_SOURCES
-    cosim_state.c)
+    cosim_state.c
+    sim_step.c
+    rb_state.c
+    rb_probe.c)
 
 function(genesisrecomp_runner_sources out_var)
     cmake_parse_arguments(GRS "" "TRACE;REVERSE_DEBUG" "" ${ARGN})
@@ -110,6 +116,20 @@ function(genesisrecomp_runner_target target)
         # so glibc never enables shadow stacks for the process.
         target_compile_options(${target} PRIVATE
             "$<$<COMPILE_LANGUAGE:C,CXX>:-fcf-protection=none>")
+    endif()
+    # Page-by-page stack probes for large frames on the game fiber, so a frame
+    # bigger than the fiber guard region (FIBER_GUARD_BYTES, fiber_compat.h)
+    # faults inside the guard instead of jumping over it into the coroutine
+    # header. MSVC's __chkstk already does this. The define lets
+    # tests/runtime/fiber_snapshot_test.c assert it (--overflow-huge).
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang" AND NOT MSVC)
+        include(CheckCCompilerFlag)
+        check_c_compiler_flag(-fstack-clash-protection GENESIS_HAVE_STACK_CLASH)
+        if(GENESIS_HAVE_STACK_CLASH)
+            target_compile_options(${target} PRIVATE
+                "$<$<COMPILE_LANGUAGE:C,CXX>:-fstack-clash-protection>")
+            target_compile_definitions(${target} PRIVATE GENESIS_STACK_CLASH_PROTECTION=1)
+        endif()
     endif()
 endfunction()
 

@@ -10,14 +10,15 @@
  *
  *   map                        mco_coro + _mco_context (+ minicoro "storage"
  *                              padding, never used) — header_size bytes
- *   map + header_size          guard page, no access
- *   stack_lo = +page           lowest usable stack byte
+ *   map + header_size          guard region, no access (FIBER_GUARD_BYTES
+ *                              rounded up to whole pages; see fiber_compat.h)
+ *   stack_lo = +guard          lowest usable stack byte
  *   stack_top                  one past the highest stack byte; the stack
  *                              grows down from here
  *
  * minicoro sees [guard, stack_top) as its stack; its overflow check and our
  * TIB StackLimit (Windows) are both pinned to stack_lo so a __chkstk probe
- * that crosses the limit touches the guard page and faults.
+ * that crosses the limit touches the guard region and faults.
  */
 #include "fiber_compat.h"
 
@@ -76,6 +77,7 @@ typedef struct fiber_impl {
     size_t         map_size;
     size_t         header_size;   /* bytes before the guard page */
     size_t         page;
+    size_t         guard_size;    /* bytes of no-access guard below stack_lo */
     uintptr_t      stack_lo;
     uintptr_t      stack_top;
 } fiber_impl;
@@ -157,14 +159,14 @@ static void fiber_require_no_shadow_stack(void)
 
 /* ---- mapping ------------------------------------------------------------- */
 
-static unsigned char *os_map(size_t size, size_t guard_off, size_t page)
+static unsigned char *os_map(size_t size, size_t guard_off, size_t guard_size)
 {
 #if defined(_WIN32)
     unsigned char *m = (unsigned char *)VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT,
                                                      PAGE_READWRITE);
     if (!m) return NULL;
     DWORD old = 0;
-    if (!VirtualProtect(m + guard_off, page, PAGE_NOACCESS, &old)) {
+    if (!VirtualProtect(m + guard_off, guard_size, PAGE_NOACCESS, &old)) {
         VirtualFree(m, 0, MEM_RELEASE);
         return NULL;
     }
@@ -172,7 +174,7 @@ static unsigned char *os_map(size_t size, size_t guard_off, size_t page)
 #else
     void *m = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (m == MAP_FAILED) return NULL;
-    if (mprotect((unsigned char *)m + guard_off, page, PROT_NONE) != 0) {
+    if (mprotect((unsigned char *)m + guard_off, guard_size, PROT_NONE) != 0) {
         munmap(m, size);
         return NULL;
     }
@@ -284,17 +286,20 @@ fiber_t fiber_create(size_t commit, size_t reserve, fiber_entry_fn entry, void *
     size_t header = align_up(_mco_align_forward(sizeof(mco_coro), 16) +
                              _mco_align_forward(sizeof(_mco_context), 16) + 16, page);
 
+    size_t guard = align_up(FIBER_GUARD_BYTES > page ? FIBER_GUARD_BYTES : page, page);
+
     fiber_impl *f = (fiber_impl *)calloc(1, sizeof *f);
     if (!f) return NULL;
     f->magic       = FIBER_IMPL_MAGIC;
     f->entry       = entry;
     f->arg         = arg;
     f->page        = page;
+    f->guard_size  = guard;
     f->header_size = header;
-    f->map_size    = header + page + stack_size;
-    f->map         = os_map(f->map_size, header, page);
+    f->map_size    = header + guard + stack_size;
+    f->map         = os_map(f->map_size, header, guard);
     if (!f->map) { free(f); return NULL; }
-    f->stack_lo  = (uintptr_t)(f->map + header + page);
+    f->stack_lo  = (uintptr_t)(f->map + header + guard);
     f->stack_top = (uintptr_t)(f->map + f->map_size);
     if (fiber_init_coro(f) != 0) {
         os_unmap(f->map, f->map_size);

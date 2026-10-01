@@ -61,21 +61,45 @@ function(genesisrecomp_enable_netplay target)
         add_subdirectory("${_rnet_root}"
                          "${CMAKE_BINARY_DIR}/recomp-net" EXCLUDE_FROM_ALL)
     endif()
+    # rbengine: the tick-keyed snapshot ring the rollback host stores
+    # runner/rb_state.c blobs in (external/rbengine, RetroPortingToolKit).
+    set(_rbe_root "${GENESISRECOMP_NET_ENGINE_ROOT}/external/rbengine")
+    if(NOT EXISTS "${_rbe_root}/CMakeLists.txt")
+        message(FATAL_ERROR
+            "GENESISRECOMP_NETPLAY=ON but the rbengine submodule is not checked out at:\n"
+            "    ${_rbe_root}\n"
+            "Fetch it with: git submodule update --init external/rbengine")
+    endif()
+    set(RBE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    if(NOT TARGET retcomm_rbengine)
+        add_subdirectory("${_rbe_root}" "${CMAKE_BINARY_DIR}/rbengine" EXCLUDE_FROM_ALL)
+    endif()
 
+    set(_np "${GENESISRECOMP_NET_ENGINE_ROOT}/runner/netplay")
     target_sources(${target} PRIVATE
-        "${GENESISRECOMP_NET_ENGINE_ROOT}/runner/netplay/genesis_netplay.c"
-        "${GENESISRECOMP_NET_ENGINE_ROOT}/runner/netplay/genesis_launcher_netplay.c"
-        "${GENESISRECOMP_NET_ENGINE_ROOT}/runner/lobby/genesis_lobby_client.c"
-        "${GENESISRECOMP_NET_ENGINE_ROOT}/runner/lobby/ws/rnet_ws.c"
-        "${GENESISRECOMP_NET_ENGINE_ROOT}/runner/lobby/ws/rnet_sha1.c")
-    target_include_directories(${target} PRIVATE
-        "${GENESISRECOMP_NET_ENGINE_ROOT}/runner/netplay"
-        "${GENESISRECOMP_NET_ENGINE_ROOT}/runner/lobby"
-        "${GENESISRECOMP_NET_ENGINE_ROOT}/runner/lobby/ws")
-    target_link_libraries(${target} PRIVATE recomp_net)
-    target_compile_definitions(${target} PRIVATE
-        GENESIS_HAS_RECOMP_NET=1
-        GENESIS_HAS_LOBBY_CLIENT=1)
+        "${_np}/genesis_netplay.c"
+        "${_np}/genesis_netplay_rb.c"
+        "${_np}/genesis_netplay_identity.c")
+    target_include_directories(${target} PRIVATE "${_np}")
+    target_link_libraries(${target} PRIVATE recomp_net retcomm_rbengine)
+    target_compile_definitions(${target} PRIVATE GENESIS_HAS_RECOMP_NET=1)
+    if(RNET_ENABLE_ICE)
+        target_compile_definitions(${target} PRIVATE RNET_ENABLE_ICE=1)
+    endif()
+    # The lobby: recomp-ui's shared netplay backend (recomp_netplay_host),
+    # bound by runner/netplay/genesis_host_lobby.c. Needs the launcher.
+    if(COMMAND recomp_target_launcher_netplay)
+        recomp_target_launcher_netplay(${target})
+        target_sources(${target} PRIVATE "${_np}/genesis_host_lobby.c")
+        target_compile_definitions(${target} PRIVATE GENESIS_HAS_HOST_LOBBY=1)
+    else()
+        message(FATAL_ERROR
+            "genesisrecomp_enable_netplay(${target}): recomp-ui's "
+            "recomp_target_launcher_netplay() is not available. Include "
+            "recomp_ui.cmake (a recomp-ui with the shared netplay backend, "
+            "RetroPortingToolKit/recomp-ui b688ca7 or later) before enabling "
+            "netplay.")
+    endif()
     if(GEN_NET_PEER_VIEW)
         target_compile_definitions(${target} PRIVATE
             GENESIS_NETPLAY_PEER_VIEW=1)
@@ -87,6 +111,7 @@ function(genesisrecomp_enable_netplay target)
     if(WIN32)
         target_link_libraries(${target} PRIVATE ws2_32)
     endif()
+    # recomp-net's netsim (RNET_SIM_*) is compiled in; nothing to add.
 
     message(STATUS
         "Genesis netplay enabled for ${target} "

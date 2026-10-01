@@ -2122,6 +2122,26 @@ static void handle_t3_dump(int id, const char *json)
  * Command dispatch
  * ========================================================================= */
 
+/* Online (a netplay session owns execution), only these READ-ONLY queries
+ * run: observers query the always-on rings, they never drive the machine
+ * (recomp-ai-rules/NETPLAY.md section 6: forbid execution control while a
+ * frontend owns execution). Pause/continue/run_frames/rdb stepping, state
+ * load/save, memory writes, input injection and every game command are
+ * refused. */
+int (*g_cmd_server_online)(void);
+static int online_allowed(const char *cmd)
+{
+    static const char *const ok[] = {
+        "ping", "screenshot", "get_registers", "read_memory", "read_ram", "sonic_history",
+        "vblank_info", "frame_info", "frame_range", "addr_history", "read_vram", "read_cram",
+        "audio_stats", "frame_performance", "get_frame", "frame_timeseries", "z80_state",
+        "read_z80_ram", "fm_state", "psg_state", "vdp_state", "vdp_events", "read_vsram",
+        "dispatch_miss_info", "rdb_range", "rdb_dump", "rdb_count", "coverage_dump", "quit" };
+    for (unsigned i = 0; i < sizeof ok / sizeof ok[0]; i++)
+        if (!strcmp(cmd, ok[i])) return 1;
+    return 0;
+}
+
 static CmdResult dispatch_command(const char *json, uint32_t frame_num)
 {
     CmdResult cr = {0};
@@ -2130,6 +2150,10 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
 
     if (!json_get_str(json, "cmd", cmd, sizeof(cmd))) {
         send_err(id, "missing cmd");
+        return cr;
+    }
+    if (g_cmd_server_online && g_cmd_server_online() && !online_allowed(cmd)) {
+        send_err(id, "refused: a netplay session owns execution (read-only queries only)");
         return cr;
     }
 

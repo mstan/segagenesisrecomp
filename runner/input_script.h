@@ -43,6 +43,12 @@
  * not found or parse error. Calling with NULL disables scripting. */
 int  input_script_load(const char *path);
 
+/* 1 when the loaded script contains a directive that MUTATES the machine
+ * (WRITE_RAM*, SAVE_STATE, LOAD_STATE). Such a script is refused in a
+ * netplay session; an input-only script (WAIT/PLAYER/HOLD/RELEASE/PRESS,
+ * reads, SCREENSHOT, DUMP_*, EXIT) is just a local controller. */
+int  input_script_mutates_state(void);
+
 /* Advance the script by one wall frame. `ram_read8`/`ram_read16` are
  * supplied by the runner so the script can implement
  * ASSERT_RAM* / WAIT_RAM* without being coupled to glue.c. Returns

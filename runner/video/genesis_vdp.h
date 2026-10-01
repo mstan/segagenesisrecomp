@@ -103,6 +103,9 @@ void gvdp_reset(GVDP *v);
 /* Draw the complete SAT without per-scanline sprite/pixel dropout. Sprite
  * ordering, priority and deliberate X=0 masking remain intact. Default off. */
 void gvdp_set_unlimited_sprites(int enabled);
+/* Simulation, not presentation: it decides when sprite evaluation raises the
+ * status register's overflow flag. Part of the rollback machine section. */
+int  gvdp_unlimited_sprites(void);
 
 /* ---- 68K port interface ($C00000 data, $C00004 control) ------------------ */
 void     gvdp_write_data   (GVDP *v, uint16_t value);
@@ -128,6 +131,8 @@ uint16_t gvdp_peek_status(const GVDP *v);
  * (consumed right after the triggering port write) and the save states
  * snapshot GVDP as a raw struct image — a new field would break existing
  * save files. */
+uint32_t gvdp_rb_pending_stall(void);
+void     gvdp_rb_set_pending_stall(uint32_t v);
 uint32_t gvdp_consume_68k_stall(GVDP *v);
 
 /* ---- Always-on VDP event ring ---------------------------------------------

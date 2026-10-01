@@ -233,6 +233,11 @@ static void dma_run_68k_to_vdp(GVDP *v)
     }
 }
 
+/* Rollback (rb_state.c): the owed stall is state between a DMA and the
+ * 68K access that pays it, so a snapshot carries it. */
+uint32_t gvdp_rb_pending_stall(void) { return s_pending_68k_stall; }
+void gvdp_rb_set_pending_stall(uint32_t v) { s_pending_68k_stall = v; }
+
 uint32_t gvdp_consume_68k_stall(GVDP *v)
 {
     (void)v;
@@ -471,6 +476,7 @@ static uint8_t s_spr_hilite_op[GVDP_MAX_WIDTH]; /* operator: highlight        */
 /* Host presentation option, independent of serialized VDP hardware state. */
 static int s_unlimited_sprites;
 void gvdp_set_unlimited_sprites(int enabled) { s_unlimited_sprites=!!enabled; }
+int  gvdp_unlimited_sprites(void) { return s_unlimited_sprites; }
 static int s_ws_extra = 0;
 
 /* Clamp the requested extra to what the output buffer can hold for width `w`
