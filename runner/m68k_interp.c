@@ -303,6 +303,15 @@ static int eval_cond(int cc) {
 static void push32(uint32_t v) { g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], v); }
 static uint32_t pop32(void)    { uint32_t v = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4; return v; }
 
+/* Game-owned instruction hooks run at the same audited sites as in generated
+ * code, so a routine reached only through the floor keeps its game extension.
+ * Generated code returns from the guest function when a hook reports the
+ * routine handled; callers below treat that as an RTS at this PC. */
+static int interp_game_hook(uint32_t pc)
+{
+    return game_instruction_hook_site(pc) && genesis_game_instruction_hook(pc);
+}
+
 /* sign-extend a size-width value to 32 bits */
 static uint32_t sext(uint32_t v, M68KSize sz) {
     switch (sz) { case M68K_SIZE_B: return (uint32_t)(int32_t)(int8_t)v;
@@ -1291,6 +1300,7 @@ static void interp_account_cycles(const M68KInstr *ins) {
 M68kiStatus m68k_interp_step(void) {
     uint32_t pc = g_cpu.PC & 0xFFFFFFu;
     if (!pc_fetchable(pc)) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
+    if (interp_game_hook(pc)) { g_cpu.PC = pop32() & 0xFFFFFFu; return M68KI_OK; }
 
     M68KInstr ins;
     if (!m68k_decode(busview(), pc, &ins)) {
@@ -1371,6 +1381,16 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
     for (;;) {
         uint32_t pc = g_cpu.PC & 0xFFFFFFu;
         if (!pc_fetchable(pc)) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
+        if (interp_game_hook(pc)) {
+            /* Implicit RTS: at depth 0 the capsule's own return (peeked). */
+            if (depth == 0) {
+                if (out_exit_pc) *out_exit_pc = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;
+                return M68KI_OK;
+            }
+            g_cpu.PC = pop32() & 0xFFFFFFu;
+            depth--;
+            continue;
+        }
 
         M68KInstr ins;
         if (!m68k_decode(busview(), pc, &ins)) {
@@ -1434,6 +1454,13 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
     for (;;) {
         uint32_t pc = g_cpu.PC & 0xFFFFFFu;
         if (pc >= ROM_SIZE) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
+        if (interp_game_hook(pc)) {
+            /* Implicit RTS; at depth 0 it ends the handler body like RTE. */
+            if (depth == 0) return M68KI_OK;
+            g_cpu.PC = pop32() & 0xFFFFFFu;
+            depth--;
+            continue;
+        }
 
         M68KInstr ins;
         /* ROM-only handler body (guarded by the ROM_SIZE check above); busview()
@@ -1502,6 +1529,16 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
     for (;;) {
         uint32_t pc = g_cpu.PC & 0xFFFFFFu;
         if (!pc_fetchable(pc)) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
+        if (interp_game_hook(pc)) {
+            /* Implicit RTS: at depth 0 the capsule's own return (peeked). */
+            if (depth == 0) {
+                if (out_exit_pc) *out_exit_pc = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;
+                return M68KI_OK;
+            }
+            g_cpu.PC = pop32() & 0xFFFFFFu;
+            depth--;
+            continue;
+        }
 
         M68KInstr ins;
         if (!m68k_decode(busview(), pc, &ins)) {
