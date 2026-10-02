@@ -2682,13 +2682,13 @@ void cmd_server_shutdown(void)
 #ifdef _WIN32
     WSACleanup();
 #endif
-    /* Always leave a valid, current-session TOML evidence file next to the
+    /* Always leave a valid, build-stamped TOML evidence file next to the
      * executable, including an empty [functions].extra array when clean. */
     {
         int miss_count = genesis_write_dispatch_miss_evidence();
         if (miss_count > 0)
             fprintf(stderr,
-                    "[cmd] %d unique dispatch misses written to dispatch_misses.toml\n",
+                    "[cmd] %d unique dispatch misses (this build, all sessions) in dispatch_misses.toml\n",
                     miss_count);
     }
     fprintf(stderr, "[cmd] Shutdown\n");

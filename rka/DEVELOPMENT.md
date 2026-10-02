@@ -16,9 +16,10 @@ no-ops instead of running the object code.
 ### Authoritative baseline measurement
 
 At the time of this measurement the miss log was append-only, so stale entries
-could pollute triage. The current runner rewrites `dispatch_misses.toml` from
-the current session's true-miss set and keeps interior-label failures separate
-in `interior_label_misses.log`. A fresh 4000-frame headless turbo run on the
+could pollute triage. The current runner keeps `dispatch_misses.toml` per
+build (accumulated across that build's sessions, stamped with the build id,
+reset when the build changes) and keeps interior-label failures separate in
+`interior_label_misses.toml` (runner/runtime_evidence.h). A fresh 4000-frame headless turbo run on the
 934-function baseline yielded **7 distinct miss addresses over 11,745 fires**:
 
 | Miss addr | Producer / shape |
@@ -95,8 +96,9 @@ This work lives on `feat/discovery-heuristics` (branched from
 - `triage_misses.py` — capstone literal-oracle miss→producer triage.
 - `rka_discovery_attempt.patch` — the two-detector change (reverted from
   `function_finder.c`; kept here for re-application once proven FP-free).
-- `interior_label_misses.log` — raw miss log (untracked; append-mode, clear
-  before each measurement).
+- `interior_label_misses.toml` — interior-label miss evidence (untracked;
+  per build, accumulated across sessions; `--fresh-evidence` before a
+  measurement). `triage_misses.py` reads it.
 
 ## 2026-06-21 — runtime oracle (Step 1) + detector audit (Step 2)
 

@@ -30,6 +30,7 @@
 #include "audio.h"
 #include "cosim.h"
 #include "png_write.h"
+#include "runtime_evidence.h"
 
 /* =========================================================================
  * Path helper: resolve filenames relative to the exe directory.
@@ -2005,6 +2006,17 @@ int main(int argc, char *argv[])
     const char *pacing_cli = NULL;
     const char *interlace_display_cli = NULL;
 
+    /* --yield-log (or GENESIS_YIELD_LOG=1): write yield_log_native.log, one
+     * line per WaitForVBla park (frame, cycle accumulator, V-int counter,
+     * V-int routine). A developer timing trace — off by default so release
+     * builds do not leave a header-only file beside every user's exe (games
+     * whose WaitForVBla is not pattern-detected never write a line). */
+    int yield_log = 0;
+    {
+        const char *v = getenv("GENESIS_YIELD_LOG");
+        yield_log = v && v[0] && v[0] != '0';
+    }
+
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--max-frames") == 0 && i + 1 < argc) {
             max_frames = (uint32_t)atol(argv[++i]);
@@ -2064,6 +2076,14 @@ int main(int argc, char *argv[])
             input_script_path = argv[++i];
         } else if (strcmp(argv[i], "--exec-coverage-out") == 0 && i + 1 < argc) {
             exec_cov_out = argv[++i];
+        } else if (strcmp(argv[i], "--yield-log") == 0) {
+            yield_log = 1;
+        } else if (strcmp(argv[i], "--fresh-evidence") == 0) {
+            /* Start dispatch_misses.toml & co. empty for this launch (the
+             * previous contents move to <name>.prev.toml). Default: evidence
+             * accumulates across launches of the same build. Env equivalent:
+             * GENESIS_EVIDENCE_FRESH=1. */
+            runtime_evidence_request_fresh();
         } else if (strncmp(argv[i], "--audio-backend=", 16) == 0) {
             /* Vestigial: there is one audio path now. Accepted and ignored so
              * existing scripts and shortcuts keep working. */
@@ -2716,12 +2736,15 @@ int main(int argc, char *argv[])
     if (framelog_path)
         s_framelog_file = fopen(framelog_path, "w");
 
-    {
+    if (yield_log) {
         extern FILE *g_yield_log_file;
         const char *yp = exe_relative("yield_log_native.log");
         g_yield_log_file = fopen(yp, "w");
         if (g_yield_log_file) {
             fprintf(g_yield_log_file, "# frame cycle_acc v_vblank_count vbla_routine\n");
+            fprintf(stderr, "[yield-log] writing %s\n", yp);
+        } else {
+            fprintf(stderr, "[yield-log] cannot open %s\n", yp);
         }
     }
 

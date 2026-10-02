@@ -123,6 +123,15 @@ Empty file → done. Non-empty → resolve via the disasm-driven pipeline
 (NOT by hand-adding extra_func entries from the log alone — see
 PRINCIPLES.md #16).
 
+The file accumulates across every launch of the same build (exe + ROM) and
+says so in its header: `sessions`, `frames` and a per-entry `session N frame
+F` comment, so an empty list after "12 sessions, 480000 frames" means what it
+says. A rebuild starts a fresh file (the old one becomes
+`dispatch_misses.prev.toml`); `--fresh-evidence` / `GENESIS_EVIDENCE_FRESH=1`
+forces that for one launch. `floor_coverage.toml`,
+`interior_label_misses.toml` and `floor_unsafe.toml` follow the same
+lifecycle — see `runner/runtime_evidence.h`.
+
 ## The always-on ring philosophy
 
 See `DEBUG.md` for the full ring inventory. The short version:

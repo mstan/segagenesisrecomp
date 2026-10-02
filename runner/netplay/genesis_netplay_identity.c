@@ -4,6 +4,8 @@
  * "version identity must be exact and machine-checked").
  *
  *   build fingerprint   FNV-1a 32 of the running executable's bytes
+ *                       (genesis_build_exe_fingerprint, runtime_evidence.c —
+ *                       the same identity stamps the runtime evidence files)
  *   game_version        "<release>+<build fingerprint hex>": two builds of
  *                       "the same version" from different trees are different
  *                       lobby versions and never see each other's rooms
@@ -13,14 +15,11 @@
  * no crypto dependency (it is a fingerprint, not a security boundary).
  */
 #include "genesis_netplay_identity.h"
+#include "../runtime_evidence.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#if defined(_WIN32)
-#include <windows.h>
-#endif
 
 /* ---- SHA-256 ------------------------------------------------------------- */
 
@@ -91,27 +90,7 @@ void genesis_identity_hex(const uint8_t *bytes, size_t n, char *out)
 
 uint32_t genesis_identity_build_fp(void)
 {
-    static uint32_t cached;
-    char path[1024] = "";
-    if (cached) return cached;
-#if defined(_WIN32)
-    GetModuleFileNameA(NULL, path, sizeof path);
-#else
-    snprintf(path, sizeof path, "/proc/self/exe");
-#endif
-    FILE *f = fopen(path, "rb");
-    uint32_t h = 2166136261u;
-    if (f) {
-        unsigned char buf[1 << 16];
-        size_t n;
-        while ((n = fread(buf, 1, sizeof buf, f)) > 0)
-            for (size_t i = 0; i < n; i++) { h ^= buf[i]; h *= 16777619u; }
-        fclose(f);
-    } else {
-        fprintf(stderr, "genesis_netplay: cannot read the executable for its fingerprint\n");
-    }
-    cached = h ? h : 1u;
-    return cached;
+    return genesis_build_exe_fingerprint();
 }
 
 const char *genesis_identity_game_version(const char *release)
