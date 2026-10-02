@@ -176,6 +176,8 @@ That code never executes. The game skips entire subroutines.
 3. Regenerate (`GenesisRecomp.exe <rom> --game game.toml`)
 4. Rebuild and re-run
 5. Repeat until `dispatch_misses.toml` has an empty `functions.extra` array
+   (it accumulates across launches of one build; its header records how many
+   sessions and frames that empty list covers)
 
 This is not optional. This is not a "later" task.
 A game with dispatch misses is FUNDAMENTALLY BROKEN.
