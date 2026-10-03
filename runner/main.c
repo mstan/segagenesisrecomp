@@ -27,6 +27,7 @@
 
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
 #include "genesis_clocks.h"
+#include "frame_pacer.h"
 #include "audio.h"
 #include "cosim.h"
 #include "png_write.h"
@@ -2613,6 +2614,14 @@ int main(int argc, char *argv[])
     /* Texture scaling filter (settings.ini / launcher): nearest vs bilinear. */
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, g_app_config.linear_filter ? "1" : "0");
 
+#ifdef _WIN32
+    /* SDL's D3D9 copy presentation path produces uneven display intervals on
+     * high-refresh desktops. Prefer D3D11's flip path. Default priority keeps
+     * SDL_RENDER_DRIVER and existing hints authoritative; SDL falls back to
+     * another available driver if D3D11 cannot initialize. */
+    SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "direct3d11", SDL_HINT_DEFAULT);
+#endif
+
     /* PRESENTVSYNC aligns each present to the display's vblank, which kills
      * the scroll tearing visible without it (notably on macOS/Metal). The
      * manual frame pacer still bounds the rate, so on a 60/120 Hz display the
@@ -2629,11 +2638,12 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
         return 1;
     }
-    if (benchmark_frames) {
+    {
         SDL_RendererInfo ri;
         memset(&ri, 0, sizeof(ri));
         SDL_GetRendererInfo(renderer, &ri);
-        fprintf(stderr, "GENESISRECOMP_BENCHMARK_RENDERER name=%s vsync=%d\n",
+        fprintf(stderr, "%s name=%s vsync=%d\n",
+                benchmark_frames ? "GENESISRECOMP_BENCHMARK_RENDERER" : "[VIDEO] renderer",
                 ri.name ? ri.name : "(unknown)",
                 (ri.flags & SDL_RENDERER_PRESENTVSYNC) != 0);
     }
@@ -2989,6 +2999,9 @@ session_begin:;
     uint32_t frame_num = 0;
     int      mode_prev = -1;     /* --hash-on-mode: last Game_Mode seen (-1 = none yet) */
     uint32_t mode_seq  = 0;      /* --hash-on-mode: transition sequence counter */
+    const Uint64 perf_frequency = SDL_GetPerformanceFrequency();
+    FramePacer frame_pacer;
+    frame_pacer_init(&frame_pacer, perf_frequency, target_fps);
     Uint64 benchmark_start = benchmark_frames ? SDL_GetPerformanceCounter() : 0;
     double benchmark_cpu_start =
         benchmark_frames ? benchmark_process_cpu_seconds() : 0.0;
@@ -3621,6 +3634,23 @@ session_begin:;
         if (genesis_netplay_active() && !genesis_netplay_rollback_active())
             (void)genesis_netplay_poll_admit();
 #endif
+        /* Pace the completed frame immediately before presentation. Waiting
+         * after present only paces frame starts: variable simulation/upload
+         * time then moves each present and makes scrolling judder. The guest
+         * still advances exactly one NTSC tick per iteration. */
+        if (turbo) {
+            frame_pacer_reset(&frame_pacer);
+        } else {
+            Uint64 now = SDL_GetPerformanceCounter();
+            Uint64 deadline = frame_pacer_deadline(&frame_pacer, now);
+            if (now < deadline) {
+                Uint64 remaining_ms = (deadline - now) * 1000 / perf_frequency;
+                if (remaining_ms > 2)
+                    SDL_Delay((Uint32)(remaining_ms - 1));
+                while (SDL_GetPerformanceCounter() < deadline)
+                    ;
+            }
+        }
         SDL_RenderPresent(renderer);
 #if GENESIS_HAS_RECOMP_NET
         if (!genesis_netplay_active())
@@ -3644,32 +3674,6 @@ session_begin:;
             (void)genesis_netplay_poll_admit();
 #endif
 
-        /* NTSC frame cap.  the chip emulation runs cycles_per_frame
-         * computed for 59.94 Hz (matches real NTSC Genesis: 60/1.001).
-         * Pacing the runner at the same rate keeps audio sample generation
-         * in lockstep with SDL playback — no slow drift between game and
-         * audio. The hard cap in audio_flush handles per-frame spikes. */
-        if (!turbo) {
-            static Uint64 s_perf_freq = 0;
-            static Uint64 s_next_frame = 0;
-            if (!s_perf_freq) {
-                s_perf_freq = SDL_GetPerformanceFrequency();
-                s_next_frame = SDL_GetPerformanceCounter();
-            }
-            /* Target wall budget per frame, derived from --target-fps /
-             * debug.ini target_fps. Default = NTSC 59.94 Hz. */
-            s_next_frame += (Uint64)((double)s_perf_freq / target_fps);
-            Uint64 now = SDL_GetPerformanceCounter();
-            if (now < s_next_frame) {
-                Sint64 remaining_ms = (Sint64)(s_next_frame - now) * 1000 / (Sint64)s_perf_freq;
-                if (remaining_ms > 2)
-                    SDL_Delay((Uint32)(remaining_ms - 1));
-                while (SDL_GetPerformanceCounter() < s_next_frame)
-                    ;  /* spin-wait for precision */
-            } else {
-                s_next_frame = now;
-            }
-        }
     }
     fprintf(stderr, "[session] loop ended: running=%d frame=%u\n", running, (unsigned)frame_num);
     {

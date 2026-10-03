@@ -31,6 +31,16 @@ target_include_directories(local_states_test PRIVATE
 target_link_libraries(local_states_test PRIVATE retcomm_rbengine)
 add_test(NAME local_states COMMAND local_states_test "${CMAKE_CURRENT_BINARY_DIR}/")
 
+add_executable(frame_pacer_test runtime/frame_pacer_test.c)
+target_include_directories(frame_pacer_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+if(MSVC)
+    target_compile_options(frame_pacer_test PRIVATE /UNDEBUG)
+else()
+    target_compile_options(frame_pacer_test PRIVATE -UNDEBUG)
+    target_link_libraries(frame_pacer_test PRIVATE m)
+endif()
+add_test(NAME frame_pacer COMMAND frame_pacer_test)
+
 find_package(Python3 QUIET COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
     add_test(NAME generated_input_paths COMMAND "${Python3_EXECUTABLE}"
