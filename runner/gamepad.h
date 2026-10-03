@@ -50,4 +50,14 @@ int     gamepad_turbo_held(void);
 int     gamepad_consume_quicksave(void);
 int     gamepad_consume_quickload(void);
 
+/* Physical P1 buttons for the modal save/rewind overlays. */
+enum {
+    GP_OVERLAY_BACK = 1u << 0, GP_OVERLAY_R3 = 1u << 1,
+    GP_OVERLAY_RB = 1u << 2, GP_OVERLAY_UP = 1u << 3,
+    GP_OVERLAY_DOWN = 1u << 4, GP_OVERLAY_LEFT = 1u << 5,
+    GP_OVERLAY_RIGHT = 1u << 6, GP_OVERLAY_A = 1u << 7,
+    GP_OVERLAY_B = 1u << 8, GP_OVERLAY_X = 1u << 9
+};
+uint32_t gamepad_overlay_mask(void);
+
 #endif /* RUNNER_GAMEPAD_H */
