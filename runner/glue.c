@@ -41,6 +41,7 @@
 #include "frame_record.h"
 #include "game_layout.h"
 #include "game_spec.h"
+#include "runtime_evidence.h"
 
 int genesis_game_instruction_hook(uint32_t pc)
 {
@@ -147,34 +148,6 @@ uint32_t  g_miss_last_addr    = 0;
 uint64_t  g_miss_last_frame   = 0;
 uint32_t  g_miss_unique_addrs[MAX_MISS_UNIQUE];
 int       g_miss_unique_count  = 0;
-
-/* Write runtime-discovered function leads as a valid GameConfig discovery
- * file. The metadata is ignored by the recompiler, while [functions].extra
- * can be merged directly after every address is checked against disassembly. */
-static int write_function_evidence_file(const char *filename,
-                                        const char *evidence_kind,
-                                        const uint32_t *addresses,
-                                        int count)
-{
-    extern const char *exe_relative(const char *);
-    FILE *f = fopen(exe_relative(filename), "w");
-    if (!f) return 0;
-
-    fprintf(f,
-            "# Runtime evidence only. Validate every address against disassembly "
-            "before adding this file to game.discovery_files.\n"
-            "format_version = 1\n"
-            "evidence_kind = \"%s\"\n\n"
-            "[functions]\n"
-            "extra = [\n",
-            evidence_kind);
-    for (int i = 0; i < count; i++)
-        fprintf(f, "  0x%06X%s\n", addresses[i] & 0xFFFFFFu,
-                i + 1 < count ? "," : "");
-    fprintf(f, "]\n");
-    fclose(f);
-    return count;
-}
 
 /* g_rte_pending via pointer indirection (see genesis_runtime.h).
  * During VBlank service, we redirect to s_rte_dummy so RTE propagation
@@ -1235,6 +1208,7 @@ void glue_service_vblank(void)
 
     glue_log_frame_state(g_frame_count);
     g_frame_count++;
+    runtime_evidence_tick();   /* frame counter; periodic, rate-bounded flush */
 }
 
 #if SONIC_REVERSE_DEBUG
@@ -1276,12 +1250,18 @@ void glue_resume_from_break(void)
 
 void glue_init(const cc_u8l *rom_bytes, cc_u32l rom_byte_len)
 {
-    /* Start each run with valid, empty evidence files so a crash or a clean
-     * run cannot leave stale candidates from an earlier process. */
-    write_function_evidence_file("dispatch_misses.toml", "dispatch_miss",
-                                 NULL, 0);
-    write_function_evidence_file("floor_coverage.toml", "tier3_floor",
-                                 NULL, 0);
+    /* Runtime evidence (dispatch misses, floor coverage, interior-label
+     * misses, floor-declined misses) accumulates across launches of this exact
+     * build: load it, count this session, and rewrite the stamped headers. A
+     * different build's evidence is rotated to <name>.prev.toml. See
+     * runtime_evidence.h. */
+    runtime_evidence_init(g_game_spec.short_name, g_game_spec.display_name,
+                          (const uint8_t *)rom_bytes, (size_t)rom_byte_len);
+    /* interp_fallbacks.log was the append-mode predecessor of
+     * dispatch_misses.toml (one "extra_func 0x..." line per true miss, never
+     * reset, no build stamp). Nothing has written it since 49afcfa; its
+     * content is a subset of the persistent dispatch-miss evidence, so a
+     * leftover copy from an older runner is only misleading. */
     {
         extern const char *exe_relative(const char *);
         remove(exe_relative("interp_fallbacks.log"));
@@ -1445,6 +1425,7 @@ void glue_wait_vblank_done(void)
 
 void glue_shutdown(void)
 {
+    runtime_evidence_flush();   /* final session counters (also via atexit) */
     if (s_game_fiber) {
         fiber_destroy(s_game_fiber);
         s_game_fiber = NULL;
@@ -1936,30 +1917,29 @@ static int s_in_floor = 0;
 
 /* ── Coverage manifest ──────────────────────────────────────────────────────
  * Records every in-ROM address the floor executed (the missed entry + the
- * JSR/BSR/JMP subtree it traversed) to floor_coverage.toml, deduplicated for the
- * session. These are LEADS to grow static coverage: validate each against the
+ * JSR/BSR/JMP subtree it traversed) to floor_coverage.toml, deduplicated across
+ * every session of this build (runtime_evidence.c). These are LEADS to grow
+ * static coverage: validate each against the
  * disasm (PRINCIPLES.md #16), then fold confirmed entries into game.toml
  * [functions].extra / the gen_disasm seed pipeline so the recompiler discovers
  * them and they become Tier-1 native. (Interior-label misses are deliberately
- * NOT here — they live in interior_label_misses.log and need a codegen fix, not
+ * NOT here — they live in interior_label_misses.toml and need a codegen fix, not
  * a seed.) The subtree matters because the interpreter runs callees inline, so
  * an undiscovered callee never logs its own dispatch miss — this is the only
  * place it surfaces. */
-#define FLOOR_COV_MAX 8192
-static uint32_t s_floor_cov[FLOOR_COV_MAX];
-static int      s_floor_cov_count = 0;
-static void floor_record_coverage(uint32_t addr)
+static void floor_record_coverage(uint32_t addr, uint32_t floor_entry)
 {
     addr &= 0xFFFFFFu;
     uint32_t rl = g_game_spec.expected_rom_size
                       ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
     if (addr >= rl) return;
-    for (int i = 0; i < s_floor_cov_count; i++) if (s_floor_cov[i] == addr) return;
-    if (s_floor_cov_count >= FLOOR_COV_MAX) return;
-    s_floor_cov[s_floor_cov_count++] = addr;
-
-    write_function_evidence_file("floor_coverage.toml", "tier3_floor",
-                                 s_floor_cov, s_floor_cov_count);
+    /* The floor re-runs recurring misses every frame: keep the known-address
+     * path to one hash probe. */
+    if (runtime_evidence_has(RT_EVIDENCE_FLOOR_COVERAGE, addr)) return;
+    char note[48] = "";
+    if (floor_entry != addr)
+        snprintf(note, sizeof note, "floor_entry $%06X", floor_entry & 0xFFFFFFu);
+    runtime_evidence_add(RT_EVIDENCE_FLOOR_COVERAGE, addr, g_frame_count, note);
 }
 
 /* Halt blacklist: a missed address the floor could not run (its first/early
@@ -1999,17 +1979,17 @@ static void floor_unsafe_record(uint32_t miss_addr, uint32_t run_at,
             miss_addr, run_at, why, exit_pc, expected_ret,
             g_cpu.A[7] & 0xFFFFFFu, g_frame_count);
 
-    extern const char *exe_relative(const char *);
-    FILE *f = fopen(exe_relative("floor_unsafe.log"), "a");
-    if (!f) return;
-    fprintf(f,
-            "miss=0x%06X run_at=0x%06X exit_pc=0x%06X expected_ret=0x%06X "
-            "A7=0x%06X D0=0x%08X D1=0x%08X A0=0x%08X A1=0x%08X SR=0x%04X "
-            "frame=%" PRIu64 " why=\"%s\"\n",
-            miss_addr, run_at, exit_pc, expected_ret, g_cpu.A[7] & 0xFFFFFFu,
-            g_cpu.D[0], g_cpu.D[1], g_cpu.A[0], g_cpu.A[1], g_cpu.SR,
-            g_frame_count, why ? why : "");
-    fclose(f);
+    /* Persistent, build-stamped, deduplicated by miss address (the address
+     * is blacklisted for the rest of the session anyway). */
+    char note[200];
+    snprintf(note, sizeof note,
+             "run_at $%06X exit_pc $%06X expected_ret $%06X A7 $%06X "
+             "D0 $%08X D1 $%08X A0 $%08X A1 $%08X SR $%04X: %s",
+             run_at, exit_pc, expected_ret, g_cpu.A[7] & 0xFFFFFFu,
+             g_cpu.D[0], g_cpu.D[1], g_cpu.A[0], g_cpu.A[1], g_cpu.SR,
+             why ? why : "");
+    if (runtime_evidence_add(RT_EVIDENCE_FLOOR_UNSAFE, miss_addr, g_frame_count, note))
+        runtime_evidence_sync(RT_EVIDENCE_FLOOR_UNSAFE);
 }
 /* Floor enable switch (GENESIS_FLOOR=1/on/yes). DEFAULT OFF: opt-in.
  *
@@ -2105,9 +2085,10 @@ void genesis_log_dispatch_miss(uint32_t addr)
                 if (plausible && exit_pc == expected_ret) {
                     /* Clean balanced return to the native continuation. Manifest
                      * the entry + its call/jump subtree as real code leads. */
-                    floor_record_coverage(addr);
+                    floor_record_coverage(addr, addr);
                     for (int i = 0; i < g_m68ki_discover_count; i++)
-                        floor_record_coverage(g_m68ki_discover[i]);
+                        floor_record_coverage(g_m68ki_discover[i], addr);
+                    runtime_evidence_sync(RT_EVIDENCE_FLOOR_COVERAGE);
                     return;  /* handled; native caller performs the single A7 pop */
                 }
                 floor_unsafe_record(addr, run_at, exit_pc, expected_ret,
@@ -2156,12 +2137,14 @@ void genesis_log_dispatch_miss(uint32_t addr)
                 "should emit an in-function switch, not call_by_address.\n",
                 addr, g_rdb_current_func, g_frame_count);
 
-        extern const char *exe_relative(const char *);
-        FILE *mf = fopen(exe_relative("interior_label_misses.log"), "a");
-        if (mf) {
-            fprintf(mf, "addr=0x%06X in_func=0x%06X frame=%" PRIu64 "\n",
-                    addr, g_rdb_current_func, g_frame_count);
-            fclose(mf);
+        {
+            char note[64] = "";
+            if (g_rdb_current_func)
+                snprintf(note, sizeof note, "in_func $%06X",
+                         g_rdb_current_func & 0xFFFFFFu);
+            if (runtime_evidence_add(RT_EVIDENCE_INTERIOR_LABEL, addr,
+                                     g_frame_count, note))
+                runtime_evidence_sync(RT_EVIDENCE_INTERIOR_LABEL);
         }
         return;
     }
@@ -2302,20 +2285,34 @@ static uint32_t s_interp_seen[MAX_INTERP_SEEN];
 static int      s_interp_seen_count = 0;
 int             g_interp_total_calls = 0;
 
-/* Called from genesis_log_dispatch_miss — these are REAL misses */
+/* Called from genesis_log_dispatch_miss — these are REAL misses.
+ * s_interp_seen is THIS session's set (the [INTERP] exit summary counts it);
+ * dispatch_misses.toml holds the set across every session of this build. */
 static void log_true_miss(uint32_t target_pc)
 {
     for (int i = 0; i < s_interp_seen_count; i++)
         if (s_interp_seen[i] == target_pc) return;
     if (s_interp_seen_count < MAX_INTERP_SEEN)
         s_interp_seen[s_interp_seen_count++] = target_pc;
-    genesis_write_dispatch_miss_evidence();
+
+    /* Context for triage: the longword on top of the stack is the return
+     * address for a JSR-originated miss (the call site is just before it);
+     * for a JMP-tail miss it is the enclosing caller's return. The
+     * recompiled-function tag exists only in reverse-debug builds. */
+    char note[64];
+    int len = snprintf(note, sizeof note, "sp_ret $%06X",
+                       glue_peek32(g_cpu.A[7]) & 0xFFFFFFu);
+    if (g_rdb_current_func && len > 0 && (size_t)len < sizeof note)
+        snprintf(note + len, sizeof note - (size_t)len, " in_func $%06X",
+                 g_rdb_current_func & 0xFFFFFFu);
+    if (runtime_evidence_add(RT_EVIDENCE_DISPATCH_MISS, target_pc, g_frame_count, note))
+        runtime_evidence_sync(RT_EVIDENCE_DISPATCH_MISS);
 }
 
 int genesis_write_dispatch_miss_evidence(void)
 {
-    return write_function_evidence_file("dispatch_misses.toml", "dispatch_miss",
-                                        s_interp_seen, s_interp_seen_count);
+    runtime_evidence_flush();
+    return runtime_evidence_count(RT_EVIDENCE_DISPATCH_MISS);
 }
 
 int glue_interp_seen_count(void) { return s_interp_seen_count; }

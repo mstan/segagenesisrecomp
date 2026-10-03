@@ -106,8 +106,9 @@ int recomp_dispatch_ram_stub(uint32_t addr);
 
 /* Logging for dispatch misses */
 void genesis_log_dispatch_miss(uint32_t addr);
-/* Rewrite dispatch_misses.toml from the current session's true-miss set.
- * Returns the number of evidence addresses written. */
+/* Rewrite the runtime evidence files (dispatch_misses.toml & co.) with the
+ * current counters. Returns the number of dispatch-miss addresses recorded
+ * for this build across all sessions (runner/runtime_evidence.h). */
 int genesis_write_dispatch_miss_evidence(void);
 
 /* JMP table interpreter fallback — runs interpreter from target_pc until RTS */

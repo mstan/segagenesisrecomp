@@ -22,12 +22,13 @@ funcset = set(funcs)
 # distinct miss addresses
 misses = []
 seen = set()
-for l in open('interior_label_misses.log'):
-    l=l.strip()
-    if not l.startswith('addr='): continue
-    a = int(l.split()[0].split('=')[1],16)
-    if a not in seen:
-        seen.add(a); misses.append(a)
+# interior_label_misses.toml: the runner's build-stamped, cross-session
+# evidence file ([interior_labels].addresses; runner/runtime_evidence.h).
+import tomllib
+with open('interior_label_misses.toml', 'rb') as fh:
+    for a in tomllib.load(fh).get('interior_labels', {}).get('addresses', []):
+        if a not in seen:
+            seen.add(a); misses.append(a)
 
 import capstone
 md = capstone.Cs(capstone.CS_ARCH_M68K, capstone.CS_MODE_BIG_ENDIAN | capstone.CS_MODE_M68K_000)

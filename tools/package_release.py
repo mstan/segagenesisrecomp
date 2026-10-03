@@ -27,6 +27,8 @@ FORBIDDEN = [
     "*.bin", "*.gen", "*.smd", "*.md5", "*.sha256",          # ROM images / hashes
     "ramdump*", "*_save_*.bin", "savestate*", "*.srm",       # dumps / saves
     "*.log", "*.map", "*.obj", "*.pdb", "*.ilk", "*.exp", "*.lib",  # build junk
+    "dispatch_misses*.toml", "floor_coverage*.toml",                # runtime evidence
+    "interior_label_misses*.toml", "floor_unsafe*.toml", "*.toml.tmp",
 ]
 
 

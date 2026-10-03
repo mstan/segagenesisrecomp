@@ -30,6 +30,8 @@
 #include "audio.h"
 #include "cosim.h"
 #include "png_write.h"
+#include "runtime_evidence.h"
+#include "local_states.h"
 
 /* =========================================================================
  * Path helper: resolve filenames relative to the exe directory.
@@ -1113,7 +1115,15 @@ int runner_load_state_file(const char *path)
     if (reason) { fprintf(stderr,"[LOAD] unavailable: %s\n",reason); return 0; }
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
-    if (g_game_spec.state_size) return host_state_load(resolved);
+    if (g_game_spec.state_size) {
+        int ok = host_state_load(resolved);
+        if (ok) {
+            genesis_local_states_clear();
+            if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
+            audio_discard_playback();
+        }
+        return ok;
+    }
     FILE *sf = fopen(resolved, "rb");
     if (!sf) {
         fprintf(stderr, "[LOAD] empty/missing %s\n", resolved);
@@ -1160,6 +1170,11 @@ int runner_load_state_file(const char *path)
         fprintf(stderr, "[LOAD] loaded %s\n", resolved);
     else
         fprintf(stderr, "[LOAD] failed/truncated %s\n", resolved);
+    if (ok) {
+        genesis_local_states_clear();
+        if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
+        audio_discard_playback();
+    }
     return ok;
 }
 
@@ -1819,6 +1834,15 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         ls.audio_freq       = 48000;   /* engine device rate (audio.c want.freq) */
         ls.volume           = g_app_config.volume;
         ls.skip_launcher    = g_app_config.skip_launcher;
+#ifdef RECOMP_LAUNCHER_HAS_REWIND_ENABLED
+        ls.rewind_enabled   = g_app_config.rewind_enabled;
+#endif
+#ifdef RECOMP_LAUNCHER_HAS_REWIND_DEPTH
+        ls.rewind_depth     = g_app_config.rewind_depth;
+#endif
+#ifdef RECOMP_LAUNCHER_HAS_REWIND_INTERVAL
+        ls.rewind_interval  = g_app_config.rewind_interval;
+#endif
         for (int p = 0; p < INPUT_MAX_PLAYERS; p++) {
             int dev = g_input_map.p[p].device;
             ls.player_src[p] = (dev == INPUT_DEV_NONE)    ? 0
@@ -1843,6 +1867,9 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         gi.rom_noun             = "ROM";
         gi.pad_mode_supported   = 1;   /* 3-Button / 6-Button selector */
         gi.pad_mode_selectable  = 1;
+#ifdef RECOMP_LAUNCHER_HAS_REWIND_DEPTH
+        gi.has_rewind_depth     = 1;
+#endif
     #if GENESIS_HAS_RECOMP_NET
         gi.netplay_supported    = 1;
         gi.netplay              = genesis_host_lobby_callbacks();
@@ -1911,6 +1938,15 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
             g_app_config.widescreen_cells = ls.widescreen_cells;
             g_app_config.volume           = ls.volume;
             g_app_config.skip_launcher    = ls.skip_launcher;
+#ifdef RECOMP_LAUNCHER_HAS_REWIND_ENABLED
+            g_app_config.rewind_enabled   = ls.rewind_enabled != 0;
+#endif
+#ifdef RECOMP_LAUNCHER_HAS_REWIND_DEPTH
+            g_app_config.rewind_depth     = ls.rewind_depth;
+#endif
+#ifdef RECOMP_LAUNCHER_HAS_REWIND_INTERVAL
+            g_app_config.rewind_interval  = ls.rewind_interval;
+#endif
             for (int p = 0; p < gi.num_players; p++) {
                 int src = ls.player_src[p];
                 g_input_map.p[p].device       = (src == 1) ? INPUT_DEV_KEYBOARD
@@ -1930,6 +1966,108 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
 /* =========================================================================
  * main
  * ========================================================================= */
+
+/* The guest is frozen while browsing a save or picking a rewind snapshot.
+ * Present the last game texture behind the software-drawn panel. */
+static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
+                               int *running, int turbo)
+{
+    SDL_Texture *panel = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+                                           SDL_TEXTUREACCESS_STREAMING, 640, 448);
+    if (!panel) { genesis_local_states_cancel(); return; }
+    SDL_SetTextureBlendMode(panel, SDL_BLENDMODE_BLEND);
+    audio_set_playback_enabled(0);
+    uint32_t prev_pad = gamepad_overlay_mask();
+    uint32_t repeat_dir = 0, repeat_at = 0;
+    while (*running && genesis_local_states_is_open()) {
+        SDL_Event ev;
+        if (SDL_WaitEventTimeout(&ev, 16)) {
+            do {
+                gamepad_handle_event(&ev);
+                if (ev.type == SDL_QUIT) { *running = 0; break; }
+                if (ev.type != SDL_KEYDOWN) continue;
+                int mode = genesis_local_states_is_open();
+                SDL_Keycode key = ev.key.keysym.sym;
+                if (!ev.key.repeat && (key == SDLK_ESCAPE || key == SDLK_F7 || key == SDLK_F8))
+                    genesis_local_states_cancel();
+                else if (key == SDLK_LEFT) genesis_local_states_move(-1);
+                else if (key == SDLK_RIGHT) genesis_local_states_move(1);
+                else if (mode == 2 && key == SDLK_UP) genesis_local_states_move(-3);
+                else if (mode == 2 && key == SDLK_DOWN) genesis_local_states_move(3);
+                else if (!ev.key.repeat && (key == SDLK_RETURN || key == SDLK_SPACE)) {
+                    if (genesis_local_states_accept() && mode == 1) {
+                        if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
+                        audio_discard_playback();
+                    }
+                } else if (!ev.key.repeat && mode == 2 && key == SDLK_s)
+                    genesis_local_states_save();
+            } while (*running && SDL_PollEvent(&ev));
+        }
+        if (!*running || !genesis_local_states_is_open()) break;
+        uint32_t pad = gamepad_overlay_mask();
+        uint32_t press = pad & ~prev_pad;
+        prev_pad = pad;
+        int mode = genesis_local_states_is_open();
+        if (press & GP_OVERLAY_B) genesis_local_states_cancel();
+        else if (press & GP_OVERLAY_A) {
+            if (genesis_local_states_accept() && mode == 1) {
+                if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
+                audio_discard_playback();
+            }
+        } else if (mode == 2 && (press & GP_OVERLAY_X)) genesis_local_states_save();
+        else if (press & GP_OVERLAY_LEFT) genesis_local_states_move(-1);
+        else if (press & GP_OVERLAY_RIGHT) genesis_local_states_move(1);
+        else if (mode == 2 && (press & GP_OVERLAY_UP)) genesis_local_states_move(-3);
+        else if (mode == 2 && (press & GP_OVERLAY_DOWN)) genesis_local_states_move(3);
+        {
+            uint32_t dir = pad & (GP_OVERLAY_LEFT | GP_OVERLAY_RIGHT |
+                                  GP_OVERLAY_UP | GP_OVERLAY_DOWN);
+            uint32_t now = SDL_GetTicks();
+            if (dir != repeat_dir) {
+                repeat_dir = dir;
+                repeat_at = now + 350;
+            } else if (dir && (int32_t)(now - repeat_at) >= 0) {
+                if (dir & GP_OVERLAY_LEFT) genesis_local_states_move(-1);
+                else if (dir & GP_OVERLAY_RIGHT) genesis_local_states_move(1);
+                else if (mode == 2 && (dir & GP_OVERLAY_UP)) genesis_local_states_move(-3);
+                else if (mode == 2 && (dir & GP_OVERLAY_DOWN)) genesis_local_states_move(3);
+                repeat_at = now + 90;
+            }
+        }
+        const uint32_t *pixels;
+        int pw, ph;
+        if (!genesis_local_states_overlay(&pixels, &pw, &ph)) break;
+        SDL_UpdateTexture(panel, NULL, pixels, pw * (int)sizeof(uint32_t));
+        SDL_Rect src = {0, 0, s_screen_width, s_screen_height};
+        int dw = s_screen_height * pw / ph;
+        if (dw > s_screen_width) dw = s_screen_width;
+        SDL_Rect dst = {(s_screen_width - dw) / 2, 0, dw, s_screen_height};
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, game, &src, NULL);
+        SDL_RenderCopy(renderer, panel, NULL, &dst);
+        SDL_RenderPresent(renderer);
+    }
+    SDL_DestroyTexture(panel);
+    (void)gamepad_consume_quicksave();
+    (void)gamepad_consume_quickload();
+    /* Do not forward a held accept/cancel button into the resumed guest. */
+    while (*running) {
+        SDL_PumpEvents();
+        const Uint8 *keys = SDL_GetKeyboardState(NULL);
+        int key_held = keys[SDL_SCANCODE_RETURN] || keys[SDL_SCANCODE_SPACE] ||
+                       keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_F7] ||
+                       keys[SDL_SCANCODE_F8];
+        int pad_held = gamepad_overlay_mask() &
+            (GP_OVERLAY_A | GP_OVERLAY_B | GP_OVERLAY_BACK | GP_OVERLAY_RB | GP_OVERLAY_R3);
+        if (!key_held && !pad_held) break;
+        SDL_Event ev;
+        if (SDL_WaitEventTimeout(&ev, 16)) {
+            gamepad_handle_event(&ev);
+            if (ev.type == SDL_QUIT) *running = 0;
+        }
+    }
+    audio_set_playback_enabled(!turbo);
+}
 
 int main(int argc, char *argv[])
 {
@@ -2005,6 +2143,17 @@ int main(int argc, char *argv[])
     const char *pacing_cli = NULL;
     const char *interlace_display_cli = NULL;
 
+    /* --yield-log (or GENESIS_YIELD_LOG=1): write yield_log_native.log, one
+     * line per WaitForVBla park (frame, cycle accumulator, V-int counter,
+     * V-int routine). A developer timing trace — off by default so release
+     * builds do not leave a header-only file beside every user's exe (games
+     * whose WaitForVBla is not pattern-detected never write a line). */
+    int yield_log = 0;
+    {
+        const char *v = getenv("GENESIS_YIELD_LOG");
+        yield_log = v && v[0] && v[0] != '0';
+    }
+
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--max-frames") == 0 && i + 1 < argc) {
             max_frames = (uint32_t)atol(argv[++i]);
@@ -2064,6 +2213,14 @@ int main(int argc, char *argv[])
             input_script_path = argv[++i];
         } else if (strcmp(argv[i], "--exec-coverage-out") == 0 && i + 1 < argc) {
             exec_cov_out = argv[++i];
+        } else if (strcmp(argv[i], "--yield-log") == 0) {
+            yield_log = 1;
+        } else if (strcmp(argv[i], "--fresh-evidence") == 0) {
+            /* Start dispatch_misses.toml & co. empty for this launch (the
+             * previous contents move to <name>.prev.toml). Default: evidence
+             * accumulates across launches of the same build. Env equivalent:
+             * GENESIS_EVIDENCE_FRESH=1. */
+            runtime_evidence_request_fresh();
         } else if (strncmp(argv[i], "--audio-backend=", 16) == 0) {
             /* Vestigial: there is one audio path now. Accepted and ignored so
              * existing scripts and shortcuts keep working. */
@@ -2532,7 +2689,8 @@ int main(int argc, char *argv[])
             cfg.extra_items=s_video_mod_items;
             cfg.extra_item_count=sizeof s_video_mod_items/sizeof s_video_mod_items[0];
         }
-        if (g_game_spec.state_size) {
+        if (!g_game_spec.state_unavailable_reason ||
+            !g_game_spec.state_unavailable_reason()) {
             static RecompRuntimeUiItem items[5]; unsigned count=0;
             if (g_game_spec.video) {
                 memcpy(items,s_video_mod_items,sizeof s_video_mod_items); count=2;
@@ -2716,12 +2874,15 @@ int main(int argc, char *argv[])
     if (framelog_path)
         s_framelog_file = fopen(framelog_path, "w");
 
-    {
+    if (yield_log) {
         extern FILE *g_yield_log_file;
         const char *yp = exe_relative("yield_log_native.log");
         g_yield_log_file = fopen(yp, "w");
         if (g_yield_log_file) {
             fprintf(g_yield_log_file, "# frame cycle_acc v_vblank_count vbla_routine\n");
+            fprintf(stderr, "[yield-log] writing %s\n", yp);
+        } else {
+            fprintf(stderr, "[yield-log] cannot open %s\n", yp);
         }
     }
 
@@ -2820,6 +2981,10 @@ session_begin:;
 #endif
     int running = 1;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
+    uint32_t prev_overlay_pad = 0;
+    genesis_local_states_configure(s_exe_dir, g_app_config.rewind_enabled,
+                                   g_app_config.rewind_depth,
+                                   g_app_config.rewind_interval);
     audio_set_playback_enabled(!turbo);
     uint32_t frame_num = 0;
     int      mode_prev = -1;     /* --hash-on-mode: last Game_Mode seen (-1 = none yet) */
@@ -2877,6 +3042,7 @@ session_begin:;
             continue;   /* re-check at loop top */
         }
 
+        int overlay_request = 0;
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
             gamepad_handle_event(&ev);
@@ -2891,6 +3057,14 @@ session_begin:;
 #endif
             if (ev.type == SDL_QUIT) { fprintf(stderr, "[session] SDL_QUIT received\n"); running = 0; }
             if (ev.type == SDL_KEYDOWN) {
+                if (!ev.key.repeat && !(ev.key.keysym.mod & (KMOD_SHIFT | KMOD_CTRL)) &&
+                    ev.key.keysym.sym == SDLK_F7) {
+                    overlay_request = 2; continue;
+                }
+                if (!ev.key.repeat && !(ev.key.keysym.mod & (KMOD_SHIFT | KMOD_CTRL)) &&
+                    ev.key.keysym.sym == SDLK_F8) {
+                    overlay_request = 1; continue;
+                }
 #if !RECOMP_LAUNCHER
                 if (ev.key.keysym.sym == SDLK_ESCAPE) running = 0;
 #endif
@@ -2935,7 +3109,10 @@ session_begin:;
                             fprintf(stderr, "genesis_netplay: save/load disabled during netplay\n");
                         } else
 #endif
-                        if (is_save) runner_save_state_file(slot_name);
+                        if (is_save) {
+                            if (runner_save_state_file(slot_name))
+                                genesis_local_states_slot_saved(slot);
+                        }
                         else runner_load_state_file(slot_name);
                     }
                 }
@@ -2946,6 +3123,31 @@ session_begin:;
                     /* chip_ring = shared stream (both builds); snd_ring = own only. */
                     { extern void chip_trace_dump(const char *path); chip_trace_dump("chip_ring.txt"); }
                     { extern void snd_trace_dump(const char *path); snd_trace_dump("snd_ring.txt"); }
+                }
+            }
+        }
+
+        {
+            uint32_t pad = gamepad_overlay_mask();
+            uint32_t menu = GP_OVERLAY_BACK | GP_OVERLAY_RB;
+            uint32_t rewind = GP_OVERLAY_BACK | GP_OVERLAY_R3;
+            if ((pad & rewind) == rewind && (prev_overlay_pad & rewind) != rewind)
+                overlay_request = 1;
+            else if ((pad & menu) == menu && (prev_overlay_pad & menu) != menu)
+                overlay_request = 2;
+            prev_overlay_pad = pad;
+        }
+        if (overlay_request) {
+#if GENESIS_HAS_RECOMP_NET
+            if (!genesis_netplay_active())
+#endif
+            {
+                int opened = overlay_request == 1 ? genesis_local_states_open_rewind()
+                                                  : genesis_local_states_open_menu();
+                if (opened) {
+                    local_states_modal(renderer, texture, &running, turbo);
+                    prev_overlay_pad = gamepad_overlay_mask();
+                    continue;
                 }
             }
         }
@@ -2965,7 +3167,10 @@ session_begin:;
                     fprintf(stderr, "genesis_netplay: quicksave/load disabled during netplay\n");
                 else
 #endif
-                if (save_slot) runner_save_state_file(slot_name);
+                if (save_slot) {
+                    if (runner_save_state_file(slot_name))
+                        genesis_local_states_slot_saved(slot);
+                }
                 else runner_load_state_file(slot_name);
             }
         }
@@ -3417,6 +3622,14 @@ session_begin:;
             (void)genesis_netplay_poll_admit();
 #endif
         SDL_RenderPresent(renderer);
+#if GENESIS_HAS_RECOMP_NET
+        if (!genesis_netplay_active())
+#endif
+#if RECOMP_LAUNCHER
+        if (!recomp_runtime_ui_is_open(s_runtime_ui.ui))
+#endif
+            genesis_local_states_note_frame(present_src, s_frame_stride,
+                                            s_screen_width, s_screen_height);
         }
         FRAME_PHASE(6);
 #if GEN_ENABLE_TRACE
@@ -3607,6 +3820,7 @@ session_begin:;
     if (s_framelog_file) fclose(s_framelog_file);
     { extern int audio_wav_active(void); extern void audio_wav_stop(void);
       if (audio_wav_active()) audio_wav_stop(); }
+    genesis_local_states_shutdown();
     glue_shutdown();
     audio_close();
     SDL_DestroyTexture(peer_view_texture);

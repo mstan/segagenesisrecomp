@@ -28,14 +28,25 @@
 include_guard(GLOBAL)
 
 get_filename_component(GENESIS_RUNNER_ENGINE_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+set(_genesis_rbe_root "${GENESIS_RUNNER_ENGINE_ROOT}/external/rbengine")
+if(NOT EXISTS "${_genesis_rbe_root}/CMakeLists.txt")
+    message(FATAL_ERROR "Local rewind needs external/rbengine; initialize that submodule")
+endif()
+set(RBE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+if(NOT TARGET retcomm_rbengine)
+    add_subdirectory("${_genesis_rbe_root}" "${CMAKE_BINARY_DIR}/rbengine" EXCLUDE_FROM_ALL)
+endif()
 
 set(GENESIS_RUNNER_CORE_SOURCES
     main.c
     sim_step.c
     rb_state.c
     rb_probe.c
+    local_states.c
+    overlay_draw.c
     audio.c
     glue.c
+    runtime_evidence.c
     fiber_compat.c
     crash_report.c
     input_script.c
@@ -70,7 +81,10 @@ set(GENESIS_RUNNER_RECONCILED_SOURCES
     cosim_state.c
     sim_step.c
     rb_state.c
-    rb_probe.c)
+    rb_probe.c
+    local_states.c
+    overlay_draw.c
+    runtime_evidence.c)
 
 function(genesisrecomp_runner_sources out_var)
     cmake_parse_arguments(GRS "" "TRACE;REVERSE_DEBUG" "" ${ARGN})
@@ -103,6 +117,8 @@ function(genesisrecomp_runner_target target)
         return()
     endif()
     set_property(TARGET ${target} PROPERTY GENESIS_RUNNER_REQUIREMENTS ON)
+    target_link_libraries(${target} PRIVATE retcomm_rbengine)
+    _genesisrecomp_build_info(${target})
     # The game fiber's context switch (runner/fiber_compat.c, minicoro)
     # replaces the stack pointer without a shadow-stack switch, so the image
     # must not opt in to user-mode hardware shadow stacks (Intel CET).
@@ -131,6 +147,33 @@ function(genesisrecomp_runner_target target)
             target_compile_definitions(${target} PRIVATE GENESIS_STACK_CLASH_PROTECTION=1)
         endif()
     endif()
+endfunction()
+
+# Build description for runner/runtime_evidence.c (runtime evidence headers):
+# engine + game `git describe`, refreshed before every build of <target> and
+# rewritten only when it changes. The exact build identity is the executable
+# fingerprint, computed at run time; this is the readable part.
+function(_genesisrecomp_build_info target)
+    find_package(Git QUIET)
+    set(_dir "${CMAKE_CURRENT_BINARY_DIR}/genesis_build_info/${target}")
+    set(_hdr "${_dir}/genesis_build_info.h")
+    set(_args
+        "-DOUT=${_hdr}"
+        "-DENGINE_DIR=${GENESIS_RUNNER_ENGINE_ROOT}"
+        "-DGAME_DIR=${CMAKE_SOURCE_DIR}"
+        "-DGIT=${GIT_EXECUTABLE}"
+        "-DGAME_VERSION=${CMAKE_PROJECT_VERSION}"
+        -P "${GENESIS_RUNNER_ENGINE_ROOT}/cmake/GenesisBuildInfo.cmake")
+    file(MAKE_DIRECTORY "${_dir}")
+    execute_process(COMMAND "${CMAKE_COMMAND}" ${_args})
+    add_custom_target(${target}_build_info
+        COMMAND "${CMAKE_COMMAND}" ${_args}
+        BYPRODUCTS "${_hdr}"
+        COMMENT "Refreshing ${target} build info"
+        VERBATIM)
+    set_target_properties(${target}_build_info PROPERTIES FOLDER "genesis")
+    add_dependencies(${target} ${target}_build_info)
+    target_include_directories(${target} PRIVATE "${_dir}")
 endfunction()
 
 function(_genesisrecomp_norm out path base)
