@@ -159,6 +159,10 @@ typedef struct GameSpec {
      * Z80 stub never runs the SMPS init). NULL = nothing. */
     void      (*on_post_reset)(void);
 
+    /* Clear presentation-only caches after a file load or local rewind.
+     * Guest memory and deterministic adapter state have already restored. */
+    void      (*on_state_loaded)(void);
+
     /* Called every VBlank, before/after the VBlank handler. The
      * frame counter is the runner's internal frame number, not the
      * game's. NULL = nothing. */
