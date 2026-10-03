@@ -2575,16 +2575,16 @@ int main(int argc, char *argv[])
 #endif
     }
 
-    /* 2× scale: 320×224 → 640×448 in authentic 4:3. When widescreen is armed
-     * for a capable game, open a TRUE 16:9 window (canvas_w × 2 wide, 16:9
-     * tall) so the launcher window is shaped 16:9 from the start. The 16:9
-     * logical size (see update_render_logical_size) makes the content fill it —
-     * gameplay full-bleed, menus pillarboxed inside. ws_armed() requires
-     * widescreen_setup() to have run, so that call is hoisted above this. */
+    /* Start widescreen games in a wide window. The built-in custom renderer
+     * does not arm the legacy VDP widescreen path, so check it separately.
+     * Adaptive mode then has a 16:9 window to follow on the first frame. */
     int win_scale = g_app_config.window_scale;
     if (win_scale < 1) win_scale = 1; else if (win_scale > 8) win_scale = 8;
     int win_w = 320 * win_scale, win_h = 224 * win_scale;   /* scale 2 = 640x448 (4:3) */
-    if (ws_armed()) {
+    int custom_video_on = g_game_spec.video && g_game_spec.video->enabled();
+    if (custom_video_on) {
+        win_w = (win_h * 16 + 4) / 9;
+    } else if (ws_armed()) {
         win_w = ws_canvas_w() * win_scale;
         win_h = win_w * WS_ASPECT_H / WS_ASPECT_W;   /* true 16:9 */
     }
@@ -2608,7 +2608,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     fprintf(stderr, "[VIDEO] window %dx%d (%s)\n", win_w, win_h,
-            ws_armed() ? "16:9 widescreen" : "4:3");
+            (custom_video_on || ws_armed()) ? "16:9 widescreen" : "4:3");
 
     /* Texture scaling filter (settings.ini / launcher): nearest vs bilinear. */
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, g_app_config.linear_filter ? "1" : "0");
