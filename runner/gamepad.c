@@ -111,7 +111,8 @@ void gamepad_handle_event(const SDL_Event *ev)
                 g_input_map.p[0].pad_type != PAD_6BUTTON) {
                 if (ev->cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER)
                     s_pending_save = 1;
-                else if (ev->cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)
+                else if (ev->cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER &&
+                         !SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_BACK))
                     s_pending_load = 1;
             }
             break;
@@ -180,6 +181,28 @@ int gamepad_turbo_held(void)
     /* Player 1's Back/View button, 3-button mode only (6-button uses it for Mode). */
     if (!s_pad[0] || g_input_map.p[0].pad_type == PAD_6BUTTON) return 0;
     return SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_BACK);
+}
+
+uint32_t gamepad_overlay_mask(void)
+{
+    SDL_GameController *c = s_pad[0];
+    if (!c) return 0;
+    static const struct { SDL_GameControllerButton button; uint32_t bit; } map[] = {
+        { SDL_CONTROLLER_BUTTON_BACK, GP_OVERLAY_BACK },
+        { SDL_CONTROLLER_BUTTON_RIGHTSTICK, GP_OVERLAY_R3 },
+        { SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, GP_OVERLAY_RB },
+        { SDL_CONTROLLER_BUTTON_DPAD_UP, GP_OVERLAY_UP },
+        { SDL_CONTROLLER_BUTTON_DPAD_DOWN, GP_OVERLAY_DOWN },
+        { SDL_CONTROLLER_BUTTON_DPAD_LEFT, GP_OVERLAY_LEFT },
+        { SDL_CONTROLLER_BUTTON_DPAD_RIGHT, GP_OVERLAY_RIGHT },
+        { SDL_CONTROLLER_BUTTON_A, GP_OVERLAY_A },
+        { SDL_CONTROLLER_BUTTON_B, GP_OVERLAY_B },
+        { SDL_CONTROLLER_BUTTON_X, GP_OVERLAY_X }
+    };
+    uint32_t mask = 0;
+    for (unsigned i = 0; i < sizeof map / sizeof map[0]; ++i)
+        if (SDL_GameControllerGetButton(c, map[i].button)) mask |= map[i].bit;
+    return mask;
 }
 
 int gamepad_consume_quicksave(void)

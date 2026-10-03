@@ -21,6 +21,22 @@ provide the ROM-specific build, assets, and release packaging.
 | Validation | Local | Synthetic harnesses, boot/regression scripts, and recomp-vs-interpreter cosim |
 | Sound Z80 static recompilation | Experimental | Optional backend; see [docs/Z80_STATIC_RECOMP.md](docs/Z80_STATIC_RECOMP.md) |
 | Widescreen injection | Per game | Current status and remaining conversions are in [WIDESCREEN_ISSUES.md](WIDESCREEN_ISSUES.md) |
+| Local rewind | Active | rbengine snapshots of the complete machine, with a paused filmstrip and branch trimming |
+
+The in-game save-state browser opens with **F7** or **Back/View + RB**; use
+arrows or the D-pad to select a slot, **Enter/A** to load, **S/X** to save,
+and **Esc/B** to cancel. **F8** or **Back/View + right-stick click** opens
+rewind. In its filmstrip, Left goes back, Right moves toward the present,
+Enter/A restores, and Esc/B cancels. The guest and audio pause while either
+overlay is open. Save-state files remain `native_save_1.bin` through
+`native_save_9.bin`; thumbnail sidecars are optional. Shift+F1–F9 still
+saves directly; F1–F6 and F9 load directly, and Ctrl+F7/F8 loads slots 7/8.
+Both overlays are unavailable during netplay.
+
+The launcher's Rewind settings control whether snapshots are kept, ring
+depth, and capture interval. `settings.ini` also accepts `[rewind]` keys
+`enabled`, `depth` (4–240 slots), and `interval` (1–60 guest frames).
+Defaults are 60 slots every 6 frames, about six seconds at 60 Hz.
 
 ## What's In This Repo
 

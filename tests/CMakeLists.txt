@@ -22,6 +22,15 @@ endif()
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
 
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/GenesisRecompRunner.cmake")
+add_executable(local_states_test runtime/local_states_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/local_states.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/overlay_draw.c")
+target_include_directories(local_states_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../runner")
+target_link_libraries(local_states_test PRIVATE retcomm_rbengine)
+add_test(NAME local_states COMMAND local_states_test "${CMAKE_CURRENT_BINARY_DIR}/")
+
 find_package(Python3 QUIET COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
     add_test(NAME generated_input_paths COMMAND "${Python3_EXECUTABLE}"

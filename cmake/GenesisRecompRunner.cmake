@@ -28,12 +28,22 @@
 include_guard(GLOBAL)
 
 get_filename_component(GENESIS_RUNNER_ENGINE_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+set(_genesis_rbe_root "${GENESIS_RUNNER_ENGINE_ROOT}/external/rbengine")
+if(NOT EXISTS "${_genesis_rbe_root}/CMakeLists.txt")
+    message(FATAL_ERROR "Local rewind needs external/rbengine; initialize that submodule")
+endif()
+set(RBE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+if(NOT TARGET retcomm_rbengine)
+    add_subdirectory("${_genesis_rbe_root}" "${CMAKE_BINARY_DIR}/rbengine" EXCLUDE_FROM_ALL)
+endif()
 
 set(GENESIS_RUNNER_CORE_SOURCES
     main.c
     sim_step.c
     rb_state.c
     rb_probe.c
+    local_states.c
+    overlay_draw.c
     audio.c
     glue.c
     runtime_evidence.c
@@ -72,6 +82,8 @@ set(GENESIS_RUNNER_RECONCILED_SOURCES
     sim_step.c
     rb_state.c
     rb_probe.c
+    local_states.c
+    overlay_draw.c
     runtime_evidence.c)
 
 function(genesisrecomp_runner_sources out_var)
@@ -105,6 +117,7 @@ function(genesisrecomp_runner_target target)
         return()
     endif()
     set_property(TARGET ${target} PROPERTY GENESIS_RUNNER_REQUIREMENTS ON)
+    target_link_libraries(${target} PRIVATE retcomm_rbengine)
     _genesisrecomp_build_info(${target})
     # The game fiber's context switch (runner/fiber_compat.c, minicoro)
     # replaces the stack pointer without a shadow-stack switch, so the image

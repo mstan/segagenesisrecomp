@@ -22,6 +22,9 @@ void app_config_defaults(void)
     g_app_config.custom_aspect = 0;
     g_app_config.volume           = 100;
     g_app_config.skip_launcher    = 0;
+    g_app_config.rewind_enabled   = 1;
+    g_app_config.rewind_depth     = 60;
+    g_app_config.rewind_interval  = 6;
 }
 
 /* ---- tiny ini helpers ---------------------------------------------------- */
@@ -91,6 +94,7 @@ int app_config_load(const char *path)
             else if (!strcmp(name, "audio"))    section = 1;
             else if (!strcmp(name, "launcher")) section = 2;
             else if (!strcmp(name, "mods.widescreen")) section = 3;
+            else if (!strcmp(name, "rewind"))   section = 4;
             else if (!strcmp(name, "input.p1")) section = 10;
             else if (!strcmp(name, "input.p2")) section = 11;
             else if (!strcmp(name, "input.p3")) section = 12;
@@ -125,6 +129,10 @@ int app_config_load(const char *path)
                 int aspect=app_config_aspect_index(val);
                 g_app_config.custom_aspect=aspect<0?0:aspect;
             }
+        } else if (section == 4) {
+            if (!strcmp(key, "enabled")) g_app_config.rewind_enabled = atoi(val) != 0;
+            else if (!strcmp(key, "depth")) g_app_config.rewind_depth = atoi(val);
+            else if (!strcmp(key, "interval")) g_app_config.rewind_interval = atoi(val);
         } else if (section >= 10 && section < 10 + INPUT_MAX_PLAYERS) {
             PlayerInput *pi = &g_input_map.p[section - 10];
             if      (!strcmp(key, "device"))   pi->device       = atoi(val);
@@ -179,6 +187,9 @@ int app_config_save(const char *path)
     fprintf(f, "volume = %d\n\n",         g_app_config.volume);
     fprintf(f, "[launcher]\n");
     fprintf(f, "skip_launcher = %d\n\n",  g_app_config.skip_launcher);
+    fprintf(f, "[rewind]\nenabled = %d\ndepth = %d\ninterval = %d\n\n",
+            g_app_config.rewind_enabled, g_app_config.rewind_depth,
+            g_app_config.rewind_interval);
     fprintf(f, "[mods.widescreen]\nenabled = %d\naspect = %s\n\n",
             g_app_config.custom_widescreen, app_config_aspect_mode(g_app_config.custom_aspect));
 

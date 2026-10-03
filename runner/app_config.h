@@ -31,6 +31,9 @@ typedef struct AppConfig {
     int volume;             /* 0..100 */
     /* launcher */
     int skip_launcher;      /* 1 = boot straight to the game next time */
+    int rewind_enabled;     /* local rewind; never available in netplay */
+    int rewind_depth;       /* snapshot slots */
+    int rewind_interval;    /* guest frames between snapshots */
 } AppConfig;
 
 extern AppConfig g_app_config;
