@@ -13,6 +13,13 @@
  */
 #include "genesis_vdp.h"
 #include <string.h>
+#ifndef GENESIS_BATCHED_PLANES
+#define GENESIS_BATCHED_PLANES 0
+#endif
+const char *gvdp_plane_implementation(void)
+{
+    return GENESIS_BATCHED_PLANES ? "BATCHED" : "SCALAR";
+}
 #ifdef GEN_DEV_TRACE
 #include <stdio.h>   /* [DMA-STALL] rare-event dev print */
 #endif
@@ -719,6 +726,40 @@ fetch_plane_pixel(const GVDP *v, PlanePixelCache *cache,
 }
 #undef GVDP_HOT_INLINE
 
+#if GENESIS_BATCHED_PLANES
+/* Native tile-row service: resolve the name table and fetch four pattern bytes
+ * once per tile span, then publish packed index/opacity/priority metadata.
+ * This cache is local to one stable-VRAM scanline, so no invalidation protocol
+ * or additional serialized device state is needed. */
+static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
+                             uint16_t base, int wt, int ht, int px, int py, int im2)
+{
+    int shift = im2 ? 4 : 3, fy_mask = (1 << shift) - 1;
+    int tile_bytes = im2 ? 64 : 32, mask = wt * 8 - 1;
+    py &= (ht << shift) - 1;
+    uint16_t row_base = (uint16_t)(base + (py >> shift) * wt * 2);
+    while (count) {
+        px &= mask;
+        int fx = px & 7, n = 8 - fx;
+        if (n > count) n = count;
+        uint16_t e = vram_read_word(v, (uint16_t)(row_base + (px >> 3) * 2));
+        int fy = py & fy_mask;
+        if (e & 0x1000) fy ^= fy_mask;
+        uint16_t pa = (uint16_t)((e & 0x7ff) * tile_bytes + fy * 4);
+        uint32_t bits = ((uint32_t)v->vram[pa] << 24) |
+                        ((uint32_t)v->vram[pa + 1] << 16) |
+                        ((uint32_t)v->vram[pa + 2] << 8) | v->vram[pa + 3];
+        unsigned flip = (e & 0x800) ? 7 : 0;
+        uint8_t attr = (uint8_t)(((e >> 9) & 0x30) | ((e >> 8) & 0x80));
+        for (int i = 0; i < n; ++i) {
+            unsigned nib = (bits >> (28 - ((fx + i) ^ flip) * 4)) & 15;
+            out[i] = (uint8_t)(attr | nib | (nib ? 0x40 : 0));
+        }
+        out += n; count -= n; px += n;
+    }
+}
+#endif
+
 /* Render one OUTPUT row. `line` is a raster line normally; in interlace
  * mode 2 it is a double-res row (0..447) — the scheduler calls this twice
  * per raster line. Raster-indexed lookups (hscroll table, window boundary)
@@ -797,14 +838,48 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
      * covers two. Rendering runs after the line's CPU/Z80 slice, so VRAM
      * cannot change underneath this row; keep separate caches for A, B, and
      * window addressing so their independent tables never alias each other. */
+#if GENESIS_BATCHED_PLANES
+    uint8_t plane_a[GVDP_MAX_WIDTH], plane_b[GVDP_MAX_WIDTH];
+    for (int x = -content_extra, xo = content_start; xo < content_end;) {
+        int boundary;
+        if (x < 0) boundary = 0;
+        else if (x >= w) boundary = w + content_extra;
+        else boundary = ((x >> 4) + 1) * 16;
+        if (boundary > w + content_extra) boundary = w + content_extra;
+        if (window_x > x && window_x < boundary) boundary = window_x;
+        int n = boundary - x;
+        int vs_a = full_vs_a, vs_b = full_vs_b;
+        if (vmode_2cell) {
+            int xc = x < 0 ? 0 : (x >= w ? w - 1 : x);
+            int col = (xc >> 4) * 2;
+            vs_a = v->vsram[col % GVDP_VSRAM_ENTRIES] & vs_mask;
+            vs_b = v->vsram[(col + 1) % GVDP_VSRAM_ENTRIES] & vs_mask;
+        }
+        int window_h_in = window_h_right ? x >= window_x : x < window_x;
+        if (x >= 0 && x < w && (window_h_in || window_v_in))
+            fetch_plane_span(v, plane_a + xo, n, base_w, win_wt, ht, x, line, im2);
+        else
+            fetch_plane_span(v, plane_a + xo, n, base_a, wt, ht,
+                             x - hs_a, line + vs_a, im2);
+        fetch_plane_span(v, plane_b + xo, n, base_b, wt, ht,
+                         x - hs_b, line + vs_b, im2);
+        x += n; xo += n;
+    }
+#else
     PlanePixelCache cache_a = { ~0u, 0 };
     PlanePixelCache cache_b = { ~0u, 0 };
     PlanePixelCache cache_w = { ~0u, 0 };
+#endif
 
     if (pillar > 0) memset(out, bar_idx, (size_t)pillar);
     if (right_bar > 0) memset(out + content_end, bar_idx, (size_t)right_bar);
 
     for (int x = -content_extra, xo = content_start; xo < content_end; x++, xo++) {
+#if GENESIS_BATCHED_PLANES
+        uint8_t a_idx = plane_a[xo] & 0x3f, b_idx = plane_b[xo] & 0x3f;
+        int a_op = plane_a[xo] & 0x40, a_hi = plane_a[xo] & 0x80;
+        int b_op = plane_b[xo] & 0x40, b_hi = plane_b[xo] & 0x80;
+#else
         /* Bars were prefilled above. This loop covers only the authentic view
          * plus genuine widescreen margins, which the planes wrap-sample. */
         /* Vertical scroll per plane (full, or per-16px-column 2-cell). */
@@ -838,6 +913,7 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         /* Plane B. */
         fetch_plane_pixel(v, &cache_b, base_b, wt, ht,
                           (x - hs_b), (line + vs_b), im2, &b_idx, &b_op, &b_hi);
+#endif
 
         /* Sprite layer (indexed in output-column space). */
         int s_op = s_spr_op[xo], s_hi = s_spr_hi[xo];

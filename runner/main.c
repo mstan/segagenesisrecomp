@@ -3756,14 +3756,15 @@ session_begin:;
                "\"cpu_seconds\":%.9f,\"cpu_fps\":%.3f,"
                "\"cpu_cycles\":%llu,\"cycles_per_frame\":%.3f,"
                "\"state_fnv1a64\":\"%016llX\","
-               "\"audio_state_fnv1a64\":\"%016llX\"}\n",
+               "\"audio_state_fnv1a64\":\"%016llX\","
+               "\"vdp_plane_impl\":\"%s\"}\n",
                g_game_spec.short_name ? g_game_spec.short_name : "game",
                frame_num, seconds, fps,
                frame_num ? seconds * 1000.0 / (double)frame_num : 0.0,
                cpu_seconds, cpu_fps,
                (unsigned long long)cpu_cycles, cycles_per_frame,
                (unsigned long long)state_hash,
-               (unsigned long long)audio_hash);
+               (unsigned long long)audio_hash, gvdp_plane_implementation());
         fflush(stdout);
     }
 
