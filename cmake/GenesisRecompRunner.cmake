@@ -26,7 +26,7 @@
 # game repository can migrate.
 
 include_guard(GLOBAL)
-set(GENESIS_VDP_PLANE_IMPL "SCALAR" CACHE STRING "VDP background plane renderer")
+set(GENESIS_VDP_PLANE_IMPL "SCALAR" CACHE STRING "VDP scanline renderer (planes, sprites and composition)")
 set_property(CACHE GENESIS_VDP_PLANE_IMPL PROPERTY STRINGS SCALAR BATCHED)
 if(NOT GENESIS_VDP_PLANE_IMPL MATCHES "^(SCALAR|BATCHED)$")
     message(FATAL_ERROR "GENESIS_VDP_PLANE_IMPL must be SCALAR or BATCHED")

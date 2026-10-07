@@ -16,6 +16,15 @@
 #ifndef GENESIS_BATCHED_PLANES
 #define GENESIS_BATCHED_PLANES 0
 #endif
+#if GENESIS_BATCHED_PLANES
+/* Four states per layer: transparent/opaque crossed with low/high priority.
+ * Select byte 0=backdrop, 1=B, 2=A, 3=sprite; bit 2 reports any opaque high
+ * layer for shadow/highlight. Immutable and shared by every scanline. */
+static const uint8_t s_layer_select[64] = {
+    0, 2, 0, 6, 1, 2, 1, 6, 0, 2, 0, 6, 5, 5, 5, 6, 3, 3, 3, 6, 3, 3, 3, 6, 3, 3, 3, 6, 5, 5, 5, 6,
+    0, 2, 0, 6, 1, 2, 1, 6, 0, 2, 0, 6, 5, 5, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
+};
+#endif
 const char *gvdp_plane_implementation(void)
 {
     return GENESIS_BATCHED_PLANES ? "BATCHED" : "SCALAR";
@@ -633,6 +642,36 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
             int iy = vf ? (height - 1 - (line - y)) : (line - y);
             int celly = iy >> cell_h_shift, fy = iy & ((1 << cell_h_shift) - 1);
 
+#if GENESIS_BATCHED_PLANES
+            /* Resolve sprite cell/row addresses once per eight output pixels.
+             * VRAM is stable during this scanline call; no persistent cache or
+             * invalidation/state migration is involved. */
+            for (int cell = 0; cell < hsz; ++cell) {
+                int cellx = hf ? hsz - 1 - cell : cell;
+                int tileno = (tile + cellx * vsz + celly) & 0x07ff;
+                uint16_t pa = (uint16_t)(tileno * tile_bytes + fy * 4);
+                uint32_t bits = ((uint32_t)v->vram[pa] << 24) |
+                    ((uint32_t)v->vram[pa + 1] << 16) |
+                    ((uint32_t)v->vram[pa + 2] << 8) | v->vram[pa + 3];
+                for (int fx = 0; fx < 8; ++fx) {
+                    int sx = screen_x + cell * 8 + fx;
+                    if (sx < 0 || sx >= total) continue;
+                    int nib = (bits >> (28 - (fx ^ (hf ? 7 : 0)) * 4)) & 15;
+                    if (!nib) continue;
+                    if (drawn[sx]) { v->sprite_collision = 1; continue; }
+                    if (sh_mode && pal == 3 && nib == 14)
+                        s_spr_hilite_op[sx] = 1;
+                    else if (sh_mode && pal == 3 && nib == 15)
+                        s_spr_shadow_op[sx] = 1;
+                    else {
+                        s_spr_idx[sx] = (uint8_t)(pal * 16 + nib);
+                        s_spr_op[sx] = 1;
+                        s_spr_hi[sx] = (uint8_t)pri;
+                        drawn[sx] = 1;
+                    }
+                }
+            }
+#else
             for (int lx = 0; lx < width; lx++) {
                 int sx = screen_x + lx;
                 if (sx < 0 || sx >= total) continue;
@@ -658,6 +697,7 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                 }
             }
 
+#endif
             pixels_budget -= width;
             if (pixels_budget <= 0 && !s_unlimited_sprites) { v->sprite_overflow = 1; break; }
         }
@@ -877,8 +917,6 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     for (int x = -content_extra, xo = content_start; xo < content_end; x++, xo++) {
 #if GENESIS_BATCHED_PLANES
         uint8_t a_idx = plane_a[xo] & 0x3f, b_idx = plane_b[xo] & 0x3f;
-        int a_op = plane_a[xo] & 0x40, a_hi = plane_a[xo] & 0x80;
-        int b_op = plane_b[xo] & 0x40, b_hi = plane_b[xo] & 0x80;
 #else
         /* Bars were prefilled above. This loop covers only the authentic view
          * plus genuine widescreen margins, which the planes wrap-sample. */
@@ -921,6 +959,14 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
 
         /* Genesis priority order: S-hi > A-hi > B-hi > S-lo > A-lo > B-lo > bg. */
         uint8_t px;
+#if GENESIS_BATCHED_PLANES
+        unsigned key = (plane_a[xo] >> 6) | ((plane_b[xo] >> 6) << 2) |
+            ((unsigned)(s_op | (s_hi << 1)) << 4);
+        unsigned selection = s_layer_select[key];
+        uint32_t colors = (uint32_t)backdrop | ((uint32_t)b_idx << 8) |
+            ((uint32_t)a_idx << 16) | ((uint32_t)s_idx << 24);
+        px = (uint8_t)(colors >> ((selection & 3) * 8));
+#else
         if      (s_op && s_hi) px = s_idx;
         else if (a_op && a_hi) px = a_idx;
         else if (b_op && b_hi) px = b_idx;
@@ -928,12 +974,17 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         else if (a_op)         px = a_idx;
         else if (b_op)         px = b_idx;
         else                   px = backdrop;
+#endif
 
         /* Shadow/highlight: when enabled, a pixel with no high-priority layer
          * is shadowed; operator sprites (pal3 colours 14/15) force highlight or
          * shadow on the underlying pixel. */
         if (sh_mode && px < GVDP_CRAM_ENTRIES) {
+#if GENESIS_BATCHED_PLANES
+            int hi_present = selection & 4;
+#else
             int hi_present = (s_op && s_hi) || (a_op && a_hi) || (b_op && b_hi);
+#endif
             int sh = !hi_present;
             int hl = 0;
             if (s_spr_shadow_op[xo]) sh = 1;
