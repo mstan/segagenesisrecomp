@@ -68,6 +68,8 @@ typedef struct {
                                        (UINT32_MAX until first sample) */
 } AudioStats;
 void audio_get_stats(AudioStats *out);
+/* End-of-run measurement: bounded delivery ring input and overflow drops. */
+void audio_get_bridge_counts(uint64_t *pushed, uint64_t *overflow_drops);
 uint32_t audio_queued_bytes(void);
 
 /*
