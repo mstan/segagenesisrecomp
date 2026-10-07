@@ -123,6 +123,80 @@ public regression target. Binary presence alone does not establish a floor.
 
 ## End-to-end engine strategy
 
+### Current broader implementation (pending gameplay/performance)
+
+`GENESIS_VDP_PLANE_IMPL=BATCHED` now covers the complete shared scanline
+service: existing background tile spans, eight-pixel sprite row decoding and
+a 64-entry immutable priority selector. Sprite cells/pattern addresses are
+resolved once per row instead of per pixel; composition selects packed layer
+colors instead of walking six conditional priority branches per pixel. The
+scalar implementation remains buildable/default with the same public ABI.
+No persistent cache/state serialization, timing identity or live handoff is
+introduced. This is a native renderer optimization; no guest leaf is replaced.
+The existing focused renderer differential passed its directed, 4,000 random,
+odd-canvas and import-sequence cases. This is not a gameplay screenshot sweep
+or a requirement for owner-visible pixel identity.
+
+`--measure-runtime N --runtime-uncapped` measures finite full-runtime work:
+guest/device execution, actual scanline rendering, texture upload/presentation,
+audio synthesis, mixing and delivery-ring push. Only host manual pacing/vsync
+are disabled. A failed audio device aborts measurement. JSON records wall FPS,
+all-thread process CPU/cycles, implementation, scope, requested/completed frames,
+audio flushes/mixed sample counts and bridge push/overflow counts. The bounded
+audio ring drops oldest source frames when production outruns device playback;
+all new samples are still synthesized/mixed/pushed. Thus this is full-runtime
+uncapped throughput, not normal-speed audio quality. `--measure-runtime N`
+alone retains normal pacing, suitable for CPU/frame confirmation if needed.
+`--benchmark N` remains explicitly `uncapped-core`, excluding presentation and
+audio delivery; it cannot alone qualify this change. Ordinary owner launches
+use neither measurement flag and remain normally paced.
+
+Malformed/conflicting measurement options fail before ROM/SDL initialization;
+`tests/runtime/runtime_measure_cli_test.py <runner.exe>` checks that boundary.
+The bounded full-runtime results below are complete; the owner visual/playcheck
+is pending. The earlier plane-pilot measurements remain historical.
+
+### Broader scanline result (Windows, 2026-10-06)
+
+Separate Release scalar/batched builds used the same engine sources/compiler,
+trace OFF and fixed per-game input/configuration. RKA title was `3e07af86`,
+Sonic1 `a211eb4`, and Sonic3K `6bf6fd04`. One full-runtime uncapped pair ran for
+each game. Only the marginal RKA/S3K results received a reversed pair; Sonic1
+was not repeated and no matrix or gameplay screenshot sweep was run.
+
+| Game | Initial FPS gain / process CPU reduction | Reverse FPS gain / CPU reduction | Disposition |
+|---|---|---|---|
+| RKA, 6,000 input frames | -2.530% / -4.885% | -15.409% / -15.945% | Failed gain; keep scalar, candidate remains draft. |
+| Sonic1 GHZ, 6,000 input frames | +20.533% / +10.563% | Not run | Useful initial candidate for this Windows title/configuration; pending owner playcheck. |
+| Sonic3K attract, 12,000 frames | +1.581% / +5.827% | +5.190% / +1.912% | Small/immaterial result for this planning target; keep scalar, no default qualification. |
+
+Every arm finished successfully with the requested frames and matched per-pair
+audio flush/mixed FM/PSG/pushed sample counts. End state/audio fingerprints also
+matched as supplementary metadata; they were not a pixel-perfect gameplay gate.
+Uncapped delivery overflow occurred as expected and is recorded, not represented
+as normal audible output. Relevant renderer tests and 13 pre-initialization CLI
+checks per arm passed. No current visual/playcheck has yet been claimed.
+
+Compiler censuses bracket each arm. Initial RKA showed a resident MSBuild node;
+later Sonic1/S3K snapshots and reverse legs observed foreign PSX CMake/Ninja/GCC
+activity. Reverse RKA/S3K snapshots contained 4..8 foreign build processes.
+Presence is not measured CPU interference, but host isolation is unproven and
+the single Sonic1 pair is not a stability estimate. No foreign process was
+killed or altered. These mixed results do not support a whole-system default.
+
+Private evidence lives in `build/vdp-service-qualification/initial-pairs/`,
+`reverse-rka/`, and `reverse-s3k/`: full raw logs/results, binary/ROM/input/config
+identity and per-arm censuses. `build/vdp-service-build-identity.json` records
+source hashes and six fixed builds. ROM/generated/binary payloads remain ignored.
+
+Ready normal-paced Sonic1 handoff: `build/sonic-batched-final/`
+`SonicTheHedgehogRecomp.exe` with the owner's `sonicthehedgehog/sonic.bin` as the
+positional ROM, without measurement/turbo/input-script flags. Scalar alternative:
+`build/sonic-scalar-final/SonicTheHedgehogRecomp.exe`. Owner launch waits until
+the coordinated measurement wave ends; positive feedback is still required.
+`SCALAR` remains the shared default and this PR remains draft; no merge/default
+promotion or issue closure is implied by the Sonic1 result.
+
 Windows is the first supported target. Use three actual games, one production
 configuration per game, and maintain a functioning LLE build with the same
 caller ABI. The owner judges practical appearance and playability; prospective

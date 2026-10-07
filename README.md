@@ -10,7 +10,7 @@ Game repositories such as
 [SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp)
 provide the ROM-specific build, assets, and release packaging.
 
-The fixed-choice scalar/batched background renderer experiment and qualification
+The fixed-choice scalar/batched scanline renderer experiment and qualification
 scope are documented in [engine plane batching](docs/ENGINE_VDP_BATCHING.md).
 
 ## Status
