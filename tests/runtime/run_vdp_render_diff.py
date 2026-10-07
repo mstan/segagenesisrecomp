@@ -19,6 +19,7 @@ SYMBOLS = [
     "gvdp_write_control",
     "gvdp_read_data",
     "gvdp_read_control",
+    "gvdp_peek_data", "gvdp_peek_status",
     "gvdp_read_hv_counter",
     "gvdp_consume_68k_stall",
     "g_gvdp_events",
@@ -36,6 +37,9 @@ SYMBOLS = [
     "gvdp_set_bgdiag",
     "gvdp_render_scanline",
     "gvdp_begin_scanline",
+    "gvdp_unlimited_sprites", "gvdp_set_host_palette", "gvdp_host_palette",
+    "gvdp_set_host_sprites", "gvdp_rb_pending_stall", "gvdp_rb_set_pending_stall",
+    "gvdp_plane_implementation",
 ]
 
 
@@ -55,6 +59,8 @@ def main() -> int:
     parser.add_argument("--baseline-ref", default="997bd1f1c754f38dd598318661b2a52553d33cc0")
     parser.add_argument("--baseline-source", type=Path)
     parser.add_argument("--candidate-source", type=Path)
+    parser.add_argument("--candidate-define", action="append", default=[])
+    parser.add_argument("--git", default=r"C:\Program Files\Git\cmd\git.exe")
     ns = parser.parse_args()
 
     root = ns.root.resolve()
@@ -64,7 +70,7 @@ def main() -> int:
     if baseline is None:
         baseline = out / "genesis_vdp_baseline.c"
         data = subprocess.check_output(
-            ["git", "-C", str(root), "show", f"{ns.baseline_ref}:runner/video/genesis_vdp.c"]
+            [ns.git, "-C", str(root), "show", f"{ns.baseline_ref}:runner/video/genesis_vdp.c"]
         )
         baseline.write_bytes(data)
     else:
@@ -80,7 +86,8 @@ def main() -> int:
     common = [ns.gcc, "-std=c11", "-O2", "-DNDEBUG", "-Wall", "-Wextra", "-Werror", "-I", str(include)]
 
     run(common + defs("head") + ["-c", str(baseline), "-o", str(head_obj)], root)
-    run(common + defs("cand") + ["-c", str(candidate), "-o", str(cand_obj)], root)
+    run(common + defs("cand") + ["-D" + d for d in ns.candidate_define] +
+        ["-c", str(candidate), "-o", str(cand_obj)], root)
     run(common + [str(test), str(head_obj), str(cand_obj), "-o", str(exe)], root)
     run([str(exe)], root)
     return 0
