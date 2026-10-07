@@ -2086,6 +2086,8 @@ int main(int argc, char *argv[])
     uint32_t max_frames  = 0;   /* 0 = unlimited */
     int start_turbo      = 0;   /* --turbo: skip frame delay + audio */
     uint32_t benchmark_frames = 0; /* finite uncapped core workload */
+    uint32_t runtime_measure_frames = 0; /* full paced runtime incl. audio/display */
+    int runtime_uncapped = 0; /* preserve full work, skip only host pacing */
     uint32_t snd_dump_frame = 0; /* [SND-TRACE] headless auto-dump of both rings at this frame (0=off, use F12) */
     uint32_t snd_dump_vint  = 0; /* [CHIP-TRACE] dump chip_ring when vint_runcount hits N (0=off) */
     int      snd_dump_done  = 0;
@@ -2158,6 +2160,20 @@ int main(int argc, char *argv[])
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--max-frames") == 0 && i + 1 < argc) {
             max_frames = (uint32_t)atol(argv[++i]);
+        } else if (strcmp(argv[i], "--runtime-uncapped") == 0) {
+            runtime_uncapped = 1;
+        } else if (strcmp(argv[i], "--measure-runtime") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "--measure-runtime requires a positive frame count\n");
+                return 2;
+            }
+            char *end = NULL;
+            unsigned long count = strtoul(argv[++i], &end, 10);
+            if (!argv[i][0] || argv[i][0] == '-' || *end || !count || count > 1000000) {
+                fprintf(stderr, "--measure-runtime requires 1..1000000 frames\n");
+                return 2;
+            }
+            runtime_measure_frames = (uint32_t)count;
         } else if (strcmp(argv[i], "--benchmark") == 0 && i + 1 < argc) {
             benchmark_frames = (uint32_t)atol(argv[++i]);
             if (benchmark_frames == 0) {
@@ -2238,6 +2254,18 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (runtime_uncapped && !runtime_measure_frames) {
+        fprintf(stderr, "--runtime-uncapped requires --measure-runtime\n");
+        return 2;
+    }
+    if (runtime_measure_frames) {
+        if (benchmark_frames || start_turbo || max_frames) {
+            fprintf(stderr, "--measure-runtime cannot combine with --benchmark, --turbo or --max-frames\n");
+            return 2;
+        }
+        max_frames = runtime_measure_frames;
+        no_launcher = 1;
+    }
     if (benchmark_frames) {
         max_frames = benchmark_frames;
         start_turbo = 1;
@@ -2628,7 +2656,7 @@ int main(int argc, char *argv[])
      * two simply settle on whichever is slower. Fall back to no-vsync if the
      * driver can't provide it. */
     Uint32 renderer_flags = SDL_RENDERER_ACCELERATED;
-    if (!benchmark_frames)
+    if (!benchmark_frames && !runtime_uncapped)
         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, renderer_flags);
     if (!renderer) {
@@ -2676,7 +2704,13 @@ int main(int argc, char *argv[])
     /* Output at PSG rate (~223721 Hz NTSC) — matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
     if (!benchmark_frames) {
-        audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
+        int audio_status = audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
+        if (runtime_measure_frames && audio_status != 0) {
+            fprintf(stderr, "--measure-runtime requires a working audio device/mixer\n");
+            SDL_Quit();
+            free(rom_buf);
+            return 2;
+        }
         audio_set_master_volume(g_app_config.volume); /* settings.ini / launcher */
     }
 #if RECOMP_LAUNCHER
@@ -3002,11 +3036,11 @@ session_begin:;
     const Uint64 perf_frequency = SDL_GetPerformanceFrequency();
     FramePacer frame_pacer;
     frame_pacer_init(&frame_pacer, perf_frequency, target_fps);
-    Uint64 benchmark_start = benchmark_frames ? SDL_GetPerformanceCounter() : 0;
+    Uint64 benchmark_start = (benchmark_frames || runtime_measure_frames) ? SDL_GetPerformanceCounter() : 0;
     double benchmark_cpu_start =
-        benchmark_frames ? benchmark_process_cpu_seconds() : 0.0;
+        (benchmark_frames || runtime_measure_frames) ? benchmark_process_cpu_seconds() : 0.0;
     uint64_t benchmark_cycles_start =
-        benchmark_frames ? benchmark_process_cpu_cycles() : 0;
+        (benchmark_frames || runtime_measure_frames) ? benchmark_process_cpu_cycles() : 0;
 
     while (running) {
         if (max_frames && frame_num >= max_frames) break;
@@ -3192,6 +3226,7 @@ session_begin:;
         { const Uint8 *ks = SDL_GetKeyboardState(NULL);
           int held = ks[SDL_SCANCODE_TAB] || gamepad_turbo_held();
           turbo = held ? 1 : (start_turbo ? 1 : 0);
+          if (runtime_measure_frames) turbo = 0;
 #if GENESIS_HAS_RECOMP_NET
           if (genesis_netplay_active()) turbo = 0;
 #endif
@@ -3638,7 +3673,7 @@ session_begin:;
          * after present only paces frame starts: variable simulation/upload
          * time then moves each present and makes scrolling judder. The guest
          * still advances exactly one NTSC tick per iteration. */
-        if (turbo) {
+        if (turbo || runtime_uncapped) {
             frame_pacer_reset(&frame_pacer);
         } else {
             Uint64 now = SDL_GetPerformanceCounter();
@@ -3729,7 +3764,7 @@ session_begin:;
 
     if (max_frames)
         fprintf(stderr, "[DONE] %u frames completed\n", frame_num);
-    if (benchmark_frames) {
+    if (benchmark_frames || runtime_measure_frames) {
         Uint64 benchmark_end = SDL_GetPerformanceCounter();
         double seconds = (double)(benchmark_end - benchmark_start)
                        / (double)SDL_GetPerformanceFrequency();
@@ -3750,20 +3785,37 @@ session_begin:;
         audio_hash = cosim_fold(audio_hash, benchmark_sub.fm);
         audio_hash = cosim_fold(audio_hash, benchmark_sub.psg);
         audio_hash = cosim_fold(audio_hash, benchmark_sub.evq);
+        AudioStats delivery_stats;
+        audio_get_stats(&delivery_stats);
+        uint64_t audio_pushed = 0, audio_overflow = 0;
+        audio_get_bridge_counts(&audio_pushed, &audio_overflow);
         printf("GENESISRECOMP_BENCHMARK "
                "{\"game\":\"%s\",\"frames\":%u,\"seconds\":%.9f,"
                "\"fps\":%.3f,\"ms_per_frame\":%.6f,"
                "\"cpu_seconds\":%.9f,\"cpu_fps\":%.3f,"
                "\"cpu_cycles\":%llu,\"cycles_per_frame\":%.3f,"
                "\"state_fnv1a64\":\"%016llX\","
-               "\"audio_state_fnv1a64\":\"%016llX\"}\n",
+               "\"audio_state_fnv1a64\":\"%016llX\","
+               "\"vdp_plane_impl\":\"%s\",\"workload_scope\":\"%s\","
+               "\"requested_frames\":%u,\"complete\":%s,"
+               "\"audio_flushes\":%u,\"mixed_fm_frames\":%llu,"
+               "\"mixed_psg_frames\":%llu,\"audio_pushed_frames\":%llu,"
+               "\"audio_overflow_drops\":%llu}\n",
                g_game_spec.short_name ? g_game_spec.short_name : "game",
                frame_num, seconds, fps,
                frame_num ? seconds * 1000.0 / (double)frame_num : 0.0,
                cpu_seconds, cpu_fps,
                (unsigned long long)cpu_cycles, cycles_per_frame,
                (unsigned long long)state_hash,
-               (unsigned long long)audio_hash);
+               (unsigned long long)audio_hash, gvdp_plane_implementation(),
+               runtime_measure_frames ? (runtime_uncapped ? "uncapped-runtime" : "paced-runtime")
+                   : "uncapped-core",
+               runtime_measure_frames ? runtime_measure_frames : benchmark_frames,
+               frame_num == (runtime_measure_frames ? runtime_measure_frames : benchmark_frames)
+                   ? "true" : "false", delivery_stats.total_flushes,
+               (unsigned long long)delivery_stats.total_fm_frames,
+               (unsigned long long)delivery_stats.total_psg_frames,
+               (unsigned long long)audio_pushed, (unsigned long long)audio_overflow);
         fflush(stdout);
     }
 
@@ -3836,5 +3888,5 @@ session_begin:;
     SDL_DestroyWindow(window);
     SDL_Quit();
     free(rom_buf);
-    return 0;
+    return runtime_measure_frames && frame_num != runtime_measure_frames ? 2 : 0;
 }
