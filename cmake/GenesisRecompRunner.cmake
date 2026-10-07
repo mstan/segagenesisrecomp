@@ -26,6 +26,12 @@
 # game repository can migrate.
 
 include_guard(GLOBAL)
+set(GENESIS_VDP_PLANE_IMPL "SCALAR" CACHE STRING "VDP background plane renderer")
+set_property(CACHE GENESIS_VDP_PLANE_IMPL PROPERTY STRINGS SCALAR BATCHED)
+if(NOT GENESIS_VDP_PLANE_IMPL MATCHES "^(SCALAR|BATCHED)$")
+    message(FATAL_ERROR "GENESIS_VDP_PLANE_IMPL must be SCALAR or BATCHED")
+endif()
+message(STATUS "Genesis VDP planes = ${GENESIS_VDP_PLANE_IMPL} (build-fixed)")
 
 get_filename_component(GENESIS_RUNNER_ENGINE_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 set(_genesis_rbe_root "${GENESIS_RUNNER_ENGINE_ROOT}/external/rbengine")
@@ -112,6 +118,8 @@ endfunction()
 
 # Build requirements the runner places on the executable that links it.
 function(genesisrecomp_runner_target target)
+    target_compile_definitions(${target} PRIVATE
+        GENESIS_BATCHED_PLANES=$<STREQUAL:${GENESIS_VDP_PLANE_IMPL},BATCHED>)
     get_target_property(_done ${target} GENESIS_RUNNER_REQUIREMENTS)
     if(_done)
         return()
