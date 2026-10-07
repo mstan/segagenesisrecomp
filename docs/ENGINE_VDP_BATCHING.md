@@ -123,149 +123,76 @@ public regression target. Binary presence alone does not establish a floor.
 
 ## End-to-end engine strategy
 
-The first implementation boundary is the shared VDP scanline render service:
-consume the same VDP register/VRAM/CRAM/VSRAM and sprite inputs, produce the same
-pixel row and caller-visible sprite status, and retain its ABI and scalar build.
-RKA's measured scanline/sprite samples and the historical Sonic3K renderer cost
-support this boundary across games. Broaden tile/row decoding and compositing
-only where it removes repeated render work; the present plane-batching pilot
-has inconclusive gain and is not a proven starting speedup. Exact pixels/status
-are the promise for this candidate, so exact comparisons remain required.
-FM block synthesis is a separate candidate supported by actual hot RKA/S3K
-samples, not an additional change mixed into the VDP comparison.
+Windows is the first supported target. Use three actual games, one production
+configuration per game, and maintain a functioning LLE build with the same
+caller ABI. The owner judges practical appearance and playability; prospective
+validation does not require pixel-perfect old/new images or internal-state
+identity. Historical exact comparisons above remain completed evidence.
 
-| Title / role | Concrete route and comparison milestones | Production floor readiness and caller contract |
+### First engine boundary
+
+Start with the shared VDP scanline render service: accept existing VDP
+register/VRAM/CRAM/VSRAM and sprite inputs and deliver pixels plus caller-visible
+sprite status through the existing interface. RKA's measured scanline/sprite
+cost and historical Sonic3K renderer dominance support this shared boundary.
+Broaden row decoding/compositing where repeated work can be removed. The current
+plane-batching pilot's gain is inconclusive; it is not ready for owner handoff
+or default promotion. The current plane batching is an exact renderer
+optimization; a broader replacement may use HLE's internal freedom behind the
+shared caller contract. Classify the final implementation honestly.
+
+FM block synthesis remains a separate measured candidate, supported by RKA/S3K
+audio samples. Do not combine it with VDP changes in the same performance pair.
+If VDP work cannot produce material whole-game savings, record that result and
+consider FM on its own rather than indefinitely expanding the graphics pilot.
+
+### Selected games and floor readiness
+
+| Game | Actual route / useful observations | Production readiness |
 |---|---|---|
-| RKA / primary | `tests/stage1-walk.input`: observe menu states at FFB002/FFB004, enter game, cinematic ends (FFB194=0), then sustained right/attack. Compare first controllable frame, scrolling/action frames and final 6,000-frame state; report active-game frames separately from startup. | Existing v0.1.13 Release is profile-ready with native accelerated SDL driver and trace OFF. Build both selections from one recorded title/engine/configuration before comparing. Check scroll/plane/sprite pixels, sprite status, player/menu progress and audio continuity; do not count cinematic time as an action-window gain. |
-| Sonic1 / companion | Existing 6,000-frame GHZ script: wait for Game_Mode 0C, hold right, repeated A/B/C jumps. Reuse the 100 checkpoint floor, compare GHZ entry, running/jumping/scrolling and final progress. | Existing isolated scalar floor is functioning. Produce matched candidate/control builds without changing generated source bodies. Check exact framebuffer/status plus player progress, valid dispatch and unchanged sound; previous noisy timing is not a gain. |
-| Sonic3K / companion | Existing `tests/regression/sonic3k_attract_12000.input` provides a concrete attract route: title/demo entry, moving demo gameplay, return/title cycle, final frame. Historical 12,000-frame gameplay samples establish cost but are not automatically this route's profile. | Historical production binary exists; first confirm its pinned route/ROM/configuration and bounded demo progression in the matched current floor. Compare scrolling/window/sprites and sound through demo transitions. Attract evidence does not qualify a newly scripted player stage or campaign. |
+| RKA | `tests/stage1-walk.input`: menus, opening cinematic, then sustained right/attack after controllable entry; finite 6,000 frames. | Existing v0.1.13 Release runs with native accelerated SDL video, trace OFF. Use matched LLE/candidate builds from one pinned title/configuration. |
+| Sonic1 | Existing 6,000-frame GHZ script: wait for Game_Mode 0C, hold right and jump. | Isolated scalar floor works; preserve equivalent generated code/configuration in the candidate. Reuse existing route without a new checkpoint sweep. |
+| Sonic3K | `tests/regression/sonic3k_attract_12000.input`: title, moving demo gameplay and title/demo transition. | Existing production binary and historical cost evidence exist. Confirm the matched floor runs this route; historical gameplay cost is not automatically this attract route's cost. |
 
-Before implementation, record the active-game events/frame interval, eligible
-render coverage and a material whole-work reduction target (10% is a planning
-target, not a universal acceptance threshold). Preserve one production
-configuration per title. Establish comparable useful work with milestone/output
-checks; collect all-thread CPU and wall time, including framework/pacing tails,
-and keep coverage diagnostics separate from uninstrumented timing binaries.
-Run primary RKA ABBA (two balanced pairs), then one A/B per companion. Apply the
-local noise gate and common six-system protocol; do not repeat automatically or
-expand to a parameter matrix. If valid measured savings do not exceed noise and
-the declared useful-work target, park the VDP experiment as draft. If broader
-render work is still hot but this boundary cannot deliver savings, record that
-failure before selecting the separately measured FM boundary; do not chain
-unbounded profiles or stack speculative changes.
+The caller contract is ordinary input response and game progress, valid render
+outputs/status, and working sound through these routes. Preserve the ABI and
+supported device behavior. Use relevant existing renderer/runtime focused
+tests; add a test only for a concrete uncovered correctness risk introduced by
+the implementation. Do not add automated screenshot/state/audio checkpoint
+sweeps or campaign/lifecycle gates as a prerequisite for this bounded task.
 
-A passing VDP candidate must preserve all three route contracts and avoid new
-stalls at their tested transitions. Then provide the owner a normal-paced,
-ready-to-launch RKA HLE/candidate desktop build with ordinary controls, ROM
-selection instructions and a fixed LLE alternative. Ask the owner to judge
-scrolling, responsiveness, sprite effects and audio during actual play, not a
-benchmark-only session. After the measured gain, automated comparisons and
-owner feel check pass, merge and enable the candidate only for the explicitly
-qualified platform/title/configuration scope, retaining the LLE build opt-out;
-close the owning issue with that scope and evidence. Companion automation does
-not establish all games, campaign completion or every host platform.
+### Measurement and decision
 
-## Measurement, decision and delivery protocol
+Before code, state the candidate boundary and a material gain target; 10%
+whole-work reduction is a planning target, not a universal acceptance threshold.
+Use one matched uninstrumented LLE/candidate performance pair per game and
+report FPS and percentage gain with the same finite inputs/useful work. Uncapped
+Windows measurements are allowed. Keep coverage diagnostics separate and
+identify startup, pacing and framework overhead when interpreting results.
 
-Owner completion rule: establish a material game-workload gain and automated
-compatibility, then deliver the final playable build for the owner's feel check.
-After that check passes, integrate the prepared default change and close the
-scoped work. Exhaustive game coverage and completed campaigns are not additional
-completion requirements.
+Repeat a reversed pair only if observed noise or ambiguity prevents a
+conclusion. There is no mandatory eight-run quota, parameter matrix or
+repeat-until-pass loop. Existing noisy Sonic1 results do not establish gain.
+A cold route or immaterial/noisy gain parks the candidate; it does not justify
+forcing a playtest. Any performance conclusion must exceed the actual noise and
+compare equivalent useful work rather than a shortened or skipped workload.
 
-1. **Pin the workload and floor.** Use the three games and concrete routes above.
-   Build LLE and HLE from the same title/framework revisions, compiler/options,
-   ROM/firmware identities, presentation/audio settings and initial game state;
-   only the selected implementation differs. Keep the replaced LLE service
-   runnable. An old executable is discovery evidence, not a mismatched control.
-   Use native game saves or replayed inputs when private savestates cannot cross
-   builds. First resolve the named route/build gaps; do not perfect unrelated
-   hardware before replacing a functioning operation.
-   Verify that companion routes actually exercise the replacement; an unaffected
-   title is a regression control, not evidence for that HLE service. If the
-   chosen service changes, replace an unsuitable companion in the three-title
-   set instead of accumulating extra games or claiming unexercised coverage.
-2. **Attribute only what is missing.** Reuse suitable profiles and collect at
-   most one new active-workload attribution capture per selected game in this
-   implementation round. Identify the intended service's eligible dynamic work.
-   Include worker threads and external modules or report them unresolved; a
-   main-thread symbol histogram cannot supply a whole-process cost percentage.
-   Capture diagnostics separately from performance. End discovery when there
-   is enough evidence to select a useful service, not when every subsystem has
-   a profile. The earlier six-launch discovery cap applied to that completed
-   pass, not to the whole implementation/qualification program.
-3. **Choose one replacement.** Record its caller ABI, inputs, outputs, observable
-   side effects, supported operation scope, permitted tiny differences, expected
-   cost removed, and candidate-specific useful gain before coding. Implement a
-   shared service with build-time LLE/HLE selection and explicit build identity.
-   Do not stack several speculative replacements into the same comparison.
-4. **Measure equivalent active play.** Delimit a fixed gameplay window by guest
-   frames and meaningful game events, excluding boot, warmup and teardown.
-   Choose enough active work to dominate measurement granularity once, then keep
-   it fixed. Report total process CPU milliseconds per guest frame (all threads),
-   critical-path frame work, median/p95 frame time and missed presentation/audio
-   deadlines where available. Record peak memory and code size, since constrained
-   targets matter. Preserve normal renderer and audio production; a benchmark
-   that omits presentation/audio is a core-only diagnostic, not end-to-end proof.
-   The owner selected Windows first and authorized uncapping for useful
-   measurements. Prefer a finite uncapped comparison where it preserves the
-   same game, render and audio-synthesis work. Remove host frame-delay/VSync
-   waits only in isolated benchmark configuration; do not change the guest
-   timing model, resolution, effects, audio workload or HLE coverage between
-   builds. Report uncapped FPS and milliseconds/frame alongside total CPU/frame,
-   and verify completed render/audio work and game progress rather than trusting
-   a frame counter alone. A legacy benchmark that skips rendering/presentation
-   or audio remains core-only evidence; use a complete paced CPU/frame comparison
-   until that benchmark path can exercise equivalent work. Normal capped play
-   can show reduced CPU/frame even when FPS stays unchanged. Measure GPU
-   completion/queue cost when work moves there; a shorter submission call alone
-   is not a win. Keep the final owner-playtest package normally paced.
-5. **Use a fixed comparison budget.** The primary game gets LLE/HLE/HLE/LLE:
-   two order-balanced pairs, four measured executions. Each of the two companion
-   games gets one LLE/HLE pair, two executions each. That is eight measured runs
-   per candidate on one declared host/configuration, not a Cartesian matrix.
-   Reuse their progression telemetry and final outputs; take expensive milestone
-   captures outside timing, and use isolated LLE/HLE fixtures for detailed
-   contracts. Do not automatically add separate full campaigns or trace runs.
-   Keep team builds/profiling out of the timed window, record host load/power/
-   thermal conditions, and preserve every result. A noisy or contradictory result
-   stops that screen; fix an identified condition before a bounded replacement
-   measurement. Never repeat until a passing subset appears.
-6. **Decide from useful gain and compatibility.** Report both paired percentage
-   and absolute savings, with the observed pair spread. About 10% lower whole
-   active-workload CPU time is a planning aim, not a universal acceptance rule.
-   A candidate may instead solve a declared frame-budget or stutter problem.
-   Both primary pairs must show a clear consistent useful improvement beyond
-   observed noise; two pairs are not a formal confidence interval. Companion
-   single pairs screen for large regressions, not proof of zero performance
-   change. Explain any apparent regression before broadening defaults. Exact
-   promises require exact outputs; permitted approximations use a declared
-   practical image/audio/result comparison. Check input, audio, progression,
-   affected completion/IRQ consumers, transitions and relevant pause/reset/save
-   behavior. No crash, softlock, stale buffer, lost completion or save corruption
-   passes. A huge isolated kernel ratio cannot substitute for this decision.
-7. **Hand off the actual finished candidate.** Provide the named primary game as
-   a ready-to-launch normal-paced HLE package, an LLE comparison build, isolated
-   save/checkpoint setup, launch instructions and checksums/build identity. Include
-   a short before/after report, companion results and any tiny known differences.
-   Prepare the intended default-selection/integration change in the draft PR so
-   the owner tests the package intended to ship. Ask the owner to play normally
-   and assess response, motion/collision, camera/scrolling, stereo where relevant,
-   audio rhythm and continued progression. There is no prescribed full-campaign
-   completion or multi-game human test matrix. Owner rejection reopens the
-   affected behavior; fix and recheck that change before another handoff.
-8. **Finish the scoped delivery.** After owner acceptance, integrate the reviewed
-   candidate, make HLE the default for the supported titles/platform/service,
-   retain a documented build-time LLE opt-out, and record the measured and manual
-   evidence before closing the issue. Do not add unrelated qualification gates
-   after the agreed playtest. If the replacement cannot deliver material gain,
-   preserve its branch and draft PR with results, explain why, and choose a new
-   boundary deliberately; an unsuccessful experiment is not a completed system.
+### Visual check and owner handoff
 
-The owner selected **Windows first; port measurements later**. Windows x64 is
-therefore the initial implementation, measurement, final-playtest and default
-scope. After automated checks, material gain and the owner's normal-paced feel
-approval, finish that Windows delivery; a mobile/Xbox port is not a new gate
-before closure. Later port work carries the winning candidate and relevant
-routes to the chosen target and measures there before claiming target savings.
-Do not multiply all hosts into the Windows discovery/comparison matrix.
+Once the replacement runs, make one basic current-implementation visual sanity
+glance: does the game look right and avoid garbled output? No baseline image
+matching is required. Escalate with targeted investigation only if that glance,
+a focused test or owner feedback reveals a concrete defect.
+
+After objective gain and focused correctness pass, prepare normal-paced Windows
+candidate builds of all three selected games with ordinary controls, ROM launch
+instructions and the maintained fixed LLE alternative. Launch every ready
+selected game for the owner without asking again for launch permission, and ask
+whether each looks and plays right. Do not present the old inconclusive pilot
+as ready or use uncapped benchmark mode for this human check.
+
+Positive owner feedback plus material objective gain permits merge and default
+candidate/HLE behavior for the supported Windows scope, retaining a fixed LLE
+build opt-out. Record the supported games/configuration and evidence, then
+close the owning issue. A reported defect returns only the affected behavior
+to focused investigation; broader platforms remain outside this initial scope.
