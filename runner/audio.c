@@ -378,6 +378,17 @@ void audio_wav_stop(void)
 int audio_wav_active(void) { return s_wav_file != NULL; }
 
 void audio_get_stats(AudioStats *out) { *out = s_stats; }
+void audio_get_bridge_counts(uint64_t *pushed, uint64_t *overflow_drops)
+{
+    *pushed = *overflow_drops = 0;
+    if (!s_dev || !s_bridge_ready) return;
+    rab_stats stats;
+    SDL_LockAudioDevice(s_dev);
+    rab_get_stats(&s_bridge, &stats);
+    SDL_UnlockAudioDevice(s_dev);
+    *pushed = stats.pushed_frames;
+    *overflow_drops = stats.overflow_drops;
+}
 uint32_t audio_queued_bytes(void) { return s_dev ? SDL_GetQueuedAudioSize(s_dev) : 0; }
 
 size_t audio_get_delivery_events(AudioDeliveryEvent *out, size_t max)
