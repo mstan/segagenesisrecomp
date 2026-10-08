@@ -21,7 +21,20 @@ exports the online callback required by the runner. A hidden 300-frame startup
 check passes with zero dispatch misses. This is a build/startup check only;
 multiplayer playtesting remains with the owner and another player.
 
-Libraries: recomp-net `588059c` (RetroPortingToolKit
+Online transports (2026-10-08): the lobby server no longer runs a UDP relay
+(recomp-net-server `987d2f8`). A match starts on two-player ICE, or on the
+host relay: the host's own UDP port (UPnP / NAT-PMP / STUN-mapped) with guests
+proven to reach it. `genesis_host_lobby.c` asks for the host relay in online
+rooms of 3+ seats (relay-over-ICE off: the deployed server rejects it), and maps
+the launch by what it stated: `transport_host` -> LAN hub on the host's port,
+`force_input_relay` -> server relay (older servers), otherwise ICE. Loopback
+against recomp-net-server `aac148c`: 2 seats ICE, 3 and 4 seats host relay,
+1800 frames each, one boot digest, 0 desyncs; LAN 2 seats unchanged. The server
+clears every guest's path report on any roster change; recomp-net now re-proves
+on the next `lobby_update`, so Start succeeds seconds after the last join.
+Pins: recomp-net main `6186402` + that fix, recomp-ui master `7e884a2`.
+
+Libraries (2026-09-25): recomp-net `588059c` (RetroPortingToolKit
 `feat/genesis-spectator-ready`, on `feat/nes-spectator` bdc58b6 = PR #17, on
 `03ee1b1` = main `a9d20e2` + sparse-room `occupied_mask` + the frame-atomic
 WebSocket buffer), rbengine `2a03e73`, recomp-ui `b9ef2f5` (RetroPortingToolKit

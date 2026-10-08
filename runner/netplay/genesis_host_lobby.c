@@ -11,6 +11,7 @@
 
 #include "recomp_netplay_host.h"
 #include "recomp_net/lobby_client.h"
+#include "recomp_net/host_relay.h"
 #include "genesis_netplay_identity.h"
 #include "genesis_netplay_rb.h"
 
@@ -146,12 +147,44 @@ int genesis_host_lobby_init(const GenesisHostLobbyIdentity *id)
     h.rematch_set_ready = 1;
     fprintf(stderr, "genesis_netplay: lobby identity game=\"%s\" version=%s content=%s seats=%d\n",
             id->game_name, s_version, s_sha[0] ? s_sha : "(unknown)", h.max_players);
-    return recomp_netplay_host_init(&h);
+    if (recomp_netplay_host_init(&h) != 0) return -1;
+    /* The lobby server relays nothing (recomp-net-server WS_LOBBY.md "Host
+     * relay"): a match runs on two-player ICE or through the host's own port.
+     * The host-relay-over-ICE variant needs a server that accepts relay_via,
+     * which the deployed one refuses (empty host endpoint), so the host relay
+     * here is the advertised-port kind. */
+    rnet_lobby_set_relay_via_ice(0);
+    return 0;
+}
+
+/* ---- relay policy per room --------------------------------------------------
+ * recomp-ui leaves the host relay off (ICE online). ICE carries exactly two
+ * players, so a room with more seats asks the host to carry the match;
+ * two-seat rooms stay on ICE, which needs no reachable port. LAN / Direct IP
+ * rooms are host-carried already. */
+static RecompLauncherCNetplayCallbacks s_callbacks;
+static int (*s_base_create)(void *, const char *, char *, const char *,
+                            const RecompLauncherCSettings *, int, int);
+
+static int create_with_relay_policy(void *ctx, const char *lobby_name, char *host_endpoint,
+                                    const char *password, const RecompLauncherCSettings *settings,
+                                    int lan_only, int max_slots)
+{
+    const int host_relay = !lan_only && max_slots > 2;
+    rnet_lobby_set_relay_host_pref(host_relay);
+    fprintf(stderr, "genesis_netplay: %s room, %d seats: %s\n", lan_only ? "LAN" : "online",
+            max_slots, lan_only ? "host-carried" : host_relay ? "host relay (the host's UDP port)" : "ICE");
+    return s_base_create(ctx, lobby_name, host_endpoint, password, settings, lan_only, max_slots);
 }
 
 const RecompLauncherCNetplayCallbacks *genesis_host_lobby_callbacks(void)
 {
-    return recomp_netplay_host_callbacks();
+    if (!s_base_create) {
+        s_callbacks = *recomp_netplay_host_callbacks();
+        s_base_create = s_callbacks.create;
+        s_callbacks.create = create_with_relay_policy;
+    }
+    return &s_callbacks;
 }
 
 int genesis_host_lobby_config_from_launch(const RecompLauncherCNetplayLaunch *l, GenesisNetplayConfig *cfg)
@@ -173,10 +206,19 @@ int genesis_host_lobby_config_from_launch(const RecompLauncherCNetplayLaunch *l,
     cfg->occupied_mask = l->occupied_mask;
     snprintf(cfg->bind_hostport, sizeof cfg->bind_hostport, "%s", l->bind_hostport);
     snprintf(cfg->peer_hostport, sizeof cfg->peer_hostport, "%s", l->peer_hostport);
-    /* Online launches ride the lobby server's UDP input relay (the SFU):
-     * the one transport that carries 3-4 players and spectators. */
-    cfg->transport = recomp_netplay_host_in_lan() ? GENESIS_NET_TRANSPORT_LAN
-                                                  : GENESIS_NET_TRANSPORT_RELAY;
+    /* The transport the LAUNCH stated: the host's own port (host binds and
+     * hubs, guests dial it), a server UDP relay (servers that still run one),
+     * or two-player ICE. */
+    if (recomp_netplay_host_in_lan())
+        cfg->transport = GENESIS_NET_TRANSPORT_LAN;
+#if defined(RECOMP_LAUNCHER_HAS_HOST_RELAY)
+    else if (l->transport_host)
+        cfg->transport = GENESIS_NET_TRANSPORT_HUB;
+#endif
+    else if (l->force_input_relay)
+        cfg->transport = GENESIS_NET_TRANSPORT_RELAY;
+    else
+        cfg->transport = GENESIS_NET_TRANSPORT_ICE;
     if (l->slot_port_valid) {
         cfg->slot_port_valid = 1;
         for (int i = 0; i < GENESIS_NETPLAY_MAX_SLOTS; i++) {
@@ -212,7 +254,7 @@ static const char *env_or(const char *k, const char *d) { const char *v = getenv
 
 void genesis_host_lobby_selftest_report_room(int round)
 {
-    const RecompLauncherCNetplayCallbacks *cb = recomp_netplay_host_callbacks();
+    const RecompLauncherCNetplayCallbacks *cb = genesis_host_lobby_callbacks();
     int role = genesis_host_lobby_selftest_role();
     if (!role || !cb) return;
     for (int i = 0; i < 20; i++) { cb->pump(NULL); hl_sleep_ms(10); }
@@ -222,9 +264,20 @@ void genesis_host_lobby_selftest_report_room(int round)
             cb->in_lobby(NULL), cb->is_host(NULL), cb->member_count(NULL), e ? e : "");
 }
 
+/* A host-relay room is startable once the host has advertised its port. The
+ * guests' proof is the server's to judge at Start (it does not echo path
+ * reports back promptly), so a refused Start is retried, as a host would. */
+static int host_relay_ready(void)
+{
+    const RNetLobbyMatchCaps *caps = rnet_lobby_match_caps();
+    RNetHostRelayStatus st;
+    if (!caps || !caps->valid || !caps->relay_host) return 1;
+    return rnet_lobby_host_relay_status(&st) && st.advertised[0];
+}
+
 int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *out)
 {
-    const RecompLauncherCNetplayCallbacks *cb = recomp_netplay_host_callbacks();
+    const RecompLauncherCNetplayCallbacks *cb = genesis_host_lobby_callbacks();
     int role = genesis_host_lobby_selftest_role();
     int is_host = role == 1;
     const char *rname = is_host ? "host" : "guest";
@@ -237,6 +290,7 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
     uint32_t deadline = rbe_mono_ms() + 90000u;
     int joined = 0, ready_sent = 0, started = 0;
     uint32_t next_list = 0;
+    uint32_t next_relay_log = 0, next_start = 0, start_sent_at = 0;
 
     if (!role || !cb || !out) return -1;
     if (players < 2) players = 2;
@@ -288,7 +342,9 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
             RecompLauncherCNetplayLobby row;
             for (int i = 0; i < cb->list_count(NULL); i++) {
                 if (cb->list_get(NULL, i, &row) && !strcmp(row.name, lobby)) {
-                    char gb[64] = "";
+                    /* Several guests on one machine need distinct game ports. */
+                    char gb[64];
+                    snprintf(gb, sizeof gb, "%s", env_or("GENESIS_LOBBY_SELFTEST_BIND", ""));
                     if (cb->join(NULL, row.lobby_id, "", gb) == 0) {
                         joined = 1;
                         fprintf(stderr, "[lobby-selftest] guest round=%d join sent\n", round);
@@ -298,12 +354,29 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
             }
         }
         int need = lan ? 2 : players + spectators;
+        if (!lan && rbe_mono_ms() >= next_relay_log) {
+            RNetHostRelayStatus st;
+            next_relay_log = rbe_mono_ms() + 2000u;
+            if (rnet_lobby_host_relay_status(&st))
+                fprintf(stderr, "[lobby-selftest] %s relay role=%d endpoint=%s advertised=%s answered=%u "
+                                "probed=%s report=%s\n", rname, st.role, st.port.endpoint, st.advertised,
+                        (unsigned)st.port.probes_answered, st.probed, st.last_report);
+        }
         if (joined && cb->in_lobby(NULL) && !ready_sent && (!is_host || cb->member_count(NULL) >= need))
             ready_sent = cb->set_ready(NULL, 1) == 0;
-        if (is_host && !started && cb->member_count(NULL) >= need && cb->all_ready(NULL)) {
+        if (is_host && !started && cb->member_count(NULL) >= need && cb->all_ready(NULL) &&
+            (lan || host_relay_ready()) && rbe_mono_ms() >= next_start) {
             started = cb->request_start(NULL, NULL) == 0;
+            start_sent_at = rbe_mono_ms();
             fprintf(stderr, "[lobby-selftest] host round=%d start=%d members=%d\n", round, started,
                     cb->member_count(NULL));
+        }
+        if (is_host && started && !cb->launch_pending(NULL) && rbe_mono_ms() - start_sent_at > 3000u) {
+            const char *e = cb->last_error ? cb->last_error(NULL) : NULL;
+            fprintf(stderr, "[lobby-selftest] host round=%d start refused (%s); retrying\n", round,
+                    e && e[0] ? e : "no launch");
+            started = 0;
+            next_start = rbe_mono_ms() + 2000u;
         }
         if (cb->launch_pending(NULL)) {
             int ok = cb->fill_launch(NULL, out);
