@@ -105,11 +105,11 @@ DATA_DIRECTIVE_RE = re.compile(r"^(?:dc\.[bwl]|dcb\.[bwl]|ds\.[bwl]|"
 LBL_NAME = r"(?:[A-Za-z_.][\w.]*|[+\-]+)"
 
 PCREL_W_RE = re.compile(
-    r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
+    r"^\s*(?:\.?[A-Za-z_][\w.]*\s*:\s*)*"
     r"dc\.w\s+(" + LBL_NAME + r")\s*-\s*(" + LBL_NAME + r")\s*(?:;.*)?$"
 )
 ABS_L_RE = re.compile(
-    r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
+    r"^\s*(?:\.?[A-Za-z_][\w.]*\s*:\s*)*"
     r"dc\.l\s+(" + LBL_NAME + r")\s*(?:;.*)?$"
 )
 # bra.w / bra.s trampoline-table form. Each entry is a single 68K
@@ -121,11 +121,11 @@ ABS_L_RE = re.compile(
 # for each. Sonic 2's GameModesArray ($003A2) and Sonic 1's
 # EniDec_JmpTable ($1852) are the canonical examples.
 BRA_W_RE = re.compile(
-    r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
+    r"^\s*(?:\.?[A-Za-z_][\w.]*\s*:\s*)*"
     r"bra\.w\s+(" + LBL_NAME + r")\s*(?:;.*)?$"
 )
 BRA_S_RE = re.compile(
-    r"^\s*(?:[A-Za-z_][\w.]*\s*:\s*)*"
+    r"^\s*(?:\.?[A-Za-z_][\w.]*\s*:\s*)*"
     r"bra(?:\.s)?\s+(" + LBL_NAME + r")\s*(?:;.*)?$"
 )
 

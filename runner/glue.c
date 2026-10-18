@@ -1154,7 +1154,9 @@ void glue_yield_for_vblank(void)
      * disables the gate and the hook never fires (Sonic 2 path). */
     {
         if (g_game_spec.call_periodic && g_game_layout.plc_pending_addr &&
-            glue_peek16(g_game_layout.plc_pending_addr & 0xFFFF) != 0) {
+            /* Host peeks use full bus addresses; truncating to a RAM offset
+             * would read ROM at the same offset instead of the PLC counter. */
+            glue_peek16(g_game_layout.plc_pending_addr) != 0) {
             M68KState plc_save = g_cpu;
             g_game_spec.call_periodic();
             g_cpu = plc_save;
