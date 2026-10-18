@@ -43,6 +43,10 @@ add_test(NAME frame_pacer COMMAND frame_pacer_test)
 
 find_package(Python3 QUIET COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
+    add_test(NAME disasm_inline_tables COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_LIST_DIR}/tools/test_disasm_inline_tables.py")
+    add_test(NAME sonic_disassembly_provenance COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_LIST_DIR}/tools/test_sonic_disassembly.py")
     add_test(NAME generated_input_paths COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_LIST_DIR}/tools/test_generated_paths.py"
         --cmake "${CMAKE_COMMAND}" --generator "${CMAKE_GENERATOR}")
