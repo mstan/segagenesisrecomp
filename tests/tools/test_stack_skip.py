@@ -52,11 +52,12 @@ void hybrid_jmp_interpret(uint32_t a) { call_by_address(a); }
 void hybrid_call_interpret(uint32_t a) { call_by_address(a); }
 void genesis_log_interior_label_miss(uint32_t a) { genesis_log_dispatch_miss(a); }
 int main(int argc,char **argv) {
-    int skip=atoi(argv[1]); (void)argc;
+    int skip=atoi(argv[1]), mixed=atoi(argv[2]); (void)argc;
     g_cpu.A[7]=0xFFFE00; g_cpu.SR=0x2700;
     recomp_call_addr(0x200);
     if (g_cpu.D[0]!=42 || g_cpu.D[1]!=(skip<2 ? 1u:0u) ||
-        g_cpu.D[2]!=(skip<1 ? 2u:0u) || g_cpu.A[7]!=0xFFFE00 || pending) {
+        g_cpu.D[2]!=(skip<1 ? 2u:0u) || g_cpu.D[3]!=(mixed?0x56781234u:0u) ||
+        g_cpu.A[7]!=0xFFFE00 || pending) {
         fprintf(stderr,"skip=%d D0=%u D1=%u D2=%u A7=%x pending=%d\n",skip,
                 g_cpu.D[0],g_cpu.D[1],g_cpu.D[2],g_cpu.A[7],pending); return 1;
     }
@@ -80,7 +81,7 @@ def main():
         (td/"game.toml").write_text(CONFIG)
         (td/"harness.c").write_text(HARNESS)
         for slots in (0,1,2):
-            for split in (False,True):
+            for split,mixed in ((False,False),(True,False),(False,True),(True,True)):
                 rom = bytearray(b"\xff"*0x400)
                 rom[0:8] = bytes.fromhex("00fffe00 00000200")
                 rom[0x100:0x200] = b" "*256
@@ -89,19 +90,26 @@ def main():
                     code = bytes.fromhex("4eb9") + target.to_bytes(4,"big") + bytes([0x70+reg*2,value,0x4e,0x75])
                     rom[addr:addr+len(code)] = code
                 adjust = bytes.fromhex({0:"4e71",1:"584f",2:"504f"}[slots])
+                # IceCap column: save two word velocities, restore one long.
+                # The data must not be mistaken for a consumed return slot.
+                push = bytes.fromhex("3f3c1234 3f3c5678") if mixed else b""
+                pop = bytes.fromhex("261f") if mixed else b""
                 if split:
-                    rom[0x2C0:0x2C6] = bytes.fromhex("4ef9 000002e0")
-                    rom[0x2E0:0x2E8] = adjust + bytes.fromhex("4ef9 000002f0")
+                    head = push + bytes.fromhex("4ef9 000002e0")
+                    tail = pop + adjust + bytes.fromhex("4ef9 000002f0")
+                    rom[0x2C0:0x2C0+len(head)] = head
+                    rom[0x2E0:0x2E0+len(tail)] = tail
                     rom[0x2F0:0x2F2] = bytes.fromhex("4e75")
                 else:
-                    rom[0x2C0:0x2C4] = adjust + bytes.fromhex("4e75")
+                    body = push + pop + adjust + bytes.fromhex("4e75")
+                    rom[0x2C0:0x2C0+len(body)] = body
                     rom[0x2E0:0x2E2] = rom[0x2F0:0x2F2] = bytes.fromhex("4e75")
                 (td/"test.bin").write_bytes(rom)
                 run([args.recompiler.resolve(),"test.bin","--game","game.toml","--output-dir","generated"],td)
                 exe = td/"test.exe"
                 sources = sorted((td/"generated").glob("skip_part*.c")) + [td/"generated/skip_dispatch.c",td/"harness.c"]
                 run([args.cc.resolve(),"-std=c11","-O1","-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
-                run([exe,str(slots)],td)
-                print(f"PASS skip {slots} return slots, split={split}")
+                run([exe,str(slots),str(int(mixed))],td)
+                print(f"PASS skip {slots} return slots, split={split}, mixed-width-data={mixed}")
 
 if __name__ == "__main__": main()

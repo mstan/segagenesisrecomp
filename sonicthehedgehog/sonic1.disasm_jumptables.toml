@@ -9,8 +9,8 @@
 #   [game]
 #   discovery_files = ["sonic1.disasm_jumptables.toml"]
 
-# Tables found: 201 pcrel16, 3 abs, 4 bra-trampoline
-# Unique targets: 1010
+# Tables found: 203 pcrel16, 3 abs, 4 bra-trampoline
+# Unique targets: 1037
 
 [[jump_table]]
 start  = 0x000B6E
@@ -193,16 +193,10 @@ stride = 2
 format = "pcrel16"   # Plat_Index (5 entries)
 
 [[jump_table]]
-start  = 0x007F5E
-end    = 0x007F6C
+start  = 0x007F5A
+end    = 0x007F74
 stride = 2
-format = "pcrel16"   # .index (7 entries)
-
-[[jump_table]]
-start  = 0x007F6C
-end    = 0x007F72
-stride = 2
-format = "pcrel16"   # .index (3 entries)
+format = "pcrel16"   # .index (13 entries)
 
 [[jump_table]]
 start  = 0x00821E
@@ -283,10 +277,22 @@ stride = 2
 format = "pcrel16"   # Crab_Index (5 entries)
 
 [[jump_table]]
+start  = 0x009578
+end    = 0x00957C
+stride = 2
+format = "pcrel16"   # .index (2 entries)
+
+[[jump_table]]
 start  = 0x0097EC
 end    = 0x0097F2
 stride = 2
 format = "pcrel16"   # Buzz_Index (3 entries)
+
+[[jump_table]]
+start  = 0x009838
+end    = 0x00983C
+stride = 2
+format = "pcrel16"   # .index (2 entries)
 
 [[jump_table]]
 start  = 0x009940
@@ -361,10 +367,10 @@ stride = 2
 format = "pcrel16"   # Burro_Index (2 entries)
 
 [[jump_table]]
-start  = 0x00AD16
+start  = 0x00AD12
 end    = 0x00AD1A
 stride = 2
-format = "pcrel16"   # .index (2 entries)
+format = "pcrel16"   # .index (4 entries)
 
 [[jump_table]]
 start  = 0x00AEC6
@@ -511,10 +517,10 @@ stride = 2
 format = "pcrel16"   # Newt_Index (3 entries)
 
 [[jump_table]]
-start  = 0x00DDCC
-end    = 0x00DDD0
+start  = 0x00DDC8
+end    = 0x00DDD2
 stride = 2
-format = "pcrel16"   # .index (2 entries)
+format = "pcrel16"   # .index (5 entries)
 
 [[jump_table]]
 start  = 0x00E008
@@ -673,10 +679,10 @@ stride = 2
 format = "pcrel16"   # Bas_Index (2 entries)
 
 [[jump_table]]
-start  = 0x01010A
+start  = 0x010106
 end    = 0x01010E
 stride = 2
-format = "pcrel16"   # .index (2 entries)
+format = "pcrel16"   # .index (4 entries)
 
 [[jump_table]]
 start  = 0x010294
@@ -685,10 +691,10 @@ stride = 2
 format = "pcrel16"   # FBlock_Index (2 entries)
 
 [[jump_table]]
-start  = 0x0103DA
+start  = 0x0103D6
 end    = 0x0103F2
 stride = 2
-format = "pcrel16"   # .index (12 entries)
+format = "pcrel16"   # .index (14 entries)
 
 [[jump_table]]
 start  = 0x010790
@@ -703,10 +709,10 @@ stride = 2
 format = "pcrel16"   # BBall_Index (2 entries)
 
 [[jump_table]]
-start  = 0x010A1C
+start  = 0x010A18
 end    = 0x010A20
 stride = 2
-format = "pcrel16"   # .index (2 entries)
+format = "pcrel16"   # .index (4 entries)
 
 [[jump_table]]
 start  = 0x010B02
@@ -715,16 +721,22 @@ stride = 2
 format = "pcrel16"   # Elev_Index (4 entries)
 
 [[jump_table]]
-start  = 0x010BF2
+start  = 0x010BEA
 end    = 0x010BFE
 stride = 2
-format = "pcrel16"   # .index (6 entries)
+format = "pcrel16"   # .index (10 entries)
 
 [[jump_table]]
 start  = 0x010D8A
 end    = 0x010D90
 stride = 2
 format = "pcrel16"   # Circ_Index (3 entries)
+
+[[jump_table]]
+start  = 0x010E00
+end    = 0x010E04
+stride = 2
+format = "pcrel16"   # .index (2 entries)
 
 [[jump_table]]
 start  = 0x010EC0
@@ -787,6 +799,12 @@ stride = 2
 format = "pcrel16"   # Bom_Index (4 entries)
 
 [[jump_table]]
+start  = 0x011A64
+end    = 0x011A6A
+stride = 2
+format = "pcrel16"   # .index (3 entries)
+
+[[jump_table]]
 start  = 0x011C3A
 end    = 0x011C3E
 stride = 2
@@ -811,16 +829,10 @@ stride = 2
 format = "pcrel16"   # LBlk_Index (2 entries)
 
 [[jump_table]]
-start  = 0x0120B2
-end    = 0x0120B8
-stride = 2
-format = "pcrel16"   # .index (3 entries)
-
-[[jump_table]]
-start  = 0x0120BA
+start  = 0x0120AE
 end    = 0x0120BE
 stride = 2
-format = "pcrel16"   # .index (2 entries)
+format = "pcrel16"   # .index (8 entries)
 
 [[jump_table]]
 start  = 0x0121FA
@@ -931,10 +943,10 @@ stride = 2
 format = "pcrel16"   # Sto_Index (2 entries)
 
 [[jump_table]]
-start  = 0x015D8C
+start  = 0x015D88
 end    = 0x015D94
 stride = 2
-format = "pcrel16"   # .index (4 entries)
+format = "pcrel16"   # .index (6 entries)
 
 [[jump_table]]
 start  = 0x016006
@@ -1202,9 +1214,9 @@ format = "pcrel16"   # AniArt_Index (7 entries)
 
 [[jump_table]]
 start  = 0x01C3CE
-end    = 0x01C3EE
+end    = 0x01C3EC
 stride = 2
-format = "pcrel16"   # AniArt_MZextra (16 entries)
+format = "pcrel16"   # AniArt_MZextra (15 entries)
 
 [[jump_table]]
 start  = 0x01C556
@@ -1445,15 +1457,18 @@ extra = [
     0x007ED6,   # Plat_Solid
     0x007EEA,   # Plat_Action
     0x007EFA,   # Plat_Action2
-    0x007F7A,   # .type05
-    0x007F86,   # .type00
-    0x007FC0,   # .type06
-    0x007FD0,   # .type02
-    0x007FE8,   # .type03
-    0x008010,   # .type04
-    0x00807A,   # .type07
-    0x0080A6,   # .type08
-    0x0080CC,   # .type0A
+    0x007F74,   # .type00
+    0x007F76,   # .type05
+    0x007F86,   # .type01
+    0x007F9E,   # .type0C
+    0x007FAE,   # .type0B
+    0x007FBC,   # .type06
+    0x007FCC,   # .type02
+    0x007FE4,   # .type03
+    0x00800C,   # .type04
+    0x008076,   # .type07
+    0x0080A2,   # .type08
+    0x0080BA,   # .type0A
     0x0080F6,   # Plat_Delete
     0x0081A8,   # Obj19
     0x008210,   # CollapseLedge
@@ -1514,12 +1529,16 @@ extra = [
     0x0094F0,   # Crabmeat
     0x009508,   # Crab_Main
     0x00955C,   # Crab_Action
+    0x00957C,   # .waittofire
+    0x00961A,   # .walkonfloor
     0x0096B8,   # Crab_Delete
     0x0096BE,   # Crab_BallMain
     0x0096F4,   # Crab_BallMove
     0x0097DE,   # BuzzBomber
     0x0097F2,   # Buzz_Main
     0x00981C,   # Buzz_Action
+    0x00983C,   # .move
+    0x0098D2,   # .chknearsonic
     0x00992C,   # Buzz_Delete
     0x009932,   # Missile
     0x00994A,   # Msl_Main
@@ -1576,8 +1595,10 @@ extra = [
     0x00ACA4,   # Burrobot
     0x00ACB6,   # Burro_Main
     0x00ACF6,   # Burro_Action
-    0x00ADBA,   # Burro_Jump
-    0x00ADF6,   # Burro_ChkSonic
+    0x00AD1A,   # .changedir
+    0x00AD44,   # Burro_Move
+    0x00ADB6,   # Burro_Jump
+    0x00ADF2,   # Burro_ChkSonic
     0x00AEB8,   # LargeGrass
     0x00AED6,   # LGrass_Main
     0x00AF34,   # LGrass_Action
@@ -1685,8 +1706,11 @@ extra = [
     0x00DD68,   # Newtron
     0x00DD7C,   # Newt_Main
     0x00DDAC,   # Newt_Action
-    0x00DE8C,   # .matchfloor
-    0x00DEAC,   # .speed
+    0x00DDD2,   # .chkdistance
+    0x00DE14,   # .type00
+    0x00DE88,   # .matchfloor
+    0x00DEA8,   # .speed
+    0x00DEAE,   # .type01
     0x00DF16,   # Newt_Delete
     0x00DFFA,   # Roller
     0x00E00C,   # Roll_Main
@@ -1793,23 +1817,27 @@ extra = [
     0x0100A8,   # Basaran
     0x0100BA,   # Bas_Main
     0x0100EA,   # Bas_Action
-    0x010190,   # .flapsound
-    0x0101CC,   # .flyup
+    0x01010E,   # .dropcheck
+    0x01014A,   # .dropfly
+    0x01018C,   # .flapsound
+    0x0101C8,   # .flyup
     0x010286,   # FloatingBlock
     0x0102A8,   # FBlock_Main
     0x01037C,   # FBlock_Action
-    0x010404,   # .type02
-    0x010426,   # .type03
-    0x010432,   # .type04
-    0x010454,   # .type05
-    0x0104E8,   # .type06
-    0x01054C,   # .type07
-    0x01057E,   # .type0C
-    0x0105E0,   # .type0D
-    0x010644,   # .type08
-    0x010656,   # .type09
-    0x010666,   # .type0A
-    0x010676,   # .type0B
+    0x0103F2,   # .type00
+    0x0103F4,   # .type01
+    0x010400,   # .type02
+    0x010422,   # .type03
+    0x01042E,   # .type04
+    0x010450,   # .type05
+    0x0104E4,   # .type06
+    0x010548,   # .type07
+    0x01057A,   # .type0C
+    0x0105DC,   # .type0D
+    0x010640,   # .type08
+    0x010652,   # .type09
+    0x010662,   # .type0A
+    0x010672,   # .type0B
     0x010782,   # SpikeBall
     0x010796,   # SBall_Main
     0x0108B6,   # SBall_Move
@@ -1817,22 +1845,28 @@ extra = [
     0x010976,   # BigSpikeBall
     0x010988,   # BBall_Main
     0x0109E2,   # BBall_Move
-    0x010A48,   # .type02
-    0x010A6C,   # .type03
+    0x010A20,   # .type00
+    0x010A22,   # .type01
+    0x010A44,   # .type02
+    0x010A68,   # .type03
     0x010AD2,   # Elevator
     0x010B2A,   # Elev_Main
     0x010BA2,   # Elev_Platform
     0x010BB2,   # Elev_Action
-    0x010C08,   # .type01
-    0x010C2A,   # .type04
-    0x010C3C,   # .type06
-    0x010C5E,   # .type08
-    0x010C80,   # .type09
+    0x010BFE,   # .type00
+    0x010C00,   # .type01
+    0x010C0E,   # .type02
+    0x010C22,   # .type04
+    0x010C34,   # .type06
+    0x010C56,   # .type08
+    0x010C78,   # .type09
     0x010CFC,   # Elev_MakeMulti
     0x010D5A,   # CirclingPlatform
     0x010D90,   # Circ_Main
     0x010DC0,   # Circ_Platform
     0x010DD0,   # Circ_Action
+    0x010E04,   # .type00
+    0x010E42,   # .type04
     0x010E90,   # Staircase
     0x010EC6,   # Stair_Main
     0x010F46,   # Stair_Move
@@ -1869,6 +1903,9 @@ extra = [
     0x0119F6,   # Bomb
     0x011A0C,   # Bom_Main
     0x011A48,   # Bom_Action
+    0x011A6A,   # .walk
+    0x011A98,   # .wait
+    0x011ABE,   # .explode
     0x011B60,   # Bom_Display
     0x011BD8,   # Bom_End
     0x011CCE,   # .fuse2
@@ -1885,11 +1922,12 @@ extra = [
     0x011FD4,   # LabyrinthBlock
     0x011FEE,   # LBlk_Main
     0x01204C,   # LBlk_Action
-    0x0120C4,   # .type03
-    0x0120EA,   # .type02
-    0x0120F2,   # .type06
-    0x01210C,   # .type04
-    0x012146,   # .type07
+    0x0120BE,   # .type00
+    0x0120C0,   # .type01
+    0x0120E6,   # .type02
+    0x012108,   # .type04
+    0x012128,   # .type05
+    0x01213A,   # .type07
     0x0121E8,   # Gargoyle
     0x01220A,   # Gar_Main
     0x012248,   # Gar_MakeFire
@@ -1974,10 +2012,12 @@ extra = [
     0x015C12,   # ScrapStomp
     0x015C38,   # Sto_Main
     0x015D0A,   # Sto_Action
-    0x015E06,   # .type02
-    0x015E5C,   # .type03
-    0x015EB0,   # .type04
-    0x015F12,   # .type05
+    0x015D94,   # .type00
+    0x015D96,   # .type01
+    0x015E02,   # .type02
+    0x015E58,   # .type03
+    0x015EAC,   # .type04
+    0x015F0E,   # .type05
     0x015FF8,   # VanishPlatform
     0x01600E,   # VanP_Main
     0x016068,   # VanP_Sync
@@ -2204,7 +2244,6 @@ extra = [
     0x01C4C4,   # AniArt_MZ_Magma_Shift0_Col3
     0x01C4D2,   # AniArt_MZ_Magma_Shift1_Col3
     0x01C4E8,   # AniArt_MZ_Magma_Shift2_Col3
-    0x01C4FA,   # AniArt_MZ_Magma_Shift3_Col3
     0x01C548,   # HUD
     0x01C55A,   # HUD_Main
     0x01C584,   # HUD_Flash

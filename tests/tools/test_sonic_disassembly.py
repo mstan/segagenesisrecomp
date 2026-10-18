@@ -35,6 +35,8 @@ class Symbols(unittest.TestCase):
             path.write_text(listing)
             self.assertEqual(module.symbols(path, bytes(rom)), {
                 0x200: ["EntryPoint"], 0x202: ["IncludedCode"], 0x206: ["NestedCode"]})
+            self.assertEqual(module.instruction_starts(path, bytes(rom)),
+                             {0x200, 0x202, 0x206, 0x20A})
 
 
 if __name__ == "__main__":
