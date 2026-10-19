@@ -698,10 +698,15 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
             for (int cell = 0; cell < hsz; ++cell) {
                 int cellx = hf ? hsz - 1 - cell : cell;
                 int tileno = (tile + cellx * vsz + celly) & 0x07ff;
-                uint16_t pa = (uint16_t)(tileno * tile_bytes + fy * 4);
-                uint32_t bits = ((uint32_t)v->vram[pa] << 24) |
-                    ((uint32_t)v->vram[pa + 1] << 16) |
-                    ((uint32_t)v->vram[pa + 2] << 8) | v->vram[pa + 3];
+                unsigned pattern_address=(unsigned)tileno*tile_bytes+(unsigned)fy*4u;
+                uint16_t pa=(uint16_t)pattern_address;
+                uint32_t bits=0;
+                for(unsigned b=0;b<4;b++) {
+                    uint8_t byte=patterns?(pattern_address+b<pattern_bytes?patterns[pattern_address+b]:0)
+                                         :v->vram[(uint16_t)(pa+b)];
+                    bits=(bits<<8)|byte;
+                }
+                int ext=pal==0?gvdp_sprite_pattern_line(sz,(unsigned)tileno):0;
                 for (int fx = 0; fx < 8; ++fx) {
                     int sx = screen_x + cell * 8 + fx;
                     if (sx < 0 || sx >= total) continue;
@@ -713,7 +718,8 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                     else if (sh_mode && pal == 3 && nib == 15)
                         s_spr_shadow_op[sx] = 1;
                     else {
-                        s_spr_idx[sx] = (uint8_t)(pal * 16 + nib);
+                        s_spr_idx[sx] = ext?(uint8_t)(GVDP_HOST_PALETTE_BASE+(ext-1)*16+nib)
+                                          :(uint8_t)(pal*16+nib);
                         s_spr_op[sx] = 1;
                         s_spr_hi[sx] = (uint8_t)pri;
                         drawn[sx] = 1;

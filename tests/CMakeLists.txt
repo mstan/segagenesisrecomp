@@ -84,6 +84,11 @@ add_executable(vdp_host_sprite_test runtime/vdp_host_sprite_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")
 target_include_directories(vdp_host_sprite_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
 add_test(NAME vdp_host_sprite COMMAND vdp_host_sprite_test)
+add_executable(vdp_host_sprite_batched_test runtime/vdp_host_sprite_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")
+target_include_directories(vdp_host_sprite_batched_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
+target_compile_definitions(vdp_host_sprite_batched_test PRIVATE GENESIS_BATCHED_PLANES=1)
+add_test(NAME vdp_host_sprite_batched COMMAND vdp_host_sprite_batched_test)
 add_executable(expansion_rom_test runtime/expansion_rom_test.c)
 target_include_directories(expansion_rom_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
 add_test(NAME expansion_rom COMMAND expansion_rom_test)
