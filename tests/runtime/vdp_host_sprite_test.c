@@ -72,6 +72,22 @@ int main(void)
     CHECK(gvdp_ext_color(7,1,1)==0xE && gvdp_ext_color(8,1,1)==0xE00);
     CHECK(v.cram[1]==0 && !v.sprite_overflow && !v.sprite_collision);
     gvdp_set_ext_tiles(NULL);gvdp_render_scanline(&v,0,row);CHECK(row[4]==1);
+    /* An explicit marker selects private art without touching VRAM or plane
+     * pixels, at native width as well as the game's custom renderer width. */
+    uint8_t patterns[64]={0},pattern_lines[2]={0,1};
+    memset(patterns+32,0x33,32);
+    CHECK(!gvdp_set_sprite_patterns(patterns,63,pattern_lines));
+    CHECK(gvdp_set_sprite_patterns(patterns,sizeof patterns,pattern_lines));
+    unsigned bytes=99;CHECK(!gvdp_sprite_patterns(0,&bytes) && bytes==0);
+    CHECK(gvdp_sprite_patterns(0x80,&bytes)==patterns && bytes==64);
+    gvdp_render_scanline(&v,0,row);CHECK(row[4]==1);
+    v.vram[0xF802]=0x80;gvdp_render_scanline(&v,0,row);
+    CHECK(row[4]==GVDP_HOST_PALETTE_BASE+3 && row[20]==17);
+    CHECK(v.vram[32]==0x11 && !v.sprite_overflow && !v.sprite_collision);
+    word(0xF804,0x2001);gvdp_render_scanline(&v,0,row);CHECK(row[4]==19);
+    word(0xF804,0x0002);gvdp_render_scanline(&v,0,row);CHECK(row[4]==0);
+    word(0xF804,1);CHECK(gvdp_set_sprite_patterns(NULL,0,NULL));
+    gvdp_render_scanline(&v,0,row);CHECK(row[4]==1);
     puts("host sprites composite behind native sprites with plane priority");
     return 0;
 }

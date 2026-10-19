@@ -148,6 +148,15 @@ void gvdp_set_ext_colors(const uint16_t *top, const uint16_t *bottom, int split_
 int gvdp_ext_line(unsigned tile);                     /* 0 or 1..GVDP_EXT_LINES */
 uint16_t gvdp_ext_color(int row, int line, int nib); /* 9-bit colour for a row */
 int gvdp_ext_active(void);
+/* Optional immutable sprite-pattern bank. Marked SAT pieces (size byte bit
+ * 7, unused by hardware) read these tiles; unmarked sprites and every plane
+ * always use guest VRAM. NULL disables it. The caller owns both buffers.
+ * Game adapters must mask the marker before any guest size-table lookup.
+ * Host pointers are presentation state, never part of serialized GVDP. */
+int gvdp_set_sprite_patterns(const uint8_t *patterns, unsigned bytes,
+                             const uint8_t *tile_lines);
+const uint8_t *gvdp_sprite_patterns(unsigned size_flags, unsigned *bytes);
+int gvdp_sprite_pattern_line(unsigned size_flags, unsigned tile);
 /* Read-only color table for index-to-ARGB sinks; NULL when disabled. */
 const uint32_t *gvdp_host_palette(void);
 

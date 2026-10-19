@@ -514,6 +514,28 @@ uint16_t gvdp_ext_color(int row, int line, int nib)
     if (line < 1 || line > GVDP_EXT_LINES || nib < 0 || nib >= 16) return 0;
     return set[(line - 1) * 16 + nib];
 }
+static const uint8_t *s_sprite_patterns, *s_sprite_pattern_lines;
+static unsigned s_sprite_pattern_bytes;
+int gvdp_set_sprite_patterns(const uint8_t *patterns,unsigned bytes,const uint8_t *tile_lines)
+{
+    if(patterns && (!bytes || bytes>65536 || bytes%32))return 0;
+    s_sprite_patterns=patterns;s_sprite_pattern_bytes=patterns?bytes:0;
+    s_sprite_pattern_lines=patterns?tile_lines:NULL;
+    return 1;
+}
+const uint8_t *gvdp_sprite_patterns(unsigned flags,unsigned *bytes)
+{
+    int active=(flags&0x80u) && s_sprite_patterns;
+    if(bytes)*bytes=active?s_sprite_pattern_bytes:0;
+    return active?s_sprite_patterns:NULL;
+}
+int gvdp_sprite_pattern_line(unsigned flags,unsigned tile)
+{
+    if(!(flags&0x80u) || !s_sprite_patterns)return gvdp_ext_line(tile);
+    unsigned line=s_sprite_pattern_lines && tile<s_sprite_pattern_bytes/32
+        ?s_sprite_pattern_lines[tile]:0;
+    return line<=GVDP_EXT_LINES?(int)line:0;
+}
 void gvdp_set_host_sprites(GVDPHostSprites draw, void *user)
 {
     s_host_sprites = draw;
@@ -613,6 +635,8 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
         uint16_t e = (uint16_t)(sat + link * 8);
         int y      = (vram_read_word(v, e) & 0x3FF) - (im2 ? 256 : 128);
         uint8_t sz = v->vram[(uint16_t)(e + 2)];
+        unsigned pattern_bytes;
+        const uint8_t *patterns=gvdp_sprite_patterns(sz,&pattern_bytes);
         int hsz    = ((sz >> 2) & 3) + 1;     /* width  in cells (1..4)        */
         int vsz    = (sz & 3) + 1;            /* height in cells (1..4)        */
         int height = vsz << cell_h_shift;
@@ -654,7 +678,9 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                 int cellx = ix >> 3, fx = ix & 7;
                 int tileno = (tile + cellx * vsz + celly) & 0x07FF;
                 uint16_t pa = (uint16_t)(tileno * tile_bytes + fy * 4 + (fx >> 1));
-                uint8_t byte = v->vram[pa & 0xFFFF];
+                unsigned pattern_address=(unsigned)tileno*tile_bytes+(unsigned)fy*4u+(unsigned)(fx>>1);
+                uint8_t byte = patterns ? (pattern_address<pattern_bytes?patterns[pattern_address]:0)
+                                        : v->vram[pa & 0xFFFF];
                 int nib = (fx & 1) ? (byte & 0x0F) : (byte >> 4);
                 if (nib == 0) continue;            /* transparent             */
 
@@ -665,7 +691,7 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                 } else if (sh_mode && pal == 3 && nib == 15) { /* shadow op    */
                     s_spr_shadow_op[sx] = 1;
                 } else {
-                    int ext = pal == 0 ? gvdp_ext_line(tileno) : 0;
+                    int ext = pal == 0 ? gvdp_sprite_pattern_line(sz,(unsigned)tileno) : 0;
                     s_spr_idx[sx] = ext ? (uint8_t)(GVDP_HOST_PALETTE_BASE + (ext - 1) * 16 + nib)
                                         : (uint8_t)(pal * 16 + nib);
                     s_spr_op[sx]  = 1;
