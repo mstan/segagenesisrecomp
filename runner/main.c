@@ -1274,6 +1274,15 @@ static void runner_sram_init_and_load(const char *rom_path)
     char *dot = strrchr(name, '.');
     if (dot) *dot = '\0';
     strncat(name, ".srm", sizeof(name) - strlen(name) - 1);
+    const char *alternate = g_game_spec.sram_filename ? g_game_spec.sram_filename() : NULL;
+    if (alternate && *alternate) {
+        if (strchr(alternate, '/') || strchr(alternate, '\\') || strchr(alternate, ':') ||
+            !strcmp(alternate, ".") || !strcmp(alternate, "..") || strlen(alternate) >= sizeof name) {
+            fprintf(stderr, "[SRAM] invalid game-selected save filename\n");
+            exit(EXIT_FAILURE);
+        }
+        snprintf(name, sizeof name, "%s", alternate);
+    }
     snprintf(s_sram_path, sizeof(s_sram_path), "%s", exe_relative(name));
 
     FILE *f = fopen(s_sram_path, "rb");
@@ -1884,7 +1893,7 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
          * ~main.c:1024). Mirror that from the current ROM so the
          * launcher's Import/Clear act on the real save file. */
         static char sram_path[600];
-        if (g_game_spec.sram_start != 0 && initial_rom[0]) {
+        if (g_game_spec.sram_start != 0 && initial_rom[0] && !g_game_spec.sram_filename) {
             const char *b = initial_rom;
             const char *s1 = strrchr(initial_rom, '/');
             const char *s2 = strrchr(initial_rom, '\\');
@@ -2992,7 +3001,9 @@ session_begin:;
     int running = 1;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
     uint32_t prev_overlay_pad = 0;
-    genesis_local_states_configure(s_exe_dir, g_app_config.rewind_enabled,
+    genesis_local_states_configure(s_exe_dir, g_app_config.rewind_enabled &&
+                                   (!g_game_spec.state_unavailable_reason ||
+                                    !g_game_spec.state_unavailable_reason()),
                                    g_app_config.rewind_depth,
                                    g_app_config.rewind_interval);
     audio_set_playback_enabled(!turbo);

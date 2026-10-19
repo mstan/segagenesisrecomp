@@ -63,6 +63,10 @@ void recomp_push_return(uint32_t ret_addr)
 
 M68KState g_cpu;
 uint8_t   g_rom[0x400000];   /* 4 MB ROM shadow — ROM bytes (big-endian, byte-addressed) */
+/* Opt-in expansion ROM mapped at $400000-$7FFFFF (game-owned buffer, even
+ * size, at most 4 MB). Default none: the region keeps its open-bus behavior. */
+uint8_t  *g_rom_ext      = NULL;
+uint32_t  g_rom_ext_size = 0;
 uint8_t   g_ram[0x10000];    /* 64 KB work RAM shadow (not authoritative in Step 2) */
 int       g_ws_margin = 0;   /* widescreen extra px/side (set per-frame by main.c gate; 0 = 4:3) */
 

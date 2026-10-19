@@ -135,6 +135,19 @@ void gvdp_set_host_sprites(GVDPHostSprites draw, void *user);
  * No guest CRAM, machine state or color callbacks are changed. Unregistering
  * the host sprite callback clears these colors too. Returns 0 for oversize. */
 int gvdp_set_host_palette(const uint32_t *argb, unsigned count);
+
+/* Extended sprite lines (opt-in, presentation only): sprite pixels drawn with
+ * CRAM line 0 from VRAM tiles flagged in `tile_lines` (2048 entries: 0 = none,
+ * 1..GVDP_EXT_LINES = extra line) take their colour from up to three extra
+ * 16-colour lines instead of CRAM, written as host palette indices. Colours
+ * are 9-bit CRAM words in two sets: rows above `split_row` use `top`, rows at
+ * or below it `bottom` (a water line). NULL tile_lines turns it off. */
+#define GVDP_EXT_LINES 3
+void gvdp_set_ext_tiles(const uint8_t *tile_lines);
+void gvdp_set_ext_colors(const uint16_t *top, const uint16_t *bottom, int split_row);
+int gvdp_ext_line(unsigned tile);                     /* 0 or 1..GVDP_EXT_LINES */
+uint16_t gvdp_ext_color(int row, int line, int nib); /* 9-bit colour for a row */
+int gvdp_ext_active(void);
 /* Read-only color table for index-to-ARGB sinks; NULL when disabled. */
 const uint32_t *gvdp_host_palette(void);
 

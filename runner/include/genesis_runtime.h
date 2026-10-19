@@ -22,6 +22,8 @@ typedef struct M68KState {
 
 extern M68KState g_cpu;
 extern uint8_t   g_rom[0x400000];   /* 4MB ROM map */
+extern uint8_t  *g_rom_ext;         /* opt-in expansion ROM at $400000 (NULL = none) */
+extern uint32_t  g_rom_ext_size;    /* even, <= 0x400000 */
 extern uint8_t   g_ram[0x010000];   /* 64KB main RAM ($FF0000-$FFFFFF) */
 
 /* Resolve the index value encoded by a 68000 brief extension word.

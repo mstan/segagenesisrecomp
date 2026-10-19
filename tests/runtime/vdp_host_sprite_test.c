@@ -63,6 +63,15 @@ int main(void)
     CHECK(!gvdp_host_palette());
     v.reg[12]&=~8;
     gvdp_render_scanline(&v,0,row); CHECK(calls==5 && row[12]==0);
+    uint8_t ext_tiles[2048]={0};
+    uint16_t top[GVDP_EXT_LINES*16]={0}, bottom[GVDP_EXT_LINES*16]={0};
+    top[1]=0xE;bottom[1]=0xE00;ext_tiles[1]=1;
+    CHECK(!gvdp_ext_active() && !gvdp_ext_line(1));
+    gvdp_set_ext_colors(top,bottom,8);gvdp_set_ext_tiles(ext_tiles);
+    gvdp_render_scanline(&v,0,row);CHECK(row[4]==GVDP_HOST_PALETTE_BASE+1);
+    CHECK(gvdp_ext_color(7,1,1)==0xE && gvdp_ext_color(8,1,1)==0xE00);
+    CHECK(v.cram[1]==0 && !v.sprite_overflow && !v.sprite_collision);
+    gvdp_set_ext_tiles(NULL);gvdp_render_scanline(&v,0,row);CHECK(row[4]==1);
     puts("host sprites composite behind native sprites with plane priority");
     return 0;
 }

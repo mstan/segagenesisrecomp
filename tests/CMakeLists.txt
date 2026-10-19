@@ -80,6 +80,9 @@ add_executable(vdp_host_sprite_test runtime/vdp_host_sprite_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")
 target_include_directories(vdp_host_sprite_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
 add_test(NAME vdp_host_sprite COMMAND vdp_host_sprite_test)
+add_executable(expansion_rom_test runtime/expansion_rom_test.c)
+target_include_directories(expansion_rom_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
+add_test(NAME expansion_rom COMMAND expansion_rom_test)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
     if(TARGET SDL2::SDL2)

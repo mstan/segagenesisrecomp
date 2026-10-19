@@ -543,6 +543,10 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
                 if (host_palette)
                     memcpy(s_cram_argb + GVDP_HOST_PALETTE_BASE, host_palette,
                            GVDP_HOST_PALETTE_SIZE * sizeof(uint32_t));
+                else if (gvdp_ext_active())          /* extended sprite lines, per row (water) */
+                    for (int k = 0; k < GVDP_EXT_LINES * 16; k++)
+                        s_cram_argb[GVDP_HOST_PALETTE_BASE + k] =
+                            bgr9_to_argb(gvdp_ext_color(row, 1 + k / 16, k % 16), 0);
                 for (int x = 0; x < n; x++) rowbuf[x] = s_cram_argb[idxbuf[x]];
                 sink(user, row, rowbuf, n);
             }

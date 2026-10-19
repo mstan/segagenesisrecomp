@@ -493,6 +493,27 @@ const uint32_t *gvdp_host_palette(void)
 {
     return s_host_palette_enabled ? s_host_palette : NULL;
 }
+static const uint8_t *s_ext_tiles;
+static uint16_t s_ext_top[GVDP_EXT_LINES * 16], s_ext_bottom[GVDP_EXT_LINES * 16];
+static int s_ext_split = 1 << 20;
+void gvdp_set_ext_tiles(const uint8_t *tile_lines) { s_ext_tiles = tile_lines; }
+void gvdp_set_ext_colors(const uint16_t *top, const uint16_t *bottom, int split_row)
+{
+    memcpy(s_ext_top, top, sizeof s_ext_top);
+    memcpy(s_ext_bottom, bottom ? bottom : top, sizeof s_ext_bottom);
+    s_ext_split = split_row;
+}
+int gvdp_ext_active(void) { return s_ext_tiles != NULL; }
+int gvdp_ext_line(unsigned tile) {
+    int line = s_ext_tiles ? s_ext_tiles[tile & 0x7FF] : 0;
+    return line <= GVDP_EXT_LINES ? line : 0;
+}
+uint16_t gvdp_ext_color(int row, int line, int nib)
+{
+    const uint16_t *set = row >= s_ext_split ? s_ext_bottom : s_ext_top;
+    if (line < 1 || line > GVDP_EXT_LINES || nib < 0 || nib >= 16) return 0;
+    return set[(line - 1) * 16 + nib];
+}
 void gvdp_set_host_sprites(GVDPHostSprites draw, void *user)
 {
     s_host_sprites = draw;
@@ -644,7 +665,9 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                 } else if (sh_mode && pal == 3 && nib == 15) { /* shadow op    */
                     s_spr_shadow_op[sx] = 1;
                 } else {
-                    s_spr_idx[sx] = (uint8_t)(pal * 16 + nib);
+                    int ext = pal == 0 ? gvdp_ext_line(tileno) : 0;
+                    s_spr_idx[sx] = ext ? (uint8_t)(GVDP_HOST_PALETTE_BASE + (ext - 1) * 16 + nib)
+                                        : (uint8_t)(pal * 16 + nib);
                     s_spr_op[sx]  = 1;
                     s_spr_hi[sx]  = (uint8_t)pri;
                     drawn[sx] = 1;
@@ -716,6 +739,8 @@ fetch_plane_pixel(const GVDP *v, PlanePixelCache *cache,
     *opaque = (nib != 0);
     *hi     = (e & 0x8000) != 0;
     *idx    = (uint8_t)(((e >> 13) & 0x3) * 16 + nib);
+    int ext = nib && !(e & 0x6000) ? gvdp_ext_line(ti) : 0;
+    if (ext) *idx = (uint8_t)(GVDP_HOST_PALETTE_BASE + (ext - 1) * 16 + nib);
 }
 #undef GVDP_HOT_INLINE
 
