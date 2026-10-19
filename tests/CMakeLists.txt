@@ -55,6 +55,12 @@ add_test(NAME frame_pacer COMMAND frame_pacer_test)
 
 find_package(Python3 QUIET COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
+    find_package(Git QUIET)
+    if(GIT_FOUND)
+        add_test(NAME build_info COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_LIST_DIR}/tools/test_build_info.py"
+            --cmake "${CMAKE_COMMAND}" --git "${GIT_EXECUTABLE}")
+    endif()
     add_test(NAME disasm_inline_tables COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_LIST_DIR}/tools/test_disasm_inline_tables.py")
     add_test(NAME sonic_disassembly_provenance COMMAND "${Python3_EXECUTABLE}"
