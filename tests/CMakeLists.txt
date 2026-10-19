@@ -22,6 +22,18 @@ endif()
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
 
+if(TARGET SDL2::SDL2)
+    add_executable(audio_extra_test runtime/audio_extra_test.c
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/audio.c")
+    target_include_directories(audio_extra_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner")
+    target_link_libraries(audio_extra_test PRIVATE SDL2::SDL2)
+    if(UNIX)
+        target_link_libraries(audio_extra_test PRIVATE m)
+    endif()
+    add_test(NAME audio_extra COMMAND audio_extra_test "${CMAKE_CURRENT_BINARY_DIR}/audio-extra-test.wav")
+endif()
+
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/GenesisRecompRunner.cmake")
 add_executable(local_states_test runtime/local_states_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../runner/local_states.c"

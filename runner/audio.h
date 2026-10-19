@@ -24,6 +24,16 @@ void audio_set_playback_enabled(int enabled);
 /* Discard device/DRC samples from the timeline abandoned by a quickload. */
 void audio_discard_playback(void);
 
+/* Optional game-owned source, mixed once per emulated frame at the internal
+ * rate, before WAV capture, master volume and delivery. Add saturating stereo
+ * samples in place. Registration, replacement and unregistration (NULL) run
+ * on the emulation thread, never the SDL callback. The game owns source state
+ * and must reset it on game reset/scene changes and unregister before freeing
+ * it. audio_close also unregisters. A NULL source leaves base audio unchanged.
+ * This API alone does not qualify extra host state for quickstates or netplay. */
+typedef void (*AudioExtraSource)(int16_t *mix_stereo, size_t frames, double rate);
+void audio_set_extra_source(AudioExtraSource source);
+
 /*
  * Mix one video frame and push to the SDL ring buffer.
  *
