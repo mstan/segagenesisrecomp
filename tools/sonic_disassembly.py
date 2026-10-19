@@ -34,6 +34,7 @@ COMPOSITES: dict[str, dict] = {}
 ROW = re.compile(r"^(?:\(\d+\))?\s*\d+/\s*([\da-fA-F]+)\s*:\s?(.*)$")
 EMIT = re.compile(r"^\s*([\da-fA-F]{2,8}(?: +[\da-fA-F]{2,8})*)\s+(\S+)")
 LABEL = re.compile(r"^\s*(?:\(MACRO\)\s*)?([A-Za-z_][\w.]*):")
+INLINE_LABELS = re.compile(r"^(?:\.?[A-Za-z_][\w.]*:\s*)+")
 M68K = re.compile(r"^!?(?:abcd|add[aqix]?|and[i]?|asl|asr|b(?:cc|cs|eq|ge|gt|hi|le|ls|lt|mi|ne|pl|ra|sr|vc|vs)|bchg|bclr|bset|btst|chk|clr|cmp[aim]?|db\w+|div[su]|eor[i]?|exg|ext|illegal|jmp|jsr|lea|link|lsl|lsr|move[amq]?|movem|movep|muls|mulu|nbcd|negx?|nop|not|or[i]?|pea|reset|rol|ror|roxl|roxr|rte|rtr|rts|sbcd|s(?:cc|cs|eq|f|ge|gt|hi|le|ls|lt|mi|ne|pl|t|vc|vs)|stop|sub[aqix]?|swap|tas|trapv?|tst|unlk)(?:\.[bwls])?$", re.I)
 
 
@@ -41,9 +42,33 @@ def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def instruction_starts(listing: Path, rom: bytes) -> set[int]:
+    """Source-confirmed 68000 starts, including nested includes and bare RTS.
+
+    Sparse instruction-test fixtures are not a complete code-address oracle:
+    omitting a jump-table target splits its table and changes the relative base.
+    Require the pinned source's bytes to match the verified stock ROM instead.
+    """
+    code = set()
+    for line in listing.read_text(encoding="utf-8", errors="replace").splitlines():
+        row = ROW.match(line)
+        if not row:
+            continue
+        address, body = int(row[1], 16), row[2]
+        if not 0x200 <= address < len(rom) or address & 1:
+            continue
+        emit = EMIT.match(body)
+        mnemonic = INLINE_LABELS.sub("", body[emit.start(2):]).split()[0] if emit else ""
+        if emit and M68K.fullmatch(mnemonic):
+            data = bytes.fromhex(emit[1])
+            if len(data) >= 2 and rom[address:address + len(data)] == data:
+                code.add(address)
+    return code
+
+
 def symbols(listing: Path, rom: bytes) -> dict[int, list[str]]:
     labels: dict[int, list[str]] = {}
-    code = set()
+    code = instruction_starts(listing, rom)
     for line in listing.read_text(encoding="utf-8", errors="replace").splitlines():
         row = ROW.match(line)
         if not row:
@@ -56,11 +81,6 @@ def symbols(listing: Path, rom: bytes) -> dict[int, list[str]]:
             names = labels.setdefault(address, [])
             if label[1] not in names:
                 names.append(label[1])
-        emit = EMIT.match(body)
-        if emit and M68K.fullmatch(emit[2]):
-            data = bytes.fromhex(emit[1])
-            if rom[address:address + len(data)] == data:
-                code.add(address)
     return {a: names for a, names in sorted(labels.items()) if a in code}
 
 
@@ -84,6 +104,8 @@ def main() -> None:
     ap.add_argument("--games", nargs="+", choices=list(SOURCES), default=list(SOURCES))
     ap.add_argument("--reuse", action="store_true", help="Recheck existing build outputs against the supplied ROMs")
     ap.add_argument("--install", action="store_true", help="Install verified annotation CSV/JSON and provenance into the repository")
+    ap.add_argument("--install-discovery", action="store_true",
+                    help="Regenerate and install jump tables from the byte-verified listing's complete code starts")
     args = ap.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -119,6 +141,15 @@ def main() -> None:
         if len(names) < 500:
             raise RuntimeError(f"{game}: unexpectedly few code labels ({len(names)})")
         export(game, rom, names, out, metadata)
+        if args.install_discovery:
+            code_path = out / f"{game}.code_addrs.txt"
+            code_path.write_text("".join(f"{a:06X}\n" for a in sorted(instruction_starts(work / listing, rom))), encoding="utf-8")
+            discovery = out / f"{game}.disasm_jumptables.toml"
+            subprocess.run([sys.executable, str(ROOT / "tests/tools/gen_disasm_jumptables.py"),
+                            "--lst", str(work / listing), "--code-addrs", str(code_path),
+                            "--prefix", game, "--rom-max", hex(len(rom)), "-o", str(discovery)], check=True)
+            import shutil
+            shutil.copyfile(discovery, ROOT / FOLDERS[game] / discovery.name)
         results[game] = {**metadata, "code_labels": len(names)}
         print(f"{game}: byte-identical, {len(names)} code labels", flush=True)
     for composite, spec in COMPOSITES.items():
