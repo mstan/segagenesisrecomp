@@ -514,26 +514,30 @@ uint16_t gvdp_ext_color(int row, int line, int nib)
     if (line < 1 || line > GVDP_EXT_LINES || nib < 0 || nib >= 16) return 0;
     return set[(line - 1) * 16 + nib];
 }
-static const uint8_t *s_sprite_patterns, *s_sprite_pattern_lines;
-static unsigned s_sprite_pattern_bytes;
-int gvdp_set_sprite_patterns(const uint8_t *patterns,unsigned bytes,const uint8_t *tile_lines)
+static const uint8_t *s_sprite_patterns[2], *s_sprite_pattern_lines[2];
+static unsigned s_sprite_pattern_bytes[2];
+int gvdp_set_sprite_patterns_bank(unsigned bank,const uint8_t *patterns,unsigned bytes,const uint8_t *tile_lines)
 {
-    if(patterns && (!bytes || bytes>65536 || bytes%32))return 0;
-    s_sprite_patterns=patterns;s_sprite_pattern_bytes=patterns?bytes:0;
-    s_sprite_pattern_lines=patterns?tile_lines:NULL;
+    if(bank>=2 || (patterns && (!bytes || bytes>65536 || bytes%32)))return 0;
+    s_sprite_patterns[bank]=patterns;s_sprite_pattern_bytes[bank]=patterns?bytes:0;
+    s_sprite_pattern_lines[bank]=patterns?tile_lines:NULL;
     return 1;
 }
+int gvdp_set_sprite_patterns(const uint8_t *patterns,unsigned bytes,const uint8_t *tile_lines)
+{ return gvdp_set_sprite_patterns_bank(0,patterns,bytes,tile_lines); }
 const uint8_t *gvdp_sprite_patterns(unsigned flags,unsigned *bytes)
 {
-    int active=(flags&0x80u) && s_sprite_patterns;
-    if(bytes)*bytes=active?s_sprite_pattern_bytes:0;
-    return active?s_sprite_patterns:NULL;
+    unsigned bank=(flags>>6)&1u;
+    int active=(flags&0x80u) && s_sprite_patterns[bank];
+    if(bytes)*bytes=active?s_sprite_pattern_bytes[bank]:0;
+    return active?s_sprite_patterns[bank]:NULL;
 }
 int gvdp_sprite_pattern_line(unsigned flags,unsigned tile)
 {
-    if(!(flags&0x80u) || !s_sprite_patterns)return gvdp_ext_line(tile);
-    unsigned line=s_sprite_pattern_lines && tile<s_sprite_pattern_bytes/32
-        ?s_sprite_pattern_lines[tile]:0;
+    unsigned bank=(flags>>6)&1u;
+    if(!(flags&0x80u) || !s_sprite_patterns[bank])return gvdp_ext_line(tile);
+    unsigned line=s_sprite_pattern_lines[bank] && tile<s_sprite_pattern_bytes[bank]/32
+        ?s_sprite_pattern_lines[bank][tile]:0;
     return line<=GVDP_EXT_LINES?(int)line:0;
 }
 void gvdp_set_host_sprites(GVDPHostSprites draw, void *user)

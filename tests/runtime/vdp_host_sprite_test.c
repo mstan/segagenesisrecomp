@@ -80,6 +80,11 @@ int main(void)
     CHECK(gvdp_set_sprite_patterns(patterns,sizeof patterns,pattern_lines));
     unsigned bytes=99;CHECK(!gvdp_sprite_patterns(0,&bytes) && bytes==0);
     CHECK(gvdp_sprite_patterns(0x80,&bytes)==patterns && bytes==64);
+    uint8_t second[64],second_lines[2]={2,2};memset(second,0x44,sizeof second);
+    CHECK(!gvdp_set_sprite_patterns_bank(2,second,sizeof second,second_lines));
+    CHECK(gvdp_set_sprite_patterns_bank(1,second,sizeof second,second_lines));
+    CHECK(gvdp_sprite_patterns(0xC0,&bytes)==second && bytes==64);
+    CHECK(gvdp_sprite_pattern_line(0xC0,1)==2 && gvdp_sprite_pattern_line(0x80,1)==1);
     gvdp_render_scanline(&v,0,row);CHECK(row[4]==1);
     v.vram[0xF802]=0x80;gvdp_render_scanline(&v,0,row);
     CHECK(row[4]==GVDP_HOST_PALETTE_BASE+3 && row[20]==17);
@@ -87,6 +92,10 @@ int main(void)
     word(0xF804,0x2001);gvdp_render_scanline(&v,0,row);CHECK(row[4]==19);
     word(0xF804,0x0002);gvdp_render_scanline(&v,0,row);CHECK(row[4]==0);
     word(0xF804,1);CHECK(gvdp_set_sprite_patterns(NULL,0,NULL));
+    CHECK(gvdp_sprite_patterns(0xC0,&bytes)==second && bytes==64);
+    v.vram[0xF802]=0xC0;gvdp_render_scanline(&v,0,row);
+    CHECK(row[4]==GVDP_HOST_PALETTE_BASE+16+4 && v.vram[32]==0x11);
+    CHECK(gvdp_set_sprite_patterns_bank(1,NULL,0,NULL));v.vram[0xF802]=0x80;
     gvdp_render_scanline(&v,0,row);CHECK(row[4]==1);
     puts("host sprites composite behind native sprites with plane priority");
     return 0;

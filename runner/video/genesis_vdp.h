@@ -155,6 +155,10 @@ int gvdp_ext_active(void);
  * Host pointers are presentation state, never part of serialized GVDP. */
 int gvdp_set_sprite_patterns(const uint8_t *patterns, unsigned bytes,
                              const uint8_t *tile_lines);
+/* Size bit 6 selects bank 1 for an independently owned sprite strip.
+ * Bank 0 remains the default selected by the original setter. */
+int gvdp_set_sprite_patterns_bank(unsigned bank, const uint8_t *patterns,
+                                  unsigned bytes, const uint8_t *tile_lines);
 const uint8_t *gvdp_sprite_patterns(unsigned size_flags, unsigned *bytes);
 int gvdp_sprite_pattern_line(unsigned size_flags, unsigned tile);
 /* Read-only color table for index-to-ARGB sinks; NULL when disabled. */
