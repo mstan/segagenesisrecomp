@@ -20,11 +20,24 @@ function(_genesis_git_describe out dir)
     set(_d "unknown")
     if(GIT AND EXISTS "${dir}")
         execute_process(
-            COMMAND "${GIT}" -C "${dir}" describe --always --dirty --abbrev=10
+            # Resolve HEAD directly: tag-history traversal can be expensive in
+            # the shared framework repository and is unnecessary for identity.
+            COMMAND "${GIT}" -C "${dir}" rev-parse --short=10 HEAD
             OUTPUT_VARIABLE _o RESULT_VARIABLE _r
             OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
         if(_r EQUAL 0 AND NOT _o STREQUAL "")
             set(_d "${_o}")
+            # A developer checkout may use junctions to pinned dependency
+            # worktrees. Their gitdir paths need not be readable through this
+            # alias. Describe this repository's tracked changes independently.
+            execute_process(
+                COMMAND "${GIT}" -C "${dir}" diff --quiet --ignore-submodules=all HEAD --
+                RESULT_VARIABLE _dirty ERROR_QUIET)
+            if(_dirty EQUAL 1)
+                string(APPEND _d "-dirty")
+            elseif(NOT _dirty EQUAL 0)
+                string(APPEND _d "-status-unknown")
+            endif()
         endif()
     endif()
     string(REPLACE "\"" "" _d "${_d}")

@@ -158,19 +158,23 @@ function(genesisrecomp_runner_target target)
 endfunction()
 
 # Build description for runner/runtime_evidence.c (runtime evidence headers):
-# engine + game `git describe`, refreshed before every build of <target> and
+# engine + game commit IDs, refreshed before every build of <target> and
 # rewritten only when it changes. The exact build identity is the executable
 # fingerprint, computed at run time; this is the readable part.
 function(_genesisrecomp_build_info target)
     find_package(Git QUIET)
     set(_dir "${CMAKE_CURRENT_BINARY_DIR}/genesis_build_info/${target}")
     set(_hdr "${_dir}/genesis_build_info.h")
+    set(_version "${CMAKE_PROJECT_VERSION}")
+    if(DEFINED GENESIS_GAME_VERSION AND NOT GENESIS_GAME_VERSION STREQUAL "")
+        set(_version "${GENESIS_GAME_VERSION}")
+    endif()
     set(_args
         "-DOUT=${_hdr}"
         "-DENGINE_DIR=${GENESIS_RUNNER_ENGINE_ROOT}"
         "-DGAME_DIR=${CMAKE_SOURCE_DIR}"
         "-DGIT=${GIT_EXECUTABLE}"
-        "-DGAME_VERSION=${CMAKE_PROJECT_VERSION}"
+        "-DGAME_VERSION=${_version}"
         -P "${GENESIS_RUNNER_ENGINE_ROOT}/cmake/GenesisBuildInfo.cmake")
     file(MAKE_DIRECTORY "${_dir}")
     execute_process(COMMAND "${CMAKE_COMMAND}" ${_args})
