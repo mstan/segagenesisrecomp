@@ -14,6 +14,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <io.h>
 #endif
 #ifndef _WIN32
 #include <unistd.h>   /* readlink, ssize_t — exe-dir resolution + popen picker */
@@ -1245,12 +1246,27 @@ static void runner_sram_flush(void)
         return;
     }
 #endif
-    FILE *f = fopen(s_sram_path, "wb");
+    char temporary[sizeof s_sram_path+8];
+    snprintf(temporary,sizeof temporary,"%s.tmp",s_sram_path);
+    FILE *f = fopen(temporary, "wb");
     if (!f) { fprintf(stderr, "[SRAM] flush failed to open %s\n", s_sram_path); return; }
     size_t n = sram_size();
     size_t wrote = fwrite(sram_buf(), 1, n, f);
-    fclose(f);
+    int ok=wrote==n && fflush(f)==0;
+#ifdef _WIN32
+    if(ok)ok=_commit(_fileno(f))==0;
+#else
+    if(ok)ok=fsync(fileno(f))==0;
+#endif
+    if(fclose(f))ok=0;
+#ifdef _WIN32
+    if(ok)ok=MoveFileExA(temporary,s_sram_path,MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)!=0;
+#else
+    if(ok)ok=rename(temporary,s_sram_path)==0;
+#endif
+    if(!ok){fprintf(stderr,"[SRAM] atomic flush failed: %s\n",s_sram_path);return;}
     s_sram_dirty = 0;
+    if(g_game_spec.sram_flushed)g_game_spec.sram_flushed(s_sram_path,sram_buf(),n);
     fprintf(stderr, "[SRAM] flushed %zu bytes to %s\n", wrote, s_sram_path);
 }
 
@@ -1285,6 +1301,7 @@ static void runner_sram_init_and_load(const char *rom_path)
     }
     snprintf(s_sram_path, sizeof(s_sram_path), "%s", exe_relative(name));
 
+    int loaded=0;
     FILE *f = fopen(s_sram_path, "rb");
     if (f) {
         size_t n = sram_size();
@@ -1305,6 +1322,7 @@ static void runner_sram_init_and_load(const char *rom_path)
                     s_sram_path, fsz, n);
         } else {
             size_t got = fread(sram_buf(), 1, n, f);
+            loaded=got==n;
             fprintf(stderr, "[SRAM] loaded %zu/%zu bytes from %s\n", got, n, s_sram_path);
         }
         fclose(f);
@@ -1313,6 +1331,7 @@ static void runner_sram_init_and_load(const char *rom_path)
     }
     s_sram_hash  = sram_content_hash();
     s_sram_dirty = 0;
+    if(g_game_spec.sram_loaded)g_game_spec.sram_loaded(s_sram_path,sram_buf(),sram_size(),loaded);
 }
 
 /* Per-frame: detect a change to SRAM and flush a short while after it settles.

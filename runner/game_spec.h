@@ -115,6 +115,11 @@ typedef struct GameSpec {
      * Evaluated after launcher configuration; NULL preserves the ROM basename.
      * A game using this seam owns its SRAM import/export UI. */
     const char *(*sram_filename)(void);
+    /* Optional notifications; data is read-only and remains runner-owned.
+     * Load reports the resolved path even when no valid-sized file exists.
+     * Flushed fires only after the complete atomic replacement succeeds. */
+    void (*sram_loaded)(const char *path, const uint8_t *data, size_t size, int loaded);
+    void (*sram_flushed)(const char *path, const uint8_t *data, size_t size);
 
     /* ---- Entry points (recompiled C) ---- */
     /* Called once on the game thread. Must contain the game's main
