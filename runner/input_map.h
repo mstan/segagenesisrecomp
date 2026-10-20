@@ -60,7 +60,7 @@ typedef struct PlayerInput {
     GamepadBind pad[GB_COUNT];     /* gamepad binding per button */
 } PlayerInput;
 
-enum { INPUT_MAX_PLAYERS = 4 };
+enum { INPUT_MAX_PLAYERS = 6 };
 typedef struct InputMap {
     /* Host logical players; the Genesis bus still exposes two physical ports. */
     PlayerInput p[INPUT_MAX_PLAYERS];

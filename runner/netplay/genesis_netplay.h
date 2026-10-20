@@ -19,7 +19,7 @@
  *
  * Transports:
  *   lan    two seats, rnet_session_start_lan(bind, peer)
- *   hub    three or four seats on one host: seat 0 relays
+ *   hub    three to six seats on one host: seat 0 relays
  *          (rnet_session_start_lan_hub), every other seat dials it
  *   relay  the lobby server's UDP input relay (online, 2..4 seats,
  *          spectators); the same UDP transport pointed at relay_endpoint
@@ -142,7 +142,7 @@ typedef struct GenesisSessionConfig {
     uint8_t pad_type[2];     /* 0 = 3-button, 1 = 6-button */
     uint8_t ws_on;           /* engine widescreen margin on */
     uint8_t ws_cells;        /* its width in 8-px cells per side */
-    char    game[48];        /* the game's line (GameSpec netplay_config_image) */
+    char    game[48];        /* game-owned compact configuration, within match caps */
     /* Game custom-video mode (GameVideo configure string): "" / "off",
      * "stage", or a window-independent ratio "W:H". The custom renderer
      * changes the simulation (Sonic 2: object activation width and the main

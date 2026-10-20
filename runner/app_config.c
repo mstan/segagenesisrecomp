@@ -99,6 +99,8 @@ int app_config_load(const char *path)
             else if (!strcmp(name, "input.p2")) section = 11;
             else if (!strcmp(name, "input.p3")) section = 12;
             else if (!strcmp(name, "input.p4")) section = 13;
+            else if (!strcmp(name, "input.p5")) section = 14;
+            else if (!strcmp(name, "input.p6")) section = 15;
             else section = -1;
             continue;
         }

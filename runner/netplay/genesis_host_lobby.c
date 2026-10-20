@@ -41,7 +41,7 @@ typedef struct GenesisCapsExt {
 
 static GenesisSessionConfig s_host_cfg;
 static int s_host_cfg_valid;
-static char s_host_cfg_text[160];
+static char s_host_cfg_text[512];
 static void (*s_capture_local_config)(const RecompLauncherCSettings *, GenesisSessionConfig *);
 
 static int caps_write(const RNetLobbyMatchCaps *caps, char *out, size_t cap, void *ctx)
@@ -136,7 +136,7 @@ int genesis_host_lobby_init(const GenesisHostLobbyIdentity *id)
     h.lan_registry_path = id->lan_registry_path;
     h.platform = "genesis";
     h.legacy_env_prefix = "GENESIS_NET_";
-    h.max_players = id->max_players < 2 ? 2 : id->max_players > 4 ? 4 : id->max_players;
+    h.max_players = id->max_players < 2 ? 2 : id->max_players > GENESIS_SIM_MAX_PLAYERS ? GENESIS_SIM_MAX_PLAYERS : id->max_players;
     h.slot_policy = RECOMP_NETPLAY_SLOTS_HOST_FIRST;
     h.input_player = 0;
     h.caps_codec = &k_codec;
@@ -294,7 +294,7 @@ int genesis_host_lobby_selftest_room(int round, RecompLauncherCNetplayLaunch *ou
 
     if (!role || !cb || !out) return -1;
     if (players < 2) players = 2;
-    if (players > 4) players = 4;
+    if (players > GENESIS_SIM_MAX_PLAYERS) players = GENESIS_SIM_MAX_PLAYERS;
     memset(out, 0, sizeof *out);
 
     if (round == 1) {

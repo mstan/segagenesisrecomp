@@ -70,6 +70,16 @@ typedef struct {
 void audio_get_stats(AudioStats *out);
 /* End-of-run measurement: bounded delivery ring input and overflow drops. */
 void audio_get_bridge_counts(uint64_t *pushed, uint64_t *overflow_drops);
+/* Main-thread snapshot captured under the existing device lock at flush.
+ * Reading it adds no callback lock, I/O or guest-state dependency. */
+typedef struct {
+    uint64_t conceal_events;
+    uint64_t concealed_frames;
+    uint32_t lock_us;
+    uint32_t callback_us;
+    uint32_t fill_us;
+} AudioHostTiming;
+void audio_get_host_timing(AudioHostTiming *out);
 uint32_t audio_queued_bytes(void);
 
 /*
