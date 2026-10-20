@@ -26,7 +26,16 @@ static unsigned irq4,irq6,frame_width=320;
 static uint32_t pixels[240][GVDP_MAX_WIDTH];
 static const char *dump_directory;
 static uint64_t start_frame=UINT64_MAX;
+static uint64_t pad_reads,pressed_pad_reads;
 static void dump_frame_named(const char *,const char *);
+static void dump(const char *,const char *,const void *,size_t);
+static void observe_input(uint32_t a,unsigned value)
+{
+    if((a&0xFFFFFEu)!=0xA10002u)return;
+    ++pad_reads;if(genesis.pad[0]&GPAD_START) {
+        if(pressed_pad_reads++<32)printf("P1 read frame=%llu address=%06X raw=%02X TH=%u pad=%04X pc=%06X\n",(unsigned long long)(line_number/262),a,value,!!(genesis.io_data[0]&64u),genesis.pad[0],coordinator.cpu[0].state.instruction_pc);
+    }
+}
 static int media_read(void *image,int32_t lba,uint8_t raw[2352])
 {return segacd_image_read(image,lba,raw);}
 uint32_t machine_z80_stamp(void){return (uint32_t)((line_number%262)*3420);}
@@ -36,8 +45,8 @@ void snd_trace_z80(uint16_t o,uint8_t v,int w){(void)o;(void)v;(void)w;}
 void snd_trace_busreq(const char*s,int v){(void)s;(void)v;}
 void audio_event_push(uint32_t stamp,uint8_t port,uint8_t value){(void)stamp;(void)port;(void)value;++audio_events;}
 void glue_charge_68k_stall(uint32_t cycles){dma_stalls+=cycles;segacd_coordinator_main_stall(&coordinator,cycles);}
-static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){(void)u;*v=gbus_read8(&genesis,a);return M68K_BUS_OK;}
-static M68kStepBusResult read16(void*u,uint32_t a,uint16_t*v){(void)u;*v=gbus_read16(&genesis,a);return M68K_BUS_OK;}
+static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){(void)u;*v=gbus_read8(&genesis,a);observe_input(a,*v);return M68K_BUS_OK;}
+static M68kStepBusResult read16(void*u,uint32_t a,uint16_t*v){(void)u;*v=gbus_read16(&genesis,a);observe_input(a,*v);return M68K_BUS_OK;}
 static M68kStepBusResult write8(void*u,uint32_t a,uint8_t v){(void)u;gbus_write8(&genesis,a,v);return M68K_BUS_OK;}
 static M68kStepBusResult write16(void*u,uint32_t a,uint16_t v){(void)u;gbus_write16(&genesis,a,v);return M68K_BUS_OK;}
 static M68kStepBusResult fetch(void*u,uint32_t a,uint16_t*v){(void)u;if(a<0xFF0000)return M68K_BUS_FAULT;*v=gbus_peek16(&genesis,a);return M68K_BUS_OK;}
@@ -60,6 +69,11 @@ static void advance_host(void*u,uint64_t now)
             if(frame==60 || frame==120 || frame==180 || frame==240 || frame==288 || frame==360 || frame==600 || frame==900) {
                 char name[64];snprintf(name,sizeof name,"frame-%04u.ppm",(unsigned)frame);
                 dump_frame_named(dump_directory,name);
+                if(frame==360 || frame==900) {
+                    snprintf(name,sizeof name,"frame-%04u-main-ram.bin",(unsigned)frame);dump(dump_directory,name,g_ram,sizeof g_ram);
+                    snprintf(name,sizeof name,"frame-%04u-sub-prg.bin",(unsigned)frame);dump(dump_directory,name,cd.prg,sizeof cd.prg);
+                    printf("snapshot frame=%llu time=%llu main=%06X sub=%06X drive=%u sectors=%llu flags=%02X/%02X\n",(unsigned long long)frame,(unsigned long long)now,coordinator.cpu[0].state.regs.PC,coordinator.cpu[1].state.regs.PC,cd.drive.status,(unsigned long long)cd.media_sectors,cd.flags[0],cd.flags[1]);
+                }
             }
         }
         if(line_number && (line+261)%262<240) {
@@ -93,6 +107,7 @@ static void dump_frame_named(const char*dir,const char*name)
 }
 int main(int argc,char**argv)
 {
+    setvbuf(stdout,NULL,_IONBF,0);
     if(argc<4 || argc>6){fprintf(stderr,"usage: segacd_bios_dual_probe BIOS SUB_CLOCK_DEADLINE PRIVATE_DUMP_DIRECTORY [IMAGE.sgcd [START_FRAME]]\n");return 2;}
     dump_directory=argv[3];if(argc==6)start_frame=strtoull(argv[5],NULL,0);
     FILE*f=fopen(argv[1],"rb");if(!f || fread(g_rom,1,SEGACD_BIOS_BYTES,f)!=SEGACD_BIOS_BYTES || fgetc(f)!=EOF || fclose(f))return 2;
@@ -101,8 +116,10 @@ int main(int argc,char**argv)
     M68kStepBus host={read8,read16,write8,write16,fetch,0,ack,0};if(!segacd_coordinator_init(&coordinator,&cd,&host,NULL))return 2;
     SegaCDImage *image=NULL;
     if(argc>=5) {
+        printf("Validating complete disc payload before mounting...\n");
         char error[256];image=segacd_image_open(argv[4],error,sizeof error);
         if(!image){fprintf(stderr,"media: %s\n",error);return 2;}
+        printf("Disc payload verified; starting original programs.\n");
         if(!segacd_cdd_mount(&cd.drive,segacd_image_toc(image))){segacd_image_close(image);return 2;}
         segacd_coordinator_media(&coordinator,media_read,image,NULL,NULL);
     }
@@ -123,11 +140,18 @@ int main(int argc,char**argv)
     uint64_t deadline=strtoull(argv[2],NULL,0),steps=0;
     struct {uint32_t main,sub;uint64_t time;} ring[64]={{0}};M68kStepResult status=M68K_STEP_OK;
     unsigned mask_before=cd.irq_mask,wp_before=cd.write_protect,control_before=cd.drive.control,event_count=0,commands=0;
+    uint64_t cdc_before=0;unsigned transfer_before=0,transfers=0;
     uint64_t command_deadline_before=0;
     while(coordinator.device_time<deadline && steps<100000000u) {
         ring[steps%64].main=coordinator.cpu[0].state.regs.PC;ring[steps%64].sub=coordinator.cpu[1].state.regs.PC;ring[steps%64].time=coordinator.device_time;
         g_audio_cycle_counter=(uint32_t)coordinator.cpu[0].state.cycles;
         status=segacd_coordinator_step(&coordinator);++steps;if(status!=M68K_STEP_OK)break;
+        if(cd.cdc.sectors!=cdc_before) {
+            if(cd.cdc.sectors<=24)printf("CDC sector time=%llu count=%llu header=%02X%02X%02X%02X ctrl=%02X/%02X if=%02X/%02X PT=%04X WA=%04X stat=%02X/%02X/%02X/%02X sub=%06X\n",(unsigned long long)coordinator.device_time,(unsigned long long)cd.cdc.sectors,cd.cdc.header[0],cd.cdc.header[1],cd.cdc.header[2],cd.cdc.header[3],cd.cdc.ctrl0,cd.cdc.ctrl1,cd.cdc.ifctrl,cd.cdc.ifstat,cd.cdc.block_pointer,cd.cdc.write_address,cd.cdc.status[0],cd.cdc.status[1],cd.cdc.status[2],cd.cdc.status[3],coordinator.cpu[1].state.regs.PC);
+            cdc_before=cd.cdc.sectors;
+        }
+        if(cd.cdc.transfer_active && !transfer_before && transfers++<24)printf("CDC transfer time=%llu dest=%u DAC=%04X DBC=%04X remaining=%u sub=%06X\n",(unsigned long long)coordinator.device_time,cd.cdc_destination,cd.cdc.dac,cd.cdc.dbc,cd.cdc.remaining,coordinator.cpu[1].state.instruction_pc);
+        transfer_before=cd.cdc.transfer_active;
         if(cd.drive.command_pending && cd.drive.command_deadline!=command_deadline_before && cd.drive.pending[0] && commands++<128) {
             printf("CDD command time=%llu main=%06X sub=%06X packet=",(unsigned long long)coordinator.device_time,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc);
             for(unsigned n=0;n<10;++n)printf("%X",cd.drive.pending[n]);printf("\n");
@@ -152,6 +176,9 @@ int main(int argc,char**argv)
     for(unsigned n=0;n<10;++n)printf("%X",cd.drive.rx[n]);printf(" tx=");
     for(unsigned n=0;n<10;++n)printf("%X",cd.drive.tx[n]);printf("\n");
     printf("retired native=%llu/%llu floor=%llu/%llu floor_only=%u\n",(unsigned long long)coordinator.native_steps[0],(unsigned long long)coordinator.native_steps[1],(unsigned long long)coordinator.floor_steps[0],(unsigned long long)coordinator.floor_steps[1],(unsigned)floor_only);
+    printf("P1 reads=%llu while_Start_pressed=%llu start_frame=%llu\n",(unsigned long long)pad_reads,(unsigned long long)pressed_pad_reads,(unsigned long long)start_frame);
+    printf("CDC final transfers=%u dest=%u DAC=%04X DBC=%04X PT=%04X WA=%04X ctrl=%02X/%02X if=%02X/%02X DMA_words=%llu\n",transfers,cd.cdc_destination,cd.cdc.dac,cd.cdc.dbc,cd.cdc.block_pointer,cd.cdc.write_address,cd.cdc.ctrl0,cd.cdc.ctrl1,cd.cdc.ifctrl,cd.cdc.ifstat,(unsigned long long)cd.dma.words);
+    dump(argv[3],"cdc-ram.bin",cd.cdc.ram,sizeof cd.cdc.ram);
     dump(argv[3],"main-ram.bin",g_ram,sizeof g_ram);dump(argv[3],"sub-prg.bin",cd.prg,sizeof cd.prg);dump(argv[3],"word-ram.bin",cd.word,sizeof cd.word);dump(argv[3],"vram.bin",vdp.vram,sizeof vdp.vram);dump_frame_named(argv[3],"frame.ppm");
     segacd_image_close(image);
     return status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;

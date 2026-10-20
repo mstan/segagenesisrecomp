@@ -1,8 +1,24 @@
+/* Stop/TOC motor-state progression adapted from ares Mega-CD CDD, commit
+ * 9408cb43d4948fc3ea6e152a307a34348df3fe04, ares/md/mcd/cdd.cpp and mcd.hpp.
+ * Copyright (c) 2004-2025 ares team, Near et al.
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * Modifications: explicit C state, existing packet/media scheduler integration.
+ * Two 75-Hz motor/TOC steps are a functional profile, not physical spin-up
+ * or lead-in scan timing qualification. See docs/SEGA_CD_REUSE.md. */
 #include "cdd.h"
 #include <stdlib.h>
 #include <string.h>
 enum { CLOCK=12500000,HOCK=4,DTS=1 };
-enum { PLAY=1,SEEK=2,SCAN=3,PAUSE=4,OPEN=5,CHECKSUM=6,ERROR=7,STOP=9,NO_DISC=11,LEADOUT=12 };
+enum { STOP=0,PLAY=1,SEEK=2,SCAN=3,PAUSE=4,OPEN=5,CHECKSUM=6,ERROR=7,READ_TOC=9,NO_DISC=11,LEADOUT=12 };
 static uint8_t checksum(const uint8_t *p){unsigned n=0;for(unsigned i=0;i<9;++i)n+=p[i];return (uint8_t)(~n&15u);}
 static void digits(uint8_t*p,unsigned n){p[0]=(uint8_t)((n/10)%10);p[1]=(uint8_t)(n%10);}
 static void msf(uint8_t*p,int32_t frames)
@@ -17,11 +33,7 @@ static unsigned track_at(const SegaCDDrive *d)
 static void reply(SegaCDDrive*d,unsigned override)
 {
     memset(d->rx,0,sizeof d->rx);d->rx[0]=(uint8_t)(override?override:d->status);d->rx[1]=d->report;
-    /* The reset/status exchange precedes drive operations. Original US1.10
-     * BIOS resident $18F6 requires a neutral, checksum-valid packet before
-     * requesting TOC; an already-stopped/MSF reply makes it reset forever. */
-    if(d->reset_handshake && !override){memset(d->rx,0,sizeof d->rx);d->rx[9]=15;return;}
-    if(d->toc.count && !d->tray_open) {
+    if(d->report_valid && d->toc.count && !d->tray_open) {
         unsigned n=track_at(d);
         switch(d->report) {
         case 0:msf(d->rx+2,d->lba+150);d->rx[8]=(uint8_t)(d->toc.track[n].data?4:0);break;
@@ -42,7 +54,9 @@ void segacd_cdd_reset(SegaCDDrive*d)
 {
     SegaCDTOC toc=d->toc;uint64_t cycles=d->cycles;
     memset(d,0,sizeof *d);d->toc=toc;d->cycles=cycles;
-    d->reset_handshake=1;d->status=d->toc.count?STOP:NO_DISC;reply(d,0);
+    /* Initialized motor state remains stopped until a TOC/drive command.
+     * An ordinary status-zero packet naturally has complement checksum F. */
+    d->status=STOP;reply(d,0);
 }
 void segacd_cdd_init(SegaCDDrive*d){memset(d,0,sizeof *d);segacd_cdd_reset(d);}
 int segacd_cdd_mount(SegaCDDrive*d,const SegaCDTOC*toc)
@@ -54,12 +68,12 @@ int segacd_cdd_mount(SegaCDDrive*d,const SegaCDTOC*toc)
         if(t->index00 < -150 || t->index00>t->start || t->start>=t->end || t->end>toc->leadout || t->data>1 ||
            (n && (t->index00!=toc->track[n-1].end || t->start<=toc->track[n-1].start)))return 0;
     }
-    d->toc=*toc;d->lba=0;d->status=d->tray_open?OPEN:STOP;
+    d->toc=*toc;d->lba=0;d->status=d->tray_open?OPEN:STOP;d->motor_started=0;
     d->scan=0;d->seek_deadline=d->command_deadline=0;d->command_pending=0;
-    d->control&=(uint8_t)~DTS;d->report=d->query_track=d->unsupported_command=0;
+    d->control&=(uint8_t)~DTS;d->report=d->report_valid=d->query_track=d->unsupported_command=0;
     reply(d,0);return 1;
 }
-void segacd_cdd_unmount(SegaCDDrive*d){memset(&d->toc,0,sizeof d->toc);d->status=d->tray_open?OPEN:NO_DISC;d->scan=0;d->seek_deadline=0;reply(d,0);}
+void segacd_cdd_unmount(SegaCDDrive*d){memset(&d->toc,0,sizeof d->toc);d->status=d->tray_open?OPEN:NO_DISC;d->motor_started=0;d->scan=0;d->seek_deadline=0;reply(d,0);}
 static int destination(const uint8_t*p,int32_t*lba)
 {
     for(unsigned n=2;n<8;++n)if(p[n]>9)return 0;
@@ -73,16 +87,19 @@ static void execute(SegaCDDrive*d)
     if(checksum(p)!=p[9]){reply(d,CHECKSUM);return;}
     if(p[1]){reply(d,ERROR);return;}
     if(command==0){reply(d,0);return;}
-    d->reset_handshake=0;
-    if(command==12){d->tray_open=0;d->status=d->toc.count?STOP:NO_DISC;reply(d,0);return;}
-    if(command==13){d->tray_open=1;d->status=OPEN;d->seek_deadline=0;d->scan=0;reply(d,0);return;}
-    if(d->tray_open || !d->toc.count){reply(d,0);return;}
+    if(command==12){d->tray_open=0;d->status=d->toc.count?STOP:NO_DISC;d->motor_started=1;reply(d,0);return;}
+    if(command==13){d->tray_open=1;d->status=OPEN;d->motor_started=0;d->seek_deadline=0;d->scan=0;reply(d,0);return;}
+    if(d->tray_open || !d->toc.count){if(!d->tray_open)d->status=NO_DISC;reply(d,0);return;}
     switch(command) {
     case 1:
-        d->status=STOP;d->scan=0;d->seek_deadline=0;d->report=0;reply(d,0);d->rx[0]=0;d->rx[9]=checksum(d->rx);return;
+        d->status=STOP;d->motor_started=1;d->scan=0;d->seek_deadline=0;d->report=d->report_valid=0;reply(d,0);return;
     case 2:
         if(p[3]>5 || (p[3]==5 && (p[4]>9 || p[5]>9 || p[4]*10u+p[5]<1 || p[4]*10u+p[5]>d->toc.count))){reply(d,ERROR);return;}
-        d->report=p[3];d->query_track=(uint8_t)(p[4]*10u+p[5]);reply(d,0);return;
+        /* TOCT starts lead-in/TOC acquisition from the initialized state;
+         * status polls alone do not spin up the motor. CDD controller RE:
+         * https://gendev.spritesmind.net/forum/viewtopic.php?p=35482 . */
+        if(p[3]==4 && d->status==STOP){d->motor_started=1;d->status=READ_TOC;}
+        d->report=p[3];d->report_valid=1;d->query_track=(uint8_t)(p[4]*10u+p[5]);reply(d,0);return;
     case 3:case 4: {
         int32_t target;if(!destination(p,&target) || target>=d->toc.leadout){reply(d,ERROR);return;}
         /* Explicit emulated mechanical delay; this provisional profile must
@@ -90,10 +107,10 @@ static void execute(SegaCDDrive*d)
         unsigned distance=(unsigned)abs(target-d->lba);
         d->seek_target=target;d->after_seek=(uint8_t)(command==3?PLAY:PAUSE);
         d->seek_deadline=d->cycles+CLOCK/10+(uint64_t)distance*CLOCK/(75u*1000u);
-        d->status=SEEK;d->scan=0;d->report=2;reply(d,0);return;
+        d->status=SEEK;d->scan=0;d->report=2;d->report_valid=1;reply(d,0);return;
     }
     case 6:d->status=PAUSE;d->scan=0;d->seek_deadline=0;reply(d,0);return;
-    case 7:d->status=PLAY;d->scan=0;d->seek_deadline=0;d->report=2;reply(d,0);return;
+    case 7:d->status=PLAY;d->scan=0;d->seek_deadline=0;d->report=2;d->report_valid=1;reply(d,0);return;
     case 8:case 9:d->status=SCAN;d->scan=(int8_t)(command==8?10:-10);d->seek_deadline=0;reply(d,0);return;
     default:d->unsupported_command=(uint8_t)command;reply(d,ERROR);return;
     }
@@ -152,7 +169,12 @@ unsigned segacd_cdd_advance(SegaCDDrive*d,uint32_t clocks,SegaCDSectorSink sink,
         if(d->fader_deadline==next)d->fader_deadline=0;
         if((d->control&HOCK) && frame_time(d)==next) {
             ++d->frames;
-            if(d->status==PLAY) {
+            if(d->status==STOP && d->motor_started) {
+                d->status=d->toc.count && !d->tray_open?READ_TOC:NO_DISC;
+                d->lba=0;
+            } else if(d->status==READ_TOC) {
+                d->status=PAUSE;d->lba=0;
+            } else if(d->status==PLAY) {
                 if(d->lba>=d->toc.leadout)d->status=LEADOUT;
                 else {if(d->lba>=0 && sink)sink(user,d->lba);++d->lba;}
             } else if(d->status==SCAN) {

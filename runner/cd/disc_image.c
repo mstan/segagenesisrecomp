@@ -182,8 +182,18 @@ SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
     int32_t leadout;
     set_error(error, capacity, "invalid SGCDIMG1 image");
     if (path == NULL) { set_error(error, capacity, "missing image path"); return NULL; }
+#ifdef _WIN32
+    /* The complete payload is read sequentially for identity validation.
+     * This CRT hint preserves later random sector access. */
+    file = fopen(path, "rbS");
+#else
     file = fopen(path, "rb");
+#endif
     if (file == NULL) { set_error(error, capacity, "cannot open image"); return NULL; }
+    /* Batch physical reads during hashing instead of issuing small CRT-sized
+     * reads on a busy disk. A failed optional buffer allocation leaves the
+     * default buffering usable; validation still hashes every payload byte. */
+    (void)setvbuf(file, NULL, _IOFBF, 1024u * 1024u);
     if (fseek(file, 0, SEEK_END) != 0 || (file_length = ftell(file)) < 0 || fseek(file, 0, SEEK_SET) != 0) {
         set_error(error, capacity, "cannot size image"); goto fail;
     }

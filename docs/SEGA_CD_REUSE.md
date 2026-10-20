@@ -64,7 +64,23 @@ main-CPU retirement and elapsed time instead of only counted in diagnostics.
 
 The original CDD implementation's report fields were cross-checked against
 ares: time reports identify data tracks and track-start reports return decimal
-track units. These protocol corrections do not import ares's CDD runtime.
+track units.
+
+The motor/TOC progression additionally adapts `cdd.cpp` and `mcd.hpp` from
+that revision: motor stop is status zero, status nine means reading the TOC,
+and the 75-Hz device clock advances a started motor through TOC reading to pause. Stop
+clears the prior report fields; time information is populated by a subsequent
+request. The ISC notice is retained in `runner/cd/cdd.c`. The two-step profile
+does not establish physical motor spin-up or lead-in scan latency. Initial
+reset packet behavior remains separately covered by the original BIOS probe.
+Initialized status remains zero until a drive operation; the TOCT request
+starts TOC acquisition. This follows the later controller-source analysis by
+[Eke](https://gendev.spritesmind.net/forum/viewtopic.php?p=35482), rather than
+the earlier notes' incorrect description of status nine as stopped. The
+synthetic reset-packet override has been removed; status zero and cleared
+report fields naturally produce the checksum-valid initial response. The
+immediate TOC metadata and transition cadence remain functional modeling,
+not measurements of a physical lead-in scan.
 
 ## Other candidates
 

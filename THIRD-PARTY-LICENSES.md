@@ -14,7 +14,7 @@ Those retired oracle components exist only in Git history.
 | **clowncommon** (`runner/external/clowncommon/`) | Integer types and small C helpers | ISC | <https://github.com/Clownacy/clowncommon> |
 | **minicoro** (`runner/external/minicoro/`) | Game-fiber context switch on an engine-owned, snapshottable stack | Unlicense OR MIT-0; its embedded context-switch assembly derives from LuaCoco (MIT, Mike Pall) | <https://github.com/edubart/minicoro> |
 | **SDL2** (`runner/external/SDL2/`) | Windowing, input, rendering, and audio delivery | zlib | <https://libsdl.org> |
-| **ares Mega-CD device algorithms** (`runner/cd/stamp.c`, `dma.c`) | Stamp graphics and CDC DMA in the experimental Sega CD backend | ISC | [Pinned source and port details](docs/SEGA_CD_REUSE.md) |
+| **ares Mega-CD device algorithms** (`runner/cd/stamp.c`, `dma.c`, `cdd.c`) | Stamp graphics, CDC DMA and drive motor/TOC progression in the experimental Sega CD backend | ISC | [Pinned source and port details](docs/SEGA_CD_REUSE.md) |
 | **tomlc99** (`recompiler/src/toml.{c,h}`) | TOML parsing for game configuration | MIT | <https://github.com/cktan/tomlc99> |
 | **recomp-net** (`external/recomp-net/`) | Optional netplay transport and lobby support | MIT | <https://github.com/TechnicallyComputers/recomp-net> |
 | **ShadowVerifier and color-science core** (`runner/audio/audio_shadow.{c,h}`, `runner/video/color_lut.{c,h}`) | Opt-in verified audio/video enhancements | MIT OR Apache-2.0 | <https://github.com/JRickey/gba-recomp>, ported through the gbarecomp/snesrecomp implementations with permission |
@@ -29,7 +29,7 @@ License texts are retained with the vendored or submodule sources:
 - `runner/external/SDL2/SDL2-2.28.5/COPYING.txt`
 - the MIT notice embedded at the top of `recompiler/src/toml.c` and `toml.h`
 - `external/recomp-net/LICENSE`
-- `runner/cd/ARES-LICENSE.txt` for builds containing the Sega CD stamp device
+- `runner/cd/ARES-LICENSE.txt` for builds containing the adapted Sega CD devices
 
 `m68k-recomp-core` and `z80-recomp-core` are project-owned shared components
 and carry their own license and provenance files in their submodules.

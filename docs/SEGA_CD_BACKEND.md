@@ -225,11 +225,23 @@ ROX and count-zero carry fixes pass 4,992 independent Unicorn seeds across all
 24 register-shift forms. Group-zero exception frames, data-dependent arithmetic
 cycles and broader cartridge regression remain pending before any merge.
 
-Original US v1.10 BIOS execution established a neutral post-reset CDD handshake:
-the initial status command receives ten nibbles `000000000F` until the first
-valid nonzero command. Returning mounted-disc STOP/MSF immediately caused the
-original sub program to reset repeatedly. The repaired sequence now reaches
-TOC/seek processing and graphics initialization without changing owned bytes.
+Original US v1.10 BIOS execution requires an initialized status-zero packet,
+`000000000F`. The first bring-up masked the incorrect internal STOP=9 state
+behind a synthetic reset-handshake response. That gate has been removed:
+STOP is now zero, nine is TOC reading, and a normal complement checksum gives
+the initial packet. Status polls leave the initialized motor stopped; a TOCT
+request starts TOC acquisition. Stop clears stale report fields. Subsequent
+motor/TOC progression uses the explicitly provisional 75-Hz profile described
+in [the reuse notes](SEGA_CD_REUSE.md), rather than holding status nine forever.
+This is device bring-up evidence, not proof that the original game boots.
+
+The corrected drive sequence delivers 64 real MODE1 sectors to the controller
+in the 190-million-sub-clock original-BIOS probe, with no media error. The
+BIOS still retries its boot read: decoder buffering never becomes enabled and
+no data transfer starts. Negative-LBA data pregap/header delivery is the next
+investigation. The 16 synthetic backend tests pass MSVC, MinGW and Linux
+ASan/UBSan; those passes do not establish original-game startup or visual
+acceptance.
 
 The [ISC ares GPU port](SEGA_CD_REUSE.md) implements trace-vector stamp drawing,
 2M Word RAM map sizes, 16/32-dot stamp cells, rotations/flips, repeat/transparent

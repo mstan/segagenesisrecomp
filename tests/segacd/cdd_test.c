@@ -18,8 +18,24 @@ int main(void)
     segacd_cdd_init(&d);CHECK(d.rx[0]==0 && d.rx[9]==15 && sum()==15 && segacd_cdd_read(&d,0x37)==0 && segacd_cdd_read(&d,0x36)==1);
     segacd_cdd_write(&d,0x37,4);CHECK(segacd_cdd_next_event(&d)==166667);CHECK(!segacd_cdd_advance(&d,166666,NULL,NULL));CHECK(segacd_cdd_advance(&d,1,NULL,NULL));
     SegaCDTOC toc={0};toc.count=2;toc.leadout=750;toc.track[0]=(SegaCDTrack){-150,0,300,1};toc.track[1]=(SegaCDTrack){300,450,750,0};
-    CHECK(segacd_cdd_mount(&d,&toc));CHECK(d.reset_handshake && d.rx[0]==0 && d.rx[9]==15);
+    CHECK(segacd_cdd_mount(&d,&toc));CHECK(d.status==0 && !d.motor_started && d.rx[0]==0 && d.rx[9]==15);
     command(0,0,0,0);for(unsigned n=0;n<9;++n)CHECK(d.rx[n]==0);CHECK(d.rx[9]==15);
+    segacd_cdd_advance(&d,500000,sector,NULL);command(0,0,0,0);
+    CHECK(d.status==0 && !d.motor_started && !sector_count);
+    for(unsigned n=0;n<9;++n)CHECK(d.rx[n]==0);CHECK(d.rx[9]==15);
+    command(2,4,0,0);CHECK(d.status==9 && d.rx[0]==9 && d.motor_started && d.report_valid);
+    CHECK(d.rx[1]==4 && d.rx[3]==1 && d.rx[5]==2);
+    segacd_cdd_advance(&d,(uint32_t)(segacd_cdd_next_event(&d)-d.cycles),sector,NULL);CHECK(d.status==4 && !sector_count);
+    /* Motor stop is status zero; nine is a transient TOC-read state. Neither
+     * phase may deliver sectors. Progress follows device time without a CPU
+     * command manufacturing the paused/ready state. */
+    command(1,0,0,0);CHECK(d.status==0 && !d.report_valid);
+    for(unsigned n=0;n<9;++n)CHECK(d.rx[n]==0);CHECK(d.rx[9]==15);
+    uint32_t motor_delay=(uint32_t)(segacd_cdd_next_event(&d)-d.cycles);
+    CHECK(motor_delay>0);CHECK(!segacd_cdd_advance(&d,motor_delay-1,sector,NULL));CHECK(d.status==0);
+    CHECK(segacd_cdd_advance(&d,1,sector,NULL));CHECK(d.status==9 && d.rx[0]==9 && d.rx[9]==6 && !sector_count);
+    motor_delay=(uint32_t)(segacd_cdd_next_event(&d)-d.cycles);
+    CHECK(segacd_cdd_advance(&d,motor_delay,sector,NULL));CHECK(d.status==4 && d.rx[0]==4 && d.rx[9]==11 && !sector_count);
     SegaCDTOC bad=toc;bad.track[1].index00=299;CHECK(!segacd_cdd_mount(&d,&bad));
     command(2,4,0,0);CHECK(d.rx[1]==4 && d.rx[2]==0 && d.rx[3]==1 && d.rx[4]==0 && d.rx[5]==2);
     command(2,3,0,0);CHECK(d.rx[1]==3 && d.rx[4]==1 && d.rx[5]==2 && d.rx[6]==0 && d.rx[7]==0); /* leadout 00:12:00 */
@@ -38,8 +54,9 @@ int main(void)
     uint32_t delay=(uint32_t)(d.seek_deadline-d.cycles);segacd_cdd_advance(&d,delay,sector,NULL);CHECK(d.status==1);
     sector_count=0;segacd_cdd_advance(&d,12500000,sector,NULL);CHECK(sector_count==75 && sectors[0]==0 && sectors[74]==74);
     command(6,0,0,0);int32_t at=d.lba;segacd_cdd_advance(&d,1000000,sector,NULL);CHECK(d.status==4 && d.lba==at);
-    command(7,0,0,0);CHECK(d.status==1);command(1,0,0,0);CHECK(d.status==9 && d.rx[0]==0);
-    command(13,0,0,0);CHECK(d.tray_open && d.rx[0]==5);command(12,0,0,0);CHECK(!d.tray_open && d.rx[0]==9);
+    command(7,0,0,0);CHECK(d.status==1);command(1,0,0,0);CHECK(d.status==0 && d.rx[0]==0);
+    for(unsigned n=0;n<9;++n)CHECK(d.rx[n]==0);CHECK(d.rx[9]==15);
+    command(13,0,0,0);CHECK(d.tray_open && d.rx[0]==5);command(12,0,0,0);CHECK(!d.tray_open && d.rx[0]==0);
     /* Wrong checksum is a protocol error, not an executed disc operation. */
     for(unsigned i=0;i<10;++i)segacd_cdd_write(&d,0x42+i,0);segacd_cdd_advance(&d,1250,NULL,NULL);CHECK(d.rx[0]==6 && sum()==15);
     command(5,0,0,0);CHECK(d.unsupported_command==5 && d.rx[0]==7);
