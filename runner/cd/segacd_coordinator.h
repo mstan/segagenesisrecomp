@@ -42,6 +42,9 @@ int segacd_coordinator_floor(SegaCDCoordinator *,M68kStepResult (*)(M68kStepCont
 void segacd_coordinator_main_irq(SegaCDCoordinator *,unsigned level);
 void segacd_coordinator_host_clock(SegaCDCoordinator *,void (*advance)(void *,uint64_t),uint64_t (*next_event)(void *));
 void segacd_coordinator_pcm_sink(SegaCDCoordinator *,Rf5c164Sink,void *user);
+/* Emulation-thread 44.1 kHz CDDA frames, after the guest fader. Host rate
+ * conversion/mixing belongs outside deterministic device state. */
+void segacd_coordinator_cdda_sink(SegaCDCoordinator *,SegaCDCddaSample,void *user);
 /* Host VDP DMA bus callback: Word RAM has a one-access output delay (Sega
  * Hardware p61); normal CPU reads have none. First-latch prefetch is not yet
  * bus-phase qualified. These calls must use the main CPU's execution stack. */

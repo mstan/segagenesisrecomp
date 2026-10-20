@@ -8,7 +8,7 @@ enum { MAIN_DENOM=53693175,MAIN_NUMER=87500000 };
 static M68kStepResult execute_cpu(SegaCDCoordinator *,unsigned);
 static int device_fault(const SegaCDCoordinator*c)
 {
-    return c->devices->drive.unsupported_command || c->devices->media_error ||
+    return c->devices->drive.unsupported_command || c->devices->media_error || c->devices->cdda_error ||
         c->devices->dma.last_result==SEGACD_DMA_BAD_DESTINATION ||
         c->devices->dma.last_result==SEGACD_DMA_ODD_BYTE_COUNT ||
         c->devices->dma.last_result==SEGACD_DMA_UNMAPPED;
@@ -225,6 +225,8 @@ void segacd_coordinator_host_clock(SegaCDCoordinator*c,void (*advance)(void *,ui
 {if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;}}
 void segacd_coordinator_pcm_sink(SegaCDCoordinator*c,Rf5c164Sink sink,void*user)
 {if(c && !c->busy[0] && !c->busy[1]){c->io.pcm_sink=sink;c->io.pcm_user=user;}}
+void segacd_coordinator_cdda_sink(SegaCDCoordinator*c,SegaCDCddaSample sink,void*user)
+{if(c && !c->busy[0] && !c->busy[1]){c->io.cdda_sample=sink;c->io.cdda_sample_user=user;}}
 uint16_t segacd_coordinator_vdp_read16(SegaCDCoordinator*c,uint32_t a)
 {
     uint16_t value=m68k_step_read16(&c->cpu[0],a);a&=0xFFFFFFu;

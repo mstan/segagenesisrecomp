@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include "rf5c164.h"
 #include "cdd.h"
+#include "cdda.h"
 #include "cdc.h"
 #include "stamp.h"
 #include "dma.h"
@@ -34,6 +35,8 @@ typedef struct {
     void *media_user;
     SegaCDCddaSector cdda_sector;
     void *cdda_user;
+    SegaCDCddaSample cdda_sample;
+    void *cdda_sample_user;
 } SegaCDIO;
 
 enum {
@@ -49,12 +52,14 @@ enum {
 typedef struct SegaCD {
     Rf5c164 pcm;
     SegaCDDrive drive;
+    SegaCDCdda cdda;
     SegaCDCdc cdc;
     SegaCDStamp stamp;
     SegaCDDma dma;
     uint8_t cdc_destination;
     uint16_t cdc_dma_address;
     uint8_t media_error; /* 1=missing/read failure; 2=unsupported sector mode. */
+    uint8_t cdda_error; /* SegaCDCddaResult; sticky until device reset. */
     int32_t media_error_lba;
     uint64_t media_sectors,cdda_sectors;
     uint8_t bios[SEGACD_BIOS_BYTES];

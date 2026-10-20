@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(SegaCDDeviceTests C)
 enable_testing()
-add_library(segacd_devices STATIC ../../runner/cd/segacd.c ../../runner/cd/rf5c164.c ../../runner/cd/cdd.c ../../runner/cd/cdc.c ../../runner/cd/sector.c ../../runner/cd/stamp.c ../../runner/cd/dma.c ../../runner/cd/fader.c)
+add_library(segacd_devices STATIC ../../runner/cd/segacd.c ../../runner/cd/rf5c164.c ../../runner/cd/cdd.c ../../runner/cd/cdc.c ../../runner/cd/sector.c ../../runner/cd/stamp.c ../../runner/cd/dma.c ../../runner/cd/fader.c ../../runner/cd/cdda.c)
 target_include_directories(segacd_devices PUBLIC ../../runner/cd)
 target_compile_features(segacd_devices PUBLIC c_std_11)
 if(MSVC)
@@ -31,6 +31,22 @@ else()
   target_compile_options(segacd_fader_test PRIVATE -Wall -Wextra -Werror)
 endif()
 add_test(NAME segacd_fader COMMAND segacd_fader_test)
+add_executable(segacd_cdda_test cdda_test.c)
+target_link_libraries(segacd_cdda_test PRIVATE segacd_devices)
+if(MSVC)
+  target_compile_options(segacd_cdda_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_cdda_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_cdda COMMAND segacd_cdda_test)
+add_executable(segacd_cdda_bus_test cdda_bus_test.c)
+target_link_libraries(segacd_cdda_bus_test PRIVATE segacd_devices)
+if(MSVC)
+  target_compile_options(segacd_cdda_bus_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_cdda_bus_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_cdda_bus COMMAND segacd_cdda_bus_test)
 add_executable(segacd_cdd_test cdd_test.c)
 target_link_libraries(segacd_cdd_test PRIVATE segacd_devices)
 add_test(NAME segacd_cdd COMMAND segacd_cdd_test)
@@ -120,6 +136,11 @@ if(NOT CMAKE_CROSSCOMPILING)
     "${engine_root}/recompiler/src/game_config.c" "${engine_root}/recompiler/src/toml.c")
   target_include_directories(segacd_module_recompiler PRIVATE ${step_includes} "${engine_root}/recompiler/src")
   target_compile_features(segacd_module_recompiler PRIVATE c_std_11)
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME segacd_entry_file
+      COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/entry_file_test.py"
+        "$<TARGET_FILE:segacd_module_recompiler>")
+  endif()
   set(module_dir "${CMAKE_CURRENT_BINARY_DIR}/module-fixtures")
   file(MAKE_DIRECTORY "${module_dir}")
   set(module_sources)
@@ -347,7 +368,7 @@ endif()
 # One build graph for the synthetic suite; private owned-input probe catalogs
 # remain outside this target. Avoid a separate MSBuild startup for each test.
 add_custom_target(segacd_test_suite)
-foreach(test_target IN ITEMS segacd_memory_test segacd_pcm_test segacd_fader_test segacd_cdd_test
+foreach(test_target IN ITEMS segacd_memory_test segacd_pcm_test segacd_fader_test segacd_cdda_test segacd_cdda_bus_test segacd_cdd_test
     segacd_cdc_test segacd_disc_image_test segacd_sector_test segacd_media_test
     segacd_stamp_test segacd_dma_test segacd_step_semantics_test
     segacd_floor_divide_test segacd_module_test segacd_execution_floor_test

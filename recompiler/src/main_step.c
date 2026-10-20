@@ -18,6 +18,35 @@ static uint32_t number(const char *s)
     if(errno || !*s || *end || n>0xFFFFFFu)fail("invalid 24-bit address");
     return (uint32_t)n;
 }
+static int in_image(const Image *i,uint32_t pc);
+static void queue_pc(const Image *i,uint32_t pc,uint8_t *queued,uint32_t *queue,size_t *tail);
+static void entries_file(const Image *image,const char *path,uint8_t *queued,
+                         uint32_t *queue,size_t *tail)
+{
+    enum { MAX_ENTRY_TOKEN=32 };
+    FILE *f=fopen(path,"rb");if(!f)fail("cannot open entries file");
+    size_t count=0;char token[MAX_ENTRY_TOKEN+1];size_t used=0;int c;
+    while((c=fgetc(f))!=EOF) {
+        if(isspace((unsigned char)c)) {
+            if(!used)continue;
+            token[used]='\0';uint32_t pc=number(token);
+            if(!in_image(image,pc))fail("entry outside image or odd");
+            queue_pc(image,pc,queued,queue,tail);++count;used=0;
+        } else {
+            if(c==0)fail("NUL byte in entries file token");
+            if(used==MAX_ENTRY_TOKEN)fail("entries file token too long");
+            token[used++]=(char)c;
+        }
+    }
+    if(ferror(f))fail("cannot read entries file");
+    if(used) {
+        token[used]='\0';uint32_t pc=number(token);
+        if(!in_image(image,pc))fail("entry outside image or odd");
+        queue_pc(image,pc,queued,queue,tail);++count;
+    }
+    if(fclose(f))fail("cannot close entries file");
+    if(!count)fail("entries file must contain at least one address");
+}
 static uint8_t image_read(uint32_t a,void *user)
 {
     Image *i=user;return a>=i->base && a-i->base<i->size?i->bytes[a-i->base]:0xFF;
@@ -46,7 +75,7 @@ static void close_output(FILE *f){if(ferror(f) || fclose(f))fail("output write f
 
 int main(int argc,char **argv)
 {
-    if(argc<6){fprintf(stderr,"usage: M68kStepRecomp INPUT OUTPUT_DIR C_IDENTIFIER LOAD_BASE ENTRY... | --all\n");return 2;}
+    if(argc<6){fprintf(stderr,"usage: M68kStepRecomp INPUT OUTPUT_DIR C_IDENTIFIER LOAD_BASE ENTRY... [--entries-file PATH] | --all\n");return 2;}
     const char *prefix=argv[3];
     if(!(isalpha((unsigned char)*prefix) || *prefix=='_'))fail("invalid C identifier");
     for(const char *p=prefix;*p;++p)if(!(isalnum((unsigned char)*p) || *p=='_'))fail("invalid C identifier");
@@ -66,7 +95,10 @@ int main(int argc,char **argv)
     size_t head=0,tail=0;int all=0;
     for(int n=5;n<argc;++n) {
         if(!strcmp(argv[n],"--all"))all=1;
-        else {uint32_t pc=number(argv[n]);if(!in_image(&image,pc))fail("entry outside image or odd");queue_pc(&image,pc,queued,queue,&tail);}
+        else if(!strcmp(argv[n],"--entries-file")) {
+            if(++n>=argc)fail("--entries-file requires a path");
+            entries_file(&image,argv[n],queued,queue,&tail);
+        } else {uint32_t pc=number(argv[n]);if(!in_image(&image,pc))fail("entry outside image or odd");queue_pc(&image,pc,queued,queue,&tail);}
     }
     if(all)for(uint32_t n=0;n<image.size;n+=2)queue_pc(&image,image.base+n,queued,queue,&tail);
     GenesisRom rom={0};rom.rom_size=image.base+image.size;rom.read8_override=image_read;rom.read8_user=&image;

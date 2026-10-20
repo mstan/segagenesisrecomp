@@ -8,6 +8,8 @@ void segacd_reset(SegaCD *s)
 {
     rf5c164_reset(&s->pcm);
     segacd_cdd_reset(&s->drive);
+    segacd_cdda_reset(&s->cdda,s->drive.cycles,0x4000);
+    s->cdda_error=0;
     segacd_cdc_reset(&s->cdc);s->cdc_destination=0;s->cdc_dma_address=0;
     segacd_stamp_reset(&s->stamp);
     segacd_dma_init(&s->dma);
@@ -51,6 +53,10 @@ static void deliver_sector(void *user,int32_t lba)
     unsigned track=0;
     while(track+1<s->drive.toc.count && lba>=s->drive.toc.track[track+1].index00)++track;
     if(s->drive.toc.track[track].data) {
+        /* lba is the sector actually delivered, whereas drive.lba becomes
+         * the NEXT sector after delivery. Do not discard the last audio
+         * sector early merely because that next sector belongs to data. */
+        segacd_cdda_clear_for_data(&s->cdda);
         SegaCDSectorResult status=segacd_sector_validate(raw);
         /* Data pregap headers participate in the decoder's pre-roll. Stored
          * audio/mode-zero pregaps do not contain supported MODE1 blocks;
@@ -63,6 +69,9 @@ static void deliver_sector(void *user,int32_t lba)
         segacd_cdc_sector(&s->cdc,raw,status==SEGACD_SECTOR_MODE1_OK);
     } else {
         ++s->cdda_sectors;
+        segacd_cdda_play(&s->cdda);
+        SegaCDCddaResult result=segacd_cdda_push_raw_sector(&s->cdda,s->drive.cycles,lba,raw);
+        if(result!=SEGACD_CDDA_OK && !s->cdda_error)s->cdda_error=(uint8_t)result;
         if(io && io->cdda_sector)io->cdda_sector(io->cdda_user,s->drive.cycles,lba,raw);
     }
 }
@@ -70,6 +79,9 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
 {
     uint32_t remaining=cycles;SectorDelivery delivery={s,io};
     while(remaining) {
+        /* A command can stop/seek/pause the source between sector events.
+         * Do not expose queued audio past that emulated command boundary. */
+        if(s->drive.status!=1)segacd_cdda_stop(&s->cdda);
         uint32_t delta=remaining;
         uint64_t event=segacd_cdd_next_event(&s->drive);
         if(event>=s->drive.cycles && event-s->drive.cycles<delta)delta=(uint32_t)(event-s->drive.cycles);
@@ -79,6 +91,11 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
         /* Age the preceding decoder pulse before delivering a new sector at
          * its actual CDD event boundary, even during a long stopped interval. */
         rf5c164_advance(&s->pcm,delta,io?io->pcm_sink:NULL,io?io->pcm_user:NULL);
+        if(!s->cdda_error) {
+            SegaCDCddaResult result=segacd_cdda_advance_to(&s->cdda,s->drive.cycles+delta,
+                io?io->cdda_sample:NULL,io?io->cdda_sample_user:NULL,NULL);
+            if(result!=SEGACD_CDDA_OK)s->cdda_error=(uint8_t)result;
+        }
         segacd_cdc_advance(&s->cdc,delta);
         if(!(s->memory_mode&(MODE_1M|RET)) && segacd_stamp_advance(&s->stamp,s->word,(s->memory_mode>>3)&3u,delta))
             s->irq_pending|=1u<<1;
@@ -311,7 +328,14 @@ static void mode_write(SegaCD *s, SegaCDCpu cpu, uint8_t v)
 
 static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
 {
-    if(cpu==SEGACD_SUB && r>=0x34 && r<0x4C){segacd_cdd_write(&s->drive,r,v);return SEGACD_OK;}
+    if(cpu==SEGACD_SUB && r>=0x34 && r<0x4C) {
+        segacd_cdd_write(&s->drive,r,v);
+        if(r==0x35) {
+            SegaCDCddaResult result=segacd_cdda_set_fader_target_raw(&s->cdda,s->drive.fader);
+            if(result!=SEGACD_CDDA_OK && !s->cdda_error)s->cdda_error=(uint8_t)result;
+        }
+        return SEGACD_OK;
+    }
     if(cpu==SEGACD_SUB && r>=0x58 && r<0x68) {
         unsigned reg=(r-0x58)/2;
         /* Trace-vector start requires a word access. */
@@ -359,6 +383,7 @@ static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
         else if (!(v & 1)) {
             s->peripheral_ready = s->sub_cycles + SEGACD_SUB_CLOCK / 10;
             rf5c164_reset(&s->pcm);segacd_cdd_reset(&s->drive);segacd_cdc_reset(&s->cdc);
+            segacd_cdda_reset(&s->cdda,s->drive.cycles,0x4000);s->cdda_error=0;
             segacd_dma_init(&s->dma);
         }
         return SEGACD_OK;

@@ -48,8 +48,15 @@ static unsigned snapshot_frame_count;
 static int custom_snapshot_frames;
 static void dump_frame_named(const char *,const char *);
 static void dump(const char *,const char *,const void *,size_t);
+static void capture_main_pc_state(uint32_t,uint16_t,uint64_t);
 static int capture_audio,capture_error;
+static int main_pc_capture_enabled,main_pc_capture_matched;
+static uint32_t main_pc_capture_target,main_pc_capture_observed;
+static uint16_t main_pc_capture_opcode;
+static uint64_t main_pc_capture_time;
 static FILE *pcm_samples_file,*pcm_index_file,*cdda_raw_file,*cdda_index_file;
+static FILE *cdda_samples_file,*cdda_samples_index_file;
+static uint64_t cdda_sample_count;
 static uint64_t pcm_epoch_subclock,pcm_event_count,cdda_event_count;
 static uint64_t fader_event_count,peripheral_ready_events;
 static uint64_t pcm_last_sample_index;
@@ -72,6 +79,18 @@ static int parse_uint_span(const char *begin,const char *end,unsigned base,uint6
 }
 static int parse_decimal_span(const char *begin,const char *end,uint64_t *out)
 { return parse_uint_span(begin,end,10,out); }
+static int parse_main_pc_target(const char *text,uint32_t *out)
+{
+    const char *begin=text,*end;
+    unsigned base=10;
+    uint64_t value;
+    if(!text||!*text||*text=='+'||*text=='-')return 0;
+    end=text+strlen(text);
+    if(end-begin>=2&&begin[0]=='0'&&(begin[1]=='x'||begin[1]=='X')){base=16;begin+=2;}
+    else if(end-begin>1&&begin[0]=='0')base=8;
+    if(!parse_uint_span(begin,end,base,&value)||value>0xFFFFFFu||(value&1u))return 0;
+    *out=(uint32_t)value;return 1;
+}
 static int parse_mask_span(const char *begin,const char *end,uint16_t *out)
 {
     unsigned base=10;uint64_t value;
@@ -123,6 +142,7 @@ static int parse_probe_inputs(void)
     const char *snapshots=getenv("SEGACD_PROBE_SNAPSHOT_FRAMES");
     const char *audio=getenv("SEGACD_PROBE_CAPTURE_AUDIO");
     const char *pc_limit=getenv("SEGACD_PROBE_FLOOR_PC_LIMIT");
+    const char *main_pc=getenv("SEGACD_PROBE_CAPTURE_MAIN_PC");
     if(events&&!parse_pad_events(events)){fprintf(stderr,"invalid SEGACD_PROBE_PAD_EVENTS (expected up to 64 frame:duration:12-bit-mask events)\n");return 0;}
     if(override) {
         if(!events||strcmp(override,"1")){fprintf(stderr,"SEGACD_PROBE_PAD_EVENTS_OVERRIDE_START requires pad events and exact value 1\n");return 0;}
@@ -130,6 +150,12 @@ static int parse_probe_inputs(void)
     }
     if(snapshots&&!parse_snapshot_frames(snapshots)){fprintf(stderr,"invalid SEGACD_PROBE_SNAPSHOT_FRAMES (expected up to 64 unique decimal frames <= UINT32_MAX)\n");return 0;}
     if(audio){if(strcmp(audio,"1")){fprintf(stderr,"SEGACD_PROBE_CAPTURE_AUDIO accepts only 1\n");return 0;}capture_audio=1;}
+    if(main_pc) {
+        if(!parse_main_pc_target(main_pc,&main_pc_capture_target)) {
+            fprintf(stderr,"SEGACD_PROBE_CAPTURE_MAIN_PC must be a base-0 even address <= 0xFFFFFF\n");return 0;
+        }
+        main_pc_capture_enabled=1;
+    }
     if(pc_limit) {
         uint64_t value;
         if(!parse_decimal_span(pc_limit,pc_limit+strlen(pc_limit),&value)||!value||value>PROBE_MAX_FLOOR_PC_LIMIT) {
@@ -184,6 +210,7 @@ static int input_selftest(void)
         printf("\n");
     }
     printf("floor-pc-limit=%u initial-epoch=0\n",floor_pc_limit);
+    printf("main-pc-capture enabled=%u target=%06X matched=0\n",main_pc_capture_enabled,main_pc_capture_target);
     return 1;
 }
 static void observe_input(uint32_t a,unsigned value)
@@ -222,6 +249,19 @@ static void cdda_capture(void *unused,uint64_t subclock,int32_t lba,const uint8_
     }
     ++cdda_event_count;
 }
+static void cdda_sample_capture(void *unused,uint64_t subclock,int16_t left,int16_t right)
+{
+    (void)unused;if(!capture_audio||capture_error)return;
+    uint16_t l=(uint16_t)left,r=(uint16_t)right;
+    const uint8_t bytes[4]={(uint8_t)l,(uint8_t)(l>>8),(uint8_t)r,(uint8_t)(r>>8)};
+    if(fwrite(bytes,1,sizeof bytes,cdda_samples_file)!=sizeof bytes ||
+       fprintf(cdda_samples_index_file,"%llu,%llu,%d,%d,%04X,%04X,%u\n",
+           (unsigned long long)cdda_sample_count,(unsigned long long)subclock,(int)left,(int)right,
+           segacd_fader_current_raw(&cd.cdda.fader),cd.cdda.fader_raw_target,cd.cdda.source_anchored)<0) {
+        fprintf(stderr,"audio capture: post-fader CDDA sample write failed\n");capture_error=1;return;
+    }
+    ++cdda_sample_count;
+}
 static int capture_open(const char *directory)
 {
     char path[4096];
@@ -235,15 +275,18 @@ static int capture_open(const char *directory)
     OPEN_CAPTURE(pcm_index_file,"rf5c164-sample-index.csv","w");
     OPEN_CAPTURE(cdda_raw_file,"cdda-sectors-2352.bin","wb");
     OPEN_CAPTURE(cdda_index_file,"cdda-sectors.csv","w");
+    OPEN_CAPTURE(cdda_samples_file,"cdda-dac-samples.s16le","wb");
+    OPEN_CAPTURE(cdda_samples_index_file,"cdda-dac-sample-index.csv","w");
 #undef OPEN_CAPTURE
     fputs("pcm_epoch,sample_index,estimated_subclock,left_s16,right_s16\n",pcm_index_file);
     fputs("event,subclock,lba,raw_file_offset,raw_bytes\n",cdda_index_file);
-    if(ferror(pcm_index_file)||ferror(cdda_index_file)){fprintf(stderr,"audio capture: CSV header write failed\n");return 0;}
+    fputs("event,subclock,left_s16,right_s16,fader_after_sample_raw,target_raw,source_anchored\n",cdda_samples_index_file);
+    if(ferror(pcm_index_file)||ferror(cdda_index_file)||ferror(cdda_samples_index_file)){fprintf(stderr,"audio capture: CSV header write failed\n");return 0;}
     return 1;
 }
 static int capture_close(void)
 {
-    FILE **files[]={&pcm_samples_file,&pcm_index_file,&cdda_raw_file,&cdda_index_file};int ok=1;
+    FILE **files[]={&pcm_samples_file,&pcm_index_file,&cdda_raw_file,&cdda_index_file,&cdda_samples_file,&cdda_samples_index_file};int ok=1;
     for(unsigned n=0;n<sizeof files/sizeof *files;++n)if(*files[n]){if(fclose(*files[n]))ok=0;*files[n]=NULL;}
     if(!ok)fprintf(stderr,"audio capture: close/flush failed\n");
     return ok;
@@ -348,6 +391,21 @@ static void dump(const char*dir,const char*name,const void*data,size_t bytes)
     if(n<0 || (size_t)n>=sizeof path){fprintf(stderr,"dump path too long\n");exit(4);}
     FILE*f=fopen(path,"wb");if(!f || fwrite(data,1,bytes,f)!=bytes || fclose(f)){fprintf(stderr,"dump failed: %s\n",name);exit(4);}
 }
+static void capture_main_pc_state(uint32_t pc,uint16_t opcode,uint64_t time)
+{
+    char name[80];
+    snprintf(name,sizeof name,"main-pc-%06X-main-ram.bin",pc);dump(dump_directory,name,g_ram,sizeof g_ram);
+    snprintf(name,sizeof name,"main-pc-%06X-sub-prg.bin",pc);dump(dump_directory,name,cd.prg,sizeof cd.prg);
+    snprintf(name,sizeof name,"main-pc-%06X-word-ram.bin",pc);dump(dump_directory,name,cd.word,sizeof cd.word);
+    snprintf(name,sizeof name,"main-pc-%06X-vdp-registers.bin",pc);dump(dump_directory,name,vdp.reg,sizeof vdp.reg);
+    snprintf(name,sizeof name,"main-pc-%06X-cram-host-u16.bin",pc);dump(dump_directory,name,vdp.cram,sizeof vdp.cram);
+    snprintf(name,sizeof name,"main-pc-%06X-vsram-host-u16.bin",pc);dump(dump_directory,name,vdp.vsram,sizeof vdp.vsram);
+    snprintf(name,sizeof name,"main-pc-%06X-z80-ram.bin",pc);dump(dump_directory,name,genesis.z80_ram,sizeof genesis.z80_ram);
+    main_pc_capture_matched=1;main_pc_capture_observed=pc;main_pc_capture_opcode=opcode;main_pc_capture_time=time;
+    printf("Main PC state capture matched target=%06X observed=%06X opcode=%04X time=%llu memory_mode=%02X main_pc=%06X sub_pc=%06X (one unambiguous Main retirement)\n",
+        main_pc_capture_target,pc,opcode,(unsigned long long)time,cd.memory_mode,
+        coordinator.cpu[0].state.regs.PC&0xFFFFFFu,coordinator.cpu[1].state.regs.PC&0xFFFFFFu);
+}
 static void dump_frame_named(const char*dir,const char*name)
 {
     char path[4096];int n=snprintf(path,sizeof path,"%s/%s",dir,name);if(n<0 || (size_t)n>=sizeof path)exit(4);
@@ -433,7 +491,8 @@ int main(int argc,char**argv)
     if(capture_audio) {
         if(!capture_open(dump_directory)){(void)capture_close();return 2;}
         segacd_coordinator_pcm_sink(&coordinator,pcm_capture,NULL);
-        printf("Audio observation enabled: RF5C164 raw signed-16 LE stereo at 12500000/384 Hz; no mix/fader/host output.\n");
+        segacd_coordinator_cdda_sink(&coordinator,cdda_sample_capture,NULL);
+        printf("Audio observation enabled: RF5C164 raw S16 LE stereo at 12500000/384 Hz, raw CDDA sectors and post-fader 44100 Hz CDDA frames; no host mix/output.\n");
     }
     uint64_t deadline=strtoull(argv[2],NULL,0),steps=0;
     struct {uint32_t main,sub;uint64_t time;} ring[64]={{0}};M68kStepResult status=M68K_STEP_OK;
@@ -451,6 +510,16 @@ int main(int argc,char**argv)
         uint64_t floor_before[2]={coordinator.floor_steps[0],coordinator.floor_steps[1]};
         uint16_t fader_before=cd.drive.fader;uint64_t fader_deadline_before=cd.drive.fader_deadline;
         status=segacd_coordinator_step(&coordinator);++steps;
+        /* Match only a successfully retired Main instruction in this outer
+         * scheduler step. Capture before any subsequent owner can execute. */
+        if(main_pc_capture_enabled&&!main_pc_capture_matched&&status==M68K_STEP_OK&&
+           coordinator.last_cpu==0&&
+           coordinator.native_steps[0]-native_before[0]+coordinator.floor_steps[0]-floor_before[0]==1&&
+           coordinator.native_steps[1]-native_before[1]+coordinator.floor_steps[1]-floor_before[1]==0) {
+            uint32_t retired_pc=coordinator.cpu[0].state.instruction_pc&0xFFFFFFu;
+            if(retired_pc==main_pc_capture_target)
+                capture_main_pc_state(retired_pc,coordinator.cpu[0].state.fault_opcode,coordinator.device_time);
+        }
         observe_fader_and_ready(coordinator.device_time,fader_before,fader_deadline_before);
         if(capture_error){status=M68K_STEP_BUS_ERROR;break;}
         if(watch_word!=UINT32_MAX && coordinator.device_time>=watch_after && watch_events<1024 &&
@@ -535,12 +604,21 @@ int main(int argc,char**argv)
     printf("\n");
     printf("retired native=%llu/%llu floor=%llu/%llu floor_only=%u\n",(unsigned long long)coordinator.native_steps[0],(unsigned long long)coordinator.native_steps[1],(unsigned long long)coordinator.floor_steps[0],(unsigned long long)coordinator.floor_steps[1],(unsigned)floor_only);
     printf("floor PC unique epoch=%u main=%llu sub=%llu print_limit=%u normalized_even_pc_bitmap=1MB_per_CPU\n",floor_pc_epoch,(unsigned long long)floor_pc_count[0],(unsigned long long)floor_pc_count[1],floor_pc_limit);
+    printf("Main PC capture enabled=%u target=%06X matched=%u observed=%06X opcode=%04X time=%llu\n",
+        main_pc_capture_enabled,main_pc_capture_target,main_pc_capture_matched,main_pc_capture_observed,
+        main_pc_capture_opcode,(unsigned long long)main_pc_capture_time);
     printf("observed boot-address-range native=%llu/%llu floor=%llu/%llu first_pc=%06X/%06X require_native=%u (single-retirement observations; address range alone does not identify loaded code)\n",(unsigned long long)observed_boot_native[0],(unsigned long long)observed_boot_native[1],(unsigned long long)observed_boot_floor[0],(unsigned long long)observed_boot_floor[1],first_boot_pc[0],first_boot_pc[1],(unsigned)require_native);
     printf("P1 reads=%llu while_Start_pressed=%llu start_frame=%llu\n",(unsigned long long)pad_reads,(unsigned long long)pressed_pad_reads,(unsigned long long)start_frame);
     printf("fader events=%llu (printed cap=256) peripheral_ready_events=%llu memory_mode=%02X fader_raw=%04X busy=%u deadline=%llu pcm_samples=%llu cdda_sectors=%llu capture=%u\n",
         (unsigned long long)fader_event_count,(unsigned long long)peripheral_ready_events,cd.memory_mode,cd.drive.fader,
         cd.drive.fader_deadline!=0,(unsigned long long)cd.drive.fader_deadline,(unsigned long long)pcm_event_count,
         (unsigned long long)cdda_event_count,capture_audio);
+    printf("CDDA error=%u status=%u clock=%llu ticks=%llu emitted=%llu source_anchored=%u fifo=%u/%u underflow=%llu capture_samples=%llu fader_current=%04X target=%04X\n",
+        cd.cdda_error,cd.cdda.status,(unsigned long long)cd.cdda.clock_now,
+        (unsigned long long)cd.cdda.total_sample_ticks,(unsigned long long)cd.cdda.delivered_frames,
+        cd.cdda.source_anchored,cd.cdda.fifo_count,cd.cdda.fifo_frame,
+        (unsigned long long)cd.cdda.underflow_frames,(unsigned long long)cdda_sample_count,
+        segacd_fader_current_raw(&cd.cdda.fader),cd.cdda.fader_raw_target);
     printf("CDC final transfers=%u dest=%u DAC=%04X DBC=%04X PT=%04X WA=%04X ctrl=%02X/%02X if=%02X/%02X DMA_words=%llu\n",transfers,cd.cdc_destination,cd.cdc.dac,cd.cdc.dbc,cd.cdc.block_pointer,cd.cdc.write_address,cd.cdc.ctrl0,cd.cdc.ctrl1,cd.cdc.ifctrl,cd.cdc.ifstat,(unsigned long long)cd.dma.words);
     dump(argv[3],"cdc-ram.bin",cd.cdc.ram,sizeof cd.cdc.ram);
     dump(argv[3],"backup-ram.bin",cd.backup,sizeof cd.backup);

@@ -404,8 +404,19 @@ a fabricated final mix. Fader word/deadline transitions are observed after each
 coordinator step, including same-word low-byte deadline refreshes. PCM sample
 indices run at 12.5 MHz / 384; a reset starts a new index epoch whose origin is
 estimated at the observed coordinator boundary, not an exact reset bus cycle.
-Capture open/write/flush failures fail the run. These controls are diagnostic
-only and do not implement Z80 execution, CDDA output or host mixing.
+The capture also includes post-fader CDDA signed-16 LE frames and their actual
+device subclocks. Its CSV labels the fader value **after** that frame's ramp
+step; the frame itself used the preceding coefficient. Capture open/write/flush
+failures fail the run. These controls are diagnostic only and do not implement
+Z80 execution or host mixing.
+
+`SEGACD_PROBE_CAPTURE_MAIN_PC` optionally captures one even 24-bit Main PC,
+after an unambiguous successful retirement and before another CPU executes.
+It retains RAM/VDP/Z80 state without changing execution. Capturing `FF1000`
+at clock 218704055 exposes a transient routine and an earlier resident page
+that later frame captures had already lost. Its guarded runtime catalogs
+remain identified as captured original-program RAM; one matching interior
+IPX block does not establish the enclosing routine's full file provenance.
 
 `build/qa-bios-audio-observation-floor-movement-1` completes the same 50-second
 input schedule with all 46 baseline artifacts unchanged. Parent review verifies
@@ -426,8 +437,50 @@ divided by 256; the last three codes use 1/1024, 2/1024 and 3/1024. This preserv
 the documented gain plateaus instead of treating the whole field as linear.
 Fixed-point output rounds nearest/ties away from zero and saturates explicitly;
 that rounding policy and above-unity behavior have not been measured on hardware.
-The unit is not yet connected to playback. EFDT transfer timing, DAC clocking,
-de-emphasis and host mixing are separate integration work.
+The unit now drives the device's CDDA sample callbacks. EFDT remains the
+existing separate CDD transfer status/deadline. `cdda.c` queues two raw sectors,
+decodes 588 little-endian stereo frames per sector, and schedules samples with
+an integer 12.5 MHz / 44.1 kHz remainder. A first audio sector establishes the
+source phase, with its first frame 284 subclocks later. This startup phase is
+a functional profile, not measured DAC phase. Integer sector intervals can
+contain 587, 588 or 589 samples; the FIFO preserves continuous source order
+and the cumulative 44.1 kHz rate. The stream advances inclusively to each CDD
+event before exposing the sector delivered at that event.
+
+Mapped fader writes latch the target on the low byte. Actual CDD command
+changes flush pending audio on stop/pause/seek; resume waits for a newly
+delivered sector. Data-track delivery clears the audio stream, using the
+delivered LBA rather than prematurely discarding the final audio sector when
+the drive's next-sector LBA crosses into data. Read errors, FIFO under/overflow
+and unimplemented emphasis/double-speed modes are explicit device faults;
+they do not silently generate successful audio. Emphasis, double speed and
+the owner-facing host mix/Z80 path remain unfinished.
+
+The 20-test suite passes MSVC, MinGW and Linux ASan/UBSan, including real
+mapped packets/fader writes through the media-to-DAC path, transport flushes,
+the complete final audio sector and reset/error handling. The original-program
+run `build/qa-bios-cdda-integrated-floor-movement-1` reaches 625000002 subclocks
+and emits 2,204,999 captured CDDA frames (including inactive silence), with
+zero source underflow or device error. This is still diagnostic-floor gameplay
+and device output, not full Z80/host audio or an owner-facing release.
+All 46 baseline RAM/VDP/frame artifacts and the earlier raw PCM/CDDA streams
+remain byte-identical. Independent arithmetic checks match 968,875 source
+frames to their exact sector samples and preceding fader coefficient. The
+462-subclock gap in inactive output is explained by the original Sub reset:
+its peripheral-ready deadline gives reset clock 13962764, and restarting the
+sample phase places the first new tick at 13963048 after the old 13962586 tick.
+`parent-reset-phase-review.json` retains that calculation. This confirms the
+implemented reset profile, not the physical DAC's reset phase.
+
+The instruction generator accepts `--entries-file PATH` with whitespace-separated
+validated entry addresses, combined with positional entries or other files.
+This avoids Windows command-line limits while keeping one deduplicated CFG
+catalog. Synthetic tests require byte-identical output to positional roots,
+10,000 duplicate entries without a long command line, and invalid/missing input
+failure before output files are created. The private Palmtree Panic catalog
+now covers 7,795 native entries from 4,917 source-matching roots in one module;
+its guards match all eight captured resident Word RAM images. Compilation and
+native-only runtime acceptance are separate checks.
 
 Additional private native overlays use the CMake cache lists
 `SEGACD_BIOS_PROBE_EXTRA_MAIN_MODULES` and
