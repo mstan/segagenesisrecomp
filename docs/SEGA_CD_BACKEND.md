@@ -92,3 +92,20 @@ the later DIV fix intentionally changes generated division. No original BIOS
 execution is inferred from these tests. Group-zero exception frames, dynamic
 cycle timing, the complete step frontend, module registration/correctness floor
 and dual-CPU scheduler still need implementation/qualification.
+
+The original-program [module frontend](M68K_STEP_MODULES.md) now emits native
+steps, sorted descriptors and byte guards for a caller-selected load base and
+CFG roots, or all aligned words. Five synthetic tests pass MSVC, MinGW and Linux
+ASan/UBSan. Independent loop expectations cover registers, stacks and exact
+cycles; replacement/extension mismatches leave CPU state untouched. This does
+not supply a correctness floor for code absent from the registered modules.
+
+The private `bios_probe` is an optional main-only bring-up driver, not the game
+runner or a release target. It uses the actual Genesis bus/VDP and CD memory,
+but has no sub-CPU/VDP clock scheduling, Z80 execution or audio rendering. The
+owned BIOS CFG contains 558 native operations and zero unsupported operations.
+Its first execution probe retired 2,000,000 original BIOS instructions and
+21,048,508 nominal cycles, initialized devices/released the sub CPU, then polled
+at `$000A1A/$000A1E` for VBlank (`$FFFE26`). It neither establishes complete boot
+nor qualifies the absent devices/audio. Private logs are under
+`build/bios-step-probe-{build,run}.log`; original-program C stays under build.

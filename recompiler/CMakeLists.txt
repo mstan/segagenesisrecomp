@@ -27,6 +27,13 @@ target_include_directories(GenesisRecomp PRIVATE
     ${M68K_RECOMP_CORE_INCLUDE_DIRS}
 )
 
+# Original programs and RAM overlays use an explicit-PC, context-bound ABI.
+# Keep this distinct from cartridge function discovery and its call-stack ABI.
+add_executable(M68kStepRecomp src/main_step.c src/rom_parser.c
+    ${M68K_RECOMP_CORE_SOURCES} src/game_config.c src/toml.c)
+target_include_directories(M68kStepRecomp PRIVATE src ${M68K_RECOMP_CORE_INCLUDE_DIRS})
+set_target_properties(M68kStepRecomp PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
 # Output directly to build/recompiler/
 set_target_properties(GenesisRecomp PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
