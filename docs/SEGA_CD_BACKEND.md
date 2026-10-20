@@ -5,12 +5,29 @@ campaign. Work is isolated on `feature/segacd-backend`. The S3K campaign was
 delivered on its own branch in `731461a`; it is a C adaptation and does not boot
 original CD programs. Neither branch is merged into master by this work.
 
-Current original-program evidence includes a complete 50-second strict native
-Z80 run: 16,292,291 generated instructions with no miss or interpreter fallback.
-Main/Sub deliberately used the diagnostic floor for that isolated check.
-`build/qa-bios-z80-native-floor-gameplay-4/parent-canonical-run-manifest.json`
-records inputs, executable and captures. The CDD counter `drive.frames` is a
-75 Hz drive counter; it must not be reported as the video frame count.
+The combined native standalone now completes 3,000 video frames of original
+US BIOS/disc boot and Palmtree Panic movement. It retires 32,297,619 Main 68000,
+47,736,468 Sub 68000 and 16,276,772 Z80 native operations, with zero interpreter
+operations and zero audio faults. Exact input, executable and artifact hashes
+are in the private `combined-native-7/manifest.json` under
+`G:/Temp/Codex/segagenesisrecomp/sonic-cd-native`. The tested executable SHA256
+is `853ab9e70913a534ac947a75d5773eb57d5dd4af42eb7f6e48837567a2a969f7`.
+This establishes playable standup for that route, not complete game coverage.
+
+A fresh independent libretro replay reaches the same scenery, score, 13 rings
+and lives. Its endpoint differs by 0.18 seconds of game time and small camera
+and animation offsets; this is a partial visual comparison, not pixel parity
+or final acceptance. Both channels of the native raw internal-mix WAV are
+active. Its intentional 223,721 Hz capture precedes the host's 48 kHz resampler.
+The normal resizable SDL window was checked with an active QA port and has
+the exact caption `Sonic CD`. The first owner playtest uses a separate executable
+copy, normal audio and a private save on G:.
+
+Earlier isolated Z80 evidence remains at
+`build/qa-bios-z80-native-floor-gameplay-4/parent-canonical-run-manifest.json`:
+16,292,291 native Z80 instructions, with Main/Sub deliberately using the
+diagnostic interpreter. The CDD counter `drive.frames` is a 75 Hz drive counter;
+it must not be reported as the video frame count.
 
 The earlier hybrid Main/Sub run retires 79,562,450 native and 350,776 floor
 operations. All 112 shared RAM, video and audio artifacts are byte-identical
@@ -20,23 +37,26 @@ independent full-byte source/table/CRC/root checks. Transient MDINIT source
 mapping and capture-derived BIOS extension identity limits remain recorded in
 `build/qa-bios-native-cdda-movement-audit/parent-adversarial-review.json`.
 
-These are separate qualification results. Combined strict native execution,
-host audio, owner playtest, original-program saves/mechanics and final
-independent visual comparisons must still pass. Earlier milestones below
+These are separate qualification results. Full original-program stage and
+mechanics coverage, save progression/restarts, owner feedback and final
+independent visual comparisons remain open. Earlier milestones below
 retain their original limitations and are superseded only by specific later
 evidence, not by a percentage of operations from one run.
 
-The standalone now builds with MSVC. Its first three combined native runs
-reach 124, 602 and 604 video frames, respectively, with nonzero Main/Sub/Z80
-instruction counts, zero floor operations and zero audio faults. They stop
-explicitly on uncovered runtime JMP variants; they have not yet established
-playable original-game coverage. Exact captured instruction bytes generate
-additional guarded variants without replacing guest state or relaxing guards.
-Private run manifests and captures are under
-`G:/Temp/Codex/segagenesisrecomp/sonic-cd-native/combined-native-{1,2,3}`.
-The final captured RAM proves each instruction variant; its precise writer is
-not established by a write trace. These are runtime observations, not a claim
-that every original stage is covered.
+The first native runs stopped explicitly on uncovered runtime JMP variants.
+An explicitly separate interpreter diagnostic collected executed variants for
+offline compilation; the native consumer never attaches that interpreter.
+Captured instruction words remain guarded in full, without replacing guest
+state. The capture alone proves the instruction variant, not its precise writer.
+
+The original Stage Select secret and menu now execute natively. Complete
+byte-identical US source rebuilds supply 587 IPX and 688 Stage Select native
+instructions, including its interrupt handler and Nemesis indirect writers.
+The first native Palmtree Panic Past selection reaches frame 1,992 before
+stopping explicitly at uncovered Sub PC `0x0410DA` in the sound-bank path.
+Full PCM bank catalogs and the remaining standard/special programs are being
+qualified. Static candidate counts are not runtime or mechanics acceptance;
+unclassified CFG paths remain fail-closed and explicitly unverified.
 
 All 26 synthetic tests pass MSVC, including the shared 68000 test. The GCC
 Sega CD suite also passes. A separate integration harness using real ymfm and
