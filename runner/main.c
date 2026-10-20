@@ -30,6 +30,7 @@
 #include "genesis_clocks.h"
 #include "frame_pacer.h"
 #include "audio.h"
+#include "host_timing.h"
 #include "cosim.h"
 #include "png_write.h"
 #include "runtime_evidence.h"
@@ -1435,6 +1436,16 @@ static FILE *s_framelog_file = NULL;
 /* Dump full 64KB work RAM at a specific game frame counter for comparison */
 static void check_ramdump(void)
 {
+#if GEN_ENABLE_TRACE
+    /* This legacy comparison capture opens/writes/closes a file mid-game.
+     * Keep it explicit in development builds, like the yield stream. Manual
+     * input-script/TCP RAM captures retain their existing caller contract. */
+    static int enabled=-1;
+    if(enabled<0) {
+        const char *request=getenv("GENESIS_AUTO_RAMDUMP");
+        enabled=request && *request && *request!='0';
+    }
+    if(!enabled) return;
     /* Align by game state: dump when in a gameplay mode (per-game
      * level_modes from g_game_layout) with the player object active
      * (obj_id byte = $01 = Sonic) and 50 frames into stable state. */
@@ -1465,6 +1476,7 @@ static void check_ramdump(void)
             }
         }
     }
+#endif
 }
 
 static void write_framelog(uint32_t frame)
@@ -2936,7 +2948,12 @@ int main(int argc, char *argv[])
 
     if (yield_log) {
         extern FILE *g_yield_log_file;
-        const char *yp = exe_relative("yield_log_native.log");
+        /* File streaming is an explicit development capture. A buffered
+         * fprintf eventually calls WriteFile on the game fiber; busy disks
+         * have blocked this for >1 second during normal gameplay. The frame
+         * and host timing rings remain the default retrospective evidence. */
+        const char *yp = getenv("GENESIS_YIELD_LOG");
+        if (!yp || !*yp || !strcmp(yp, "1")) yp = exe_relative("yield_log_native.log");
         g_yield_log_file = fopen(yp, "w");
         if (g_yield_log_file) {
             fprintf(g_yield_log_file, "# frame cycle_acc v_vblank_count vbla_routine\n");
@@ -3040,6 +3057,7 @@ session_begin:;
     }
 #endif
     int running = 1;
+    int window_close_requested = 0;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
     uint32_t prev_overlay_pad = 0;
     genesis_local_states_configure(s_exe_dir, g_app_config.rewind_enabled &&
@@ -3049,6 +3067,8 @@ session_begin:;
                                    g_app_config.rewind_interval);
     audio_set_playback_enabled(!turbo);
     uint32_t frame_num = 0;
+    HostTiming host_timing = {0};
+    const Uint64 host_perf_freq = SDL_GetPerformanceFrequency();
     int      mode_prev = -1;     /* --hash-on-mode: last Game_Mode seen (-1 = none yet) */
     uint32_t mode_seq  = 0;      /* --hash-on-mode: transition sequence counter */
     const Uint64 perf_frequency = SDL_GetPerformanceFrequency();
@@ -3065,18 +3085,15 @@ session_begin:;
 #if GENESIS_HAS_RECOMP_NET
         if (s_offline_after_netplay && frame_num >= s_netplay_match_frames) break;
 #endif
-#if GEN_ENABLE_TRACE
         Uint64 phase_start=SDL_GetPerformanceCounter();
-        uint32_t phase_us[8]={0};
-#define FRAME_PHASE(n) do { Uint64 now=SDL_GetPerformanceCounter(); phase_us[n]=(uint32_t)((now-phase_start)*1000000ull/SDL_GetPerformanceFrequency()); phase_start=now; } while (0)
-#else
-#define FRAME_PHASE(n) ((void)0)
-#endif
+        Uint64 frame_start=phase_start;
+        uint32_t phase_us[9]={0};
+#define FRAME_PHASE(n) do { Uint64 now=SDL_GetPerformanceCounter(); phase_us[n]=(uint32_t)((now-phase_start)*1000000ull/host_perf_freq); phase_start=now; } while (0)
 
         /* Poll TCP debug server */
         CmdResult cmd_cr = {0};
         if (s_debug_enabled) cmd_cr = cmd_server_poll();
-        if (cmd_cr.should_quit) running = 0;
+        if (cmd_cr.should_quit) { running = 0; break; }
         if (cmd_cr.input_override) {
             s_tcp_input_active = 1;
             s_tcp_input_keys = cmd_cr.input_keys;
@@ -3098,7 +3115,7 @@ session_begin:;
             SDL_Event pev;
             while (SDL_PollEvent(&pev)) {
                 gamepad_handle_event(&pev);
-                if (pev.type == SDL_QUIT) { running = 0; break; }
+                if (pev.type == SDL_QUIT) { running = 0; window_close_requested = 1; break; }
             }
             if (!running) break;
             CmdResult pcr = cmd_server_poll();
@@ -3120,7 +3137,7 @@ session_begin:;
                 continue;
             }
 #endif
-            if (ev.type == SDL_QUIT) { fprintf(stderr, "[session] SDL_QUIT received\n"); running = 0; }
+            if (ev.type == SDL_QUIT) { running = 0; window_close_requested = 1; break; }
             if (ev.type == SDL_KEYDOWN) {
                 if (!ev.key.repeat && !(ev.key.keysym.mod & (KMOD_SHIFT | KMOD_CTRL)) &&
                     ev.key.keysym.sym == SDLK_F7) {
@@ -3131,7 +3148,7 @@ session_begin:;
                     overlay_request = 1; continue;
                 }
 #if !RECOMP_LAUNCHER
-                if (ev.key.keysym.sym == SDLK_ESCAPE) running = 0;
+                if (ev.key.keysym.sym == SDLK_ESCAPE) { running = 0; window_close_requested = 1; break; }
 #endif
 
                 /* Fullscreen toggle: F11, Alt+Enter, or Cmd/Ctrl+F.
@@ -3192,6 +3209,7 @@ session_begin:;
             }
         }
 
+        if (!running) break; /* Close must not execute another game/render tick. */
         {
             uint32_t pad = gamepad_overlay_mask();
             uint32_t menu = GP_OVERLAY_BACK | GP_OVERLAY_RB;
@@ -3211,6 +3229,7 @@ session_begin:;
                                                   : genesis_local_states_open_menu();
                 if (opened) {
                     local_states_modal(renderer, texture, &running, turbo);
+                    if (!running) { window_close_requested = 1; break; }
                     prev_overlay_pad = gamepad_overlay_mask();
                     continue;
                 }
@@ -3546,6 +3565,7 @@ session_begin:;
                     runner_write_screenshot_file(state_path);
             }
             if (input_script_should_exit()) {
+                host_timing_dump(&host_timing, stderr);
                 fprintf(stderr, "[input_script] exiting per script directive (code=%d)\n",
                         input_script_exit_code());
                 if (s_sram_dirty) runner_sram_flush();
@@ -3704,6 +3724,7 @@ session_begin:;
                     ;
             }
         }
+        FRAME_PHASE(8);
         SDL_RenderPresent(renderer);
 #if GENESIS_HAS_RECOMP_NET
         if (!genesis_netplay_active())
@@ -3718,7 +3739,6 @@ session_begin:;
 #if GEN_ENABLE_TRACE
         if (s_debug_enabled) cmd_server_record_timing(frame_num-1,phase_us);
 #endif
-#undef FRAME_PHASE
 
 #if GENESIS_HAS_RECOMP_NET
         /* Confirmation normally arrived during vsync. The top-of-loop barrier
@@ -3727,8 +3747,22 @@ session_begin:;
             (void)genesis_netplay_poll_admit();
 #endif
 
+        if (!turbo && !benchmark_frames) {
+            AudioHostTiming audio_timing;
+            audio_get_host_timing(&audio_timing);
+            host_timing_record(&host_timing, frame_num - 1,
+                              (uint32_t)((phase_start - frame_start) * 1000000ull / host_perf_freq),
+                              phase_us, &audio_timing);
+        }
+#undef FRAME_PHASE
     }
-    fprintf(stderr, "[session] loop ended: running=%d frame=%u\n", running, (unsigned)frame_num);
+    if (window_close_requested) {
+        SDL_HideWindow(window);
+        audio_close(); /* stop playback before persistence/optional diagnostics */
+    }
+    host_timing_dump(&host_timing, stderr);
+    if (!window_close_requested || host_timing_dump_requested())
+        fprintf(stderr, "[session] loop ended: running=%d frame=%u\n", running, (unsigned)frame_num);
     {
         /* RUN_DONE: one comparable line per session (GENESIS_RUN_DONE=1):
          * the machine state fingerprint after the session's last tick. A
@@ -3837,6 +3871,7 @@ session_begin:;
         fflush(stdout);
     }
 
+    if (!window_close_requested || host_timing_dump_requested()) {
     { extern int glue_interp_total_calls(void);
       extern int glue_interp_seen_count(void);
       extern uint64_t glue_miss_count_any(void);
@@ -3851,6 +3886,7 @@ session_begin:;
       fprintf(stderr, "[VBLA] cvblank_fires=%llu VBla_Exit=%d VBla_Music=%d loc_B88=%d\n",
               (unsigned long long)g_cvblank_fires_total,
               g_dbg_b64_count, g_dbg_b5e_count, g_dbg_b88_count); }
+    }
 
     /* --- Discovery runtime oracle: dump executed-PC coverage ---
      * Sourced from the clean-room Tier-3 interpreter's always-on coverage
