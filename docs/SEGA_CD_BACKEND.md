@@ -76,8 +76,19 @@ Shared core branch `feature/segacd-flat-step` exposes the established native C
 arithmetic/EA emitter with consumer-owned CPU/memory bindings. Synthetic real
 opcodes compile into executable C and pass overflow flags, independent contexts,
 postincrement RMW, long index, big-endian memory, real stack adjustment and
-explicit rejection of control/privilege/exception instructions. MSVC, MinGW and
-Linux ASan/UBSan pass. The legacy BIOS generation remains byte-identical in all
-35 C/header artifacts. This seam is not yet the complete step frontend: CPU
-control, privileged instructions, exceptions, cycle accounting, code guards,
-registration and the dual-CPU scheduler still need implementation/qualification.
+explicit rejection of control/privilege/exception instructions by the semantics
+API. The operation API adds real guest BSR/RTS, JSR/JMP, Bcc/DBcc, SR/USP,
+STOP/interrupt/RTE, traps, divide and CHK. Generated operations execute through
+the shared portable CPU context, with current instruction-byte guards and
+independent stacks/memory. Tests cover divide overflow at quotient 65536,
+signed division/remainder, divide by zero entering vector five and CHK bounds.
+The existing interpreter floor has the same unsigned-overflow fix; it reports
+zero division loudly because its function ABI cannot construct that frame.
+
+MSVC and MinGW pass all four current device/generated-operation/legacy-floor/
+CPU-context tests. Linux ASan/UBSan also runs these synthetic tests. The first
+semantics API preserved all 35 legacy BIOS generation artifacts byte for byte;
+the later DIV fix intentionally changes generated division. No original BIOS
+execution is inferred from these tests. Group-zero exception frames, dynamic
+cycle timing, the complete step frontend, module registration/correctness floor
+and dual-CPU scheduler still need implementation/qualification.

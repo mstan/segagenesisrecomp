@@ -19,6 +19,8 @@ if(NOT CMAKE_CROSSCOMPILING)
   include("${engine_root}/external/m68k-recomp-core/cmake/M68kRecompCore.cmake")
   m68k_recomp_core_sources(step_sources genesis)
   m68k_recomp_core_include_dirs(step_includes genesis)
+  m68k_recomp_step_sources(step_runtime_sources)
+  m68k_recomp_step_include_dirs(step_runtime_includes)
   add_executable(segacd_step_emit_test step_emit_test.c ${step_sources}
     "${engine_root}/recompiler/src/rom_parser.c"
     "${engine_root}/recompiler/src/game_config.c"
@@ -29,8 +31,17 @@ if(NOT CMAKE_CROSSCOMPILING)
   add_custom_command(OUTPUT "${step_output}"
     COMMAND segacd_step_emit_test "${step_output}"
     DEPENDS segacd_step_emit_test VERBATIM)
-  add_executable(segacd_step_semantics_test "${step_output}")
-  target_include_directories(segacd_step_semantics_test PRIVATE "${engine_root}/runner/include")
+  add_executable(segacd_step_semantics_test "${step_output}" ${step_runtime_sources})
+  target_include_directories(segacd_step_semantics_test PRIVATE ${step_runtime_includes})
   target_compile_features(segacd_step_semantics_test PRIVATE c_std_11)
   add_test(NAME segacd_step_semantics COMMAND segacd_step_semantics_test)
+  add_executable(segacd_floor_divide_test floor_divide_test.c
+    "${engine_root}/runner/m68k_interp.c"
+    "${engine_root}/external/m68k-recomp-core/common/m68k_decoder.c"
+    "${engine_root}/recompiler/src/rom_parser.c")
+  target_include_directories(segacd_floor_divide_test PRIVATE ${step_includes}
+    "${engine_root}/runner" "${engine_root}/runner/include" "${engine_root}/recompiler/src")
+  target_compile_features(segacd_floor_divide_test PRIVATE c_std_11)
+  add_test(NAME segacd_floor_divide COMMAND segacd_floor_divide_test)
+  add_subdirectory("${engine_root}/external/m68k-recomp-core/tests/step" "core-step")
 endif()

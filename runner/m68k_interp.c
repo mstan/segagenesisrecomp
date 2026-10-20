@@ -429,10 +429,7 @@ static int do_shift(M68KMnemonic mn, int dreg, M68KSize sz,
 static void do_div(int dr, uint32_t src16, int is_signed) {
     uint32_t dest = g_cpu.D[dr];
     g_cpu.SR &= ~SR_C;                                   /* carry always cleared */
-    if ((uint16_t)src16 == 0) {                          /* div by zero: clown traps (vec 5) */
-        g_cpu.SR &= ~(SR_N | SR_Z | SR_V);               /* (harness skips the trap excursion) */
-        return;
-    }
+    if ((uint16_t)src16 == 0) return; /* exec_one rejects the unhandled trap. */
     int src_neg  = is_signed && ((src16 & 0x8000u) != 0);
     int dest_neg = is_signed && ((dest & 0x80000000u) != 0);
     int res_neg  = (src_neg != dest_neg);
@@ -442,7 +439,8 @@ static void do_div(int dr, uint32_t src16, int is_signed) {
 
     if (abs_src >= (abs_dest >> 16)) {                   /* unsigned overflow pre-check */
         uint32_t abs_quo = abs_dest / abs_src;
-        if (!is_signed || abs_quo <= (res_neg ? 0x8000u : 0x7FFFu)) {
+        if ((!is_signed && abs_quo <= 0xFFFFu) ||
+            (is_signed && abs_quo <= (res_neg ? 0x8000u : 0x7FFFu))) {
             uint32_t abs_rem = abs_dest % abs_src;
             uint32_t quo = res_neg  ? (0u - abs_quo) : abs_quo;
             uint32_t rem = dest_neg ? (0u - abs_rem) : abs_rem;
@@ -1014,12 +1012,18 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
         flags_logic(g_cpu.D[ins->reg], M68K_SIZE_L);
         return M68KI_OK;
     }
-    case MN_DIVU:
-        do_div(ins->reg, read_ea(ins, ins->src_ea, M68K_SIZE_W, &er) & 0xFFFFu, 0);
+    case MN_DIVU: case MN_DIVS: {
+        uint32_t divisor=read_ea(ins,ins->src_ea,M68K_SIZE_W,&er)&0xFFFFu;
+        /* The function-ABI floor cannot build a hardware exception frame.
+         * Stop explicitly rather than silently continuing past vector five.
+         * The explicit-PC runtime supplies real exception entry separately. */
+        if(!divisor) {
+            g_m68ki_bad_pc=ins->addr;g_m68ki_bad_op=ins->words[0];
+            return M68KI_HALT_UNIMPL;
+        }
+        do_div(ins->reg,divisor,ins->mnemonic==MN_DIVS);
         return M68KI_OK;
-    case MN_DIVS:
-        do_div(ins->reg, read_ea(ins, ins->src_ea, M68K_SIZE_W, &er) & 0xFFFFu, 1);
-        return M68KI_OK;
+    }
 
     /* ---- MOVEM ---- */
     case MN_MOVEM:
