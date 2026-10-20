@@ -11,10 +11,13 @@ typedef struct {
     uint8_t tx[10],rx[10],pending[10];
     uint8_t control,status,report,query_track,after_seek,report_valid;
     uint8_t tray_open,command_pending,unsupported_command,motor_started;
+    uint8_t track_skip_active,track_skip_inward;
     uint16_t fader;
-    int32_t lba,seek_target;
+    int32_t lba,seek_target,track_skip_origin_lba,track_skip_target_lba;
     int8_t scan;
+    uint32_t track_skip_count,track_skip_step;
     uint64_t cycles,frame_origin,frames,command_deadline,seek_deadline,fader_deadline;
+    uint64_t track_skip_origin_cycle,track_skip_deadline;
 } SegaCDDrive;
 /* Called once per delivered raw sector, for both audio and data. */
 typedef void (*SegaCDSectorSink)(void *,int32_t lba);

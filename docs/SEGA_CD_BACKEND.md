@@ -235,13 +235,71 @@ motor/TOC progression uses the explicitly provisional 75-Hz profile described
 in [the reuse notes](SEGA_CD_REUSE.md), rather than holding status nine forever.
 This is device bring-up evidence, not proof that the original game boots.
 
-The corrected drive sequence delivers 64 real MODE1 sectors to the controller
-in the 190-million-sub-clock original-BIOS probe, with no media error. The
-BIOS still retries its boot read: decoder buffering never becomes enabled and
-no data transfer starts. Negative-LBA data pregap/header delivery is the next
-investigation. The 16 synthetic backend tests pass MSVC, MinGW and Linux
-ASan/UBSan; those passes do not establish original-game startup or visual
-acceptance.
+The corrected drive sequence initially delivered 64 MODE1 sectors without
+enabling decoder buffering. Canonical virtual MODE1 pregaps, actual negative-LBA
+delivery and the pinned ares three-sector stream-acquisition profile now let the
+BIOS complete 52 real CPU-port transfers. Run `build/qa-bios-floor-disc-9`
+reaches 166,217,096 sub clocks, delivers 153 media sectors (152 decoder sectors),
+and shows the BIOS Start prompt followed by the original game's SEGA licensing
+screen. It then halts on unsupported CDD command A, packet `A000020B08` (radial
+track skip). This is startup progress, not a title-screen/gameplay or final
+visual acceptance claim. That run uses the execution floor; private catalogs
+for the original disc-loaded boot programs are being added separately.
+
+The current 16 synthetic tests pass MSVC, MinGW and Linux ASan/UBSan. The
+earlier 64-sector native-catalog run matches its floor-only run in all nine
+retained RAM/VRAM/frame artifacts after approximately 19.3 million operations;
+it does not establish native execution of the newly loaded game programs.
+The gap encoder's independent integrity checks and unchanged stored disc bytes
+are documented in [the media notes](SEGA_CD_MEDIA.md). The provisional seek
+profile and reference discrepancy are documented in [the reuse notes](SEGA_CD_REUSE.md).
+
+Command A now performs radial movement with explicit Tracking/Pause states.
+Its count is hexadecimal spiral turns; either nonzero direction nibble selects
+inward movement. A first-party fixed-point functional model uses nominal 25-mm
+program origin, 1.6-micrometre pitch and 1.30-m/s scan velocity from the ranges
+in ECMA-130 sections 8.6 and 11. Movement takes one turn per 75-Hz interval;
+that rate is a selected profile, not measured original-drive calibration.
+Positions clamp to the represented first pregap and final stored sector.
+For long accepted images the nominal geometry extrapolates beyond the standard
+user-zone radius; the TOC remains the addressing bound. A replacement seek
+uses the position already reached. Invalid seeks preserve ongoing movement,
+and a zero count preserves the exact logical position. The permissive ares
+TrackSkip handler is a TODO/no-op and was not used as an implementation.
+Synthetic tests cover interruption, bounds, direction and divided time advance.
+An independent SI-unit floating-point calculation checks 180 position/direction/
+count/disc-size cases against the fixed-point model, with maximum discrepancy
+1.522 sectors within its analytically bounded radius/sector quantization.
+These checks qualify the selected geometry, not actual Sega motor timing.
+
+The next original-program run (`build/qa-bios-native-disc-10`) passes the former
+TrackSkip halt, completes 75 CPU-port transfers and reaches 375 million sub
+clocks (30 seconds), retiring 31,159,569 guarded native operations plus
+14,289,796 floor operations. Optional private boot catalogs cover the original
+system-area Main image at `FF0000` and SP image at `006000`; the running BIOS
+loads the bytes, and candidate operations still guard current memory.
+Later overlays and BIOS-written handlers remain incompletely cataloged.
+`SEGACD_PROBE_REQUIRE_NATIVE=1` disables the diagnostic floor and exposes the
+first catalog miss at Sub `005F28`; native-only startup is not yet accepted.
+
+The floor-only comparison initially stopped at valid `MOVEP.L` in the BIOS
+backup-RAM reader. The floor now performs the instruction's ordered alternating
+byte transfers, signed displacement, preserved flags and word-register upper
+half, using 16/24 nominal clocks. Tests cover all four forms, odd/even addresses
+and a WAIT after the first completed byte. The architectural contract is in
+Motorola's [Programmer's Reference Manual, MOVEP pp4-131..133](https://www.nxp.com/docs/en/reference-manual/M68000PRM.pdf).
+Its focused test passes MSVC, MinGW and Linux ASan/UBSan, following the full
+16-test passes on all three toolchains for the drive/media changes.
+
+With that fix, `build/qa-bios-floor-disc-11` and the native run have byte-identical
+contents in all 18 shared RAM/CDC/VRAM/frame artifacts and identical final CPU,
+cycle and device observations after 45,455,995 coordinator steps. Evidence is
+`build/qa-bios-native-disc-10/native-floor-comparison.json`. Both end on a black
+frame: Main loops at `FF215A`, while Sub polls Word RAM's DMNA at `0101BA`.
+The diagnostic now retains the first unconditional self-loop's predecessor PCs,
+registers and RAM snapshot. The path into that loop remains under investigation.
+No original-game title screen, playable stage, complete audio, final independent
+visual acceptance or native-only gameplay is claimed by this milestone.
 
 The [ISC ares GPU port](SEGA_CD_REUSE.md) implements trace-vector stamp drawing,
 2M Word RAM map sizes, 16/32-dot stamp cells, rotations/flips, repeat/transparent

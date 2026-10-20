@@ -110,6 +110,24 @@ static int control(M68kStepContext *ctx,const M68KInstr *ins)
         if(ins->mnemonic==MN_ORI_TO_CCR)ccr|=value;else if(ins->mnemonic==MN_ANDI_TO_CCR)ccr&=value;else ccr^=value;
         ctx->charge=20;g_cpu.SR=(uint16_t)((g_cpu.SR&0xFF00u)|(ccr&31u));return 1;
     }
+    case MN_MOVEP: {
+        /* Peripheral ports occupy alternating byte lanes. These are byte
+         * transactions even when the effective address is odd; a word read
+         * here would both access the wrong ports and raise a false fault. */
+        uint32_t address=g_cpu.A[ins->src_ea&7]+(uint32_t)(int32_t)(int16_t)ins->words[1];
+        unsigned count=(ins->words[0]&0x40u)?4u:2u;
+        ctx->charge=count==4?24u:16u;
+        if(ins->words[0]&0x80u) {
+            uint32_t value=g_cpu.D[ins->reg];
+            for(unsigned n=0;n<count;++n)m68k_write8(address+n*2u,(uint8_t)(value>>((count-1u-n)*8u)));
+        } else {
+            uint32_t value=0;
+            for(unsigned n=0;n<count;++n)value=(value<<8)|m68k_read8(address+n*2u);
+            if(count==2)value|=g_cpu.D[ins->reg]&0xFFFF0000u;
+            g_cpu.D[ins->reg]=value;
+        }
+        return 1; /* MOVEP preserves all condition codes and address registers. */
+    }
     case MN_DIVU:case MN_DIVS:divide(ctx,ins,&er);return 1;
     case MN_CHK: {
         unsigned extra=m68k_68000_operand_cycles((unsigned)ins->src_ea,0);

@@ -9,6 +9,7 @@ if(MSVC)
 else()
   target_compile_options(segacd_devices PRIVATE -Wall -Wextra -Werror)
 endif()
+
 add_executable(segacd_memory_test memory_test.c)
 target_link_libraries(segacd_memory_test PRIVATE segacd_devices)
 target_include_directories(segacd_memory_test PRIVATE ../../runner/cd)
@@ -218,6 +219,41 @@ if(NOT CMAKE_CROSSCOMPILING)
         target_include_directories(segacd_bios_dual_probe PRIVATE "${SEGACD_BIOS_PROBE_SUB_PATCH_MODULE_DIR}")
         target_compile_definitions(segacd_bios_dual_probe PRIVATE SEGACD_BIOS_PROBE_SUB_PATCH=1)
       endif()
+      # Original disc-loaded bootstrap catalogs are private generated inputs.
+      # They describe source bytes; the running BIOS must load those bytes.
+      foreach(cpu IN ITEMS MAIN SUB)
+        set(SEGACD_BIOS_PROBE_BOOT_${cpu}_MODULE_DIR "" CACHE PATH
+          "Private original disc boot ${cpu} module directory")
+        if(SEGACD_BIOS_PROBE_BOOT_${cpu}_MODULE_DIR)
+          string(TOLOWER "${cpu}" cpu_lower)
+          set(boot_path "${SEGACD_BIOS_PROBE_BOOT_${cpu}_MODULE_DIR}")
+          set(boot_prefix "segacd_boot_${cpu_lower}")
+          set(boot_sources "${boot_path}/${boot_prefix}_module.c")
+          foreach(part RANGE 0 31)
+            if(part LESS 10)
+              set(part "0${part}")
+            endif()
+            list(APPEND boot_sources "${boot_path}/${boot_prefix}_part${part}.c")
+          endforeach()
+          target_sources(segacd_bios_dual_probe PRIVATE ${boot_sources})
+          target_include_directories(segacd_bios_dual_probe PRIVATE "${boot_path}")
+          target_compile_definitions(segacd_bios_dual_probe PRIVATE
+            SEGACD_BIOS_PROBE_BOOT_${cpu}=1)
+        endif()
+      endforeach()
     endif()
   endif()
 endif()
+
+# One build graph for the synthetic suite; private owned-input probe catalogs
+# remain outside this target. Avoid a separate MSBuild startup for each test.
+add_custom_target(segacd_test_suite)
+foreach(test_target IN ITEMS segacd_memory_test segacd_pcm_test segacd_cdd_test
+    segacd_cdc_test segacd_disc_image_test segacd_sector_test segacd_media_test
+    segacd_stamp_test segacd_dma_test segacd_step_semantics_test
+    segacd_floor_divide_test segacd_module_test segacd_execution_floor_test
+    segacd_coordinator_test m68k_step_test)
+  if(TARGET ${test_target})
+    add_dependencies(segacd_test_suite ${test_target})
+  endif()
+endforeach()

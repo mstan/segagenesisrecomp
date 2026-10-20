@@ -82,6 +82,18 @@ report fields naturally produce the checksum-valid initial response. The
 immediate TOC metadata and transition cadence remain functional modeling,
 not measurements of a physical lead-in scan.
 
+Seek-play and seek-pause also begin three sectors before the requested address,
+clamped to the first represented pregap, following that pinned ares revision.
+Negative-LBA MODE1 sectors now reach the decoder with their actual raw headers
+and integrity result. This is a provisional stream-acquisition profile. An
+independent Genesis Plus GX trace instead begins at the requested LBA and
+issues invalid decoder callbacks during seek. The Sanyo manual describes
+block/interrupt progression from received bytes; it does not establish decoder
+interrupts with no arriving input. No synthetic zero-header decoder ticks have
+been added to imitate that reference. Physical stream acquisition and decoder
+pipeline timing remain unqualified; neither software profile proves hardware
+identity.
+
 ## Other candidates
 
 MAME's `src/mame/sega/megacd.cpp` and header identify BSD-3-Clause.

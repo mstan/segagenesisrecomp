@@ -28,7 +28,7 @@ static void audio_sector(void *user,uint64_t stamp,int32_t lba,const uint8_t raw
     for(unsigned n=0;n<2352;++n)CHECK(raw[n]==lba);
     f->stamp[f->audio++]=stamp;
 }
-static void prepare(SegaCD *s)
+static void prepare_at(SegaCD *s,unsigned second,unsigned frame)
 {
     const SegaCDTOC toc={{{-150,0,2,1},{2,3,5,0}},2,5};
     CHECK(segacd_init(s,bios,sizeof bios));CHECK(segacd_cdd_mount(&s->drive,&toc));
@@ -36,9 +36,24 @@ static void prepare(SegaCD *s)
     segacd_cdc_address(&s->cdc,1);segacd_cdc_write(&s->cdc,32);
     segacd_cdc_address(&s->cdc,10);segacd_cdc_write(&s->cdc,132);
     segacd_cdd_write(&s->drive,0x37,4);
-    uint8_t packet[10]={3,0,0,0,0,2,0,0,0,0};unsigned sum=0;
+    uint8_t packet[10]={3,0,0,0,0,0,0,0,0,0};unsigned sum=0;
+    packet[4]=(uint8_t)(second/10);packet[5]=(uint8_t)(second%10);
+    packet[6]=(uint8_t)(frame/10);packet[7]=(uint8_t)(frame%10);
     for(unsigned n=0;n<9;++n)sum+=packet[n];packet[9]=(uint8_t)(~sum&15u);
     for(unsigned n=0;n<10;++n)segacd_cdd_write(&s->drive,0x42+n,packet[n]);
+}
+/* Commanded address includes the drive's three-sector physical pre-roll. */
+static void prepare(SegaCD *s){prepare_at(s,2,3);}
+static int read_pregap(void *user,int32_t lba,uint8_t raw[2352])
+{
+    unsigned *reads=user;CHECK(lba==(int32_t)*reads-2 && *reads<3);++*reads;
+    /* Fixed zero-payload MODE1 fixture EDCs independently verified with the
+     * ECMA bit recurrence and a separate libchdr P/Q checker. ECC is outside
+     * this decoder's current validation contract. */
+    static const uint8_t headers[3][4]={{0,1,0x73,1},{0,1,0x74,1},{0,2,0,1}};
+    static const uint8_t edc[3][4]={{0x8B,0x31,0xF6,0xE8},{0x7F,9,4,0x60},{0xC5,0x13,0x68,0x2B}};
+    memset(raw,0,2352);memset(raw+1,255,10);
+    memcpy(raw+12,headers[lba+2],4);memcpy(raw+2064,edc[lba+2],4);return 1;
 }
 int main(void)
 {
@@ -71,6 +86,19 @@ int main(void)
     CHECK(a.media_error==1 && a.media_error_lba==1 && a.media_sectors==1 && a.cdc.sectors==1 && fa.reads==2 && !fa.audio);
     prepare(&a);segacd_advance(&a,SEGACD_SUB_CLOCK);
     CHECK(a.media_error==1 && a.media_error_lba==0 && !a.media_sectors && !a.cdc.sectors);
+    /* Real pre-roll sector events, not direct header/ready-state injection:
+     * the boot BIOS needs headers before LBA zero to arm buffer writes. */
+    unsigned pregap_reads=0;SegaCDIO prelude={0};prelude.read_sector=read_pregap;prelude.media_user=&pregap_reads;
+    prepare_at(&a,2,1);segacd_advance_io(&a,1250,&prelude);
+    CHECK(a.drive.status==2 && a.drive.seek_target==-2);
+    segacd_advance_io(&a,(uint32_t)(a.drive.seek_deadline-a.drive.cycles),&prelude);
+    CHECK(a.drive.status==1 && !pregap_reads);
+    for(unsigned n=0;n<3;++n) {
+        segacd_advance_io(&a,(uint32_t)(segacd_cdd_next_event(&a.drive)-a.drive.cycles),&prelude);
+        CHECK(pregap_reads==n+1 && a.media_sectors==n+1 && a.cdc.sectors==n+1 && !a.media_error);
+        CHECK(a.cdc.header[1]==(n<2?1:2) && a.cdc.header[2]==(n==0?0x73:n==1?0x74:0));
+        CHECK((a.cdc.status[0]&128) && !(a.cdc.status[0]&1));
+    }
     puts("CDD media deadlines, raw data/EDC to CDC, timed audio-sector events, split-step equivalence and read-failure diagnostics pass");
     return 0;
 }

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Normalize an owned raw BIN/CUE into a bounded, portable Sega CD image.
 
-Preserves stored INDEX 00 sectors and inserts virtual PREGAP/POSTGAP silence.
+Preserves stored INDEX 00 sectors and inserts virtual PREGAP/POSTGAP sectors:
+silent AUDIO or zero-user-data MODE1 with valid headers, EDC and P/Q parity.
 Supported source formats are BINARY MODE1/2352 and AUDIO; other formats fail
 explicitly. No ISO extraction, game filenames or game-content adaptation.
 """
@@ -21,6 +22,96 @@ MAX_LBA = 100 * 60 * 75 - 151
 MAGIC = b'SGCDIMG\0'
 HEADER = struct.Struct('<8s4I2i2Q32s16s')
 ENTRY = struct.Struct('<IIiii12s')
+EDC_POLY_REFLECTED = 0xD8018001
+ECC_POLY = 0x11D
+_EDC_TABLE = None
+_ECC_TABLES = None
+
+
+def _bcd(value):
+    if not 0 <= value <= 99:
+        raise ValueError('MSF field is outside binary-coded decimal range')
+    return (value // 10) * 16 + value % 10
+
+
+def _edc_table():
+    table = []
+    for value in range(256):
+        edc = value
+        for _ in range(8):
+            edc = (edc >> 1) ^ (EDC_POLY_REFLECTED if edc & 1 else 0)
+        table.append(edc)
+    return tuple(table)
+
+
+def _edc(data):
+    global _EDC_TABLE
+    if _EDC_TABLE is None:
+        _EDC_TABLE = _edc_table()
+    value = 0
+    for byte in data:
+        value = (value >> 8) ^ _EDC_TABLE[(value ^ byte) & 0xFF]
+    return value
+
+
+def _ecc_tables():
+    def double(value):
+        value <<= 1
+        return (value ^ ECC_POLY) & 0xFF if value & 0x100 else value
+
+    forward = tuple(double(value) for value in range(256))
+    backward = [0] * 256
+    for value in range(256):
+        backward[value ^ forward[value]] = value
+    return forward, tuple(backward)
+
+
+def _ecc_pair(sector, major_count, minor_count, major_mult, minor_inc):
+    """Return two parity symbols per interleaved GF(2^8) codeword."""
+    global _ECC_TABLES
+    if _ECC_TABLES is None:
+        _ECC_TABLES = _ecc_tables()
+    forward, backward = _ECC_TABLES
+    size = major_count * minor_count
+    first, second = bytearray(major_count), bytearray(major_count)
+    for major in range(major_count):
+        index = (major >> 1) * major_mult + (major & 1)
+        a = b = 0
+        for _ in range(minor_count):
+            sample = sector[12 + index]
+            index += minor_inc
+            if index >= size:
+                index -= size
+            a = forward[a ^ sample]
+            b ^= sample
+        a = backward[forward[a] ^ b]
+        first[major] = a
+        second[major] = a ^ b
+    return bytes(first + second)
+
+
+def encode_zero_mode1_sector(lba):
+    """Encode zero user data using ECMA-130 sector fields and P/Q interleaves.
+
+    Stored sectors never pass through this encoder. LBA zero is MSF 00:02:00;
+    negative LBAs represent the first-track pregap, separate from lead-in.
+    """
+    if not isinstance(lba, int):
+        raise ValueError('LBA must be an integer')
+    absolute_frames = lba - FIRST_LBA
+    if not 0 <= absolute_frames < 100 * 60 * 75:
+        raise ValueError('LBA is outside the two-digit absolute MSF range')
+    minute, remainder = divmod(absolute_frames, 60 * 75)
+    second, frame = divmod(remainder, 75)
+    sector = bytearray(RAW)
+    sector[:12] = b'\x00' + b'\xff' * 10 + b'\x00'
+    sector[12:16] = bytes((_bcd(minute), _bcd(second), _bcd(frame), 1))
+    sector[2064:2068] = _edc(sector[:2064]).to_bytes(4, 'little')
+    # P is 86 interleaves of 24 source symbols plus two parity symbols;
+    # Q is 52 interleaves of 43 source symbols plus two parity symbols.
+    sector[2076:2248] = _ecc_pair(sector, 86, 24, 2, 86)
+    sector[2248:2352] = _ecc_pair(sector, 52, 43, 86, 88)
+    return bytes(sector)
 
 
 @dataclass
@@ -107,15 +198,13 @@ def read_cue(cue):
         stored_gap = track.indexes[1] - track.stored_start
         if i == 0:
             if stored_gap + track.pregap > 150:
-                raise ValueError('First pregap exceeds the represented 150-sector lead-in')
+                raise ValueError('First pregap exceeds the represented 150-sector first-track pregap')
             track.index00, track.start = FIRST_LBA, 0
         else:
             track.index00 = cursor
             track.start = cursor + track.pregap + stored_gap
         track.end = track.start + track.stored_end - track.indexes[1] + track.postgap
         cursor = track.end
-        if track.data and (track.postgap or (i and track.pregap)):
-            raise ValueError('Virtual data-track gaps need a raw sector encoder; supply stored raw sectors')
     if cursor > MAX_LBA:
         raise ValueError('Disc exceeds the two-digit MSF range')
     return tracks
@@ -142,16 +231,23 @@ def convert(cue, output, overwrite=False):
                 handle.write(blob)
                 digest.update(blob)
 
-            def silence(count):
-                block = bytes(32 * RAW)
-                while count:
-                    n = min(count, 32)
-                    write(block[:n * RAW])
-                    count -= n
+            def write_gap(count, data_track=False, first_lba=0):
+                if data_track:
+                    for lba in range(first_lba, first_lba + count):
+                        write(encode_zero_mode1_sector(lba))
+                else:
+                    block = bytes(32 * RAW)
+                    while count:
+                        n = min(count, 32)
+                        write(block[:n * RAW])
+                        count -= n
 
             for i, track in enumerate(tracks):
                 gap = track.indexes[1] - track.stored_start
-                silence(150 - gap if i == 0 else track.pregap)
+                if i == 0:
+                    write_gap(150 - gap, track.data, FIRST_LBA)
+                else:
+                    write_gap(track.pregap, track.data, track.index00)
                 remaining = (track.stored_end - track.stored_start) * RAW
                 with track.path.open('rb') as source:
                     source.seek(track.stored_start * RAW)
@@ -161,7 +257,7 @@ def convert(cue, output, overwrite=False):
                             raise ValueError('Source changed/truncated while converting')
                         write(blob)
                         remaining -= len(blob)
-                silence(track.postgap)
+                write_gap(track.postgap, track.data, track.end - track.postgap)
             if handle.tell() != offset + payload_bytes:
                 raise ValueError('Disc timeline/payload length mismatch')
             payload_hash = digest.digest()

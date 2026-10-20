@@ -8,6 +8,12 @@
 #ifdef SEGACD_BIOS_PROBE_SUB_PATCH
 #include "segacd_sub_patch.h"
 #endif
+#ifdef SEGACD_BIOS_PROBE_BOOT_MAIN
+#include "segacd_boot_main.h"
+#endif
+#ifdef SEGACD_BIOS_PROBE_BOOT_SUB
+#include "segacd_boot_sub.h"
+#endif
 #endif
 #include "segacd_coordinator.h"
 #include "genesis_bus.h"
@@ -124,37 +130,83 @@ int main(int argc,char**argv)
         segacd_coordinator_media(&coordinator,media_read,image,NULL,NULL);
     }
 #ifndef SEGACD_BIOS_PROBE_NO_CATALOGS
-    const M68kStepModule*main_modules[]={&segacd_bios_module,&segacd_main_ram_module};
+    const M68kStepModule*main_modules[]={&segacd_bios_module,&segacd_main_ram_module
+#ifdef SEGACD_BIOS_PROBE_BOOT_MAIN
+        ,&segacd_boot_main_module
+#endif
+    };
     const M68kStepModule*sub_modules[]={&segacd_sub_module
 #ifdef SEGACD_BIOS_PROBE_SUB_PATCH
         ,&segacd_sub_patch_module
 #endif
+#ifdef SEGACD_BIOS_PROBE_BOOT_SUB
+        ,&segacd_boot_sub_module
+#endif
     };
     int floor_only=getenv("SEGACD_PROBE_FLOOR_ONLY") && !strcmp(getenv("SEGACD_PROBE_FLOOR_ONLY"),"1");
-    if(!floor_only && (!segacd_coordinator_modules(&coordinator,SEGACD_MAIN,main_modules,2) || !segacd_coordinator_modules(&coordinator,SEGACD_SUB,sub_modules,sizeof sub_modules/sizeof *sub_modules)))return 2;
+    if(!floor_only && (!segacd_coordinator_modules(&coordinator,SEGACD_MAIN,main_modules,sizeof main_modules/sizeof *main_modules) || !segacd_coordinator_modules(&coordinator,SEGACD_SUB,sub_modules,sizeof sub_modules/sizeof *sub_modules)))return 2;
 #else
     int floor_only=1;
 #endif
-    if(!segacd_coordinator_floor(&coordinator,segacd_m68k_floor_step))return 2;
+    int require_native=getenv("SEGACD_PROBE_REQUIRE_NATIVE") && !strcmp(getenv("SEGACD_PROBE_REQUIRE_NATIVE"),"1");
+    if(!require_native && !segacd_coordinator_floor(&coordinator,segacd_m68k_floor_step))return 2;
     segacd_coordinator_host_clock(&coordinator,advance_host,next_host_event);
     uint64_t deadline=strtoull(argv[2],NULL,0),steps=0;
     struct {uint32_t main,sub;uint64_t time;} ring[64]={{0}};M68kStepResult status=M68K_STEP_OK;
-    unsigned mask_before=cd.irq_mask,wp_before=cd.write_protect,control_before=cd.drive.control,event_count=0,commands=0;
+    unsigned mask_before=cd.irq_mask,wp_before=cd.write_protect,control_before=cd.drive.control,event_count=0,commands=0,queries=0;
     uint64_t cdc_before=0;unsigned transfer_before=0,transfers=0;
     uint64_t command_deadline_before=0;
+    uint64_t observed_boot_native[2]={0},observed_boot_floor[2]={0};
+    uint32_t first_boot_pc[2]={0},floor_pc[2][16]={{0}};unsigned floor_pc_count[2]={0};
+    uint32_t selfloop_pc[2][8]={{0}};unsigned selfloop_count[2]={0};
     while(coordinator.device_time<deadline && steps<100000000u) {
         ring[steps%64].main=coordinator.cpu[0].state.regs.PC;ring[steps%64].sub=coordinator.cpu[1].state.regs.PC;ring[steps%64].time=coordinator.device_time;
         g_audio_cycle_counter=(uint32_t)coordinator.cpu[0].state.cycles;
-        status=segacd_coordinator_step(&coordinator);++steps;if(status!=M68K_STEP_OK)break;
+        uint64_t native_before[2]={coordinator.native_steps[0],coordinator.native_steps[1]};
+        uint64_t floor_before[2]={coordinator.floor_steps[0],coordinator.floor_steps[1]};
+        status=segacd_coordinator_step(&coordinator);++steps;
+        for(unsigned which=0;which<2;++which) {
+            uint64_t native_delta=coordinator.native_steps[which]-native_before[which];
+            uint64_t floor_delta=coordinator.floor_steps[which]-floor_before[which];
+            /* A WAIT can retire several nested operations. Attribute only a
+             * single retirement, whose instruction PC is unambiguous here. */
+            if(native_delta+floor_delta!=1)continue;
+            uint32_t pc=coordinator.cpu[which].state.instruction_pc&0xFFFFFFu;
+            M68kStepState *s=&coordinator.cpu[which].state;
+            if((s->regs.PC&0xFFFFFFu)==pc && (s->fault_opcode==0x60FEu || s->fault_opcode==0x6000u) && selfloop_count[which]<8) {
+                unsigned n=0;while(n<selfloop_count[which] && selfloop_pc[which][n]!=pc)++n;
+                if(n==selfloop_count[which]) {
+                    selfloop_pc[which][selfloop_count[which]++]=pc;
+                    printf("Unconditional self-loop cpu=%u pc=%06X time=%llu sr=%04X\n",which,pc,(unsigned long long)coordinator.device_time,s->regs.SR);
+                    for(unsigned r=0;r<8;++r)printf("self-loop D%u=%08X A%u=%08X\n",r,s->regs.D[r],r,s->regs.A[r]);
+                    for(uint64_t k=steps>32?steps-32:0;k<steps;++k)printf("self-loop predecessor time=%llu main=%06X sub=%06X\n",(unsigned long long)ring[k%64].time,ring[k%64].main,ring[k%64].sub);
+                    char name[64];snprintf(name,sizeof name,"selfloop-cpu%u-%06X-memory.bin",which,pc);
+                    dump(dump_directory,name,which?cd.prg:g_ram,which?sizeof cd.prg:sizeof g_ram);
+                }
+            }
+            int boot=which==0?(pc>=0xFF0000u && pc<0xFF7E00u):(pc>=0x6000u && pc<0xD000u);
+            if(boot) {
+                observed_boot_native[which]+=native_delta;observed_boot_floor[which]+=floor_delta;
+                if(!first_boot_pc[which]){first_boot_pc[which]=pc;printf("Observed boot-address-range execution cpu=%u pc=%06X native=%u time=%llu\n",which,pc,(unsigned)native_delta,(unsigned long long)coordinator.device_time);}
+            }
+            if(floor_delta && floor_pc_count[which]<16) {
+                unsigned n=0;while(n<floor_pc_count[which] && floor_pc[which][n]!=pc)++n;
+                if(n==floor_pc_count[which]){floor_pc[which][floor_pc_count[which]++]=pc;printf("Floor PC cpu=%u pc=%06X time=%llu\n",which,pc,(unsigned long long)coordinator.device_time);}
+            }
+        }
+        if(status!=M68K_STEP_OK)break;
         if(cd.cdc.sectors!=cdc_before) {
             if(cd.cdc.sectors<=24)printf("CDC sector time=%llu count=%llu header=%02X%02X%02X%02X ctrl=%02X/%02X if=%02X/%02X PT=%04X WA=%04X stat=%02X/%02X/%02X/%02X sub=%06X\n",(unsigned long long)coordinator.device_time,(unsigned long long)cd.cdc.sectors,cd.cdc.header[0],cd.cdc.header[1],cd.cdc.header[2],cd.cdc.header[3],cd.cdc.ctrl0,cd.cdc.ctrl1,cd.cdc.ifctrl,cd.cdc.ifstat,cd.cdc.block_pointer,cd.cdc.write_address,cd.cdc.status[0],cd.cdc.status[1],cd.cdc.status[2],cd.cdc.status[3],coordinator.cpu[1].state.regs.PC);
             cdc_before=cd.cdc.sectors;
         }
         if(cd.cdc.transfer_active && !transfer_before && transfers++<24)printf("CDC transfer time=%llu dest=%u DAC=%04X DBC=%04X remaining=%u sub=%06X\n",(unsigned long long)coordinator.device_time,cd.cdc_destination,cd.cdc.dac,cd.cdc.dbc,cd.cdc.remaining,coordinator.cpu[1].state.instruction_pc);
         transfer_before=cd.cdc.transfer_active;
-        if(cd.drive.command_pending && cd.drive.command_deadline!=command_deadline_before && cd.drive.pending[0] && commands++<128) {
-            printf("CDD command time=%llu main=%06X sub=%06X packet=",(unsigned long long)coordinator.device_time,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc);
-            for(unsigned n=0;n<10;++n)printf("%X",cd.drive.pending[n]);printf("\n");
+        if(cd.drive.command_pending && cd.drive.command_deadline!=command_deadline_before && cd.drive.pending[0]) {
+            int log=cd.drive.pending[0]==2?queries++<24:commands++<256;
+            if(log) {
+                printf("CDD command time=%llu main=%06X sub=%06X packet=",(unsigned long long)coordinator.device_time,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc);
+                for(unsigned n=0;n<10;++n)printf("%X",cd.drive.pending[n]);printf("\n");
+            }
         }
         command_deadline_before=cd.drive.command_deadline;
         if(mask_before!=cd.irq_mask || wp_before!=cd.write_protect || control_before!=cd.drive.control) {
@@ -176,6 +228,7 @@ int main(int argc,char**argv)
     for(unsigned n=0;n<10;++n)printf("%X",cd.drive.rx[n]);printf(" tx=");
     for(unsigned n=0;n<10;++n)printf("%X",cd.drive.tx[n]);printf("\n");
     printf("retired native=%llu/%llu floor=%llu/%llu floor_only=%u\n",(unsigned long long)coordinator.native_steps[0],(unsigned long long)coordinator.native_steps[1],(unsigned long long)coordinator.floor_steps[0],(unsigned long long)coordinator.floor_steps[1],(unsigned)floor_only);
+    printf("observed boot-address-range native=%llu/%llu floor=%llu/%llu first_pc=%06X/%06X require_native=%u (single-retirement observations; address range alone does not identify loaded code)\n",(unsigned long long)observed_boot_native[0],(unsigned long long)observed_boot_native[1],(unsigned long long)observed_boot_floor[0],(unsigned long long)observed_boot_floor[1],first_boot_pc[0],first_boot_pc[1],(unsigned)require_native);
     printf("P1 reads=%llu while_Start_pressed=%llu start_frame=%llu\n",(unsigned long long)pad_reads,(unsigned long long)pressed_pad_reads,(unsigned long long)start_frame);
     printf("CDC final transfers=%u dest=%u DAC=%04X DBC=%04X PT=%04X WA=%04X ctrl=%02X/%02X if=%02X/%02X DMA_words=%llu\n",transfers,cd.cdc_destination,cd.cdc.dac,cd.cdc.dbc,cd.cdc.block_pointer,cd.cdc.write_address,cd.cdc.ctrl0,cd.cdc.ctrl1,cd.cdc.ifctrl,cd.cdc.ifstat,(unsigned long long)cd.dma.words);
     dump(argv[3],"cdc-ram.bin",cd.cdc.ram,sizeof cd.cdc.ram);

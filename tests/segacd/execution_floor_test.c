@@ -10,7 +10,7 @@
 typedef struct {uint8_t bytes[0x2000];unsigned waits,ready,first_reads;unsigned events;uint8_t event_op[16];uint32_t event_addr[16];} Memory;
 static Memory ma,mb;
 static void event(Memory*m,uint8_t op,uint32_t a){if(a>=0x600&&a<0x800){if(m->events<16){m->event_op[m->events]=op;m->event_addr[m->events]=a;}++m->events;}}
-static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){Memory*m=u;event(m,1,a);if(a>=sizeof m->bytes)return M68K_BUS_FAULT;*v=m->bytes[a];return M68K_BUS_OK;}
+static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){Memory*m=u;event(m,1,a);if(a==0x600 && !m->ready)return M68K_BUS_WAIT;if(a==0x5FE)++m->first_reads;if(a>=sizeof m->bytes)return M68K_BUS_FAULT;*v=m->bytes[a];return M68K_BUS_OK;}
 static M68kStepBusResult read16(void*u,uint32_t a,uint16_t*v)
 {
     Memory*m=u;event(m,1,a);
@@ -46,6 +46,29 @@ int main(int argc,char**argv)
         CHECK(a.state.stopped && a.state.regs.D[1]==(variant?5u:3u) && a.state.regs.A[7]==0x800);
         CHECK(a.state.instructions==(variant?27u:17u) && a.state.cycles==(variant?266u:162u));
     }
+    /* MOVEP's sparse bus order, signed displacement, odd-address legality,
+     * word upper-half preservation and unchanged flags are architectural
+     * expectations, independent of the emitted native operation. */
+    for(unsigned size=0;size<2;++size)for(unsigned write=0;write<2;++write)for(unsigned odd=0;odd<2;++odd) {
+        prepare(&a,&ma);a.state.regs.SR=0x201F;a.state.regs.D[2]=0xA1B2C3D4;
+        a.state.regs.A[3]=0x708+odd;
+        unsigned count=size?4u:2u;uint32_t start=0x700+odd;
+        for(unsigned n=0;n<8;++n)ma.bytes[0x700+n]=(uint8_t)(0x10+n);
+        const uint16_t movep[]={(uint16_t)(0x050Bu|(size?0x40u:0u)|(write?0x80u:0u)),0xFFF8};
+        words(&a,movep,2);ma.events=0;step(&a);
+        CHECK(ma.events==count && a.state.regs.A[3]==0x708+odd && a.state.regs.SR==0x201F);
+        CHECK(a.state.regs.PC==0x1004 && a.charge==(size?24u:16u));
+        for(unsigned n=0;n<count;++n)CHECK(ma.event_addr[n]==start+n*2u && ma.event_op[n]==(write?2:1));
+        if(write) {
+            CHECK(a.state.regs.D[2]==0xA1B2C3D4);
+            for(unsigned n=0;n<count;++n)CHECK(ma.bytes[start+n*2u]==(uint8_t)(0xA1B2C3D4u>>((count-1u-n)*8u)));
+            for(unsigned n=0;n<8;++n)if(n%2!=odd || n/2>=count)CHECK(ma.bytes[0x700+n]==0x10+n);
+        } else CHECK(a.state.regs.D[2]==(size?(odd?0x11131517u:0x10121416u):(odd?0xA1B21113u:0xA1B21012u)));
+    }
+    prepare(&a,&ma);a.state.regs.A[0]=0x5FE;a.state.regs.D[2]=0xAABBCCDD;
+    ma.bytes[0x5FE]=0x12;ma.bytes[0x600]=0x34;ma.bytes[0x602]=0x56;ma.bytes[0x604]=0x78;
+    const uint16_t movep_wait[]={0x0548,0};words(&a,movep_wait,2);ma.ready=0;step(&a);
+    CHECK(ma.waits==1 && ma.first_reads==1 && a.state.regs.D[2]==0x12345678 && a.state.regs.A[0]==0x5FE);
     prepare(&a,&ma);
     /* CLR reads the old value before writing zero for every memory size. The
      * RMW EA updates postincrement exactly once, including the A7 byte step. */

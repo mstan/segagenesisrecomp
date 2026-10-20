@@ -51,10 +51,12 @@ static void deliver_sector(void *user,int32_t lba)
     unsigned track=0;
     while(track+1<s->drive.toc.count && lba>=s->drive.toc.track[track+1].index00)++track;
     if(s->drive.toc.track[track].data) {
-        /* A stored data pregap may contain mode-zero or missing-sync blocks;
-         * supported program sectors are never labeled valid without EDC. */
-        if(lba<s->drive.toc.track[track].start)return;
         SegaCDSectorResult status=segacd_sector_validate(raw);
+        /* Data pregap headers participate in the decoder's pre-roll. Stored
+         * audio/mode-zero pregaps do not contain supported MODE1 blocks;
+         * valid MODE1 pregaps follow the same real EDC path as program data. */
+        if(lba<s->drive.toc.track[track].start &&
+           (status==SEGACD_SECTOR_BAD_SYNC || status==SEGACD_SECTOR_UNSUPPORTED_MODE))return;
         if(status==SEGACD_SECTOR_UNSUPPORTED_MODE) {
             s->media_error=2;s->media_error_lba=lba;return;
         }

@@ -10,12 +10,15 @@ segacd_disc_probe "private/disc.sgcd"
 ```
 
 The converter accepts consecutive tracks 01–99 with MODE1/2352 or AUDIO, quoted
-BINARY files, INDEX 00/01 and audio PREGAP/POSTGAP. Shared and separate BIN files
-are supported. Unsupported formats, flags, indexes or virtual data gaps fail
-explicitly. Stored INDEX 00 audio remains byte-identical; virtual audio gaps
-become zero samples. Track 1 INDEX 01 is LBA 0; its represented lead-in starts
-at LBA -150. Unstored lead-in bytes are zero placeholders, not physical lead-in
-subchannel data. No subchannel or pre-emphasis implementation is claimed.
+BINARY files, INDEX 00/01 and PREGAP/POSTGAP. Shared and separate BIN files
+are supported. Unsupported formats, flags or indexes fail explicitly. All
+stored sectors, including INDEX 00, remain byte-identical. Virtual audio gaps
+become zero samples. Virtual MODE1 gaps contain zero user data, actual BCD
+MSF headers, sync, EDC and P/Q parity encoded according to ECMA-130 section 14
+and annex A. Track 1 INDEX 01 is LBA 0; its represented first pregap starts
+at LBA -150. These synthesized sectors describe unstored gap data, not captured
+physical lead-in or subchannel information. No subchannel or pre-emphasis
+implementation is claimed.
 
 Publication uses a temporary file on the output volume, flush/fsync and atomic
 create-if-absent. Existing output requires explicit `--overwrite`; failed
@@ -64,3 +67,13 @@ bounds, integrity failures, independent known SHA/EDC fixtures, track boundaries
 buffer preservation and converter publication failures. `segacd_disc_probe`
 additionally reads every sector of a caller-supplied image and checks all
 program-data MODE1 EDCs. It requires no game-specific filenames or adapters.
+
+The canonical gap encoder was independently checked against libchdr's
+BSD-3-Clause parity verifier at commit
+`47d794151b2b64f6aba60304e6480f4f5a2bc24b`. All 155 selected LBAs pass full
+parity and separate bitwise EDC checks; deliberate header/data/EDC/reserved/P/Q
+mutations are rejected. That verifier remains a private QA dependency.
+The regenerated owned 35-track image preserves every one of its 255,826 stored
+sectors (601,702,752 bytes); only 150 implicit first-pregap sectors differ from
+the earlier zero-placeholder image. Evidence is retained in
+`build/qa-mode1-gap-proposal`, including the independent comparison manifest.
