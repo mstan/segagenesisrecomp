@@ -64,3 +64,20 @@ finds 436 functions and reports 17 dispatch sites with zero unsupported sites.
 That establishes code generation only; no original BIOS/disc execution is yet
 claimed. The qualified BIOS SHA256 is
 `807384678ef259494d943eddb6954dfc7069693d0dde0c424e2028488d88e81a`.
+
+The next execution seam uses explicit guest PCs and instruction-sized AOT
+operations. Both CPU contexts and writable overlays need a safe scheduling and
+invalidation boundary. A compiled operation must match the instruction bytes
+in the currently mapped memory before running; a PC alone cannot identify code
+that the disc has replaced. Unsupported/mismatched code must report a miss and
+use the qualified correctness floor, never execute an old program or no-op.
+
+Shared core branch `feature/segacd-flat-step` exposes the established native C
+arithmetic/EA emitter with consumer-owned CPU/memory bindings. Synthetic real
+opcodes compile into executable C and pass overflow flags, independent contexts,
+postincrement RMW, long index, big-endian memory, real stack adjustment and
+explicit rejection of control/privilege/exception instructions. MSVC, MinGW and
+Linux ASan/UBSan pass. The legacy BIOS generation remains byte-identical in all
+35 C/header artifacts. This seam is not yet the complete step frontend: CPU
+control, privileged instructions, exceptions, cycle accounting, code guards,
+registration and the dual-CPU scheduler still need implementation/qualification.
