@@ -8,7 +8,9 @@ original CD programs. Neither branch is merged into master by this work.
 The new `runner/cd` device library is game-independent portable C. It takes an
 owned BIOS; BIOS, disc images, generated program C and captures stay private.
 The explicit-PC dual-CPU coordinator and guarded AOT modules use these devices.
-No external emulator implementation is linked/copied into production.
+The stamp device adapts ares's ISC-licensed GPU algorithm; its provenance,
+license and integration limits are recorded in [implementation reuse](SEGA_CD_REUSE.md).
+The recompiled original CPU programs remain on this project's execution path.
 
 The initial memory/control implementation covers BIOS, four PRG windows and
 write protection, Word RAM ownership, 2M/1M mapping, cell/dot images and pixel
@@ -177,7 +179,7 @@ The register/protocol specification tests do not establish complete disc support
 CDD sources: Sega Hardware Manual pp31-33 and the original authors'
 [CDD_inf v2.0 reverse-engineering notes](https://gendev.spritesmind.net/forum/viewtopic.php?t=2061),
 including the later correction that no-disc status is `$B`. Those protocol facts
-are used without copying/linking external emulator implementations. CDC work
+were implemented from their specification. CDC work
 uses Sanyo's [LC8950/LC8951 Design Manual](https://bitsavers.org/pdf/sony/cdrom/CDU535-88_SLCD/LC8950_LC8951_Design_Manual.pdf),
 including appendix E's original-LC8951 differences. Its private source SHA256 is
 `afb95208d748c2ed9552b5ded3a86e57b831801ade2b25d32220173716383d0e`.
@@ -211,3 +213,41 @@ passed ECMA-130 EDC. These are media identity/integrity checks, not gameplay.
 Synthetic tests qualify long/split advance equivalence, CDC data/EDC delivery,
 timed raw audio events, finite decoder pulses and read-failure diagnostics.
 Missing/truncated media halts the coordinator instead of supplying zero sectors.
+
+The current-byte execution floor now uses the same explicit CPU context,
+exceptions, WAIT and trace boundary as guarded AOT operations. It decodes current
+writable RAM, so a module miss cannot execute stale generated code. The probe
+always attaches this floor; there is no correctness toggle in a launcher.
+Synthetic tests compare complete CPU/memory/cycle state against native loops,
+exercise partial-instruction WAIT, stack-byte/CMPM aliasing, privilege/traps,
+and verify CLR's actual discarded read before its zero write. Register-count
+ROX and count-zero carry fixes pass 4,992 independent Unicorn seeds across all
+24 register-shift forms. Group-zero exception frames, data-dependent arithmetic
+cycles and broader cartridge regression remain pending before any merge.
+
+Original US v1.10 BIOS execution established a neutral post-reset CDD handshake:
+the initial status command receives ten nibbles `000000000F` until the first
+valid nonzero command. Returning mounted-disc STOP/MSF immediately caused the
+original sub program to reset repeatedly. The repaired sequence now reaches
+TOC/seek processing and graphics initialization without changing owned bytes.
+
+The [ISC ares GPU port](SEGA_CD_REUSE.md) implements trace-vector stamp drawing,
+2M Word RAM map sizes, 16/32-dot stamp cells, rotations/flips, repeat/transparent
+bounds, fixed-point sampling, image-buffer offsets/vertical stride, pixel
+priority, asynchronous busy/remaining lines and IRQ1. CPU priority now applies
+to the 1M dot-image aperture; direct RAM writes remain ordinary memory. The
+15-test suite passes MSVC, MinGW and Linux ASan/UBSan. Twenty independent
+Genesis Plus GX reference cases match the entire output Word RAM, including
+both stamp sizes and all transforms. The initial worker fixture set used an
+incorrect STS bit and address assumptions; it was rejected and preserved under
+`build/qa-stamp-reference/invalid-initial-fixtures`. Only the corrected manifest
+and `build/qa-stamp-synthetic/reference-comparison.json` support these claims.
+
+The next private original-BIOS run, `build/qa-bios-floor-disc-2`, reaches
+90,000,003 sub clocks (7.2 seconds), retiring 5,102,454 main and 4,170,003 sub
+instructions without a CPU/device fault. It starts 614 real ASIC operations
+and writes 7,462,288 pixels. Its actual captured BIOS logo still differs from
+the independent reference, and no sectors have been read. This is not a
+validated disc boot. Word RAM-to-VDP DMA's documented one-word delay, actual
+DMA stall charging, CDC DMA, full audio/runner integration and original-game
+qualification remain work. These captures do not satisfy final visual acceptance.

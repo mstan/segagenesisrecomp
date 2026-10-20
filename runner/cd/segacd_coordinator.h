@@ -20,6 +20,8 @@ struct SegaCDCoordinator {
     uint64_t (*host_next_event)(void *);
     const M68kStepModule *const *modules[2];
     size_t module_count[2];
+    M68kStepResult (*floor_step)(M68kStepContext *);
+    uint64_t native_steps[2],floor_steps[2];
     /* Elapsed time in sub-CPU ticks, distinct from retired CPU cycle counts.
      * Main conversion retains the rational remainder (NTSC master / 7). */
     uint64_t time[2],device_time,main_remainder;
@@ -34,6 +36,9 @@ int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host
 /* Descriptors/arrays must remain immutable and alive during execution. */
 int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
                               const M68kStepModule *const *,size_t);
+/* A full-system consumer must attach its qualified portable floor. NULL is
+ * useful for AOT coverage diagnostics, where a missing operation is a stop. */
+int segacd_coordinator_floor(SegaCDCoordinator *,M68kStepResult (*)(M68kStepContext *));
 void segacd_coordinator_main_irq(SegaCDCoordinator *,unsigned level);
 void segacd_coordinator_host_clock(SegaCDCoordinator *,void (*advance)(void *,uint64_t),uint64_t (*next_event)(void *));
 void segacd_coordinator_pcm_sink(SegaCDCoordinator *,Rf5c164Sink,void *user);

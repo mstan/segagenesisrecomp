@@ -10,7 +10,7 @@ typedef struct {
     SegaCDTOC toc;
     uint8_t tx[10],rx[10],pending[10];
     uint8_t control,status,report,query_track,after_seek;
-    uint8_t tray_open,command_pending,unsupported_command;
+    uint8_t tray_open,command_pending,unsupported_command,reset_handshake;
     uint16_t fader;
     int32_t lba,seek_target;
     int8_t scan;

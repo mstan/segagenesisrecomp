@@ -9,6 +9,7 @@ void segacd_reset(SegaCD *s)
     rf5c164_reset(&s->pcm);
     segacd_cdd_reset(&s->drive);
     segacd_cdc_reset(&s->cdc);s->cdc_destination=0;s->cdc_dma_address=0;
+    segacd_stamp_reset(&s->stamp);
     s->media_error=0;s->media_error_lba=0;s->media_sectors=s->cdda_sectors=0;
     ++s->sub_reset_generation;
     s->main_control = s->write_protect = s->prg_bank = 0;
@@ -72,6 +73,8 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
          * its actual CDD event boundary, even during a long stopped interval. */
         rf5c164_advance(&s->pcm,delta,io?io->pcm_sink:NULL,io?io->pcm_user:NULL);
         segacd_cdc_advance(&s->cdc,delta);
+        if(!(s->memory_mode&(MODE_1M|RET)) && segacd_stamp_advance(&s->stamp,s->word,(s->memory_mode>>3)&3u,delta))
+            s->irq_pending|=1u<<1;
         if(segacd_cdd_advance(&s->drive,delta,deliver_sector,&delivery))s->irq_pending|=1u<<4;
         remaining-=delta;
     }
@@ -184,6 +187,10 @@ static uint16_t cdc_host_word(SegaCD*s,SegaCDCpu cpu)
 static SegaCDResult reg_read(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t *v)
 {
     if(cpu==SEGACD_SUB && r>=0x34 && r<0x4C){*v=segacd_cdd_read(&s->drive,r);return SEGACD_OK;}
+    if(cpu==SEGACD_SUB && r>=0x58 && r<0x68) {
+        uint16_t value=segacd_stamp_read(&s->stamp,(r-0x58)/2);
+        *v=(uint8_t)(r&1u?value:value>>8);return SEGACD_OK;
+    }
     unsigned word;
     switch (r & ~1u) {
     case 0x04:word=cdc_mode(s,cpu);break;
@@ -297,6 +304,15 @@ static void mode_write(SegaCD *s, SegaCDCpu cpu, uint8_t v)
 static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
 {
     if(cpu==SEGACD_SUB && r>=0x34 && r<0x4C){segacd_cdd_write(&s->drive,r,v);return SEGACD_OK;}
+    if(cpu==SEGACD_SUB && r>=0x58 && r<0x68) {
+        unsigned reg=(r-0x58)/2;
+        /* Trace-vector start requires a word access. */
+        if(reg<7) {
+            uint16_t old=s->stamp.reg[reg];
+            segacd_stamp_latch(&s->stamp,reg,(uint16_t)(r&1u?(old&0xFF00u)|v:(old&255u)|((unsigned)v<<8)));
+        }
+        return SEGACD_OK;
+    }
     if(r==4 || r==5) {
         if(cpu==SEGACD_SUB) {
             if(r==4){s->cdc_destination=v&7u;s->cdc.transfer_end=0;if(!s->cdc_destination)s->cdc_dma_address=0;}
@@ -403,7 +419,9 @@ SegaCDResult segacd_write8(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t v)
     uint32_t offset; int dot;
     SegaCDResult result = word_address(s, cpu, a, &offset, &dot);
     if (result != SEGACD_OK) return result;
-    unsigned mode = cpu == SEGACD_SUB && (s->memory_mode & MODE_1M) ? (s->memory_mode >> 3) & 3 : 0;
+    /* Hardware p54: CPU pixel priority belongs to the unpacked dot aperture.
+     * Direct 1M RAM writes remain ordinary RAM accesses. */
+    unsigned mode = dot ? (s->memory_mode >> 3) & 3 : 0;
     if (mode == 3) return SEGACD_UNMAPPED; /* prohibited by hardware contract */
     unsigned old = s->word[offset];
     if (dot) {
@@ -419,6 +437,11 @@ SegaCDResult segacd_write16(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint16_t v)
 {
     if (a & 1u) return SEGACD_ADDRESS_ERROR;
     a &= 0xFFFFFFu;
+    if(cpu==SEGACD_SUB && a==0xFF8066u) {
+        if(s->memory_mode&MODE_1M)return SEGACD_UNMAPPED;
+        if(s->memory_mode&RET)return SEGACD_WAIT;
+        segacd_stamp_start(&s->stamp,v);return SEGACD_OK;
+    }
     if ((cpu == SEGACD_MAIN && a == 0xA1200Cu) || (cpu == SEGACD_SUB && a == 0xFF800Cu)) {
         s->stopwatch_origin = s->sub_cycles;
         return SEGACD_OK;

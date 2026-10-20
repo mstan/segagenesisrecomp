@@ -35,6 +35,8 @@ static uint64_t next_event_time(SegaCDCoordinator*c,uint64_t deadline)
     }
     if(c->devices->cdc.decoder_irq_clocks && now+c->devices->cdc.decoder_irq_clocks<next)
         next=now+c->devices->cdc.decoder_irq_clocks;
+    if(c->devices->stamp.busy && !(c->devices->memory_mode&5u) && now+c->devices->stamp.remaining_clocks<next)
+        next=now+c->devices->stamp.remaining_clocks;
     return deadline<next?deadline:next;
 }
 static void account(SegaCDCoordinator *c,unsigned cpu,uint64_t cycles)
@@ -175,6 +177,9 @@ static M68kStepResult execute_cpu(SegaCDCoordinator *c,unsigned which)
         result=m68k_step_module_execute(cpu,c->modules[which][n]);
         if(result!=M68K_STEP_MISS)break;
     }
+    if(result==M68K_STEP_MISS && c->floor_step) {
+        result=c->floor_step(cpu);if(result==M68K_STEP_OK)++c->floor_steps[which];
+    } else if(result==M68K_STEP_OK)++c->native_steps[which];
     c->busy[which]=0;
     c->last_cpu=which;
     if(result==M68K_STEP_OK)account(c,which,cpu->state.cycles-before);
@@ -196,6 +201,11 @@ int segacd_coordinator_modules(SegaCDCoordinator *c,SegaCDCpu cpu,const M68kStep
     if(!c || (unsigned)cpu>1 || (count && !modules) || c->busy[0] || c->busy[1])return 0;
     for(size_t n=0;n<count;++n)if(!m68k_step_module_valid(modules[n]))return 0;
     c->modules[cpu]=modules;c->module_count[cpu]=count;return 1;
+}
+int segacd_coordinator_floor(SegaCDCoordinator *c,M68kStepResult (*step)(M68kStepContext *))
+{
+    if(!c || c->busy[0] || c->busy[1])return 0;
+    c->floor_step=step;return 1;
 }
 void segacd_coordinator_main_irq(SegaCDCoordinator*c,unsigned level){if(c && level<=7)c->main_irq=level;}
 void segacd_coordinator_host_clock(SegaCDCoordinator*c,void (*advance)(void *,uint64_t),uint64_t (*next)(void *))

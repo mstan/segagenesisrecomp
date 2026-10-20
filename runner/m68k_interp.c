@@ -362,7 +362,7 @@ static int do_shift(M68KMnemonic mn, int dreg, M68KSize sz,
             if (cnt >= bits) v = (sv != 0) ? 1u : 0u;
             else {
                 uint32_t top = sv >> (bits - 1 - cnt);
-                uint32_t allm = (uint32_t)((1u << (cnt + 1)) - 1u);
+                uint32_t allm = (uint32_t)((UINT64_C(1) << (cnt + 1)) - 1u);
                 v = (top != 0 && top != allm) ? 1u : 0u;
             }
         }
@@ -410,10 +410,11 @@ static int do_shift(M68KMnemonic mn, int dreg, M68KSize sz,
         if (!res) g_cpu.SR |= SR_Z;
         if ((res >> (bits - 1)) & 1u) g_cpu.SR |= SR_N;
         if (c) g_cpu.SR |= SR_C;
-    } else if (reg_count && cnt == 0) {                        /* count 0: preserve X, C=0 */
+    } else if (reg_count && cnt == 0) { /* Preserve X; ROX copies X to C. */
         g_cpu.SR &= ~0x0Fu;
         if (!res) g_cpu.SR |= SR_Z;
         if ((res >> (bits - 1)) & 1u) g_cpu.SR |= SR_N;
+        if ((mn == MN_ROXL || mn == MN_ROXR) && (g_cpu.SR & SR_X)) g_cpu.SR |= SR_C;
     } else {
         g_cpu.SR &= ~0x1Fu;
         if (!res) g_cpu.SR |= SR_Z;
@@ -703,8 +704,12 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
         return M68KI_OK;
     }
     case MN_CLR: {
-        /* 68000 quirk: CLR does a (discarded) read before writing 0. */
-        write_ea(ins, ins->src_ea, sz, &er, 0);
+        /* MC68000 reads the destination before clearing it. Re-resolve the
+         * write from a fresh extension reader so the read's postincrement or
+         * predecrement handling occurs exactly once across the RMW pair. */
+        (void)read_ea_ex(ins, ins->src_ea, sz, &er, 1);
+        ExtR write_er; er_init(&write_er, ins);
+        write_ea_ex(ins, ins->src_ea, sz, &write_er, 0, 1);
         g_cpu.SR = (uint16_t)((g_cpu.SR & ~0x0Fu) | SR_Z);
         return M68KI_OK;
     }

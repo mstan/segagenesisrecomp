@@ -1,16 +1,19 @@
 /* Private-input native dual-program bring-up. Real main bus/VDP/CD memories
- * and coordinator; no disc/ASIC or Z80/audio rendering yet.
+ * and coordinator; no Z80/audio rendering yet.
  * Missing devices/code halt loudly. This diagnostic is never a game release. */
+#ifndef SEGACD_BIOS_PROBE_NO_CATALOGS
 #include "segacd_bios.h"
 #include "segacd_main_ram.h"
 #include "segacd_sub.h"
 #ifdef SEGACD_BIOS_PROBE_SUB_PATCH
 #include "segacd_sub_patch.h"
 #endif
+#endif
 #include "segacd_coordinator.h"
 #include "genesis_bus.h"
 #include "genesis_dac.h"
 #include "disc_image.h"
+#include "m68k_floor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -91,13 +94,19 @@ int main(int argc,char**argv)
         if(!segacd_cdd_mount(&cd.drive,segacd_image_toc(image))){segacd_image_close(image);return 2;}
         segacd_coordinator_media(&coordinator,media_read,image,NULL,NULL);
     }
+#ifndef SEGACD_BIOS_PROBE_NO_CATALOGS
     const M68kStepModule*main_modules[]={&segacd_bios_module,&segacd_main_ram_module};
     const M68kStepModule*sub_modules[]={&segacd_sub_module
 #ifdef SEGACD_BIOS_PROBE_SUB_PATCH
         ,&segacd_sub_patch_module
 #endif
     };
-    if(!segacd_coordinator_modules(&coordinator,SEGACD_MAIN,main_modules,2) || !segacd_coordinator_modules(&coordinator,SEGACD_SUB,sub_modules,sizeof sub_modules/sizeof *sub_modules))return 2;
+    int floor_only=getenv("SEGACD_PROBE_FLOOR_ONLY") && !strcmp(getenv("SEGACD_PROBE_FLOOR_ONLY"),"1");
+    if(!floor_only && (!segacd_coordinator_modules(&coordinator,SEGACD_MAIN,main_modules,2) || !segacd_coordinator_modules(&coordinator,SEGACD_SUB,sub_modules,sizeof sub_modules/sizeof *sub_modules)))return 2;
+#else
+    int floor_only=1;
+#endif
+    if(!segacd_coordinator_floor(&coordinator,segacd_m68k_floor_step))return 2;
     segacd_coordinator_host_clock(&coordinator,advance_host,next_host_event);
     uint64_t deadline=strtoull(argv[2],NULL,0),steps=0;
     struct {uint32_t main,sub;uint64_t time;} ring[64]={{0}};M68kStepResult status=M68K_STEP_OK;
@@ -119,10 +128,12 @@ int main(int argc,char**argv)
         for(unsigned r=0;r<8;++r)printf("cpu%u D%u=%08X A%u=%08X\n",which,r,s->regs.D[r],r,s->regs.A[r]);
     }
     for(uint64_t n=steps>64?steps-64:0;n<steps;++n)printf("%llu time=%llu main=%06X sub=%06X\n",(unsigned long long)n,(unsigned long long)ring[n%64].time,ring[n%64].main,ring[n%64].sub);
-    printf("sub_control=%u audio_events=%llu dma_stalls=%llu media_sectors=%llu cdc_sectors=%llu cdda_sectors=%llu media_error=%u lba=%d (Z80/audio output/ASIC absent)\n",cd.main_control,(unsigned long long)audio_events,(unsigned long long)dma_stalls,(unsigned long long)cd.media_sectors,(unsigned long long)cd.cdc.sectors,(unsigned long long)cd.cdda_sectors,cd.media_error,cd.media_error_lba);
+    printf("sub_control=%u audio_events=%llu dma_stalls=%llu media_sectors=%llu cdc_sectors=%llu cdda_sectors=%llu media_error=%u lba=%d (Z80/audio output absent)\n",cd.main_control,(unsigned long long)audio_events,(unsigned long long)dma_stalls,(unsigned long long)cd.media_sectors,(unsigned long long)cd.cdc.sectors,(unsigned long long)cd.cdda_sectors,cd.media_error,cd.media_error_lba);
+    printf("stamp operations=%llu pixels=%llu busy=%u remaining_lines=%u\n",(unsigned long long)cd.stamp.operations,(unsigned long long)cd.stamp.pixels,cd.stamp.busy,cd.stamp.reg[6]);
     printf("gate mask=%02X pending=%02X flags=%02X/%02X wp=%02X events=%u; drive status=%u control=%02X command=%u unsupported=%u lba=%d frames=%llu rx=",cd.irq_mask,cd.irq_pending,cd.flags[0],cd.flags[1],cd.write_protect,event_count,cd.drive.status,cd.drive.control,cd.drive.command_pending,cd.drive.unsupported_command,cd.drive.lba,(unsigned long long)cd.drive.frames);
     for(unsigned n=0;n<10;++n)printf("%X",cd.drive.rx[n]);printf(" tx=");
     for(unsigned n=0;n<10;++n)printf("%X",cd.drive.tx[n]);printf("\n");
+    printf("retired native=%llu/%llu floor=%llu/%llu floor_only=%u\n",(unsigned long long)coordinator.native_steps[0],(unsigned long long)coordinator.native_steps[1],(unsigned long long)coordinator.floor_steps[0],(unsigned long long)coordinator.floor_steps[1],(unsigned)floor_only);
     dump(argv[3],"main-ram.bin",g_ram,sizeof g_ram);dump(argv[3],"sub-prg.bin",cd.prg,sizeof cd.prg);dump(argv[3],"word-ram.bin",cd.word,sizeof cd.word);dump(argv[3],"vram.bin",vdp.vram,sizeof vdp.vram);dump_frame(argv[3]);
     segacd_image_close(image);
     return status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;

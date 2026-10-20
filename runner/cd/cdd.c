@@ -17,6 +17,10 @@ static unsigned track_at(const SegaCDDrive *d)
 static void reply(SegaCDDrive*d,unsigned override)
 {
     memset(d->rx,0,sizeof d->rx);d->rx[0]=(uint8_t)(override?override:d->status);d->rx[1]=d->report;
+    /* The reset/status exchange precedes drive operations. Original US1.10
+     * BIOS resident $18F6 requires a neutral, checksum-valid packet before
+     * requesting TOC; an already-stopped/MSF reply makes it reset forever. */
+    if(d->reset_handshake && !override){memset(d->rx,0,sizeof d->rx);d->rx[9]=15;return;}
     if(d->toc.count && !d->tray_open) {
         unsigned n=track_at(d);
         switch(d->report) {
@@ -38,7 +42,7 @@ void segacd_cdd_reset(SegaCDDrive*d)
 {
     SegaCDTOC toc=d->toc;uint64_t cycles=d->cycles;
     memset(d,0,sizeof *d);d->toc=toc;d->cycles=cycles;
-    d->status=d->toc.count?STOP:NO_DISC;reply(d,0);
+    d->reset_handshake=1;d->status=d->toc.count?STOP:NO_DISC;reply(d,0);
 }
 void segacd_cdd_init(SegaCDDrive*d){memset(d,0,sizeof *d);segacd_cdd_reset(d);}
 int segacd_cdd_mount(SegaCDDrive*d,const SegaCDTOC*toc)
@@ -69,6 +73,7 @@ static void execute(SegaCDDrive*d)
     if(checksum(p)!=p[9]){reply(d,CHECKSUM);return;}
     if(p[1]){reply(d,ERROR);return;}
     if(command==0){reply(d,0);return;}
+    d->reset_handshake=0;
     if(command==12){d->tray_open=0;d->status=d->toc.count?STOP:NO_DISC;reply(d,0);return;}
     if(command==13){d->tray_open=1;d->status=OPEN;d->seek_deadline=0;d->scan=0;reply(d,0);return;}
     if(d->tray_open || !d->toc.count){reply(d,0);return;}

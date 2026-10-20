@@ -10,6 +10,7 @@
 #include "rf5c164.h"
 #include "cdd.h"
 #include "cdc.h"
+#include "stamp.h"
 
 typedef enum {
     SEGACD_MAIN = 0, SEGACD_SUB = 1
@@ -48,6 +49,7 @@ typedef struct SegaCD {
     Rf5c164 pcm;
     SegaCDDrive drive;
     SegaCDCdc cdc;
+    SegaCDStamp stamp;
     uint8_t cdc_destination;
     uint16_t cdc_dma_address;
     uint8_t media_error; /* 1=missing/read failure; 2=unsupported sector mode. */

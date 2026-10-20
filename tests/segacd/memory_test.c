@@ -71,8 +71,11 @@ int main(void)
     /* Sub dot image is two unpacked low nibbles; priority applies per pixel. */
     w(SEGACD_SUB,0xC0000,0xA30F);CHECK(r(SEGACD_SUB,0x80000)==0x0A03);
     b(SEGACD_SUB,0x80001,5);CHECK(r(SEGACD_SUB,0xC0000)==0xA50F);
-    b(SEGACD_SUB,0xFF8003,13);w(SEGACD_SUB,0xC0000,0x1234);CHECK(r(SEGACD_SUB,0xC0000)==0xA53F);
-    b(SEGACD_SUB,0xFF8003,21);w(SEGACD_SUB,0xC0000,0x0002);CHECK(r(SEGACD_SUB,0xC0000)==0xA532);
+    b(SEGACD_SUB,0xFF8003,13);w(SEGACD_SUB,0x80000,0x0102);w(SEGACD_SUB,0x80002,0x0304);CHECK(r(SEGACD_SUB,0xC0000)==0xA53F);
+    b(SEGACD_SUB,0xFF8003,21);w(SEGACD_SUB,0x80000,0);w(SEGACD_SUB,0x80002,2);CHECK(r(SEGACD_SUB,0xC0000)==0xA532);
+    /* Direct RAM bypasses dot priority, including incoming zero pixels. */
+    w(SEGACD_SUB,0xC0000,0x1020);CHECK(r(SEGACD_SUB,0xC0000)==0x1020);
+    w(SEGACD_SUB,0xC0000,0xA532);
     b(SEGACD_SUB,0xFF8003,1);
     CHECK(r(SEGACD_MAIN,0x200000)==0xA532); /* same physical bank after mode change */
     /* Backup RAM's odd lane, first/last byte, and persistence across reset. */
