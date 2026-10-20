@@ -24,6 +24,9 @@ static SegaCD cd;static SegaCDCoordinator coordinator;static GenesisBus genesis;
 static uint64_t line_number,audio_events,dma_stalls;
 static unsigned irq4,irq6,frame_width=320;
 static uint32_t pixels[240][GVDP_MAX_WIDTH];
+static const char *dump_directory;
+static uint64_t start_frame=UINT64_MAX;
+static void dump_frame_named(const char *,const char *);
 static int media_read(void *image,int32_t lba,uint8_t raw[2352])
 {return segacd_image_read(image,lba,raw);}
 uint32_t machine_z80_stamp(void){return (uint32_t)((line_number%262)*3420);}
@@ -32,14 +35,14 @@ void snd_trace_68k_write(uint16_t o,uint8_t a,uint8_t b,int req,int reset){(void
 void snd_trace_z80(uint16_t o,uint8_t v,int w){(void)o;(void)v;(void)w;}
 void snd_trace_busreq(const char*s,int v){(void)s;(void)v;}
 void audio_event_push(uint32_t stamp,uint8_t port,uint8_t value){(void)stamp;(void)port;(void)value;++audio_events;}
-void glue_charge_68k_stall(uint32_t cycles){dma_stalls+=cycles;}
+void glue_charge_68k_stall(uint32_t cycles){dma_stalls+=cycles;segacd_coordinator_main_stall(&coordinator,cycles);}
 static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){(void)u;*v=gbus_read8(&genesis,a);return M68K_BUS_OK;}
 static M68kStepBusResult read16(void*u,uint32_t a,uint16_t*v){(void)u;*v=gbus_read16(&genesis,a);return M68K_BUS_OK;}
 static M68kStepBusResult write8(void*u,uint32_t a,uint8_t v){(void)u;gbus_write8(&genesis,a,v);return M68K_BUS_OK;}
 static M68kStepBusResult write16(void*u,uint32_t a,uint16_t v){(void)u;gbus_write16(&genesis,a,v);return M68K_BUS_OK;}
 static M68kStepBusResult fetch(void*u,uint32_t a,uint16_t*v){(void)u;if(a<0xFF0000)return M68K_BUS_FAULT;*v=gbus_peek16(&genesis,a);return M68K_BUS_OK;}
 static unsigned ack(void*u,unsigned level){(void)u;if(level==6)irq6=0;if(level==4)irq4=0;return M68K_STEP_AUTOVECTOR;}
-static uint16_t dma_read(void*u,uint32_t a){(void)u;return m68k_step_read16(&coordinator.cpu[0],a);}
+static uint16_t dma_read(void*u,uint32_t a){(void)u;return segacd_coordinator_vdp_read16(&coordinator,a);}
 static uint64_t line_tick(uint64_t line)
 {
     uint64_t master=line*3420;
@@ -51,6 +54,14 @@ static void advance_host(void*u,uint64_t now)
     (void)u;
     while(line_tick(line_number)<=now) {
         unsigned line=(unsigned)(line_number%262);
+        if(!line) {
+            uint64_t frame=line_number/262;
+            genesis.pad[0]=(uint16_t)(frame>=start_frame && frame-start_frame<10?GPAD_START:0);
+            if(frame==60 || frame==120 || frame==180 || frame==240 || frame==288 || frame==360 || frame==600 || frame==900) {
+                char name[64];snprintf(name,sizeof name,"frame-%04u.ppm",(unsigned)frame);
+                dump_frame_named(dump_directory,name);
+            }
+        }
         if(line_number && (line+261)%262<240) {
             unsigned row=(line+261)%262;uint8_t indices[GVDP_MAX_WIDTH];
             int width=gvdp_render_scanline(&vdp,(int)row,indices);
@@ -72,9 +83,9 @@ static void dump(const char*dir,const char*name,const void*data,size_t bytes)
     if(n<0 || (size_t)n>=sizeof path){fprintf(stderr,"dump path too long\n");exit(4);}
     FILE*f=fopen(path,"wb");if(!f || fwrite(data,1,bytes,f)!=bytes || fclose(f)){fprintf(stderr,"dump failed: %s\n",name);exit(4);}
 }
-static void dump_frame(const char*dir)
+static void dump_frame_named(const char*dir,const char*name)
 {
-    char path[4096];int n=snprintf(path,sizeof path,"%s/frame.ppm",dir);if(n<0 || (size_t)n>=sizeof path)exit(4);
+    char path[4096];int n=snprintf(path,sizeof path,"%s/%s",dir,name);if(n<0 || (size_t)n>=sizeof path)exit(4);
     FILE*f=fopen(path,"wb");if(!f)exit(4);unsigned height=(unsigned)gvdp_screen_height(&vdp);if(height>240)height=240;
     fprintf(f,"P6\n%u %u\n255\n",frame_width,height);
     for(unsigned y=0;y<height;++y)for(unsigned x=0;x<frame_width;++x){uint32_t p=pixels[y][x];uint8_t rgb[3]={(uint8_t)(p>>16),(uint8_t)(p>>8),(uint8_t)p};if(fwrite(rgb,1,3,f)!=3)exit(4);}
@@ -82,13 +93,14 @@ static void dump_frame(const char*dir)
 }
 int main(int argc,char**argv)
 {
-    if(argc!=4 && argc!=5){fprintf(stderr,"usage: segacd_bios_dual_probe BIOS SUB_CLOCK_DEADLINE PRIVATE_DUMP_DIRECTORY [IMAGE.sgcd]\n");return 2;}
+    if(argc<4 || argc>6){fprintf(stderr,"usage: segacd_bios_dual_probe BIOS SUB_CLOCK_DEADLINE PRIVATE_DUMP_DIRECTORY [IMAGE.sgcd [START_FRAME]]\n");return 2;}
+    dump_directory=argv[3];if(argc==6)start_frame=strtoull(argv[5],NULL,0);
     FILE*f=fopen(argv[1],"rb");if(!f || fread(g_rom,1,SEGACD_BIOS_BYTES,f)!=SEGACD_BIOS_BYTES || fgetc(f)!=EOF || fclose(f))return 2;
     if(!segacd_init(&cd,g_rom,SEGACD_BIOS_BYTES))return 2;
     gvdp_init(&vdp);gbus_init(&genesis,&vdp);vdp.bus_read=dma_read;
     M68kStepBus host={read8,read16,write8,write16,fetch,0,ack,0};if(!segacd_coordinator_init(&coordinator,&cd,&host,NULL))return 2;
     SegaCDImage *image=NULL;
-    if(argc==5) {
+    if(argc>=5) {
         char error[256];image=segacd_image_open(argv[4],error,sizeof error);
         if(!image){fprintf(stderr,"media: %s\n",error);return 2;}
         if(!segacd_cdd_mount(&cd.drive,segacd_image_toc(image))){segacd_image_close(image);return 2;}
@@ -110,11 +122,17 @@ int main(int argc,char**argv)
     segacd_coordinator_host_clock(&coordinator,advance_host,next_host_event);
     uint64_t deadline=strtoull(argv[2],NULL,0),steps=0;
     struct {uint32_t main,sub;uint64_t time;} ring[64]={{0}};M68kStepResult status=M68K_STEP_OK;
-    unsigned mask_before=cd.irq_mask,wp_before=cd.write_protect,control_before=cd.drive.control,event_count=0;
+    unsigned mask_before=cd.irq_mask,wp_before=cd.write_protect,control_before=cd.drive.control,event_count=0,commands=0;
+    uint64_t command_deadline_before=0;
     while(coordinator.device_time<deadline && steps<100000000u) {
         ring[steps%64].main=coordinator.cpu[0].state.regs.PC;ring[steps%64].sub=coordinator.cpu[1].state.regs.PC;ring[steps%64].time=coordinator.device_time;
         g_audio_cycle_counter=(uint32_t)coordinator.cpu[0].state.cycles;
         status=segacd_coordinator_step(&coordinator);++steps;if(status!=M68K_STEP_OK)break;
+        if(cd.drive.command_pending && cd.drive.command_deadline!=command_deadline_before && cd.drive.pending[0] && commands++<128) {
+            printf("CDD command time=%llu main=%06X sub=%06X packet=",(unsigned long long)coordinator.device_time,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc);
+            for(unsigned n=0;n<10;++n)printf("%X",cd.drive.pending[n]);printf("\n");
+        }
+        command_deadline_before=cd.drive.command_deadline;
         if(mask_before!=cd.irq_mask || wp_before!=cd.write_protect || control_before!=cd.drive.control) {
             if(event_count++<64)printf("device event time=%llu main=%06X sub=%06X mask=%02X wp=%02X drive_control=%02X\n",(unsigned long long)coordinator.device_time,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc,cd.irq_mask,cd.write_protect,cd.drive.control);
             mask_before=cd.irq_mask;wp_before=cd.write_protect;control_before=cd.drive.control;
@@ -134,7 +152,7 @@ int main(int argc,char**argv)
     for(unsigned n=0;n<10;++n)printf("%X",cd.drive.rx[n]);printf(" tx=");
     for(unsigned n=0;n<10;++n)printf("%X",cd.drive.tx[n]);printf("\n");
     printf("retired native=%llu/%llu floor=%llu/%llu floor_only=%u\n",(unsigned long long)coordinator.native_steps[0],(unsigned long long)coordinator.native_steps[1],(unsigned long long)coordinator.floor_steps[0],(unsigned long long)coordinator.floor_steps[1],(unsigned)floor_only);
-    dump(argv[3],"main-ram.bin",g_ram,sizeof g_ram);dump(argv[3],"sub-prg.bin",cd.prg,sizeof cd.prg);dump(argv[3],"word-ram.bin",cd.word,sizeof cd.word);dump(argv[3],"vram.bin",vdp.vram,sizeof vdp.vram);dump_frame(argv[3]);
+    dump(argv[3],"main-ram.bin",g_ram,sizeof g_ram);dump(argv[3],"sub-prg.bin",cd.prg,sizeof cd.prg);dump(argv[3],"word-ram.bin",cd.word,sizeof cd.word);dump(argv[3],"vram.bin",vdp.vram,sizeof vdp.vram);dump_frame_named(argv[3],"frame.ppm");
     segacd_image_close(image);
     return status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;
 }

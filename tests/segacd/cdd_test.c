@@ -25,6 +25,14 @@ int main(void)
     command(2,3,0,0);CHECK(d.rx[1]==3 && d.rx[4]==1 && d.rx[5]==2 && d.rx[6]==0 && d.rx[7]==0); /* leadout 00:12:00 */
     command(2,5,0,1);CHECK(d.rx[4]==0 && d.rx[5]==2 && d.rx[6]==8 && d.rx[8]==1); /* data 00:02:00, data flag */
     command(2,5,0,2);CHECK(d.rx[4]==0 && d.rx[5]==8 && d.rx[6]==0 && d.rx[8]==2); /* audio 00:08:00 */
+    /* Track IDs in report 5 are decimal units, including tracks 10..99;
+     * masking to a hex nibble falsely rejects a normal multi-track disc. */
+    SegaCDTOC many={0};many.count=99;many.leadout=99*75;
+    for(unsigned n=0;n<99;++n)many.track[n]=(SegaCDTrack){n?(int32_t)n*75:-150,(int32_t)n*75,(int32_t)(n+1)*75,(uint8_t)(n==0)};
+    CHECK(segacd_cdd_mount(&d,&many));
+    for(unsigned track=1;track<=99;++track){command(2,5,track/10,track%10);CHECK(d.rx[8]==track%10 && d.rx[1]==5);}
+    command(2,0,0,0);CHECK(d.rx[8]==4);command(2,1,0,0);CHECK(d.rx[8]==4);
+    CHECK(segacd_cdd_mount(&d,&toc));
     /* Read sector zero, wait for the emulated seek, then deliver raw sectors. */
     command(3,0,0,2);CHECK(d.status==2 && d.seek_deadline>d.cycles);
     uint32_t delay=(uint32_t)(d.seek_deadline-d.cycles);segacd_cdd_advance(&d,delay,sector,NULL);CHECK(d.status==1);

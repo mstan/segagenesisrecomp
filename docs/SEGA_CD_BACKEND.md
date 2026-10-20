@@ -251,3 +251,26 @@ the independent reference, and no sectors have been read. This is not a
 validated disc boot. Word RAM-to-VDP DMA's documented one-word delay, actual
 DMA stall charging, CDC DMA, full audio/runner integration and original-game
 qualification remain work. These captures do not satisfy final visual acceptance.
+
+The following CDC DMA milestone adds destinations 4/5/7 using the
+[permissive reference profile](SEGA_CD_REUSE.md), with emulated six-clock word
+boundaries, full internal address retention, PCM/PRG/Word mapping, ownership
+WAIT without source consumption, actual final-byte EDT/DTEI and IRQ5. Odd-byte
+requests still stop explicitly. Device errors now also halt all-STOP execution;
+they cannot disappear behind an idle deadline. A real port-driven PRG test
+programs IFCTRL/DBC/DAC/DTTRG, crosses the six-clock edge, checks transferred
+bytes and actual completion/ack. Unit cases separately cover bank/address
+boundaries, write protection, ownership resume and split advances. All 16
+current tests pass fresh MSVC, MinGW and Linux ASan/UBSan. This does not qualify
+physical DMA contention or all hardware transfer edge cases.
+
+The VDP Word RAM output latch and main CPU freeze charging repair the visibly
+scrambled BIOS logo. Run `build/qa-bios-floor-disc-3` reaches 190,000,002 sub
+clocks (15.2 seconds), retires 10,132,645 main/9,202,149 sub instructions and
+starts 1,572 ASIC operations with no fault. Its SEGA/SEGA CD logo shapes now
+render, but the Start prompt remains missing and no sectors load after real
+controller Start at frames 600-609. The frame-360 diagnostic comparison against
+the inserted-disc reference still differs (mean RGB absolute error 4.0016),
+and is not final visual acceptance. A later protocol correction fixes decimal
+track units for tracks 10-99 and missing data flags in time reports; tests
+cover all 99 track queries. The next owned-BIOS run is pending.

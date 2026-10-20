@@ -128,8 +128,14 @@ int main(void)
     CHECK(segacd_write8(&cd,SEGACD_MAIN,0xA12004,7)==SEGACD_OK && cd.cdc_destination==2);
     CHECK(segacd_write16(&cd,SEGACD_SUB,0xFF800A,0x1234)==SEGACD_OK && cd.cdc_dma_address==0x1234);
     CHECK(segacd_write8(&cd,SEGACD_SUB,0xFF8004,0)==SEGACD_OK && cd.cdc_dma_address==0);
-    /* Until DMA is implemented it must reject a real start, not discard it. */
-    CHECK(segacd_write8(&cd,SEGACD_SUB,0xFF8004,5)==SEGACD_OK);CHECK(segacd_write8(&cd,SEGACD_SUB,0xFF8005,6)==SEGACD_OK);
-    CHECK(segacd_write8(&cd,SEGACD_SUB,0xFF8007,0)==SEGACD_UNMAPPED);
-    puts("LC8951 AR/flags, sector-ring bounds/header, two-byte FIFO/count, host CPU gating and persistent IRQ/ack pass (EDC/ECC/timing/DMA pending)");return 0;
+    /* A real register-driven PRG DMA start transfers after its actual clock
+     * deadline. This replaces the earlier unimplemented-start expectation. */
+    sub_reg(7,0);CHECK(!segacd_irq_level(&cd));start(5);
+    CHECK(cd.dma.active && !cd.cdc.transfer_end);
+    segacd_advance(&cd,5);CHECK(!cd.prg[0] && !cd.dma.words);
+    segacd_advance(&cd,1);CHECK(cd.prg[0]==0x12 && cd.prg[1]==0x34 && cd.dma.words==1 && !cd.cdc.transfer_end);
+    segacd_advance(&cd,6);CHECK(cd.prg[2]==0x56 && cd.prg[3]==0x78 && cd.dma.words==2 && cd.cdc.transfer_end && !cd.dma.active);
+    CHECK(read_word(SEGACD_SUB,0xFF8004)&0x8000);
+    CHECK(segacd_irq_level(&cd)==5);sub_reg(7,0);CHECK(!segacd_irq_level(&cd));
+    puts("LC8951 AR/flags, sector-ring bounds/header, two-byte FIFO/count, CPU gating, timed PRG DMA and persistent IRQ/ack pass (ECC/bus timing pending)");return 0;
 }

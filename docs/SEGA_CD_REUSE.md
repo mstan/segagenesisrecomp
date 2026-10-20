@@ -37,6 +37,35 @@ Private source downloads, hashes and licensing audit are under
 release dependencies. Agreement with a reference for stated cases does not
 establish hardware identity.
 
+## CDC DMA and transfer integration
+
+`runner/cd/dma.c` adapts destination and address stepping from ares's
+`ares/md/mcd/cdc-transfer.cpp` and its six-sub-clock word cadence from `mcd.cpp`
+at the same pinned revision. Its ISC notice is retained in that source and the
+shared license file. The port consumes the existing LC8951 FIFO only after a
+successful mapped destination write. It retains the full internal address
+between transfers, including low bits absent from the programmed A18..A3
+register. PCM advances four internal address units per word, PRG/Word RAM two.
+DMA uses the current RF5C164 bank or the sub CPU's mapped PRG/Word RAM view;
+denied Word RAM ownership waits without consuming source bytes.
+
+The clock splitter interleaves DMA boundaries with PCM, stamp and media events.
+At a coincident PCM-sample/DMA-write boundary it samples before applying the
+write; exact hardware phase/contention is unqualified. Odd-byte DMA requests
+are explicitly unsupported rather than padded or silently truncated. Destination
+write protection and ownership use this backend's bus contract; the reference
+profile alone does not establish physical arbitration or CPU contention costs.
+
+The host VDP callback additionally models Word RAM's one-access output latch,
+documented by Sega Hardware p61 and corroborated by ares `bus-external.cpp`.
+Normal CPU reads are unaffected. Initial CPU-prefetch latch content remains
+unqualified. The existing Genesis VDP DMA freeze estimate is now charged to
+main-CPU retirement and elapsed time instead of only counted in diagnostics.
+
+The original CDD implementation's report fields were cross-checked against
+ares: time reports identify data tracks and track-start reports return decimal
+track units. These protocol corrections do not import ares's CDD runtime.
+
 ## Other candidates
 
 MAME's `src/mame/sega/megacd.cpp` and header identify BSD-3-Clause.

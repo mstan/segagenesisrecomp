@@ -11,6 +11,7 @@
 #include "cdd.h"
 #include "cdc.h"
 #include "stamp.h"
+#include "dma.h"
 
 typedef enum {
     SEGACD_MAIN = 0, SEGACD_SUB = 1
@@ -50,6 +51,7 @@ typedef struct SegaCD {
     SegaCDDrive drive;
     SegaCDCdc cdc;
     SegaCDStamp stamp;
+    SegaCDDma dma;
     uint8_t cdc_destination;
     uint16_t cdc_dma_address;
     uint8_t media_error; /* 1=missing/read failure; 2=unsupported sector mode. */
@@ -62,6 +64,7 @@ typedef struct SegaCD {
     uint8_t main_control, write_protect, prg_bank, memory_mode;
     uint8_t irq_mask, irq_pending, flags[2], timer_reload;
     uint16_t command[8], status[8], hint_vector, led;
+    uint16_t vdp_word_latch; /* Word RAM output latch on the VDP DMA path. */
     uint16_t font_bits;
     uint8_t font_color;
     uint32_t sub_reset_generation;

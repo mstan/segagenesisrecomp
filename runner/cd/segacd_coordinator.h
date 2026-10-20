@@ -42,6 +42,13 @@ int segacd_coordinator_floor(SegaCDCoordinator *,M68kStepResult (*)(M68kStepCont
 void segacd_coordinator_main_irq(SegaCDCoordinator *,unsigned level);
 void segacd_coordinator_host_clock(SegaCDCoordinator *,void (*advance)(void *,uint64_t),uint64_t (*next_event)(void *));
 void segacd_coordinator_pcm_sink(SegaCDCoordinator *,Rf5c164Sink,void *user);
+/* Host VDP DMA bus callback: Word RAM has a one-access output delay (Sega
+ * Hardware p61); normal CPU reads have none. First-latch prefetch is not yet
+ * bus-phase qualified. These calls must use the main CPU's execution stack. */
+uint16_t segacd_coordinator_vdp_read16(SegaCDCoordinator *,uint32_t address);
+/* Charge a host DMA freeze during a main operation. The operation's actual
+ * retirement then advances elapsed time, including the other processor. */
+void segacd_coordinator_main_stall(SegaCDCoordinator *,uint32_t main_cycles);
 /* Configure only between completed CPU operations. Caller mounts the matching
  * TOC on devices->drive and keeps host handles alive until unmounted. */
 void segacd_coordinator_media(SegaCDCoordinator *,SegaCDReadSector,void *media_user,

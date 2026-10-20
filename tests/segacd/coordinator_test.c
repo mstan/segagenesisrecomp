@@ -6,11 +6,12 @@
 #include <string.h>
 #define CHECK(x) do{if(!(x)){fprintf(stderr,"line %u: %s\n",(unsigned)__LINE__,#x);exit(1);}}while(0)
 static uint8_t bios[SEGACD_BIOS_BYTES],ram[65536];static SegaCD cd;static SegaCDCoordinator c;
+static uint32_t stall_on_write;
 static void put32(uint8_t*p,uint32_t v){p[0]=(uint8_t)(v>>24);p[1]=(uint8_t)(v>>16);p[2]=(uint8_t)(v>>8);p[3]=(uint8_t)v;}
 static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){(void)u;if(a<0xFF0000)return M68K_BUS_FAULT;*v=ram[a&65535];return M68K_BUS_OK;}
 static M68kStepBusResult read16(void*u,uint32_t a,uint16_t*v){uint8_t hi,lo;if(read8(u,a,&hi)!=M68K_BUS_OK || read8(u,a+1,&lo)!=M68K_BUS_OK)return M68K_BUS_FAULT;*v=(uint16_t)(((unsigned)hi<<8)|lo);return M68K_BUS_OK;}
 static M68kStepBusResult write8(void*u,uint32_t a,uint8_t v){(void)u;if(a<0xFF0000)return M68K_BUS_FAULT;ram[a&65535]=v;return M68K_BUS_OK;}
-static M68kStepBusResult write16(void*u,uint32_t a,uint16_t v){if(write8(u,a,(uint8_t)(v>>8))!=M68K_BUS_OK)return M68K_BUS_FAULT;return write8(u,a+1,(uint8_t)v);}
+static M68kStepBusResult write16(void*u,uint32_t a,uint16_t v){if(write8(u,a,(uint8_t)(v>>8))!=M68K_BUS_OK)return M68K_BUS_FAULT;M68kStepBusResult r=write8(u,a+1,(uint8_t)v);if(r==M68K_BUS_OK && stall_on_write)segacd_coordinator_main_stall(&c,stall_on_write);return r;}
 static void load(uint8_t*dst,const char*path,size_t bytes){FILE*f=fopen(path,"rb");CHECK(f && fread(dst,1,bytes,f)==bytes && fgetc(f)==EOF && !fclose(f));}
 static void initialize(const char*main_path,const char*sub_path)
 {
@@ -26,6 +27,8 @@ static void initialize(const char*main_path,const char*sub_path)
 static uint64_t host_time,host_event;
 static void host_advance(void*u,uint64_t time){(void)u;CHECK(time>=host_time);host_time=time;if(host_event && time>=host_event){host_event=0;segacd_coordinator_main_irq(&c,6);}}
 static uint64_t host_next(void*u){(void)u;return host_event?host_event:UINT64_MAX;}
+static void dma_trigger_operation(M68kStepContext*ctx)
+{m68k_step_write16(ctx,0xFF0500,0x1234);ctx->state.regs.SR&=0xFFF0;}
 int main(int argc,char**argv)
 {
     CHECK(argc==3);initialize(argv[1],argv[2]);
@@ -76,5 +79,33 @@ int main(int argc,char**argv)
     M68kStepResult r=M68K_STEP_OK;for(unsigned n=0;n<5 && r==M68K_STEP_OK;++n)r=segacd_coordinator_step(&c);
     CHECK(r==M68K_STEP_NO_WAIT_HANDLER && c.cpu[1].state.regs.PC==0x100 && c.last_cpu==0);
     CHECK(c.wait_cpu==1 && c.wait_result==M68K_STEP_MISS);
+    /* The VDP path returns the prior Word RAM word. CPU reads neither delay
+     * nor disturb that latch; non-CD DMA sources remain ordinary bus reads. */
+    initialize(argv[1],argv[2]);cd.word[0]=0x12;cd.word[1]=0x34;cd.word[2]=0x56;cd.word[3]=0x78;
+    CHECK(segacd_coordinator_vdp_read16(&c,0x200000)==0);
+    CHECK(m68k_step_read16(&c.cpu[0],0x200002)==0x5678);
+    CHECK(segacd_coordinator_vdp_read16(&c,0x200002)==0x1234 && cd.vdp_word_latch==0x5678);
+    ram[0x500]=0xAB;ram[0x501]=0xCD;
+    CHECK(segacd_coordinator_vdp_read16(&c,0xFF0500)==0xABCD && cd.vdp_word_latch==0x5678);
+    /* A synthetic MOVE operation invokes the actual host write callback;
+     * its DMA freeze must be included in retirement and rational elapsed time. */
+    static const M68kStepEntry dma_entry={0x1040,{0x33FC,0x1234,0x00FF,0x0500},4,20,dma_trigger_operation};
+    static const M68kStepModule dma_module={"dma trigger",0x1040,8,0,&dma_entry,1};
+    const M68kStepModule* dma_modules[]={&dma_module};
+    for(unsigned n=0;n<4;++n){bios[0x1040+n*2]=(uint8_t)(dma_entry.words[n]>>8);bios[0x1041+n*2]=(uint8_t)dma_entry.words[n];}
+    memcpy(cd.bios+0x1040,bios+0x1040,8);c.cpu[0].state.regs.PC=0x1040;
+    CHECK(segacd_coordinator_modules(&c,SEGACD_MAIN,dma_modules,1));stall_on_write=100;
+    CHECK(segacd_coordinator_step(&c)==M68K_STEP_OK);stall_on_write=0;
+    CHECK(c.cpu[0].state.cycles==120 && c.cpu[0].state.instructions==1 && ram[0x500]==0x12 && ram[0x501]==0x34);
+    CHECK(c.time[0]==(UINT64_C(120)*87500000u)/53693175u);
+    /* A later idle charge updates elapsed time without inventing instructions. */
+    initialize(argv[1],argv[2]);
+    segacd_coordinator_main_stall(&c,53693175u);
+    CHECK(c.time[0]==87500000u && c.cpu[0].state.cycles==53693175u && !c.cpu[0].state.instructions);
+    CHECK(cd.sub_cycles==87500000u);
+    segacd_reset(&cd);CHECK(!cd.vdp_word_latch);
+    /* A stop cannot hide a failed device transfer or run past it as success. */
+    initialize(argv[1],argv[2]);c.cpu[0].state.stopped=1;cd.dma.last_result=SEGACD_DMA_UNMAPPED;
+    CHECK(segacd_coordinator_run_until(&c,1000)==M68K_STEP_BUS_ERROR && !c.device_time);
     puts("Two native original-ISA programs: Word RAM WAIT/handoff, independent CPUs, STOP clock deadlines, timer IRQ/RTE and reset pulse pass");return 0;
 }

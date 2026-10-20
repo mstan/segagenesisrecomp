@@ -6,6 +6,13 @@
  * PAL and hardware bus-cycle phasing need separate qualification. */
 enum { MAIN_DENOM=53693175,MAIN_NUMER=87500000 };
 static M68kStepResult execute_cpu(SegaCDCoordinator *,unsigned);
+static int device_fault(const SegaCDCoordinator*c)
+{
+    return c->devices->drive.unsupported_command || c->devices->media_error ||
+        c->devices->dma.last_result==SEGACD_DMA_BAD_DESTINATION ||
+        c->devices->dma.last_result==SEGACD_DMA_ODD_BYTE_COUNT ||
+        c->devices->dma.last_result==SEGACD_DMA_UNMAPPED;
+}
 static void advance_devices(SegaCDCoordinator *c)
 {
     uint64_t now=c->time[0];
@@ -37,6 +44,8 @@ static uint64_t next_event_time(SegaCDCoordinator*c,uint64_t deadline)
         next=now+c->devices->cdc.decoder_irq_clocks;
     if(c->devices->stamp.busy && !(c->devices->memory_mode&5u) && now+c->devices->stamp.remaining_clocks<next)
         next=now+c->devices->stamp.remaining_clocks;
+    if(c->devices->dma.active && now+6u-c->devices->dma.phase<next)
+        next=now+6u-c->devices->dma.phase;
     return deadline<next?deadline:next;
 }
 static void account(SegaCDCoordinator *c,unsigned cpu,uint64_t cycles)
@@ -134,7 +143,11 @@ static int bus_wait(void *user,uint32_t address,int write)
         if(c->time[b->cpu]<c->time[other])c->time[b->cpu]=c->time[other];
         advance_devices(c);
         uint8_t ignored=0;
-        SegaCDResult access=segacd_read8(c->devices,b->cpu,address,&ignored);
+        SegaCDResult access;
+        if(write && b->cpu==SEGACD_SUB && address==0xFF8066u)
+            access=(c->devices->memory_mode&4u)?SEGACD_UNMAPPED:
+                (c->devices->memory_mode&1u)?SEGACD_WAIT:SEGACD_OK;
+        else access=segacd_read8(c->devices,b->cpu,address,&ignored);
         if(access!=SEGACD_WAIT)return access==SEGACD_OK;
         if(r==M68K_STEP_STOPPED) {
             /* A stopped owner can wake on its timer or a host VDP interrupt.
@@ -212,6 +225,23 @@ void segacd_coordinator_host_clock(SegaCDCoordinator*c,void (*advance)(void *,ui
 {if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;}}
 void segacd_coordinator_pcm_sink(SegaCDCoordinator*c,Rf5c164Sink sink,void*user)
 {if(c && !c->busy[0] && !c->busy[1]){c->io.pcm_sink=sink;c->io.pcm_user=user;}}
+uint16_t segacd_coordinator_vdp_read16(SegaCDCoordinator*c,uint32_t a)
+{
+    uint16_t value=m68k_step_read16(&c->cpu[0],a);a&=0xFFFFFFu;
+    if(a>=0x200000u && a<0x240000u) {
+        /* Hardware p61 documents this delay. ares's bus-external.cpp also
+         * models the latch; initial CPU-prefetch content remains unqualified. */
+        uint16_t previous=c->devices->vdp_word_latch;
+        c->devices->vdp_word_latch=value;return previous;
+    }
+    return value;
+}
+void segacd_coordinator_main_stall(SegaCDCoordinator*c,uint32_t cycles)
+{
+    if(!c || !cycles)return;
+    if(c->cpu[0].fault_escape)c->cpu[0].charge+=cycles;
+    else {c->cpu[0].state.cycles+=cycles;account(c,0,cycles);advance_devices(c);}
+}
 void segacd_coordinator_media(SegaCDCoordinator*c,SegaCDReadSector read_sector,void*media_user,
                              SegaCDCddaSector sink,void*cdda_user)
 {
@@ -230,7 +260,7 @@ static void idle_until(SegaCDCoordinator*c,uint64_t deadline)
 M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
 {
     if(!c || c->busy[0] || c->busy[1])return M68K_STEP_REENTERED;
-    if(c->devices->drive.unsupported_command || c->devices->media_error){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
+    if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
     M68kStepResult r=refresh_sub(c);if(r!=M68K_STEP_OK)return c->last_result=r;
     advance_devices(c);
     unsigned which=segacd_sub_runnable(c->devices) && c->time[1]<c->time[0]?1u:0u;
@@ -241,12 +271,15 @@ M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
         if(r==M68K_STEP_STOPPED){idle_until(c,c->device_time+SEGACD_TIMER_DIVISOR);r=M68K_STEP_OK;}
         else if(c->time[which]<c->time[other])c->time[which]=c->time[other];
     }
-    advance_devices(c);return c->last_result=r;
+    advance_devices(c);
+    if(r==M68K_STEP_OK && device_fault(c)){c->last_cpu=1;r=M68K_STEP_BUS_ERROR;}
+    return c->last_result=r;
 }
 M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator*c,uint64_t deadline)
 {
     if(!c)return M68K_STEP_REENTERED;
     while(c->time[0]<deadline || (segacd_sub_runnable(c->devices) && c->time[1]<deadline)) {
+        if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
         /* Never step an all-STOP system past a host raster deadline. */
         if(c->cpu[0].state.stopped && (!segacd_sub_runnable(c->devices) || c->cpu[1].state.stopped)) {
             advance_devices(c);
@@ -257,5 +290,7 @@ M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator*c,uint64_t deadlin
         }
         M68kStepResult r=segacd_coordinator_step(c);if(r!=M68K_STEP_OK)return r;
     }
-    advance_devices(c);return M68K_STEP_OK;
+    advance_devices(c);
+    if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
+    return M68K_STEP_OK;
 }

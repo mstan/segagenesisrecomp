@@ -10,6 +10,7 @@ void segacd_reset(SegaCD *s)
     segacd_cdd_reset(&s->drive);
     segacd_cdc_reset(&s->cdc);s->cdc_destination=0;s->cdc_dma_address=0;
     segacd_stamp_reset(&s->stamp);
+    segacd_dma_init(&s->dma);
     s->media_error=0;s->media_error_lba=0;s->media_sectors=s->cdda_sectors=0;
     ++s->sub_reset_generation;
     s->main_control = s->write_protect = s->prg_bank = 0;
@@ -20,6 +21,7 @@ void segacd_reset(SegaCD *s)
     memset(s->status, 0, sizeof s->status);
     s->hint_vector = 0xFFFF;
     s->led = s->font_bits = s->font_color = 0;
+    s->vdp_word_latch=0;
     s->stopwatch_origin = s->timer_origin = s->sub_cycles;
     s->peripheral_ready = s->sub_cycles + SEGACD_SUB_CLOCK / 10;
 }
@@ -69,12 +71,16 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
         uint32_t delta=remaining;
         uint64_t event=segacd_cdd_next_event(&s->drive);
         if(event>=s->drive.cycles && event-s->drive.cycles<delta)delta=(uint32_t)(event-s->drive.cycles);
+        if(s->dma.active && 6u-s->dma.phase<delta)delta=6u-s->dma.phase;
+        if(s->stamp.busy && !(s->memory_mode&(MODE_1M|RET)) && s->stamp.remaining_clocks<delta)
+            delta=s->stamp.remaining_clocks;
         /* Age the preceding decoder pulse before delivering a new sector at
          * its actual CDD event boundary, even during a long stopped interval. */
         rf5c164_advance(&s->pcm,delta,io?io->pcm_sink:NULL,io?io->pcm_user:NULL);
         segacd_cdc_advance(&s->cdc,delta);
         if(!(s->memory_mode&(MODE_1M|RET)) && segacd_stamp_advance(&s->stamp,s->word,(s->memory_mode>>3)&3u,delta))
             s->irq_pending|=1u<<1;
+        (void)segacd_dma_advance(s,&s->dma,delta);
         if(segacd_cdd_advance(&s->drive,delta,deliver_sector,&delivery))s->irq_pending|=1u<<4;
         remaining-=delta;
     }
@@ -315,15 +321,19 @@ static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
     }
     if(r==4 || r==5) {
         if(cpu==SEGACD_SUB) {
-            if(r==4){s->cdc_destination=v&7u;s->cdc.transfer_end=0;if(!s->cdc_destination)s->cdc_dma_address=0;}
+            if(r==4){
+                s->cdc_destination=v&7u;s->cdc.transfer_end=0;
+                if(!s->cdc_destination){s->cdc_dma_address=0;segacd_dma_address_programmed(s,&s->dma);}
+                if(s->cdc_destination!=4 && s->cdc_destination!=5 && s->cdc_destination!=7)s->dma.active=0;
+            }
             else segacd_cdc_address(&s->cdc,v);
         }
         return SEGACD_OK; /* Main CDC mode is read only. */
     }
     if(cpu==SEGACD_SUB && (r==6 || r==7)) {
         if(r==7) {
-            if(s->cdc.ar==6 && (s->cdc.ifctrl&2u) && s->cdc_destination>=4)
-                return SEGACD_UNMAPPED; /* DMA destinations are not connected yet. */
+            if(s->cdc.ar==6 && (s->cdc.ifctrl&2u) && s->cdc_destination>=4 && !s->cdc.transfer_active &&
+               segacd_dma_begin(s,&s->dma)!=SEGACD_DMA_OK)return SEGACD_UNMAPPED;
             segacd_cdc_write(&s->cdc,v);
         }
         return SEGACD_OK;
@@ -331,7 +341,8 @@ static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
     if(r==8 || r==9)return SEGACD_OK; /* Host data is read only. */
     if(cpu==SEGACD_SUB && (r==10 || r==11)) {
         s->cdc_dma_address=(r&1u)?(uint16_t)((s->cdc_dma_address&0xFF00u)|v):
-            (uint16_t)((s->cdc_dma_address&255u)|((unsigned)v<<8));return SEGACD_OK;
+            (uint16_t)((s->cdc_dma_address&255u)|((unsigned)v<<8));
+        segacd_dma_address_programmed(s,&s->dma);return SEGACD_OK;
     }
     if (r == 0 || r == 1) {
         if (cpu == SEGACD_MAIN) {
@@ -346,6 +357,7 @@ static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
         else if (!(v & 1)) {
             s->peripheral_ready = s->sub_cycles + SEGACD_SUB_CLOCK / 10;
             rf5c164_reset(&s->pcm);segacd_cdd_reset(&s->drive);segacd_cdc_reset(&s->cdc);
+            segacd_dma_init(&s->dma);
         }
         return SEGACD_OK;
     }

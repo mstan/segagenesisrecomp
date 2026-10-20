@@ -14,7 +14,7 @@ Those retired oracle components exist only in Git history.
 | **clowncommon** (`runner/external/clowncommon/`) | Integer types and small C helpers | ISC | <https://github.com/Clownacy/clowncommon> |
 | **minicoro** (`runner/external/minicoro/`) | Game-fiber context switch on an engine-owned, snapshottable stack | Unlicense OR MIT-0; its embedded context-switch assembly derives from LuaCoco (MIT, Mike Pall) | <https://github.com/edubart/minicoro> |
 | **SDL2** (`runner/external/SDL2/`) | Windowing, input, rendering, and audio delivery | zlib | <https://libsdl.org> |
-| **ares Mega-CD GPU algorithm** (`runner/cd/stamp.c`) | Stamp/trace-vector graphics device in the experimental Sega CD backend | ISC | [Pinned source and port details](docs/SEGA_CD_REUSE.md) |
+| **ares Mega-CD device algorithms** (`runner/cd/stamp.c`, `dma.c`) | Stamp graphics and CDC DMA in the experimental Sega CD backend | ISC | [Pinned source and port details](docs/SEGA_CD_REUSE.md) |
 | **tomlc99** (`recompiler/src/toml.{c,h}`) | TOML parsing for game configuration | MIT | <https://github.com/cktan/tomlc99> |
 | **recomp-net** (`external/recomp-net/`) | Optional netplay transport and lobby support | MIT | <https://github.com/TechnicallyComputers/recomp-net> |
 | **ShadowVerifier and color-science core** (`runner/audio/audio_shadow.{c,h}`, `runner/video/color_lut.{c,h}`) | Opt-in verified audio/video enhancements | MIT OR Apache-2.0 | <https://github.com/JRickey/gba-recomp>, ported through the gbarecomp/snesrecomp implementations with permission |

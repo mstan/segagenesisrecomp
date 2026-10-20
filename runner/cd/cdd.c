@@ -24,14 +24,14 @@ static void reply(SegaCDDrive*d,unsigned override)
     if(d->toc.count && !d->tray_open) {
         unsigned n=track_at(d);
         switch(d->report) {
-        case 0:msf(d->rx+2,d->lba+150);break;
-        case 1:msf(d->rx+2,d->lba-d->toc.track[n].start);break;
+        case 0:msf(d->rx+2,d->lba+150);d->rx[8]=(uint8_t)(d->toc.track[n].data?4:0);break;
+        case 1:msf(d->rx+2,d->lba-d->toc.track[n].start);d->rx[8]=(uint8_t)(d->toc.track[n].data?4:0);break;
         case 2:digits(d->rx+2,n+1);break;
         case 3:msf(d->rx+2,d->toc.leadout+150);break;
         case 4:digits(d->rx+2,1);digits(d->rx+4,d->toc.count);break;
         case 5:
             n=d->query_track-1u;
-            if(n<d->toc.count){msf(d->rx+2,d->toc.track[n].start+150);if(d->toc.track[n].data)d->rx[6]|=8;d->rx[8]=d->query_track&15u;}
+            if(n<d->toc.count){msf(d->rx+2,d->toc.track[n].start+150);if(d->toc.track[n].data)d->rx[6]|=8;d->rx[8]=d->query_track%10u;}
             break;
         default:break;
         }
