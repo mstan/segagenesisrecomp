@@ -13,7 +13,7 @@ static void advance_devices(SegaCDCoordinator *c)
     while(now>c->device_time) {
         uint64_t remaining=now-c->device_time;
         uint32_t delta=remaining>UINT32_MAX?UINT32_MAX:(uint32_t)remaining;
-        segacd_advance(c->devices,delta);c->device_time+=delta;
+        segacd_advance_audio(c->devices,delta,c->pcm_sink,c->pcm_user);c->device_time+=delta;
     }
     if(c->host_advance)c->host_advance(c->host_user,c->device_time);
 }
@@ -27,6 +27,11 @@ static uint64_t next_event_time(SegaCDCoordinator*c,uint64_t deadline)
     if(c->host_next_event) {
         uint64_t host=c->host_next_event(c->host_user);
         if(host>now && host<next)next=host;
+    }
+    uint64_t drive=segacd_cdd_next_event(&c->devices->drive);
+    if(drive!=UINT64_MAX && drive>c->devices->drive.cycles) {
+        uint64_t deadline_drive=now+(drive-c->devices->drive.cycles);
+        if(deadline_drive<next)next=deadline_drive;
     }
     return deadline<next?deadline:next;
 }
@@ -193,6 +198,8 @@ int segacd_coordinator_modules(SegaCDCoordinator *c,SegaCDCpu cpu,const M68kStep
 void segacd_coordinator_main_irq(SegaCDCoordinator*c,unsigned level){if(c && level<=7)c->main_irq=level;}
 void segacd_coordinator_host_clock(SegaCDCoordinator*c,void (*advance)(void *,uint64_t),uint64_t (*next)(void *))
 {if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;}}
+void segacd_coordinator_pcm_sink(SegaCDCoordinator*c,Rf5c164Sink sink,void*user)
+{if(c && !c->busy[0] && !c->busy[1]){c->pcm_sink=sink;c->pcm_user=user;}}
 static void idle_until(SegaCDCoordinator*c,uint64_t deadline)
 {
     uint64_t next=next_event_time(c,deadline);
@@ -203,6 +210,7 @@ static void idle_until(SegaCDCoordinator*c,uint64_t deadline)
 M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
 {
     if(!c || c->busy[0] || c->busy[1])return M68K_STEP_REENTERED;
+    if(c->devices->drive.unsupported_command){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
     M68kStepResult r=refresh_sub(c);if(r!=M68K_STEP_OK)return c->last_result=r;
     advance_devices(c);
     unsigned which=segacd_sub_runnable(c->devices) && c->time[1]<c->time[0]?1u:0u;

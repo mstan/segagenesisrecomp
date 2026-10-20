@@ -95,7 +95,7 @@ implementation/qualification.
 
 The original-program [module frontend](M68K_STEP_MODULES.md) now emits native
 steps, sorted descriptors and byte guards for a caller-selected load base and
-CFG roots, or all aligned words. Six synthetic tests pass MSVC, MinGW and Linux
+CFG roots, or all aligned words. Eight synthetic tests pass MSVC, MinGW and Linux
 ASan/UBSan. Independent loop expectations cover registers, stacks and exact
 cycles; replacement/extension mismatches leave CPU state untouched. This does
 not supply a correctness floor for code absent from the registered modules.
@@ -113,8 +113,9 @@ return/read, independent registers, timer wake during a pending memory WAIT,
 autovector frames/RTE, reset latching, host IRQ wake and precise all-STOP host
 deadlines. An absent module during WAIT halts the waiting CPU and retains the
 owner CPU's miss/PC in diagnostics; it cannot restart a partly executed
-instruction. These six tests pass MSVC `/W4 /WX`, MinGW strict warnings and
-Linux ASan/UBSan. PAL clocks, instruction/bus-cycle phase accuracy, reset during
+instruction. The coordinator/device/core-context targets use MSVC `/W4 /WX`;
+the portable suite also passes MinGW and Linux ASan/UBSan. PAL clocks,
+instruction/bus-cycle phase accuracy, reset during
 an in-flight wait, full machine serialization/netplay and original dual-program
 boot remain unqualified. This coordinator is not complete disc/device support.
 
@@ -127,3 +128,50 @@ Its first execution probe retired 2,000,000 original BIOS instructions and
 at `$000A1A/$000A1E` for VBlank (`$FFFE26`). It neither establishes complete boot
 nor qualifies the absent devices/audio. Private logs are under
 `build/bios-step-probe-{build,run}.log`; original-program C stays under build.
+
+The optional `bios_dual_probe` now connects both native original BIOS programs
+and main RAM handlers to the coordinator and real VDP raster events. It emits
+actual RAM/PRG/VRAM images and a PPM frame when stopping. The first run stopped
+on missing CDD `$FF8037`; after the initial CDD implementation it reaches missing
+CDC `$FF8005` after 865,419 main instructions and 13 sub instructions
+(`build/qa-bios-native-dual-2`). These are explicit missing-device faults, not
+successful boot. The probe still lacks disc/CDC/ASIC and Z80/audio rendering.
+Its DMA stall sink currently counts stalls without applying their timing.
+
+The upstream `rf5c164` chip takes explicit contexts and emits one stereo sample
+per 384 sub clocks. It covers channel/wave banks, odd-lane CPU mapping, wave
+RAM, active-low channel control, fractional addresses, loop markers, position
+reads, stereo envelope/panning, full 16-bit sum/limiter, and reset preserving
+external wave RAM. The sample kernel was extracted from the qualified campaign
+chip, without its game driver. Audio sinks are optional and host-owned; muted
+validation still advances chip state. Primary specification: Sega PCM manual
+sections 4.1-4.4 and 4.8-4.9, linked from the original manual index above.
+
+Independent qualification `build/qa-upstream-pcm-original/results.json` runs the
+owned original sound driver against the new upstream chip and an external
+reference chip (Genesis Plus GX `49c584764893b0505ac7f768a754f97330fa4392`, QA only).
+All nine music banks pass at 180 seconds each, plus the 28-second voice/stop
+sequence: zero driver-state differences, correlation at least 0.9999999528 and
+at most seven LSB of sample error. The permitted eight-LSB bound accounts for
+the documented per-channel multiply/truncation order. The script, input/source/
+DLL hashes and raw streams are retained privately. This qualifies sample/chip
+behavior under atomic 512-sample driver service, not hardware bus phase,
+analogue filtering, the future host resampler or complete original-game audio.
+
+The provisional `cdd` library implements gated host control, 10-nibble packets
+and complement checksums, bounded TOC metadata/queries, drive position,
+seek/read/pause/resume/scan/tray state, 75 Hz status/sector cadence and IRQ4.
+Fader register data-transfer busy is modeled; its audio gain/envelope is not.
+Mechanical/packet/fader delays and scan behavior remain provisional and need
+independent qualification. Unsupported commands are recorded and halt the
+coordinator; they are not silent successes. Media streams, CDC delivery and
+CD-DA are not connected yet. The register/protocol specification tests pass;
+that does not establish complete disc support.
+
+CDD sources: Sega Hardware Manual pp31-33 and the original authors'
+[CDD_inf v2.0 reverse-engineering notes](https://gendev.spritesmind.net/forum/viewtopic.php?t=2061),
+including the later correction that no-disc status is `$B`. Those protocol facts
+are used without copying/linking external emulator implementations. CDC work
+uses Sanyo's [LC8950/LC8951 Design Manual](https://bitsavers.org/pdf/sony/cdrom/CDU535-88_SLCD/LC8950_LC8951_Design_Manual.pdf),
+including appendix E's original-LC8951 differences. Its private source SHA256 is
+`afb95208d748c2ed9552b5ded3a86e57b831801ade2b25d32220173716383d0e`.

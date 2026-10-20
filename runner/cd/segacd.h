@@ -7,6 +7,8 @@
 #define SEGACD_H
 #include <stddef.h>
 #include <stdint.h>
+#include "rf5c164.h"
+#include "cdd.h"
 
 typedef enum {
     SEGACD_MAIN = 0, SEGACD_SUB = 1
@@ -29,6 +31,8 @@ enum {
  * portable format: field padding and byte order are host implementation details.
  */
 typedef struct SegaCD {
+    Rf5c164 pcm;
+    SegaCDDrive drive;
     uint8_t bios[SEGACD_BIOS_BYTES];
     uint8_t prg[SEGACD_PRG_BYTES];
     uint8_t word[SEGACD_WORD_BYTES];
@@ -47,6 +51,7 @@ int segacd_init(SegaCD *cd, const void *bios, size_t bytes);
 void segacd_reset(SegaCD *cd);
 /* Clock domain is the 12.5 MHz sub CPU; never wall-clock time. */
 void segacd_advance(SegaCD *cd, uint32_t sub_cycles);
+void segacd_advance_audio(SegaCD *cd,uint32_t sub_cycles,Rf5c164Sink,void *user);
 unsigned segacd_irq_level(const SegaCD *cd);
 void segacd_irq_ack(SegaCD *cd, unsigned level);
 int segacd_sub_runnable(const SegaCD *cd);

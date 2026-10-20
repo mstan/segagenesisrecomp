@@ -12,6 +12,8 @@ struct SegaCDCoordinator {
     SegaCDBusBinding binding[2];
     M68kStepBus host_main;
     void *host_user;
+    Rf5c164Sink pcm_sink;
+    void *pcm_user;
     /* Host Genesis devices (VDP/Z80) advance on the same emulated timeline,
      * including while either CPU waits for memory. IRQs may be queued here;
      * CPU execution/module mutation must not reenter from these callbacks. */
@@ -35,6 +37,7 @@ int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
                               const M68kStepModule *const *,size_t);
 void segacd_coordinator_main_irq(SegaCDCoordinator *,unsigned level);
 void segacd_coordinator_host_clock(SegaCDCoordinator *,void (*advance)(void *,uint64_t),uint64_t (*next_event)(void *));
+void segacd_coordinator_pcm_sink(SegaCDCoordinator *,Rf5c164Sink,void *user);
 /* Run until both elapsed CPU timelines reach the absolute sub-clock deadline.
  * Returns at an instruction boundary; STOP advances emulated device time.
  * MISS/faults are diagnostic stops, never skipped code. */

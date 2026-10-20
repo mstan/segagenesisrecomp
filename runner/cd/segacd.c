@@ -5,6 +5,8 @@ enum { RET = 1, DMNA = 2, MODE_1M = 4, PRIORITY = 24 };
 
 void segacd_reset(SegaCD *s)
 {
+    rf5c164_reset(&s->pcm);
+    segacd_cdd_reset(&s->drive);
     ++s->sub_reset_generation;
     s->main_control = s->write_protect = s->prg_bank = 0;
     s->memory_mode = RET; /* Power-on Word RAM belongs to the main CPU. */
@@ -30,8 +32,10 @@ int segacd_init(SegaCD *s, const void *bios, size_t bytes)
 
 int segacd_sub_runnable(const SegaCD *s) { return (s->main_control & 3) == 1; }
 
-void segacd_advance(SegaCD *s, uint32_t cycles)
+void segacd_advance_audio(SegaCD *s,uint32_t cycles,Rf5c164Sink sink,void *user)
 {
+    rf5c164_advance(&s->pcm,cycles,sink,user);
+    if(segacd_cdd_advance(&s->drive,cycles,NULL,NULL))s->irq_pending|=1u<<4;
     s->sub_cycles += cycles;
     if (s->timer_reload) {
         uint32_t period = ((uint32_t)s->timer_reload + 1) * SEGACD_TIMER_DIVISOR;
@@ -42,6 +46,7 @@ void segacd_advance(SegaCD *s, uint32_t cycles)
         }
     }
 }
+void segacd_advance(SegaCD *s,uint32_t cycles){segacd_advance_audio(s,cycles,NULL,NULL);}
 
 unsigned segacd_irq_level(const SegaCD *s)
 {
@@ -122,6 +127,7 @@ static unsigned font_word(const SegaCD *s, unsigned offset)
 
 static SegaCDResult reg_read(const SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t *v)
 {
+    if(cpu==SEGACD_SUB && r>=0x34 && r<0x4C){*v=segacd_cdd_read(&s->drive,r);return SEGACD_OK;}
     unsigned word;
     switch (r & ~1u) {
     case 0x00:
@@ -173,6 +179,10 @@ SegaCDResult segacd_read8(const SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t *v
         if (a >= 0xA12000u && a < 0xA12030u) return reg_read(s, cpu, a - 0xA12000u, v);
     } else {
         if (a < SEGACD_PRG_BYTES) { *v = s->prg[a]; return SEGACD_OK; }
+        if (a>=0xFF0000u && a<0xFF4000u) {
+            *v=(a&1u)?rf5c164_read(&s->pcm,(a-0xFF0000u)/2):0xFF;
+            return SEGACD_OK;
+        }
         if (a >= 0xFE0000u && a < 0xFE4000u) {
             *v = (a & 1u) ? s->backup[(a - 0xFE0000u) / 2] : 0xFF;
             return SEGACD_OK;
@@ -216,6 +226,7 @@ static void mode_write(SegaCD *s, SegaCDCpu cpu, uint8_t v)
 
 static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
 {
+    if(cpu==SEGACD_SUB && r>=0x34 && r<0x4C){segacd_cdd_write(&s->drive,r,v);return SEGACD_OK;}
     if (r == 0 || r == 1) {
         if (cpu == SEGACD_MAIN) {
             if (r == 0) { if ((v & 1) && (s->irq_mask & 4)) s->irq_pending |= 4; }
@@ -226,7 +237,10 @@ static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
                 s->main_control = v & 3;
             }
         } else if (r == 0) s->led = (uint16_t)((v & 3u) << 8);
-        else if (!(v & 1)) s->peripheral_ready = s->sub_cycles + SEGACD_SUB_CLOCK / 10;
+        else if (!(v & 1)) {
+            s->peripheral_ready = s->sub_cycles + SEGACD_SUB_CLOCK / 10;
+            rf5c164_reset(&s->pcm);segacd_cdd_reset(&s->drive);
+        }
         return SEGACD_OK;
     }
     if (r == 2) { if (cpu == SEGACD_MAIN) s->write_protect = v; return SEGACD_OK; }
@@ -282,6 +296,10 @@ SegaCDResult segacd_write8(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t v)
         }
         if (a >= 0xA12000u && a < 0xA12030u) return reg_write(s, cpu, a - 0xA12000u, v);
     } else {
+        if(a>=0xFF0000u && a<0xFF4000u) {
+            if(a&1u)rf5c164_write(&s->pcm,(a-0xFF0000u)/2,v);
+            return SEGACD_OK;
+        }
         if (a < SEGACD_PRG_BYTES) {
             if (a >= (unsigned)s->write_protect * 512u) s->prg[a] = v;
             return SEGACD_OK;
