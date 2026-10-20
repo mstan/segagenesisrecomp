@@ -85,20 +85,38 @@ signed division/remainder, divide by zero entering vector five and CHK bounds.
 The existing interpreter floor has the same unsigned-overflow fix; it reports
 zero division loudly because its function ABI cannot construct that frame.
 
-MSVC and MinGW pass all four current device/generated-operation/legacy-floor/
-CPU-context tests. Linux ASan/UBSan also runs these synthetic tests. The first
+MSVC and MinGW pass the device/generated-operation/legacy-floor/CPU-context
+tests. Linux ASan/UBSan also runs these synthetic tests. The first
 semantics API preserved all 35 legacy BIOS generation artifacts byte for byte;
 the later DIV fix intentionally changes generated division. No original BIOS
 execution is inferred from these tests. Group-zero exception frames, dynamic
-cycle timing, the complete step frontend, module registration/correctness floor
-and dual-CPU scheduler still need implementation/qualification.
+cycle timing and the general-system correctness floor still need
+implementation/qualification.
 
 The original-program [module frontend](M68K_STEP_MODULES.md) now emits native
 steps, sorted descriptors and byte guards for a caller-selected load base and
-CFG roots, or all aligned words. Five synthetic tests pass MSVC, MinGW and Linux
+CFG roots, or all aligned words. Six synthetic tests pass MSVC, MinGW and Linux
 ASan/UBSan. Independent loop expectations cover registers, stacks and exact
 cycles; replacement/extension mismatches leave CPU state untouched. This does
 not supply a correctness floor for code absent from the registered modules.
+
+`segacd_coordinator` now runs independent context-bound main/sub programs. It
+uses the NTSC master/7 and 12.5 MHz sub clock with a retained rational remainder;
+elapsed timelines are separate from retired instruction cycle counts. Word RAM
+WAIT runs the actual owner, preserving the waiting operation's existing bus
+effects. STOP advances emulated timers and host event sources, including while
+the other CPU waits. Reset pulses reload SUB vectors without erasing PRG.
+The host-clock callbacks are the integration seam for Genesis VDP/Z80 events.
+
+Generated synthetic main/sub programs qualify actual Word RAM grant/write/
+return/read, independent registers, timer wake during a pending memory WAIT,
+autovector frames/RTE, reset latching, host IRQ wake and precise all-STOP host
+deadlines. An absent module during WAIT halts the waiting CPU and retains the
+owner CPU's miss/PC in diagnostics; it cannot restart a partly executed
+instruction. These six tests pass MSVC `/W4 /WX`, MinGW strict warnings and
+Linux ASan/UBSan. PAL clocks, instruction/bus-cycle phase accuracy, reset during
+an in-flight wait, full machine serialization/netplay and original dual-program
+boot remain unqualified. This coordinator is not complete disc/device support.
 
 The private `bios_probe` is an optional main-only bring-up driver, not the game
 runner or a release target. It uses the actual Genesis bus/VDP and CD memory,

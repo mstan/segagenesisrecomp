@@ -55,9 +55,15 @@ static M68kStepBusResult fetch(void*u,uint32_t a,uint16_t*v)
     return M68K_BUS_FAULT;
 }
 static uint16_t dma_read(void*u,uint32_t a){uint16_t v=0;(void)u;if(read16(NULL,a,&v)!=M68K_BUS_OK){fprintf(stderr,"unimplemented DMA source %06X\n",a);exit(4);}return v;}
+static void dump(const char *dir,const char *name,const void *data,size_t bytes)
+{
+    char path[4096];int n=snprintf(path,sizeof path,"%s/%s",dir,name);
+    if(n<0 || (size_t)n>=sizeof path){fprintf(stderr,"dump path too long\n");exit(4);}
+    FILE*f=fopen(path,"wb");if(!f || fwrite(data,1,bytes,f)!=bytes || fclose(f)){fprintf(stderr,"dump failed: %s\n",name);exit(4);}
+}
 int main(int argc,char **argv)
 {
-    if(argc!=3){fprintf(stderr,"usage: segacd_bios_probe BIOS INSTRUCTION_LIMIT\n");return 2;}
+    if(argc!=3 && argc!=4){fprintf(stderr,"usage: segacd_bios_probe BIOS INSTRUCTION_LIMIT [PRIVATE_DUMP_DIRECTORY]\n");return 2;}
     FILE*f=fopen(argv[1],"rb");if(!f || fread(g_rom,1,SEGACD_BIOS_BYTES,f)!=SEGACD_BIOS_BYTES || fgetc(f)!=EOF || fclose(f))return 2;
     if(!segacd_init(&cd,g_rom,SEGACD_BIOS_BYTES) || !m68k_step_module_valid(&segacd_bios_module))return 2;
     gvdp_init(&vdp);gbus_init(&genesis,&vdp);vdp.bus_read=dma_read;
@@ -76,5 +82,6 @@ int main(int argc,char **argv)
            (unsigned)status,(unsigned long long)cpu.state.instructions,(unsigned long long)cpu.state.cycles,cpu.state.regs.PC,last_bus,last_write,cd.main_control,(unsigned long long)audio_events,(unsigned long long)stalls);
     for(unsigned long long i=n<63?0:n-63;i<=n && i<limit;++i)printf("%llu pc=%06X sr=%04X op=%04X\n",i,ring[i%64].pc,ring[i%64].sr,ring[i%64].op);
     for(unsigned r=0;r<8;++r)printf("D%u=%08X A%u=%08X\n",r,cpu.state.regs.D[r],r,cpu.state.regs.A[r]);
+    if(argc==4){dump(argv[3],"bios-main-ram.bin",g_ram,sizeof g_ram);dump(argv[3],"bios-sub-prg.bin",cd.prg,sizeof cd.prg);}
     return status==M68K_STEP_OK?0:3;
 }

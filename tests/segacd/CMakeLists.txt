@@ -52,7 +52,7 @@ if(NOT CMAKE_CROSSCOMPILING)
   set(module_dir "${CMAKE_CURRENT_BINARY_DIR}/module-fixtures")
   file(MAKE_DIRECTORY "${module_dir}")
   set(module_sources)
-  foreach(module IN ITEMS fixture_a fixture_b)
+  foreach(module IN ITEMS fixture_a fixture_b dual_main dual_sub)
     list(APPEND module_sources "${module_dir}/${module}_module.c" "${module_dir}/${module}.h")
     foreach(part RANGE 0 31)
       if(part LESS 10)
@@ -62,14 +62,31 @@ if(NOT CMAKE_CROSSCOMPILING)
     endforeach()
   endforeach()
   add_custom_command(OUTPUT ${module_sources}
-    COMMAND segacd_module_fixture "${module_dir}/a.bin" "${module_dir}/b.bin"
+    COMMAND segacd_module_fixture "${module_dir}/a.bin" "${module_dir}/b.bin" "${module_dir}/main.bin" "${module_dir}/sub.bin"
     COMMAND segacd_module_recompiler "${module_dir}/a.bin" "${module_dir}" fixture_a 0x1000 0x1000
     COMMAND segacd_module_recompiler "${module_dir}/b.bin" "${module_dir}" fixture_b 0x1000 --all
+    COMMAND segacd_module_recompiler "${module_dir}/main.bin" "${module_dir}" dual_main 0x1000 0x1000 0x1030
+    COMMAND segacd_module_recompiler "${module_dir}/sub.bin" "${module_dir}" dual_sub 0xF0 0xF0 0x100 0x120
     DEPENDS segacd_module_fixture segacd_module_recompiler VERBATIM)
-  add_executable(segacd_module_test module_test.c ${module_sources} ${step_runtime_sources})
+  add_library(segacd_generated_fixture_modules STATIC ${module_sources})
+  target_include_directories(segacd_generated_fixture_modules PUBLIC ${step_runtime_includes} "${module_dir}")
+  target_compile_features(segacd_generated_fixture_modules PRIVATE c_std_11)
+  add_executable(segacd_module_test module_test.c ${step_runtime_sources})
+  target_link_libraries(segacd_module_test PRIVATE segacd_generated_fixture_modules)
   target_include_directories(segacd_module_test PRIVATE ${step_runtime_includes} "${module_dir}")
   target_compile_features(segacd_module_test PRIVATE c_std_11)
   add_test(NAME segacd_module COMMAND segacd_module_test "${module_dir}/a.bin" "${module_dir}/b.bin")
+  add_executable(segacd_coordinator_test coordinator_test.c ${step_runtime_sources}
+    ../../runner/cd/segacd.c ../../runner/cd/segacd_coordinator.c)
+  target_include_directories(segacd_coordinator_test PRIVATE ../../runner/cd)
+  target_link_libraries(segacd_coordinator_test PRIVATE segacd_generated_fixture_modules)
+  target_compile_features(segacd_coordinator_test PRIVATE c_std_11)
+  if(MSVC)
+    target_compile_options(segacd_coordinator_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_coordinator_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_test(NAME segacd_coordinator COMMAND segacd_coordinator_test "${module_dir}/main.bin" "${module_dir}/sub.bin")
   add_subdirectory("${engine_root}/external/m68k-recomp-core/tests/step" "core-step")
 
   # Deliberately opt-in private-input bring-up, outside the synthetic CTest set.
