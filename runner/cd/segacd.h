@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include "rf5c164.h"
 #include "cdd.h"
+#include "cdc.h"
 
 typedef enum {
     SEGACD_MAIN = 0, SEGACD_SUB = 1
@@ -19,6 +20,19 @@ typedef enum {
      * A denied access never reads/writes the other processor's memory. */
     SEGACD_WAIT = 2, SEGACD_ADDRESS_ERROR = 3
 } SegaCDResult;
+
+/* Host media handles and sinks stay outside deterministic device state. The
+ * raw audio callback is a timed CD-DA sector event, not a host resampler. */
+typedef int (*SegaCDReadSector)(void *,int32_t lba,uint8_t raw[2352]);
+typedef void (*SegaCDCddaSector)(void *,uint64_t sub_clock,int32_t lba,const uint8_t raw[2352]);
+typedef struct {
+    Rf5c164Sink pcm_sink;
+    void *pcm_user;
+    SegaCDReadSector read_sector;
+    void *media_user;
+    SegaCDCddaSector cdda_sector;
+    void *cdda_user;
+} SegaCDIO;
 
 enum {
     SEGACD_BIOS_BYTES = 0x20000, SEGACD_PRG_BYTES = 0x80000,
@@ -33,6 +47,12 @@ enum {
 typedef struct SegaCD {
     Rf5c164 pcm;
     SegaCDDrive drive;
+    SegaCDCdc cdc;
+    uint8_t cdc_destination;
+    uint16_t cdc_dma_address;
+    uint8_t media_error; /* 1=missing/read failure; 2=unsupported sector mode. */
+    int32_t media_error_lba;
+    uint64_t media_sectors,cdda_sectors;
     uint8_t bios[SEGACD_BIOS_BYTES];
     uint8_t prg[SEGACD_PRG_BYTES];
     uint8_t word[SEGACD_WORD_BYTES];
@@ -52,12 +72,13 @@ void segacd_reset(SegaCD *cd);
 /* Clock domain is the 12.5 MHz sub CPU; never wall-clock time. */
 void segacd_advance(SegaCD *cd, uint32_t sub_cycles);
 void segacd_advance_audio(SegaCD *cd,uint32_t sub_cycles,Rf5c164Sink,void *user);
+void segacd_advance_io(SegaCD *,uint32_t sub_cycles,const SegaCDIO *);
 unsigned segacd_irq_level(const SegaCD *cd);
 void segacd_irq_ack(SegaCD *cd, unsigned level);
 int segacd_sub_runnable(const SegaCD *cd);
 
-SegaCDResult segacd_read8(const SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint8_t *value);
-SegaCDResult segacd_read16(const SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint16_t *value);
+SegaCDResult segacd_read8(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint8_t *value);
+SegaCDResult segacd_read16(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint16_t *value);
 SegaCDResult segacd_write8(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint8_t value);
 SegaCDResult segacd_write16(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint16_t value);
 

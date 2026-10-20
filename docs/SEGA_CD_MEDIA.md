@@ -1,0 +1,66 @@
+# Sega CD raw media
+
+The general backend uses owned BINARY BIN/CUE images. Conversion preserves raw
+2352-byte sectors; it does not extract game files or adapt game content. Owned
+images, BIOS files, generated code and captures belong outside source control.
+
+```text
+python tools/segacd/disc_image.py "owned-disc.cue" "private/disc.sgcd"
+segacd_disc_probe "private/disc.sgcd"
+```
+
+The converter accepts consecutive tracks 01–99 with MODE1/2352 or AUDIO, quoted
+BINARY files, INDEX 00/01 and audio PREGAP/POSTGAP. Shared and separate BIN files
+are supported. Unsupported formats, flags, indexes or virtual data gaps fail
+explicitly. Stored INDEX 00 audio remains byte-identical; virtual audio gaps
+become zero samples. Track 1 INDEX 01 is LBA 0; its represented lead-in starts
+at LBA -150. Unstored lead-in bytes are zero placeholders, not physical lead-in
+subchannel data. No subchannel or pre-emphasis implementation is claimed.
+
+Publication uses a temporary file on the output volume, flush/fsync and atomic
+create-if-absent. Existing output requires explicit `--overwrite`; failed
+conversion preserves it. Output cannot replace an input CUE/BIN path.
+
+SGCDIMG1 uses explicit little-endian fields, never a dumped host C structure.
+The file consists of a 96-byte header, one 32-byte entry per track, then raw
+sectors from LBA -150 up to but excluding leadout.
+
+| Header offset | Type | Value |
+| --- | --- | --- |
+| 0 | 8 bytes | `SGCDIMG` followed by zero |
+| 8 | u32 | Version 1 |
+| 12 | u32 | Header plus track-table size |
+| 16 | u32 | Sector size 2352 |
+| 20 | u32 | Track count 1–99 |
+| 24 | i32 | First LBA, -150 |
+| 28 | i32 | Leadout LBA, 1–449849 |
+| 32 | u64 | Payload offset, identical to offset 12's value |
+| 40 | u64 | Payload bytes, `(leadout + 150) * 2352` |
+| 48 | 32 bytes | SHA-256 of the complete raw payload |
+| 80 | 16 bytes | Reserved, zero |
+
+Each track entry holds u32 track number, u32 kind (0 audio, 1 data), signed
+32-bit INDEX 00, INDEX 01 and exclusive end LBAs, then 12 reserved zero bytes.
+The first entry begins at INDEX 00 -150 and INDEX 01 0. Each following INDEX 00
+equals the preceding exclusive end. INDEX 01 precedes the end; the last end
+equals leadout. Leadout plus 150 must fit two-digit MSF, through 99:59:74.
+
+`segacd_image_open` verifies format, exact file length, all bounds/reserved
+fields, track sequence, TOC and whole-payload SHA-256. It owns its file handle
+outside simulation state. Sector reads reject out-of-range LBAs and preserve
+the caller's buffer on I/O failure. Mounted files must remain immutable; a
+payload hash checked at open is not protection against later external writes.
+
+The pure sector validator checks MODE1 sync, mode and EDC using
+[ECMA-130 sections 14.1–14.3](https://ecma-international.org/wp-content/uploads/ECMA-130_2nd_edition_june_1996.pdf).
+It does not validate or repair ECC, compare header MSF with an LBA, or claim
+support for Mode 2 data. The controller receives a real integrity result.
+Bad EDC remains an error status; unsupported data modes and media-read failures
+produce explicit diagnostics. Timed raw CD-DA sector events are a host mixing
+seam; resampling, fader/de-emphasis and actual audio output remain pending.
+
+The standalone synthetic CTest suite includes malformed headers, arithmetic
+bounds, integrity failures, independent known SHA/EDC fixtures, track boundaries,
+buffer preservation and converter publication failures. `segacd_disc_probe`
+additionally reads every sector of a caller-supplied image and checks all
+program-data MODE1 EDCs. It requires no game-specific filenames or adapters.

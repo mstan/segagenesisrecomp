@@ -7,7 +7,7 @@ original CD programs. Neither branch is merged into master by this work.
 
 The new `runner/cd` device library is game-independent portable C. It takes an
 owned BIOS; BIOS, disc images, generated program C and captures stay private.
-The original-program runner and AOT module registration will use these devices.
+The explicit-PC dual-CPU coordinator and guarded AOT modules use these devices.
 No external emulator implementation is linked/copied into production.
 
 The initial memory/control implementation covers BIOS, four PRG windows and
@@ -61,8 +61,8 @@ hardware observations.
 The existing original 68000 recompiler also accepts the owned US v1.10 BIOS
 without relaxing cartridge/header validation. Its private generation probe
 finds 436 functions and reports 17 dispatch sites with zero unsupported sites.
-That establishes code generation only; no original BIOS/disc execution is yet
-claimed. The qualified BIOS SHA256 is
+That older function-generation check establishes generation only. The later
+instruction-module probes below execute original BIOS programs. The BIOS SHA256 is
 `807384678ef259494d943eddb6954dfc7069693d0dde0c424e2028488d88e81a`.
 
 The next execution seam uses explicit guest PCs and instruction-sized AOT
@@ -131,12 +131,18 @@ nor qualifies the absent devices/audio. Private logs are under
 
 The optional `bios_dual_probe` now connects both native original BIOS programs
 and main RAM handlers to the coordinator and real VDP raster events. It emits
-actual RAM/PRG/VRAM images and a PPM frame when stopping. The first run stopped
-on missing CDD `$FF8037`; after the initial CDD implementation it reaches missing
-CDC `$FF8005` after 865,419 main instructions and 13 sub instructions
-(`build/qa-bios-native-dual-2`). These are explicit missing-device faults, not
-successful boot. The probe still lacks disc/CDC/ASIC and Z80/audio rendering.
-Its DMA stall sink currently counts stalls without applying their timing.
+actual RAM/PRG/VRAM images and a PPM frame when stopping. Its latest no-disc run
+(`build/qa-bios-native-dual-8`) reaches 60,000,006 sub clocks, retiring 2,939,153
+main instructions and 3,718,427 sub instructions without a missing operation or
+device fault. The actual frame shows the US v1.10 BIOS Earth/copyright screen.
+Registered catalogs cover all aligned words in the 128 KiB BIOS, the initial
+64 KiB resident sub program, main RAM jump handlers, and the handlers the sub
+BIOS writes to RAM. Catalog bytes are never injected into runtime memory;
+the original programs write memory and every operation guards its current bytes.
+Scanning data as candidate opcodes does not establish executable-code coverage.
+Disc boot, Z80/audio output and ASIC work remain incomplete. Its DMA stall sink
+counts stalls without applying timing; Word RAM VDP DMA's documented delayed
+read also remains pending. This is a diagnostic, not a release consumer.
 
 The upstream `rf5c164` chip takes explicit contexts and emits one stereo sample
 per 384 sub clocks. It covers channel/wave banks, odd-lane CPU mapping, wave
@@ -164,9 +170,9 @@ seek/read/pause/resume/scan/tray state, 75 Hz status/sector cadence and IRQ4.
 Fader register data-transfer busy is modeled; its audio gain/envelope is not.
 Mechanical/packet/fader delays and scan behavior remain provisional and need
 independent qualification. Unsupported commands are recorded and halt the
-coordinator; they are not silent successes. Media streams, CDC delivery and
-CD-DA are not connected yet. The register/protocol specification tests pass;
-that does not establish complete disc support.
+coordinator; they are not silent successes. Raw media now feeds the CDC and a
+timed CD-DA sector callback; the audio resampler/fader/output is not implemented.
+The register/protocol specification tests do not establish complete disc support.
 
 CDD sources: Sega Hardware Manual pp31-33 and the original authors'
 [CDD_inf v2.0 reverse-engineering notes](https://gendev.spritesmind.net/forum/viewtopic.php?t=2061),
@@ -183,3 +189,25 @@ the same architectural expectations; a separate Unicorn original-MC68000
 probe agrees for all three byte-stack/alias cases
 (`build/qa-stack-byte-unicorn.json`). Broader cartridge/default-path regression
 qualification remains necessary before any merge.
+
+The `cdc` layer implements original LC8951 address-register sequencing,
+active-low interrupt flags/masks, a 16 KiB sector ring, header/subheader/status
+reads, a two-byte host FIFO and CPU-specific gate-array host reads. DAC advances
+on FIFO loads; DBC counts actual host byte reads and DTEI occurs at final
+consumption. Gate-array EDT clears on destination selection. DMA destinations
+still reject transfer starts explicitly; their arbitration/timing is not guessed.
+Decoder IRQ pulses use appendix E's approximate 2750/1800/1500 us profiles,
+converted to sub clocks. Exact serial input, decoder pipeline delays and ECC
+correction are unqualified. A bad EDC is reported, never silently repaired.
+
+The [media format and converter](SEGA_CD_MEDIA.md) preserve raw program/audio
+sectors and stored/virtual audio pregaps. The portable reader validates exact
+bounds, TOC and the entire payload SHA-256 before mounting. The owned 35-track
+image was independently compared against all source files and all 255,976
+payload sectors, including 5,126 stored INDEX 00 sectors and 150 lead-in sectors.
+The C reader separately read every sector; all 59,261 MODE1 program sectors
+passed ECMA-130 EDC. These are media identity/integrity checks, not gameplay.
+`segacd_advance_io` delivers sectors on the CDD's emulated event boundaries.
+Synthetic tests qualify long/split advance equivalence, CDC data/EDC delivery,
+timed raw audio events, finite decoder pulses and read-failure diagnostics.
+Missing/truncated media halts the coordinator instead of supplying zero sectors.

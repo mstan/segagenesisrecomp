@@ -24,7 +24,7 @@ int main(void)
     CHECK(segacd_read16(s,SEGACD_MAIN,1,&value)==SEGACD_ADDRESS_ERROR && value==0xDEAD);
     CHECK(segacd_write16(s,SEGACD_MAIN,0x20001,0)==SEGACD_ADDRESS_ERROR);
     CHECK(segacd_read16(s,SEGACD_MAIN,0x40000,&value)==SEGACD_UNMAPPED);
-    CHECK(segacd_read16(s,SEGACD_SUB,0xFF8004,&value)==SEGACD_UNMAPPED); /* CDC not implemented yet */
+    CHECK(segacd_read16(s,SEGACD_SUB,0xFF8004,&value)==SEGACD_OK && value==0); /* CDC mode/address at reset */
     CHECK(!segacd_sub_runnable(s));
     /* All four main-CPU PRG windows select distinct sub-CPU storage. */
     for (unsigned bank=0;bank<4;++bank) {

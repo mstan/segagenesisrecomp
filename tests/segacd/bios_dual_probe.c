@@ -1,12 +1,16 @@
 /* Private-input native dual-program bring-up. Real main bus/VDP/CD memories
- * and coordinator; no disc/CDC/CDD/PCM/ASIC or Z80/audio rendering yet.
+ * and coordinator; no disc/ASIC or Z80/audio rendering yet.
  * Missing devices/code halt loudly. This diagnostic is never a game release. */
 #include "segacd_bios.h"
 #include "segacd_main_ram.h"
 #include "segacd_sub.h"
+#ifdef SEGACD_BIOS_PROBE_SUB_PATCH
+#include "segacd_sub_patch.h"
+#endif
 #include "segacd_coordinator.h"
 #include "genesis_bus.h"
 #include "genesis_dac.h"
+#include "disc_image.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +21,8 @@ static SegaCD cd;static SegaCDCoordinator coordinator;static GenesisBus genesis;
 static uint64_t line_number,audio_events,dma_stalls;
 static unsigned irq4,irq6,frame_width=320;
 static uint32_t pixels[240][GVDP_MAX_WIDTH];
+static int media_read(void *image,int32_t lba,uint8_t raw[2352])
+{return segacd_image_read(image,lba,raw);}
 uint32_t machine_z80_stamp(void){return (uint32_t)((line_number%262)*3420);}
 uint32_t machine_z80_pc(void){return 0;}
 void snd_trace_68k_write(uint16_t o,uint8_t a,uint8_t b,int req,int reset){(void)o;(void)a;(void)b;(void)req;(void)reset;}
@@ -73,21 +79,37 @@ static void dump_frame(const char*dir)
 }
 int main(int argc,char**argv)
 {
-    if(argc!=4){fprintf(stderr,"usage: segacd_bios_dual_probe BIOS SUB_CLOCK_DEADLINE PRIVATE_DUMP_DIRECTORY\n");return 2;}
+    if(argc!=4 && argc!=5){fprintf(stderr,"usage: segacd_bios_dual_probe BIOS SUB_CLOCK_DEADLINE PRIVATE_DUMP_DIRECTORY [IMAGE.sgcd]\n");return 2;}
     FILE*f=fopen(argv[1],"rb");if(!f || fread(g_rom,1,SEGACD_BIOS_BYTES,f)!=SEGACD_BIOS_BYTES || fgetc(f)!=EOF || fclose(f))return 2;
     if(!segacd_init(&cd,g_rom,SEGACD_BIOS_BYTES))return 2;
     gvdp_init(&vdp);gbus_init(&genesis,&vdp);vdp.bus_read=dma_read;
     M68kStepBus host={read8,read16,write8,write16,fetch,0,ack,0};if(!segacd_coordinator_init(&coordinator,&cd,&host,NULL))return 2;
+    SegaCDImage *image=NULL;
+    if(argc==5) {
+        char error[256];image=segacd_image_open(argv[4],error,sizeof error);
+        if(!image){fprintf(stderr,"media: %s\n",error);return 2;}
+        if(!segacd_cdd_mount(&cd.drive,segacd_image_toc(image))){segacd_image_close(image);return 2;}
+        segacd_coordinator_media(&coordinator,media_read,image,NULL,NULL);
+    }
     const M68kStepModule*main_modules[]={&segacd_bios_module,&segacd_main_ram_module};
-    const M68kStepModule*sub_modules[]={&segacd_sub_module};
-    if(!segacd_coordinator_modules(&coordinator,SEGACD_MAIN,main_modules,2) || !segacd_coordinator_modules(&coordinator,SEGACD_SUB,sub_modules,1))return 2;
+    const M68kStepModule*sub_modules[]={&segacd_sub_module
+#ifdef SEGACD_BIOS_PROBE_SUB_PATCH
+        ,&segacd_sub_patch_module
+#endif
+    };
+    if(!segacd_coordinator_modules(&coordinator,SEGACD_MAIN,main_modules,2) || !segacd_coordinator_modules(&coordinator,SEGACD_SUB,sub_modules,sizeof sub_modules/sizeof *sub_modules))return 2;
     segacd_coordinator_host_clock(&coordinator,advance_host,next_host_event);
     uint64_t deadline=strtoull(argv[2],NULL,0),steps=0;
     struct {uint32_t main,sub;uint64_t time;} ring[64]={{0}};M68kStepResult status=M68K_STEP_OK;
+    unsigned mask_before=cd.irq_mask,wp_before=cd.write_protect,control_before=cd.drive.control,event_count=0;
     while(coordinator.device_time<deadline && steps<100000000u) {
         ring[steps%64].main=coordinator.cpu[0].state.regs.PC;ring[steps%64].sub=coordinator.cpu[1].state.regs.PC;ring[steps%64].time=coordinator.device_time;
         g_audio_cycle_counter=(uint32_t)coordinator.cpu[0].state.cycles;
         status=segacd_coordinator_step(&coordinator);++steps;if(status!=M68K_STEP_OK)break;
+        if(mask_before!=cd.irq_mask || wp_before!=cd.write_protect || control_before!=cd.drive.control) {
+            if(event_count++<64)printf("device event time=%llu main=%06X sub=%06X mask=%02X wp=%02X drive_control=%02X\n",(unsigned long long)coordinator.device_time,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc,cd.irq_mask,cd.write_protect,cd.drive.control);
+            mask_before=cd.irq_mask;wp_before=cd.write_protect;control_before=cd.drive.control;
+        }
     }
     printf("native dual-program probe: status=%u cpu=%u steps=%llu device_time=%llu lines=%llu waits=%llu wait_cpu=%u wait_result=%u\n",
         (unsigned)status,coordinator.last_cpu,(unsigned long long)steps,(unsigned long long)coordinator.device_time,(unsigned long long)line_number,(unsigned long long)coordinator.waits,coordinator.wait_cpu,(unsigned)coordinator.wait_result);
@@ -97,7 +119,11 @@ int main(int argc,char**argv)
         for(unsigned r=0;r<8;++r)printf("cpu%u D%u=%08X A%u=%08X\n",which,r,s->regs.D[r],r,s->regs.A[r]);
     }
     for(uint64_t n=steps>64?steps-64:0;n<steps;++n)printf("%llu time=%llu main=%06X sub=%06X\n",(unsigned long long)n,(unsigned long long)ring[n%64].time,ring[n%64].main,ring[n%64].sub);
-    printf("sub_control=%u audio_events=%llu dma_stalls=%llu (Z80/audio/disc devices absent)\n",cd.main_control,(unsigned long long)audio_events,(unsigned long long)dma_stalls);
+    printf("sub_control=%u audio_events=%llu dma_stalls=%llu media_sectors=%llu cdc_sectors=%llu cdda_sectors=%llu media_error=%u lba=%d (Z80/audio output/ASIC absent)\n",cd.main_control,(unsigned long long)audio_events,(unsigned long long)dma_stalls,(unsigned long long)cd.media_sectors,(unsigned long long)cd.cdc.sectors,(unsigned long long)cd.cdda_sectors,cd.media_error,cd.media_error_lba);
+    printf("gate mask=%02X pending=%02X flags=%02X/%02X wp=%02X events=%u; drive status=%u control=%02X command=%u unsupported=%u lba=%d frames=%llu rx=",cd.irq_mask,cd.irq_pending,cd.flags[0],cd.flags[1],cd.write_protect,event_count,cd.drive.status,cd.drive.control,cd.drive.command_pending,cd.drive.unsupported_command,cd.drive.lba,(unsigned long long)cd.drive.frames);
+    for(unsigned n=0;n<10;++n)printf("%X",cd.drive.rx[n]);printf(" tx=");
+    for(unsigned n=0;n<10;++n)printf("%X",cd.drive.tx[n]);printf("\n");
     dump(argv[3],"main-ram.bin",g_ram,sizeof g_ram);dump(argv[3],"sub-prg.bin",cd.prg,sizeof cd.prg);dump(argv[3],"word-ram.bin",cd.word,sizeof cd.word);dump(argv[3],"vram.bin",vdp.vram,sizeof vdp.vram);dump_frame(argv[3]);
+    segacd_image_close(image);
     return status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;
 }

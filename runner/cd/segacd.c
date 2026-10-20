@@ -1,4 +1,5 @@
 #include "segacd.h"
+#include "sector.h"
 #include <string.h>
 
 enum { RET = 1, DMNA = 2, MODE_1M = 4, PRIORITY = 24 };
@@ -7,6 +8,8 @@ void segacd_reset(SegaCD *s)
 {
     rf5c164_reset(&s->pcm);
     segacd_cdd_reset(&s->drive);
+    segacd_cdc_reset(&s->cdc);s->cdc_destination=0;s->cdc_dma_address=0;
+    s->media_error=0;s->media_error_lba=0;s->media_sectors=s->cdda_sectors=0;
     ++s->sub_reset_generation;
     s->main_control = s->write_protect = s->prg_bank = 0;
     s->memory_mode = RET; /* Power-on Word RAM belongs to the main CPU. */
@@ -32,10 +35,46 @@ int segacd_init(SegaCD *s, const void *bios, size_t bytes)
 
 int segacd_sub_runnable(const SegaCD *s) { return (s->main_control & 3) == 1; }
 
-void segacd_advance_audio(SegaCD *s,uint32_t cycles,Rf5c164Sink sink,void *user)
+typedef struct {SegaCD *cd;const SegaCDIO *io;} SectorDelivery;
+static void deliver_sector(void *user,int32_t lba)
 {
-    rf5c164_advance(&s->pcm,cycles,sink,user);
-    if(segacd_cdd_advance(&s->drive,cycles,NULL,NULL))s->irq_pending|=1u<<4;
+    SectorDelivery *delivery=user;SegaCD *s=delivery->cd;const SegaCDIO *io=delivery->io;
+    uint8_t raw[2352];
+    if(s->media_error)return;
+    if(!io || !io->read_sector || !io->read_sector(io->media_user,lba,raw)) {
+        s->media_error=1;s->media_error_lba=lba;return;
+    }
+    ++s->media_sectors;
+    unsigned track=0;
+    while(track+1<s->drive.toc.count && lba>=s->drive.toc.track[track+1].index00)++track;
+    if(s->drive.toc.track[track].data) {
+        /* A stored data pregap may contain mode-zero or missing-sync blocks;
+         * supported program sectors are never labeled valid without EDC. */
+        if(lba<s->drive.toc.track[track].start)return;
+        SegaCDSectorResult status=segacd_sector_validate(raw);
+        if(status==SEGACD_SECTOR_UNSUPPORTED_MODE) {
+            s->media_error=2;s->media_error_lba=lba;return;
+        }
+        segacd_cdc_sector(&s->cdc,raw,status==SEGACD_SECTOR_MODE1_OK);
+    } else {
+        ++s->cdda_sectors;
+        if(io && io->cdda_sector)io->cdda_sector(io->cdda_user,s->drive.cycles,lba,raw);
+    }
+}
+void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
+{
+    uint32_t remaining=cycles;SectorDelivery delivery={s,io};
+    while(remaining) {
+        uint32_t delta=remaining;
+        uint64_t event=segacd_cdd_next_event(&s->drive);
+        if(event>=s->drive.cycles && event-s->drive.cycles<delta)delta=(uint32_t)(event-s->drive.cycles);
+        /* Age the preceding decoder pulse before delivering a new sector at
+         * its actual CDD event boundary, even during a long stopped interval. */
+        rf5c164_advance(&s->pcm,delta,io?io->pcm_sink:NULL,io?io->pcm_user:NULL);
+        segacd_cdc_advance(&s->cdc,delta);
+        if(segacd_cdd_advance(&s->drive,delta,deliver_sector,&delivery))s->irq_pending|=1u<<4;
+        remaining-=delta;
+    }
     s->sub_cycles += cycles;
     if (s->timer_reload) {
         uint32_t period = ((uint32_t)s->timer_reload + 1) * SEGACD_TIMER_DIVISOR;
@@ -46,11 +85,15 @@ void segacd_advance_audio(SegaCD *s,uint32_t cycles,Rf5c164Sink sink,void *user)
         }
     }
 }
+void segacd_advance_audio(SegaCD *s,uint32_t cycles,Rf5c164Sink sink,void *user)
+{
+    SegaCDIO io={0};io.pcm_sink=sink;io.pcm_user=user;segacd_advance_io(s,cycles,&io);
+}
 void segacd_advance(SegaCD *s,uint32_t cycles){segacd_advance_audio(s,cycles,NULL,NULL);}
 
 unsigned segacd_irq_level(const SegaCD *s)
 {
-    unsigned pending = s->irq_mask & s->irq_pending;
+    unsigned pending = s->irq_mask & (s->irq_pending | (segacd_cdc_irq(&s->cdc)?32u:0u));
     for (unsigned level = 6; level; --level)
         if (pending & (1u << level)) return level;
     return 0;
@@ -125,11 +168,25 @@ static unsigned font_word(const SegaCD *s, unsigned offset)
     return out;
 }
 
-static SegaCDResult reg_read(const SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t *v)
+static unsigned cdc_mode(const SegaCD*s,SegaCDCpu cpu)
+{
+    return ((unsigned)s->cdc_destination<<8)|(s->cdc.transfer_end?0x8000u:0)|
+        (s->cdc.fifo_count==2?0x4000u:0)|(cpu==SEGACD_SUB && s->cdc.fifo_count==1?0x2000u:0)|
+        (cpu==SEGACD_SUB?s->cdc.ar:0);
+}
+static uint16_t cdc_host_word(SegaCD*s,SegaCDCpu cpu)
+{
+    uint8_t high,low;
+    if(s->cdc_destination!=(cpu==SEGACD_MAIN?2u:3u) || s->cdc.fifo_count<2)return 0xFFFF;
+    if(!segacd_cdc_host_read(&s->cdc,&high) || !segacd_cdc_host_read(&s->cdc,&low))return 0xFFFF;
+    return (uint16_t)(((unsigned)high<<8)|low);
+}
+static SegaCDResult reg_read(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t *v)
 {
     if(cpu==SEGACD_SUB && r>=0x34 && r<0x4C){*v=segacd_cdd_read(&s->drive,r);return SEGACD_OK;}
     unsigned word;
     switch (r & ~1u) {
+    case 0x04:word=cdc_mode(s,cpu);break;
     case 0x00:
         word = cpu == SEGACD_MAIN ?
             ((s->irq_mask & 4) ? 0x8000u : 0) | ((s->irq_pending & 4) ? 0x100u : 0) | s->main_control :
@@ -141,8 +198,17 @@ static SegaCDResult reg_read(const SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t
         else word &= 0xFF1Fu;
         break;
     case 0x06:
-        if (cpu != SEGACD_MAIN) return SEGACD_UNMAPPED;
+        if(cpu==SEGACD_SUB){*v=(r&1u)?segacd_cdc_read(&s->cdc):0;return SEGACD_OK;}
         word = s->hint_vector; break;
+    case 0x08:
+        /* The physical host data port requires a word access. A byte peek
+         * does not consume half a sector or duplicate a FIFO transfer. */
+        if(s->cdc.fifo_count==2)word=((unsigned)s->cdc.fifo[s->cdc.fifo_head]<<8)|s->cdc.fifo[s->cdc.fifo_head^1u];
+        else word=0xFFFF;
+        break;
+    case 0x0A:
+        if(cpu==SEGACD_MAIN)return SEGACD_UNMAPPED;
+        word=0;break; /* DMA address is write only. */
     case 0x0C: word = stopwatch(s); break;
     case 0x0E: word = ((unsigned)s->flags[0] << 8) | s->flags[1]; break;
     default:
@@ -162,7 +228,7 @@ static SegaCDResult reg_read(const SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t
     return SEGACD_OK;
 }
 
-SegaCDResult segacd_read8(const SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t *v)
+SegaCDResult segacd_read8(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t *v)
 {
     a &= 0xFFFFFFu;
     if (cpu == SEGACD_MAIN) {
@@ -196,9 +262,13 @@ SegaCDResult segacd_read8(const SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t *v
     return SEGACD_OK;
 }
 
-SegaCDResult segacd_read16(const SegaCD *s, SegaCDCpu cpu, uint32_t a, uint16_t *v)
+SegaCDResult segacd_read16(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint16_t *v)
 {
     if (a & 1u) return SEGACD_ADDRESS_ERROR;
+    a&=0xFFFFFFu;
+    if((cpu==SEGACD_MAIN && a==0xA12008u) || (cpu==SEGACD_SUB && a==0xFF8008u)) {
+        *v=cdc_host_word(s,cpu);return SEGACD_OK;
+    }
     uint8_t hi, lo;
     SegaCDResult result = segacd_read8(s, cpu, a, &hi);
     if (result != SEGACD_OK) return result;
@@ -227,6 +297,26 @@ static void mode_write(SegaCD *s, SegaCDCpu cpu, uint8_t v)
 static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
 {
     if(cpu==SEGACD_SUB && r>=0x34 && r<0x4C){segacd_cdd_write(&s->drive,r,v);return SEGACD_OK;}
+    if(r==4 || r==5) {
+        if(cpu==SEGACD_SUB) {
+            if(r==4){s->cdc_destination=v&7u;s->cdc.transfer_end=0;if(!s->cdc_destination)s->cdc_dma_address=0;}
+            else segacd_cdc_address(&s->cdc,v);
+        }
+        return SEGACD_OK; /* Main CDC mode is read only. */
+    }
+    if(cpu==SEGACD_SUB && (r==6 || r==7)) {
+        if(r==7) {
+            if(s->cdc.ar==6 && (s->cdc.ifctrl&2u) && s->cdc_destination>=4)
+                return SEGACD_UNMAPPED; /* DMA destinations are not connected yet. */
+            segacd_cdc_write(&s->cdc,v);
+        }
+        return SEGACD_OK;
+    }
+    if(r==8 || r==9)return SEGACD_OK; /* Host data is read only. */
+    if(cpu==SEGACD_SUB && (r==10 || r==11)) {
+        s->cdc_dma_address=(r&1u)?(uint16_t)((s->cdc_dma_address&0xFF00u)|v):
+            (uint16_t)((s->cdc_dma_address&255u)|((unsigned)v<<8));return SEGACD_OK;
+    }
     if (r == 0 || r == 1) {
         if (cpu == SEGACD_MAIN) {
             if (r == 0) { if ((v & 1) && (s->irq_mask & 4)) s->irq_pending |= 4; }
@@ -239,7 +329,7 @@ static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
         } else if (r == 0) s->led = (uint16_t)((v & 3u) << 8);
         else if (!(v & 1)) {
             s->peripheral_ready = s->sub_cycles + SEGACD_SUB_CLOCK / 10;
-            rf5c164_reset(&s->pcm);segacd_cdd_reset(&s->drive);
+            rf5c164_reset(&s->pcm);segacd_cdd_reset(&s->drive);segacd_cdc_reset(&s->cdc);
         }
         return SEGACD_OK;
     }

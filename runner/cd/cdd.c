@@ -43,7 +43,7 @@ void segacd_cdd_reset(SegaCDDrive*d)
 void segacd_cdd_init(SegaCDDrive*d){memset(d,0,sizeof *d);segacd_cdd_reset(d);}
 int segacd_cdd_mount(SegaCDDrive*d,const SegaCDTOC*toc)
 {
-    if(!d || !toc || !toc->count || toc->count>99 || toc->leadout<=0 || toc->leadout>99*60*75-150 ||
+    if(!d || !toc || !toc->count || toc->count>99 || toc->leadout<=0 || toc->leadout>100*60*75-151 ||
        toc->track[0].start!=0 || toc->track[toc->count-1].end!=toc->leadout)return 0;
     for(unsigned n=0;n<toc->count;++n) {
         const SegaCDTrack*t=&toc->track[n];
