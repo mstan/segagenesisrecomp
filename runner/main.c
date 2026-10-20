@@ -2387,7 +2387,7 @@ int main(int argc, char *argv[])
                 char initial_rom[600] = "";
                 rom_cfg_read(rom_cfg_path, initial_rom, sizeof initial_rom);
                 char ltitle[200];
-                snprintf(ltitle, sizeof ltitle, "%s — Sega Genesis Launcher",
+                snprintf(ltitle, sizeof ltitle, "%s",
                          g_game_spec.display_name ? g_game_spec.display_name : "Genesis");
                 static char picked[600] = "";
                 int lr = 2;   /* default UNAVAILABLE -> native picker below */
@@ -2594,22 +2594,10 @@ int main(int argc, char *argv[])
     }
     gamepad_init_players(g_game_spec.logical_players);
 
-    /* Build-type-aware window title so the RECOMPILED (native) window is
-     * visually distinguishable from the INTERPRETER (oracle) window when both
-     * run side by side — otherwise both show the bare game name and can't be
-     * told apart. */
-    const char *build_tag = "RECOMPILED - native";
-    char window_title[256];
-    {
-        const char *base = g_game_spec.display_name ? g_game_spec.display_name
-                                                    : "Sonic the Hedgehog";
-        if (debug_port_cli)
-            snprintf(window_title, sizeof window_title, "%s  [ %s ]  port %d",
-                     base, build_tag, debug_port_cli);
-        else
-            snprintf(window_title, sizeof window_title, "%s  [ %s ]",
-                     base, build_tag);
-    }
+    /* Every Genesis game uses a clean title. Backend/build/debug-port identity
+     * belongs in diagnostics and About, never in the window caption. */
+    const char *window_title = g_game_spec.display_name && *g_game_spec.display_name
+                                   ? g_game_spec.display_name : "Sega Genesis";
 
     /* Resolve the widescreen request (env: GENESIS_WIDESCREEN / _COLUMNS /
      * _BARS) BEFORE sizing the window — ws_armed()/ws_canvas_w() below depend
