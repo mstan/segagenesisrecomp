@@ -5,6 +5,18 @@ campaign. Work is isolated on `feature/segacd-backend`. The S3K campaign was
 delivered on its own branch in `731461a`; it is a C adaptation and does not boot
 original CD programs. Neither branch is merged into master by this work.
 
+Current original-program milestone: actual Start/Right/A input reaches Palmtree
+Panic, moves Sonic through its loop and collects 13 rings. The 50-second run
+`build/qa-bios-native-scripted-movement-1` retires 70,193,539 guarded native
+operations and 9,719,687 diagnostic-floor operations. All 46 shared RAM/VDP/frame
+artifacts and final CPU/device observations match its floor-only counterpart;
+the directory's `native-floor-comparison.json` records the comparison. This is
+hybrid bring-up evidence, not native-only coverage, independent fidelity
+acceptance or a playable release. Complete Z80/audio integration, native
+coverage, original-program save/mechanics coverage and final independent
+visual comparisons remain required. Earlier milestones below retain their
+original limitations; later runs supersede the earlier black-screen results.
+
 The new `runner/cd` device library is game-independent portable C. It takes an
 owned BIOS; BIOS, disc images, generated program C and captures stay private.
 The explicit-PC dual-CPU coordinator and guarded AOT modules use these devices.
@@ -376,6 +388,46 @@ existing CLI Start pulse remains unless explicitly suppressed with
 64 unique decimal frame numbers; custom captures include Main/Sub RAM. Invalid
 or overflowing input fails before boot. `SEGACD_PROBE_INPUT_SELFTEST=1` checks
 and prints event boundaries before opening BIOS/media, for private QA only.
+
+The custom snapshots now also retain physical Word RAM, VDP registers,
+CRAM/VSRAM (explicitly host-u16), Z80 RAM, memory mode and fader state.
+`SEGACD_PROBE_FLOOR_PC_LIMIT` accepts 1..4096, defaults to 16 and bounds printed
+unique PCs per CPU per custom-snapshot epoch. A normalized even-24-bit-PC bitmap
+avoids quadratic searches, while total unique counts remain visible beyond the
+print limit. Only unambiguous single-retirement steps are counted; a PC/opcode
+is not program identity, and an operation spanning the host snapshot edge may
+be assigned to an adjacent epoch.
+
+`SEGACD_PROBE_CAPTURE_AUDIO=1` records raw RF5C164 signed-16 LE stereo and raw
+2352-byte CDDA sectors with separate index/time CSVs, without speaker output or
+a fabricated final mix. Fader word/deadline transitions are observed after each
+coordinator step, including same-word low-byte deadline refreshes. PCM sample
+indices run at 12.5 MHz / 384; a reset starts a new index epoch whose origin is
+estimated at the observed coordinator boundary, not an exact reset bus cycle.
+Capture open/write/flush failures fail the run. These controls are diagnostic
+only and do not implement Z80 execution, CDDA output or host mixing.
+
+`build/qa-bios-audio-observation-floor-movement-1` completes the same 50-second
+input schedule with all 46 baseline artifacts unchanged. Parent review verifies
+1,627,603 PCM frames against every CSV sample and all 1,649 captured CDDA
+sectors against the owned image at their recorded LBAs. It observes 29 fader
+writes (58 word/deadline transitions): initial mute from Sub PC `0002B6`, then
+the original BIOS service at `002D9C`, including unity `4000`, normal `3100`,
+the game's intermediate fade targets and mute. `parent-adversarial-review.json`
+retains the checks. This establishes source delivery and program requests,
+not complete audio or physical timing correctness.
+
+The portable `fader.c` unit implements the encoded attenuation curve from
+[Sanyo LC7883K/KM EN3884B, p9](https://www.tautec-electronics.de/Datenblaetter/Schaltkreise/LC7883KM.pdf),
+cross-checked against Sega's Hardware Manual p31: unity at `4000`, 1024 field
+steps to mute, one field step per DAC stereo frame. Both channels use the same
+coefficient before stepping. Nonzero upper coefficients use the upper field
+divided by 256; the last three codes use 1/1024, 2/1024 and 3/1024. This preserves
+the documented gain plateaus instead of treating the whole field as linear.
+Fixed-point output rounds nearest/ties away from zero and saturates explicitly;
+that rounding policy and above-unity behavior have not been measured on hardware.
+The unit is not yet connected to playback. EFDT transfer timing, DAC clocking,
+de-emphasis and host mixing are separate integration work.
 
 Additional private native overlays use the CMake cache lists
 `SEGACD_BIOS_PROBE_EXTRA_MAIN_MODULES` and

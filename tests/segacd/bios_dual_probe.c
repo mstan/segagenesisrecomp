@@ -35,15 +35,26 @@ static const char *dump_directory;
 static uint64_t start_frame=UINT64_MAX;
 static uint64_t pad_reads,pressed_pad_reads;
 #define PROBE_MAX_SCRIPT_EVENTS 64u
+#define PROBE_MAX_FLOOR_PC_LIMIT 4096u
 typedef struct { uint64_t frame,duration;uint16_t mask; } ProbePadEvent;
 static ProbePadEvent pad_events[PROBE_MAX_SCRIPT_EVENTS];
 static unsigned pad_event_count;
+static unsigned floor_pc_limit=16,floor_pc_epoch;
+static uint64_t floor_pc_count[2];
+static uint8_t floor_pc_seen[2][0x100000];
 static int pad_events_override_start;
 static uint32_t snapshot_frames[PROBE_MAX_SCRIPT_EVENTS];
 static unsigned snapshot_frame_count;
 static int custom_snapshot_frames;
 static void dump_frame_named(const char *,const char *);
 static void dump(const char *,const char *,const void *,size_t);
+static int capture_audio,capture_error;
+static FILE *pcm_samples_file,*pcm_index_file,*cdda_raw_file,*cdda_index_file;
+static uint64_t pcm_epoch_subclock,pcm_event_count,cdda_event_count;
+static uint64_t fader_event_count,peripheral_ready_events;
+static uint64_t pcm_last_sample_index;
+static unsigned pcm_epoch_id;
+static int previous_fader_busy,previous_peripheral_ready;
 static int parse_uint_span(const char *begin,const char *end,unsigned base,uint64_t *out)
 {
     uint64_t value=0;
@@ -110,12 +121,22 @@ static int parse_probe_inputs(void)
     const char *events=getenv("SEGACD_PROBE_PAD_EVENTS");
     const char *override=getenv("SEGACD_PROBE_PAD_EVENTS_OVERRIDE_START");
     const char *snapshots=getenv("SEGACD_PROBE_SNAPSHOT_FRAMES");
+    const char *audio=getenv("SEGACD_PROBE_CAPTURE_AUDIO");
+    const char *pc_limit=getenv("SEGACD_PROBE_FLOOR_PC_LIMIT");
     if(events&&!parse_pad_events(events)){fprintf(stderr,"invalid SEGACD_PROBE_PAD_EVENTS (expected up to 64 frame:duration:12-bit-mask events)\n");return 0;}
     if(override) {
         if(!events||strcmp(override,"1")){fprintf(stderr,"SEGACD_PROBE_PAD_EVENTS_OVERRIDE_START requires pad events and exact value 1\n");return 0;}
         pad_events_override_start=1;
     }
     if(snapshots&&!parse_snapshot_frames(snapshots)){fprintf(stderr,"invalid SEGACD_PROBE_SNAPSHOT_FRAMES (expected up to 64 unique decimal frames <= UINT32_MAX)\n");return 0;}
+    if(audio){if(strcmp(audio,"1")){fprintf(stderr,"SEGACD_PROBE_CAPTURE_AUDIO accepts only 1\n");return 0;}capture_audio=1;}
+    if(pc_limit) {
+        uint64_t value;
+        if(!parse_decimal_span(pc_limit,pc_limit+strlen(pc_limit),&value)||!value||value>PROBE_MAX_FLOOR_PC_LIMIT) {
+            fprintf(stderr,"SEGACD_PROBE_FLOOR_PC_LIMIT must be decimal 1..4096\n");return 0;
+        }
+        floor_pc_limit=(unsigned)value;
+    }
     return 1;
 }
 static uint16_t scripted_pad(uint64_t frame)
@@ -133,6 +154,13 @@ static int snapshot_requested(uint32_t frame)
     if(!custom_snapshot_frames)return frame==60||frame==120||frame==180||frame==240||frame==288||frame==360||frame==600||frame==900;
     for(unsigned n=0;n<snapshot_frame_count;++n)if(snapshot_frames[n]==frame)return 1;
     return 0;
+}
+static void reset_floor_pc_epoch(uint32_t frame,uint64_t time)
+{
+    if(!custom_snapshot_frames)return;
+    printf("Floor PC epoch boundary frame=%u time=%llu prior_unique=%llu/%llu next_epoch=%u\n",frame,
+        (unsigned long long)time,(unsigned long long)floor_pc_count[0],(unsigned long long)floor_pc_count[1],floor_pc_epoch+1);
+    memset(floor_pc_seen,0,sizeof floor_pc_seen);floor_pc_count[0]=floor_pc_count[1]=0;++floor_pc_epoch;
 }
 static int input_selftest(void)
 {
@@ -155,6 +183,7 @@ static int input_selftest(void)
         for(unsigned n=0;n<snapshot_frame_count;++n)printf(" %u",snapshot_frames[n]);
         printf("\n");
     }
+    printf("floor-pc-limit=%u initial-epoch=0\n",floor_pc_limit);
     return 1;
 }
 static void observe_input(uint32_t a,unsigned value)
@@ -166,6 +195,89 @@ static void observe_input(uint32_t a,unsigned value)
 }
 static int media_read(void *image,int32_t lba,uint8_t raw[2352])
 {return segacd_image_read(image,lba,raw);}
+static void pcm_capture(void *unused,int16_t left,int16_t right)
+{
+    (void)unused;if(!capture_audio||capture_error)return;
+    uint16_t l=(uint16_t)left,r=(uint16_t)right;
+    const uint8_t bytes[4]={(uint8_t)l,(uint8_t)(l>>8),(uint8_t)r,(uint8_t)(r>>8)};
+    uint64_t index=cd.pcm.samples;
+    if(index<pcm_last_sample_index) {
+        ++pcm_epoch_id;pcm_epoch_subclock=coordinator.device_time;pcm_last_sample_index=0;
+        printf("PCM reset observed epoch=%u subclock_estimate=%llu\n",pcm_epoch_id,(unsigned long long)pcm_epoch_subclock);
+    }
+    if(fwrite(bytes,1,sizeof bytes,pcm_samples_file)!=sizeof bytes ||
+       fprintf(pcm_index_file,"%u,%llu,%llu,%d,%d\n",pcm_epoch_id,(unsigned long long)index,
+           (unsigned long long)(pcm_epoch_subclock+index*384u),(int)left,(int)right)<0) {
+        fprintf(stderr,"audio capture: RF5C164 sample write failed\n");capture_error=1;return;
+    }
+    pcm_last_sample_index=index;++pcm_event_count;
+}
+static void cdda_capture(void *unused,uint64_t subclock,int32_t lba,const uint8_t raw[2352])
+{
+    (void)unused;if(!capture_audio||capture_error)return;
+    if(fwrite(raw,1,2352,cdda_raw_file)!=2352 ||
+       fprintf(cdda_index_file,"%llu,%llu,%d,%llu,2352\n",(unsigned long long)cdda_event_count,
+           (unsigned long long)subclock,lba,(unsigned long long)(cdda_event_count*2352u))<0) {
+        fprintf(stderr,"audio capture: CDDA sector write failed at LBA %d\n",lba);capture_error=1;return;
+    }
+    ++cdda_event_count;
+}
+static int capture_open(const char *directory)
+{
+    char path[4096];
+#define OPEN_CAPTURE(field,name,mode) do { \
+    int n=snprintf(path,sizeof path,"%s/%s",directory,name); \
+    if(n<0||(size_t)n>=sizeof path || !(field=fopen(path,mode))) { \
+        fprintf(stderr,"audio capture: cannot open %s\n",name);return 0; \
+    } \
+} while(0)
+    OPEN_CAPTURE(pcm_samples_file,"rf5c164-samples.s16le","wb");
+    OPEN_CAPTURE(pcm_index_file,"rf5c164-sample-index.csv","w");
+    OPEN_CAPTURE(cdda_raw_file,"cdda-sectors-2352.bin","wb");
+    OPEN_CAPTURE(cdda_index_file,"cdda-sectors.csv","w");
+#undef OPEN_CAPTURE
+    fputs("pcm_epoch,sample_index,estimated_subclock,left_s16,right_s16\n",pcm_index_file);
+    fputs("event,subclock,lba,raw_file_offset,raw_bytes\n",cdda_index_file);
+    if(ferror(pcm_index_file)||ferror(cdda_index_file)){fprintf(stderr,"audio capture: CSV header write failed\n");return 0;}
+    return 1;
+}
+static int capture_close(void)
+{
+    FILE **files[]={&pcm_samples_file,&pcm_index_file,&cdda_raw_file,&cdda_index_file};int ok=1;
+    for(unsigned n=0;n<sizeof files/sizeof *files;++n)if(*files[n]){if(fclose(*files[n]))ok=0;*files[n]=NULL;}
+    if(!ok)fprintf(stderr,"audio capture: close/flush failed\n");
+    return ok;
+}
+static void observe_fader_and_ready(uint64_t step_time,uint16_t old_word,uint64_t old_deadline)
+{
+    uint16_t word=cd.drive.fader;uint64_t deadline=cd.drive.fader_deadline;
+    int busy=deadline!=0;
+    if(word!=old_word || deadline!=old_deadline) {
+        uint64_t event=++fader_event_count;
+        if(event<=256)printf("FADER event=%llu subclock=%llu last_cpu=%u main_pc=%06X sub_pc=%06X word=%04X->%04X word_same=%u deadline=%llu->%llu busy=%u->%u ready=%u\n",
+            (unsigned long long)event,(unsigned long long)step_time,coordinator.last_cpu,
+            coordinator.cpu[0].state.instruction_pc&0xFFFFFFu,coordinator.cpu[1].state.instruction_pc&0xFFFFFFu,old_word,word,word==old_word,
+            (unsigned long long)old_deadline,(unsigned long long)deadline,old_deadline!=0,busy,!busy);
+    }
+    if(busy!=previous_fader_busy) {
+        if(fader_event_count<=256) {
+            if(busy)printf("FADER busy-start subclock=%llu word=%04X deadline=%llu main_pc=%06X sub_pc=%06X\n",
+                (unsigned long long)step_time,word,(unsigned long long)deadline,
+                coordinator.cpu[0].state.instruction_pc&0xFFFFFFu,coordinator.cpu[1].state.instruction_pc&0xFFFFFFu);
+            else printf("FADER ready subclock=%llu word=%04X deadline=%llu main_pc=%06X sub_pc=%06X\n",
+                (unsigned long long)step_time,word,(unsigned long long)deadline,
+                coordinator.cpu[0].state.instruction_pc&0xFFFFFFu,coordinator.cpu[1].state.instruction_pc&0xFFFFFFu);
+        }
+        previous_fader_busy=busy;
+    }
+    int ready=cd.sub_cycles>=cd.peripheral_ready;
+    if(ready && !previous_peripheral_ready) {
+        if(++peripheral_ready_events<=256)printf("SUB peripheral-ready event=%llu subclock=%llu deadline=%llu main_pc=%06X sub_pc=%06X\n",
+            (unsigned long long)peripheral_ready_events,(unsigned long long)step_time,(unsigned long long)cd.peripheral_ready,
+            coordinator.cpu[0].state.instruction_pc&0xFFFFFFu,coordinator.cpu[1].state.instruction_pc&0xFFFFFFu);
+    }
+    previous_peripheral_ready=ready;
+}
 uint32_t machine_z80_stamp(void){return (uint32_t)((line_number%262)*3420);}
 uint32_t machine_z80_pc(void){return 0;}
 void snd_trace_68k_write(uint16_t o,uint8_t a,uint8_t b,int req,int reset){(void)o;(void)a;(void)b;(void)req;(void)reset;}
@@ -200,7 +312,18 @@ static void advance_host(void*u,uint64_t now)
                 if((!custom_snapshot_frames&&(frame==360||frame==900))||custom_snapshot_frames) {
                     snprintf(name,sizeof name,"frame-%04u-main-ram.bin",(unsigned)frame);dump(dump_directory,name,g_ram,sizeof g_ram);
                     snprintf(name,sizeof name,"frame-%04u-sub-prg.bin",(unsigned)frame);dump(dump_directory,name,cd.prg,sizeof cd.prg);
-                    printf("snapshot frame=%llu time=%llu main=%06X sub=%06X drive=%u sectors=%llu flags=%02X/%02X\n",(unsigned long long)frame,(unsigned long long)now,coordinator.cpu[0].state.regs.PC,coordinator.cpu[1].state.regs.PC,cd.drive.status,(unsigned long long)cd.media_sectors,cd.flags[0],cd.flags[1]);
+                    if(custom_snapshot_frames) {
+                        snprintf(name,sizeof name,"frame-%04u-word-ram.bin",(unsigned)frame);dump(dump_directory,name,cd.word,sizeof cd.word);
+                        snprintf(name,sizeof name,"frame-%04u-vdp-registers.bin",(unsigned)frame);dump(dump_directory,name,vdp.reg,sizeof vdp.reg);
+                        snprintf(name,sizeof name,"frame-%04u-cram-host-u16.bin",(unsigned)frame);dump(dump_directory,name,vdp.cram,sizeof vdp.cram);
+                        snprintf(name,sizeof name,"frame-%04u-vsram-host-u16.bin",(unsigned)frame);dump(dump_directory,name,vdp.vsram,sizeof vdp.vsram);
+                        snprintf(name,sizeof name,"frame-%04u-z80-ram.bin",(unsigned)frame);dump(dump_directory,name,genesis.z80_ram,sizeof genesis.z80_ram);
+                    }
+                    printf("snapshot frame=%llu time=%llu main=%06X sub=%06X drive=%u sectors=%llu flags=%02X/%02X memory_mode=%02X fader=%04X fader_busy=%u fader_deadline=%llu peripheral_ready=%llu\n",
+                        (unsigned long long)frame,(unsigned long long)now,coordinator.cpu[0].state.regs.PC,coordinator.cpu[1].state.regs.PC,
+                        cd.drive.status,(unsigned long long)cd.media_sectors,cd.flags[0],cd.flags[1],cd.memory_mode,cd.drive.fader,
+                        cd.drive.fader_deadline!=0,(unsigned long long)cd.drive.fader_deadline,(unsigned long long)cd.peripheral_ready);
+                    reset_floor_pc_epoch((uint32_t)frame,now);
                 }
             }
         }
@@ -268,6 +391,12 @@ int main(int argc,char**argv)
     }
     gvdp_init(&vdp);gbus_init(&genesis,&vdp);vdp.bus_read=dma_read;
     M68kStepBus host={read8,read16,write8,write16,fetch,0,ack,0};if(!segacd_coordinator_init(&coordinator,&cd,&host,NULL))return 2;
+    printf("FADER initial subclock=%llu word=%04X deadline=%llu busy=%u ready=%u; SUB peripheral_ready=%llu memory_mode=%02X main_pc=%06X sub_pc=%06X\n",
+        (unsigned long long)cd.drive.cycles,cd.drive.fader,(unsigned long long)cd.drive.fader_deadline,
+        cd.drive.fader_deadline!=0,!cd.drive.fader_deadline,(unsigned long long)cd.peripheral_ready,cd.memory_mode,
+        coordinator.cpu[0].state.instruction_pc&0xFFFFFFu,coordinator.cpu[1].state.instruction_pc&0xFFFFFFu);
+    previous_fader_busy=cd.drive.fader_deadline!=0;
+    previous_peripheral_ready=cd.sub_cycles>=cd.peripheral_ready;
     SegaCDImage *image=NULL;
     if(argc>=5) {
         printf("Validating complete disc payload before mounting...\n");
@@ -275,7 +404,7 @@ int main(int argc,char**argv)
         if(!image){fprintf(stderr,"media: %s\n",error);return 2;}
         printf("Disc payload verified; starting original programs.\n");
         if(!segacd_cdd_mount(&cd.drive,segacd_image_toc(image))){segacd_image_close(image);return 2;}
-        segacd_coordinator_media(&coordinator,media_read,image,NULL,NULL);
+        segacd_coordinator_media(&coordinator,media_read,image,capture_audio?cdda_capture:NULL,NULL);
     }
 #ifndef SEGACD_BIOS_PROBE_NO_CATALOGS
     const M68kStepModule*main_modules[]={&segacd_bios_module,&segacd_main_ram_module
@@ -301,13 +430,18 @@ int main(int argc,char**argv)
     int require_native=getenv("SEGACD_PROBE_REQUIRE_NATIVE") && !strcmp(getenv("SEGACD_PROBE_REQUIRE_NATIVE"),"1");
     if(!require_native && !segacd_coordinator_floor(&coordinator,segacd_m68k_floor_step))return 2;
     segacd_coordinator_host_clock(&coordinator,advance_host,next_host_event);
+    if(capture_audio) {
+        if(!capture_open(dump_directory)){(void)capture_close();return 2;}
+        segacd_coordinator_pcm_sink(&coordinator,pcm_capture,NULL);
+        printf("Audio observation enabled: RF5C164 raw signed-16 LE stereo at 12500000/384 Hz; no mix/fader/host output.\n");
+    }
     uint64_t deadline=strtoull(argv[2],NULL,0),steps=0;
     struct {uint32_t main,sub;uint64_t time;} ring[64]={{0}};M68kStepResult status=M68K_STEP_OK;
     unsigned mask_before=cd.irq_mask,wp_before=cd.write_protect,control_before=cd.drive.control,event_count=0,commands=0,queries=0;
     uint64_t cdc_before=0;unsigned transfer_before=0,transfers=0;
     uint64_t command_deadline_before=0;
     uint64_t observed_boot_native[2]={0},observed_boot_floor[2]={0};
-    uint32_t first_boot_pc[2]={0},floor_pc[2][16]={{0}};unsigned floor_pc_count[2]={0};
+    uint32_t first_boot_pc[2]={0};
     uint32_t selfloop_pc[2][8]={{0}};unsigned selfloop_count[2]={0};
     unsigned watch_events=0;uint8_t watch_before=0;
     while(coordinator.device_time<deadline && steps<100000000u) {
@@ -315,12 +449,16 @@ int main(int argc,char**argv)
         g_audio_cycle_counter=(uint32_t)coordinator.cpu[0].state.cycles;
         uint64_t native_before[2]={coordinator.native_steps[0],coordinator.native_steps[1]};
         uint64_t floor_before[2]={coordinator.floor_steps[0],coordinator.floor_steps[1]};
+        uint16_t fader_before=cd.drive.fader;uint64_t fader_deadline_before=cd.drive.fader_deadline;
         status=segacd_coordinator_step(&coordinator);++steps;
+        observe_fader_and_ready(coordinator.device_time,fader_before,fader_deadline_before);
+        if(capture_error){status=M68K_STEP_BUS_ERROR;break;}
         if(watch_word!=UINT32_MAX && coordinator.device_time>=watch_after && watch_events<1024 &&
            (!watch_events || cd.word[watch_word]!=watch_before)) {
             printf("Word RAM watch time=%llu offset=%05X old=%02X new=%02X mode=%02X cpu=%u main=%06X sub=%06X D0=%08X/%08X D1=%08X/%08X D2=%08X/%08X\n",(unsigned long long)coordinator.device_time,watch_word,watch_before,cd.word[watch_word],cd.memory_mode,coordinator.last_cpu,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc,coordinator.cpu[0].state.regs.D[0],coordinator.cpu[1].state.regs.D[0],coordinator.cpu[0].state.regs.D[1],coordinator.cpu[1].state.regs.D[1],coordinator.cpu[0].state.regs.D[2],coordinator.cpu[1].state.regs.D[2]);
             uint32_t base=watch_word&~7u;printf("Word RAM watch bytes base=%05X value=",base);
-            for(unsigned n=0;n<8;++n)printf("%02X",cd.word[base+n]);printf("\n");
+            for(unsigned n=0;n<8;++n)printf("%02X",cd.word[base+n]);
+            printf("\n");
             watch_before=cd.word[watch_word];++watch_events;
         }
         for(unsigned which=0;which<2;++which) {
@@ -347,9 +485,16 @@ int main(int argc,char**argv)
                 observed_boot_native[which]+=native_delta;observed_boot_floor[which]+=floor_delta;
                 if(!first_boot_pc[which]){first_boot_pc[which]=pc;printf("Observed boot-address-range execution cpu=%u pc=%06X native=%u time=%llu\n",which,pc,(unsigned)native_delta,(unsigned long long)coordinator.device_time);}
             }
-            if(floor_delta && floor_pc_count[which]<16) {
-                unsigned n=0;while(n<floor_pc_count[which] && floor_pc[which][n]!=pc)++n;
-                if(n==floor_pc_count[which]){floor_pc[which][floor_pc_count[which]++]=pc;printf("Floor PC cpu=%u pc=%06X time=%llu\n",which,pc,(unsigned long long)coordinator.device_time);}
+            if(floor_delta && native_delta+floor_delta==1) {
+                uint32_t normalized=pc&0xFFFFFEu;uint32_t index=normalized>>1;
+                uint8_t bit=(uint8_t)(1u<<(index&7u));uint8_t *slot=&floor_pc_seen[which][index>>3];
+                if(!(*slot&bit)) {
+                    *slot|=bit;uint64_t unique=++floor_pc_count[which];
+                    if(unique<=floor_pc_limit) {
+                        if(floor_pc_limit==16)printf("Floor PC cpu=%u pc=%06X time=%llu\n",which,normalized,(unsigned long long)coordinator.device_time);
+                        else printf("Floor PC epoch=%u unique=%llu cpu=%u pc=%06X time=%llu opcode=%04X\n",floor_pc_epoch,(unsigned long long)unique,which,normalized,(unsigned long long)coordinator.device_time,coordinator.cpu[which].state.fault_opcode);
+                    }
+                }
             }
         }
         if(status!=M68K_STEP_OK)break;
@@ -363,7 +508,8 @@ int main(int argc,char**argv)
             int log=cd.drive.pending[0]==2?queries++<24:commands++<256;
             if(log) {
                 printf("CDD command time=%llu main=%06X sub=%06X packet=",(unsigned long long)coordinator.device_time,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc);
-                for(unsigned n=0;n<10;++n)printf("%X",cd.drive.pending[n]);printf("\n");
+                for(unsigned n=0;n<10;++n)printf("%X",cd.drive.pending[n]);
+                printf("\n");
             }
         }
         command_deadline_before=cd.drive.command_deadline;
@@ -383,11 +529,18 @@ int main(int argc,char**argv)
     printf("sub_control=%u audio_events=%llu dma_stalls=%llu media_sectors=%llu cdc_sectors=%llu cdda_sectors=%llu media_error=%u lba=%d (Z80/audio output absent)\n",cd.main_control,(unsigned long long)audio_events,(unsigned long long)dma_stalls,(unsigned long long)cd.media_sectors,(unsigned long long)cd.cdc.sectors,(unsigned long long)cd.cdda_sectors,cd.media_error,cd.media_error_lba);
     printf("stamp operations=%llu pixels=%llu busy=%u remaining_lines=%u\n",(unsigned long long)cd.stamp.operations,(unsigned long long)cd.stamp.pixels,cd.stamp.busy,cd.stamp.reg[6]);
     printf("gate mask=%02X pending=%02X flags=%02X/%02X wp=%02X events=%u; drive status=%u control=%02X command=%u unsupported=%u lba=%d frames=%llu rx=",cd.irq_mask,cd.irq_pending,cd.flags[0],cd.flags[1],cd.write_protect,event_count,cd.drive.status,cd.drive.control,cd.drive.command_pending,cd.drive.unsupported_command,cd.drive.lba,(unsigned long long)cd.drive.frames);
-    for(unsigned n=0;n<10;++n)printf("%X",cd.drive.rx[n]);printf(" tx=");
-    for(unsigned n=0;n<10;++n)printf("%X",cd.drive.tx[n]);printf("\n");
+    for(unsigned n=0;n<10;++n)printf("%X",cd.drive.rx[n]);
+    printf(" tx=");
+    for(unsigned n=0;n<10;++n)printf("%X",cd.drive.tx[n]);
+    printf("\n");
     printf("retired native=%llu/%llu floor=%llu/%llu floor_only=%u\n",(unsigned long long)coordinator.native_steps[0],(unsigned long long)coordinator.native_steps[1],(unsigned long long)coordinator.floor_steps[0],(unsigned long long)coordinator.floor_steps[1],(unsigned)floor_only);
+    printf("floor PC unique epoch=%u main=%llu sub=%llu print_limit=%u normalized_even_pc_bitmap=1MB_per_CPU\n",floor_pc_epoch,(unsigned long long)floor_pc_count[0],(unsigned long long)floor_pc_count[1],floor_pc_limit);
     printf("observed boot-address-range native=%llu/%llu floor=%llu/%llu first_pc=%06X/%06X require_native=%u (single-retirement observations; address range alone does not identify loaded code)\n",(unsigned long long)observed_boot_native[0],(unsigned long long)observed_boot_native[1],(unsigned long long)observed_boot_floor[0],(unsigned long long)observed_boot_floor[1],first_boot_pc[0],first_boot_pc[1],(unsigned)require_native);
     printf("P1 reads=%llu while_Start_pressed=%llu start_frame=%llu\n",(unsigned long long)pad_reads,(unsigned long long)pressed_pad_reads,(unsigned long long)start_frame);
+    printf("fader events=%llu (printed cap=256) peripheral_ready_events=%llu memory_mode=%02X fader_raw=%04X busy=%u deadline=%llu pcm_samples=%llu cdda_sectors=%llu capture=%u\n",
+        (unsigned long long)fader_event_count,(unsigned long long)peripheral_ready_events,cd.memory_mode,cd.drive.fader,
+        cd.drive.fader_deadline!=0,(unsigned long long)cd.drive.fader_deadline,(unsigned long long)pcm_event_count,
+        (unsigned long long)cdda_event_count,capture_audio);
     printf("CDC final transfers=%u dest=%u DAC=%04X DBC=%04X PT=%04X WA=%04X ctrl=%02X/%02X if=%02X/%02X DMA_words=%llu\n",transfers,cd.cdc_destination,cd.cdc.dac,cd.cdc.dbc,cd.cdc.block_pointer,cd.cdc.write_address,cd.cdc.ctrl0,cd.cdc.ctrl1,cd.cdc.ifctrl,cd.cdc.ifstat,(unsigned long long)cd.dma.words);
     dump(argv[3],"cdc-ram.bin",cd.cdc.ram,sizeof cd.cdc.ram);
     dump(argv[3],"backup-ram.bin",cd.backup,sizeof cd.backup);
@@ -395,6 +548,6 @@ int main(int argc,char**argv)
     dump(argv[3],"cram-host-u16.bin",vdp.cram,sizeof vdp.cram);
     dump(argv[3],"vsram-host-u16.bin",vdp.vsram,sizeof vdp.vsram);
     dump(argv[3],"main-ram.bin",g_ram,sizeof g_ram);dump(argv[3],"sub-prg.bin",cd.prg,sizeof cd.prg);dump(argv[3],"word-ram.bin",cd.word,sizeof cd.word);dump(argv[3],"vram.bin",vdp.vram,sizeof vdp.vram);dump_frame_named(argv[3],"frame.ppm");
-    segacd_image_close(image);
-    return status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;
+    int capture_ok=capture_close();segacd_image_close(image);
+    return capture_ok && !capture_error && status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;
 }
