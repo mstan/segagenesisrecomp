@@ -21,6 +21,7 @@ endif()
 # a top-level project.  Keep its ROM-independent harnesses runnable directly
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
+add_subdirectory(segacd)
 
 if(TARGET SDL2::SDL2)
     add_executable(audio_extra_test runtime/audio_extra_test.c

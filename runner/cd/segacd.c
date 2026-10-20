@@ -1,0 +1,320 @@
+#include "segacd.h"
+#include <string.h>
+
+enum { RET = 1, DMNA = 2, MODE_1M = 4, PRIORITY = 24 };
+
+void segacd_reset(SegaCD *s)
+{
+    ++s->sub_reset_generation;
+    s->main_control = s->write_protect = s->prg_bank = 0;
+    s->memory_mode = RET; /* Power-on Word RAM belongs to the main CPU. */
+    s->irq_mask = s->irq_pending = s->timer_reload = 0;
+    s->flags[0] = s->flags[1] = 0;
+    memset(s->command, 0, sizeof s->command);
+    memset(s->status, 0, sizeof s->status);
+    s->hint_vector = 0xFFFF;
+    s->led = s->font_bits = s->font_color = 0;
+    s->stopwatch_origin = s->timer_origin = s->sub_cycles;
+    s->peripheral_ready = s->sub_cycles + SEGACD_SUB_CLOCK / 10;
+}
+
+int segacd_init(SegaCD *s, const void *bios, size_t bytes)
+{
+    if (!s || !bios || bytes != SEGACD_BIOS_BYTES) return 0;
+    memset(s, 0, sizeof *s);
+    memcpy(s->bios, bios, bytes);
+    memset(s->backup, 0xFF, sizeof s->backup);
+    segacd_reset(s);
+    return 1;
+}
+
+int segacd_sub_runnable(const SegaCD *s) { return (s->main_control & 3) == 1; }
+
+void segacd_advance(SegaCD *s, uint32_t cycles)
+{
+    s->sub_cycles += cycles;
+    if (s->timer_reload) {
+        uint32_t period = ((uint32_t)s->timer_reload + 1) * SEGACD_TIMER_DIVISOR;
+        uint64_t elapsed = s->sub_cycles - s->timer_origin;
+        if (elapsed >= period) {
+            s->timer_origin += (elapsed / period) * period;
+            s->irq_pending |= 1u << 3;
+        }
+    }
+}
+
+unsigned segacd_irq_level(const SegaCD *s)
+{
+    unsigned pending = s->irq_mask & s->irq_pending;
+    for (unsigned level = 6; level; --level)
+        if (pending & (1u << level)) return level;
+    return 0;
+}
+void segacd_irq_ack(SegaCD *s, unsigned level)
+{
+    if (level && level <= 6) s->irq_pending &= (uint8_t)~(1u << level);
+}
+
+static uint16_t stopwatch(const SegaCD *s)
+{ return (uint16_t)(((s->sub_cycles - s->stopwatch_origin) / SEGACD_TIMER_DIVISOR) & 4095); }
+
+static uint32_t word_1m(uint32_t offset, unsigned bank)
+{
+    /* In 2M mode the two physical banks are interleaved by 16-bit word. */
+    return ((offset & 0x1FFFEu) << 1) | (bank << 1) | (offset & 1u);
+}
+
+static uint32_t cell_to_linear(uint32_t offset)
+{
+    /* Hardware Manual pp16-17: column-major 8x8 cells, 512-dot bitmap rows.
+     * Five independently mapped bands
+     * have 32, 16, 8, 4 and 4 vertical cells respectively. */
+    uint32_t base; unsigned rows;
+    if (offset < 0x10000u) { base = 0; rows = 32; }
+    else if (offset < 0x18000u) { base = 0x10000; rows = 16; }
+    else if (offset < 0x1C000u) { base = 0x18000; rows = 8; }
+    else if (offset < 0x1E000u) { base = 0x1C000; rows = 4; }
+    else { base = 0x1E000; rows = 4; }
+    uint32_t n = offset - base, tile = n / 32;
+    return base + ((tile % rows) * 8 + (n % 32) / 4) * 256
+         + (tile / rows) * 4 + (n & 3);
+}
+
+static SegaCDResult word_address(const SegaCD *s, SegaCDCpu cpu,
+                                 uint32_t a, uint32_t *offset, int *dot)
+{
+    *dot = 0;
+    if (cpu == SEGACD_MAIN) {
+        if (a < 0x200000u || a >= 0x240000u) return SEGACD_UNMAPPED;
+        if (!(s->memory_mode & MODE_1M)) {
+            if (!(s->memory_mode & RET)) return SEGACD_WAIT;
+            *offset = a - 0x200000u;
+        } else {
+            uint32_t o = (a - 0x200000u) & 0x1FFFFu;
+            if (a & 0x20000u) o = cell_to_linear(o);
+            *offset = word_1m(o, s->memory_mode & RET);
+        }
+    } else if (!(s->memory_mode & MODE_1M)) {
+        if (a < 0x080000u || a >= 0x0C0000u) return SEGACD_UNMAPPED;
+        if (s->memory_mode & RET) return SEGACD_WAIT;
+        *offset = a - 0x080000u;
+    } else {
+        uint32_t o;
+        if (a >= 0x080000u && a < 0x0C0000u) {
+            o = (a - 0x080000u) / 2;
+            *dot = (a & 1u) ? 2 : 1;
+        } else if (a >= 0x0C0000u && a < 0x0E0000u) o = a - 0x0C0000u;
+        else return SEGACD_UNMAPPED;
+        *offset = word_1m(o, (s->memory_mode & RET) ^ 1u);
+    }
+    return SEGACD_OK;
+}
+
+static unsigned font_word(const SegaCD *s, unsigned offset)
+{
+    unsigned out = 0, shift = 12 - ((offset - 0x50) / 2) * 4;
+    for (unsigned i = 0; i < 4; ++i) {
+        unsigned bit = (s->font_bits >> (shift + 3 - i)) & 1;
+        out = (out << 4) | ((s->font_color >> (bit * 4)) & 15);
+    }
+    return out;
+}
+
+static SegaCDResult reg_read(const SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t *v)
+{
+    unsigned word;
+    switch (r & ~1u) {
+    case 0x00:
+        word = cpu == SEGACD_MAIN ?
+            ((s->irq_mask & 4) ? 0x8000u : 0) | ((s->irq_pending & 4) ? 0x100u : 0) | s->main_control :
+            s->led | (s->sub_cycles >= s->peripheral_ready);
+        break;
+    case 0x02:
+        word = ((unsigned)s->write_protect << 8) | (s->prg_bank << 6) | s->memory_mode;
+        if (cpu == SEGACD_MAIN) word &= 0xFFC7u;
+        else word &= 0xFF1Fu;
+        break;
+    case 0x06:
+        if (cpu != SEGACD_MAIN) return SEGACD_UNMAPPED;
+        word = s->hint_vector; break;
+    case 0x0C: word = stopwatch(s); break;
+    case 0x0E: word = ((unsigned)s->flags[0] << 8) | s->flags[1]; break;
+    default:
+        if (r >= 0x10 && r < 0x20) word = s->command[(r - 0x10) / 2];
+        else if (r >= 0x20 && r < 0x30) word = s->status[(r - 0x20) / 2];
+        else if (cpu != SEGACD_SUB) return SEGACD_UNMAPPED;
+        else switch (r & ~1u) {
+        case 0x30: word = s->timer_reload; break;
+        case 0x32: word = s->irq_mask; break;
+        case 0x4C: word = s->font_color; break;
+        case 0x4E: word = s->font_bits; break;
+        case 0x50: case 0x52: case 0x54: case 0x56: word = font_word(s, r & ~1u); break;
+        default: return SEGACD_UNMAPPED;
+        }
+    }
+    *v = (uint8_t)((r & 1u) ? word : word >> 8);
+    return SEGACD_OK;
+}
+
+SegaCDResult segacd_read8(const SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t *v)
+{
+    a &= 0xFFFFFFu;
+    if (cpu == SEGACD_MAIN) {
+        if (a < SEGACD_BIOS_BYTES) {
+            *v = a == 0x72 ? (uint8_t)(s->hint_vector >> 8) :
+                 a == 0x73 ? (uint8_t)s->hint_vector : s->bios[a];
+            return SEGACD_OK;
+        }
+        if (a >= 0x020000u && a < 0x040000u) {
+            if (segacd_sub_runnable(s)) return SEGACD_WAIT;
+            *v = s->prg[(s->prg_bank * 0x20000u) + a - 0x020000u];
+            return SEGACD_OK;
+        }
+        if (a >= 0xA12000u && a < 0xA12030u) return reg_read(s, cpu, a - 0xA12000u, v);
+    } else {
+        if (a < SEGACD_PRG_BYTES) { *v = s->prg[a]; return SEGACD_OK; }
+        if (a >= 0xFE0000u && a < 0xFE4000u) {
+            *v = (a & 1u) ? s->backup[(a - 0xFE0000u) / 2] : 0xFF;
+            return SEGACD_OK;
+        }
+        if (a >= 0xFF8000u && a < 0xFF8200u) return reg_read(s, cpu, a - 0xFF8000u, v);
+    }
+    uint32_t offset; int dot;
+    SegaCDResult result = word_address(s, cpu, a, &offset, &dot);
+    if (result != SEGACD_OK) return result;
+    *v = dot ? (s->word[offset] >> (dot == 1 ? 4 : 0)) & 15 : s->word[offset];
+    return SEGACD_OK;
+}
+
+SegaCDResult segacd_read16(const SegaCD *s, SegaCDCpu cpu, uint32_t a, uint16_t *v)
+{
+    if (a & 1u) return SEGACD_ADDRESS_ERROR;
+    uint8_t hi, lo;
+    SegaCDResult result = segacd_read8(s, cpu, a, &hi);
+    if (result != SEGACD_OK) return result;
+    result = segacd_read8(s, cpu, a + 1, &lo);
+    if (result == SEGACD_OK) *v = (uint16_t)(((unsigned)hi << 8) | lo);
+    return result;
+}
+
+static void mode_write(SegaCD *s, SegaCDCpu cpu, uint8_t v)
+{
+    if (cpu == SEGACD_MAIN) {
+        s->prg_bank = v >> 6;
+        if (s->memory_mode & MODE_1M) {
+            if (!(v & DMNA)) s->memory_mode |= DMNA;
+        } else if (v & DMNA) s->memory_mode = (s->memory_mode & PRIORITY) | DMNA;
+    } else {
+        unsigned old = s->memory_mode;
+        if (v & MODE_1M) s->memory_mode = v & (MODE_1M | PRIORITY | RET);
+        else {
+            unsigned owner = (v & RET) ? RET : (old & MODE_1M) ? DMNA : old & (RET | DMNA);
+            s->memory_mode = (uint8_t)((v & PRIORITY) | owner);
+        }
+    }
+}
+
+static SegaCDResult reg_write(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t v)
+{
+    if (r == 0 || r == 1) {
+        if (cpu == SEGACD_MAIN) {
+            if (r == 0) { if ((v & 1) && (s->irq_mask & 4)) s->irq_pending |= 4; }
+            else {
+                /* Preserve a reset pulse even when both edges occur before
+                 * the scheduler next gives the sub CPU an execution slice. */
+                if ((s->main_control & 1) && !(v & 1)) ++s->sub_reset_generation;
+                s->main_control = v & 3;
+            }
+        } else if (r == 0) s->led = (uint16_t)((v & 3u) << 8);
+        else if (!(v & 1)) s->peripheral_ready = s->sub_cycles + SEGACD_SUB_CLOCK / 10;
+        return SEGACD_OK;
+    }
+    if (r == 2) { if (cpu == SEGACD_MAIN) s->write_protect = v; return SEGACD_OK; }
+    if (r == 3) { mode_write(s, cpu, v); return SEGACD_OK; }
+    if (r == 6 || r == 7) {
+        if (cpu != SEGACD_MAIN) return SEGACD_UNMAPPED;
+        s->hint_vector = r == 6 ? (uint16_t)((s->hint_vector & 255) | ((unsigned)v << 8)) :
+            (uint16_t)((s->hint_vector & 0xFF00) | v);
+        return SEGACD_OK;
+    }
+    if (r == 0xC || r == 0xD) return SEGACD_OK; /* word access only */
+    if (r == 0xE || r == 0xF) {
+        if (r == 0xE && cpu == SEGACD_MAIN) s->flags[0] = v;
+        if (r == 0xF && cpu == SEGACD_SUB) s->flags[1] = v;
+        return SEGACD_OK;
+    }
+    if (r >= 0x10 && r < 0x30) {
+        uint16_t *word;
+        if (r < 0x20) { if (cpu != SEGACD_MAIN) return SEGACD_OK; word = &s->command[(r - 0x10) / 2]; }
+        else { if (cpu != SEGACD_SUB) return SEGACD_OK; word = &s->status[(r - 0x20) / 2]; }
+        *word = (r & 1u) ? (uint16_t)((*word & 0xFF00) | v) : (uint16_t)((*word & 255) | ((unsigned)v << 8));
+        return SEGACD_OK;
+    }
+    if (cpu != SEGACD_SUB) return SEGACD_UNMAPPED;
+    switch (r) {
+    case 0x30: case 0x32: case 0x4C: return SEGACD_OK;
+    case 0x31: s->timer_reload = v; s->timer_origin = s->sub_cycles; return SEGACD_OK;
+    case 0x33: s->irq_mask = v & 0x7E; return SEGACD_OK;
+    case 0x4D: s->font_color = v; return SEGACD_OK;
+    case 0x4E: s->font_bits = (uint16_t)((s->font_bits & 255) | ((unsigned)v << 8)); return SEGACD_OK;
+    case 0x4F: s->font_bits = (uint16_t)((s->font_bits & 0xFF00) | v); return SEGACD_OK;
+    case 0x50: case 0x51: case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57: return SEGACD_OK;
+    default: return SEGACD_UNMAPPED;
+    }
+}
+
+static unsigned priority_pixel(unsigned dest, unsigned src, unsigned mode)
+{
+    if (mode == 1 && dest) return dest; /* underwrite */
+    if (mode == 2 && !src) return dest; /* transparent source */
+    return src;
+}
+
+SegaCDResult segacd_write8(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t v)
+{
+    a &= 0xFFFFFFu;
+    if (cpu == SEGACD_MAIN) {
+        if (a < SEGACD_BIOS_BYTES) return SEGACD_OK; /* ROM */
+        if (a >= 0x020000u && a < 0x040000u) {
+            if (segacd_sub_runnable(s)) return SEGACD_WAIT;
+            s->prg[s->prg_bank * 0x20000u + a - 0x020000u] = v;
+            return SEGACD_OK;
+        }
+        if (a >= 0xA12000u && a < 0xA12030u) return reg_write(s, cpu, a - 0xA12000u, v);
+    } else {
+        if (a < SEGACD_PRG_BYTES) {
+            if (a >= (unsigned)s->write_protect * 512u) s->prg[a] = v;
+            return SEGACD_OK;
+        }
+        if (a >= 0xFE0000u && a < 0xFE4000u) {
+            if (a & 1u) s->backup[(a - 0xFE0000u) / 2] = v;
+            return SEGACD_OK;
+        }
+        if (a >= 0xFF8000u && a < 0xFF8200u) return reg_write(s, cpu, a - 0xFF8000u, v);
+    }
+    uint32_t offset; int dot;
+    SegaCDResult result = word_address(s, cpu, a, &offset, &dot);
+    if (result != SEGACD_OK) return result;
+    unsigned mode = cpu == SEGACD_SUB && (s->memory_mode & MODE_1M) ? (s->memory_mode >> 3) & 3 : 0;
+    if (mode == 3) return SEGACD_UNMAPPED; /* prohibited by hardware contract */
+    unsigned old = s->word[offset];
+    if (dot) {
+        unsigned shift = dot == 1 ? 4 : 0;
+        unsigned pixel = priority_pixel((old >> shift) & 15, v & 15, mode);
+        s->word[offset] = (uint8_t)((old & ~(15u << shift)) | (pixel << shift));
+    } else s->word[offset] = (uint8_t)((priority_pixel(old >> 4, v >> 4, mode) << 4) |
+        priority_pixel(old & 15, v & 15, mode));
+    return SEGACD_OK;
+}
+
+SegaCDResult segacd_write16(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint16_t v)
+{
+    if (a & 1u) return SEGACD_ADDRESS_ERROR;
+    a &= 0xFFFFFFu;
+    if ((cpu == SEGACD_MAIN && a == 0xA1200Cu) || (cpu == SEGACD_SUB && a == 0xFF800Cu)) {
+        s->stopwatch_origin = s->sub_cycles;
+        return SEGACD_OK;
+    }
+    SegaCDResult result = segacd_write8(s, cpu, a, (uint8_t)(v >> 8));
+    return result == SEGACD_OK ? segacd_write8(s, cpu, a + 1, (uint8_t)v) : result;
+}
