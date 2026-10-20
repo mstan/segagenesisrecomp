@@ -890,7 +890,7 @@ static uint16_t collect_pad_mask(int player)
 
 /* The sealed inputs of one tick (sim_step.h), from the same sources the
  * frame loop always used: ports 0/1 through input_requested_cb (published
- * netplay pads, scripts, TCP, live map) plus the 6-button extras; players 2/3
+ * netplay pads, scripts, TCP, live map) plus the 6-button extras; players 2..5
  * (adapter-only, e.g. the Sonic 2 party) from their live map and script. */
 static void collect_sim_input(GenesisSimInput *in)
 {

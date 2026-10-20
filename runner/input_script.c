@@ -58,7 +58,7 @@ typedef struct {
 /* ---- State ---- */
 
 #define MAX_OPS 4096
-#define SCRIPT_PLAYERS 4
+#define SCRIPT_PLAYERS 6
 static ScriptOp s_ops[MAX_OPS];
 static int      s_op_count = 0;
 static int      s_pc       = 0;     /* next op to execute */
@@ -118,7 +118,7 @@ static int parse_line(char *line, int line_no) {
     if (n < 1) return 1;
 
     if (!_stricmp(tok, "PLAYER")) {
-        if (n != 2 || strlen(a1) != 1 || a1[0] < '1' || a1[0] > '4') goto bad;
+        if (n != 2 || strlen(a1) != 1 || a1[0] < '1' || a1[0] >= '1' + SCRIPT_PLAYERS) goto bad;
         s_parse_player = (unsigned)(a1[0] - '1');
         s_players_used[s_parse_player] = 1;
         return 1;

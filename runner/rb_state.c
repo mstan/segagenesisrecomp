@@ -25,7 +25,9 @@
  * images) and that it holds no host pointer; if it does, scrub it the way
  * machine_rb_save does. Then update the size here. */
 _Static_assert(sizeof(M68KState) == 76, "M68KState changed: review rb_state cpu section");
-_Static_assert(sizeof(GenesisSimInput) == 16, "GenesisSimInput changed: review rb_state input section");
+/* Six uint16 pads, the unchanged two physical port types and human mask.
+ * This section contains no pointers; size-checked loads reject older images. */
+_Static_assert(sizeof(GenesisSimInput) == 20, "GenesisSimInput changed: review rb_state input section");
 _Static_assert(sizeof(AudioEvent) == 8, "AudioEvent changed: review audio_event_rb_*");
 _Static_assert(sizeof(g_ram) == 0x10000, "work RAM size changed");
 #if UINTPTR_MAX == 0xFFFFFFFFFFFFFFFFu

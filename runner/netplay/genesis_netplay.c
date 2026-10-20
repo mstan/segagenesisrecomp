@@ -682,7 +682,7 @@ int genesis_netplay_peer_disconnected(uint32_t timeout_ms)
 
 /* ---- config seal + identity -------------------------------------------------------- */
 
-static char s_config_image[512];
+static char s_config_image[1024];
 static GenesisSessionConfig s_local_cfg, s_session_cfg;
 static int s_session_cfg_adopted;
 static char s_engine_knobs[256];
@@ -714,7 +714,7 @@ void genesis_netplay_config_seal(void)
     g_np.pad_type[0] = c->pad_type[0] ? 1 : 0;
     g_np.pad_type[1] = c->pad_type[1] ? 1 : 0;
     snprintf(s_config_image, sizeof s_config_image,
-             "genesis-config/1\npad=%u,%u\nws=%u cells=%u\nvideo=%s\ngame=%s\nknobs=%s\n",
+             "genesis-config/2\npad=%u,%u\nws=%u cells=%u\nvideo=%s\ngame=%s\nknobs=%s\n",
              (unsigned)g_np.pad_type[0], (unsigned)g_np.pad_type[1],
              (unsigned)(c->ws_on ? 1 : 0), (unsigned)(c->ws_on ? c->ws_cells : 0),
              c->video[0] ? c->video : "off", c->game, s_engine_knobs);

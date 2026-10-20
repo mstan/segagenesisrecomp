@@ -14,14 +14,15 @@ int main(int argc,char **argv)
     tick(0);
     CHECK(input_script_held_mask()==8 && input_script_player_mask(1)==4);
     CHECK(input_script_player_mask(2)==16 && input_script_player_mask(3)==32);
-    CHECK(!input_script_player_mask(-1) && !input_script_player_mask(4));
-    CHECK(input_script_player_used(3));
-    tick(1); CHECK(input_script_player_mask(2)==16 && input_script_player_mask(3)==32);
+    CHECK(input_script_player_mask(4)==64 && input_script_player_mask(5)==128);
+    CHECK(!input_script_player_mask(-1) && !input_script_player_mask(6));
+    CHECK(input_script_player_used(5));
+    tick(1); CHECK(input_script_player_mask(2)==16 && input_script_player_mask(3)==32 && !input_script_player_mask(5));
     tick(2); CHECK(!input_script_player_mask(2) && input_script_player_mask(3)==32);
     tick(3); CHECK(!input_script_held_mask() && input_script_player_mask(1)==4);
     tick(4); CHECK(!input_script_player_mask(3) && input_script_player_mask(1)==4);
     input_script_load(NULL);
-    CHECK(!input_script_player_used(3) && !input_script_player_mask(1));
-    puts("input_script_party: independent four-player masks and release timers OK");
+    CHECK(!input_script_player_used(5) && !input_script_player_mask(4));
+    puts("input_script_party: independent six-player masks and release timers OK");
     return 0;
 }

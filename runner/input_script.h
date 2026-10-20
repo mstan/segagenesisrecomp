@@ -7,7 +7,7 @@
  * Format (one directive per line, # comments, blank lines OK):
  *
  *   WAIT N               wait N frames before processing the next line
- *   PLAYER N             target logical player 1..4 (initially 1)
+ *   PLAYER N             target logical player 1..6 (initially 1)
  *   HOLD <BUTTON>        start holding the button (until RELEASE or EXIT)
  *   RELEASE [BUTTON]     release one button; no arg releases this player's buttons
  *   PRESS <BUTTON> N     hold for N frames then auto-release

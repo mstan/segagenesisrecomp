@@ -35,8 +35,8 @@ extern "C" {
 #endif
 
 /* Logical players a tick carries. Ports 0/1 are the Genesis bus; players
- * 2/3 exist only for game adapters (Sonic 2's party) via genesis_sim_pad. */
-#define GENESIS_SIM_MAX_PLAYERS 4
+ * 2..5 exist for game adapters (Sonic 2's party) via genesis_sim_pad. */
+#define GENESIS_SIM_MAX_PLAYERS 6
 
 typedef struct GenesisSimInput {
     /* GPAD_* bits (genesis_bus.h), 1 = pressed: active high, 12 bits

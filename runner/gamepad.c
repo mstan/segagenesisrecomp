@@ -5,7 +5,7 @@
  * path covers XInput (Xbox pads on Windows), HID (PS / Switch Pro), and SDL's
  * controller database.
  *
- * Two controllers by default; games may opt into up to four logical players in plug
+ * Two controllers by default; games may opt into up to six logical players in plug
  * order. Each player's button mask is resolved through g_input_map's rebindable
  * per-player bindings (set in the launcher), plus an always-on left-analog-stick
  * -> d-pad convenience. The quicksave / quickload / turbo shortcuts live on
@@ -20,7 +20,7 @@
 #include <stdio.h>
 
 static SDL_GameController *s_pad[INPUT_MAX_PLAYERS];
-static SDL_JoystickID s_pad_jid[INPUT_MAX_PLAYERS] = { -1, -1, -1, -1 };
+static SDL_JoystickID s_pad_jid[INPUT_MAX_PLAYERS] = { -1, -1, -1, -1, -1, -1 };
 static unsigned s_player_limit = 2;
 
 /* Edge-triggered shoulder latches (consumed by main loop once per press). */
