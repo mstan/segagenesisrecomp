@@ -340,11 +340,21 @@ static void rab__sample_at(const rab_bridge *b, double pos, float *s) {
     s[0] = s0; s[1] = (ch == 2) ? s1 : 0.0f;
 }
 
+static double rab__loop_score(const rab_bridge *b, int64_t end_i, int L, int W, int stride) {
+    int ch = b->cfg.channels;
+    double num = 0.0, d1 = 0.0, d2 = 0.0;
+    for (int k = 0; k < W; k += stride) {
+        float a = b->ring[((end_i - k)     % b->cap) * ch];
+        float c = b->ring[((end_i - L - k) % b->cap) * ch];
+        num += (double)a * c; d1 += (double)a * a; d2 += (double)c * c;
+    }
+    return num / (sqrt(d1 * d2) + 1e-9);
+}
+
 /* Choose a loop length (source frames) ending at end_i whose period best matches
  * the signal one period earlier (normalized cross-correlation on ch0), so the
  * loop wrap is pitch-continuous instead of buzzy. */
 static double rab__find_loop_len(const rab_bridge *b, int64_t end_i) {
-    int ch = b->cfg.channels;
     double sr = b->cfg.source_rate;
     int Lmin = (int)(b->cfg.stretch_min_ms * sr / 1000.0); if (Lmin < 1) Lmin = 1;
     int Lmax = (int)(b->cfg.stretch_max_ms * sr / 1000.0); if (Lmax < Lmin) Lmax = Lmin;
@@ -353,15 +363,23 @@ static double rab__find_loop_len(const rab_bridge *b, int64_t end_i) {
     if (oldest < (int64_t)b->half) oldest = (int64_t)b->half;
     while (Lmax > Lmin && (end_i - Lmax - W) < oldest) Lmax--;
     if ((end_i - Lmax - W) < oldest) return (double)Lmin;
+    /* This runs on the device callback while the producer is locked out.
+     * At the Genesis PSG rate the exhaustive search performed ~5 million
+     * sample products per stall, starving its own producer.
+     * Bound the coarse analysis to 24 kHz, then refine the best lag at
+     * source-frame precision. Neither guest timing nor live resampling changes. */
+    int stride = (int)ceil(sr / 24000.0); if (stride < 1) stride = 1;
     double best = -1e30; int bestL = Lmin;
-    for (int L = Lmin; L <= Lmax; ++L) {
-        double num = 0.0, d1 = 0.0, d2 = 0.0;
-        for (int k = 0; k < W; ++k) {
-            float a = b->ring[((end_i - k)     % b->cap) * ch];
-            float c = b->ring[((end_i - L - k) % b->cap) * ch];
-            num += (double)a * c; d1 += (double)a * a; d2 += (double)c * c;
-        }
-        double r = num / (sqrt(d1 * d2) + 1e-9);
+    for (int L = Lmin; L <= Lmax; L += stride) {
+        double r = rab__loop_score(b, end_i, L, W, stride);
+        if (r > best) { best = r; bestL = L; }
+    }
+    int lo = bestL - stride, hi = bestL + stride;
+    if (lo < Lmin) lo = Lmin;
+    if (hi > Lmax) hi = Lmax;
+    best = -1e30;
+    for (int L = lo; L <= hi; ++L) {
+        double r = rab__loop_score(b, end_i, L, W, 1);
         if (r > best) { best = r; bestL = L; }
     }
     return (double)bestL;
@@ -375,11 +393,18 @@ void rab_pull(rab_bridge *b, int16_t *out, int frames) {
     double step  = b->cur_step;
     double xf    = b->cfg.stretch_xfade_ms * b->cfg.source_rate / 1000.0;
     if (xf < 1.0) xf = 1.0;
+    /* A single new video frame is not a recovered queue. Resuming immediately
+     * drains that chunk and restarts concealment on subsequent callbacks;
+     * the small ratio servo can take seconds to rebuild the target cushion.
+     * Hold the read cursor through one refill instead. This changes device
+     * recovery only: no generated samples or guest frames are skipped. */
+    int recovering = b->concealing &&
+        (double)b->in_count - b->out_pos < b->cfg.target_ms * b->cfg.source_rate / 1000.0;
 
     for (int f = 0; f < frames; ++f) {
         int64_t i   = (int64_t)floor(b->out_pos);
         int64_t newest_needed = i + b->half;
-        int     have = b->primed && (newest_needed < (int64_t)b->in_count)
+        int     have = b->primed && !recovering && (newest_needed < (int64_t)b->in_count)
                        && ((i - b->half + 1) >= 0);
 
         float s[2] = {0.0f, 0.0f};

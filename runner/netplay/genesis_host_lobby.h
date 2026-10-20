@@ -26,7 +26,7 @@ typedef struct GenesisHostLobbyIdentity {
     const char *release_version;  /* e.g. "0.7.0"; the lobby version adds the exe hash */
     const char *rom_sha256_hex;   /* 64 hex chars */
     const char *lan_registry_path;
-    int         max_players;      /* 2..4 */
+    int         max_players;      /* 2..GENESIS_SIM_MAX_PLAYERS */
     /* Capture local preferences at CREATE/START, before the machine boots.
      * settings is NULL for the headless room helper. */
     void (*capture_local_config)(const RecompLauncherCSettings *settings,
