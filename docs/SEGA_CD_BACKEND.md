@@ -258,8 +258,14 @@ Command A now performs radial movement with explicit Tracking/Pause states.
 Its count is hexadecimal spiral turns; either nonzero direction nibble selects
 inward movement. A first-party fixed-point functional model uses nominal 25-mm
 program origin, 1.6-micrometre pitch and 1.30-m/s scan velocity from the ranges
-in ECMA-130 sections 8.6 and 11. Movement takes one turn per 75-Hz interval;
-that rate is a selected profile, not measured original-drive calibration.
+in ECMA-130 sections 8.6 and 11. Movement now takes 1,250 sub clocks per turn
+(10,000 turns/second, nominal 16 mm/s); status/IRQ frames remain at 75 Hz.
+This is a deterministic functional timing profile, not measured original-drive
+calibration. The former one-turn-per-75-Hz profile made an observed 12,929-turn
+request last 172 seconds, exceeding the original BIOS's roughly ten-second
+wait. The revised request takes 1.2929 seconds while preserving intermediate
+positions, interruption and retargeting. Tests exercise both coincident and
+off-phase command/movement events and verify that movement does not add IRQs.
 Positions clamp to the represented first pregap and final stored sector.
 For long accepted images the nominal geometry extrapolates beyond the standard
 user-zone radius; the TOC remains the addressing bound. A replacement seek
@@ -299,7 +305,92 @@ frame: Main loops at `FF215A`, while Sub polls Word RAM's DMNA at `0101BA`.
 The diagnostic now retains the first unconditional self-loop's predecessor PCs,
 registers and RAM snapshot. The path into that loop remains under investigation.
 No original-game title screen, playable stage, complete audio, final independent
-visual acceptance or native-only gameplay is claimed by this milestone.
+visual acceptance or native-only gameplay is claimed by that milestone.
+
+The error path is now identified from original instructions and memory writes:
+BRAMINIT requests BIOS BRMINIT, which rejects the initially erased internal
+backup RAM as unformatted. D1=1 and carry identify that result; D0=2 is capacity
+information, not error code two. An independent erased-RAM reference renders
+the original formatting warning. With the corrected movement rate, a fresh
+erased-RAM run (`build/qa-bios-erased-fast-floor-1`) also renders that warning.
+Its 17 colors have a one-to-one pixel-position mapping to the independent
+frame-1800 capture: geometry matches, but DAC/presentation colors differ
+(mean RGB absolute error 1.4078). Neither a raw pixel match nor final visual
+acceptance is claimed. The previous black result is retained as earlier evidence.
+
+A private synthetic caller executes the original BIOS's BRMINIT service 0,
+BRMFORMAT service 6, then BRMINIT again. It executes 612,462 instructions and
+produces an 8-KiB persisted image with SHA256
+`4390aad972163d9bbc8a8cd7d32e86b216e5a17a0d795c7d230942155e6a895b`.
+All 70 backup-byte writes originate in the original BIOS. Parent review replays
+the logged writes from erased RAM and reconstructs the exact image. This is a
+legitimate persisted input for further bring-up; formatting through the normal
+BIOS menu remains bypassed and unverified.
+
+Using that input and the corrected movement rate,
+`build/qa-bios-preformatted-fast-floor-1` reaches 625 million sub clocks
+(50 seconds), completes 543 transfers and reads 2,144 media sectors, including
+721 decoder and 1,422 CD-audio sector events, without a CPU/device fault.
+The original opening movie now renders. Main RAM contains the original
+`OPEN_M.MMD` body at `FF2000`, and Sub PRG contains `OPEN_S.BIN` at `030000`.
+This run uses the diagnostic floor; its image has not passed an independent
+visual comparison and audio sectors are not audible output. A matched reference
+run with only the early Start pulse remains at the title at frame 3000; it
+requires a later real Start press to enter the menu/opening sequence. That input/
+startup-flow difference remains unqualified. Full stage/mechanics acceptance,
+native-only execution, complete sound and release integration remain
+unaccepted. The 16 synthetic tests pass MSVC, MinGW and Linux ASan/UBSan with
+the revised drive timing.
+
+The corresponding guarded-native run,
+`build/qa-bios-preformatted-fast-native-1`, retires 33,218,750 native and
+37,385,999 diagnostic-floor operations. All 22 RAM/VDP/frame artifacts are
+byte-identical to the floor-only run, with identical final CPU/device
+observations after 70,616,284 coordinator steps. The comparison manifest is
+`native-floor-comparison.json` in that directory. This qualifies agreement
+between these execution paths for the run, not native-only coverage or
+independent original-game fidelity.
+
+Ordinary Start presses at frames 1500, 1650 and 1800 reach Palmtree Panic in
+`build/qa-bios-scripted-floor-1`. The follow-up
+`build/qa-bios-scripted-floor-movement-1` holds Right at 2350..2899 and A at
+2450..2459: captures show Sonic moving through terrain, camera scrolling,
+the loop traversal and 13 collected rings. It reaches 625 million clocks
+without a fault. These are initial diagnostic-floor gameplay observations;
+full collision/mechanics/audio coverage, independent matching input runs and
+all 70 original stage/time variants remain work. No progress/success flags
+were injected. The existing campaign's coverage does not qualify this backend.
+
+The private dual probe accepts `SEGACD_PROBE_BRAM_IMAGE` as an exact 8,192-byte
+persisted input; missing/short/long/unreadable input fails rather than formatting
+or repairing it. Final dumps include backup RAM, VDP registers, CRAM and VSRAM
+as well as the existing RAM/frame evidence. `SEGACD_PROBE_WATCH_WORD_BYTE` and
+`SEGACD_PROBE_WATCH_AFTER` optionally log changes to a physical Word RAM byte,
+with the neighboring bytes and CPU observations; they never change guest state.
+`SEGACD_PROBE_PAD_EVENTS` supplies up to 64 real P1 button events as
+`frame:duration:mask` entries separated by commas (decimal frame/duration,
+decimal or `0x` 12-bit mask). Overlapping intervals OR their buttons. The
+existing CLI Start pulse remains unless explicitly suppressed with
+`SEGACD_PROBE_PAD_EVENTS_OVERRIDE_START=1` alongside an event list.
+`SEGACD_PROBE_SNAPSHOT_FRAMES` replaces the default capture schedule with up to
+64 unique decimal frame numbers; custom captures include Main/Sub RAM. Invalid
+or overflowing input fails before boot. `SEGACD_PROBE_INPUT_SELFTEST=1` checks
+and prints event boundaries before opening BIOS/media, for private QA only.
+
+Additional private native overlays use the CMake cache lists
+`SEGACD_BIOS_PROBE_EXTRA_MAIN_MODULES` and
+`SEGACD_BIOS_PROBE_EXTRA_SUB_MODULES`, with entries
+`absolute-generated-directory|C_identifier_prefix`. CMake validates the module,
+header and 32 shards and generates a registry header. Existing current-byte
+guards remain mandatory. Extra directories are not target-wide include paths:
+adding an overlay must not invalidate every previously compiled catalog.
+The first strict native miss at Sub `005F28` is a relocated BIOS jump stub;
+the registered earlier image targets `020C`, while actual bytes target `602A`.
+Rejecting that entry is correct; the relocated variant requires its own guarded
+catalog rather than weakening the guard. Registering the exact captured four
+relocated jump stubs gets past that miss; the next strict run stops at Sub
+`018014`, with 1,053,757 native operations and zero floor operations. Broader
+native coverage remains work.
 
 The [ISC ares GPU port](SEGA_CD_REUSE.md) implements trace-vector stamp drawing,
 2M Word RAM map sizes, 16/32-dot stamp cells, rotations/flips, repeat/transparent

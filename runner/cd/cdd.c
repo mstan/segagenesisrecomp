@@ -24,12 +24,15 @@ enum { STOP=0,PLAY=1,SEEK=2,SCAN=3,PAUSE=4,OPEN=5,CHECKSUM=6,ERROR=7,READ_TOC=9,
  * §8.6 places the user data zone at radii 25..58 mm; §11.3 gives 1.6 um
  * nominal pitch and §11.4 allows 1.20..1.40 m/s scan velocity. The model
  * uses the midpoint 1.30 m/s and integrates sectors/turn over a spiral with
- * constant nominal track pitch. Movement is one radial turn per 75-Hz CDD
- * frame. For discs longer than this nominal radius range, the squared-radius
- * mapping extrapolates so every represented LBA remains reachable. These are
- * explicit deterministic profile choices, not measured Sega drive mechanics. */
+ * constant nominal track pitch. Functional profile movement is 10,000 radial
+ * turns/second (16 mm/s at the nominal 1.6 um pitch), chosen so BIOS TrackSkip
+ * requests complete within game command timeouts. This is a deterministic
+ * usability profile, not measured Sega drive timing. For discs longer than
+ * the nominal radius range, the squared-radius mapping extrapolates so every
+ * represented LBA remains reachable. ECMA geometry and this time scale do not
+ * establish the original drive's motor speed or seek behavior. */
 /* Radius is stored in tenths of a micrometre so the 1.6 um pitch is exact. */
-enum { SKIP_INNER_RADIUS_TENTH_UM=250000,SKIP_PITCH_TENTH_UM=16 };
+enum { SKIP_INNER_RADIUS_TENTH_UM=250000,SKIP_PITCH_TENTH_UM=16,SKIP_TURNS_PER_SECOND=10000 };
 static uint8_t checksum(const uint8_t *p){unsigned n=0;for(unsigned i=0;i<9;++i)n+=p[i];return (uint8_t)(~n&15u);}
 static void digits(uint8_t*p,unsigned n){p[0]=(uint8_t)((n/10)%10);p[1]=(uint8_t)(n%10);}
 static void msf(uint8_t*p,int32_t frames)
@@ -112,7 +115,8 @@ static int32_t bounded_radius_to_lba(const SegaCDDrive*d,uint64_t radius)
 static uint64_t track_skip_deadline(const SegaCDDrive*d)
 {
     uint64_t ticks=(uint64_t)d->track_skip_step+1u;
-    return d->track_skip_origin_cycle+(ticks*(uint64_t)CLOCK+74u)/75u;
+    return d->track_skip_origin_cycle+
+        (ticks*(uint64_t)CLOCK+SKIP_TURNS_PER_SECOND-1u)/SKIP_TURNS_PER_SECOND;
 }
 static void cancel_track_skip(SegaCDDrive*d)
 {

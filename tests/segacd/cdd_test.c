@@ -63,9 +63,9 @@ int main(void)
     uint32_t delay=(uint32_t)(d.seek_deadline-d.cycles);segacd_cdd_advance(&d,delay,sector,NULL);CHECK(d.status==1);
     sector_count=0;segacd_cdd_advance(&d,12500000,sector,NULL);CHECK(sector_count==75 && sectors[0]==-3 && sectors[74]==71);
     command(6,0,0,0);int32_t at=d.lba;segacd_cdd_advance(&d,1000000,sector,NULL);CHECK(d.status==4 && d.lba==at);
-    /* A uses a hexadecimal radial-turn count. This deterministic mechanical
-     * profile follows ECMA-130's user-data radii/pitch/scan velocity; it is
-     * not a claim about the original Sega drive's seek motor calibration. */
+    /* A uses a hexadecimal radial-turn count. This deterministic functional
+     * profile uses ECMA-130's nominal pitch/geometry plus an explicit 10,000
+     * turns/s usability timescale; it does not claim Sega motor calibration. */
     track_skip(0,2);CHECK(d.status==10 && d.track_skip_active && d.rx[0]==10 && d.track_skip_count==2);
     int32_t skip_start=d.lba;uint64_t skip_at=d.track_skip_deadline;
     CHECK(skip_at>d.cycles && segacd_cdd_next_event(&d)<=skip_at);
@@ -80,8 +80,8 @@ int main(void)
     /* The same elapsed clock interval has the same partial physical position
      * whether the scheduler delivers it whole or in subdivisions. */
     track_skip(0,8);SegaCDDrive whole=d,split=d;
-    segacd_cdd_advance(&whole,666667,NULL,NULL);
-    segacd_cdd_advance(&split,123456,NULL,NULL);segacd_cdd_advance(&split,543211,NULL,NULL);
+    segacd_cdd_advance(&whole,5000,NULL,NULL); /* Four 1,250-clock turn intervals. */
+    segacd_cdd_advance(&split,2222,NULL,NULL);segacd_cdd_advance(&split,2778,NULL,NULL);
     CHECK(whole.cycles==split.cycles && whole.lba==split.lba && whole.status==split.status &&
           whole.track_skip_step==split.track_skip_step && whole.track_skip_deadline==split.track_skip_deadline &&
           memcmp(whole.rx,split.rx,sizeof whole.rx)==0);
@@ -101,15 +101,20 @@ int main(void)
     CHECK(d.status==4 && d.lba==d.toc.track[0].index00);d.lba=at;
     /* The largest packet count clamps to the physical profile's lead-out. */
     track_skip(0,0xFFFF);CHECK(d.status==10 && d.track_skip_target_lba==d.toc.leadout-1);
-    for(unsigned n=0;n<200 && d.track_skip_active;++n)segacd_cdd_advance(&d,(uint32_t)(d.track_skip_deadline-d.cycles),sector,NULL);
+    for(unsigned n=0;n<30000 && d.track_skip_active;++n)segacd_cdd_advance(&d,(uint32_t)(d.track_skip_deadline-d.cycles),sector,NULL);
     CHECK(d.status==4 && !d.track_skip_active && d.lba==d.toc.leadout-1 && d.lba>at);
     command(1,0,0,0);CHECK(d.status==0 && !d.track_skip_active && !d.track_skip_deadline);
     /* An explicit seek replaces the in-flight skip destination and starts
      * from the already moved head. The expected head remains at that partial
      * skip position until normal seek completion. */
     d.lba=100;command(6,0,0,0);track_skip(0,20);CHECK(d.status==10);segacd_cdd_advance(&d,(uint32_t)(d.track_skip_deadline-d.cycles),sector,NULL);at=d.lba;
-    command(4,0,0,12);CHECK(d.status==10 && d.track_skip_active && d.lba==at); /* malformed seek keeps skip alive */
-    command(4,0,0,2);CHECK(d.status==2 && !d.track_skip_active && d.lba==at && d.seek_target==-3);
+    command(4,0,0,12);CHECK(d.status==10 && d.track_skip_active && d.lba>at); /* malformed packet leaves skip active; physical motion continues */
+    segacd_cdd_advance(&d,500,NULL,NULL);
+    SegaCDDrive reached_head=d;segacd_cdd_advance(&reached_head,1250,NULL,NULL);
+    at=reached_head.lba; /* A turn lands 500 clocks before valid packet execution. */
+    uint64_t seek_apply=d.cycles+1250u;
+    uint64_t expected_seek=seek_apply+1250000u+(uint64_t)abs(-3-at)*12500000u/(75u*1000u);
+    command(4,0,0,2);CHECK(d.status==2 && !d.track_skip_active && d.lba==at && d.seek_target==-3 && d.seek_deadline==expected_seek);
     segacd_cdd_advance(&d,(uint32_t)(d.seek_deadline-d.cycles),sector,NULL);CHECK(d.status==4 && d.lba==-3);
     /* PLAY, STOP and tray open also cancel a pending physical skip. */
     track_skip(0,20);CHECK(d.track_skip_active);command(7,0,0,0);CHECK(d.status==1 && !d.track_skip_active);
@@ -124,9 +129,29 @@ int main(void)
     CHECK(d.status==10 && d.track_skip_active && d.track_skip_count==523 && d.track_skip_target_lba>d.lba);
     segacd_cdd_advance(&d,(uint32_t)(d.track_skip_deadline-d.cycles),sector,NULL);
     CHECK(d.lba>100000 && d.status==10);
-    at=d.lba;uint64_t expected_seek=d.cycles+1250u+1250000u+(uint64_t)abs(-3-at)*12500000u/(75u*1000u);
+    at=d.lba;expected_seek=d.cycles+1250u+1250000u+(uint64_t)abs(-3-at)*12500000u/(75u*1000u);
     command(4,0,0,2);CHECK(!d.track_skip_active && d.status==2 && d.seek_target==-3 && d.lba==at && d.seek_deadline==expected_seek);
     segacd_cdd_advance(&d,(uint32_t)(d.seek_deadline-d.cycles),sector,NULL);CHECK(d.status==4 && d.lba==-3);
+    /* BIOS packet A000328107 requests 12,929 turns. It must finish under
+     * the game's 10-second wait while status/IRQ cadence remains 75 Hz. */
+    d.lba=0;
+    track_skip_fields(0,0,0x3281);
+    CHECK(d.status==10 && d.track_skip_active && d.track_skip_target_lba>0 &&
+          d.track_skip_target_lba<d.toc.leadout-1);
+    uint64_t frame_before=d.frames;
+    uint64_t profile_start=d.track_skip_origin_cycle;
+    uint64_t profile_end=profile_start+(uint64_t)0x3281*1250u;
+    CHECK(profile_end-d.cycles<12500000u*10u);
+    unsigned skip_events=0,frame_irqs=0;
+    while(d.track_skip_active) {
+        frame_irqs+=segacd_cdd_advance(&d,(uint32_t)(d.track_skip_deadline-d.cycles),sector,NULL);
+        ++skip_events;
+    }
+    CHECK(d.status==4 && !d.track_skip_active && d.lba==d.track_skip_target_lba &&
+          d.cycles==profile_end && d.cycles-profile_start==(uint64_t)0x3281*1250u &&
+          skip_events==0x3281);
+    CHECK(d.frames-frame_before>=75 && d.frames-frame_before<750);
+    CHECK(frame_irqs==d.frames-frame_before); /* Only regular 75-Hz frames raise IRQs. */
     CHECK(segacd_cdd_mount(&d,&toc));
     command(7,0,0,0);CHECK(d.status==1);command(1,0,0,0);CHECK(d.status==0 && d.rx[0]==0);
     for(unsigned n=0;n<9;++n)CHECK(d.rx[n]==0);CHECK(d.rx[9]==15);
