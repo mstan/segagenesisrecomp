@@ -21,6 +21,12 @@
 #include "genesis_dac.h"
 #include "disc_image.h"
 #include "m68k_floor.h"
+#ifdef SEGACD_BIOS_PROBE_NATIVE_Z80
+#include "z80_native.h"
+#include "sonic_cd_z80_step.h"
+static SegaCDZ80 sound_cpu;
+static uint64_t z80_callback_clock;
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -321,17 +327,45 @@ static void observe_fader_and_ready(uint64_t step_time,uint16_t old_word,uint64_
     }
     previous_peripheral_ready=ready;
 }
+#ifdef SEGACD_BIOS_PROBE_NATIVE_Z80
+static uint64_t sub_to_master(uint64_t clock)
+{return (clock/12500000u)*53693175u+(clock%12500000u)*53693175u/12500000u;}
+static void z80_stamp(uint64_t clock)
+{z80_callback_clock=clock;g_snd_frame=(unsigned long)(sub_to_master(clock)/(262u*3420u));}
+uint32_t machine_z80_stamp(void){return (uint32_t)(sub_to_master(z80_callback_clock)%(262u*3420u));}
+uint32_t machine_z80_pc(void){return g_z80.pc;}
+static uint8_t z80_local_read(void*u,uint16_t a,uint64_t clock)
+{(void)u;z80_stamp(clock);return gbus_z80_read(&genesis,a);}
+static void z80_local_write(void*u,uint16_t a,uint8_t v,uint64_t clock)
+{(void)u;z80_stamp(clock);gbus_z80_write(&genesis,a,v);}
+static uint16_t z80_bank(void*u){(void)u;return (uint16_t)genesis.z80_bank;}
+static uint64_t sound_clock_limit(void*u)
+{
+    (void)u;
+    if(sound_cpu.in_step)return segacd_z80_bus_time(&sound_cpu);
+    return genesis.z80_reset_off&&!genesis.z80_busreq?sound_cpu.time:UINT64_MAX;
+}
+static void host_bus_stamp(void)
+{
+    uint64_t clock=coordinator.external_active?segacd_z80_bus_time(&sound_cpu):coordinator.time[0];
+    uint64_t master=sub_to_master(clock);
+    g_snd_frame=(unsigned long)(master/(262u*3420u));
+    g_audio_cycle_counter=0;g_68k_stamp_rebase=(uint32_t)(master%(262u*3420u));
+}
+#else
 uint32_t machine_z80_stamp(void){return (uint32_t)((line_number%262)*3420);}
 uint32_t machine_z80_pc(void){return 0;}
+static void host_bus_stamp(void){}
+#endif
 void snd_trace_68k_write(uint16_t o,uint8_t a,uint8_t b,int req,int reset){(void)o;(void)a;(void)b;(void)req;(void)reset;}
 void snd_trace_z80(uint16_t o,uint8_t v,int w){(void)o;(void)v;(void)w;}
 void snd_trace_busreq(const char*s,int v){(void)s;(void)v;}
 void audio_event_push(uint32_t stamp,uint8_t port,uint8_t value){(void)stamp;(void)port;(void)value;++audio_events;}
 void glue_charge_68k_stall(uint32_t cycles){dma_stalls+=cycles;segacd_coordinator_main_stall(&coordinator,cycles);}
-static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){(void)u;*v=gbus_read8(&genesis,a);observe_input(a,*v);return M68K_BUS_OK;}
-static M68kStepBusResult read16(void*u,uint32_t a,uint16_t*v){(void)u;*v=gbus_read16(&genesis,a);observe_input(a,*v);return M68K_BUS_OK;}
-static M68kStepBusResult write8(void*u,uint32_t a,uint8_t v){(void)u;gbus_write8(&genesis,a,v);return M68K_BUS_OK;}
-static M68kStepBusResult write16(void*u,uint32_t a,uint16_t v){(void)u;gbus_write16(&genesis,a,v);return M68K_BUS_OK;}
+static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){(void)u;host_bus_stamp();*v=gbus_read8(&genesis,a);observe_input(a,*v);return M68K_BUS_OK;}
+static M68kStepBusResult read16(void*u,uint32_t a,uint16_t*v){(void)u;host_bus_stamp();*v=gbus_read16(&genesis,a);observe_input(a,*v);return M68K_BUS_OK;}
+static M68kStepBusResult write8(void*u,uint32_t a,uint8_t v){(void)u;host_bus_stamp();gbus_write8(&genesis,a,v);return M68K_BUS_OK;}
+static M68kStepBusResult write16(void*u,uint32_t a,uint16_t v){(void)u;host_bus_stamp();gbus_write16(&genesis,a,v);return M68K_BUS_OK;}
 static M68kStepBusResult fetch(void*u,uint32_t a,uint16_t*v){(void)u;if(a<0xFF0000)return M68K_BUS_FAULT;*v=gbus_peek16(&genesis,a);return M68K_BUS_OK;}
 static unsigned ack(void*u,unsigned level){(void)u;if(level==6)irq6=0;if(level==4)irq4=0;return M68K_STEP_AUTOVECTOR;}
 static uint16_t dma_read(void*u,uint32_t a){(void)u;return segacd_coordinator_vdp_read16(&coordinator,a);}
@@ -379,7 +413,11 @@ static void advance_host(void*u,uint64_t now)
             }
         }
         unsigned interrupts=gvdp_begin_scanline(&vdp,(int)line);
-        if(interrupts&GVDP_IRQ_VBLANK)irq6=1;
+        if(interrupts&GVDP_IRQ_VBLANK){irq6=1;
+#ifdef SEGACD_BIOS_PROBE_NATIVE_Z80
+            segacd_z80_irq(&sound_cpu);
+#endif
+        }
         if(interrupts&GVDP_IRQ_HBLANK)irq4=1;
         g_snd_frame=(unsigned long)(line_number/262);++line_number;
     }
@@ -488,6 +526,12 @@ int main(int argc,char**argv)
     int require_native=getenv("SEGACD_PROBE_REQUIRE_NATIVE") && !strcmp(getenv("SEGACD_PROBE_REQUIRE_NATIVE"),"1");
     if(!require_native && !segacd_coordinator_floor(&coordinator,segacd_m68k_floor_step))return 2;
     segacd_coordinator_host_clock(&coordinator,advance_host,next_host_event);
+#ifdef SEGACD_BIOS_PROBE_NATIVE_Z80
+    const SegaCDZ80Bus sound_bus={z80_local_read,z80_local_write,z80_bank};
+    if(!segacd_z80_init(&sound_cpu,&coordinator,&sound_bus,NULL,sonic_cd_z80_step))return 2;
+    segacd_coordinator_device_limit(&coordinator,sound_clock_limit);
+    printf("Native generated Z80 enabled; strict misses, no interpreter.\n");
+#endif
     if(capture_audio) {
         if(!capture_open(dump_directory)){(void)capture_close();return 2;}
         segacd_coordinator_pcm_sink(&coordinator,pcm_capture,NULL);
@@ -509,7 +553,22 @@ int main(int argc,char**argv)
         uint64_t native_before[2]={coordinator.native_steps[0],coordinator.native_steps[1]};
         uint64_t floor_before[2]={coordinator.floor_steps[0],coordinator.floor_steps[1]};
         uint16_t fader_before=cd.drive.fader;uint64_t fader_deadline_before=cd.drive.fader_deadline;
-        status=segacd_coordinator_step(&coordinator);++steps;
+#ifdef SEGACD_BIOS_PROBE_NATIVE_Z80
+        if(genesis.z80_reset_pending){segacd_z80_reset(&sound_cpu);genesis.z80_reset_pending=0;}
+        if(!genesis.z80_reset_off||genesis.z80_busreq) {
+            if(sound_cpu.time<=coordinator.device_time)(void)segacd_z80_hold_until(&sound_cpu,coordinator.device_time);
+            status=segacd_coordinator_step(&coordinator);
+        }else if(sound_cpu.time<=coordinator.device_time) {
+            SegaCDZ80Result zr=segacd_z80_step(&sound_cpu);
+            status=zr==SEGACD_Z80_OK?M68K_STEP_OK:sound_cpu.bus_result;
+            if(zr!=SEGACD_Z80_OK)fprintf(stderr,"Z80 stopped result=%u bus=%u pc=%04X miss=%04X time=%llu retired=%llu\n",
+                zr,sound_cpu.bus_result,sound_cpu.state.pc,sound_cpu.miss_pc,
+                (unsigned long long)sound_cpu.time,(unsigned long long)sound_cpu.retired);
+        }else status=segacd_coordinator_step(&coordinator);
+#else
+        status=segacd_coordinator_step(&coordinator);
+#endif
+        ++steps;
         /* Match only a successfully retired Main instruction in this outer
          * scheduler step. Capture before any subsequent owner can execute. */
         if(main_pc_capture_enabled&&!main_pc_capture_matched&&status==M68K_STEP_OK&&
@@ -595,7 +654,15 @@ int main(int argc,char**argv)
         for(unsigned r=0;r<8;++r)printf("cpu%u D%u=%08X A%u=%08X\n",which,r,s->regs.D[r],r,s->regs.A[r]);
     }
     for(uint64_t n=steps>64?steps-64:0;n<steps;++n)printf("%llu time=%llu main=%06X sub=%06X\n",(unsigned long long)n,(unsigned long long)ring[n%64].time,ring[n%64].main,ring[n%64].sub);
-    printf("sub_control=%u audio_events=%llu dma_stalls=%llu media_sectors=%llu cdc_sectors=%llu cdda_sectors=%llu media_error=%u lba=%d (Z80/audio output absent)\n",cd.main_control,(unsigned long long)audio_events,(unsigned long long)dma_stalls,(unsigned long long)cd.media_sectors,(unsigned long long)cd.cdc.sectors,(unsigned long long)cd.cdda_sectors,cd.media_error,cd.media_error_lba);
+    printf("sub_control=%u audio_events=%llu dma_stalls=%llu media_sectors=%llu cdc_sectors=%llu cdda_sectors=%llu media_error=%u lba=%d (host audio output absent)\n",cd.main_control,(unsigned long long)audio_events,(unsigned long long)dma_stalls,(unsigned long long)cd.media_sectors,(unsigned long long)cd.cdc.sectors,(unsigned long long)cd.cdda_sectors,cd.media_error,cd.media_error_lba);
+#ifdef SEGACD_BIOS_PROBE_NATIVE_Z80
+    printf("Z80 native result=%u retired=%llu time=%llu wait_ticks=%llu tstates=%llu pc=%04X miss=%04X bank=%03X irq=%u iff=%u/%u halted=%u reset_off=%u busreq=%u\n",
+        sound_cpu.result,(unsigned long long)sound_cpu.retired,(unsigned long long)sound_cpu.time,
+        (unsigned long long)sound_cpu.wait_ticks,(unsigned long long)sound_cpu.state.cyc,sound_cpu.state.pc,
+        sound_cpu.miss_pc,genesis.z80_bank,sound_cpu.irq_pending,sound_cpu.state.iff1,sound_cpu.state.iff2,
+        sound_cpu.state.halted,genesis.z80_reset_off,genesis.z80_busreq);
+    dump(argv[3],"z80-ram.bin",genesis.z80_ram,sizeof genesis.z80_ram);
+#endif
     printf("stamp operations=%llu pixels=%llu busy=%u remaining_lines=%u\n",(unsigned long long)cd.stamp.operations,(unsigned long long)cd.stamp.pixels,cd.stamp.busy,cd.stamp.reg[6]);
     printf("gate mask=%02X pending=%02X flags=%02X/%02X wp=%02X events=%u; drive status=%u control=%02X command=%u unsupported=%u lba=%d frames=%llu rx=",cd.irq_mask,cd.irq_pending,cd.flags[0],cd.flags[1],cd.write_protect,event_count,cd.drive.status,cd.drive.control,cd.drive.command_pending,cd.drive.unsupported_command,cd.drive.lba,(unsigned long long)cd.drive.frames);
     for(unsigned n=0;n<10;++n)printf("%X",cd.drive.rx[n]);

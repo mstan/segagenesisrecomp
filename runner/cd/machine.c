@@ -1,0 +1,147 @@
+#include "machine.h"
+#include "../video/genesis_dac.h"
+#include <string.h>
+
+/* Genesis bus ABI. Work RAM remains CPU-visible real storage, not a host
+ * campaign/state replacement. No cartridge ROM is installed in CD mode. */
+uint8_t g_rom[0x400000],g_ram[0x10000],*g_rom_ext,g_sndwatch[0x2000];
+uint32_t g_rom_ext_size,g_audio_cycle_counter,g_68k_stamp_rebase;
+unsigned long g_snd_frame;
+unsigned g_snd_pcz;
+static SegaCDMachine *current;
+static uint64_t master_clock(uint64_t sub)
+{return sub/12500000u*53693175u+(sub%12500000u)*53693175u/12500000u;}
+uint64_t segacd_machine_line_clock(uint64_t line)
+{
+    uint64_t master=line*3420u;
+    return master/53693175u*12500000u+
+        ((master%53693175u)*12500000u+53693174u)/53693175u;
+}
+static void stamp_bus(SegaCDMachine *m,uint64_t sub)
+{
+    uint64_t master=master_clock(sub);m->bus_clock=sub;
+    g_snd_frame=(unsigned long)(master/(262u*3420u));
+    g_audio_cycle_counter=0;g_68k_stamp_rebase=(uint32_t)(master%(262u*3420u));
+}
+static void main_stamp(SegaCDMachine *m)
+{
+    stamp_bus(m,m->coordinator.external_active?segacd_z80_bus_time(&m->z80):m->coordinator.time[0]);
+}
+uint32_t machine_z80_stamp(void)
+{return current?(uint32_t)(master_clock(current->bus_clock)%(262u*3420u)):0;}
+uint32_t machine_z80_pc(void){return g_z80.pc;}
+void snd_trace_68k_write(uint16_t o,uint8_t a,uint8_t b,int req,int reset)
+{(void)o;(void)a;(void)b;(void)req;(void)reset;}
+void snd_trace_z80(uint16_t o,uint8_t v,int w){(void)o;(void)v;(void)w;}
+void snd_trace_busreq(const char *s,int v){(void)s;(void)v;}
+void audio_event_push(uint32_t unused,uint8_t port,uint8_t value)
+{
+    (void)unused;
+    if(current&&current->audio_write)
+        current->audio_write(current->audio_user,current->bus_clock,port,value);
+}
+void glue_charge_68k_stall(uint32_t cycles)
+{if(current)segacd_coordinator_main_stall(&current->coordinator,cycles);}
+static M68kStepBusResult read8(void *u,uint32_t a,uint8_t *v)
+{SegaCDMachine*m=u;main_stamp(m);*v=gbus_read8(&m->bus,a);return M68K_BUS_OK;}
+static M68kStepBusResult read16(void *u,uint32_t a,uint16_t *v)
+{SegaCDMachine*m=u;main_stamp(m);*v=gbus_read16(&m->bus,a);return M68K_BUS_OK;}
+static M68kStepBusResult write8(void *u,uint32_t a,uint8_t v)
+{SegaCDMachine*m=u;main_stamp(m);gbus_write8(&m->bus,a,v);return M68K_BUS_OK;}
+static M68kStepBusResult write16(void *u,uint32_t a,uint16_t v)
+{SegaCDMachine*m=u;main_stamp(m);gbus_write16(&m->bus,a,v);return M68K_BUS_OK;}
+static M68kStepBusResult fetch16(void *u,uint32_t a,uint16_t *v)
+{
+    SegaCDMachine*m=u;if(a<0xff0000u)return M68K_BUS_FAULT;
+    *v=gbus_peek16(&m->bus,a);return M68K_BUS_OK;
+}
+static unsigned ack(void *u,unsigned level)
+{SegaCDMachine*m=u;if(level==6)m->irq6=0;if(level==4)m->irq4=0;return M68K_STEP_AUTOVECTOR;}
+static uint16_t dma_read(void *u,uint32_t address)
+{return segacd_coordinator_vdp_read16(&((SegaCDMachine*)u)->coordinator,address);}
+static uint8_t z80_read(void *u,uint16_t a,uint64_t clock)
+{SegaCDMachine*m=u;stamp_bus(m,clock);return gbus_z80_read(&m->bus,a);}
+static void z80_write(void *u,uint16_t a,uint8_t v,uint64_t clock)
+{SegaCDMachine*m=u;stamp_bus(m,clock);gbus_z80_write(&m->bus,a,v);}
+static uint16_t z80_bank(void *u){return (uint16_t)((SegaCDMachine*)u)->bus.z80_bank;}
+static uint64_t sound_limit(void *u)
+{
+    SegaCDMachine*m=u;
+    if(m->z80.in_step)return segacd_z80_bus_time(&m->z80);
+    return m->bus.z80_reset_off&&!m->bus.z80_busreq?m->z80.time:UINT64_MAX;
+}
+static uint64_t next_host_event(void *u)
+{return segacd_machine_line_clock(((SegaCDMachine*)u)->line);}
+static void host_advance(void *u,uint64_t clock)
+{
+    SegaCDMachine*m=u;
+    while(segacd_machine_line_clock(m->line)<=clock) {
+        unsigned line=(unsigned)(m->line%262u);
+        if(m->line) {
+            unsigned row=(line+261u)%262u;
+            if(row<GVDP_MAX_HEIGHT) {
+                uint8_t indices[GVDP_MAX_WIDTH];
+                int width=gvdp_render_scanline(&m->vdp,(int)row,indices);
+                if(width>0&&width<=GVDP_MAX_WIDTH) {
+                    m->width=(unsigned)width;
+                    for(int x=0;x<width;++x){unsigned i=indices[x];m->pixels[row][x]=i<192?
+                        genesis_dac_cram_to_argb(m->vdp.cram[i%64],(int)(i/64)):0xff000000u;}
+                }
+            }
+        }
+        if(!line&&m->line){++m->frames;m->height=(unsigned)gvdp_screen_height(&m->vdp);}
+        unsigned irq=gvdp_begin_scanline(&m->vdp,(int)line);
+        if(irq&GVDP_IRQ_VBLANK){m->irq6=1;segacd_z80_irq(&m->z80);}
+        if(irq&GVDP_IRQ_HBLANK)m->irq4=1;
+        ++m->line;
+    }
+    segacd_coordinator_main_irq(&m->coordinator,m->irq6?6u:m->irq4?4u:0u);
+}
+int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
+                        const SegaCDNativeProgram *program)
+{
+    if(!m||!program||!bios||bytes!=SEGACD_BIOS_BYTES||current||!program->z80_step)return 0;
+    memset(m,0,sizeof *m);memset(g_rom,0,sizeof g_rom);memset(g_ram,0,sizeof g_ram);
+    g_rom_ext=NULL;g_rom_ext_size=0;g_snd_frame=0;g_audio_cycle_counter=g_68k_stamp_rebase=0;
+    m->width=320;m->height=224;
+    if(!segacd_init(&m->devices,bios,bytes))return 0;
+    gvdp_init(&m->vdp);gbus_init(&m->bus,&m->vdp);
+    m->vdp.bus_read=dma_read;m->vdp.bus_read_user=m;
+    const M68kStepBus host={read8,read16,write8,write16,fetch16,NULL,ack,NULL};
+    if(!segacd_coordinator_init(&m->coordinator,&m->devices,&host,m)||
+       !segacd_coordinator_modules(&m->coordinator,SEGACD_MAIN,program->main_modules,program->main_count)||
+       !segacd_coordinator_modules(&m->coordinator,SEGACD_SUB,program->sub_modules,program->sub_count))return 0;
+    const SegaCDZ80Bus sound={z80_read,z80_write,z80_bank};
+    if(!segacd_z80_init(&m->z80,&m->coordinator,&sound,m,program->z80_step))return 0;
+    segacd_coordinator_host_clock(&m->coordinator,host_advance,next_host_event);
+    segacd_coordinator_device_limit(&m->coordinator,sound_limit);
+    current=m;return 1;
+}
+void segacd_machine_close(SegaCDMachine *m){if(current==m)current=NULL;}
+void segacd_machine_pad(SegaCDMachine *m,unsigned port,uint16_t buttons)
+{if(m&&port<2)m->bus.pad[port]=buttons&0xfffu;}
+M68kStepResult segacd_machine_step(SegaCDMachine *m)
+{
+    if(!m||m!=current)return M68K_STEP_REENTERED;
+    if(m->coordinator.busy[0]||m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)
+        return M68K_STEP_REENTERED;
+    if(m->result!=M68K_STEP_OK)return m->result;
+    if(m->bus.z80_reset_pending){segacd_z80_reset(&m->z80);m->bus.z80_reset_pending=0;}
+    if(!m->bus.z80_reset_off||m->bus.z80_busreq) {
+        if(m->z80.time<=m->coordinator.device_time)
+            (void)segacd_z80_hold_until(&m->z80,m->coordinator.device_time);
+        m->result=segacd_coordinator_step(&m->coordinator);
+    }else if(m->z80.time<=m->coordinator.device_time) {
+        SegaCDZ80Result result=segacd_z80_step(&m->z80);
+        if(result!=SEGACD_Z80_OK)m->result=m->z80.bus_result;
+    }else m->result=segacd_coordinator_step(&m->coordinator);
+    return m->result;
+}
+M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
+{
+    if(!m||m!=current)return M68K_STEP_REENTERED;
+    uint64_t frame=m->frames;
+    do {M68kStepResult r=segacd_machine_step(m);if(r!=M68K_STEP_OK)return r;}
+    while(m->frames==frame);
+    return M68K_STEP_OK;
+}

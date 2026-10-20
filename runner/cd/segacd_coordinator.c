@@ -17,6 +17,13 @@ static void advance_devices(SegaCDCoordinator *c)
 {
     uint64_t now=c->time[0];
     if(segacd_sub_runnable(c->devices) && c->time[1]<now)now=c->time[1];
+    /* A third master may be the current limiting clock. External Main byte
+     * WAIT is the exception: its Sub owner and devices must continue advancing
+     * while the Z80/master making that access is synchronously paused. */
+    if(!c->external_active && c->device_limit) {
+        uint64_t limit=c->device_limit(c->host_user);
+        if(now>limit)now=limit;
+    }
     while(now>c->device_time) {
         uint64_t remaining=now-c->device_time;
         uint32_t delta=remaining>UINT32_MAX?UINT32_MAX:(uint32_t)remaining;
@@ -223,6 +230,8 @@ int segacd_coordinator_floor(SegaCDCoordinator *c,M68kStepResult (*step)(M68kSte
 void segacd_coordinator_main_irq(SegaCDCoordinator*c,unsigned level){if(c && level<=7)c->main_irq=level;}
 void segacd_coordinator_host_clock(SegaCDCoordinator*c,void (*advance)(void *,uint64_t),uint64_t (*next)(void *))
 {if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;}}
+void segacd_coordinator_device_limit(SegaCDCoordinator*c,uint64_t (*limit)(void *))
+{if(c && !c->busy[0] && !c->busy[1])c->device_limit=limit;}
 void segacd_coordinator_pcm_sink(SegaCDCoordinator*c,Rf5c164Sink sink,void*user)
 {if(c && !c->busy[0] && !c->busy[1]){c->io.pcm_sink=sink;c->io.pcm_user=user;}}
 void segacd_coordinator_cdda_sink(SegaCDCoordinator*c,SegaCDCddaSample sink,void*user)
@@ -241,6 +250,7 @@ uint16_t segacd_coordinator_vdp_read16(SegaCDCoordinator*c,uint32_t a)
 void segacd_coordinator_main_stall(SegaCDCoordinator*c,uint32_t cycles)
 {
     if(!c || !cycles)return;
+    if(c->external_active){c->external_stall_seen=1;return;}
     if(c->cpu[0].fault_escape)c->cpu[0].charge+=cycles;
     else {c->cpu[0].state.cycles+=cycles;account(c,0,cycles);advance_devices(c);}
 }
@@ -279,7 +289,13 @@ M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
 }
 M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator*c,uint64_t deadline)
 {
-    if(!c)return M68K_STEP_REENTERED;
+    if(!c || c->busy[0] || c->busy[1] || c->external_active)return M68K_STEP_REENTERED;
+    /* A synchronous caller (notably the Z80 instruction bridge) cannot wait
+     * for an independent master that is itself waiting for this call to
+     * return. Fail before advancing either CPU instead of reporting success
+     * with device_time stranded below the requested deadline. */
+    if(c->device_limit && deadline>c->device_limit(c->host_user))
+        return c->last_result=M68K_STEP_NO_WAIT_HANDLER;
     while(c->time[0]<deadline || (segacd_sub_runnable(c->devices) && c->time[1]<deadline)) {
         if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
         /* Never step an all-STOP system past a host raster deadline. */
@@ -295,4 +311,118 @@ M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator*c,uint64_t deadlin
     advance_devices(c);
     if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
     return M68K_STEP_OK;
+}
+
+typedef struct { uint32_t address; uint8_t value; int write; } ExternalByte;
+
+static M68kStepResult external_byte_once(SegaCDCoordinator *c,ExternalByte *op,int *wait)
+{
+    *wait=0;
+    SegaCDResult r;
+    if(op->write)r=segacd_write8(c->devices,SEGACD_MAIN,op->address,op->value);
+    else r=segacd_read8(c->devices,SEGACD_MAIN,op->address,&op->value);
+    if(r==SEGACD_WAIT){*wait=1;return M68K_STEP_OK;}
+    if(r==SEGACD_UNMAPPED) {
+        if(main_cd_port(op->address))return M68K_STEP_BUS_ERROR;
+        M68kStepBusResult host;
+        if(op->write) {
+            if(!c->host_main.write8)return M68K_STEP_BUS_ERROR;
+            host=c->host_main.write8(c->host_user,op->address,op->value);
+        } else {
+            if(!c->host_main.read8)return M68K_STEP_BUS_ERROR;
+            uint8_t value;
+            host=c->host_main.read8(c->host_user,op->address,&value);
+            if(host==M68K_BUS_OK)op->value=value;
+        }
+        if(host==M68K_BUS_OK)return M68K_STEP_OK;
+        return host==M68K_BUS_WAIT?M68K_STEP_NO_WAIT_HANDLER:M68K_STEP_BUS_ERROR;
+    }
+    if(r==SEGACD_OK)return M68K_STEP_OK;
+    return r==SEGACD_ADDRESS_ERROR?M68K_STEP_ADDRESS_ERROR:M68K_STEP_BUS_ERROR;
+}
+
+static int external_stop_has_event(SegaCDCoordinator *c)
+{
+    return c->devices->timer_reload ||
+        (c->host_next_event && c->host_next_event(c->host_user)!=UINT64_MAX) ||
+        segacd_cdd_next_event(&c->devices->drive)!=UINT64_MAX ||
+        c->devices->cdc.decoder_irq_clocks || c->devices->dma.active ||
+        c->devices->stamp.busy;
+}
+
+static M68kStepResult external_main_byte(SegaCDCoordinator *c,ExternalByte *op)
+{
+    if(!c || c->busy[0] || c->busy[1] || c->external_active)return M68K_STEP_REENTERED;
+    op->address&=0xFFFFFFu;
+    c->external_active=1;c->busy[SEGACD_MAIN]=1;c->external_stall_seen=0;
+    M68kStepResult result=M68K_STEP_OK;
+    int wait=0;
+    /* An immediate byte is still allowed with a zero owner-step budget, but
+     * device faults never permit host callbacks or a synthetic value. */
+    if(device_fault(c)){c->last_cpu=1;result=M68K_STEP_BUS_ERROR;goto done;}
+    result=external_byte_once(c,op,&wait);
+    if(c->external_stall_seen){result=M68K_STEP_NO_WAIT_HANDLER;goto done;}
+    if(device_fault(c)){c->last_cpu=1;result=M68K_STEP_BUS_ERROR;goto done;}
+    if(!wait)goto done;
+    if(c->wait_limit==0){result=M68K_STEP_NO_WAIT_HANDLER;goto done;}
+    if(!segacd_sub_runnable(c->devices)){result=M68K_STEP_STOPPED;goto done;}
+
+    result=refresh_sub(c);
+    if(result!=M68K_STEP_OK)goto done;
+    advance_devices(c);
+    if(c->external_stall_seen){result=M68K_STEP_NO_WAIT_HANDLER;goto done;}
+    if(device_fault(c)){c->last_cpu=1;result=M68K_STEP_BUS_ERROR;goto done;}
+    result=external_byte_once(c,op,&wait);
+    if(c->external_stall_seen){result=M68K_STEP_NO_WAIT_HANDLER;goto done;}
+    if(device_fault(c)){c->last_cpu=1;result=M68K_STEP_BUS_ERROR;goto done;}
+    if(!wait)goto done;
+
+    /* The budget counts actual scheduler/owner advances, not the initial
+     * immediate byte probe. Sub keeps its existing clock position. Main is
+     * paused and catches up only after Sub genuinely advances beyond it. */
+    for(unsigned n=0;n<c->wait_limit;++n) {
+        if(!segacd_sub_runnable(c->devices)){result=M68K_STEP_STOPPED;goto done;}
+        result=execute_cpu(c,SEGACD_SUB);
+        if(result!=M68K_STEP_OK && result!=M68K_STEP_STOPPED)goto done;
+        if(c->time[0]<c->time[1])c->time[0]=c->time[1];
+        advance_devices(c);
+        if(c->external_stall_seen){result=M68K_STEP_NO_WAIT_HANDLER;goto done;}
+        if(device_fault(c)){c->last_cpu=1;result=M68K_STEP_BUS_ERROR;goto done;}
+        result=refresh_sub(c);
+        if(result!=M68K_STEP_OK)goto done;
+        result=external_byte_once(c,op,&wait);
+        if(c->external_stall_seen){result=M68K_STEP_NO_WAIT_HANDLER;goto done;}
+        if(device_fault(c)){c->last_cpu=1;result=M68K_STEP_BUS_ERROR;goto done;}
+        if(!wait)goto done;
+        if(result!=M68K_STEP_OK)goto done;
+        if(!segacd_sub_runnable(c->devices)){result=M68K_STEP_STOPPED;goto done;}
+        if(c->cpu[SEGACD_SUB].state.stopped) {
+            /* Bounded real events may wake a stopped owner; unrelated events
+             * cannot fabricate a grant and eventually exhaust wait_limit. */
+            if(!external_stop_has_event(c)){result=M68K_STEP_STOPPED;goto done;}
+            uint64_t next=next_event_time(c,UINT64_MAX);
+            if(next<=c->device_time){result=M68K_STEP_STOPPED;goto done;}
+            if(c->time[SEGACD_SUB]<next)c->time[SEGACD_SUB]=next;
+            if(c->time[0]<c->time[SEGACD_SUB])c->time[0]=c->time[SEGACD_SUB];
+            advance_devices(c);
+            if(c->external_stall_seen){result=M68K_STEP_NO_WAIT_HANDLER;goto done;}
+        }
+    }
+    result=M68K_STEP_NO_WAIT_HANDLER;
+done:
+    c->busy[SEGACD_MAIN]=0;c->external_active=0;c->external_stall_seen=0;
+    return result;
+}
+
+M68kStepResult segacd_coordinator_external_main_read8(SegaCDCoordinator*c,uint32_t a,uint8_t*v)
+{
+    if(!v)return M68K_STEP_BUS_ERROR;
+    ExternalByte op={a,0,0};M68kStepResult r=external_main_byte(c,&op);
+    if(r==M68K_STEP_OK)*v=op.value;
+    return r;
+}
+
+M68kStepResult segacd_coordinator_external_main_write8(SegaCDCoordinator*c,uint32_t a,uint8_t v)
+{
+    ExternalByte op={a,v,1};return external_main_byte(c,&op);
 }

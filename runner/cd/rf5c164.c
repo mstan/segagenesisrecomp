@@ -69,3 +69,16 @@ void rf5c164_advance(Rf5c164 *p,uint32_t clocks,Rf5c164Sink sink,void *user)
     uint32_t count=(uint32_t)(total/384u);p->phase=(uint16_t)(total%384u);
     for(uint32_t n=0;n<count;++n){rf5c164_sample(p,NULL,NULL);if(sink)sink(user,p->left,p->right);}
 }
+void rf5c164_advance_timed(Rf5c164 *p,uint64_t start,uint32_t clocks,Rf5c164TimedSink sink,void *user)
+{
+    uint32_t phase=p->phase;
+    uint64_t total=(uint64_t)phase+clocks;
+    uint32_t count=(uint32_t)(total/384u);
+    p->phase=(uint16_t)(total%384u);
+    uint32_t first=384u-phase;
+    for(uint32_t n=0;n<count;++n) {
+        uint64_t stamp=start+(uint64_t)first+(uint64_t)n*384u;
+        rf5c164_sample(p,NULL,NULL);
+        if(sink)sink(user,stamp,p->left,p->right);
+    }
+}

@@ -90,7 +90,10 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
             delta=s->stamp.remaining_clocks;
         /* Age the preceding decoder pulse before delivering a new sector at
          * its actual CDD event boundary, even during a long stopped interval. */
-        rf5c164_advance(&s->pcm,delta,io?io->pcm_sink:NULL,io?io->pcm_user:NULL);
+        if(io && io->pcm_timed_sink)
+            rf5c164_advance_timed(&s->pcm,s->drive.cycles,delta,io->pcm_timed_sink,io->pcm_timed_user);
+        else
+            rf5c164_advance(&s->pcm,delta,io?io->pcm_sink:NULL,io?io->pcm_user:NULL);
         if(!s->cdda_error) {
             SegaCDCddaResult result=segacd_cdda_advance_to(&s->cdda,s->drive.cycles+delta,
                 io?io->cdda_sample:NULL,io?io->cdda_sample_user:NULL,NULL);

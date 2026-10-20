@@ -28,6 +28,7 @@ typedef enum {
  * raw audio callback is a timed CD-DA sector event, not a host resampler. */
 typedef int (*SegaCDReadSector)(void *,int32_t lba,uint8_t raw[2352]);
 typedef void (*SegaCDCddaSector)(void *,uint64_t sub_clock,int32_t lba,const uint8_t raw[2352]);
+typedef void (*SegaCDPcmTimedSample)(void *,uint64_t sub_clock,int16_t left,int16_t right);
 typedef struct {
     Rf5c164Sink pcm_sink;
     void *pcm_user;
@@ -37,6 +38,11 @@ typedef struct {
     void *cdda_user;
     SegaCDCddaSample cdda_sample;
     void *cdda_sample_user;
+    /* Appended for positional-initializer compatibility. When present, this
+     * exact subclock callback takes precedence over the legacy untimed PCM
+     * sink; sample events use device cycles and the RF5C164 384-clock phase. */
+    SegaCDPcmTimedSample pcm_timed_sink;
+    void *pcm_timed_user;
 } SegaCDIO;
 
 enum {

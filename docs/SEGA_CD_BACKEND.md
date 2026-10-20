@@ -5,17 +5,85 @@ campaign. Work is isolated on `feature/segacd-backend`. The S3K campaign was
 delivered on its own branch in `731461a`; it is a C adaptation and does not boot
 original CD programs. Neither branch is merged into master by this work.
 
-Current original-program milestone: actual Start/Right/A input reaches Palmtree
-Panic, moves Sonic through its loop and collects 13 rings. The 50-second run
-`build/qa-bios-native-scripted-movement-1` retires 70,193,539 guarded native
-operations and 9,719,687 diagnostic-floor operations. All 46 shared RAM/VDP/frame
-artifacts and final CPU/device observations match its floor-only counterpart;
-the directory's `native-floor-comparison.json` records the comparison. This is
-hybrid bring-up evidence, not native-only coverage, independent fidelity
-acceptance or a playable release. Complete Z80/audio integration, native
-coverage, original-program save/mechanics coverage and final independent
-visual comparisons remain required. Earlier milestones below retain their
-original limitations; later runs supersede the earlier black-screen results.
+Current original-program evidence includes a complete 50-second strict native
+Z80 run: 16,292,291 generated instructions with no miss or interpreter fallback.
+Main/Sub deliberately used the diagnostic floor for that isolated check.
+`build/qa-bios-z80-native-floor-gameplay-4/parent-canonical-run-manifest.json`
+records inputs, executable and captures. The CDD counter `drive.frames` is a
+75 Hz drive counter; it must not be reported as the video frame count.
+
+The earlier hybrid Main/Sub run retires 79,562,450 native and 350,776 floor
+operations. All 112 shared RAM, video and audio artifacts are byte-identical
+to the CDDA-integrated floor run; only the execution log differs. Eight further
+guarded catalogs now cover its remaining 62 Main and 146 Sub trace PCs, with
+independent full-byte source/table/CRC/root checks. Transient MDINIT source
+mapping and capture-derived BIOS extension identity limits remain recorded in
+`build/qa-bios-native-cdda-movement-audit/parent-adversarial-review.json`.
+
+These are separate qualification results. Combined strict native execution,
+host audio, owner playtest, original-program saves/mechanics and final
+independent visual comparisons must still pass. Earlier milestones below
+retain their original limitations and are superseded only by specific later
+evidence, not by a percentage of operations from one run.
+
+The standalone now builds with MSVC. Its first three combined native runs
+reach 124, 602 and 604 video frames, respectively, with nonzero Main/Sub/Z80
+instruction counts, zero floor operations and zero audio faults. They stop
+explicitly on uncovered runtime JMP variants; they have not yet established
+playable original-game coverage. Exact captured instruction bytes generate
+additional guarded variants without replacing guest state or relaxing guards.
+Private run manifests and captures are under
+`G:/Temp/Codex/segagenesisrecomp/sonic-cd-native/combined-native-{1,2,3}`.
+The final captured RAM proves each instruction variant; its precise writer is
+not established by a write trace. These are runtime observations, not a claim
+that every original stage is covered.
+
+All 26 synthetic tests pass MSVC, including the shared 68000 test. The GCC
+Sega CD suite also passes. A separate integration harness using real ymfm and
+SN76489 implementations verifies three frame sample boundaries, two flushed
+intervals and timestamped PCM/CDDA silence without opening an audio device.
+The new Linux sanitizer pass remains unverified: available WSL distributions
+are backed by C:, and the installed MinGW lacks ASan/UBSan libraries. Earlier
+Linux results apply only to their recorded revisions.
+
+The native consumer uses `runner/cd/machine.c` with guarded Main/Sub catalogs
+and `z80_native.c`; it never attaches the diagnostic floor or links the legacy
+Z80 interpreter adapter. The shared Z80 core pin sequences word reads. Z80
+time retains the rational `187500000/53693175` Sub-clock phase, and a third
+coordinator clock ceiling prevents devices passing the running Z80 boundary.
+Banked Z80 bytes use the CD Main map. An ownership WAIT runs the actual Sub
+owner and retries only the denied byte; completed earlier effects stay
+committed. A fault is terminal and cannot replay a partial instruction.
+
+`audio_native.c` queues FM/PSG writes on the same absolute clock, preserves
+chip phases and mixes timed RF5C164/CDDA at the exact rational PSG positions.
+One video frame of host delivery latency supplies interpolation lookahead.
+No SDL callback advances guest devices. Queue, clock and underflow errors are
+sticky; window preflight prevents an incomplete mix reaching host playback.
+Stopping ends delivery at the counted complete intervals rather than running
+an extra guest frame to invent future source samples.
+
+`backup.c` validates a complete 8192-byte file before replacing guest RAM.
+Writes use an exclusive same-directory temporary file, flush/commit and atomic
+replacement; a Windows replacement-denied test preserves the prior save.
+This is host persistence, not proof of original BIOS-menu formatting or game
+save progression. Those still require original-program tests.
+
+The opt-in CMake `SEGACD_BUILD_NATIVE_RUNNER` target `SonicCD` accepts owned
+`--bios`, `--disc` and optional `--backup` paths. It requires the qualified US
+BIOS and disc identities. Window titles use `Sonic CD`, presentation starts
+windowed, and owner audio defaults to volume 100. Arrows/Z/X/C/Enter and a
+standard controller supply the original buttons; P pauses and Escape closes.
+`--headless --frames N --mute`, repeated `--pad frame:duration:mask`, `--dump`
+and `--wav` support reproducible private QA. Generated catalogs and inputs
+remain private. Building the target alone is not gameplay acceptance.
+An explicit backup path creates no AppData directory; the default save lives
+beside the executable. Optional `--debug-port N` binds a loopback QA service;
+`--start-paused` permits a client to attach before execution. Its logged memory
+writes, held controller input, frame stepping and PPM captures run only between
+frames. Neither the service nor its port changes the gameplay window caption.
+Z80 I/O-space instructions stop explicitly as unsupported; they never alias
+Genesis memory or silently perform an unrelated memory access.
 
 The new `runner/cd` device library is game-independent portable C. It takes an
 owned BIOS; BIOS, disc images, generated program C and captures stay private.
