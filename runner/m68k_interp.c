@@ -149,6 +149,7 @@ static void mem_write(M68KSize sz, uint32_t a, uint32_t v) {
 
 static uint32_t read_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, int rmw) {
     int mode = (ea >> 3) & 7, reg = ea & 7, sb = szbytes(sz);
+    if(reg==7 && sz==M68K_SIZE_B)sb=2;
     switch (mode) {
     case 0: return g_cpu.D[reg];
     case 1: return g_cpu.A[reg];
@@ -209,6 +210,7 @@ static uint32_t addr_ea(const M68KInstr *ins, int ea, ExtR *er) {
 
 static void write_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, uint32_t val, int rmw) {
     int mode = (ea >> 3) & 7, reg = ea & 7, sb = szbytes(sz);
+    if(reg==7 && sz==M68K_SIZE_B)sb=2;
     (void)ins;
     switch (mode) {
     case 0: store_dn(reg, val, sz); break;
@@ -777,8 +779,8 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
     case MN_CMPM: {
         /* CMPM (Ay)+,(Ax)+ : Ax is dest (ins->reg), Ay is src (src_ea&7). */
         int ay = ins->src_ea & 7, ax = ins->reg, sb = szbytes(sz); uint32_t m = szmask(sz);
-        uint32_t b = mem_read(sz, g_cpu.A[ay]) & m; g_cpu.A[ay] += sb;
-        uint32_t a = mem_read(sz, g_cpu.A[ax]) & m; g_cpu.A[ax] += sb;
+        uint32_t b = mem_read(sz, g_cpu.A[ay]) & m; g_cpu.A[ay] += ay==7 && sz==M68K_SIZE_B?2:sb;
+        uint32_t a = mem_read(sz, g_cpu.A[ax]) & m; g_cpu.A[ax] += ax==7 && sz==M68K_SIZE_B?2:sb;
         flags_cmp(a, b, a - b, sz);
         return M68KI_OK;
     }

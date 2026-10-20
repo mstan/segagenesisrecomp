@@ -37,6 +37,13 @@ int main(void)
     CHECK(run(0x80000000u,0xFFFF,1)==M68KI_OK);CHECK(g_cpu.D[0]==0x80000000u && (g_cpu.SR&2));
     CHECK(run(0x12345678,0,0)==M68KI_HALT_UNIMPL);CHECK(g_cpu.PC==0x200 && g_cpu.D[0]==0x12345678 && g_m68ki_bad_pc==0x200 && g_m68ki_bad_op==0x80FC);
     CHECK(run(0x12345678,0,1)==M68KI_HALT_UNIMPL);CHECK(g_cpu.PC==0x200 && g_m68ki_bad_op==0x81FC);
+    memset(&g_cpu,0,sizeof g_cpu);g_cpu.PC=0x200;g_cpu.SR=0x2000;g_cpu.A[7]=0xFFFF0022u;g_cpu.D[0]=0xAABBCC00u;
+    g_rom[0x200]=0x10;g_rom[0x201]=0x27;g_ram[0x20]=0x42;
+    CHECK(m68k_interp_step()==M68KI_OK && g_cpu.A[7]==0xFFFF0020u && g_cpu.D[0]==0xAABBCC42u);
+    g_cpu.PC=0x200;g_rom[0x200]=0x1E;g_rom[0x201]=0xC0;g_cpu.D[0]=0x3E;
+    CHECK(m68k_interp_step()==M68KI_OK && g_cpu.A[7]==0xFFFF0022u && g_ram[0x20]==0x3E);
+    g_cpu.PC=0x200;g_cpu.A[7]=0xFFFF0020u;g_cpu.SR=0x2010;g_rom[0x200]=0xBF;g_rom[0x201]=0x0F;g_ram[0x20]=1;g_ram[0x22]=3;
+    CHECK(m68k_interp_step()==M68KI_OK && g_cpu.A[7]==0xFFFF0024u && g_cpu.SR==0x2010);
     puts("Existing correctness floor: divide boundary/overflow/remainder and loud zero-divide rejection pass");
     return 0;
 }

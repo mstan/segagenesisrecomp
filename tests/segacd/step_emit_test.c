@@ -29,6 +29,9 @@ static const Case cases[] = {
     {"signed_divide", {0x81FC,0x0003},2,0,1},
     {"signed_overflow", {0x81FC,0xFFFF},2,0,1},
     {"check", {0x41BC,0x000A},2,0,1},
+    {"stack_read", {0x1027},1,1,1},  /* MOVE.B -(A7),D0 */
+    {"stack_write", {0x1EC0},1,1,1}, /* MOVE.B D0,(A7)+ */
+    {"stack_cmpm", {0xBF0F},1,1,1},  /* CMPM.B (A7)+,(A7)+ */
 };
 
 int main(int argc, char **argv)
@@ -89,6 +92,9 @@ int main(int argc, char **argv)
           "a.state.regs.A[7]=0x100;a.state.regs.D[0]=11;m68k_step_write32(&a,6*4,0x180);run(&a,&e_check);CHECK(a.state.exception_vector==6 && a.state.regs.PC==0x180 && !(a.state.regs.SR&8) && a.charge==44);\n"
           "a.state.regs.A[7]=0x100;a.state.regs.D[0]=0xFFFF;run(&a,&e_check);CHECK(a.state.exception_vector==6 && (a.state.regs.SR&8));\n"
           "a.state.regs.D[0]=10;run(&a,&e_check);CHECK(!a.state.exception_vector && a.state.regs.PC==4 && a.charge==14);\n"
+          "a.state.regs.A[7]=0x102;a.state.regs.D[0]=0xAABBCC00u;m68k_step_write8(&a,0x100,0x42);run(&a,&e_stack_read);CHECK(a.state.regs.A[7]==0x100 && a.state.regs.D[0]==0xAABBCC42u);\n"
+          "a.state.regs.D[0]=0x3E;run(&a,&e_stack_write);CHECK(a.state.regs.A[7]==0x102 && m68k_step_read8(&a,0x100)==0x3E);\n"
+          "a.state.regs.A[7]=0x100;a.state.regs.SR=0x2010;m68k_step_write8(&a,0x100,1);m68k_step_write8(&a,0x102,3);run(&a,&e_stack_cmpm);CHECK(a.state.regs.A[7]==0x104 && a.state.regs.SR==0x2010);\n"
           "puts(\"Native arithmetic/control steps, physical contexts and explicit rejection pass\");return 0;}\n",out);
     CHECK(!ferror(out));CHECK(!fclose(out));return 0;
 }

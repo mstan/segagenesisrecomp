@@ -175,3 +175,11 @@ are used without copying/linking external emulator implementations. CDC work
 uses Sanyo's [LC8950/LC8951 Design Manual](https://bitsavers.org/pdf/sony/cdrom/CDU535-88_SLCD/LC8950_LC8951_Design_Manual.pdf),
 including appendix E's original-LC8951 differences. Its private source SHA256 is
 `afb95208d748c2ed9552b5ded3a86e57b831801ade2b25d32220173716383d0e`.
+
+Further default CPU fixes preserve A7's two-byte increment/decrement for byte
+EAs and execute CMPM's source read/increment before its destination read when
+the registers alias. Generated native steps and the existing interpreter pass
+the same architectural expectations; a separate Unicorn original-MC68000
+probe agrees for all three byte-stack/alias cases
+(`build/qa-stack-byte-unicorn.json`). Broader cartridge/default-path regression
+qualification remains necessary before any merge.
