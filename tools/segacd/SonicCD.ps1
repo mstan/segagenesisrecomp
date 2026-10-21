@@ -71,7 +71,7 @@ if ($ValidateOnly) {
         }
         $verified[$normalizedRelative] = $actualHash
     }
-    foreach ($requiredRelative in @('soniccd.exe', 'sdl2.dll', 'soniccd.ps1', 'soniccd.cmd', 'readme-portable-windows.md', 'tools/segacd/disc_image.py')) {
+    foreach ($requiredRelative in @('soniccd.exe', 'sdl2.dll', 'soniccd.ps1', 'soniccd.cmd', 'readme-portable-windows.md', 'tools/segacd/disc_image.py', 'license', 'third-party-licenses.md')) {
         if (-not $verified.ContainsKey($requiredRelative)) {
             throw "Required package file is not recorded: $requiredRelative"
         }

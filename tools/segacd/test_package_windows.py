@@ -59,6 +59,9 @@ class PortablePackageTests(unittest.TestCase):
         packaged_bytes = [path.read_bytes() for path in self.destination.rglob("*") if path.is_file()]
         self.assertNotIn(self.bios.read_bytes(), packaged_bytes)
         self.assertNotIn(self.disc.read_bytes(), packaged_bytes)
+        for relative, source in package_windows.SOURCE_NOTICES.items():
+            self.assertEqual((self.destination / relative).read_bytes(),
+                             (package_windows.SOURCE_ROOT / source).read_bytes())
 
     def test_existing_package_is_never_overwritten(self):
         self.create(seed=self.seed)

@@ -17,6 +17,18 @@ import sys
 
 SCHEMA = "SegaCDWindowsPortablePackage1"
 BACKUP_BYTES = 8192
+SOURCE_ROOT = Path(__file__).resolve().parents[2]
+# The SDL runtime UI has no external font/image assets. Ship the notices for
+# the code actually linked into this standalone target, plus the project terms.
+SOURCE_NOTICES = {
+    "LICENSE": "LICENSE.md",
+    "THIRD-PARTY-LICENSES.md": "THIRD-PARTY-LICENSES.md",
+    "licenses/SDL2.txt": "runner/external/SDL2/SDL2-2.28.5/COPYING.txt",
+    "licenses/ymfm.txt": "runner/external/ymfm/LICENSE",
+    "licenses/ares.txt": "runner/cd/ARES-LICENSE.txt",
+    "licenses/m68k-recomp-core.txt": "external/m68k-recomp-core/LICENSE",
+    "licenses/z80-recomp-core.txt": "external/z80-recomp-core/LICENSE",
+}
 PACKAGE_FILES = (
     "SonicCD.exe",
     "SDL2.dll",
@@ -24,6 +36,8 @@ PACKAGE_FILES = (
     "SonicCD.cmd",
     "README-portable-windows.md",
     "tools/segacd/disc_image.py",
+    "LICENSE",
+    "THIRD-PARTY-LICENSES.md",
 )
 
 
@@ -105,6 +119,8 @@ def create_package(args: argparse.Namespace) -> dict[str, object]:
     license_dir = license_dir.resolve(strict=True)
     if not license_dir.is_dir():
         raise ValueError(f"license directory is not a directory: {license_dir}")
+    notices = {name: require_file(SOURCE_ROOT / relative, "source notice")
+               for name, relative in SOURCE_NOTICES.items()}
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.mkdir()
@@ -119,6 +135,14 @@ def create_package(args: argparse.Namespace) -> dict[str, object]:
         tools_dir.mkdir(parents=True)
         shutil.copyfile(Path(__file__).with_name("disc_image.py"), tools_dir / "disc_image.py")
         license_files = _copy_licenses(license_dir, destination / "licenses")
+        notice_names = set(SOURCE_NOTICES)
+        license_files = [row for row in license_files if row["path"] not in notice_names]
+        for relative, source in notices.items():
+            target = destination / relative
+            shutil.copyfile(source, target)
+            if relative.startswith("licenses/"):
+                license_files.append({"path": relative, "bytes": target.stat().st_size,
+                                      "sha256": sha256(target)})
         data_dir = destination / "userdata"
         data_dir.mkdir()
         seed_dir = destination / "seed"

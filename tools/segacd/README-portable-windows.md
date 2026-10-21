@@ -40,3 +40,10 @@ exactly 8,192 bytes. Existing save data is never replaced. The package includes
 runtime license texts, but package creation does not include a BIOS, original
 disc image, or save from the owner. Selecting a CUE creates a content-verified
 SGCD conversion cache under `userdata/disc` for the runner to use.
+
+The engine uses the PolyForm Noncommercial license included as `LICENSE`.
+Third-party terms remain separate in `THIRD-PARTY-LICENSES.md` and `licenses/`.
+Generated game code does not grant rights to the original game; provide your
+own legally obtained BIOS and disc. Engine source and build instructions are
+in [segagenesisrecomp](https://github.com/mstan/segagenesisrecomp),
+`docs/SONIC_CD_NATIVE_BUILD.md`.
