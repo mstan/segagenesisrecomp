@@ -1,5 +1,10 @@
 # Original Sonic CD / Sega CD recompilation handoff
 
+Current status (2026-10-21): development is active under the owner's resumed
+goal. Use [SONIC_CD_NATIVE_ACCEPTANCE.md](SONIC_CD_NATIVE_ACCEPTANCE.md) for the
+current pass/unverified ledger. The paused/headless-only state below is an
+archived 2026-10-20 checkpoint and does not describe the current runner.
+
 Updated 2026-10-20. This is the current continuation handoff. It supersedes older
 sequencing and incomplete-status text in the campaign handoffs. Implementation
 HEAD when this document was written: `17f74420376c2d384ef4345e851a0cb3bc533749`.
