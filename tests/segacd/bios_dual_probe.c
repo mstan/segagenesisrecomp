@@ -42,7 +42,16 @@ static uint64_t start_frame=UINT64_MAX;
 static uint64_t pad_reads,pressed_pad_reads;
 #define PROBE_MAX_SCRIPT_EVENTS 64u
 #define PROBE_MAX_FLOOR_PC_LIMIT 4096u
+#define PROBE_SUB_VECTOR_BASE 0x5F28u
+#define PROBE_SUB_VECTOR_BYTES 0x60u
+#define PROBE_MAX_VECTOR_CHANGE_EVENTS 2048u
 typedef struct { uint64_t frame,duration;uint16_t mask; } ProbePadEvent;
+typedef struct {
+    uint64_t time_before,time_after,native_before[2],native_after[2],floor_before[2],floor_after[2];
+    uint32_t frame_before,frame_after,main_pc_before,main_pc_after,sub_pc_before,sub_pc_after;
+    uint8_t memory_mode_before,memory_mode_after;
+    M68kStepResult status;
+} ProbeVectorChangeStep;
 static ProbePadEvent pad_events[PROBE_MAX_SCRIPT_EVENTS];
 static unsigned pad_event_count;
 static unsigned floor_pc_limit=16,floor_pc_epoch;
@@ -57,6 +66,9 @@ static void dump(const char *,const char *,const void *,size_t);
 static void capture_main_pc_state(uint32_t,uint16_t,uint64_t);
 static int capture_audio,capture_error;
 static int export_floor_pc_roots,pc_roots_error;
+static int capture_sub_vector_changes,sub_vector_capture_error;
+static uint32_t sub_vector_change_count;
+static FILE *sub_vector_change_log;
 static int main_pc_capture_enabled,main_pc_capture_matched;
 static uint32_t main_pc_capture_target,main_pc_capture_observed;
 static uint16_t main_pc_capture_opcode;
@@ -151,6 +163,7 @@ static int parse_probe_inputs(void)
     const char *pc_limit=getenv("SEGACD_PROBE_FLOOR_PC_LIMIT");
     const char *main_pc=getenv("SEGACD_PROBE_CAPTURE_MAIN_PC");
     const char *pc_roots=getenv("SEGACD_PROBE_PC_ROOTS");
+    const char *vector_changes=getenv("SEGACD_PROBE_VECTOR_CHANGES");
     if(events&&!parse_pad_events(events)){fprintf(stderr,"invalid SEGACD_PROBE_PAD_EVENTS (expected up to 64 frame:duration:12-bit-mask events)\n");return 0;}
     if(override) {
         if(!events||strcmp(override,"1")){fprintf(stderr,"SEGACD_PROBE_PAD_EVENTS_OVERRIDE_START requires pad events and exact value 1\n");return 0;}
@@ -168,6 +181,10 @@ static int parse_probe_inputs(void)
         if(strcmp(pc_roots,"1")){fprintf(stderr,"SEGACD_PROBE_PC_ROOTS accepts only 1\n");return 0;}
         export_floor_pc_roots=1;
     }
+    if(vector_changes) {
+        if(strcmp(vector_changes,"1")){fprintf(stderr,"SEGACD_PROBE_VECTOR_CHANGES accepts only 1\n");return 0;}
+        capture_sub_vector_changes=1;
+    }
     if(pc_limit) {
         uint64_t value;
         if(!parse_decimal_span(pc_limit,pc_limit+strlen(pc_limit),&value)||!value||value>PROBE_MAX_FLOOR_PC_LIMIT) {
@@ -176,6 +193,100 @@ static int parse_probe_inputs(void)
         floor_pc_limit=(unsigned)value;
     }
     return 1;
+}
+static int open_sub_vector_change_log(void)
+{
+    if(!capture_sub_vector_changes)return 1;
+    char path[4096];
+    int length=snprintf(path,sizeof path,"%s/sub-vector-changes.jsonl",dump_directory);
+    if(length<0||(size_t)length>=sizeof path) {
+        fprintf(stderr,"Sub vector change capture failed: output path too long\n");
+        sub_vector_capture_error=1;return 0;
+    }
+    sub_vector_change_log=fopen(path,"wb");
+    if(!sub_vector_change_log) {
+        fprintf(stderr,"Sub vector change capture failed: cannot open %s\n",path);
+        sub_vector_capture_error=1;return 0;
+    }
+    return 1;
+}
+static int record_sub_vector_change(const uint8_t before[PROBE_SUB_VECTOR_BYTES],
+                                    const uint8_t after[PROBE_SUB_VECTOR_BYTES],
+                                    const ProbeVectorChangeStep *step)
+{
+    if(!capture_sub_vector_changes||!memcmp(before,after,PROBE_SUB_VECTOR_BYTES))return 1;
+    if(sub_vector_change_count>=PROBE_MAX_VECTOR_CHANGE_EVENTS) {
+        if(sub_vector_change_log) {
+            (void)fprintf(sub_vector_change_log,"{\"error\":\"event_limit_exceeded\",\"limit\":%u}\n",PROBE_MAX_VECTOR_CHANGE_EVENTS);
+            (void)fflush(sub_vector_change_log);
+        }
+        fprintf(stderr,"Sub vector change capture failed: event limit %u exceeded\n",PROBE_MAX_VECTOR_CHANGE_EVENTS);
+        sub_vector_capture_error=1;return 0;
+    }
+    char name[80],path[4096];
+    int name_length=snprintf(name,sizeof name,"sub-vector-changes-%06u.bin",sub_vector_change_count);
+    int path_length=snprintf(path,sizeof path,"%s/%s",dump_directory,name);
+    if(name_length<0||(size_t)name_length>=sizeof name||path_length<0||(size_t)path_length>=sizeof path) {
+        fprintf(stderr,"Sub vector change capture failed: snapshot path too long\n");
+        sub_vector_capture_error=1;return 0;
+    }
+    FILE *snapshot=fopen(path,"wb");
+    if(!snapshot) {
+        fprintf(stderr,"Sub vector change capture failed: cannot open %s\n",path);
+        sub_vector_capture_error=1;return 0;
+    }
+    int ok=fwrite(after,1,PROBE_SUB_VECTOR_BYTES,snapshot)==PROBE_SUB_VECTOR_BYTES;
+    if(fclose(snapshot))ok=0;
+    if(!ok) {
+        fprintf(stderr,"Sub vector change capture failed while writing %s\n",path);
+        if(sub_vector_change_log) {
+            (void)fprintf(sub_vector_change_log,"{\"event\":%u,\"error\":\"snapshot_write_failed\",\"file\":\"%s\"}\n",sub_vector_change_count,name);
+            (void)fflush(sub_vector_change_log);
+        }
+        sub_vector_capture_error=1;return 0;
+    }
+    if(!sub_vector_change_log) {
+        fprintf(stderr,"Sub vector change capture failed: event log is not open\n");
+        sub_vector_capture_error=1;return 0;
+    }
+    if(fprintf(sub_vector_change_log,
+        "{\"event\":%u,\"file\":\"%s\",\"sub_clock_before\":%llu,\"sub_clock_after\":%llu,"
+        "\"frame_before\":%u,\"frame_after\":%u,\"memory_mode_before\":\"%02X\",\"memory_mode_after\":\"%02X\","
+        "\"main_pc_before\":\"%06X\",\"main_pc_after\":\"%06X\",\"sub_pc_before\":\"%06X\",\"sub_pc_after\":\"%06X\","
+        "\"native_retired_main\":%llu,\"native_retired_sub\":%llu,\"floor_retired_main\":%llu,\"floor_retired_sub\":%llu,"
+        "\"step_status\":%u,\"writer_attribution\":\"not inferred; this record is a before/after diff for one coordinator step\",\"changes\":[",
+        sub_vector_change_count,name,(unsigned long long)step->time_before,(unsigned long long)step->time_after,
+        step->frame_before,step->frame_after,step->memory_mode_before,step->memory_mode_after,
+        step->main_pc_before,step->main_pc_after,step->sub_pc_before,step->sub_pc_after,
+        (unsigned long long)(step->native_after[0]-step->native_before[0]),
+        (unsigned long long)(step->native_after[1]-step->native_before[1]),
+        (unsigned long long)(step->floor_after[0]-step->floor_before[0]),
+        (unsigned long long)(step->floor_after[1]-step->floor_before[1]),(unsigned)step->status)<0)ok=0;
+    int first=1;
+    for(unsigned offset=0;offset<PROBE_SUB_VECTOR_BYTES&&ok;++offset)if(before[offset]!=after[offset]) {
+        if(fprintf(sub_vector_change_log,"%s{\"offset\":%u,\"before\":%u,\"after\":%u}",
+                   first?"":",",offset,before[offset],after[offset])<0)ok=0;
+        first=0;
+    }
+    if(ok&&fprintf(sub_vector_change_log,"]}\n")<0)ok=0;
+    if(ok&&fflush(sub_vector_change_log))ok=0;
+    if(!ok) {
+        fprintf(stderr,"Sub vector change capture failed while writing event log\n");
+        sub_vector_capture_error=1;return 0;
+    }
+    ++sub_vector_change_count;
+    return 1;
+}
+static int close_sub_vector_change_log(void)
+{
+    if(!sub_vector_change_log)return !sub_vector_capture_error;
+    int ok=fclose(sub_vector_change_log)==0;
+    sub_vector_change_log=NULL;
+    if(!ok) {
+        fprintf(stderr,"Sub vector change capture failed closing event log\n");
+        sub_vector_capture_error=1;
+    }
+    return ok&&!sub_vector_capture_error;
 }
 static uint16_t scripted_pad(uint64_t frame)
 {
@@ -293,6 +404,18 @@ static int input_selftest(void)
         record_floor_pc(1,0x000005E8u,0,0x4E71u);
         record_floor_pc(1,0x0000A120u,0,0x4E75u);
         if(!write_floor_pc_roots(0,42,123456u))return -1;
+    }
+    if(capture_sub_vector_changes) {
+        uint8_t before[PROBE_SUB_VECTOR_BYTES]={0},after[PROBE_SUB_VECTOR_BYTES];
+        for(unsigned n=0;n<PROBE_SUB_VECTOR_BYTES;++n)after[n]=(uint8_t)(n*17u+3u);
+        ProbeVectorChangeStep step={0};
+        step.time_before=100;step.time_after=117;step.frame_before=1;step.frame_after=2;
+        step.memory_mode_before=1;step.memory_mode_after=2;
+        step.main_pc_before=0xFF1234;step.main_pc_after=0xFF1236;
+        step.sub_pc_before=0x005F76;step.sub_pc_after=0x00000660;step.status=M68K_STEP_OK;
+        step.native_before[0]=4;step.native_after[0]=5;step.floor_before[1]=7;step.floor_after[1]=8;
+        if(!open_sub_vector_change_log()||!record_sub_vector_change(before,after,&step)||!close_sub_vector_change_log())return -1;
+        printf("Sub vector change capture selftest wrote one 96-byte event\n");
     }
     return 1;
 }
@@ -543,6 +666,7 @@ int main(int argc,char**argv)
     dump_directory=argv[3];if(argc==6)start_frame=strtoull(argv[5],NULL,0);
     if(!parse_probe_inputs())return 2;
     int input_test=input_selftest();if(input_test<0)return 2;if(input_test>0)return 0;
+    if(!open_sub_vector_change_log())return 2;
     for(unsigned n=0;n<pad_event_count;++n)printf("P1 scripted event frame=%llu duration=%llu buttons=%03X\n",(unsigned long long)pad_events[n].frame,(unsigned long long)pad_events[n].duration,pad_events[n].mask);
     uint32_t watch_word=UINT32_MAX;uint64_t watch_after=0;
     const char *watch=getenv("SEGACD_PROBE_WATCH_WORD_BYTE");
@@ -629,6 +753,18 @@ int main(int argc,char**argv)
         g_audio_cycle_counter=(uint32_t)coordinator.cpu[0].state.cycles;
         uint64_t native_before[2]={coordinator.native_steps[0],coordinator.native_steps[1]};
         uint64_t floor_before[2]={coordinator.floor_steps[0],coordinator.floor_steps[1]};
+        uint8_t sub_vectors_before[PROBE_SUB_VECTOR_BYTES];
+        ProbeVectorChangeStep vector_step={0};
+        if(capture_sub_vector_changes) {
+            memcpy(sub_vectors_before,cd.prg+PROBE_SUB_VECTOR_BASE,sizeof sub_vectors_before);
+            vector_step.time_before=coordinator.device_time;
+            vector_step.frame_before=(uint32_t)(line_number/262u);
+            vector_step.memory_mode_before=cd.memory_mode;
+            vector_step.main_pc_before=coordinator.cpu[0].state.regs.PC&0xFFFFFFu;
+            vector_step.sub_pc_before=coordinator.cpu[1].state.regs.PC&0xFFFFFFu;
+            vector_step.native_before[0]=native_before[0];vector_step.native_before[1]=native_before[1];
+            vector_step.floor_before[0]=floor_before[0];vector_step.floor_before[1]=floor_before[1];
+        }
         uint16_t fader_before=cd.drive.fader;uint64_t fader_deadline_before=cd.drive.fader_deadline;
 #ifdef SEGACD_BIOS_PROBE_NATIVE_Z80
         if(genesis.z80_reset_pending){segacd_z80_reset(&sound_cpu);genesis.z80_reset_pending=0;}
@@ -646,6 +782,20 @@ int main(int argc,char**argv)
         status=segacd_coordinator_step(&coordinator);
 #endif
         ++steps;
+        if(capture_sub_vector_changes) {
+            vector_step.time_after=coordinator.device_time;
+            vector_step.frame_after=(uint32_t)(line_number/262u);
+            vector_step.memory_mode_after=cd.memory_mode;
+            vector_step.main_pc_after=coordinator.cpu[0].state.regs.PC&0xFFFFFFu;
+            vector_step.sub_pc_after=coordinator.cpu[1].state.regs.PC&0xFFFFFFu;
+            vector_step.native_after[0]=coordinator.native_steps[0];vector_step.native_after[1]=coordinator.native_steps[1];
+            vector_step.floor_after[0]=coordinator.floor_steps[0];vector_step.floor_after[1]=coordinator.floor_steps[1];
+            vector_step.status=status;
+            if(memcmp(sub_vectors_before,cd.prg+PROBE_SUB_VECTOR_BASE,sizeof sub_vectors_before)&&
+               !record_sub_vector_change(sub_vectors_before,cd.prg+PROBE_SUB_VECTOR_BASE,&vector_step)) {
+                status=M68K_STEP_BUS_ERROR;break;
+            }
+        }
         /* Match only a successfully retired Main instruction in this outer
          * scheduler step. Capture before any subsequent owner can execute. */
         if(main_pc_capture_enabled&&!main_pc_capture_matched&&status==M68K_STEP_OK&&
@@ -657,7 +807,7 @@ int main(int argc,char**argv)
                 capture_main_pc_state(retired_pc,coordinator.cpu[0].state.fault_opcode,coordinator.device_time);
         }
         observe_fader_and_ready(coordinator.device_time,fader_before,fader_deadline_before);
-        if(capture_error||pc_roots_error){status=M68K_STEP_BUS_ERROR;break;}
+        if(capture_error||pc_roots_error||sub_vector_capture_error){status=M68K_STEP_BUS_ERROR;break;}
         if(watch_word!=UINT32_MAX && coordinator.device_time>=watch_after && watch_events<1024 &&
            (!watch_events || cd.word[watch_word]!=watch_before)) {
             printf("Word RAM watch time=%llu offset=%05X old=%02X new=%02X mode=%02X cpu=%u main=%06X sub=%06X D0=%08X/%08X D1=%08X/%08X D2=%08X/%08X\n",(unsigned long long)coordinator.device_time,watch_word,watch_before,cd.word[watch_word],cd.memory_mode,coordinator.last_cpu,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc,coordinator.cpu[0].state.regs.D[0],coordinator.cpu[1].state.regs.D[0],coordinator.cpu[0].state.regs.D[1],coordinator.cpu[1].state.regs.D[1],coordinator.cpu[0].state.regs.D[2],coordinator.cpu[1].state.regs.D[2]);
@@ -764,6 +914,7 @@ int main(int argc,char**argv)
     dump(argv[3],"main-ram.bin",g_ram,sizeof g_ram);dump(argv[3],"sub-prg.bin",cd.prg,sizeof cd.prg);dump(argv[3],"word-ram.bin",cd.word,sizeof cd.word);dump(argv[3],"vram.bin",vdp.vram,sizeof vdp.vram);dump_frame_named(argv[3],"frame.ppm");
     int capture_ok=capture_close();
     int roots_ok=!pc_roots_error&&write_floor_pc_roots(floor_pc_epoch,(uint32_t)(line_number/262u),coordinator.device_time);
+    int vector_changes_ok=close_sub_vector_change_log();
     segacd_image_close(image);
-    return capture_ok && !capture_error && roots_ok && !pc_roots_error && status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;
+    return capture_ok && !capture_error && roots_ok && !pc_roots_error && vector_changes_ok && !sub_vector_capture_error && status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;
 }
