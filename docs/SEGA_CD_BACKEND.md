@@ -77,6 +77,10 @@ QA uses stage selection, player-position/protection cheats and actual guest
 completion triggers. It does not require full-route playthroughs. Shared
 mechanics receive representative deeper checks; unique mechanics, bosses and
 transitions retain their own explicit results.
+The owner also authorizes one-hit boss health or forcing the original actor's
+defeat state to speed QA. Those checks record combat as bypassed and let the
+original death, stage-clear, save and next-load paths execute; they do not set
+final completion or save-success flags to claim those paths passed.
 
 A targeted native time-travel check activates the real Present Past post,
 reaches the original speed/timer thresholds and observes the guest's restart
@@ -121,7 +125,7 @@ Host persistence is tested independently of original BIOS formatting and game
 save boundaries.
 
 A fresh-save test starts with 8,192 erased bytes and enters the original BIOS
-control panel using B. Controller input selects Option, internal-memory Format
+control panel using controller input. It selects Option, internal-memory Format
 and Yes; the original BIOS displays FORMAT COMPLETE and persists its 64 changed
 bytes on exit. No QA memory writes or host formatting are used. The resulting
 backup matches the earlier BIOS-produced fixture in full. A new process boots
@@ -143,6 +147,13 @@ Act 2. The checks use targeted teleports and actual completion triggers; full
 route playthroughs are not an acceptance requirement. Later zone-boundary
 save/restart behavior still needs qualification. Evidence is in
 `continue-r11a-qualified/save-restart-qualification.json` under the G: QA root.
+
+The next teleport-assisted trigger check crosses both original R11A and R12A
+signposts, runs their results and reaches the exact owned R13D boss-stage image.
+It finishes at 6,880 frames with zero interpreter operations or audio faults.
+Parent review verifies all 28 debug writes are limited to player position and
+velocity at Main RAM `D008..D015`. Boss combat is still untested by that run.
+Evidence is in `teleport-assisted-r11a-r12a-r13-boss-4` under the G: QA root.
 
 `tools/segacd/sgcd_owned_extract.py --disc <verified.sgcd> --output-dir <new-directory>`
 extracts the owned ISO's MMD/BIN program files and records source/file hashes
@@ -730,6 +741,18 @@ failure before output files are created. The private Palmtree Panic catalog
 now covers 7,795 native entries from 4,917 source-matching roots in one module;
 its guards match all eight captured resident Word RAM images. Compilation and
 native-only runtime acceptance are separate checks.
+
+For incremental catalogs, `--covered-entries-file PATH` declares operations
+already supplied by linked native modules. Each whitespace-separated record is
+`PC WORD_COUNT NOMINAL_CYCLES WORD...`, using C-style integer notation. The
+generator requires exact current input bytes, instruction length and nominal
+cycles. It still walks their control flow and probes current emitter support,
+but reports those operations as `covered` and emits only the remaining
+callbacks. Invalid or stale records fail generation. An entirely covered
+catalog has a valid zero-entry module. This is an explicit build dependency:
+the caller must retain the supplying modules, their provenance and full guards.
+The consumer's current-byte checks and terminal native MISS behavior do not
+change. A covered-entry list does not prove runtime or mechanics coverage.
 
 Additional private native overlays use the CMake cache lists
 `SEGACD_BIOS_PROBE_EXTRA_MAIN_MODULES` and

@@ -188,11 +188,14 @@ if(NOT CMAKE_CROSSCOMPILING)
     add_test(NAME segacd_entry_file
       COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/entry_file_test.py"
         "$<TARGET_FILE:segacd_module_recompiler>")
+    add_test(NAME segacd_covered_entry_file
+      COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/covered_entry_file_test.py"
+        "$<TARGET_FILE:segacd_module_recompiler>")
   endif()
   set(module_dir "${CMAKE_CURRENT_BINARY_DIR}/module-fixtures")
   file(MAKE_DIRECTORY "${module_dir}")
   set(module_sources)
-  foreach(module IN ITEMS fixture_a fixture_b dual_main dual_sub)
+  foreach(module IN ITEMS fixture_a fixture_b fixture_delta dual_main dual_sub)
     list(APPEND module_sources "${module_dir}/${module}_module.c" "${module_dir}/${module}.h")
     foreach(part RANGE 0 31)
       if(part LESS 10)
@@ -203,8 +206,11 @@ if(NOT CMAKE_CROSSCOMPILING)
   endforeach()
   add_custom_command(OUTPUT ${module_sources}
     COMMAND segacd_module_fixture "${module_dir}/a.bin" "${module_dir}/b.bin" "${module_dir}/main.bin" "${module_dir}/sub.bin"
+      "${module_dir}/a-covered.txt"
     COMMAND segacd_module_recompiler "${module_dir}/a.bin" "${module_dir}" fixture_a 0x1000 0x1000
     COMMAND segacd_module_recompiler "${module_dir}/b.bin" "${module_dir}" fixture_b 0x1000 --all
+    COMMAND segacd_module_recompiler "${module_dir}/a.bin" "${module_dir}" fixture_delta 0x1000 0x1000
+      --covered-entries-file "${module_dir}/a-covered.txt"
     COMMAND segacd_module_recompiler "${module_dir}/main.bin" "${module_dir}" dual_main 0x1000 0x1000 0x1030
     COMMAND segacd_module_recompiler "${module_dir}/sub.bin" "${module_dir}" dual_sub 0xF0 0xF0 0x100 0x120
     DEPENDS segacd_module_fixture segacd_module_recompiler VERBATIM)

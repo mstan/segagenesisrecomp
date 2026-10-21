@@ -10,7 +10,8 @@
 
 enum { SHARDS=32 };
 typedef struct { uint8_t *bytes;uint32_t base,size; } Image;
-typedef struct { M68KInstr ins;unsigned cycles;int illegal,emitted; } Operation;
+typedef struct { M68KInstr ins;unsigned cycles;int illegal,emitted,covered; } Operation;
+typedef struct { uint16_t words[M68K_MAX_WORDS],cycles;uint8_t word_count; } CoveredEntry;
 static void fail(const char *message){fprintf(stderr,"M68kStepRecomp: %s\n",message);exit(1);}
 static uint32_t number(const char *s)
 {
@@ -20,6 +21,67 @@ static uint32_t number(const char *s)
 }
 static int in_image(const Image *i,uint32_t pc);
 static void queue_pc(const Image *i,uint32_t pc,uint8_t *queued,uint32_t *queue,size_t *tail);
+static uint8_t image_read(uint32_t a,void *user);
+static int decode_operation(const Image *image,const GenesisRom *rom,uint32_t pc,Operation *o)
+{
+    if(!m68k_decode_68000(rom,pc,&o->ins))return 0;
+    M68KValidity validity=m68k_validate(&o->ins,NULL);
+    o->illegal=validity!=M68K_LEGAL || o->ins.mnemonic==MN_ILLEGAL;
+    if(o->illegal){o->ins.mnemonic=MN_ILLEGAL;o->ins.word_count=1;o->ins.byte_length=2;}
+    if(!o->ins.word_count || o->ins.word_count>M68K_MAX_WORDS ||
+       o->ins.byte_length>image->size-(pc-image->base)){o->ins.word_count=0;return 0;}
+    o->cycles=codegen_step_nominal_cycles(&o->ins);return 1;
+}
+static int token(FILE *f,char *out)
+{
+    size_t used=0;int c;
+    while((c=fgetc(f))!=EOF && isspace((unsigned char)c)){}
+    if(c==EOF){if(ferror(f))fail("cannot read covered entries file");return 0;}
+    do {
+        if(c==0 || used==32)fail("invalid covered entry token");
+        out[used++]=(char)c;
+        c=fgetc(f);
+    } while(c!=EOF && !isspace((unsigned char)c));
+    if(ferror(f))fail("cannot read covered entries file");
+    out[used]='\0';return 1;
+}
+static uint32_t covered_number(FILE *f)
+{
+    char value[33];if(!token(f,value))fail("truncated covered entry");return number(value);
+}
+/* Explicit build-time dependency on callbacks supplied by another linked
+ * module, never a runtime miss/fallback rule. Records are whitespace-separated:
+ * PC WORD_COUNT NOMINAL_CYCLES WORD... (numbers use C integer notation).
+ * Reject stale bytes, lengths and cycles before omitting any operation. */
+static void covered_entries_file(const Image *image,const char *path,CoveredEntry *covered)
+{
+    FILE *f=fopen(path,"rb");if(!f)fail("cannot open covered entries file");
+    GenesisRom rom={0};rom.rom_size=image->base+image->size;
+    rom.read8_override=image_read;rom.read8_user=(void *)image;
+    char value[33];
+    while(token(f,value)) {
+        uint32_t pc=number(value),count=covered_number(f),cycles=covered_number(f);
+        if(!in_image(image,pc) || !count || count>M68K_MAX_WORDS ||
+           count*2u>image->size-(pc-image->base) || !cycles || cycles>0xFFFFu)
+            fail("invalid covered entry address, length or cycles");
+        CoveredEntry entry={0};entry.word_count=(uint8_t)count;entry.cycles=(uint16_t)cycles;
+        for(uint32_t n=0;n<count;++n) {
+            uint32_t word=covered_number(f);size_t offset=pc-image->base+n*2u;
+            if(word>0xFFFFu || word!=((unsigned)image->bytes[offset]<<8|image->bytes[offset+1]))
+                fail("covered entry bytes do not match input image");
+            entry.words[n]=(uint16_t)word;
+        }
+        Operation decoded={0};
+        if(!decode_operation(image,&rom,pc,&decoded) || count!=decoded.ins.word_count || cycles!=decoded.cycles)
+            fail("covered entry length or cycles do not match decoded instruction");
+        CoveredEntry *previous=&covered[(pc-image->base)/2u];
+        if(previous->word_count && (previous->word_count!=entry.word_count ||
+           previous->cycles!=entry.cycles || memcmp(previous->words,entry.words,count*sizeof(uint16_t))))
+            fail("conflicting covered entries");
+        *previous=entry;
+    }
+    if(fclose(f))fail("cannot close covered entries file");
+}
 static void entries_file(const Image *image,const char *path,uint8_t *queued,
                          uint32_t *queue,size_t *tail)
 {
@@ -75,7 +137,7 @@ static void close_output(FILE *f){if(ferror(f) || fclose(f))fail("output write f
 
 int main(int argc,char **argv)
 {
-    if(argc<6){fprintf(stderr,"usage: M68kStepRecomp INPUT OUTPUT_DIR C_IDENTIFIER LOAD_BASE ENTRY... [--entries-file PATH] | --all\n");return 2;}
+    if(argc<6){fprintf(stderr,"usage: M68kStepRecomp INPUT OUTPUT_DIR C_IDENTIFIER LOAD_BASE ENTRY... [--entries-file PATH] [--covered-entries-file PATH] | --all\n");return 2;}
     const char *prefix=argv[3];
     if(!(isalpha((unsigned char)*prefix) || *prefix=='_'))fail("invalid C identifier");
     for(const char *p=prefix;*p;++p)if(!(isalnum((unsigned char)*p) || *p=='_'))fail("invalid C identifier");
@@ -91,26 +153,28 @@ int main(int argc,char **argv)
     uint32_t *queue=malloc(slots*sizeof *queue);
     uint8_t *queued=calloc(slots,1);
     Operation *ops=calloc(slots,sizeof *ops);
-    if(!queue || !queued || !ops)fail("out of memory");
+    CoveredEntry *covered=calloc(slots,sizeof *covered);
+    if(!queue || !queued || !ops || !covered)fail("out of memory");
     size_t head=0,tail=0;int all=0;
     for(int n=5;n<argc;++n) {
         if(!strcmp(argv[n],"--all"))all=1;
         else if(!strcmp(argv[n],"--entries-file")) {
             if(++n>=argc)fail("--entries-file requires a path");
             entries_file(&image,argv[n],queued,queue,&tail);
+        } else if(!strcmp(argv[n],"--covered-entries-file")) {
+            if(++n>=argc)fail("--covered-entries-file requires a path");
+            covered_entries_file(&image,argv[n],covered);
         } else {uint32_t pc=number(argv[n]);if(!in_image(&image,pc))fail("entry outside image or odd");queue_pc(&image,pc,queued,queue,&tail);}
     }
     if(all)for(uint32_t n=0;n<image.size;n+=2)queue_pc(&image,image.base+n,queued,queue,&tail);
     GenesisRom rom={0};rom.rom_size=image.base+image.size;rom.read8_override=image_read;rom.read8_user=&image;
     while(head<tail) {
         uint32_t pc=queue[head++];Operation *o=&ops[(pc-image.base)/2];
-        if(!m68k_decode_68000(&rom,pc,&o->ins))continue;
-        M68KValidity validity=m68k_validate(&o->ins,NULL);
-        o->illegal=validity!=M68K_LEGAL || o->ins.mnemonic==MN_ILLEGAL;
-        if(o->illegal){o->ins.mnemonic=MN_ILLEGAL;o->ins.word_count=1;o->ins.byte_length=2;}
-        if(!o->ins.word_count || o->ins.word_count>M68K_MAX_WORDS ||
-           o->ins.byte_length>image.size-(pc-image.base)){o->ins.word_count=0;continue;}
-        o->cycles=codegen_step_nominal_cycles(&o->ins);
+        if(!decode_operation(&image,&rom,pc,o))continue;
+        CoveredEntry *provided=&covered[(pc-image.base)/2u];
+        if(provided->word_count && (provided->word_count!=o->ins.word_count ||
+            provided->cycles!=o->cycles || memcmp(provided->words,o->ins.words,o->ins.word_count*sizeof(uint16_t))))
+            fail("covered entry length or cycles do not match decoded instruction");
         if(all || o->illegal)continue;
         if(o->ins.has_target)queue_pc(&image,o->ins.target_addr,queued,queue,&tail);
         if(!m68k_is_terminator(&o->ins))queue_pc(&image,pc+o->ins.byte_length,queued,queue,&tail);
@@ -121,28 +185,33 @@ int main(int argc,char **argv)
     fprintf(module,"/* Generated module; always validate current instruction bytes. */\n#include \"%s.h\"\n",prefix);
     FILE *report=output(argv[2],prefix,"_coverage.csv");
     fputs("pc,opcode,words,nominal_cycles,kind\n",report);
-    size_t emitted=0,illegal=0,unsupported=0;
+    size_t emitted=0,illegal=0,unsupported=0,provided=0;
     for(size_t n=0;n<slots;++n) {
         Operation *o=&ops[n];if(!o->ins.word_count)continue;
-        if(o->illegal){o->emitted=1;++illegal;}
+        int supplied=covered[n].word_count!=0;
+        if(o->illegal){if(supplied)o->covered=1;else {o->emitted=1;++illegal;}}
         else {
             FILE *probe=tmpfile();if(!probe)fail("cannot create emission buffer");
             if(codegen_emit_step_operation(probe,&rom,&o->ins)) {
-                rewind(probe);FILE *part=parts[emitted%SHARDS];
-                fprintf(part,"void %s_at_%06X(M68kStepContext *ctx){\n",prefix,o->ins.addr);
-                char buffer[4096];size_t got;
-                while((got=fread(buffer,1,sizeof buffer,probe))!=0)if(fwrite(buffer,1,got,part)!=got)fail("output write failed");
-                fputs("}\n",part);o->emitted=1;
-                fprintf(module,"extern void %s_at_%06X(M68kStepContext *);\n",prefix,o->ins.addr);
+                if(supplied)o->covered=1;
+                else {
+                    rewind(probe);FILE *part=parts[emitted%SHARDS];
+                    fprintf(part,"void %s_at_%06X(M68kStepContext *ctx){\n",prefix,o->ins.addr);
+                    char buffer[4096];size_t got;
+                    while((got=fread(buffer,1,sizeof buffer,probe))!=0)if(fwrite(buffer,1,got,part)!=got)fail("output write failed");
+                    fputs("}\n",part);o->emitted=1;
+                    fprintf(module,"extern void %s_at_%06X(M68kStepContext *);\n",prefix,o->ins.addr);
+                }
             } else ++unsupported;
             close_output(probe);
         }
         if(o->emitted)++emitted;
+        if(o->covered)++provided;
         fprintf(report,"%06X,%04X,%u,%u,%s\n",o->ins.addr,o->ins.words[0],(unsigned)o->ins.word_count,o->cycles,
-                o->illegal?"illegal":o->emitted?"native":"unsupported");
+                o->covered?"covered":o->illegal?"illegal":o->emitted?"native":"unsupported");
     }
-    if(!emitted)fail("no compiled operations");
-    fputs("static const M68kStepEntry entries[]={\n",module);
+    if(!emitted && !provided)fail("no compiled operations");
+    if(emitted)fputs("static const M68kStepEntry entries[]={\n",module);
     for(size_t n=0;n<slots;++n) {
         Operation *o=&ops[n];if(!o->emitted)continue;
         fprintf(module," {0x%06Xu,{",o->ins.addr);
@@ -152,13 +221,14 @@ int main(int argc,char **argv)
         else fprintf(module,"%s_at_%06X",prefix,o->ins.addr);
         fputs("},\n",module);
     }
-    fprintf(module,"};\nconst M68kStepModule %s_module={\"%s\",0x%06Xu,%uu,0x%08Xu,entries,sizeof entries/sizeof *entries};\n",
-            prefix,prefix,image.base,image.size,crc32(&image));
+    if(emitted)fputs("};\n",module);
+    fprintf(module,"const M68kStepModule %s_module={\"%s\",0x%06Xu,%uu,0x%08Xu,%s};\n",
+            prefix,prefix,image.base,image.size,crc32(&image),emitted?"entries,sizeof entries/sizeof *entries":"NULL,0");
     FILE *header=output(argv[2],prefix,".h");
     fprintf(header,"#pragma once\n#include \"m68k_step.h\"\nextern const M68kStepModule %s_module;\n",prefix);
     close_output(header);close_output(module);close_output(report);
     for(unsigned n=0;n<SHARDS;++n)close_output(parts[n]);
-    printf("%s: image=%u base=%06X crc32=%08X native=%zu illegal=%zu unsupported=%zu examined=%zu\n",prefix,image.size,image.base,crc32(&image),emitted-illegal,illegal,unsupported,tail);
-    free(ops);free(queued);free(queue);free(image.bytes);
+    printf("%s: image=%u base=%06X crc32=%08X native=%zu illegal=%zu unsupported=%zu examined=%zu covered=%zu\n",prefix,image.size,image.base,crc32(&image),emitted-illegal,illegal,unsupported,tail,provided);
+    free(covered);free(ops);free(queued);free(queue);free(image.bytes);
     return unsupported?3:0;
 }
