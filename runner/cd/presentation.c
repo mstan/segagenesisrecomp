@@ -1,6 +1,7 @@
 #include "presentation.h"
 
 #include "presentation_ui.h"
+#include "sonic_cd_limits.h"
 #include "../audio.h"
 #include "backup.h"
 
@@ -72,6 +73,8 @@ static void load_one_setting(char *line, SegaCDPresentationSettings *settings) {
         settings->audio_enabled = clamp_value((int)value, 0, 1);
     else if (strcmp(line, "volume") == 0)
         settings->volume = clamp_value((int)value, 0, 100);
+    else if (strcmp(line, "view_mode") == 0)
+        settings->view_mode = clamp_value((int)value, 0, 2);
 }
 
 static void load_settings(const char *path,
@@ -114,7 +117,7 @@ static void load_settings(const char *path,
 static int save_settings(SegaCDPresentation *presentation) {
     static const char format[] =
         "fullscreen=%d\nwindow_scale=%d\nlinear_filter=%d\n"
-        "audio_enabled=%d\nvolume=%d\n";
+        "audio_enabled=%d\nvolume=%d\nview_mode=%d\n";
     char contents[192];
     int content_length;
     if (!presentation || !presentation->settings_path) return 0;
@@ -123,7 +126,8 @@ static int save_settings(SegaCDPresentation *presentation) {
                               presentation->settings.window_scale,
                               presentation->settings.linear_filter,
                               presentation->settings.audio_enabled,
-                              presentation->settings.volume);
+                              presentation->settings.volume,
+                              presentation->settings.view_mode);
     if (content_length < 0 || (size_t)content_length >= sizeof(contents)) {
         return 0;
     }
@@ -189,6 +193,12 @@ static int apply_setting(void *context, const char *key, int value) {
         apply_audio(presentation);
         return 1;
     }
+    if (strcmp(key, RECOMP_RUNTIME_UI_KEY_VIEW_MODE) == 0) {
+        if (value < RECOMP_RUNTIME_UI_VIEW_NATIVE ||
+            value > RECOMP_RUNTIME_UI_VIEW_ADAPTIVE) return 0;
+        presentation->settings.view_mode=value;
+        return 1;
+    }
     return 0;
 }
 
@@ -203,9 +213,11 @@ static void persist_settings(void *context,
                                             : "(no path)");
 }
 
-static void visibility_changed(void *context, int open) {
+static unsigned supported_view_modes(void *context) {
     (void)context;
-    (void)open;
+    return RECOMP_RUNTIME_UI_VIEW_MODE_NATIVE |
+           RECOMP_RUNTIME_UI_VIEW_MODE_FIXED_16_9 |
+           RECOMP_RUNTIME_UI_VIEW_MODE_ADAPTIVE;
 }
 
 static int is_game_key(SDL_Scancode key) {
@@ -338,8 +350,10 @@ SegaCDPresentation *segacd_presentation_create(SDL_Window *window,
         free(presentation);
         return NULL;
     }
+    int initial_width=presentation->settings.view_mode==RECOMP_RUNTIME_UI_VIEW_NATIVE ?
+        presentation->width : 398;
     SDL_SetWindowSize(window,
-                      presentation->width * presentation->settings.window_scale,
+                      initial_width * presentation->settings.window_scale,
                       presentation->height * presentation->settings.window_scale);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,
                 presentation->settings.linear_filter ? "1" : "0");
@@ -350,7 +364,7 @@ SegaCDPresentation *segacd_presentation_create(SDL_Window *window,
     ui_config.callbacks.context = presentation;
     ui_config.callbacks.apply_setting = apply_setting;
     ui_config.callbacks.save_settings = persist_settings;
-    ui_config.callbacks.visibility_changed = visibility_changed;
+    ui_config.callbacks.supported_view_modes = supported_view_modes;
     ui_config.window_scale_max = 8;
     presentation->ui = segacd_presentation_ui_create(&ui_config);
     if (!presentation->ui) {
@@ -446,6 +460,20 @@ int segacd_presentation_handle_event(SegaCDPresentation *presentation,
 int segacd_presentation_is_open(const SegaCDPresentation *presentation) {
     return presentation &&
            segacd_presentation_ui_is_open(presentation->ui);
+}
+
+unsigned segacd_presentation_view_width(const SegaCDPresentation *presentation) {
+    int w=0,h=0;
+    if (!presentation || presentation->settings.view_mode==RECOMP_RUNTIME_UI_VIEW_NATIVE)
+        return SEGACD_DEFAULT_WIDTH;
+    if (presentation->settings.view_mode==RECOMP_RUNTIME_UI_VIEW_FIXED_16_9) {
+        w=16;h=9;
+    } else if (SDL_GetRendererOutputSize(presentation->renderer,&w,&h)!=0 || w<=0 || h<=0)
+        return SEGACD_DEFAULT_WIDTH;
+    uint64_t width=((uint64_t)SEGACD_DEFAULT_HEIGHT*(unsigned)w+(unsigned)h/2u)/(unsigned)h;
+    if (width<SEGACD_DEFAULT_WIDTH)width=SEGACD_DEFAULT_WIDTH;
+    if (width>SEGACD_SONIC_CD_MAX_VIEW_WIDTH)width=SEGACD_SONIC_CD_MAX_VIEW_WIDTH;
+    return (unsigned)width & ~1u;
 }
 
 int segacd_presentation_blocks_game_input(

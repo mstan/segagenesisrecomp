@@ -23,6 +23,9 @@ int segacd_presentation_is_open(const SegaCDPresentation *presentation);
 /* Poll once per frame before sampling game controls. */
 int segacd_presentation_blocks_game_input(
     SegaCDPresentation *presentation);
+/* Native, fixed 16:9, or the actual drawable window aspect. Rounded to a
+   symmetric even guest-pixel width; the native view is the minimum. */
+unsigned segacd_presentation_view_width(const SegaCDPresentation *presentation);
 
 /* Copies and overlays the host frame; the machine's source pixels are untouched. */
 int segacd_presentation_present(SegaCDPresentation *presentation,

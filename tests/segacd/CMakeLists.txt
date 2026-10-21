@@ -20,6 +20,19 @@ else()
   target_compile_options(segacd_memory_test PRIVATE -Wall -Wextra -Werror)
 endif()
 add_test(NAME segacd_memory COMMAND segacd_memory_test)
+
+add_executable(segacd_sonic_cd_render_test sonic_cd_render_test.c
+  ../../runner/cd/sonic_cd_render.c ../../runner/cd/sonic_cd_scene.c
+  ../../runner/cd/sonic_cd_world.c)
+target_include_directories(segacd_sonic_cd_render_test PRIVATE
+  ../../runner/cd ../../runner/video)
+target_compile_features(segacd_sonic_cd_render_test PRIVATE c_std_11)
+if(MSVC)
+  target_compile_options(segacd_sonic_cd_render_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_sonic_cd_render_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_sonic_cd_render COMMAND segacd_sonic_cd_render_test)
 add_executable(segacd_pcm_test pcm_test.c)
 target_link_libraries(segacd_pcm_test PRIVATE segacd_devices)
 add_test(NAME segacd_pcm COMMAND segacd_pcm_test)
@@ -118,6 +131,17 @@ if(NOT CMAKE_CROSSCOMPILING)
   m68k_recomp_core_include_dirs(step_includes genesis)
   m68k_recomp_step_sources(step_runtime_sources)
   m68k_recomp_step_include_dirs(step_runtime_includes)
+  add_executable(segacd_sonic_cd_view_test sonic_cd_view_test.c
+    ../../runner/cd/sonic_cd_view.c ../../runner/cd/sonic_cd_culls.c ${step_runtime_sources})
+  target_include_directories(segacd_sonic_cd_view_test PRIVATE
+    ${step_runtime_includes} ../../runner/cd)
+  target_compile_features(segacd_sonic_cd_view_test PRIVATE c_std_11)
+  if(MSVC)
+    target_compile_options(segacd_sonic_cd_view_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_sonic_cd_view_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_test(NAME segacd_sonic_cd_view COMMAND segacd_sonic_cd_view_test)
   m68k_recomp_decode_sources(floor_decode_sources)
   add_library(segacd_execution_floor STATIC ../../runner/cd/m68k_floor.c
     ${floor_decode_sources} "${engine_root}/recompiler/src/rom_parser.c")
@@ -227,6 +251,8 @@ if(NOT CMAKE_CROSSCOMPILING)
   endif()
   add_test(NAME segacd_z80_native COMMAND segacd_z80_native_test)
   add_executable(segacd_machine_test machine_test.c fixtures/z80_native/proof_control_step.c
+    ../../runner/cd/sonic_cd_world.c ../../runner/cd/sonic_cd_view.c ../../runner/cd/sonic_cd_culls.c
+    ../../runner/cd/sonic_cd_scene.c ../../runner/cd/sonic_cd_render.c ../../runner/cd/sonic_cd_widescreen.c
     ../../runner/cd/machine.c ../../runner/cd/z80_native.c ../../runner/cd/segacd_coordinator.c
     ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c ${step_runtime_sources})
   target_include_directories(segacd_machine_test PRIVATE ${step_runtime_includes}
@@ -456,6 +482,8 @@ if(NOT CMAKE_CROSSCOMPILING)
         target_include_directories(segacd_owned_native_program PRIVATE ${native_includes})
         target_compile_features(segacd_owned_native_program PRIVATE c_std_11)
         add_executable(SonicCD ../../runner/cd/standalone.c ../../runner/cd/standalone_program.c
+          ../../runner/cd/sonic_cd_world.c ../../runner/cd/sonic_cd_view.c ../../runner/cd/sonic_cd_culls.c
+          ../../runner/cd/sonic_cd_scene.c ../../runner/cd/sonic_cd_render.c ../../runner/cd/sonic_cd_widescreen.c
           ../../runner/cd/machine.c ../../runner/cd/z80_native.c ../../runner/cd/segacd_coordinator.c
           ../../runner/cd/backup.c ../../runner/cd/audio_mix.c ../../runner/cd/audio_native.c ../../runner/cd/debug.c
           ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c
@@ -501,7 +529,7 @@ foreach(test_target IN ITEMS segacd_memory_test segacd_pcm_test segacd_fader_tes
     segacd_stamp_test segacd_dma_test segacd_step_semantics_test
     segacd_floor_divide_test segacd_module_test segacd_execution_floor_test
     segacd_coordinator_test segacd_external_bus_test segacd_z80_native_test segacd_audio_mix_test
-    segacd_audio_native_test segacd_backup_test segacd_machine_test m68k_step_test)
+    segacd_audio_native_test segacd_backup_test segacd_machine_test segacd_sonic_cd_render_test segacd_sonic_cd_view_test m68k_step_test)
   if(TARGET ${test_target})
     add_dependencies(segacd_test_suite ${test_target})
   endif()

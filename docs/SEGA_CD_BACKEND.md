@@ -61,13 +61,35 @@ code prefix, not its differing embedded stage-data tail. A corrected native
 Palmtree Panic Past pass reaches active gameplay and observed movement/jumping
 at 2,507 frames. An explicitly separate offline diagnostic has reached and moved in
 all 70 standard stage/time variants; its recorded original instruction words
-are being compiled into guarded supplements. It is diagnostic interpreter
-evidence, not strict-native acceptance of all 70 variants.
+were compiled into guarded supplements. The subsequent strict-native sweep
+now reaches active gameplay in all 70 actual Stage Select entries (0–7 and
+11–72). Every entry and endpoint matches its full 262,144-byte owned MMD.
+Right movement passes in 70; jump passes in 68 and is unverified in R83C/R83D,
+where the player was already ineligible or airborne. All native floor counters
+are zero and the floor callback is absent. This brief sweep does not establish
+bosses, unique mechanics or completion. The private summary is
+`native-stage-sweep/combined-review.csv`; its Main-PC trace explicitly omits
+nested WAIT retirements and is not a complete instruction trace.
 Static candidate counts are not runtime or mechanics acceptance;
 unclassified CFG paths remain fail-closed and explicitly unverified.
 
-All 26 synthetic tests pass MSVC, including the shared 68000 test. The GCC
-Sega CD suite also passes. A separate integration harness using real ymfm and
+QA uses stage selection, player-position/protection cheats and actual guest
+completion triggers. It does not require full-route playthroughs. Shared
+mechanics receive representative deeper checks; unique mechanics, bosses and
+transitions retain their own explicit results.
+
+A targeted native time-travel check activates the real Present Past post,
+reaches the original speed/timer thresholds and observes the guest's restart
+and WARP sequence. The resulting live stage matches every byte of owned
+R11B Past. Parent audit confirms that all memory writes were limited to player
+position and velocity; no warp, completion or result field was set by QA.
+Evidence is in `G:/Temp/Codex/segagenesisrecomp/native-timewarp-r11a/run-14`.
+This proves that Past transition, not reverse/Future transitions.
+
+The earlier 26 synthetic tests pass MSVC, including the shared 68000 test.
+All 28 current tests, including the new view and renderer tests, pass Windows
+GCC. The changed view/renderer/machine tests also pass strict MSVC builds.
+A separate integration harness using real ymfm and
 SN76489 implementations verifies three frame sample boundaries, two flushed
 intervals and timestamped PCM/CDDA silence without opening an audio device.
 The new Linux sanitizer pass remains unverified: available WSL distributions
@@ -94,8 +116,32 @@ an extra guest frame to invent future source samples.
 `backup.c` validates a complete 8192-byte file before replacing guest RAM.
 Writes use an exclusive same-directory temporary file, flush/commit and atomic
 replacement; a Windows replacement-denied test preserves the prior save.
-This is host persistence, not proof of original BIOS-menu formatting or game
-save progression. Those still require original-program tests.
+Host persistence is tested independently of original BIOS formatting and game
+save boundaries.
+
+A fresh-save test starts with 8,192 erased bytes and enters the original BIOS
+control panel using B. Controller input selects Option, internal-memory Format
+and Yes; the original BIOS displays FORMAT COMPLETE and persists its 64 changed
+bytes on exit. No QA memory writes or host formatting are used. The resulting
+backup matches the earlier BIOS-produced fixture in full. A new process boots
+New Game with that saved file and reaches the exact owned R11A image and live
+player/clock. The format and restart runs finish at 1,322 and 2,450 frames,
+respectively, with zero floor operations or audio faults. Evidence is in
+`fresh-backup-bios-format-menu-4` and `bios-formatted-new-game-restart-1` under
+the G: QA root.
+
+The cheat-assisted signpost check crosses the actual R11A signpost, runs
+results, and enters playable R12A with a full owned-image match. That
+4,708-frame native
+run has zero floor operations and audio faults (`act1-normal-progression-native-3`).
+Its guest-written BRAM differs from the formatted fixture in 775 bytes and
+survives a normal exit/relaunch. The subsequent Continue route loads the exact
+owned R11A image without debug memory writes; BRAM remains unchanged. This
+matches the original IPX save boundary: completing Act 1 does not durably save
+Act 2. The checks use targeted teleports and actual completion triggers; full
+route playthroughs are not an acceptance requirement. Later zone-boundary
+save/restart behavior still needs qualification. Evidence is in
+`continue-r11a-qualified/save-restart-qualification.json` under the G: QA root.
 
 The opt-in CMake `SEGACD_BUILD_NATIVE_RUNNER` target `SonicCD` accepts owned
 `--bios`, `--disc` and optional `--backup` paths. It requires the qualified US
@@ -136,11 +182,72 @@ controller passthrough and release boundaries. The changed machine/backup
 tests pass on Windows GCC. The machine's read-only scanline observer provides
 live raster state to game-owned presentation and rejects CPU reentry.
 
-Adaptive widescreen is requested and remains in development. Its menu control
-is not exposed until a real renderer, expanded native object visibility and
-HUD placement are integrated and checked; the current menu presents native
-aspect gameplay. This milestone does not satisfy the mandatory final original-
-game visual comparisons or unique-mechanics/completion/save gates.
+Display / View mode now offers native, fixed 16:9 and Fit to screen. Native
+remains the default. Fit to screen derives an even guest-pixel width from the
+actual drawable window, with the original 320-pixel view as its minimum.
+Nonlevel scenes retain original centered presentation. Headless QA can request
+an explicit `--view-width`; windowed users select the view in recomp-ui.
+
+The optional Sonic CD renderer reads original live level layouts/chunks,
+block definitions, line scroll, sprite mappings and raster CRAM. Foreground
+and background bindings are checked against all 70 owned MMDs, including the
+distinct TTZ line-scroll implementation. Read-only queue/SAT observers require
+the reconstructed sprite scene to match the actual published native SAT.
+The HUD anchors to the canvas's left edge; title cards remain centered.
+Widened presentation draws all source-queued mapping pieces, including pieces
+beyond the hardware's 80-entry SAT limit. This is an intentional opt-in visual
+extension; the guest still executes its original SAT generation and limit.
+
+Guarded native instruction modules widen draw/spawn/despawn bounds. A growing
+view runs the original backward and forward object-spawning paths before
+publishing a wider scene. It never creates guest objects in the host. Per-site
+code-context guards suppress enhancements when Word RAM is replaced; original
+instruction effects and cycles remain intact. The initial 910 guarded sites
+match the registered native catalogs' complete words and nominal cycles.
+Ring retention adds 140 checked sites, including a source-derived R73D
+state closure; all 1,050 sites match their original native catalogs.
+Further source-bound discovery covers CheckObjDespawnS1, Test Badnik,
+FloatBlock, MovingSpring and Spring, plus 122 short-branch cleanup routes.
+The latter require complete arithmetic windows and actual saved-flag,
+DeleteObject or platform-dismount cleanup chains. One R43C window has an
+unqualified target and retains its original behavior explicitly. Discovery
+rejects damaged branch/cleanup paths and matches full object-field offsets.
+Across all 70 owned MMDs, all 1,850 intercepted instruction sites now match
+registered original native instructions in complete words and nominal cycles.
+The additional 65 direct CFG closures contain 7,715 native instructions, with
+no generated rows removed. Their root/cycle/byte checks do not establish
+unresolved indirect targets or runtime reachability.
+
+The Palmtree Panic adaptive-window test checks five client shapes, producing
+398, 538, 896, 320 and 522 by 224 frames. Native refresh completes within two
+game frames. Its 2,925-frame run has zero floor operations, audio faults or
+rejected scenes (`widescreen-adaptive-window-2`). Synthetic renderer and
+machine tests cover source pixel/priority/flip vectors, palette changes,
+HUD anchoring, canvas fallback and safe callback teardown. Both tests pass
+again on Windows GCC after the guest-pause fix. The original Start pause now
+retains the source-published sprite scene and real margin pixels throughout
+120 paused frames; the guest timer holds and resumes correctly afterward
+(`widescreen-game-pause-2`, 2,580 frames, zero floor/audio faults). A real menu
+test also enables widescreen and verifies published margin terrain after
+closing, while preserving queued frame steps (`recomp-ui-widescreen-window-4`).
+
+An independent original-game comparison exposed ring loss in the widened
+view: early-spawned ring groups still used their separate original deletion
+bounds. The fix follows ObjectIndex ID $10 and its state table to widen those
+two native arithmetic operations. Native aspect and widened presentation now
+both collect 14 rings on the matched Right-450-frame route, with identical
+player/camera state. An additional fixed-400-pixel regression passes at
+2,900 frames with zero floor operations, audio faults or rejected scenes
+(`ring-fixed400-regression-1`). Final independent visual acceptance is still
+pending for the remaining representative scenes. An independent review of
+that fixed-width capture agrees on central terrain and player/ring placement,
+HUD counts and additional side scenery. Its original reference differs by
+24 level frames, so it establishes layout alignment rather than pixel parity.
+The subsequent build with all source-cull catalogs repeats the fixed-400 test with identical
+ring count and no floor operations, audio faults or rejected scenes
+(`ring-fixed400-all-culls-regression-1`). Broader live
+widescreen qualification, mandatory final independent original-game visual
+comparisons and unique-mechanics/completion/save gates remain open.
 
 The new `runner/cd` device library is game-independent portable C. It takes an
 owned BIOS; BIOS, disc images, generated program C and captures stay private.
@@ -184,12 +291,18 @@ Independent hardware/original-BIOS observations must still qualify the timing,
 mapping and edge behavior. CPU state, media and device state must participate
 in deterministic snapshots/compatibility identity before any netplay claim.
 
-Remaining backend acceptance includes the disc reader, CDC/CDD and CD-DA,
-RF5C164, rotation/scaling, both original 68000 programs with AOT dispatch and
-overlay identity/invalidation, scheduler/interrupt/reset integration, owned-BIOS
-disc boot, actual original Sonic CD gameplay/audio/visual validation, persistence
-and a standalone game consumer/build. The current device library is the first
-implementation step, not a completed Sega CD backend.
+The original device-only milestone required disc/audio/ASIC support, native
+dual-CPU scheduling and a standalone consumer. Those implementations and their
+individual evidence are recorded above and below. Remaining game acceptance
+includes unique mechanics/bosses and real completion triggers, later save
+boundaries, final representative visual comparisons
+and a reproducible owned-input generation/build flow. This is not yet a
+completed Sega CD backend.
+
+The noncritical hardware-accuracy defer list is limited to measured physical
+CD seek/radial-scan latency and exact stamp-device bus contention/refresh
+timing. Current functional timing profiles remain deterministic. Missing game
+paths or failed mechanics are not hardware-accuracy deferrals.
 
 Initial validation: the device test passes MSVC, MinGW GCC and Linux GCC with
 ASan/UBSan, including every 1M cell-view byte, five cell bands, ownership denials,
@@ -208,8 +321,9 @@ The next execution seam uses explicit guest PCs and instruction-sized AOT
 operations. Both CPU contexts and writable overlays need a safe scheduling and
 invalidation boundary. A compiled operation must match the instruction bytes
 in the currently mapped memory before running; a PC alone cannot identify code
-that the disc has replaced. Unsupported/mismatched code must report a miss and
-use the qualified correctness floor, never execute an old program or no-op.
+that the disc has replaced. Unsupported/mismatched code reports a miss rather
+than executing an old program or no-op. An interpreter is available only in
+explicitly separate diagnostics; the native runner never attaches it.
 
 Shared core branch `feature/segacd-flat-step` exposes the established native C
 arithmetic/EA emitter with consumer-owned CPU/memory bindings. Synthetic real

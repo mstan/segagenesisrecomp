@@ -1,4 +1,5 @@
 #include "machine.h"
+#include "sonic_cd_widescreen.h"
 #include "fixtures/z80_native/proof_control_step.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,11 +131,56 @@ static void test_native_miss_is_terminal_without_floor(void)
     segacd_machine_close(&machine);
 }
 
+static void test_widescreen_original_frame_and_safe_teardown(void)
+{
+    setup(1);
+    SegaCDNativeProgram program={main_modules,sub_modules,1,1,proof_control_step};
+    SegaCDWidescreen *wide=segacd_widescreen_create(&machine,&program);
+    CHECK(wide&&segacd_widescreen_state(wide)==SEGACD_WIDESCREEN_NATIVE);
+    uint64_t main_steps=machine.coordinator.native_steps[0];
+    CHECK(segacd_widescreen_prepare(wide,400));
+    CHECK(segacd_widescreen_state(wide)==SEGACD_WIDESCREEN_ORIGINAL_SCENE);
+    CHECK(machine.coordinator.native_steps[0]==main_steps);
+    CHECK(machine.coordinator.main_remainder==0&&machine.frames==0);
+    CHECK(machine.coordinator.modules[0]==main_modules);
+    for(unsigned y=0;y<224;++y)for(unsigned x=0;x<320;++x)
+        machine.pixels[y][x]=0xff000000u|(y*320u+x);
+    unsigned width,height,pitch;
+    const uint32_t *pixels=segacd_widescreen_frame(wide,&width,&height,&pitch);
+    CHECK(pixels&&width==400&&height==224&&pitch==1600);
+    CHECK(pixels[0]==0xff000000u&&pixels[39]==0xff000000u);
+    CHECK(pixels[40]==machine.pixels[0][0]);
+    CHECK(pixels[359]==machine.pixels[0][319]&&pixels[360]==0xff000000u);
+    CHECK(pixels[223u*400u+100u]==machine.pixels[223][60]);
+    CHECK(!segacd_widescreen_prepare(wide,319));
+    CHECK(segacd_widescreen_prepare(wide,455));
+    pixels=segacd_widescreen_frame(wide,&width,&height,&pitch);
+    CHECK(pixels&&width==454&&pitch==454u*sizeof(uint32_t));
+    CHECK(pixels[67]==machine.pixels[0][0]);
+    CHECK(segacd_widescreen_prepare(wide,320));
+    CHECK(segacd_widescreen_state(wide)==SEGACD_WIDESCREEN_NATIVE);
+    CHECK(segacd_widescreen_frame(wide,&width,&height,&pitch)==&machine.pixels[0][0]);
+    CHECK(width==320&&pitch==GVDP_MAX_WIDTH*sizeof(uint32_t));
+    /* A failed observer detach must retain the context. The real machine can
+     * still run with that callback and a later safe teardown must succeed. */
+    machine.coordinator.busy[0]=1;
+    CHECK(!segacd_widescreen_destroy(wide));
+    machine.coordinator.busy[0]=0;
+    CHECK(segacd_widescreen_prepare(wide,400));
+    CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_OK);
+    CHECK(machine.frames==1&&!machine.coordinator.floor_steps[0]&&
+          !machine.coordinator.floor_steps[1]);
+    CHECK(segacd_widescreen_destroy(wide));
+    CHECK(segacd_machine_step(&machine)==M68K_STEP_OK);
+    segacd_machine_close(&machine);
+}
+
 int main(void)
 {
     test_full_frame_video_irq_and_controls();
     test_machine_reentry_from_audio_observer();
     test_native_miss_is_terminal_without_floor();
+    test_widescreen_original_frame_and_safe_teardown();
     puts("native machine: frame/raster IRQ, controller bus, Z80 clock ceiling, reentry and strict missing-code stop pass");
     return 0;
 }

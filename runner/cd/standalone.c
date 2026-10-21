@@ -6,6 +6,8 @@
 #include "debug.h"
 #include "disc_image.h"
 #include "presentation.h"
+#include "sonic_cd_widescreen.h"
+#include "sonic_cd_limits.h"
 #include "../audio.h"
 #include <SDL2/SDL.h>
 #include <errno.h>
@@ -18,6 +20,7 @@ extern int segacd_standalone_accept_bios(const uint8_t *,size_t);
 extern int segacd_standalone_accept_disc(const uint8_t *);
 extern uint8_t g_ram[0x10000];
 static SegaCDMachine machine;
+static SegaCDWidescreen *widescreen;
 typedef struct {uint64_t first,duration;uint16_t mask;} PadEvent;
 static PadEvent pad_events[128];static size_t pad_count;
 static int parse_number(const char *text,uint64_t *out)
@@ -112,10 +115,14 @@ static void debug_write_log(void *user,const char *space,uint32_t offset,const u
 static int debug_capture(void *user,const char *path,const SegaCDMachine *m)
 {
     (void)user;
+    unsigned width=m->width,height=m->height,pitch=GVDP_MAX_WIDTH*sizeof(uint32_t);
+    const uint32_t *pixels=widescreen ?
+        segacd_widescreen_frame(widescreen,&width,&height,&pitch) : &m->pixels[0][0];
+    if(!pixels)return 0;
     FILE*f=fopen(path,"wb");if(!f)return 0;
-    int ok=fprintf(f,"P6\n%u %u\n255\n",m->width,m->height)>0;
-    for(unsigned y=0;ok&&y<m->height;++y)for(unsigned x=0;x<m->width;++x) {
-        uint32_t p=m->pixels[y][x];
+    int ok=fprintf(f,"P6\n%u %u\n255\n",width,height)>0;
+    for(unsigned y=0;ok&&y<height;++y)for(unsigned x=0;x<width;++x) {
+        uint32_t p=*(const uint32_t *)((const uint8_t *)pixels+(size_t)y*pitch+x*sizeof(uint32_t));
         uint8_t rgb[3]={(uint8_t)(p>>16),(uint8_t)(p>>8),(uint8_t)p};
         if(fwrite(rgb,1,3,f)!=3){ok=0;break;}
     }
@@ -125,7 +132,7 @@ static int debug_capture(void *user,const char *path,const SegaCDMachine *m)
 int main(int argc,char **argv)
 {
     const char *bios_path=NULL,*disc_path=NULL,*backup_path=NULL,*dump_dir=NULL,*wav_path=NULL,*settings_path=NULL;
-    uint64_t frame_limit=0,debug_port=0;int headless=0,mute=0,debug_requested=0,start_paused=0;
+    uint64_t frame_limit=0,debug_port=0,view_width=0;int headless=0,mute=0,debug_requested=0,start_paused=0;
     for(int i=1;i<argc;++i) {
         if(!strcmp(argv[i],"--headless"))headless=1;
         else if(!strcmp(argv[i],"--mute"))mute=1;
@@ -138,11 +145,16 @@ int main(int argc,char **argv)
         else if(i+1<argc&&!strcmp(argv[i],"--dump"))dump_dir=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--wav"))wav_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--frames")){if(!parse_number(argv[++i],&frame_limit))return 2;}
+        else if(i+1<argc&&!strcmp(argv[i],"--view-width")){if(!parse_number(argv[++i],&view_width)||view_width<320||view_width>SEGACD_SONIC_CD_MAX_VIEW_WIDTH)return 2;}
         else if(i+1<argc&&!strcmp(argv[i],"--pad")){if(!parse_pad(argv[++i]))return 2;}
         else {fprintf(stderr,"Unknown/incomplete option: %s\n",argv[i]);return 2;}
     }
     if(!bios_path||!disc_path||(headless&&!frame_limit)||(start_paused&&!debug_requested)) {
         fprintf(stderr,"Sonic CD --bios <owned BIOS> --disc <verified SGCD> [--backup file] [--settings file] [--headless --frames N --mute] [--pad frame:duration:mask] [--dump directory] [--wav file] [--debug-port N [--start-paused]]\n");return 2;
+    }
+    if(!headless&&view_width) {
+        fprintf(stderr,"--view-width is a headless QA override; use the Graphics menu in a window.\n");
+        return 2;
     }
     if(headless){SDL_setenv("SDL_AUDIODRIVER","dummy",1);mute=1;}
     if(SDL_Init(SDL_INIT_AUDIO|SDL_INIT_TIMER|(headless?0:SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER))){fprintf(stderr,"SDL: %s\n",SDL_GetError());return 2;}
@@ -202,6 +214,17 @@ int main(int argc,char **argv)
         if(!presentation){fprintf(stderr,"Window/settings: %s\n",SDL_GetError());if(renderer)SDL_DestroyRenderer(renderer);if(window)SDL_DestroyWindow(window);segacd_debug_stop(debug);audio_wav_stop();segacd_native_audio_destroy(audio);segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
         for(int i=0;i<SDL_NumJoysticks();++i)if(SDL_IsGameController(i)){pad=SDL_GameControllerOpen(i);break;}
     }
+    if(!headless||view_width>320) {
+        widescreen=segacd_widescreen_create(&machine,segacd_standalone_program());
+        if(!widescreen) {
+            fprintf(stderr,"Cannot initialize Sonic CD widescreen presentation\n");
+            if(pad)SDL_GameControllerClose(pad);
+            segacd_presentation_destroy(presentation);
+            if(renderer)SDL_DestroyRenderer(renderer);if(window)SDL_DestroyWindow(window);
+            segacd_debug_stop(debug);audio_wav_stop();segacd_native_audio_destroy(audio);
+            segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;
+        }
+    }
     int quit=0,paused=0,exit_code=0;uint64_t freq=SDL_GetPerformanceFrequency(),target=SDL_GetPerformanceCounter(),phase=0;
     while(!quit&&(!frame_limit||machine.frames<frame_limit)) {
         SDL_Event event;
@@ -218,6 +241,11 @@ int main(int argc,char **argv)
             (debug?segacd_debug_should_run_frame(debug):!paused);
         audio_set_playback_enabled(run);
         if(run) {
+            unsigned desired_width=headless ? (view_width ? (unsigned)view_width : 320u) :
+                segacd_presentation_view_width(presentation);
+            if(widescreen&&!segacd_widescreen_prepare(widescreen,desired_width)) {
+                fprintf(stderr,"Cannot configure Sonic CD widescreen presentation\n");exit_code=2;break;
+            }
             int block_input=headless||segacd_presentation_blocks_game_input(presentation);
             segacd_machine_pad(&machine,0,scripted_pad(machine.frames)|segacd_debug_pad(debug,0)|(block_input?0:keyboard_pad()|controller_pad(pad)));
             segacd_machine_pad(&machine,1,segacd_debug_pad(debug,1));
@@ -231,8 +259,11 @@ int main(int argc,char **argv)
             }
         }
         if(!headless) {
-            if(!segacd_presentation_present(presentation,&machine.pixels[0][0],
-                (int)machine.width,(int)machine.height,GVDP_MAX_WIDTH*(int)sizeof(uint32_t))) {
+            unsigned width=machine.width,height=machine.height,pitch=GVDP_MAX_WIDTH*sizeof(uint32_t);
+            const uint32_t *pixels=widescreen ?
+                segacd_widescreen_frame(widescreen,&width,&height,&pitch) : &machine.pixels[0][0];
+            if(!pixels||!segacd_presentation_present(presentation,pixels,
+                (int)width,(int)height,(int)pitch)) {
                 fprintf(stderr,"Presentation: %s\n",SDL_GetError());exit_code=2;break;
             }
         }
@@ -256,6 +287,15 @@ int main(int argc,char **argv)
         (unsigned long long)stats.rendered_fm_frames,(unsigned long long)stats.rendered_psg_frames);
     if(window&&exit_code)SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"Sonic CD","The game stopped. See the execution log for details.",window);
     if(pad)SDL_GameControllerClose(pad);
+    if(widescreen) {
+        uint64_t expanded=0,original=0,rejected=0;
+        segacd_widescreen_stats(widescreen,&expanded,&original,&rejected);
+        printf("Sonic CD widescreen expanded=%llu original=%llu rejectedScenes=%llu\n",
+            (unsigned long long)expanded,(unsigned long long)original,(unsigned long long)rejected);
+        if(!segacd_widescreen_destroy(widescreen)) {
+            fprintf(stderr,"Cannot detach Sonic CD presentation at shutdown\n");exit_code=2;
+        } else widescreen=NULL;
+    }
     segacd_presentation_destroy(presentation);
     if(renderer)SDL_DestroyRenderer(renderer);
     if(window)SDL_DestroyWindow(window);
