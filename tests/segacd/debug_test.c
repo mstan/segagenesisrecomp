@@ -62,6 +62,13 @@ int main(void)
     machine.devices.dma.active=1;machine.devices.stamp.busy=1;
     machine.z80.state.pc=0xC123u;machine.z80.state.halted=1;
     machine.z80.state.iff1=1;machine.z80.state.im=2;machine.z80.irq_pending=1;
+    machine.coordinator.cdd_submission_total=70;
+    for(unsigned i=0;i<SEGACD_CDD_TRACE_CAPACITY;++i) {
+        machine.coordinator.cdd_submissions[i].device_clock=UINT64_MAX;
+        machine.coordinator.cdd_submissions[i].command_deadline=UINT64_MAX;
+        machine.coordinator.cdd_submissions[i].instruction_pc=0xA00000u+i;
+        memset(machine.coordinator.cdd_submissions[i].packet,15,10);
+    }
 
     char error[128];SegaCDDebugServer*server=segacd_debug_start(&machine,0,NULL,NULL,NULL,error,sizeof error);
     if(!server){fprintf(stderr,"debug server start failed: %s\n",error);return 1;}
@@ -87,7 +94,7 @@ int main(void)
     if(!machine_before||!ram_before)fail("snapshot allocation");
     memcpy(machine_before,&machine,sizeof machine);memcpy(ram_before,g_ram,sizeof g_ram);
     segacd_debug_poll(server);
-    char response[8192];size_t response_size=0;unsigned lines=0;
+    char response[32768];size_t response_size=0;unsigned lines=0;
     while(lines<2&&response_size+1<sizeof response) {
 #ifdef _WIN32
         int received=recv(client,response+response_size,(int)(sizeof response-response_size-1),0);
@@ -112,6 +119,8 @@ int main(void)
     if(!strstr(response,"\"active\":true,\"end\":false,\"fifo_count\":2,\"remaining\":17"))fail("CDC transfer state");
     if(!strstr(response,"\"seek_target\":17767")||!strstr(response,"\"dma\":{\"active\":true")||!strstr(response,"\"stamp\":{\"busy\":true"))fail("device busy state");
     if(!strstr(response,"\"z80\":{\"pc\":\"C123\",\"halted\":true,\"iff1\":true"))fail("Z80 interrupt state");
+    if(!strstr(response,"\"cdd_submissions\":{\"total\":70")||
+       !strstr(response,"\"pc\":\"A00006\"")||!strstr(response,"\"packet\":\"FFFFFFFFFF\""))fail("full CDD history snapshot");
     if(memcmp(machine_before,&machine,sizeof machine)||memcmp(ram_before,g_ram,sizeof g_ram))fail("inspect mutated machine state");
     free(machine_before);free(ram_before);test_close(client);segacd_debug_stop(server);
     printf("segacd debug snapshot PASS (SegaCDMachine=%zu bytes)\n",sizeof machine);return 0;

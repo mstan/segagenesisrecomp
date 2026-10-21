@@ -29,6 +29,8 @@ static void host_advance(void*u,uint64_t time){(void)u;CHECK(time>=host_time);ho
 static uint64_t host_next(void*u){(void)u;return host_event?host_event:UINT64_MAX;}
 static void dma_trigger_operation(M68kStepContext*ctx)
 {m68k_step_write16(ctx,0xFF0500,0x1234);ctx->state.regs.SR&=0xFFF0;}
+static void cdd_stage_packet(const uint8_t packet[10])
+{for(unsigned n=0;n<9;++n)m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF8042u+n,packet[n]);}
 int main(int argc,char**argv)
 {
     CHECK(argc==3);initialize(argv[1],argv[2]);
@@ -109,5 +111,47 @@ int main(int argc,char**argv)
     /* A stop cannot hide a failed device transfer or run past it as success. */
     initialize(argv[1],argv[2]);c.cpu[0].state.stopped=1;cd.dma.last_result=SEGACD_DMA_UNMAPPED;
     CHECK(segacd_coordinator_run_until(&c,1000)==M68K_STEP_BUS_ERROR && !c.device_time);
-    puts("Two native original-ISA programs: Word RAM WAIT/handoff, independent CPUs, STOP clock deadlines, timer IRQ/RTE and reset pulse pass");return 0;
+    /* Coordinator observation records actual accepted packet-submit bus
+     * edges, not staged payload bytes, ignored HOCK-low writes or command-0
+     * status polls. Word writes at 4A submit exactly once on their low byte. */
+    initialize(argv[1],argv[2]);
+    uint8_t packet1[10]={1,2,3,4,5,6,7,8,9,10};
+    uint8_t packet2[10]={2,3,4,5,6,7,8,9,10,11};
+    uint8_t poll[10]={0,1,2,3,4,5,6,7,8,9};
+    SegaCDCddSnapshot cdd_snapshot;SegaCDCddSubmission cdd_events[4];
+    c.cpu[SEGACD_SUB].state.instruction_pc=0x1234;
+    m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF8037,4);
+    cdd_stage_packet(packet1);m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF804B,packet1[9]);
+    CHECK(segacd_coordinator_cdd_trace(&c,&cdd_snapshot,cdd_events,4)==1);
+    CHECK(cdd_snapshot.accepted_total==1 && cdd_snapshot.retained_count==1);
+    CHECK(!memcmp(cdd_events[0].packet,packet1,sizeof packet1) && cdd_events[0].instruction_pc==0x1234);
+    CHECK(cdd_snapshot.command_pending && cdd_snapshot.pending[0]==packet1[0]);
+    c.cpu[SEGACD_SUB].state.instruction_pc=0x2345;
+    cdd_stage_packet(packet2);
+    CHECK(segacd_coordinator_cdd_trace(&c,&cdd_snapshot,cdd_events,4)==1);
+    CHECK(cdd_events[0].packet[0]==packet1[0]); /* Staging while busy is not a submit. */
+    m68k_step_write16(&c.cpu[SEGACD_SUB],0xFF804A,(uint16_t)((packet2[8]<<8)|packet2[9]));
+    CHECK(segacd_coordinator_cdd_trace(&c,&cdd_snapshot,cdd_events,4)==2);
+    CHECK(cdd_snapshot.accepted_total==2 && cdd_events[1].instruction_pc==0x2345);
+    CHECK(!memcmp(cdd_events[1].packet,packet2,sizeof packet2));
+    CHECK(cdd_events[0].device_clock<=cdd_events[1].device_clock);
+    m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF8037,0); /* HOCK low cancels pending. */
+    cdd_stage_packet(packet2);m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF804B,packet2[9]);
+    CHECK(segacd_coordinator_cdd_trace(&c,&cdd_snapshot,cdd_events,4)==2 && !cdd_snapshot.command_pending);
+    m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF8037,4);
+    cdd_stage_packet(poll);m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF804B,poll[9]);
+    CHECK(segacd_coordinator_cdd_trace(&c,&cdd_snapshot,cdd_events,4)==2);
+    CHECK(cdd_snapshot.command_pending && cdd_snapshot.pending[0]==0 && cdd_snapshot.status==cd.drive.status);
+    for(unsigned n=0;n<70;++n) {
+        uint8_t packet[10];for(unsigned i=0;i<10;++i)packet[i]=(uint8_t)((n+i+1u)&15u);
+        packet[0]=(uint8_t)(n%15u+1u);c.cpu[SEGACD_SUB].state.instruction_pc=0x5000u+n;
+        cdd_stage_packet(packet);m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF804B,packet[9]);
+    }
+    SegaCDCddSubmission cdd_recent[SEGACD_CDD_TRACE_CAPACITY];
+    CHECK(segacd_coordinator_cdd_trace(&c,&cdd_snapshot,cdd_recent,SEGACD_CDD_TRACE_CAPACITY)==SEGACD_CDD_TRACE_CAPACITY);
+    CHECK(cdd_snapshot.accepted_total==72 && cdd_snapshot.retained_count==SEGACD_CDD_TRACE_CAPACITY);
+    CHECK(cdd_recent[0].packet[0]==7 && cdd_recent[0].instruction_pc==0x5006);
+    CHECK(cdd_recent[SEGACD_CDD_TRACE_CAPACITY-1].packet[0]==10 &&
+          cdd_recent[SEGACD_CDD_TRACE_CAPACITY-1].instruction_pc==0x5045);
+    puts("Coordinator CDD packet submission trace and two native original-ISA programs pass");return 0;
 }

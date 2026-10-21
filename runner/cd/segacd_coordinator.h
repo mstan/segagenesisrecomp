@@ -6,6 +6,20 @@
 
 typedef struct SegaCDCoordinator SegaCDCoordinator;
 typedef struct {SegaCDCoordinator *owner;SegaCDCpu cpu;} SegaCDBusBinding;
+#define SEGACD_CDD_TRACE_CAPACITY 64u
+typedef struct {
+    uint8_t packet[10];
+    uint32_t instruction_pc;
+    uint64_t device_clock,command_deadline;
+    int32_t lba;
+    uint8_t status;
+} SegaCDCddSubmission;
+typedef struct {
+    uint8_t tx[10],pending[10],control,status,command_pending;
+    int32_t lba,seek_target;
+    uint64_t device_clock,command_deadline,accepted_total;
+    size_t retained_count;
+} SegaCDCddSnapshot;
 struct SegaCDCoordinator {
     SegaCD *devices;
     M68kStepContext cpu[2];
@@ -42,6 +56,10 @@ struct SegaCDCoordinator {
      * Word RAM. A host DMA stall in that interval has no safe CPU stack to
      * charge; report the unsupported stall instead of charging Main early. */
     uint8_t external_active,external_stall_seen;
+    /* Read-only diagnostic history for accepted, non-poll CDD commands.
+     * Kept here so the sealed SegaCD device ABI stays unchanged. */
+    SegaCDCddSubmission cdd_submissions[SEGACD_CDD_TRACE_CAPACITY];
+    uint64_t cdd_submission_total;
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
@@ -85,4 +103,9 @@ M68kStepResult segacd_coordinator_step(SegaCDCoordinator *);
  * external bus effects are retained. Read output changes only on success. */
 M68kStepResult segacd_coordinator_external_main_read8(SegaCDCoordinator *,uint32_t,uint8_t *);
 M68kStepResult segacd_coordinator_external_main_write8(SegaCDCoordinator *,uint32_t,uint8_t);
+/* Snapshot current CDD packet/state and copy up to capacity retained accepted
+ * commands into chronological order (oldest first among the copied entries).
+ * Returns the number of entries copied; snapshot reports total and retained. */
+size_t segacd_coordinator_cdd_trace(const SegaCDCoordinator *,SegaCDCddSnapshot *,
+                                    SegaCDCddSubmission *,size_t capacity);
 #endif

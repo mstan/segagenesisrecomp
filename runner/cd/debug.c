@@ -154,6 +154,23 @@ static void inspect_machine(SegaCDDebugServer*s)
           cd->dma.address,(unsigned long long)cd->dma.words,(unsigned long long)cd->dma.waits,
           (unsigned)cd->dma.last_result,cd->stamp.busy?"true":"false",
           cd->stamp.remaining_clocks,(unsigned long long)cd->stamp.operations);
+    queue(s,"\"cdd_submissions\":{\"total\":%llu,\"pending_packet\":\"",
+          (unsigned long long)m->coordinator.cdd_submission_total);
+    for(unsigned i=0;i<10;++i)queue(s,"%X",d->pending[i]&15u);
+    queue(s,"\",\"tx_packet\":\"");
+    for(unsigned i=0;i<10;++i)queue(s,"%X",d->tx[i]&15u);
+    queue(s,"\",\"events\":[");
+    uint64_t total=m->coordinator.cdd_submission_total;
+    uint64_t count=total>SEGACD_CDD_TRACE_CAPACITY?SEGACD_CDD_TRACE_CAPACITY:total;
+    for(uint64_t n=0;n<count;++n) {
+        const SegaCDCddSubmission*e=&m->coordinator.cdd_submissions[(total-count+n)%SEGACD_CDD_TRACE_CAPACITY];
+        queue(s,"%s{\"clock\":%llu,\"deadline\":%llu,\"pc\":\"%06X\",\"status\":%u,\"lba\":%d,\"packet\":\"",
+              n?",":"",(unsigned long long)e->device_clock,(unsigned long long)e->command_deadline,
+              e->instruction_pc&0xFFFFFFu,e->status,e->lba);
+        for(unsigned i=0;i<10;++i)queue(s,"%X",e->packet[i]&15u);
+        queue(s,"\"}");
+    }
+    queue(s,"]},");
     queue(s,"\"z80\":{\"pc\":\"%04X\",\"halted\":%s,\"iff1\":%s,\"iff2\":%s,\"interrupt_mode\":%u,\"irq_pending\":%u,\"in_step\":%u}}\n",
           m->z80.state.pc,m->z80.state.halted?"true":"false",
           m->z80.state.iff1?"true":"false",m->z80.state.iff2?"true":"false",

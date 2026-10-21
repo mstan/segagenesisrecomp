@@ -88,10 +88,29 @@ static M68kStepBusResult bus_read16(void *user,uint32_t a,uint16_t *v)
     if(b->cpu==SEGACD_SUB || main_cd_port(a) || !c->host_main.read16)return M68K_BUS_FAULT;
     return c->host_main.read16(c->host_user,a,v);
 }
+static void observe_cdd_submission(SegaCDCoordinator*c,SegaCDCpu cpu,uint32_t a,int word)
+{
+    a&=0xFFFFFFu;
+    if(cpu!=SEGACD_SUB || (word?a!=0xFF804Au:a!=0xFF804Bu))return;
+    SegaCDDrive*d=&c->devices->drive;
+    /* Register 4B is the packet-submit edge. Payload-byte writes before it
+     * are only staging; an ignored submit (HOCK low) leaves no pending
+     * command. Command zero is a status poll, not a transport request. */
+    if(!d->command_pending || !d->pending[0])return;
+    uint64_t sequence=c->cdd_submission_total++;
+    SegaCDCddSubmission*entry=&c->cdd_submissions[sequence%SEGACD_CDD_TRACE_CAPACITY];
+    memcpy(entry->packet,d->pending,sizeof entry->packet);
+    entry->instruction_pc=c->cpu[SEGACD_SUB].state.instruction_pc;
+    entry->device_clock=d->cycles;
+    entry->command_deadline=d->command_deadline;
+    entry->lba=d->lba;
+    entry->status=d->status;
+}
 static M68kStepBusResult bus_write8(void *user,uint32_t a,uint8_t v)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     SegaCDResult r=segacd_write8(c->devices,b->cpu,a,v);
+    if(r==SEGACD_OK)observe_cdd_submission(c,b->cpu,a,0);
     if(r!=SEGACD_UNMAPPED)return translate(r);
     if(b->cpu==SEGACD_SUB || main_cd_port(a) || !c->host_main.write8)return M68K_BUS_FAULT;
     return c->host_main.write8(c->host_user,a,v);
@@ -100,6 +119,7 @@ static M68kStepBusResult bus_write16(void *user,uint32_t a,uint16_t v)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     SegaCDResult r=segacd_write16(c->devices,b->cpu,a,v);
+    if(r==SEGACD_OK)observe_cdd_submission(c,b->cpu,a,1);
     if(r!=SEGACD_UNMAPPED)return translate(r);
     if(b->cpu==SEGACD_SUB || main_cd_port(a) || !c->host_main.write16)return M68K_BUS_FAULT;
     return c->host_main.write16(c->host_user,a,v);
@@ -267,6 +287,33 @@ void segacd_coordinator_media(SegaCDCoordinator*c,SegaCDReadSector read_sector,v
         c->io.read_sector=read_sector;c->io.media_user=media_user;
         c->io.cdda_sector=sink;c->io.cdda_user=cdda_user;
     }
+}
+size_t segacd_coordinator_cdd_trace(const SegaCDCoordinator*c,SegaCDCddSnapshot*snapshot,
+                                    SegaCDCddSubmission*events,size_t capacity)
+{
+    if(!c)return 0;
+    const SegaCDDrive*d=&c->devices->drive;
+    size_t retained=c->cdd_submission_total>SEGACD_CDD_TRACE_CAPACITY?
+        SEGACD_CDD_TRACE_CAPACITY:(size_t)c->cdd_submission_total;
+    if(snapshot) {
+        memcpy(snapshot->tx,d->tx,sizeof snapshot->tx);
+        memcpy(snapshot->pending,d->pending,sizeof snapshot->pending);
+        snapshot->control=d->control;
+        snapshot->status=d->status;
+        snapshot->command_pending=d->command_pending;
+        snapshot->lba=d->lba;
+        snapshot->seek_target=d->seek_target;
+        snapshot->device_clock=d->cycles;
+        snapshot->command_deadline=d->command_deadline;
+        snapshot->accepted_total=c->cdd_submission_total;
+        snapshot->retained_count=retained;
+    }
+    if(!events || !capacity)return 0;
+    size_t count=capacity<retained?capacity:retained;
+    uint64_t first=c->cdd_submission_total-count;
+    for(size_t n=0;n<count;++n)
+        events[n]=c->cdd_submissions[(first+n)%SEGACD_CDD_TRACE_CAPACITY];
+    return count;
 }
 static void idle_until(SegaCDCoordinator*c,uint64_t deadline)
 {
