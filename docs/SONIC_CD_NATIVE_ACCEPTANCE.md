@@ -1,9 +1,9 @@
 # Original Sonic CD native acceptance
 
 Updated 2026-10-21 on `feature/segacd-backend`. This is the current acceptance
-ledger; older chronological handoffs describe earlier checkpoints. Development
-is active. No CD merge into main/master is authorized. Campaign and Shadow work
-remain preserved.
+ledger; older chronological handoffs describe earlier checkpoints. The requested
+Sonic CD burndown is complete on this branch. No CD merge into main/master is
+authorized. Campaign and Shadow work remain preserved.
 
 The owner has tested windowed Palmtree Panic with normal audio and reported that
 it looks and sounds good. This is a working original-program native consumer,
@@ -37,10 +37,10 @@ Accepted Main/Sub 68000 and Z80 execution is native, with Main/Sub floor counter
 | MMZ layer and size changes | PASS | `mechanics-mmz-runtime-2`: actual layer 0→1, shrink 0→1 and reverse enlargement 1→0; raw radius bytes 1309→0A05→1309. No layer/mini/radius writes. `parent-final-mechanics-and-widescreen-audit.json` corrects the worker's mixed decimal/hex radius notation. |
 | QQZ lift and conveyor-like surface | PASS WITH SCOPE | Original vertical-lift carry retained. `qqz-conveyor-native-1`: exact R51A, visually authored panel surface carries Sonic right with zero velocity fields and no directional input; adjacent floor remains stationary. Representative passive carry is proved; original symbol-name attribution is not claimed. Parent audited every write. |
 | Original campaign ending and credits | PASS | `mmz-clean-source-campaign-ending-parent-4/parent-ending-completion-audit.json`: actual MMZ1/2 results, boss and exit reach exact ENDING.MMD, original bad-ending animation, full credit roll and automatic exact TITLEM return. 7512 raw byte writes audited; no result/save/next-stage flag supplied. Final frame24632, floors0/0, audioFaults0. Initial QA zone-6 save bypasses prerequisites; this is not save validation. Alternate good-ending prerequisites are not claimed. |
-| Independent final visuals | PASS WITH PHASE LIMIT | Qualified PPZ, TTZ and SS1 comparisons retained; SS8 comparison complete. `ending-visual-parent-review-1` independently checks the clean-build cinematic framing and credit-roll layout against the original. Exact animation phase/pixel parity remains UNVERIFIED. |
-| Controls/audio/recomp-ui/adaptive widescreen | PASS WITH SCOPE | Clean candidate: normal window and exact `Sonic CD` caption with debug port; real movement/jump/pause; F1 UI freezes emulation and blocks held input on close; nonzero captured audio, audioFaults0. PID-qualified resize tests produce320/512px frames. `widescreen-r11a-midstage-3` proves continuous terrain in both actual margins and visible HUD after camera settle/12 frames. Earlier resize screenshots with black margins do not prove expanded scenery. Physical gamepad not newly tested. |
-| Reproducible owned-input source build | PARTIAL: FINAL COMPILE PENDING | `G:/Temp/Codex/segagenesisrecomp/owned-native-regeneration-1/generation-provenance.json`: public owned-input recipe and verified resume pass, producing333 catalogs/11290 source/header files. All original M68K guarded entries preserved across332 images (one Sub patch split); fresh native Z80 bootstrap has zero code-region guard gaps. Legacy-only data/stack variants are explicitly retired by source-role audit. Clean source-bundle compile passed earlier; final compile of this complete regenerated bundle remains. |
-| Standalone owner package | PASS CANDIDATE | `G:/Temp/Codex/segagenesisrecomp/sonic-cd-playtest-3/SonicCD/SonicCD.cmd` uses the clean source binary, required notices and an empty BIOS-formatted BRAM seed. Media paths only; no owned disc/BIOS copied. Python/PowerShell validation and final presentation checks passed; launch link delivered. Owner feedback on this final package remains pending. |
+| Independent final visuals | PASS WITH PHASE/ASPECT LIMITS | Final frozen binary: `G:/Temp/Codex/segagenesisrecomp/final-owned-input-qa-1/independent-review.json` and `parent-final-visual-audit.json`. Independent PPZ/TTZ/SS1/SS8 retakes plus parent visual/source/write review pass. PPZ/TTZ show actual400px expanded scenery; special stages retain the original256px projection centered with72px black bars, with no special-stage widescreen claim. Early blank/loading/title-card samples were rejected. `ending-visual-parent-review-1` retains the independent cinematic/credit layout comparison. Exact animation phase/pixel parity remains UNVERIFIED. |
+| Controls/audio/recomp-ui/adaptive widescreen | PASS WITH SCOPE | Final owned-input binary: `window-owned-input-final-1/parent-final-presentation-audit.json`. Normal window and exact `Sonic CD` caption with debug port; real movement/jump/pause; F1 UI freezes emulation and blocks held input on close. Stereo capture last-second RMS2410/peak12874, audioFaults0, floors0/0. PID-qualified960x720 and1600x700 clients; final512x224 midstage capture has continuous terrain in both96px margins and visible HUD. Earlier stage-start black margins do not prove expanded scenery. Physical gamepad not newly tested. |
+| Reproducible owned-input source build | PASS | Public recipe generation and full verified resume produce333 catalogs/11290 source/header files from owned BIOS/disc. `G:/Temp/Codex/segagenesisrecomp/sonic-cd-owned-input-build-1/source-build-provenance.json`: clean source1969498, pinned clean cores, configured/built true, zero imported archives. All2019176 required original M68K guards preserved across332 images (one Sub patch split); fresh native Z80 bootstrap has zero historical code-region guard gaps. Legacy-only data/stack variants are explicitly retired by source-role audit. Final CMake confirmation exits0. |
+| Standalone owner package | PASS | `G:/Temp/Codex/segagenesisrecomp/sonic-cd-playtest-4/SonicCD/SonicCD.cmd` contains the final frozen binary, SDL2, required notices and a newly BIOS-formatted empty BRAM seed. Media paths only; no owned disc/BIOS copied. Python verifies15 package files; PowerShell `-ValidateOnly` passes. New profile defaults to a normal window, adaptive widescreen and normal audio; prior packages/saves preserved. Owner feedback on this exact package remains pending. |
 
 All QA uses stage selection, teleports, protection and source-qualified actor
 prerequisite cheats. The guest executes the completion trigger under test.
@@ -52,6 +52,30 @@ Its terrain/collision observations are unverified. Original results/exit evidenc
 remains valid with this additional navigation bypass recorded. The helper now
 preserves radii; SSZ's accepted cage collision and timer used restored source
 hitboxes. The final representative interaction checks use the corrected helper.
+
+## Final pass/fail/unverified ledger
+
+- PASS: all70 standard stage/time variants,7 boss completions,8 special-stage
+  completions, secret credits/exit, original campaign bad ending/full credits/title
+  return, durable save/restart/Continue, representative mechanics and time travel.
+- PASS: strict native Main/Sub/Z80 execution, complete owned-input generation,
+  verified resume, clean source compile, standalone package integrity, final
+  independent visual comparisons and window/controls/audio/UI/adaptive stage view.
+- FAIL: none in the accepted final checks. Failed setup/timing samples are kept
+  and excluded explicitly; they are not relabeled as gameplay passes.
+- UNVERIFIED: physical projector contact, water air-bubble refill, physical
+  gamepad, alternate all-time-stones good-ending prerequisite path and exact
+  reference animation/pixel phase. These are coverage limits, not runtime stubs
+  or claims of validated behavior. Special-stage widescreen expansion is not
+  implemented or claimed; the original projection is retained.
+
+The final focused presentation run reaches2923 frames with native
+Main31911883/Sub46947438/Z8015968947, floors0/0 and audioFaults0. All16 raw byte
+writes were the Stage Select row and player kinematics; no outcome flags were
+supplied. Four independent final visual retakes also have floors0/0 and
+audioFaults0; SS8 uses controller input only. Recent generation checks pass
+10 M68K orchestration tests and8 Z80 generator tests. Earlier qualified runtime,
+device, media, audio and portability tests remain applicable.
 
 ## Runtime correction
 
@@ -72,6 +96,18 @@ These are limited qualifications, not substitutes for required gameplay checks:
 - Drive-error and marginal-media behavior beyond the qualified owned disc has
   not been exhaustively checked.
 
-Final compilation and focused regression of the complete regenerated bundle
-remain acceptance work; neither is a hardware defer. The prior clean-source
-owner candidate remains available while that build finishes.
+## Final build identity
+
+The frozen `SonicCD.exe` is143287808 bytes, SHA-256
+`80c14de9c887afd5d52d25360beeb1a8ce3d5da21544fc77c23a09c0798ca74d`.
+Source commit is `1969498c637262b2a537b87ff059daa633acd31b`, with M68K core
+`7233852a6e45d8779b9dae8b29afd6b94d5231dc` and Z80 core
+`4dfc5fc29fd67d23714126348e678e45952e9462`. Source and both cores were clean.
+The final acceptance documentation commit does not change runtime code.
+
+Generation evidence is in
+`G:/Temp/Codex/segagenesisrecomp/owned-native-regeneration-1`; compile evidence
+is in `G:/Temp/Codex/segagenesisrecomp/sonic-cd-owned-input-build-1`.
+`qualified-builds/native-owned-input-final-1/frozen-build-identity.json` binds
+the executable, SDL2 and copied source/generation provenance. No relink is used
+after this freeze. The owner package contains this same executable hash.
