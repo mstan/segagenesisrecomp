@@ -41,6 +41,14 @@ int main(void)
     machine.coordinator.cpu[SEGACD_SUB].state.regs.PC=0x05E8u;
     machine.coordinator.cpu[SEGACD_SUB].state.regs.D[3]=0xFEDCBA98u;
     machine.coordinator.cpu[SEGACD_SUB].state.stopped=1;
+    machine.coordinator.interrupts[SEGACD_SUB][2]=3;
+    machine.coordinator.last_interrupt_level[SEGACD_SUB]=2;
+    machine.coordinator.last_interrupt_vector[SEGACD_SUB]=26;
+    machine.coordinator.last_interrupt_pc[SEGACD_SUB]=0x000005E8u;
+    machine.coordinator.last_interrupt_target[SEGACD_SUB]=0x00005F2u;
+    machine.coordinator.main_irq=6;machine.irq4=1;machine.irq6=1;
+    machine.vdp.reg[0]=0x12;machine.vdp.reg[1]=0x34;
+    machine.vdp.scanline=0x123;machine.vdp.vint_pending=1;
     machine.coordinator.busy[SEGACD_SUB]=1;machine.coordinator.waits=3;
     machine.coordinator.wait_address=0x0A12003u;machine.coordinator.wait_cpu=SEGACD_MAIN;
     machine.coordinator.wait_result=M68K_STEP_NO_WAIT_HANDLER;
@@ -97,6 +105,9 @@ int main(void)
     if(!strstr(response,"\"89ABCDEF\"")||!strstr(response,"\"00FF1234\""))fail("Main D/A registers");
     if(!strstr(response,"\"pc\":\"0005E8\"")||!strstr(response,"\"FEDCBA98\"")||!strstr(response,"\"stopped\":true"))fail("Sub snapshot");
     if(!strstr(response,"\"waits\":3,\"wait_address\":\"A12003\"")||!strstr(response,"\"wait_result\":\"no_wait_handler\""))fail("scheduler wait state");
+    if(!strstr(response,"\"accepted\":[[0,0,0,0,0,0,0,0],[0,0,3,0,0,0,0,0]]"))fail("accepted interrupt counters");
+    if(!strstr(response,"\"level\":2,\"vector\":26,\"entry_pc\":\"0005E8\",\"target_pc\":\"0005F2\"}"))fail("last interrupt entry/target");
+    if(!strstr(response,"\"host\":{\"irq4\":1,\"irq6\":1,\"main_level\":6},\"vdp\":{\"reg0\":18,\"reg1\":52,\"scanline\":291,\"vint_pending\":1}"))fail("host/VPD interrupt state");
     if(!strstr(response,"\"memory_mode\":5,\"word_ram_1m\":true,\"word_ram_ret\":true")||!strstr(response,"\"word_ram_owner\":\"split_1m\""))fail("Gate Array state");
     if(!strstr(response,"\"active\":true,\"end\":false,\"fifo_count\":2,\"remaining\":17"))fail("CDC transfer state");
     if(!strstr(response,"\"seek_target\":17767")||!strstr(response,"\"dma\":{\"active\":true")||!strstr(response,"\"stamp\":{\"busy\":true"))fail("device busy state");

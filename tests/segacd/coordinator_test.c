@@ -51,6 +51,8 @@ int main(int argc,char**argv)
     CHECK(segacd_coordinator_run_until(&c,event)==M68K_STEP_OK);CHECK(cd.irq_pending&8);
     CHECK(segacd_coordinator_step(&c)==M68K_STEP_OK);
     CHECK(c.cpu[1].state.exception_vector==27 && c.cpu[1].state.regs.PC==0x120 && !c.cpu[1].state.stopped && !(cd.irq_pending&8));
+    CHECK(c.interrupts[SEGACD_SUB][3]==1 && c.last_interrupt_level[SEGACD_SUB]==3);
+    CHECK(c.last_interrupt_vector[SEGACD_SUB]==27 && c.last_interrupt_pc[SEGACD_SUB]==0x116 && c.last_interrupt_target[SEGACD_SUB]==0x120);
     CHECK(m68k_step_read32(&c.cpu[1],0x7FEFC)==0x116 && m68k_step_read16(&c.cpu[1],0x7FEFA)==0x2000);
     CHECK(segacd_coordinator_step(&c)==M68K_STEP_OK);
     CHECK(c.cpu[1].state.regs.PC==0x116 && c.cpu[1].state.regs.A[7]==0x7FF00 && c.cpu[1].state.regs.SR==0x2000);

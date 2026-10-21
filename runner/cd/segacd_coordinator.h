@@ -25,6 +25,11 @@ struct SegaCDCoordinator {
     size_t module_count[2];
     M68kStepResult (*floor_step)(M68kStepContext *);
     uint64_t native_steps[2],floor_steps[2];
+    /* Accepted interrupt diagnostics. Count only exceptions actually entered,
+     * not merely asserted/requested interrupt levels. */
+    uint64_t interrupts[2][8];
+    uint32_t last_interrupt_pc[2],last_interrupt_target[2];
+    uint8_t last_interrupt_vector[2],last_interrupt_level[2];
     /* Elapsed time in sub-CPU ticks, distinct from retired CPU cycle counts.
      * Main conversion retains the rational remainder (NTSC master / 7). */
     uint64_t time[2],device_time,main_remainder;

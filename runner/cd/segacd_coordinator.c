@@ -187,7 +187,13 @@ static M68kStepResult execute_cpu(SegaCDCoordinator *c,unsigned which)
     c->last_cpu=which;
     uint64_t before=cpu->state.cycles;
     unsigned level=which==SEGACD_SUB?segacd_irq_level(c->devices):c->main_irq;
+    uint32_t entry_pc=cpu->state.regs.PC;
     if(m68k_step_interrupt(cpu,level)) {
+        ++c->interrupts[which][level];
+        c->last_interrupt_pc[which]=entry_pc;
+        c->last_interrupt_target[which]=cpu->state.regs.PC;
+        c->last_interrupt_vector[which]=cpu->state.exception_vector;
+        c->last_interrupt_level[which]=(uint8_t)level;
         account(c,which,cpu->state.cycles-before);return M68K_STEP_OK;
     }
     if(cpu->state.fault)return (M68kStepResult)cpu->state.fault;

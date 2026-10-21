@@ -111,7 +111,23 @@ static void inspect_machine(SegaCDDebugServer*s)
           (unsigned long long)cd->sub_cycles);
     inspect_cpu(s,"main",&m->coordinator.cpu[SEGACD_MAIN]);queue(s,",");
     inspect_cpu(s,"sub",&m->coordinator.cpu[SEGACD_SUB]);
-    queue(s,"},\"scheduler\":{\"busy\":[%u,%u],\"waits\":%llu,\"wait_address\":\"%06X\",\"wait_cpu\":%u,\"wait_result\":\"%s\"},\"gate_array\":{\"main_control\":%u,\"prg_bank\":%u,\"write_protect\":%u,\"memory_mode\":%u,\"word_ram_1m\":%s,\"word_ram_ret\":%s,\"word_ram_dmna\":%s,\"word_ram_owner\":\"%s\",\"irq_mask\":%u,\"irq_pending\":%u,\"commands\":[",
+    queue(s,"},\"interrupts\":{\"accepted\":[");
+    for(unsigned cpu=0;cpu<2;++cpu) {
+        queue(s,"%s[",cpu?",":"");
+        for(unsigned level=0;level<8;++level)
+            queue(s,"%s%llu",level?",":"",(unsigned long long)m->coordinator.interrupts[cpu][level]);
+        queue(s,"]");
+    }
+    queue(s,"],\"last\":[");
+    for(unsigned cpu=0;cpu<2;++cpu)
+        queue(s,"%s{\"level\":%u,\"vector\":%u,\"entry_pc\":\"%06X\",\"target_pc\":\"%06X\"}",
+              cpu?",":"",m->coordinator.last_interrupt_level[cpu],
+              m->coordinator.last_interrupt_vector[cpu],
+              m->coordinator.last_interrupt_pc[cpu]&0xFFFFFFu,
+              m->coordinator.last_interrupt_target[cpu]&0xFFFFFFu);
+    queue(s,"],\"host\":{\"irq4\":%u,\"irq6\":%u,\"main_level\":%u},\"vdp\":{\"reg0\":%u,\"reg1\":%u,\"scanline\":%u,\"vint_pending\":%u}},\"scheduler\":{\"busy\":[%u,%u],\"waits\":%llu,\"wait_address\":\"%06X\",\"wait_cpu\":%u,\"wait_result\":\"%s\"},\"gate_array\":{\"main_control\":%u,\"prg_bank\":%u,\"write_protect\":%u,\"memory_mode\":%u,\"word_ram_1m\":%s,\"word_ram_ret\":%s,\"word_ram_dmna\":%s,\"word_ram_owner\":\"%s\",\"irq_mask\":%u,\"irq_pending\":%u,\"commands\":[",
+          m->irq4,m->irq6,m->coordinator.main_irq,m->vdp.reg[0],m->vdp.reg[1],
+          m->vdp.scanline,m->vdp.vint_pending,
           m->coordinator.busy[0],m->coordinator.busy[1],
           (unsigned long long)m->coordinator.waits,m->coordinator.wait_address&0xFFFFFFu,
           m->coordinator.wait_cpu,result_name(m->coordinator.wait_result,1),
