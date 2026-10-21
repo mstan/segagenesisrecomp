@@ -96,12 +96,27 @@ static int dump_file(const char *directory,const char *name,const void *data,siz
 }
 static int dump_state(const char *directory)
 {
+    uint8_t cram_bytes[sizeof machine.vdp.cram];
+    uint8_t vsram_bytes[sizeof machine.vdp.vsram];
+    for(size_t i=0;i<sizeof machine.vdp.cram/sizeof machine.vdp.cram[0];++i) {
+        cram_bytes[i*2u]=(uint8_t)(machine.vdp.cram[i]>>8);
+        cram_bytes[i*2u+1u]=(uint8_t)machine.vdp.cram[i];
+    }
+    for(size_t i=0;i<sizeof machine.vdp.vsram/sizeof machine.vdp.vsram[0];++i) {
+        vsram_bytes[i*2u]=(uint8_t)(machine.vdp.vsram[i]>>8);
+        vsram_bytes[i*2u+1u]=(uint8_t)machine.vdp.vsram[i];
+    }
     int ok=dump_file(directory,"main-ram.bin",g_ram,65536);
     ok&=dump_file(directory,"sub-prg.bin",machine.devices.prg,sizeof machine.devices.prg);
     ok&=dump_file(directory,"word-ram.bin",machine.devices.word,sizeof machine.devices.word);
     ok&=dump_file(directory,"backup-ram.bin",machine.devices.backup,sizeof machine.devices.backup);
     ok&=dump_file(directory,"z80-ram.bin",machine.bus.z80_ram,sizeof machine.bus.z80_ram);
     ok&=dump_file(directory,"vram.bin",machine.vdp.vram,sizeof machine.vdp.vram);
+    ok&=dump_file(directory,"vdp-registers.bin",machine.vdp.reg,sizeof machine.vdp.reg);
+    /* CRAM uses the renderer's packed 9-bit BGR representation. All word
+     * snapshots are explicitly big-endian, independent of the host. */
+    ok&=dump_file(directory,"cram9.be16",cram_bytes,sizeof cram_bytes);
+    ok&=dump_file(directory,"vsram.be16",vsram_bytes,sizeof vsram_bytes);
     ok&=dump_file(directory,"frame.argb",machine.pixels,sizeof machine.pixels);
     return ok;
 }
