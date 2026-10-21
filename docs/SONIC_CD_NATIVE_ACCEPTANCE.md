@@ -20,14 +20,15 @@ Accepted Main/Sub 68000 and Z80 execution is native, with Main/Sub floor counter
 | Check | Status | Evidence / limit |
 |---|---|---|
 | Standard stage/time entry and brief movement | PASS 70/70 | Exact owned full MMD at entry and endpoint; reuse the qualified sweep. This does not prove every object mechanic. |
-| Boss death, actual stage-end/results path | PASS 6/7 | PPZ, CCZ, TTZ, QQZ, WWZ and MMZ. SSZ results/exit remains open. Combat and routes are explicitly bypassed. |
+| Boss death, actual stage-end/results path | PASS 7/7 | PPZ, CCZ, TTZ, QQZ, WWZ, SSZ and MMZ. Combat and routes are explicitly bypassed; campaign ending is a separate check. |
 | Special stages | PASS 8/8 | Actual six-UFO collision/completion paths. SS1 also proves the time-stone award and actual next-act return. |
 | Secret SS8 credits and exit | PASS | `ss8-original-completion-latched-parent-9`: original secret credits, then real Start returns to exact owned TITLEM. |
 | WWZ results and return | PASS | `wwz-cdd-latched-retake-parent-2/parent-title-and-write-audit.json`: original results advance 0402 to 0500, then StageSelect returns to exact TITLEM. No next-stage load is claimed from this caller. |
 | MMZ final boss | PASS | `mmz-final-original-ending-parent-4`: original firefly deaths, boss last-hit/death/escape and scripted stage exit. StageSelect returns to title; campaign ending is still open. |
+| SSZ race/cage/results and return | PASS | `r73d-race-completion-clean-3/title-return`: guest win/crash, actual cage collision with restored source hitbox, original timer/results, zone0502 to0600 and exact TITLEM return. |
 | PPZ to CCZ save/restart/Continue | PASS | Actual clear writes durable BRAM; restart/Continue restores exact CCZ with no guest-memory writes. |
 | Past time travel | PASS | Actual post/timer/WARP/owned R11B reload; player positioning/speed prerequisites were bypassed. |
-| Future and reverse time travel | UNVERIFIED | Targeted original post/warp checks in progress. |
+| Future and reverse time travel | PASS | `G:/Temp/Codex/segagenesisrecomp/timewarp-qa/run-future-reverse-7`: actual posts/timers/WARP, exact R11A to R11D to R11A images; player position/speed prerequisites bypassed. |
 | Representative unique mechanics and death/retry | UNVERIFIED | Complete focused checks; loading a stage or finding a handler does not pass a mechanic. |
 | Original campaign ending and credits | UNVERIFIED | Needs the Continue campaign caller and actual MMZ completion triggers. A QA-only initial zone-6 save is a prerequisite bypass, not save validation. |
 | Independent final visuals | PARTIAL | Qualified PPZ, TTZ and SS1 comparisons retained; SS8 independent original comparison complete. Ending comparison remains open. Phase/DAC differences preclude raw pixel-parity claims. |
@@ -39,6 +40,12 @@ All QA uses stage selection, teleports, protection and source-qualified actor
 prerequisite cheats. The guest executes the completion trigger under test.
 Result, save, success and next-stage flags are not supplied by QA. StageSelect
 return-to-title and campaign progression are distinguished explicitly.
+
+An earlier navigation helper also zeroed Sonic's radius bytes at offsets16/17.
+Its terrain/collision observations are unverified. Original results/exit evidence
+remains valid with this additional navigation bypass recorded. The helper now
+preserves radii; SSZ's accepted cage collision and timer used restored source
+hitboxes. The final representative interaction checks use the corrected helper.
 
 ## Runtime correction
 

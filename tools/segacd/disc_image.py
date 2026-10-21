@@ -15,6 +15,7 @@ import os
 import re
 import struct
 import tempfile
+import sys
 
 RAW = 2352
 FIRST_LBA = -150
@@ -210,6 +211,47 @@ def read_cue(cue):
     return tracks
 
 
+def file_sha256(path):
+    digest = hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def inspect_cue(cue):
+    """Return content-bound identity for a CUE and every referenced BIN."""
+    cue = Path(cue).resolve(strict=True)
+    tracks = read_cue(cue)
+    source_paths = sorted({str(track.path.resolve(strict=True)) for track in tracks}, key=str.casefold)
+    sources = []
+    for source in source_paths:
+        path = Path(source)
+        sources.append({
+            'path': str(path),
+            'bytes': path.stat().st_size,
+            'sha256': file_sha256(path),
+        })
+    track_rows = []
+    for track in tracks:
+        track_rows.append({
+            'number': track.number,
+            'source_path': str(track.path.resolve(strict=True)),
+            'data': track.data,
+            'indexes': {str(index): value for index, value in sorted(track.indexes.items())},
+            'pregap': track.pregap,
+            'postgap': track.postgap,
+        })
+    return {
+        'schema': 'SGCDCueSourceIdentity1',
+        'cue_path': str(cue),
+        'cue_bytes': cue.stat().st_size,
+        'cue_sha256': file_sha256(cue),
+        'sources': sources,
+        'tracks': track_rows,
+    }
+
+
 def convert(cue, output, overwrite=False):
     cue, output = Path(cue).resolve(strict=True), Path(output).resolve()
     tracks = read_cue(cue)
@@ -281,12 +323,24 @@ def convert(cue, output, overwrite=False):
             'first_lba': FIRST_LBA, 'leadout': tracks[-1].end, 'bytes': output.stat().st_size}
 
 
-def main():
+def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == 'inspect-cue':
+        parser = argparse.ArgumentParser(description='Inspect and hash a supported CUE and its referenced track files.')
+        parser.add_argument('command')
+        parser.add_argument('cue', type=Path)
+        args = parser.parse_args(argv)
+        try:
+            identity = inspect_cue(args.cue)
+        except (OSError, ValueError) as error:
+            parser.exit(1, f'Sega CD CUE: {error}\n')
+        print(json.dumps(identity, sort_keys=True, separators=(',', ':')))
+        return 0
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('cue', type=Path)
     parser.add_argument('output', type=Path)
     parser.add_argument('--overwrite', action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         result = convert(args.cue, args.output, args.overwrite)
     except (OSError, ValueError) as error:
