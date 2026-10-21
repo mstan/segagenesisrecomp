@@ -20,8 +20,9 @@ and animation offsets; this is a partial visual comparison, not pixel parity
 or final acceptance. Both channels of the native raw internal-mix WAV are
 active. Its intentional 223,721 Hz capture precedes the host's 48 kHz resampler.
 The normal resizable SDL window was checked with an active QA port and has
-the exact caption `Sonic CD`. The first owner playtest uses a separate executable
-copy, normal audio and a private save on G:.
+the exact caption `Sonic CD`. The second owner playtest includes the qualified
+PCM bank catalogs, uses a separate executable copy, normal audio and a private
+save on G:. The owner reports that it looks and sounds good.
 
 Earlier isolated Z80 evidence remains at
 `build/qa-bios-z80-native-floor-gameplay-4/parent-canonical-run-manifest.json`:
@@ -38,7 +39,7 @@ mapping and capture-derived BIOS extension identity limits remain recorded in
 `build/qa-bios-native-cdda-movement-audit/parent-adversarial-review.json`.
 
 These are separate qualification results. Full original-program stage and
-mechanics coverage, save progression/restarts, owner feedback and final
+mechanics coverage, save progression/restarts and final
 independent visual comparisons remain open. Earlier milestones below
 retain their original limitations and are superseded only by specific later
 evidence, not by a percentage of operations from one run.
@@ -54,8 +55,15 @@ byte-identical US source rebuilds supply 587 IPX and 688 Stage Select native
 instructions, including its interrupt handler and Nemesis indirect writers.
 The first native Palmtree Panic Past selection reaches frame 1,992 before
 stopping explicitly at uncovered Sub PC `0x0410DA` in the sound-bank path.
-Full PCM bank catalogs and the remaining standard/special programs are being
-qualified. Static candidate counts are not runtime or mechanics acceptance;
+All nine PCM banks and WARP/SPMM/SPSS/SPX code catalogs are now qualified
+against owned bytes and compiled. SPSS qualification covers its byte-identical
+code prefix, not its differing embedded stage-data tail. A corrected native
+Palmtree Panic Past pass reaches active gameplay and observed movement/jumping
+at 2,507 frames. An explicitly separate offline diagnostic has reached and moved in
+all 70 standard stage/time variants; its recorded original instruction words
+are being compiled into guarded supplements. It is diagnostic interpreter
+evidence, not strict-native acceptance of all 70 variants.
+Static candidate counts are not runtime or mechanics acceptance;
 unclassified CFG paths remain fail-closed and explicitly unverified.
 
 All 26 synthetic tests pass MSVC, including the shared 68000 test. The GCC
@@ -93,17 +101,46 @@ The opt-in CMake `SEGACD_BUILD_NATIVE_RUNNER` target `SonicCD` accepts owned
 `--bios`, `--disc` and optional `--backup` paths. It requires the qualified US
 BIOS and disc identities. Window titles use `Sonic CD`, presentation starts
 windowed, and owner audio defaults to volume 100. Arrows/Z/X/C/Enter and a
-standard controller supply the original buttons; P pauses and Escape closes.
+standard controller supply the original buttons; P pauses. Escape/F1 or the
+controller Back button opens recomp-ui; the window close button exits. The
+controller B button retains its original gameplay mapping while the menu is
+closed. The menu pauses simulation and audio delivery, consumes menu controls,
+and withholds held gameplay inputs until release after closing.
 `--headless --frames N --mute`, repeated `--pad frame:duration:mask`, `--dump`
 and `--wav` support reproducible private QA. Generated catalogs and inputs
 remain private. Building the target alone is not gameplay acceptance.
 An explicit backup path creates no AppData directory; the default save lives
-beside the executable. Optional `--debug-port N` binds a loopback QA service;
+beside the executable. `--settings` selects a portable settings file; its default
+is `sonic-cd-settings.ini` beside the executable. Headless runs do not create
+the UI or read/write presentation settings. Settings use the same exclusive,
+durable atomic file replacement as backup RAM. Startup always uses a normal
+window; fullscreen remains available as an explicit in-session setting.
+Optional `--debug-port N` binds a loopback QA service;
 `--start-paused` permits a client to attach before execution. Its logged memory
 writes, held controller input, frame stepping and PPM captures run only between
 frames. Neither the service nor its port changes the gameplay window caption.
 Z80 I/O-space instructions stop explicitly as unsupported; they never alias
 Genesis memory or silently perform an unrelated memory access.
+
+The runtime menu uses MIT-licensed recomp-ui pinned at
+`b9ef2f539be3622eeb0e7d4a2ff33c8edf129667`. Set the CMake path
+`SEGACD_RECOMP_UI_ROOT` to a local checkout or let the runner fetch that pin.
+Only the portable runtime C implementation is linked, and its license is copied
+beside the executable. A real SDL-window test at 960x672 verifies menu rendering
+while paused, exact preservation of queued QA frame steps, accepted filtering
+changes and their settings file. It ends at 2,453 frames with zero floor
+operations and zero audio faults. Private artifacts are under
+`G:/Temp/Codex/segagenesisrecomp/sonic-cd-native/recomp-ui-window-2`.
+Strict GCC host tests additionally cover immutable padded-pitch source frames,
+controller passthrough and release boundaries. The changed machine/backup
+tests pass on Windows GCC. The machine's read-only scanline observer provides
+live raster state to game-owned presentation and rejects CPU reentry.
+
+Adaptive widescreen is requested and remains in development. Its menu control
+is not exposed until a real renderer, expanded native object visibility and
+HUD placement are integrated and checked; the current menu presents native
+aspect gameplay. This milestone does not satisfy the mandatory final original-
+game visual comparisons or unique-mechanics/completion/save gates.
 
 The new `runner/cd` device library is game-independent portable C. It takes an
 owned BIOS; BIOS, disc images, generated program C and captures stay private.

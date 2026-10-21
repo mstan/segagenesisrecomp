@@ -9,6 +9,9 @@ uint32_t g_rom_ext_size,g_audio_cycle_counter,g_68k_stamp_rebase;
 unsigned long g_snd_frame;
 unsigned g_snd_pcz;
 static SegaCDMachine *current;
+static SegaCDMachineVideoObserver video_observer;
+static void *video_user;
+static int observing_video;
 static uint64_t master_clock(uint64_t sub)
 {return sub/12500000u*53693175u+(sub%12500000u)*53693175u/12500000u;}
 uint64_t segacd_machine_line_clock(uint64_t line)
@@ -86,6 +89,9 @@ static void host_advance(void *u,uint64_t clock)
                     m->width=(unsigned)width;
                     for(int x=0;x<width;++x){unsigned i=indices[x];m->pixels[row][x]=i<192?
                         genesis_dac_cram_to_argb(m->vdp.cram[i%64],(int)(i/64)):0xff000000u;}
+                    if(video_observer&&row<(unsigned)gvdp_screen_height(&m->vdp)) {
+                        observing_video=1;video_observer(video_user,m,row);observing_video=0;
+                    }
                 }
             }
         }
@@ -115,14 +121,21 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
     if(!segacd_z80_init(&m->z80,&m->coordinator,&sound,m,program->z80_step))return 0;
     segacd_coordinator_host_clock(&m->coordinator,host_advance,next_host_event);
     segacd_coordinator_device_limit(&m->coordinator,sound_limit);
-    current=m;return 1;
+    video_observer=NULL;video_user=NULL;observing_video=0;current=m;return 1;
 }
-void segacd_machine_close(SegaCDMachine *m){if(current==m)current=NULL;}
+void segacd_machine_close(SegaCDMachine *m)
+{if(current==m&&!observing_video){current=NULL;video_observer=NULL;video_user=NULL;}}
+int segacd_machine_video_observer(SegaCDMachine *m,SegaCDMachineVideoObserver observer,void *user)
+{
+    if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||
+       m->coordinator.external_active||m->z80.in_step)return 0;
+    video_observer=observer;video_user=user;return 1;
+}
 void segacd_machine_pad(SegaCDMachine *m,unsigned port,uint16_t buttons)
 {if(m&&port<2)m->bus.pad[port]=buttons&0xfffu;}
 M68kStepResult segacd_machine_step(SegaCDMachine *m)
 {
-    if(!m||m!=current)return M68K_STEP_REENTERED;
+    if(!m||m!=current||observing_video)return M68K_STEP_REENTERED;
     if(m->coordinator.busy[0]||m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)
         return M68K_STEP_REENTERED;
     if(m->result!=M68K_STEP_OK)return m->result;

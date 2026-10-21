@@ -463,6 +463,8 @@ if(NOT CMAKE_CROSSCOMPILING)
           ../../runner/external/ymfm/src/ymfm_opn.cpp ../../runner/external/ymfm/src/ymfm_ssg.cpp
           ../../runner/external/ymfm/src/ymfm_adpcm.cpp ../../runner/external/ymfm/src/ymfm_pcm.cpp
           ${step_runtime_sources})
+        include("${engine_root}/runner/cd/recomp_ui.cmake")
+        segacd_target_recomp_ui(SonicCD)
         target_include_directories(SonicCD PRIVATE ${native_includes} ../../runner ../../runner/include
           ../../runner/external/ymfm/src)
         foreach(sdl_include IN LISTS SDL2_INCLUDE_DIRS)

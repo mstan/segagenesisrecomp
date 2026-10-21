@@ -5,6 +5,7 @@
 #include "backup.h"
 #include "debug.h"
 #include "disc_image.h"
+#include "presentation.h"
 #include "../audio.h"
 #include <SDL2/SDL.h>
 #include <errno.h>
@@ -123,7 +124,7 @@ static int debug_capture(void *user,const char *path,const SegaCDMachine *m)
 }
 int main(int argc,char **argv)
 {
-    const char *bios_path=NULL,*disc_path=NULL,*backup_path=NULL,*dump_dir=NULL,*wav_path=NULL;
+    const char *bios_path=NULL,*disc_path=NULL,*backup_path=NULL,*dump_dir=NULL,*wav_path=NULL,*settings_path=NULL;
     uint64_t frame_limit=0,debug_port=0;int headless=0,mute=0,debug_requested=0,start_paused=0;
     for(int i=1;i<argc;++i) {
         if(!strcmp(argv[i],"--headless"))headless=1;
@@ -133,6 +134,7 @@ int main(int argc,char **argv)
         else if(i+1<argc&&!strcmp(argv[i],"--bios"))bios_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--disc"))disc_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--backup"))backup_path=argv[++i];
+        else if(i+1<argc&&!strcmp(argv[i],"--settings"))settings_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--dump"))dump_dir=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--wav"))wav_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--frames")){if(!parse_number(argv[++i],&frame_limit))return 2;}
@@ -140,11 +142,11 @@ int main(int argc,char **argv)
         else {fprintf(stderr,"Unknown/incomplete option: %s\n",argv[i]);return 2;}
     }
     if(!bios_path||!disc_path||(headless&&!frame_limit)||(start_paused&&!debug_requested)) {
-        fprintf(stderr,"Sonic CD --bios <owned BIOS> --disc <verified SGCD> [--backup file] [--headless --frames N --mute] [--pad frame:duration:mask] [--dump directory] [--wav file] [--debug-port N [--start-paused]]\n");return 2;
+        fprintf(stderr,"Sonic CD --bios <owned BIOS> --disc <verified SGCD> [--backup file] [--settings file] [--headless --frames N --mute] [--pad frame:duration:mask] [--dump directory] [--wav file] [--debug-port N [--start-paused]]\n");return 2;
     }
     if(headless){SDL_setenv("SDL_AUDIODRIVER","dummy",1);mute=1;}
     if(SDL_Init(SDL_INIT_AUDIO|SDL_INIT_TIMER|(headless?0:SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER))){fprintf(stderr,"SDL: %s\n",SDL_GetError());return 2;}
-    char default_backup[4096];
+    char default_backup[4096],default_settings[4096];
     if(!backup_path) {
         /* Portable saves stay beside the executable. In particular, an
          * explicit --backup must never create an unused AppData directory. */
@@ -154,6 +156,14 @@ int main(int argc,char **argv)
         SDL_free(base);
         if(n<0||(size_t)n>=sizeof default_backup){SDL_Quit();return 2;}
         backup_path=default_backup;
+    }
+    if(!headless&&!settings_path) {
+        char *base=SDL_GetBasePath();
+        if(!base){SDL_Quit();return 2;}
+        int n=snprintf(default_settings,sizeof default_settings,"%ssonic-cd-settings.ini",base);
+        SDL_free(base);
+        if(n<0||(size_t)n>=sizeof default_settings){SDL_Quit();return 2;}
+        settings_path=default_settings;
     }
     static uint8_t bios[SEGACD_BIOS_BYTES];char error[512];
     if(!read_bios(bios_path,bios)){fprintf(stderr,"BIOS must be exactly %u readable bytes\n",SEGACD_BIOS_BYTES);SDL_Quit();return 2;}
@@ -180,15 +190,16 @@ int main(int argc,char **argv)
         segacd_debug_pause(debug,start_paused);
         printf("QA control listening on 127.0.0.1:%u\n",segacd_debug_port(debug));fflush(stdout);
     }
-    SDL_Window*window=NULL;SDL_Renderer*renderer=NULL;SDL_Texture*texture=NULL;SDL_GameController*pad=NULL;
+    SDL_Window*window=NULL;SDL_Renderer*renderer=NULL;SDL_GameController*pad=NULL;
+    SegaCDPresentation *presentation=NULL;
     if(!headless) {
         window=SDL_CreateWindow("Sonic CD",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,960,672,SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI);
         const char *render_driver=SDL_GetHint(SDL_HINT_RENDER_DRIVER);
         Uint32 renderer_flags=render_driver&&!SDL_strcasecmp(render_driver,"software")?SDL_RENDERER_SOFTWARE:SDL_RENDERER_ACCELERATED;
         if(window)renderer=SDL_CreateRenderer(window,-1,renderer_flags);
         if(window&&!renderer)renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_SOFTWARE);
-        if(renderer)texture=SDL_CreateTexture(renderer,SDL_PIXELFORMAT_ARGB8888,SDL_TEXTUREACCESS_STREAMING,GVDP_MAX_WIDTH,GVDP_MAX_HEIGHT);
-        if(!texture){fprintf(stderr,"Window: %s\n",SDL_GetError());if(renderer)SDL_DestroyRenderer(renderer);if(window)SDL_DestroyWindow(window);segacd_debug_stop(debug);audio_wav_stop();segacd_native_audio_destroy(audio);segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
+        if(renderer)presentation=segacd_presentation_create(window,renderer,settings_path,mute);
+        if(!presentation){fprintf(stderr,"Window/settings: %s\n",SDL_GetError());if(renderer)SDL_DestroyRenderer(renderer);if(window)SDL_DestroyWindow(window);segacd_debug_stop(debug);audio_wav_stop();segacd_native_audio_destroy(audio);segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
         for(int i=0;i<SDL_NumJoysticks();++i)if(SDL_IsGameController(i)){pad=SDL_GameControllerOpen(i);break;}
     }
     int quit=0,paused=0,exit_code=0;uint64_t freq=SDL_GetPerformanceFrequency(),target=SDL_GetPerformanceCounter(),phase=0;
@@ -196,30 +207,37 @@ int main(int argc,char **argv)
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
             if(event.type==SDL_QUIT)quit=1;
-            else if(event.type==SDL_KEYDOWN&&!event.key.repeat&&event.key.keysym.scancode==SDL_SCANCODE_ESCAPE)quit=1;
-            else if(event.type==SDL_KEYDOWN&&!event.key.repeat&&event.key.keysym.scancode==SDL_SCANCODE_P){if(debug)segacd_debug_pause(debug,!segacd_debug_is_paused(debug));else paused=!paused;}
             else if(event.type==SDL_CONTROLLERDEVICEADDED&&!pad)pad=SDL_GameControllerOpen(event.cdevice.which);
             else if(event.type==SDL_CONTROLLERDEVICEREMOVED&&pad&&SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(pad))==event.cdevice.which){SDL_GameControllerClose(pad);pad=NULL;}
+            if(segacd_presentation_handle_event(presentation,&event))continue;
+            if(event.type==SDL_KEYDOWN&&!event.key.repeat&&event.key.keysym.scancode==SDL_SCANCODE_P){if(debug)segacd_debug_pause(debug,!segacd_debug_is_paused(debug));else paused=!paused;}
         }
         segacd_debug_poll(debug);
         if(quit||segacd_debug_quit_requested(debug))break;
-        int run=debug?segacd_debug_should_run_frame(debug):!paused;
+        int run=!segacd_presentation_is_open(presentation)&&
+            (debug?segacd_debug_should_run_frame(debug):!paused);
         audio_set_playback_enabled(run);
-        if(!run){target=SDL_GetPerformanceCounter();phase=0;SDL_Delay(5);continue;}
-        segacd_machine_pad(&machine,0,scripted_pad(machine.frames)|segacd_debug_pad(debug,0)|(headless?0:keyboard_pad()|controller_pad(pad)));
-        segacd_machine_pad(&machine,1,segacd_debug_pad(debug,1));
-        M68kStepResult result=segacd_machine_run_frame(&machine);
-        if(result!=M68K_STEP_OK){fprintf(stderr,"Native execution stopped result=%u cpu=%u main=%06X sub=%06X Z80=%04X miss=%04X at Subclock=%llu\n",result,machine.coordinator.last_cpu,machine.coordinator.cpu[0].state.regs.PC,machine.coordinator.cpu[1].state.regs.PC,machine.z80.state.pc,machine.z80.miss_pc,(unsigned long long)machine.coordinator.device_time);exit_code=3;break;}
-        SegaCDNativeAudioResult ar=segacd_native_audio_finish_frame(audio,machine.frames*896040u,(uint32_t)machine.frames,!headless);
-        if(ar!=SEGACD_NATIVE_AUDIO_OK){fprintf(stderr,"Audio stopped result=%u at frame=%llu\n",ar,(unsigned long long)machine.frames);exit_code=3;break;}
-        if(machine.frames%60==0&&memcmp(persisted,machine.devices.backup,sizeof persisted)) {
-            if(segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK){fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;}
-            memcpy(persisted,machine.devices.backup,sizeof persisted);
+        if(run) {
+            int block_input=headless||segacd_presentation_blocks_game_input(presentation);
+            segacd_machine_pad(&machine,0,scripted_pad(machine.frames)|segacd_debug_pad(debug,0)|(block_input?0:keyboard_pad()|controller_pad(pad)));
+            segacd_machine_pad(&machine,1,segacd_debug_pad(debug,1));
+            M68kStepResult result=segacd_machine_run_frame(&machine);
+            if(result!=M68K_STEP_OK){fprintf(stderr,"Native execution stopped result=%u cpu=%u main=%06X sub=%06X Z80=%04X miss=%04X at Subclock=%llu\n",result,machine.coordinator.last_cpu,machine.coordinator.cpu[0].state.regs.PC,machine.coordinator.cpu[1].state.regs.PC,machine.z80.state.pc,machine.z80.miss_pc,(unsigned long long)machine.coordinator.device_time);exit_code=3;break;}
+            SegaCDNativeAudioResult ar=segacd_native_audio_finish_frame(audio,machine.frames*896040u,(uint32_t)machine.frames,!headless);
+            if(ar!=SEGACD_NATIVE_AUDIO_OK){fprintf(stderr,"Audio stopped result=%u at frame=%llu\n",ar,(unsigned long long)machine.frames);exit_code=3;break;}
+            if(machine.frames%60==0&&memcmp(persisted,machine.devices.backup,sizeof persisted)) {
+                if(segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK){fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;}
+                memcpy(persisted,machine.devices.backup,sizeof persisted);
+            }
         }
         if(!headless) {
-            (void)SDL_UpdateTexture(texture,NULL,machine.pixels,GVDP_MAX_WIDTH*(int)sizeof(uint32_t));
-            SDL_RenderSetLogicalSize(renderer,(int)machine.width,(int)machine.height);
-            SDL_Rect rect={0,0,(int)machine.width,(int)machine.height};SDL_RenderClear(renderer);SDL_RenderCopy(renderer,texture,&rect,NULL);SDL_RenderPresent(renderer);
+            if(!segacd_presentation_present(presentation,&machine.pixels[0][0],
+                (int)machine.width,(int)machine.height,GVDP_MAX_WIDTH*(int)sizeof(uint32_t))) {
+                fprintf(stderr,"Presentation: %s\n",SDL_GetError());exit_code=2;break;
+            }
+        }
+        if(!run){target=SDL_GetPerformanceCounter();phase=0;SDL_Delay(5);continue;}
+        if(!headless) {
             phase+=freq*896040u;target+=phase/53693175u;phase%=53693175u;
             uint64_t now=SDL_GetPerformanceCounter();if(target>now){uint64_t ms=(target-now)*1000u/freq;if(ms)SDL_Delay((Uint32)ms);}
         }
@@ -238,7 +256,7 @@ int main(int argc,char **argv)
         (unsigned long long)stats.rendered_fm_frames,(unsigned long long)stats.rendered_psg_frames);
     if(window&&exit_code)SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"Sonic CD","The game stopped. See the execution log for details.",window);
     if(pad)SDL_GameControllerClose(pad);
-    if(texture)SDL_DestroyTexture(texture);
+    segacd_presentation_destroy(presentation);
     if(renderer)SDL_DestroyRenderer(renderer);
     if(window)SDL_DestroyWindow(window);
     /* Delivery has one emulated frame of lookahead latency. Stopping does

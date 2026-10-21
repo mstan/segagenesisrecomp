@@ -47,9 +47,14 @@ SegaCDBackupResult segacd_backup_load(const char *path,uint8_t backup[SEGACD_BAC
 }
 SegaCDBackupResult segacd_backup_store(const char *path,const uint8_t backup[SEGACD_BACKUP_BYTES])
 {
+    if(!backup)return SEGACD_BACKUP_ERROR;
+    return segacd_atomic_file_store(path,backup,SEGACD_BACKUP_BYTES)?SEGACD_BACKUP_OK:SEGACD_BACKUP_ERROR;
+}
+int segacd_atomic_file_store(const char *path,const void *data,size_t bytes)
+{
     static unsigned sequence;
-    if(!path||!*path||!backup||strlen(path)>SIZE_MAX-64)return SEGACD_BACKUP_ERROR;
-    size_t size=strlen(path)+64;char*temp=malloc(size);if(!temp)return SEGACD_BACKUP_ERROR;
+    if(!path||!*path||(!data&&bytes)||strlen(path)>SIZE_MAX-64)return 0;
+    size_t size=strlen(path)+64;char*temp=malloc(size);if(!temp)return 0;
 #ifdef _WIN32
     unsigned long pid=GetCurrentProcessId();
 #else
@@ -57,8 +62,8 @@ SegaCDBackupResult segacd_backup_store(const char *path,const uint8_t backup[SEG
 #endif
     (void)snprintf(temp,size,"%s.tmp-%lu-%u",path,pid,++sequence);
     FILE*f=open_path(temp,"wbx");
-    if(!f){free(temp);return SEGACD_BACKUP_ERROR;}
-    int ok=fwrite(backup,1,SEGACD_BACKUP_BYTES,f)==SEGACD_BACKUP_BYTES&&!fflush(f);
+    if(!f){free(temp);return 0;}
+    int ok=(!bytes||fwrite(data,1,bytes,f)==bytes)&&!fflush(f);
 #ifdef _WIN32
     if(ok&&_commit(_fileno(f)))ok=0;
 #else
@@ -74,5 +79,5 @@ SegaCDBackupResult segacd_backup_store(const char *path,const uint8_t backup[SEG
     if(ok&&rename(temp,path))ok=0;
     if(!ok)(void)remove(temp);
 #endif
-    free(temp);return ok?SEGACD_BACKUP_OK:SEGACD_BACKUP_ERROR;
+    free(temp);return ok;
 }

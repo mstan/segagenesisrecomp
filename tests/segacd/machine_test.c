@@ -17,6 +17,16 @@ static const M68kStepModule *sub_modules[]={&sub_module};
 static M68kStepResult nested_result;
 static unsigned audio_events;
 static int try_reentry;
+static unsigned video_rows;
+static void video_observer(void *user,const SegaCDMachine *m,unsigned row)
+{
+    CHECK(user==&video_rows&&m==&machine);
+    CHECK(row==video_rows%224u);
+    CHECK(m->width==(unsigned)gvdp_screen_width(&m->vdp));
+    ++video_rows;
+    CHECK(segacd_machine_step(&machine)==M68K_STEP_REENTERED);
+    CHECK(!segacd_machine_video_observer(&machine,NULL,NULL));
+}
 
 static void put32(uint8_t*p,uint32_t v)
 {p[0]=(uint8_t)(v>>24);p[1]=(uint8_t)(v>>16);p[2]=(uint8_t)(v>>8);p[3]=(uint8_t)v;}
@@ -73,6 +83,8 @@ static void setup(int with_main)
 static void test_full_frame_video_irq_and_controls(void)
 {
     setup(1);
+    video_rows=0;
+    CHECK(segacd_machine_video_observer(&machine,video_observer,&video_rows));
     CHECK(segacd_write8(&machine.devices,SEGACD_MAIN,0xA12001u,1u)==SEGACD_OK);
     /* Start the generated HALT fixture with interrupts disabled. A real
      * vertical interrupt must queue without inventing a generated handler. */
@@ -92,6 +104,8 @@ static void test_full_frame_video_irq_and_controls(void)
     CHECK(machine.irq6==0); /* vector 30 was taken and acknowledged */
     CHECK(machine.coordinator.cpu[SEGACD_MAIN].state.regs.A[7]==0xFFFF17FAu);
     CHECK(audio_events==1);
+    CHECK(video_rows==224u);
+    CHECK(segacd_machine_video_observer(&machine,NULL,NULL));
     segacd_machine_close(&machine);
 }
 
