@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+import re
 
 if len(sys.argv) < 2:
     raise SystemExit("usage: entry_file_test.py PATH_TO_SEGACD_MODULE_RECOMPILER")
@@ -67,6 +68,40 @@ class EntryFileTests(unittest.TestCase):
         result, output = self.run_generator("many-duplicates", ["--entries-file", str(roots)])
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(self.output_bytes(baseline_dir), self.output_bytes(output))
+
+    def test_reuses_emission_buffer_without_long_operation_tail_leak(self):
+        # DIVU emits a substantially longer body than RTS. The second operation
+        # must contain only its own bytes when the generator reuses one stream.
+        self.image.write_bytes(bytes.fromhex("80C1 4E75"))
+        combined, combined_dir = self.run_generator("long-then-short", ["0x1000"])
+        self.assertEqual(combined.returncode, 0, combined.stdout + combined.stderr)
+        short_only, short_dir = self.run_generator("short-only", ["0x1002"])
+        self.assertEqual(short_only.returncode, 0, short_only.stdout + short_only.stderr)
+
+        def body_for(directory, pc):
+            pattern = re.compile(rf"void fixture_at_{pc:06X}\(M68kStepContext \*ctx\)\{{(.*?)\n\}}", re.S)
+            bodies = []
+            for part in sorted(directory.glob("fixture_part*.c")):
+                bodies.extend(pattern.findall(part.read_text(encoding="utf-8")))
+            self.assertEqual(len(bodies), 1, f"expected one generated body at {pc:06X}")
+            return bodies[0]
+
+        long_body = body_for(combined_dir, 0x1000)
+        combined_short_body = body_for(combined_dir, 0x1002)
+        short_body = body_for(short_dir, 0x1002)
+        self.assertGreater(len(long_body), len(short_body), "fixture must exercise long-to-short reuse")
+        self.assertEqual(combined_short_body, short_body,
+                         "short operation inherited trailing bytes from prior longer emission")
+
+    def test_more_than_seventy_thousand_supported_operations(self):
+        operation_count = 70001
+        self.image.write_bytes(bytes.fromhex("4E71") * operation_count)
+        result, output = self.run_generator("large-supported-input", ["--all"])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        with (output / "fixture_coverage.csv").open("r", encoding="utf-8") as coverage:
+            row_count = sum(1 for _ in coverage) - 1  # CSV header
+        self.assertEqual(row_count, operation_count)
+        self.assertIn(f"native={operation_count}", result.stdout)
 
     def test_invalid_entries_fail_without_creating_outputs(self):
         cases = {

@@ -185,31 +185,45 @@ int main(int argc,char **argv)
     fprintf(module,"/* Generated module; always validate current instruction bytes. */\n#include \"%s.h\"\n",prefix);
     FILE *report=output(argv[2],prefix,"_coverage.csv");
     fputs("pc,opcode,words,nominal_cycles,kind\n",report);
+    FILE *probe=NULL;
     size_t emitted=0,illegal=0,unsupported=0,provided=0;
     for(size_t n=0;n<slots;++n) {
         Operation *o=&ops[n];if(!o->ins.word_count)continue;
         int supplied=covered[n].word_count!=0;
         if(o->illegal){if(supplied)o->covered=1;else {o->emitted=1;++illegal;}}
         else {
-            FILE *probe=tmpfile();if(!probe)fail("cannot create emission buffer");
-            if(codegen_emit_step_operation(probe,&rom,&o->ins)) {
+            if(!probe){probe=tmpfile();if(!probe)fail("cannot create emission buffer");}
+            if(fseek(probe,0,SEEK_SET)!=0)fail("cannot rewind emission buffer");
+            clearerr(probe);
+            int supported=codegen_emit_step_operation(probe,&rom,&o->ins);
+            if(fflush(probe)!=0||ferror(probe))fail("cannot flush emission buffer");
+            long length=ftell(probe);if(length<0)fail("cannot size emitted operation");
+            if(supported) {
                 if(supplied)o->covered=1;
                 else {
-                    rewind(probe);FILE *part=parts[emitted%SHARDS];
+                    if(fseek(probe,0,SEEK_SET)!=0)fail("cannot rewind emitted operation");
+                    clearerr(probe);
+                    FILE *part=parts[emitted%SHARDS];
                     fprintf(part,"void %s_at_%06X(M68kStepContext *ctx){\n",prefix,o->ins.addr);
-                    char buffer[4096];size_t got;
-                    while((got=fread(buffer,1,sizeof buffer,probe))!=0)if(fwrite(buffer,1,got,part)!=got)fail("output write failed");
+                    char buffer[4096];long remaining=length;
+                    while(remaining>0) {
+                        size_t requested=remaining>(long)sizeof buffer?sizeof buffer:(size_t)remaining;
+                        size_t got=fread(buffer,1,requested,probe);
+                        if(got!=requested)fail(ferror(probe)?"emission buffer read failed":"short emission buffer read");
+                        if(fwrite(buffer,1,got,part)!=got)fail("output write failed");
+                        remaining-=(long)got;
+                    }
                     fputs("}\n",part);o->emitted=1;
                     fprintf(module,"extern void %s_at_%06X(M68kStepContext *);\n",prefix,o->ins.addr);
                 }
             } else ++unsupported;
-            close_output(probe);
         }
         if(o->emitted)++emitted;
         if(o->covered)++provided;
         fprintf(report,"%06X,%04X,%u,%u,%s\n",o->ins.addr,o->ins.words[0],(unsigned)o->ins.word_count,o->cycles,
                 o->covered?"covered":o->illegal?"illegal":o->emitted?"native":"unsupported");
     }
+    if(probe&&fclose(probe)!=0)fail("cannot close emission buffer");
     if(!emitted && !provided)fail("no compiled operations");
     if(emitted)fputs("static const M68kStepEntry entries[]={\n",module);
     for(size_t n=0;n<slots;++n) {
