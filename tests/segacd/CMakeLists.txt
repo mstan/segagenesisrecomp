@@ -191,6 +191,12 @@ if(NOT CMAKE_CROSSCOMPILING)
     add_test(NAME segacd_covered_entry_file
       COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/covered_entry_file_test.py"
         "$<TARGET_FILE:segacd_module_recompiler>")
+    add_test(NAME segacd_byte_index_catalog
+      COMMAND "${CMAKE_COMMAND}" -E env
+        "M68K_STEP_RECOMP=$<TARGET_FILE:segacd_module_recompiler>"
+        "M68K_CATALOG_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/catalog-driver-tests"
+        "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../tools/segacd/test_m68k_catalog.py")
   endif()
   set(module_dir "${CMAKE_CURRENT_BINARY_DIR}/module-fixtures")
   file(MAKE_DIRECTORY "${module_dir}")

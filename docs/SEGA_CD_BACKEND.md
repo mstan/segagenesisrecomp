@@ -754,6 +754,29 @@ the caller must retain the supplying modules, their provenance and full guards.
 The consumer's current-byte checks and terminal native MISS behavior do not
 change. A covered-entry list does not prove runtime or mechanics coverage.
 
+`tools/segacd/m68k_catalog.py` drives this generator over one mapped owned image
+and closes the original engine's byte-index dispatches to a fixed point. Supply
+`--image`, `--load-base`, `--generator`, `--prefix`, a fresh `--output-dir` and
+initial roots through `--entry` or `--entries-file`. Optional repeatable
+`--covered-entries-file` arguments retain the explicit baseline dependency above.
+The driver recognizes the exact zero-extended byte to word-table to adjacent
+indexed JSR/JMP pattern, uses signed brief PC displacements and conservatively
+enumerates all 128 even byte indices. It does not infer table lengths from the
+first offset. Odd table bases and other unqualified forms remain explicit;
+candidate roots establish possible entries, not runtime reachability.
+
+Each iteration records generator output and hashes, dispatch targets, complete
+instruction guard audits and coverage. Missing requested roots, stale coverage,
+unsupported instructions or failure to reach a fixed point fail the command;
+architectural illegal-instruction entries retain their real exception behavior.
+Eight focused tests cover signed displacements, register chains, candidate
+bounds, unqualified odd tables, stale/duplicate coverage, a real frontend fixed
+point, truncated roots and preserved unsupported output. A private owned R13D
+qualification reached the same 16,992 coverage rows as the independently
+qualified catalog in two iterations: 5,769 additional native entries, 10,643
+baseline-covered entries and 580 architectural exception entries. This supplies
+reproducible per-image generation, not the complete standalone build recipe.
+
 Additional private native overlays use the CMake cache lists
 `SEGACD_BIOS_PROBE_EXTRA_MAIN_MODULES` and
 `SEGACD_BIOS_PROBE_EXTRA_SUB_MODULES`, with entries
