@@ -64,6 +64,10 @@ add_test(NAME audio_drc COMMAND audio_drc_test)
 
 find_package(Python3 QUIET COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
+    add_test(NAME segacd_owned_extract COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_LIST_DIR}/../tools/segacd/test_sgcd_owned_extract.py")
+    add_test(NAME segacd_owned_media COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_LIST_DIR}/../tools/segacd/test_owned_media.py")
     find_package(Git QUIET)
     if(GIT_FOUND)
         add_test(NAME build_info COMMAND "${Python3_EXECUTABLE}"
