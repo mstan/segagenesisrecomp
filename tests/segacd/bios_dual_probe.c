@@ -56,6 +56,7 @@ static void dump_frame_named(const char *,const char *);
 static void dump(const char *,const char *,const void *,size_t);
 static void capture_main_pc_state(uint32_t,uint16_t,uint64_t);
 static int capture_audio,capture_error;
+static int export_floor_pc_roots,pc_roots_error;
 static int main_pc_capture_enabled,main_pc_capture_matched;
 static uint32_t main_pc_capture_target,main_pc_capture_observed;
 static uint16_t main_pc_capture_opcode;
@@ -149,6 +150,7 @@ static int parse_probe_inputs(void)
     const char *audio=getenv("SEGACD_PROBE_CAPTURE_AUDIO");
     const char *pc_limit=getenv("SEGACD_PROBE_FLOOR_PC_LIMIT");
     const char *main_pc=getenv("SEGACD_PROBE_CAPTURE_MAIN_PC");
+    const char *pc_roots=getenv("SEGACD_PROBE_PC_ROOTS");
     if(events&&!parse_pad_events(events)){fprintf(stderr,"invalid SEGACD_PROBE_PAD_EVENTS (expected up to 64 frame:duration:12-bit-mask events)\n");return 0;}
     if(override) {
         if(!events||strcmp(override,"1")){fprintf(stderr,"SEGACD_PROBE_PAD_EVENTS_OVERRIDE_START requires pad events and exact value 1\n");return 0;}
@@ -161,6 +163,10 @@ static int parse_probe_inputs(void)
             fprintf(stderr,"SEGACD_PROBE_CAPTURE_MAIN_PC must be a base-0 even address <= 0xFFFFFF\n");return 0;
         }
         main_pc_capture_enabled=1;
+    }
+    if(pc_roots) {
+        if(strcmp(pc_roots,"1")){fprintf(stderr,"SEGACD_PROBE_PC_ROOTS accepts only 1\n");return 0;}
+        export_floor_pc_roots=1;
     }
     if(pc_limit) {
         uint64_t value;
@@ -187,9 +193,72 @@ static int snapshot_requested(uint32_t frame)
     for(unsigned n=0;n<snapshot_frame_count;++n)if(snapshot_frames[n]==frame)return 1;
     return 0;
 }
+static void record_floor_pc(unsigned cpu,uint32_t pc,uint64_t time,uint16_t opcode)
+{
+    uint32_t normalized=pc&0xFFFFFEu,index=normalized>>1;
+    uint8_t bit=(uint8_t)(1u<<(index&7u));uint8_t *slot=&floor_pc_seen[cpu][index>>3];
+    if(!(*slot&bit)) {
+        *slot|=bit;uint64_t unique=++floor_pc_count[cpu];
+        if(unique<=floor_pc_limit) {
+            if(floor_pc_limit==16)printf("Floor PC cpu=%u pc=%06X time=%llu\n",cpu,normalized,(unsigned long long)time);
+            else printf("Floor PC epoch=%u unique=%llu cpu=%u pc=%06X time=%llu opcode=%04X\n",floor_pc_epoch,(unsigned long long)unique,cpu,normalized,(unsigned long long)time,opcode);
+        }
+    }
+}
+static int write_floor_pc_roots_file(unsigned epoch,unsigned cpu,uint64_t *written_out)
+{
+    char name[80],path[4096];const char *cpu_name=cpu?"sub":"main";
+    int name_size=snprintf(name,sizeof name,"floor-pc-roots-epoch-%03u-%s.txt",epoch,cpu_name);
+    int path_size=snprintf(path,sizeof path,"%s/%s",dump_directory,name);
+    if(name_size<0||(size_t)name_size>=sizeof name||path_size<0||(size_t)path_size>=sizeof path) {
+        fprintf(stderr,"PC-root export failed: output path too long\n");return 0;
+    }
+    FILE *file=fopen(path,"wb");
+    if(!file){fprintf(stderr,"PC-root export failed: cannot open %s\n",path);return 0;}
+    uint64_t written=0;int ok=1;
+    for(size_t byte=0;byte<sizeof floor_pc_seen[cpu]&&ok;++byte) {
+        uint8_t bits=floor_pc_seen[cpu][byte];
+        for(unsigned bit=0;bit<8;++bit)if(bits&(uint8_t)(1u<<bit)) {
+            uint32_t pc=(uint32_t)(((byte*8u+(size_t)bit)<<1));
+            if(fprintf(file,"0x%06X\n",pc)<0){ok=0;break;}
+            ++written;
+        }
+    }
+    if(fclose(file))ok=0;
+    if(!ok||written!=floor_pc_count[cpu]) {
+        fprintf(stderr,"PC-root export failed while writing %s\n",path);return 0;
+    }
+    *written_out=written;return 1;
+}
+static int write_floor_pc_roots(unsigned epoch,uint32_t frame,uint64_t time)
+{
+    if(!export_floor_pc_roots)return 1;
+    uint64_t counts[2]={0,0};
+    if(!write_floor_pc_roots_file(epoch,0,&counts[0])||
+       !write_floor_pc_roots_file(epoch,1,&counts[1]))return 0;
+    char name[80],path[4096];
+    int name_size=snprintf(name,sizeof name,"floor-pc-roots-epoch-%03u.json",epoch);
+    int path_size=snprintf(path,sizeof path,"%s/%s",dump_directory,name);
+    if(name_size<0||(size_t)name_size>=sizeof name||path_size<0||(size_t)path_size>=sizeof path) {
+        fprintf(stderr,"PC-root export failed: metadata path too long\n");return 0;
+    }
+    FILE *file=fopen(path,"wb");
+    if(!file){fprintf(stderr,"PC-root export failed: cannot open %s\n",path);return 0;}
+    int ok=fprintf(file,
+        "{\n  \"schema\":\"SegaCDProbeFloorPCRoots1\",\n  \"epoch\":%u,\n  \"frame\":%u,\n  \"sub_clock\":%llu,\n  \"main_count\":%llu,\n  \"sub_count\":%llu,\n  \"main_file\":\"floor-pc-roots-epoch-%03u-main.txt\",\n  \"sub_file\":\"floor-pc-roots-epoch-%03u-sub.txt\",\n  \"scope\":\"Unique even PC addresses observed when this CPU retired exactly one floor operation in a coordinator step; native operations and ambiguous multi-retirement steps for that CPU, including nested WAIT, are omitted. This is not complete execution coverage.\"\n}\n",
+        epoch,frame,(unsigned long long)time,(unsigned long long)counts[0],
+        (unsigned long long)counts[1],epoch,epoch)>=0;
+    if(fclose(file))ok=0;
+    if(!ok){fprintf(stderr,"PC-root export failed while writing %s\n",path);return 0;}
+    printf("Floor PC roots exported epoch=%u frame=%u time=%llu main=%llu sub=%llu\n",
+        epoch,frame,(unsigned long long)time,(unsigned long long)counts[0],
+        (unsigned long long)counts[1]);
+    return 1;
+}
 static void reset_floor_pc_epoch(uint32_t frame,uint64_t time)
 {
-    if(!custom_snapshot_frames)return;
+    if(!custom_snapshot_frames&&!export_floor_pc_roots)return;
+    if(!write_floor_pc_roots(floor_pc_epoch,frame,time)){pc_roots_error=1;return;}
     printf("Floor PC epoch boundary frame=%u time=%llu prior_unique=%llu/%llu next_epoch=%u\n",frame,
         (unsigned long long)time,(unsigned long long)floor_pc_count[0],(unsigned long long)floor_pc_count[1],floor_pc_epoch+1);
     memset(floor_pc_seen,0,sizeof floor_pc_seen);floor_pc_count[0]=floor_pc_count[1]=0;++floor_pc_epoch;
@@ -217,6 +286,14 @@ static int input_selftest(void)
     }
     printf("floor-pc-limit=%u initial-epoch=0\n",floor_pc_limit);
     printf("main-pc-capture enabled=%u target=%06X matched=0\n",main_pc_capture_enabled,main_pc_capture_target);
+    if(export_floor_pc_roots) {
+        record_floor_pc(0,0x00FF1000u,0,0x4E75u);
+        record_floor_pc(0,0x00123456u,0,0x4E71u);
+        record_floor_pc(0,0x00FF1000u,0,0x4E75u);
+        record_floor_pc(1,0x000005E8u,0,0x4E71u);
+        record_floor_pc(1,0x0000A120u,0,0x4E75u);
+        if(!write_floor_pc_roots(0,42,123456u))return -1;
+    }
     return 1;
 }
 static void observe_input(uint32_t a,unsigned value)
@@ -580,7 +657,7 @@ int main(int argc,char**argv)
                 capture_main_pc_state(retired_pc,coordinator.cpu[0].state.fault_opcode,coordinator.device_time);
         }
         observe_fader_and_ready(coordinator.device_time,fader_before,fader_deadline_before);
-        if(capture_error){status=M68K_STEP_BUS_ERROR;break;}
+        if(capture_error||pc_roots_error){status=M68K_STEP_BUS_ERROR;break;}
         if(watch_word!=UINT32_MAX && coordinator.device_time>=watch_after && watch_events<1024 &&
            (!watch_events || cd.word[watch_word]!=watch_before)) {
             printf("Word RAM watch time=%llu offset=%05X old=%02X new=%02X mode=%02X cpu=%u main=%06X sub=%06X D0=%08X/%08X D1=%08X/%08X D2=%08X/%08X\n",(unsigned long long)coordinator.device_time,watch_word,watch_before,cd.word[watch_word],cd.memory_mode,coordinator.last_cpu,coordinator.cpu[0].state.instruction_pc,coordinator.cpu[1].state.instruction_pc,coordinator.cpu[0].state.regs.D[0],coordinator.cpu[1].state.regs.D[0],coordinator.cpu[0].state.regs.D[1],coordinator.cpu[1].state.regs.D[1],coordinator.cpu[0].state.regs.D[2],coordinator.cpu[1].state.regs.D[2]);
@@ -614,15 +691,7 @@ int main(int argc,char**argv)
                 if(!first_boot_pc[which]){first_boot_pc[which]=pc;printf("Observed boot-address-range execution cpu=%u pc=%06X native=%u time=%llu\n",which,pc,(unsigned)native_delta,(unsigned long long)coordinator.device_time);}
             }
             if(floor_delta && native_delta+floor_delta==1) {
-                uint32_t normalized=pc&0xFFFFFEu;uint32_t index=normalized>>1;
-                uint8_t bit=(uint8_t)(1u<<(index&7u));uint8_t *slot=&floor_pc_seen[which][index>>3];
-                if(!(*slot&bit)) {
-                    *slot|=bit;uint64_t unique=++floor_pc_count[which];
-                    if(unique<=floor_pc_limit) {
-                        if(floor_pc_limit==16)printf("Floor PC cpu=%u pc=%06X time=%llu\n",which,normalized,(unsigned long long)coordinator.device_time);
-                        else printf("Floor PC epoch=%u unique=%llu cpu=%u pc=%06X time=%llu opcode=%04X\n",floor_pc_epoch,(unsigned long long)unique,which,normalized,(unsigned long long)coordinator.device_time,coordinator.cpu[which].state.fault_opcode);
-                    }
-                }
+                record_floor_pc(which,pc,coordinator.device_time,coordinator.cpu[which].state.fault_opcode);
             }
         }
         if(status!=M68K_STEP_OK)break;
@@ -693,6 +762,8 @@ int main(int argc,char**argv)
     dump(argv[3],"cram-host-u16.bin",vdp.cram,sizeof vdp.cram);
     dump(argv[3],"vsram-host-u16.bin",vdp.vsram,sizeof vdp.vsram);
     dump(argv[3],"main-ram.bin",g_ram,sizeof g_ram);dump(argv[3],"sub-prg.bin",cd.prg,sizeof cd.prg);dump(argv[3],"word-ram.bin",cd.word,sizeof cd.word);dump(argv[3],"vram.bin",vdp.vram,sizeof vdp.vram);dump_frame_named(argv[3],"frame.ppm");
-    int capture_ok=capture_close();segacd_image_close(image);
-    return capture_ok && !capture_error && status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;
+    int capture_ok=capture_close();
+    int roots_ok=!pc_roots_error&&write_floor_pc_roots(floor_pc_epoch,(uint32_t)(line_number/262u),coordinator.device_time);
+    segacd_image_close(image);
+    return capture_ok && !capture_error && roots_ok && !pc_roots_error && status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;
 }

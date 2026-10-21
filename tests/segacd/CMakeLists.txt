@@ -301,6 +301,11 @@ if(NOT CMAKE_CROSSCOMPILING)
   target_compile_definitions(segacd_bios_floor_probe PRIVATE SEGACD_BIOS_PROBE_NO_CATALOGS=1)
   target_include_directories(segacd_bios_floor_probe PRIVATE ../../runner/video)
   target_link_libraries(segacd_bios_floor_probe PRIVATE segacd_devices segacd_disc_image segacd_execution_floor)
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME segacd_probe_pc_roots COMMAND "${Python3_EXECUTABLE}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/probe_pc_roots_test.py" "$<TARGET_FILE:segacd_bios_floor_probe>")
+    set_tests_properties(segacd_probe_pc_roots PROPERTIES TIMEOUT 15)
+  endif()
 
   # Private generated sound-driver input, deliberately absent from source.
   # The adapter has no decoder/fallback: a code miss is a terminal stop.
