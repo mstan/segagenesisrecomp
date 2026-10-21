@@ -555,14 +555,14 @@ if(NOT CMAKE_CROSSCOMPILING)
   endif()
 endif()
 
-# One build graph for the synthetic suite; private owned-input probe catalogs
-# remain outside this target. Avoid a separate MSBuild startup for each test.
+# One build graph for the synthetic suite; the catalog-free probe supplies
+# input/export self-tests. Private owned-input catalogs remain outside it.
 add_custom_target(segacd_test_suite)
 foreach(test_target IN ITEMS segacd_memory_test segacd_pcm_test segacd_fader_test segacd_cdda_test segacd_cdda_bus_test segacd_cdd_test
     segacd_cdc_test segacd_disc_image_test segacd_sector_test segacd_media_test
     segacd_stamp_test segacd_dma_test segacd_step_semantics_test
     segacd_floor_divide_test segacd_module_test segacd_execution_floor_test segacd_debug_test
-    segacd_coordinator_test segacd_external_bus_test segacd_z80_native_test segacd_audio_mix_test
+    segacd_coordinator_test segacd_external_bus_test segacd_z80_native_test segacd_audio_mix_test segacd_bios_floor_probe
     segacd_audio_native_test segacd_backup_test segacd_machine_test segacd_sonic_cd_render_test segacd_sonic_cd_view_test m68k_step_test)
   if(TARGET ${test_target})
     add_dependencies(segacd_test_suite ${test_target})
