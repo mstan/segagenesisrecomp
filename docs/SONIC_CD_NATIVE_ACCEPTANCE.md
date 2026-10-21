@@ -39,7 +39,7 @@ Accepted Main/Sub 68000 and Z80 execution is native, with Main/Sub floor counter
 | Original campaign ending and credits | PASS | `mmz-clean-source-campaign-ending-parent-4/parent-ending-completion-audit.json`: actual MMZ1/2 results, boss and exit reach exact ENDING.MMD, original bad-ending animation, full credit roll and automatic exact TITLEM return. 7512 raw byte writes audited; no result/save/next-stage flag supplied. Final frame24632, floors0/0, audioFaults0. Initial QA zone-6 save bypasses prerequisites; this is not save validation. Alternate good-ending prerequisites are not claimed. |
 | Independent final visuals | PASS WITH PHASE LIMIT | Qualified PPZ, TTZ and SS1 comparisons retained; SS8 comparison complete. `ending-visual-parent-review-1` independently checks the clean-build cinematic framing and credit-roll layout against the original. Exact animation phase/pixel parity remains UNVERIFIED. |
 | Controls/audio/recomp-ui/adaptive widescreen | PASS WITH SCOPE | Clean candidate: normal window and exact `Sonic CD` caption with debug port; real movement/jump/pause; F1 UI freezes emulation and blocks held input on close; nonzero captured audio, audioFaults0. PID-qualified resize tests produce320/512px frames. `widescreen-r11a-midstage-3` proves continuous terrain in both actual margins and visible HUD after camera settle/12 frames. Earlier resize screenshots with black margins do not prove expanded scenery. Physical gamepad not newly tested. |
-| Reproducible owned-input source build | PARTIAL | `sonic-cd-source-build-1/source-build-provenance.json`: clean compile/link of all 332 catalogs and 11256 generated source/header files passed, without imported archives. Complete BIOS/disc-driven source/capture generation still needs qualification. |
+| Reproducible owned-input source build | PARTIAL: FINAL COMPILE PENDING | `G:/Temp/Codex/segagenesisrecomp/owned-native-regeneration-1/generation-provenance.json`: public owned-input recipe and verified resume pass, producing333 catalogs/11290 source/header files. All original M68K guarded entries preserved across332 images (one Sub patch split); fresh native Z80 bootstrap has zero code-region guard gaps. Legacy-only data/stack variants are explicitly retired by source-role audit. Clean source-bundle compile passed earlier; final compile of this complete regenerated bundle remains. |
 | Standalone owner package | PASS CANDIDATE | `G:/Temp/Codex/segagenesisrecomp/sonic-cd-playtest-3/SonicCD/SonicCD.cmd` uses the clean source binary, required notices and an empty BIOS-formatted BRAM seed. Media paths only; no owned disc/BIOS copied. Python/PowerShell validation and final presentation checks passed; launch link delivered. Owner feedback on this final package remains pending. |
 
 All QA uses stage selection, teleports, protection and source-qualified actor
@@ -72,6 +72,6 @@ These are limited qualifications, not substitutes for required gameplay checks:
 - Drive-error and marginal-media behavior beyond the qualified owned disc has
   not been exhaustively checked.
 
-Complete BIOS/disc-driven source-generation orchestration remains acceptance
-work; it is not classified as a hardware defer. The clean source-bundle build
-and owner candidate remain available while that recipe is qualified.
+Final compilation and focused regression of the complete regenerated bundle
+remain acceptance work; neither is a hardware defer. The prior clean-source
+owner candidate remains available while that build finishes.
