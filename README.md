@@ -2,16 +2,88 @@
   <img src="logo.png" alt="Genesis Recomp" width="640" />
 </p>
 
-# Genesis 68K Static Recompiler
+# Genesis Recomp
 
-A static-recompilation framework that translates Sega Genesis (Mega Drive)
-68000 ROM code into native C and runs it against a clean-room Genesis runtime.
-Game repositories such as
-[SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp)
-provide the ROM-specific build, assets, and release packaging.
+**A beta static-recompilation framework for the Sega Genesis / Mega Drive.**
+It translates 68000 code into native C and supplies a shared VDP, audio,
+bus, scheduler and Z80 runtime, with an interpreter fallback for unresolved
+targets. Each game owns its ROM identity and integration.
 
-The fixed-choice scalar/batched scanline renderer experiment and qualification
-scope are documented in [engine plane batching](docs/ENGINE_VDP_BATCHING.md).
+The Sonic trilogy and Rocket Knight Adventures show what that enables:
+**adaptive ultrawide stages, modern controls, mods, multiplayer, save states
+and rewind**, with different feature limits for each game.
+
+**[Choose a game](#games)** · **[Start a game integration](docs/GETTING_STARTED.md)**
+— command-line tools and source code, with no AI required.
+
+## Games
+
+These public projects use the shared framework. Beta describes the framework;
+the widescreen renderers and imported campaigns remain experimental. This
+snapshot was checked against public source/release notes on **21 October
+2026**, with development-only work labeled separately.
+
+| Game | Project / downloads | Features and scope |
+|---|---|---|
+| *Sonic the Hedgehog* | [SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp) · [downloads](https://github.com/mstan/SonicTheHedgehogRecomp/releases) | Optional adaptive/16:9/21:9/32:9 stage renderer, expanded objects/HUD, save states and rewind. |
+| *Sonic the Hedgehog 2* | [SonicTheHedgehog2Recomp](https://github.com/mstan/SonicTheHedgehog2Recomp) · [downloads](https://github.com/mstan/SonicTheHedgehog2Recomp/releases) | Adaptive ultrawide, character/party mods, rollback netplay and experimental independent online cameras. Public builds currently expose four seats; the six-player development preview is shown below. |
+| *Sonic 3*, *Sonic & Knuckles*, *Sonic 3 & Knuckles* | [Sonic3AndKnucklesRecomp](https://github.com/mstan/Sonic3AndKnucklesRecomp) · [downloads](https://github.com/mstan/Sonic3AndKnucklesRecomp/releases) | Three cartridge targets, custom adaptive/ultrawide renderer; the combined target adds optional Sonic 1/2/Megamix campaigns and Mighty/Shadow. |
+| *Rocket Knight Adventures* | [RocketKnightAdventuresRecomp](https://github.com/mstan/RocketKnightAdventuresRecomp) · [downloads](https://github.com/mstan/RocketKnightAdventuresRecomp/releases) | Adaptive scenery/actors across seven stages, remappable input, visual save browser and rewind. |
+
+### Sonic 1–3 in widescreen
+
+The game-owned renderers expand stage scenery, object visibility and HUD
+placement. **Adaptive** follows the live window; fixed 16:9, 21:9 and 32:9
+views are also available. They do not establish whole-game correctness at
+every width. Enable Widescreen in each game's **Mods** page.
+
+<table>
+  <tr><td><img src="docs/assets/games/sonic-1-ultrawide.png" alt="Sonic 1 Green Hill in 32:9, with expanded terrain and visible enemies" width="100%"><br><sub><b>Sonic the Hedgehog</b> — Green Hill at 32:9.</sub></td></tr>
+  <tr><td><img src="docs/assets/games/sonic-3-ultrawide.png" alt="Sonic 3 and Knuckles Angel Island in 32:9, with additional stage scenery" width="100%"><br><sub><b>Sonic 3 &amp; Knuckles</b> — Angel Island at 32:9.</sub></td></tr>
+</table>
+
+### Sonic 2: a party of six — development preview
+
+The current local development build extends party play to **six actors**:
+Sonic, Tails, Knuckles, Amy, Mighty and Shadow. Optional imported characters
+need the exact source ROMs or converted packs described by the game; no donor
+assets are distributed. This screenshot is from that development build.
+The public source and released build still expose **four seats**, so use
+the game's release notes to check when the six-player work becomes available.
+
+<p align="center">
+  <img src="docs/assets/games/sonic-2-six-player.png" alt="Sonic 2 development party with Sonic, Tails, Knuckles, Amy, Mighty and Shadow enabled in Emerald Hill" width="800">
+  <br><sub><b>Six-character Sonic 2 party.</b> Development preview; not the four-seat public release.</sub>
+</p>
+
+### Sonic 3: Sonic 1 + 2 + 3, then Megamix
+
+The combined S3K target offers independent, default-off **Sonic 1 stages**,
+**Sonic 2 stages**, **Sonic Megamix stages**, **Mighty** and **Shadow** mods.
+Enabled Sonic 1/2 campaigns precede native S3K, with Megamix last. Characters
+can be enabled separately from their stage pack. Supply and convert the
+required source ROMs locally; Megamix content uses the supported v3 donor.
+
+Progress retains native-compatible SRAM and an addon journal. Imported
+campaign state currently excludes quickstates, rewind and netplay. See
+[stage-pack setup and credits](https://github.com/mstan/Sonic3AndKnucklesRecomp/blob/main/docs/STAGE_PACKS.md)
+and [Megamix gameplay and validation](https://github.com/mstan/Sonic3AndKnucklesRecomp/blob/main/docs/MEGAMIX_STAGE_PACK.md)
+for what has actually been exercised.
+
+### Rocket Knight Adventures: Sparkster across a wider world
+
+<p align="center">
+  <img src="docs/assets/games/rocket-knight-wide.png" alt="Sparkster fights the tank boss on a suspension bridge in adaptive widescreen" width="800">
+  <br><sub><b>Rocket Knight Adventures</b> — adaptive bridge battle.</sub>
+</p>
+
+The Widescreen mod offers **Adaptive (fit window)** and fixed views, with a
+choice between original and viewport-based enemy activation. The original
+view remains available when the mod is off. Stage and boss coverage is
+documented by the game project.
+
+Screenshot provenance and version boundaries are recorded in
+[the showcase sources](docs/SHOWCASE_SOURCES.md).
 
 ## Status
 
@@ -187,23 +259,18 @@ add `runner/audio/audio_shadow.c`, `runner/audio/fm_shadow.cpp`, and
 [`docs/SHADOW_ENHANCEMENTS.md`](docs/SHADOW_ENHANCEMENTS.md) for the full design,
 verifier algorithm, and integration points.
 
-### Widescreen (16:9, opt-in)
+### Widescreen integration
 
-`GENESIS_WIDESCREEN=1` renders a 16:9 viewport (default 448px wide, configurable
-via `GENESIS_WIDESCREEN_COLUMNS=<cells/side>`) in place of the authentic 4:3
-320px. The clean-room VDP draws extra **centered** columns; the recompiled 68K
-reads a per-frame `Widescreen_extra` RAM word (written by the runner) to widen
-its own tile-load, object-cull, ring-window, and sprite bounds. The word is `0`
-when the toggle is off, so **the authentic 4:3 output stays byte-identical**. It
-is per-game and gameplay-gated — authentic 4:3 on menus, title cards, and
-2-player split-screen. Supported in Sonic 1, Sonic 2, and the Sonic 3 family
-(S3-alone and S&K-alone; the combined S3&K build is bring-up). See the
-`[widescreen]` block in each `game.toml`.
+Current public games expose game-owned widescreen mods with adaptive and
+fixed aspect choices. The old `GENESIS_WIDESCREEN` column-expansion path is
+a development interface, not a description of every current renderer.
+Each game owns its streaming, visibility, camera and HUD policies; menus
+and special screens can use different presentation rules.
 
-Converted games ingest the canonical ROM and apply declarative
-`[[widescreen_site]]` transforms while emitting C. The original ROM is not
-patched. See [WIDESCREEN_ISSUES.md](WIDESCREEN_ISSUES.md) for games that still
-use the older patched-disassembly path.
+See the [game list](#games) and per-title renderer guides for current
+behavior. [WIDESCREEN_ISSUES.md](WIDESCREEN_ISSUES.md) retains the migration
+history and older injection work. The shared plane-batching experiment is
+documented separately in [ENGINE_VDP_BATCHING.md](docs/ENGINE_VDP_BATCHING.md).
 
 #### Disassembly sources
 
