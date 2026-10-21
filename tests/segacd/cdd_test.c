@@ -41,9 +41,13 @@ int main(void)
     for(unsigned n=0;n<9;++n)CHECK(d.rx[n]==0);CHECK(d.rx[9]==15);
     uint32_t motor_delay=(uint32_t)(segacd_cdd_next_event(&d)-d.cycles);
     CHECK(motor_delay>0);CHECK(!segacd_cdd_advance(&d,motor_delay-1,sector,NULL));CHECK(d.status==0);
-    CHECK(segacd_cdd_advance(&d,1,sector,NULL));CHECK(d.status==9 && d.rx[0]==9 && d.rx[9]==6 && !sector_count);
+    CHECK(segacd_cdd_advance(&d,1,sector,NULL));CHECK(d.status==9 && d.rx[0]==0 && d.rx[9]==15 && !sector_count);
     motor_delay=(uint32_t)(segacd_cdd_next_event(&d)-d.cycles);
-    CHECK(segacd_cdd_advance(&d,motor_delay,sector,NULL));CHECK(d.status==4 && d.rx[0]==4 && d.rx[9]==11 && !sector_count);
+    CHECK(segacd_cdd_advance(&d,motor_delay,sector,NULL));CHECK(d.status==4 && d.rx[0]==0 && d.rx[9]==15 && !sector_count);
+    /* The host must observe the completed STOP packet, even when its next
+     * interrupt arrives after mechanical state has already advanced. Only
+     * an explicit new status request publishes the current paused state. */
+    command(0,0,0,0);CHECK(d.rx[0]==4 && d.rx[9]==11);
     SegaCDTOC bad=toc;bad.track[1].index00=299;CHECK(!segacd_cdd_mount(&d,&bad));
     command(2,4,0,0);CHECK(d.rx[1]==4 && d.rx[2]==0 && d.rx[3]==1 && d.rx[4]==0 && d.rx[5]==2);
     command(2,3,0,0);CHECK(d.rx[1]==3 && d.rx[4]==1 && d.rx[5]==2 && d.rx[6]==0 && d.rx[7]==0); /* leadout 00:12:00 */
@@ -73,7 +77,8 @@ int main(void)
     segacd_cdd_advance(&d,1,sector,NULL);CHECK(d.status==10 && d.lba>skip_start && d.rx[0]==10);
     CHECK(sector_count==75); /* Tracking never streams sectors. */
     segacd_cdd_advance(&d,(uint32_t)(d.track_skip_deadline-d.cycles),sector,NULL);
-    CHECK(d.status==4 && !d.track_skip_active && d.lba==d.track_skip_target_lba && d.rx[0]==4);
+    CHECK(d.status==4 && !d.track_skip_active && d.lba==d.track_skip_target_lba && d.rx[0]==10);
+    command(0,0,0,0);CHECK(d.rx[0]==4);
     int32_t outward=d.lba;track_skip_fields(1,0,1);CHECK(d.status==10 && d.track_skip_target_lba<outward);
     segacd_cdd_advance(&d,(uint32_t)(d.track_skip_deadline-d.cycles),sector,NULL);
     CHECK(d.status==4 && d.lba<outward);

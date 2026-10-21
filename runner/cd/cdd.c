@@ -138,7 +138,8 @@ static void track_skip_step(SegaCDDrive*d)
     if(d->track_skip_step>=d->track_skip_count || d->lba==d->track_skip_target_lba) {
         d->lba=d->track_skip_target_lba;cancel_track_skip(d);d->status=PAUSE;
     } else d->track_skip_deadline=track_skip_deadline(d);
-    reply(d,0);
+    /* Mechanical motion does not replace an already completed command's
+     * response packet. The next command/status poll latches a fresh reply. */
 }
 void segacd_cdd_reset(SegaCDDrive*d)
 {
@@ -303,7 +304,12 @@ unsigned segacd_cdd_advance(SegaCDDrive*d,uint32_t clocks,SegaCDSectorSink sink,
             } else if(d->status==SCAN) {
                 d->lba+=d->scan;if(d->lba<0)d->lba=0;if(d->lba>=d->toc.leadout){d->lba=d->toc.leadout;d->status=LEADOUT;}
             }
-            reply(d,0);irq=1;
+            /* Keep the completed command response stable until the host's
+             * next packet. In particular, the STOP acknowledgement (zero)
+             * must survive the following motor/TOC tick and IRQ delivery.
+             * The pinned ares CDD similarly updates status[] in process(),
+             * independently of mechanical state changes in clock(). */
+            irq=1;
         }
     }
     d->cycles=until;return irq;
