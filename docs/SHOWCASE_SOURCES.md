@@ -9,6 +9,19 @@ No scenery, actor or HUD content has been synthesized or painted in.
 | `sonic-2-six-player.png` | Sonic 2 local development validation, `qa-six-final/party/follow.png`: six enabled actors, with Sonic, Tails, Knuckles, Amy, Mighty and Shadow. Imported assets remain local. |
 | `sonic-3-ultrawide.png` | Combined S3K custom-renderer validation, `final-s3k/32-9/checkpoint-8.png`: Angel Island. This is native S3K scenery, not an imported Megamix stage. |
 | `rocket-knight-wide.png` | Rocket Knight Adventures' public [`adaptive-bridge.png`](https://github.com/mstan/RocketKnightAdventuresRecomp/blob/main/docs/images/adaptive-bridge.png). |
+| `sonic-cd-wide.png` | Sonic CD 0.0.1's public [`palmtree-panic-wide.png`](https://github.com/mstan/SonicCDRecomp/blob/v0.0.1/docs/screenshots/palmtree-panic-wide.png), copied unchanged. Native Windows capture; expanded Palmtree Panic scenery and original HUD. |
+
+## Sonic CD release boundary
+
+[SonicCDRecomp 0.0.1](https://github.com/mstan/SonicCDRecomp/releases/tag/v0.0.1)
+is the original US CD program running on native Main/Sub 68000 and Z80
+catalogs, with Windows/Linux x64 packages. Its engine pin is
+`c8bcab94babc217955c8aab195d7de8d4b532331` on `feature/segacd-backend`;
+the backend has not been merged into engine master. This is separate from
+the S3K-hosted CD campaign adaptation. The screenshot demonstrates normal-stage
+expansion; special stages keep their original centered projection. Full
+coverage, Linux package smoke checks and unverified cases are recorded in
+the game's [validation ledger](https://github.com/mstan/SonicCDRecomp/blob/main/docs/VALIDATION.md).
 
 ## Sonic 2 release boundary
 

@@ -5,6 +5,12 @@ are ordinary command-line programs; no AI assistant is required. To play an
 existing port, choose it from the [game list](../README.md#games) and follow
 that game's release instructions.
 
+This page covers the cartridge pipeline. For Sega CD / Mega-CD, start with
+[Set up a Sega CD recomp](SEGA_CD_SETUP.md): it covers the released Sonic CD
+reference project, owned BIOS/disc inputs, Main/Sub 68000 and Z80 catalogs,
+and the work required to integrate another CD title. Sega CD's released native
+runner has a separate build and stops on missing generated instructions.
+
 ## 1. Set up one toolchain
 
 For the Windows x64 path, install Git for Windows and Visual Studio 2022

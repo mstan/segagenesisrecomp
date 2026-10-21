@@ -1,5 +1,12 @@
 # Releasing — compliance requirements (READ BEFORE PUBLISHING ANY BINARY)
 
+This checklist describes cartridge-runner packages. For Sega CD, follow
+[CD setup and packaging](docs/SEGA_CD_SETUP.md#package-a-standalone-release)
+and the consuming game's release process, such as
+[Sonic CD's Windows/AppImage packaging](https://github.com/mstan/SonicCDRecomp/blob/main/RELEASING.md).
+CD packages require their own runtime notices and external owned BIOS/disc
+inputs; Sonic CD's strict native target has no interpreter fallback.
+
 **Release (native) binaries are AGPL-free.** They run the clean-room own
 backend: recompiled 68K, own VDP/bus/machine scheduler, ymfm FM (BSD-3),
 superzazu Z80 (MIT), clean-room SN76489, SDL2 (zlib), clowncommon helpers

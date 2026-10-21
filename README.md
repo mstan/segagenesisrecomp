@@ -4,16 +4,21 @@
 
 # Genesis Recomp
 
-**A beta static-recompilation framework for the Sega Genesis / Mega Drive.**
-It translates 68000 code into native C and supplies a shared VDP, audio,
-bus, scheduler and Z80 runtime, with an interpreter fallback for unresolved
-targets. Each game owns its ROM identity and integration.
+**A beta static-recompilation framework for the Sega Genesis / Mega Drive
+and Sega CD / Mega-CD.** The cartridge pipeline translates 68000 code into
+native C and supplies a shared VDP, audio, bus, scheduler and Z80 runtime,
+with an interpreter fallback for unresolved cartridge targets. Each game
+owns its input identity and integration.
 
-The Sonic trilogy and Rocket Knight Adventures show what that enables:
+Sega CD support currently lives on **`feature/segacd-backend`**. Its first
+released consumer, **Sonic CD 0.0.1**, runs original Main/Sub 68000 and Z80
+programs as native code, with terminal misses and no interpreter fallback.
+
+The Sonic trilogy, Sonic CD and Rocket Knight Adventures show what that enables:
 **adaptive ultrawide stages, modern controls, mods, multiplayer, save states
 and rewind**, with different feature limits for each game.
 
-**[Choose a game](#games)** · **[Start a game integration](docs/GETTING_STARTED.md)**
+**[Choose a game](#games)** · **[Start a cartridge integration](docs/GETTING_STARTED.md)** · **[Set up a Sega CD recomp](docs/SEGA_CD_SETUP.md)**
 — command-line tools and source code, with no AI required.
 
 ## Games
@@ -27,6 +32,7 @@ snapshot was checked against public source/release notes on **21 October
 |---|---|---|
 | *Sonic the Hedgehog* | [SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp) · [downloads](https://github.com/mstan/SonicTheHedgehogRecomp/releases) | Optional adaptive/16:9/21:9/32:9 stage renderer, expanded objects/HUD, save states and rewind. |
 | *Sonic the Hedgehog 2* | [SonicTheHedgehog2Recomp](https://github.com/mstan/SonicTheHedgehog2Recomp) · [downloads](https://github.com/mstan/SonicTheHedgehog2Recomp/releases) | Adaptive ultrawide, character/party mods, rollback netplay and experimental independent online cameras. Public builds currently expose four seats; the six-player development preview is shown below. |
+| *Sonic CD* | [SonicCDRecomp](https://github.com/mstan/SonicCDRecomp) · [0.0.1 downloads](https://github.com/mstan/SonicCDRecomp/releases/tag/v0.0.1) | Original US CD programs, strict native Main/Sub 68000 and Z80, recomp-ui, adaptive stage widescreen, FM/PSG/PCM/CD audio and backup-RAM saves. Windows/Linux x64; users supply the qualified disc and BIOS. |
 | *Sonic 3*, *Sonic & Knuckles*, *Sonic 3 & Knuckles* | [Sonic3AndKnucklesRecomp](https://github.com/mstan/Sonic3AndKnucklesRecomp) · [downloads](https://github.com/mstan/Sonic3AndKnucklesRecomp/releases) | Three cartridge targets, custom adaptive/ultrawide renderer; the combined target adds optional Sonic 1/2/Megamix campaigns and Mighty/Shadow. |
 | *Rocket Knight Adventures* | [RocketKnightAdventuresRecomp](https://github.com/mstan/RocketKnightAdventuresRecomp) · [downloads](https://github.com/mstan/RocketKnightAdventuresRecomp/releases) | Adaptive scenery/actors across seven stages, remappable input, visual save browser and rewind. |
 
@@ -70,6 +76,27 @@ campaign state currently excludes quickstates, rewind and netplay. See
 and [Megamix gameplay and validation](https://github.com/mstan/Sonic3AndKnucklesRecomp/blob/main/docs/MEGAMIX_STAGE_PACK.md)
 for what has actually been exercised.
 
+### Sonic CD: original programs on the Sega CD backend
+
+<p align="center">
+  <img src="docs/assets/games/sonic-cd-wide.png" alt="Sonic CD Palmtree Panic with original HUD and expanded stage scenery" width="800">
+  <br><sub><b>Sonic CD</b> — Palmtree Panic with adaptive stage widescreen.</sub>
+</p>
+
+[Sonic CD 0.0.1](https://github.com/mstan/SonicCDRecomp/releases/tag/v0.0.1)
+ships a Windows ZIP and Linux AppImage. Supply your own **US Sonic CD disc**
+and **US Model 1 v1.10 Sega CD BIOS**; the launcher remembers their paths.
+The game opens windowed with normal audio. F1/Esc opens recomp-ui; supported
+normal stages expand with the window, while special stages keep their
+original centered projection. Saves use original backup RAM. This release
+does not include the cartridge runner's save-state/rewind UI or netplay.
+
+The [validation ledger](https://github.com/mstan/SonicCDRecomp/blob/main/docs/VALIDATION.md)
+records 70 stage/time variants, seven boss completions, eight special stages,
+ending/credits, save boundaries and independent visual comparisons, with
+explicit coverage limits. See [CD setup](docs/SEGA_CD_SETUP.md) for supported
+inputs, a source build and the reusable backend's integration boundaries.
+
 ### Rocket Knight Adventures: Sparkster across a wider world
 
 <p align="center">
@@ -90,13 +117,18 @@ Screenshot provenance and version boundaries are recorded in
 | Feature | Status | Notes |
 |---------|--------|-------|
 | 68K frontend | Active | Shared decoder, validator, discovery, and emitter from `m68k-recomp-core` |
-| Runtime fallback | Active | Clean-room Tier-3 interpreter handles supported static-dispatch misses |
+| Runtime fallback | Cartridge runner | Clean-room Tier-3 interpreter handles supported cartridge static-dispatch misses; Sonic CD's native runner stops on misses |
 | Runtime hardware | Active | Own VDP, bus, scheduler, YM2612, SN76489, and Z80 integration |
 | Function discovery | Evidence-driven | Static analysis plus disassembly and runtime evidence declared by `game.toml` |
 | Validation | Local | Synthetic harnesses, boot/regression scripts, and recomp-vs-interpreter cosim |
-| Sound Z80 static recompilation | Experimental | Optional backend; see [docs/Z80_STATIC_RECOMP.md](docs/Z80_STATIC_RECOMP.md) |
+| Cartridge Z80 static recompilation | Experimental | Optional cartridge backend; see [docs/Z80_STATIC_RECOMP.md](docs/Z80_STATIC_RECOMP.md) |
 | Widescreen injection | Per game | Current status and remaining conversions are in [WIDESCREEN_ISSUES.md](WIDESCREEN_ISSUES.md) |
 | Local rewind | Active | rbengine snapshots of the complete machine, with a paused filmstrip and branch trimming |
+| Sega CD hardware/runtime | Feature branch | Reusable Main/Sub buses, Word RAM, CDD/CDC/DMA, stamp graphics, PCM/CDDA and backup RAM on `feature/segacd-backend` |
+| Sega CD native execution | Released consumer | Sonic CD 0.0.1 executes Main/Sub 68000 and Z80 natively; see [CD setup and scope](docs/SEGA_CD_SETUP.md) |
+
+The save-state and rewind controls below apply to the cartridge runner.
+Sonic CD 0.0.1 uses original backup-RAM saves and its own recomp-ui controls.
 
 The in-game save-state browser opens with **F7** or **Back/View + RB**; use
 arrows or the D-pad to select a slot, **Enter/A** to load, **S/X** to save,
@@ -136,6 +168,8 @@ directory; legacy engine-relative paths remain supported for other consumers.
 
 ## How It Works
 
+### Cartridge games
+
 The Genesis CLI loads a ROM and `game.toml`, then invokes the Genesis profile in
 `m68k-recomp-core`. Discovered 68K routines become C functions operating on the
 shared `M68KState` and runtime bus. Generated dispatch code falls back to the
@@ -149,6 +183,17 @@ Key recompiler features:
   MC68000 timing model in the shared Genesis profile, so generation has no
   emulator dependency.
 
+### Sega CD games
+
+The CD pipeline generates native catalogs for the original BIOS, Main/Sub
+program loads and Z80 code variants. Instruction-byte guards distinguish
+overlays and modified code at the same address. The native machine runs
+those programs against coordinated CPU/device clocks, Word RAM ownership,
+raw-sector/CD audio delivery and backup RAM. Missing executed variants stop
+the native runner; separately named diagnostic probes support offline
+discovery. The consuming game owns its supported inputs, program recipe,
+presentation and packaging. See [CD setup](docs/SEGA_CD_SETUP.md).
+
 ## Cloning
 
 ```bash
@@ -160,15 +205,24 @@ disassembly submodules. See [DISASSEMBLIES.md](docs/DISASSEMBLIES.md) for
 ROM-verified annotation regeneration and headless Ghidra imports.
 There is no emulator-core or AGPL dependency in the repository.
 
+For Sega CD, use the [CD setup guide](docs/SEGA_CD_SETUP.md). It selects the
+backend branch and the two required CPU submodules, or the released game's
+pinned engine and Z80 generation frontend. The Genesis CLI and `game.toml`
+workflow above describe cartridge integration.
+
 ## Platform Support
 
-The runner builds and runs natively on **Windows (MSVC)**, **macOS (Apple
+The cartridge runner builds and runs natively on **Windows (MSVC)**, **macOS (Apple
 Silicon & Intel)**, and **Linux**. The cooperative game-fiber scheduler is
 backed by Win32 Fibers on Windows and by `ucontext` on macOS/Linux via
 `runner/fiber_compat.{h,c}`; SDL2 handles windowing, rendering, audio, and
 `SDL_GameController` gamepads on all platforms. See the
 [SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp)
 README for per-platform build steps.
+
+Sonic CD 0.0.1 is qualified on **Windows x64** and **Linux x86_64**. Its Linux
+AppImage requires glibc 2.39+ (Ubuntu 24.04 baseline) and Python 3. CD macOS
+builds and other BIOS/disc revisions are not qualified by that release.
 
 ## Building the Recompiler
 
