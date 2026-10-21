@@ -23,6 +23,16 @@ cross-check is the cosim harness (recomp vs our own Tier-3 interpreter,
 - **Sonic3AndKnucklesRecomp** — Sonic 3 alone, Sonic 3 & Knuckles and
   Sonic & Knuckles alone; native release targets (ships a `v0.1.0-linux`
   AppImage).
+- **SonicCDRecomp** — original Sonic CD US, released as 0.0.1 for Windows
+  and Linux x64 using the engine's `feature/segacd-backend` pin. Original
+  Main/Sub 68000 and Z80 execution is strict native; missing code stops rather
+  than using the cartridge interpreter floor. Users provide a qualified BIOS
+  and disc. See [Sega CD setup](docs/SEGA_CD_SETUP.md).
+
+The cartridge architecture and `game.toml` integration described below are
+separate from the CD machine. Sega CD has its own buses, coordinator,
+guarded program catalogs, audio and backup RAM. Its code remains on the
+feature branch; a documentation update does not merge it into master.
 
 ## Repo topology (read this first)
 
@@ -34,7 +44,9 @@ The Sonic 3 family followed (Sonic3AndKnucklesRecomp `game/common`,
 Sonic 1/other engine game directories are legacy pending separate migrations;
 never use them as precedent for new game-specific engine code.
 
-There are FOUR repos in play:
+Established cartridge layouts are shown below. Sonic CD uses a separate
+`external/segagenesisrecomp` engine pin and `external/z80-frontend` build-tool
+pin; see [the CD setup guide](docs/SEGA_CD_SETUP.md).
 
 ```
 F:\Projects\segagenesisrecomp-release\

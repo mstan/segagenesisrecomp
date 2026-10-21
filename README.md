@@ -2,29 +2,133 @@
   <img src="logo.png" alt="Genesis Recomp" width="640" />
 </p>
 
-# Genesis 68K Static Recompiler
+# Genesis Recomp
 
-A static-recompilation framework that translates Sega Genesis (Mega Drive)
-68000 ROM code into native C and runs it against a clean-room Genesis runtime.
-Game repositories such as
-[SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp)
-provide the ROM-specific build, assets, and release packaging.
+**A beta static-recompilation framework for the Sega Genesis / Mega Drive
+and Sega CD / Mega-CD.** The cartridge pipeline translates 68000 code into
+native C and supplies a shared VDP, audio, bus, scheduler and Z80 runtime,
+with an interpreter fallback for unresolved cartridge targets. Each game
+owns its input identity and integration.
 
-The fixed-choice scalar/batched scanline renderer experiment and qualification
-scope are documented in [engine plane batching](docs/ENGINE_VDP_BATCHING.md).
+Sega CD support currently lives on **`feature/segacd-backend`**. Its first
+released consumer, **Sonic CD 0.0.1**, runs original Main/Sub 68000 and Z80
+programs as native code, with terminal misses and no interpreter fallback.
+
+The Sonic trilogy, Sonic CD and Rocket Knight Adventures show what that enables:
+**adaptive ultrawide stages, modern controls, mods, multiplayer, save states
+and rewind**, with different feature limits for each game.
+
+**[Choose a game](#games)** · **[Start a cartridge integration](docs/GETTING_STARTED.md)** · **[Set up a Sega CD recomp](docs/SEGA_CD_SETUP.md)**
+— command-line tools and source code, with no AI required.
+
+## Games
+
+These public projects use the shared framework. Beta describes the framework;
+the widescreen renderers and imported campaigns remain experimental. This
+snapshot was checked against public source/release notes on **21 October
+2026**, with development-only work labeled separately.
+
+| Game | Project / downloads | Features and scope |
+|---|---|---|
+| *Sonic the Hedgehog* | [SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp) · [downloads](https://github.com/mstan/SonicTheHedgehogRecomp/releases) | Optional adaptive/16:9/21:9/32:9 stage renderer, expanded objects/HUD, save states and rewind. |
+| *Sonic the Hedgehog 2* | [SonicTheHedgehog2Recomp](https://github.com/mstan/SonicTheHedgehog2Recomp) · [downloads](https://github.com/mstan/SonicTheHedgehog2Recomp/releases) | Adaptive ultrawide, character/party mods, rollback netplay and experimental independent online cameras. Public builds currently expose four seats; the six-player development preview is shown below. |
+| *Sonic CD* | [SonicCDRecomp](https://github.com/mstan/SonicCDRecomp) · [0.0.1 downloads](https://github.com/mstan/SonicCDRecomp/releases/tag/v0.0.1) | Original US CD programs, strict native Main/Sub 68000 and Z80, recomp-ui, adaptive stage widescreen, FM/PSG/PCM/CD audio and backup-RAM saves. Windows/Linux x64; users supply the qualified disc and BIOS. |
+| *Sonic 3*, *Sonic & Knuckles*, *Sonic 3 & Knuckles* | [Sonic3AndKnucklesRecomp](https://github.com/mstan/Sonic3AndKnucklesRecomp) · [downloads](https://github.com/mstan/Sonic3AndKnucklesRecomp/releases) | Three cartridge targets, custom adaptive/ultrawide renderer; the combined target adds optional Sonic 1/2/Megamix campaigns and Mighty/Shadow. |
+| *Rocket Knight Adventures* | [RocketKnightAdventuresRecomp](https://github.com/mstan/RocketKnightAdventuresRecomp) · [downloads](https://github.com/mstan/RocketKnightAdventuresRecomp/releases) | Adaptive scenery/actors across seven stages, remappable input, visual save browser and rewind. |
+
+### Sonic 1–3 in widescreen
+
+The game-owned renderers expand stage scenery, object visibility and HUD
+placement. **Adaptive** follows the live window; fixed 16:9, 21:9 and 32:9
+views are also available. They do not establish whole-game correctness at
+every width. Enable Widescreen in each game's **Mods** page.
+
+<table>
+  <tr><td><img src="docs/assets/games/sonic-1-ultrawide.png" alt="Sonic 1 Green Hill in 32:9, with expanded terrain and visible enemies" width="100%"><br><sub><b>Sonic the Hedgehog</b> — Green Hill at 32:9.</sub></td></tr>
+  <tr><td><img src="docs/assets/games/sonic-3-ultrawide.png" alt="Sonic 3 and Knuckles Angel Island in 32:9, with additional stage scenery" width="100%"><br><sub><b>Sonic 3 &amp; Knuckles</b> — Angel Island at 32:9.</sub></td></tr>
+</table>
+
+### Sonic 2: a party of six — development preview
+
+The current local development build extends party play to **six actors**:
+Sonic, Tails, Knuckles, Amy, Mighty and Shadow. Optional imported characters
+need the exact source ROMs or converted packs described by the game; no donor
+assets are distributed. This screenshot is from that development build.
+The public source and released build still expose **four seats**, so use
+the game's release notes to check when the six-player work becomes available.
+
+<p align="center">
+  <img src="docs/assets/games/sonic-2-six-player.png" alt="Sonic 2 development party with Sonic, Tails, Knuckles, Amy, Mighty and Shadow enabled in Emerald Hill" width="800">
+  <br><sub><b>Six-character Sonic 2 party.</b> Development preview; not the four-seat public release.</sub>
+</p>
+
+### Sonic 3: Sonic 1 + 2 + 3, then Megamix
+
+The combined S3K target offers independent, default-off **Sonic 1 stages**,
+**Sonic 2 stages**, **Sonic Megamix stages**, **Mighty** and **Shadow** mods.
+Enabled Sonic 1/2 campaigns precede native S3K, with Megamix last. Characters
+can be enabled separately from their stage pack. Supply and convert the
+required source ROMs locally; Megamix content uses the supported v3 donor.
+
+Progress retains native-compatible SRAM and an addon journal. Imported
+campaign state currently excludes quickstates, rewind and netplay. See
+[stage-pack setup and credits](https://github.com/mstan/Sonic3AndKnucklesRecomp/blob/main/docs/STAGE_PACKS.md)
+and [Megamix gameplay and validation](https://github.com/mstan/Sonic3AndKnucklesRecomp/blob/main/docs/MEGAMIX_STAGE_PACK.md)
+for what has actually been exercised.
+
+### Sonic CD: original programs on the Sega CD backend
+
+<p align="center">
+  <img src="docs/assets/games/sonic-cd-wide.png" alt="Sonic CD Palmtree Panic with original HUD and expanded stage scenery" width="800">
+  <br><sub><b>Sonic CD</b> — Palmtree Panic with adaptive stage widescreen.</sub>
+</p>
+
+[Sonic CD 0.0.1](https://github.com/mstan/SonicCDRecomp/releases/tag/v0.0.1)
+ships a Windows ZIP and Linux AppImage. Supply your own **US Sonic CD disc**
+and **US Model 1 v1.10 Sega CD BIOS**; the launcher remembers their paths.
+The game opens windowed with normal audio. F1/Esc opens recomp-ui; supported
+normal stages expand with the window, while special stages keep their
+original centered projection. Saves use original backup RAM. This release
+does not include the cartridge runner's save-state/rewind UI or netplay.
+
+The [validation ledger](https://github.com/mstan/SonicCDRecomp/blob/main/docs/VALIDATION.md)
+records 70 stage/time variants, seven boss completions, eight special stages,
+ending/credits, save boundaries and independent visual comparisons, with
+explicit coverage limits. See [CD setup](docs/SEGA_CD_SETUP.md) for supported
+inputs, a source build and the reusable backend's integration boundaries.
+
+### Rocket Knight Adventures: Sparkster across a wider world
+
+<p align="center">
+  <img src="docs/assets/games/rocket-knight-wide.png" alt="Sparkster fights the tank boss on a suspension bridge in adaptive widescreen" width="800">
+  <br><sub><b>Rocket Knight Adventures</b> — adaptive bridge battle.</sub>
+</p>
+
+The Widescreen mod offers **Adaptive (fit window)** and fixed views, with a
+choice between original and viewport-based enemy activation. The original
+view remains available when the mod is off. Stage and boss coverage is
+documented by the game project.
+
+Screenshot provenance and version boundaries are recorded in
+[the showcase sources](docs/SHOWCASE_SOURCES.md).
 
 ## Status
 
 | Feature | Status | Notes |
 |---------|--------|-------|
 | 68K frontend | Active | Shared decoder, validator, discovery, and emitter from `m68k-recomp-core` |
-| Runtime fallback | Active | Clean-room Tier-3 interpreter handles supported static-dispatch misses |
+| Runtime fallback | Cartridge runner | Clean-room Tier-3 interpreter handles supported cartridge static-dispatch misses; Sonic CD's native runner stops on misses |
 | Runtime hardware | Active | Own VDP, bus, scheduler, YM2612, SN76489, and Z80 integration |
 | Function discovery | Evidence-driven | Static analysis plus disassembly and runtime evidence declared by `game.toml` |
 | Validation | Local | Synthetic harnesses, boot/regression scripts, and recomp-vs-interpreter cosim |
-| Sound Z80 static recompilation | Experimental | Optional backend; see [docs/Z80_STATIC_RECOMP.md](docs/Z80_STATIC_RECOMP.md) |
+| Cartridge Z80 static recompilation | Experimental | Optional cartridge backend; see [docs/Z80_STATIC_RECOMP.md](docs/Z80_STATIC_RECOMP.md) |
 | Widescreen injection | Per game | Current status and remaining conversions are in [WIDESCREEN_ISSUES.md](WIDESCREEN_ISSUES.md) |
 | Local rewind | Active | rbengine snapshots of the complete machine, with a paused filmstrip and branch trimming |
+| Sega CD hardware/runtime | Feature branch | Reusable Main/Sub buses, Word RAM, CDD/CDC/DMA, stamp graphics, PCM/CDDA and backup RAM on `feature/segacd-backend` |
+| Sega CD native execution | Released consumer | Sonic CD 0.0.1 executes Main/Sub 68000 and Z80 natively; see [CD setup and scope](docs/SEGA_CD_SETUP.md) |
+
+The save-state and rewind controls below apply to the cartridge runner.
+Sonic CD 0.0.1 uses original backup-RAM saves and its own recomp-ui controls.
 
 The in-game save-state browser opens with **F7** or **Back/View + RB**; use
 arrows or the D-pad to select a slot, **Enter/A** to load, **S/X** to save,
@@ -64,6 +168,8 @@ directory; legacy engine-relative paths remain supported for other consumers.
 
 ## How It Works
 
+### Cartridge games
+
 The Genesis CLI loads a ROM and `game.toml`, then invokes the Genesis profile in
 `m68k-recomp-core`. Discovered 68K routines become C functions operating on the
 shared `M68KState` and runtime bus. Generated dispatch code falls back to the
@@ -77,6 +183,17 @@ Key recompiler features:
   MC68000 timing model in the shared Genesis profile, so generation has no
   emulator dependency.
 
+### Sega CD games
+
+The CD pipeline generates native catalogs for the original BIOS, Main/Sub
+program loads and Z80 code variants. Instruction-byte guards distinguish
+overlays and modified code at the same address. The native machine runs
+those programs against coordinated CPU/device clocks, Word RAM ownership,
+raw-sector/CD audio delivery and backup RAM. Missing executed variants stop
+the native runner; separately named diagnostic probes support offline
+discovery. The consuming game owns its supported inputs, program recipe,
+presentation and packaging. See [CD setup](docs/SEGA_CD_SETUP.md).
+
 ## Cloning
 
 ```bash
@@ -88,15 +205,24 @@ disassembly submodules. See [DISASSEMBLIES.md](docs/DISASSEMBLIES.md) for
 ROM-verified annotation regeneration and headless Ghidra imports.
 There is no emulator-core or AGPL dependency in the repository.
 
+For Sega CD, use the [CD setup guide](docs/SEGA_CD_SETUP.md). It selects the
+backend branch and the two required CPU submodules, or the released game's
+pinned engine and Z80 generation frontend. The Genesis CLI and `game.toml`
+workflow above describe cartridge integration.
+
 ## Platform Support
 
-The runner builds and runs natively on **Windows (MSVC)**, **macOS (Apple
+The cartridge runner builds and runs natively on **Windows (MSVC)**, **macOS (Apple
 Silicon & Intel)**, and **Linux**. The cooperative game-fiber scheduler is
 backed by Win32 Fibers on Windows and by `ucontext` on macOS/Linux via
 `runner/fiber_compat.{h,c}`; SDL2 handles windowing, rendering, audio, and
 `SDL_GameController` gamepads on all platforms. See the
 [SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp)
 README for per-platform build steps.
+
+Sonic CD 0.0.1 is qualified on **Windows x64** and **Linux x86_64**. Its Linux
+AppImage requires glibc 2.39+ (Ubuntu 24.04 baseline) and Python 3. CD macOS
+builds and other BIOS/disc revisions are not qualified by that release.
 
 ## Building the Recompiler
 
@@ -187,23 +313,18 @@ add `runner/audio/audio_shadow.c`, `runner/audio/fm_shadow.cpp`, and
 [`docs/SHADOW_ENHANCEMENTS.md`](docs/SHADOW_ENHANCEMENTS.md) for the full design,
 verifier algorithm, and integration points.
 
-### Widescreen (16:9, opt-in)
+### Widescreen integration
 
-`GENESIS_WIDESCREEN=1` renders a 16:9 viewport (default 448px wide, configurable
-via `GENESIS_WIDESCREEN_COLUMNS=<cells/side>`) in place of the authentic 4:3
-320px. The clean-room VDP draws extra **centered** columns; the recompiled 68K
-reads a per-frame `Widescreen_extra` RAM word (written by the runner) to widen
-its own tile-load, object-cull, ring-window, and sprite bounds. The word is `0`
-when the toggle is off, so **the authentic 4:3 output stays byte-identical**. It
-is per-game and gameplay-gated — authentic 4:3 on menus, title cards, and
-2-player split-screen. Supported in Sonic 1, Sonic 2, and the Sonic 3 family
-(S3-alone and S&K-alone; the combined S3&K build is bring-up). See the
-`[widescreen]` block in each `game.toml`.
+Current public games expose game-owned widescreen mods with adaptive and
+fixed aspect choices. The old `GENESIS_WIDESCREEN` column-expansion path is
+a development interface, not a description of every current renderer.
+Each game owns its streaming, visibility, camera and HUD policies; menus
+and special screens can use different presentation rules.
 
-Converted games ingest the canonical ROM and apply declarative
-`[[widescreen_site]]` transforms while emitting C. The original ROM is not
-patched. See [WIDESCREEN_ISSUES.md](WIDESCREEN_ISSUES.md) for games that still
-use the older patched-disassembly path.
+See the [game list](#games) and per-title renderer guides for current
+behavior. [WIDESCREEN_ISSUES.md](WIDESCREEN_ISSUES.md) retains the migration
+history and older injection work. The shared plane-batching experiment is
+documented separately in [ENGINE_VDP_BATCHING.md](docs/ENGINE_VDP_BATCHING.md).
 
 #### Disassembly sources
 
