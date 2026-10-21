@@ -87,8 +87,9 @@ Evidence is in `G:/Temp/Codex/segagenesisrecomp/native-timewarp-r11a/run-14`.
 This proves that Past transition, not reverse/Future transitions.
 
 The earlier 26 synthetic tests pass MSVC, including the shared 68000 test.
-All 28 current tests, including the new view and renderer tests, pass Windows
-GCC. The changed view/renderer/machine tests also pass strict MSVC builds.
+The Windows GCC suite, including the new view and renderer tests, passes.
+The seven synthetic owned-program extractor cases also pass. The changed
+view/renderer/machine tests also pass strict MSVC builds.
 A separate integration harness using real ymfm and
 SN76489 implementations verifies three frame sample boundaries, two flushed
 intervals and timestamped PCM/CDDA silence without opening an audio device.
@@ -142,6 +143,15 @@ Act 2. The checks use targeted teleports and actual completion triggers; full
 route playthroughs are not an acceptance requirement. Later zone-boundary
 save/restart behavior still needs qualification. Evidence is in
 `continue-r11a-qualified/save-restart-qualification.json` under the G: QA root.
+
+`tools/segacd/sgcd_owned_extract.py --disc <verified.sgcd> --output-dir <new-directory>`
+extracts the owned ISO's MMD/BIN program files and records source/file hashes
+and disc extents. It validates SGCD geometry/payload identity and bounded
+ISO9660 records before extraction, requires a new explicit output directory,
+and rejects ambiguous or unsafe filenames. All 124 US-disc program files match
+the earlier private inventory by size and SHA-256. This is the public input
+inventory step; catalog generation and a clean standalone build remain separate
+unfinished delivery steps. ISO extents do not prove BIOS load addresses.
 
 The opt-in CMake `SEGACD_BUILD_NATIVE_RUNNER` target `SonicCD` accepts owned
 `--bios`, `--disc` and optional `--backup` paths. It requires the qualified US
