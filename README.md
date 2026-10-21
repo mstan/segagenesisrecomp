@@ -2,7 +2,7 @@
   <img src="logo.png" alt="Genesis Recomp" width="640" />
 </p>
 
-# Genesis Recomp — Beta
+# Genesis Recomp
 
 **A beta static-recompilation framework for the Sega Genesis / Mega Drive.**
 It translates 68000 code into native C and supplies a shared VDP, audio,
