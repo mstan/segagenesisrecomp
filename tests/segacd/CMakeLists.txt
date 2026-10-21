@@ -119,6 +119,8 @@ if(Python3_Interpreter_FOUND)
   add_test(NAME segacd_disc_converter COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/disc_image_test.py")
   add_test(NAME segacd_owned_programs COMMAND "${Python3_EXECUTABLE}"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../tools/segacd/test_sgcd_owned_extract.py")
+  add_test(NAME segacd_z80_native_generation COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/z80_native_generate_test.py")
 endif()
 add_library(segacd_pcm_reference_adapter SHARED pcm_reference_adapter.c)
 target_link_libraries(segacd_pcm_reference_adapter PRIVATE segacd_devices)
