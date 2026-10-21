@@ -1,5 +1,32 @@
 # Owned-input Sonic CD build and portable package
 
+Sonic CD 0.0.1 is now [released for Windows and Linux x64](https://github.com/mstan/SonicCDRecomp/releases/tag/v0.0.1).
+For a complete build using the game's pinned dependencies and wrapper, follow
+[Set up a Sega CD recomp](SEGA_CD_SETUP.md#build-sonic-cd-from-owned-inputs)
+or the [game's build guide](https://github.com/mstan/SonicCDRecomp/blob/main/docs/BUILDING.md).
+The lower-level commands below describe the same owned-input catalog pipeline.
+Engine code remains on `feature/segacd-backend`; publishing the game does not
+merge the CD implementation into engine master.
+
+## Check out the backend and frontends
+
+```sh
+git clone --branch feature/segacd-backend https://github.com/mstan/segagenesisrecomp.git
+cd segagenesisrecomp
+git submodule update --init external/m68k-recomp-core external/z80-recomp-core
+```
+
+For the 0.0.1 engine baseline, check out
+`c8bcab94babc217955c8aab195d7de8d4b532331` before initializing the submodules.
+Later documentation commits do not change that runtime baseline. Use a
+separate frontend checkout at the pin below; for example, from your development
+workspace, clone `https://github.com/mstan/smsggrecomp.git` to
+`G:/Tools/smsggrecomp` and check out
+`224d5bb2c150a2c295033d35dec629ef9ee42940`. That directory's `recompiler/`
+build supplies `SmsRecomp`. Select equivalent paths on Linux.
+
+## Supported owned inputs
+
 The supported inputs are the US Model 1 v1.10 BIOS (128 KiB, SHA-256
 `807384678ef259494d943eddb6954dfc7069693d0dde0c424e2028488d88e81a`)
 and the qualified Sonic CD US disc (SGCD payload SHA-256
@@ -9,6 +36,8 @@ The runner rejects other inputs. BIOS and media are supplied externally.
 `tools/segacd/disc_image.py` converts supported raw BIN/CUE images; its
 `inspect-cue` subcommand binds the canonical CUE and every referenced track to
 content hashes. The portable launcher uses that identity for conversion caches.
+Archives must be extracted first; retain the complete mixed-mode track set.
+An ISO-only data image does not supply the disc's audio tracks.
 
 ## Generate from the owned inputs
 

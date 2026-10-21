@@ -10,6 +10,25 @@ it looks and sounds good. This is a working original-program native consumer,
 with recomp-ui and adaptive widescreen. It is separate from the completed S3K
 campaign adaptation.
 
+## Public release follow-up
+
+[SonicCDRecomp 0.0.1](https://github.com/mstan/SonicCDRecomp/releases/tag/v0.0.1)
+is public for Windows and Linux x64, with source, screenshots, setup and
+component notices. The owner accepted windowed gameplay with normal audio
+before release. The Windows ZIP retains the accepted executable hash below;
+the game repository pins engine `c8bcab94` and the same qualified CPU cores.
+Public package hashes and checksums were verified by downloading both assets.
+
+The Linux source build uses the same 333 owned-generated catalogs and passes
+a packaged 2,791-frame R11A controls/widescreen/stereo-audio check with floors
+`0/0` and zero audio faults. Its final RGB capture matches Windows exactly.
+Two actual AppImage launches exit successfully with the `Sonic CD` caption,
+windowed defaults, volume 100 default settings and existing settings/BRAM
+preserved. The full content sweep below was qualified on Windows and reused;
+physical Linux audio/controller devices and other distributions are unverified.
+See the game's [platform validation ledger](https://github.com/mstan/SonicCDRecomp/blob/main/docs/VALIDATION.md)
+and [engine setup guide](SEGA_CD_SETUP.md) for public reproduction instructions.
+
 ## Evidence and remaining work
 
 Evidence root: `G:/Temp/Codex/segagenesisrecomp/sonic-cd-native`. Each accepted
@@ -40,7 +59,7 @@ Accepted Main/Sub 68000 and Z80 execution is native, with Main/Sub floor counter
 | Independent final visuals | PASS WITH PHASE/ASPECT LIMITS | Final frozen binary: `G:/Temp/Codex/segagenesisrecomp/final-owned-input-qa-1/independent-review.json` and `parent-final-visual-audit.json`. Independent PPZ/TTZ/SS1/SS8 retakes plus parent visual/source/write review pass. PPZ/TTZ show actual400px expanded scenery; special stages retain the original256px projection centered with72px black bars, with no special-stage widescreen claim. Early blank/loading/title-card samples were rejected. `ending-visual-parent-review-1` retains the independent cinematic/credit layout comparison. Exact animation phase/pixel parity remains UNVERIFIED. |
 | Controls/audio/recomp-ui/adaptive widescreen | PASS WITH SCOPE | Final owned-input binary: `window-owned-input-final-1/parent-final-presentation-audit.json`. Normal window and exact `Sonic CD` caption with debug port; real movement/jump/pause; F1 UI freezes emulation and blocks held input on close. Stereo capture last-second RMS2410/peak12874, audioFaults0, floors0/0. PID-qualified960x720 and1600x700 clients; final512x224 midstage capture has continuous terrain in both96px margins and visible HUD. Earlier stage-start black margins do not prove expanded scenery. Physical gamepad not newly tested. |
 | Reproducible owned-input source build | PASS | Public recipe generation and full verified resume produce333 catalogs/11290 source/header files from owned BIOS/disc. `G:/Temp/Codex/segagenesisrecomp/sonic-cd-owned-input-build-1/source-build-provenance.json`: clean source1969498, pinned clean cores, configured/built true, zero imported archives. All2019176 required original M68K guards preserved across332 images (one Sub patch split); fresh native Z80 bootstrap has zero historical code-region guard gaps. Legacy-only data/stack variants are explicitly retired by source-role audit. Final CMake confirmation exits0. |
-| Standalone owner package | PASS | `G:/Temp/Codex/segagenesisrecomp/sonic-cd-playtest-4/SonicCD/SonicCD.cmd` contains the final frozen binary, SDL2, required notices and a newly BIOS-formatted empty BRAM seed. Media paths only; no owned disc/BIOS copied. Python verifies15 package files; PowerShell `-ValidateOnly` passes. New profile defaults to a normal window, adaptive widescreen and normal audio; prior packages/saves preserved. Owner feedback on this exact package remains pending. |
+| Standalone owner package | PASS | `G:/Temp/Codex/segagenesisrecomp/sonic-cd-playtest-4/SonicCD/SonicCD.cmd` contains the final frozen binary, SDL2, required notices and a newly BIOS-formatted empty BRAM seed. Media paths only; no owned disc/BIOS copied. Python verifies15 package files; PowerShell `-ValidateOnly` passes. New profile defaults to a normal window, adaptive widescreen and normal audio; prior packages/saves preserved. Subsequent owner acceptance and public release are recorded above. |
 
 All QA uses stage selection, teleports, protection and source-qualified actor
 prerequisite cheats. The guest executes the completion trigger under test.

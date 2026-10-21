@@ -15,10 +15,25 @@ scope are documented in [engine plane batching](docs/ENGINE_VDP_BATCHING.md).
 
 ## Status
 
+Sega CD / Mega-CD support is available on this `feature/segacd-backend`
+branch. [SonicCDRecomp 0.0.1](https://github.com/mstan/SonicCDRecomp/releases/tag/v0.0.1)
+ships original Sonic CD US for Windows and Linux x64, using strict native
+Main/Sub 68000 and Z80 execution, recomp-ui, adaptive stage widescreen,
+FM/PSG/PCM/CDDA and original backup-RAM saves. Users provide the qualified
+disc and US Model 1 v1.10 BIOS. The backend has not been merged into master.
+
+Follow [Set up a Sega CD recomp](docs/SEGA_CD_SETUP.md) for a source build,
+input/dependency pins and integration of another CD title. The
+[backend overview](docs/SEGA_CD_BACKEND.md) and
+[native acceptance ledger](docs/SONIC_CD_NATIVE_ACCEPTANCE.md) describe current
+architecture and qualification. The cartridge status and controls below use
+their existing runtime; Sonic CD has terminal native misses and does not
+include that runner's save-state/rewind UI or netplay.
+
 | Feature | Status | Notes |
 |---------|--------|-------|
 | 68K frontend | Active | Shared decoder, validator, discovery, and emitter from `m68k-recomp-core` |
-| Runtime fallback | Active | Clean-room Tier-3 interpreter handles supported static-dispatch misses |
+| Runtime fallback | Cartridge runner | Clean-room Tier-3 interpreter handles supported cartridge static-dispatch misses; the Sonic CD native runner stops on misses |
 | Runtime hardware | Active | Own VDP, bus, scheduler, YM2612, SN76489, and Z80 integration |
 | Function discovery | Evidence-driven | Static analysis plus disassembly and runtime evidence declared by `game.toml` |
 | Validation | Local | Synthetic harnesses, boot/regression scripts, and recomp-vs-interpreter cosim |

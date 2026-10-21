@@ -59,8 +59,11 @@ The pure sector validator checks MODE1 sync, mode and EDC using
 It does not validate or repair ECC, compare header MSF with an LBA, or claim
 support for Mode 2 data. The controller receives a real integrity result.
 Bad EDC remains an error status; unsupported data modes and media-read failures
-produce explicit diagnostics. Timed raw CD-DA sector events are a host mixing
-seam; resampling, fader/de-emphasis and actual audio output remain pending.
+produce explicit diagnostics. Timed raw CDDA sector events feed the native
+audio bridge, which applies the fader and resamples/mixes CDDA with PCM and
+FM/PSG for host output. Sonic CD 0.0.1 has qualified stereo audio delivery;
+see the [current backend overview](SEGA_CD_BACKEND.md). Pre-emphasis/subchannel
+handling and physical stream-acquisition accuracy remain unqualified.
 
 The standalone synthetic CTest suite includes malformed headers, arithmetic
 bounds, integrity failures, independent known SHA/EDC fixtures, track boundaries,
