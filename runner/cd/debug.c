@@ -86,9 +86,62 @@ static int memory(SegaCDDebugServer*s,const char*space,uint8_t**base,size_t*size
     else return 0;
     return 1;
 }
-static const char*result_name(M68kStepResult r)
+static const char*result_name(M68kStepResult r,int detailed)
 {
-    switch(r){case M68K_STEP_OK:return "ok";case M68K_STEP_MISS:return "miss";case M68K_STEP_BUS_ERROR:return "bus_error";case M68K_STEP_ADDRESS_ERROR:return "address_error";case M68K_STEP_STOPPED:return "stopped";case M68K_STEP_REENTERED:return "reentered";default:return "error";}
+    switch(r){case M68K_STEP_OK:return "ok";case M68K_STEP_MISS:return "miss";case M68K_STEP_BUS_ERROR:return "bus_error";case M68K_STEP_ADDRESS_ERROR:return "address_error";case M68K_STEP_NO_WAIT_HANDLER:return detailed?"no_wait_handler":"error";case M68K_STEP_STOPPED:return "stopped";case M68K_STEP_REENTERED:return "reentered";case M68K_STEP_UNSUPPORTED:return detailed?"unsupported":"error";default:return "error";}
+}
+static void inspect_cpu(SegaCDDebugServer*s,const char*name,const M68kStepContext*c)
+{
+    queue(s,"\"%s\":{\"pc\":\"%06X\",\"sr\":\"%04X\",\"d\":[",name,
+          c->state.regs.PC&0xFFFFFFu,c->state.regs.SR);
+    for(unsigned i=0;i<8;++i)queue(s,"%s\"%08X\"",i?",":"",c->state.regs.D[i]);
+    queue(s,"],\"a\":[");
+    for(unsigned i=0;i<8;++i)queue(s,"%s\"%08X\"",i?",":"",c->state.regs.A[i]);
+    queue(s,"],\"stopped\":%s,\"irq_pins\":%u,\"fault\":%s,\"fault_address\":\"%06X\",\"fault_opcode\":\"%04X\",\"exception_vector\":%u}",
+          c->state.stopped?"true":"false",c->state.irq_pins,
+          c->state.fault?"true":"false",c->state.fault_address&0xFFFFFFu,
+          c->state.fault_opcode,c->state.exception_vector);
+}
+static void inspect_machine(SegaCDDebugServer*s)
+{
+    SegaCDMachine*m=s->machine;SegaCD*cd=&m->devices;SegaCDCdc*c=&cd->cdc;
+    SegaCDDrive*d=&cd->drive;
+    queue(s,"{\"ok\":true,\"frames\":%llu,\"bus_clock\":%llu,\"device_clock\":%llu,\"cpus\":{",
+          (unsigned long long)m->frames,(unsigned long long)m->bus_clock,
+          (unsigned long long)cd->sub_cycles);
+    inspect_cpu(s,"main",&m->coordinator.cpu[SEGACD_MAIN]);queue(s,",");
+    inspect_cpu(s,"sub",&m->coordinator.cpu[SEGACD_SUB]);
+    queue(s,"},\"scheduler\":{\"busy\":[%u,%u],\"waits\":%llu,\"wait_address\":\"%06X\",\"wait_cpu\":%u,\"wait_result\":\"%s\"},\"gate_array\":{\"main_control\":%u,\"prg_bank\":%u,\"write_protect\":%u,\"memory_mode\":%u,\"word_ram_1m\":%s,\"word_ram_ret\":%s,\"word_ram_dmna\":%s,\"word_ram_owner\":\"%s\",\"irq_mask\":%u,\"irq_pending\":%u,\"commands\":[",
+          m->coordinator.busy[0],m->coordinator.busy[1],
+          (unsigned long long)m->coordinator.waits,m->coordinator.wait_address&0xFFFFFFu,
+          m->coordinator.wait_cpu,result_name(m->coordinator.wait_result,1),
+          cd->main_control,cd->prg_bank,cd->write_protect,cd->memory_mode,
+          (cd->memory_mode&4u)?"true":"false",(cd->memory_mode&1u)?"true":"false",
+          (cd->memory_mode&2u)?"true":"false",
+          (cd->memory_mode&4u)?"split_1m":(cd->memory_mode&1u)?"main":"sub",
+          cd->irq_mask,cd->irq_pending);
+    for(unsigned i=0;i<8;++i)queue(s,"%s\"%04X\"",i?",":"",cd->command[i]);
+    queue(s,"],\"statuses\":[");
+    for(unsigned i=0;i<8;++i)queue(s,"%s\"%04X\"",i?",":"",cd->status[i]);
+    queue(s,"],\"flags\":[%u,%u]},\"cdc\":{\"active\":%s,\"end\":%s,\"fifo_count\":%u,\"remaining\":%u,\"dbc\":%u,\"dac\":%u,\"ifstat\":%u,\"ifctrl\":%u,\"decoder_irq_clocks\":%u},",
+          cd->flags[0],cd->flags[1],c->transfer_active?"true":"false",
+          c->transfer_end?"true":"false",c->fifo_count,c->remaining,c->dbc,c->dac,
+          c->ifstat,c->ifctrl,c->decoder_irq_clocks);
+    queue(s,"\"cdd\":{\"status\":%u,\"control\":%u,\"report\":%u,\"command_pending\":%s,\"unsupported_command\":%s,\"motor_started\":%s,\"tray_open\":%s,\"lba\":%d,\"seek_target\":%d,\"seek_deadline\":%llu,\"track_skip_active\":%s,\"cycles\":%llu},",
+          d->status,d->control,d->report,d->command_pending?"true":"false",
+          d->unsupported_command?"true":"false",d->motor_started?"true":"false",
+          d->tray_open?"true":"false",d->lba,d->seek_target,
+          (unsigned long long)d->seek_deadline,d->track_skip_active?"true":"false",
+          (unsigned long long)d->cycles);
+    queue(s,"\"dma\":{\"active\":%s,\"address_valid\":%s,\"address\":\"%05X\",\"words\":%llu,\"waits\":%llu,\"last_result\":%u},\"stamp\":{\"busy\":%s,\"remaining_clocks\":%u,\"operations\":%llu},",
+          cd->dma.active?"true":"false",cd->dma.address_valid?"true":"false",
+          cd->dma.address,(unsigned long long)cd->dma.words,(unsigned long long)cd->dma.waits,
+          (unsigned)cd->dma.last_result,cd->stamp.busy?"true":"false",
+          cd->stamp.remaining_clocks,(unsigned long long)cd->stamp.operations);
+    queue(s,"\"z80\":{\"pc\":\"%04X\",\"halted\":%s,\"iff1\":%s,\"iff2\":%s,\"interrupt_mode\":%u,\"irq_pending\":%u,\"in_step\":%u}}\n",
+          m->z80.state.pc,m->z80.state.halted?"true":"false",
+          m->z80.state.iff1?"true":"false",m->z80.state.iff2?"true":"false",
+          m->z80.state.im,m->z80.irq_pending,m->z80.in_step);
 }
 static void command(SegaCDDebugServer*s,char*line)
 {
@@ -99,7 +152,11 @@ static void command(SegaCDDebugServer*s,char*line)
         SegaCDMachine*m=s->machine;
         queue(s,"{\"ok\":true,\"frames\":%llu,\"main_pc\":%u,\"sub_pc\":%u,\"z80_pc\":%u,\"result\":\"%s\",\"paused\":%s}\n",
             (unsigned long long)m->frames,m->coordinator.cpu[0].state.regs.PC,
-            m->coordinator.cpu[1].state.regs.PC,m->z80.state.pc,result_name(m->result),s->paused?"true":"false");return;
+            m->coordinator.cpu[1].state.regs.PC,m->z80.state.pc,result_name(m->result,0),s->paused?"true":"false");return;
+    }
+    if(!strcmp(op,"inspect")){
+        if(!no_more(&save)){queue(s,"{\"ok\":false,\"error\":\"inspect takes no arguments\"}\n");return;}
+        inspect_machine(s);return;
     }
     if(!strcmp(op,"read")){
         char *space=d_strtok(NULL," \t\r",&save),*a=d_strtok(NULL," \t\r",&save),*n=d_strtok(NULL," \t\r",&save);uint64_t off,count;uint8_t*b;size_t size;

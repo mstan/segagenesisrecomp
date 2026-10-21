@@ -133,6 +133,21 @@ if(NOT CMAKE_CROSSCOMPILING)
   m68k_recomp_core_include_dirs(step_includes genesis)
   m68k_recomp_step_sources(step_runtime_sources)
   m68k_recomp_step_include_dirs(step_runtime_includes)
+  add_executable(segacd_debug_test debug_test.c ../../runner/cd/debug.c)
+  target_include_directories(segacd_debug_test PRIVATE ../../runner/cd ../../runner/video
+    "${engine_root}/external/m68k-recomp-core/runtime"
+    "${engine_root}/external/z80-recomp-core/include")
+  target_compile_features(segacd_debug_test PRIVATE c_std_11)
+  if(MSVC)
+    target_compile_options(segacd_debug_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_debug_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  if(WIN32)
+    target_link_libraries(segacd_debug_test PRIVATE ws2_32)
+  endif()
+  add_test(NAME segacd_debug COMMAND segacd_debug_test)
+  set_tests_properties(segacd_debug PROPERTIES TIMEOUT 10)
   add_executable(segacd_sonic_cd_view_test sonic_cd_view_test.c
     ../../runner/cd/sonic_cd_view.c ../../runner/cd/sonic_cd_culls.c ${step_runtime_sources})
   target_include_directories(segacd_sonic_cd_view_test PRIVATE
@@ -541,7 +556,7 @@ add_custom_target(segacd_test_suite)
 foreach(test_target IN ITEMS segacd_memory_test segacd_pcm_test segacd_fader_test segacd_cdda_test segacd_cdda_bus_test segacd_cdd_test
     segacd_cdc_test segacd_disc_image_test segacd_sector_test segacd_media_test
     segacd_stamp_test segacd_dma_test segacd_step_semantics_test
-    segacd_floor_divide_test segacd_module_test segacd_execution_floor_test
+    segacd_floor_divide_test segacd_module_test segacd_execution_floor_test segacd_debug_test
     segacd_coordinator_test segacd_external_bus_test segacd_z80_native_test segacd_audio_mix_test
     segacd_audio_native_test segacd_backup_test segacd_machine_test segacd_sonic_cd_render_test segacd_sonic_cd_view_test m68k_step_test)
   if(TARGET ${test_target})

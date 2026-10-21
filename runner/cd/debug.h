@@ -11,8 +11,9 @@ typedef int (*SegaCDDebugCapture)(void *user,const char *path,const SegaCDMachin
 /* Bind only to IPv4 loopback. Poll from the emulation thread between frames;
  * this is the sole place requests inspect or modify machine state. Commands
  * are newline-delimited: status; read SPACE OFFSET COUNT; write SPACE OFFSET
- * BYTE; pad PORT MASK; pause 0|1; step [FRAMES]; quit; capture PATH. Numbers
- * accept C base prefixes. read returns hex bytes; write handles one byte. */
+ * BYTE; pad PORT MASK; pause 0|1; step [FRAMES]; quit; capture PATH;
+ * inspect. Numbers accept C base prefixes. read returns hex bytes; write
+ * handles one byte. inspect copies cached machine state without bus accesses. */
 SegaCDDebugServer *segacd_debug_start(SegaCDMachine *,uint16_t port,
                                       SegaCDDebugWriteLog,SegaCDDebugCapture,
                                       void *user,char *error,size_t error_size);
