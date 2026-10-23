@@ -1,5 +1,13 @@
 # Shared-engine VDP batching and Windows qualification
 
+Fresh attribution and follow-up qualification from 2026-10-22 are tracked in
+central `beads-8r88` and [PERFORMANCE.md](PERFORMANCE.md#2026-10-22-accuracy-preserving-investigation).
+The historical result below remains inconclusive; the follow-up uses coherent
+controls, full-runtime audio work and serialized headroom checks. The follow-up
+passed exactness and native-view timing, but its 16:9 timing exceeded the
+declared variance limit. BATCHED is excluded from that investigation's final
+bundle; SCALAR remains the default and owner handoff backend.
+
 Owner: central issue `beads-q9k6`. Baseline: `d9d37b18e53277931e30485d0c13b61c6f8e766d`.
 
 `GENESIS_VDP_PLANE_IMPL=SCALAR|BATCHED` is a fixed build choice defaulting to

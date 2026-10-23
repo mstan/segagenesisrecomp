@@ -5,6 +5,14 @@
 #include <string.h>
 #define CHECK(c) do { if (!(c)) { fprintf(stderr,"line %d: %s\n",__LINE__,#c); exit(1); } } while (0)
 static GVDP v;
+static void check_discarded(void)
+{
+    GVDP full=v, discarded=v;
+    uint8_t row[GVDP_MAX_WIDTH];
+    gvdp_render_scanline(&full,0,row);
+    gvdp_evaluate_scanline(&discarded,0);
+    CHECK(!memcmp(&full,&discarded,sizeof full));
+}
 static void word(unsigned a,unsigned n) { v.vram[a]=n>>8; v.vram[a+1]=n; }
 static void scene(unsigned count,unsigned size)
 {
@@ -22,16 +30,34 @@ int main(void)
 {
     uint8_t row[320];
     scene(21,0); gvdp_set_unlimited_sprites(0);
+    check_discarded();
     gvdp_render_scanline(&v,0,row); CHECK(row[160]==0 && v.sprite_overflow);
     gvdp_set_unlimited_sprites(1); v.sprite_overflow=0;
+    check_discarded();
     gvdp_render_scanline(&v,0,row); CHECK(row[160]==1 && !v.sprite_overflow);
     /* Eleven 32px sprites exhaust the pixel budget before the count limit. */
     scene(11,12); gvdp_set_unlimited_sprites(0);
+    check_discarded();
     gvdp_render_scanline(&v,0,row); CHECK(row[108]==0 && v.sprite_overflow);
     gvdp_set_unlimited_sprites(1); v.sprite_overflow=0;
+    check_discarded();
     gvdp_render_scanline(&v,0,row); CHECK(row[108]==1 && !v.sprite_overflow);
     /* Intentional sprite masks (including native split-screen) still work. */
     word(0xF80E,0); gvdp_render_scanline(&v,0,row); CHECK(row[108]==0);
+    check_discarded();
+    /* Collision depends on freshly written native or private pattern bytes,
+     * including transparent-to-opaque edits made without VDP port hooks. */
+    scene(2,0); word(0xF80E,128); check_discarded();
+    gvdp_evaluate_scanline(&v,0); CHECK(v.sprite_collision);
+    memset(v.vram+32,0,32); v.sprite_collision=0; check_discarded();
+    gvdp_evaluate_scanline(&v,0); CHECK(!v.sprite_collision);
+    uint8_t art[64]={0};
+    v.vram[0xF802]=v.vram[0xF80A]=0x80;
+    CHECK(gvdp_set_sprite_patterns(art,sizeof art,NULL));
+    check_discarded();
+    memset(art+32,0x11,32); check_discarded();
+    gvdp_evaluate_scanline(&v,0); CHECK(v.sprite_collision);
+    CHECK(gvdp_set_sprite_patterns(NULL,0,NULL));
     gvdp_set_unlimited_sprites(0);
     puts("sprite count/pixel limits lifted; intentional masks preserved");
     return 0;

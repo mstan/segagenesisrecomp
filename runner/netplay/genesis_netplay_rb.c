@@ -18,7 +18,7 @@
  * identical on the wire (rb_driver.h).
  *
  * PRESENTATION DURING A REPLAY (NETPLAY.md section 1): the bound runner runs
- * genesis_sim_step with no scanline sink (the VDP still renders for its
+ * genesis_sim_step with no scanline sink (the VDP still evaluates sprites for its
  * status flags, nothing is presented) and drains audio into sim_step's
  * scratch buffers: replayed ticks re-clock the YM/PSG models, which is
  * simulation, but what they produce is never queued to the device, so the

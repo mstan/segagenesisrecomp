@@ -36,10 +36,14 @@ SYMBOLS = [
     "gvdp_active_width",
     "gvdp_set_bgdiag",
     "gvdp_render_scanline",
+    "gvdp_evaluate_scanline",
     "gvdp_begin_scanline",
     "gvdp_unlimited_sprites", "gvdp_set_host_palette", "gvdp_host_palette",
     "gvdp_set_host_sprites", "gvdp_rb_pending_stall", "gvdp_rb_set_pending_stall",
     "gvdp_plane_implementation",
+    "gvdp_set_ext_tiles", "gvdp_set_ext_colors", "gvdp_ext_active",
+    "gvdp_ext_line", "gvdp_ext_color", "gvdp_set_sprite_patterns_bank",
+    "gvdp_set_sprite_patterns", "gvdp_sprite_patterns", "gvdp_sprite_pattern_line",
 ]
 
 

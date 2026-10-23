@@ -766,6 +766,17 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
     }
 }
 
+void gvdp_evaluate_scanline(GVDP *v, int line)
+{
+    if (!gvdp_display_enabled(v)) return;
+    int w = gvdp_screen_width(v);
+    int total = gvdp_active_width(v);
+    /* Same centered authentic origin as gvdp_render_scanline, including an
+     * odd-width canvas. Do not substitute native width: the existing sprite
+     * pixel budget and clipping use the complete output width. */
+    sprite_render_line(v, line, total, (total - w) / 2);
+}
+
 /* Plane geometry: tiles wide/high from reg[16] (00=32,01=64,11=128). */
 static int plane_tiles(unsigned code2)
 {

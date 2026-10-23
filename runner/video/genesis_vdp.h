@@ -265,6 +265,11 @@ int gvdp_output_height(const GVDP *v);          /* raster height x2 in IM2     *
  * for shadow/highlight offsets). `out` must hold at least gvdp_screen_width()
  * entries. Returns the number of pixels written. */
 int gvdp_render_scanline(GVDP *v, int line, uint8_t *out);
+/* Run the guest-visible sprite evaluation for a discarded output row. Uses
+ * exactly the renderer's sprite limits, pattern reads and collision rules;
+ * background fetch/composition and host drawing have no device side effects.
+ * `line` is an output row, including both rows of interlace mode 2. */
+void gvdp_evaluate_scanline(GVDP *v, int line);
 const char *gvdp_plane_implementation(void);
 
 /* ---- Per-frame raster timing ---------------------------------------------- */

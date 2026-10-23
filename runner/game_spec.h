@@ -58,7 +58,9 @@ typedef struct GameSpec {
     /* At the game's real WaitForVint: is its caller a resumable loop? */
     int (*state_at_boundary)(void);
     /* ---- Identity ---- */
-    const char *display_name;        /* "Sonic the Hedgehog" — window title */
+    /* Clean game name for gameplay and launcher captions, e.g. "Sonic the
+     * Hedgehog". Build/backend/debug identity belongs in logs and About. */
+    const char *display_name;
     const char *short_name;          /* "Sonic1" — shows up in info / ping */
     /* Box-art file staged next to the exe under assets/img/, e.g.
      * "boxart-sonic3.tga". NULL => the shared "boxart.tga" (single-boxart

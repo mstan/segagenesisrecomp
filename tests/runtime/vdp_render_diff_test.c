@@ -6,12 +6,15 @@
 #include "../../runner/video/genesis_vdp.h"
 
 int head_gvdp_render_scanline(GVDP *v, int line, uint8_t *out);
+void head_gvdp_reset(GVDP *v);
 void head_gvdp_set_ws_extra(int extra_px);
 void head_gvdp_set_ws_canvas(int canvas_w);
 void head_gvdp_set_ws_bar_black(int black);
 void head_gvdp_set_bgdiag(int on);
 
 int cand_gvdp_render_scanline(GVDP *v, int line, uint8_t *out);
+void cand_gvdp_reset(GVDP *v);
+void cand_gvdp_evaluate_scanline(GVDP *v, int line);
 void cand_gvdp_set_ws_extra(int extra_px);
 void cand_gvdp_set_ws_canvas(int canvas_w);
 void cand_gvdp_set_ws_bar_black(int black);
@@ -140,6 +143,20 @@ static int compare_case(const char *label, const GVDP *src, int line,
                 a.sprite_collision, b.sprite_collision);
         return 1;
     }
+    /* A discarded replay row must have exactly the full renderer's device
+     * effects. Use direct state images, then repeat the view: neither writes
+     * bypassing VDP ports nor reset/restore may require cache invalidation. */
+    GVDP discarded = *src;
+    cand_gvdp_evaluate_scanline(&discarded, line);
+    if (memcmp(&a, &discarded, sizeof(GVDP)) != 0) {
+        fprintf(stderr, "%s discarded-row device mismatch line=%d\n", label, line);
+        return 1;
+    }
+    cand_gvdp_evaluate_scanline(&discarded, line);
+    if (memcmp(&a, &discarded, sizeof(GVDP)) != 0) {
+        fprintf(stderr, "%s repeated discarded-row mismatch line=%d\n", label, line);
+        return 1;
+    }
     return 0;
 }
 
@@ -250,6 +267,29 @@ static int run_import_sequence(void)
     return failures;
 }
 
+static int run_reset_restore(void)
+{
+    GVDP saved, a, b;
+    int failures = 0;
+    fill_random(&saved, 1, 1, 1, 1, 3, 1, 0x33);
+    install_directed_sprite(&saved, 1, 1, 1);
+    a = b = saved;
+    head_gvdp_reset(&a);
+    cand_gvdp_reset(&b);
+    if (memcmp(&a, &b, sizeof a)) {
+        fprintf(stderr, "reset state differs\n");
+        failures++;
+    }
+    failures += compare_case("after-reset", &b, 0, 0, 0, 0, 0);
+    b = saved; /* Current-build import can replace every byte directly. */
+    failures += compare_case("after-reset-restore", &b, 16, 64, 448, 0, 0);
+    b.cram[0] ^= 0xEEE;
+    b.vsram[0] ^= 31;
+    b.reg[0x0B] = 0;
+    failures += compare_case("after-live-palette-scroll-write", &b, 17, 0, 0, 0, 0);
+    return failures;
+}
+
 int main(void)
 {
     int failures = 0;
@@ -257,10 +297,11 @@ int main(void)
     failures += run_random();
     failures += run_odd_canvas_cases();
     failures += run_import_sequence();
+    failures += run_reset_restore();
     if (failures) {
         fprintf(stderr, "vdp_render_diff_test failed: %d mismatches\n", failures);
         return 1;
     }
-    printf("vdp_render_diff_test passed: directed, 4000 random, odd-canvas, and import-sequence cases matched\n");
+    printf("vdp_render_diff_test passed: directed, 4000 random, odd-canvas, import/reset/restore and live-write cases matched\n");
     return 0;
 }

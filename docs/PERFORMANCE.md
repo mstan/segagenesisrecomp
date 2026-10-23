@@ -9,11 +9,19 @@ measurement.
 
 - Use Release builds from the same compiler and source revision.
 - Compile at BelowNormal priority with one build job on this machine.
-- Use `--benchmark N ROM` for finite uncapped runs. Benchmark mode disables
-  pacing, VSync presentation, audio-device delivery, autosave, and the launcher
-  while retaining guest CPU, VDP, Z80, and sound-chip execution.
+- Use `tools/paired_benchmark.py --workload runtime` for gameplay CPU-work
+  comparisons. It selects `--measure-runtime N --runtime-uncapped`, retaining
+  synthesis, mixing, device pushes, presentation and rewind while removing
+  pacing. Mute unattended runs with a dummy output device. Use a paced run
+  separately to check delivery, since uncapped output can overflow a real-time
+  audio queue. `--benchmark N ROM` remains useful for core attribution, but
+  disables audio-device delivery, presentation and rewind; it cannot establish
+  normal gameplay throughput by itself.
 - Warm both binaries, then use order-balanced A/B pairs over a workload long
   enough to reach attract/gameplay. Report paired deltas and raw results.
+- Run an identical-binary A/A control first. Stop timing when it fails the
+  declared noise gate; retain the failed control. A new quiet interval or a
+  justified protocol change must be recorded before another attempt.
 - Run both sides of a pair on the same fixed logical CPU. Ordinary work on
   other cores is acceptable; reject the measurement when paired deltas spread
   by more than 3 percentage points (or when broader thermal/memory pressure
@@ -768,3 +776,279 @@ Stop a line after two well-formed neutral/negative experiments, when profiling
 shows the bucket cannot repay the complexity, or when exactness would be
 weakened. Keep the faithful implementation and record rejected experiments so
 the same attractive-looking change is not repeated later.
+
+## 2026-10-22 accuracy-preserving investigation
+
+Work is tracked centrally in **beads-8r88**, with rejected-load correctness in
+**beads-kbp9**. The task burndown and approval state live in Beads. This section
+records engineering evidence, not an integration approval. Nothing from this
+investigation has been committed or merged.
+
+The source boundary is the nested shared-engine repository, not its parent
+collection directory. The coherent starting engine is `64c1ffbd11`; Sonic 2
+is `0df1890409`, and Rocket Knight Adventures is `3e07af8`. All work uses the
+isolated `codex/accuracy-perf-20261022` worktree on G:. The canonical engine
+and Sonic 2 worktrees remain clean. The owner's existing RKA clean-display-name
+edit is preserved and copied into the qualification worktree.
+
+Sonic 2's gameplay route is the primary fixture because it has strong state,
+audio, strict-stack, pixel and rollback checks. RKA follows with its Konami
+engine, opening cinematic, stage transition, native SAT traversal, and custom
+scroll/actor renderer. Both routes use ordinary inputs and reach gameplay;
+neither writes success flags. Native and 16:9 views are checked separately.
+This is representative regression coverage, not a whole-game hardware audit.
+
+### Attribution and candidate selection
+
+Owned-child main-thread RIP samples use the exact MSVC linker map, with a 2 ms
+attempted interval. Sampling suspends that thread briefly and perturbs timing;
+these runs are attribution only. Inlined work belongs to its containing symbol,
+and audio callback threads are excluded. Do not equate sample shares with an
+exact tile-decoder or guest-instruction breakdown.
+
+The dense Sonic 2 replay sample (`--benchmark 12000`, probe `16:8`) collected
+3,207 samples without sampler errors: `digest_bytes` 40.35%,
+`gvdp_render_scanline` 31.40%, and sprite traversal 1.62%. It completed 749 probe
+passes and 5,992 replay ticks with no divergence/asymmetry or dispatch misses.
+Sonic 2's snapshot was roughly 1.75 MB: the game section alone was 1,590,965
+bytes, versus 1,492 EXEC bytes, 90,600 machine bytes and 65,536 RAM bytes.
+Hashing the large game image, rather than copying the small EXEC image, explains
+the low ceiling of the rejected digest experiment.
+
+A separate full-runtime sample without replay collected 5,136 main-thread
+samples: the VDP renderer body contributed 44.10%, sprites 3.29%, and 22.70%
+fell outside the executable. An expanded 5,051-sample run resolved the latter
+by DLL: SDL 13.86%, VCRUNTIME 4.34%, ntdll 3.21%, MSVCRT 1.64% and UCRT 0.20%
+of all samples. Nearest-export estimates put 3.68% in memmove and 2.12% in
+memcmp; these are estimates, not private DLL symbols or call-stack attribution.
+Generated 68000 code and dispatch, Z80 stepping, scanline synchronization,
+YM2612 operators/channels, PSG generation, mixing/resampling, device pushes,
+rewind snapshots and runtime bookkeeping remain active. No audio-disabled
+result is used for gameplay claims.
+
+Map-object attribution gives the following workload-specific shares. The dense
+sample uses the core benchmark for localization; the normal sample uses the
+complete runtime. The different feature scopes are not a throughput comparison.
+
+| Containing-source bucket | Normal runtime | Dense core replay |
+| --- | ---: | ---: |
+| VDP decode, sprite traversal and composition | 46.47% | 33.12% |
+| Generated 68000 bodies, dispatch and interpreter | 4.49% | 3.68% |
+| Z80 execution and dispatch | 3.19% | 2.62% |
+| Scanline scheduling and fiber coordination | 2.14% | 1.28% |
+| Mixed 68000 glue, memory and synchronization | 1.54% | 1.50% |
+| Bus, memory and chip coordination | 1.15% | 1.34% |
+| YM2612, PSG, emulated audio and mixing | 12.20% | 9.23% |
+| Host audio delivery | 3.17% | disabled by core scope |
+| Snapshot, digest, rewind and probe bookkeeping | 0.65% | 42.31% |
+| Main loop and scanline host output | 1.11% | 0.59% |
+| External DLLs | 23.24% | 3.49% |
+| Other game/library/unresolved | 0.65% | 0.84% |
+
+YMFM alone is 9.86%, dispatch 2.51%, the scanline scheduler 1.96%, PSG 1.76%
+and rewind capture 0.61% in the normal sample. `profile-attribution.json`
+enumerates the individual objects. Inlined work is charged to its containing
+symbol/object; these are not independent per-instruction counters.
+
+The shared scalar plane path already keeps separate A/B/window name-entry
+caches within a draw. The optional batched path fetches spans bounded by tile,
+window and two-cell-scroll changes. Sprite evaluation traverses the SAT and
+reads pattern opacity to set collision/overflow. Native VDP state is live per
+scanline; title renderers also retain art/scroll/actor views, with Sonic 2
+palettes kept live for HBlank changes. RKA surveys patterns for its own custom
+view. Rewind allocates and submits exact execution snapshots to rbengine.
+Those contracts were inspected rather than replaced with SNES-style caches.
+
+The retained generic candidate removes repeated plane fetching and composition
+when a replay requests no scanline sink. `gvdp_evaluate_scanline` calls the
+existing sprite evaluator with the identical complete canvas width, centered
+origin, sprite limits, masks and pattern reads. It evaluates both IM2 output
+rows. All CPU/Z80 scheduling, FIFO/DMA/ports, status/interrupt timing and chip
+draining remain on the existing path. Visible output still uses the original
+renderer. No persistent cache, VRAM version tag, game specialization, new ISA
+requirement or negotiated host profile is introduced.
+
+The independent streaming-section-digest experiment retained exact hash bytes
+while avoiding the full serialized staging copy. Its paired result was neutral
+and it was rejected. `runner/rb_state.c` is restored to the reference; the
+experiment survives only as a scratch patch. Further tile-row/palette/SAT
+deduplication was not implemented: its invalidation and comparison cost needs
+fresh evidence, especially with direct native/private-pattern writes.
+
+The existing optional BATCHED plane implementation was also tested as an
+independent candidate, prompted by fresh normal-runtime VDP dominance. Its
+previous Sonic 1 timing in `ENGINE_VDP_BATCHING.md` failed a 40-point noise
+spread under foreign compiler load, so it did not establish a speed result.
+The new Sonic 2 candidate uses the coherent reference plus only that fixed
+build selection. It is excluded from the final bundle: the native view passed
+its timing control, but the 16:9 candidate pair exceeded the declared variance
+limit. The harness now
+requires an explicit expected candidate backend for implementation comparisons,
+retaining fixed per-side identity, all state/audio fingerprints and emitted-work
+guards; explicit matching view selection is available as `--widescreen`.
+
+### Controlled measurements
+
+Local identical-binary measurements failed under other windows' benchmarks
+(paired deltas +0.55% and -13.68%). They are disqualified. With owner permission,
+SERVER was accessed through `F:\NAS`, checked for other work and disk pressure,
+and reserved using `G:\Temp\Codex\.benchmark.lock`. No service was stopped.
+Its host is an i5-4670 with four logical CPUs; timing children use CPU 2 and
+normal priority. Builds use one job at BelowNormal. All generated data,
+temporary files, profiles and saves stay on G:.
+
+The first NAS turn used MSVC Release, SCALAR, 6,000 full-runtime frames,
+600 warmup frames, two order-balanced A/B pairs, normal audio synthesis/mixing,
+SDL dummy video/audio output and the software renderer. The full host pipeline
+executes, but this is not a physical GPU or speaker performance measurement.
+Dense replay uses probe `16:8`. The metric is total process
+cycles per frame; the table's throughput delta is `baseline/candidate - 1`.
+State/audio fingerprints and emitted-work counts match in every pair.
+
+| Experiment | Pair deltas | Median cycle-throughput delta | Pair spread |
+| --- | --- | --- | --- |
+| Sonic 2 identical binary | +0.206%, +0.417% | +0.311% | 0.211 pp |
+| Sonic 2 discarded composition | +10.868%, +11.982% | +11.425% | 1.114 pp |
+| Sonic 2 streaming digest, rejected | -0.339%, +1.758% | +0.710% | 2.097 pp |
+| RKA identical binary | -0.083%, +0.393% | +0.155% | 0.476 pp |
+| RKA discarded composition | +19.808%, +18.440% | +19.124% | 1.368 pp |
+
+The retained result corresponds to about 10.25% fewer process cycles for Sonic
+2 and 16.05% for RKA **in this dense rollback stress workload**. It does not
+claim an ordinary single-player FPS improvement. Uncapped queue overflow counts
+are retained in the raw logs; they are not evidence of paced audible delivery.
+
+After adding the cold-load correctness guard below, a fresh final-bundle A/A
+control failed: -0.498% and -3.781%, median -2.139%, spread 3.283 pp against the
+3 pp gate. Timing stopped before A/B; that failed turn cannot qualify a final
+speed claim. The historical controlled results above identify the candidate;
+final-bundle measurement remained pending until the headroom-2 control below.
+One follow-up attempt changed warmup to the complete 6,000-frame route and
+required a measured 60-second idle interval before any benchmark. It aborted
+during the first interval (13.60% aggregate host CPU against the declared 10%
+ceiling), before running another control. There is no retry-until-pass loop;
+the owner's other benchmark windows retain priority.
+
+The subsequent headroom-1 control used complete-route warmups and allowed
+ordinary work on other cores, with measured memory/disk/core headroom. Its
++0.455%/-2.021% A/A deltas passed the existing 3 pp project limit but failed
+an additional 1 pp diagnostic screen; no A/B ran. Before seeing any final A/B
+data, headroom-2 returned to the established 3 pp resolution, retaining an
+absolute A/A median limit of 1%. It used physical CPU 3, measured 60 seconds of
+headroom, 6,000-frame warmups and measurements, ABBA order, and separate
+matching controls with and without the dense replay probe. No service was
+stopped. All previous failed controls remain in the evidence.
+
+The exact final SCALAR bundle (same cold-load guard in both sides) completed:
+
+| Title / workload | A/A pair deltas | Candidate pair deltas | Candidate median cycle-throughput | Candidate spread |
+| --- | --- | --- | ---: | ---: |
+| Sonic 2 dense replay | +1.385%, -0.428% | +7.372%, +9.303% | +8.337% | 1.931 pp |
+| Sonic 2 ordinary runtime | +1.116%, -1.479% | +0.998%, -0.989% | +0.005% | 1.987 pp |
+| RKA dense replay | +0.161%, -0.935% | +18.919%, +18.444% | +18.681% | 0.475 pp |
+| RKA ordinary runtime | +1.433%, +0.273% | +0.513%, -1.226% | -0.356% | 1.739 pp |
+
+The paired median reductions in **total process cycles** are **7.69% Sonic 2**
+and **15.74% RKA** in dense replay. Ordinary gameplay is neutral within its
+matching A/A noise range. These final-bundle measurements supersede the earlier
+candidate-only point estimates for handoff claims; they do not promise those
+gains for ordinary single-player play. `qualified-timing.json` and the
+`*-headroom2-*.log` files retain the complete results and work fingerprints.
+
+The independent BATCHED experiment matched the coherent reference's complete
+state, audio, pixels and work in both native and 16:9 routes. Its serialized
+third timing turn selected CPU 2 from a measured 60-second headroom interval
+before starting any timing. Native A/A deltas were +1.247%/+0.112%; native A/B
+was +22.777%/+21.798%, median +22.287% cycle-throughput, spread 0.979 pp.
+The 16:9 A/A was -0.904%/-0.344%, but A/B was +10.678%/+6.285%, spread
+4.393 pp against the 3 pp limit. That view's timing is inconclusive, so the
+backend is not promoted or included in the owner bundle. No secondary-title
+or combined-bundle BATCHED qualification is claimed. Earlier turns stopped at
+the declared CPU-headroom gates before timing. `batched-disposition.json` and
+the `sonic2-batched-primary3-*` logs preserve all four timing records.
+
+### Accuracy and lifecycle evidence
+
+The candidate matched the frozen renderer for directed cases, 4,000 random
+states, odd canvases, IM2, shadow/highlight, independent scroll modes, imports,
+reset/restore, live palette/scroll writes and repeated views. Each discarded
+evaluation is compared against full rendering over the complete GVDP state.
+Sprite tests cover count/pixel limits, intentional masks, collisions, direct
+VRAM writes and direct private-pattern transparent-to-opaque edits. Both
+SCALAR and BATCHED compile paths pass under MinGW; MSVC runtime tests also pass.
+No newly added assembly or optional CPU path needs host feature selection.
+
+The 39-test CTest suite passed, including fiber snapshots, audio, rewind,
+sprite/host rendering and native campaign file tests. Both title measurement
+CLIs passed their 13 pre-initialization cases. Individual reference/candidate
+runs matched complete WAV bytes, architectural/audio fingerprints, 100 pixel
+checkpoints, native-save outputs and work counts per 6,000-frame native/wide
+arm. Each arm completed 374 probes and 2,992 replay ticks without divergence,
+asymmetry or dispatch misses. The final coherent bundle, with the load fix in
+both reference and candidate, repeated and passed these checks for both titles
+in both views. Exact final EXE identities are in `artifacts.json` and the
+`*-qualified-diff.json` reports.
+
+Both current builds pass repeated save/load branches, fresh-process continuation
+and invalid-input rejection in native and wide views. Actual F8 rewind was
+exercised through owned SDL windows: Sonic 2's guest counter went
+1101 -> 997 -> 1034; RKA's went 4615 -> 4513 -> 4550, proving restore followed
+by continued execution. Gameplay captions are exactly the clean game names
+with debug ports supplied. Actual launcher captions also match. Build/backend
+identity remains in diagnostics and About.
+
+Actual two-process Sonic 2 direct-LAN rollback, with 20 ms simulated latency,
+4 ms jitter and forced prediction errors, completed 19 changed replays per
+peer, zero desyncs/refusals and 28 matching confirmed-state samples. This is
+same-build/same-host LAN evidence; production lobby, Internet/NAT and cross-host
+qualification are not claimed. Production was not used.
+RKA's existing build does not link the netplay driver; its dense replay probe
+and actual local rewind are qualified, without adding a netplay feature.
+
+Paced 6,000-frame native-code runs with the 16:9 view also match their coherent
+references in guest/audio fingerprints, emitted work and 100 pixel checkpoints.
+Both versions report dummy-device queue drops: Sonic 2 reference/candidate
+487,901/469,145 and RKA 507,629/497,470, each from 22,392,000 source frames.
+Those scheduling-dependent device counters are not an exactness gate or proof
+of drop-free speaker output. Chip execution and captured pre-device PCM are
+qualified; normal speaker delivery remains an explicit owner playtest item.
+
+Qualification exposed an existing RKA fallback-loader bug: it rejected a short
+file after overwriting the live guest. The cold-path fix snapshots current
+execution before the legacy in-place readers and restores it on a failed or
+trailing-data load. Failed loads preserve queued chip writes. The new
+`run_legacy_state_failure.py` compares RAM, full guest/audio fingerprints and
+all 30 frame hashes against a no-load control for seven header/CPU/RAM/machine/
+tail/trailing/bad-magic cases. All pass. This is a current-build safety fix;
+no migration or compatibility with old saves is added. Owner progress files
+are untouched, and private profiles isolate all automated and handoff saves.
+
+The replay helper adds 128 virtual `.text` bytes relative to its corresponding
+control. With the same cold-load guard in both sides, the final Sonic 2 EXE is
+512 bytes larger due to PE section alignment; RKA's EXE size is unchanged.
+This is portable C with the existing visible renderer as the normal output
+path. Other OS/CPU builds have not been claimed from Windows compilation alone.
+
+### Evidence and handoff boundary
+
+Local evidence root:
+`G:\Temp\Codex\segagenesisrecomp\accuracy-perf-20261022`.
+NAS evidence root:
+`G:\Temp\Codex\segagenesisrecomp-accuracy-perf-20261022` on SERVER.
+Important records include `artifacts.json`, `nas-results`, the individual and
+final differential reports, VDP logs, lifecycle/LAN reports, malformed-load
+reports, complete per-arm logs/WAV files, and the two experiment patches.
+`nas-evidence-final-v2.zip` contains bounded log/report/image records, excluding
+ROMs, executables and bulk WAV data; it is also extracted as
+`nas-evidence-final-v2`. The earlier `nas-evidence.zip` remains preserved.
+Original WAVs remain in the NAS task directory. `review-engine.patch` contains
+tracked source changes; `review-new-run_legacy_state_failure.py` carries the
+new ROM-dependent regression script alongside it.
+
+Private owner playtests used `playtest\Sonic2` and `playtest\RKA` with normal
+audio, normal windows and adaptive Fit to screen. Automated checks used dummy
+audio output. The owner accepted both combined playtests ("sonic 2 is good",
+"rka ok") and then explicitly approved integration of the validated replay
+optimization and failed-load protection. No rejected digest or inconclusive
+BATCHED experiment is included. The isolated qualified builds remain available;
+this integration does not publish a game release or alter owner progress files.

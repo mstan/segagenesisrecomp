@@ -1142,18 +1142,37 @@ int runner_load_state_file(const char *path)
     }
 
     extern uint8_t g_ram[0x010000];
+    /* The legacy readers apply sections in place. A later short read must
+     * not leave a rejected file's CPU/RAM/chips installed in the live game.
+     * This snapshot is in-process only; current-build cold saves still use
+     * their existing resume path. Battery progress files are independent. */
+    size_t backup_cap = genesis_rb_bound();
+    uint8_t *backup = (uint8_t *)malloc(backup_cap);
+    size_t backup_len = backup ? genesis_rb_save(backup, backup_cap) : 0;
+    if (!backup_len) {
+        free(backup);
+        fclose(sf);
+        fprintf(stderr, "[LOAD] could not preserve current state: %s\n", resolved);
+        return 0;
+    }
     int ok = 1;
     glue_load_state(sf);
     ok = ok && fread(g_ram, 1, 0x10000, sf) == 0x10000;
     ok = ok && machine_load_state(sf);
     ok = ok && ym2612_load_state(sf);
     ok = ok && psg_load_state(sf);
-    ok = ok && !ferror(sf);
+    ok = ok && fgetc(sf) == EOF && !ferror(sf);
     fclose(sf);
+
+    if (!ok && !genesis_rb_load(backup, backup_len)) {
+        fprintf(stderr, "[LOAD] fatal: could not restore pre-load state\n");
+        abort();
+    }
+    free(backup);
 
     /* Drop any chip writes queued by the frame the save interrupted; the
      * restored chips already contain their effect. */
-    audio_event_queue_reset();
+    if (ok) audio_event_queue_reset();
 
     if (ok) {
         /* Mode-aware resume: re-enter at the restored Game_Mode's per-frame

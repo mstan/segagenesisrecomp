@@ -123,10 +123,17 @@ def run_once(
     priority: str,
     timeout: float,
     env_overrides: dict[str, str],
+    workload: str = "core",
+    log_dir: Path | None = None,
+    widescreen: str | None = None,
 ) -> dict:
-    command = [str(exe), "--benchmark", str(frames), str(rom)]
+    command = ([str(exe), "--measure-runtime", str(frames), "--runtime-uncapped",
+                "--no-launcher", str(rom)] if workload == "runtime" else
+               [str(exe), "--benchmark", str(frames), str(rom)])
     if input_script is not None:
         command += ["--input-script", str(input_script)]
+    if widescreen is not None:
+        command += ["--widescreen", widescreen]
     child_env = os.environ.copy()
     child_env.update(env_overrides)
     proc = subprocess.Popen(
@@ -145,6 +152,10 @@ def run_once(
         proc.kill()
         proc.communicate()
         raise
+
+    if log_dir is not None:
+        log_dir.mkdir(parents=True, exist_ok=True)
+        (log_dir / (label + ".log")).write_text(stdout + "\n" + stderr, encoding="utf-8")
 
     if proc.returncode != 0:
         tail = "\n".join((stdout + "\n" + stderr).splitlines()[-30:])
@@ -196,6 +207,13 @@ def main() -> int:
         help="optional input script applied identically to both binaries",
     )
     parser.add_argument("--frames", type=int, default=6000)
+    parser.add_argument("--log-dir", type=Path, help="retain every arm's complete runner output")
+    parser.add_argument("--workload", choices=("core", "runtime"), default="core",
+                        help="runtime retains presentation, audio mixing/delivery and rewind")
+    parser.add_argument("--candidate-vdp-impl", choices=("SCALAR", "BATCHED"),
+                        help="expected candidate backend for a deliberate VDP implementation comparison")
+    parser.add_argument("--widescreen", choices=("off", "16:9", "21:9", "32:9", "fit"),
+                        help="apply the same explicit view to both sides")
     parser.add_argument("--warmup-frames", type=int, default=600)
     parser.add_argument("--pairs", type=int, default=2)
     parser.add_argument("--cpu", type=int, required=True)
@@ -272,6 +290,9 @@ def main() -> int:
         args.priority,
         args.timeout,
         baseline_env,
+        args.workload,
+        args.log_dir,
+        args.widescreen,
     )
     warm_candidate = run_once(
         "candidate-warmup",
@@ -283,6 +304,9 @@ def main() -> int:
         args.priority,
         args.timeout,
         candidate_env,
+        args.workload,
+        args.log_dir,
+        args.widescreen,
     )
     if warm_baseline["game"] != warm_candidate["game"]:
         raise RuntimeError(
@@ -295,6 +319,12 @@ def main() -> int:
         "warmup",
         args.allow_missing_hashes,
     )
+    expected_vdp = {
+        "baseline": warm_baseline.get("vdp_plane_impl"),
+        "candidate": args.candidate_vdp_impl or warm_baseline.get("vdp_plane_impl"),
+    }
+    if warm_candidate.get("vdp_plane_impl") != expected_vdp["candidate"]:
+        raise RuntimeError("unexpected candidate VDP implementation; declare a backend comparison explicitly")
 
     pair_results = []
     baseline_values = []
@@ -318,7 +348,7 @@ def main() -> int:
         )
         for label, exe, env_overrides in order:
             result = run_once(
-                label,
+                f"pair-{pair_index + 1}-{label}",
                 exe,
                 rom,
                 input_script,
@@ -327,11 +357,16 @@ def main() -> int:
                 args.priority,
                 args.timeout,
                 env_overrides,
+                args.workload,
+                args.log_dir,
+                args.widescreen,
             )
             if result["game"] != warm_baseline["game"]:
                 raise RuntimeError(
                     f"{label} reported unexpected game {result['game']}"
                 )
+            if result.get("vdp_plane_impl") != expected_vdp[label]:
+                raise RuntimeError(f"{label} changed VDP implementation between arms")
             results[label] = result
             print(
                 f"  {label}: {result['fps']:.3f} FPS "
@@ -353,6 +388,21 @@ def main() -> int:
             f"pair {pair_index + 1}",
             args.allow_missing_hashes,
         )
+        for field in ("frames", "requested_frames", "complete", "workload_scope",
+                      "audio_flushes", "mixed_fm_frames",
+                      "mixed_psg_frames", "audio_pushed_frames"):
+            if results["baseline"].get(field) != results["candidate"].get(field):
+                raise RuntimeError(f"pair {pair_index + 1}: unequal work: {field}")
+        if results["baseline"].get("complete") is False:
+            raise RuntimeError("incomplete benchmark workload")
+        if args.workload == "runtime":
+            for label, result in results.items():
+                if (result.get("frames") != args.frames or
+                        result.get("workload_scope") != "uncapped-runtime" or
+                        result.get("audio_flushes") != args.frames or
+                        not all(result.get(field, 0) > 0 for field in
+                                ("mixed_fm_frames", "mixed_psg_frames", "audio_pushed_frames"))):
+                    raise RuntimeError(f"{label}: incomplete full-runtime audio work")
         delta = (
             (base_value / cand_value - 1.0) * 100.0
             if args.metric == "cycles_per_frame"
@@ -369,6 +419,8 @@ def main() -> int:
                 "baseline_metric": base_value,
                 "candidate_metric": cand_value,
                 "delta_pct": delta,
+                "baseline": results["baseline"],
+                "candidate": results["candidate"],
             }
         )
         print(f"  paired delta: {delta:+.3f}%")
@@ -377,6 +429,9 @@ def main() -> int:
     spread = max(deltas) - min(deltas)
     summary = {
         "game": warm_baseline["game"],
+        "workload": args.workload,
+        "vdp_implementations": expected_vdp,
+        "widescreen": args.widescreen,
         "cpu": args.cpu,
         "priority": args.priority,
         "metric": args.metric,
