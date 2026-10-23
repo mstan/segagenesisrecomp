@@ -39,6 +39,10 @@ typedef struct {
 
 typedef struct GameSpec {
     const GameVideo *video;          /* NULL = native VDP presentation only */
+    /* Custom-video mode for a fresh install (no saved [mods.widescreen]
+     * enabled key): NULL or "off" keeps the renderer opt-in; "fit", "16:9",
+     * "21:9" or "32:9" enables it. A saved choice, including off, still wins. */
+    const char *video_default;
     unsigned logical_players;       /* 0 = native two ports; host input/UI capacity */
     void (*load_settings)(const char *settings_path);
     /* Game-owned additive features may compose with the common video provider. */
