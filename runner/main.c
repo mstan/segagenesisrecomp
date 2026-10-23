@@ -479,6 +479,7 @@ static void update_render_logical_size(SDL_Renderer *renderer)
     static SDL_Renderer *s_last_renderer = NULL;
     static int s_last_w = 0;
     static int s_last_h = 0;
+    static int s_last_integer = -1;
     int w;
     int h;
 
@@ -488,17 +489,27 @@ static void update_render_logical_size(SDL_Renderer *renderer)
      * non-gameplay screens carry their pillarbox bars within the canvas. */
     if (ws_armed()) {
         w = ws_canvas_w();
-        h = ws_canvas_h();
+        /* Integer scale keeps the 224 lines unstretched (square pixels). */
+        h = g_app_config.integer_scale ? display_logical_height() : ws_canvas_h();
     } else {
         w = s_screen_width;
         h = display_logical_height();
     }
 
-    if (renderer != s_last_renderer || w != s_last_w || h != s_last_h) {
+    /* The custom renderer sizes its canvas from the window, so it keeps the
+     * fractional fill. */
+    int integer = g_app_config.integer_scale && !s_custom_width;
+    if (renderer != s_last_renderer || w != s_last_w || h != s_last_h || integer != s_last_integer) {
+        /* SDL never scales below 1x, so a window smaller than the frame
+         * would crop it; integer mode keeps the window at least 1x. */
+        SDL_Window *window = SDL_RenderGetWindow(renderer);
+        if (window) SDL_SetWindowMinimumSize(window, integer ? w : 1, integer ? h : 1);
+        SDL_RenderSetIntegerScale(renderer, integer ? SDL_TRUE : SDL_FALSE);
         if (SDL_RenderSetLogicalSize(renderer, w, h) == 0) {
             s_last_renderer = renderer;
             s_last_w = w;
             s_last_h = h;
+            s_last_integer = integer;
         }
     }
 }
@@ -2648,7 +2659,7 @@ int main(int argc, char *argv[])
     /* Scripted launcher tests must stay hidden after the handoff to gameplay. */
     int test_hidden = getenv("LNG_SCRIPT") && getenv("LNG_TEST_HIDDEN");
     Uint32 win_flags = ((benchmark_frames || test_hidden) ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN)
-                     | SDL_WINDOW_RESIZABLE;
+                     | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     /* Launcher tri-state: 1 = borderless (desktop resolution, letterboxed by
      * SDL_RenderSetLogicalSize), 2 = exclusive (real mode change). */
     if (!benchmark_frames) {
