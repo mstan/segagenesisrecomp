@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(GenesisRecomp C)
+project(GenesisRecomp VERSION 0.1.2 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 
@@ -26,6 +26,8 @@ target_include_directories(GenesisRecomp PRIVATE
     src
     ${M68K_RECOMP_CORE_INCLUDE_DIRS}
 )
+target_compile_definitions(GenesisRecomp PRIVATE
+    GENESIS_RECOMP_VERSION="${PROJECT_VERSION}")
 
 # Output directly to build/recompiler/
 set_target_properties(GenesisRecomp PROPERTIES

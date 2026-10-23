@@ -4,9 +4,10 @@ package_release.py — build a compliance-checked release zip.
 
 WHY: release (native) binaries are AGPL-FREE (own backend; see RELEASING.md)
 and ship under PolyForm Noncommercial 1.0.0 + permissive third-party notices.
-The zip MUST NOT contain the ROM (copyright), RAM dumps, saves, build junk,
-an `_oracle` exe, or `GenesisRecomp.exe` (those statically link AGPL code and
-are dev-only).
+The zip MUST NOT contain the ROM (copyright), RAM dumps, saves or build junk.
+Game packages exclude validation targets and the recompiler. A standalone
+recompiler package requires the explicit --kind recompiler selection; the
+current clean-room tool links no emulator core (see LICENSING.md).
 
 This packager builds the zip from an explicit ALLOWLIST (so a ROM can never be
 swept in), verifies the license is PolyForm Noncommercial (and NOT AGPL), warns
@@ -44,6 +45,8 @@ def fail(msg):
 
 def main():
     ap = argparse.ArgumentParser(description="Build a compliance-checked release zip.")
+    ap.add_argument("--kind", choices=("game", "recompiler"), default="game",
+                    help="package contract; recompiler tools ship separately from games")
     ap.add_argument("--exe", required=True, help="the game .exe")
     ap.add_argument("--out", required=True, help="output .zip path")
     ap.add_argument("--license", required=True,
@@ -90,12 +93,15 @@ def main():
     if bad:
         fail("forbidden file in the allowlist (ROM/dump/junk?):\n  " + "\n  ".join(bad))
 
-    # 3) the exe must be a NATIVE release target — never the oracle or the
-    #    recompiler tool (both statically link AGPL code; dev-only)
+    # 3) Keep tools separate from game packages and never ship validation
+    # targets. The current clean-room recompiler is independently releasable.
     exe_base = os.path.basename(args.exe).lower()
-    if "_oracle" in exe_base or exe_base == "genesisrecomp.exe":
-        fail("refusing to package a dev-only AGPL-linked exe (%s); release the "
-             "native target (see RELEASING.md)." % exe_base)
+    if "_oracle" in exe_base or "_cosim" in exe_base:
+        fail("refusing to package a validation target (%s)" % exe_base)
+    if args.kind == "recompiler" and exe_base != "genesisrecomp.exe":
+        fail("the recompiler package requires GenesisRecomp.exe")
+    if args.kind == "game" and exe_base == "genesisrecomp.exe":
+        fail("GenesisRecomp.exe requires a separate --kind recompiler package")
 
     # 4) the LICENSE must be PolyForm Noncommercial — and must NOT be AGPL
     #    (release binaries are AGPL-free; see RELEASING.md)

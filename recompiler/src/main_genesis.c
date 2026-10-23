@@ -22,6 +22,10 @@
 #include "annotations.h"
 #include "game_config.h"
 
+#ifndef GENESIS_RECOMP_VERSION
+#define GENESIS_RECOMP_VERSION "development"
+#endif
+
 static bool is_path_separator(char ch) {
     return ch == '/' || ch == '\\';
 }
@@ -78,12 +82,17 @@ static bool make_output_path(char *dst, size_t dst_size,
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        fprintf(stderr,
+    if (argc == 2 && strcmp(argv[1], "--version") == 0) {
+        printf("GenesisRecomp %s\n", GENESIS_RECOMP_VERSION);
+        return 0;
+    }
+    bool help = argc == 2 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0);
+    if (argc < 2 || help) {
+        fprintf(help ? stdout : stderr,
             "Usage: GenesisRecomp <rom.md|rom.bin> [--game <path/to/game.toml>] "
             "[--output-dir <directory>] [--reverse-debug] "
             "[--fail-on-unsupported]\n");
-        return 1;
+        return help ? 0 : 1;
     }
 
     const char *rom_path  = argv[1];

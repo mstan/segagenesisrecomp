@@ -4,6 +4,10 @@
 
 # Genesis Recomp
 
+**[Windows x64 recompiler tool v0.1.2](https://github.com/mstan/segagenesisrecomp/releases/tag/v0.1.2)**
+includes `GenesisRecomp.exe`, its license/notices and usage instructions. Game
+runners and their launcher assets are distributed by the title projects below.
+
 **A beta static-recompilation framework for the Sega Genesis / Mega Drive
 and Sega CD / Mega-CD.** The cartridge pipeline translates 68000 code into
 native C and supplies a shared VDP, audio, bus, scheduler and Z80 runtime,
@@ -31,7 +35,7 @@ snapshot was checked against public source/release notes on **21 October
 | Game | Project / downloads | Features and scope |
 |---|---|---|
 | *Sonic the Hedgehog* | [SonicTheHedgehogRecomp](https://github.com/mstan/SonicTheHedgehogRecomp) · [downloads](https://github.com/mstan/SonicTheHedgehogRecomp/releases) | Optional adaptive/16:9/21:9/32:9 stage renderer, expanded objects/HUD, save states and rewind. |
-| *Sonic the Hedgehog 2* | [SonicTheHedgehog2Recomp](https://github.com/mstan/SonicTheHedgehog2Recomp) · [downloads](https://github.com/mstan/SonicTheHedgehog2Recomp/releases) | Adaptive ultrawide, character/party mods, rollback netplay and experimental independent online cameras. Public builds currently expose four seats; the six-player development preview is shown below. |
+| *Sonic the Hedgehog 2* | [SonicTheHedgehog2Recomp](https://github.com/mstan/SonicTheHedgehog2Recomp) · [downloads](https://github.com/mstan/SonicTheHedgehog2Recomp/releases) | Adaptive ultrawide, character/party mods, rollback netplay and experimental independent online cameras. Version 0.9.0 adds six local/online campaign seats; direct LAN remains two peers. |
 | *Sonic CD* | [SonicCDRecomp](https://github.com/mstan/SonicCDRecomp) · [0.0.1 downloads](https://github.com/mstan/SonicCDRecomp/releases/tag/v0.0.1) | Original US CD programs, strict native Main/Sub 68000 and Z80, recomp-ui, adaptive stage widescreen, FM/PSG/PCM/CD audio and backup-RAM saves. Windows/Linux x64; users supply the qualified disc and BIOS. |
 | *Sonic 3*, *Sonic & Knuckles*, *Sonic 3 & Knuckles* | [Sonic3AndKnucklesRecomp](https://github.com/mstan/Sonic3AndKnucklesRecomp) · [downloads](https://github.com/mstan/Sonic3AndKnucklesRecomp/releases) | Three cartridge targets, custom adaptive/ultrawide renderer; the combined target adds optional Sonic 1/2/Megamix campaigns and Mighty/Shadow. |
 | *Rocket Knight Adventures* | [RocketKnightAdventuresRecomp](https://github.com/mstan/RocketKnightAdventuresRecomp) · [downloads](https://github.com/mstan/RocketKnightAdventuresRecomp/releases) | Adaptive scenery/actors across seven stages, remappable input, visual save browser and rewind. |
@@ -48,18 +52,17 @@ every width. Enable Widescreen in each game's **Mods** page.
   <tr><td><img src="docs/assets/games/sonic-3-ultrawide.png" alt="Sonic 3 and Knuckles Angel Island in 32:9, with additional stage scenery" width="100%"><br><sub><b>Sonic 3 &amp; Knuckles</b> — Angel Island at 32:9.</sub></td></tr>
 </table>
 
-### Sonic 2: a party of six — development preview
+### Sonic 2: a party of six
 
-The current local development build extends party play to **six actors**:
+Version 0.9.0 extends party play to **six actors**:
 Sonic, Tails, Knuckles, Amy, Mighty and Shadow. Optional imported characters
 need the exact source ROMs or converted packs described by the game; no donor
-assets are distributed. This screenshot is from that development build.
-The public source and released build still expose **four seats**, so use
-the game's release notes to check when the six-player work becomes available.
+assets are distributed. This screenshot is from the development build used to
+validate that work. See the game's release notes for the qualification limits.
 
 <p align="center">
   <img src="docs/assets/games/sonic-2-six-player.png" alt="Sonic 2 development party with Sonic, Tails, Knuckles, Amy, Mighty and Shadow enabled in Emerald Hill" width="800">
-  <br><sub><b>Six-character Sonic 2 party.</b> Development preview; not the four-seat public release.</sub>
+  <br><sub><b>Six-character Sonic 2 party.</b> Development validation screenshot for the version 0.9.0 campaign work.</sub>
 </p>
 
 ### Sonic 3: Sonic 1 + 2 + 3, then Megamix

@@ -26,8 +26,9 @@ harnesses, and recomp-vs-interpreter co-simulation.
 
 ## Hard checklist — ALL must be true before publishing a binary
 
-1. **Right target.** The zip contains the NATIVE exe only — never
-   `GenesisRecomp.exe`, never a `*_cosim.exe`.
+1. **Right target.** A game ZIP contains the NATIVE game exe only, never
+   `GenesisRecomp.exe` or a `*_cosim.exe`. The recompiler has its own separate
+   tool-package contract below.
 2. **License.** The project license (`LICENSE.md`, PolyForm Noncommercial
    1.0.0) is inside the zip as `LICENSE`.
 3. **Attribution.** `THIRD-PARTY-LICENSES.md` is in the zip (ymfm BSD-3,
@@ -82,7 +83,20 @@ Sonic3AndKnucklesRecomp repo packages each exe separately; its per-mode box art
   `README`, `LICENSE` (PolyForm Noncommercial), `THIRD-PARTY-LICENSES.md`, and
   the launcher's `assets/` folder (`assets/fonts/*.ttf`, `assets/img/*.tga`).
 
-## History
+## Standalone Windows recompiler tool
+
+The current `GenesisRecomp` target uses the clean-room timing model and links
+no emulator core; the historical AGPL restriction no longer applies (see
+`LICENSING.md`). Build `recompiler/CMakeLists.txt` in Release from the tagged
+engine source with the pinned `m68k-recomp-core` initialized. Package the
+executable separately using `tools/package_release.py --kind recompiler`.
+Include its actual non-OS DLL closure, `LICENSE.md` as `LICENSE`,
+`THIRD-PARTY-LICENSES.md`, a tool-specific README and exact source/build metadata.
+Do not put game runners, ROMs, generated game code or launcher assets into this
+tool archive. Verify `GenesisRecomp.exe --help` and regenerate a qualified
+private cartridge fixture with the extracted tool before publication.
+
+## Historical licensing
 
 Until 2026-06-10 every release statically linked clownmdemu/clownz80 and was
 therefore an AGPL-3.0 combined work (see git history of this file for the
