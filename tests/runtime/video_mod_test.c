@@ -60,7 +60,27 @@ int main(int argc,char **argv)
     CHECK(p->feature_enable(p->ctx,feature.package_id,feature.id,0));CHECK(p->commit(p->ctx,NULL));
     app_config_defaults();CHECK(app_config_load(argv[1]));app_config_apply_video(&video);
     CHECK(!strcmp(mode,"off"));CHECK(!app_config_video_mods(NULL,argv[1]));
+    /* GameSpec.video_default: a game may enable its renderer on a fresh
+     * install, while a saved choice (including off) still wins. */
+    CHECK(!app_config_set_video_default("garbage"));
+    app_config_defaults();CHECK(!g_app_config.custom_widescreen); /* bad input leaves opt-in */
+    CHECK(app_config_set_video_default("fit"));
+    app_config_defaults();CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==0);
+    app_config_apply_video(&video);CHECK(!strcmp(mode,"fit"));
+    CHECK(p->feature_get(p->ctx,0,&feature) && feature.enabled);
+    CHECK(app_config_load(argv[1]));CHECK(!g_app_config.custom_widescreen); /* saved off */
+    app_config_apply_video(&video);CHECK(!strcmp(mode,"off"));
+    FILE *f=fopen(argv[1],"wb");CHECK(f);
+    fputs("[audio]\nvolume = 50\n",f);CHECK(fclose(f)==0); /* settings without the mod key */
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==0 && g_app_config.volume==50);
+    CHECK(app_config_set_video_default("21:9"));
+    app_config_defaults();CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==2);
+    CHECK(!app_config_set_video_default("garbage"));
+    app_config_defaults();CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==2);
+    CHECK(app_config_set_video_default(NULL));
+    app_config_defaults();CHECK(!g_app_config.custom_widescreen && g_app_config.custom_aspect==0);
     CHECK(remove(argv[1])==0); /* this executable owns only its explicit CTest fixture */
-    puts("PASS opt-in defaults, four aspect choices, provider validation, persistence and input binding preservation");
+    puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence and input binding preservation");
     return 0;
 }

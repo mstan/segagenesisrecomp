@@ -10,6 +10,21 @@
 #include <string.h>
 
 AppConfig g_app_config;
+static int s_default_custom_widescreen, s_default_custom_aspect;
+
+int app_config_set_video_default(const char *mode)
+{
+    if (!mode || !strcmp(mode, "off")) {
+        s_default_custom_widescreen = 0;
+        s_default_custom_aspect = 0;
+        return 1;
+    }
+    int aspect = app_config_aspect_index(mode);
+    if (aspect < 0) return 0;
+    s_default_custom_widescreen = 1;
+    s_default_custom_aspect = aspect;
+    return 1;
+}
 
 void app_config_defaults(void)
 {
@@ -18,8 +33,8 @@ void app_config_defaults(void)
     g_app_config.linear_filter    = 0;
     g_app_config.widescreen       = 0;
     g_app_config.widescreen_cells = 8;
-    g_app_config.custom_widescreen = 0;
-    g_app_config.custom_aspect = 0;
+    g_app_config.custom_widescreen = s_default_custom_widescreen;
+    g_app_config.custom_aspect = s_default_custom_aspect;
     g_app_config.volume           = 100;
     g_app_config.skip_launcher    = 0;
     g_app_config.rewind_enabled   = 1;
@@ -236,7 +251,7 @@ static int video_mod_package(void *ctx,int i,RecompLauncherCModPackage *out)
     memset(out,0,sizeof(*out));
     MOD_COPY(out->id,"custom-widescreen");MOD_COPY(out->name,"Widescreen");MOD_COPY(out->version,"1");
     MOD_COPY(out->author,"GenesisRecomp contributors");
-    MOD_COPY(out->description,"Opt-in custom scene renderer with expanded scenery, objects and screen-anchored HUD.");
+    MOD_COPY(out->description,"Custom scene renderer with expanded scenery, objects and screen-anchored HUD.");
     MOD_COPY(out->license,"PolyForm Noncommercial 1.0.0");
     out->enabled=g_app_config.custom_widescreen;out->option_count=1;return 1;
 }

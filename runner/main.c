@@ -2259,6 +2259,9 @@ int main(int argc, char *argv[])
                  g_game_spec.short_name ? g_game_spec.short_name : "game");
         snprintf(rom_cfg_path, sizeof rom_cfg_path, "%s", exe_relative(rc));
     }
+    if (g_game_spec.video && !app_config_set_video_default(g_game_spec.video_default))
+        fprintf(stderr, "[config] ignoring invalid video_default \"%s\"; widescreen stays opt-in\n",
+                g_game_spec.video_default);
     app_config_defaults();
     app_config_load(settings_ini);   /* also seeds g_input_map controller bindings */
     if (g_game_spec.load_settings) g_game_spec.load_settings(settings_ini);

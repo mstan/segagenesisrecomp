@@ -41,6 +41,12 @@ extern AppConfig g_app_config;
 /* Reset g_app_config to defaults (does NOT touch g_input_map). */
 void app_config_defaults(void);
 
+/* Game-requested custom-video default used by later app_config_defaults()
+ * calls (GameSpec.video_default). NULL/"off" = opt-in; otherwise an aspect
+ * preset ("fit"/"adaptive", "16:9", "21:9", "32:9"). A saved settings.ini
+ * value loaded afterwards still wins. Returns 0, unchanged, for bad input. */
+int  app_config_set_video_default(const char *mode);
+
 /* Load settings.ini at `path` into g_app_config + g_input_map. Missing file is
  * not an error (defaults stand). Returns 1 if a file was read, 0 otherwise. */
 int  app_config_load(const char *path);
