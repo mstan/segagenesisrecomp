@@ -87,7 +87,10 @@ add_executable(input_script_party_test runtime/input_script_party_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../runner/input_script.c")
 target_include_directories(input_script_party_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
-add_test(NAME input_script_party COMMAND input_script_party_test "${CMAKE_CURRENT_LIST_DIR}/runtime/input_script_party.input")
+add_test(NAME input_script_party COMMAND input_script_party_test
+    "${CMAKE_CURRENT_LIST_DIR}/runtime/input_script_party.input"
+    "${CMAKE_CURRENT_LIST_DIR}/runtime/input_script_invalid_a7.input"
+    "${CMAKE_CURRENT_LIST_DIR}/runtime/input_script_invalid_restart.input")
 
 add_executable(sonic1_video_test runtime/sonic1_video_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog/sonic1_video.c")

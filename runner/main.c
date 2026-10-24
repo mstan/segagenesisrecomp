@@ -3579,6 +3579,11 @@ session_begin:;
                     runner_save_state_file(state_path);
                 if (input_script_take_load_state(state_path, sizeof(state_path)))
                     runner_load_state_file(state_path);
+                {
+                    uint32_t restart_pc;
+                    if (input_script_take_restart_game(&restart_pc))
+                        glue_restart_game_fiber(restart_pc);
+                }
                 if (input_script_take_ram_dump(state_path, sizeof(state_path)))
                     runner_dump_ram_file(state_path);
                 if (input_script_take_vram_dump(state_path, sizeof(state_path)))

@@ -12,6 +12,7 @@
 #include "crash_report.h"
 #include "genesis_runtime.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +39,8 @@ typedef enum {
     OP_WRITE_RAM8,
     OP_WRITE_RAM16,
     OP_WRITE_RAM32,
+    OP_WRITE_CPU_A7,
+    OP_RESTART_GAME,
     OP_SCREENSHOT,
     OP_SAVE_STATE,
     OP_LOAD_STATE,
@@ -72,6 +75,7 @@ static int      s_exit_code        = 0;
 static char     s_pending_screenshot[260];
 static char     s_pending_save_state[260];
 static char     s_pending_load_state[260];
+static uint32_t s_pending_restart_game;
 static char     s_pending_ram_dump[260];
 static char     s_pending_vram_dump[260];
 
@@ -94,6 +98,18 @@ static int parse_button(const char *s, uint8_t *out) {
 }
 
 /* ---- Parser ---- */
+
+static int parse_u24_hex(const char *text, int allow_zero, uint32_t *out)
+{
+    char *end = NULL;
+    errno = 0;
+    unsigned long value = strtoul(text, &end, 16);
+    if (errno == ERANGE || end == text || *end != '\0'
+        || value > 0xFFFFFFul || (!allow_zero && value == 0))
+        return 0;
+    *out = (uint32_t)value;
+    return 1;
+}
 
 static int parse_line(char *line, int line_no) {
     /* Strip comment + trailing whitespace */
@@ -166,6 +182,12 @@ static int parse_line(char *line, int line_no) {
         o->op     = OP_WRITE_RAM32;
         o->arg32  = (uint32_t)strtoul(a1, NULL, 16);
         o->arg32b = (uint32_t)strtoul(a2, NULL, 16);
+    } else if (!_stricmp(tok, "WRITE_CPU_A7") && n == 2) {
+        o->op = OP_WRITE_CPU_A7;
+        if (!parse_u24_hex(a1, 1, &o->arg32)) goto bad;
+    } else if (!_stricmp(tok, "RESTART_GAME") && n == 2) {
+        o->op = OP_RESTART_GAME;
+        if (!parse_u24_hex(a1, 0, &o->arg32)) goto bad;
     } else if (!_stricmp(tok, "SCREENSHOT")) {
         o->op = OP_SCREENSHOT;
         if (n >= 2) snprintf(o->str, sizeof(o->str), "%s", a1);
@@ -208,6 +230,7 @@ int input_script_load(const char *path) {
     s_pending_screenshot[0] = '\0';
     s_pending_save_state[0] = '\0';
     s_pending_load_state[0] = '\0';
+    s_pending_restart_game = 0;
     s_pending_ram_dump[0] = '\0';
     s_pending_vram_dump[0] = '\0';
     memset(s_press_until, 0, sizeof s_press_until);
@@ -350,6 +373,20 @@ void input_script_tick(uint64_t frame,
                 s_pc++;
                 break;
 
+            case OP_WRITE_CPU_A7:
+                g_cpu.A[7] = o->arg32;
+                fprintf(stderr, "[input_script] WRITE_CPU_A7 at frame %llu ($%06X)\n",
+                        (unsigned long long)frame, o->arg32);
+                s_pc++;
+                break;
+
+            case OP_RESTART_GAME:
+                s_pending_restart_game = o->arg32;
+                fprintf(stderr, "[input_script] RESTART_GAME requested at frame %llu (pc=$%06X)\n",
+                        (unsigned long long)frame, o->arg32);
+                s_pc++;
+                break;
+
             case OP_SCREENSHOT:
                 snprintf(s_pending_screenshot, sizeof(s_pending_screenshot), "%s", o->str);
                 /* Wired by the main loop next frame — see input_script_pending_screenshot. */
@@ -433,6 +470,16 @@ bool input_script_take_load_state(char *out, size_t out_cap)
     return take_pending_path(s_pending_load_state, out, out_cap);
 }
 
+bool input_script_take_restart_game(uint32_t *pc)
+{
+    if (!s_pending_restart_game)
+        return false;
+    if (pc)
+        *pc = s_pending_restart_game;
+    s_pending_restart_game = 0;
+    return true;
+}
+
 bool input_script_take_ram_dump(char *out, size_t out_cap)
 {
     return take_pending_path(s_pending_ram_dump, out, out_cap);
@@ -448,7 +495,8 @@ int input_script_mutates_state(void)
     for (int i = 0; i < s_op_count; i++)
         switch (s_ops[i].op) {
         case OP_WRITE_RAM8: case OP_WRITE_RAM16: case OP_WRITE_RAM32:
-        case OP_SAVE_STATE: case OP_LOAD_STATE:
+        case OP_WRITE_CPU_A7:
+        case OP_RESTART_GAME: case OP_SAVE_STATE: case OP_LOAD_STATE:
             return 1;
         default: break;
         }

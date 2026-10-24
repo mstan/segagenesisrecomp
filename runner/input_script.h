@@ -18,6 +18,8 @@
  *   WRITE_RAM8   <addr> <value>   write byte to 68K address
  *   WRITE_RAM16  <addr> <value>   write big-endian word to 68K address
  *   WRITE_RAM32  <addr> <value>   write big-endian long to 68K address
+ *   WRITE_CPU_A7 <value>   set the 68K stack pointer for resume tests
+ *   RESTART_GAME <pc>      restart the game fiber at a 24-bit ROM address
  *   SCREENSHOT  <path>   trigger a PNG capture (path templated with frame)
  *   SAVE_STATE  <path>   save a native/interpreter state file
  *   LOAD_STATE  <path>   load a native/interpreter state file
@@ -44,9 +46,10 @@
 int  input_script_load(const char *path);
 
 /* 1 when the loaded script contains a directive that MUTATES the machine
- * (WRITE_RAM*, SAVE_STATE, LOAD_STATE). Such a script is refused in a
- * netplay session; an input-only script (WAIT/PLAYER/HOLD/RELEASE/PRESS,
- * reads, SCREENSHOT, DUMP_*, EXIT) is just a local controller. */
+ * (WRITE_RAM*, WRITE_CPU_A7, RESTART_GAME, SAVE_STATE, LOAD_STATE). Such a
+ * script is refused in a netplay session; an input-only script
+ * (WAIT/PLAYER/HOLD/RELEASE/PRESS, reads, SCREENSHOT, DUMP_*, EXIT) is just a
+ * local controller. */
 int  input_script_mutates_state(void);
 
 /* Advance the script by one wall frame. `ram_read8`/`ram_read16` are
@@ -87,6 +90,7 @@ int     input_script_exit_code  (void);
 bool    input_script_take_save_state(char *out, size_t out_cap);
 bool    input_script_take_screenshot(char *out, size_t out_cap);
 bool    input_script_take_load_state(char *out, size_t out_cap);
+bool    input_script_take_restart_game(uint32_t *pc);
 bool    input_script_take_ram_dump(char *out, size_t out_cap);
 bool    input_script_take_vram_dump(char *out, size_t out_cap);
 
