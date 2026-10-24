@@ -139,6 +139,7 @@ static uint64_t hash_handshake(void) {
     h = cosim_fnv_u32(h, b->sram_size);
     h = cosim_fnv_u8(h, b->sram_present);
     h = cosim_fnv_u8(h, b->sram_enabled);
+    h = cosim_fnv_u8(h, b->sram_always_mapped);
     if (b->sram_size && b->sram_size <= sizeof b->sram)
         h = cosim_fnv_bytes(h, b->sram, b->sram_size);
     return h;

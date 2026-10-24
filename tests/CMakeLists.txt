@@ -124,6 +124,19 @@ add_executable(expansion_rom_test runtime/expansion_rom_test.c)
 target_include_directories(expansion_rom_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
 add_test(NAME expansion_rom COMMAND expansion_rom_test)
 
+add_executable(genesis_bus_sram_test runtime/genesis_bus_sram_test.c)
+target_include_directories(genesis_bus_sram_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
+add_test(NAME genesis_bus_sram COMMAND genesis_bus_sram_test)
+
+add_executable(genesis_machine_sram_state_test
+    runtime/genesis_machine_sram_state_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_machine.c")
+target_include_directories(genesis_machine_sram_state_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../runner"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/external/superzazu")
+add_test(NAME genesis_machine_sram_state COMMAND genesis_machine_sram_state_test)
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
     if(TARGET SDL2::SDL2)
         add_executable(party_input_test runtime/party_input_test.c
