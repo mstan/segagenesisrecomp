@@ -15,7 +15,7 @@
     {
       "id": "V1",
       "name": "Lazy original raster for custom presentation",
-      "status": "implemented_cartridge_correctness_passed_final_timing_pending",
+      "status": "implemented_cartridge_correctness_passed_final_timing_unmeasured_owner_release_waiver",
       "package": "sonic-lazy-row-v1",
       "titles": [
         "Sonic 1",
@@ -25,12 +25,12 @@
         "Sonic 3 & Knuckles"
       ],
       "evidence": "runs/s1-correctness-16x9/result.json; runs/s1-correctness-off/result.json; runs/s1-lifecycle/result.json",
-      "performance": "Sonic1 wide package positive40.47pct, stock neutral; Sonic2 pending"
+      "performance": "Sonic1 wide package positive40.47pct, stock neutral; Sonic2 unmeasured_owner_release_waiver"
     },
     {
       "id": "V2",
       "name": "Custom renderer tile-row spans",
-      "status": "implemented_cartridge_correctness_passed_final_timing_pending",
+      "status": "implemented_cartridge_correctness_passed_final_timing_unmeasured_owner_release_waiver",
       "titles": [
         "Sonic 1",
         "Sonic 2",
@@ -38,7 +38,7 @@
         "Sonic & Knuckles",
         "Sonic 3 & Knuckles"
       ],
-      "performance": "Sonic1 wide package positive40.47pct, stock neutral; Sonic2 pending"
+      "performance": "Sonic1 wide package positive40.47pct, stock neutral; Sonic2 unmeasured_owner_release_waiver"
     },
     {
       "id": "V3",
@@ -50,7 +50,7 @@
     {
       "id": "V4",
       "name": "Palette and row geometry reuse",
-      "status": "implemented_cartridge_correctness_passed_final_timing_pending",
+      "status": "implemented_cartridge_correctness_passed_final_timing_unmeasured_owner_release_waiver",
       "titles": [
         "Sonic 1",
         "Sonic 2",
@@ -58,7 +58,7 @@
         "Sonic & Knuckles",
         "Sonic 3 & Knuckles"
       ],
-      "performance": "Sonic1 wide package positive40.47pct, stock neutral; Sonic2 pending",
+      "performance": "Sonic1 wide package positive40.47pct, stock neutral; Sonic2 unmeasured_owner_release_waiver",
       "palette": "Cartridge renderers already build live per-row64/128-color tables; persistent cache would need CRAM/extended-color invalidation. Retain existing live tables. CD per-pixel conversions hoisted into live row tables underCD1."
     },
     {
@@ -83,7 +83,7 @@
     {
       "id": "A1",
       "name": "YM2612 block synthesis",
-      "status": "implemented_cartridge_correctness_passed_final_timing_pending",
+      "status": "implemented_cartridge_correctness_passed_final_timing_unmeasured_owner_release_waiver",
       "package": "faithful-fm-blocks-v1",
       "performance": "independent FM mixed/noisy4.50pp spread, inconclusive; whole package unaffected",
       "titles": [
@@ -160,7 +160,7 @@
     {
       "id": "R2",
       "name": "Portable full-byte rollback checksum",
-      "status": "component_passed_built_runtime_pending",
+      "status": "component_passed_built_runtime_unmeasured_owner_release_waiver",
       "package": "portable-full-byte-xxh64-v1",
       "evidence": "digest-experiment/selection.json; tests/runtime/rb_digest_test.c",
       "scope": "dense replay separately from ordinary gameplay; unchanged complete byte domain and build identity gate",
@@ -172,12 +172,12 @@
       "status": "implemented_component_tests_passed",
       "package": "host-deadline-wait-v1",
       "evidence": "runs/s1-v2-lines-profile.json; host_wait_native and host_wait_portable tests",
-      "performance": "pending_paced_measurement"
+      "performance": "unmeasured_owner_release_waiver_paced_measurement"
     },
     {
       "id": "CD1",
       "name": "Sega CD image ownership",
-      "status": "implemented_component_passed_game_gate_pending",
+      "status": "implemented_component_passed_game_gate_unmeasured_owner_release_waiver",
       "package": "cd-owned-render-spans-v1",
       "evaluation": "Title owns renderer; world geometry/patterns resolved per8-pixel span, live normal/shadow/highlight palette perrow. Original whole-frame fallback preserved; cartridge lazy-raster shortcut rejected for this contract.",
       "evidence": "cd/tests/render_diff.c; cd-ctest.log:4000 random full-output/sprite-scratch/return/failure comparisons pass"
@@ -185,7 +185,7 @@
     {
       "id": "CD2",
       "name": "Sega CD CPU and Word RAM coordination",
-      "status": "implemented_component_passed_game_gate_pending",
+      "status": "implemented_component_passed_game_gate_unmeasured_owner_release_waiver",
       "package": "cd-guarded-descriptor-prefix-v1",
       "evaluation": "Cache immutable module descriptor discovery only. Every opcode/extension guard remains live in original module order; unknown suffix discovered progressively, overflow uses original search, registry replacement resets. Fixed22560bytes across2CPUs; compile-fixed original fallback.",
       "evidence": "cd/tests/catalog_lookup_test.c; cd-ctest.log; cached/reference MinGW and LinuxGCC checks"
@@ -193,14 +193,14 @@
     {
       "id": "CD3",
       "name": "Sega CD media, rotation, PCM and CDDA",
-      "status": "source_screened_profile_pending",
-      "evaluation": "Validated SGCD reader already batches identity hashing; runtime reads one2352-byte sector at drive cadence. Existing ares-derived stamp sampler and native PCM/CDDA keep asynchronous completion, DAC timestamps and full synthesis. No host-time/loading shortcut adopted. Attribute remaining cost after descriptor-cache/game gate before additional changes.",
+      "status": "evaluated_source_screen_no_change_profile_deferred",
+      "evaluation": "Validated SGCD reader already batches identity hashing; runtime reads one2352-byte sector at drive cadence. Existing ares-derived stamp sampler and native PCM/CDDA keep asynchronous completion, DAC timestamps and full synthesis. No host-time/loading shortcut adopted. Attribute remaining cost after descriptor-cache/game gate before additional changes. Optional new runtime profile deferred by explicit owner instruction to finish release without benchmark waiting.",
       "evidence": "cd/external/segagenesisrecomp/runner/cd/{disc_image.c,stamp.c,audio_native.c}; original title docs/VALIDATION.md"
     },
     {
       "id": "V8",
       "name": "Restore original Blue Spheres composition",
-      "status": "implemented_native_pixel_oracle_passed_owner_approved_runtime_pending",
+      "status": "implemented_native_pixel_oracle_runtime_recheck_owner_approved",
       "issue": "beads-tdq.3.26",
       "titles": [
         "Sonic 3",
@@ -222,7 +222,7 @@
       ]
     }
   ],
-  "updated_utc": "2026-10-27T16:36:11.642070+00:00",
+  "updated_utc": "2026-10-27T17:16:27.472099+00:00",
   "integration_status": {
     "engine_head": "252535d12476f5a697cf87082ea3e827f6430a1b",
     "released_cd_dependency": "c8bcab94babc217955c8aab195d7de8d4b532331",
@@ -233,6 +233,12 @@
       "s3_family": 99,
       "sonic_cd": 38
     },
-    "game_level_qualification": "initial all six passed; Blue Spheres shared baseline defect fixed and owner approved; final family technical recheck queued"
+    "game_level_qualification": "all six matched full-runtime passed, owner approved normal games and shared Blue Spheres fix; final timing waived as release gate"
+  },
+  "release_policy": {
+    "owner_visual_acceptance": "all six passed; Blue Spheres fix passed",
+    "final_package_performance": "unmeasured; owner explicitly removed benchmark gate",
+    "further_benchmark_attempts": "none scheduled",
+    "source_build_identities": "release-builds.json in private campaign evidence"
   }
 }
