@@ -31,6 +31,15 @@ extern GenesisMachine g_machine;
 /* Emit a rendered scanline (ARGB row) to the display. The host (main.c) copies
  * it into its framebuffer. */
 typedef void (*GenesisScanlineSink)(void *user, int line, const uint32_t *argb, int width);
+typedef const uint32_t *(*GenesisNativeRow)(void *ctx);
+typedef struct GenesisScanlineProducer {
+    /* Queried at the current raster position, before rendering/status work. */
+    int (*enabled)(void *user);
+    /* Supplies/delivers a complete row. Sprite status is evaluated first;
+     * native_row lazily supplies the original ARGB image if required. */
+    void (*render)(void *user, const GVDP *vdp, int line, int native_w,
+                   GenesisNativeRow native_row, void *native_ctx);
+} GenesisScanlineProducer;
 
 void machine_init(void);
 void machine_set_pad(int port, uint16_t buttons);  /* GPAD_* bits (12)         */
@@ -55,5 +64,7 @@ int    machine_rb_load(const void *src, size_t len);
 /* Run one full frame: per scanline, advance the 68K (fiber), step the Z80, tick
  * the VDP, deliver interrupts, and emit active scanlines via `sink`. */
 void machine_run_frame(GenesisScanlineSink sink, void *user);
+void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
+                          const GenesisScanlineProducer *producer);
 
 #endif /* GENESIS_MACHINE_H */

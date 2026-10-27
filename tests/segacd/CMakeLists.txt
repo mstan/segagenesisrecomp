@@ -1,0 +1,582 @@
+cmake_minimum_required(VERSION 3.16)
+project(SegaCDDeviceTests C)
+enable_testing()
+option(SEGACD_CATALOG_LOOKUP_CACHE "Cache immutable native descriptor discovery, preserving live guards" ON)
+set_source_files_properties("../../runner/cd/segacd_coordinator.c" PROPERTIES
+    COMPILE_DEFINITIONS "SEGACD_CATALOG_LOOKUP_CACHE=$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>")
+set(SEGACD_GAME_RENDER_SOURCE "${CMAKE_CURRENT_LIST_DIR}/../../runner/cd/sonic_cd_render.c"
+    CACHE FILEPATH "Game-owned complete-row renderer (legacy default retained)")
+add_library(segacd_devices STATIC ../../runner/cd/segacd.c ../../runner/cd/rf5c164.c ../../runner/cd/cdd.c ../../runner/cd/cdc.c ../../runner/cd/sector.c ../../runner/cd/stamp.c ../../runner/cd/dma.c ../../runner/cd/fader.c ../../runner/cd/cdda.c)
+target_include_directories(segacd_devices PUBLIC ../../runner/cd)
+target_compile_features(segacd_devices PUBLIC c_std_11)
+if(MSVC)
+  target_compile_options(segacd_devices PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_devices PRIVATE -Wall -Wextra -Werror)
+endif()
+
+add_executable(segacd_memory_test memory_test.c)
+target_link_libraries(segacd_memory_test PRIVATE segacd_devices)
+target_include_directories(segacd_memory_test PRIVATE ../../runner/cd)
+target_compile_features(segacd_memory_test PRIVATE c_std_11)
+if(MSVC)
+  target_compile_options(segacd_memory_test PRIVATE /W4)
+else()
+  target_compile_options(segacd_memory_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_memory COMMAND segacd_memory_test)
+
+add_executable(segacd_sonic_cd_render_test sonic_cd_render_test.c
+  "${SEGACD_GAME_RENDER_SOURCE}" ../../runner/cd/sonic_cd_scene.c
+  ../../runner/cd/sonic_cd_world.c)
+target_include_directories(segacd_sonic_cd_render_test PRIVATE
+  ../../runner/cd ../../runner/video)
+target_compile_features(segacd_sonic_cd_render_test PRIVATE c_std_11)
+if(MSVC)
+  target_compile_options(segacd_sonic_cd_render_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_sonic_cd_render_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_sonic_cd_render COMMAND segacd_sonic_cd_render_test)
+add_executable(segacd_pcm_test pcm_test.c)
+target_link_libraries(segacd_pcm_test PRIVATE segacd_devices)
+add_test(NAME segacd_pcm COMMAND segacd_pcm_test)
+add_executable(segacd_fader_test fader_test.c)
+target_link_libraries(segacd_fader_test PRIVATE segacd_devices)
+if(MSVC)
+  target_compile_options(segacd_fader_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_fader_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_fader COMMAND segacd_fader_test)
+add_executable(segacd_cdda_test cdda_test.c)
+target_link_libraries(segacd_cdda_test PRIVATE segacd_devices)
+if(MSVC)
+  target_compile_options(segacd_cdda_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_cdda_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_cdda COMMAND segacd_cdda_test)
+add_executable(segacd_cdda_bus_test cdda_bus_test.c)
+target_link_libraries(segacd_cdda_bus_test PRIVATE segacd_devices)
+if(MSVC)
+  target_compile_options(segacd_cdda_bus_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_cdda_bus_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_cdda_bus COMMAND segacd_cdda_bus_test)
+add_executable(segacd_audio_mix_test audio_mix_test.c ../../runner/cd/audio_mix.c)
+target_link_libraries(segacd_audio_mix_test PRIVATE segacd_devices)
+if(MSVC)
+  target_compile_options(segacd_audio_mix_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_audio_mix_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_audio_mix COMMAND segacd_audio_mix_test)
+add_executable(segacd_audio_native_test audio_native_test.c ../../runner/cd/audio_native.c ../../runner/cd/audio_mix.c)
+target_link_libraries(segacd_audio_native_test PRIVATE segacd_devices)
+add_test(NAME segacd_audio_native COMMAND segacd_audio_native_test)
+add_executable(segacd_backup_test backup_test.c ../../runner/cd/backup.c)
+target_link_libraries(segacd_backup_test PRIVATE segacd_devices)
+add_test(NAME segacd_backup COMMAND segacd_backup_test "${CMAKE_CURRENT_BINARY_DIR}/backup-test.brm")
+if(MSVC)
+  target_compile_definitions(segacd_backup_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+  target_compile_options(segacd_backup_test PRIVATE /W4 /WX)
+  target_compile_options(segacd_audio_native_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_backup_test PRIVATE -Wall -Wextra -Werror)
+  target_compile_options(segacd_audio_native_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_executable(segacd_cdd_test cdd_test.c)
+target_link_libraries(segacd_cdd_test PRIVATE segacd_devices)
+add_test(NAME segacd_cdd COMMAND segacd_cdd_test)
+add_executable(segacd_cdc_test cdc_test.c)
+target_link_libraries(segacd_cdc_test PRIVATE segacd_devices)
+add_test(NAME segacd_cdc COMMAND segacd_cdc_test)
+add_library(segacd_disc_image STATIC ../../runner/cd/disc_image.c)
+target_include_directories(segacd_disc_image PUBLIC ../../runner/cd)
+target_compile_features(segacd_disc_image PUBLIC c_std_11)
+if(MSVC)
+  target_compile_options(segacd_disc_image PRIVATE /W4 /WX)
+  target_compile_definitions(segacd_disc_image PRIVATE _CRT_SECURE_NO_WARNINGS)
+else()
+  target_compile_options(segacd_disc_image PRIVATE -Wall -Wextra -Werror)
+endif()
+add_executable(segacd_disc_image_test disc_image_reader_test.c)
+target_link_libraries(segacd_disc_image_test PRIVATE segacd_disc_image)
+add_test(NAME segacd_disc_image COMMAND segacd_disc_image_test)
+add_executable(segacd_sector_test sector_test.c)
+target_link_libraries(segacd_sector_test PRIVATE segacd_devices)
+add_test(NAME segacd_sector COMMAND segacd_sector_test)
+add_executable(segacd_media_test media_test.c)
+target_link_libraries(segacd_media_test PRIVATE segacd_devices)
+add_test(NAME segacd_media COMMAND segacd_media_test)
+add_executable(segacd_stamp_test stamp_test.c)
+target_link_libraries(segacd_stamp_test PRIVATE segacd_devices)
+add_test(NAME segacd_stamp COMMAND segacd_stamp_test)
+add_executable(segacd_dma_test dma_test.c)
+target_link_libraries(segacd_dma_test PRIVATE segacd_devices)
+add_test(NAME segacd_dma COMMAND segacd_dma_test)
+add_executable(segacd_disc_probe disc_probe.c)
+target_link_libraries(segacd_disc_probe PRIVATE segacd_disc_image segacd_devices)
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND)
+  add_test(NAME segacd_disc_converter COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/disc_image_test.py")
+  add_test(NAME segacd_owned_programs COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../tools/segacd/test_sgcd_owned_extract.py")
+  add_test(NAME segacd_z80_native_generation COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/z80_native_generate_test.py")
+endif()
+add_library(segacd_pcm_reference_adapter SHARED pcm_reference_adapter.c)
+target_link_libraries(segacd_pcm_reference_adapter PRIVATE segacd_devices)
+
+# The host generator and its compiled synthetic output validate the new shared
+# step-emission seam. Cross builds still compile the portable device tests;
+# generated execution tests need a runnable host toolchain.
+if(NOT CMAKE_CROSSCOMPILING)
+  get_filename_component(engine_root "../.." ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+  include("${engine_root}/external/m68k-recomp-core/cmake/M68kRecompCore.cmake")
+  m68k_recomp_core_sources(step_sources genesis)
+  m68k_recomp_core_include_dirs(step_includes genesis)
+  m68k_recomp_step_sources(step_runtime_sources)
+  m68k_recomp_step_include_dirs(step_runtime_includes)
+  add_executable(segacd_debug_test debug_test.c ../../runner/cd/debug.c)
+  target_include_directories(segacd_debug_test PRIVATE ../../runner/cd ../../runner/video
+    "${engine_root}/external/m68k-recomp-core/runtime"
+    "${engine_root}/external/z80-recomp-core/include")
+  target_compile_features(segacd_debug_test PRIVATE c_std_11)
+  if(MSVC)
+    target_compile_options(segacd_debug_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_debug_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  if(WIN32)
+    target_link_libraries(segacd_debug_test PRIVATE ws2_32)
+  endif()
+  add_test(NAME segacd_debug COMMAND segacd_debug_test)
+  set_tests_properties(segacd_debug PROPERTIES TIMEOUT 10)
+  add_executable(segacd_sonic_cd_view_test sonic_cd_view_test.c
+    ../../runner/cd/sonic_cd_view.c ../../runner/cd/sonic_cd_culls.c ${step_runtime_sources})
+  target_include_directories(segacd_sonic_cd_view_test PRIVATE
+    ${step_runtime_includes} ../../runner/cd)
+  target_compile_features(segacd_sonic_cd_view_test PRIVATE c_std_11)
+  if(MSVC)
+    target_compile_options(segacd_sonic_cd_view_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_sonic_cd_view_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_test(NAME segacd_sonic_cd_view COMMAND segacd_sonic_cd_view_test)
+  m68k_recomp_decode_sources(floor_decode_sources)
+  add_library(segacd_execution_floor STATIC ../../runner/cd/m68k_floor.c
+    ${floor_decode_sources} "${engine_root}/recompiler/src/rom_parser.c")
+  target_include_directories(segacd_execution_floor PUBLIC ${step_runtime_includes}
+    "${engine_root}/external/m68k-recomp-core/common" "${engine_root}/recompiler/src" ../../runner/cd)
+  target_compile_features(segacd_execution_floor PUBLIC c_std_11)
+  if(MSVC)
+    target_compile_options(segacd_execution_floor PRIVATE /W4 /WX)
+    target_compile_definitions(segacd_execution_floor PRIVATE _CRT_SECURE_NO_WARNINGS)
+  else()
+    target_compile_options(segacd_execution_floor PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_executable(segacd_step_emit_test step_emit_test.c ${step_sources}
+    "${engine_root}/recompiler/src/rom_parser.c"
+    "${engine_root}/recompiler/src/game_config.c"
+    "${engine_root}/recompiler/src/toml.c")
+  target_include_directories(segacd_step_emit_test PRIVATE ${step_includes} "${engine_root}/recompiler/src")
+  target_compile_features(segacd_step_emit_test PRIVATE c_std_11)
+  set(step_output "${CMAKE_CURRENT_BINARY_DIR}/step_semantics_generated.c")
+  add_custom_command(OUTPUT "${step_output}"
+    COMMAND segacd_step_emit_test "${step_output}"
+    DEPENDS segacd_step_emit_test VERBATIM)
+  add_executable(segacd_step_semantics_test "${step_output}" ${step_runtime_sources})
+  target_include_directories(segacd_step_semantics_test PRIVATE ${step_runtime_includes})
+  target_compile_features(segacd_step_semantics_test PRIVATE c_std_11)
+  add_test(NAME segacd_step_semantics COMMAND segacd_step_semantics_test)
+  add_executable(segacd_floor_divide_test floor_divide_test.c
+    "${engine_root}/runner/m68k_interp.c"
+    "${engine_root}/external/m68k-recomp-core/common/m68k_decoder.c"
+    "${engine_root}/recompiler/src/rom_parser.c")
+  target_include_directories(segacd_floor_divide_test PRIVATE ${step_includes}
+    "${engine_root}/runner" "${engine_root}/runner/include" "${engine_root}/recompiler/src")
+  target_compile_features(segacd_floor_divide_test PRIVATE c_std_11)
+  add_test(NAME segacd_floor_divide COMMAND segacd_floor_divide_test)
+  add_executable(segacd_module_fixture module_fixture.c)
+  add_executable(segacd_module_recompiler "${engine_root}/recompiler/src/main_step.c"
+    ${step_sources} "${engine_root}/recompiler/src/rom_parser.c"
+    "${engine_root}/recompiler/src/game_config.c" "${engine_root}/recompiler/src/toml.c")
+  target_include_directories(segacd_module_recompiler PRIVATE ${step_includes} "${engine_root}/recompiler/src")
+  target_compile_features(segacd_module_recompiler PRIVATE c_std_11)
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME segacd_owned_native_generation
+      COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/owned_native_generate_test.py"
+        "$<TARGET_FILE:segacd_module_recompiler>")
+    add_test(NAME segacd_entry_file
+      COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/entry_file_test.py"
+        "$<TARGET_FILE:segacd_module_recompiler>")
+    add_test(NAME segacd_covered_entry_file
+      COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/covered_entry_file_test.py"
+        "$<TARGET_FILE:segacd_module_recompiler>")
+    add_test(NAME segacd_byte_index_catalog
+      COMMAND "${CMAKE_COMMAND}" -E env
+        "M68K_STEP_RECOMP=$<TARGET_FILE:segacd_module_recompiler>"
+        "M68K_CATALOG_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/catalog-driver-tests"
+        "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../tools/segacd/test_m68k_catalog.py")
+  endif()
+  set(module_dir "${CMAKE_CURRENT_BINARY_DIR}/module-fixtures")
+  file(MAKE_DIRECTORY "${module_dir}")
+  set(module_sources)
+  foreach(module IN ITEMS fixture_a fixture_b fixture_delta dual_main dual_sub)
+    list(APPEND module_sources "${module_dir}/${module}_module.c" "${module_dir}/${module}.h")
+    foreach(part RANGE 0 31)
+      if(part LESS 10)
+        set(part "0${part}")
+      endif()
+      list(APPEND module_sources "${module_dir}/${module}_part${part}.c")
+    endforeach()
+  endforeach()
+  add_custom_command(OUTPUT ${module_sources}
+    COMMAND segacd_module_fixture "${module_dir}/a.bin" "${module_dir}/b.bin" "${module_dir}/main.bin" "${module_dir}/sub.bin"
+      "${module_dir}/a-covered.txt"
+    COMMAND segacd_module_recompiler "${module_dir}/a.bin" "${module_dir}" fixture_a 0x1000 0x1000
+    COMMAND segacd_module_recompiler "${module_dir}/b.bin" "${module_dir}" fixture_b 0x1000 --all
+    COMMAND segacd_module_recompiler "${module_dir}/a.bin" "${module_dir}" fixture_delta 0x1000 0x1000
+      --covered-entries-file "${module_dir}/a-covered.txt"
+    COMMAND segacd_module_recompiler "${module_dir}/main.bin" "${module_dir}" dual_main 0x1000 0x1000 0x1030
+    COMMAND segacd_module_recompiler "${module_dir}/sub.bin" "${module_dir}" dual_sub 0xF0 0xF0 0x100 0x120
+    DEPENDS segacd_module_fixture segacd_module_recompiler VERBATIM)
+  add_library(segacd_generated_fixture_modules STATIC ${module_sources})
+  target_include_directories(segacd_generated_fixture_modules PUBLIC ${step_runtime_includes} "${module_dir}")
+  target_compile_features(segacd_generated_fixture_modules PRIVATE c_std_11)
+  add_executable(segacd_module_test module_test.c ${step_runtime_sources})
+  target_link_libraries(segacd_module_test PRIVATE segacd_generated_fixture_modules)
+  target_include_directories(segacd_module_test PRIVATE ${step_runtime_includes} "${module_dir}")
+  target_compile_features(segacd_module_test PRIVATE c_std_11)
+  add_test(NAME segacd_module COMMAND segacd_module_test "${module_dir}/a.bin" "${module_dir}/b.bin")
+  add_executable(segacd_execution_floor_test execution_floor_test.c ${step_runtime_sources})
+  target_link_libraries(segacd_execution_floor_test PRIVATE segacd_execution_floor segacd_generated_fixture_modules)
+  add_test(NAME segacd_execution_floor COMMAND segacd_execution_floor_test "${module_dir}/a.bin" "${module_dir}/b.bin")
+  add_executable(segacd_coordinator_test coordinator_test.c ${step_runtime_sources}
+    ../../runner/cd/segacd_coordinator.c)
+  target_include_directories(segacd_coordinator_test PRIVATE ../../runner/cd)
+  target_link_libraries(segacd_coordinator_test PRIVATE segacd_generated_fixture_modules segacd_devices)
+  target_compile_features(segacd_coordinator_test PRIVATE c_std_11)
+  if(MSVC)
+    target_compile_options(segacd_coordinator_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_coordinator_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_test(NAME segacd_coordinator COMMAND segacd_coordinator_test "${module_dir}/main.bin" "${module_dir}/sub.bin")
+  add_executable(segacd_external_bus_test external_bus_test.c ${step_runtime_sources}
+    ../../runner/cd/segacd_coordinator.c)
+  target_include_directories(segacd_external_bus_test PRIVATE ${step_runtime_includes} ../../runner/cd)
+  target_link_libraries(segacd_external_bus_test PRIVATE segacd_devices)
+  if(MSVC)
+    target_compile_options(segacd_external_bus_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_external_bus_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_test(NAME segacd_external_bus COMMAND segacd_external_bus_test)
+  add_executable(segacd_z80_native_test z80_native_test.c
+    fixtures/z80_native/proof_ldi_step.c fixtures/z80_native/proof_control_step.c
+    ../../runner/cd/z80_native.c ../../runner/cd/segacd_coordinator.c ${step_runtime_sources})
+  target_include_directories(segacd_z80_native_test PRIVATE ${step_runtime_includes}
+    "${engine_root}/external/z80-recomp-core/include" ../../runner/cd)
+  target_link_libraries(segacd_z80_native_test PRIVATE segacd_devices)
+  if(MSVC)
+    target_compile_options(segacd_z80_native_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_z80_native_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_test(NAME segacd_z80_native COMMAND segacd_z80_native_test)
+  add_executable(segacd_machine_test machine_test.c fixtures/z80_native/proof_control_step.c
+    ../../runner/cd/sonic_cd_world.c ../../runner/cd/sonic_cd_view.c ../../runner/cd/sonic_cd_culls.c
+    ../../runner/cd/sonic_cd_scene.c "${SEGACD_GAME_RENDER_SOURCE}" ../../runner/cd/sonic_cd_widescreen.c
+    ../../runner/cd/machine.c ../../runner/cd/z80_native.c ../../runner/cd/segacd_coordinator.c
+    ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c ${step_runtime_sources})
+  target_include_directories(segacd_machine_test PRIVATE ${step_runtime_includes}
+    "${engine_root}/external/z80-recomp-core/include" ../../runner/cd ../../runner/video)
+  target_link_libraries(segacd_machine_test PRIVATE segacd_devices)
+  if(MSVC)
+    target_compile_options(segacd_machine_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_machine_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_test(NAME segacd_machine COMMAND segacd_machine_test)
+  add_subdirectory("${engine_root}/external/m68k-recomp-core/tests/step" "core-step")
+
+  # No owned generated catalogs needed for diagnosing the live-code floor.
+  add_executable(segacd_bios_floor_probe bios_dual_probe.c ${step_runtime_sources}
+    ../../runner/cd/segacd_coordinator.c ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c)
+  target_compile_definitions(segacd_bios_floor_probe PRIVATE SEGACD_BIOS_PROBE_NO_CATALOGS=1)
+  target_include_directories(segacd_bios_floor_probe PRIVATE ../../runner/video)
+  target_link_libraries(segacd_bios_floor_probe PRIVATE segacd_devices segacd_disc_image segacd_execution_floor)
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME segacd_probe_pc_roots COMMAND "${Python3_EXECUTABLE}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/probe_pc_roots_test.py" "$<TARGET_FILE:segacd_bios_floor_probe>")
+    set_tests_properties(segacd_probe_pc_roots PROPERTIES TIMEOUT 15)
+  endif()
+
+  # Private generated sound-driver input, deliberately absent from source.
+  # The adapter has no decoder/fallback: a code miss is a terminal stop.
+  set(SEGACD_BIOS_PROBE_Z80_MODULE_DIR "" CACHE PATH "Private generated sonic_cd_z80_step directory")
+  function(segacd_probe_z80 target)
+    if(SEGACD_BIOS_PROBE_Z80_MODULE_DIR)
+      if(NOT EXISTS "${SEGACD_BIOS_PROBE_Z80_MODULE_DIR}/sonic_cd_z80_step.c")
+        message(FATAL_ERROR "Missing private generated Sonic CD Z80 module")
+      endif()
+      target_sources(${target} PRIVATE ../../runner/cd/z80_native.c
+        "${SEGACD_BIOS_PROBE_Z80_MODULE_DIR}/sonic_cd_z80_step.c")
+      target_include_directories(${target} PRIVATE "${engine_root}/external/z80-recomp-core/include"
+        "${SEGACD_BIOS_PROBE_Z80_MODULE_DIR}")
+      target_compile_definitions(${target} PRIVATE SEGACD_BIOS_PROBE_NATIVE_Z80=1)
+    endif()
+  endfunction()
+  segacd_probe_z80(segacd_bios_floor_probe)
+
+  # Deliberately opt-in private-input bring-up, outside the synthetic CTest set.
+  set(SEGACD_BIOS_PROBE_MODULE_DIR "" CACHE PATH "Private generated segacd_bios module directory")
+  if(SEGACD_BIOS_PROBE_MODULE_DIR)
+    set(bios_sources "${SEGACD_BIOS_PROBE_MODULE_DIR}/segacd_bios_module.c")
+    foreach(part RANGE 0 31)
+      if(part LESS 10)
+        set(part "0${part}")
+      endif()
+      list(APPEND bios_sources "${SEGACD_BIOS_PROBE_MODULE_DIR}/segacd_bios_part${part}.c")
+    endforeach()
+    add_executable(segacd_bios_probe bios_probe.c ${bios_sources} ${step_runtime_sources}
+      ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c)
+    target_link_libraries(segacd_bios_probe PRIVATE segacd_devices)
+    target_include_directories(segacd_bios_probe PRIVATE "${SEGACD_BIOS_PROBE_MODULE_DIR}"
+      ${step_runtime_includes} ../../runner/cd ../../runner/video)
+    target_compile_features(segacd_bios_probe PRIVATE c_std_11)
+    set(SEGACD_BIOS_PROBE_SUB_MODULE_DIR "" CACHE PATH "Private original SUB program module directory")
+    set(SEGACD_BIOS_PROBE_RAM_MODULE_DIR "" CACHE PATH "Private original main RAM module directory")
+    if(SEGACD_BIOS_PROBE_SUB_MODULE_DIR AND SEGACD_BIOS_PROBE_RAM_MODULE_DIR)
+      set(SEGACD_BIOS_PROBE_EXTRA_MAIN_MODULES "" CACHE STRING
+        "Semicolon-separated private AOT modules as absolute-directory|prefix entries")
+      set(SEGACD_BIOS_PROBE_EXTRA_SUB_MODULES "" CACHE STRING
+        "Semicolon-separated private AOT modules as absolute-directory|prefix entries")
+      set(dual_sources ${bios_sources})
+      foreach(pair IN ITEMS sub ram)
+        if(pair STREQUAL "sub")
+          set(module_path "${SEGACD_BIOS_PROBE_SUB_MODULE_DIR}")
+          set(module_prefix segacd_sub)
+        else()
+          set(module_path "${SEGACD_BIOS_PROBE_RAM_MODULE_DIR}")
+          set(module_prefix segacd_main_ram)
+        endif()
+        list(APPEND dual_sources "${module_path}/${module_prefix}_module.c")
+        foreach(part RANGE 0 31)
+          if(part LESS 10)
+            set(part "0${part}")
+          endif()
+          list(APPEND dual_sources "${module_path}/${module_prefix}_part${part}.c")
+        endforeach()
+      endforeach()
+
+      # Optional private overlays can be compiled into this probe without a
+      # per-overlay cache variable. The generated registry header contains
+      # declarations and comma-prefixed entries for bios_dual_probe.c to append
+      # to its existing module arrays; it does not alter source-byte guards.
+      set(extra_main_module_declarations "")
+      set(extra_sub_module_declarations "")
+      set(extra_main_module_entries "")
+      set(extra_sub_module_entries "")
+      set(extra_all_prefixes)
+      set(extra_all_paths)
+      foreach(extra_cpu IN ITEMS MAIN SUB)
+        set(extra_var "SEGACD_BIOS_PROBE_EXTRA_${extra_cpu}_MODULES")
+        if(extra_cpu STREQUAL "MAIN")
+          set(extra_declarations_var extra_main_module_declarations)
+          set(extra_entries_var extra_main_module_entries)
+        else()
+          set(extra_declarations_var extra_sub_module_declarations)
+          set(extra_entries_var extra_sub_module_entries)
+        endif()
+        set(extra_seen_prefixes)
+        set(extra_seen_paths)
+        foreach(extra_entry IN LISTS ${extra_var})
+          string(REPLACE "|" ";" extra_fields "${extra_entry}")
+          list(LENGTH extra_fields extra_field_count)
+          if(NOT extra_field_count EQUAL 2)
+            message(FATAL_ERROR
+              "${extra_var} entry must be an absolute-directory|prefix pair: '${extra_entry}'")
+          endif()
+          list(GET extra_fields 0 extra_path)
+          list(GET extra_fields 1 extra_prefix)
+          if(NOT IS_ABSOLUTE "${extra_path}" OR NOT IS_DIRECTORY "${extra_path}")
+            message(FATAL_ERROR "${extra_var} module directory must exist and be absolute: '${extra_path}'")
+          endif()
+          if(NOT extra_prefix MATCHES "^[A-Za-z_][A-Za-z0-9_]*$")
+            message(FATAL_ERROR "${extra_var} prefix is not a C identifier: '${extra_prefix}'")
+          endif()
+          list(FIND extra_seen_prefixes "${extra_prefix}" extra_prefix_index)
+          if(NOT extra_prefix_index EQUAL -1)
+            list(GET extra_seen_paths ${extra_prefix_index} previous_path)
+            if(NOT "${previous_path}" STREQUAL "${extra_path}")
+              message(FATAL_ERROR
+                "${extra_var} repeats symbol prefix '${extra_prefix}' with different directories")
+            endif()
+            continue()
+          endif()
+          list(APPEND extra_seen_prefixes "${extra_prefix}")
+          list(APPEND extra_seen_paths "${extra_path}")
+          set(extra_module "${extra_prefix}_module")
+          set(extra_module_c "${extra_path}/${extra_module}.c")
+          if(NOT EXISTS "${extra_module_c}" OR NOT EXISTS "${extra_path}/${extra_prefix}.h")
+            message(FATAL_ERROR
+              "${extra_var} entry lacks ${extra_module}.c or ${extra_prefix}.h in '${extra_path}'")
+          endif()
+          list(FIND extra_all_prefixes "${extra_prefix}" all_prefix_index)
+          if(NOT all_prefix_index EQUAL -1)
+            list(GET extra_all_paths ${all_prefix_index} previous_path)
+            if(NOT "${previous_path}" STREQUAL "${extra_path}")
+              message(FATAL_ERROR
+                "extra main/sub module prefix '${extra_prefix}' names different directories")
+            endif()
+          else()
+            list(APPEND extra_all_prefixes "${extra_prefix}")
+            list(APPEND extra_all_paths "${extra_path}")
+            list(APPEND dual_sources "${extra_module_c}")
+            foreach(part RANGE 0 31)
+              if(part LESS 10)
+                set(part "0${part}")
+              endif()
+              set(part_c "${extra_path}/${extra_prefix}_part${part}.c")
+              if(NOT EXISTS "${part_c}")
+                message(FATAL_ERROR "${extra_var} entry lacks generated part '${part_c}'")
+              endif()
+              list(APPEND dual_sources "${part_c}")
+            endforeach()
+          endif()
+          string(APPEND ${extra_declarations_var}
+            "extern const M68kStepModule ${extra_module};\n")
+          string(APPEND ${extra_entries_var} ", &${extra_module}")
+        endforeach()
+      endforeach()
+      set(extra_registry_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+      file(MAKE_DIRECTORY "${extra_registry_dir}")
+      set(extra_registry_header "${extra_registry_dir}/segacd_bios_extra_modules.h")
+      configure_file(bios_extra_modules.h.in "${extra_registry_header}" @ONLY)
+
+      add_executable(segacd_bios_dual_probe bios_dual_probe.c ${dual_sources} ${step_runtime_sources}
+        ../../runner/cd/segacd_coordinator.c
+        ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c)
+      target_include_directories(segacd_bios_dual_probe PRIVATE "${SEGACD_BIOS_PROBE_MODULE_DIR}"
+        "${SEGACD_BIOS_PROBE_SUB_MODULE_DIR}" "${SEGACD_BIOS_PROBE_RAM_MODULE_DIR}"
+        "${extra_registry_dir}"
+        ${step_runtime_includes} ../../runner/cd ../../runner/video)
+      target_compile_features(segacd_bios_dual_probe PRIVATE c_std_11)
+      target_link_libraries(segacd_bios_dual_probe PRIVATE segacd_devices segacd_disc_image segacd_execution_floor)
+      segacd_probe_z80(segacd_bios_dual_probe)
+      set(SEGACD_BIOS_PROBE_SUB_PATCH_MODULE_DIR "" CACHE PATH "Private SUB runtime-written handler module directory")
+      if(SEGACD_BIOS_PROBE_SUB_PATCH_MODULE_DIR)
+        set(patch_sources "${SEGACD_BIOS_PROBE_SUB_PATCH_MODULE_DIR}/segacd_sub_patch_module.c")
+        foreach(part RANGE 0 31)
+          if(part LESS 10)
+            set(part "0${part}")
+          endif()
+          list(APPEND patch_sources "${SEGACD_BIOS_PROBE_SUB_PATCH_MODULE_DIR}/segacd_sub_patch_part${part}.c")
+        endforeach()
+        target_sources(segacd_bios_dual_probe PRIVATE ${patch_sources})
+        target_include_directories(segacd_bios_dual_probe PRIVATE "${SEGACD_BIOS_PROBE_SUB_PATCH_MODULE_DIR}")
+        target_compile_definitions(segacd_bios_dual_probe PRIVATE SEGACD_BIOS_PROBE_SUB_PATCH=1)
+      endif()
+      # Original disc-loaded bootstrap catalogs are private generated inputs.
+      # They describe source bytes; the running BIOS must load those bytes.
+      foreach(cpu IN ITEMS MAIN SUB)
+        set(SEGACD_BIOS_PROBE_BOOT_${cpu}_MODULE_DIR "" CACHE PATH
+          "Private original disc boot ${cpu} module directory")
+        if(SEGACD_BIOS_PROBE_BOOT_${cpu}_MODULE_DIR)
+          string(TOLOWER "${cpu}" cpu_lower)
+          set(boot_path "${SEGACD_BIOS_PROBE_BOOT_${cpu}_MODULE_DIR}")
+          set(boot_prefix "segacd_boot_${cpu_lower}")
+          set(boot_sources "${boot_path}/${boot_prefix}_module.c")
+          foreach(part RANGE 0 31)
+            if(part LESS 10)
+              set(part "0${part}")
+            endif()
+            list(APPEND boot_sources "${boot_path}/${boot_prefix}_part${part}.c")
+          endforeach()
+          target_sources(segacd_bios_dual_probe PRIVATE ${boot_sources})
+          target_include_directories(segacd_bios_dual_probe PRIVATE "${boot_path}")
+          target_compile_definitions(segacd_bios_dual_probe PRIVATE
+            SEGACD_BIOS_PROBE_BOOT_${cpu}=1)
+        endif()
+      endforeach()
+
+      option(SEGACD_BUILD_NATIVE_RUNNER "Build the native-only owned-program SDL consumer" OFF)
+      if(SEGACD_BUILD_NATIVE_RUNNER)
+        if(NOT SEGACD_BIOS_PROBE_Z80_MODULE_DIR)
+          message(FATAL_ERROR "The native runner requires a generated Z80 module")
+        endif()
+        enable_language(CXX)
+        if(WIN32)
+          if(NOT SDL2_DIR)
+            set(SDL2_DIR "${engine_root}/runner/external/SDL2/SDL2-2.28.5/cmake")
+          endif()
+          find_package(SDL2 REQUIRED CONFIG NO_DEFAULT_PATH PATHS "${SDL2_DIR}")
+        else()
+          find_package(SDL2 REQUIRED)
+        endif()
+        get_target_property(native_catalog_sources segacd_bios_dual_probe SOURCES)
+        list(FILTER native_catalog_sources EXCLUDE REGEX "(bios_dual_probe|segacd_coordinator|genesis_bus|genesis_vdp|z80_native|m68k_step)\\.c$")
+        get_target_property(native_includes segacd_bios_dual_probe INCLUDE_DIRECTORIES)
+        get_target_property(native_definitions segacd_bios_dual_probe COMPILE_DEFINITIONS)
+        add_library(segacd_owned_native_program STATIC ${native_catalog_sources})
+        target_include_directories(segacd_owned_native_program PRIVATE ${native_includes})
+        target_compile_features(segacd_owned_native_program PRIVATE c_std_11)
+        add_executable(SonicCD ../../runner/cd/standalone.c ../../runner/cd/standalone_program.c
+          ../../runner/cd/sonic_cd_world.c ../../runner/cd/sonic_cd_view.c ../../runner/cd/sonic_cd_culls.c
+          ../../runner/cd/sonic_cd_scene.c "${SEGACD_GAME_RENDER_SOURCE}" ../../runner/cd/sonic_cd_widescreen.c
+          ../../runner/cd/machine.c ../../runner/cd/z80_native.c ../../runner/cd/segacd_coordinator.c
+          ../../runner/cd/backup.c ../../runner/cd/audio_mix.c ../../runner/cd/audio_native.c ../../runner/cd/debug.c
+          ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c
+          ../../runner/audio.c ../../runner/audio/sn76489.c ../../runner/audio/ym2612_ymfm.cpp
+          ../../runner/external/ymfm/src/ymfm_opn.cpp ../../runner/external/ymfm/src/ymfm_ssg.cpp
+          ../../runner/external/ymfm/src/ymfm_adpcm.cpp ../../runner/external/ymfm/src/ymfm_pcm.cpp
+          ${step_runtime_sources})
+        include("${engine_root}/runner/cd/recomp_ui.cmake")
+        segacd_target_recomp_ui(SonicCD)
+        target_include_directories(SonicCD PRIVATE ${native_includes} ../../runner ../../runner/include
+          ../../runner/external/ymfm/src ../../runner/video)
+        foreach(sdl_include IN LISTS SDL2_INCLUDE_DIRS)
+          get_filename_component(sdl_name "${sdl_include}" NAME)
+          if(sdl_name STREQUAL "SDL2")
+            get_filename_component(sdl_parent "${sdl_include}" DIRECTORY)
+            target_include_directories(SonicCD PRIVATE "${sdl_parent}")
+          endif()
+        endforeach()
+        target_compile_definitions(SonicCD PRIVATE ${native_definitions} _CRT_SECURE_NO_WARNINGS)
+        target_compile_features(SonicCD PRIVATE c_std_11 cxx_std_17)
+        target_link_libraries(SonicCD PRIVATE segacd_owned_native_program segacd_devices segacd_disc_image SDL2::SDL2)
+        if(TARGET SDL2::SDL2main)
+          target_link_libraries(SonicCD PRIVATE SDL2::SDL2main)
+        endif()
+        if(NOT WIN32)
+          target_link_libraries(SonicCD PRIVATE m)
+        else()
+          target_link_libraries(SonicCD PRIVATE ws2_32)
+          set_target_properties(SonicCD PROPERTIES WIN32_EXECUTABLE TRUE)
+          add_custom_command(TARGET SonicCD POST_BUILD COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "$<TARGET_FILE:SDL2::SDL2>" "$<TARGET_FILE_DIR:SonicCD>" VERBATIM)
+        endif()
+      endif()
+    endif()
+  endif()
+endif()
+
+# One build graph for the synthetic suite; the catalog-free probe supplies
+# input/export self-tests. Private owned-input catalogs remain outside it.
+add_custom_target(segacd_test_suite)
+foreach(test_target IN ITEMS segacd_memory_test segacd_pcm_test segacd_fader_test segacd_cdda_test segacd_cdda_bus_test segacd_cdd_test
+    segacd_cdc_test segacd_disc_image_test segacd_sector_test segacd_media_test
+    segacd_stamp_test segacd_dma_test segacd_step_semantics_test
+    segacd_floor_divide_test segacd_module_test segacd_execution_floor_test segacd_debug_test
+    segacd_coordinator_test segacd_external_bus_test segacd_z80_native_test segacd_audio_mix_test segacd_bios_floor_probe
+    segacd_audio_native_test segacd_backup_test segacd_machine_test segacd_sonic_cd_render_test segacd_sonic_cd_view_test m68k_step_test)
+  if(TARGET ${test_target})
+    add_dependencies(segacd_test_suite ${test_target})
+  endif()
+endforeach()

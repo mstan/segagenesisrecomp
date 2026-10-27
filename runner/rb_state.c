@@ -1,6 +1,7 @@
 /* rb_state.c -- one section table for rollback snapshots and digests.
  * See rb_state.h for the contract and the digest domain. */
 #include "rb_state.h"
+#include "rb_digest.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,6 +17,8 @@
 #include "audio/ym2612.h"
 #include "audio/sn76489.h"
 #include "audio/event_queue.h"
+
+const char *genesis_rb_digest_implementation(void){return GENESIS_RB_DIGEST_IMPL;}
 
 /* ---- drift guards -----------------------------------------------------------
  * These pin the layouts the sections serialize. A failing assert means a
@@ -114,7 +117,7 @@ static int    sec_evq_load(const void *s, size_t n) { return audio_event_rb_load
 /* Default digest: the section's own bytes into its one partition. */
 static void digest_bytes(int part, const uint8_t *b, size_t n, GenesisRbDigest *d)
 {
-    d->part[part] = cosim_fnv_bytes(d->part[part], b, n);
+    d->part[part] = genesis_rb_digest_bytes(d->part[part], b, n);
 }
 
 static void digest_exec(int part, const uint8_t *b, size_t n, GenesisRbDigest *d)
@@ -131,19 +134,19 @@ static void digest_machine(int part, const uint8_t *b, size_t n, GenesisRbDigest
     const size_t bo = offsetof(GenesisMachine, bus), bn = sizeof(GenesisBus);
     const size_t zo = offsetof(GenesisMachine, z80);
     if (n < sizeof(GenesisMachine)) return;
-    d->part[GENESIS_RB_PART_VDP] = cosim_fnv_bytes(d->part[GENESIS_RB_PART_VDP], b + vo, vn);
-    d->part[GENESIS_RB_PART_BUS] = cosim_fnv_bytes(d->part[GENESIS_RB_PART_BUS], b + bo, bn);
+    d->part[GENESIS_RB_PART_VDP] = genesis_rb_digest_bytes(d->part[GENESIS_RB_PART_VDP], b + vo, vn);
+    d->part[GENESIS_RB_PART_BUS] = genesis_rb_digest_bytes(d->part[GENESIS_RB_PART_BUS], b + bo, bn);
     /* z80 core + the machine's cycle carry/master clock + the tail
      * (YM timer clock, DMA stall, recompiled Z80): everything after the bus. */
-    d->part[GENESIS_RB_PART_Z80] = cosim_fnv_bytes(d->part[GENESIS_RB_PART_Z80], b + zo, n - zo);
+    d->part[GENESIS_RB_PART_Z80] = genesis_rb_digest_bytes(d->part[GENESIS_RB_PART_Z80], b + zo, n - zo);
     /* Bytes before vdp (none today) belong to the VDP partition. */
-    if (vo) d->part[GENESIS_RB_PART_VDP] = cosim_fnv_bytes(d->part[GENESIS_RB_PART_VDP], b, vo);
+    if (vo) d->part[GENESIS_RB_PART_VDP] = genesis_rb_digest_bytes(d->part[GENESIS_RB_PART_VDP], b, vo);
     /* Padding between the members is part of the copied image: fold it too,
      * so "digest = snapshot bytes" holds exactly. */
     if (bo > vo + vn)
-        d->part[GENESIS_RB_PART_VDP] = cosim_fnv_bytes(d->part[GENESIS_RB_PART_VDP], b + vo + vn, bo - (vo + vn));
+        d->part[GENESIS_RB_PART_VDP] = genesis_rb_digest_bytes(d->part[GENESIS_RB_PART_VDP], b + vo + vn, bo - (vo + vn));
     if (zo > bo + bn)
-        d->part[GENESIS_RB_PART_BUS] = cosim_fnv_bytes(d->part[GENESIS_RB_PART_BUS], b + bo + bn, zo - (bo + bn));
+        d->part[GENESIS_RB_PART_BUS] = genesis_rb_digest_bytes(d->part[GENESIS_RB_PART_BUS], b + bo + bn, zo - (bo + bn));
 }
 
 typedef struct RbSection {

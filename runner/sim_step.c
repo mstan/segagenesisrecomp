@@ -55,7 +55,7 @@ int genesis_sim_step(const GenesisSimInput *in, const GenesisSimAudio *audio,
     }
     if (hooks->pre_raster) hooks->pre_raster(hooks->ctx);
     glue_sched_frame_begin();        /* scheduler rule: busy-wait streaks restart */
-    machine_run_frame(hooks->sink, hooks->sink_user);
+    machine_run_frame_ex(hooks->sink, hooks->sink_user, hooks->producer);
 
     {
         GenesisSimAudio scratch = { s_scratch_fm, SIM_SCRATCH_FM_FRAMES, NULL,

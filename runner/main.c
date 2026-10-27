@@ -29,6 +29,7 @@
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
 #include "genesis_clocks.h"
 #include "frame_pacer.h"
+#include "host_wait.h"
 #include "audio.h"
 #include "host_timing.h"
 #include "cosim.h"
@@ -581,6 +582,29 @@ static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width
     if (g_game_spec.video && g_game_spec.video->overlay_scanline)
         g_game_spec.video->overlay_scanline(&g_machine.vdp, line, row, s_screen_width);
 }
+
+static int own_custom_row_enabled(void *user)
+{
+    (void)user;
+    return s_custom_width && g_game_spec.video && g_game_spec.video->scanline_lazy;
+}
+
+static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
+                           GenesisNativeRow native_row, void *native_ctx)
+{
+    (void)user;
+    s_screen_width = s_custom_width;
+    if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
+    uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
+    g_game_spec.video->scanline_lazy(vdp, line, native_w, row, s_custom_width,
+                                     native_row, native_ctx);
+    if (g_game_spec.video->overlay_scanline)
+        g_game_spec.video->overlay_scanline(vdp, line, row, s_screen_width);
+}
+
+static const GenesisScanlineProducer s_custom_producer = {
+    own_custom_row_enabled, own_custom_row
+};
 
 static void custom_video_prepare(void)
 {
@@ -3371,7 +3395,7 @@ session_begin:;
               (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
               (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
           GenesisSimHooks sim_hooks = { live_pre_raster, own_scanline_sink, NULL,
-                                        live_post_drain, NULL };
+                                        live_post_drain, NULL, &s_custom_producer };
           int probing = rb_probe_armed()
 #if GENESIS_HAS_RECOMP_NET
                         && !genesis_netplay_active()
@@ -3533,7 +3557,7 @@ session_begin:;
                       (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
                       (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
                   GenesisSimHooks sim_hooks = { widescreen_pre_raster, own_scanline_sink, NULL,
-                                                rdb_post_drain, NULL };
+                                                rdb_post_drain, NULL, &s_custom_producer };
                   if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
             }
@@ -3738,13 +3762,8 @@ session_begin:;
         } else {
             Uint64 now = SDL_GetPerformanceCounter();
             Uint64 deadline = frame_pacer_deadline(&frame_pacer, now);
-            if (now < deadline) {
-                Uint64 remaining_ms = (deadline - now) * 1000 / perf_frequency;
-                if (remaining_ms > 2)
-                    SDL_Delay((Uint32)(remaining_ms - 1));
-                while (SDL_GetPerformanceCounter() < deadline)
-                    ;
-            }
+            if (now < deadline)
+                genesis_host_wait_until(deadline, perf_frequency);
         }
         FRAME_PHASE(8);
         SDL_RenderPresent(renderer);
@@ -3870,7 +3889,7 @@ session_begin:;
                "\"cpu_cycles\":%llu,\"cycles_per_frame\":%.3f,"
                "\"state_fnv1a64\":\"%016llX\","
                "\"audio_state_fnv1a64\":\"%016llX\","
-               "\"vdp_plane_impl\":\"%s\",\"workload_scope\":\"%s\","
+               "\"vdp_plane_impl\":\"%s\",\"host_wait_native\":%s,\"rb_digest_impl\":\"%s\",\"workload_scope\":\"%s\","
                "\"requested_frames\":%u,\"complete\":%s,"
                "\"audio_flushes\":%u,\"mixed_fm_frames\":%llu,"
                "\"mixed_psg_frames\":%llu,\"audio_pushed_frames\":%llu,"
@@ -3882,6 +3901,8 @@ session_begin:;
                (unsigned long long)cpu_cycles, cycles_per_frame,
                (unsigned long long)state_hash,
                (unsigned long long)audio_hash, gvdp_plane_implementation(),
+               genesis_host_wait_native_active() ? "true" : "false",
+               genesis_rb_digest_implementation(),
                runtime_measure_frames ? (runtime_uncapped ? "uncapped-runtime" : "paced-runtime")
                    : "uncapped-core",
                runtime_measure_frames ? runtime_measure_frames : benchmark_frames,
@@ -3943,6 +3964,7 @@ session_begin:;
     }
 
     /* --- Cleanup --- */
+    genesis_host_wait_shutdown();
 #if GENESIS_HAS_RECOMP_NET
     genesis_netplay_print_summary();
     genesis_netplay_shutdown();

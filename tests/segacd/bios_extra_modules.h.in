@@ -1,0 +1,12 @@
+#ifndef SEGACD_BIOS_EXTRA_MODULES_H
+#define SEGACD_BIOS_EXTRA_MODULES_H
+
+#include "m68k_step.h"
+
+@extra_main_module_declarations@
+@extra_sub_module_declarations@
+
+#define SEGACD_BIOS_PROBE_EXTRA_MAIN_MODULES @extra_main_module_entries@
+#define SEGACD_BIOS_PROBE_EXTRA_SUB_MODULES @extra_sub_module_entries@
+
+#endif

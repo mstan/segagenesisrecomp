@@ -71,6 +71,7 @@ typedef struct GenesisSimHooks {
      * tick there (the host is quitting). Optional. */
     int (*post_drain)(void *ctx);
     void *ctx;
+    const GenesisScanlineProducer *producer;
 } GenesisSimHooks;
 
 /* Run one tick. Returns 1 when the tick completed, 0 when post_drain asked

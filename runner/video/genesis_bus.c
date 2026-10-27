@@ -114,8 +114,8 @@ static void ym_write_side_effect(GenesisBus *b, uint8_t port, uint8_t val,
         /* Bits 4/5 clear timer A/B flags; bit 1 loads/runs timer B; bit 3
          * enables its overflow flag. RKA writes $3C (clear/stop), updates
          * $26, then writes $3A (clear/load/run). */
-        if (val & 0x10u) b->ym_status &= (uint8_t)~0x01u;
-        if (val & 0x20u) b->ym_status &= (uint8_t)~0x02u;
+        if (val & 0x10u) b->ym_status &= 0xfeu;
+        if (val & 0x20u) b->ym_status &= 0xfdu;
         b->ym_mode = val;
         if (val & 0x02u) {
             if (b->ym_timer_b_period == 0)

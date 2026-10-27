@@ -1,7 +1,7 @@
 # Framework-level tests for segagenesisrecomp.
 #
 # Builds:
-#   l1_decoder_test  — per-instruction decoder correctness harness.
+#   l1_decoder_test  â€” per-instruction decoder correctness harness.
 #                      Reads fixture + ROM, runs m68k_decode per row,
 #                      buckets failures by (level, expected, got).
 #
@@ -21,8 +21,41 @@ endif()
 # a top-level project.  Keep its ROM-independent harnesses runnable directly
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
+add_subdirectory(segacd)
+enable_language(CXX)
+
+# Compile the same public wrapper under both fixed implementations. Share the
+# unmodified ymfm chip, compare full state and PCM, and exercise pending output.
+set(_fm_wrapper "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/ym2612_ymfm.cpp")
+set(_ymfm "${CMAKE_CURRENT_LIST_DIR}/../runner/external/ymfm/src")
+add_library(fm_scalar_test_model OBJECT "${_fm_wrapper}")
+target_include_directories(fm_scalar_test_model PRIVATE "${_ymfm}"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner")
+target_compile_definitions(fm_scalar_test_model PRIVATE GENESIS_FM_BLOCK_SAMPLES=0)
+foreach(_fm_api init advance write render samples_available sample_rate save_state load_state cosim_hash rb_save rb_load)
+    target_compile_definitions(fm_scalar_test_model PRIVATE ym2612_${_fm_api}=ref_ym2612_${_fm_api})
+endforeach()
+add_executable(fm_block_test runtime/fm_block_test.cpp "${_fm_wrapper}"
+    $<TARGET_OBJECTS:fm_scalar_test_model>
+    "${_ymfm}/ymfm_opn.cpp" "${_ymfm}/ymfm_ssg.cpp"
+    "${_ymfm}/ymfm_adpcm.cpp" "${_ymfm}/ymfm_pcm.cpp")
+target_include_directories(fm_block_test PRIVATE "${_ymfm}"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner")
+target_compile_definitions(fm_block_test PRIVATE GENESIS_FM_BLOCK_SAMPLES=1)
+add_test(NAME fm_block COMMAND fm_block_test)
 
 if(TARGET SDL2::SDL2)
+    foreach(_host_wait_variant native portable)
+        add_executable(host_wait_${_host_wait_variant}_test runtime/host_wait_test.c
+            "${CMAKE_CURRENT_LIST_DIR}/../runner/host_wait.c")
+        target_include_directories(host_wait_${_host_wait_variant}_test PRIVATE
+            "${CMAKE_CURRENT_LIST_DIR}/../runner")
+        target_link_libraries(host_wait_${_host_wait_variant}_test PRIVATE SDL2::SDL2)
+        if(_host_wait_variant STREQUAL "portable")
+            target_compile_definitions(host_wait_${_host_wait_variant}_test PRIVATE GENESIS_DISABLE_NATIVE_HOST_WAIT=1)
+        endif()
+        add_test(NAME host_wait_${_host_wait_variant} COMMAND host_wait_${_host_wait_variant}_test)
+    endforeach()
     add_executable(audio_extra_test runtime/audio_extra_test.c
         "${CMAKE_CURRENT_LIST_DIR}/../runner/audio.c")
     target_include_directories(audio_extra_test PRIVATE
@@ -64,6 +97,8 @@ add_test(NAME audio_drc COMMAND audio_drc_test)
 
 find_package(Python3 QUIET COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
+    add_test(NAME paired_benchmark_gate COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_LIST_DIR}/runtime/test_paired_benchmark.py")
     add_test(NAME segacd_owned_extract COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_LIST_DIR}/../tools/segacd/test_sgcd_owned_extract.py")
     add_test(NAME segacd_owned_media COMMAND "${Python3_EXECUTABLE}"
@@ -96,6 +131,17 @@ target_include_directories(sonic1_video_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner/include"
     "${CMAKE_CURRENT_LIST_DIR}/../sonicthehedgehog")
 add_test(NAME sonic1_video COMMAND sonic1_video_test)
+add_executable(tile_row_test runtime/tile_row_test.c)
+target_include_directories(tile_row_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+add_test(NAME tile_row COMMAND tile_row_test)
+foreach(_digest_variant fast reference)
+    add_executable(rb_digest_${_digest_variant}_test runtime/rb_digest_test.c)
+    target_include_directories(rb_digest_${_digest_variant}_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+    if(_digest_variant STREQUAL "reference")
+        target_compile_definitions(rb_digest_${_digest_variant}_test PRIVATE GENESIS_FAST_RB_DIGEST=0)
+    endif()
+    add_test(NAME rb_digest_${_digest_variant} COMMAND rb_digest_${_digest_variant}_test)
+endforeach()
 
 # Snapshottable game fiber (runner/fiber_compat.c + vendored minicoro):
 # save/restore/reset contract the rollback netplay core depends on.
@@ -142,7 +188,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
         target_link_libraries(party_input_test PRIVATE SDL2::SDL2)
         if(WIN32)
             add_custom_command(TARGET party_input_test POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${SDL2_BUNDLED}/lib/x64/SDL2.dll" "$<TARGET_FILE_DIR:party_input_test>")
+                "$<TARGET_FILE:SDL2::SDL2>" "$<TARGET_FILE_DIR:party_input_test>" VERBATIM)
         endif()
         add_test(NAME party_input COMMAND party_input_test "${CMAKE_CURRENT_BINARY_DIR}/party-input-test.ini")
     endif()
@@ -210,7 +256,7 @@ add_executable(l1_decoder_test
 genesisrecomp_configure_test(l1_decoder_test)
 
 # ---------------------------------------------------------------------------
-# m68k_validator_test — synthetic legality fixtures (Phase 5).
+# m68k_validator_test â€” synthetic legality fixtures (Phase 5).
 # ---------------------------------------------------------------------------
 add_executable(m68k_validator_test
     harness/m68k_validator_test.c
@@ -220,7 +266,7 @@ add_executable(m68k_validator_test
 genesisrecomp_register_test(m68k_validator_test)
 
 # ---------------------------------------------------------------------------
-# m68k_decoder_synth_test — synthetic decoder fixtures for instruction
+# m68k_decoder_synth_test â€” synthetic decoder fixtures for instruction
 # forms Sonic's disasm doesn't exercise (MOVE_CCR/SR direction, CMPM,
 # immediate-to-CCR/SR, ADDX/SUBX memory-predec, etc.). Grows phase-by-phase.
 # ---------------------------------------------------------------------------
@@ -231,7 +277,7 @@ add_executable(m68k_decoder_synth_test
 genesisrecomp_register_test(m68k_decoder_synth_test)
 
 # ---------------------------------------------------------------------------
-# codegen_diag_test — unit smoke test for the diagnostics module.
+# codegen_diag_test â€” unit smoke test for the diagnostics module.
 # Exercises codegen_diag directly without spinning up a ROM/codegen
 # pipeline; ensures recording, counting, and summary stay correct as
 # new diag kinds are added in later phases.
@@ -244,7 +290,7 @@ add_executable(codegen_diag_test
 genesisrecomp_register_test(codegen_diag_test)
 
 # ---------------------------------------------------------------------------
-# return_capture_test — all-path proof for callees that consume JSR return PCs.
+# return_capture_test â€” all-path proof for callees that consume JSR return PCs.
 # ---------------------------------------------------------------------------
 add_executable(return_capture_test
     harness/return_capture_test.c
@@ -257,7 +303,7 @@ target_include_directories(return_capture_test PRIVATE
 )
 
 # ---------------------------------------------------------------------------
-# m68k_effective_address_test — brief-extension W/L index semantics shared by
+# m68k_effective_address_test â€” brief-extension W/L index semantics shared by
 # generated code and the clean-room Tier-3 interpreter.
 # ---------------------------------------------------------------------------
 add_executable(m68k_effective_address_test

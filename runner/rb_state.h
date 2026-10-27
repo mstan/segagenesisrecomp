@@ -23,7 +23,7 @@
  *   input   the sealed GenesisSimInput and the tick counter
  *   game    GameSpec.rb_state_save/load (adapter statics), if provided
  *
- * DIGEST DOMAIN. Every section's digest is the FNV-1a of exactly the bytes
+ * DIGEST DOMAIN. Every section's digest covers exactly the bytes
  * its snapshot writes, except exec, whose bytes are host addresses: exec is
  * digested address-free (yield site, running flag, resume PC, the guest-
  * visible tail-frame chain) and its raw stack is compared in-process by the
@@ -33,6 +33,10 @@
  *
  * Partitions are finer than sections so a fork names what differs: the
  * machine section digests as vdp / bus / z80.
+ * The build-fixed byte checksum is portable XXH64 (or the reference FNV-1a
+ * build option). Exec remains address-free FNV-1a; the partition fold remains
+ * FNV-1a. No state bytes are omitted. Existing exact executable identity
+ * checks exclude peers compiled with a different algorithm.
  */
 #include <stddef.h>
 #include <stdint.h>
@@ -78,6 +82,7 @@ int genesis_rb_load(const void *src, size_t len);
 
 /* Partitioned digest of the live state (reads only). */
 void genesis_rb_digest(GenesisRbDigest *out);
+const char *genesis_rb_digest_implementation(void);
 /* 32-bit folds for the wire (recomp-net RNetRbDigestParts). */
 uint32_t genesis_rb_fold32(uint64_t h);
 

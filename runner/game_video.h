@@ -2,6 +2,9 @@
 #include <stdint.h>
 
 struct GVDP;
+/* Synchronous, memoized original image for the current row. Valid only during
+ * scanline_lazy; callers that fully draw the row need not request it. */
+typedef const uint32_t *(*GameVideoNativeRow)(void *ctx);
 
 /* Optional game-owned presentation. It reads the live scene at the same
  * scanline as the native VDP pass; the scanline/overlay callbacks must not
@@ -26,4 +29,10 @@ typedef struct GameVideo {
      * of aspect mode; must not advance simulation or mutate the guest. */
     void (*overlay_scanline)(const struct GVDP *vdp, int line,
                              uint32_t *out, int width);
+    /* Optional complete-row producer. Sprite status has already been evaluated.
+     * Request original pixels through native_row only at fallback sites. The
+     * legacy scanline callback remains supported for existing game adapters. */
+    void (*scanline_lazy)(const struct GVDP *vdp, int line, int native_w,
+                          uint32_t *out, int width,
+                          GameVideoNativeRow native_row, void *native_ctx);
 } GameVideo;

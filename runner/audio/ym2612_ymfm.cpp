@@ -33,6 +33,10 @@ extern "C" {
 #include <cstdio>
 #include <vector>
 
+#ifndef GENESIS_FM_BLOCK_SAMPLES
+#define GENESIS_FM_BLOCK_SAMPLES 1
+#endif
+
 namespace {
 
 /* 68K / YM2612 chip clock (NTSC master / 7). sample_rate = clock / 144 = 53267. */
@@ -93,6 +97,7 @@ inline int32_t fm_lpf(int ch, int32_t in) {
     return out;
 }
 
+#if !GENESIS_FM_BLOCK_SAMPLES
 void emit_one_sample() {
     if (s_scratch_write >= FM_SCRATCH_STEREO_SAMPLES) {
         /* Scratch full — consumer didn't drain. Shouldn't happen at
@@ -107,6 +112,27 @@ void emit_one_sample() {
     s_scratch[s_scratch_write * 2 + 1] = (int16_t)fm_lpf(1, r);
     s_scratch_write++;
 }
+#else
+void emit_samples(uint32_t count) {
+    size_t available = FM_SCRATCH_STEREO_SAMPLES - s_scratch_write;
+    if (count > available) count = (uint32_t)available;
+    /* No register write can occur within this advance interval. Keep ymfm's
+     * exact sample sequence and the serial LPF, amortizing the outer calls. */
+    ymfm::ym2612::output_data block[64];
+    while (count) {
+        uint32_t chunk = count < 64 ? count : 64;
+        s_chip->generate(block, chunk);
+        for (uint32_t i = 0; i < chunk; ++i) {
+            int32_t l = block[i].data[0] * YM_GAIN_NUM / YM_GAIN_DEN;
+            int32_t r = block[i].data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
+            s_scratch[s_scratch_write * 2] = (int16_t)fm_lpf(0, l);
+            s_scratch[s_scratch_write * 2 + 1] = (int16_t)fm_lpf(1, r);
+            ++s_scratch_write;
+        }
+        count -= chunk;
+    }
+}
+#endif
 
 } /* namespace */
 
@@ -125,10 +151,18 @@ extern "C" void ym2612_advance(uint32_t cycles_master) {
     if (!s_inited) ym2612_init();
     if (cycles_master == 0) return;
     s_master_accum += cycles_master;
+#if GENESIS_FM_BLOCK_SAMPLES
+    if (s_master_accum >= MASTER_PER_SAMPLE) {
+        uint32_t count = s_master_accum / MASTER_PER_SAMPLE;
+        s_master_accum %= MASTER_PER_SAMPLE;
+        emit_samples(count);
+    }
+#else
     while (s_master_accum >= MASTER_PER_SAMPLE) {
         s_master_accum -= MASTER_PER_SAMPLE;
         emit_one_sample();
     }
+#endif
 }
 
 extern "C" void ym2612_write(uint8_t port, uint8_t value) {

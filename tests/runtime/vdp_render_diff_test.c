@@ -157,6 +157,15 @@ static int compare_case(const char *label, const GVDP *src, int line,
         fprintf(stderr, "%s repeated discarded-row mismatch line=%d\n", label, line);
         return 1;
     }
+    /* Lazy presentation can request original pixels after status evaluation.
+     * That fallback must reproduce both the image and device state. */
+    memset(out_b, 0xA5, sizeof(out_b));
+    wb = cand_gvdp_render_scanline(&discarded, line, out_b);
+    if (wb != wa || memcmp(out_a, out_b, sizeof(out_a)) ||
+        memcmp(&a, &discarded, sizeof(GVDP))) {
+        fprintf(stderr, "%s lazy native fallback mismatch line=%d\n", label, line);
+        return 1;
+    }
     return 0;
 }
 

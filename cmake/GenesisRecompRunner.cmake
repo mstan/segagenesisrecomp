@@ -26,6 +26,8 @@
 # game repository can migrate.
 
 include_guard(GLOBAL)
+option(GENESIS_FM_BLOCK_SAMPLES "Batch faithful FM samples between register writes" ON)
+option(GENESIS_FAST_RB_DIGEST "Use portable XXH64 for complete rollback section bytes" ON)
 set(GENESIS_VDP_PLANE_IMPL "SCALAR" CACHE STRING "VDP scanline renderer (planes, sprites and composition)")
 set_property(CACHE GENESIS_VDP_PLANE_IMPL PROPERTY STRINGS SCALAR BATCHED)
 if(NOT GENESIS_VDP_PLANE_IMPL MATCHES "^(SCALAR|BATCHED)$")
@@ -45,6 +47,7 @@ endif()
 
 set(GENESIS_RUNNER_CORE_SOURCES
     main.c
+    host_wait.c
     sim_step.c
     rb_state.c
     rb_probe.c
@@ -84,6 +87,7 @@ set(GENESIS_RUNNER_CORE_SOURCES
 # and is listed by every consumer; a consumer lacking one of those is a
 # deliberate divergence the reconciler must not paper over.
 set(GENESIS_RUNNER_RECONCILED_SOURCES
+    host_wait.c
     cosim_state.c
     sim_step.c
     rb_state.c
@@ -119,6 +123,8 @@ endfunction()
 # Build requirements the runner places on the executable that links it.
 function(genesisrecomp_runner_target target)
     target_compile_definitions(${target} PRIVATE
+        GENESIS_FM_BLOCK_SAMPLES=$<BOOL:${GENESIS_FM_BLOCK_SAMPLES}>
+        GENESIS_FAST_RB_DIGEST=$<BOOL:${GENESIS_FAST_RB_DIGEST}>
         GENESIS_BATCHED_PLANES=$<STREQUAL:${GENESIS_VDP_PLANE_IMPL},BATCHED>)
     get_target_property(_done ${target} GENESIS_RUNNER_REQUIREMENTS)
     if(_done)

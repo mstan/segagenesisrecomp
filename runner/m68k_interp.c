@@ -149,6 +149,7 @@ static void mem_write(M68KSize sz, uint32_t a, uint32_t v) {
 
 static uint32_t read_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, int rmw) {
     int mode = (ea >> 3) & 7, reg = ea & 7, sb = szbytes(sz);
+    if(reg==7 && sz==M68K_SIZE_B)sb=2;
     switch (mode) {
     case 0: return g_cpu.D[reg];
     case 1: return g_cpu.A[reg];
@@ -209,6 +210,7 @@ static uint32_t addr_ea(const M68KInstr *ins, int ea, ExtR *er) {
 
 static void write_ea_ex(const M68KInstr *ins, int ea, M68KSize sz, ExtR *er, uint32_t val, int rmw) {
     int mode = (ea >> 3) & 7, reg = ea & 7, sb = szbytes(sz);
+    if(reg==7 && sz==M68K_SIZE_B)sb=2;
     (void)ins;
     switch (mode) {
     case 0: store_dn(reg, val, sz); break;
@@ -360,7 +362,7 @@ static int do_shift(M68KMnemonic mn, int dreg, M68KSize sz,
             if (cnt >= bits) v = (sv != 0) ? 1u : 0u;
             else {
                 uint32_t top = sv >> (bits - 1 - cnt);
-                uint32_t allm = (uint32_t)((1u << (cnt + 1)) - 1u);
+                uint32_t allm = (uint32_t)((UINT64_C(1) << (cnt + 1)) - 1u);
                 v = (top != 0 && top != allm) ? 1u : 0u;
             }
         }
@@ -408,10 +410,11 @@ static int do_shift(M68KMnemonic mn, int dreg, M68KSize sz,
         if (!res) g_cpu.SR |= SR_Z;
         if ((res >> (bits - 1)) & 1u) g_cpu.SR |= SR_N;
         if (c) g_cpu.SR |= SR_C;
-    } else if (reg_count && cnt == 0) {                        /* count 0: preserve X, C=0 */
+    } else if (reg_count && cnt == 0) { /* Preserve X; ROX copies X to C. */
         g_cpu.SR &= ~0x0Fu;
         if (!res) g_cpu.SR |= SR_Z;
         if ((res >> (bits - 1)) & 1u) g_cpu.SR |= SR_N;
+        if ((mn == MN_ROXL || mn == MN_ROXR) && (g_cpu.SR & SR_X)) g_cpu.SR |= SR_C;
     } else {
         g_cpu.SR &= ~0x1Fu;
         if (!res) g_cpu.SR |= SR_Z;
@@ -429,10 +432,7 @@ static int do_shift(M68KMnemonic mn, int dreg, M68KSize sz,
 static void do_div(int dr, uint32_t src16, int is_signed) {
     uint32_t dest = g_cpu.D[dr];
     g_cpu.SR &= ~SR_C;                                   /* carry always cleared */
-    if ((uint16_t)src16 == 0) {                          /* div by zero: clown traps (vec 5) */
-        g_cpu.SR &= ~(SR_N | SR_Z | SR_V);               /* (harness skips the trap excursion) */
-        return;
-    }
+    if ((uint16_t)src16 == 0) return; /* exec_one rejects the unhandled trap. */
     int src_neg  = is_signed && ((src16 & 0x8000u) != 0);
     int dest_neg = is_signed && ((dest & 0x80000000u) != 0);
     int res_neg  = (src_neg != dest_neg);
@@ -442,7 +442,8 @@ static void do_div(int dr, uint32_t src16, int is_signed) {
 
     if (abs_src >= (abs_dest >> 16)) {                   /* unsigned overflow pre-check */
         uint32_t abs_quo = abs_dest / abs_src;
-        if (!is_signed || abs_quo <= (res_neg ? 0x8000u : 0x7FFFu)) {
+        if ((!is_signed && abs_quo <= 0xFFFFu) ||
+            (is_signed && abs_quo <= (res_neg ? 0x8000u : 0x7FFFu))) {
             uint32_t abs_rem = abs_dest % abs_src;
             uint32_t quo = res_neg  ? (0u - abs_quo) : abs_quo;
             uint32_t rem = dest_neg ? (0u - abs_rem) : abs_rem;
@@ -703,8 +704,12 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
         return M68KI_OK;
     }
     case MN_CLR: {
-        /* 68000 quirk: CLR does a (discarded) read before writing 0. */
-        write_ea(ins, ins->src_ea, sz, &er, 0);
+        /* MC68000 reads the destination before clearing it. Re-resolve the
+         * write from a fresh extension reader so the read's postincrement or
+         * predecrement handling occurs exactly once across the RMW pair. */
+        (void)read_ea_ex(ins, ins->src_ea, sz, &er, 1);
+        ExtR write_er; er_init(&write_er, ins);
+        write_ea_ex(ins, ins->src_ea, sz, &write_er, 0, 1);
         g_cpu.SR = (uint16_t)((g_cpu.SR & ~0x0Fu) | SR_Z);
         return M68KI_OK;
     }
@@ -779,8 +784,8 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
     case MN_CMPM: {
         /* CMPM (Ay)+,(Ax)+ : Ax is dest (ins->reg), Ay is src (src_ea&7). */
         int ay = ins->src_ea & 7, ax = ins->reg, sb = szbytes(sz); uint32_t m = szmask(sz);
-        uint32_t b = mem_read(sz, g_cpu.A[ay]) & m; g_cpu.A[ay] += sb;
-        uint32_t a = mem_read(sz, g_cpu.A[ax]) & m; g_cpu.A[ax] += sb;
+        uint32_t b = mem_read(sz, g_cpu.A[ay]) & m; g_cpu.A[ay] += ay==7 && sz==M68K_SIZE_B?2:sb;
+        uint32_t a = mem_read(sz, g_cpu.A[ax]) & m; g_cpu.A[ax] += ax==7 && sz==M68K_SIZE_B?2:sb;
         flags_cmp(a, b, a - b, sz);
         return M68KI_OK;
     }
@@ -1014,12 +1019,18 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
         flags_logic(g_cpu.D[ins->reg], M68K_SIZE_L);
         return M68KI_OK;
     }
-    case MN_DIVU:
-        do_div(ins->reg, read_ea(ins, ins->src_ea, M68K_SIZE_W, &er) & 0xFFFFu, 0);
+    case MN_DIVU: case MN_DIVS: {
+        uint32_t divisor=read_ea(ins,ins->src_ea,M68K_SIZE_W,&er)&0xFFFFu;
+        /* The function-ABI floor cannot build a hardware exception frame.
+         * Stop explicitly rather than silently continuing past vector five.
+         * The explicit-PC runtime supplies real exception entry separately. */
+        if(!divisor) {
+            g_m68ki_bad_pc=ins->addr;g_m68ki_bad_op=ins->words[0];
+            return M68KI_HALT_UNIMPL;
+        }
+        do_div(ins->reg,divisor,ins->mnemonic==MN_DIVS);
         return M68KI_OK;
-    case MN_DIVS:
-        do_div(ins->reg, read_ea(ins, ins->src_ea, M68K_SIZE_W, &er) & 0xFFFFu, 1);
-        return M68KI_OK;
+    }
 
     /* ---- MOVEM ---- */
     case MN_MOVEM:

@@ -11,6 +11,7 @@ import argparse
 import ctypes
 import json
 import os
+import re
 import statistics
 import subprocess
 import sys
@@ -101,6 +102,17 @@ def parse_benchmark(stdout: str, stderr: str) -> dict:
     raise RuntimeError("runner produced no GENESISRECOMP_BENCHMARK record")
 
 
+def parse_rollback_receipt(log: str) -> dict:
+    summaries = re.findall(r"rb_probe: summary passes=(\d+) divergences=(\d+) asymmetric=(\d+) period=(\d+) depth=(\d+)", log)
+    if len(summaries) != 1:
+        raise RuntimeError("missing or duplicate rollback summary")
+    passes, divergences, asymmetric, period, depth = map(int, summaries[0])
+    if not passes or divergences or asymmetric:
+        raise RuntimeError(f"rollback failed: {summaries[0]}")
+    return dict(passes=passes, divergences=divergences, asymmetric=asymmetric,
+                period=period, depth=depth)
+
+
 def parse_env_overrides(values: list[str]) -> dict[str, str]:
     overrides: dict[str, str] = {}
     for value in values:
@@ -127,8 +139,9 @@ def run_once(
     log_dir: Path | None = None,
     widescreen: str | None = None,
 ) -> dict:
-    command = ([str(exe), "--measure-runtime", str(frames), "--runtime-uncapped",
-                "--no-launcher", str(rom)] if workload == "runtime" else
+    command = ([str(exe), "--measure-runtime", str(frames),
+                *(["--runtime-uncapped"] if workload == "runtime" else []),
+                "--no-launcher", str(rom)] if workload in ("runtime", "paced-runtime") else
                [str(exe), "--benchmark", str(frames), str(rom)])
     if input_script is not None:
         command += ["--input-script", str(input_script)]
@@ -164,6 +177,10 @@ def run_once(
         )
 
     result = parse_benchmark(stdout, stderr)
+    if int(child_env.get("GENESIS_RB_PROBE", "0").split(":")[0]) > 0:
+        result["rollback"] = parse_rollback_receipt(stdout + "\n" + stderr)
+    if int(child_env.get("GENESIS_RB_SELFTEST", "0")) > 0 and "[rb_selftest] PASS (0 failure(s))" not in stdout + stderr:
+        raise RuntimeError(f"{label}: rollback section mutation self-test did not pass")
     result["label"] = label
     return result
 
@@ -179,6 +196,8 @@ def verify_hashes(
     context: str,
     allow_missing: bool,
 ) -> None:
+    if baseline.get("rollback") != candidate.get("rollback"):
+        raise RuntimeError(f"{context}: rollback work mismatch")
     for field in HASH_FIELDS:
         base_hash = baseline.get(field)
         cand_hash = candidate.get(field)
@@ -208,7 +227,7 @@ def main() -> int:
     )
     parser.add_argument("--frames", type=int, default=6000)
     parser.add_argument("--log-dir", type=Path, help="retain every arm's complete runner output")
-    parser.add_argument("--workload", choices=("core", "runtime"), default="core",
+    parser.add_argument("--workload", choices=("core", "runtime", "paced-runtime"), default="core",
                         help="runtime retains presentation, audio mixing/delivery and rewind")
     parser.add_argument("--candidate-vdp-impl", choices=("SCALAR", "BATCHED"),
                         help="expected candidate backend for a deliberate VDP implementation comparison")
@@ -395,10 +414,10 @@ def main() -> int:
                 raise RuntimeError(f"pair {pair_index + 1}: unequal work: {field}")
         if results["baseline"].get("complete") is False:
             raise RuntimeError("incomplete benchmark workload")
-        if args.workload == "runtime":
+        if args.workload in ("runtime", "paced-runtime"):
             for label, result in results.items():
                 if (result.get("frames") != args.frames or
-                        result.get("workload_scope") != "uncapped-runtime" or
+                        result.get("workload_scope") != ("uncapped-runtime" if args.workload == "runtime" else "paced-runtime") or
                         result.get("audio_flushes") != args.frames or
                         not all(result.get(field, 0) > 0 for field in
                                 ("mixed_fm_frames", "mixed_psg_frames", "audio_pushed_frames"))):

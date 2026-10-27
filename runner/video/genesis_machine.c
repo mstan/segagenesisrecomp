@@ -466,7 +466,35 @@ static void step_z80(GenesisMachine *m, uint32_t target)
 #endif
 }
 
-void machine_run_frame(GenesisScanlineSink sink, void *user)
+typedef struct NativeRowContext {
+    GVDP *vdp;
+    int line, width, ready;
+    uint8_t *indices;
+    uint32_t *pixels;
+} NativeRowContext;
+
+static const uint32_t *native_row_fetch(void *ctx)
+{
+    NativeRowContext *r = (NativeRowContext *)ctx;
+    if (!r->ready) {
+        r->width = gvdp_render_scanline(r->vdp, r->line, r->indices);
+        const uint32_t *host_palette = gvdp_host_palette();
+        if (host_palette)
+            memcpy(s_cram_argb + GVDP_HOST_PALETTE_BASE, host_palette,
+                   GVDP_HOST_PALETTE_SIZE * sizeof(uint32_t));
+        else if (gvdp_ext_active())
+            for (int k = 0; k < GVDP_EXT_LINES * 16; k++)
+                s_cram_argb[GVDP_HOST_PALETTE_BASE + k] =
+                    bgr9_to_argb(gvdp_ext_color(r->line, 1 + k / 16, k % 16), 0);
+        for (int x = 0; x < r->width; x++)
+            r->pixels[x] = s_cram_argb[r->indices[x]];
+        r->ready = 1;
+    }
+    return r->pixels;
+}
+
+void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
+                          const GenesisScanlineProducer *producer)
 {
     GenesisMachine *m = &g_machine;
     int active_h = gvdp_screen_height(&m->vdp);
@@ -542,21 +570,27 @@ void machine_run_frame(GenesisScanlineSink sink, void *user)
                     gvdp_evaluate_scanline(&m->vdp, row);
                     continue;
                 }
-                int n = gvdp_render_scanline(&m->vdp, row, idxbuf);
-                const uint32_t *host_palette = gvdp_host_palette();
-                if (host_palette)
-                    memcpy(s_cram_argb + GVDP_HOST_PALETTE_BASE, host_palette,
-                           GVDP_HOST_PALETTE_SIZE * sizeof(uint32_t));
-                else if (gvdp_ext_active())          /* extended sprite lines, per row (water) */
-                    for (int k = 0; k < GVDP_EXT_LINES * 16; k++)
-                        s_cram_argb[GVDP_HOST_PALETTE_BASE + k] =
-                            bgr9_to_argb(gvdp_ext_color(row, 1 + k / 16, k % 16), 0);
-                for (int x = 0; x < n; x++) rowbuf[x] = s_cram_argb[idxbuf[x]];
-                sink(user, row, rowbuf, n);
+                NativeRowContext native = { &m->vdp, row, 0, 0, idxbuf, rowbuf };
+                if (producer && producer->enabled(user)) {
+                    /* Status remains hardware-owned even when the original
+                     * image is unused. A lazy fallback re-evaluates the same
+                     * row; collision/overflow are sticky, not counters. */
+                    gvdp_evaluate_scanline(&m->vdp, row);
+                    producer->render(user, &m->vdp, row, gvdp_active_width(&m->vdp),
+                                     native_row_fetch, &native);
+                } else {
+                    const uint32_t *pixels = native_row_fetch(&native);
+                    sink(user, row, pixels, native.width);
+                }
             }
         }
 
         m->master_cycle += MASTER_PER_LINE;
     }
     g_snd_frame++;   /* [SND-TRACE] */
+}
+
+void machine_run_frame(GenesisScanlineSink sink, void *user)
+{
+    machine_run_frame_ex(sink, user, NULL);
 }
