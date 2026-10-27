@@ -17,5 +17,10 @@ const SegaCDTOC *segacd_image_toc(const SegaCDImage *image);
 /* Returns nonzero on success. On invalid LBA or I/O failure, raw is unchanged. */
 int segacd_image_read(SegaCDImage *image, int32_t lba, uint8_t raw[2352]);
 const uint8_t *segacd_image_sha256(const SegaCDImage *image);
+/* Optional immutable host residency, filled during full payload validation.
+ * NULL means the requested sector is not resident; ordinary reads still work.
+ * Pointers remain valid until close. This never advances a drive/device clock. */
+const uint8_t *segacd_image_resident_sector(const SegaCDImage *, int32_t lba);
+size_t segacd_image_resident_bytes(const SegaCDImage *);
 
 #endif

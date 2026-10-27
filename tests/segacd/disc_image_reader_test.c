@@ -138,6 +138,8 @@ int main(void)
 
     CHECK(segacd_image_toc(NULL) == NULL);
     CHECK(segacd_image_sha256(NULL) == NULL);
+    CHECK(segacd_image_resident_sector(NULL, 0) == NULL);
+    CHECK(segacd_image_resident_bytes(NULL) == 0);
     CHECK(!segacd_image_read(NULL, 0, NULL));
     CHECK(segacd_image_open(NULL, error, sizeof(error)) == NULL);
     segacd_image_close(NULL);
@@ -151,6 +153,15 @@ int main(void)
     CHECK(toc->track[0].index00 == -150 && toc->track[0].start == 0 && toc->track[0].end == 1 && toc->track[0].data == 0);
     CHECK(toc->track[1].index00 == 1 && toc->track[1].start == 2 && toc->track[1].end == 3 && toc->track[1].data == 1);
     CHECK(memcmp(segacd_image_sha256(image), known_digest, sizeof(known_digest)) == 0);
+    /* Only the first data track is resident, including its INDEX 00. Audio
+     * and arbitrary LBAs cannot escape that allocation. */
+    CHECK(segacd_image_resident_bytes(image) == 2u*RAW);
+    CHECK(segacd_image_resident_sector(image, INT32_MIN) == NULL);
+    CHECK(segacd_image_resident_sector(image, 0) == NULL);
+    CHECK(all_byte(segacd_image_resident_sector(image, 1), RAW, 0));
+    CHECK(all_byte(segacd_image_resident_sector(image, 2), RAW, 0x22));
+    CHECK(segacd_image_resident_sector(image, 3) == NULL);
+    CHECK(segacd_image_resident_sector(image, INT32_MAX) == NULL);
     CHECK(segacd_image_read(image, -150, sector) && all_byte(sector, sizeof(sector), 0));
     CHECK(segacd_image_read(image, -1, sector) && all_byte(sector, sizeof(sector), 0));
     CHECK(segacd_image_read(image, 0, sector) && all_byte(sector, sizeof(sector), 0x11));

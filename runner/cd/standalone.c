@@ -5,6 +5,7 @@
 #include "backup.h"
 #include "debug.h"
 #include "disc_image.h"
+#include "standalone_services.h"
 #include "presentation.h"
 #include "sonic_cd_widescreen.h"
 #include "sonic_cd_limits.h"
@@ -205,6 +206,7 @@ int main(int argc,char **argv)
     uint8_t persisted[SEGACD_BACKUP_BYTES];memcpy(persisted,machine.devices.backup,sizeof persisted);
     if(!segacd_cdd_mount(&machine.devices.drive,segacd_image_toc(image))){segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
     segacd_coordinator_media(&machine.coordinator,media_read,image,NULL,NULL);
+    segacd_standalone_services_install(&machine,image);
     SegaCDNativeAudio*audio=segacd_native_audio_create(1);
     if(!audio){fprintf(stderr,"Audio initialization failed\n");segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
     segacd_native_audio_attach_io(audio,&machine.coordinator.io);

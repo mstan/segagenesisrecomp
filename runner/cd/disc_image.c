@@ -5,6 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef SEGACD_IMAGE_PLATFORM_SHA
+#define SEGACD_IMAGE_PLATFORM_SHA 1
+#endif
+#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
+#include <windows.h>
+#include <bcrypt.h>
+#endif
+
 enum { SECTOR_BYTES = 2352, HEADER_BYTES = 96, TRACK_BYTES = 32,
        MAX_TRACKS = 99, MAX_LEADOUT = 449849 };
 
@@ -13,6 +21,9 @@ struct SegaCDImage {
     SegaCDTOC toc;
     uint64_t payload_offset;
     uint8_t digest[32];
+    uint8_t *resident;
+    int32_t resident_first;
+    size_t resident_size;
 };
 
 typedef struct {
@@ -153,21 +164,70 @@ static int all_zero(const uint8_t *data, size_t size)
     return 1;
 }
 
-static int hash_payload(FILE *file, uint64_t offset, uint64_t size, uint8_t digest[32])
+static int hash_payload_pass(SegaCDImage *image, uint64_t offset, uint64_t size,
+                             uint8_t digest[32], int platform)
 {
+    FILE *file = image->file;
     Sha256 sha;
     uint8_t buffer[32768];
     uint64_t remaining = size;
-    if (offset > (uint64_t)LONG_MAX || fseek(file, (long)offset, SEEK_SET) != 0) return 0;
+#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
+    BCRYPT_ALG_HANDLE algorithm = NULL;
+    BCRYPT_HASH_HANDLE hash = NULL;
+    if (platform && (BCryptOpenAlgorithmProvider(&algorithm, BCRYPT_SHA256_ALGORITHM, NULL, 0) < 0 ||
+        BCryptCreateHash(algorithm, &hash, NULL, 0, NULL, 0, 0) < 0)) {
+        if (algorithm != NULL) BCryptCloseAlgorithmProvider(algorithm, 0);
+        return -1;
+    }
+#else
+    (void)platform;
+#endif
+    int result = 0;
+    if (offset > (uint64_t)LONG_MAX || fseek(file, (long)offset, SEEK_SET) != 0) goto done;
     sha_init(&sha);
     while (remaining != 0) {
         const size_t amount = remaining < sizeof(buffer) ? (size_t)remaining : sizeof(buffer);
-        if (!read_exact(file, buffer, amount)) return 0;
+        if (!read_exact(file, buffer, amount)) goto done;
+        if (image->resident != NULL) {
+            uint64_t cache_start = (uint64_t)(image->resident_first + 150) * SECTOR_BYTES;
+            uint64_t position = size - remaining;
+            uint64_t first = position > cache_start ? position : cache_start;
+            uint64_t end = position + amount;
+            uint64_t cache_end = cache_start + image->resident_size;
+            if (end > cache_end) end = cache_end;
+            if (first < end)
+                memcpy(image->resident + (size_t)(first - cache_start),
+                       buffer + (size_t)(first - position), (size_t)(end - first));
+        }
+#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
+        if (hash != NULL) {
+            if (BCryptHashData(hash, buffer, (ULONG)amount, 0) < 0) { result = -1; goto done; }
+        } else
+#endif
         sha_update(&sha, buffer, amount);
         remaining -= amount;
     }
-    sha_final(&sha, digest);
-    return 1;
+#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
+    if (hash != NULL) {
+        result = BCryptFinishHash(hash, digest, 32, 0) < 0 ? -1 : 1;
+    } else
+#endif
+    { sha_final(&sha, digest); result = 1; }
+done:
+#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
+    if (hash != NULL) BCryptDestroyHash(hash);
+    if (algorithm != NULL) BCryptCloseAlgorithmProvider(algorithm, 0);
+#endif
+    return result;
+}
+
+static int hash_payload(SegaCDImage *image, uint64_t offset, uint64_t size, uint8_t digest[32])
+{
+    int result = hash_payload_pass(image, offset, size, digest, 1);
+    /* Provider failure restarts a complete portable validation. No failed or
+     * partial digest can qualify the image or expose its resident sectors. */
+    if (result < 0) result = hash_payload_pass(image, offset, size, digest, 0);
+    return result == 1;
 }
 
 SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
@@ -241,7 +301,23 @@ SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
         track->data = (uint8_t)kind;
     }
     if (image->toc.track[count-1u].end != leadout) { set_error(error, capacity, "track table does not reach leadout"); goto fail; }
-    if (!hash_payload(image->file, payload_offset, payload_size, digest)) {
+    /* Keep only the first data track, not the much larger CDDA soundtrack.
+     * Reuse the mandatory validation pass: no second media read/preload wait.
+     * This bounded optional allocation is never required to mount an image. */
+    for (i = 0; i < count; ++i) {
+        const SegaCDTrack *track = &image->toc.track[i];
+        uint64_t bytes = (uint64_t)(track->end - track->index00) * SECTOR_BYTES;
+        if (!track->data) continue;
+        if (bytes <= 256u * 1024u * 1024u) {
+            image->resident = (uint8_t *)malloc((size_t)bytes);
+            if (image->resident != NULL) {
+                image->resident_first = track->index00;
+                image->resident_size = (size_t)bytes;
+            }
+        }
+        break;
+    }
+    if (!hash_payload(image, payload_offset, payload_size, digest)) {
         set_error(error, capacity, "cannot read image payload"); goto fail;
     }
     if (memcmp(digest, image->digest, sizeof(digest)) != 0) { set_error(error, capacity, "payload SHA-256 mismatch"); goto fail; }
@@ -257,6 +333,7 @@ void segacd_image_close(SegaCDImage *image)
 {
     if (image == NULL) return;
     if (image->file != NULL) fclose(image->file);
+    free(image->resident);
     free(image);
 }
 
@@ -270,6 +347,8 @@ int segacd_image_read(SegaCDImage *image, int32_t lba, uint8_t raw[SECTOR_BYTES]
     uint8_t temporary[SECTOR_BYTES];
     uint64_t offset;
     if (image == NULL || raw == NULL || lba < -150 || lba >= image->toc.leadout) return 0;
+    const uint8_t *resident = segacd_image_resident_sector(image, lba);
+    if (resident != NULL) { memcpy(raw, resident, SECTOR_BYTES); return 1; }
     offset = image->payload_offset + (uint64_t)(lba + 150) * SECTOR_BYTES;
     if (offset > (uint64_t)LONG_MAX || fseek(image->file, (long)offset, SEEK_SET) != 0 ||
         !read_exact(image->file, temporary, sizeof(temporary))) return 0;
@@ -280,4 +359,17 @@ int segacd_image_read(SegaCDImage *image, int32_t lba, uint8_t raw[SECTOR_BYTES]
 const uint8_t *segacd_image_sha256(const SegaCDImage *image)
 {
     return image == NULL ? NULL : image->digest;
+}
+
+const uint8_t *segacd_image_resident_sector(const SegaCDImage *image, int32_t lba)
+{
+    if (image == NULL || image->resident == NULL || lba < image->resident_first) return NULL;
+    size_t index = (size_t)((int64_t)lba - image->resident_first);
+    if (index >= image->resident_size / SECTOR_BYTES) return NULL;
+    return image->resident + index * SECTOR_BYTES;
+}
+
+size_t segacd_image_resident_bytes(const SegaCDImage *image)
+{
+    return image == NULL ? 0 : image->resident_size;
 }
