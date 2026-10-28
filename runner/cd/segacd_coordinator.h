@@ -76,6 +76,7 @@ struct SegaCDCoordinator {
     uint64_t region_event_deadline;
     uint8_t region_event_valid;
     SegaCDCodeIdentity *code_identity;
+    SegaCDIO code_readonly_io;
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
@@ -87,6 +88,9 @@ void segacd_coordinator_code_begin(SegaCDCoordinator *,SegaCDCodeIdentity *);
 void segacd_coordinator_code_end(SegaCDCoordinator *);
 void segacd_coordinator_code_observer(SegaCDCoordinator *,int entering);
 void segacd_coordinator_code_write(SegaCDCoordinator *,const uint8_t *,size_t);
+/* Independently qualify only host-output-only callbacks AND their user object.
+ * Captured by value, so arbitrary rebinding cannot inherit qualification. */
+int segacd_coordinator_readonly_io(SegaCDCoordinator *,const SegaCDIO *bindings);
 /* Descriptors/arrays must remain immutable and alive during execution. */
 int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
                               const M68kStepModule *const *,size_t);

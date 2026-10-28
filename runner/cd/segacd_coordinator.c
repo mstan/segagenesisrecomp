@@ -23,6 +23,14 @@ static int current_code(void *user,const M68kStepEntry *entry)
 }
 static void observe_io(void *user,int entering)
 {segacd_coordinator_code_observer(user,entering);}
+int segacd_coordinator_readonly_io(SegaCDCoordinator *c,const SegaCDIO *bindings)
+{
+    if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
+    if(bindings)c->code_readonly_io=*bindings;
+    else memset(&c->code_readonly_io,0,sizeof c->code_readonly_io);
+    if(c->code_identity)segacd_code_fence(c->code_identity);
+    return 1;
+}
 void segacd_coordinator_code_begin(SegaCDCoordinator *c,SegaCDCodeIdentity *id)
 {
     if(!c||!id||c->code_identity||c->busy[0]||c->busy[1]||c->external_active)return;
@@ -66,7 +74,7 @@ static void advance_devices(SegaCDCoordinator *c)
         }
         if(c->devices->stamp.busy)
             segacd_coordinator_code_write(c,c->devices->word,sizeof c->devices->word);
-        segacd_advance_io_owned(c->devices,delta,&c->io,c->code_identity?observe_io:NULL,c);
+        segacd_advance_io_owned(c->devices,delta,&c->io,c->code_identity?observe_io:NULL,c,&c->code_readonly_io);
         c->device_time+=delta;
     }
     if(c->host_advance)c->host_advance(c->host_user,c->device_time);
