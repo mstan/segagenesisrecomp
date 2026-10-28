@@ -95,6 +95,7 @@ static void fault_main(M68kStepContext *ctx)
 static void fault_sub(M68kStepContext *ctx)
 {
     m68k_step_write16(ctx,0x500,0x5678);++ctx->state.regs.D[4];
+    if(fault_mode==5&&ctx->state.regs.D[4]<10){ctx->state.regs.PC=0x100;return;}
     (void)m68k_step_read16(ctx,0xe0000);++ctx->state.regs.D[5];
 }
 static M68kStepResult translating_floor(M68kStepContext *ctx)
@@ -107,17 +108,21 @@ static void test_native_region_fault_parity(void)
     SegaCDMachine *reference=malloc(sizeof *reference),*normalized=malloc(sizeof *normalized);
     CHECK(reference&&normalized);
     uint8_t reference_ram[65536];M68kStepResult expected=M68K_STEP_OK;unsigned expected_floor=0;
-    for(unsigned mode=0;mode<5;++mode)for(unsigned arm=0;arm<2;++arm) {
+    for(unsigned mode=0;mode<6;++mode)for(unsigned arm=0;arm<2;++arm) {
         fault_mode=mode;floor_returned=0;setup(mode!=4);
         main_entries[0].execute=fault_main;sub_entry.execute=fault_sub;
-        if(mode>=1&&mode<=3)machine.devices.main_control=1;
+        if((mode>=1&&mode<=3)||mode==5)machine.devices.main_control=1;
         if(mode==1)machine.devices.memory_mode=0; /* Real Main WAIT, nested Sub failure. */
         if(mode==2) {
             CHECK(m68k_step_reset(&machine.coordinator.cpu[1])==M68K_STEP_OK);
             machine.coordinator.sub_initialized=machine.coordinator.sub_was_running=1;
             machine.coordinator.cpu[0].state.stopped=1;machine.coordinator.time[1]=20;
         }
-        if(mode==3){machine.bus.z80_reset_off=1;machine.bus.z80_ram[1]=0x76;machine.z80.state.pc=1;}
+        if(mode==3||mode==5){machine.bus.z80_reset_off=1;machine.bus.z80_ram[1]=0x76;machine.z80.state.pc=1;}
+        if(mode==5) {
+            machine.z80.state.iff1=machine.z80.state.iff2=true;machine.z80.state.im=1;
+            machine.z80.state.sp=0x1000;machine.z80.irq_pending=1;
+        }
         if(mode==4)CHECK(segacd_coordinator_floor(&machine.coordinator,translating_floor));
         M68kStepResult result;
         if(arm)result=segacd_machine_run_frame(&machine);
@@ -125,6 +130,7 @@ static void test_native_region_fault_parity(void)
         CHECK(result!=M68K_STEP_OK);
         CHECK(!machine.coordinator.busy[0]&&!machine.coordinator.busy[1]&&!machine.z80.in_step);
         CHECK(!machine.coordinator.cpu[0].fault_escape&&!machine.coordinator.cpu[1].fault_escape);
+        if(mode==5)CHECK(machine.z80.state.sp==0xffe&&!machine.z80.state.iff1&&!machine.z80.irq_pending);
         *normalized=machine;
         normalized->coordinator.catalog_index[0]=normalized->coordinator.catalog_index[1]=NULL;
 #if defined(M68K_STEP_HAS_EXECUTION_SCOPES) && M68K_STEP_HAS_EXECUTION_SCOPES
@@ -133,6 +139,15 @@ static void test_native_region_fault_parity(void)
         if(!arm){*reference=*normalized;memcpy(reference_ram,g_ram,sizeof reference_ram);expected=result;expected_floor=floor_returned;}
         else {
             CHECK(result==expected&&floor_returned==expected_floor);
+            if(memcmp(reference,normalized,sizeof *normalized)) {
+                unsigned shown=0;
+                for(size_t i=0;i<sizeof *normalized&&shown<12;++i)
+                    if(((uint8_t *)reference)[i]!=((uint8_t *)normalized)[i]) {
+                        fprintf(stderr,"mode%u byte%zu old%u new%u (coordinator%zu z80%zu bus%zu)\n",mode,i,
+                            ((uint8_t *)reference)[i],((uint8_t *)normalized)[i],
+                            offsetof(SegaCDMachine,coordinator),offsetof(SegaCDMachine,z80),offsetof(SegaCDMachine,bus));++shown;
+                    }
+            }
             CHECK(!memcmp(reference,normalized,sizeof *normalized));
             CHECK(!memcmp(reference_ram,g_ram,sizeof reference_ram));
         }

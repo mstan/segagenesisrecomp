@@ -22,10 +22,15 @@ typedef struct {
 typedef struct {
     SegaCDLookupSlot slots[SEGACD_LOOKUP_SLOTS];
     uint64_t hits,descriptor_searches;
+    /* Transient: an outer fault exit must commit this hit just as the
+     * ordinary returned-error path does. Never serialized as guest state. */
+    uint8_t pending_hit;
 } SegaCDCatalogLookup;
 
 static inline void segacd_catalog_lookup_reset(SegaCDCatalogLookup *cache)
 {memset(cache,0,sizeof *cache);}
+static inline void segacd_catalog_lookup_fault(SegaCDCatalogLookup *cache)
+{if(cache->pending_hit){++cache->hits;cache->pending_hit=0;}}
 static inline M68kStepResult segacd_catalog_execute_slow(M68kStepContext *cpu,
     const M68kStepModule *const *modules,size_t count)
 {
@@ -60,7 +65,9 @@ static inline M68kStepResult segacd_catalog_execute(SegaCDCatalogLookup *cache,
     }
     if(slot->overflow)return segacd_catalog_execute_slow(cpu,modules,count);
     for(unsigned i=0;i<slot->count;i++) {
+        cache->pending_hit=1;
         M68kStepResult result=m68k_step_execute(cpu,slot->entry[i]);
+        cache->pending_hit=0;
         if(result!=M68K_STEP_MISS){++cache->hits;return result;}
     }
     for(size_t i=slot->next_module;i<count;i++) {

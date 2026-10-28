@@ -45,6 +45,10 @@ void segacd_z80_irq(SegaCDZ80 *);
  * changing registers. Call only while the Z80 is externally held. */
 int segacd_z80_hold_until(SegaCDZ80 *,uint64_t subclock);
 SegaCDZ80Result segacd_z80_step(SegaCDZ80 *);
+/* Complete a failed synchronize after an outer native region has unwound
+ * its C stack. First complete the coordinator's root CPU fault exit. The
+ * usual local Z80 bus-error trap remains for ordinary callers and failures. */
+SegaCDZ80Result segacd_z80_scope_fault(SegaCDZ80 *,M68kStepResult);
 /* Current callback's clock (including preceding waits), otherwise state.time. */
 uint64_t segacd_z80_bus_time(const SegaCDZ80 *);
 #endif
