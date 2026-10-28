@@ -3,7 +3,7 @@
   "issue": "beads-3vb.31",
   "campaign": "beads-2wy8.1",
   "status": "active-incomplete",
-  "updated_utc": "2026-10-28T07:20:02.033638+00:00",
+  "updated_utc": "2026-10-28T07:43:34.528244+00:00",
   "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "candidates": {
     "E01": {
@@ -65,9 +65,14 @@
     "E09": {
       "name": "Single image-production ownership",
       "priority": "P1",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implementation_in_progress",
+      "disposition": "Shared CD owned raster capture, exact lazy original-image getter and mechanical existing adapter adoption committed at16c14e6. Palette/live-state replacement, partial frame, narrowed tail, observer detach and unsupported-provider fallback checks pass. Real-game correctness/performance remain pending.",
+      "evidence": [
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.log",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\captured-raster-contract-diff.log"
+      ]
     },
     "E10": {
       "name": "Renderer interface independent of aspect ratio",
@@ -94,9 +99,14 @@
     "E12": {
       "name": "Shared sprite evaluation jobs",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implementation_in_progress",
+      "disposition": "The CD raster packet evaluates hardware sprites at capture, retains all sprite lanes and composes whole-frame fallback without evaluating sprites again. No title scene/SAT algorithm changes. Component and CPU-frame contracts pass; actual per-game qualification pending.",
+      "evidence": [
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.log",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\captured-raster-contract-diff.log"
+      ]
     },
     "E13": {
       "name": "Versioned generic graphics derivation",
@@ -122,9 +132,14 @@
     "E16": {
       "name": "Final pixels and upload ownership",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implementation_in_progress",
+      "disposition": "Deferred CD original rows convert only when requested, using retained per-row CRAM and a64/192-entry palette instead of per-pixel DAC work. Existing raw dump/screenshot readers use the getter. Broader cartridge/upload pipeline remains to be evaluated; no new speedup claim.",
+      "evidence": [
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.log",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\captured-raster-contract-diff.log"
+      ]
     },
     "E17": {
       "name": "Optional generic GPU raster backend",
@@ -244,9 +259,14 @@
     "E33": {
       "name": "Discarded-replay engine work",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_already_implemented",
+      "disposition": "Additional shared cartridge replay image work ruled out at this base: s_resim_hooks has no sink/producer/post-drain observation; machine_run_frame_ex only evaluates sprite status on discarded rows; genesis_sim_step continues chip evolution. Current Sonic1 rollback probes pass. Remaining pre-raster work sets simulation-affecting viewport/RAM parameters and cannot be removed. Title publication algorithms remain outside scope; new CD deferred work is tracked under E09.",
+      "evidence": [
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\s1-raster-game-gates.json",
+        "runner/main.c:s_resim_hooks",
+        "runner/video/genesis_machine.c:machine_run_frame_ex",
+        "runner/sim_step.c:genesis_sim_step"
+      ]
     },
     "E34": {
       "name": "Host presentation/deadline pipeline",
@@ -292,6 +312,33 @@
       ],
       "other_games": "not built/qualified yet",
       "portable_tests": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-raster-checks.json"
+    },
+    "native-raster-and-deferred-image-v2": {
+      "package": "native-raster-and-deferred-image-v2",
+      "engine": "fc55f70ca1319a49833543fc5bd505a731518504",
+      "implementation": "16c14e6242002389d5e715884f16f99e988b09bb",
+      "baseline_engine": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
+      "retained_bytes": 898600,
+      "synthetic_raster": {
+        "captured_rows": 934,
+        "composed_rows": 694,
+        "eager_provider_fallback_rows": 26,
+        "exact_pixels_and_device_state": true
+      },
+      "checks": [
+        "Windows MSVC full CPU frame and deferred/eager raster contract",
+        "Linux GCC native and forced-portable/scalar raster contracts",
+        "4000-case original VDP differential plus directed cases",
+        "unsupported providers/invalid packets reject before writes"
+      ],
+      "evidence": [
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.log",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\captured-raster-contract-diff.log"
+      ],
+      "per_game": [],
+      "performance": "unqualified; built CD game validation pending; synthetic omitted work is not a whole-game speed claim"
     }
   },
   "timing_admission": [
@@ -303,5 +350,5 @@
       "next_check_not_before_utc": "2026-10-28T07:43:33.954491+00:00"
     }
   ],
-  "authoritative_completion": "Incomplete. All36 items still require final dispositions; additional games/current-build lifecycle/performance and final owner builds remain. No merge/release authorized."
+  "authoritative_completion": "Incomplete:3/36 evaluations resolved (E10/E27 deferred; E33 already implemented). E09/E11/E12/E16 active; remaining evaluations, real-game qualification and final owner builds remain. No merge/release authorized."
 }

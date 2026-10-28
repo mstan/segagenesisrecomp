@@ -82,7 +82,7 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Goal: Provide reusable lazy original-image production and exact fallback in the shared cartridge/CD raster pipeline.
   - Boundary: Retain CPU-visible sprite status and whole-frame fallback. Title scene eligibility and its adapter implementation belong in the title backlog. Do not land unused abstraction merely to check this item off.
   - Evidence: `runner/cd/machine.c`, `runner/video/genesis_machine.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Shared CD owned raster capture, exact lazy original-image getter and mechanical existing adapter adoption committed at16c14e6. Palette/live-state replacement, partial frame, narrowed tail, observer detach and unsupported-provider fallback checks pass. Real-game correctness/performance remain pending.
 
 - [x] **E10: Renderer interface independent of aspect ratio** — P1; original N12.
   - Goal: Separate shared renderer ownership/selection from viewport width and elective widescreen policy.
@@ -100,7 +100,7 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Goal: Prepare reusable generic sprite membership/opacity/priority work for both hardware status and image production.
   - Boundary: Preserve limits, masks, raster-visible changes, overflow and collision timing; no replacement of game BuildSprites.
   - Evidence: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: The CD raster packet evaluates hardware sprites at capture, retains all sprite lanes and composes whole-frame fallback without evaluating sprites again. No title scene/SAT algorithm changes. Component and CPU-frame contracts pass; actual per-game qualification pending.
 
 - [ ] **E13: Versioned generic graphics derivation** — P2; original N16.
   - Goal: Cache decoded VDP art, palettes and geometry only at verified VRAM/CRAM/register change boundaries.
@@ -124,7 +124,7 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Goal: Fuse shared indexed/ARGB conversion, copies, color processing, UI staging and upload preparation.
   - Boundary: Keep raw verification/capture output, filter edges, UI and portable output paths correct.
   - Evidence: `runner/main.c`, `runner/cd/presentation.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Deferred CD original rows convert only when requested, using retained per-row CRAM and a64/192-entry palette instead of per-pixel DAC work. Existing raw dump/screenshot readers use the getter. Broader cartridge/upload pipeline remains to be evaluated; no new speedup claim.
 
 - [ ] **E17: Optional generic GPU raster backend** — P3; original N21.
   - Goal: Evaluate hardware tile/sprite/priority composition from reusable immutable render packets.
@@ -228,11 +228,11 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Evidence: `runner/local_states.c`, `runner/rb_state.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E33: Discarded-replay engine work** — P2; original N39.
+- [x] **E33: Discarded-replay engine work** — P2; original N39.
   - Goal: Remove remaining purely derived shared rendering/publication preparation from replay that produces no visible output.
   - Boundary: Continue all authoritative game/device/audio state. Title-specific capture changes require separate work and cannot be silently skipped.
   - Evidence: `runner/sim_step.c`, `runner/video/genesis_machine.c`, `runner/main.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Additional shared cartridge replay image work ruled out at this base: s_resim_hooks has no sink/producer/post-drain observation; machine_run_frame_ex only evaluates sprite status on discarded rows; genesis_sim_step continues chip evolution. Current Sonic1 rollback probes pass. Remaining pre-raster work sets simulation-affecting viewport/RAM parameters and cannot be removed. Title publication algorithms remain outside scope; new CD deferred work is tracked under E09.
 
 ### Host and built program
 
