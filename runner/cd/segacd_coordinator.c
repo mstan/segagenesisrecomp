@@ -219,7 +219,7 @@ static M68kStepResult execute_cpu(SegaCDCoordinator *c,unsigned which)
     if(cpu->state.fault)return (M68kStepResult)cpu->state.fault;
     if(cpu->state.stopped)return M68K_STEP_STOPPED;
     c->busy[which]=1;
-    M68kStepResult result=segacd_catalog_execute(&c->catalog_lookup[which],cpu,
+    M68kStepResult result=segacd_catalog_index_execute(c->catalog_index[which],&c->catalog_lookup[which],cpu,
                                                c->modules[which],c->module_count[which]);
     if(result==M68K_STEP_MISS && c->floor_step) {
         result=c->floor_step(cpu);if(result==M68K_STEP_OK)++c->floor_steps[which];
@@ -245,7 +245,20 @@ int segacd_coordinator_modules(SegaCDCoordinator *c,SegaCDCpu cpu,const M68kStep
     if(!c || (unsigned)cpu>1 || (count && !modules) || c->busy[0] || c->busy[1])return 0;
     for(size_t n=0;n<count;++n)if(!m68k_step_module_valid(modules[n]))return 0;
     c->modules[cpu]=modules;c->module_count[cpu]=count;
+    segacd_catalog_index_destroy(c->catalog_index[cpu]);c->catalog_index[cpu]=NULL;
+    if(c->catalog_index_enabled)
+        c->catalog_index[cpu]=segacd_catalog_index_create(SEGACD_INDEX_DEFAULT_LIMIT);
     segacd_catalog_lookup_reset(&c->catalog_lookup[cpu]);return 1;
+}
+int segacd_coordinator_catalog_index(SegaCDCoordinator *c,int enabled)
+{
+    if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
+    for(unsigned cpu=0;cpu<2;++cpu) {
+        if(!enabled){segacd_catalog_index_destroy(c->catalog_index[cpu]);c->catalog_index[cpu]=NULL;}
+        else if(!c->catalog_index[cpu])
+            c->catalog_index[cpu]=segacd_catalog_index_create(SEGACD_INDEX_DEFAULT_LIMIT);
+    }
+    c->catalog_index_enabled=(uint8_t)(enabled!=0);return 1;
 }
 int segacd_coordinator_floor(SegaCDCoordinator *c,M68kStepResult (*step)(M68kStepContext *))
 {

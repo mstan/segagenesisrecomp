@@ -305,6 +305,11 @@ int main(int argc,char **argv)
         (unsigned long long)machine.coordinator.catalog_lookup[0].descriptor_searches,
         (unsigned long long)machine.coordinator.catalog_lookup[1].descriptor_searches,
         sizeof machine.coordinator.catalog_lookup);
+    printf("Catalog PC index visited=%zu/%zu bytes=%zu/%zu\n",
+        machine.coordinator.catalog_index[0]?machine.coordinator.catalog_index[0]->visited:0,
+        machine.coordinator.catalog_index[1]?machine.coordinator.catalog_index[1]->visited:0,
+        machine.coordinator.catalog_index[0]?machine.coordinator.catalog_index[0]->bytes:0,
+        machine.coordinator.catalog_index[1]?machine.coordinator.catalog_index[1]->bytes:0);
     printf("Sonic CD frames=%llu Subclock=%llu nativeMain=%llu nativeSub=%llu nativeZ80=%llu floor=%llu/%llu audioFaults=%u audioOutput=%llu\n",
         (unsigned long long)machine.frames,(unsigned long long)machine.coordinator.device_time,
         (unsigned long long)machine.coordinator.native_steps[0],(unsigned long long)machine.coordinator.native_steps[1],

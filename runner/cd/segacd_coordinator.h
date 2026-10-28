@@ -4,6 +4,7 @@
 #include "segacd.h"
 #include "m68k_step.h"
 #include "catalog_lookup.h"
+#include "catalog_index.h"
 
 typedef struct SegaCDCoordinator SegaCDCoordinator;
 typedef struct {SegaCDCoordinator *owner;SegaCDCpu cpu;} SegaCDBusBinding;
@@ -63,12 +64,18 @@ struct SegaCDCoordinator {
     uint64_t cdd_submission_total;
     /* Derived host lookup only. Live opcode/extension guards still execute. */
     SegaCDCatalogLookup catalog_lookup[2];
+    SegaCDCatalogIndex *catalog_index[2];
+    uint8_t catalog_index_enabled;
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
 /* Descriptors/arrays must remain immutable and alive during execution. */
 int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
                               const M68kStepModule *const *,size_t);
+/* Optional bounded derived lookup; fixed-cache execution remains the default
+ * for generic callers. Disable before destroying an enabled coordinator.
+ * Configure between completed operations; allocation failure retains fallback. */
+int segacd_coordinator_catalog_index(SegaCDCoordinator *,int enabled);
 /* Diagnostics may attach the portable execution floor. Native-only consumers
  * leave it NULL: every uncovered operation is a stop, never skipped code. */
 int segacd_coordinator_floor(SegaCDCoordinator *,M68kStepResult (*)(M68kStepContext *));

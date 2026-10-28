@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 project(SegaCDDeviceTests C)
 enable_testing()
 option(SEGACD_CATALOG_LOOKUP_CACHE "Cache immutable native descriptor discovery, preserving live guards" ON)
+option(SEGACD_CATALOG_PC_INDEX "Use bounded direct-PC native catalog lookup" ON)
+set_source_files_properties("../../runner/cd/machine.c" PROPERTIES
+    COMPILE_DEFINITIONS "SEGACD_CATALOG_PC_INDEX=$<BOOL:${SEGACD_CATALOG_PC_INDEX}>")
 set_source_files_properties("../../runner/cd/segacd_coordinator.c" PROPERTIES
     COMPILE_DEFINITIONS "SEGACD_CATALOG_LOOKUP_CACHE=$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>")
 set(SEGACD_GAME_RENDER_SOURCE "${CMAKE_CURRENT_LIST_DIR}/../../runner/cd/sonic_cd_render.c"
@@ -177,6 +180,15 @@ if(NOT CMAKE_CROSSCOMPILING)
   m68k_recomp_core_include_dirs(step_includes genesis)
   m68k_recomp_step_sources(step_runtime_sources)
   m68k_recomp_step_include_dirs(step_runtime_includes)
+  add_executable(segacd_catalog_index_test catalog_index_test.c ${step_runtime_sources})
+  target_include_directories(segacd_catalog_index_test PRIVATE ${step_runtime_includes} ../../runner/cd)
+  target_compile_features(segacd_catalog_index_test PRIVATE c_std_11)
+  if(MSVC)
+    target_compile_options(segacd_catalog_index_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_catalog_index_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_test(NAME segacd_catalog_index COMMAND segacd_catalog_index_test)
   add_executable(segacd_debug_test debug_test.c ../../runner/cd/debug.c)
   target_include_directories(segacd_debug_test PRIVATE ../../runner/cd ../../runner/video
     "${engine_root}/external/m68k-recomp-core/runtime"

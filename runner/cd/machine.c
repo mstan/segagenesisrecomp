@@ -2,6 +2,9 @@
 #include "../video/genesis_dac.h"
 #include <stdlib.h>
 #include <string.h>
+#ifndef SEGACD_CATALOG_PC_INDEX
+#define SEGACD_CATALOG_PC_INDEX 1
+#endif
 
 /* Genesis bus ABI. Work RAM remains CPU-visible real storage, not a host
  * campaign/state replacement. No cartridge ROM is installed in CD mode. */
@@ -197,10 +200,12 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
     if(!segacd_z80_init(&m->z80,&m->coordinator,&sound,m,program->z80_step))return 0;
     segacd_coordinator_host_clock(&m->coordinator,host_advance,next_host_event);
     segacd_coordinator_device_limit(&m->coordinator,sound_limit);
+    (void)segacd_coordinator_catalog_index(&m->coordinator,SEGACD_CATALOG_PC_INDEX);
     video_observer=NULL;video_user=NULL;observing_video=0;current=m;return 1;
 }
 void segacd_machine_close(SegaCDMachine *m)
-{if(current==m&&!observing_video){free(captured_video);captured_video=NULL;
+{if(m&&current==m&&!observing_video){(void)segacd_coordinator_catalog_index(&m->coordinator,0);
+    free(captured_video);captured_video=NULL;
     current=NULL;video_observer=NULL;video_user=NULL;}}
 int segacd_machine_video_observer(SegaCDMachine *m,SegaCDMachineVideoObserver observer,void *user)
 {
