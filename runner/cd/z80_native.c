@@ -128,27 +128,13 @@ int segacd_z80_hold_until(SegaCDZ80 *s,uint64_t clock)
     if(!s||active||s->result!=SEGACD_Z80_OK||clock<s->time||clock<s->coordinator->device_time)return 0;
     s->time=clock;s->remainder=0;return 1;
 }
-static SegaCDZ80Result finish_step(SegaCDZ80 *s)
-{
-    s->state=g_z80;s->time=time_start+wait_charge+
-        cycle_offset(g_z80.cyc-cycle_start,remainder_start,&s->remainder);
-    s->wait_ticks+=wait_charge;s->in_step=0;active=NULL;return s->result;
-}
-SegaCDZ80Result segacd_z80_scope_fault(SegaCDZ80 *s,M68kStepResult result)
-{
-    if(!s||active!=s||!s->in_step||result==M68K_STEP_OK||s->coordinator->external_active||
-       s->coordinator->busy[0]||s->coordinator->busy[1])return SEGACD_Z80_REENTERED;
-    /* An outer native region unwound synchronize() before it could call
-     * fail(). Reproduce that exact terminal translation and the same partial
-     * instruction/IRQ cleanup, without jumping into its now-unwound stack. */
-    s->result=SEGACD_Z80_BUS_ERROR;s->bus_result=result;return finish_step(s);
-}
 SegaCDZ80Result segacd_z80_step(SegaCDZ80 *s)
 {
     if(!s)return SEGACD_Z80_BAD_MODULE;
     if(active)return SEGACD_Z80_REENTERED;
     if(s->result!=SEGACD_Z80_OK)return s->result;
     if(!s->step)return s->result=SEGACD_Z80_BAD_MODULE;
+    unsigned held=segacd_coordinator_scope_hold(s->coordinator);
     active=s;s->in_step=1;g_z80=s->state;cycle_start=g_z80.cyc;time_start=s->time;
     remainder_start=s->remainder;wait_charge=0;
     if(!setjmp(fault_escape)) {
@@ -160,5 +146,8 @@ SegaCDZ80Result segacd_z80_step(SegaCDZ80 *s)
     }
     /* Faults are terminal. Preserve committed effects/partial architecture;
      * never replay the operation or manufacture a successful read value. */
-    return finish_step(s);
+    s->state=g_z80;s->time=time_start+wait_charge+
+        cycle_offset(g_z80.cyc-cycle_start,remainder_start,&s->remainder);
+    s->wait_ticks+=wait_charge;s->in_step=0;active=NULL;
+    segacd_coordinator_scope_resume(s->coordinator,held);return s->result;
 }

@@ -284,11 +284,7 @@ M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
     if(execution_scope) {
         M68kStepContext *faulted=NULL;
         M68kStepResult result=m68k_step_scope_run(execution_scope,frame_body,m,&faulted);
-        if(faulted) {
-            result=segacd_coordinator_scope_fault(&m->coordinator,faulted);
-            if(m->z80.in_step&&segacd_z80_scope_fault(&m->z80,result)!=SEGACD_Z80_BUS_ERROR)
-                result=M68K_STEP_REENTERED;
-        }
+        if(faulted)result=segacd_coordinator_scope_fault(&m->coordinator,faulted);
         running_frame=0;return m->result=result;
     }
 #endif

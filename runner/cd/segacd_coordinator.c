@@ -393,7 +393,6 @@ M68kStepResult segacd_coordinator_scope_fault(SegaCDCoordinator *c,M68kStepConte
     if(!c->busy[which]||c->busy[which^1u]||faulted->fault_escape||!faulted->state.fault)
         return M68K_STEP_REENTERED;
     c->busy[which]=0;c->last_cpu=which;
-    segacd_catalog_lookup_fault(&c->catalog_lookup[which]);
     advance_devices(c);
     return c->last_result=(M68kStepResult)faulted->state.fault;
 }
