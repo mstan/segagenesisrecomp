@@ -130,6 +130,18 @@ static void test_machine_reentry_from_audio_observer(void)
     segacd_machine_close(&machine);
 }
 
+static void test_raster_deadline_counter_replacement(void)
+{
+    setup(1);
+    const uint64_t lines[]={0,1,262,UINT64_C(0xffffff),3,UINT64_MAX,0,UINT64_MAX,0};
+    for(unsigned i=0;i<sizeof lines/sizeof *lines;++i) {
+        machine.line=lines[i];
+        for(unsigned repeat=0;repeat<3;++repeat)
+            CHECK(machine.coordinator.host_next_event(&machine)==segacd_machine_line_clock(lines[i]));
+    }
+    segacd_machine_close(&machine);
+}
+
 static void test_native_miss_is_terminal_without_floor(void)
 {
     setup(0);
@@ -276,6 +288,7 @@ int main(void)
 {
     test_full_frame_video_irq_and_controls();
     test_machine_reentry_from_audio_observer();
+    test_raster_deadline_counter_replacement();
     test_native_miss_is_terminal_without_floor();
     test_widescreen_original_frame_and_safe_teardown();
     test_deferred_raster_contract();

@@ -82,6 +82,15 @@ uint64_t segacd_machine_line_clock(uint64_t line)
     return master/53693175u*12500000u+
         ((master%53693175u)*12500000u+53693174u)/53693175u;
 }
+/* The NTSC deadline is a pure function of the line counter. CPU operations
+ * query it many times between raster events; derive it once per changed
+ * counter, including arbitrary current-build counter restore/replacement. */
+static uint64_t cached_line,cached_line_clock;
+static uint64_t line_deadline(uint64_t line)
+{
+    if(line!=cached_line){cached_line_clock=segacd_machine_line_clock(line);cached_line=line;}
+    return cached_line_clock;
+}
 static void stamp_bus(SegaCDMachine *m,uint64_t sub)
 {
     uint64_t master=master_clock(sub);m->bus_clock=sub;
@@ -136,11 +145,11 @@ static uint64_t sound_limit(void *u)
     return m->bus.z80_reset_off&&!m->bus.z80_busreq?m->z80.time:UINT64_MAX;
 }
 static uint64_t next_host_event(void *u)
-{return segacd_machine_line_clock(((SegaCDMachine*)u)->line);}
+{return line_deadline(((SegaCDMachine*)u)->line);}
 static void host_advance(void *u,uint64_t clock)
 {
     SegaCDMachine*m=u;
-    while(segacd_machine_line_clock(m->line)<=clock) {
+    while(line_deadline(m->line)<=clock) {
         unsigned line=(unsigned)(m->line%262u);
         if(m->line) {
             unsigned row=(line+261u)%262u;
