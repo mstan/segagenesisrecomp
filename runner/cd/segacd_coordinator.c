@@ -21,47 +21,17 @@ static int current_code(void *user,const M68kStepEntry *entry)
     if(!cpu->code_span||!b->owner->code_identity)return 0;
     return segacd_code_guard(b->owner->code_identity,entry,user,cpu->code_span);
 }
-static int owned_sector(void *u,int32_t lba,uint8_t raw[2352])
-{
-    SegaCDCoordinator *c=u;segacd_coordinator_code_observer(c,1);
-    int result=c->io.read_sector(c->io.media_user,lba,raw);
-    segacd_coordinator_code_observer(c,0);return result;
-}
-static void owned_cdda_sector(void *u,uint64_t clock,int32_t lba,const uint8_t raw[2352])
-{
-    SegaCDCoordinator *c=u;segacd_coordinator_code_observer(c,1);
-    c->io.cdda_sector(c->io.cdda_user,clock,lba,raw);segacd_coordinator_code_observer(c,0);
-}
-static void owned_pcm(void *u,int16_t l,int16_t r)
-{
-    SegaCDCoordinator *c=u;segacd_coordinator_code_observer(c,1);
-    c->io.pcm_sink(c->io.pcm_user,l,r);segacd_coordinator_code_observer(c,0);
-}
-static void owned_pcm_timed(void *u,uint64_t clock,int16_t l,int16_t r)
-{
-    SegaCDCoordinator *c=u;segacd_coordinator_code_observer(c,1);
-    c->io.pcm_timed_sink(c->io.pcm_timed_user,clock,l,r);segacd_coordinator_code_observer(c,0);
-}
-static void owned_cdda(void *u,uint64_t clock,int16_t l,int16_t r)
-{
-    SegaCDCoordinator *c=u;segacd_coordinator_code_observer(c,1);
-    c->io.cdda_sample(c->io.cdda_sample_user,clock,l,r);segacd_coordinator_code_observer(c,0);
-}
+static void observe_io(void *user,int entering)
+{segacd_coordinator_code_observer(user,entering);}
 void segacd_coordinator_code_begin(SegaCDCoordinator *c,SegaCDCodeIdentity *id)
 {
     if(!c||!id||c->code_identity||c->busy[0]||c->busy[1]||c->external_active)return;
     c->code_identity=id;id->active=1;id->suspended=0;segacd_code_fence(id);
-    c->guarded_io=c->io;
-    if(c->io.read_sector){c->guarded_io.read_sector=owned_sector;c->guarded_io.media_user=c;}
-    if(c->io.cdda_sector){c->guarded_io.cdda_sector=owned_cdda_sector;c->guarded_io.cdda_user=c;}
-    if(c->io.pcm_sink){c->guarded_io.pcm_sink=owned_pcm;c->guarded_io.pcm_user=c;}
-    if(c->io.pcm_timed_sink){c->guarded_io.pcm_timed_sink=owned_pcm_timed;c->guarded_io.pcm_timed_user=c;}
-    if(c->io.cdda_sample){c->guarded_io.cdda_sample=owned_cdda;c->guarded_io.cdda_sample_user=c;}
     for(unsigned n=0;n<2;++n){c->cpu[n].code_guard=current_code;c->cpu[n].code_observer=opaque_code;}
 }
 void segacd_coordinator_code_end(SegaCDCoordinator *c)
 {
-    if(!c||c->busy[0]||c->busy[1]||c->external_active)return;
+    if(!c||!c->code_identity||c->busy[0]||c->busy[1]||c->external_active)return;
     if(c->code_identity){segacd_code_fence(c->code_identity);c->code_identity->active=0;}
     c->code_identity=NULL;
     for(unsigned n=0;n<2;++n){c->cpu[n].code_guard=NULL;c->cpu[n].code_observer=NULL;}
@@ -96,7 +66,8 @@ static void advance_devices(SegaCDCoordinator *c)
         }
         if(c->devices->stamp.busy)
             segacd_coordinator_code_write(c,c->devices->word,sizeof c->devices->word);
-        segacd_advance_io(c->devices,delta,c->code_identity?&c->guarded_io:&c->io);c->device_time+=delta;
+        segacd_advance_io_owned(c->devices,delta,&c->io,c->code_identity?observe_io:NULL,c);
+        c->device_time+=delta;
     }
     if(c->host_advance)c->host_advance(c->host_user,c->device_time);
 }
@@ -600,7 +571,10 @@ static M68kStepResult external_byte_once(SegaCDCoordinator *c,ExternalByte *op,i
 {
     *wait=0;
     SegaCDResult r;
-    if(op->write)r=segacd_write8(c->devices,SEGACD_MAIN,op->address,op->value);
+    if(op->write) {
+        code_bus_write(c,SEGACD_MAIN,op->address,1);
+        r=segacd_write8(c->devices,SEGACD_MAIN,op->address,op->value);
+    }
     else r=segacd_read8(c->devices,SEGACD_MAIN,op->address,&op->value);
     if(r==SEGACD_WAIT){*wait=1;return M68K_STEP_OK;}
     if(r==SEGACD_UNMAPPED) {

@@ -76,7 +76,6 @@ struct SegaCDCoordinator {
     uint64_t region_event_deadline;
     uint8_t region_event_valid;
     SegaCDCodeIdentity *code_identity;
-    SegaCDIO guarded_io;
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);

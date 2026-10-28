@@ -40,13 +40,33 @@ int segacd_init(SegaCD *s, const void *bios, size_t bytes)
 
 int segacd_sub_runnable(const SegaCD *s) { return (s->main_control & 3) == 1; }
 
-typedef struct {SegaCD *cd;const SegaCDIO *io;} SectorDelivery;
+typedef struct {SegaCD *cd;const SegaCDIO *io;SegaCDObserver observer;void *observer_user;} SectorDelivery;
+typedef struct {
+    SegaCDObserver observer;void *observer_user;
+    Rf5c164Sink pcm;SegaCDPcmTimedSample timed;void *user;
+} SampleScope;
+static void owned_pcm(void *user,int16_t l,int16_t r)
+{
+    SampleScope *scope=user;scope->observer(scope->observer_user,1);
+    scope->pcm(scope->user,l,r);scope->observer(scope->observer_user,0);
+}
+static void owned_timed(void *user,uint64_t clock,int16_t l,int16_t r)
+{
+    SampleScope *scope=user;scope->observer(scope->observer_user,1);
+    scope->timed(scope->user,clock,l,r);scope->observer(scope->observer_user,0);
+}
 static void deliver_sector(void *user,int32_t lba)
 {
     SectorDelivery *delivery=user;SegaCD *s=delivery->cd;const SegaCDIO *io=delivery->io;
     uint8_t raw[2352];
     if(s->media_error)return;
-    if(!io || !io->read_sector || !io->read_sector(io->media_user,lba,raw)) {
+    int read=0;
+    if(io&&io->read_sector) {
+        if(delivery->observer)delivery->observer(delivery->observer_user,1);
+        read=io->read_sector(io->media_user,lba,raw);
+        if(delivery->observer)delivery->observer(delivery->observer_user,0);
+    }
+    if(!read) {
         s->media_error=1;s->media_error_lba=lba;return;
     }
     ++s->media_sectors;
@@ -72,12 +92,17 @@ static void deliver_sector(void *user,int32_t lba)
         segacd_cdda_play(&s->cdda);
         SegaCDCddaResult result=segacd_cdda_push_raw_sector(&s->cdda,s->drive.cycles,lba,raw);
         if(result!=SEGACD_CDDA_OK && !s->cdda_error)s->cdda_error=(uint8_t)result;
-        if(io && io->cdda_sector)io->cdda_sector(io->cdda_user,s->drive.cycles,lba,raw);
+        if(io && io->cdda_sector) {
+            if(delivery->observer)delivery->observer(delivery->observer_user,1);
+            io->cdda_sector(io->cdda_user,s->drive.cycles,lba,raw);
+            if(delivery->observer)delivery->observer(delivery->observer_user,0);
+        }
     }
 }
-void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
+void segacd_advance_io_owned(SegaCD *s,uint32_t cycles,const SegaCDIO *io,
+                            SegaCDObserver observer,void *observer_user)
 {
-    uint32_t remaining=cycles;SectorDelivery delivery={s,io};
+    uint32_t remaining=cycles;SectorDelivery delivery={s,io,observer,observer_user};
     while(remaining) {
         /* A command can stop/seek/pause the source between sector events.
          * Do not expose queued audio past that emulated command boundary. */
@@ -90,13 +115,20 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
             delta=s->stamp.remaining_clocks;
         /* Age the preceding decoder pulse before delivering a new sector at
          * its actual CDD event boundary, even during a long stopped interval. */
-        if(io && io->pcm_timed_sink)
-            rf5c164_advance_timed(&s->pcm,s->drive.cycles,delta,io->pcm_timed_sink,io->pcm_timed_user);
-        else
-            rf5c164_advance(&s->pcm,delta,io?io->pcm_sink:NULL,io?io->pcm_user:NULL);
+        if(io && io->pcm_timed_sink) {
+            SampleScope scope={observer,observer_user,NULL,io->pcm_timed_sink,io->pcm_timed_user};
+            rf5c164_advance_timed(&s->pcm,s->drive.cycles,delta,
+                observer?owned_timed:io->pcm_timed_sink,observer?(void *)&scope:io->pcm_timed_user);
+        } else {
+            SampleScope scope={observer,observer_user,io?io->pcm_sink:NULL,NULL,io?io->pcm_user:NULL};
+            rf5c164_advance(&s->pcm,delta,observer&&scope.pcm?owned_pcm:scope.pcm,
+                observer&&scope.pcm?(void *)&scope:scope.user);
+        }
         if(!s->cdda_error) {
+            SampleScope scope={observer,observer_user,NULL,io?io->cdda_sample:NULL,io?io->cdda_sample_user:NULL};
             SegaCDCddaResult result=segacd_cdda_advance_to(&s->cdda,s->drive.cycles+delta,
-                io?io->cdda_sample:NULL,io?io->cdda_sample_user:NULL,NULL);
+                observer&&scope.timed?owned_timed:scope.timed,
+                observer&&scope.timed?(void *)&scope:scope.user,NULL);
             if(result!=SEGACD_CDDA_OK)s->cdda_error=(uint8_t)result;
         }
         segacd_cdc_advance(&s->cdc,delta);
@@ -116,6 +148,8 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
         }
     }
 }
+void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
+{segacd_advance_io_owned(s,cycles,io,NULL,NULL);}
 void segacd_advance_audio(SegaCD *s,uint32_t cycles,Rf5c164Sink sink,void *user)
 {
     SegaCDIO io={0};io.pcm_sink=sink;io.pcm_user=user;segacd_advance_io(s,cycles,&io);

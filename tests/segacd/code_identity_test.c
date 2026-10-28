@@ -18,6 +18,8 @@ static M68kStepResult nested_result;
 static void nested(M68kStepContext *cpu);
 static void sink(void *u,int16_t l,int16_t r)
 {(void)u;(void)l;(void)r;cd.prg[0x103]^=1;}
+static void observer(void *u,int entering)
+{segacd_coordinator_code_observer(u,entering);}
 static void setup(void)
 {
     memset(&id,0,sizeof id);memset(bios,0,sizeof bios);
@@ -53,6 +55,9 @@ static void versions(void)
     CHECK(m68k_step_execute_tracked(cpu,&other)==M68K_STEP_OK);
     m68k_step_write16(cpu,0x102,0x1234);
     CHECK(m68k_step_execute_tracked(cpu,&entry)==M68K_STEP_OK);
+    CHECK(segacd_coordinator_external_main_write8(&c,0x20103,0x35)==M68K_STEP_OK);
+    CHECK(m68k_step_execute_tracked(cpu,&entry)==M68K_STEP_MISS);
+    m68k_step_write16(cpu,0x102,0x1234);
     CHECK(m68k_step_execute(cpu,&opaque)==M68K_STEP_OK&&id.suspended==0);
     CHECK(m68k_step_execute_tracked(cpu,&entry)==M68K_STEP_MISS);
     CHECK(m68k_step_execute_tracked(cpu,&other)==M68K_STEP_OK);
@@ -64,7 +69,7 @@ static void versions(void)
     cd.prg[0x103]=0x35;
     segacd_coordinator_code_begin(&c,&id);
     CHECK(m68k_step_execute_tracked(cpu,&entry)==M68K_STEP_MISS);
-    c.guarded_io.pcm_sink(c.guarded_io.pcm_user,0,0);
+    segacd_advance_io_owned(&cd,384,&c.io,observer,&c);
     CHECK(m68k_step_execute_tracked(cpu,&entry)==M68K_STEP_OK);
     /* While opaque code owns the C stack, even another CPU must fetch fresh
      * bytes. This covers the ownership-WAIT nesting that cannot defer a fence
@@ -83,7 +88,8 @@ static void aliases(void)
     M68kStepEntry bank={0x20100,{0x4e71,0x1234},2,4,loop};
     cd.main_control=0;cpu->state.regs.PC=bank.pc;
     CHECK(m68k_step_execute_tracked(cpu,&bank)==M68K_STEP_OK);
-    m68k_step_write8(cpu,0xA12003,0x40);cpu->state.regs.PC=bank.pc;
+    CHECK(segacd_coordinator_external_main_write8(&c,0xA12003,0x40)==M68K_STEP_OK);
+    cpu->state.regs.PC=bank.pc;
     CHECK(m68k_step_execute_tracked(cpu,&bank)==M68K_STEP_MISS);
     m68k_step_write8(cpu,0xA12003,0);cpu->state.regs.PC=bank.pc;
     m68k_step_write8(cpu,0xA12001,1);
@@ -120,5 +126,20 @@ static void aliases(void)
     CHECK(id.serial==1&&id.fence==1);
     segacd_coordinator_code_end(&c);
 }
+static unsigned sample_calls;
+static void rebind_sink(void *u,int16_t l,int16_t r)
+{(void)l;(void)r;++sample_calls;((SegaCDIO *)u)->pcm_sink=NULL;}
+static void bindings(void)
+{
+    setup();static SegaCD reference;reference=cd;
+    SegaCDIO reference_io={0};reference_io.pcm_sink=rebind_sink;reference_io.pcm_user=&reference_io;
+    sample_calls=0;segacd_advance_io(&reference,384*3,&reference_io);
+    unsigned expected=sample_calls;CHECK(expected==3&&!reference_io.pcm_sink);
+    c.io.pcm_sink=rebind_sink;c.io.pcm_user=&c.io;sample_calls=0;
+    segacd_advance_io_owned(&cd,384*3,&c.io,observer,&c);
+    CHECK(sample_calls==expected&&!c.io.pcm_sink&&!id.suspended);
+    CHECK(!memcmp(&cd,&reference,sizeof cd));
+    segacd_coordinator_code_end(&c);
+}
 int main(void)
-{versions();aliases();puts("Code identity: tracked/opaque/fault/restore/alias/boundary/wrap checks passed");return 0;}
+{versions();aliases();bindings();puts("Code identity: CPU/external/opaque/fault/restore/remap/boundary/wrap/IO-rebinding checks passed");return 0;}
