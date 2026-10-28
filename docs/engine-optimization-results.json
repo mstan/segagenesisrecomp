@@ -1467,5 +1467,15 @@
     "status": "awaiting owner observations; no merge or release",
     "normal_window_audio": true,
     "saves": "isolated profiles and native-save copies; owner files untouched"
+  },
+  "owner_acceptance": {
+    "utc": "2026-10-28T16:07:14.859061+00:00",
+    "verdict": "approved_for_merge_and_release",
+    "sonic_cd": "Explicit owner pass; no repeated visual check",
+    "rka": "Explicit candidate pass after direct old/new recheck; owner calls prior castle sighting a fluke",
+    "sonic1": "Earlier cleared game remains accepted",
+    "castle_followup": "beads-h7ot closed after owner recheck; no reproducible defect or fix claimed",
+    "notes": "G:/Temp/Codex/genesis-engine-burndown-20261027/owner-review/review-notes.json",
+    "core_landed": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60 on m68k-recomp-core/main"
   }
 }
