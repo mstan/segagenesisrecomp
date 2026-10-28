@@ -12,7 +12,7 @@ import argparse
 import hashlib
 import json
 import os
-from pathlib import Path, PureWindowsPath
+from pathlib import Path
 import re
 import subprocess
 import sys
@@ -258,8 +258,6 @@ def run(args: argparse.Namespace) -> dict:
     bundle = validate_catalog_bundle(Path(args.catalog_manifest), Path(args.base_catalogs), Path(args.append_overlays))
     inputs = validate_owned_inputs(Path(args.bios), Path(args.disc))
     build_dir = Path(args.build_dir).resolve(strict=False)
-    if PureWindowsPath(str(build_dir)).drive.casefold() == "c:":
-        raise BuildInputError("build outputs on C: are refused; choose an F: or G: directory")
     sdl2_dir = Path(args.sdl2_dir).resolve(strict=True)
     if not sdl2_dir.is_dir():
         raise BuildInputError("SDL2_DIR is not a directory")
@@ -283,6 +281,7 @@ def run(args: argparse.Namespace) -> dict:
                         "XDG_CONFIG_HOME": str(host_state / "config")})
     cache_path = build_dir / "segacd-native-initial-cache.cmake"
     compact_dir = None
+    compact_warning = None
     if getattr(args, "canonicalize_catalogs", False):
         # Reproduce standalone_program.c's priority exactly. This is mechanical
         # registry adoption; the compactor itself knows no game or ROM identity.
@@ -296,9 +295,16 @@ def run(args: argparse.Namespace) -> dict:
         compact_dir = build_dir / "compact-native-catalogs"
         ordered_list = build_dir / "compact-native-inputs.txt"
         ordered_list.write_text("".join(f"{role}|{directory}|{prefix}\n" for role, directory, prefix in ordered), encoding="utf-8")
-        subprocess.run([sys.executable, str(source_root / "tools" / "native_catalog_compact.py"),
-                        "--catalog-list", str(ordered_list), "--output", str(compact_dir)],
-                       check=True, env=process_env)
+        try:
+            subprocess.run([sys.executable, str(source_root / "tools" / "native_catalog_compact.py"),
+                            "--catalog-list", str(ordered_list), "--output", str(compact_dir)],
+                           check=True, env=process_env)
+        except subprocess.CalledProcessError as error:
+            # A newer/unknown generator format must still build through the
+            # original portable registry, never through partial metadata.
+            compact_warning = f"Catalog compaction exited {error.returncode}; retaining original registry"
+            print(compact_warning, file=sys.stderr)
+            compact_dir = None
     write_initial_cache(cache_path, bundle["catalogs"], sdl2_dir, compact_dir)
     source_git = git_identity(source_root)
     core_git = {}
@@ -319,6 +325,8 @@ def run(args: argparse.Namespace) -> dict:
         "configuration_requested": bool(args.configure or args.build),
         "build_requested": bool(args.build),
         "compact_catalog_manifest": str(compact_dir / "native_catalog_manifest.json") if compact_dir else None,
+        "compact_catalog_manifest_sha256": sha256_file(compact_dir / "native_catalog_manifest.json") if compact_dir else None,
+        "compact_catalog_warning": compact_warning,
         "limitation": "Consumes an existing generated catalog bundle; BIOS/disc-driven catalog discovery and generation are separate.",
     }
     provenance_path = build_dir / "source-build-provenance.json"
@@ -352,8 +360,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--build", action="store_true", help="configure and build SonicCD from source")
     parser.add_argument("--configuration", default="Release")
     parser.add_argument("--parallel", type=int, default=4)
-    parser.add_argument("--canonicalize-catalogs", action="store_true",
-                        help="compact equivalent generated operation/guard metadata in original registry priority")
+    parser.add_argument("--canonicalize-catalogs", action=argparse.BooleanOptionalAction, default=True,
+                        help="compact equivalent generated metadata in original priority (default: enabled; unsupported formats retain original registry)")
     args = parser.parse_args(argv)
     if args.parallel < 1:
         parser.error("--parallel must be positive")

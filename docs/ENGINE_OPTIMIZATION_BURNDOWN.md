@@ -34,17 +34,17 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
   - Evidence: `runner/cd/segacd_coordinator.c`, `runner/cd/machine.c`.
   - Disposition/evidence: Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.
 
-- [ ] **E02: Code identity and invalidation** — P1; original N02.
+- [x] **E02: Code identity and invalidation** — P1; original N02.
   - Goal: Use guarded code regions with complete write/remapping invalidation instead of per-instruction byte comparisons where qualified.
   - Boundary: Cover mutable overlays and self-modification through generic memory ownership/versioning.
   - Evidence: `runner/cd/catalog_lookup.h`, `external/m68k-recomp-core/runtime/m68k_step.c`.
-  - Disposition/evidence: Fresh owned instruction spans retain every live opcode/extension comparison. Full code-version guard elision is deferred: device arrays are public, title HLE writes PRG/Word RAM directly, and imports bypass bus epochs. A bus-only dirty counter would be unsound. The selected cache retains descriptor discovery without trusting code bytes; no title-specific writer policy introduced. New source audit qualifies31.476percent Main and14.929percent Sub duplicate descriptors by guard/cycle/body equivalence. Generic exact-body compaction into the unchanged step-module ABI is being qualified; it retains live guards and per-PC priority. No built size/startup/runtime gain claimed yet.
+  - Disposition/evidence: Generic exact-body catalog compaction45b4805 preserves every PC/full-word guard/cycle/operation variant and its original priority in the existing step-module ABI. Qualified source corpus reduces Main descriptors2409238 to1650902 and Sub161321 to137237. Final Windows and four Linux3000-frame runs match the frozen original in full state/pixels/WAV. Windows executable23.13percent smaller; unstripped Linux9.98percent smaller. Linux host instructions3.732percent fewer; CPU timing mixed(-15.08/+11.84percent reductions), not a runtime win. Guard elision remains deferred until all native/direct/import writers have sound ownership/versioning; public arrays are not a reason to preserve that architecture indefinitely.
 
-- [ ] **E03: Owned memory access** — P1; original N03.
+- [x] **E03: Owned memory access** — P1; original N03.
   - Goal: Resolve generic RAM/ROM/Word RAM mappings once for safe regions; reduce repeated bus decoding and byte-order bookkeeping.
   - Boundary: Keep guest bytes, aliases, write protection, MMIO and ownership transfers coherent. Game-object redesign is deferred.
   - Evidence: `runner/video/genesis_bus.c`, `runner/cd/segacd.c`.
-  - Disposition/evidence: Owned code spans core53fc7b4/engine86d2d0c pass actual SonicCD3000frame Linux and matched Windows reference/candidate gates: full raw memory/pixels/WAV and observations exact. Preserve all live bytes, HINT/MMIO/1M/odd/wrap and ownership WAIT fallback. Updated v7 attribution puts remaining segacd_read8/read16 below1percent each; retain exact public data-bus path instead of adding an unmeasured second memory representation. Runtime-core/generator-core identities remain separate; final combined suite remains.
+  - Disposition/evidence: Owned code spans core53fc7b4/engine86d2d0c pass final Windows/Linux3000-frame game gates and complete core/machine contracts. Every opcode/extension byte still checks current owned bytes. HINT/MMIO/1M/odd/wrap and ownership WAIT retain the portable fetch path. Remaining data-bus read attribution is below1percent per read helper on the measured route; no unmeasured second data-memory representation added. Generator-core7233852 and runtime-core53fc7b4 identities remain distinct.
 
 - [x] **E04: Generated native arithmetic and state** — P2; original N04.
   - Goal: Improve the common 68000 emitter with local registers, proven flag liveness, combined effective addresses and grouped cycle accounting.
@@ -78,11 +78,11 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
 
 ### Graphics and rendering
 
-- [ ] **E09: Single image-production ownership** — P1; original N11.
+- [x] **E09: Single image-production ownership** — P1; original N11.
   - Goal: Provide reusable lazy original-image production and exact fallback in the shared cartridge/CD raster pipeline.
   - Boundary: Retain CPU-visible sprite status and whole-frame fallback. Title scene eligibility and its adapter implementation belong in the title backlog. Do not land unused abstraction merely to check this item off.
   - Evidence: `runner/cd/machine.c`, `runner/video/genesis_machine.c`.
-  - Disposition/evidence: Implemented and built-game correctness passed at16c14e6. Shared CD captures immutable rows, preserves per-row CRAM and composes exact whole-frame fallback on demand. Frozen current SonicCD ran3000 actually presented frames: all11screenshots, CPU/device observations, raw state/pixels and WAV match;720000rows captured/442800composed,38.5percent original compositions omitted on this route.898600bytes retained. Runtime timing and final Windows/combined gates remain; cartridge already has lazy row ownership.
+  - Disposition/evidence: Shared CD immutable raster inputs and lazy exact fallback16c14e6 pass final Windows/Linux3000-frame state/pixel/WAV gates.720000rows captured and442800composed:38.5percent original compositions omitted on this route, with898600retained bytes. CPU-visible hardware sprite status remains at its original deadline; per-row CRAM survives fallback. Cartridge already had lazy original rows. Omitted work is not a whole-game FPS claim.
 
 - [x] **E10: Renderer interface independent of aspect ratio** — P1; original N12.
   - Goal: Separate shared renderer ownership/selection from viewport width and elective widescreen policy.
@@ -90,17 +90,17 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
   - Evidence: `runner/main.c`, `runner/game_video.h`.
   - Disposition/evidence: Requires excluded title stock-fidelity/adoption T08; do not add an unused shared selector.
 
-- [ ] **E11: Fused generic VDP raster** — P1; original N14.
+- [x] **E11: Fused generic VDP raster** — P1; original N14.
   - Goal: Combine tile/window/scroll spans, decode, priority and shadow/highlight composition in the shared renderer.
   - Boundary: Existing BATCHED fetching is partial work, not a new gain. Preserve all supported VDP modes and the universal reference path.
   - Evidence: `runner/video/genesis_vdp.c`.
-  - Disposition/evidence: Native row and composition package implemented; Sonic1 current built-game correctness passed, further engine raster ownership work and performance qualification pending.
+  - Disposition/evidence: Portable native packed tile rows34b08ee and byte-lane priority/shading composition705129b replace repeated per-pixel packing/selection. Kernel/provider/edge/width/frame contracts pass MSVC/GCC. Final Sonic1 stock+widescreen2400-frame and RKA stock+widescreen6000-frame gates preserve all image/state/full-WAV/work/rollback results. CD final Windows/Linux3000-frame gates also pass. No qualified per-game runtime speed claim under shared-host variation.
 
-- [ ] **E12: Shared sprite evaluation jobs** — P2; original N15.
+- [x] **E12: Shared sprite evaluation jobs** — P2; original N15.
   - Goal: Prepare reusable generic sprite membership/opacity/priority work for both hardware status and image production.
   - Boundary: Preserve limits, masks, raster-visible changes, overflow and collision timing; no replacement of game BuildSprites.
   - Evidence: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`.
-  - Disposition/evidence: Implemented CD hardware sprite capture once per row; deferred whole-frame fallback reuses captured sprite lanes and never evaluates hardware sprites again. Synthetic provider/width/state and full CPU-frame contracts pass; actual SonicCD3000frame output/state/audio matches. No title SAT/scene algorithm changes. Final integration/performance gate remains.
+  - Disposition/evidence: Hardware sprite capture occurs once per CD raster row; deferred fallback reuses captured lanes and never repeats sprite evaluation. Status, limits, priority and per-row palette remain exact in synthetic full-frame/provider contracts and final Windows/Linux3000-frame memory/pixel/WAV gates. No title SAT/scene policy changed. Further sprite caches are separately deferred under E13/E15.
 
 - [x] **E13: Versioned generic graphics derivation** — P2; original N16.
   - Goal: Cache decoded VDP art, palettes and geometry only at verified VRAM/CRAM/register change boundaries.
@@ -120,11 +120,11 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
   - Evidence: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`.
   - Disposition/evidence: Considered caching complete captured-row inputs plus CRAM and validating output ownership, rather than relying on unsafe end-of-frame VRAM hashes. Hardware sprite/status evaluation must continue through raster changes; frame-end equality cannot establish equal intermediate rows. Current sampled CD resolve_row cost0.086percent gives negligible ceiling after lazy ownership. Defer cross-frame generic packet reuse until a demonstrated static-render-heavy consumer; no title scene/image eligibility added.
 
-- [ ] **E16: Final pixels and upload ownership** — P2; original N20.
+- [x] **E16: Final pixels and upload ownership** — P2; original N20.
   - Goal: Fuse shared indexed/ARGB conversion, copies, color processing, UI staging and upload preparation.
   - Boundary: Keep raw verification/capture output, filter edges, UI and portable output paths correct.
   - Evidence: `runner/main.c`, `runner/cd/presentation.c`.
-  - Disposition/evidence: CD original rows now convert only when requested, using retained CRAM and64/192-entry palette; raw readers use the getter. Exact SonicCD3000frame evidence passes with38.5percent fewer original compositions. Broader cartridge/upload pipeline still requires evaluation; reduced row count is not a runtime speed claim.
+  - Disposition/evidence: CD original rows convert only when requested, using retained row CRAM and the exact64/192-entry palette; raw readers use the lazy getter. Final Windows/Linux game proof records38.5percent fewer original compositions and exact final pixels/WAV. Current pixel resolution attribution is0.086percent, not a demonstrated GPU/upload bottleneck. Further host upload ownership work remains deferred with E17/E34; no simulation image is repurposed for UI.
 
 - [x] **E17: Optional generic GPU raster backend** — P3; original N21.
   - Goal: Evaluate hardware tile/sprite/priority composition from reusable immutable render packets.
@@ -140,11 +140,11 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
 
 ### Audio
 
-- [ ] **E19: One ordered audio timeline** — P2; original N23.
+- [x] **E19: One ordered audio timeline** — P2; original N23.
   - Goal: Consolidate engine timestamps, stable ordering, register pairing and deferred DAC-stream representation.
   - Boundary: Preserve cross-source timing, long bursts and exact paired writes; do not implement game sound-driver semantics.
   - Evidence: `runner/audio/mixer.c`, `runner/audio/event_queue.c`, `runner/cd/audio_native.c`.
-  - Disposition/evidence: Stable natural-run merging and reverse FM pairing retain original push indices for optional applied-audio tracing. Reuse a typed union scratch for deferred events. Correction: total static event storage is6MiB versus5MiB originally, an increase of1MiB, rather than the initially estimated saving. Maximum262144-event and1200random oracle cases now compare original indices as well as exact events; MSVC/GCC and ASan/UBSan pass. Actual cartridge state/PCM/diagnostic validation pending.
+  - Disposition/evidence: Stable natural-run merging and reverse FM pair assignment preserve the original optional applied trace, including push indices. Static event storage increases from5MiB to6MiB (+1MiB), with typed shared sort/defer scratch.1200random and262144-event independent old-order oracle cases pass MSVC/GCC and ASan/UBSan. Final Sonic1 stock/wide2400-frame full WAV/applied-trace/state/replay and RKA stock/wide6000-frame full WAV/state/replay gates pass. CD uses its separate native event scheduler and receives no cartridge timeline gain claim. Runtime timing is unqualified.
 
 - [x] **E20: Faithful FM kernels** — P1; original N24.
   - Goal: Optimize actual YM2612 operator/channel kernels beyond the already-shipped sample-block wrapper.
@@ -152,11 +152,11 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
   - Evidence: `runner/audio/ym2612_ymfm.cpp`, `runner/external/ymfm/ymfm_fm.ipp`.
   - Disposition/evidence: The faithful FM sample-block wrapper is already shipped; no new gain is credited to it. Replacing or vector-packing the YM2612 operator kernel is allowed, but needs a concrete bit-identical replacement across envelope/LFO/feedback/DAC/register-write and serializer state. No such replacement is qualified by the current vendor API or historical profile alone. E36 compiler optimization and E21 exact PSG spans are the bounded first alternatives; defer a new FM kernel until current post-block attribution and a specific arithmetic/layout design justify that separate chip qualification.
 
-- [ ] **E21: PSG event spans** — P3; original N25.
+- [x] **E21: PSG event spans** — P3; original N25.
   - Goal: Generate eligible tone/noise runs in blocks.
   - Boundary: Advance counters, LFSR, phase and filters exactly; historical whole-game cost is small.
   - Evidence: `runner/audio/sn76489.c`.
-  - Disposition/evidence: Engine57b4cea advances settled-muted PSG spans with closed-form tone/noise counters and exact periodic/white LFSR jumps, producing zeros in one block. Nonzero filters/active channels retain ordinary per-sample synthesis. MSVC/GCC dual-backend full state/PCM/pending-output restore tests pass; current Windows SonicCD3000frame output and state match. Cartridge combined/actual timing qualification remains.
+  - Disposition/evidence: Exact settled-muted PSG spans57b4cea advance tone counters, phase, periodic/white-noise LFSR and pending samples in closed form, writing zeros in bulk only with settled filters and all channels muted. Active sound/filter tails keep the original sample path. Dual scalar/optimized state+PCM and pending-output restore tests pass MSVC/GCC. Final Sonic1/RKA and Windows/Linux CD full WAV/state gates pass. No proven whole-game runtime gain claimed.
 
 - [x] **E22: Sega CD PCM/CDDA spans** — P2; original N26.
   - Goal: Advance generic PCM channels, CDDA/fader and queues in timed blocks instead of per-sample callbacks.
@@ -176,19 +176,19 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
   - Evidence: `runner/audio.c`.
   - Disposition/evidence: The host bridge already uses one bounded mixed frame and one producer handoff, with the audio-device lock protecting SPSC ring/DRC/callback state. Replacing this with atomics/borrowed buffers requires ownership of all shared callback state, not just a lock deletion. Lock/callback timing instrumentation already exists; dummy-device throughput does not establish speaker contention. Defer a new handoff on a demonstrated physical-device lock/jitter problem, preserving concealment/recovery and callback deadlines.
 
-- [ ] **E25: Exact constant/silent spans** — P3; original N29.
+- [x] **E25: Exact constant/silent spans** — P3; original N29.
   - Goal: Represent provably constant output efficiently without per-sample queue work where valid.
   - Boundary: Timers, phase, filters, fader and future sample state must still evolve exactly.
   - Evidence: `runner/audio/sn76489.c`, `runner/cd/cdda.c`, `runner/cd/rf5c164.c`.
-  - Disposition/evidence: Exact settled PSG silence is implemented under E21; counters and LFSR never freeze, and later unmute/restore remains exact. CDDA/PCM zero samples still carry observable queue/timestamp/fader/underflow state, so silence alone does not allow dropping them. A compressed timed-run source would require a new mixer/observer contract plus a measured cost; current CDDA advance attribution1.43percent is the entire transport, not just zero publication. Keep these sources faithful and defer unmeasured run compression.
+  - Disposition/evidence: Exact settled PSG silence is implemented under E21; counters and LFSR never freeze, and later unmute/restore remains exact. CDDA/PCM zero samples still carry observable queue/timestamp/fader/underflow state, so silence alone does not allow dropping them. A compressed timed-run source would require a new mixer/observer contract plus a measured cost; current CDDA advance attribution1.43percent is the entire transport, not just zero publication. Keep these sources faithful and defer unmeasured run compression. Final Sonic1/RKA and Windows/Linux CD whole-WAV and state gates now pass; retain the PSG portion and the explicit other-source deferral.
 
 ### Generic media and console firmware
 
-- [ ] **E26: Bounded generic media prefetch** — P2; original N32.
+- [x] **E26: Bounded generic media prefetch** — P2; original N32.
   - Goal: Read upcoming raw CDDA/movie/nonresident sectors off the simulation path using actual device requests/transport information.
   - Boundary: Bound memory and preserve emulated delivery, seeks, cancellation, errors and synchronous fallback; no title preload tables.
   - Evidence: `runner/cd/disc_image.c`, `runner/cd/cdd.c`, `runner/cd/cdc.c`.
-  - Disposition/evidence: Engine96a2e2f preserves bounded1MiB stdio read-ahead by avoiding seeks for consecutive nonresident raw reads. Actual Linux and matched Windows3000frame CD gates preserve complete state/pixels/WAV. Emulated delivery/seek/pause remain unchanged; reader and injected-error tests retain buffers and synchronous fallback. Speculative asynchronous workers are deferred because no host read stall is demonstrated by current CPU attribution; final combined gate remains.
+  - Disposition/evidence: Sequential nonresident reads preserve bounded1MiB stdio read-ahead by skipping redundant seeks96a2e2f. Final Windows/Linux3000-frame state/pixel/WAV gates pass; current route reports2139raw reads,116resident reads and2host seeks. Guest seek/delivery/pause clocks are unchanged, with injected read/error and synchronous fallback checks. Async prefetch remains deferred without a demonstrated host read stall; do not create idle workers merely for coverage.
 
 - [x] **E27: Verified media handoff contract** — P1; original N33.
   - Goal: Provide a safe common way to reuse completed media verification within one launch instead of independent redundant payload reads.
@@ -200,13 +200,13 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
   - Goal: Evaluate accelerated portable/platform SHA and safe immutable-sector validation reuse.
   - Boundary: Windows CNG already ships. Keep complete payload checks, corruption detection, CPU/OS gating and full portable restart/fallback.
   - Evidence: `runner/cd/disc_image.c`, `runner/cd/sector.c`.
-  - Disposition/evidence: Evaluated/implemented: optional OpenSSL1.1+ EVP full-payload validation outside Windows, with CNG retained and universal C fallback. WindowsCNG/portable and LinuxOpenSSL/missing-provider/portable plus injected init/midstream/final failures pass. Six matched SonicCD one-frame launches preserve raw state/pixels/WAV/native summaries. Two balanced Linux warm-host A/B pairs observed12.4/13.8percent less full-launch wall time and40.2/41.1percent less processCPU; A/A drift2.0percent wall/1.7percent CPU. Raw samples in cd-media-startup.json. This is a bounded shared-host launch result, not a runtime throughput claim; final combined/Windows qualification and dependency packaging remain.
+  - Disposition/evidence: Optional OpenSSL full-payload validation outside Windows, retained Windows CNG and universal C fallback pass provider-missing/forced-portable and injected init/update/final failure checks. Final combined Windows/Linux game gates pass. Earlier six balanced Linux launch observations show12.4/13.8percent less wall and40.2/41.1percent less processCPU (A/A drift2.0/1.7percent), bounded shared-host evidence, not FPS. Selected Linux system libcrypto dependency is recorded; Windows review build needs no added crypto DLL. Catalog-only startup observations are neutral/inconclusive and are not added to these gains.
 
-- [ ] **E29: Resident-media representation** — P2; original N35.
+- [x] **E29: Resident-media representation** — P2; original N35.
   - Goal: Evaluate lower-copy/raw-versus-user-data residency, bounded mapped/shared storage and memory footprint.
   - Boundary: Preserve generic raw/audio/movie/sector reader contracts and allocation fallback. Memory savings are distinct from speedups.
   - Evidence: `runner/cd/disc_image.c`.
-  - Disposition/evidence: Read-only mapped residency96a2e2f passes full mandatory payload comparison, actual Linux and matched Windows3000frame game parity, and forced mapping-failure copied fallback. Existing256MiB cap retained. Record published mapped/private byte counters and actual host memory separately; mapping size is not an RSS saving. Final combined game/cost summary remains.
+  - Disposition/evidence: Read-only mapped first-data-track residency96a2e2f shares bytes verified during mandatory full payload hashing; the256MiB cap and copied fallback remain. Windows/Linux full game proof and forced mapping-failure checks pass. Current mappedBytes139735888/privateResidentBytes0 removes the separate private copy; mapping length is not an RSS saving claim. Catalog-only matched Linux RSS samples are retained separately with their raw process status.
 
 - [x] **E30: Reusable console-firmware services** — P2; original N36.
   - Goal: Assess closed standard Sega CD BIOS services that can be replaced once for supported firmware profiles across games.
@@ -252,7 +252,7 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
   - Goal: Evaluate common LTO/PGO, cross-TU inlining, hot/cold layout and qualified optional kernels on real built consumers.
   - Boundary: Keep arithmetic precise, public build portability and fixed qualified netplay capabilities; supported consumer build wiring is allowed, title logic is not.
   - Evidence: `cmake`, `external/m68k-recomp-core/profiles/genesis/code_generator.c`.
-  - Disposition/evidence: Standard CMake IPO is already available as a build experiment; no extra unused engine switch is needed. Current code comparisons refresh both Sonic1 arms with the same MSVC19.44 toolset rather than relabeling the old19.41 binary. New LTO/PGO adoption remains deferred: no matched built-game evidence establishes a gain, and current local/NAS shared reservations reject timing admission. Benchmark availability does not block the retained engine batch. Keep precise arithmetic, portable compilation and fixed compatibility identity; no fast-math/host-only ISA or unsupported whole-program claim introduced.
+  - Disposition/evidence: Whole-program generated catalog canonicalization45b4805 is qualified on the current CD consumer without fast math, new ISA or a new runtime ABI. Ordinary linking drops duplicate metadata and unneeded operation objects: Windows142430208 to109482496bytes, unstripped Linux544293880 to489968336bytes. Loaded data.rel.ro falls102851160 to71537280bytes; relocation table61718808 to42927408bytes. Both platform game gates pass; instruction retirement falls3.732percent but runtime timing is inconclusive. Supported source pipeline enables compaction by default, retains original-registry fallback on unsupported formats and offers --no-canonicalize-catalogs. LTO/PGO remain deferred pending matched built-game benefit; no new unused compiler switch introduced.
 
 ## Coherent implementation packages
 
@@ -276,3 +276,13 @@ Historical evidence: [PERFORMANCE.md](PERFORMANCE.md), [NATIVE_OPTIMIZATION_BURN
 ## Evaluation record
 
 For each E-ID, record the chosen package and implementation/reference heads, built-game evidence, per-game positive/neutral/regression/inconclusive outcome, correctness, material costs and decision in `beads-3vb.31` and the campaign. Keep untested and deferred entries explicit. Do not close the implementation owner merely because this document exists.
+
+## Current batch: ready for owner review (2026-10-28)
+
+All36 families have an evidence-backed disposition: {'rejected': 1, 'implemented_or_partial': 14, 'deferred': 19, 'existing': 2}. Implemented/partial counts overlap; they are not independent speed wins. Deferred items remain future opportunities. The title backlog stays excluded.
+
+Sonic1 stock/wide2400-frame, RKA stock/wide6000-frame and SonicCD Windows plus four Linux3000-frame checks preserve full state, pixels and WAV; cartridge replay checks and Sonic1 applied-audio trace also match. Raw per-game packages, source/binary identities, settings, costs and evidence are in [engine-optimization-results.json](engine-optimization-results.json).
+
+The catalog fixture reduces Windows executable size23.13percent and unstripped Linux9.98percent. CD lazy raster omits38.5percent of original compositions on its measured route. These are footprint/repeated-work results; current runtime and catalog-only startup timing are inconclusive. The earlier media-provider launch improvement is recorded separately, not added to these results. Rejected native fault scopes are reverted.
+
+Owner review: `G:/Temp/Codex/genesis-engine-burndown-20261027/owner-review/Review.cmd`. Three current private review builds have normal-window/audio launchers and persistent per-game Pass/Fail/deferred notes. Native saves/settings are isolated. No delivery folder, main branch or release changed. Wait for owner acceptance before merge/release; benchmark waiting is not a blocker.

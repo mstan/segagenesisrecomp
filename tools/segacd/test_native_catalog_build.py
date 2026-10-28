@@ -7,11 +7,31 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
+import argparse
 
 import native_catalog_build as driver
 
 
 class NativeCatalogBuildTests(unittest.TestCase):
+    def test_unknown_compaction_format_keeps_original_registry(self):
+        # The ordinary validated fixture deliberately has no native-function
+        # prelude. Exercise the real compactor failure, not a mocked exit code.
+        args = argparse.Namespace(source_root=Path(__file__).resolve().parents[2],
+            catalog_manifest=self.manifest, base_catalogs=self.base, append_overlays=self.overlays,
+            bios=self.root / "fixture-bios", disc=self.root / "fixture-disc", build_dir=self.root / "build",
+            sdl2_dir=self.root, configure=False, build=False, canonicalize_catalogs=True,
+            configuration="Release", parallel=1, cmake=None)
+        with mock.patch.object(driver, "validate_owned_inputs", return_value={"fixture": "no media execution"}), \
+             mock.patch.object(driver, "git_identity", return_value={"path": "fixture", "revision": "fixture", "dirty": False}):
+            result = driver.run(args)
+        provenance = json.loads(result["provenance"].read_text(encoding="utf-8"))
+        self.assertIsNone(provenance["compact_catalog_manifest"])
+        self.assertIn("retaining original registry", provenance["compact_catalog_warning"])
+        cache = result["cache"].read_text(encoding="utf-8")
+        self.assertIn('set(SEGACD_COMPACT_CATALOG_DIR ""', cache)
+        self.assertIn("extra_fixture", cache)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="segacd-native-build-")
         self.root = Path(self.temp.name)
