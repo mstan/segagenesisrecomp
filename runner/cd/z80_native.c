@@ -134,7 +134,6 @@ SegaCDZ80Result segacd_z80_step(SegaCDZ80 *s)
     if(active)return SEGACD_Z80_REENTERED;
     if(s->result!=SEGACD_Z80_OK)return s->result;
     if(!s->step)return s->result=SEGACD_Z80_BAD_MODULE;
-    unsigned held=segacd_coordinator_scope_hold(s->coordinator);
     active=s;s->in_step=1;g_z80=s->state;cycle_start=g_z80.cyc;time_start=s->time;
     remainder_start=s->remainder;wait_charge=0;
     if(!setjmp(fault_escape)) {
@@ -148,6 +147,5 @@ SegaCDZ80Result segacd_z80_step(SegaCDZ80 *s)
      * never replay the operation or manufacture a successful read value. */
     s->state=g_z80;s->time=time_start+wait_charge+
         cycle_offset(g_z80.cyc-cycle_start,remainder_start,&s->remainder);
-    s->wait_ticks+=wait_charge;s->in_step=0;active=NULL;
-    segacd_coordinator_scope_resume(s->coordinator,held);return s->result;
+    s->wait_ticks+=wait_charge;s->in_step=0;active=NULL;return s->result;
 }

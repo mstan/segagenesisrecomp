@@ -86,13 +86,6 @@ uint64_t segacd_machine_line_clock(uint64_t line)
  * query it many times between raster events; derive it once per changed
  * counter, including arbitrary current-build counter restore/replacement. */
 static uint64_t cached_line,cached_line_clock;
-static unsigned running_frame;
-#ifndef SEGACD_NATIVE_REGION_SCOPE
-#define SEGACD_NATIVE_REGION_SCOPE 1
-#endif
-#if defined(M68K_STEP_HAS_EXECUTION_SCOPES) && M68K_STEP_HAS_EXECUTION_SCOPES && SEGACD_NATIVE_REGION_SCOPE
-static M68kStepScope *execution_scope;
-#endif
 static uint64_t line_deadline(uint64_t line)
 {
     if(line!=cached_line){cached_line_clock=segacd_machine_line_clock(line);cached_line=line;}
@@ -224,21 +217,10 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
     segacd_coordinator_host_clock(&m->coordinator,host_advance,next_host_event);
     segacd_coordinator_device_limit(&m->coordinator,sound_limit);
     (void)segacd_coordinator_catalog_index(&m->coordinator,SEGACD_CATALOG_PC_INDEX);
-    video_observer=NULL;video_user=NULL;observing_video=0;running_frame=0;
-#if defined(M68K_STEP_HAS_EXECUTION_SCOPES) && M68K_STEP_HAS_EXECUTION_SCOPES && SEGACD_NATIVE_REGION_SCOPE
-    execution_scope=m68k_step_scope_create();
-    (void)m68k_step_scope_bind(&m->coordinator.cpu[0],execution_scope);
-    (void)m68k_step_scope_bind(&m->coordinator.cpu[1],execution_scope);
-#endif
-    current=m;return 1;
+    video_observer=NULL;video_user=NULL;observing_video=0;current=m;return 1;
 }
 void segacd_machine_close(SegaCDMachine *m)
-{if(m&&current==m&&!observing_video&&!running_frame){(void)segacd_coordinator_catalog_index(&m->coordinator,0);
-#if defined(M68K_STEP_HAS_EXECUTION_SCOPES) && M68K_STEP_HAS_EXECUTION_SCOPES && SEGACD_NATIVE_REGION_SCOPE
-    (void)m68k_step_scope_bind(&m->coordinator.cpu[0],NULL);
-    (void)m68k_step_scope_bind(&m->coordinator.cpu[1],NULL);
-    (void)m68k_step_scope_destroy(execution_scope);execution_scope=NULL;
-#endif
+{if(m&&current==m&&!observing_video){(void)segacd_coordinator_catalog_index(&m->coordinator,0);
     free(captured_video);captured_video=NULL;
     current=NULL;video_observer=NULL;video_user=NULL;}}
 int segacd_machine_video_observer(SegaCDMachine *m,SegaCDMachineVideoObserver observer,void *user)
@@ -267,26 +249,11 @@ M68kStepResult segacd_machine_step(SegaCDMachine *m)
     }else m->result=segacd_coordinator_step(&m->coordinator);
     return m->result;
 }
-static M68kStepResult frame_body(void *user)
+M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
 {
-    SegaCDMachine *m=user;
+    if(!m||m!=current)return M68K_STEP_REENTERED;
     uint64_t frame=m->frames;
     do {M68kStepResult r=segacd_machine_step(m);if(r!=M68K_STEP_OK)return r;}
     while(m->frames==frame);
     return M68K_STEP_OK;
-}
-M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
-{
-    if(!m||m!=current||running_frame||observing_video||m->coordinator.busy[0]||
-       m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)return M68K_STEP_REENTERED;
-    running_frame=1;
-#if defined(M68K_STEP_HAS_EXECUTION_SCOPES) && M68K_STEP_HAS_EXECUTION_SCOPES && SEGACD_NATIVE_REGION_SCOPE
-    if(execution_scope) {
-        M68kStepContext *faulted=NULL;
-        M68kStepResult result=m68k_step_scope_run(execution_scope,frame_body,m,&faulted);
-        if(faulted)result=segacd_coordinator_scope_fault(&m->coordinator,faulted);
-        running_frame=0;return m->result=result;
-    }
-#endif
-    M68kStepResult result=frame_body(m);running_frame=0;return result;
 }

@@ -9,7 +9,6 @@
 #define CHECK(x) do { if(!(x)){fprintf(stderr,"line %u: %s\n",(unsigned)__LINE__,#x);exit(1);} } while(0)
 
 static SegaCDMachine machine;
-extern uint8_t g_ram[65536];
 static uint8_t bios[SEGACD_BIOS_BYTES];
 static M68kStepEntry main_entries[2];
 static M68kStepModule main_module;
@@ -82,64 +81,6 @@ static void setup(int with_main)
     machine.bus.pad_type[0]=0;machine.bus.io_data[0]=0x40;
     segacd_machine_pad(&machine,0,GPAD_RIGHT|GPAD_START);
     machine.vdp.reg[1]|=0x20u; /* V interrupt enabled. */
-}
-
-static unsigned fault_mode,floor_returned;
-static void fault_main(M68kStepContext *ctx)
-{
-    m68k_step_write16(ctx,0xff0400,0x1234);++ctx->state.regs.D[3];
-    if(fault_mode==0||fault_mode==4)(void)m68k_step_read16(ctx,1);
-    else if(fault_mode==1)(void)m68k_step_read16(ctx,0x200000);
-    ctx->state.regs.PC=0x100;
-}
-static void fault_sub(M68kStepContext *ctx)
-{
-    m68k_step_write16(ctx,0x500,0x5678);++ctx->state.regs.D[4];
-    (void)m68k_step_read16(ctx,0xe0000);++ctx->state.regs.D[5];
-}
-static M68kStepResult translating_floor(M68kStepContext *ctx)
-{
-    CHECK(m68k_step_execute_live(ctx,fault_main)==M68K_STEP_ADDRESS_ERROR);
-    ++floor_returned;return M68K_STEP_UNSUPPORTED;
-}
-static void test_native_region_fault_parity(void)
-{
-    SegaCDMachine *reference=malloc(sizeof *reference),*normalized=malloc(sizeof *normalized);
-    CHECK(reference&&normalized);
-    uint8_t reference_ram[65536];M68kStepResult expected=M68K_STEP_OK;unsigned expected_floor=0;
-    for(unsigned mode=0;mode<5;++mode)for(unsigned arm=0;arm<2;++arm) {
-        fault_mode=mode;floor_returned=0;setup(mode!=4);
-        main_entries[0].execute=fault_main;sub_entry.execute=fault_sub;
-        if(mode>=1&&mode<=3)machine.devices.main_control=1;
-        if(mode==1)machine.devices.memory_mode=0; /* Real Main WAIT, nested Sub failure. */
-        if(mode==2) {
-            CHECK(m68k_step_reset(&machine.coordinator.cpu[1])==M68K_STEP_OK);
-            machine.coordinator.sub_initialized=machine.coordinator.sub_was_running=1;
-            machine.coordinator.cpu[0].state.stopped=1;machine.coordinator.time[1]=20;
-        }
-        if(mode==3){machine.bus.z80_reset_off=1;machine.bus.z80_ram[1]=0x76;machine.z80.state.pc=1;}
-        if(mode==4)CHECK(segacd_coordinator_floor(&machine.coordinator,translating_floor));
-        M68kStepResult result;
-        if(arm)result=segacd_machine_run_frame(&machine);
-        else {do{result=segacd_machine_step(&machine);}while(result==M68K_STEP_OK&&!machine.frames);}
-        CHECK(result!=M68K_STEP_OK);
-        CHECK(!machine.coordinator.busy[0]&&!machine.coordinator.busy[1]&&!machine.z80.in_step);
-        CHECK(!machine.coordinator.cpu[0].fault_escape&&!machine.coordinator.cpu[1].fault_escape);
-        *normalized=machine;
-        normalized->coordinator.catalog_index[0]=normalized->coordinator.catalog_index[1]=NULL;
-#if defined(M68K_STEP_HAS_EXECUTION_SCOPES) && M68K_STEP_HAS_EXECUTION_SCOPES
-        normalized->coordinator.cpu[0].scope=normalized->coordinator.cpu[1].scope=NULL;
-#endif
-        if(!arm){*reference=*normalized;memcpy(reference_ram,g_ram,sizeof reference_ram);expected=result;expected_floor=floor_returned;}
-        else {
-            CHECK(result==expected&&floor_returned==expected_floor);
-            CHECK(!memcmp(reference,normalized,sizeof *normalized));
-            CHECK(!memcmp(reference_ram,g_ram,sizeof reference_ram));
-        }
-        segacd_machine_close(&machine);
-    }
-    free(reference);free(normalized);
-    puts("native region faults: exact single-step/frame CPU/device/clock/partial RAM, nested WAIT, STOP peer, Z80 and floor cleanup");
 }
 
 static void test_full_frame_video_irq_and_controls(void)
@@ -347,7 +288,6 @@ int main(void)
 {
     test_full_frame_video_irq_and_controls();
     test_machine_reentry_from_audio_observer();
-    test_native_region_fault_parity();
     test_raster_deadline_counter_replacement();
     test_native_miss_is_terminal_without_floor();
     test_widescreen_original_frame_and_safe_teardown();
