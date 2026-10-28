@@ -1062,8 +1062,12 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
 
     /* ---- MOVE to/from SR / CCR / USP ---- */
     case MN_MOVE_SR:
-        if (!ins->dst_is_ea) g_cpu.SR = (uint16_t)(read_ea(ins, ins->src_ea, M68K_SIZE_W, &er) & 0xA71Fu);
-        else                 write_ea(ins, ins->src_ea, M68K_SIZE_W, &er, g_cpu.SR);
+        if (!ins->dst_is_ea) {
+            g_cpu.SR = (uint16_t)(read_ea(ins, ins->src_ea, M68K_SIZE_W, &er) & 0xA71Fu);
+            glue_sr_written();
+        } else {
+            write_ea(ins, ins->src_ea, M68K_SIZE_W, &er, g_cpu.SR);
+        }
         return M68KI_OK;
     case MN_MOVE_CCR:        /* CCR is 5 bits (0x1F) — clown masks; matches HW */
         if (!ins->dst_is_ea)
@@ -1089,9 +1093,9 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
     case MN_ORI_TO_CCR:  g_cpu.SR |= (uint16_t)(ins->imm32 & 0xFFu);              g_cpu.SR &= 0xA71Fu; return M68KI_OK;
     case MN_ORI_TO_SR:   g_cpu.SR |= (uint16_t)(ins->imm32 & 0xFFFFu);            g_cpu.SR &= 0xA71Fu; return M68KI_OK;
     case MN_ANDI_TO_CCR: g_cpu.SR &= (uint16_t)(0xFF00u | (ins->imm32 & 0xFFu));  g_cpu.SR &= 0xA71Fu; return M68KI_OK;
-    case MN_ANDI_TO_SR:  g_cpu.SR &= (uint16_t)(ins->imm32 & 0xFFFFu);            g_cpu.SR &= 0xA71Fu; return M68KI_OK;
+    case MN_ANDI_TO_SR:  g_cpu.SR &= (uint16_t)(ins->imm32 & 0xFFFFu);            g_cpu.SR &= 0xA71Fu; glue_sr_written(); return M68KI_OK;
     case MN_EORI_TO_CCR: g_cpu.SR ^= (uint16_t)(ins->imm32 & 0xFFu);              g_cpu.SR &= 0xA71Fu; return M68KI_OK;
-    case MN_EORI_TO_SR:  g_cpu.SR ^= (uint16_t)(ins->imm32 & 0xFFFFu);            g_cpu.SR &= 0xA71Fu; return M68KI_OK;
+    case MN_EORI_TO_SR:  g_cpu.SR ^= (uint16_t)(ins->imm32 & 0xFFFFu);            g_cpu.SR &= 0xA71Fu; glue_sr_written(); return M68KI_OK;
 
     default:
         g_m68ki_bad_pc = ins->addr;
