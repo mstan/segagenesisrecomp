@@ -916,6 +916,16 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
         *next_pc = pop32();
         return M68KI_OK;
     }
+    case MN_TRAP: {                      /* push PC (next insn), then SR; enter S; vector */
+        /* Genesis games run in supervisor mode, so A7 is already the SSP. */
+        uint32_t vec = 0x20u + (ins->imm32 & 0xFu);
+        uint16_t sr  = g_cpu.SR;
+        push32(*next_pc);
+        push16(sr);
+        g_cpu.SR = (uint16_t)((sr | 0x2000u) & 0x7FFFu);
+        *next_pc = m68k_read32(vec * 4u) & 0xFFFFFFu;
+        return M68KI_OK;
+    }
 
     /* ---- shifts / rotates (register Dn target) ---- */
     case MN_LSL: case MN_LSR: case MN_ASL: case MN_ASR:
@@ -1462,6 +1472,7 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
     g_m68ki_discover_count = 0;
 
     int depth = 0;
+    int trap_depth = 0;   /* TRAPs taken inside the handler, not yet RTE'd */
     for (;;) {
         uint32_t pc = g_cpu.PC & 0xFFFFFFu;
         if (pc >= ROM_SIZE) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
@@ -1482,7 +1493,10 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
             return M68KI_HALT_UNIMPL;
         }
 
-        if (depth == 0 && ins.mnemonic == MN_RTE)
+        /* An RTE that closes a TRAP taken inside this handler is executed
+         * normally (it pops the frame the TRAP pushed); only the handler's
+         * own RTE ends the run. */
+        if (depth == 0 && trap_depth == 0 && ins.mnemonic == MN_RTE)
             return M68KI_OK;                 /* handler's own return — stop, don't pop */
 
         uint32_t next;
@@ -1499,6 +1513,10 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
             depth++;
         else if (ins.mnemonic == MN_RTS || ins.mnemonic == MN_RTR)
             depth--;
+        else if (ins.mnemonic == MN_TRAP)
+            trap_depth++;
+        else if (ins.mnemonic == MN_RTE && trap_depth > 0)
+            trap_depth--;
 
         if (++g_m68ki_insn_count > M68KI_INSN_GUARD) {
             g_m68ki_bad_pc = g_cpu.PC; return M68KI_HALT_GUARD;
@@ -1537,6 +1555,7 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
     if (out_exit_pc) *out_exit_pc = 0;
 
     int depth = 0;
+    int trap_depth = 0;   /* TRAPs taken inside the capsule, not yet RTE'd */
     for (;;) {
         uint32_t pc = g_cpu.PC & 0xFFFFFFu;
         if (!pc_fetchable(pc)) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
@@ -1570,7 +1589,8 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
          * glue's delivery wrapper, so nothing is popped. Unwind any nested
          * JSR return addresses this capsule pushed, flag the skip-return,
          * and hand control back to the C caller. */
-        if (ins.mnemonic == MN_RTE) {
+        /* An RTE closing a TRAP taken inside this capsule pops normally. */
+        if (ins.mnemonic == MN_RTE && trap_depth == 0) {
             g_cpu.A[7] += 4u * (uint32_t)depth;
             g_rte_pending = 1;
             interp_account_cycles(&ins);
@@ -1592,6 +1612,10 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
             depth++;
         else if (ins.mnemonic == MN_RTS || ins.mnemonic == MN_RTR)
             depth--;
+        else if (ins.mnemonic == MN_TRAP)
+            trap_depth++;
+        else if (ins.mnemonic == MN_RTE && trap_depth > 0)
+            trap_depth--;
 
         if (++g_m68ki_insn_count > M68KI_INSN_GUARD) {
             g_m68ki_bad_pc = g_cpu.PC; return M68KI_HALT_GUARD;
