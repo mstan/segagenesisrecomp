@@ -1,5 +1,8 @@
 /* Inject one real provider-boundary error. The complete existing reader suite
  * then verifies portable restart, resident bytes and corruption rejection. */
+#if !defined(_WIN32) && !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200809L
+#endif
 #include <openssl/evp.h>
 static unsigned failure_hit;
 #if SEGACD_TEST_FAIL_init

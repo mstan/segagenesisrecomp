@@ -65,6 +65,17 @@ the linked crypto library and its license with their other runtime dependencies.
 CTest covers native, forced-portable and unavailable-provider builds, plus
 injected OpenSSL initialization, mid-stream and finalization failures.
 
+The bounded data-track residency uses a read-only file mapping where available.
+Every published mapped byte is compared with the validation stream and touched
+during that same pass. Mapping failure or
+`-DSEGACD_IMAGE_MAP_RESIDENT=OFF` retains the copied-memory implementation;
+resident pointers keep the same lifetime and exact raw-sector contents.
+Sequential nonresident reads retain the standard stream's read-ahead buffer
+instead of seeking back to its current position for each sector. Device delivery
+clocks, cancellation, raw-sector errors and the mounted-file immutability
+contract are unchanged. Host statistics distinguish mapping size, private
+resident bytes, raw reads and issued seek calls; these exclude validation I/O.
+
 The pure sector validator checks MODE1 sync, mode and EDC using
 [ECMA-130 sections 14.1–14.3](https://ecma-international.org/wp-content/uploads/ECMA-130_2nd_edition_june_1996.pdf).
 It does not validate or repair ECC, compare header MSF with an LBA, or claim

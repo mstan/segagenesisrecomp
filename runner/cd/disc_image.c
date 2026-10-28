@@ -1,3 +1,6 @@
+#if !defined(_WIN32) && !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200809L
+#endif
 #include "disc_image.h"
 
 #include <limits.h>
@@ -8,11 +11,21 @@
 #ifndef SEGACD_IMAGE_PLATFORM_SHA
 #define SEGACD_IMAGE_PLATFORM_SHA 1
 #endif
+#ifndef SEGACD_IMAGE_MAP_RESIDENT
+#define SEGACD_IMAGE_MAP_RESIDENT 1
+#endif
 #if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
 #include <windows.h>
 #include <bcrypt.h>
 #elif SEGACD_IMAGE_PLATFORM_SHA && defined(SEGACD_IMAGE_OPENSSL_SHA) && SEGACD_IMAGE_OPENSSL_SHA
 #include <openssl/evp.h>
+#endif
+#if SEGACD_IMAGE_MAP_RESIDENT && defined(_WIN32)
+#include <windows.h>
+#include <io.h>
+#elif SEGACD_IMAGE_MAP_RESIDENT && (defined(__unix__) || defined(__APPLE__))
+#include <sys/mman.h>
+#include <unistd.h>
 #endif
 
 enum { SECTOR_BYTES = 2352, HEADER_BYTES = 96, TRACK_BYTES = 32,
@@ -26,7 +39,40 @@ struct SegaCDImage {
     uint8_t *resident;
     int32_t resident_first;
     size_t resident_size;
+    void *mapping_base,*mapping_handle;
+    size_t mapping_size;
+    uint64_t read_cursor,raw_reads,resident_reads,host_seeks;
 };
+
+static int map_resident(SegaCDImage *image,uint64_t offset,size_t bytes)
+{
+#if SEGACD_IMAGE_MAP_RESIDENT && defined(_WIN32)
+    SYSTEM_INFO info;GetSystemInfo(&info);
+    uint64_t aligned=offset-offset%info.dwAllocationGranularity;
+    size_t prefix=(size_t)(offset-aligned),length=prefix+bytes;
+    HANDLE file=(HANDLE)_get_osfhandle(_fileno(image->file));
+    if(file==INVALID_HANDLE_VALUE)return 0;
+    HANDLE mapping=CreateFileMappingW(file,NULL,PAGE_READONLY,0,0,NULL);
+    if(!mapping)return 0;
+    void *view=MapViewOfFile(mapping,FILE_MAP_READ,(DWORD)(aligned>>32),(DWORD)aligned,length);
+    if(!view){CloseHandle(mapping);return 0;}
+    image->mapping_handle=mapping;
+#elif SEGACD_IMAGE_MAP_RESIDENT && (defined(__unix__) || defined(__APPLE__))
+    long page=sysconf(_SC_PAGESIZE);if(page<=0)return 0;
+    uint64_t aligned=offset-offset%(uint64_t)page;
+    size_t prefix=(size_t)(offset-aligned),length=prefix+bytes;
+    if((uint64_t)(off_t)aligned!=aligned)return 0;
+    void *view=mmap(NULL,length,PROT_READ,MAP_PRIVATE,fileno(image->file),(off_t)aligned);
+    if(view==MAP_FAILED)return 0;
+    if(!view){(void)munmap(view,length);return 0;}
+#else
+    (void)image;(void)offset;(void)bytes;return 0;
+#endif
+#if SEGACD_IMAGE_MAP_RESIDENT && (defined(_WIN32) || defined(__unix__) || defined(__APPLE__))
+    image->mapping_base=view;image->mapping_size=length;
+    image->resident=(uint8_t *)view+prefix;return 1;
+#endif
+}
 
 typedef struct {
     uint32_t state[8];
@@ -233,6 +279,7 @@ static int hash_payload_pass(SegaCDImage *image,uint64_t offset,uint64_t size,
     uint8_t buffer[32768];
     uint64_t remaining=size;
     int result = 0;
+    image->read_cursor=UINT64_MAX;
     if(!payload_hash_init(&hash,platform)){result=-1;goto done;}
     if (offset > (uint64_t)LONG_MAX || fseek(file, (long)offset, SEEK_SET) != 0) goto done;
     while (remaining != 0) {
@@ -245,9 +292,16 @@ static int hash_payload_pass(SegaCDImage *image,uint64_t offset,uint64_t size,
             uint64_t end = position + amount;
             uint64_t cache_end = cache_start + image->resident_size;
             if (end > cache_end) end = cache_end;
-            if (first < end)
-                memcpy(image->resident + (size_t)(first - cache_start),
-                       buffer + (size_t)(first - position), (size_t)(end - first));
+            if (first < end) {
+                uint8_t *resident=image->resident+(size_t)(first-cache_start);
+                const uint8_t *source=buffer+(size_t)(first-position);
+                size_t bytes=(size_t)(end-first);
+                if(image->mapping_base) {
+                    /* Compare/prefault EVERY published mapped byte during
+                     * validation. The mounted file must remain immutable. */
+                    if(memcmp(resident,source,bytes))goto done;
+                }else memcpy(resident,source,bytes);
+            }
         }
         if(!payload_hash_update(&hash,buffer,amount)){result=-1;goto done;}
         remaining -= amount;
@@ -346,7 +400,9 @@ SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
         uint64_t bytes = (uint64_t)(track->end - track->index00) * SECTOR_BYTES;
         if (!track->data) continue;
         if (bytes <= 256u * 1024u * 1024u) {
-            image->resident = (uint8_t *)malloc((size_t)bytes);
+            uint64_t offset=payload_offset+(uint64_t)(track->index00+150)*SECTOR_BYTES;
+            if(!map_resident(image,offset,(size_t)bytes))
+                image->resident=(uint8_t *)malloc((size_t)bytes);
             if (image->resident != NULL) {
                 image->resident_first = track->index00;
                 image->resident_size = (size_t)bytes;
@@ -369,8 +425,14 @@ fail:
 void segacd_image_close(SegaCDImage *image)
 {
     if (image == NULL) return;
+    if(image->mapping_base) {
+#if SEGACD_IMAGE_MAP_RESIDENT && defined(_WIN32)
+        UnmapViewOfFile(image->mapping_base);CloseHandle((HANDLE)image->mapping_handle);
+#elif SEGACD_IMAGE_MAP_RESIDENT && (defined(__unix__) || defined(__APPLE__))
+        (void)munmap(image->mapping_base,image->mapping_size);
+#endif
+    }else free(image->resident);
     if (image->file != NULL) fclose(image->file);
-    free(image->resident);
     free(image);
 }
 
@@ -385,10 +447,16 @@ int segacd_image_read(SegaCDImage *image, int32_t lba, uint8_t raw[SECTOR_BYTES]
     uint64_t offset;
     if (image == NULL || raw == NULL || lba < -150 || lba >= image->toc.leadout) return 0;
     const uint8_t *resident = segacd_image_resident_sector(image, lba);
-    if (resident != NULL) { memcpy(raw, resident, SECTOR_BYTES); return 1; }
+    if (resident != NULL) { memcpy(raw, resident, SECTOR_BYTES);++image->resident_reads;return 1; }
     offset = image->payload_offset + (uint64_t)(lba + 150) * SECTOR_BYTES;
-    if (offset > (uint64_t)LONG_MAX || fseek(image->file, (long)offset, SEEK_SET) != 0 ||
-        !read_exact(image->file, temporary, sizeof(temporary))) return 0;
+    ++image->raw_reads;
+    if(offset>(uint64_t)LONG_MAX)return 0;
+    if(offset!=image->read_cursor) {
+        ++image->host_seeks;
+        if(fseek(image->file,(long)offset,SEEK_SET)!=0){image->read_cursor=UINT64_MAX;return 0;}
+    }
+    if(!read_exact(image->file,temporary,sizeof temporary)){image->read_cursor=UINT64_MAX;return 0;}
+    image->read_cursor=offset+SECTOR_BYTES;
     memcpy(raw, temporary, sizeof(temporary));
     return 1;
 }
@@ -409,4 +477,12 @@ const uint8_t *segacd_image_resident_sector(const SegaCDImage *image, int32_t lb
 size_t segacd_image_resident_bytes(const SegaCDImage *image)
 {
     return image == NULL ? 0 : image->resident_size;
+}
+
+int segacd_image_host_stats(const SegaCDImage *image,SegaCDImageHostStats *stats)
+{
+    if(!image||!stats)return 0;
+    stats->raw_reads=image->raw_reads;stats->resident_reads=image->resident_reads;
+    stats->host_seeks=image->host_seeks;stats->mapped_view_bytes=image->mapping_size;
+    stats->private_resident_bytes=image->mapping_base?0:image->resident_size;return 1;
 }

@@ -294,6 +294,11 @@ int main(int argc,char **argv)
     if(!exit_code&&memcmp(persisted,machine.devices.backup,sizeof persisted)&&segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK)exit_code=4;
     if(dump_dir&&!dump_state(dump_dir))exit_code=4;
     SegaCDNativeAudioStats stats;segacd_native_audio_get_stats(audio,&stats);
+    SegaCDImageHostStats image_stats;
+    if(segacd_image_host_stats(image,&image_stats))
+        printf("Media rawReads=%llu residentReads=%llu hostSeeks=%llu mappedBytes=%zu privateResidentBytes=%zu\n",
+            (unsigned long long)image_stats.raw_reads,(unsigned long long)image_stats.resident_reads,
+            (unsigned long long)image_stats.host_seeks,image_stats.mapped_view_bytes,image_stats.private_resident_bytes);
     SegaCDMachineVideoStats video_stats;
     if(segacd_machine_video_stats(&machine,&video_stats))
         printf("Raster captured=%llu composed=%llu eager=%llu retainedBytes=%zu deferred=%d\n",

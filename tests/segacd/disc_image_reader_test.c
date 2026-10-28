@@ -165,6 +165,12 @@ int main(void)
     CHECK(segacd_image_read(image, -150, sector) && all_byte(sector, sizeof(sector), 0));
     CHECK(segacd_image_read(image, -1, sector) && all_byte(sector, sizeof(sector), 0));
     CHECK(segacd_image_read(image, 0, sector) && all_byte(sector, sizeof(sector), 0x11));
+    SegaCDImageHostStats host_stats;
+    CHECK(segacd_image_host_stats(image,&host_stats));
+    CHECK(host_stats.raw_reads==3&&host_stats.host_seeks==2&&host_stats.resident_reads==0);
+    CHECK(host_stats.private_resident_bytes==0 || host_stats.private_resident_bytes==2u*RAW);
+    CHECK(host_stats.private_resident_bytes!=0 || host_stats.mapped_view_bytes>=2u*RAW);
+    CHECK(!segacd_image_host_stats(NULL,&host_stats)&&!segacd_image_host_stats(image,NULL));
     CHECK(segacd_image_read(second, 2, sector) && all_byte(sector, sizeof(sector), 0x22));
     CHECK(segacd_image_read(image, 1, sector) && all_byte(sector, sizeof(sector), 0));
     CHECK(segacd_image_read(second, 0, sector) && all_byte(sector, sizeof(sector), 0x11));
