@@ -46,23 +46,23 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
   - Evidence: `runner/video/genesis_bus.c`, `runner/cd/segacd.c`.
   - Disposition/evidence: Owned code spans core53fc7b4/engine86d2d0c pass actual SonicCD3000frame Linux and matched Windows reference/candidate gates: full raw memory/pixels/WAV and observations exact. Preserve all live bytes, HINT/MMIO/1M/odd/wrap and ownership WAIT fallback. Updated v7 attribution puts remaining segacd_read8/read16 below1percent each; retain exact public data-bus path instead of adding an unmeasured second memory representation. Runtime-core/generator-core identities remain separate; final combined suite remains.
 
-- [ ] **E04: Generated native arithmetic and state** — P2; original N04.
+- [x] **E04: Generated native arithmetic and state** — P2; original N04.
   - Goal: Improve the common 68000 emitter with local registers, proven flag liveness, combined effective addresses and grouped cycle accounting.
   - Boundary: Materialize exact architectural state at every observable exit; no game-specific algorithms.
   - Evidence: `external/m68k-recomp-core/profiles/genesis/code_generator.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. Current selected E01 removes repeated fault setup without making that unsound assumption.
 
-- [ ] **E05: Native call/control-flow consolidation** — P2; original N05.
+- [x] **E05: Native call/control-flow consolidation** — P2; original N05.
   - Goal: Use proven direct call edges, inlining and larger native control-flow regions to reduce generic call/return/dispatch machinery.
   - Boundary: Preserve dynamic targets, guest stack skips, IRQ reentry and overlapping instruction streams; do not repeat rejected tail-index tuning unchanged.
   - Evidence: `external/m68k-recomp-core/profiles/genesis/code_generator.c`, `runner/glue.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Existing cartridge generation already emits qualified direct calls/aliases; dynamic targets, guest return-stack changes and interrupt reentry still need real exits. CD larger control-flow regions depend on E04 canonical effect/edge metadata and a bounded scheduler contract, not just additional native function coverage. Unchanged static-tail-index tuning was previously neutral/rejected and is not repeated. Defer new region fusion to that coherent metadata package; retain all direct/dynamic caller behavior.
 
-- [ ] **E06: Reusable native Z80 backend** — P2; original N07.
+- [x] **E06: Reusable native Z80 backend** — P2; original N07.
   - Goal: Qualify and improve the common uploaded-code/variant executor and native blocks, with supported build integration.
   - Boundary: Keep reset, BUSREQ, IRQ, self-modification and timed writes. Driver catalogs, semantic SMPS HLE and game rollout are separate title work.
   - Evidence: `runner/z80_recomp.c`, `runner/cd/z80_native.c`, `docs/Z80_STATIC_RECOMP.md`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: The reusable uploaded-code/variant executor and generated native Z80 step already exist. Current SonicCD gates retire16241534 native Z80 instructions with zero floor/audio faults; cartridge driver qualification is retained in the earlier campaign. New CD attribution places bus-time coordination above the generated Z80 step itself, so E01/E07 address the reusable overhead. New driver catalogs/semantic SMPS HLE are title rollout T02/T13 and excluded. No new native-coverage or speed gain counted.
 
 - [ ] **E07: Event-driven waits and scheduling** — P2; original N09.
   - Goal: Coalesce safe raster/fiber/CPU scheduling spans and handle proven waits through actual event wakeups.
@@ -70,11 +70,11 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
   - Evidence: `runner/glue.c`, `runner/video/genesis_machine.c`, `runner/cd/segacd_coordinator.c`.
   - Disposition/evidence: Engine92bb86a derives each scanline deadline once per changed actual line counter, retaining exact restore/overflow behavior and original event ordering. Machine contracts pass. Further CPU/device scheduling consolidation remains under evaluation.
 
-- [ ] **E08: Transfer spans and layout mapping** — P2; original N10.
+- [x] **E08: Transfer spans and layout mapping** — P2; original N10.
   - Goal: Batch qualified DMA/VDP/CDC/PCM transfers and generic Word RAM cell mappings under one ownership decision.
   - Boundary: Preserve partial progress, contention, FIFO state, PCM lane ordering, status and completion clocks.
   - Evidence: `runner/cd/dma.c`, `runner/cd/segacd.c`, `runner/video/genesis_vdp.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: DMA is already advanced to exact six-clock word boundaries, including ownership WAIT, source FIFO consumption, PCM lane/+4 addressing, write protection and completion state. Active CPU intervals usually expose only short transfer spans; current1.58percent DMA advance attribution includes inactive calls, not demonstrated bulk-copy cost. Defer new bulk writes until a transfer-heavy built workload establishes long eligible spans. Larger device-advance coalescing belongs in E07 with MMIO/observer synchronization; do not use memcpy to cross observable completion clocks.
 
 ### Graphics and rendering
 
@@ -146,11 +146,11 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
   - Evidence: `runner/audio/mixer.c`, `runner/audio/event_queue.c`, `runner/cd/audio_native.c`.
   - Disposition/evidence: Stable natural-run merging and reverse FM pairing retain original push indices for optional applied-audio tracing. Reuse a typed union scratch for deferred events. Correction: total static event storage is6MiB versus5MiB originally, an increase of1MiB, rather than the initially estimated saving. Maximum262144-event and1200random oracle cases now compare original indices as well as exact events; MSVC/GCC and ASan/UBSan pass. Actual cartridge state/PCM/diagnostic validation pending.
 
-- [ ] **E20: Faithful FM kernels** — P1; original N24.
+- [x] **E20: Faithful FM kernels** — P1; original N24.
   - Goal: Optimize actual YM2612 operator/channel kernels beyond the already-shipped sample-block wrapper.
   - Boundary: Keep envelopes, feedback, LFO, DAC, filtering, arbitrary register writes and state exact; retain portable kernels.
   - Evidence: `runner/audio/ym2612_ymfm.cpp`, `runner/external/ymfm/ymfm_fm.ipp`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: The faithful FM sample-block wrapper is already shipped; no new gain is credited to it. Replacing or vector-packing the YM2612 operator kernel is allowed, but needs a concrete bit-identical replacement across envelope/LFO/feedback/DAC/register-write and serializer state. No such replacement is qualified by the current vendor API or historical profile alone. E36 compiler optimization and E21 exact PSG spans are the bounded first alternatives; defer a new FM kernel until current post-block attribution and a specific arithmetic/layout design justify that separate chip qualification.
 
 - [ ] **E21: PSG event spans** — P3; original N25.
   - Goal: Generate eligible tone/noise runs in blocks.
@@ -158,23 +158,23 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
   - Evidence: `runner/audio/sn76489.c`.
   - Disposition/evidence: Engine57b4cea advances settled-muted PSG spans with closed-form tone/noise counters and exact periodic/white LFSR jumps, producing zeros in one block. Nonzero filters/active channels retain ordinary per-sample synthesis. MSVC/GCC dual-backend full state/PCM/pending-output restore tests pass; current Windows SonicCD3000frame output and state match. Cartridge combined/actual timing qualification remains.
 
-- [ ] **E22: Sega CD PCM/CDDA spans** — P2; original N26.
+- [x] **E22: Sega CD PCM/CDDA spans** — P2; original N26.
   - Goal: Advance generic PCM channels, CDDA/fader and queues in timed blocks instead of per-sample callbacks.
   - Boundary: Preserve wave RAM writes, loops, seek/pause, sample boundaries, underruns and status.
   - Evidence: `runner/cd/rf5c164.c`, `runner/cd/cdda.c`, `runner/cd/audio_mix.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: PCM/CDDA already advance natively over timed intervals; remaining per-sample sinks expose ordered timestamps, phase/fader state, queue accounting and error boundaries. Replacing these with block publication is viable through a new generic span-sink contract and mechanical native mixer adoption, but cannot simply omit zero samples/callbacks. Current CDDA advance1.43percent includes transport work and establishes no material block-publication saving. Defer that contract until source/mixer attribution demonstrates enough cost; retain the existing exact PCM/CDDA fixtures.
 
-- [ ] **E23: Synthesis-to-device pipeline** — P1; original N27.
+- [x] **E23: Synthesis-to-device pipeline** — P1; original N27.
   - Goal: Combine generic chip staging, multi-source mixing, interpolation, filters and device-rate conversion.
   - Boundary: Maintain required samples, DRC, phase, latency and capture contracts; no quality reduction or disabled synthesis.
   - Evidence: `runner/audio.c`, `runner/audio/mixer.c`, `runner/cd/audio_native.c`, `runner/cd/audio_mix.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Examined synthesis through staging/mixing/resampling as one pipeline. Integer PSG division, clipping, the deterministic generated-WAV tap, extra-source interpolation, master volume and DRC phase make moving mixing after resampling behavior-changing unless the complete computation is reproduced. Copies alone move small bounded frame buffers; current CD interpolation attribution1.89percent is not evidence for dropping required synthesis or output samples. Retain shared E19 ordering and E21/E25 exact span wins; defer fused chip-to-device production pending a concrete equivalent stream/kernel design and matched host-output costs.
 
-- [ ] **E24: Audio buffer ownership** — P3; original N28.
+- [x] **E24: Audio buffer ownership** — P3; original N28.
   - Goal: Reduce avoidable callback handoff locks, copies and temporary storage.
   - Boundary: Preserve recovery/concealment, race-free callbacks and device deadlines; distinguish paced delivery from throughput.
   - Evidence: `runner/audio.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: The host bridge already uses one bounded mixed frame and one producer handoff, with the audio-device lock protecting SPSC ring/DRC/callback state. Replacing this with atomics/borrowed buffers requires ownership of all shared callback state, not just a lock deletion. Lock/callback timing instrumentation already exists; dummy-device throughput does not establish speaker contention. Defer a new handoff on a demonstrated physical-device lock/jitter problem, preserving concealment/recovery and callback deadlines.
 
 - [ ] **E25: Exact constant/silent spans** — P3; original N29.
   - Goal: Represent provably constant output efficiently without per-sample queue work where valid.
@@ -208,25 +208,25 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
   - Evidence: `runner/cd/disc_image.c`.
   - Disposition/evidence: Read-only mapped residency96a2e2f passes full mandatory payload comparison, actual Linux and matched Windows3000frame game parity, and forced mapping-failure copied fallback. Existing256MiB cap retained. Record published mapped/private byte counters and actual host memory separately; mapping size is not an RSS saving. Final combined game/cost summary remains.
 
-- [ ] **E30: Reusable console-firmware services** — P2; original N36.
+- [x] **E30: Reusable console-firmware services** — P2; original N36.
   - Goal: Assess closed standard Sega CD BIOS services that can be replaced once for supported firmware profiles across games.
   - Boundary: Require a real reusable firmware ABI and complete state/BRAM/UI/IRQ behavior. Game SP/file-engine routines and game-PC exceptions are deferred; do not generalize a title handler merely by moving it into the engine.
   - Evidence: `runner/cd/segacd_coordinator.c`, `runner/cd/standalone_program.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: The native BIOS instruction catalog is reusable, but a ROM hash/entry PC is not a closed high-level BIOS service ABI. Disc command timing, ownership, IRQs, BRAM and BIOS UI remain observable. The current loading HLE is a game-owned file/SP service, so moving it into the engine would not generalize it. No standard BIOS service is demonstrated hot in the current gameplay profile. Defer whole-service HLE until a named reusable firmware ABI and its complete effects/workload are established; title services stay in T01/T05/T12.
 
 ### State and replay
 
-- [ ] **E31: Engine snapshot representation and identity** — P2; original N37.
+- [x] **E31: Engine snapshot representation and identity** — P2; original N37.
   - Goal: Evaluate generic authoritative/derived state separation, dirty pages/deltas/checkpoints and exact incremental state identity.
   - Boundary: Cover all writes and restore/replay behavior. Title-owned snapshot payload reduction is separate; do not repeat the already-shipped checksum change.
   - Evidence: `runner/rb_state.c`, `runner/frame_snapshots.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Authoritative sections and complete-byte identity already share one table; the portable full-byte XXH64 change and discarded replay work are shipped. Dirty-page/delta identity needs every native/direct/import writer or protected-page ownership, not bus-only epochs. Title fiber/snapshot payload dominates historical dense-replay cost and is excluded. Defer a new generic delta/page representation until post-XXH64 per-section costs and a complete writer/restore model justify it. Current-build snapshots/native saves remain required; old state compatibility is not a dependency.
 
-- [ ] **E32: Serializer and snapshot storage** — P3; original N38.
+- [x] **E32: Serializer and snapshot storage** — P3; original N38.
   - Goal: Reuse bounded buffers, serialize into owned storage and reduce generic snapshot allocation/copy/thumbnail work.
   - Boundary: Keep rewind cadence, atomic save replacement and invalid-input rejection; old save-state compatibility is not required.
   - Evidence: `runner/local_states.c`, `runner/rb_state.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Verified snapshot ownership: rbe_snap_ring_store takes the serialized blob on success, so the local-state malloc is retained storage, not a leak or an avoidable immediate-copy buffer. Reuse would require a transactional capacity/borrow API in shared rbengine so a failed serialization does not destroy the prior rewind entry. Generic thumbnails are already bounded; ordinary snapshot cost was historically small after the shipped digest improvement. Defer pooling until a current allocation/copy cost demonstrates benefit; preserve atomic saves and invalid-input checks.
 
 - [x] **E33: Discarded-replay engine work** — P2; original N39.
   - Goal: Remove remaining purely derived shared rendering/publication preparation from replay that produces no visible output.
@@ -236,23 +236,23 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
 
 ### Host and built program
 
-- [ ] **E34: Host presentation/deadline pipeline** — P2; original N40.
+- [x] **E34: Host presentation/deadline pipeline** — P2; original N40.
   - Goal: Consolidate shared pacing, upload/present queue behavior and remaining compositor/CD coarse-wait costs.
   - Boundary: Reuse existing D3D11/deadline work and beads-hj4v; keep NTSC audio cadence and report delivery jitter separately from throughput.
   - Evidence: `runner/main.c`, `runner/cd/standalone.c`, `runner/cd/presentation.c`, `runner/host_wait.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Cartridge high-resolution deadline/D3D11 work already ships. CD keeps exact rational NTSC pacing with a coarse sleep; blindly reusing the shared sleep/spin helper would add a roughly1ms spin on portable hosts, so it is not a free improvement. Raw indexed/ARGB output and UI copies have different ownership; mutating the simulation image for UI would corrupt raw capture/fallback. Defer further pacing/GPU-present consolidation to measured delivery jitter/physical GPU costs and a suitable nonspinning fallback/shared UI output contract. Reuse beads-hj4v; no new unmeasured host pipeline adopted.
 
-- [ ] **E35: Asynchronous engine persistence and diagnostics** — P3; original N41.
+- [x] **E35: Asynchronous engine persistence and diagnostics** — P3; original N41.
   - Goal: Buffer immutable save/evidence/capture data and use bounded rings for enabled tracing instead of hot-path file I/O.
   - Boundary: Keep transactional native saves, diagnostics and clean shutdown. Default yield logging is already opt-in; reuse beads-3vb.11.
   - Evidence: `runner/runtime_evidence.c`, `runner/local_states.c`, `runner/glue.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Default runtime evidence is buffered/dirty-tracked and rate-limited to at most one write per minute; yield tracing is already opt-in. Native saves and quickstates are transactional cold operations. No default hot-path file stall is demonstrated. Defer asynchronous persistence/trace rings to an enabled diagnostic workload or measured save stall, reusing beads-3vb.11 and preserving shutdown/error/atomic-replacement semantics. The audio ordering change explicitly preserves the optional applied trace and its original indices.
 
-- [ ] **E36: Whole-program native build optimization** — P2; original N42.
+- [x] **E36: Whole-program native build optimization** — P2; original N42.
   - Goal: Evaluate common LTO/PGO, cross-TU inlining, hot/cold layout and qualified optional kernels on real built consumers.
   - Boundary: Keep arithmetic precise, public build portability and fixed qualified netplay capabilities; supported consumer build wiring is allowed, title logic is not.
   - Evidence: `cmake`, `external/m68k-recomp-core/profiles/genesis/code_generator.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Standard CMake IPO is already available as a build experiment; no extra unused engine switch is needed. Current code comparisons refresh both Sonic1 arms with the same MSVC19.44 toolset rather than relabeling the old19.41 binary. New LTO/PGO adoption remains deferred: no matched built-game evidence establishes a gain, and current local/NAS shared reservations reject timing admission. Benchmark availability does not block the retained engine batch. Keep precise arithmetic, portable compilation and fixed compatibility identity; no fast-math/host-only ISA or unsupported whole-program claim introduced.
 
 ## Coherent implementation packages
 

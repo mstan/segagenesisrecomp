@@ -3,7 +3,7 @@
   "issue": "beads-3vb.31",
   "campaign": "beads-2wy8.1",
   "status": "active-incomplete",
-  "updated_utc": "2026-10-28T11:12:57.510710+00:00",
+  "updated_utc": "2026-10-28T11:37:26.005081+00:00",
   "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "candidates": {
     "E01": {
@@ -43,23 +43,36 @@
     "E04": {
       "name": "Generated native arithmetic and state",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. Current selected E01 removes repeated fault setup without making that unsound assumption.",
+      "evidence": [
+        "external/m68k-recomp-core/profiles/genesis/code_generator.c",
+        "runner/cd/segacd_coordinator.c",
+        "runner/cd/catalog_lookup.h"
+      ]
     },
     "E05": {
       "name": "Native call/control-flow consolidation",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Existing cartridge generation already emits qualified direct calls/aliases; dynamic targets, guest return-stack changes and interrupt reentry still need real exits. CD larger control-flow regions depend on E04 canonical effect/edge metadata and a bounded scheduler contract, not just additional native function coverage. Unchanged static-tail-index tuning was previously neutral/rejected and is not repeated. Defer new region fusion to that coherent metadata package; retain all direct/dynamic caller behavior.",
+      "evidence": [
+        "external/m68k-recomp-core/profiles/genesis/code_generator.c",
+        "runner/glue.c",
+        "docs/NATIVE_OPTIMIZATION_BURNDOWN.md"
+      ]
     },
     "E06": {
       "name": "Reusable native Z80 backend",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_already_native",
+      "disposition": "The reusable uploaded-code/variant executor and generated native Z80 step already exist. Current SonicCD gates retire16241534 native Z80 instructions with zero floor/audio faults; cartridge driver qualification is retained in the earlier campaign. New CD attribution places bus-time coordination above the generated Z80 step itself, so E01/E07 address the reusable overhead. New driver catalogs/semantic SMPS HLE are title rollout T02/T13 and excluded. No new native-coverage or speed gain counted.",
+      "evidence": [
+        "runner/z80_recomp.c",
+        "runner/cd/z80_native.c",
+        "docs/Z80_STATIC_RECOMP.md",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-region-windows-game.json"
+      ]
     },
     "E07": {
       "name": "Event-driven waits and scheduling",
@@ -74,9 +87,15 @@
     "E08": {
       "name": "Transfer spans and layout mapping",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "DMA is already advanced to exact six-clock word boundaries, including ownership WAIT, source FIFO consumption, PCM lane/+4 addressing, write protection and completion state. Active CPU intervals usually expose only short transfer spans; current1.58percent DMA advance attribution includes inactive calls, not demonstrated bulk-copy cost. Defer new bulk writes until a transfer-heavy built workload establishes long eligible spans. Larger device-advance coalescing belongs in E07 with MMIO/observer synchronization; do not use memcpy to cross observable completion clocks.",
+      "evidence": [
+        "runner/cd/dma.c",
+        "runner/cd/segacd.c",
+        "runner/video/genesis_vdp.c",
+        "tests/segacd/dma_test.c",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
+      ]
     },
     "E09": {
       "name": "Single image-production ownership",
@@ -201,9 +220,14 @@
     "E20": {
       "name": "Faithful FM kernels",
       "priority": "P1",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "The faithful FM sample-block wrapper is already shipped; no new gain is credited to it. Replacing or vector-packing the YM2612 operator kernel is allowed, but needs a concrete bit-identical replacement across envelope/LFO/feedback/DAC/register-write and serializer state. No such replacement is qualified by the current vendor API or historical profile alone. E36 compiler optimization and E21 exact PSG spans are the bounded first alternatives; defer a new FM kernel until current post-block attribution and a specific arithmetic/layout design justify that separate chip qualification.",
+      "evidence": [
+        "runner/audio/ym2612_ymfm.cpp",
+        "runner/external/ymfm/src/ymfm_fm.ipp",
+        "tests/runtime/fm_block_test.cpp",
+        "docs/ENGINE_VDP_BATCHING.md"
+      ]
     },
     "E21": {
       "name": "PSG event spans",
@@ -220,23 +244,39 @@
     "E22": {
       "name": "Sega CD PCM/CDDA spans",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "PCM/CDDA already advance natively over timed intervals; remaining per-sample sinks expose ordered timestamps, phase/fader state, queue accounting and error boundaries. Replacing these with block publication is viable through a new generic span-sink contract and mechanical native mixer adoption, but cannot simply omit zero samples/callbacks. Current CDDA advance1.43percent includes transport work and establishes no material block-publication saving. Defer that contract until source/mixer attribution demonstrates enough cost; retain the existing exact PCM/CDDA fixtures.",
+      "evidence": [
+        "runner/cd/rf5c164.c",
+        "runner/cd/cdda.c",
+        "runner/cd/audio_native.c",
+        "runner/cd/audio_mix.c",
+        "tests/segacd/cdda_test.c"
+      ]
     },
     "E23": {
       "name": "Synthesis-to-device pipeline",
       "priority": "P1",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Examined synthesis through staging/mixing/resampling as one pipeline. Integer PSG division, clipping, the deterministic generated-WAV tap, extra-source interpolation, master volume and DRC phase make moving mixing after resampling behavior-changing unless the complete computation is reproduced. Copies alone move small bounded frame buffers; current CD interpolation attribution1.89percent is not evidence for dropping required synthesis or output samples. Retain shared E19 ordering and E21/E25 exact span wins; defer fused chip-to-device production pending a concrete equivalent stream/kernel design and matched host-output costs.",
+      "evidence": [
+        "runner/audio.c",
+        "runner/audio/mixer.c",
+        "runner/cd/audio_native.c",
+        "runner/cd/audio_mix.c",
+        "tests/runtime/audio_extra_test.c"
+      ]
     },
     "E24": {
       "name": "Audio buffer ownership",
       "priority": "P3",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "The host bridge already uses one bounded mixed frame and one producer handoff, with the audio-device lock protecting SPSC ring/DRC/callback state. Replacing this with atomics/borrowed buffers requires ownership of all shared callback state, not just a lock deletion. Lock/callback timing instrumentation already exists; dummy-device throughput does not establish speaker contention. Defer a new handoff on a demonstrated physical-device lock/jitter problem, preserving concealment/recovery and callback deadlines.",
+      "evidence": [
+        "runner/audio.c",
+        "runner/audio.h",
+        "tests/runtime/audio_extra_test.c"
+      ]
     },
     "E25": {
       "name": "Exact constant/silent spans",
@@ -296,23 +336,39 @@
     "E30": {
       "name": "Reusable console-firmware services",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "The native BIOS instruction catalog is reusable, but a ROM hash/entry PC is not a closed high-level BIOS service ABI. Disc command timing, ownership, IRQs, BRAM and BIOS UI remain observable. The current loading HLE is a game-owned file/SP service, so moving it into the engine would not generalize it. No standard BIOS service is demonstrated hot in the current gameplay profile. Defer whole-service HLE until a named reusable firmware ABI and its complete effects/workload are established; title services stay in T01/T05/T12.",
+      "evidence": [
+        "runner/cd/standalone_program.c",
+        "runner/cd/standalone_services.c",
+        "runner/cd/segacd_coordinator.c",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
+      ]
     },
     "E31": {
       "name": "Engine snapshot representation and identity",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Authoritative sections and complete-byte identity already share one table; the portable full-byte XXH64 change and discarded replay work are shipped. Dirty-page/delta identity needs every native/direct/import writer or protected-page ownership, not bus-only epochs. Title fiber/snapshot payload dominates historical dense-replay cost and is excluded. Defer a new generic delta/page representation until post-XXH64 per-section costs and a complete writer/restore model justify it. Current-build snapshots/native saves remain required; old state compatibility is not a dependency.",
+      "evidence": [
+        "runner/rb_state.c",
+        "runner/rb_digest.h",
+        "runner/frame_snapshots.c",
+        "docs/PERFORMANCE.md"
+      ]
     },
     "E32": {
       "name": "Serializer and snapshot storage",
       "priority": "P3",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Verified snapshot ownership: rbe_snap_ring_store takes the serialized blob on success, so the local-state malloc is retained storage, not a leak or an avoidable immediate-copy buffer. Reuse would require a transactional capacity/borrow API in shared rbengine so a failed serialization does not destroy the prior rewind entry. Generic thumbnails are already bounded; ordinary snapshot cost was historically small after the shipped digest improvement. Defer pooling until a current allocation/copy cost demonstrates benefit; preserve atomic saves and invalid-input checks.",
+      "evidence": [
+        "runner/local_states.c",
+        "runner/rb_state.c",
+        "external/rbengine/include/retcomm_rbengine/snap_ring.h",
+        "external/rbengine/src/snap/rbe_snap_ring.c",
+        "tests/runtime/local_states_test.c"
+      ]
     },
     "E33": {
       "name": "Discarded-replay engine work",
@@ -329,23 +385,39 @@
     "E34": {
       "name": "Host presentation/deadline pipeline",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Cartridge high-resolution deadline/D3D11 work already ships. CD keeps exact rational NTSC pacing with a coarse sleep; blindly reusing the shared sleep/spin helper would add a roughly1ms spin on portable hosts, so it is not a free improvement. Raw indexed/ARGB output and UI copies have different ownership; mutating the simulation image for UI would corrupt raw capture/fallback. Defer further pacing/GPU-present consolidation to measured delivery jitter/physical GPU costs and a suitable nonspinning fallback/shared UI output contract. Reuse beads-hj4v; no new unmeasured host pipeline adopted.",
+      "evidence": [
+        "runner/main.c",
+        "runner/cd/standalone.c",
+        "runner/cd/presentation.c",
+        "runner/host_wait.c",
+        "beads-hj4v"
+      ]
     },
     "E35": {
       "name": "Asynchronous engine persistence and diagnostics",
       "priority": "P3",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Default runtime evidence is buffered/dirty-tracked and rate-limited to at most one write per minute; yield tracing is already opt-in. Native saves and quickstates are transactional cold operations. No default hot-path file stall is demonstrated. Defer asynchronous persistence/trace rings to an enabled diagnostic workload or measured save stall, reusing beads-3vb.11 and preserving shutdown/error/atomic-replacement semantics. The audio ordering change explicitly preserves the optional applied trace and its original indices.",
+      "evidence": [
+        "runner/runtime_evidence.c",
+        "runner/local_states.c",
+        "runner/glue.c",
+        "runner/audio/mixer.c",
+        "beads-3vb.11"
+      ]
     },
     "E36": {
       "name": "Whole-program native build optimization",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Standard CMake IPO is already available as a build experiment; no extra unused engine switch is needed. Current code comparisons refresh both Sonic1 arms with the same MSVC19.44 toolset rather than relabeling the old19.41 binary. New LTO/PGO adoption remains deferred: no matched built-game evidence establishes a gain, and current local/NAS shared reservations reject timing admission. Benchmark availability does not block the retained engine batch. Keep precise arithmetic, portable compilation and fixed compatibility identity; no fast-math/host-only ISA or unsupported whole-program claim introduced.",
+      "evidence": [
+        "cmake/GenesisRecompRunner.cmake",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/s1-audio-bundle-build.json",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/nas-admission"
+      ]
     }
   },
   "packages": {
@@ -497,5 +569,6 @@
     "linux_v7": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-owned-spans-game.json",
     "windows_v8": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-windows-game-v8.json",
     "scope_v9": "Component contracts pass; actual-game/performance pending. Initial build metadata2e58 predates source-equivalent inline warning fix14a58 and requires final refresh before qualification."
-  }
+  },
+  "evaluation_summary": "All36 families have now been source-evaluated or implemented, with explicit retained/deferred/shared-existing dispositions. Combined per-game qualification and final owner-ready builds remain; this is not goal completion or a claim that every optimization was implemented."
 }
