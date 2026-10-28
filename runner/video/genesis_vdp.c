@@ -21,6 +21,9 @@
 #ifndef GENESIS_NATIVE_COMPOSE
 #define GENESIS_NATIVE_COMPOSE (UINTPTR_MAX > UINT32_MAX)
 #endif
+#ifndef GENESIS_NATIVE_TILE_ROWS
+#define GENESIS_NATIVE_TILE_ROWS (UINTPTR_MAX > UINT32_MAX)
+#endif
 #if GENESIS_BATCHED_PLANES
 /* Four states per layer: transparent/opaque crossed with low/high priority.
  * Select byte 0=backdrop, 1=B, 2=A, 3=sprite; bit 2 reports any opaque high
@@ -867,6 +870,7 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
                         ((uint32_t)v->vram[pa + 1] << 16) |
                         ((uint32_t)v->vram[pa + 2] << 8) | v->vram[pa + 3];
         uint8_t attr = (uint8_t)(((e >> 9) & 0x30) | ((e >> 8) & 0x80));
+#if GENESIS_NATIVE_TILE_ROWS
         uint64_t pixels = gtile_packed_row(bits, attr, e & 0x800);
         if (n == 8) {
             memcpy(out, &pixels, sizeof pixels);
@@ -874,6 +878,13 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
             const uint8_t *decoded = (const uint8_t *)&pixels;
             for (int i = 0; i < n; ++i) out[i] = decoded[fx + i];
         }
+#else
+        unsigned flip = (e & 0x800) ? 7 : 0;
+        for (int i = 0; i < n; ++i) {
+            unsigned nib = (bits >> (28 - ((fx + i) ^ flip) * 4)) & 15;
+            out[i] = (uint8_t)(attr | nib | (nib ? 0x40 : 0));
+        }
+#endif
         out += n; count -= n; px += n;
     }
 }

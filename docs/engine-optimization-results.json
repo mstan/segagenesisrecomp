@@ -1,0 +1,307 @@
+{
+  "schema": "GenesisEngineOptimizationResults1",
+  "issue": "beads-3vb.31",
+  "campaign": "beads-2wy8.1",
+  "status": "active-incomplete",
+  "updated_utc": "2026-10-28T07:20:02.033638+00:00",
+  "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
+  "candidates": {
+    "E01": {
+      "name": "Native CD execution regions",
+      "priority": "P1",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E02": {
+      "name": "Code identity and invalidation",
+      "priority": "P1",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E03": {
+      "name": "Owned memory access",
+      "priority": "P1",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E04": {
+      "name": "Generated native arithmetic and state",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E05": {
+      "name": "Native call/control-flow consolidation",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E06": {
+      "name": "Reusable native Z80 backend",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E07": {
+      "name": "Event-driven waits and scheduling",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E08": {
+      "name": "Transfer spans and layout mapping",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E09": {
+      "name": "Single image-production ownership",
+      "priority": "P1",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E10": {
+      "name": "Renderer interface independent of aspect ratio",
+      "priority": "P1",
+      "status": "deferred",
+      "disposition": "Requires excluded title stock-fidelity/adoption T08; do not add an unused shared selector.",
+      "evidence": [
+        "runner/main.c:own_custom_row_enabled",
+        "docs/TITLE_OPTIMIZATION_BACKLOG.md:T08"
+      ]
+    },
+    "E11": {
+      "name": "Fused generic VDP raster",
+      "priority": "P1",
+      "status": "implementation_in_progress",
+      "disposition": "Native row and composition package implemented; Sonic1 current built-game correctness passed, further engine raster ownership work and performance qualification pending.",
+      "evidence": [
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\reference-attribution.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\native-compose-diff.log",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\s1-raster-game-gates.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-raster-checks.json"
+      ]
+    },
+    "E12": {
+      "name": "Shared sprite evaluation jobs",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E13": {
+      "name": "Versioned generic graphics derivation",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E14": {
+      "name": "Native Sega CD stamp-device jobs",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E15": {
+      "name": "Reuse unchanged hardware render results",
+      "priority": "P3",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E16": {
+      "name": "Final pixels and upload ownership",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E17": {
+      "name": "Optional generic GPU raster backend",
+      "priority": "P3",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E18": {
+      "name": "Independent engine work scheduling",
+      "priority": "P3",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E19": {
+      "name": "One ordered audio timeline",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E20": {
+      "name": "Faithful FM kernels",
+      "priority": "P1",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E21": {
+      "name": "PSG event spans",
+      "priority": "P3",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E22": {
+      "name": "Sega CD PCM/CDDA spans",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E23": {
+      "name": "Synthesis-to-device pipeline",
+      "priority": "P1",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E24": {
+      "name": "Audio buffer ownership",
+      "priority": "P3",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E25": {
+      "name": "Exact constant/silent spans",
+      "priority": "P3",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E26": {
+      "name": "Bounded generic media prefetch",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E27": {
+      "name": "Verified media handoff contract",
+      "priority": "P1",
+      "status": "deferred",
+      "disposition": "Shared image open already verifies payload once; duplicate launcher pass requires excluded T12 integration and safe cross-process ownership proof.",
+      "evidence": [
+        "runner/cd/disc_image.c:hash_payload",
+        "docs/TITLE_OPTIMIZATION_BACKLOG.md:T12"
+      ]
+    },
+    "E28": {
+      "name": "Portable full-media validation",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E29": {
+      "name": "Resident-media representation",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E30": {
+      "name": "Reusable console-firmware services",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E31": {
+      "name": "Engine snapshot representation and identity",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E32": {
+      "name": "Serializer and snapshot storage",
+      "priority": "P3",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E33": {
+      "name": "Discarded-replay engine work",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E34": {
+      "name": "Host presentation/deadline pipeline",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E35": {
+      "name": "Asynchronous engine persistence and diagnostics",
+      "priority": "P3",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    },
+    "E36": {
+      "name": "Whole-program native build optimization",
+      "priority": "P2",
+      "status": "pending",
+      "disposition": null,
+      "evidence": []
+    }
+  },
+  "packages": {
+    "native-tile-and-composition-spans-v1": {
+      "engine": "705129b7918f9ab47c614c1ed2324e0428dfc9c3",
+      "baseline_engine": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
+      "consumer": "3ffa2087d6861872738564d15f638396671090ce",
+      "baseline_binary_sha256": "2fc01d3d885e0ad809348aff1e37f756b6c589f0bfc9f9262401739e00ebb872",
+      "candidate_binary_sha256": "15b5c75a5ce3651ad626372acd2f7bbe12fd8a06632d16c3076138cbcfa86d31",
+      "game_rows": [
+        {
+          "game": "Sonic1",
+          "views": [
+            "stock",
+            "16:9"
+          ],
+          "correctness": "passed matching framebuffer/PNG/machine/audio/work/rollback probes",
+          "correctness_receipt": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\s1-raster-game-gates.json",
+          "performance": "unqualified-no-measurement",
+          "performance_samples": []
+        }
+      ],
+      "other_games": "not built/qualified yet",
+      "portable_tests": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-raster-checks.json"
+    }
+  },
+  "timing_admission": [
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\nas-admission\\preflight-1793171613954490500.json",
+      "eligible": false,
+      "selected_peak_load_percent": 51.593823636724665,
+      "observed_utc": "2026-10-28T07:13:33.954491+00:00",
+      "next_check_not_before_utc": "2026-10-28T07:43:33.954491+00:00"
+    }
+  ],
+  "authoritative_completion": "Incomplete. All36 items still require final dispositions; additional games/current-build lifecycle/performance and final owner builds remain. No merge/release authorized."
+}

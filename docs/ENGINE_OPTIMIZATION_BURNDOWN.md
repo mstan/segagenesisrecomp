@@ -10,7 +10,7 @@ Only reusable engine, code-generation, hardware-device, media, state, host and c
 
 Title-owned logic is saved separately in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md) and is excluded. Do not add game-PC checks, asset/layout knowledge, sound-driver semantics or game-specific outcomes to engine code. Consumer changes are limited to supported regeneration, pins/build wiring and mechanical adoption of a generic interface; new title behavior or adapter logic stays deferred.
 
-This list contains **36 pending engine candidates**, split from the earlier42-family inventory. Several are parts or alternatives of the same coherent implementation. Priorities rank investigation, not proven savings. No further speedup has been established for these candidates.
+This list contains **36 engine candidates**, split from the earlier42-family inventory. Several are parts or alternatives of the same coherent implementation. Priorities rank investigation, not proven savings. Per-item state is recorded below and in `engine-optimization-results.json`; no additional runtime speedup is qualified yet.
 
 ## Execution and acceptance
 
@@ -84,17 +84,17 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
   - Evidence: `runner/cd/machine.c`, `runner/video/genesis_machine.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E10: Renderer interface independent of aspect ratio** — P1; original N12.
+- [x] **E10: Renderer interface independent of aspect ratio** — P1; original N12.
   - Goal: Separate shared renderer ownership/selection from viewport width and elective widescreen policy.
   - Boundary: Keep existing consumers compatible. Stock sprite/scene fidelity and enabling a particular game's custom renderer remain title tasks.
   - Evidence: `runner/main.c`, `runner/game_video.h`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Deferred on title fidelity/adoption T08. `runner/main.c:own_custom_row_enabled` selects a custom producer only when `s_custom_width` is set; existing custom adapters can intentionally lift stock sprite/object limits. Enabling them at320px would change title policy without the excluded title qualification. An unused extra engine selector would not improve delivered runtime.
 
 - [ ] **E11: Fused generic VDP raster** — P1; original N14.
   - Goal: Combine tile/window/scroll spans, decode, priority and shadow/highlight composition in the shared renderer.
   - Boundary: Existing BATCHED fetching is partial work, not a new gain. Preserve all supported VDP modes and the universal reference path.
   - Evidence: `runner/video/genesis_vdp.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Implementation in progress. Portable complete tile-row expansion and eight-byte priority/shadow composition are committed at `34b08ee` and `705129b`. Windows4000-case hardware differential,20000-pattern and12000-composition checks pass; matched built Sonic1 stock/16:9 images, machine/audio state, emitted work and rollback probes pass. Raw evidence: `G:/Temp/Codex/genesis-engine-burndown-20261027`. Performance unqualified: SERVER admission found no idle physical core; no timing comparison was run.
 
 - [ ] **E12: Shared sprite evaluation jobs** — P2; original N15.
   - Goal: Prepare reusable generic sprite membership/opacity/priority work for both hardware status and image production.
@@ -190,11 +190,11 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
   - Evidence: `runner/cd/disc_image.c`, `runner/cd/cdd.c`, `runner/cd/cdc.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E27: Verified media handoff contract** — P1; original N33.
+- [x] **E27: Verified media handoff contract** — P1; original N33.
   - Goal: Provide a safe common way to reuse completed media verification within one launch instead of independent redundant payload reads.
   - Boundary: Validate actual complete identity every launch; never substitute timestamps. Changes to a game's launcher/converter are deferred.
   - Evidence: `runner/cd/disc_image.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Deferred on excluded launcher integration T12. `runner/cd/disc_image.c` performs one full payload verification per open; its second pass is only the required complete portable restart after platform-provider failure. The independent duplicate validation is in the title launcher. A safe cross-process proof/handle handoff needs that consumer integration; adding an unused trust API alone cannot remove runtime work and timestamp-only validation remains unacceptable.
 
 - [ ] **E28: Portable full-media validation** — P2; original N34.
   - Goal: Evaluate accelerated portable/platform SHA and safe immutable-sector validation reuse.
