@@ -26,11 +26,11 @@ static uint32_t seed=0x23567121;
 static uint32_t rnd(void){seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return seed;}
 static void check(const AudioEvent *source,size_t n,int pairguard)
 {
-    AudioEvent *actual=malloc((n+1)*sizeof *actual),*scratch=malloc((n+1)*sizeof *scratch);
+    AudioOrderedEvent *actual=malloc((n+1)*sizeof *actual),*scratch=malloc((n+1)*sizeof *scratch);
     OriginalEvent *old=malloc((n+1)*sizeof *old);CHECK(actual&&scratch&&old);
-    for(size_t i=0;i<n;++i){actual[i]=source[i];old[i].e=source[i];old[i].idx=(uint32_t)i;}
+    for(size_t i=0;i<n;++i){actual[i].e=source[i];actual[i].idx=(uint32_t)i;old[i].e=source[i];old[i].idx=(uint32_t)i;}
     reference(old,n,pairguard);audio_event_order(actual,scratch,n,pairguard);
-    for(size_t i=0;i<n;++i)CHECK(actual[i].cycle_stamp==old[i].e.cycle_stamp&&actual[i].port==old[i].e.port&&actual[i].value==old[i].e.value);
+    for(size_t i=0;i<n;++i)CHECK(actual[i].e.cycle_stamp==old[i].e.cycle_stamp&&actual[i].e.port==old[i].e.port&&actual[i].e.value==old[i].e.value&&actual[i].idx==old[i].idx);
     free(actual);free(scratch);free(old);
 }
 int main(void)
