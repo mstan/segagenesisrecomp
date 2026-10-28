@@ -1,6 +1,9 @@
 #include "segacd_coordinator.h"
 #include <limits.h>
 #include <string.h>
+#ifndef SEGACD_OWNED_CODE_SPANS
+#define SEGACD_OWNED_CODE_SPANS 1
+#endif
 
 /* NTSC master 53,693,175 Hz; main 68000 master/7; sub 12,500,000 Hz.
  * PAL and hardware bus-cycle phasing need separate qualification. */
@@ -138,6 +141,17 @@ static M68kStepBusResult bus_fetch(void *user,uint32_t a,uint16_t *v)
         return c->host_main.fetch16(c->host_user,a,v);
     return M68K_BUS_FAULT;
 }
+#if defined(M68K_STEP_HAS_CODE_SPANS) && M68K_STEP_HAS_CODE_SPANS && SEGACD_OWNED_CODE_SPANS
+static const uint8_t *bus_code_span(void *user,uint32_t a,size_t bytes)
+{
+    SegaCDBusBinding *binding=user;SegaCDCoordinator *c=binding->owner;
+    int memory=binding->cpu==SEGACD_MAIN?a<0x40000u||(a>=0x200000u&&a<0x240000u):a<0xe0000u;
+    if(memory)return segacd_code_span(c->devices,binding->cpu,a,bytes);
+    if(binding->cpu==SEGACD_MAIN&&!main_cd_port(a)&&c->host_code_span)
+        return c->host_code_span(c->host_user,a,bytes);
+    return NULL;
+}
+#endif
 static unsigned bus_ack(void *user,unsigned level)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
@@ -237,7 +251,12 @@ int segacd_coordinator_init(SegaCDCoordinator *c,SegaCD *devices,const M68kStepB
     c->device_time=c->time[0]=c->time[1]=devices->sub_cycles;
     c->reset_generation=devices->sub_reset_generation;
     M68kStepBus bus={bus_read8,bus_read16,bus_write8,bus_write16,bus_fetch,bus_wait,bus_ack,bus_reset};
-    for(unsigned n=0;n<2;++n){c->binding[n].owner=c;c->binding[n].cpu=(SegaCDCpu)n;m68k_step_init(&c->cpu[n],&bus,&c->binding[n]);}
+    for(unsigned n=0;n<2;++n){
+        c->binding[n].owner=c;c->binding[n].cpu=(SegaCDCpu)n;m68k_step_init(&c->cpu[n],&bus,&c->binding[n]);
+#if defined(M68K_STEP_HAS_CODE_SPANS) && M68K_STEP_HAS_CODE_SPANS && SEGACD_OWNED_CODE_SPANS
+        (void)m68k_step_code_span(&c->cpu[n],bus_code_span);
+#endif
+    }
     return m68k_step_reset(&c->cpu[0])==M68K_STEP_OK;
 }
 int segacd_coordinator_modules(SegaCDCoordinator *c,SegaCDCpu cpu,const M68kStepModule *const *modules,size_t count)
@@ -259,6 +278,11 @@ int segacd_coordinator_catalog_index(SegaCDCoordinator *c,int enabled)
             c->catalog_index[cpu]=segacd_catalog_index_create(SEGACD_INDEX_DEFAULT_LIMIT);
     }
     c->catalog_index_enabled=(uint8_t)(enabled!=0);return 1;
+}
+int segacd_coordinator_main_code_span(SegaCDCoordinator *c,const uint8_t *(*span)(void *,uint32_t,size_t))
+{
+    if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
+    c->host_code_span=span;return 1;
 }
 int segacd_coordinator_floor(SegaCDCoordinator *c,M68kStepResult (*step)(M68kStepContext *))
 {

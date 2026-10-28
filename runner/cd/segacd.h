@@ -95,6 +95,10 @@ int segacd_sub_runnable(const SegaCD *cd);
 
 SegaCDResult segacd_read8(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint8_t *value);
 SegaCDResult segacd_read16(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint16_t *value);
+/* Ephemeral contiguous current instruction bytes. No pointer is retained or
+ * code identity trusted across operations. NULL keeps ordinary fetch/WAIT for
+ * patches, mapping boundaries, ownership stalls and noncontiguous 1M views. */
+const uint8_t *segacd_code_span(const SegaCD *,SegaCDCpu,uint32_t,size_t);
 SegaCDResult segacd_write8(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint8_t value);
 SegaCDResult segacd_write16(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint16_t value);
 

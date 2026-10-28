@@ -129,6 +129,12 @@ static M68kStepBusResult fetch16(void *u,uint32_t a,uint16_t *v)
     SegaCDMachine*m=u;if(a<0xff0000u)return M68K_BUS_FAULT;
     *v=gbus_peek16(&m->bus,a);return M68K_BUS_OK;
 }
+static const uint8_t *host_code_span(void *u,uint32_t a,size_t bytes)
+{
+    (void)u;
+    if(a<0xff0000u||a>0xffffffu||!bytes||bytes>0x1000000u-a)return NULL;
+    return g_ram+(a&0xffffu);
+}
 static unsigned ack(void *u,unsigned level)
 {SegaCDMachine*m=u;if(level==6)m->irq6=0;if(level==4)m->irq4=0;return M68K_STEP_AUTOVECTOR;}
 static uint16_t dma_read(void *u,uint32_t address)
@@ -207,6 +213,7 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
        !segacd_coordinator_modules(&m->coordinator,SEGACD_SUB,program->sub_modules,program->sub_count))return 0;
     const SegaCDZ80Bus sound={z80_read,z80_write,z80_bank};
     if(!segacd_z80_init(&m->z80,&m->coordinator,&sound,m,program->z80_step))return 0;
+    (void)segacd_coordinator_main_code_span(&m->coordinator,host_code_span);
     segacd_coordinator_host_clock(&m->coordinator,host_advance,next_host_event);
     segacd_coordinator_device_limit(&m->coordinator,sound_limit);
     (void)segacd_coordinator_catalog_index(&m->coordinator,SEGACD_CATALOG_PC_INDEX);

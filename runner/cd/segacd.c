@@ -263,6 +263,29 @@ static SegaCDResult reg_read(SegaCD *s, SegaCDCpu cpu, unsigned r, uint8_t *v)
     return SEGACD_OK;
 }
 
+const uint8_t *segacd_code_span(const SegaCD *s,SegaCDCpu cpu,uint32_t a,size_t bytes)
+{
+    if(!s||!bytes||(a&1u)||a>0xffffffu||bytes>0x1000000u-a)return NULL;
+    if(cpu==SEGACD_MAIN) {
+        if(a<SEGACD_BIOS_BYTES && bytes<=SEGACD_BIOS_BYTES-a) {
+            if(a<0x74u && a+bytes>0x72u)return NULL;
+            return s->bios+a;
+        }
+        if(a>=0x020000u&&a<0x040000u&&bytes<=0x040000u-a) {
+            if(segacd_sub_runnable(s)||s->prg_bank>=4)return NULL;
+            return s->prg+(size_t)s->prg_bank*0x20000u+a-0x020000u;
+        }
+    }else if(cpu==SEGACD_SUB) {
+        if(a<SEGACD_PRG_BYTES&&bytes<=SEGACD_PRG_BYTES-a)return s->prg+a;
+    }else return NULL;
+    if(!(s->memory_mode&MODE_1M)) {
+        uint32_t offset;int dot;
+        if(word_address(s,cpu,a,&offset,&dot)==SEGACD_OK&&bytes<=SEGACD_WORD_BYTES-offset)
+            return s->word+offset;
+    }
+    return NULL;
+}
+
 SegaCDResult segacd_read8(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t *v)
 {
     a &= 0xFFFFFFu;

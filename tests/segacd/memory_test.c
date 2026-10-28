@@ -12,6 +12,30 @@ static uint16_t r(SegaCDCpu cpu, uint32_t a)
 { uint16_t v; CHECK(segacd_read16(s,cpu,a,&v)==SEGACD_OK); return v; }
 static void b(SegaCDCpu cpu, uint32_t a, uint8_t value)
 { CHECK(segacd_write8(s,cpu,a,value)==SEGACD_OK); }
+static void check_code_spans(void)
+{
+    const uint32_t addresses[]={0,0x60,0x70,0x72,0x74,0x1fffe,0x20000,0x3fff0,
+        0x7fffe,0x80000,0xbfff0,0xc0000,0xdfff0,0x200000,0x23fff0,0xa12000,0xff0000};
+    for(unsigned mode=0;mode<8;++mode)for(unsigned control=0;control<4;++control)
+    for(unsigned bank=0;bank<4;++bank) {
+        s->memory_mode=(uint8_t)mode;s->main_control=(uint8_t)control;s->prg_bank=(uint8_t)bank;
+        for(unsigned cpu=0;cpu<2;++cpu)for(unsigned a=0;a<sizeof addresses/sizeof *addresses;++a)
+        for(size_t count=2;count<=22;count+=2) {
+            uint32_t address=addresses[a];const uint8_t *span=segacd_code_span(s,(SegaCDCpu)cpu,address,count);
+            if(span)for(size_t i=0;i<count;++i) {
+                uint8_t value=0;CHECK(segacd_read8(s,(SegaCDCpu)cpu,address+(uint32_t)i,&value)==SEGACD_OK);
+                CHECK(value==span[i]);
+            }
+            if(cpu==SEGACD_MAIN&&address<0x74&&address+count>0x72)CHECK(!span);
+            if((mode&4)&&((cpu==SEGACD_MAIN&&address>=0x200000&&address<0x240000)||
+               (cpu==SEGACD_SUB&&address>=0x80000&&address<0xe0000)))CHECK(!span);
+        }
+    }
+    CHECK(!segacd_code_span(s,SEGACD_MAIN,1,2));
+    CHECK(!segacd_code_span(s,SEGACD_MAIN,0xfffffe,4));
+    CHECK(!segacd_code_span(s,SEGACD_MAIN,0x1000000,2));
+    CHECK(!segacd_code_span(s,SEGACD_MAIN,0,0));
+}
 
 int main(void)
 {
@@ -109,6 +133,7 @@ int main(void)
         CHECK(segacd_read8(s,SEGACD_MAIN,0x220000+a,&v)==SEGACD_OK);
         CHECK(segacd_write8(s,SEGACD_SUB,0xC0000+a,(uint8_t)a)==SEGACD_OK);
     }
-    free(s);puts("Sega CD memory, ownership, communication, timer/IRQ and font contracts pass");
+    check_code_spans();
+    free(s);puts("Sega CD memory, ownership, communication, timer/IRQ, code spans and font contracts pass");
     return 0;
 }

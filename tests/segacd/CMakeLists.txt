@@ -2,11 +2,12 @@ cmake_minimum_required(VERSION 3.16)
 project(SegaCDDeviceTests C)
 enable_testing()
 option(SEGACD_CATALOG_LOOKUP_CACHE "Cache immutable native descriptor discovery, preserving live guards" ON)
+option(SEGACD_OWNED_CODE_SPANS "Resolve current instruction guard ranges through owned memory views" ON)
 option(SEGACD_CATALOG_PC_INDEX "Use bounded direct-PC native catalog lookup" ON)
 set_source_files_properties("../../runner/cd/machine.c" PROPERTIES
     COMPILE_DEFINITIONS "SEGACD_CATALOG_PC_INDEX=$<AND:$<BOOL:${SEGACD_CATALOG_PC_INDEX}>,$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>>")
 set_source_files_properties("../../runner/cd/segacd_coordinator.c" PROPERTIES
-    COMPILE_DEFINITIONS "SEGACD_CATALOG_LOOKUP_CACHE=$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>")
+    COMPILE_DEFINITIONS "SEGACD_CATALOG_LOOKUP_CACHE=$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>;SEGACD_OWNED_CODE_SPANS=$<BOOL:${SEGACD_OWNED_CODE_SPANS}>")
 set(SEGACD_GAME_RENDER_SOURCE "${CMAKE_CURRENT_LIST_DIR}/../../runner/cd/sonic_cd_render.c"
     CACHE FILEPATH "Game-owned complete-row renderer (legacy default retained)")
 set(SEGACD_GAME_SERVICES_SOURCE "${CMAKE_CURRENT_LIST_DIR}/../../runner/cd/standalone_services.c"

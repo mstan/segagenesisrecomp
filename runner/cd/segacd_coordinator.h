@@ -66,6 +66,7 @@ struct SegaCDCoordinator {
     SegaCDCatalogLookup catalog_lookup[2];
     SegaCDCatalogIndex *catalog_index[2];
     uint8_t catalog_index_enabled;
+    const uint8_t *(*host_code_span)(void *,uint32_t,size_t);
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
@@ -76,6 +77,9 @@ int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
  * for generic callers. Disable before destroying an enabled coordinator.
  * Configure between completed operations; allocation failure retains fallback. */
 int segacd_coordinator_catalog_index(SegaCDCoordinator *,int enabled);
+/* Optional Main-host executable storage, under the same no-side-effect rules
+ * as host_main.fetch16. Code ranges owned by CD devices never delegate here. */
+int segacd_coordinator_main_code_span(SegaCDCoordinator *,const uint8_t *(*)(void *,uint32_t,size_t));
 /* Diagnostics may attach the portable execution floor. Native-only consumers
  * leave it NULL: every uncovered operation is a stop, never skipped code. */
 int segacd_coordinator_floor(SegaCDCoordinator *,M68kStepResult (*)(M68kStepContext *));
