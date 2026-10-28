@@ -19,8 +19,7 @@ static int current_code(void *user,const M68kStepEntry *entry)
 {
     SegaCDBusBinding *b=user;M68kStepContext *cpu=&b->owner->cpu[b->cpu];
     if(!cpu->code_span||!b->owner->code_identity)return 0;
-    return segacd_code_guard(b->owner->code_identity,entry,
-        cpu->code_span(user,entry->pc,(size_t)entry->word_count*2u));
+    return segacd_code_guard(b->owner->code_identity,entry,user,cpu->code_span);
 }
 static int owned_sector(void *u,int32_t lba,uint8_t raw[2352])
 {
@@ -50,6 +49,7 @@ static void owned_cdda(void *u,uint64_t clock,int16_t l,int16_t r)
 }
 void segacd_coordinator_code_begin(SegaCDCoordinator *c,SegaCDCodeIdentity *id)
 {
+    if(!c||!id||c->code_identity||c->busy[0]||c->busy[1]||c->external_active)return;
     c->code_identity=id;id->active=1;id->suspended=0;segacd_code_fence(id);
     c->guarded_io=c->io;
     if(c->io.read_sector){c->guarded_io.read_sector=owned_sector;c->guarded_io.media_user=c;}
@@ -61,6 +61,7 @@ void segacd_coordinator_code_begin(SegaCDCoordinator *c,SegaCDCodeIdentity *id)
 }
 void segacd_coordinator_code_end(SegaCDCoordinator *c)
 {
+    if(!c||c->busy[0]||c->busy[1]||c->external_active)return;
     if(c->code_identity){segacd_code_fence(c->code_identity);c->code_identity->active=0;}
     c->code_identity=NULL;
     for(unsigned n=0;n<2;++n){c->cpu[n].code_guard=NULL;c->cpu[n].code_observer=NULL;}
@@ -177,6 +178,9 @@ static void observe_cdd_submission(SegaCDCoordinator*c,SegaCDCpu cpu,uint32_t a,
 static void code_bus_write(SegaCDCoordinator *c,SegaCDCpu cpu,uint32_t a,size_t bytes)
 {
     if(!c->code_identity)return;
+    if((cpu==SEGACD_MAIN&&a>=0xA12000u&&a<0xA12004u)||
+       (cpu==SEGACD_SUB&&a>=0xFF8000u&&a<0xFF8004u))
+        segacd_code_fence(c->code_identity);
     const uint8_t *p=segacd_code_span(c->devices,cpu,a&0xfffffeu,2);
     if(p)segacd_coordinator_code_write(c,p+(bytes==1?(a&1u):0u),bytes);
     else if((cpu==SEGACD_MAIN&&a>=0x200000u&&a<0x240000u)||
@@ -360,6 +364,7 @@ int segacd_coordinator_catalog_index(SegaCDCoordinator *c,int enabled)
 int segacd_coordinator_main_code_span(SegaCDCoordinator *c,const uint8_t *(*span)(void *,uint32_t,size_t))
 {
     if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
+    if(c->code_identity)segacd_code_fence(c->code_identity);
     c->host_code_span=span;return 1;
 }
 int segacd_coordinator_floor(SegaCDCoordinator *c,M68kStepResult (*step)(M68kStepContext *))

@@ -83,13 +83,15 @@ static void aliases(void)
     M68kStepEntry bank={0x20100,{0x4e71,0x1234},2,4,loop};
     cd.main_control=0;cpu->state.regs.PC=bank.pc;
     CHECK(m68k_step_execute_tracked(cpu,&bank)==M68K_STEP_OK);
-    cd.prg_bank=1;cpu->state.regs.PC=bank.pc;
+    m68k_step_write8(cpu,0xA12003,0x40);cpu->state.regs.PC=bank.pc;
     CHECK(m68k_step_execute_tracked(cpu,&bank)==M68K_STEP_MISS);
-    cd.prg_bank=0;cpu->state.regs.PC=bank.pc;cd.main_control=1;
+    m68k_step_write8(cpu,0xA12003,0);cpu->state.regs.PC=bank.pc;
+    m68k_step_write8(cpu,0xA12001,1);
     /* Ownership WAIT is never certified merely because this physical image
      * matched before. Do not execute a WAIT here without runnable modules. */
     CHECK(cpu->code_span(cpu->user,bank.pc,4)==NULL);
-    cd.main_control=0;cpu->state.regs.PC=bank.pc;
+    CHECK(cpu->code_guard(cpu->user,&bank)==0);
+    m68k_step_write8(cpu,0xA12001,0);cpu->state.regs.PC=bank.pc;
     m68k_step_write8(&c.cpu[1],0x103,0x35);
     CHECK(m68k_step_execute_tracked(cpu,&bank)==M68K_STEP_MISS);
     /* Both boundary pages participate, with a non-wrapping monotonic token. */
@@ -100,19 +102,19 @@ static void aliases(void)
     m68k_step_write8(&c.cpu[1],0x201,0x35);c.cpu[1].state.regs.PC=cross.pc;
     CHECK(m68k_step_execute_tracked(&c.cpu[1],&cross)==M68K_STEP_MISS);
     M68kStepEntry word={0x80100,{0x4e71,0x1234},2,4,loop};
-    cd.memory_mode=0;
+    m68k_step_write8(cpu,0xA12003,2);
     m68k_step_write16(&c.cpu[1],0x80100,0x4e71);m68k_step_write16(&c.cpu[1],0x80102,0x1234);
     c.cpu[1].state.regs.PC=word.pc;
     CHECK(m68k_step_execute_tracked(&c.cpu[1],&word)==M68K_STEP_OK);
-    cd.memory_mode=1;
+    m68k_step_write8(&c.cpu[1],0xFF8003,1);
     CHECK(c.cpu[1].code_span(c.cpu[1].user,word.pc,4)==NULL);
     m68k_step_write8(&c.cpu[0],0x200103,0x35);
-    cd.memory_mode=0;c.cpu[1].state.regs.PC=word.pc;
+    m68k_step_write8(cpu,0xA12003,2);c.cpu[1].state.regs.PC=word.pc;
     CHECK(m68k_step_execute_tracked(&c.cpu[1],&word)==M68K_STEP_MISS);
-    cd.memory_mode=5; /* Main 1M bank1 byte81 aliases physical byte103. */
+    m68k_step_write8(&c.cpu[1],0xFF8003,5); /* Main 1M bank1 byte81 aliases physical byte103. */
     CHECK(c.cpu[0].code_span(c.cpu[0].user,0x200080,4)==NULL);
     m68k_step_write8(&c.cpu[0],0x200081,0x34);
-    cd.memory_mode=0;c.cpu[1].state.regs.PC=word.pc;
+    m68k_step_write8(&c.cpu[1],0xFF8003,0);c.cpu[1].state.regs.PC=word.pc;
     CHECK(m68k_step_execute_tracked(&c.cpu[1],&word)==M68K_STEP_OK);
     id.serial=UINT64_MAX;segacd_code_fence(&id);
     CHECK(id.serial==1&&id.fence==1);

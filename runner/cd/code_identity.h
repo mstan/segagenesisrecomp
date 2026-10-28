@@ -3,10 +3,11 @@
 #include "m68k_step.h"
 #include <string.h>
 
-/* Derived physical-storage ownership, not guest/snapshot state. Each current
- * mapping is resolved before consulting identity. A monotonically increasing
- * serial versions 512-byte physical pages; max(two pages, global fence) is a
- * complete token for the longest (22-byte) instruction. No hash of guest bytes
+/* Derived physical-storage ownership, not guest/snapshot state. Mapping and
+ * opaque-observer fences invalidate cached physical-page references. Otherwise
+ * max(two monotonically versioned 512-byte pages) is a complete token for the
+ * longest (22-byte) instruction; changed tokens resolve the current view again.
+ * No hash of guest bytes
  * is trusted. Unknown storage and unowned execution keep the live-byte guard. */
 enum { SEGACD_CODE_RANGES=4, SEGACD_CODE_PAGES=2048,
        SEGACD_CODE_PAGE_BITS=9, SEGACD_CODE_GUARDS=1024 };
@@ -18,6 +19,9 @@ typedef struct {
     const M68kStepEntry *entry;
     const uint8_t *span;
     uint64_t serial;
+    const uint64_t *first_page,*last_page;
+    const void *owner;
+    uint64_t fence;
     int result;
 } SegaCDCodeGuard;
 typedef struct {
@@ -76,28 +80,37 @@ static inline void segacd_code_write(SegaCDCodeIdentity *id,const uint8_t *p,siz
     for(size_t page=first;page<=last;++page)id->pages[page]=serial;
 }
 static inline int segacd_code_guard(SegaCDCodeIdentity *id,const M68kStepEntry *entry,
-                                    const uint8_t *span)
+                                    void *owner,M68kStepCodeSpan view)
 {
-    if(!id->active||id->suspended||!span)return 0;
+    if(!id->active||id->suspended||!view)return 0;
+    unsigned slot=(unsigned)(((uintptr_t)entry>>4)^((uintptr_t)entry>>14))&(SEGACD_CODE_GUARDS-1);
+    SegaCDCodeGuard *guard=&id->guards[slot];
+    if(guard->entry==entry&&guard->owner==owner&&guard->fence==id->fence) {
+        uint64_t current=*guard->first_page;
+        if(*guard->last_page>current)current=*guard->last_page;
+        if(guard->serial==current){++id->hits;return guard->result;}
+    }
     size_t bytes=(size_t)entry->word_count*2u;
+    const uint8_t *span=view(owner,entry->pc,bytes);
+    if(!span)return 0;
     const SegaCDCodeRange *r=segacd_code_locate(id,span,bytes);
     if(!r||!bytes||bytes>22)return 0;
     size_t offset=(size_t)((uintptr_t)span-(uintptr_t)r->base);
     size_t first=r->first_page+(offset>>SEGACD_CODE_PAGE_BITS);
     size_t last=r->first_page+((offset+bytes-1)>>SEGACD_CODE_PAGE_BITS);
     if(last>=SEGACD_CODE_PAGES)return 0;
-    uint64_t serial=id->fence;
+    uint64_t serial=0;
     if(id->pages[first]>serial)serial=id->pages[first];
     if(id->pages[last]>serial)serial=id->pages[last];
-    unsigned slot=(unsigned)(((uintptr_t)entry>>4)^((uintptr_t)entry>>14))&(SEGACD_CODE_GUARDS-1);
-    SegaCDCodeGuard *guard=&id->guards[slot];
-    if(guard->entry==entry&&guard->span==span&&guard->serial==serial) {
-        ++id->hits;return guard->result;
+    if(guard->entry==entry&&guard->span==span&&guard->fence==id->fence&&guard->serial==serial) {
+        guard->owner=owner;++id->hits;return guard->result;
     }
     int result=1;++id->checks;
     for(unsigned n=0;n<entry->word_count;++n)
         if((((unsigned)span[2u*n]<<8)|span[2u*n+1u])!=entry->words[n]){result=-1;break;}
     guard->entry=entry;guard->span=span;guard->serial=serial;guard->result=result;
+    guard->owner=owner;guard->fence=id->fence;
+    guard->first_page=&id->pages[first];guard->last_page=&id->pages[last];
     return result;
 }
 #endif
