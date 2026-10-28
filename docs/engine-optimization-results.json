@@ -3,7 +3,7 @@
   "issue": "beads-3vb.31",
   "campaign": "beads-2wy8.1",
   "status": "active-incomplete",
-  "updated_utc": "2026-10-28T07:43:34.528244+00:00",
+  "updated_utc": "2026-10-28T08:09:57.363563+00:00",
   "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "candidates": {
     "E01": {
@@ -65,13 +65,11 @@
     "E09": {
       "name": "Single image-production ownership",
       "priority": "P1",
-      "status": "implementation_in_progress",
-      "disposition": "Shared CD owned raster capture, exact lazy original-image getter and mechanical existing adapter adoption committed at16c14e6. Palette/live-state replacement, partial frame, narrowed tail, observer detach and unsupported-provider fallback checks pass. Real-game correctness/performance remain pending.",
+      "status": "implemented_game_correctness_pending_integration",
+      "disposition": "Implemented and built-game correctness passed at16c14e6. Shared CD captures immutable rows, preserves per-row CRAM and composes exact whole-frame fallback on demand. Frozen current SonicCD ran3000 actually presented frames: all11screenshots, CPU/device observations, raw state/pixels and WAV match;720000rows captured/442800composed,38.5percent original compositions omitted on this route.898600bytes retained. Runtime timing and final Windows/combined gates remain; cartridge already has lazy row ownership.",
       "evidence": [
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.log",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\captured-raster-contract-diff.log"
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-raster-game.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log"
       ]
     },
     "E10": {
@@ -99,13 +97,11 @@
     "E12": {
       "name": "Shared sprite evaluation jobs",
       "priority": "P2",
-      "status": "implementation_in_progress",
-      "disposition": "The CD raster packet evaluates hardware sprites at capture, retains all sprite lanes and composes whole-frame fallback without evaluating sprites again. No title scene/SAT algorithm changes. Component and CPU-frame contracts pass; actual per-game qualification pending.",
+      "status": "implemented_game_correctness_pending_integration",
+      "disposition": "Implemented CD hardware sprite capture once per row; deferred whole-frame fallback reuses captured sprite lanes and never evaluates hardware sprites again. Synthetic provider/width/state and full CPU-frame contracts pass; actual SonicCD3000frame output/state/audio matches. No title SAT/scene algorithm changes. Final integration/performance gate remains.",
       "evidence": [
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.log",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\captured-raster-contract-diff.log"
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-raster-game.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log"
       ]
     },
     "E13": {
@@ -132,13 +128,11 @@
     "E16": {
       "name": "Final pixels and upload ownership",
       "priority": "P2",
-      "status": "implementation_in_progress",
-      "disposition": "Deferred CD original rows convert only when requested, using retained per-row CRAM and a64/192-entry palette instead of per-pixel DAC work. Existing raw dump/screenshot readers use the getter. Broader cartridge/upload pipeline remains to be evaluated; no new speedup claim.",
+      "status": "implemented_game_correctness_pending_integration",
+      "disposition": "CD original rows now convert only when requested, using retained CRAM and64/192-entry palette; raw readers use the getter. Exact SonicCD3000frame evidence passes with38.5percent fewer original compositions. Broader cartridge/upload pipeline still requires evaluation; reduced row count is not a runtime speed claim.",
       "evidence": [
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.log",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\captured-raster-contract-diff.log"
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-raster-game.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-capture-contract.log"
       ]
     },
     "E17": {
@@ -224,9 +218,13 @@
     "E28": {
       "name": "Portable full-media validation",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_implemented_launch_verified",
+      "disposition": "Evaluated/implemented: optional OpenSSL1.1+ EVP full-payload validation outside Windows, with CNG retained and universal C fallback. WindowsCNG/portable and LinuxOpenSSL/missing-provider/portable plus injected init/midstream/final failures pass. Six matched SonicCD one-frame launches preserve raw state/pixels/WAV/native summaries. Two balanced Linux warm-host A/B pairs observed12.4/13.8percent less full-launch wall time and40.2/41.1percent less processCPU; A/A drift2.0percent wall/1.7percent CPU. Raw samples in cd-media-startup.json. This is a bounded shared-host launch result, not a runtime throughput claim; final combined/Windows qualification and dependency packaging remain.",
+      "evidence": [
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-media-startup.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-media-providers.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\windows-media-providers.json"
+      ]
     },
     "E29": {
       "name": "Resident-media representation",
@@ -337,8 +335,60 @@
         "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-capture-contract.log",
         "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\captured-raster-contract-diff.log"
       ],
-      "per_game": [],
+      "per_game": [
+        {
+          "game": "SonicCD",
+          "host": "Linux GCC13.3 WSL, SDL dummy/software, normal emulated clocks",
+          "consumer": "f1b5824ef77369e42283a53d433d2b2666bc7521",
+          "frames": 3000,
+          "correctness": "Exact11checkpoint screenshots and CPU/device observations, full raw memory/pixels and WAV match",
+          "expanded_frames": 1156,
+          "fallback_frames": 1844,
+          "captured_rows": 720000,
+          "composed_rows": 442800,
+          "original_compositions_omitted_pct": 38.5,
+          "retained_bytes": 898600,
+          "performance": "Removed work counted; no whole-runtime timing qualification",
+          "evidence": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-raster-game.json"
+        }
+      ],
       "performance": "unqualified; built CD game validation pending; synthetic omitted work is not a whole-game speed claim"
+    },
+    "native-raster-and-media-provider-v3": {
+      "engine": "2e83cd7554ec40a6d47399f6939d71865d004359",
+      "implementation": "2e83cd7",
+      "build": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-media-build.json",
+      "game_rows": [
+        {
+          "game": "SonicCD",
+          "platform": "Linux OpenSSL3.0.13",
+          "workload": "Full payload verification plus one native runtime frame, warm host caches, isolated native saves and muted SDL dummy. Bounded launch-cost observation under shared host load; not a quiet-host stress/performance qualification.",
+          "savings_pct": {
+            "wall_seconds": [
+              13.82282127579979,
+              12.433797513981759
+            ],
+            "cpu_seconds": [
+              41.09955020174836,
+              40.174964698349505
+            ]
+          },
+          "AA_drift_pct": {
+            "wall_seconds": -1.9801434591383615,
+            "cpu_seconds": -1.6604070054317632
+          },
+          "correctness": "Six launches have exact raw memory/frame/audio and native execution summaries",
+          "evidence": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-media-startup.json",
+          "performance_qualification": "Bounded shared-host full-launch observation; final combined runtime and Windows integration gates remain"
+        }
+      ],
+      "checks": [
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\windows-media-providers.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\linux-media-providers.json"
+      ],
+      "portable": "C fallback with missing OpenSSL and forced portable passes; real provider init/update/final failure restart passes",
+      "costs": "Optional linked libcrypto dependency outside Windows; package must carry selected runtime library/license; Windows CNG retained; cartridge consumers do not link this component",
+      "final_integration_qualified": false
     }
   },
   "timing_admission": [
@@ -348,7 +398,14 @@
       "selected_peak_load_percent": 51.593823636724665,
       "observed_utc": "2026-10-28T07:13:33.954491+00:00",
       "next_check_not_before_utc": "2026-10-28T07:43:33.954491+00:00"
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\nas-admission\\preflight-1793173451173975900.json",
+      "eligible": false,
+      "selected_peak_load_percent": 10.994979442276176,
+      "observed_utc": "2026-10-28T07:44:11.1739757Z",
+      "next_check_not_before_utc": "2026-10-28T08:14:11.1739757Z"
     }
   ],
-  "authoritative_completion": "Incomplete:3/36 evaluations resolved (E10/E27 deferred; E33 already implemented). E09/E11/E12/E16 active; remaining evaluations, real-game qualification and final owner builds remain. No merge/release authorized."
+  "authoritative_completion": "Incomplete:4/36 evaluations resolved (E10/E27 deferred; E33 already implemented; E28 implemented with bounded Linux launch evidence). E09/E11/E12/E16 integration/performance and allremaining evaluations remain. No merge/release authorized."
 }

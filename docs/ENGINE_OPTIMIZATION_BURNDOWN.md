@@ -82,7 +82,7 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Goal: Provide reusable lazy original-image production and exact fallback in the shared cartridge/CD raster pipeline.
   - Boundary: Retain CPU-visible sprite status and whole-frame fallback. Title scene eligibility and its adapter implementation belong in the title backlog. Do not land unused abstraction merely to check this item off.
   - Evidence: `runner/cd/machine.c`, `runner/video/genesis_machine.c`.
-  - Disposition/evidence: Shared CD owned raster capture, exact lazy original-image getter and mechanical existing adapter adoption committed at16c14e6. Palette/live-state replacement, partial frame, narrowed tail, observer detach and unsupported-provider fallback checks pass. Real-game correctness/performance remain pending.
+  - Disposition/evidence: Implemented and built-game correctness passed at16c14e6. Shared CD captures immutable rows, preserves per-row CRAM and composes exact whole-frame fallback on demand. Frozen current SonicCD ran3000 actually presented frames: all11screenshots, CPU/device observations, raw state/pixels and WAV match;720000rows captured/442800composed,38.5percent original compositions omitted on this route.898600bytes retained. Runtime timing and final Windows/combined gates remain; cartridge already has lazy row ownership.
 
 - [x] **E10: Renderer interface independent of aspect ratio** — P1; original N12.
   - Goal: Separate shared renderer ownership/selection from viewport width and elective widescreen policy.
@@ -100,7 +100,7 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Goal: Prepare reusable generic sprite membership/opacity/priority work for both hardware status and image production.
   - Boundary: Preserve limits, masks, raster-visible changes, overflow and collision timing; no replacement of game BuildSprites.
   - Evidence: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`.
-  - Disposition/evidence: The CD raster packet evaluates hardware sprites at capture, retains all sprite lanes and composes whole-frame fallback without evaluating sprites again. No title scene/SAT algorithm changes. Component and CPU-frame contracts pass; actual per-game qualification pending.
+  - Disposition/evidence: Implemented CD hardware sprite capture once per row; deferred whole-frame fallback reuses captured sprite lanes and never evaluates hardware sprites again. Synthetic provider/width/state and full CPU-frame contracts pass; actual SonicCD3000frame output/state/audio matches. No title SAT/scene algorithm changes. Final integration/performance gate remains.
 
 - [ ] **E13: Versioned generic graphics derivation** — P2; original N16.
   - Goal: Cache decoded VDP art, palettes and geometry only at verified VRAM/CRAM/register change boundaries.
@@ -124,7 +124,7 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Goal: Fuse shared indexed/ARGB conversion, copies, color processing, UI staging and upload preparation.
   - Boundary: Keep raw verification/capture output, filter edges, UI and portable output paths correct.
   - Evidence: `runner/main.c`, `runner/cd/presentation.c`.
-  - Disposition/evidence: Deferred CD original rows convert only when requested, using retained per-row CRAM and a64/192-entry palette instead of per-pixel DAC work. Existing raw dump/screenshot readers use the getter. Broader cartridge/upload pipeline remains to be evaluated; no new speedup claim.
+  - Disposition/evidence: CD original rows now convert only when requested, using retained CRAM and64/192-entry palette; raw readers use the getter. Exact SonicCD3000frame evidence passes with38.5percent fewer original compositions. Broader cartridge/upload pipeline still requires evaluation; reduced row count is not a runtime speed claim.
 
 - [ ] **E17: Optional generic GPU raster backend** — P3; original N21.
   - Goal: Evaluate hardware tile/sprite/priority composition from reusable immutable render packets.
@@ -196,11 +196,11 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Evidence: `runner/cd/disc_image.c`.
   - Disposition/evidence: Deferred on excluded launcher integration T12. `runner/cd/disc_image.c` performs one full payload verification per open; its second pass is only the required complete portable restart after platform-provider failure. The independent duplicate validation is in the title launcher. A safe cross-process proof/handle handoff needs that consumer integration; adding an unused trust API alone cannot remove runtime work and timestamp-only validation remains unacceptable.
 
-- [ ] **E28: Portable full-media validation** — P2; original N34.
+- [x] **E28: Portable full-media validation** — P2; original N34.
   - Goal: Evaluate accelerated portable/platform SHA and safe immutable-sector validation reuse.
   - Boundary: Windows CNG already ships. Keep complete payload checks, corruption detection, CPU/OS gating and full portable restart/fallback.
   - Evidence: `runner/cd/disc_image.c`, `runner/cd/sector.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Evaluated/implemented: optional OpenSSL1.1+ EVP full-payload validation outside Windows, with CNG retained and universal C fallback. WindowsCNG/portable and LinuxOpenSSL/missing-provider/portable plus injected init/midstream/final failures pass. Six matched SonicCD one-frame launches preserve raw state/pixels/WAV/native summaries. Two balanced Linux warm-host A/B pairs observed12.4/13.8percent less full-launch wall time and40.2/41.1percent less processCPU; A/A drift2.0percent wall/1.7percent CPU. Raw samples in cd-media-startup.json. This is a bounded shared-host launch result, not a runtime throughput claim; final combined/Windows qualification and dependency packaging remain.
 
 - [ ] **E29: Resident-media representation** — P2; original N35.
   - Goal: Evaluate lower-copy/raw-versus-user-data residency, bounded mapped/shared storage and memory footprint.
