@@ -191,7 +191,7 @@
       "name": "One ordered audio timeline",
       "priority": "P2",
       "status": "implemented_component_qualified",
-      "disposition": "Engine162c0e7 replaces repeated full-frame qsort/sequence records with stable natural-run merging and linear reverse FM-latch pairing. Deferred PCM bursts retain their sorted runs; the same scratch owns later requeue data. Two AudioEvent arrays replace indexed events plus a separate deferred array, reducing static storage by1MiB at current capacity. Old timeline parity passes1200 randomized cases and complete262144-event bursts including ties, relatches, orphan addresses and wrapped stamps on MSVC/GCC plus ASan/UBSan/leak checks. Actual cartridge audio/state validation pending.",
+      "disposition": "Stable natural-run merging and reverse FM pairing retain original push indices for optional applied-audio tracing. Reuse a typed union scratch for deferred events. Correction: total static event storage is6MiB versus5MiB originally, an increase of1MiB, rather than the initially estimated saving. Maximum262144-event and1200random oracle cases now compare original indices as well as exact events; MSVC/GCC and ASan/UBSan pass. Actual cartridge state/PCM/diagnostic validation pending.",
       "evidence": [
         "runner/audio/event_order.h",
         "runner/audio/mixer.c",
