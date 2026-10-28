@@ -4,7 +4,7 @@ Historical evaluation/release owner: `beads-3vb.31`. Remaining implementation: *
 
 Source audit base: `f422ad52a04b9d253c0e9cbcdb3476aabd563ae8`. Prepared in isolated branch `codex/engine-optimization-burndown-20261027`. Refresh and freeze remote engine/shared-core and representative consumer heads before implementation.
 
-**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The audit leaves 30 families open and recognizes four bounded delivered contracts plus two existing bounded findings; family counts overlap and are not speedup counts.
+**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The first serial run now implements and qualifies E01; **29 families remain open**, alongside five delivered bounded contracts and two existing findings; family counts overlap and are not speedup counts.
 
 ## Scope
 
@@ -15,6 +15,8 @@ Title-owned logic is saved separately in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_O
 This list contains **36 engine candidate families**, split from the earlier42-family inventory. Several are parts or alternatives of the same coherent implementation. Priorities rank investigation, not proven savings. Dispositions below distinguish implemented work, shared existing work, rejected experiments and concrete deferrals; counts are not performance claims.
 
 ## Execution and acceptance
+
+Current owner instruction (2026-10-28): work serially on one original goal or coherent group, then check in. Deferral or partial implementation does not close a goal. Historical evaluation dispositions remain below; only the original implemented/qualified scope counts as implementation completion.
 
 - Work solo in isolated worktrees. Claim the remaining-work owner `beads-3z5k` before new implementation and update it and the campaign at meaningful milestones.
 - Prioritize coherent replacement of the largest demonstrated repeated work across execution/memory/device or render/audio boundaries. Treat required observable behavior as the contract; existing subsystem interfaces and representations may be replaced.
@@ -30,11 +32,11 @@ This list contains **36 engine candidate families**, split from the earlier42-fa
 
 ### Execution and memory
 
-- [ ] **E01: Native CD execution regions** — P1; original N01.
+- [x] **E01: Native CD execution regions** — P1; original N01.
   - Goal: Run reusable Main/Sub/Z80 native regions until the next observable interaction or device deadline.
   - Boundary: Keep CPU ordering, interrupts, DMA, Word RAM ownership, raster and audio deadlines exact; no title PC/routine recognition.
   - Evidence: `runner/cd/segacd_coordinator.c`, `runner/cd/machine.c`.
-  - Disposition/evidence: Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.
+  - Disposition/evidence: Implemented and qualified by engine `382678d` / core `34e5aee`: effect-qualified Main/Sub regions and continuous Z80 intervals preserve original CPU order, full live guards, actual hardware deadlines, bus/WAIT/HLE exits and completed-state publication. Final v5 built-game checkpoints/memory/pixels/full WAV/execution totals match the reference; MSVC/GCC region/fault/reentry contracts pass. Earlier fault-scope-only and v1/v2/v4 experiments remain rejected, with raw evidence. Final Windows SonicCD pairs show 3.1/8.7 percent lower process CPU and 8.6/7.2 percent fewer process cycles on the matched route; no universal FPS claim; the final balanced v5 pairs are retained separately from older variants. Binary/effect-storage costs recorded. See [ENGINE_NATIVE_REGIONS.md](ENGINE_NATIVE_REGIONS.md) and [engine-native-region-results.json](engine-native-region-results.json). Owner check/merge handoff remains; no other E-ID closed.
 
 - [ ] **E02: Code identity and invalidation** — P1; original N02.
   - Goal: Use guarded code regions with complete write/remapping invalidation instead of per-instruction byte comparisons where qualified.
