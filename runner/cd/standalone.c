@@ -212,6 +212,10 @@ int main(int argc,char **argv)
     SegaCDNativeAudio*audio=segacd_native_audio_create(1);
     if(!audio){fprintf(stderr,"Audio initialization failed\n");segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
     segacd_native_audio_attach_io(audio,&machine.coordinator.io);
+    /* These engine-owned sinks only enqueue host audio. Keep media and all
+     * arbitrary/rebound callbacks opaque to executable-memory ownership. */
+    SegaCDIO readonly_audio={0};segacd_native_audio_attach_io(audio,&readonly_audio);
+    (void)segacd_coordinator_readonly_io(&machine.coordinator,&readonly_audio);
     machine.audio_write=segacd_native_audio_write;machine.audio_user=audio;
     audio_set_master_volume(mute?0:100);
     if(wav_path&&audio_wav_start(wav_path)!=0){fprintf(stderr,"Cannot create WAV capture\n");segacd_native_audio_destroy(audio);segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}

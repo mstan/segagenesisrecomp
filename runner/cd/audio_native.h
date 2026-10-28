@@ -59,7 +59,10 @@ SegaCDNativeAudioResult segacd_native_audio_write_checked(SegaCDNativeAudio *,
                                                            uint8_t port,uint8_t value);
 
 /* Sink wrappers for SegaCDIO PCM/CDDA callbacks. Samples keep their exact
- * absolute Sub-clock stamps and are consumed by the clock-domain mixer. */
+ * absolute Sub-clock stamps and are consumed by the clock-domain mixer.
+ * These sinks touch only their separately owned audio queues/stats and make
+ * no guest access or arbitrary callout; exact function/user bindings may be
+ * qualified as readonly observers by an executable-memory owner. */
 void segacd_native_audio_pcm_sample(void *user,uint64_t subclock,
                                     int16_t left,int16_t right);
 void segacd_native_audio_cdda_sample(void *user,uint64_t subclock,

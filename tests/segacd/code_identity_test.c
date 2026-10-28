@@ -69,7 +69,7 @@ static void versions(void)
     cd.prg[0x103]=0x35;
     segacd_coordinator_code_begin(&c,&id);
     CHECK(m68k_step_execute_tracked(cpu,&entry)==M68K_STEP_MISS);
-    segacd_advance_io_owned(&cd,384,&c.io,observer,&c);
+    segacd_advance_io_owned(&cd,384,&c.io,observer,&c,NULL);
     CHECK(m68k_step_execute_tracked(cpu,&entry)==M68K_STEP_OK);
     /* While opaque code owns the C stack, even another CPU must fetch fresh
      * bytes. This covers the ownership-WAIT nesting that cannot defer a fence
@@ -129,6 +129,29 @@ static void aliases(void)
 static unsigned sample_calls;
 static void rebind_sink(void *u,int16_t l,int16_t r)
 {(void)l;(void)r;++sample_calls;((SegaCDIO *)u)->pcm_sink=NULL;}
+static void host_output(void *u,int16_t l,int16_t r)
+{(void)l;(void)r;++*(unsigned *)u;}
+static void output_effects(void)
+{
+    setup();unsigned a=0,b=0;
+    SegaCDIO qualified={0};qualified.pcm_sink=host_output;qualified.pcm_user=&a;
+    c.io.pcm_sink=host_output;c.io.pcm_user=&a;
+    CHECK(segacd_coordinator_readonly_io(&c,&qualified));
+    qualified.pcm_sink=NULL; /* Qualification is a captured binding. */
+    CHECK(m68k_step_execute_tracked(&c.cpu[1],&entry)==M68K_STEP_OK);
+    uint64_t fences=id.fences,checks=id.checks;
+    segacd_advance_io_owned(&cd,384,&c.io,observer,&c,&c.code_readonly_io);
+    CHECK(a==1&&id.fences==fences);
+    CHECK(m68k_step_execute_tracked(&c.cpu[1],&entry)==M68K_STEP_OK&&id.checks==checks);
+    c.io.pcm_user=&b;
+    segacd_advance_io_owned(&cd,384,&c.io,observer,&c,&c.code_readonly_io);
+    CHECK(b==1&&id.fences>fences&&!id.suspended);
+    c.io.pcm_sink=sink;c.io.pcm_user=&a;
+    segacd_advance_io_owned(&cd,384,&c.io,observer,&c,&c.code_readonly_io);
+    CHECK(m68k_step_execute_tracked(&c.cpu[1],&entry)==M68K_STEP_MISS);
+    CHECK(segacd_coordinator_readonly_io(&c,NULL));
+    segacd_coordinator_code_end(&c);
+}
 static void bindings(void)
 {
     setup();static SegaCD reference;reference=cd;
@@ -136,10 +159,10 @@ static void bindings(void)
     sample_calls=0;segacd_advance_io(&reference,384*3,&reference_io);
     unsigned expected=sample_calls;CHECK(expected==3&&!reference_io.pcm_sink);
     c.io.pcm_sink=rebind_sink;c.io.pcm_user=&c.io;sample_calls=0;
-    segacd_advance_io_owned(&cd,384*3,&c.io,observer,&c);
+    segacd_advance_io_owned(&cd,384*3,&c.io,observer,&c,NULL);
     CHECK(sample_calls==expected&&!c.io.pcm_sink&&!id.suspended);
     CHECK(!memcmp(&cd,&reference,sizeof cd));
     segacd_coordinator_code_end(&c);
 }
 int main(void)
-{versions();aliases();bindings();puts("Code identity: CPU/external/opaque/fault/restore/remap/boundary/wrap/IO-rebinding checks passed");return 0;}
+{versions();aliases();bindings();output_effects();puts("Code identity: CPU/external/opaque/fault/restore/remap/boundary/wrap/IO-rebinding/effect checks passed");return 0;}

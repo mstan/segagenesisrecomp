@@ -92,7 +92,10 @@ void segacd_advance_io(SegaCD *,uint32_t sub_cycles,const SegaCDIO *);
 /* Optional derived-memory observer around each actual host callback. Preserve
  * IO rebinding and each device's original per-call callback snapshot. */
 typedef void (*SegaCDObserver)(void *,int entering);
-void segacd_advance_io_owned(SegaCD *,uint32_t,const SegaCDIO *,SegaCDObserver,void *);
+/* readonly is an independent snapshot of qualified function/user bindings
+ * that touch host-owned output only, with no guest access or opaque callouts.
+ * An absent/rebound function OR user retains ordinary observation. */
+void segacd_advance_io_owned(SegaCD *,uint32_t,const SegaCDIO *,SegaCDObserver,void *,const SegaCDIO *readonly);
 unsigned segacd_irq_level(const SegaCD *cd);
 void segacd_irq_ack(SegaCD *cd, unsigned level);
 int segacd_sub_runnable(const SegaCD *cd);
