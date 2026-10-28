@@ -1,5 +1,6 @@
 #include "machine.h"
 #include "sonic_cd_widescreen.h"
+#include "../../runner/video/genesis_dac.h"
 #include "fixtures/z80_native/proof_control_step.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -175,12 +176,96 @@ static void test_widescreen_original_frame_and_safe_teardown(void)
     segacd_machine_close(&machine);
 }
 
+static uint32_t eager_pixels[GVDP_MAX_HEIGHT][GVDP_MAX_WIDTH];
+static GVDP eager_vdp;
+static uint32_t raster_rng=0x719abc23u;
+static uint32_t raster_random(void)
+{raster_rng^=raster_rng<<13;raster_rng^=raster_rng>>17;raster_rng^=raster_rng<<5;return raster_rng;}
+
+static void advance_raster_line(void)
+{
+    machine.coordinator.host_advance(&machine,segacd_machine_line_clock(machine.line));
+}
+
+static void test_deferred_raster_contract(void)
+{
+    setup(1);gvdp_set_ws_extra(0);gvdp_set_ws_canvas(0);gvdp_set_bgdiag(0);
+    gvdp_set_host_sprites(NULL,NULL);gvdp_set_ext_tiles(NULL);
+    for(unsigned i=0;i<sizeof machine.vdp.vram;++i)machine.vdp.vram[i]=(uint8_t)raster_random();
+    for(unsigned i=0;i<GVDP_VSRAM_ENTRIES;++i)machine.vdp.vsram[i]=(uint16_t)raster_random();
+    machine.vdp.reg[1]=0x40;machine.vdp.reg[2]=0x30;machine.vdp.reg[3]=0x28;
+    machine.vdp.reg[4]=7;machine.vdp.reg[5]=0x40;machine.vdp.reg[13]=0x3e;
+    machine.vdp.reg[16]=0x11;machine.vdp.reg[11]=7;
+    memset(machine.pixels,0x71,sizeof machine.pixels);memcpy(eager_pixels,machine.pixels,sizeof eager_pixels);
+    eager_vdp=machine.vdp;
+    CHECK(segacd_machine_defer_video(&machine,1));
+    SegaCDMachineVideoStats stats;
+    CHECK(segacd_machine_video_stats(&machine,&stats)&&stats.deferred&&stats.retained_bytes>0);
+    /* Drive the installed host raster callback directly, retaining independent
+     * eager row production. This isolates raster ownership from CPU scheduling,
+     * which the full-frame tests above already exercise. */
+    for(unsigned tick=0;tick<262u*4u;++tick) {
+        unsigned line=(unsigned)(machine.line%262u),row=(line+261u)%262u;
+        unsigned frame=(unsigned)(machine.line/262u);
+        int canvas=frame==0?448:frame==1?0:frame==2?511:0;
+        gvdp_set_ws_canvas(canvas);gvdp_set_ws_bar_black(frame&1u);gvdp_set_bgdiag(frame==2);
+        machine.vdp.reg[1]=(uint8_t)(row%11u?0x40:0);
+        machine.vdp.reg[12]=(uint8_t)((frame&1u?0:1)|(row%3u?8:0));
+        machine.vdp.reg[7]=(uint8_t)(row&63u);
+        memcpy(eager_vdp.reg,machine.vdp.reg,sizeof eager_vdp.reg);
+        for(unsigned i=0;i<GVDP_CRAM_ENTRIES;++i)
+            machine.vdp.cram[i]=eager_vdp.cram[i]=(uint16_t)raster_random();
+        /* Direct storage writes and complete live state replacement must not
+         * invalidate already captured inputs or use a stale derived cache. */
+        unsigned a=raster_random()&65535u;
+        machine.vdp.vram[a]=eager_vdp.vram[a]=(uint8_t)raster_random();
+        if(machine.line&&row<GVDP_MAX_HEIGHT) {
+            uint8_t indices[GVDP_MAX_WIDTH];
+            int width=gvdp_render_scanline(&eager_vdp,(int)row,indices);
+            for(int x=0;x<width;++x) {
+                unsigned i=indices[x];eager_pixels[row][x]=i<192?
+                    genesis_dac_cram_to_argb(eager_vdp.cram[i%64],(int)(i/64)):0xff000000u;
+            }
+        }
+        (void)gvdp_begin_scanline(&eager_vdp,(int)line);
+        advance_raster_line();
+        CHECK(!memcmp(&machine.vdp,&eager_vdp,sizeof eager_vdp));
+        /* Mid-frame reads are sparse enough that old packets are overwritten
+         * and narrowed, while still checking partially updated prior frames. */
+        if(tick==137||tick==262u*3u+91u||tick==262u*4u-1u) {
+            GVDP before=machine.vdp;uint64_t steps=machine.coordinator.native_steps[0];
+            CHECK(segacd_machine_pixels(&machine)==&machine.pixels[0][0]);
+            CHECK(!memcmp(eager_pixels,machine.pixels,sizeof eager_pixels));
+            CHECK(!memcmp(&before,&machine.vdp,sizeof before));
+            CHECK(steps==machine.coordinator.native_steps[0]);
+        }
+    }
+    CHECK(segacd_machine_video_stats(&machine,&stats));
+    CHECK(stats.captured_rows==GVDP_MAX_HEIGHT*4u&&stats.eager_rows==0);
+    CHECK(stats.composed_rows>0&&stats.composed_rows<stats.captured_rows);
+    printf("deferred raster: %llu captured, %llu composed, %zu retained bytes; exact eager pixels/state\n",
+        (unsigned long long)stats.captured_rows,(unsigned long long)stats.composed_rows,stats.retained_bytes);
+    uint64_t before=stats.captured_rows;
+    CHECK(segacd_machine_video_observer(&machine,NULL,NULL));
+    CHECK(segacd_machine_video_stats(&machine,&stats)&&!stats.deferred);
+    CHECK(!memcmp(eager_pixels,machine.pixels,sizeof eager_pixels));
+    for(unsigned i=0;i<262u;++i)advance_raster_line();
+    CHECK(segacd_machine_video_stats(&machine,&stats)&&stats.captured_rows==before);
+    CHECK(stats.eager_rows==GVDP_MAX_HEIGHT);
+    machine.coordinator.busy[0]=1;CHECK(!segacd_machine_defer_video(&machine,1));machine.coordinator.busy[0]=0;
+    segacd_machine_close(&machine);
+    CHECK(!segacd_machine_pixels(&machine));
+    CHECK(!segacd_machine_video_stats(&machine,&stats));
+    gvdp_set_ws_canvas(0);gvdp_set_bgdiag(0);gvdp_set_ws_bar_black(0);
+}
+
 int main(void)
 {
     test_full_frame_video_irq_and_controls();
     test_machine_reentry_from_audio_observer();
     test_native_miss_is_terminal_without_floor();
     test_widescreen_original_frame_and_safe_teardown();
+    test_deferred_raster_contract();
     puts("native machine: frame/raster IRQ, controller bus, Z80 clock ceiling, reentry and strict missing-code stop pass");
     return 0;
 }

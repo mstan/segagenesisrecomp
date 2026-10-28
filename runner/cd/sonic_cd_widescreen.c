@@ -198,9 +198,13 @@ int segacd_widescreen_prepare(SegaCDWidescreen *w, unsigned width)
         w->frame_ready=0;
     }
     if (width==320) {
+        if(!segacd_machine_defer_video(w->machine,0))return 0;
         if(!detach(w))return 0;
         w->state=SEGACD_WIDESCREEN_NATIVE;return 1;
     }
+    /* Mechanical adoption of the common image-owner contract. Failure to
+     * allocate the optional cache retains the exact eager original image. */
+    (void)segacd_machine_defer_video(w->machine,1);
     if (w->installed && w->configured_width==width &&
         memcmp(w->configured_code,w->machine->devices.word,sizeof w->configured_code)==0)
         return 1;
@@ -255,15 +259,17 @@ const uint32_t *segacd_widescreen_frame(SegaCDWidescreen *w, unsigned *width,
     *height=m->height;
     if(w->width<=320) {
         *width=m->width;*pitch=GVDP_MAX_WIDTH*sizeof(uint32_t);
-        return &m->pixels[0][0];
+        return segacd_machine_pixels(m);
     }
     *width=w->width;*pitch=w->width*sizeof(uint32_t);
     if(w->frame_ready && w->completed_frame==m->frames && *height==224)return w->pixels;
+    const uint32_t *original=segacd_machine_pixels(m);
+    if(!original)return NULL;
     for(unsigned y=0;y<*height && y<GVDP_MAX_HEIGHT;++y) {
         uint32_t *row=w->pixels+(size_t)y*w->width;
         for(unsigned x=0;x<w->width;++x)row[x]=0xff000000u;
         unsigned n=m->width<w->width?m->width:w->width;
-        memcpy(row+(w->width-n)/2,m->pixels[y],n*sizeof(uint32_t));
+        memcpy(row+(w->width-n)/2,original+(size_t)y*GVDP_MAX_WIDTH,n*sizeof(uint32_t));
     }
     return w->pixels;
 }

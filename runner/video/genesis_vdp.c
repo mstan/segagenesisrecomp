@@ -846,7 +846,6 @@ fetch_plane_pixel(const GVDP *v, PlanePixelCache *cache,
 }
 #undef GVDP_HOT_INLINE
 
-#if GENESIS_BATCHED_PLANES
 /* Native tile-row service: resolve the name table and fetch four pattern bytes
  * once per tile span, then publish packed index/opacity/priority metadata.
  * This cache is local to one stable-VRAM scanline, so no invalidation protocol
@@ -888,7 +887,88 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
         out += n; count -= n; px += n;
     }
 }
-#endif
+
+int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
+{
+    /* These providers can publish private art/palettes or invoke arbitrary
+     * host drawing. The original path owns them until they supply an explicit
+     * immutable capture contract. No callback/status work has run on rejection. */
+    if (!v || !row || line < 0 || line >= GVDP_MAX_HEIGHT * 2 ||
+        s_host_sprites || s_ext_tiles || s_sprite_patterns[0] || s_sprite_patterns[1])
+        return 0;
+    int w=gvdp_screen_width(v),extra=clamp_ws_extra(w);
+    unsigned block=(unsigned)(w+2*extra);
+    row->width=(unsigned)(s_ws_canvas_w>(int)block?s_ws_canvas_w:(int)block);
+    row->start=(row->width-block)/2u;row->count=block;
+    unsigned offset=row->start+(unsigned)extra;
+    row->backdrop=(uint8_t)(REG_BACKDROP(v)&63u);
+    row->bar=s_ws_bar_black?(uint8_t)GVDP_WS_BAR_INDEX:row->backdrop;
+    row->display=(uint8_t)(gvdp_display_enabled(v)!=0);
+    row->shadow_mode=(uint8_t)(MODE4_SHI(v)!=0);
+    row->diagnostic=(uint8_t)(s_ws_bgdiag!=0);
+    row->diag_offset=row->diag_mask=0;
+    if (!row->display) return (int)row->width;
+
+    int im2=MODE4_IM2(v),rline=im2?line>>1:line;
+    int wt=plane_tiles(REG_PLANE_SIZE(v)&3),ht=plane_tiles((REG_PLANE_SIZE(v)>>4)&3);
+    uint16_t base_a=(uint16_t)((REG_PLANEA_NT(v)&0x38)<<10);
+    uint16_t base_b=(uint16_t)((REG_PLANEB_NT(v)&7)<<13);
+    int win_wt=MODE4_H40(v)?64:32;
+    uint16_t base_w=(uint16_t)((REG_WINDOW_NT(v)&(MODE4_H40(v)?0x3e:0x3f))<<10);
+    uint16_t hbase=(uint16_t)((REG_HSCROLL_NT(v)&63)<<10);
+    int hmode=REG_MODE3(v)&3,hidx=hmode==0?0:hmode==2?rline&~7:rline;
+    int hs_a=vram_read_word(v,(uint16_t)(hbase+hidx*4))&1023;
+    int hs_b=vram_read_word(v,(uint16_t)(hbase+(s_ws_bgdiag?0:hidx)*4+2))&1023;
+    int two_cell=(REG_MODE3(v)&4)!=0,vs_mask=im2?2047:1023;
+    int full_a=v->vsram[0]&vs_mask,full_b=v->vsram[1]&vs_mask;
+    unsigned wx=REG_WINDOW_X(v),wy=REG_WINDOW_Y(v);
+    int window_x=(wx&31)*16,window_y=(wy&31)*8;
+    int right=(wx&128)!=0,vertical=(wy&128)?rline>=window_y:rline<window_y;
+    row->diag_mask=(unsigned)(wt*8-1);row->diag_offset=offset+(unsigned)hs_b;
+
+    sprite_render_line(v,line,(int)row->width,(int)offset);
+    memcpy(row->sprite,s_spr_idx,row->width);memcpy(row->opaque,s_spr_op,row->width);
+    memcpy(row->high,s_spr_hi,row->width);memcpy(row->shadow_op,s_spr_shadow_op,row->width);
+    memcpy(row->hilite_op,s_spr_hilite_op,row->width);
+    unsigned end=row->start+block;
+    for (int x=-extra,xo=(int)row->start;xo<(int)end;) {
+        int boundary=x<0?0:x>=w?w+extra:((x>>4)+1)*16;
+        if(boundary>w+extra)boundary=w+extra;
+        if(window_x>x && window_x<boundary)boundary=window_x;
+        int n=boundary-x,va=full_a,vb=full_b;
+        if(two_cell) {
+            int xc=x<0?0:x>=w?w-1:x,col=(xc>>4)*2;
+            va=v->vsram[col%GVDP_VSRAM_ENTRIES]&vs_mask;
+            vb=v->vsram[(col+1)%GVDP_VSRAM_ENTRIES]&vs_mask;
+        }
+        int horizontal=right?x>=window_x:x<window_x;
+        if(x>=0 && x<w && (horizontal||vertical))
+            fetch_plane_span(v,row->plane_a+xo,n,base_w,win_wt,ht,x,line,im2);
+        else fetch_plane_span(v,row->plane_a+xo,n,base_a,wt,ht,x-hs_a,line+va,im2);
+        fetch_plane_span(v,row->plane_b+xo,n,base_b,wt,ht,x-hs_b,line+vb,im2);
+        x+=n;xo+=n;
+    }
+    return (int)row->width;
+}
+
+int gvdp_compose_captured(const GVDPRasterRow *row,uint8_t *out)
+{
+    if(!row || !out || !row->width || row->width>GVDP_MAX_WIDTH ||
+       row->start>row->width || row->count>row->width-row->start)return 0;
+    memset(out,row->bar,row->width);
+    if(!row->display)memset(out+row->start,row->backdrop,row->count);
+    else {
+        unsigned start=row->start;
+        gvdp_compose_span(out+start,row->plane_a+start,row->plane_b+start,
+            row->sprite+start,row->opaque+start,row->high+start,
+            row->shadow_op+start,row->hilite_op+start,(int)row->count,
+            row->backdrop,row->shadow_mode);
+        if(row->diagnostic)for(unsigned x=start;x<start+row->count;++x)
+            if(out[x]<GVDP_HOST_PALETTE_BASE && !((x-row->diag_offset)&row->diag_mask))
+                out[x]=(uint8_t)((out[x]&63u)+GVDP_PALETTE_SHADOW);
+    }
+    return (int)row->width;
+}
 
 /* Render one OUTPUT row. `line` is a raster line normally; in interlace
  * mode 2 it is a double-res row (0..447) — the scheduler calls this twice

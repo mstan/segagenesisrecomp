@@ -118,7 +118,7 @@ static int dump_state(const char *directory)
      * snapshots are explicitly big-endian, independent of the host. */
     ok&=dump_file(directory,"cram9.be16",cram_bytes,sizeof cram_bytes);
     ok&=dump_file(directory,"vsram.be16",vsram_bytes,sizeof vsram_bytes);
-    ok&=dump_file(directory,"frame.argb",machine.pixels,sizeof machine.pixels);
+    ok&=dump_file(directory,"frame.argb",segacd_machine_pixels(&machine),sizeof machine.pixels);
     return ok;
 }
 static void debug_write_log(void *user,const char *space,uint32_t offset,const uint8_t *bytes,size_t size)
@@ -133,7 +133,7 @@ static int debug_capture(void *user,const char *path,const SegaCDMachine *m)
     (void)user;
     unsigned width=m->width,height=m->height,pitch=GVDP_MAX_WIDTH*sizeof(uint32_t);
     const uint32_t *pixels=widescreen ?
-        segacd_widescreen_frame(widescreen,&width,&height,&pitch) : &m->pixels[0][0];
+        segacd_widescreen_frame(widescreen,&width,&height,&pitch) : segacd_machine_pixels(m);
     if(!pixels)return 0;
     FILE*f=fopen(path,"wb");if(!f)return 0;
     int ok=fprintf(f,"P6\n%u %u\n255\n",width,height)>0;
@@ -279,7 +279,7 @@ int main(int argc,char **argv)
         if(!headless) {
             unsigned width=machine.width,height=machine.height,pitch=GVDP_MAX_WIDTH*sizeof(uint32_t);
             const uint32_t *pixels=widescreen ?
-                segacd_widescreen_frame(widescreen,&width,&height,&pitch) : &machine.pixels[0][0];
+                segacd_widescreen_frame(widescreen,&width,&height,&pitch) : segacd_machine_pixels(&machine);
             if(!pixels||!segacd_presentation_present(presentation,pixels,
                 (int)width,(int)height,(int)pitch)) {
                 fprintf(stderr,"Presentation: %s\n",SDL_GetError());exit_code=2;break;
@@ -294,6 +294,11 @@ int main(int argc,char **argv)
     if(!exit_code&&memcmp(persisted,machine.devices.backup,sizeof persisted)&&segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK)exit_code=4;
     if(dump_dir&&!dump_state(dump_dir))exit_code=4;
     SegaCDNativeAudioStats stats;segacd_native_audio_get_stats(audio,&stats);
+    SegaCDMachineVideoStats video_stats;
+    if(segacd_machine_video_stats(&machine,&video_stats))
+        printf("Raster captured=%llu composed=%llu eager=%llu retainedBytes=%zu deferred=%d\n",
+            (unsigned long long)video_stats.captured_rows,(unsigned long long)video_stats.composed_rows,
+            (unsigned long long)video_stats.eager_rows,video_stats.retained_bytes,video_stats.deferred);
     printf("Catalog lookup hits=%llu/%llu descriptorSearches=%llu/%llu bytes=%zu\n",
         (unsigned long long)machine.coordinator.catalog_lookup[0].hits,
         (unsigned long long)machine.coordinator.catalog_lookup[1].hits,

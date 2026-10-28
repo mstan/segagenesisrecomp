@@ -13,12 +13,17 @@ void head_gvdp_set_ws_bar_black(int black);
 void head_gvdp_set_bgdiag(int on);
 
 int cand_gvdp_render_scanline(GVDP *v, int line, uint8_t *out);
+int cand_gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row);
+int cand_gvdp_compose_captured(const GVDPRasterRow *row, uint8_t *out);
 void cand_gvdp_reset(GVDP *v);
 void cand_gvdp_evaluate_scanline(GVDP *v, int line);
 void cand_gvdp_set_ws_extra(int extra_px);
 void cand_gvdp_set_ws_canvas(int canvas_w);
 void cand_gvdp_set_ws_bar_black(int black);
 void cand_gvdp_set_bgdiag(int on);
+void cand_gvdp_set_host_sprites(GVDPHostSprites draw,void *user);
+void cand_gvdp_set_ext_tiles(const uint8_t *tiles);
+int cand_gvdp_set_sprite_patterns_bank(unsigned,const uint8_t *,unsigned,const uint8_t *);
 
 static uint32_t rng_state = 0x13572468u;
 
@@ -142,6 +147,23 @@ static int compare_case(const char *label, const GVDP *src, int line,
                 label, line, a.sprite_overflow, b.sprite_overflow,
                 a.sprite_collision, b.sprite_collision);
         return 1;
+    }
+    /* Deferred composition owns all row inputs. It must survive replacement
+     * of the complete device image and presentation parameters after capture. */
+    GVDP captured=*src;GVDPRasterRow packet;
+    int wc=cand_gvdp_capture_scanline(&captured,line,&packet);
+    if(wc!=wa || memcmp(&captured,&a,sizeof a)) {
+        fprintf(stderr,"%s capture state mismatch line=%d\n",label,line);return 1;
+    }
+    memset(&captured,0xd6,sizeof captured);
+    cand_gvdp_set_ws_extra(0);cand_gvdp_set_ws_canvas(0);
+    cand_gvdp_set_ws_bar_black(!bar_black);cand_gvdp_set_bgdiag(!bgdiag);
+    memset(out_b,0xa5,sizeof out_b);
+    wc=cand_gvdp_compose_captured(&packet,out_b);
+    cand_gvdp_set_ws_extra(ws_extra);cand_gvdp_set_ws_canvas(ws_canvas);
+    cand_gvdp_set_ws_bar_black(bar_black);cand_gvdp_set_bgdiag(bgdiag);
+    if(wc!=wa || memcmp(out_a,out_b,sizeof out_a)) {
+        fprintf(stderr,"%s deferred row mismatch line=%d\n",label,line);return 1;
     }
     /* A discarded replay row must have exactly the full renderer's device
      * effects. Use direct state images, then repeat the view: neither writes
@@ -299,6 +321,44 @@ static int run_reset_restore(void)
     return failures;
 }
 
+static unsigned rejected_callbacks;
+static void rejected_sprite(void *user,const GVDP *v,const GVDPSpriteLayer *layer)
+{(void)user;(void)v;(void)layer;++rejected_callbacks;}
+static int run_capture_rejection(void)
+{
+    GVDP v,before;GVDPRasterRow row,saved;
+    uint8_t art[32]={0},tiles[2048]={0},out[GVDP_MAX_WIDTH],guard[GVDP_MAX_WIDTH];
+    fill_random(&v,1,1,0,0,0,0,0);before=v;
+    memset(&row,0xa6,sizeof row);saved=row;
+    for(unsigned kind=0;kind<7;++kind) {
+        if(kind==0)cand_gvdp_set_host_sprites(rejected_sprite,NULL);
+        if(kind==1)cand_gvdp_set_ext_tiles(tiles);
+        if(kind==2||kind==3)if(!cand_gvdp_set_sprite_patterns_bank(kind-2,art,sizeof art,NULL))return 1;
+        int line=kind==4?-1:kind==5?GVDP_MAX_HEIGHT*2:0;
+        int width=cand_gvdp_capture_scanline(kind==6?NULL:&v,line,&row);
+        cand_gvdp_set_host_sprites(NULL,NULL);cand_gvdp_set_ext_tiles(NULL);
+        if(!cand_gvdp_set_sprite_patterns_bank(0,NULL,0,NULL)||
+           !cand_gvdp_set_sprite_patterns_bank(1,NULL,0,NULL))return 1;
+        if(width||memcmp(&v,&before,sizeof v)||memcmp(&row,&saved,sizeof row)||rejected_callbacks) {
+            fprintf(stderr,"capture rejection mutated inputs kind=%u\n",kind);return 1;
+        }
+    }
+    if(cand_gvdp_capture_scanline(&v,0,NULL))return 1;
+    memset(out,0xb9,sizeof out);memcpy(guard,out,sizeof out);
+    for(unsigned kind=0;kind<4;++kind) {
+        memset(&row,0,sizeof row);row.width=320;row.count=320;
+        if(kind==0)row.width=0;
+        if(kind==1)row.width=GVDP_MAX_WIDTH+1;
+        if(kind==2)row.start=321;
+        if(kind==3)row.count=321;
+        if(cand_gvdp_compose_captured(&row,out)||memcmp(out,guard,sizeof out)) {
+            fprintf(stderr,"invalid capture packet wrote output kind=%u\n",kind);return 1;
+        }
+    }
+    if(cand_gvdp_compose_captured(NULL,out)||cand_gvdp_compose_captured(&row,NULL))return 1;
+    return 0;
+}
+
 int main(void)
 {
     int failures = 0;
@@ -307,6 +367,7 @@ int main(void)
     failures += run_odd_canvas_cases();
     failures += run_import_sequence();
     failures += run_reset_restore();
+    failures += run_capture_rejection();
     if (failures) {
         fprintf(stderr, "vdp_render_diff_test failed: %d mismatches\n", failures);
         return 1;

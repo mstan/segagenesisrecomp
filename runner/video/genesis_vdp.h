@@ -265,6 +265,20 @@ int gvdp_output_height(const GVDP *v);          /* raster height x2 in IM2     *
  * for shadow/highlight offsets). `out` must hold at least gvdp_screen_width()
  * entries. Returns the number of pixels written. */
 int gvdp_render_scanline(GVDP *v, int line, uint8_t *out);
+/* Owned raster input, independent of live VRAM, palettes and global sprite
+ * scratch after capture. Device-visible sprite evaluation occurs at capture;
+ * image composition can be deferred or omitted. This is presentation data,
+ * not serialized hardware state. Unsupported presentation extensions return
+ * zero BEFORE device mutation and retain the ordinary renderer. */
+typedef struct GVDPRasterRow {
+    unsigned width, start, count, diag_offset, diag_mask;
+    uint8_t backdrop, bar, display, shadow_mode, diagnostic;
+    uint8_t plane_a[GVDP_MAX_WIDTH], plane_b[GVDP_MAX_WIDTH];
+    uint8_t sprite[GVDP_MAX_WIDTH], opaque[GVDP_MAX_WIDTH], high[GVDP_MAX_WIDTH];
+    uint8_t shadow_op[GVDP_MAX_WIDTH], hilite_op[GVDP_MAX_WIDTH];
+} GVDPRasterRow;
+int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row);
+int gvdp_compose_captured(const GVDPRasterRow *row, uint8_t *out);
 /* Run the guest-visible sprite evaluation for a discarded output row. Uses
  * exactly the renderer's sprite limits, pattern reads and collision rules;
  * background fetch/composition and host drawing have no device side effects.

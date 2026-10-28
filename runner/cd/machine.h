@@ -44,4 +44,18 @@ uint64_t segacd_machine_line_clock(uint64_t line);
  * operations. NULL detaches it. One active machine is supported by this ABI. */
 typedef void (*SegaCDMachineVideoObserver)(void *,const SegaCDMachine *,unsigned line);
 int segacd_machine_video_observer(SegaCDMachine *,SegaCDMachineVideoObserver,void *user);
+/* Optional original-image production. Default observers see eager pixels.
+ * An explicit deferred observer reads pixels only through the getter, which
+ * resolves retained raster inputs with their original per-row palette and
+ * never advances devices. Observer replacement returns to eager behavior.
+ * Enable/disable between operations; allocation failure keeps the eager path.
+ * The pixels field is a derived cache while deferral is enabled. */
+int segacd_machine_defer_video(SegaCDMachine *,int enabled);
+const uint32_t *segacd_machine_pixels(const SegaCDMachine *);
+typedef struct {
+    uint64_t captured_rows,composed_rows,eager_rows;
+    size_t retained_bytes;
+    int deferred;
+} SegaCDMachineVideoStats;
+int segacd_machine_video_stats(const SegaCDMachine *,SegaCDMachineVideoStats *);
 #endif

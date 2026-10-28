@@ -1,5 +1,6 @@
 #include "machine.h"
 #include "../video/genesis_dac.h"
+#include <stdlib.h>
 #include <string.h>
 
 /* Genesis bus ABI. Work RAM remains CPU-visible real storage, not a host
@@ -12,6 +13,64 @@ static SegaCDMachine *current;
 static SegaCDMachineVideoObserver video_observer;
 static void *video_user;
 static int observing_video;
+/* One active machine, as for the bus ABI. Derived image inputs deliberately
+ * live outside hardware state and are never copied into execution snapshots. */
+typedef struct {
+    GVDPRasterRow raster;
+    uint16_t cram[GVDP_CRAM_ENTRIES];
+    int pending;
+} CapturedRow;
+typedef struct {
+    CapturedRow rows[GVDP_MAX_HEIGHT];
+    SegaCDMachineVideoStats stats;
+} CapturedVideo;
+static CapturedVideo *captured_video;
+static void resolve_row(SegaCDMachine *m,unsigned row)
+{
+    CapturedRow *r=&captured_video->rows[row];
+    if(!r->pending)return;
+    uint8_t indices[GVDP_MAX_WIDTH];
+    int width=gvdp_compose_captured(&r->raster,indices);
+    /* Captures are internal and validated when produced. Keep the old CD
+     * contract for reserved host/bar indices: opaque black. */
+    uint32_t palette[192];
+    unsigned levels=r->raster.shadow_mode||r->raster.diagnostic?3u:1u;
+    for(unsigned i=0;i<levels*64u;++i)
+        palette[i]=genesis_dac_cram_to_argb(r->cram[i%64u],(int)(i/64u));
+    for(int x=0;x<width;++x) {
+        unsigned i=indices[x];m->pixels[row][x]=i<levels*64u?palette[i]:0xff000000u;
+    }
+    r->pending=0;++captured_video->stats.composed_rows;
+}
+const uint32_t *segacd_machine_pixels(const SegaCDMachine *m)
+{
+    if(!m||m!=current)return NULL;
+    if(captured_video)for(unsigned row=0;row<GVDP_MAX_HEIGHT;++row)
+        resolve_row(current,row);
+    return &m->pixels[0][0];
+}
+int segacd_machine_video_stats(const SegaCDMachine *m,SegaCDMachineVideoStats *stats)
+{
+    if(!m||m!=current||!stats)return 0;
+    if(captured_video)*stats=captured_video->stats;
+    else memset(stats,0,sizeof *stats);
+    return 1;
+}
+int segacd_machine_defer_video(SegaCDMachine *m,int enabled)
+{
+    if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||
+       m->coordinator.external_active||m->z80.in_step)return 0;
+    if(enabled&&!captured_video) {
+        captured_video=(CapturedVideo *)calloc(1,sizeof *captured_video);
+        if(!captured_video)return 0;
+        captured_video->stats.retained_bytes=sizeof *captured_video;
+    }
+    if(captured_video) {
+        if(!enabled)(void)segacd_machine_pixels(m);
+        captured_video->stats.deferred=enabled!=0;
+    }
+    return 1;
+}
 static uint64_t master_clock(uint64_t sub)
 {return sub/12500000u*53693175u+(sub%12500000u)*53693175u/12500000u;}
 uint64_t segacd_machine_line_clock(uint64_t line)
@@ -84,11 +143,28 @@ static void host_advance(void *u,uint64_t clock)
             unsigned row=(line+261u)%262u;
             if(row<GVDP_MAX_HEIGHT) {
                 uint8_t indices[GVDP_MAX_WIDTH];
-                int width=gvdp_render_scanline(&m->vdp,(int)row,indices);
+                int width=0,deferred=0;
+                if(captured_video&&captured_video->stats.deferred) {
+                    CapturedRow *r=&captured_video->rows[row];
+                    /* Eager rendering leaves the tail of a narrowed row
+                     * untouched. Resolve that previous tail before reuse. */
+                    if(r->pending&&r->raster.width>(unsigned)gvdp_active_width(&m->vdp))
+                        resolve_row(m,row);
+                    width=gvdp_capture_scanline(&m->vdp,(int)row,&r->raster);
+                    if(width>0) {
+                        memcpy(r->cram,m->vdp.cram,sizeof r->cram);
+                        r->pending=1;deferred=1;
+                        ++captured_video->stats.captured_rows;
+                    }else resolve_row(m,row);
+                }
+                if(!deferred)width=gvdp_render_scanline(&m->vdp,(int)row,indices);
                 if(width>0&&width<=GVDP_MAX_WIDTH) {
                     m->width=(unsigned)width;
-                    for(int x=0;x<width;++x){unsigned i=indices[x];m->pixels[row][x]=i<192?
-                        genesis_dac_cram_to_argb(m->vdp.cram[i%64],(int)(i/64)):0xff000000u;}
+                    if(!deferred) {
+                        for(int x=0;x<width;++x){unsigned i=indices[x];m->pixels[row][x]=i<192?
+                            genesis_dac_cram_to_argb(m->vdp.cram[i%64],(int)(i/64)):0xff000000u;}
+                        if(captured_video)++captured_video->stats.eager_rows;
+                    }
                     if(video_observer&&row<(unsigned)gvdp_screen_height(&m->vdp)) {
                         observing_video=1;video_observer(video_user,m,row);observing_video=0;
                     }
@@ -124,11 +200,13 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
     video_observer=NULL;video_user=NULL;observing_video=0;current=m;return 1;
 }
 void segacd_machine_close(SegaCDMachine *m)
-{if(current==m&&!observing_video){current=NULL;video_observer=NULL;video_user=NULL;}}
+{if(current==m&&!observing_video){free(captured_video);captured_video=NULL;
+    current=NULL;video_observer=NULL;video_user=NULL;}}
 int segacd_machine_video_observer(SegaCDMachine *m,SegaCDMachineVideoObserver observer,void *user)
 {
     if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||
        m->coordinator.external_active||m->z80.in_step)return 0;
+    if(!segacd_machine_defer_video(m,0))return 0;
     video_observer=observer;video_user=user;return 1;
 }
 void segacd_machine_pad(SegaCDMachine *m,unsigned port,uint16_t buttons)

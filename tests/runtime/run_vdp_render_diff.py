@@ -36,6 +36,7 @@ SYMBOLS = [
     "gvdp_active_width",
     "gvdp_set_bgdiag",
     "gvdp_render_scanline",
+    "gvdp_capture_scanline", "gvdp_compose_captured",
     "gvdp_evaluate_scanline",
     "gvdp_begin_scanline",
     "gvdp_unlimited_sprites", "gvdp_set_host_palette", "gvdp_host_palette",
