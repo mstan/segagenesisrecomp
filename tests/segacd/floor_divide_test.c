@@ -16,6 +16,7 @@ static uint8_t bus_op[16];
 static uint32_t bus_addr[16];
 static void bus_event(uint8_t op,uint32_t a){if(a>=0xFF0600u && a<0xFF0700u && bus_events<16){bus_op[bus_events]=op;bus_addr[bus_events]=a;++bus_events;}}
 void glue_check_vblank(void){CHECK(0);}
+void glue_sr_written(void){}
 int game_instruction_hook_site(uint32_t pc){(void)pc;return 0;}
 int genesis_game_instruction_hook(uint32_t pc){(void)pc;return 0;}
 uint8_t m68k_read8(uint32_t a){a&=0xFFFFFFu;bus_event(1,a);if(a<sizeof g_rom)return g_rom[a];CHECK(a>=0xFF0000u);return g_ram[a&65535];}

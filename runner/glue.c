@@ -507,6 +507,8 @@ static void game_stack_note(const char *reason, const void *stack_marker)
 }
 
 static void check_cycle_budget(void);   /* fwd: defined below, drains the chunk budget */
+static int  s_own_vint_latched;         /* fwd: V-int latched while IRQs were masked */
+static int  latched_vint_unmasked(void); /* fwd: that V-int may now be taken */
 
 /* GENESIS_FORCE_INTERP (env): make the game fiber interpret the WHOLE program
  * via m68k_interp. In a co-sim build this is pairing #1 B-side; in a normal
@@ -773,7 +775,28 @@ static void check_cycle_budget(void)
             g_chunk_yield_count++;
             { char stack_marker; game_stack_note("cycle-budget", &stack_marker); }
             yield_to_main(GLUE_YIELD_BUDGET);
+        } else if (latched_vint_unmasked()) {
+            /* Backstop for mask-lowering paths that do not report through
+             * glue_sr_written (an RTE used as a jump, say): deliver at the
+             * next bus access instead of the next chunk boundary. */
+            s_watchdog_counter = 0;
+            yield_to_main(GLUE_YIELD_IRQPOLL);
         }
+    }
+}
+
+/* Called by generated code and the interpreter right after an instruction
+ * writes SR (MOVE to SR, ANDI/EORI to SR). On hardware a V-int that became
+ * pending while the 68K had IRQs masked is taken before the next instruction
+ * once the mask drops; the scheduler delivers a latched V-int between chunks,
+ * so end this chunk now. Without this, a loop that is masked for nearly all of
+ * its time can keep its chunk boundaries inside the masked span and never take
+ * the V-int at all. */
+void glue_sr_written(void)
+{
+    if (s_interleave_active && !s_in_vblank_service && latched_vint_unmasked()) {
+        s_watchdog_counter = 0;
+        yield_to_main(GLUE_YIELD_IRQPOLL);
     }
 }
 
@@ -799,9 +822,15 @@ void glue_charge_68k_stall(uint32_t cycles)
  * it the instant the mask drops; the own backend used to DROP it outright,
  * losing one v_vblank_count per masked transition. That one-frame skew sent the
  * attract demo down a different branch (GM_Demo vs the oracle's GM_Level) and
- * desynced VRAM. We now LATCH it and deliver at the next scanline whose mask
- * permits — see glue_own_vint_service_latched(). */
+ * desynced VRAM. We now LATCH it and deliver it as soon as the mask permits:
+ * glue_sr_written() ends the chunk at the instruction that lowers the mask, and
+ * glue_own_vint_service_latched() delivers it between chunks. */
 static int s_own_vint_latched = 0;
+
+static int latched_vint_unmasked(void)
+{
+    return s_own_vint_latched && !s_irq_in_progress && ((g_cpu.SR >> 8) & 7) < 6;
+}
 
 /* --- STAGE 1: interleaved interrupt delivery (behind GENESIS_INTERLEAVE_IRQ) --
  * The atomic model runs a V-int/H-int handler to completion on the MAIN fiber
