@@ -28,6 +28,7 @@ static void video_observer(void *user,const SegaCDMachine *m,unsigned row)
     ++video_rows;
     CHECK(segacd_machine_step(&machine)==M68K_STEP_REENTERED);
     CHECK(!segacd_machine_video_observer(&machine,NULL,NULL));
+    CHECK(!segacd_machine_defer_video(&machine,1));
 }
 
 static void put32(uint8_t*p,uint32_t v)
@@ -107,6 +108,14 @@ static void test_full_frame_video_irq_and_controls(void)
     CHECK(machine.coordinator.cpu[SEGACD_MAIN].state.regs.A[7]==0xFFFF17FAu);
     CHECK(audio_events==1);
     CHECK(video_rows==224u);
+    CHECK(segacd_machine_defer_video(&machine,1));
+    CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_OK);
+    CHECK(video_rows==448u);
+    SegaCDMachineVideoStats video_stats;
+    CHECK(segacd_machine_video_stats(&machine,&video_stats));
+    CHECK(video_stats.captured_rows==240u&&video_stats.composed_rows==0);
+    CHECK(segacd_machine_pixels(&machine));
+    CHECK(segacd_machine_video_stats(&machine,&video_stats)&&video_stats.composed_rows==240u);
     CHECK(segacd_machine_video_observer(&machine,NULL,NULL));
     segacd_machine_close(&machine);
 }
@@ -189,6 +198,7 @@ static void advance_raster_line(void)
 
 static void test_deferred_raster_contract(void)
 {
+    uint8_t ext_tiles[2048]={0};
     setup(1);gvdp_set_ws_extra(0);gvdp_set_ws_canvas(0);gvdp_set_bgdiag(0);
     gvdp_set_host_sprites(NULL,NULL);gvdp_set_ext_tiles(NULL);
     for(unsigned i=0;i<sizeof machine.vdp.vram;++i)machine.vdp.vram[i]=(uint8_t)raster_random();
@@ -208,6 +218,9 @@ static void test_deferred_raster_contract(void)
         unsigned line=(unsigned)(machine.line%262u),row=(line+261u)%262u;
         unsigned frame=(unsigned)(machine.line/262u);
         int canvas=frame==0?448:frame==1?0:frame==2?511:0;
+        /* An unsupported optional provider retains the eager path, including
+         * an old wider row's tail and palette captured on the prior frame. */
+        gvdp_set_ext_tiles(frame==3&&row>=50&&row<=75?ext_tiles:NULL);
         gvdp_set_ws_canvas(canvas);gvdp_set_ws_bar_black(frame&1u);gvdp_set_bgdiag(frame==2);
         machine.vdp.reg[1]=(uint8_t)(row%11u?0x40:0);
         machine.vdp.reg[12]=(uint8_t)((frame&1u?0:1)|(row%3u?8:0));
@@ -241,7 +254,7 @@ static void test_deferred_raster_contract(void)
         }
     }
     CHECK(segacd_machine_video_stats(&machine,&stats));
-    CHECK(stats.captured_rows==GVDP_MAX_HEIGHT*4u&&stats.eager_rows==0);
+    CHECK(stats.captured_rows==GVDP_MAX_HEIGHT*4u-26u&&stats.eager_rows==26u);
     CHECK(stats.composed_rows>0&&stats.composed_rows<stats.captured_rows);
     printf("deferred raster: %llu captured, %llu composed, %zu retained bytes; exact eager pixels/state\n",
         (unsigned long long)stats.captured_rows,(unsigned long long)stats.composed_rows,stats.retained_bytes);
@@ -251,7 +264,7 @@ static void test_deferred_raster_contract(void)
     CHECK(!memcmp(eager_pixels,machine.pixels,sizeof eager_pixels));
     for(unsigned i=0;i<262u;++i)advance_raster_line();
     CHECK(segacd_machine_video_stats(&machine,&stats)&&stats.captured_rows==before);
-    CHECK(stats.eager_rows==GVDP_MAX_HEIGHT);
+    CHECK(stats.eager_rows==GVDP_MAX_HEIGHT+26u);
     machine.coordinator.busy[0]=1;CHECK(!segacd_machine_defer_video(&machine,1));machine.coordinator.busy[0]=0;
     segacd_machine_close(&machine);
     CHECK(!segacd_machine_pixels(&machine));

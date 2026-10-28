@@ -40,7 +40,7 @@ M68kStepResult segacd_machine_run_frame(SegaCDMachine *);
 uint64_t segacd_machine_line_clock(uint64_t line);
 /* Optional game presentation reads each completed active native scanline,
  * including live raster palette/scroll changes. The observer owns its output;
- * it must not mutate the machine or advance a CPU. Install between completed
+ * it must not mutate hardware or advance a CPU. Install between completed
  * operations. NULL detaches it. One active machine is supported by this ABI. */
 typedef void (*SegaCDMachineVideoObserver)(void *,const SegaCDMachine *,unsigned line);
 int segacd_machine_video_observer(SegaCDMachine *,SegaCDMachineVideoObserver,void *user);
