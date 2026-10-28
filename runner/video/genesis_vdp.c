@@ -12,6 +12,7 @@
  * chapter, Charles MacDonald's "genvdp.txt" hardware notes, and VDP test ROMs.
  */
 #include "genesis_vdp.h"
+#include "genesis_tile_row.h"
 #include <string.h>
 #ifndef GENESIS_BATCHED_PLANES
 #define GENESIS_BATCHED_PLANES 0
@@ -861,11 +862,13 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
         uint32_t bits = ((uint32_t)v->vram[pa] << 24) |
                         ((uint32_t)v->vram[pa + 1] << 16) |
                         ((uint32_t)v->vram[pa + 2] << 8) | v->vram[pa + 3];
-        unsigned flip = (e & 0x800) ? 7 : 0;
         uint8_t attr = (uint8_t)(((e >> 9) & 0x30) | ((e >> 8) & 0x80));
-        for (int i = 0; i < n; ++i) {
-            unsigned nib = (bits >> (28 - ((fx + i) ^ flip) * 4)) & 15;
-            out[i] = (uint8_t)(attr | nib | (nib ? 0x40 : 0));
+        uint64_t pixels = gtile_packed_row(bits, attr, e & 0x800);
+        if (n == 8) {
+            memcpy(out, &pixels, sizeof pixels);
+        } else {
+            const uint8_t *decoded = (const uint8_t *)&pixels;
+            for (int i = 0; i < n; ++i) out[i] = decoded[fx + i];
         }
         out += n; count -= n; px += n;
     }
