@@ -211,7 +211,8 @@ def _cmake_quote(value: str) -> str:
     return value.replace("\\", "/").replace('"', '\\"').replace("$", "\\$")
 
 
-def write_initial_cache(cache_path: Path, catalogs: list[tuple[str, Path, str]], sdl2_dir: Path) -> None:
+def write_initial_cache(cache_path: Path, catalogs: list[tuple[str, Path, str]], sdl2_dir: Path,
+                        compact_dir: Path | None = None) -> None:
     by_prefix = {prefix: directory for _, directory, prefix in catalogs}
     values = {
         "SEGACD_BUILD_NATIVE_RUNNER": ("BOOL", "ON"),
@@ -223,6 +224,7 @@ def write_initial_cache(cache_path: Path, catalogs: list[tuple[str, Path, str]],
         "SEGACD_BIOS_PROBE_SUB_PATCH_MODULE_DIR": ("PATH", str(by_prefix["segacd_sub_patch"])),
         "SEGACD_BIOS_PROBE_Z80_MODULE_DIR": ("PATH", str(by_prefix["sonic_cd_z80_step"])),
         "SDL2_DIR": ("PATH", str(sdl2_dir)),
+        "SEGACD_COMPACT_CATALOG_DIR": ("PATH", str(compact_dir) if compact_dir else ""),
     }
     for role in ("MAIN", "SUB"):
         pairs = [f"{directory}|{prefix}" for entry_role, directory, prefix in catalogs
@@ -280,7 +282,24 @@ def run(args: argparse.Namespace) -> dict:
                         "XDG_STATE_HOME": str(host_state / "state"),
                         "XDG_CONFIG_HOME": str(host_state / "config")})
     cache_path = build_dir / "segacd-native-initial-cache.cmake"
-    write_initial_cache(cache_path, bundle["catalogs"], sdl2_dir)
+    compact_dir = None
+    if getattr(args, "canonicalize_catalogs", False):
+        # Reproduce standalone_program.c's priority exactly. This is mechanical
+        # registry adoption; the compactor itself knows no game or ROM identity.
+        first = {"MAIN": ["segacd_bios", "segacd_main_ram", "segacd_boot_main"],
+                 "SUB": ["segacd_sub", "segacd_sub_patch", "segacd_boot_sub"]}
+        by_prefix = {prefix: (role, directory, prefix) for role, directory, prefix in bundle["catalogs"]}
+        ordered = []
+        for role, prefixes in first.items():
+            ordered.extend(by_prefix[prefix] for prefix in prefixes)
+            ordered.extend(row for row in bundle["catalogs"] if row[0] == role and row[2] not in prefixes)
+        compact_dir = build_dir / "compact-native-catalogs"
+        ordered_list = build_dir / "compact-native-inputs.txt"
+        ordered_list.write_text("".join(f"{role}|{directory}|{prefix}\n" for role, directory, prefix in ordered), encoding="utf-8")
+        subprocess.run([sys.executable, str(source_root / "tools" / "native_catalog_compact.py"),
+                        "--catalog-list", str(ordered_list), "--output", str(compact_dir)],
+                       check=True, env=process_env)
+    write_initial_cache(cache_path, bundle["catalogs"], sdl2_dir, compact_dir)
     source_git = git_identity(source_root)
     core_git = {}
     for core in ("m68k-recomp-core", "z80-recomp-core"):
@@ -299,6 +318,7 @@ def run(args: argparse.Namespace) -> dict:
         "build_dir": str(build_dir), "initial_cache": str(cache_path),
         "configuration_requested": bool(args.configure or args.build),
         "build_requested": bool(args.build),
+        "compact_catalog_manifest": str(compact_dir / "native_catalog_manifest.json") if compact_dir else None,
         "limitation": "Consumes an existing generated catalog bundle; BIOS/disc-driven catalog discovery and generation are separate.",
     }
     provenance_path = build_dir / "source-build-provenance.json"
@@ -332,6 +352,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--build", action="store_true", help="configure and build SonicCD from source")
     parser.add_argument("--configuration", default="Release")
     parser.add_argument("--parallel", type=int, default=4)
+    parser.add_argument("--canonicalize-catalogs", action="store_true",
+                        help="compact equivalent generated operation/guard metadata in original registry priority")
     args = parser.parse_args(argv)
     if args.parallel < 1:
         parser.error("--parallel must be positive")

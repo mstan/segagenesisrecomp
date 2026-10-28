@@ -10,7 +10,7 @@ Only reusable engine, code-generation, hardware-device, media, state, host and c
 
 Title-owned logic is saved separately in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md) and is excluded. Do not add game-PC checks, asset/layout knowledge, sound-driver semantics or game-specific outcomes to engine code. Consumer changes are limited to supported regeneration, pins/build wiring and mechanical adoption of a generic interface; new title behavior or adapter logic stays deferred.
 
-This list contains **36 pending engine candidates**, split from the earlier42-family inventory. Several are parts or alternatives of the same coherent implementation. Priorities rank investigation, not proven savings. No further speedup has been established for these candidates.
+This list contains **36 engine candidate families**, split from the earlier42-family inventory. Several are parts or alternatives of the same coherent implementation. Priorities rank investigation, not proven savings. Dispositions below distinguish implemented work, shared existing work, rejected experiments and concrete deferrals; counts are not performance claims.
 
 ## Execution and acceptance
 
@@ -28,17 +28,17 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
 
 ### Execution and memory
 
-- [ ] **E01: Native CD execution regions** — P1; original N01.
+- [x] **E01: Native CD execution regions** — P1; original N01.
   - Goal: Run reusable Main/Sub/Z80 native regions until the next observable interaction or device deadline.
   - Boundary: Keep CPU ordering, interrupts, DMA, Word RAM ownership, raster and audio deadlines exact; no title PC/routine recognition.
   - Evidence: `runner/cd/segacd_coordinator.c`, `runner/cd/machine.c`.
-  - Disposition/evidence: Core3b7b76f and engine2e58a00/14a58ad move native fault ownership above the entire frame across Main/Sub/device coordination. Every guard, instruction retirement, CPU ordering, IRQ and WAIT remains. Nested CPU faults retain local traps; cleanup-bearing STOP-peer/Z80/floor/external drivers hold the outer scope. Full-machine manual-step/frame parity includes complete CPU/device/clock/partial RAM across five error classes; MSVC/GCC core and machine checks pass, including older-core fallback. Actual new-package game/performance qualification remains.
+  - Disposition/evidence: Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.
 
-- [x] **E02: Code identity and invalidation** — P1; original N02.
+- [ ] **E02: Code identity and invalidation** — P1; original N02.
   - Goal: Use guarded code regions with complete write/remapping invalidation instead of per-instruction byte comparisons where qualified.
   - Boundary: Cover mutable overlays and self-modification through generic memory ownership/versioning.
   - Evidence: `runner/cd/catalog_lookup.h`, `external/m68k-recomp-core/runtime/m68k_step.c`.
-  - Disposition/evidence: Fresh owned instruction spans retain every live opcode/extension comparison. Full code-version guard elision is deferred: device arrays are public, title HLE writes PRG/Word RAM directly, and imports bypass bus epochs. A bus-only dirty counter would be unsound. The selected cache retains descriptor discovery without trusting code bytes; no title-specific writer policy introduced.
+  - Disposition/evidence: Fresh owned instruction spans retain every live opcode/extension comparison. Full code-version guard elision is deferred: device arrays are public, title HLE writes PRG/Word RAM directly, and imports bypass bus epochs. A bus-only dirty counter would be unsound. The selected cache retains descriptor discovery without trusting code bytes; no title-specific writer policy introduced. New source audit qualifies31.476percent Main and14.929percent Sub duplicate descriptors by guard/cycle/body equivalence. Generic exact-body compaction into the unchanged step-module ABI is being qualified; it retains live guards and per-PC priority. No built size/startup/runtime gain claimed yet.
 
 - [ ] **E03: Owned memory access** — P1; original N03.
   - Goal: Resolve generic RAM/ROM/Word RAM mappings once for safe regions; reduce repeated bus decoding and byte-order bookkeeping.
@@ -50,7 +50,7 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
   - Goal: Improve the common 68000 emitter with local registers, proven flag liveness, combined effective addresses and grouped cycle accounting.
   - Boundary: Materialize exact architectural state at every observable exit; no game-specific algorithms.
   - Evidence: `external/m68k-recomp-core/profiles/genesis/code_generator.c`.
-  - Disposition/evidence: Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. Current selected E01 removes repeated fault setup without making that unsound assumption.
+  - Disposition/evidence: Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. The E01 fault-setup-only experiment was evaluated and rejected; a future region package must remove meaningful dispatch/state work rather than only relocating traps.
 
 - [x] **E05: Native call/control-flow consolidation** — P2; original N05.
   - Goal: Use proven direct call edges, inlining and larger native control-flow regions to reduce generic call/return/dispatch machinery.
@@ -64,11 +64,11 @@ This list contains **36 pending engine candidates**, split from the earlier42-fa
   - Evidence: `runner/z80_recomp.c`, `runner/cd/z80_native.c`, `docs/Z80_STATIC_RECOMP.md`.
   - Disposition/evidence: The reusable uploaded-code/variant executor and generated native Z80 step already exist. Current SonicCD gates retire16241534 native Z80 instructions with zero floor/audio faults; cartridge driver qualification is retained in the earlier campaign. New CD attribution places bus-time coordination above the generated Z80 step itself, so E01/E07 address the reusable overhead. New driver catalogs/semantic SMPS HLE are title rollout T02/T13 and excluded. No new native-coverage or speed gain counted.
 
-- [ ] **E07: Event-driven waits and scheduling** — P2; original N09.
+- [x] **E07: Event-driven waits and scheduling** — P2; original N09.
   - Goal: Coalesce safe raster/fiber/CPU scheduling spans and handle proven waits through actual event wakeups.
   - Boundary: Do not bypass meaningful CPU work or add title-specific polling signatures.
   - Evidence: `runner/glue.c`, `runner/video/genesis_machine.c`, `runner/cd/segacd_coordinator.c`.
-  - Disposition/evidence: Engine92bb86a derives each scanline deadline once per changed actual line counter, retaining exact restore/overflow behavior and original event ordering. Machine contracts pass. Further CPU/device scheduling consolidation remains under evaluation.
+  - Disposition/evidence: Engine92bb86a derives each scanline deadline once per changed actual line counter, retaining exact restore/overflow behavior and event ordering. Machine contracts and actual Windows/Linux3000frame CD gates pass. Broader batching is deferred on explicit observer/effect metadata: Main/Sub MMIO, Z80 device timestamps, DMA completion and IRQs currently synchronize at observable boundaries. Fault-scope experiments alone did not improve runtime; do not extend them or skip useful guest work without a bounded pure-region contract.
 
 - [x] **E08: Transfer spans and layout mapping** — P2; original N10.
   - Goal: Batch qualified DMA/VDP/CDC/PCM transfers and generic Word RAM cell mappings under one ownership decision.

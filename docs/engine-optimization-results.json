@@ -3,25 +3,26 @@
   "issue": "beads-3vb.31",
   "campaign": "beads-2wy8.1",
   "status": "active-incomplete",
-  "updated_utc": "2026-10-28T11:37:26.005081+00:00",
+  "updated_utc": "2026-10-28T12:47:30.462642+00:00",
   "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "candidates": {
     "E01": {
       "name": "Native CD execution regions",
       "priority": "P1",
-      "status": "implemented_component_qualified",
-      "disposition": "Core3b7b76f and engine2e58a00/14a58ad move native fault ownership above the entire frame across Main/Sub/device coordination. Every guard, instruction retirement, CPU ordering, IRQ and WAIT remains. Nested CPU faults retain local traps; cleanup-bearing STOP-peer/Z80/floor/external drivers hold the outer scope. Full-machine manual-step/frame parity includes complete CPU/device/clock/partial RAM across five error classes; MSVC/GCC core and machine checks pass, including older-core fallback. Actual new-package game/performance qualification remains.",
+      "status": "evaluated_rejected",
+      "disposition": "Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.",
       "evidence": [
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-region-cost.json",
+        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-complete-region-cost.json",
         "beads-rxq.2",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-region-linux-contract.log",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-region-old-core-fallback.log"
+        "58da518"
       ]
     },
     "E02": {
       "name": "Code identity and invalidation",
       "priority": "P1",
-      "status": "evaluated_guard_elision_deferred",
-      "disposition": "Fresh owned instruction spans retain every live opcode/extension comparison. Full code-version guard elision is deferred: device arrays are public, title HLE writes PRG/Word RAM directly, and imports bypass bus epochs. A bus-only dirty counter would be unsound. The selected cache retains descriptor discovery without trusting code bytes; no title-specific writer policy introduced.",
+      "status": "catalog_compaction_under_evaluation",
+      "disposition": "Fresh owned instruction spans retain every live opcode/extension comparison. Full code-version guard elision is deferred: device arrays are public, title HLE writes PRG/Word RAM directly, and imports bypass bus epochs. A bus-only dirty counter would be unsound. The selected cache retains descriptor discovery without trusting code bytes; no title-specific writer policy introduced. New source audit qualifies31.476percent Main and14.929percent Sub duplicate descriptors by guard/cycle/body equivalence. Generic exact-body compaction into the unchanged step-module ABI is being qualified; it retains live guards and per-PC priority. No built size/startup/runtime gain claimed yet.",
       "evidence": [
         "runner/cd/catalog_index.h",
         "runner/cd/segacd.c",
@@ -44,7 +45,7 @@
       "name": "Generated native arithmetic and state",
       "priority": "P2",
       "status": "evaluated_deferred",
-      "disposition": "Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. Current selected E01 removes repeated fault setup without making that unsound assumption.",
+      "disposition": "Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. The E01 fault-setup-only experiment was evaluated and rejected; a future region package must remove meaningful dispatch/state work rather than only relocating traps.",
       "evidence": [
         "external/m68k-recomp-core/profiles/genesis/code_generator.c",
         "runner/cd/segacd_coordinator.c",
@@ -77,8 +78,8 @@
     "E07": {
       "name": "Event-driven waits and scheduling",
       "priority": "P2",
-      "status": "implemented_partial_pending_evaluation",
-      "disposition": "Engine92bb86a derives each scanline deadline once per changed actual line counter, retaining exact restore/overflow behavior and original event ordering. Machine contracts pass. Further CPU/device scheduling consolidation remains under evaluation.",
+      "status": "implemented_game_qualified_further_coalescing_deferred",
+      "disposition": "Engine92bb86a derives each scanline deadline once per changed actual line counter, retaining exact restore/overflow behavior and event ordering. Machine contracts and actual Windows/Linux3000frame CD gates pass. Broader batching is deferred on explicit observer/effect metadata: Main/Sub MMIO, Z80 device timestamps, DMA completion and IRQs currently synchronize at observable boundaries. Fault-scope experiments alone did not improve runtime; do not extend them or skip useful guest work without a bounded pure-region contract.",
       "evidence": [
         "runner/cd/machine.c",
         "tests/segacd/machine_test.c"

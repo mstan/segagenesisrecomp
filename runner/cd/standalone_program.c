@@ -6,6 +6,9 @@
 #include "segacd_bios_extra_modules.h"
 #include "sonic_cd_z80_step.h"
 #include <string.h>
+#ifdef GENESIS_COMPACT_NATIVE_CATALOGS
+#include "native_catalog_registry.h"
+#endif
 #ifdef SEGACD_BIOS_PROBE_SUB_PATCH
 #include "segacd_sub_patch.h"
 #endif
@@ -36,6 +39,10 @@ int segacd_standalone_accept_disc(const uint8_t *sha256)
 }
 const SegaCDNativeProgram *segacd_standalone_program(void)
 {
+#ifdef GENESIS_COMPACT_NATIVE_CATALOGS
+    static const M68kStepModule *const main_modules[]={GENESIS_CATALOG_MAIN_MODULES};
+    static const M68kStepModule *const sub_modules[]={GENESIS_CATALOG_SUB_MODULES};
+#else
     static const M68kStepModule *const main_modules[]={&segacd_bios_module,&segacd_main_ram_module
 #ifdef SEGACD_BIOS_PROBE_BOOT_MAIN
         ,&segacd_boot_main_module
@@ -51,6 +58,7 @@ const SegaCDNativeProgram *segacd_standalone_program(void)
 #endif
         SEGACD_BIOS_PROBE_EXTRA_SUB_MODULES
     };
+#endif
     static const SegaCDNativeProgram program={main_modules,sub_modules,
         sizeof main_modules/sizeof *main_modules,sizeof sub_modules/sizeof *sub_modules,sonic_cd_z80_step};
     return &program;
