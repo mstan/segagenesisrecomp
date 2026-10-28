@@ -11,6 +11,8 @@ static Observation observations[8192],reference_observations[8192];
 static unsigned observation_count;static uint64_t host_event;
 static unsigned device_case;
 static unsigned staged_clock;static uint64_t clock_ceiling;
+static SegaCDCodeIdentity identity;
+static unsigned identity_enabled;
 static uint64_t third_master_limit(void *user){(void)user;return clock_ceiling;}
 static void observe(unsigned kind)
 {
@@ -83,6 +85,13 @@ static void setup(int qualified,int enable_sub)
     observation_count=0;memset(observations,0,sizeof observations);host_event=31;
     segacd_coordinator_host_clock(&c,host_advance,host_next);
     if(staged_clock){clock_ceiling=0;segacd_coordinator_device_limit(&c,third_master_limit);}
+    if(identity_enabled&&qualified) {
+        memset(&identity,0,sizeof identity);
+        segacd_code_range(&identity,0,cd.bios,sizeof cd.bios);
+        segacd_code_range(&identity,1,cd.prg,sizeof cd.prg);
+        segacd_code_range(&identity,2,cd.word,sizeof cd.word);
+        segacd_coordinator_code_begin(&c,&identity);
+    }
 }
 static M68kStepResult run_to(unsigned stop,unsigned isolated)
 {
@@ -106,6 +115,7 @@ int main(void)
         reference_cd=cd;M68kStepState state[2]={c.cpu[0].state,c.cpu[1].state};
         uint64_t time[3]={c.time[0],c.time[1],c.main_remainder};
         unsigned count=observation_count;memcpy(reference_observations,observations,sizeof observations);
+      for(identity_enabled=0;identity_enabled<2;++identity_enabled)
       for(unsigned isolated=0;isolated<2;++isolated) {
         setup(1,sub);
         CHECK(run_to(stop,isolated)==result);
@@ -117,7 +127,7 @@ int main(void)
         if(stop>100&&device_case!=2)CHECK(c.region_runs&&c.region_instructions[0]);
       }
     }
-    device_case=staged_clock=0;
+    device_case=staged_clock=identity_enabled=0;
     setup(1,1);CHECK(segacd_coordinator_run_until(&c,100)==M68K_STEP_OK);
     /* Complete live guard, unknown callback and qualification replacement exits. */
     c.cpu[0].state.regs.PC=c.cpu[1].state.regs.PC=0x100;cd.bios[0x101]^=1;cd.prg[0x101]^=1;

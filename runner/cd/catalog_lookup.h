@@ -3,9 +3,9 @@
 #include "m68k_step.h"
 #include <string.h>
 
-/* Cache immutable descriptor discovery, never opcode/extension-byte identity.
- * Every attempted entry still passes m68k_step_execute's CURRENT mapped-byte
- * guards, in the original module order. Unknown suffixes are discovered only
+/* Cache immutable descriptor discovery. Every attempted entry still passes
+ * the runtime's CURRENT code guard (live bytes, or qualified owned versions),
+ * in the original module order. Unknown suffixes are discovered only
  * when the known prefix misses, so cold execution does no speculative work.
  * Registry replacement resets the cache. Fixed storage has no allocation or
  * lifetime contract; long variant lists use the original universal search. */
@@ -69,7 +69,8 @@ static inline M68kStepResult segacd_catalog_execute_qualified(SegaCDCatalogLooku
     }
     if(slot->overflow)return segacd_catalog_execute_slow(cpu,modules,count);
     for(unsigned i=0;i<slot->count;i++) {
-        M68kStepResult result=m68k_step_execute(cpu,slot->entry[i]);
+        M68kStepResult result=(slot->register_only[i]&(M68K_STEP_EFFECT_REGISTER|M68K_STEP_EFFECT_TRACKED_BUS))?
+            m68k_step_execute_tracked(cpu,slot->entry[i]):m68k_step_execute(cpu,slot->entry[i]);
         if(result!=M68K_STEP_MISS){++cache->hits;return result;}
     }
     for(size_t i=slot->next_module;i<count;i++) {
@@ -83,7 +84,9 @@ static inline M68kStepResult segacd_catalog_execute_qualified(SegaCDCatalogLooku
             }
             else slot->overflow=1;
         }
-        M68kStepResult result=m68k_step_execute(cpu,entry);
+        unsigned effect=segacd_catalog_register_effect(effects,effect_count,modules[i],entry);
+        M68kStepResult result=(effect&(M68K_STEP_EFFECT_REGISTER|M68K_STEP_EFFECT_TRACKED_BUS))?
+            m68k_step_execute_tracked(cpu,entry):m68k_step_execute(cpu,entry);
         if(result!=M68K_STEP_MISS)return result;
     }
     return M68K_STEP_MISS;

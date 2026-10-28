@@ -16,6 +16,8 @@ static SegaCDMachine *current;
 static SegaCDMachineVideoObserver video_observer;
 static void *video_user;
 static int observing_video;
+static SegaCDCodeIdentity code_identity;
+static int code_identity_enabled;
 /* One active machine, as for the bus ABI. Derived image inputs deliberately
  * live outside hardware state and are never copied into execution snapshots. */
 typedef struct {
@@ -111,8 +113,11 @@ void snd_trace_busreq(const char *s,int v){(void)s;(void)v;}
 void audio_event_push(uint32_t unused,uint8_t port,uint8_t value)
 {
     (void)unused;
-    if(current&&current->audio_write)
+    if(current&&current->audio_write) {
+        segacd_coordinator_code_observer(&current->coordinator,1);
         current->audio_write(current->audio_user,current->bus_clock,port,value);
+        segacd_coordinator_code_observer(&current->coordinator,0);
+    }
 }
 void glue_charge_68k_stall(uint32_t cycles)
 {if(current)segacd_coordinator_main_stall(&current->coordinator,cycles);}
@@ -121,9 +126,24 @@ static M68kStepBusResult read8(void *u,uint32_t a,uint8_t *v)
 static M68kStepBusResult read16(void *u,uint32_t a,uint16_t *v)
 {SegaCDMachine*m=u;main_stamp(m);*v=gbus_read16(&m->bus,a);return M68K_BUS_OK;}
 static M68kStepBusResult write8(void *u,uint32_t a,uint8_t v)
-{SegaCDMachine*m=u;main_stamp(m);gbus_write8(&m->bus,a,v);return M68K_BUS_OK;}
+{
+    SegaCDMachine*m=u;main_stamp(m);
+    if((a&0xffffffu)>=0xff0000u)segacd_coordinator_code_write(&m->coordinator,g_ram+(a&0xffffu),1);
+    gbus_write8(&m->bus,a,v);return M68K_BUS_OK;
+}
 static M68kStepBusResult write16(void *u,uint32_t a,uint16_t v)
-{SegaCDMachine*m=u;main_stamp(m);gbus_write16(&m->bus,a,v);return M68K_BUS_OK;}
+{
+    SegaCDMachine*m=u;main_stamp(m);
+    if((a&0xffffffu)>=0xff0000u) {
+        unsigned offset=a&0xffffu;
+        if(offset<0xffffu)segacd_coordinator_code_write(&m->coordinator,g_ram+offset,2);
+        else {
+            segacd_coordinator_code_write(&m->coordinator,g_ram+offset,1);
+            segacd_coordinator_code_write(&m->coordinator,g_ram,1);
+        }
+    }
+    gbus_write16(&m->bus,a,v);return M68K_BUS_OK;
+}
 static M68kStepBusResult fetch16(void *u,uint32_t a,uint16_t *v)
 {
     SegaCDMachine*m=u;if(a<0xff0000u)return M68K_BUS_FAULT;
@@ -184,7 +204,9 @@ static void host_advance(void *u,uint64_t clock)
                         if(captured_video)++captured_video->stats.eager_rows;
                     }
                     if(video_observer&&row<(unsigned)gvdp_screen_height(&m->vdp)) {
+                        segacd_coordinator_code_observer(&m->coordinator,1);
                         observing_video=1;video_observer(video_user,m,row);observing_video=0;
+                        segacd_coordinator_code_observer(&m->coordinator,0);
                     }
                 }
             }
@@ -217,6 +239,11 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
     segacd_coordinator_host_clock(&m->coordinator,host_advance,next_host_event);
     segacd_coordinator_device_limit(&m->coordinator,sound_limit);
     (void)segacd_coordinator_catalog_index(&m->coordinator,SEGACD_CATALOG_PC_INDEX);
+    memset(&code_identity,0,sizeof code_identity);code_identity_enabled=0;
+    segacd_code_range(&code_identity,0,m->devices.bios,sizeof m->devices.bios);
+    segacd_code_range(&code_identity,1,m->devices.prg,sizeof m->devices.prg);
+    segacd_code_range(&code_identity,2,m->devices.word,sizeof m->devices.word);
+    segacd_code_range(&code_identity,3,g_ram,sizeof g_ram);
     video_observer=NULL;video_user=NULL;observing_video=0;current=m;return 1;
 }
 void segacd_machine_close(SegaCDMachine *m)
@@ -254,7 +281,7 @@ static int z80_interval_running(void *user)
     SegaCDMachine *m=user;
     return !m->bus.z80_reset_pending&&m->bus.z80_reset_off&&!m->bus.z80_busreq;
 }
-M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
+static M68kStepResult run_frame(SegaCDMachine *m)
 {
     if(!m||m!=current||observing_video)return M68K_STEP_REENTERED;
     if(m->coordinator.busy[0]||m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)
@@ -280,4 +307,26 @@ M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
     }
     while(m->frames==frame);
     return M68K_STEP_OK;
+}
+int segacd_machine_code_identity(SegaCDMachine *m,int enabled)
+{
+    if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||
+       m->coordinator.external_active||m->z80.in_step||m->coordinator.code_identity)return 0;
+    code_identity_enabled=enabled!=0;return 1;
+}
+int segacd_machine_code_stats(const SegaCDMachine *m,SegaCDMachineCodeStats *stats)
+{
+    if(!m||m!=current||!stats)return 0;
+    stats->hits=code_identity.hits;stats->checks=code_identity.checks;
+    stats->writes=code_identity.writes;stats->fences=code_identity.fences;
+    stats->bytes=sizeof code_identity;return 1;
+}
+M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
+{
+    if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||
+       m->coordinator.external_active||m->z80.in_step)return M68K_STEP_REENTERED;
+    if(code_identity_enabled)segacd_coordinator_code_begin(&m->coordinator,&code_identity);
+    M68kStepResult result=run_frame(m);
+    if(code_identity_enabled)segacd_coordinator_code_end(&m->coordinator);
+    return result;
 }
