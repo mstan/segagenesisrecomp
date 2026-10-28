@@ -2,21 +2,33 @@
   "schema": "GenesisEngineOptimizationResults1",
   "issue": "beads-3vb.31",
   "campaign": "beads-2wy8.1",
-  "status": "ready_for_owner_visual_review",
+  "status": "released_batch_remaining_engine_scope_open",
   "updated_utc": "2026-10-28T13:13:39.463580+00:00",
   "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "candidates": {
     "E01": {
       "name": "Native CD execution regions",
       "priority": "P1",
-      "status": "evaluated_rejected",
-      "disposition": "Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.",
+      "status": "implemented_native_regions_game_qualified",
+      "disposition": "E01 original deadline/observer region contract delivered and qualified; final v5 Windows SonicCD processCPU reductions3.1/8.7percent, cycles8.6/7.2percent on matched route. No FPS/universal gain claim. Owner handoff pending; no other E-ID closed.",
       "evidence": [
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-region-cost.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-complete-region-cost.json",
-        "beads-rxq.2",
-        "58da518"
-      ]
+        "ENGINE_NATIVE_REGIONS.md",
+        "engine-native-region-results.json",
+        "beads-ufzc",
+        "beads-7yle"
+      ],
+      "historical_evaluation": {
+        "name": "Native CD execution regions",
+        "priority": "P1",
+        "status": "evaluated_rejected",
+        "disposition": "Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.",
+        "evidence": [
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-region-cost.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-complete-region-cost.json",
+          "beads-rxq.2",
+          "58da518"
+        ]
+      }
     },
     "E02": {
       "name": "Code identity and invalidation",
@@ -573,7 +585,7 @@
       "next_check_not_before_utc": "2026-10-28T08:14:11.1739757Z"
     }
   ],
-  "authoritative_completion": "36/36 families evaluated with explicit implemented/partial, existing, rejected or concrete deferred dispositions. Final representative built-game gates pass and owner review builds are prepared. No merge/release; owner visual acceptance remains.",
+  "authoritative_completion": "The evaluation/release batch is integrated and delivered with owner approval. The implementation audit leaves 30 of the 36 original family scopes open; four selected bounded contracts are delivered and two bounded findings were already present. See completion_audit; family counts overlap and are not performance wins.",
   "catalog_experiments": {
     "direct_layout": {
       "engine": "e8f3159",
@@ -656,7 +668,7 @@
     "cd_windows": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json",
     "cd_linux_four_runs": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json"
   },
-  "evaluation_summary": "Evaluation complete; deferred goals remain opportunities, not implemented wins. Overlapping families share coherent packages. Timing-host availability is not a blocker and no unqualified FPS claim is made.",
+  "evaluation_summary": "All 36 families received evaluation dispositions. Evaluation closure is not implementation closure; partial delivery, deferral and a rejected narrow mechanism retain open original scope. Accepted releases and per-game evidence remain valid.",
   "evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -1477,5 +1489,43 @@
     "castle_followup": "beads-h7ot closed after owner recheck; no reproducible defect or fix claimed",
     "notes": "G:/Temp/Codex/genesis-engine-burndown-20261027/owner-review/review-notes.json",
     "core_landed": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60 on m68k-recomp-core/main"
+  },
+  "completion_audit": {
+    "date": "2026-10-28",
+    "audit_issue": "beads-1o1d",
+    "remaining_work_issue": "beads-3z5k",
+    "conclusion": "Evaluation/disposition and release pass complete; original implementation scope remains open. No claim that opportunities are exhausted.",
+    "historical_evaluation_counts": {
+      "rejected": 1,
+      "implemented_or_partial": 14,
+      "deferred": 19,
+      "existing": 2
+    },
+    "implementation_counts": {
+      "rejected_mechanism": 1,
+      "partial": 10,
+      "deferred": 19,
+      "existing": 2,
+      "bounded_delivered": 4
+    },
+    "remaining_scope_open_count": 30,
+    "count_caveat": "Families overlap. Bounded delivered closes only the selected contract, not every possible optimization. Partial/deferred/rejected-mechanism rows stay open; row counts are not speedups.",
+    "document": "ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md",
+    "data": "engine-optimization-completion-audit.json"
+  },
+  "historical_evaluation_stage": {
+    "status": "ready_for_owner_visual_review",
+    "authoritative_completion": "36/36 families evaluated with explicit implemented/partial, existing, rejected or concrete deferred dispositions. Final representative built-game gates pass and owner review builds are prepared. No merge/release; owner visual acceptance remains."
+  },
+  "evaluation_counts_scope": "Historical released evaluation pass; current serial implementation is tracked separately.",
+  "serial_implementation": {
+    "current_goal": "E01",
+    "completed": [
+      "E01"
+    ],
+    "remaining_original_scopes": 29,
+    "data": "engine-native-region-results.json",
+    "next_task_started": false,
+    "owner_check": "pending"
   }
 }

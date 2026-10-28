@@ -1,0 +1,631 @@
+{
+  "schema": "GenesisEngineOptimizationCompletionAudit1",
+  "date": "2026-10-28",
+  "audit_issue": "beads-1o1d",
+  "remaining_work_issue": "beads-3z5k",
+  "campaign": "beads-2wy8.1",
+  "audited_engine": "ae1c742adef48b6ef6ed5b4c1dd4b64514086edd",
+  "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
+  "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
+  "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
+  "conclusion": "Evaluation/disposition and release pass complete; original implementation scope remains open. No claim that opportunities are exhausted.",
+  "historical_evaluation_counts": {
+    "rejected": 1,
+    "implemented_or_partial": 14,
+    "deferred": 19,
+    "existing": 2
+  },
+  "implementation_counts": {
+    "rejected_mechanism": 1,
+    "partial": 10,
+    "deferred": 19,
+    "existing": 2,
+    "bounded_delivered": 4
+  },
+  "remaining_scope_open_count": 30,
+  "count_caveat": "Families overlap. Bounded delivered closes only the selected contract, not every possible optimization. Partial/deferred/rejected-mechanism rows stay open; row counts are not speedups.",
+  "validation": "Source/diff/evidence audit only. No new runtime build, benchmark, game launch or release change.",
+  "entries": [
+    {
+      "id": "E01",
+      "name": "Native CD execution regions",
+      "original_goal": "Run reusable Main/Sub/Z80 native regions until the next observable interaction or device deadline.",
+      "recorded_evaluation_status": "evaluated_rejected",
+      "implementation_state": "rejected_mechanism",
+      "remaining_scope_open": true,
+      "delivered": "Two fault-scope layouts were tried and reverted.",
+      "remaining": "Larger deadline-bounded Main/Sub/Z80 native regions were not implemented. Rejecting fault-setup relocation does not reject region execution.",
+      "audit_basis": "Core execute_operation still guards and invokes one instruction; coordinator dispatches it per step.",
+      "next_closure": "Generate effect/exit metadata and implement a bounded region removing repeated dispatch/state work; keep unknown callbacks as exits.",
+      "source_references": [
+        "runner/cd/segacd_coordinator.c:217",
+        "core/runtime/m68k_step.c:165"
+      ]
+    },
+    {
+      "id": "E02",
+      "name": "Code identity and invalidation",
+      "original_goal": "Use guarded code regions with complete write/remapping invalidation instead of per-instruction byte comparisons where qualified.",
+      "recorded_evaluation_status": "implemented_catalog_guard_elision_deferred",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Exact-body catalog compaction and immutable descriptor discovery.",
+      "remaining": "Complete writer/remap ownership and region code identity; per-instruction byte guards remain.",
+      "audit_basis": "catalog_index explicitly disclaims code-identity caching; core compares every live instruction word.",
+      "next_closure": "Own all native/direct/import writers and aliases, then qualify versioned regions and invalidation.",
+      "source_references": [
+        "runner/cd/catalog_index.h:1",
+        "runner/cd/catalog_lookup.h:1",
+        "core/runtime/m68k_step.c:179"
+      ]
+    },
+    {
+      "id": "E03",
+      "name": "Owned memory access",
+      "original_goal": "Resolve generic RAM/ROM/Word RAM mappings once for safe regions; reduce repeated bus decoding and byte-order bookkeeping.",
+      "recorded_evaluation_status": "implemented_game_qualified",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Side-effect-free instruction-fetch spans.",
+      "remaining": "General data RAM/ROM/Word RAM region ownership and reduced repeated data-bus decoding.",
+      "audit_basis": "code_span returns instruction bytes; it does not replace general data reads/writes. segacd_read16 is 1.088% in the cited profile, so the old below-1%-per-helper wording is inaccurate.",
+      "next_closure": "Use the E01/E02 ownership contract for safe data regions with MMIO, remap, protection and WAIT exits.",
+      "source_references": [
+        "runner/cd/segacd.c:266",
+        "runner/cd/segacd_coordinator.c:145",
+        "core/runtime/m68k_step.c:181"
+      ]
+    },
+    {
+      "id": "E04",
+      "name": "Generated native arithmetic and state",
+      "original_goal": "Improve the common 68000 emitter with local registers, proven flag liveness, combined effective addresses and grouped cycle accounting.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "No new emitter-local register/flag region implementation.",
+      "remaining": "Effect metadata, local registers, flag liveness, combined effective addresses and grouped cycle accounting.",
+      "audit_basis": "The Genesis code generator is unchanged between generator core 7233852 and runtime core 53fc7b4. Effect metadata is engine work, not an external blocker.",
+      "next_closure": "Add canonical generated-operation effects and exact observable-exit materialization as part of the native region package.",
+      "source_references": [
+        "core/profiles/genesis/code_generator.c",
+        "core/runtime/m68k_step.h:70"
+      ]
+    },
+    {
+      "id": "E05",
+      "name": "Native call/control-flow consolidation",
+      "original_goal": "Use proven direct call edges, inlining and larger native control-flow regions to reduce generic call/return/dispatch machinery.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Existing cartridge direct-call generation was retained.",
+      "remaining": "New control-flow fusion and larger CD native regions.",
+      "audit_basis": "No new generator work; existing calls and a rejected tail-index experiment do not exhaust region fusion.",
+      "next_closure": "Use E04 edge/effect metadata for proven direct regions; retain dynamic-target, guest-stack and IRQ exits.",
+      "source_references": [
+        "core/profiles/genesis/code_generator.c",
+        "runner/glue.c"
+      ]
+    },
+    {
+      "id": "E06",
+      "name": "Reusable native Z80 backend",
+      "original_goal": "Qualify and improve the common uploaded-code/variant executor and native blocks, with supported build integration.",
+      "recorded_evaluation_status": "evaluated_already_native",
+      "implementation_state": "existing",
+      "remaining_scope_open": false,
+      "delivered": "Reusable native Z80 variant executor already existed and remained qualified.",
+      "remaining": "No new engine implementation required for the selected backend contract; driver-specific rollout stays separate.",
+      "audit_basis": "Current CD gates record native Z80 execution with zero floor/audio faults. This is an existing capability, not a new speedup.",
+      "next_closure": "Retain reset/BUSREQ/IRQ/mutable-code contracts; revisit backend internals only with new cost evidence.",
+      "source_references": [
+        "runner/z80_recomp.c",
+        "runner/cd/z80_native.c",
+        "docs/Z80_STATIC_RECOMP.md"
+      ]
+    },
+    {
+      "id": "E07",
+      "name": "Event-driven waits and scheduling",
+      "original_goal": "Coalesce safe raster/fiber/CPU scheduling spans and handle proven waits through actual event wakeups.",
+      "recorded_evaluation_status": "implemented_game_qualified_further_coalescing_deferred",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Memoized scanline deadline calculation.",
+      "remaining": "Broader CPU/device/fiber event coalescing and event-driven waits.",
+      "audit_basis": "Deadline memoization does not change the instruction/synchronization boundary.",
+      "next_closure": "Combine with E01/E04, preserving MMIO, DMA, interrupt and Z80 observer times.",
+      "source_references": [
+        "runner/cd/machine.c",
+        "runner/cd/segacd_coordinator.c:217",
+        "runner/glue.c"
+      ]
+    },
+    {
+      "id": "E08",
+      "name": "Transfer spans and layout mapping",
+      "original_goal": "Batch qualified DMA/VDP/CDC/PCM transfers and generic Word RAM cell mappings under one ownership decision.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Existing exact word-boundary DMA advancement retained.",
+      "remaining": "Qualified bulk transfer and Word RAM layout spans.",
+      "audit_basis": "DMA source is unchanged; the 1.58% CD attribution includes inactive calls and does not measure an eligible transfer-heavy workload.",
+      "next_closure": "Use an actual transfer-heavy consumer; implement spans only across proven unobservable intervals, retaining partial progress and completion clocks.",
+      "source_references": [
+        "runner/cd/dma.c",
+        "runner/cd/segacd.c",
+        "runner/video/genesis_vdp.c"
+      ]
+    },
+    {
+      "id": "E09",
+      "name": "Single image-production ownership",
+      "original_goal": "Provide reusable lazy original-image production and exact fallback in the shared cartridge/CD raster pipeline.",
+      "recorded_evaluation_status": "implemented_game_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Reusable CD lazy original-image capture/composition with exact fallback; cartridge already had lazy rows.",
+      "remaining": "The selected ownership/fallback contract is delivered. Other raster/cache/upload goals remain separate.",
+      "audit_basis": "720000 rows captured, 442800 composed: 38.5% fewer original compositions, with 898600 retained bytes; full state/pixels/WAV checks. This is not an FPS claim.",
+      "next_closure": "Retain exact hardware-status deadlines and per-row palette/fallback contracts.",
+      "source_references": [
+        "runner/cd/machine.c:30",
+        "runner/cd/machine.c:62",
+        "runner/video/genesis_vdp.c:891"
+      ]
+    },
+    {
+      "id": "E10",
+      "name": "Renderer interface independent of aspect ratio",
+      "original_goal": "Separate shared renderer ownership/selection from viewport width and elective widescreen policy.",
+      "recorded_evaluation_status": "deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "No shared aspect-independent renderer selector/adoption.",
+      "remaining": "Renderer ownership selection independent of aspect ratio.",
+      "audit_basis": "Title stock-fidelity concerns justify coordinating rollout, not marking the engine interface delivered. Mechanical consumer adoption is permitted; new title rendering logic remains excluded.",
+      "next_closure": "Design a used generic selector with mechanical adoption; track title-specific fidelity separately and preserve exact fallback.",
+      "source_references": [
+        "runner/main.c",
+        "runner/game_video.h",
+        "docs/TITLE_OPTIMIZATION_BACKLOG.md"
+      ]
+    },
+    {
+      "id": "E11",
+      "name": "Fused generic VDP raster",
+      "original_goal": "Combine tile/window/scroll spans, decode, priority and shadow/highlight composition in the shared renderer.",
+      "recorded_evaluation_status": "implemented_game_qualified",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Packed tile rows and eight-byte priority/shading composition.",
+      "remaining": "The original full tile/window/scroll/decode/priority production fusion.",
+      "audit_basis": "The renderer still prepares separate plane and sprite arrays and composes in a later pass. Faster kernels are useful but narrower than the stated fusion goal.",
+      "next_closure": "Evaluate one coherent raster production representation on a post-change cartridge workload, retaining all VDP modes and the portable path.",
+      "source_references": [
+        "runner/video/genesis_tile_row.h",
+        "runner/video/genesis_vdp_compose.h",
+        "runner/video/genesis_vdp.c:929",
+        "runner/video/genesis_vdp.c:954"
+      ]
+    },
+    {
+      "id": "E12",
+      "name": "Shared sprite evaluation jobs",
+      "original_goal": "Prepare reusable generic sprite membership/opacity/priority work for both hardware status and image production.",
+      "recorded_evaluation_status": "implemented_game_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "CD sprite evaluation captured once for both CPU-visible status and deferred image production.",
+      "remaining": "The selected shared-evaluation contract is delivered; additional caching belongs to E13/E15.",
+      "audit_basis": "Deferred composition consumes captured lanes without repeating sprite evaluation; limits/status/palette gates pass. This overlaps E09.",
+      "next_closure": "Retain current sprite status and exact fallback tests; do not double-count E09/E12 as independent measured wins.",
+      "source_references": [
+        "runner/video/genesis_vdp.c:929",
+        "runner/video/genesis_vdp.c:954",
+        "runner/cd/machine.c"
+      ]
+    },
+    {
+      "id": "E13",
+      "name": "Versioned generic graphics derivation",
+      "original_goal": "Cache decoded VDP art, palettes and geometry only at verified VRAM/CRAM/register change boundaries.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "No new complete versioned graphics ownership/cache.",
+      "remaining": "Complete VRAM/CRAM/register/private-writer invalidation or immutable-input cache ownership.",
+      "audit_basis": "Public/direct/import writes require a complete writer model. The 0.086% CD resolve_row sample does not rule out cartridge decode or art-cache work.",
+      "next_closure": "Use a representative cartridge raster workload; design complete producer ownership or full input identity rather than bus-only epochs.",
+      "source_references": [
+        "runner/video/genesis_vdp.c",
+        "runner/video/genesis_bus.c",
+        "runner/video/genesis_machine.c"
+      ]
+    },
+    {
+      "id": "E14",
+      "name": "Native Sega CD stamp-device jobs",
+      "original_goal": "Optimize the generic affine/stamp device in exact spans/blocks.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Existing native affine stamp device retained.",
+      "remaining": "A new exact block/span stamp kernel.",
+      "audit_basis": "stamp.c is unchanged and had no samples in the recorded CD gameplay route. No stamp-heavy qualification was performed.",
+      "next_closure": "Select a built stamp-heavy workload before choosing a block kernel; preserve partial writes, priority and IRQ timing.",
+      "source_references": [
+        "runner/cd/stamp.c"
+      ]
+    },
+    {
+      "id": "E15",
+      "name": "Reuse unchanged hardware render results",
+      "original_goal": "Reuse generic render jobs/regions/images when the complete hardware input identity is unchanged.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "No new generic unchanged-job/image reuse.",
+      "remaining": "Complete intermediate hardware-input identity and reusable render output ownership.",
+      "audit_basis": "Frame-end equality cannot establish identical raster history. A cold CD resolve_row does not rule out static-render-heavy consumers.",
+      "next_closure": "Build on immutable packets and exact raster identity where actual repeated work justifies reuse.",
+      "source_references": [
+        "runner/video/genesis_vdp.c",
+        "runner/video/genesis_machine.c"
+      ]
+    },
+    {
+      "id": "E16",
+      "name": "Final pixels and upload ownership",
+      "original_goal": "Fuse shared indexed/ARGB conversion, copies, color processing, UI staging and upload preparation.",
+      "recorded_evaluation_status": "implemented_lazy_pixels_upload_deferred",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Lazy CD conversion when original pixels are requested.",
+      "remaining": "Conversion/copy/filter/UI staging/upload ownership across the host boundary.",
+      "audit_basis": "This is the E09 deferred-raster package. Host presentation still copies the image for UI and uploads it. Low resolve_row attribution is not physical upload evidence.",
+      "next_closure": "Design shared raw-image/UI/output ownership preserving capture and filter edges; use actual presentation costs to choose fusion.",
+      "source_references": [
+        "runner/cd/machine.c",
+        "runner/cd/presentation.c:522",
+        "runner/main.c"
+      ]
+    },
+    {
+      "id": "E17",
+      "name": "Optional generic GPU raster backend",
+      "original_goal": "Evaluate hardware tile/sprite/priority composition from reusable immutable render packets.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Immutable CPU raster packets are available; no generic GPU backend was added.",
+      "remaining": "A qualified generic GPU composition implementation with portable CPU fallback.",
+      "audit_basis": "No physical GPU A/B qualifies this alternative. One CD software/dummy route cannot globally reject it.",
+      "next_closure": "Pursue only if actual composition/upload cost supports packet-to-GPU implementation; preserve CPU-visible effects and exact raw output.",
+      "source_references": [
+        "runner/video/genesis_vdp.c:891",
+        "runner/cd/presentation.c"
+      ]
+    },
+    {
+      "id": "E18",
+      "name": "Independent engine work scheduling",
+      "original_goal": "Evaluate workers for immutable rendering/audio spans and safe overlap of preparation/upload.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "No new worker scheduling implementation.",
+      "remaining": "Safe independently owned jobs and overlap without extra emulated latency.",
+      "audit_basis": "The record is a design deferral, not a worker experiment. Current CD capture/resolve cost is not evidence about every cartridge/audio job.",
+      "next_closure": "Choose a demonstrated heavy immutable job; include dispatch/copy/barrier costs and single-thread fallback in qualification.",
+      "source_references": [
+        "runner/sim_step.c",
+        "runner/video/genesis_machine.c",
+        "runner/audio.c"
+      ]
+    },
+    {
+      "id": "E19",
+      "name": "One ordered audio timeline",
+      "original_goal": "Consolidate engine timestamps, stable ordering, register pairing and deferred DAC-stream representation.",
+      "recorded_evaluation_status": "implemented_game_qualified",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Cartridge stable natural-run event ordering, reverse FM pairing and shared sort/defer scratch.",
+      "remaining": "Broader timestamp/deferred-stream representation consolidation beyond this cartridge ordering replacement.",
+      "audit_basis": "event_order.h/mixer.c changed, but event_queue and CD native scheduler did not. CD receives no cartridge timeline gain. Storage rises from 5 to 6 MiB. A common scheduler is not automatically required.",
+      "next_closure": "Treat ordering as delivered; pursue broader stream representation only where it removes repeated work while retaining ordering, push-index traces and DAC bursts.",
+      "source_references": [
+        "runner/audio/event_order.h",
+        "runner/audio/mixer.c:97",
+        "runner/audio/event_queue.c",
+        "runner/cd/audio_native.c"
+      ]
+    },
+    {
+      "id": "E20",
+      "name": "Faithful FM kernels",
+      "original_goal": "Optimize actual YM2612 operator/channel kernels beyond the already-shipped sample-block wrapper.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Existing FM block wrapper retained; no new operator/channel kernel.",
+      "remaining": "Actual faithful YM2612 arithmetic/layout/kernel optimization.",
+      "audit_basis": "ym2612_ymfm.cpp and ymfm_fm.ipp are unchanged in the batch. Vendor API and exact arithmetic are implementation constraints, not a rejection of kernel replacement.",
+      "next_closure": "Use current operator/channel attribution and a concrete equivalent layout/kernel; qualify register writes, feedback/LFO/envelopes/DAC and state.",
+      "source_references": [
+        "runner/audio/ym2612_ymfm.cpp",
+        "runner/external/ymfm/src/ymfm_fm.ipp"
+      ]
+    },
+    {
+      "id": "E21",
+      "name": "PSG event spans",
+      "original_goal": "Generate eligible tone/noise runs in blocks.",
+      "recorded_evaluation_status": "implemented_game_qualified",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Exact closed-form settled-muted PSG spans.",
+      "remaining": "Active tone/noise generation spans and filter-tail work.",
+      "audit_basis": "sn_silent_span requires all four volumes muted and filters exactly zero; otherwise psg_advance calls sn_render_sample for each sample. This overlaps E25.",
+      "next_closure": "Keep the silent path; consider active runs only with a concrete exact phase/filter/kernel design and meaningful affected cost.",
+      "source_references": [
+        "runner/audio/sn76489.c:184",
+        "runner/audio/sn76489.c:233"
+      ]
+    },
+    {
+      "id": "E22",
+      "name": "Sega CD PCM/CDDA spans",
+      "original_goal": "Advance generic PCM channels, CDDA/fader and queues in timed blocks instead of per-sample callbacks.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Existing native timed PCM/CDDA advancement retained.",
+      "remaining": "Block source publication instead of per-sample callbacks, including queue/status behavior.",
+      "audit_basis": "PCM/CDDA/native mix source is unchanged. A span-sink contract is reusable engine implementation work, not an immutable subsystem boundary.",
+      "next_closure": "Design a timed span sink and mechanical mixer adoption preserving wave writes, loops, fader, queue/underflow and timestamps.",
+      "source_references": [
+        "runner/cd/rf5c164.c",
+        "runner/cd/cdda.c",
+        "runner/cd/audio_mix.c"
+      ]
+    },
+    {
+      "id": "E23",
+      "name": "Synthesis-to-device pipeline",
+      "original_goal": "Combine generic chip staging, multi-source mixing, interpolation, filters and device-rate conversion.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "No new synthesis-to-device fusion.",
+      "remaining": "Equivalent chip staging/mix/interpolation/filter/device-rate production.",
+      "audit_basis": "Host and CD audio pipeline files are unchanged. Clipping, integer divisions, capture taps and phase constrain equivalent fusion; they do not establish that it is impossible.",
+      "next_closure": "Specify the exact stream computation/ownership, then remove redundant passes while preserving generated-WAV/device contracts.",
+      "source_references": [
+        "runner/audio.c",
+        "runner/audio/mixer.c",
+        "runner/cd/audio_native.c",
+        "runner/cd/audio_mix.c"
+      ]
+    },
+    {
+      "id": "E24",
+      "name": "Audio buffer ownership",
+      "original_goal": "Reduce avoidable callback handoff locks, copies and temporary storage.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Existing bounded mixed frame and device-locked handoff retained.",
+      "remaining": "Qualified reduction of callback locks/copies/shared state.",
+      "audit_basis": "audio.c is unchanged; dummy-device throughput does not measure actual callback contention or jitter.",
+      "next_closure": "Use existing timing for a physical-device symptom; redesign all shared callback ownership rather than removing a lock alone.",
+      "source_references": [
+        "runner/audio.c"
+      ]
+    },
+    {
+      "id": "E25",
+      "name": "Exact constant/silent spans",
+      "original_goal": "Represent provably constant output efficiently without per-sample queue work where valid.",
+      "recorded_evaluation_status": "implemented_psg_other_sources_deferred",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Exact settled PSG silence, shared with E21.",
+      "remaining": "Constant/silent PCM and CDDA runs with queue/timestamp/fader evolution.",
+      "audit_basis": "Other sources still publish samples individually. Silence does not imply the absence of authoritative state changes.",
+      "next_closure": "Combine with E22 timed span sinks if source/mixer cost justifies compression.",
+      "source_references": [
+        "runner/audio/sn76489.c:184",
+        "runner/cd/cdda.c",
+        "runner/cd/rf5c164.c"
+      ]
+    },
+    {
+      "id": "E26",
+      "name": "Bounded generic media prefetch",
+      "original_goal": "Read upcoming raw CDDA/movie/nonresident sectors off the simulation path using actual device requests/transport information.",
+      "recorded_evaluation_status": "implemented_read_ahead_async_deferred",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Redundant seeks removed so bounded 1 MiB stdio read-ahead works.",
+      "remaining": "Actual asynchronous request-driven prefetch off the simulation path.",
+      "audit_basis": "There is no async prefetch worker in the new disc_image implementation. Raw-read/seek counts establish reduced seeks, not zero I/O stalls in every route.",
+      "next_closure": "Retain read-ahead; add bounded cancellable request-driven prefetch only if actual media wait cost warrants it, with synchronous fallback.",
+      "source_references": [
+        "runner/cd/disc_image.c:446",
+        "runner/cd/cdd.c",
+        "runner/cd/cdc.c"
+      ]
+    },
+    {
+      "id": "E27",
+      "name": "Verified media handoff contract",
+      "original_goal": "Provide a safe common way to reuse completed media verification within one launch instead of independent redundant payload reads.",
+      "recorded_evaluation_status": "deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "No generic verified media handoff.",
+      "remaining": "Safe reuse of complete launch verification across a generic immutable media handoff.",
+      "audit_basis": "The prior T12 exclusion is too broad if applied to mechanical adoption of an engine contract, which the scope explicitly allows. New title converter/cache design stays separate.",
+      "next_closure": "Design a full-identity immutable handle/buffer or equivalent proof without a TOCTOU gap and with portable full-verification fallback; mechanically adopt where applicable.",
+      "source_references": [
+        "runner/cd/disc_image.c",
+        "docs/ENGINE_OPTIMIZATION_BURNDOWN.md",
+        "docs/TITLE_OPTIMIZATION_BACKLOG.md"
+      ]
+    },
+    {
+      "id": "E28",
+      "name": "Portable full-media validation",
+      "original_goal": "Evaluate accelerated portable/platform SHA and safe immutable-sector validation reuse.",
+      "recorded_evaluation_status": "implemented_game_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Optional OpenSSL full-payload SHA outside Windows, existing CNG and full portable restart/fallback.",
+      "remaining": "The selected accelerated full-verification contract is delivered; immutable-sector reuse was not implemented or globally exhausted.",
+      "audit_basis": "Provider/failure/fallback checks and parity pass. Earlier balanced Linux launches show bounded 12.4/13.8% wall and 40.2/41.1% process-CPU reductions; not an FPS or Windows claim.",
+      "next_closure": "Keep full corruption detection and fallback; revisit immutable reuse separately only with complete ownership proof.",
+      "source_references": [
+        "runner/cd/disc_image.c:223",
+        "runner/cd/sector.c"
+      ]
+    },
+    {
+      "id": "E29",
+      "name": "Resident-media representation",
+      "original_goal": "Evaluate lower-copy/raw-versus-user-data residency, bounded mapped/shared storage and memory footprint.",
+      "recorded_evaluation_status": "implemented_game_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Read-only mapped first-data-track residency with bounded copied fallback.",
+      "remaining": "The selected lower-private-copy representation is delivered; this does not exhaust all raw/user-sector representation alternatives.",
+      "audit_basis": "Current mappedBytes 139735888 and privateResidentBytes 0 remove the separate private copy. Mapping length is not a measured RSS saving.",
+      "next_closure": "Retain 256 MiB bound, raw/audio/movie readers and allocation/mapping-failure fallback.",
+      "source_references": [
+        "runner/cd/disc_image.c:40",
+        "runner/cd/disc_image.h"
+      ]
+    },
+    {
+      "id": "E30",
+      "name": "Reusable console-firmware services",
+      "original_goal": "Assess closed standard Sega CD BIOS services that can be replaced once for supported firmware profiles across games.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Native BIOS instruction catalog retained; no new reusable whole-service HLE.",
+      "remaining": "A named standard firmware service ABI with complete reusable effects.",
+      "audit_basis": "Catalog execution is not service HLE. A gameplay-only profile does not cover boot, BRAM/UI or firmware control waits; title file/SP routines remain excluded.",
+      "next_closure": "Find a costly standard firmware service and specify its complete ABI/effects before replacing it; do not move a title routine into engine code.",
+      "source_references": [
+        "runner/cd/standalone_program.c",
+        "runner/cd/segacd_coordinator.c"
+      ]
+    },
+    {
+      "id": "E31",
+      "name": "Engine snapshot representation and identity",
+      "original_goal": "Evaluate generic authoritative/derived state separation, dirty pages/deltas/checkpoints and exact incremental state identity.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Existing authoritative section table and full-byte checksum retained.",
+      "remaining": "Generic writer ownership, dirty pages/deltas/checkpoints and exact incremental identity.",
+      "audit_basis": "rb_state.c is unchanged. Dominant title fiber payload is outside scope, but does not rule out generic representation work. Old save-state compatibility is not required.",
+      "next_closure": "Establish complete writer/restore ownership and current per-section cost before choosing a generic page/delta representation.",
+      "source_references": [
+        "runner/rb_state.c",
+        "runner/frame_snapshots.c"
+      ]
+    },
+    {
+      "id": "E32",
+      "name": "Serializer and snapshot storage",
+      "original_goal": "Reuse bounded buffers, serialize into owned storage and reduce generic snapshot allocation/copy/thumbnail work.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Existing snapshot ownership/atomic-save implementation retained.",
+      "remaining": "Generic transactional borrow/capacity/commit storage or pooling where useful.",
+      "audit_basis": "rbe_snap_ring_store owns the blob on success, so malloc is not an immediate-copy leak. A new transactional storage contract is feasible shared engine work.",
+      "next_closure": "If allocation/copy cost warrants it, serialize into reserved owned capacity without destroying the previous entry on failure.",
+      "source_references": [
+        "runner/local_states.c:142",
+        "runner/rb_state.c"
+      ]
+    },
+    {
+      "id": "E33",
+      "name": "Discarded-replay engine work",
+      "original_goal": "Remove remaining purely derived shared rendering/publication preparation from replay that produces no visible output.",
+      "recorded_evaluation_status": "evaluated_already_implemented",
+      "implementation_state": "existing",
+      "remaining_scope_open": false,
+      "delivered": "Discarded cartridge replay already omits derived image work while retaining authoritative status/audio.",
+      "remaining": "No remaining shared cartridge image work demonstrated at this base; title publication remains separate and CD work is E09.",
+      "audit_basis": "Existing resim hooks/machine frame path establish this bounded terminal finding; current replay checks pass. No new gain is counted.",
+      "next_closure": "Retain current-build replay/state correctness; reopen for newly demonstrated shared derived work.",
+      "source_references": [
+        "runner/sim_step.c",
+        "runner/video/genesis_machine.c",
+        "runner/main.c"
+      ]
+    },
+    {
+      "id": "E34",
+      "name": "Host presentation/deadline pipeline",
+      "original_goal": "Consolidate shared pacing, upload/present queue behavior and remaining compositor/CD coarse-wait costs.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Previously delivered cartridge D3D11/high-resolution pacing retained.",
+      "remaining": "Further shared presentation/upload/UI ownership and CD pacing consolidation.",
+      "audit_basis": "presentation.c is unchanged and CD still uses coarse SDL_Delay. Blind sleep/spin reuse is not a qualified solution; no new physical delivery comparison was made.",
+      "next_closure": "Reuse beads-hj4v. Select an actual delivery/jitter or copy cost and implement a suitable shared pipeline/nonspinning fallback.",
+      "source_references": [
+        "runner/cd/presentation.c:522",
+        "runner/cd/standalone.c:291",
+        "runner/host_wait.c",
+        "runner/main.c"
+      ]
+    },
+    {
+      "id": "E35",
+      "name": "Asynchronous engine persistence and diagnostics",
+      "original_goal": "Buffer immutable save/evidence/capture data and use bounded rings for enabled tracing instead of hot-path file I/O.",
+      "recorded_evaluation_status": "evaluated_deferred",
+      "implementation_state": "deferred",
+      "remaining_scope_open": true,
+      "delivered": "Existing dirty-tracked/minute-rate evidence and opt-in tracing retained.",
+      "remaining": "Async immutable persistence or bounded trace rings for an enabled costly workload.",
+      "audit_basis": "No default hot file stall is demonstrated. This is a reasonable low-priority deferral, not an implemented asynchronous pipeline.",
+      "next_closure": "Reuse beads-3vb.11; pursue a measured enabled trace/save stall and retain transactional saves, shutdown/error handling.",
+      "source_references": [
+        "runner/runtime_evidence.c",
+        "runner/local_states.c",
+        "runner/glue.c"
+      ]
+    },
+    {
+      "id": "E36",
+      "name": "Whole-program native build optimization",
+      "original_goal": "Evaluate common LTO/PGO, cross-TU inlining, hot/cold layout and qualified optional kernels on real built consumers.",
+      "recorded_evaluation_status": "implemented_catalog_lto_deferred",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Generated catalog compaction under ordinary linking, shared with E02.",
+      "remaining": "Actual matched LTO/PGO/cross-TU/hot-cold layout evaluation and qualification.",
+      "audit_basis": "Compaction is not an LTO/PGO experiment. No qualified new compiler alternative was delivered; noisy catalog CPU timing does not decide compiler optimization.",
+      "next_closure": "Use a supported compiler package on built consumers; retain exact arithmetic/portability and record runtime/startup/memory. Benchmark host waiting is not a global blocker.",
+      "source_references": [
+        "tools/native_catalog_compact.py",
+        "tools/segacd/native_catalog_build.py",
+        "cmake",
+        "core/profiles/genesis/code_generator.c"
+      ]
+    }
+  ]
+}

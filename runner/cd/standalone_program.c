@@ -63,3 +63,14 @@ const SegaCDNativeProgram *segacd_standalone_program(void)
         sizeof main_modules/sizeof *main_modules,sizeof sub_modules/sizeof *sub_modules,sonic_cd_z80_step};
     return &program;
 }
+void segacd_standalone_qualify_regions(SegaCDMachine *machine)
+{
+#if defined(GENESIS_CATALOG_HAS_EFFECTS) && GENESIS_CATALOG_HAS_EFFECTS
+    static const M68kStepEffectModule main_effects[]={GENESIS_CATALOG_MAIN_EFFECT_MODULES};
+    static const M68kStepEffectModule sub_effects[]={GENESIS_CATALOG_SUB_EFFECT_MODULES};
+    (void)segacd_coordinator_region_effects(&machine->coordinator,SEGACD_MAIN,main_effects,sizeof main_effects/sizeof *main_effects);
+    (void)segacd_coordinator_region_effects(&machine->coordinator,SEGACD_SUB,sub_effects,sizeof sub_effects/sizeof *sub_effects);
+#else
+    (void)machine;
+#endif
+}

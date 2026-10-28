@@ -1,0 +1,187 @@
+{
+  "schema": "GenesisNativeRegionResults1",
+  "goal": "E01",
+  "issue": "beads-ufzc",
+  "core_issue": "beads-7yle",
+  "parent": "beads-3z5k",
+  "campaign": "beads-2wy8.1",
+  "status": "implemented_qualified_ready_for_owner_check",
+  "date": "2026-10-28",
+  "engine_code_commit": "382678d28c02255bb1a79d271cb730c4d8902277",
+  "runtime_core_commit": "34e5aee23348199adfc6eda9a92b9632138b9884",
+  "instruction_generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
+  "consumer_commit": "94f57796db9de4990e23476b576b29239095fb22",
+  "per_game": [
+    {
+      "game": "Sonic CD",
+      "baseline_package": "Windows v0.0.4, engine ae1c742/core53fc7b4, same title sources and frozen operation objects",
+      "candidate_package": "E01-native-deadline-regions-v5",
+      "candidate": {
+        "sha256": "ad78fc4d9200fb6d7ef1c14139d4dd2e0247f64a5a182aca249eb0416f08c79d",
+        "bytes": 111279104
+      },
+      "baseline": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-native-regions-20261028\\released-baseline\\SonicCD.exe",
+        "bytes": 109482496,
+        "sha256": "aefcf32fcce2a6fae36a6c50c342d6afc6fd0619ade2f206441ddb5040b75915"
+      },
+      "correctness": "All final 3000-frame state/inspect/pixel/full-WAV and execution totals match the frozen reference and actual released A arm; zero floors/audio faults/queue errors.",
+      "performance_classification": "positive_observed_on_matched_workload",
+      "performance_claim": "Final v5 balanced pairs use3.1/8.7% less process CPU and8.6/7.2% fewer process cycles on this Windows Sonic CD route. CPU A/A drift8.38%, cycle A/A drift1.72%; bounded shared-host evidence, not an FPS or other-host/title claim. Older package samples remain separate.",
+      "v3_samples": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 8.59375,
+            "cycles": 40643389120
+          },
+          "wall_seconds": 20.681829900015146
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 9.375,
+            "cycles": 43912772100
+          },
+          "wall_seconds": 20.317488799919374
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 9.546875,
+            "cycles": 45062642610
+          },
+          "wall_seconds": 20.30971950001549
+        },
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 9.65625,
+            "cycles": 44509991700
+          },
+          "wall_seconds": 20.362563699949533
+        }
+      ],
+      "v3_cpu_reductions_pct": [
+        8.333333333333337,
+        -1.1456628477905184
+      ],
+      "v3_cycle_reductions_pct": [
+        7.445175568863716,
+        1.2264059051817822
+      ],
+      "v3_AA_drift_pct": {
+        "cpu_seconds": 1.8333333333333313,
+        "cycles": 2.618533185246119
+      },
+      "final_v5_samples": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 8.859375,
+            "cycles": 40727693960
+          },
+          "wall_seconds": 20.296543100033887
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 9.140625,
+            "cycles": 44543001210
+          },
+          "wall_seconds": 20.33798269997351
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 9.90625,
+            "cycles": 45310798850
+          },
+          "wall_seconds": 20.35082519997377
+        },
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 9.046875,
+            "cycles": 42059945620
+          },
+          "wall_seconds": 20.357407499919645
+        }
+      ],
+      "final_v5_reductions_pct": {
+        "cpu_seconds": [
+          3.076923076923077,
+          8.675078864353313
+        ],
+        "cycles": [
+          8.565447200139387,
+          7.174566135463312
+        ]
+      },
+      "final_v5_caveat": "Four balanced B-A-A-B runs after shared validation-context consolidation; per-game/host/route bound. No universal FPS or other-package inference.",
+      "final_v5_AA_drift_pct": {
+        "cpu_seconds": 8.376068376068368,
+        "cycles": 1.7237222888960346
+      },
+      "settings": "view_mode1; normal cadence; dummy SDL software presentation and dummy audio output; audio emulation/full WAV active; same scripted input/private seed; process affinity14/below-normal in every arm.",
+      "host": {
+        "cpu": "AMD Ryzen 7 9800X3D, 8 cores/16 logical",
+        "os": "Windows 11 Home 64-bit 10.0.26200",
+        "load": "Ambient shared host; no quiet-host qualification or per-window host-load telemetry; no physical GPU/audio-device claim."
+      },
+      "material_costs": {
+        "baseline_exe_bytes": 109482496,
+        "candidate_exe_bytes": 111279104,
+        "exe_delta_bytes": 1796608,
+        "effect_entries": 1788139,
+        "bounded_sparse_lookup_bytes_per_cpu": 8388608,
+        "generation_observed_seconds": 435.64000000001397,
+        "generation_caveat": "Observed new metadata generation, not a matched generation benchmark."
+      },
+      "raw_evidence": [
+        "G:\\Temp\\Codex\\genesis-engine-native-regions-20261028\\game-v5.json",
+        "G:\\Temp\\Codex\\genesis-engine-native-regions-20261028\\game-v3.json",
+        "G:\\Temp\\Codex\\genesis-engine-native-regions-20261028\\build-v5.json",
+        "G:\\Temp\\Codex\\genesis-engine-native-regions-20261028\\generation.json"
+      ]
+    }
+  ],
+  "participation": {
+    "main_register_retirements": 16655448,
+    "sub_register_retirements": 20308700,
+    "region_runs": 25475456,
+    "caveat": "Native-fast retirement/work counters, not new native coverage or FPS gains. Old build was already native."
+  },
+  "validation": {
+    "MSVC": "8 targeted core/CPU/coordinator/external-WAIT/Z80/machine gates pass; 4 effect-grammar/catalog tests pass.",
+    "GCC": "6 portable core/CPU/coordinator/Z80/machine gates pass.",
+    "oracles": "20000 ordinary-vs-register CPU retirements; 1308 regular/staged third-master ceiling cases with exact CPU/device/observer state, active DMA/stamp/timer and DMA self-modification; 109 Z80 interval cases plus terminal miss-prefix and callback-reentry coverage.",
+    "regressions_found_and_fixed": [
+      "Due event publication before the next instruction after third-master ceiling overshoot",
+      "Completed clock publication on terminal Z80 native miss",
+      "Explicit run_frame callback/reentry guard"
+    ]
+  },
+  "rejected_experiments": [
+    {
+      "package": "v1",
+      "decision": "Rejected: reproducible20.8/23.3% process-CPU regression; correctness passed all4 runs.",
+      "raw": "G:\\Temp\\Codex\\genesis-engine-native-regions-20261028\\game-v1.json"
+    },
+    {
+      "package": "v2",
+      "decision": "Rejected: inspect-timing and full-WAV differences; due-event regression reproduced and fixed.",
+      "raw": "G:\\Temp\\Codex\\genesis-engine-native-regions-20261028\\game-v2.json"
+    },
+    {
+      "package": "v4",
+      "decision": "Rejected: reproducible2.5/3.1% CPU and6.7/5.7% cycle increases. Shared validated context in v5 removes repeated validation/clock calculation.",
+      "raw": [
+        "G:\\Temp\\Codex\\genesis-engine-native-regions-20261028\\game-v4.json",
+        "G:\\Temp\\Codex\\genesis-engine-native-regions-20261028\\game-v4-r2.json"
+      ]
+    }
+  ],
+  "scope": "E01 only. Necessary effect/deadline support does not close E02/E03/E04/E05/E07. Cartridge runtime paths/generator are unchanged; no new cartridge gains claimed.",
+  "merge_release": "Not merged/released. Owner check follows this serial task; no next task started."
+}
