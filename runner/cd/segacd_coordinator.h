@@ -74,10 +74,10 @@ struct SegaCDCoordinator {
 static inline unsigned segacd_coordinator_scope_hold(SegaCDCoordinator *c)
 {
 #if defined(M68K_STEP_HAS_EXECUTION_SCOPES) && M68K_STEP_HAS_EXECUTION_SCOPES
-    unsigned mask=(unsigned)m68k_step_scope_hold(c->cpu[0].scope);
-    if(c->cpu[1].scope!=c->cpu[0].scope)
-        mask|=(unsigned)m68k_step_scope_hold(c->cpu[1].scope)<<1;
-    return mask;
+    if(c->cpu[1].scope==c->cpu[0].scope)
+        return (unsigned)m68k_step_scope_hold(c->cpu[0].scope);
+    return (unsigned)m68k_step_scope_hold(c->cpu[0].scope)|
+           ((unsigned)m68k_step_scope_hold(c->cpu[1].scope)<<1);
 #else
     (void)c;return 0;
 #endif
