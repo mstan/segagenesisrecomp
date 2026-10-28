@@ -142,6 +142,72 @@ static int16_t sn_render_sample(SN76489 *p)
     return (int16_t)out;
 }
 
+#ifndef GENESIS_PSG_SILENT_SPANS
+#define GENESIS_PSG_SILENT_SPANS 1
+#endif
+#if GENESIS_PSG_SILENT_SPANS
+/* No writes occur inside an advance interval. Once every channel is muted
+ * and the filter has settled exactly to zero, samples are known, but chip
+ * counters/phase/noise must still advance for a later unmute or snapshot. */
+static unsigned sn_counter_span(int32_t *counter,unsigned period,unsigned samples)
+{
+    unsigned first=*counter>0?(unsigned)*counter:1u;
+    if(samples<first){*counter-=(int32_t)samples;return 0;}
+    unsigned rest=samples-first;
+    *counter=(int32_t)(period-rest%period);
+    return 1u+rest/period;
+}
+static uint16_t sn_white_step(uint16_t bits)
+{return (uint16_t)((bits>>1)|(((bits^(bits>>3))&1u)<<15));}
+static uint16_t sn_linear_apply(const uint16_t columns[16],uint16_t bits)
+{
+    uint16_t out=0;
+    for(unsigned i=0;bits;++i,bits>>=1)if(bits&1u)out^=columns[i];
+    return out;
+}
+static uint16_t sn_white_span(uint16_t bits,unsigned steps)
+{
+    /* A scratch chunk has at most8192 ticks, hence4096 LFSR edges. This is
+     * derived immutable math, not chip state; reset/restore needs no epoch. */
+    static uint16_t powers[13][16];
+    static int ready;
+    if(steps<16u){while(steps--)bits=sn_white_step(bits);return bits;}
+    if(!ready) {
+        for(unsigned i=0;i<16;++i)powers[0][i]=sn_white_step((uint16_t)(1u<<i));
+        for(unsigned p=1;p<13;++p)for(unsigned i=0;i<16;++i)
+            powers[p][i]=sn_linear_apply(powers[p-1],powers[p-1][i]);
+        ready=1;
+    }
+    for(unsigned p=0;steps;++p,steps>>=1)if(steps&1u)bits=sn_linear_apply(powers[p],bits);
+    return bits;
+}
+static int sn_silent_span(SN76489 *p,int16_t *out,size_t samples)
+{
+    if(p->vol[0]!=15||p->vol[1]!=15||p->vol[2]!=15||p->vol[3]!=15||
+       p->lpf_y||p->lpf_prev||p->noise_ff>1||p->noise_out>1||
+       p->tone_out[0]>1||p->tone_out[1]>1||p->tone_out[2]>1)return 0;
+    for(unsigned i=0;i<3;++i) {
+        unsigned period=p->tone_period[i]?p->tone_period[i]:1u;
+        p->tone_out[i]^=(uint8_t)(sn_counter_span(&p->tone_counter[i],period,(unsigned)samples)&1u);
+    }
+    unsigned edges=sn_counter_span(&p->noise_counter,(unsigned)sn_noise_reload(p),(unsigned)samples);
+    unsigned shifts=(edges+(p->noise_ff?0u:1u))/2u;
+    p->noise_ff^=(uint8_t)(edges&1u);
+    if(shifts) {
+        if(p->noise_ctrl&4u)p->lfsr=sn_white_span(p->lfsr,shifts);
+        else {
+            unsigned rotate=shifts&15u;
+            if(rotate)p->lfsr=(uint16_t)((p->lfsr>>rotate)|((uint32_t)p->lfsr<<(16u-rotate)));
+        }
+        /* A noise-control write resets LFSR without changing noise_out.
+         * Preserve that stale output until an actual rising clock edge. */
+        p->noise_out=(uint8_t)(p->lfsr&1u);
+    }
+    memset(out,0,samples*sizeof *out);
+    return 1;
+}
+#endif
+
 void psg_init(void)
 {
     sn_reset(&s_sn);
@@ -163,8 +229,11 @@ void psg_advance(uint32_t cycles_master)
         size_t avail = PSG_SCRATCH_SAMPLES - s_scratch_write;
         if (avail == 0) return;  /* scratch full; drop */
         size_t chunk = samples_to_emit < avail ? samples_to_emit : avail;
-        for (size_t i = 0; i < chunk; i++)
-            s_scratch[s_scratch_write + i] = sn_render_sample(&s_sn);
+#if GENESIS_PSG_SILENT_SPANS
+        if(!sn_silent_span(&s_sn,s_scratch+s_scratch_write,chunk))
+#endif
+            for (size_t i = 0; i < chunk; i++)
+                s_scratch[s_scratch_write + i] = sn_render_sample(&s_sn);
         s_scratch_write  += chunk;
         samples_to_emit  -= chunk;
     }

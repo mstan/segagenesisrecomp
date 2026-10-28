@@ -24,6 +24,18 @@ enable_testing()
 add_subdirectory(segacd)
 enable_language(CXX)
 
+set(_psg_wrapper "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/sn76489.c")
+add_library(psg_scalar_test_model OBJECT "${_psg_wrapper}")
+target_include_directories(psg_scalar_test_model PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
+target_compile_definitions(psg_scalar_test_model PRIVATE GENESIS_PSG_SILENT_SPANS=0)
+foreach(_psg_api init advance write render samples_available sample_rate reset_leftover save_state load_state cosim_hash rb_save rb_load)
+    target_compile_definitions(psg_scalar_test_model PRIVATE psg_${_psg_api}=ref_psg_${_psg_api})
+endforeach()
+add_executable(psg_span_test runtime/psg_span_test.c "${_psg_wrapper}" $<TARGET_OBJECTS:psg_scalar_test_model>)
+target_include_directories(psg_span_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
+target_compile_definitions(psg_span_test PRIVATE GENESIS_PSG_SILENT_SPANS=1)
+add_test(NAME psg_span COMMAND psg_span_test)
+
 # Compile the same public wrapper under both fixed implementations. Share the
 # unmodified ymfm chip, compare full state and PCM, and exercise pending output.
 set(_fm_wrapper "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/ym2612_ymfm.cpp")
