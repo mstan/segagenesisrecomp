@@ -17,7 +17,17 @@ if(NOT DEFINED RECOMP_ROOT)
     message(FATAL_ERROR "RECOMP_ROOT must name the segagenesisrecomp checkout")
 endif()
 
-if(NOT TARGET GenesisRecomp)
+# Cross builds (e.g. MinGW from Linux) cannot run a recompiler built for the
+# target platform. GENESIS_RECOMPILER_EXE names a prebuilt host GenesisRecomp
+# to run instead of building one in this tree.
+set(GENESIS_RECOMPILER_EXE "" CACHE FILEPATH
+    "Prebuilt host GenesisRecomp executable (for cross-compiling)")
+if(GENESIS_RECOMPILER_EXE)
+    if(NOT EXISTS "${GENESIS_RECOMPILER_EXE}")
+        message(FATAL_ERROR
+            "GENESIS_RECOMPILER_EXE does not exist: ${GENESIS_RECOMPILER_EXE}")
+    endif()
+elseif(NOT TARGET GenesisRecomp)
     add_subdirectory("${RECOMP_ROOT}/recompiler"
                      "${CMAKE_BINARY_DIR}/genesis-recompiler")
 endif()
@@ -98,6 +108,13 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
         set(_rom_present 0)
     endif()
 
+    if(GENESIS_RECOMPILER_EXE)
+        set(_genesis_recomp_cmd "${GENESIS_RECOMPILER_EXE}")
+        set(_genesis_recomp_dep "${GENESIS_RECOMPILER_EXE}")
+    else()
+        set(_genesis_recomp_cmd "$<TARGET_FILE:GenesisRecomp>")
+        set(_genesis_recomp_dep GenesisRecomp)
+    endif()
     set(_recompiler_args "${ROM_NAME}" --game game.toml
         --output-dir "${_stage}")
     if(GRG_REVERSE_DEBUG)
@@ -134,14 +151,14 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
             "-DREQUIRED_LABEL=${PREFIX} ROM"
             -P "${RECOMP_ROOT}/cmake/RequireFile.cmake"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${_stage}" "${_gen}"
-        COMMAND "$<TARGET_FILE:GenesisRecomp>" ${_recompiler_args}
+        COMMAND "${_genesis_recomp_cmd}" ${_recompiler_args}
         # Diagnostics are promoted with the generation. Compiled outputs have
         # explicit rules below so Visual Studio orders them before compilation.
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${_stage_audit}" "${_audit}"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${_stage_unresolved}" "${_unresolved}"
         COMMAND "${CMAKE_COMMAND}" -E touch "${_stamp}"
         DEPENDS
-            GenesisRecomp
+            ${_genesis_recomp_dep}
             ${_rom_input}
             "${_game}/game.toml"
             "${_options_file}"
