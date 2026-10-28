@@ -18,6 +18,7 @@ typedef struct {
     size_t next_module;
     const M68kStepEntry *entry[SEGACD_LOOKUP_VARIANTS];
     uint8_t valid,count,overflow;
+    uint8_t register_only[SEGACD_LOOKUP_VARIANTS];
 } SegaCDLookupSlot;
 typedef struct {
     SegaCDLookupSlot slots[SEGACD_LOOKUP_SLOTS];
@@ -48,8 +49,16 @@ static inline const M68kStepEntry *segacd_catalog_find(const M68kStepModule *m,u
     }
     return NULL;
 }
-static inline M68kStepResult segacd_catalog_execute(SegaCDCatalogLookup *cache,
-    M68kStepContext *cpu,const M68kStepModule *const *modules,size_t count)
+static inline unsigned segacd_catalog_register_effect(const M68kStepEffectModule *effects,
+    size_t effect_count,const M68kStepModule *module,const M68kStepEntry *entry)
+{
+    for(size_t i=0;i<effect_count;++i)if(effects[i].module==module)
+        return effects[i].register_only?effects[i].register_only[entry-module->entries]:0;
+    return 0;
+}
+static inline M68kStepResult segacd_catalog_execute_qualified(SegaCDCatalogLookup *cache,
+    M68kStepContext *cpu,const M68kStepModule *const *modules,size_t count,
+    const M68kStepEffectModule *effects,size_t effect_count)
 {
 #if SEGACD_CATALOG_LOOKUP_CACHE
     uint32_t pc=cpu->state.regs.PC;
@@ -68,7 +77,10 @@ static inline M68kStepResult segacd_catalog_execute(SegaCDCatalogLookup *cache,
         ++cache->descriptor_searches;slot->next_module=i+1;
         if(!entry)continue;
         if(!slot->overflow) {
-            if(slot->count<SEGACD_LOOKUP_VARIANTS)slot->entry[slot->count++]=entry;
+            if(slot->count<SEGACD_LOOKUP_VARIANTS) {
+                slot->register_only[slot->count]=(uint8_t)segacd_catalog_register_effect(effects,effect_count,modules[i],entry);
+                slot->entry[slot->count++]=entry;
+            }
             else slot->overflow=1;
         }
         M68kStepResult result=m68k_step_execute(cpu,entry);
@@ -77,7 +89,11 @@ static inline M68kStepResult segacd_catalog_execute(SegaCDCatalogLookup *cache,
     return M68K_STEP_MISS;
 #else
     (void)cache;
+    (void)effects;(void)effect_count;
     return segacd_catalog_execute_slow(cpu,modules,count);
 #endif
 }
+static inline M68kStepResult segacd_catalog_execute(SegaCDCatalogLookup *cache,
+    M68kStepContext *cpu,const M68kStepModule *const *modules,size_t count)
+{return segacd_catalog_execute_qualified(cache,cpu,modules,count,NULL,0);}
 #endif

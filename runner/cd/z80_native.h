@@ -45,6 +45,14 @@ void segacd_z80_irq(SegaCDZ80 *);
  * changing registers. Call only while the Z80 is externally held. */
 int segacd_z80_hold_until(SegaCDZ80 *,uint64_t subclock);
 SegaCDZ80Result segacd_z80_step(SegaCDZ80 *);
+/* A continuous native interval; bus synchronization, IRQ sampling, faults and
+ * state publication still occur at their original instruction boundaries.
+ * keep_running is a read-only host ownership/reset predicate, sampled between
+ * operations; NULL retains the ordinary single-step contract. For continuous
+ * intervals, local reads must be isolated RAM/YM/PSG reads with no CD-device
+ * effects. Unknown callbacks must use step(); writes invalidate settle reuse. */
+SegaCDZ80Result segacd_z80_run_until(SegaCDZ80 *,uint64_t deadline,
+                                  int (*keep_running)(void *),void *);
 /* Current callback's clock (including preceding waits), otherwise state.time. */
 uint64_t segacd_z80_bus_time(const SegaCDZ80 *);
 #endif
