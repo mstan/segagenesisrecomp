@@ -236,7 +236,10 @@ static M68kStepResult execute_cpu(SegaCDCoordinator *c,unsigned which)
     M68kStepResult result=segacd_catalog_index_execute(c->catalog_index[which],&c->catalog_lookup[which],cpu,
                                                c->modules[which],c->module_count[which]);
     if(result==M68K_STEP_MISS && c->floor_step) {
-        result=c->floor_step(cpu);if(result==M68K_STEP_OK)++c->floor_steps[which];
+        unsigned held=segacd_coordinator_scope_hold(c);
+        result=c->floor_step(cpu);
+        segacd_coordinator_scope_resume(c,held);
+        if(result==M68K_STEP_OK)++c->floor_steps[which];
     } else if(result==M68K_STEP_OK)++c->native_steps[which];
     c->busy[which]=0;
     c->last_cpu=which;
@@ -368,13 +371,30 @@ M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
     r=execute_cpu(c,which);
     if(r==M68K_STEP_STOPPED) {
         unsigned other=which^1u;
+        /* This branch aligns the STOPped peer after an error too. Keep its
+         * local return so an outer fault cannot skip that bookkeeping. */
+        unsigned held=segacd_coordinator_scope_hold(c);
         if(other==0 || segacd_sub_runnable(c->devices))r=execute_cpu(c,other);
+        segacd_coordinator_scope_resume(c,held);
         if(r==M68K_STEP_STOPPED){idle_until(c,c->device_time+SEGACD_TIMER_DIVISOR);r=M68K_STEP_OK;}
         else if(c->time[which]<c->time[other])c->time[which]=c->time[other];
     }
     advance_devices(c);
     if(r==M68K_STEP_OK && device_fault(c)){c->last_cpu=1;r=M68K_STEP_BUS_ERROR;}
     return c->last_result=r;
+}
+M68kStepResult segacd_coordinator_scope_fault(SegaCDCoordinator *c,M68kStepContext *faulted)
+{
+    if(!c||!faulted||c->external_active)return M68K_STEP_REENTERED;
+    unsigned which;
+    if(faulted==&c->cpu[0])which=0;
+    else if(faulted==&c->cpu[1])which=1;
+    else return M68K_STEP_REENTERED;
+    if(!c->busy[which]||c->busy[which^1u]||faulted->fault_escape||!faulted->state.fault)
+        return M68K_STEP_REENTERED;
+    c->busy[which]=0;c->last_cpu=which;
+    advance_devices(c);
+    return c->last_result=(M68kStepResult)faulted->state.fault;
 }
 M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator*c,uint64_t deadline)
 {
@@ -443,6 +463,7 @@ static M68kStepResult external_main_byte(SegaCDCoordinator *c,ExternalByte *op)
 {
     if(!c || c->busy[0] || c->busy[1] || c->external_active)return M68K_STEP_REENTERED;
     op->address&=0xFFFFFFu;
+    unsigned held=segacd_coordinator_scope_hold(c);
     c->external_active=1;c->busy[SEGACD_MAIN]=1;c->external_stall_seen=0;
     M68kStepResult result=M68K_STEP_OK;
     int wait=0;
@@ -500,6 +521,7 @@ static M68kStepResult external_main_byte(SegaCDCoordinator *c,ExternalByte *op)
     result=M68K_STEP_NO_WAIT_HANDLER;
 done:
     c->busy[SEGACD_MAIN]=0;c->external_active=0;c->external_stall_seen=0;
+    segacd_coordinator_scope_resume(c,held);
     return result;
 }
 

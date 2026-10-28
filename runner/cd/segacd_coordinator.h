@@ -69,6 +69,32 @@ struct SegaCDCoordinator {
     const uint8_t *(*host_code_span)(void *,uint32_t,size_t);
 };
 
+/* Preserve local fault translation across cleanup-bearing nested drivers.
+ * The machine binds both CPUs to one scope; generic callers may bind two. */
+static inline unsigned segacd_coordinator_scope_hold(SegaCDCoordinator *c)
+{
+#if defined(M68K_STEP_HAS_EXECUTION_SCOPES) && M68K_STEP_HAS_EXECUTION_SCOPES
+    unsigned mask=(unsigned)m68k_step_scope_hold(c->cpu[0].scope);
+    if(c->cpu[1].scope!=c->cpu[0].scope)
+        mask|=(unsigned)m68k_step_scope_hold(c->cpu[1].scope)<<1;
+    return mask;
+#else
+    (void)c;return 0;
+#endif
+}
+static inline void segacd_coordinator_scope_resume(SegaCDCoordinator *c,unsigned mask)
+{
+#if defined(M68K_STEP_HAS_EXECUTION_SCOPES) && M68K_STEP_HAS_EXECUTION_SCOPES
+    if(mask&2u)(void)m68k_step_scope_resume(c->cpu[1].scope);
+    if(mask&1u)(void)m68k_step_scope_resume(c->cpu[0].scope);
+#else
+    (void)c;(void)mask;
+#endif
+}
+/* Complete the same scheduler error exit after an outer scope catches a
+ * root operation fault. The faulted CPU remains busy until this cleanup. */
+M68kStepResult segacd_coordinator_scope_fault(SegaCDCoordinator *,M68kStepContext *);
+
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
 /* Descriptors/arrays must remain immutable and alive during execution. */
 int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
