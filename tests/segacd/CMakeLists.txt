@@ -178,6 +178,8 @@ add_executable(segacd_disc_probe disc_probe.c)
 target_link_libraries(segacd_disc_probe PRIVATE segacd_disc_image segacd_devices)
 find_package(Python3 COMPONENTS Interpreter QUIET)
 if(Python3_Interpreter_FOUND)
+  add_test(NAME segacd_native_catalog_compact COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/native_catalog_compact_test.py")
   add_test(NAME segacd_disc_converter COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/disc_image_test.py")
   add_test(NAME segacd_owned_programs COMMAND "${Python3_EXECUTABLE}"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../tools/segacd/test_sgcd_owned_extract.py")

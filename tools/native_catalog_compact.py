@@ -63,12 +63,13 @@ def entries(text: str, prefix: str, aliases: dict):
         raise CatalogError("unsupported generated module include")
     clean = clean[len(start):].lstrip()
     declaration = re.compile(r"extern void (" + IDENT + r")\(M68kStepContext \*\);\s*")
-    while match := declaration.match(clean):
-        clean = clean[match.end():]
+    position = 0
+    while match := declaration.match(clean, position):
+        position = match.end()
     begin = "static const M68kStepEntry entries[]={\n"
-    if not clean.startswith(begin):
+    if not clean.startswith(begin, position):
         raise CatalogError("unsupported generated entry array")
-    lines = clean[len(begin):].splitlines()
+    lines = clean[position + len(begin):].splitlines()
     previous = -1
     result = []
     for index, line in enumerate(lines):
@@ -146,6 +147,8 @@ def compact(catalog_list: Path, output: Path, *, parts: int = 32, chunk_entries:
                 print(f"Qualified {len(module_rows)} generated catalogs", flush=True)
     generated, declarations, macros, stats = [], [], [], {}
     for group, state in groups.items():
+        if not state["seen"]:
+            raise CatalogError(f"group {group} has no descriptors")
         # Each shard has at most one entry per PC. Variant-major traversal keeps
         # the ORIGINAL priority at every PC even when shards cover many images.
         ordered = sorted(state["variants"].items())
