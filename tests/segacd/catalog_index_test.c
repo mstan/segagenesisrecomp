@@ -33,7 +33,7 @@ int main(void)
     CHECK(!segacd_catalog_index_create(1));
     SegaCDCatalogIndex *index=segacd_catalog_index_create(SEGACD_INDEX_DEFAULT_LIMIT);CHECK(index);
     live_words[0]=0x303c;live_words[1]=31;
-    compare(index,&fallback,list,32,0x1000); /* expands through all32 variants */
+    compare(index,&fallback,list,32,0x1000); /* retains original wide-variant fallback */
     size_t searches=fallback.descriptor_searches;
     for(unsigned i=0;i<1000;++i){live_words[1]=(uint16_t)(i%32);compare(index,&fallback,list,32,0x1000);}
     CHECK(searches==32&&fallback.descriptor_searches==searches&&index->visited==1);
@@ -41,6 +41,7 @@ int main(void)
     live_words[0]=0x303c;live_words[1]=32;compare(index,&fallback,list,32,0x1000); /* no variant */
     compare(index,&fallback,list,32,0x1001);compare(index,&fallback,list,32,0x1000000);
     segacd_catalog_index_destroy(index);
+    segacd_catalog_lookup_reset(&fallback);
     /* Registry replacement has a new empty derivation; earlier precedence
      * and not-yet-seen suffixes are rediscovered with exact read traces. */
     index=segacd_catalog_index_create(SEGACD_INDEX_DEFAULT_LIMIT);CHECK(index);
@@ -48,12 +49,13 @@ int main(void)
     live_words[1]=0;compare(index,&fallback,replacement,2,0x1000);
     live_words[1]=31;compare(index,&fallback,replacement,2,0x1000);
     segacd_catalog_index_destroy(index);
-    /* Seal during variant expansion: the failed allocation must not repeat
-     * any guard in this operation; subsequent calls use the old lookup. */
+    /* Budget exhaustion must never repeat guards or lose the front cache. */
+    segacd_catalog_lookup_reset(&fallback);
     index=segacd_catalog_index_create(sizeof *index+SEGACD_INDEX_PAGE_SLOTS*sizeof(void*)+sizeof(SegaCDIndexSlot));CHECK(index);
-    live_words[1]=31;compare(index,&fallback,list,32,0x1000);CHECK(index->sealed);
+    live_words[1]=31;compare(index,&fallback,list,32,0x1000);
     for(unsigned i=0;i<32;++i){live_words[1]=(uint16_t)i;compare(index,&fallback,list,32,0x1000);}
     compare(index,&fallback,list,32,0x4000); /* missing page after budget exhaustion */
+    CHECK(index->sealed);
     CHECK(index->bytes<=index->limit);segacd_catalog_index_destroy(index);
     /* Many PCs remain resident even when they would evict the old128 slots. */
     static M68kStepEntry many[2048];M68kStepModule large={"many",0x10000,8192,0,many,2048};

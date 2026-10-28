@@ -4,7 +4,7 @@ enable_testing()
 option(SEGACD_CATALOG_LOOKUP_CACHE "Cache immutable native descriptor discovery, preserving live guards" ON)
 option(SEGACD_CATALOG_PC_INDEX "Use bounded direct-PC native catalog lookup" ON)
 set_source_files_properties("../../runner/cd/machine.c" PROPERTIES
-    COMPILE_DEFINITIONS "SEGACD_CATALOG_PC_INDEX=$<BOOL:${SEGACD_CATALOG_PC_INDEX}>")
+    COMPILE_DEFINITIONS "SEGACD_CATALOG_PC_INDEX=$<AND:$<BOOL:${SEGACD_CATALOG_PC_INDEX}>,$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>>")
 set_source_files_properties("../../runner/cd/segacd_coordinator.c" PROPERTIES
     COMPILE_DEFINITIONS "SEGACD_CATALOG_LOOKUP_CACHE=$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>")
 set(SEGACD_GAME_RENDER_SOURCE "${CMAKE_CURRENT_LIST_DIR}/../../runner/cd/sonic_cd_render.c"
