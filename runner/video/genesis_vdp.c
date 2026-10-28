@@ -13,9 +13,13 @@
  */
 #include "genesis_vdp.h"
 #include "genesis_tile_row.h"
+#include "genesis_vdp_compose.h"
 #include <string.h>
 #ifndef GENESIS_BATCHED_PLANES
 #define GENESIS_BATCHED_PLANES 0
+#endif
+#ifndef GENESIS_NATIVE_COMPOSE
+#define GENESIS_NATIVE_COMPOSE (UINTPTR_MAX > UINT32_MAX)
 #endif
 #if GENESIS_BATCHED_PLANES
 /* Four states per layer: transparent/opaque crossed with low/high priority.
@@ -988,6 +992,16 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
 
     if (pillar > 0) memset(out, bar_idx, (size_t)pillar);
     if (right_bar > 0) memset(out + content_end, bar_idx, (size_t)right_bar);
+
+#if GENESIS_BATCHED_PLANES && GENESIS_NATIVE_COMPOSE
+    if (!s_ws_bgdiag) {
+        gvdp_compose_span(out+content_start,plane_a+content_start,plane_b+content_start,
+            s_spr_idx+content_start,s_spr_op+content_start,s_spr_hi+content_start,
+            s_spr_shadow_op+content_start,s_spr_hilite_op+content_start,
+            content_block,backdrop,sh_mode);
+        return total;
+    }
+#endif
 
     for (int x = -content_extra, xo = content_start; xo < content_end; x++, xo++) {
 #if GENESIS_BATCHED_PLANES
