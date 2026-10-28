@@ -54,6 +54,17 @@ outside simulation state. Sector reads reject out-of-range LBAs and preserve
 the caller's buffer on I/O failure. Mounted files must remain immutable; a
 payload hash checked at open is not protection against later external writes.
 
+Full-payload validation uses Windows CNG, or optional OpenSSL 1.1+ EVP on other
+hosts when CMake finds `OpenSSL::Crypto`. The provider handles its own CPU
+feature selection. `-DSEGACD_IMAGE_OPENSSL_SHA=OFF` disables that optional
+dependency; absence of OpenSSL also selects the universal C implementation.
+Provider initialization, update or finalization failure restarts a complete
+portable pass, including resident-sector population. Every launch still hashes
+all payload bytes. Linux distributions/packages enabling OpenSSL must carry
+the linked crypto library and its license with their other runtime dependencies.
+CTest covers native, forced-portable and unavailable-provider builds, plus
+injected OpenSSL initialization, mid-stream and finalization failures.
+
 The pure sector validator checks MODE1 sync, mode and EDC using
 [ECMA-130 sections 14.1–14.3](https://ecma-international.org/wp-content/uploads/ECMA-130_2nd_edition_june_1996.pdf).
 It does not validate or repair ECC, compare header MSF with an LBA, or claim

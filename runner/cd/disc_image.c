@@ -11,6 +11,8 @@
 #if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
 #include <windows.h>
 #include <bcrypt.h>
+#elif SEGACD_IMAGE_PLATFORM_SHA && defined(SEGACD_IMAGE_OPENSSL_SHA) && SEGACD_IMAGE_OPENSSL_SHA
+#include <openssl/evp.h>
 #endif
 
 enum { SECTOR_BYTES = 2352, HEADER_BYTES = 96, TRACK_BYTES = 32,
@@ -164,27 +166,75 @@ static int all_zero(const uint8_t *data, size_t size)
     return 1;
 }
 
-static int hash_payload_pass(SegaCDImage *image, uint64_t offset, uint64_t size,
-                             uint8_t digest[32], int platform)
-{
-    FILE *file = image->file;
-    Sha256 sha;
-    uint8_t buffer[32768];
-    uint64_t remaining = size;
+/* Provider selection is host work. Every provider sees the complete stream;
+ * no partial result or residency is published after a provider failure. */
+typedef struct {
+    Sha256 portable;
 #if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
-    BCRYPT_ALG_HANDLE algorithm = NULL;
-    BCRYPT_HASH_HANDLE hash = NULL;
-    if (platform && (BCryptOpenAlgorithmProvider(&algorithm, BCRYPT_SHA256_ALGORITHM, NULL, 0) < 0 ||
-        BCryptCreateHash(algorithm, &hash, NULL, 0, NULL, 0, 0) < 0)) {
-        if (algorithm != NULL) BCryptCloseAlgorithmProvider(algorithm, 0);
-        return -1;
+    BCRYPT_ALG_HANDLE algorithm;
+    BCRYPT_HASH_HANDLE hash;
+#elif SEGACD_IMAGE_PLATFORM_SHA && defined(SEGACD_IMAGE_OPENSSL_SHA) && SEGACD_IMAGE_OPENSSL_SHA
+    EVP_MD_CTX *context;
+#endif
+} PayloadHash;
+static int payload_hash_init(PayloadHash *hash,int platform)
+{
+    memset(hash,0,sizeof *hash);sha_init(&hash->portable);
+#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
+    if(platform && (BCryptOpenAlgorithmProvider(&hash->algorithm,BCRYPT_SHA256_ALGORITHM,NULL,0)<0 ||
+        BCryptCreateHash(hash->algorithm,&hash->hash,NULL,0,NULL,0,0)<0))return 0;
+#elif SEGACD_IMAGE_PLATFORM_SHA && defined(SEGACD_IMAGE_OPENSSL_SHA) && SEGACD_IMAGE_OPENSSL_SHA
+    if(platform) {
+        hash->context=EVP_MD_CTX_new();
+        if(!hash->context || EVP_DigestInit_ex(hash->context,EVP_sha256(),NULL)!=1)return 0;
     }
 #else
     (void)platform;
 #endif
+    return 1;
+}
+static int payload_hash_update(PayloadHash *hash,const uint8_t *bytes,size_t size)
+{
+#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
+    if(hash->hash)return BCryptHashData(hash->hash,(PUCHAR)bytes,(ULONG)size,0)>=0;
+#elif SEGACD_IMAGE_PLATFORM_SHA && defined(SEGACD_IMAGE_OPENSSL_SHA) && SEGACD_IMAGE_OPENSSL_SHA
+    if(hash->context)return EVP_DigestUpdate(hash->context,bytes,size)==1;
+#endif
+    sha_update(&hash->portable,bytes,size);return 1;
+}
+static int payload_hash_final(PayloadHash *hash,uint8_t digest[32])
+{
+#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
+    if(hash->hash)return BCryptFinishHash(hash->hash,digest,32,0)>=0;
+#elif SEGACD_IMAGE_PLATFORM_SHA && defined(SEGACD_IMAGE_OPENSSL_SHA) && SEGACD_IMAGE_OPENSSL_SHA
+    if(hash->context) {
+        unsigned bytes=0;
+        return EVP_DigestFinal_ex(hash->context,digest,&bytes)==1&&bytes==32;
+    }
+#endif
+    sha_final(&hash->portable,digest);return 1;
+}
+static void payload_hash_close(PayloadHash *hash)
+{
+#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
+    if(hash->hash)BCryptDestroyHash(hash->hash);
+    if(hash->algorithm)BCryptCloseAlgorithmProvider(hash->algorithm,0);
+#elif SEGACD_IMAGE_PLATFORM_SHA && defined(SEGACD_IMAGE_OPENSSL_SHA) && SEGACD_IMAGE_OPENSSL_SHA
+    EVP_MD_CTX_free(hash->context);
+#else
+    (void)hash;
+#endif
+}
+static int hash_payload_pass(SegaCDImage *image,uint64_t offset,uint64_t size,
+                             uint8_t digest[32],int platform)
+{
+    FILE *file=image->file;
+    PayloadHash hash;
+    uint8_t buffer[32768];
+    uint64_t remaining=size;
     int result = 0;
+    if(!payload_hash_init(&hash,platform)){result=-1;goto done;}
     if (offset > (uint64_t)LONG_MAX || fseek(file, (long)offset, SEEK_SET) != 0) goto done;
-    sha_init(&sha);
     while (remaining != 0) {
         const size_t amount = remaining < sizeof(buffer) ? (size_t)remaining : sizeof(buffer);
         if (!read_exact(file, buffer, amount)) goto done;
@@ -199,25 +249,12 @@ static int hash_payload_pass(SegaCDImage *image, uint64_t offset, uint64_t size,
                 memcpy(image->resident + (size_t)(first - cache_start),
                        buffer + (size_t)(first - position), (size_t)(end - first));
         }
-#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
-        if (hash != NULL) {
-            if (BCryptHashData(hash, buffer, (ULONG)amount, 0) < 0) { result = -1; goto done; }
-        } else
-#endif
-        sha_update(&sha, buffer, amount);
+        if(!payload_hash_update(&hash,buffer,amount)){result=-1;goto done;}
         remaining -= amount;
     }
-#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
-    if (hash != NULL) {
-        result = BCryptFinishHash(hash, digest, 32, 0) < 0 ? -1 : 1;
-    } else
-#endif
-    { sha_final(&sha, digest); result = 1; }
+    result=payload_hash_final(&hash,digest)?1:-1;
 done:
-#if defined(_WIN32) && SEGACD_IMAGE_PLATFORM_SHA
-    if (hash != NULL) BCryptDestroyHash(hash);
-    if (algorithm != NULL) BCryptCloseAlgorithmProvider(algorithm, 0);
-#endif
+    payload_hash_close(&hash);
     return result;
 }
 
