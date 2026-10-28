@@ -36,6 +36,10 @@ target_include_directories(psg_span_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../r
 target_compile_definitions(psg_span_test PRIVATE GENESIS_PSG_SILENT_SPANS=1)
 add_test(NAME psg_span COMMAND psg_span_test)
 
+add_executable(audio_event_order_test runtime/audio_event_order_test.c)
+target_include_directories(audio_event_order_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+add_test(NAME audio_event_order COMMAND audio_event_order_test)
+
 # Compile the same public wrapper under both fixed implementations. Share the
 # unmodified ymfm chip, compare full state and PCM, and exercise pending output.
 set(_fm_wrapper "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/ym2612_ymfm.cpp")

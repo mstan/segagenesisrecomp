@@ -14,6 +14,7 @@
  */
 #include "mixer.h"
 #include "event_queue.h"
+#include "event_order.h"
 #include "ym2612.h"
 #include "sn76489.h"
 #include "fm_shadow.h"   /* verified-enhancement FM shadow (default OFF) */
@@ -36,17 +37,10 @@ void audio_mixer_init(void)
  * V-int handler as one lump out of raster order. So the queue's PUSH order is
  * not stamp order. Applying in push order with the monotonic clamp below
  * would collapse whichever source arrives late — the write-collapse bug.
- * Sorting by (stamp, push index) reconstructs the modeled timeline. The
+ * Stable timestamp ordering reconstructs the modeled timeline. The
  * oracle build's stamps come from one clock already in order, so the sort is
- * a no-op there. */
-typedef struct { AudioEvent e; uint32_t idx; } SortedEvt;
-static int evt_cmp(const void *pa, const void *pb)
-{
-    const SortedEvt *a = (const SortedEvt *)pa, *b = (const SortedEvt *)pb;
-    if (a->e.cycle_stamp != b->e.cycle_stamp)
-        return a->e.cycle_stamp < b->e.cycle_stamp ? -1 : 1;
-    return a->idx < b->idx ? -1 : (a->idx > b->idx ? 1 : 0);   /* stable */
-}
+ * a no-op there. Natural runs also preserve sorted deferred bursts instead
+ * of repeatedly comparison-sorting their complete remaining payload. */
 
 /* Boop-bisection toggles (env, read once). Each DISABLES one mixer mechanism
  * that CLAIMS to fix the boop, so we can A/B which one actually causes the jump
@@ -99,12 +93,12 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 
     /* Collect the frame's events, then sort by stamp (stable). */
     enum { DRAIN_CAP = 262144 };   /* matches event_queue.c QUEUE_CAP */
-    static SortedEvt evs[DRAIN_CAP];
+    static AudioEvent evs[DRAIN_CAP],scratch[DRAIN_CAP];
     size_t n = 0;
     {
         AudioEvent pe;
         while (n < DRAIN_CAP && audio_event_pop(&pe)) {
-            evs[n].e = pe; evs[n].idx = (uint32_t)n; n++;
+            evs[n++] = pe;
         }
     }
 
@@ -114,19 +108,7 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * event can sort between an address write and the data write that
      * completes it, so the synth's address latch can never be clobbered
      * mid-pair by cross-axis interleaving. */
-    if (!s_no_pairguard)
-    for (size_t i = 0; i < n; i++) {
-        uint8_t p = evs[i].e.port;
-        if (p == AUDIO_PORT_FM1_ADDR || p == AUDIO_PORT_FM2_ADDR) {
-            for (size_t j = i + 1; j < n; j++) {
-                uint8_t q = evs[j].e.port;
-                if (q == p + 1) { evs[i].e.cycle_stamp = evs[j].e.cycle_stamp; break; }
-                if (q == p)     break;   /* re-latched address; keep own stamp */
-            }
-        }
-    }
-
-    qsort(evs, n, sizeof(SortedEvt), evt_cmp);
+    audio_event_order(evs,scratch,n,!s_no_pairguard);
 
     /* Multi-frame spreading: a handler that runs long (the Sega-scream PCM
      * V-int feeds ~118k DAC writes whose stamps span ~129 frames of machine
@@ -140,19 +122,19 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * foreign write able to sort between its halves next frame. */
     size_t n_apply = n;
     if (!s_no_spread) {
-    while (n_apply > 0 && evs[n_apply - 1].e.cycle_stamp > frame_end_cycle)
+    while (n_apply > 0 && evs[n_apply - 1].cycle_stamp > frame_end_cycle)
         n_apply--;
     if (n_apply > 0) {
-        uint8_t lastp = evs[n_apply - 1].e.port;
+        uint8_t lastp = evs[n_apply - 1].port;
         if (lastp == AUDIO_PORT_FM1_ADDR || lastp == AUDIO_PORT_FM2_ADDR)
             n_apply--;   /* keep the orphan address with its deferred data */
     }
     }
     if (n_apply < n) {
-        static AudioEvent defer[DRAIN_CAP];
+        AudioEvent *defer=scratch;
         size_t d = 0;
         for (size_t i = n_apply; i < n; i++) {
-            AudioEvent e = evs[i].e;
+            AudioEvent e = evs[i];
             e.cycle_stamp = e.cycle_stamp > frame_end_cycle
                             ? e.cycle_stamp - frame_end_cycle : 0;
             defer[d++] = e;
@@ -161,7 +143,7 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
     }
 
     for (size_t i = 0; i < n_apply; i++) {
-        AudioEvent e = evs[i].e;
+        AudioEvent e = evs[i];
         if (e.port == AUDIO_PORT_PSG) {
             if (e.cycle_stamp < psg_prev) e.cycle_stamp = psg_prev;
             uint32_t delta = e.cycle_stamp - psg_prev;
