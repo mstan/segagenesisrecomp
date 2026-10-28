@@ -28,49 +28,49 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
 
 ### Execution and memory
 
-- [ ] **E01: Native CD execution regions** — P1; original N01.
+- [ ] **E01: Native CD execution regions** â€” P1; original N01.
   - Goal: Run reusable Main/Sub/Z80 native regions until the next observable interaction or device deadline.
   - Boundary: Keep CPU ordering, interrupts, DMA, Word RAM ownership, raster and audio deadlines exact; no title PC/routine recognition.
   - Evidence: `runner/cd/segacd_coordinator.c`, `runner/cd/machine.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Core3b7b76f and engine2e58a00/14a58ad move native fault ownership above the entire frame across Main/Sub/device coordination. Every guard, instruction retirement, CPU ordering, IRQ and WAIT remains. Nested CPU faults retain local traps; cleanup-bearing STOP-peer/Z80/floor/external drivers hold the outer scope. Full-machine manual-step/frame parity includes complete CPU/device/clock/partial RAM across five error classes; MSVC/GCC core and machine checks pass, including older-core fallback. Actual new-package game/performance qualification remains.
 
-- [x] **E02: Code identity and invalidation** — P1; original N02.
+- [x] **E02: Code identity and invalidation** â€” P1; original N02.
   - Goal: Use guarded code regions with complete write/remapping invalidation instead of per-instruction byte comparisons where qualified.
   - Boundary: Cover mutable overlays and self-modification through generic memory ownership/versioning.
   - Evidence: `runner/cd/catalog_lookup.h`, `external/m68k-recomp-core/runtime/m68k_step.c`.
   - Disposition/evidence: Fresh owned instruction spans retain every live opcode/extension comparison. Full code-version guard elision is deferred: device arrays are public, title HLE writes PRG/Word RAM directly, and imports bypass bus epochs. A bus-only dirty counter would be unsound. The selected cache retains descriptor discovery without trusting code bytes; no title-specific writer policy introduced.
 
-- [ ] **E03: Owned memory access** — P1; original N03.
+- [ ] **E03: Owned memory access** â€” P1; original N03.
   - Goal: Resolve generic RAM/ROM/Word RAM mappings once for safe regions; reduce repeated bus decoding and byte-order bookkeeping.
   - Boundary: Keep guest bytes, aliases, write protection, MMIO and ownership transfers coherent. Game-object redesign is deferred.
   - Evidence: `runner/video/genesis_bus.c`, `runner/cd/segacd.c`.
-  - Disposition/evidence: Core53fc7b4 plus engine86d2d0c resolve eligible contiguous BIOS/PRG/owned2MWordRAM/MainRAM once per instruction guard. All live bytes still checked; MMIO/HINT/1M/ownership/wrap/odd paths retain ordinary fetch including WAIT/fault. Windows/Linux core contracts and Windows full-machine/mapping tests pass. Runtime core and generated-object core identities are recorded separately; combined game gate pending.
+  - Disposition/evidence: Owned code spans core53fc7b4/engine86d2d0c pass actual SonicCD3000frame Linux and matched Windows reference/candidate gates: full raw memory/pixels/WAV and observations exact. Preserve all live bytes, HINT/MMIO/1M/odd/wrap and ownership WAIT fallback. Updated v7 attribution puts remaining segacd_read8/read16 below1percent each; retain exact public data-bus path instead of adding an unmeasured second memory representation. Runtime-core/generator-core identities remain separate; final combined suite remains.
 
-- [ ] **E04: Generated native arithmetic and state** — P2; original N04.
+- [ ] **E04: Generated native arithmetic and state** â€” P2; original N04.
   - Goal: Improve the common 68000 emitter with local registers, proven flag liveness, combined effective addresses and grouped cycle accounting.
   - Boundary: Materialize exact architectural state at every observable exit; no game-specific algorithms.
   - Evidence: `external/m68k-recomp-core/profiles/genesis/code_generator.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E05: Native call/control-flow consolidation** — P2; original N05.
+- [ ] **E05: Native call/control-flow consolidation** â€” P2; original N05.
   - Goal: Use proven direct call edges, inlining and larger native control-flow regions to reduce generic call/return/dispatch machinery.
   - Boundary: Preserve dynamic targets, guest stack skips, IRQ reentry and overlapping instruction streams; do not repeat rejected tail-index tuning unchanged.
   - Evidence: `external/m68k-recomp-core/profiles/genesis/code_generator.c`, `runner/glue.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E06: Reusable native Z80 backend** — P2; original N07.
+- [ ] **E06: Reusable native Z80 backend** â€” P2; original N07.
   - Goal: Qualify and improve the common uploaded-code/variant executor and native blocks, with supported build integration.
   - Boundary: Keep reset, BUSREQ, IRQ, self-modification and timed writes. Driver catalogs, semantic SMPS HLE and game rollout are separate title work.
   - Evidence: `runner/z80_recomp.c`, `runner/cd/z80_native.c`, `docs/Z80_STATIC_RECOMP.md`.
   - Disposition/evidence: Pending.
 
-- [ ] **E07: Event-driven waits and scheduling** — P2; original N09.
+- [ ] **E07: Event-driven waits and scheduling** â€” P2; original N09.
   - Goal: Coalesce safe raster/fiber/CPU scheduling spans and handle proven waits through actual event wakeups.
   - Boundary: Do not bypass meaningful CPU work or add title-specific polling signatures.
   - Evidence: `runner/glue.c`, `runner/video/genesis_machine.c`, `runner/cd/segacd_coordinator.c`.
   - Disposition/evidence: Engine92bb86a derives each scanline deadline once per changed actual line counter, retaining exact restore/overflow behavior and original event ordering. Machine contracts pass. Further CPU/device scheduling consolidation remains under evaluation.
 
-- [ ] **E08: Transfer spans and layout mapping** — P2; original N10.
+- [ ] **E08: Transfer spans and layout mapping** â€” P2; original N10.
   - Goal: Batch qualified DMA/VDP/CDC/PCM transfers and generic Word RAM cell mappings under one ownership decision.
   - Boundary: Preserve partial progress, contention, FIFO state, PCM lane ordering, status and completion clocks.
   - Evidence: `runner/cd/dma.c`, `runner/cd/segacd.c`, `runner/video/genesis_vdp.c`.
@@ -78,137 +78,137 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
 
 ### Graphics and rendering
 
-- [ ] **E09: Single image-production ownership** — P1; original N11.
+- [ ] **E09: Single image-production ownership** â€” P1; original N11.
   - Goal: Provide reusable lazy original-image production and exact fallback in the shared cartridge/CD raster pipeline.
   - Boundary: Retain CPU-visible sprite status and whole-frame fallback. Title scene eligibility and its adapter implementation belong in the title backlog. Do not land unused abstraction merely to check this item off.
   - Evidence: `runner/cd/machine.c`, `runner/video/genesis_machine.c`.
   - Disposition/evidence: Implemented and built-game correctness passed at16c14e6. Shared CD captures immutable rows, preserves per-row CRAM and composes exact whole-frame fallback on demand. Frozen current SonicCD ran3000 actually presented frames: all11screenshots, CPU/device observations, raw state/pixels and WAV match;720000rows captured/442800composed,38.5percent original compositions omitted on this route.898600bytes retained. Runtime timing and final Windows/combined gates remain; cartridge already has lazy row ownership.
 
-- [x] **E10: Renderer interface independent of aspect ratio** — P1; original N12.
+- [x] **E10: Renderer interface independent of aspect ratio** â€” P1; original N12.
   - Goal: Separate shared renderer ownership/selection from viewport width and elective widescreen policy.
   - Boundary: Keep existing consumers compatible. Stock sprite/scene fidelity and enabling a particular game's custom renderer remain title tasks.
   - Evidence: `runner/main.c`, `runner/game_video.h`.
   - Disposition/evidence: Deferred on title fidelity/adoption T08. `runner/main.c:own_custom_row_enabled` selects a custom producer only when `s_custom_width` is set; existing custom adapters can intentionally lift stock sprite/object limits. Enabling them at320px would change title policy without the excluded title qualification. An unused extra engine selector would not improve delivered runtime.
 
-- [ ] **E11: Fused generic VDP raster** — P1; original N14.
+- [ ] **E11: Fused generic VDP raster** â€” P1; original N14.
   - Goal: Combine tile/window/scroll spans, decode, priority and shadow/highlight composition in the shared renderer.
   - Boundary: Existing BATCHED fetching is partial work, not a new gain. Preserve all supported VDP modes and the universal reference path.
   - Evidence: `runner/video/genesis_vdp.c`.
   - Disposition/evidence: Implementation in progress. Portable complete tile-row expansion and eight-byte priority/shadow composition are committed at `34b08ee` and `705129b`. Windows4000-case hardware differential,20000-pattern and12000-composition checks pass; matched built Sonic1 stock/16:9 images, machine/audio state, emitted work and rollback probes pass. Raw evidence: `G:/Temp/Codex/genesis-engine-burndown-20261027`. Performance unqualified: SERVER admission found no idle physical core; no timing comparison was run.
 
-- [ ] **E12: Shared sprite evaluation jobs** — P2; original N15.
+- [ ] **E12: Shared sprite evaluation jobs** â€” P2; original N15.
   - Goal: Prepare reusable generic sprite membership/opacity/priority work for both hardware status and image production.
   - Boundary: Preserve limits, masks, raster-visible changes, overflow and collision timing; no replacement of game BuildSprites.
   - Evidence: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`.
   - Disposition/evidence: Implemented CD hardware sprite capture once per row; deferred whole-frame fallback reuses captured sprite lanes and never evaluates hardware sprites again. Synthetic provider/width/state and full CPU-frame contracts pass; actual SonicCD3000frame output/state/audio matches. No title SAT/scene algorithm changes. Final integration/performance gate remains.
 
-- [ ] **E13: Versioned generic graphics derivation** — P2; original N16.
+- [x] **E13: Versioned generic graphics derivation** â€” P2; original N16.
   - Goal: Cache decoded VDP art, palettes and geometry only at verified VRAM/CRAM/register change boundaries.
   - Boundary: All writer paths must invalidate or take the existing fallback. Game layout, object and private-art caches are separate.
   - Evidence: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`, `runner/video/genesis_bus.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Evaluated both write epochs and full immutable-input keys. Public direct VRAM/private-pattern writes and imports make bus-only epochs incomplete; a complete replacement must own every producer or compare complete inputs. Existing narrow caches were already neutral/rejected. New owned-row composition consumes only0.086percent of the sampled CD route (capture0.487percent); another row/palette cache is not justified there. Defer broader decoded-art ownership until a post-native-raster cartridge profile demonstrates enough affected cost; do not silently assume invalidation.
 
-- [ ] **E14: Native Sega CD stamp-device jobs** — P2; original N18.
+- [x] **E14: Native Sega CD stamp-device jobs** â€” P2; original N18.
   - Goal: Optimize the generic affine/stamp device in exact spans/blocks.
   - Boundary: Preserve Word RAM writes, priority, partial completion and IRQs. No Blue Spheres or other game-effect redesign.
   - Evidence: `runner/cd/stamp.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Generic stamp is already a native affine line job with explicit asynchronous completion, nibble priority and WordRAM writes. It has no samples in the recorded3000frame CD gameplay attribution. Defer a new block kernel pending a stamp-heavy built consumer/workload; neither synthetic throughput nor unrelated Blue Spheres title algorithms establish a current-game benefit. Preserve existing stamp/dma correctness fixtures for that future comparison.
 
-- [ ] **E15: Reuse unchanged hardware render results** — P3; original N19.
+- [x] **E15: Reuse unchanged hardware render results** â€” P3; original N19.
   - Goal: Reuse generic render jobs/regions/images when the complete hardware input identity is unchanged.
   - Boundary: Continue guest execution, status and audio; track every palette/VRAM/scroll change. Title-specific image eligibility is deferred.
   - Evidence: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Considered caching complete captured-row inputs plus CRAM and validating output ownership, rather than relying on unsafe end-of-frame VRAM hashes. Hardware sprite/status evaluation must continue through raster changes; frame-end equality cannot establish equal intermediate rows. Current sampled CD resolve_row cost0.086percent gives negligible ceiling after lazy ownership. Defer cross-frame generic packet reuse until a demonstrated static-render-heavy consumer; no title scene/image eligibility added.
 
-- [ ] **E16: Final pixels and upload ownership** — P2; original N20.
+- [ ] **E16: Final pixels and upload ownership** â€” P2; original N20.
   - Goal: Fuse shared indexed/ARGB conversion, copies, color processing, UI staging and upload preparation.
   - Boundary: Keep raw verification/capture output, filter edges, UI and portable output paths correct.
   - Evidence: `runner/main.c`, `runner/cd/presentation.c`.
   - Disposition/evidence: CD original rows now convert only when requested, using retained CRAM and64/192-entry palette; raw readers use the getter. Exact SonicCD3000frame evidence passes with38.5percent fewer original compositions. Broader cartridge/upload pipeline still requires evaluation; reduced row count is not a runtime speed claim.
 
-- [ ] **E17: Optional generic GPU raster backend** — P3; original N21.
+- [x] **E17: Optional generic GPU raster backend** â€” P3; original N21.
   - Goal: Evaluate hardware tile/sprite/priority composition from reusable immutable render packets.
   - Boundary: Keep CPU-visible VDP effects and exact supported output with a complete portable CPU path. Per-title custom GPU adapters are outside scope.
   - Evidence: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`, `runner/cd/presentation.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Immutable raster packets now provide a valid generic CPU-status/GPU-input boundary; the old subsystem split is not a design restriction. Current CD CPU composition is0.086percent and capture0.487percent in the sampled route. SDL software/dummy attribution does not measure a physical GPU. Defer a new shader/upload/backend until a real GPU workload demonstrates a worthwhile affected cost; preserve universal CPU output and raw capture.
 
-- [ ] **E18: Independent engine work scheduling** — P3; original N22.
+- [x] **E18: Independent engine work scheduling** â€” P3; original N22.
   - Goal: Evaluate workers for immutable rendering/audio spans and safe overlap of preparation/upload.
   - Boundary: No guest-state races, reordered observable events or required extra-frame latency; keep single-core/unsupported-host operation.
   - Evidence: `runner/sim_step.c`, `runner/video/genesis_machine.c`, `runner/audio.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Evaluated worker ownership around immutable raster packets and ordered audio intervals. Hardware status and next chip/snapshot state must be ready at their actual simulation boundaries; moving them to a worker cannot add an unqualified frame of latency. CD composition/capture are under1percent combined in current attribution, so dispatch/copy/barrier costs have little demonstrated headroom. Defer workers until an independently owned heavy job is measured after retained native spans.
 
 ### Audio
 
-- [ ] **E19: One ordered audio timeline** — P2; original N23.
+- [ ] **E19: One ordered audio timeline** â€” P2; original N23.
   - Goal: Consolidate engine timestamps, stable ordering, register pairing and deferred DAC-stream representation.
   - Boundary: Preserve cross-source timing, long bursts and exact paired writes; do not implement game sound-driver semantics.
   - Evidence: `runner/audio/mixer.c`, `runner/audio/event_queue.c`, `runner/cd/audio_native.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Engine162c0e7 replaces repeated full-frame qsort/sequence records with stable natural-run merging and linear reverse FM-latch pairing. Deferred PCM bursts retain their sorted runs; the same scratch owns later requeue data. Two AudioEvent arrays replace indexed events plus a separate deferred array, reducing static storage by1MiB at current capacity. Old timeline parity passes1200 randomized cases and complete262144-event bursts including ties, relatches, orphan addresses and wrapped stamps on MSVC/GCC plus ASan/UBSan/leak checks. Actual cartridge audio/state validation pending.
 
-- [ ] **E20: Faithful FM kernels** — P1; original N24.
+- [ ] **E20: Faithful FM kernels** â€” P1; original N24.
   - Goal: Optimize actual YM2612 operator/channel kernels beyond the already-shipped sample-block wrapper.
   - Boundary: Keep envelopes, feedback, LFO, DAC, filtering, arbitrary register writes and state exact; retain portable kernels.
   - Evidence: `runner/audio/ym2612_ymfm.cpp`, `runner/external/ymfm/ymfm_fm.ipp`.
   - Disposition/evidence: Pending.
 
-- [ ] **E21: PSG event spans** — P3; original N25.
+- [ ] **E21: PSG event spans** â€” P3; original N25.
   - Goal: Generate eligible tone/noise runs in blocks.
   - Boundary: Advance counters, LFSR, phase and filters exactly; historical whole-game cost is small.
   - Evidence: `runner/audio/sn76489.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Engine57b4cea advances settled-muted PSG spans with closed-form tone/noise counters and exact periodic/white LFSR jumps, producing zeros in one block. Nonzero filters/active channels retain ordinary per-sample synthesis. MSVC/GCC dual-backend full state/PCM/pending-output restore tests pass; current Windows SonicCD3000frame output and state match. Cartridge combined/actual timing qualification remains.
 
-- [ ] **E22: Sega CD PCM/CDDA spans** — P2; original N26.
+- [ ] **E22: Sega CD PCM/CDDA spans** â€” P2; original N26.
   - Goal: Advance generic PCM channels, CDDA/fader and queues in timed blocks instead of per-sample callbacks.
   - Boundary: Preserve wave RAM writes, loops, seek/pause, sample boundaries, underruns and status.
   - Evidence: `runner/cd/rf5c164.c`, `runner/cd/cdda.c`, `runner/cd/audio_mix.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E23: Synthesis-to-device pipeline** — P1; original N27.
+- [ ] **E23: Synthesis-to-device pipeline** â€” P1; original N27.
   - Goal: Combine generic chip staging, multi-source mixing, interpolation, filters and device-rate conversion.
   - Boundary: Maintain required samples, DRC, phase, latency and capture contracts; no quality reduction or disabled synthesis.
   - Evidence: `runner/audio.c`, `runner/audio/mixer.c`, `runner/cd/audio_native.c`, `runner/cd/audio_mix.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E24: Audio buffer ownership** — P3; original N28.
+- [ ] **E24: Audio buffer ownership** â€” P3; original N28.
   - Goal: Reduce avoidable callback handoff locks, copies and temporary storage.
   - Boundary: Preserve recovery/concealment, race-free callbacks and device deadlines; distinguish paced delivery from throughput.
   - Evidence: `runner/audio.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E25: Exact constant/silent spans** — P3; original N29.
+- [ ] **E25: Exact constant/silent spans** â€” P3; original N29.
   - Goal: Represent provably constant output efficiently without per-sample queue work where valid.
   - Boundary: Timers, phase, filters, fader and future sample state must still evolve exactly.
   - Evidence: `runner/audio/sn76489.c`, `runner/cd/cdda.c`, `runner/cd/rf5c164.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Exact settled PSG silence is implemented under E21; counters and LFSR never freeze, and later unmute/restore remains exact. CDDA/PCM zero samples still carry observable queue/timestamp/fader/underflow state, so silence alone does not allow dropping them. A compressed timed-run source would require a new mixer/observer contract plus a measured cost; current CDDA advance attribution1.43percent is the entire transport, not just zero publication. Keep these sources faithful and defer unmeasured run compression.
 
 ### Generic media and console firmware
 
-- [ ] **E26: Bounded generic media prefetch** — P2; original N32.
+- [ ] **E26: Bounded generic media prefetch** â€” P2; original N32.
   - Goal: Read upcoming raw CDDA/movie/nonresident sectors off the simulation path using actual device requests/transport information.
   - Boundary: Bound memory and preserve emulated delivery, seeks, cancellation, errors and synchronous fallback; no title preload tables.
   - Evidence: `runner/cd/disc_image.c`, `runner/cd/cdd.c`, `runner/cd/cdc.c`.
-  - Disposition/evidence: Engine96a2e2f preserves the existing bounded1MiB FILE read-ahead by avoiding seeks for consecutive nonresident raw reads. No async worker or emulated CD-speed change. Reader tests verify three reads require only two seeks, preserve errors and caller buffers; combined game check pending. Background speculative prefetch is not yet justified by the current CPU attribution.
+  - Disposition/evidence: Engine96a2e2f preserves bounded1MiB stdio read-ahead by avoiding seeks for consecutive nonresident raw reads. Actual Linux and matched Windows3000frame CD gates preserve complete state/pixels/WAV. Emulated delivery/seek/pause remain unchanged; reader and injected-error tests retain buffers and synchronous fallback. Speculative asynchronous workers are deferred because no host read stall is demonstrated by current CPU attribution; final combined gate remains.
 
-- [x] **E27: Verified media handoff contract** — P1; original N33.
+- [x] **E27: Verified media handoff contract** â€” P1; original N33.
   - Goal: Provide a safe common way to reuse completed media verification within one launch instead of independent redundant payload reads.
   - Boundary: Validate actual complete identity every launch; never substitute timestamps. Changes to a game's launcher/converter are deferred.
   - Evidence: `runner/cd/disc_image.c`.
   - Disposition/evidence: Deferred on excluded launcher integration T12. `runner/cd/disc_image.c` performs one full payload verification per open; its second pass is only the required complete portable restart after platform-provider failure. The independent duplicate validation is in the title launcher. A safe cross-process proof/handle handoff needs that consumer integration; adding an unused trust API alone cannot remove runtime work and timestamp-only validation remains unacceptable.
 
-- [x] **E28: Portable full-media validation** — P2; original N34.
+- [x] **E28: Portable full-media validation** â€” P2; original N34.
   - Goal: Evaluate accelerated portable/platform SHA and safe immutable-sector validation reuse.
   - Boundary: Windows CNG already ships. Keep complete payload checks, corruption detection, CPU/OS gating and full portable restart/fallback.
   - Evidence: `runner/cd/disc_image.c`, `runner/cd/sector.c`.
   - Disposition/evidence: Evaluated/implemented: optional OpenSSL1.1+ EVP full-payload validation outside Windows, with CNG retained and universal C fallback. WindowsCNG/portable and LinuxOpenSSL/missing-provider/portable plus injected init/midstream/final failures pass. Six matched SonicCD one-frame launches preserve raw state/pixels/WAV/native summaries. Two balanced Linux warm-host A/B pairs observed12.4/13.8percent less full-launch wall time and40.2/41.1percent less processCPU; A/A drift2.0percent wall/1.7percent CPU. Raw samples in cd-media-startup.json. This is a bounded shared-host launch result, not a runtime throughput claim; final combined/Windows qualification and dependency packaging remain.
 
-- [ ] **E29: Resident-media representation** — P2; original N35.
+- [ ] **E29: Resident-media representation** â€” P2; original N35.
   - Goal: Evaluate lower-copy/raw-versus-user-data residency, bounded mapped/shared storage and memory footprint.
   - Boundary: Preserve generic raw/audio/movie/sector reader contracts and allocation fallback. Memory savings are distinct from speedups.
   - Evidence: `runner/cd/disc_image.c`.
-  - Disposition/evidence: Engine96a2e2f offers read-only mapped first-data-track residency within the existing256MiB budget, compared/prefaulted during mandatory full-payload validation. Mapping failure retains copied residency. Windows/POSIX reader and injected-mapping-failure tests pass. Actual game and private-memory observation remain pending; mapped virtual bytes are not claimed as RSS savings.
+  - Disposition/evidence: Read-only mapped residency96a2e2f passes full mandatory payload comparison, actual Linux and matched Windows3000frame game parity, and forced mapping-failure copied fallback. Existing256MiB cap retained. Record published mapped/private byte counters and actual host memory separately; mapping size is not an RSS saving. Final combined game/cost summary remains.
 
-- [ ] **E30: Reusable console-firmware services** — P2; original N36.
+- [ ] **E30: Reusable console-firmware services** â€” P2; original N36.
   - Goal: Assess closed standard Sega CD BIOS services that can be replaced once for supported firmware profiles across games.
   - Boundary: Require a real reusable firmware ABI and complete state/BRAM/UI/IRQ behavior. Game SP/file-engine routines and game-PC exceptions are deferred; do not generalize a title handler merely by moving it into the engine.
   - Evidence: `runner/cd/segacd_coordinator.c`, `runner/cd/standalone_program.c`.
@@ -216,19 +216,19 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
 
 ### State and replay
 
-- [ ] **E31: Engine snapshot representation and identity** — P2; original N37.
+- [ ] **E31: Engine snapshot representation and identity** â€” P2; original N37.
   - Goal: Evaluate generic authoritative/derived state separation, dirty pages/deltas/checkpoints and exact incremental state identity.
   - Boundary: Cover all writes and restore/replay behavior. Title-owned snapshot payload reduction is separate; do not repeat the already-shipped checksum change.
   - Evidence: `runner/rb_state.c`, `runner/frame_snapshots.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E32: Serializer and snapshot storage** — P3; original N38.
+- [ ] **E32: Serializer and snapshot storage** â€” P3; original N38.
   - Goal: Reuse bounded buffers, serialize into owned storage and reduce generic snapshot allocation/copy/thumbnail work.
   - Boundary: Keep rewind cadence, atomic save replacement and invalid-input rejection; old save-state compatibility is not required.
   - Evidence: `runner/local_states.c`, `runner/rb_state.c`.
   - Disposition/evidence: Pending.
 
-- [x] **E33: Discarded-replay engine work** — P2; original N39.
+- [x] **E33: Discarded-replay engine work** â€” P2; original N39.
   - Goal: Remove remaining purely derived shared rendering/publication preparation from replay that produces no visible output.
   - Boundary: Continue all authoritative game/device/audio state. Title-specific capture changes require separate work and cannot be silently skipped.
   - Evidence: `runner/sim_step.c`, `runner/video/genesis_machine.c`, `runner/main.c`.
@@ -236,19 +236,19 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
 
 ### Host and built program
 
-- [ ] **E34: Host presentation/deadline pipeline** — P2; original N40.
+- [ ] **E34: Host presentation/deadline pipeline** â€” P2; original N40.
   - Goal: Consolidate shared pacing, upload/present queue behavior and remaining compositor/CD coarse-wait costs.
   - Boundary: Reuse existing D3D11/deadline work and beads-hj4v; keep NTSC audio cadence and report delivery jitter separately from throughput.
   - Evidence: `runner/main.c`, `runner/cd/standalone.c`, `runner/cd/presentation.c`, `runner/host_wait.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E35: Asynchronous engine persistence and diagnostics** — P3; original N41.
+- [ ] **E35: Asynchronous engine persistence and diagnostics** â€” P3; original N41.
   - Goal: Buffer immutable save/evidence/capture data and use bounded rings for enabled tracing instead of hot-path file I/O.
   - Boundary: Keep transactional native saves, diagnostics and clean shutdown. Default yield logging is already opt-in; reuse beads-3vb.11.
   - Evidence: `runner/runtime_evidence.c`, `runner/local_states.c`, `runner/glue.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E36: Whole-program native build optimization** — P2; original N42.
+- [ ] **E36: Whole-program native build optimization** â€” P2; original N42.
   - Goal: Evaluate common LTO/PGO, cross-TU inlining, hot/cold layout and qualified optional kernels on real built consumers.
   - Boundary: Keep arithmetic precise, public build portability and fixed qualified netplay capabilities; supported consumer build wiring is allowed, title logic is not.
   - Evidence: `cmake`, `external/m68k-recomp-core/profiles/genesis/code_generator.c`.
@@ -258,12 +258,12 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
 
 Use packages to reduce repeated work rather than treating every row as a separate patch. Effects overlap.
 
-- Native execution/memory/device ownership: E01–E08; firmware E30 only where its reusable ABI is established.
-- Single graphics producer and reusable raster data: E09–E16. GPU/worker alternatives E17–E18 require evidence that they repay their complexity.
-- Ordered audio through device output: E19–E25.
-- Verified media and bounded residency: E26–E29.
-- State representation and discarded replay: E31–E33.
-- Host delivery/I/O/build behavior: E34–E36.
+- Native execution/memory/device ownership: E01â€“E08; firmware E30 only where its reusable ABI is established.
+- Single graphics producer and reusable raster data: E09â€“E16. GPU/worker alternatives E17â€“E18 require evidence that they repay their complexity.
+- Ordered audio through device output: E19â€“E25.
+- Verified media and bounded residency: E26â€“E29.
+- State representation and discarded replay: E31â€“E33.
+- Host delivery/I/O/build behavior: E34â€“E36.
 
 ## Already delivered and previous experiments
 

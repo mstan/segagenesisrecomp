@@ -3,15 +3,19 @@
   "issue": "beads-3vb.31",
   "campaign": "beads-2wy8.1",
   "status": "active-incomplete",
-  "updated_utc": "2026-10-28T10:41:44.943123+00:00",
+  "updated_utc": "2026-10-28T11:12:57.510710+00:00",
   "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "candidates": {
     "E01": {
       "name": "Native CD execution regions",
       "priority": "P1",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implemented_component_qualified",
+      "disposition": "Core3b7b76f and engine2e58a00/14a58ad move native fault ownership above the entire frame across Main/Sub/device coordination. Every guard, instruction retirement, CPU ordering, IRQ and WAIT remains. Nested CPU faults retain local traps; cleanup-bearing STOP-peer/Z80/floor/external drivers hold the outer scope. Full-machine manual-step/frame parity includes complete CPU/device/clock/partial RAM across five error classes; MSVC/GCC core and machine checks pass, including older-core fallback. Actual new-package game/performance qualification remains.",
+      "evidence": [
+        "beads-rxq.2",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-region-linux-contract.log",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-region-old-core-fallback.log"
+      ]
     },
     "E02": {
       "name": "Code identity and invalidation",
@@ -28,12 +32,12 @@
     "E03": {
       "name": "Owned memory access",
       "priority": "P1",
-      "status": "implemented_pending_combined_game",
-      "disposition": "Core53fc7b4 plus engine86d2d0c resolve eligible contiguous BIOS/PRG/owned2MWordRAM/MainRAM once per instruction guard. All live bytes still checked; MMIO/HINT/1M/ownership/wrap/odd paths retain ordinary fetch including WAIT/fault. Windows/Linux core contracts and Windows full-machine/mapping tests pass. Runtime core and generated-object core identities are recorded separately; combined game gate pending.",
+      "status": "implemented_game_correctness_pending_final",
+      "disposition": "Owned code spans core53fc7b4/engine86d2d0c pass actual SonicCD3000frame Linux and matched Windows reference/candidate gates: full raw memory/pixels/WAV and observations exact. Preserve all live bytes, HINT/MMIO/1M/odd/wrap and ownership WAIT fallback. Updated v7 attribution puts remaining segacd_read8/read16 below1percent each; retain exact public data-bus path instead of adding an unmeasured second memory representation. Runtime-core/generator-core identities remain separate; final combined suite remains.",
       "evidence": [
-        "beads-rxq.1",
-        "tests/segacd/memory_test.c",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-capture-contract.log"
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-owned-spans-game.json",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-windows-game-v8.json",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
       ]
     },
     "E04": {
@@ -119,23 +123,36 @@
     "E13": {
       "name": "Versioned generic graphics derivation",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Evaluated both write epochs and full immutable-input keys. Public direct VRAM/private-pattern writes and imports make bus-only epochs incomplete; a complete replacement must own every producer or compare complete inputs. Existing narrow caches were already neutral/rejected. New owned-row composition consumes only0.086percent of the sampled CD route (capture0.487percent); another row/palette cache is not justified there. Defer broader decoded-art ownership until a post-native-raster cartridge profile demonstrates enough affected cost; do not silently assume invalidation.",
+      "evidence": [
+        "runner/video/genesis_vdp.c",
+        "runner/cd/machine.c",
+        "docs/ENGINE_VDP_BATCHING.md",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
+      ]
     },
     "E14": {
       "name": "Native Sega CD stamp-device jobs",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Generic stamp is already a native affine line job with explicit asynchronous completion, nibble priority and WordRAM writes. It has no samples in the recorded3000frame CD gameplay attribution. Defer a new block kernel pending a stamp-heavy built consumer/workload; neither synthetic throughput nor unrelated Blue Spheres title algorithms establish a current-game benefit. Preserve existing stamp/dma correctness fixtures for that future comparison.",
+      "evidence": [
+        "runner/cd/stamp.c",
+        "tests/segacd/stamp_test.c",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
+      ]
     },
     "E15": {
       "name": "Reuse unchanged hardware render results",
       "priority": "P3",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Considered caching complete captured-row inputs plus CRAM and validating output ownership, rather than relying on unsafe end-of-frame VRAM hashes. Hardware sprite/status evaluation must continue through raster changes; frame-end equality cannot establish equal intermediate rows. Current sampled CD resolve_row cost0.086percent gives negligible ceiling after lazy ownership. Defer cross-frame generic packet reuse until a demonstrated static-render-heavy consumer; no title scene/image eligibility added.",
+      "evidence": [
+        "runner/cd/machine.c",
+        "runner/video/genesis_machine.c",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
+      ]
     },
     "E16": {
       "name": "Final pixels and upload ownership",
@@ -150,23 +167,36 @@
     "E17": {
       "name": "Optional generic GPU raster backend",
       "priority": "P3",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Immutable raster packets now provide a valid generic CPU-status/GPU-input boundary; the old subsystem split is not a design restriction. Current CD CPU composition is0.086percent and capture0.487percent in the sampled route. SDL software/dummy attribution does not measure a physical GPU. Defer a new shader/upload/backend until a real GPU workload demonstrates a worthwhile affected cost; preserve universal CPU output and raw capture.",
+      "evidence": [
+        "runner/video/genesis_vdp.h",
+        "runner/cd/machine.c",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
+      ]
     },
     "E18": {
       "name": "Independent engine work scheduling",
       "priority": "P3",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_deferred",
+      "disposition": "Evaluated worker ownership around immutable raster packets and ordered audio intervals. Hardware status and next chip/snapshot state must be ready at their actual simulation boundaries; moving them to a worker cannot add an unqualified frame of latency. CD composition/capture are under1percent combined in current attribution, so dispatch/copy/barrier costs have little demonstrated headroom. Defer workers until an independently owned heavy job is measured after retained native spans.",
+      "evidence": [
+        "runner/sim_step.c",
+        "runner/cd/machine.c",
+        "runner/cd/audio_native.c",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
+      ]
     },
     "E19": {
       "name": "One ordered audio timeline",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implemented_component_qualified",
+      "disposition": "Engine162c0e7 replaces repeated full-frame qsort/sequence records with stable natural-run merging and linear reverse FM-latch pairing. Deferred PCM bursts retain their sorted runs; the same scratch owns later requeue data. Two AudioEvent arrays replace indexed events plus a separate deferred array, reducing static storage by1MiB at current capacity. Old timeline parity passes1200 randomized cases and complete262144-event bursts including ties, relatches, orphan addresses and wrapped stamps on MSVC/GCC plus ASan/UBSan/leak checks. Actual cartridge audio/state validation pending.",
+      "evidence": [
+        "runner/audio/event_order.h",
+        "runner/audio/mixer.c",
+        "tests/runtime/audio_event_order_test.c"
+      ]
     },
     "E20": {
       "name": "Faithful FM kernels",
@@ -178,9 +208,14 @@
     "E21": {
       "name": "PSG event spans",
       "priority": "P3",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implemented_component_and_cd_correctness",
+      "disposition": "Engine57b4cea advances settled-muted PSG spans with closed-form tone/noise counters and exact periodic/white LFSR jumps, producing zeros in one block. Nonzero filters/active channels retain ordinary per-sample synthesis. MSVC/GCC dual-backend full state/PCM/pending-output restore tests pass; current Windows SonicCD3000frame output and state match. Cartridge combined/actual timing qualification remains.",
+      "evidence": [
+        "tests/runtime/psg_span_test.c",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/psg-spans-windows.log",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/psg-spans-linux.log",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-windows-game-v8.json"
+      ]
     },
     "E22": {
       "name": "Sega CD PCM/CDDA spans",
@@ -206,18 +241,24 @@
     "E25": {
       "name": "Exact constant/silent spans",
       "priority": "P3",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implemented_psg_other_sources_deferred",
+      "disposition": "Exact settled PSG silence is implemented under E21; counters and LFSR never freeze, and later unmute/restore remains exact. CDDA/PCM zero samples still carry observable queue/timestamp/fader/underflow state, so silence alone does not allow dropping them. A compressed timed-run source would require a new mixer/observer contract plus a measured cost; current CDDA advance attribution1.43percent is the entire transport, not just zero publication. Keep these sources faithful and defer unmeasured run compression.",
+      "evidence": [
+        "runner/audio/sn76489.c",
+        "runner/cd/cdda.c",
+        "runner/cd/rf5c164.c",
+        "runner/cd/audio_mix.c"
+      ]
     },
     "E26": {
       "name": "Bounded generic media prefetch",
       "priority": "P2",
-      "status": "implemented_pending_combined_game",
-      "disposition": "Engine96a2e2f preserves the existing bounded1MiB FILE read-ahead by avoiding seeks for consecutive nonresident raw reads. No async worker or emulated CD-speed change. Reader tests verify three reads require only two seeks, preserve errors and caller buffers; combined game check pending. Background speculative prefetch is not yet justified by the current CPU attribution.",
+      "status": "implemented_game_correctness_pending_final",
+      "disposition": "Engine96a2e2f preserves bounded1MiB stdio read-ahead by avoiding seeks for consecutive nonresident raw reads. Actual Linux and matched Windows3000frame CD gates preserve complete state/pixels/WAV. Emulated delivery/seek/pause remain unchanged; reader and injected-error tests retain buffers and synchronous fallback. Speculative asynchronous workers are deferred because no host read stall is demonstrated by current CPU attribution; final combined gate remains.",
       "evidence": [
         "runner/cd/disc_image.c",
-        "tests/segacd/disc_image_test.c"
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-owned-spans-game.json",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-windows-game-v8.json"
       ]
     },
     "E27": {
@@ -244,11 +285,12 @@
     "E29": {
       "name": "Resident-media representation",
       "priority": "P2",
-      "status": "implemented_pending_combined_game",
-      "disposition": "Engine96a2e2f offers read-only mapped first-data-track residency within the existing256MiB budget, compared/prefaulted during mandatory full-payload validation. Mapping failure retains copied residency. Windows/POSIX reader and injected-mapping-failure tests pass. Actual game and private-memory observation remain pending; mapped virtual bytes are not claimed as RSS savings.",
+      "status": "implemented_game_correctness_pending_final",
+      "disposition": "Read-only mapped residency96a2e2f passes full mandatory payload comparison, actual Linux and matched Windows3000frame game parity, and forced mapping-failure copied fallback. Existing256MiB cap retained. Record published mapped/private byte counters and actual host memory separately; mapping size is not an RSS saving. Final combined game/cost summary remains.",
       "evidence": [
         "runner/cd/disc_image.c",
-        "tests/segacd/disc_image_mapping_failure_test.c"
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-owned-spans-game.json",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-windows-game-v8.json"
       ]
     },
     "E30": {
@@ -450,5 +492,10 @@
       ],
       "description": "Original compact128-slot hot cache remains; sparse bounded backing only saves/restores evicted slots. Descriptor searches31321/18184; exact CPU/device/raw state/images/WAV."
     }
+  },
+  "newest_game_gates": {
+    "linux_v7": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-owned-spans-game.json",
+    "windows_v8": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-windows-game-v8.json",
+    "scope_v9": "Component contracts pass; actual-game/performance pending. Initial build metadata2e58 predates source-equivalent inline warning fix14a58 and requires final refresh before qualification."
   }
 }
