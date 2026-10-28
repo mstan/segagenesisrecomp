@@ -1464,7 +1464,7 @@
     "launcher": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\owner-review\\Review.cmd",
     "manifest": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\owner-review\\review-manifest.json",
     "notes": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\owner-review\\review-notes.json",
-    "status": "awaiting owner observations; no merge or release",
+    "status": "approved for merge and release on2026-10-28",
     "normal_window_audio": true,
     "saves": "isolated profiles and native-save copies; owner files untouched"
   },
