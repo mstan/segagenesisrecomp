@@ -113,6 +113,8 @@ typedef struct GameSpec {
      * declares "RA" $200001-$2003FF there and needs no override). When
      * sram_start is non-zero AND the header carries no "RA", the runtime
      * maps SRAM over this inclusive byte range [sram_start & ~1, sram_end].
+     * Ranges wholly beyond the loaded ROM are always visible; overlapping
+     * ranges remain controlled by the $A130F1 overlay bit.
      * A header "RA" marker always wins (never override a self-describing
      * cart). */
     uint32_t    sram_start;

@@ -256,7 +256,10 @@ int machine_save_state(FILE *f)
 
 int machine_load_state(FILE *f)
 {
+    const GenesisSramGeometry geometry = gbus_sram_geometry(&g_machine.bus);
+
     if (fread(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
+    gbus_sram_restore_geometry(&g_machine.bus, geometry);
     { uint64_t clk = 0;
       if (fread(&clk, sizeof clk, 1, f) != 1) return 0;
       g_snd_frame = (unsigned long)clk; }
@@ -322,11 +325,13 @@ int machine_rb_load(const void *src, size_t len)
 {
     if (!src || len != machine_rb_save(NULL, 0)) return 0;
     const uint8_t *i = (const uint8_t *)src;
+    const GenesisSramGeometry geometry = gbus_sram_geometry(&g_machine.bus);
     GVDP_BusReadWord br = g_machine.vdp.bus_read;
     void *bru = g_machine.vdp.bus_read_user;
     GVDP_ColourUpdated cu = g_machine.vdp.colour_updated;
     void *cuu = g_machine.vdp.colour_updated_user;
     memcpy(&g_machine, i, sizeof g_machine);
+    gbus_sram_restore_geometry(&g_machine.bus, geometry);
     i += sizeof g_machine;
     machine_wire_pointers();
     g_machine.vdp.bus_read = br;       g_machine.vdp.bus_read_user = bru;
