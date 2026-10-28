@@ -9,14 +9,26 @@
     "E01": {
       "name": "Native CD execution regions",
       "priority": "P1",
-      "status": "evaluated_rejected",
-      "disposition": "Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.",
+      "status": "implemented_native_regions_game_qualified",
+      "disposition": "E01 original deadline/observer region contract delivered and qualified; final v5 Windows SonicCD processCPU reductions3.1/8.7percent, cycles8.6/7.2percent on matched route. No FPS/universal gain claim. Owner handoff pending; no other E-ID closed.",
       "evidence": [
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-region-cost.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-complete-region-cost.json",
-        "beads-rxq.2",
-        "58da518"
-      ]
+        "ENGINE_NATIVE_REGIONS.md",
+        "engine-native-region-results.json",
+        "beads-ufzc",
+        "beads-7yle"
+      ],
+      "historical_evaluation": {
+        "name": "Native CD execution regions",
+        "priority": "P1",
+        "status": "evaluated_rejected",
+        "disposition": "Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.",
+        "evidence": [
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-region-cost.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-complete-region-cost.json",
+          "beads-rxq.2",
+          "58da518"
+        ]
+      }
     },
     "E02": {
       "name": "Code identity and invalidation",
@@ -1504,5 +1516,16 @@
   "historical_evaluation_stage": {
     "status": "ready_for_owner_visual_review",
     "authoritative_completion": "36/36 families evaluated with explicit implemented/partial, existing, rejected or concrete deferred dispositions. Final representative built-game gates pass and owner review builds are prepared. No merge/release; owner visual acceptance remains."
+  },
+  "evaluation_counts_scope": "Historical released evaluation pass; current serial implementation is tracked separately.",
+  "serial_implementation": {
+    "current_goal": "E01",
+    "completed": [
+      "E01"
+    ],
+    "remaining_original_scopes": 29,
+    "data": "engine-native-region-results.json",
+    "next_task_started": false,
+    "owner_check": "pending"
   }
 }
