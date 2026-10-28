@@ -5,6 +5,7 @@
 #include "m68k_step.h"
 #include "catalog_lookup.h"
 #include "catalog_index.h"
+#include "code_identity.h"
 
 typedef struct SegaCDCoordinator SegaCDCoordinator;
 typedef struct {SegaCDCoordinator *owner;SegaCDCpu cpu;} SegaCDBusBinding;
@@ -74,9 +75,19 @@ struct SegaCDCoordinator {
     uint64_t region_instructions[2],region_runs,region_device_advances;
     uint64_t region_event_deadline;
     uint8_t region_event_valid;
+    SegaCDCodeIdentity *code_identity;
+    SegaCDIO guarded_io;
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
+/* Qualified machine-owned execution only. Unknown operations/host observers
+ * must fence all direct writes; bus/DMA/stamp writes are tracked internally.
+ * Storage is derived, external to guest snapshots. End before returning to
+ * an unowned caller; begin fences arbitrary direct edits/imports/restores. */
+void segacd_coordinator_code_begin(SegaCDCoordinator *,SegaCDCodeIdentity *);
+void segacd_coordinator_code_end(SegaCDCoordinator *);
+void segacd_coordinator_code_observer(SegaCDCoordinator *,int entering);
+void segacd_coordinator_code_write(SegaCDCoordinator *,const uint8_t *,size_t);
 /* Descriptors/arrays must remain immutable and alive during execution. */
 int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
                               const M68kStepModule *const *,size_t);

@@ -70,6 +70,7 @@ void segacd_standalone_qualify_regions(SegaCDMachine *machine)
     static const M68kStepEffectModule sub_effects[]={GENESIS_CATALOG_SUB_EFFECT_MODULES};
     (void)segacd_coordinator_region_effects(&machine->coordinator,SEGACD_MAIN,main_effects,sizeof main_effects/sizeof *main_effects);
     (void)segacd_coordinator_region_effects(&machine->coordinator,SEGACD_SUB,sub_effects,sizeof sub_effects/sizeof *sub_effects);
+    (void)segacd_machine_code_identity(machine,1);
 #else
     (void)machine;
 #endif

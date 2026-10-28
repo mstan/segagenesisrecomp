@@ -76,6 +76,11 @@ static void setup(int with_main)
     sub_module=(M68kStepModule){"synthetic native Sub consumer",0x100u,2u,0,&sub_entry,1};
     SegaCDNativeProgram program={with_main?main_modules:NULL,sub_modules,with_main?1u:0u,1,proof_control_step};
     CHECK(segacd_machine_init(&machine,bios,sizeof bios,&program));
+    static const uint8_t main_flags[]={2,2},sub_flags[]={1};
+    static const M68kStepEffectModule main_effects[]={{&main_module,main_flags}},sub_effects[]={{&sub_module,sub_flags}};
+    CHECK(segacd_coordinator_region_effects(&machine.coordinator,SEGACD_MAIN,main_effects,1));
+    CHECK(segacd_coordinator_region_effects(&machine.coordinator,SEGACD_SUB,sub_effects,1));
+    CHECK(segacd_machine_code_identity(&machine,1));
     put32(machine.devices.prg,0x7FF00u);put32(machine.devices.prg+4,0x100u);
     machine.devices.prg[0x100]=0x4E;machine.devices.prg[0x101]=0x71;
     machine.audio_write=audio_observer;machine.audio_user=&machine;
@@ -98,6 +103,9 @@ static void test_full_frame_video_irq_and_controls(void)
     CHECK(machine.frames==1 && machine.height==224 && machine.line>=262);
     CHECK(machine.vdp.vint_pending && machine.z80.irq_pending && machine.z80.state.halted);
     CHECK(machine.coordinator.native_steps[SEGACD_MAIN]>10000);
+    SegaCDMachineCodeStats code_stats;
+    CHECK(segacd_machine_code_stats(&machine,&code_stats)&&code_stats.hits&&code_stats.checks);
+    CHECK(!machine.coordinator.code_identity&&!machine.coordinator.cpu[0].code_guard);
     /* Both 68000 timelines reach the raster boundary; shared devices never
      * run ahead of the independent Z80 master that caps the coordinator. */
     CHECK(machine.coordinator.time[SEGACD_MAIN]>=machine.coordinator.device_time);

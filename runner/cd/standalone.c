@@ -316,6 +316,11 @@ int main(int argc,char **argv)
         (unsigned long long)machine.coordinator.region_runs,
         (unsigned long long)machine.coordinator.region_instructions[0],
         (unsigned long long)machine.coordinator.region_instructions[1]);
+    SegaCDMachineCodeStats code_stats;
+    if(segacd_machine_code_stats(&machine,&code_stats))
+        printf("Code identity hits=%llu checks=%llu writes=%llu fences=%llu bytes=%zu\n",
+            (unsigned long long)code_stats.hits,(unsigned long long)code_stats.checks,
+            (unsigned long long)code_stats.writes,(unsigned long long)code_stats.fences,code_stats.bytes);
     printf("Catalog PC index visited=%zu/%zu bytes=%zu/%zu\n",
         machine.coordinator.catalog_index[0]?machine.coordinator.catalog_index[0]->visited:0,
         machine.coordinator.catalog_index[1]?machine.coordinator.catalog_index[1]->visited:0,

@@ -37,6 +37,13 @@ void segacd_machine_close(SegaCDMachine *);
 void segacd_machine_pad(SegaCDMachine *,unsigned port,uint16_t buttons);
 M68kStepResult segacd_machine_step(SegaCDMachine *);
 M68kStepResult segacd_machine_run_frame(SegaCDMachine *);
+/* Qualify generated Z80 code that accesses external storage only through the
+ * sms bus ABI. Opaque Z80 callbacks retain disabled/live guards. Main/Sub
+ * unknown HLE and all host observers are fenced automatically. A scope lasts
+ * one run_frame call; direct edits/imports/restores between calls are safe. */
+int segacd_machine_code_identity(SegaCDMachine *,int enabled);
+typedef struct {uint64_t hits,checks,writes,fences;size_t bytes;} SegaCDMachineCodeStats;
+int segacd_machine_code_stats(const SegaCDMachine *,SegaCDMachineCodeStats *);
 uint64_t segacd_machine_line_clock(uint64_t line);
 /* Optional game presentation reads each completed active native scanline,
  * including live raster palette/scroll changes. The observer owns its output;

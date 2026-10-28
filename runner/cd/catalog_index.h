@@ -5,7 +5,7 @@
 
 /* Derived immutable-descriptor discovery, not a code-identity cache. Sparse
  * direct PC pages keep visited PCs resident without hash eviction. Variants
- * retain module order and ALWAYS pass the ordinary live instruction guard.
+ * retain module order and ALWAYS pass the runtime's current code guard.
  * Reset at registry replacement; no state or guest storage is owned here. */
 enum { SEGACD_INDEX_PAGE_BITS=10, SEGACD_INDEX_PAGE_SLOTS=1024,
        SEGACD_INDEX_PAGES=8192 };
