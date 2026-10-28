@@ -3,7 +3,7 @@
   "issue": "beads-3vb.31",
   "campaign": "beads-2wy8.1",
   "status": "active-incomplete",
-  "updated_utc": "2026-10-28T08:09:57.363563+00:00",
+  "updated_utc": "2026-10-28T10:41:44.943123+00:00",
   "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "candidates": {
     "E01": {
@@ -16,16 +16,25 @@
     "E02": {
       "name": "Code identity and invalidation",
       "priority": "P1",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "evaluated_guard_elision_deferred",
+      "disposition": "Fresh owned instruction spans retain every live opcode/extension comparison. Full code-version guard elision is deferred: device arrays are public, title HLE writes PRG/Word RAM directly, and imports bypass bus epochs. A bus-only dirty counter would be unsound. The selected cache retains descriptor discovery without trusting code bytes; no title-specific writer policy introduced.",
+      "evidence": [
+        "runner/cd/catalog_index.h",
+        "runner/cd/segacd.c",
+        "runner/cd/segacd_coordinator.c",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-hybrid-game.json"
+      ]
     },
     "E03": {
       "name": "Owned memory access",
       "priority": "P1",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implemented_pending_combined_game",
+      "disposition": "Core53fc7b4 plus engine86d2d0c resolve eligible contiguous BIOS/PRG/owned2MWordRAM/MainRAM once per instruction guard. All live bytes still checked; MMIO/HINT/1M/ownership/wrap/odd paths retain ordinary fetch including WAIT/fault. Windows/Linux core contracts and Windows full-machine/mapping tests pass. Runtime core and generated-object core identities are recorded separately; combined game gate pending.",
+      "evidence": [
+        "beads-rxq.1",
+        "tests/segacd/memory_test.c",
+        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-capture-contract.log"
+      ]
     },
     "E04": {
       "name": "Generated native arithmetic and state",
@@ -51,9 +60,12 @@
     "E07": {
       "name": "Event-driven waits and scheduling",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implemented_partial_pending_evaluation",
+      "disposition": "Engine92bb86a derives each scanline deadline once per changed actual line counter, retaining exact restore/overflow behavior and original event ordering. Machine contracts pass. Further CPU/device scheduling consolidation remains under evaluation.",
+      "evidence": [
+        "runner/cd/machine.c",
+        "tests/segacd/machine_test.c"
+      ]
     },
     "E08": {
       "name": "Transfer spans and layout mapping",
@@ -201,9 +213,12 @@
     "E26": {
       "name": "Bounded generic media prefetch",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implemented_pending_combined_game",
+      "disposition": "Engine96a2e2f preserves the existing bounded1MiB FILE read-ahead by avoiding seeks for consecutive nonresident raw reads. No async worker or emulated CD-speed change. Reader tests verify three reads require only two seeks, preserve errors and caller buffers; combined game check pending. Background speculative prefetch is not yet justified by the current CPU attribution.",
+      "evidence": [
+        "runner/cd/disc_image.c",
+        "tests/segacd/disc_image_test.c"
+      ]
     },
     "E27": {
       "name": "Verified media handoff contract",
@@ -229,9 +244,12 @@
     "E29": {
       "name": "Resident-media representation",
       "priority": "P2",
-      "status": "pending",
-      "disposition": null,
-      "evidence": []
+      "status": "implemented_pending_combined_game",
+      "disposition": "Engine96a2e2f offers read-only mapped first-data-track residency within the existing256MiB budget, compared/prefaulted during mandatory full-payload validation. Mapping failure retains copied residency. Windows/POSIX reader and injected-mapping-failure tests pass. Actual game and private-memory observation remain pending; mapped virtual bytes are not claimed as RSS savings.",
+      "evidence": [
+        "runner/cd/disc_image.c",
+        "tests/segacd/disc_image_mapping_failure_test.c"
+      ]
     },
     "E30": {
       "name": "Reusable console-firmware services",
@@ -407,5 +425,30 @@
       "next_check_not_before_utc": "2026-10-28T08:14:11.1739757Z"
     }
   ],
-  "authoritative_completion": "Incomplete:4/36 evaluations resolved (E10/E27 deferred; E33 already implemented; E28 implemented with bounded Linux launch evidence). E09/E11/E12/E16 integration/performance and allremaining evaluations remain. No merge/release authorized."
+  "authoritative_completion": "Incomplete:4/36 evaluations resolved (E10/E27 deferred; E33 already implemented; E28 implemented with bounded Linux launch evidence). E09/E11/E12/E16 integration/performance and allremaining evaluations remain. No merge/release authorized.",
+  "catalog_experiments": {
+    "direct_layout": {
+      "engine": "e8f3159",
+      "decision": "replaced after noisy/slower CPU observations; not accepted as a gain",
+      "evidence": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-index-game.json"
+    },
+    "hot_front_plus_sparse_backing": {
+      "engine": "e375dc8",
+      "decision": "retain for combined qualification; timing neutral/inconclusive under drift",
+      "evidence": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-hybrid-game.json",
+      "exact_presented_frame_runs": 4,
+      "frames_per_run": 3000,
+      "host_instruction_reductions_pct": [
+        2.8043023391920996,
+        2.9595757927235455
+      ],
+      "instruction_AA_drift_pct": 0.07007339143765279,
+      "cpu_AA_drift_pct": -5.6661562021439345,
+      "backing_bytes_per_cpu": [
+        506384,
+        717408
+      ],
+      "description": "Original compact128-slot hot cache remains; sparse bounded backing only saves/restores evicted slots. Descriptor searches31321/18184; exact CPU/device/raw state/images/WAV."
+    }
+  }
 }

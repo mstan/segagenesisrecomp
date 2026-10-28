@@ -34,17 +34,17 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Evidence: `runner/cd/segacd_coordinator.c`, `runner/cd/machine.c`.
   - Disposition/evidence: Pending.
 
-- [ ] **E02: Code identity and invalidation** — P1; original N02.
+- [x] **E02: Code identity and invalidation** — P1; original N02.
   - Goal: Use guarded code regions with complete write/remapping invalidation instead of per-instruction byte comparisons where qualified.
   - Boundary: Cover mutable overlays and self-modification through generic memory ownership/versioning.
   - Evidence: `runner/cd/catalog_lookup.h`, `external/m68k-recomp-core/runtime/m68k_step.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Fresh owned instruction spans retain every live opcode/extension comparison. Full code-version guard elision is deferred: device arrays are public, title HLE writes PRG/Word RAM directly, and imports bypass bus epochs. A bus-only dirty counter would be unsound. The selected cache retains descriptor discovery without trusting code bytes; no title-specific writer policy introduced.
 
 - [ ] **E03: Owned memory access** — P1; original N03.
   - Goal: Resolve generic RAM/ROM/Word RAM mappings once for safe regions; reduce repeated bus decoding and byte-order bookkeeping.
   - Boundary: Keep guest bytes, aliases, write protection, MMIO and ownership transfers coherent. Game-object redesign is deferred.
   - Evidence: `runner/video/genesis_bus.c`, `runner/cd/segacd.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Core53fc7b4 plus engine86d2d0c resolve eligible contiguous BIOS/PRG/owned2MWordRAM/MainRAM once per instruction guard. All live bytes still checked; MMIO/HINT/1M/ownership/wrap/odd paths retain ordinary fetch including WAIT/fault. Windows/Linux core contracts and Windows full-machine/mapping tests pass. Runtime core and generated-object core identities are recorded separately; combined game gate pending.
 
 - [ ] **E04: Generated native arithmetic and state** — P2; original N04.
   - Goal: Improve the common 68000 emitter with local registers, proven flag liveness, combined effective addresses and grouped cycle accounting.
@@ -68,7 +68,7 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Goal: Coalesce safe raster/fiber/CPU scheduling spans and handle proven waits through actual event wakeups.
   - Boundary: Do not bypass meaningful CPU work or add title-specific polling signatures.
   - Evidence: `runner/glue.c`, `runner/video/genesis_machine.c`, `runner/cd/segacd_coordinator.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Engine92bb86a derives each scanline deadline once per changed actual line counter, retaining exact restore/overflow behavior and original event ordering. Machine contracts pass. Further CPU/device scheduling consolidation remains under evaluation.
 
 - [ ] **E08: Transfer spans and layout mapping** — P2; original N10.
   - Goal: Batch qualified DMA/VDP/CDC/PCM transfers and generic Word RAM cell mappings under one ownership decision.
@@ -188,7 +188,7 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Goal: Read upcoming raw CDDA/movie/nonresident sectors off the simulation path using actual device requests/transport information.
   - Boundary: Bound memory and preserve emulated delivery, seeks, cancellation, errors and synchronous fallback; no title preload tables.
   - Evidence: `runner/cd/disc_image.c`, `runner/cd/cdd.c`, `runner/cd/cdc.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Engine96a2e2f preserves the existing bounded1MiB FILE read-ahead by avoiding seeks for consecutive nonresident raw reads. No async worker or emulated CD-speed change. Reader tests verify three reads require only two seeks, preserve errors and caller buffers; combined game check pending. Background speculative prefetch is not yet justified by the current CPU attribution.
 
 - [x] **E27: Verified media handoff contract** — P1; original N33.
   - Goal: Provide a safe common way to reuse completed media verification within one launch instead of independent redundant payload reads.
@@ -206,7 +206,7 @@ This list contains **36 engine candidates**, split from the earlier42-family inv
   - Goal: Evaluate lower-copy/raw-versus-user-data residency, bounded mapped/shared storage and memory footprint.
   - Boundary: Preserve generic raw/audio/movie/sector reader contracts and allocation fallback. Memory savings are distinct from speedups.
   - Evidence: `runner/cd/disc_image.c`.
-  - Disposition/evidence: Pending.
+  - Disposition/evidence: Engine96a2e2f offers read-only mapped first-data-track residency within the existing256MiB budget, compared/prefaulted during mandatory full-payload validation. Mapping failure retains copied residency. Windows/POSIX reader and injected-mapping-failure tests pass. Actual game and private-memory observation remain pending; mapped virtual bytes are not claimed as RSS savings.
 
 - [ ] **E30: Reusable console-firmware services** — P2; original N36.
   - Goal: Assess closed standard Sega CD BIOS services that can be replaced once for supported firmware profiles across games.
