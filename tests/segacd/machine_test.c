@@ -27,6 +27,7 @@ static void video_observer(void *user,const SegaCDMachine *m,unsigned row)
     CHECK(m->width==(unsigned)gvdp_screen_width(&m->vdp));
     ++video_rows;
     CHECK(segacd_machine_step(&machine)==M68K_STEP_REENTERED);
+    CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_REENTERED);
     CHECK(!segacd_machine_video_observer(&machine,NULL,NULL));
     CHECK(!segacd_machine_defer_video(&machine,1));
 }

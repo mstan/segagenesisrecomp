@@ -60,9 +60,10 @@ static inline SegaCDIndexSlot *segacd_catalog_index_slot(SegaCDCatalogIndex *ind
     }
     return slot;
 }
-static inline M68kStepResult segacd_catalog_index_execute(SegaCDCatalogIndex *index,
+static inline M68kStepResult segacd_catalog_index_execute_qualified(SegaCDCatalogIndex *index,
     SegaCDCatalogLookup *fallback,M68kStepContext *cpu,
-    const M68kStepModule *const *modules,size_t count)
+    const M68kStepModule *const *modules,size_t count,
+    const M68kStepEffectModule *effects,size_t effect_count)
 {
 #if SEGACD_CATALOG_LOOKUP_CACHE
     if(index) {
@@ -84,6 +85,9 @@ static inline M68kStepResult segacd_catalog_index_execute(SegaCDCatalogIndex *in
 #else
     (void)index;
 #endif
-    return segacd_catalog_execute(fallback,cpu,modules,count);
+    return segacd_catalog_execute_qualified(fallback,cpu,modules,count,effects,effect_count);
 }
+static inline M68kStepResult segacd_catalog_index_execute(SegaCDCatalogIndex *index,
+    SegaCDCatalogLookup *fallback,M68kStepContext *cpu,const M68kStepModule *const *modules,size_t count)
+{return segacd_catalog_index_execute_qualified(index,fallback,cpu,modules,count,NULL,0);}
 #endif

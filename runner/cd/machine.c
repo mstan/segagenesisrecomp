@@ -249,11 +249,35 @@ M68kStepResult segacd_machine_step(SegaCDMachine *m)
     }else m->result=segacd_coordinator_step(&m->coordinator);
     return m->result;
 }
+static int z80_interval_running(void *user)
+{
+    SegaCDMachine *m=user;
+    return !m->bus.z80_reset_pending&&m->bus.z80_reset_off&&!m->bus.z80_busreq;
+}
 M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
 {
-    if(!m||m!=current)return M68K_STEP_REENTERED;
+    if(!m||m!=current||observing_video)return M68K_STEP_REENTERED;
+    if(m->coordinator.busy[0]||m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)
+        return M68K_STEP_REENTERED;
+    if(m->result!=M68K_STEP_OK)return m->result;
     uint64_t frame=m->frames;
-    do {M68kStepResult r=segacd_machine_step(m);if(r!=M68K_STEP_OK)return r;}
+    do {
+        if(m->result==M68K_STEP_OK&&z80_interval_running(m)&&m->z80.time<=m->coordinator.device_time) {
+            SegaCDZ80Result zr=segacd_z80_run_until(&m->z80,line_deadline(m->line),z80_interval_running,m);
+            if(zr!=SEGACD_Z80_OK)return m->result=m->z80.bus_result;
+            continue;
+        }
+        if(!m->bus.z80_reset_pending && m->result==M68K_STEP_OK &&
+           (!m->bus.z80_reset_off||m->bus.z80_busreq||m->z80.time>m->coordinator.device_time)) {
+            uint64_t limit=line_deadline(m->line);
+            if(m->bus.z80_reset_off&&!m->bus.z80_busreq&&m->z80.time<limit)limit=m->z80.time;
+            if(segacd_coordinator_native_region(&m->coordinator,limit)) {
+                if(m->coordinator.last_result!=M68K_STEP_OK)return m->result=m->coordinator.last_result;
+                continue;
+            }
+        }
+        M68kStepResult r=segacd_machine_step(m);if(r!=M68K_STEP_OK)return r;
+    }
     while(m->frames==frame);
     return M68K_STEP_OK;
 }

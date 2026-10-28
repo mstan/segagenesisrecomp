@@ -208,6 +208,16 @@ if(NOT CMAKE_CROSSCOMPILING)
     target_compile_options(segacd_catalog_index_test PRIVATE -Wall -Wextra -Werror)
   endif()
   add_test(NAME segacd_catalog_index COMMAND segacd_catalog_index_test)
+  add_executable(segacd_native_region_test native_region_test.c ${step_runtime_sources}
+    ../../runner/cd/segacd_coordinator.c)
+  target_include_directories(segacd_native_region_test PRIVATE ${step_runtime_includes} ../../runner/cd)
+  target_link_libraries(segacd_native_region_test PRIVATE segacd_devices)
+  if(MSVC)
+    target_compile_options(segacd_native_region_test PRIVATE /W4 /WX)
+  else()
+    target_compile_options(segacd_native_region_test PRIVATE -Wall -Wextra -Werror)
+  endif()
+  add_test(NAME segacd_native_region COMMAND segacd_native_region_test)
   add_executable(segacd_debug_test debug_test.c ../../runner/cd/debug.c)
   target_include_directories(segacd_debug_test PRIVATE ../../runner/cd ../../runner/video
     "${engine_root}/external/m68k-recomp-core/runtime"

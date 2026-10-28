@@ -29,6 +29,39 @@ ENTRY = re.compile(r" \{0x([0-9A-Fa-f]+)u,\{([^}]*)\},(\d+),(\d+),(" + IDENT + r
 BUILTINS = {"m68k_step_illegal", "m68k_step_unimplemented"}
 
 
+def register_only(body: str) -> bool:
+    """Closed effect grammar, not an opcode/HLE guess. Unknown text is an exit.
+
+    The accepted TU has only m68k_step_bind.h, whose g_cpu is ctx->state.regs.
+    No calls, pointers, external identifiers, volatile/static storage or state
+    outside registers/charge can occur. Guest branches and variable charge are
+    allowed; the region still checks IRQ/trace/deadline boundaries each step.
+    """
+    code = COMMENTS.sub("", body)
+    if UNSAFE.search(code) or re.search(r"\b(?:volatile|goto|switch|case|default)\b", code):
+        return False
+    code = re.sub(r"\bg_cpu\.(?:D|A|SR|PC|USP)\b", "REG", code)
+    code = re.sub(r"\bctx->charge\b", "CHARGE", code)
+    if re.search(r"->|\.|[&]\s*REG|\b(?:ctx|g_cpu)\b", code):
+        return False
+    # No helper calls, including apparently pure custom/HLE functions.
+    if any(name not in {"if", "for", "while", "sizeof"} for name in
+           re.findall(r"\b([A-Za-z_]\w*)\s*\(", code)):
+        return False
+    types = r"(?:u?int(?:8|16|32|64)_t|unsigned|int|long|short|signed|size_t)"
+    if re.search(r"\b" + types + r"\s*\*|\(\s*\*|\bvoid\s*\(\s*\*", code):
+        return False
+    locals_ = set(re.findall(r"\b" + types + r"\s+([A-Za-z_]\w*)", code))
+    # The ordinary emitter uses comma declarations for arithmetic temporaries.
+    locals_.update(re.findall(r",\s*(_[A-Za-z_]\w*)\s*=", code))
+    allowed = locals_ | {"REG", "CHARGE", "if", "else", "for", "while", "do", "return", "sizeof",
+                         "uint8_t", "uint16_t", "uint32_t", "uint64_t", "int8_t", "int16_t", "int32_t", "int64_t",
+                         "unsigned", "signed", "int", "long", "short", "size_t", "void"}
+    # Remove integer literals before scanning names (including their C suffix).
+    code = re.sub(r"\b(?:0[xX][0-9a-fA-F]+|[0-9]+)[uUlL]*\b", "0", code)
+    return set(re.findall(r"\b[A-Za-z_]\w*\b", code)) <= allowed
+
+
 class CatalogError(ValueError):
     pass
 
@@ -43,7 +76,7 @@ def read_source(path: Path, sources: dict) -> str:
     return raw.decode("utf-8").replace("\r\n", "\n")
 
 
-def operations(text: str, prefix: str):
+def operations(text: str, prefix: str, effects: dict | None = None):
     remainder = COMMENTS.sub("", FUNCTION.sub("", text)).strip()
     if remainder != '#include "m68k_step_bind.h"':
         raise CatalogError("operation translation unit has an unsupported prelude or body")
@@ -51,6 +84,8 @@ def operations(text: str, prefix: str):
         symbol, body = match.groups()
         if not re.fullmatch(re.escape(prefix) + r"_at_[0-9A-Fa-f]{6}", symbol):
             raise CatalogError(f"unexpected generated operation: {symbol}")
+        if effects is not None:
+            effects[symbol] = int(register_only(body))
         # Exact text, not algebra or alpha equivalence. Source-location, local
         # static and preprocessing effects must retain their original identity.
         yield symbol, None if UNSAFE.search(body) else digest(body.encode("utf-8"))
@@ -109,7 +144,7 @@ def compact(catalog_list: Path, output: Path, *, parts: int = 32, chunk_entries:
         raise CatalogError("parts and chunk entries must be positive")
     output.mkdir(parents=True, exist_ok=True)
     groups = collections.OrderedDict()
-    sources, canonical, symbols, module_rows = {}, {}, set(), []
+    sources, canonical, symbols, module_rows, effects = {}, {}, set(), [], {}
     input_raw = catalog_list.read_bytes()
     catalogs = []
     for line in input_raw.decode("utf-8").splitlines():
@@ -128,7 +163,7 @@ def compact(catalog_list: Path, output: Path, *, parts: int = 32, chunk_entries:
             aliases = {}
             for part in range(parts):
                 path = directory / f"{prefix}_part{part:02d}.c"
-                for symbol, body_hash in operations(read_source(path, sources), prefix):
+                for symbol, body_hash in operations(read_source(path, sources), prefix, effects):
                     if symbol in symbols:
                         raise CatalogError(f"duplicate exported operation: {symbol}")
                     symbols.add(symbol)
@@ -153,6 +188,7 @@ def compact(catalog_list: Path, output: Path, *, parts: int = 32, chunk_entries:
         # the ORIGINAL priority at every PC even when shards cover many images.
         ordered = sorted(state["variants"].items())
         modules = []
+        effect_modules = []
         for variant in range(max((len(v) for _, v in ordered), default=0)):
             layer = [v[variant] for _, v in ordered if variant < len(v)]
             for begin in range(0, len(layer), chunk_entries):
@@ -168,13 +204,19 @@ def compact(catalog_list: Path, output: Path, *, parts: int = 32, chunk_entries:
                         values = ",".join(f"0x{w:04X}" for w in words)
                         stream.write(f" {{0x{pc:06X}u,{{{values}}},{len(words)},{cycles},{target}}},\n")
                     stream.write('};\nconst M68kStepModule ' + name + '_module={"' + name + '",0u,0x1000000u,0u,entries,sizeof entries/sizeof *entries};\n')
+                    stream.write('const uint8_t ' + name + '_register_effects[]={\n' +
+                                 ','.join(str(effects.get(r[3], 0)) for r in records) + '\n};\n')
                 generated.append(path)
                 modules.append(name + "_module")
                 declarations.append("extern const M68kStepModule " + name + "_module;")
+                declarations.append("extern const uint8_t " + name + "_register_effects[];")
+                effect_modules.append("{&" + name + "_module," + name + "_register_effects}")
         macros.append("#define GENESIS_CATALOG_" + group + "_MODULES " + ",".join("&" + n for n in modules))
-        stats[group] = {"input_entries": state["input_entries"], "unique_entries": len(state["seen"]), "output_modules": len(modules)}
+        macros.append("#define GENESIS_CATALOG_" + group + "_EFFECT_MODULES " + ",".join(effect_modules))
+        stats[group] = {"input_entries": state["input_entries"], "unique_entries": len(state["seen"]), "output_modules": len(modules),
+                        "register_only_entries": sum(effects.get(r[3], 0) for r in state['seen'])}
     header = output / "native_catalog_registry.h"
-    header.write_text('#ifndef GENESIS_NATIVE_CATALOG_REGISTRY_H\n#define GENESIS_NATIVE_CATALOG_REGISTRY_H\n#include "m68k_step.h"\n' + "\n".join(declarations + macros) + "\n#endif\n", encoding="utf-8", newline="\n")
+    header.write_text('#ifndef GENESIS_NATIVE_CATALOG_REGISTRY_H\n#define GENESIS_NATIVE_CATALOG_REGISTRY_H\n#include "m68k_step.h"\n#define GENESIS_CATALOG_HAS_EFFECTS 1\n' + "\n".join(declarations + macros) + "\n#endif\n", encoding="utf-8", newline="\n")
     generated.append(header)
     manifest = {"schema": "M68kStepCompactCatalog1", "generator_sha256": digest(Path(__file__).read_bytes()),
                 "catalog_list_sha256": digest(input_raw), "groups": stats, "modules": module_rows,

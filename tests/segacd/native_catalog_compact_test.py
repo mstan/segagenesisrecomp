@@ -12,6 +12,17 @@ spec.loader.exec_module(tool)
 
 
 class CompactTests(unittest.TestCase):
+    def test_register_effect_grammar_excludes_observers_and_indirect_calls(self):
+        for body in ['g_cpu.D[0]++;', 'ctx->charge=6; g_cpu.PC=0x1234u;',
+                     'uint16_t _a=1, _b=2; g_cpu.SR&=~15u; g_cpu.D[0]=_a+_b;']:
+            self.assertTrue(tool.register_only(body),body)
+        for body in ['m68k_write16(g_cpu.A[0],0);', 'm68k_step_stop(ctx,0);',
+                     'ctx->state.regs.D[0]++;', 'g_cpu.D[0]=external;',
+                     'static int count; count++;', 'volatile unsigned value=0;',
+                     '((void (*)(void))(uint64_t)g_cpu.D[0])();',
+                     'uint32_t *pointer=0; g_cpu.D[0]=*pointer;',
+                     'unknown(g_cpu.D[0]);', 'g_cpu.D[0]=__LINE__;']:
+            self.assertFalse(tool.register_only(body),body)
     def catalog(self, root, prefix, rows, body=" ctx->state.regs.D[0]++;\n"):
         directory = root / prefix
         directory.mkdir()

@@ -180,6 +180,52 @@ static void test_io_in_out_are_unsupported_without_memory_access(void)
     CHECK(z80.bus_result==M68K_STEP_UNSUPPORTED && z80.time==time && local_reads==reads);
 }
 
+static int interval_continue(void *u){(void)u;return 1;}
+static void main_register_loop(M68kStepContext *ctx){++ctx->state.regs.D[0];ctx->state.regs.PC=0x100;}
+static const M68kStepEntry main_loop_entries[]={{0x100,{0x4e71},1,4,main_register_loop}};
+static const M68kStepModule main_loop_module={"main-register-loop",0x100,2,0,main_loop_entries,1};
+static const M68kStepModule *const main_loop_modules[]={&main_loop_module};
+static const uint8_t main_loop_flags[]={1};
+static const M68kStepEffectModule main_loop_effects[]={{&main_loop_module,main_loop_flags}};
+static void prepare_main_loop(void)
+{
+    cd.bios[0x100]=0x4e;cd.bios[0x101]=0x71;coordinator.cpu[0].state.stopped=0;
+    CHECK(segacd_coordinator_modules(&coordinator,SEGACD_MAIN,main_loop_modules,1));
+    CHECK(segacd_coordinator_region_effects(&coordinator,SEGACD_MAIN,main_loop_effects,1));
+}
+static void test_interval_miss_publishes_completed_prefix(void)
+{
+    static SegaCD expected_cd;static const uint8_t ldi[]={0xed,0xa0,0,0};
+    setup(ldi,sizeof ldi,0,0);prepare_main_loop();
+    SegaCDZ80Result result;
+    do {result=segacd_z80_step(&z80);}while(result==SEGACD_Z80_OK);
+    CHECK(result==SEGACD_Z80_MISS);SegaCDZ80 expected=z80;expected_cd=cd;
+    M68kStepState cpu=coordinator.cpu[0].state;uint64_t time=coordinator.device_time;
+    setup(ldi,sizeof ldi,0,0);prepare_main_loop();
+    CHECK(segacd_z80_run_until(&z80,1000,interval_continue,NULL)==SEGACD_Z80_MISS);
+    CHECK(!memcmp(&expected,&z80,sizeof z80));
+    CHECK(!memcmp(&cpu,&coordinator.cpu[0].state,sizeof cpu));
+    CHECK(time==coordinator.device_time&&!memcmp(&expected_cd,&cd,sizeof cd));
+}
+static void test_continuous_interval_matches_step(void)
+{
+    static SegaCD expected_cd;static SegaCDCoordinator expected_coordinator;
+    static const uint8_t control[]={0xFB,0x76,0xDB,0x01,0xD3,0x02};
+    for(uint64_t deadline=1;deadline<4000;deadline+=37) {
+        setup(control,sizeof control,0,0);z80.step=proof_control_step;
+        do {CHECK(segacd_z80_step(&z80)==SEGACD_Z80_OK);}while(z80.time<deadline);
+        SegaCDZ80 expected=z80;expected_cd=cd;expected_coordinator=coordinator;
+        unsigned reads=local_reads;
+        setup(control,sizeof control,0,0);z80.step=proof_control_step;
+        CHECK(segacd_z80_run_until(&z80,deadline,interval_continue,NULL)==SEGACD_Z80_OK);
+        CHECK(!memcmp(&expected,&z80,sizeof z80));
+        CHECK(!memcmp(&expected_cd,&cd,sizeof cd));
+        CHECK(!coordinator.region_event_valid&&!expected_coordinator.region_event_valid);
+        expected_coordinator.region_event_deadline=coordinator.region_event_deadline; /* derived, invalid cache */
+        CHECK(!memcmp(&expected_coordinator,&coordinator,sizeof coordinator));
+        CHECK(reads==local_reads);
+    }
+}
 int main(void)
 {
     test_rational_clock_and_hold_reset();
@@ -187,6 +233,8 @@ int main(void)
     test_native_miss_is_terminal();
     test_ei_delay_and_halt_irq();
     test_io_in_out_are_unsupported_without_memory_access();
+    test_continuous_interval_matches_step();
+    test_interval_miss_publishes_completed_prefix();
     puts("native Z80: generated LDI WAIT, rational clock, held/reset phase, terminal miss, EI/HALT IRQ, and terminal unmapped I/O pass");
     return 0;
 }

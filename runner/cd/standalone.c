@@ -17,6 +17,7 @@
 #include <string.h>
 
 extern const SegaCDNativeProgram *segacd_standalone_program(void);
+extern void segacd_standalone_qualify_regions(SegaCDMachine *);
 extern int segacd_standalone_accept_bios(const uint8_t *,size_t);
 extern int segacd_standalone_accept_disc(const uint8_t *);
 extern uint8_t g_ram[0x10000];
@@ -207,6 +208,7 @@ int main(int argc,char **argv)
     if(!segacd_cdd_mount(&machine.devices.drive,segacd_image_toc(image))){segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
     segacd_coordinator_media(&machine.coordinator,media_read,image,NULL,NULL);
     segacd_standalone_services_install(&machine,image);
+    segacd_standalone_qualify_regions(&machine);
     SegaCDNativeAudio*audio=segacd_native_audio_create(1);
     if(!audio){fprintf(stderr,"Audio initialization failed\n");segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
     segacd_native_audio_attach_io(audio,&machine.coordinator.io);
@@ -310,6 +312,10 @@ int main(int argc,char **argv)
         (unsigned long long)machine.coordinator.catalog_lookup[0].descriptor_searches,
         (unsigned long long)machine.coordinator.catalog_lookup[1].descriptor_searches,
         sizeof machine.coordinator.catalog_lookup);
+    printf("Native regions runs=%llu Main=%llu Sub=%llu\n",
+        (unsigned long long)machine.coordinator.region_runs,
+        (unsigned long long)machine.coordinator.region_instructions[0],
+        (unsigned long long)machine.coordinator.region_instructions[1]);
     printf("Catalog PC index visited=%zu/%zu bytes=%zu/%zu\n",
         machine.coordinator.catalog_index[0]?machine.coordinator.catalog_index[0]->visited:0,
         machine.coordinator.catalog_index[1]?machine.coordinator.catalog_index[1]->visited:0,

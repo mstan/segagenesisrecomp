@@ -14,6 +14,8 @@ int g_diff_freeze,g_diff_active;
 static SegaCDZ80 *active;
 static jmp_buf fault_escape;
 static uint64_t cycle_start,time_start,remainder_start,wait_charge;
+static uint64_t synchronized_time,wait_ticks_start;
+static int interval_mode,synchronized_valid,synchronized_published;
 
 static void fail(SegaCDZ80Result r,M68kStepResult bus)
 {
@@ -35,14 +37,21 @@ uint64_t segacd_z80_bus_time(const SegaCDZ80 *s)
         cycle_offset(g_z80.cyc-cycle_start,remainder_start,NULL);
     return s?s->time:0;
 }
-static void synchronize(void)
+static void synchronize(int publish)
 {
-    M68kStepResult r=segacd_coordinator_run_until(active->coordinator,
-                                                segacd_z80_bus_time(active));
+    uint64_t target=segacd_z80_bus_time(active);
+    /* Only the qualified continuous interval may reuse a successful settle.
+     * Ordinary step callers retain arbitrary local callback behavior. */
+    if(!interval_mode)publish=1;
+    if(interval_mode&&synchronized_valid&&synchronized_time==target&&(!publish||synchronized_published))return;
+    M68kStepResult r=publish?segacd_coordinator_run_until(active->coordinator,target):
+        segacd_coordinator_run_isolated_until(active->coordinator,target);
     if(r!=M68K_STEP_OK)fail(SEGACD_Z80_BUS_ERROR,r);
+    synchronized_time=target;synchronized_valid=1;synchronized_published=publish;
 }
 static void after_external(uint64_t before,M68kStepResult r)
 {
+    synchronized_valid=0;
     uint64_t now=active->coordinator->device_time;
     if(now>before)wait_charge+=now-before;
     if(r!=M68K_STEP_OK)fail(SEGACD_Z80_BUS_ERROR,r);
@@ -51,7 +60,7 @@ uint8_t sms_read8(uint16_t a)
 {
     uint8_t value=0;
     if(!active)return 0xff; /* ABI is callable only from segacd_z80_step. */
-    synchronize();
+    synchronize(a>=0x4000u);
     if(a<0x8000u)return active->bus.read(active->user,a,segacd_z80_bus_time(active));
     uint32_t main=(((uint32_t)active->bus.bank(active->user)&0x1ffu)<<15)+(a-0x8000u);
     uint64_t before=active->coordinator->device_time;
@@ -61,8 +70,8 @@ uint8_t sms_read8(uint16_t a)
 void sms_write8(uint16_t a,uint8_t value)
 {
     if(!active)return;
-    synchronize();
-    if(a<0x8000u){active->bus.write(active->user,a,value,segacd_z80_bus_time(active));return;}
+    synchronize(1);
+    if(a<0x8000u){active->bus.write(active->user,a,value,segacd_z80_bus_time(active));synchronized_valid=0;return;}
     uint32_t main=(((uint32_t)active->bus.bank(active->user)&0x1ffu)<<15)+(a-0x8000u);
     uint64_t before=active->coordinator->device_time;
     M68kStepResult r=segacd_coordinator_external_main_write8(active->coordinator,main,value);
@@ -72,7 +81,7 @@ uint8_t sms_io_in(uint8_t p)
 {
     (void)p;
     if(active) {
-        synchronize();
+        synchronize(1);
         fail(SEGACD_Z80_BUS_ERROR,M68K_STEP_UNSUPPORTED);
     }
     return 0xff;
@@ -81,17 +90,17 @@ void sms_io_out(uint8_t p,uint8_t v)
 {
     (void)p;(void)v;
     if(!active)return;
-    synchronize();
+    synchronize(1);
     fail(SEGACD_Z80_BUS_ERROR,M68K_STEP_UNSUPPORTED);
 }
 int sms_slot_bank(uint16_t a){(void)a;return 0;}
 void sms_halt(void){g_z80.halted=true;}
-void sms_sync(void){if(active)synchronize();}
+void sms_sync(void){if(active)synchronize(1);}
 void sms_dispatch_miss(uint16_t pc)
 {
-    if(active){active->miss_pc=pc;fail(SEGACD_Z80_MISS,M68K_STEP_MISS);}
+    if(active){synchronize(1);active->miss_pc=pc;fail(SEGACD_Z80_MISS,M68K_STEP_MISS);}
 }
-void sms_diff_abort(void){if(active)fail(SEGACD_Z80_BAD_MODULE,M68K_STEP_MISS);}
+void sms_diff_abort(void){if(active){synchronize(1);fail(SEGACD_Z80_BAD_MODULE,M68K_STEP_MISS);}}
 void sms_diff_enter(uint16_t pc){(void)pc;}
 
 static void accept_irq(void)
@@ -128,7 +137,8 @@ int segacd_z80_hold_until(SegaCDZ80 *s,uint64_t clock)
     if(!s||active||s->result!=SEGACD_Z80_OK||clock<s->time||clock<s->coordinator->device_time)return 0;
     s->time=clock;s->remainder=0;return 1;
 }
-SegaCDZ80Result segacd_z80_step(SegaCDZ80 *s)
+SegaCDZ80Result segacd_z80_run_until(SegaCDZ80 *s,uint64_t deadline,
+                                  int (*keep_running)(void *),void *run_user)
 {
     if(!s)return SEGACD_Z80_BAD_MODULE;
     if(active)return SEGACD_Z80_REENTERED;
@@ -136,16 +146,30 @@ SegaCDZ80Result segacd_z80_step(SegaCDZ80 *s)
     if(!s->step)return s->result=SEGACD_Z80_BAD_MODULE;
     active=s;s->in_step=1;g_z80=s->state;cycle_start=g_z80.cyc;time_start=s->time;
     remainder_start=s->remainder;wait_charge=0;
+    wait_ticks_start=s->wait_ticks;interval_mode=keep_running!=NULL;synchronized_valid=0;
     if(!setjmp(fault_escape)) {
+      do {
+        uint64_t previous=g_z80.cyc;
         if(g_z80.halted){g_z80.cyc+=4;g_z80.r=(uint8_t)((g_z80.r&0x80u)|((g_z80.r+1u)&0x7fu));}
         else s->step();
-        if(g_z80.cyc<=cycle_start)fail(SEGACD_Z80_BAD_MODULE,M68K_STEP_MISS);
+        if(g_z80.cyc<=previous)fail(SEGACD_Z80_BAD_MODULE,M68K_STEP_MISS);
         /* Settle the just-completed instruction before sampling /INT. */
-        synchronize();accept_irq();synchronize();++s->retired;
+        synchronize(0);accept_irq();synchronize(0);++s->retired;
+        if(!keep_running||segacd_z80_bus_time(s)>=deadline)break;
+        /* Preserve the public completed-instruction snapshot. Bus observers
+         * during the next operation see exactly the same prefix as step(). */
+        s->state=g_z80;s->time=segacd_z80_bus_time(s);
+        (void)cycle_offset(g_z80.cyc-cycle_start,remainder_start,&s->remainder);
+        s->wait_ticks=wait_ticks_start+wait_charge;
+        if(!keep_running(run_user))break;
+      }while(1);
+      if(interval_mode)synchronize(1);
     }
     /* Faults are terminal. Preserve committed effects/partial architecture;
      * never replay the operation or manufacture a successful read value. */
     s->state=g_z80;s->time=time_start+wait_charge+
         cycle_offset(g_z80.cyc-cycle_start,remainder_start,&s->remainder);
-    s->wait_ticks+=wait_charge;s->in_step=0;active=NULL;return s->result;
+    s->wait_ticks=wait_ticks_start+wait_charge;s->in_step=0;interval_mode=0;active=NULL;return s->result;
 }
+SegaCDZ80Result segacd_z80_step(SegaCDZ80 *s)
+{return segacd_z80_run_until(s,0,NULL,NULL);}

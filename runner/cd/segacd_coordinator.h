@@ -67,6 +67,13 @@ struct SegaCDCoordinator {
     SegaCDCatalogIndex *catalog_index[2];
     uint8_t catalog_index_enabled;
     const uint8_t *(*host_code_span)(void *,uint32_t,size_t);
+    /* Immutable generated effect sidecars survive registry prepend/replacement
+     * by module identity. Unlisted callbacks are always observable exits. */
+    const M68kStepEffectModule *region_effects[2];
+    size_t region_effect_count[2];
+    uint64_t region_instructions[2],region_runs,region_device_advances;
+    uint64_t region_event_deadline;
+    uint8_t region_event_valid;
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
@@ -80,6 +87,17 @@ int segacd_coordinator_catalog_index(SegaCDCoordinator *,int enabled);
 /* Optional Main-host executable storage, under the same no-side-effect rules
  * as host_main.fetch16. Code ranges owned by CD devices never delegate here. */
 int segacd_coordinator_main_code_span(SegaCDCoordinator *,const uint8_t *(*)(void *,uint32_t,size_t));
+/* Qualify only with complete effect metadata and interval-composable device
+ * sinks. Host observers must report every observable deadline through
+ * host_next_event; instrumentation observing every old advance call instead
+ * of emulated events must retain the ordinary step interface. */
+int segacd_coordinator_region_effects(SegaCDCoordinator *,SegaCDCpu,
+                                     const M68kStepEffectModule *,size_t);
+/* Run only qualified register operations in the ORIGINAL dual-CPU order.
+ * End at an unknown/observable operation, trace/IRQ, unavailable current code
+ * view, host/device event or caller ceiling. Zero means use the ordinary step.
+ * No bus operation, fault/WAIT scope or arbitrary callback is run inside. */
+uint64_t segacd_coordinator_native_region(SegaCDCoordinator *,uint64_t deadline);
 /* Diagnostics may attach the portable execution floor. Native-only consumers
  * leave it NULL: every uncovered operation is a stop, never skipped code. */
 int segacd_coordinator_floor(SegaCDCoordinator *,M68kStepResult (*)(M68kStepContext *));
@@ -107,6 +125,11 @@ void segacd_coordinator_media(SegaCDCoordinator *,SegaCDReadSector,void *media_u
  * at an instruction boundary; STOP advances emulated device time. MISS/faults
  * are diagnostic stops, never skipped code. */
 M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator *,uint64_t deadline);
+/* Qualified isolated-memory observer: settle CPU execution and EVERY due
+ * device event, but permit device counters to remain unpublished between
+ * observable deadlines. Use run_until before MMIO/external accesses and at
+ * interval return. Only the qualified machine/Z80 RAM interval uses this. */
+M68kStepResult segacd_coordinator_run_isolated_until(SegaCDCoordinator *,uint64_t deadline);
 /* One scheduler boundary, useful for instruction/interrupt observations.
  * An idle boundary advances at most to the next timer event / 384 ticks. */
 M68kStepResult segacd_coordinator_step(SegaCDCoordinator *);
