@@ -89,6 +89,10 @@ void segacd_reset(SegaCD *cd);
 void segacd_advance(SegaCD *cd, uint32_t sub_cycles);
 void segacd_advance_audio(SegaCD *cd,uint32_t sub_cycles,Rf5c164Sink,void *user);
 void segacd_advance_io(SegaCD *,uint32_t sub_cycles,const SegaCDIO *);
+/* Optional derived-memory observer around each actual host callback. Preserve
+ * IO rebinding and each device's original per-call callback snapshot. */
+typedef void (*SegaCDObserver)(void *,int entering);
+void segacd_advance_io_owned(SegaCD *,uint32_t,const SegaCDIO *,SegaCDObserver,void *);
 unsigned segacd_irq_level(const SegaCD *cd);
 void segacd_irq_ack(SegaCD *cd, unsigned level);
 int segacd_sub_runnable(const SegaCD *cd);

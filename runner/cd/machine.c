@@ -324,7 +324,7 @@ int segacd_machine_code_stats(const SegaCDMachine *m,SegaCDMachineCodeStats *sta
 M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
 {
     if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||
-       m->coordinator.external_active||m->z80.in_step)return M68K_STEP_REENTERED;
+       m->coordinator.external_active||m->z80.in_step||m->coordinator.code_identity)return M68K_STEP_REENTERED;
     if(code_identity_enabled)segacd_coordinator_code_begin(&m->coordinator,&code_identity);
     M68kStepResult result=run_frame(m);
     if(code_identity_enabled)segacd_coordinator_code_end(&m->coordinator);
