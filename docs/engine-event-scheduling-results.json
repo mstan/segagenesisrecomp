@@ -5,7 +5,7 @@
   "campaign": "beads-2wy8.1",
   "pr": "https://github.com/mstan/segagenesisrecomp/pull/41",
   "sources": {
-    "engine": "2079c513ec55170000579db8e12bf81bb153744b",
+    "engine": "bddea140ffe3e6781f8b6db570cd901b8c3660b3",
     "m68k_core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
     "z80_core": "4dfc5fc29fd67d23714126348e678e45952e9462",
     "cd_consumer": "94f57796db9de4990e23476b576b29239095fb22",
@@ -62259,6 +62259,11 @@
       "bytes": 1679,
       "sha256": "c4c85b03cbdb64323670aeee105873eab39205aa92577d982933172465c93c18"
     },
+    "capacity-cd-census-2.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-event-scheduling-20261029\\capacity-cd-census-2.json",
+      "bytes": 1708,
+      "sha256": "0f907b2b9b3de53d20afce53ccb32d72d1d2407d7bc14c1ef17ee6cbc95dd518"
+    },
     "capacity-cd-census-3.json": {
       "path": "C:\\temp\\Codex\\genesis-engine-event-scheduling-20261029\\capacity-cd-census-3.json",
       "bytes": 1693,
@@ -62309,6 +62314,16 @@
       "bytes": 365,
       "sha256": "d517306fbee9a8d36bc3a37c9dad608ec519dd0bda98e0edce50fec7fc9cd635"
     },
+    "z80_native_census.c": {
+      "path": "C:\\temp\\Codex\\genesis-engine-event-scheduling-20261029\\z80_native_census.c",
+      "bytes": 8247,
+      "sha256": "c04cca9683295583573f3f4744c5e3919f89e04001ed44c1e1088a0a08c4e66f"
+    },
+    "coordinator_census.c": {
+      "path": "C:\\temp\\Codex\\genesis-engine-event-scheduling-20261029\\coordinator_census.c",
+      "bytes": 40429,
+      "sha256": "7b34bb86bb5330d9772bb56f45cca9e4e8f9c6785837f4ebf3e09b18cf906e27"
+    },
     "z80_native_census-r2.c": {
       "path": "C:\\temp\\Codex\\genesis-engine-event-scheduling-20261029\\z80_native_census-r2.c",
       "bytes": 8247,
@@ -62336,5 +62351,74 @@
     }
   },
   "independent_gate": "pending validate_e07 complete gate; do not advance E08 or mark scope accepted yet",
-  "handoff": "Combined owner visual/merge/release handoff pending. No new owner-facing launch or delivery replacement."
+  "handoff": "Combined owner visual/merge/release handoff pending. No new owner-facing launch or delivery replacement.",
+  "prior_census": {
+    "purpose": "eligibility/work census only; instrumented binary is NOT a performance sample",
+    "production_sources": [
+      {
+        "path": "C:\\temp\\Codex\\genesis-engine-event-scheduling-20261029\\engine\\runner\\cd\\z80_native.c",
+        "bytes": 7642,
+        "sha256": "d3f5fff73700c57038d60504d18fb3d67517bc061c4c8f13a3accd67bfe1694a"
+      },
+      {
+        "path": "C:\\temp\\Codex\\genesis-engine-event-scheduling-20261029\\engine\\runner\\cd\\segacd_coordinator.c",
+        "bytes": 39506,
+        "sha256": "14ff2b7ee204b0dfe579f3128b364bafb4e4ed8c6cebe283896e2732e69a1b30"
+      }
+    ],
+    "instrumented_sources": [
+      {
+        "path": "C:\\temp\\Codex\\genesis-engine-event-scheduling-20261029\\z80_native_census.c",
+        "bytes": 8247,
+        "sha256": "c04cca9683295583573f3f4744c5e3919f89e04001ed44c1e1088a0a08c4e66f"
+      },
+      {
+        "path": "C:\\temp\\Codex\\genesis-engine-event-scheduling-20261029\\coordinator_census.c",
+        "bytes": 40429,
+        "sha256": "7b34bb86bb5330d9772bb56f45cca9e4e8f9c6785837f4ebf3e09b18cf906e27"
+      }
+    ],
+    "binary": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-event-scheduling-20261029\\cd-build\\runtime\\Release\\SonicCD.exe",
+      "bytes": 115635200,
+      "sha256": "f97e810460e7139d45ff2a9004b5fbc3a21c45ac6be675ba626e8d5846a9ccb9"
+    },
+    "counts": {
+      "halt": 0,
+      "operations": 16241534,
+      "halt_both_stopped": 0,
+      "wait": 0,
+      "wait_stopped": 0,
+      "external_wait": 0,
+      "external_stopped": 0,
+      "all_stop": 0,
+      "service": 98309446,
+      "service_advance": 72191897
+    },
+    "manifest": "G:\\Temp\\Codex\\genesis-engine-event-scheduling-20261029\\cd-halt-census\\run\\manifest.json",
+    "limitation": "one representative real title route; does not establish other games never HALT/WAIT",
+    "clean_packages": {
+      "package": "E07-qualified-actual-event-service",
+      "engine": "2478108ed4059726bc86331a6ecf8edb3bea21d8",
+      "unchanged_instruction_archive_sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+      "unchanged_catalog_manifest_sha256": "283505cde3d56505353d4d686cbaa517b1b178af17134f40dfed09494f2ed552",
+      "packages": {
+        "reference": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-event-scheduling-20261029\\binaries\\reference\\SonicCD.exe",
+          "sha256": "4782641902eb908ee6d6b27a6c1374bd7eb13fd564af30e0b48a38535aea2b5d",
+          "bytes": 115634688,
+          "seconds": 100.84299999999348,
+          "SEGACD_EVENT_DEADLINES": 0
+        },
+        "candidate": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-event-scheduling-20261029\\binaries\\candidate\\SonicCD.exe",
+          "sha256": "5bea681138f30b4273ee05bae3d341daeff07975055083a51a3dcb2b65e72f3e",
+          "bytes": 115634688,
+          "seconds": 20.29700000002049,
+          "SEGACD_EVENT_DEADLINES": 1
+        }
+      }
+    },
+    "binary_retention": "Historical first diagnostic PE bytes were overwritten in disposable cd-build by the final diagnostic. Execution-time SHA/source snapshots/raw log/manifest/capacity receipt are retained; binary.path is historical, not a current r1 file. All clean timing binaries and final diagnostic PE bytes are retained separately."
+  }
 }
