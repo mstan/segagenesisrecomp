@@ -3,7 +3,10 @@
 Owner `beads-3z5k.9`, parent `beads-3z5k`, campaign `beads-2wy8.1`.
 Base `4166e74` (compiled production `96be781`), retained production `50b0854`.
 Engine [PR44](https://github.com/mstan/segagenesisrecomp/pull/44) stacks on PR43.
-Independent source/tests accepted; final PR/record gate pending. No merge/release approval.
+Independent final whole-scope gate ACCEPTED production50b0854 / readyPR44
+reviewedc405c7e. E11 bounded rejection and useful adoption complete;22families
+remain open. Reviewer explicitly instructed fresh serial E13 after status/sync/cleanup.
+No merge/release approval.
 
 The full native tile/window/scroll/decode/priority/shadow fusion was implemented,
 qualified and reached by actual games, then rejected against the best existing
