@@ -108,8 +108,10 @@ separate package costs, not the slice increment. Built RSS/startup-memory
 deltas were not measured and are not claimed zero.
 
 PRs: [engine40](https://github.com/mstan/segagenesisrecomp/pull/40),
-[producer3](https://github.com/mstan/smsggrecomp/pull/3). Final independent
-acceptance remains pending in this working record; E07 has not started.
+[producer3](https://github.com/mstan/smsggrecomp/pull/3). Independent validation accepted production engine424a990 / PR40 head17d558d
+and producerdc775df / PR3. The reviewer verified live PR metadata and rehashed
+cartridge/CD binaries, WAV and lifecycle artifacts, then explicitly instructed
+serial E07 with a fresh validation-only reviewer. Owner batch handoff remains.
 
 ## Evidence and retention
 
