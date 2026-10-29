@@ -36,6 +36,42 @@ static void check_code_spans(void)
     CHECK(!segacd_code_span(s,SEGACD_MAIN,0x1000000,2));
     CHECK(!segacd_code_span(s,SEGACD_MAIN,0,0));
 }
+static void check_data_regions(void)
+{
+    const uint32_t addresses[]={0,0x70,0x71,0x72,0x73,0x74,0x1fe,0x200,0x1fe00,0x1fffe,
+        0x20000,0x3fffe,0x7fffe,0x80000,0xbfffe,0xc0000,0xdfffe,
+        0x200000,0x23fffe,0xa12000,0xfe0000,0xff0000,0xfffffe};
+    for(unsigned mode=0;mode<8;++mode)for(unsigned control=0;control<4;++control)
+    for(unsigned bank=0;bank<4;++bank)for(unsigned cpu=0;cpu<2;++cpu)
+    for(unsigned write=0;write<2;++write)for(unsigned n=0;n<sizeof addresses/sizeof *addresses;++n)
+    for(size_t count=1;count<=22;count+=3) {
+        s->memory_mode=(uint8_t)mode;s->main_control=(uint8_t)control;
+        s->prg_bank=(uint8_t)bank;s->write_protect=1;
+        uint32_t address=addresses[n];SegaCDMemoryRegion view;
+        int mapped=segacd_memory_region(s,(SegaCDCpu)cpu,address,count,(int)write,&view);
+        if(mapped) {
+            CHECK(view.data&&address>=view.address&&count<=view.bytes-(address-view.address));
+            for(size_t i=0;i<count;++i) {
+                uint32_t a=address+(uint32_t)i;uint8_t value;
+                if(write) {
+                    CHECK(segacd_write8(s,(SegaCDCpu)cpu,a,(uint8_t)(a^0xa5u))==SEGACD_OK);
+                    CHECK(view.data[a-view.address]==(uint8_t)(a^0xa5u));
+                } else {
+                    CHECK(segacd_read8(s,(SegaCDCpu)cpu,a,&value)==SEGACD_OK);
+                    CHECK(view.data[a-view.address]==value);
+                }
+            }
+        }
+        if(cpu==SEGACD_MAIN&&address<0x74&&address+count>0x72)CHECK(!mapped);
+        if(write&&cpu==SEGACD_SUB&&address<0x200)CHECK(!mapped);
+        if((mode&4)&&((cpu==SEGACD_MAIN&&address>=0x200000&&address<0x240000)||
+           (cpu==SEGACD_SUB&&address>=0x80000&&address<0xe0000)))CHECK(!mapped);
+    }
+    SegaCDMemoryRegion view;
+    CHECK(!segacd_memory_region(s,SEGACD_MAIN,0xfffffe,4,0,&view));
+    CHECK(!segacd_memory_region(s,SEGACD_SUB,0x1000000,1,0,&view));
+    CHECK(!segacd_memory_region(s,SEGACD_SUB,0,0,0,&view));
+}
 
 int main(void)
 {
@@ -134,6 +170,7 @@ int main(void)
         CHECK(segacd_write8(s,SEGACD_SUB,0xC0000+a,(uint8_t)a)==SEGACD_OK);
     }
     check_code_spans();
+    check_data_regions();
     free(s);puts("Sega CD memory, ownership, communication, timer/IRQ, code spans and font contracts pass");
     return 0;
 }

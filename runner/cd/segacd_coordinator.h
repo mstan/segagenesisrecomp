@@ -67,6 +67,8 @@ struct SegaCDCoordinator {
     SegaCDCatalogIndex *catalog_index[2];
     uint8_t catalog_index_enabled;
     const uint8_t *(*host_code_span)(void *,uint32_t,size_t);
+    M68kStepDataResolver host_data_region;
+    uint64_t data_resolutions[2];
     /* Immutable generated effect sidecars survive registry prepend/replacement
      * by module identity. Unlisted callbacks are always observable exits. */
     const M68kStepEffectModule *region_effects[2];
@@ -87,6 +89,9 @@ int segacd_coordinator_catalog_index(SegaCDCoordinator *,int enabled);
 /* Optional Main-host executable storage, under the same no-side-effect rules
  * as host_main.fetch16. Code ranges owned by CD devices never delegate here. */
 int segacd_coordinator_main_code_span(SegaCDCoordinator *,const uint8_t *(*)(void *,uint32_t,size_t));
+/* Qualified ordinary Main-host RAM; same per-operation/no-observer contract
+ * as m68k_step_data_regions. NULL keeps the ordinary host bus. */
+int segacd_coordinator_main_data_region(SegaCDCoordinator *,M68kStepDataResolver);
 /* Qualify only with complete effect metadata and interval-composable device
  * sinks. Host observers must report every observable deadline through
  * host_next_event; instrumentation observing every old advance call instead

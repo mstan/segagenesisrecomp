@@ -316,6 +316,9 @@ int main(int argc,char **argv)
         (unsigned long long)machine.coordinator.region_runs,
         (unsigned long long)machine.coordinator.region_instructions[0],
         (unsigned long long)machine.coordinator.region_instructions[1]);
+    printf("Owned data regions Main=%llu Sub=%llu\n",
+        (unsigned long long)machine.coordinator.data_resolutions[0],
+        (unsigned long long)machine.coordinator.data_resolutions[1]);
     printf("Catalog PC index visited=%zu/%zu bytes=%zu/%zu\n",
         machine.coordinator.catalog_index[0]?machine.coordinator.catalog_index[0]->visited:0,
         machine.coordinator.catalog_index[1]?machine.coordinator.catalog_index[1]->visited:0,
