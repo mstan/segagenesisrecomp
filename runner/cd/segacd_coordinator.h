@@ -77,7 +77,7 @@ struct SegaCDCoordinator {
     size_t region_effect_count[2];
     uint64_t region_instructions[2],region_runs,region_device_advances;
     uint64_t region_event_deadline;
-    uint8_t region_event_valid;
+    uint8_t region_event_valid,event_intervals_qualified;
     const M68kStepRegisterSpan *register_spans[2];
     size_t register_span_count[2];
     uint8_t register_span_qualified[2][SEGACD_REGISTER_SPAN_LIMIT/8];
