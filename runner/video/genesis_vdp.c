@@ -21,6 +21,11 @@
 #ifndef GENESIS_FUSED_RASTER
 #define GENESIS_FUSED_RASTER 0
 #endif
+/* Sprite row decoding is independent of the plane/output representation.
+ * Fused production must retain the existing batched evaluator's work. */
+#ifndef GENESIS_BATCHED_SPRITES
+#define GENESIS_BATCHED_SPRITES (GENESIS_BATCHED_PLANES || GENESIS_FUSED_RASTER)
+#endif
 #ifndef GENESIS_NATIVE_COMPOSE
 #define GENESIS_NATIVE_COMPOSE (UINTPTR_MAX > UINT32_MAX)
 #endif
@@ -702,7 +707,7 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
             int iy = vf ? (height - 1 - (line - y)) : (line - y);
             int celly = iy >> cell_h_shift, fy = iy & ((1 << cell_h_shift) - 1);
 
-#if GENESIS_BATCHED_PLANES
+#if GENESIS_BATCHED_SPRITES
             /* Resolve sprite cell/row addresses once per eight output pixels.
              * VRAM is stable during this scanline call; no persistent cache or
              * invalidation/state migration is involved. */
