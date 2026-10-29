@@ -6,7 +6,7 @@
   "parent": "beads-3z5k",
   "campaign": "beads-2wy8.1",
   "date": "2026-10-29",
-  "status": "implemented_game_qualified_neutral_awaiting_independent_final_PR_gate",
+  "status": "implemented_game_qualified_neutral_independent_final_gate_accepted",
   "package": "E04-common-native-state-r4-inline-budget-owned-rmw",
   "engine_code_commit": "132b84d27a61acb3657ec12737446ca9625e7bb1",
   "core_code_commit": "4479e7e24abe3e4478d943f1eebd41cc264e0140",
@@ -1388,5 +1388,13 @@
     "storage": "New native companions, no duplicate guest-memory representation; unchanged1.39GB ordinary native archive is a borrowed build input. Raw logs/WAV/captures and frozen binaries retained outside delivery folders.",
     "startup": "CD firstB4.885s vs warmB0.996s/A1.021/0.907s; startup processCPU0.563 vs0.469-0.500s. Cold/warm/shared-host differences prevent a startup performance claim. All raw startup costs retained in per_game samples."
   },
-  "independent_runtime_gate": "validate_e04 accepted final built-runtime gate2026-10-29 as neutral/inconclusive per game; final PR/record audit pending"
+  "independent_runtime_gate": "validate_e04 accepted source/compiler/producer, built-game per-game neutral classification and final PR/record gate; explicitly instructed E05 next.",
+  "independent_review": {
+    "path": "C:\\temp\\Codex\\genesis-engine-native-state-20261028\\VALIDATOR_E04.md",
+    "sha256": "30913d4887d22a6ae3c2ea761d895ee07fde913e0cbb2f51227d63cbd835aa54",
+    "reviewed_engine_PR_head": "95190755597567d07771bcb8aa7e731c03ab2f53",
+    "reviewed_core_PR_head": "4479e7e24abe3e4478d943f1eebd41cc264e0140",
+    "next": "E05 with fresh validation-only agent",
+    "merge_approval": false
+  }
 }
