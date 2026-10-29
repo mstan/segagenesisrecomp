@@ -111,8 +111,10 @@ Both pairs improve on this route, with material shared-host variation. This is
 observed CPU work reduction at the existing frame pacing, not a universal FPS
 or guaranteed percentage claim. Startup wall samples are variable (B4.312/1.475s,
 A1.048/0.818s); startup CPU/cycles are mixed/neutral and all samples are retained.
-No startup speedup or proven startup regression is inferred from that ambient
-sample. There is no new allocation, I/O, media residency or deterministic state.
+A targeted same-build ABBA startup-only follow-up does not reproduce that
+longer candidate launch: A2.239/0.833s, B0.699/0.706s, with exact frame0
+inspection state. Both sequences remain retained. Startup CPU/cycles are
+small/mixed; no startup speedup or regression is claimed. There is no new allocation, I/O, media residency or deterministic state.
 
 The final separately retained diagnostic PE9b989172 confirms72,259,107inactive
 phase spans replacing the same number of complete DMA-controller calls.
