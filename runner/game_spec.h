@@ -95,8 +95,8 @@ typedef struct GameSpec {
     /* Optional statically-recompiled Z80 coprocessor backend. The generated
      * function executes exactly one instruction from the explicit Z80 PC and
      * returns; the shared Genesis scheduler remains responsible for cycle
-     * slices, reset, BUSREQ, and interrupts. NULL keeps the verified
-     * SuperZazu interpreter path. This is deliberately per game because every
+     * slices, reset, BUSREQ, and interrupts. NULL uses the optional shared-build
+     * configured entry, otherwise SuperZazu. This is per game because every
      * cartridge uploads a different sound-driver image into Z80 RAM. */
     void      (*z80_step)(void);
 
