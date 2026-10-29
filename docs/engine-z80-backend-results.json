@@ -18225,5 +18225,5 @@
       "sha256": "b81e36fa3e81ab4597dbc0127e8c9b03f69dfa57ccc30c1e30347988793a6102"
     }
   },
-  "current_gate": "Source/test/built-game gates pass, PR40 and producerPR3 filed; independent final validation pending. E07 not started."
+  "current_gate": "ACCEPTED by independent validate_e06 at production engine424a990 / PR40head17d558d and producerdc775df / PR3; final actual binary/artifact hashes, PRs and durable Beads audited. Explicit instruction: serial E07 with fresh validation-only reviewer. Owner combined merge/release handoff pending."
 }
