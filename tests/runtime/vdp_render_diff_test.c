@@ -332,7 +332,9 @@ static void eager_provider(void *user,const GVDP *v,const GVDPSpriteLayer *layer
     (void)user;(void)v;++eager_callbacks;
     for(int x=3;x<layer->total;x+=17) {
         layer->index[x]=(uint8_t)(GVDP_HOST_PALETTE_BASE+5);
-        layer->opaque[x]=1;layer->high[x]=(uint8_t)(x&1);
+        const uint8_t flags[]={2,0x80,255};
+        layer->opaque[x]=flags[(unsigned)x%3];
+        layer->high[x]=(x&1)?flags[(unsigned)(x+1)%3]:0;
     }
 }
 static int run_eager_providers(void)

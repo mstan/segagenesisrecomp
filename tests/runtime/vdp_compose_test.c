@@ -24,6 +24,14 @@ static uint8_t reference(unsigned a,unsigned b,unsigned s,unsigned so,unsigned h
 
 int main(void)
 {
+    /* Public host opacity/priority accepts all nonzero byte values; lane
+     * normalization must remain exact, including adjacent high-bit lanes. */
+    for(unsigned byte=0;byte<256;++byte)for(unsigned lane=0;lane<8;++lane) {
+        uint8_t flags[8],truth[8];
+        for(unsigned i=0;i<8;++i){flags[i]=(uint8_t)(i==lane?byte:(i&1?255:0));truth[i]=(uint8_t)(flags[i]!=0);}
+        uint64_t bits,expected;memcpy(&bits,flags,8);memcpy(&expected,truth,8);
+        if(gvdp_compose_boolean(bits)!=expected){fputs("host flag lane normalization mismatch\n",stderr);return 1;}
+    }
     uint8_t a[520],b[520],s[520],op[520],hi[520],sh[520],hl[520],out[536];
     for(unsigned test=0;test<12000;++test){
         unsigned count=1u+next_random()%512u,offset=next_random()%8u;
