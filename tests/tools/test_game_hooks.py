@@ -67,7 +67,7 @@ def main():
                 if os.name=='nt':configure+=['-G','Visual Studio 17 2022','-A','x64']
                 run(configure,td)
                 run([args.cmake.resolve(),'--build',td/'build','--config','Release','--parallel','1'],td)
-                exe=td/'build/Release/hooks.exe'
+                exe=td/'build'/('Release/hooks.exe' if os.name=='nt' else 'hooks')
             else:
                 run([args.cc.resolve(),"-std=c11","-O1","-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
             for mode in (0,1,2):
