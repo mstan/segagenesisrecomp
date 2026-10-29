@@ -2346,8 +2346,8 @@
       "bytes": 611
     },
     "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\validator_e14_audit.py": {
-      "sha256": "28840c0a5d598b38bd181fa18e708ac985427bc5f0e572c4032fbed589a9a35a",
-      "bytes": 5480
+      "sha256": "5c6e8fa32f431bc199cefa8c7e11dd2aef3c95879edb6822b9d49292d7ce504e",
+      "bytes": 6150
     },
     "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\document_final.py": {
       "sha256": "72706129be4dd960a9adf3dd3448571c558a28234ac06c5178cf4592faab588a",
@@ -2356,6 +2356,26 @@
     "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\compact_evidence.py": {
       "sha256": "10327fef6fba3ece22cb3ba4ddfefea6abe5becf2cc648a77c991f006736e56a",
       "bytes": 1687
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\validator_e14_audit_precleanup.py": {
+      "sha256": "28840c0a5d598b38bd181fa18e708ac985427bc5f0e572c4032fbed589a9a35a",
+      "bytes": 5480
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cleanup-complete.json": {
+      "sha256": "22cd7cbbec82aa49318d26e73824f8a8e2e6f8eac54afa03ef3a8cf2d5c0f8c4",
+      "bytes": 1230
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cleanup-complete-wsl.json": {
+      "sha256": "be2b7ac77530bd82aa0a4ce206b262186aebf1b53c6a2d7735db9b6a48cd7d31",
+      "bytes": 236
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cleanup-audit.json": {
+      "sha256": "22cd7cbbec82aa49318d26e73824f8a8e2e6f8eac54afa03ef3a8cf2d5c0f8c4",
+      "bytes": 1230
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cleanup-audit-wsl.json": {
+      "sha256": "6043f603029c5699dbd059d0afa60e35480027de175224a9e04aab65884a0e24",
+      "bytes": 237
     }
   },
   "evidence_roots": {
@@ -2374,6 +2394,15 @@
     "next_task": "E15 afterstatus/cleanup/sync, NEWisolatedWT+freshvalidation-onlyreviewer",
     "unresolved_findings": []
   },
-  "cleanup": "Pendingfinalreview; retainallfrozenPE/raw/source/config/failedsamples; auditexactownedscratchbefore nonforced removal.",
+  "cleanup": {
+    "completed": true,
+    "removed_bytes": 342910325,
+    "windows_removed_bytes": 339694123,
+    "wsl_removed_bytes": 3216202,
+    "native_nonforced": true,
+    "ownership_containment_no_reparse_no_nestedrepo_verified": true,
+    "retained": "AllfrozenPEs/raw8arms/fullWAV/RAM/images/commands/sourceprototypes/acceptedreview/qualifiedunitPEs/CMakeCTestsettings; originalacceptedmetadataunchanged. Borroweddependency/UI/archive/fixturesuntouched.",
+    "remaining": "Sourceworktrees/retainedevidence/configsneededongoingcampaign, no disposablebuildscratchremains."
+  },
   "pr": "https://github.com/mstan/segagenesisrecomp/pull/46"
 }
