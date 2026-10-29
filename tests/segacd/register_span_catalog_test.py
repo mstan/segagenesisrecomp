@@ -10,15 +10,17 @@ import native_register_spans as spans
 
 with tempfile.TemporaryDirectory(prefix='register-span-catalog-') as temp:
     root=Path(temp);original=root/'original';original.mkdir()
-    image=root/'fixture.bin';image.write_bytes(bytes.fromhex('700172024e75'))
+    image=root/'fixture.bin';image.write_bytes(bytes.fromhex('7001720266fc4e75'))
     subprocess.run([sys.argv[1],str(image),str(original),'fixture','0','0'],check=True)
     catalogs=root/'catalogs.txt';catalogs.write_bytes(f'MAIN|{original.as_posix()}|fixture\n'.encode())
     parent=root/'parent';compact.compact(catalogs,parent)
     output=root/'spans';spans.generate(parent,output,Path(sys.argv[2]))
     manifest=json.loads((output/'native_catalog_manifest.json').read_bytes())
-    assert manifest['canonical_ordinary_bodies_verified']==2
+    assert manifest['canonical_ordinary_bodies_verified']==3
     assert 'genesis_spans_main' in (output/'native_register_span_registry.h').read_text()
     assert 'main_effect' not in (output/'native_register_span_registry.h').read_text()
+    assert '#define GENESIS_CATALOG_HAS_FLOW_SPANS 1' in (output/'native_register_span_registry.h').read_text()
+    assert 'const size_t genesis_spans_main_flow_count=1;' in (output/'genesis_spans_main_module.c').read_text()
     first=(original/'fixture_part00.c').read_bytes()
     assert b'void fixture_at_000000(M68kStepContext *ctx){\n' in first
     (original/'fixture_part00.c').write_bytes(first.replace(b'void fixture_at_000000(M68kStepContext *ctx){\n',b'void fixture_at_000000(M68kStepContext *ctx){\n  g_cpu.D[7]++;\n'))
@@ -28,6 +30,22 @@ with tempfile.TemporaryDirectory(prefix='register-span-catalog-') as temp:
     assert filtered['excluded_noncanonical_symbols']==['fixture_at_000000']
     assert 'const size_t genesis_spans_main_count=0;' in (root/'filtered-hle/genesis_spans_main_module.c').read_text()
     assert 'fixture_at_000000' in (root/'filtered-hle/genesis_catalog_main_0000.c').read_text()
+    assert 'const size_t genesis_spans_main_flow_count=1;' in (root/'filtered-hle/genesis_spans_main_module.c').read_text()
+    filtered_parts=''.join(path.read_text() for path in (root/'filtered-hle').glob('genesis_spans_main_part*.c'))
+    assert 'flow_members_0[]={&genesis_catalog_main_0000_entries[1],&genesis_catalog_main_0000_entries[2]}' in filtered_parts
+    # A terminal that looks like Bcc is still arbitrary HLE until its actual
+    # archived callback body matches canonical emission. Never trust opcode.
+    (original/'fixture_part00.c').write_bytes(first)
+    terminal=next(path for path in original.glob('fixture_part*.c') if b'void fixture_at_000004(M68kStepContext *ctx){\n' in path.read_bytes())
+    terminal_bytes=terminal.read_bytes()
+    terminal.write_bytes(terminal_bytes.replace(b'void fixture_at_000004(M68kStepContext *ctx){\n',b'void fixture_at_000004(M68kStepContext *ctx){\n g_cpu.D[7]++;\n'))
+    terminal_hle=root/'terminal-hle';compact.compact(catalogs,terminal_hle)
+    spans.generate(terminal_hle,root/'terminal-filtered',Path(sys.argv[2]))
+    refused_terminal=json.loads((root/'terminal-filtered/native_catalog_manifest.json').read_bytes())
+    assert refused_terminal['excluded_noncanonical_symbols']==['fixture_at_000004']
+    assert 'const size_t genesis_spans_main_flow_count=0;' in (root/'terminal-filtered/genesis_spans_main_module.c').read_text()
+    assert 'const size_t genesis_spans_main_count=1;' in (root/'terminal-filtered/genesis_spans_main_module.c').read_text()
+    terminal.write_bytes(terminal_bytes)
     rmw_source=root/'rmw-original';rmw_source.mkdir()
     rmw_image=root/'rmw.bin';rmw_image.write_bytes(bytes.fromhex('0668000100084e75'))
     subprocess.run([sys.argv[1],str(rmw_image),str(rmw_source),'rmw','0','0'],check=True)
@@ -48,6 +66,24 @@ with tempfile.TemporaryDirectory(prefix='register-span-catalog-') as temp:
         (compile_source/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.16)\nproject(RegistryContract C)\nadd_library(registry OBJECT registry.c)\ntarget_include_directories(registry PRIVATE "'+core.as_posix()+'" "'+rmw_output.as_posix()+'")\n')
         subprocess.run([sys.argv[3],'-S',str(compile_source),'-B',str(root/'registry-build'),'-G',sys.argv[4]],check=True)
         subprocess.run([sys.argv[3],'--build',str(root/'registry-build'),'--config','Release','--parallel','1'],check=True)
+        # Compile/link/run the ACTUAL producer output, not a handwritten copy
+        # of its declarations. This also checks the ordinary archive ABI.
+        (compile_source/'flow.c').write_text('''#include "native_register_span_registry.h"
+#include <stdio.h>
+static const unsigned char image[]={0x70,1,0x72,2,0x66,0xfc,0x4e,0x75};
+static const unsigned char*view(void*u,uint32_t pc,size_t n){(void)u;return pc<=sizeof image&&n<=sizeof image-pc?image+pc:0;}
+static M68kStepBusResult fetch(void*u,uint32_t pc,uint16_t*v){const unsigned char*p=view(u,pc,2);if(!p)return M68K_BUS_FAULT;*v=(uint16_t)((unsigned)p[0]<<8|p[1]);return M68K_BUS_OK;}
+int main(void){M68kStepContext c={0};c.bus.fetch16=fetch;c.code_span=view;c.state.regs.SR=0x2700;
+ if(genesis_spans_main_flow_count!=1||m68k_step_execute_flow_span(&c,genesis_spans_main_flow_spans,18)!=M68K_STEP_OK||c.state.regs.D[0]!=1||c.state.regs.D[1]!=2||c.state.regs.PC!=2||c.state.cycles!=18||c.state.instructions!=3)return 1;
+ puts("actual canonical producer flow linked and retired");return 0;}
+''')
+        sources=[compile_source/'flow.c',core/'m68k_step.c',*original.glob('fixture_part*.c'),*output.glob('*.c')]
+        with (compile_source/'CMakeLists.txt').open('a') as file:
+            file.write('add_executable(flow\n'+''.join(' "'+p.as_posix()+'"\n' for p in sources)+')\ntarget_include_directories(flow PRIVATE "'+core.as_posix()+'" "'+output.as_posix()+'" "'+original.as_posix()+'")\n')
+        subprocess.run([sys.argv[3],'-S',str(compile_source),'-B',str(root/'registry-build')],check=True)
+        subprocess.run([sys.argv[3],'--build',str(root/'registry-build'),'--config','Release','--target','flow','--parallel','1'],check=True)
+        flow_executable=root/'registry-build'/('Release/flow.exe' if sys.platform=='win32' else 'flow')
+        subprocess.run([str(flow_executable)],check=True)
     array,index,original,replacement=rmw_manifest['canonical_owned_rmw_redirects'][0]
     assert original=='rmw_at_000000' and index==0
     old=(rmw_parent/'genesis_catalog_main_0000.c').read_text()

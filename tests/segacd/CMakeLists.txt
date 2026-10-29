@@ -322,6 +322,19 @@ if(NOT CMAKE_CROSSCOMPILING)
   target_include_directories(segacd_register_span_semantics_test PRIVATE ${step_runtime_includes})
   target_compile_features(segacd_register_span_semantics_test PRIVATE c_std_11)
   add_test(NAME segacd_register_span_semantics COMMAND segacd_register_span_semantics_test)
+  add_executable(segacd_flow_span_emit_test flow_span_emit_test.c ${step_sources}
+    "${engine_root}/recompiler/src/rom_parser.c" "${engine_root}/recompiler/src/game_config.c"
+    "${engine_root}/recompiler/src/toml.c")
+  target_include_directories(segacd_flow_span_emit_test PRIVATE ${step_includes} "${engine_root}/recompiler/src")
+  target_compile_features(segacd_flow_span_emit_test PRIVATE c_std_11)
+  set(flow_output "${CMAKE_CURRENT_BINARY_DIR}/flow_spans_generated.c")
+  add_custom_command(OUTPUT "${flow_output}"
+    COMMAND segacd_flow_span_emit_test "${flow_output}" "${CMAKE_CURRENT_SOURCE_DIR}/flow_span_harness.c.in"
+    DEPENDS segacd_flow_span_emit_test flow_span_harness.c.in VERBATIM)
+  add_executable(segacd_flow_span_semantics_test "${flow_output}" ${step_runtime_sources})
+  target_include_directories(segacd_flow_span_semantics_test PRIVATE ${step_runtime_includes})
+  target_compile_features(segacd_flow_span_semantics_test PRIVATE c_std_11)
+  add_test(NAME segacd_flow_span_semantics COMMAND segacd_flow_span_semantics_test)
   add_executable(segacd_owned_rmw_emit_test owned_rmw_emit_test.c ${step_sources}
     "${engine_root}/recompiler/src/rom_parser.c" "${engine_root}/recompiler/src/game_config.c"
     "${engine_root}/recompiler/src/toml.c")

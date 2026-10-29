@@ -73,6 +73,10 @@ void segacd_standalone_qualify_regions(SegaCDMachine *machine)
 #if defined(GENESIS_CATALOG_HAS_REGISTER_SPANS) && GENESIS_CATALOG_HAS_REGISTER_SPANS
     (void)segacd_coordinator_register_spans(&machine->coordinator,SEGACD_MAIN,genesis_spans_main_spans,genesis_spans_main_count);
     (void)segacd_coordinator_register_spans(&machine->coordinator,SEGACD_SUB,genesis_spans_sub_spans,genesis_spans_sub_count);
+#if defined(GENESIS_CATALOG_HAS_FLOW_SPANS) && GENESIS_CATALOG_HAS_FLOW_SPANS && defined(M68K_STEP_HAS_FLOW_SPANS)
+    (void)segacd_coordinator_flow_spans(&machine->coordinator,SEGACD_MAIN,genesis_spans_main_flow_spans,genesis_spans_main_flow_count);
+    (void)segacd_coordinator_flow_spans(&machine->coordinator,SEGACD_SUB,genesis_spans_sub_flow_spans,genesis_spans_sub_flow_count);
+#endif
 #endif
 #else
     (void)machine;

@@ -322,6 +322,9 @@ int main(int argc,char **argv)
     printf("Owned RMW Main=%llu Sub=%llu\n",
         (unsigned long long)machine.coordinator.cpu[0].owned_rmw_grants,
         (unsigned long long)machine.coordinator.cpu[1].owned_rmw_grants);
+    printf("Flow spans Main=%llu/%llu Sub=%llu/%llu\n",
+        (unsigned long long)machine.coordinator.flow_runs[0],(unsigned long long)machine.coordinator.flow_instructions[0],
+        (unsigned long long)machine.coordinator.flow_runs[1],(unsigned long long)machine.coordinator.flow_instructions[1]);
     printf("Owned data regions Main=%llu Sub=%llu\n",
         (unsigned long long)machine.coordinator.data_resolutions[0],
         (unsigned long long)machine.coordinator.data_resolutions[1]);

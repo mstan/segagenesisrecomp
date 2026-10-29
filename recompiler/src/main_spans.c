@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-typedef struct {M68KInstr ins;char array[128],symbol[128];unsigned index,cycles;int qualified,owned;} Record;
+typedef struct {M68KInstr ins;char array[128],symbol[128];unsigned index,cycles,flow_max;int qualified,owned,flow;} Record;
 static void fail(const char*s){fprintf(stderr,"M68kSpanRecomp: %s\n",s);exit(1);}
 static uint8_t read_byte(uint32_t address,void*user)
 {
@@ -55,7 +55,8 @@ int main(int argc,char**argv)
     codegen_step_nominal_cycles(&decoded)==record.cycles;
   record.qualified=exact&&effect==1u&&codegen_register_instruction(&decoded,NULL,NULL);
   record.owned=exact&&effect==2u&&codegen_owned_rmw_instruction(&decoded);
-  if(record.qualified||record.owned)record.ins=decoded;else record.ins.byte_length=words*2u;
+  record.flow=exact&&effect==1u&&codegen_flow_terminal(&decoded,&record.flow_max);
+  if(record.qualified||record.owned||record.flow)record.ins=decoded;else record.ins.byte_length=words*2u;
   if(count==capacity){capacity=capacity?capacity*2:4096;Record*next=realloc(rows,capacity*sizeof*rows);if(!next)fail("out of memory");rows=next;}
   rows[count++]=record;previous=pc;
  }
@@ -64,7 +65,7 @@ int main(int argc,char**argv)
  FILE*module=output(argv[2],prefix,"_module.c");fputs("#include \"m68k_step.h\"\n",module);
  FILE*proof=output(argv[2],prefix,"_ordinary_bodies.jsonl");
  GenesisRom proof_rom={0};
- for(size_t n=0;n<count;++n)if(rows[n].qualified||rows[n].owned)ordinary_body(proof,&rows[n],&proof_rom);
+ for(size_t n=0;n<count;++n)if(rows[n].qualified||rows[n].owned||rows[n].flow)ordinary_body(proof,&rows[n],&proof_rom);
  FILE*table=tmpfile();if(!table)fail("cannot open table buffer");
  unsigned spans=0,instructions=0;
  for(size_t s=0;s<count;){
@@ -85,6 +86,28 @@ int main(int argc,char**argv)
  if(spans){fprintf(module,"const M68kStepRegisterSpan %s_spans[]={\n",prefix);rewind(table);int ch;while((ch=fgetc(table))!=EOF)fputc(ch,module);fputs("};\n",module);}
  else fprintf(module,"const M68kStepRegisterSpan %s_spans[1]={{0}};\n",prefix);
  fprintf(module,"const size_t %s_count=%u;\n",prefix,spans);
+ FILE*flow_table=tmpfile();if(!flow_table)fail("cannot open flow table buffer");
+ unsigned flows=0,flow_instructions=0;
+ for(size_t tail=0;tail<count;++tail)if(rows[tail].flow){
+  size_t start=tail;
+  while(start && tail-start<CODEGEN_REGISTER_SPAN_MAX-1 && rows[start-1].qualified &&
+        rows[start-1].ins.addr+rows[start-1].ins.byte_length==rows[start].ins.addr)--start;
+  if(start==tail)continue;
+  M68KInstr ins[CODEGEN_REGISTER_SPAN_MAX];unsigned length=(unsigned)(tail-start+1),maximum=rows[tail].flow_max;
+  FILE*part=parts[(spans+flows)%32];
+  for(unsigned n=0;n<length;++n){ins[n]=rows[start+n].ins;if(n+1<length)maximum+=rows[start+n].cycles;
+   fprintf(part,"extern const M68kStepEntry %s[];\n",rows[start+n].array);}
+  fprintf(part,"const M68kStepEntry *const %s_flow_members_%u[]={",prefix,flows);
+  for(unsigned n=0;n<length;++n)fprintf(part,"%s&%s[%u]",n?",":"",rows[start+n].array,rows[start+n].index);
+  fprintf(part,"};\nvoid %s_flow_%u(M68kStepContext*ctx){\n",prefix,flows);
+  GenesisRom rom={0};if(!codegen_emit_flow_span(part,&rom,ins,length))fail("flow emission failed");fputs("}\n",part);
+  fprintf(module,"extern const M68kStepEntry *const %s_flow_members_%u[];\nextern void %s_flow_%u(M68kStepContext*);\n",prefix,flows,prefix,flows);
+  fprintf(flow_table," {%s_flow_members_%u,%s_flow_%u,%u,%u},\n",prefix,flows,prefix,flows,length,maximum);
+  ++flows;flow_instructions+=length;
+ }
+ if(flows){fprintf(module,"const M68kStepRegisterSpan %s_flow_spans[]={\n",prefix);rewind(flow_table);int ch;while((ch=fgetc(flow_table))!=EOF)fputc(ch,module);fputs("};\n",module);}
+ else fprintf(module,"const M68kStepRegisterSpan %s_flow_spans[1]={{0}};\n",prefix);
+ fprintf(module,"const size_t %s_flow_count=%u;\n",prefix,flows);close_file(flow_table);
  FILE*redirects=output(argv[2],prefix,"_owned_redirects.jsonl");unsigned owned=0;
  for(size_t n=0;n<count;++n)if(rows[n].owned){
   FILE*part=parts[owned%32];fprintf(part,"void %s_owned_%u(M68kStepContext*ctx){\n",prefix,owned);
@@ -92,5 +115,5 @@ int main(int argc,char**argv)
   fputs("}\n",part);fprintf(redirects,"[\"%s\",%u,\"%s\",\"%s_owned_%u\"]\n",rows[n].array,rows[n].index,rows[n].symbol,prefix,owned);++owned;
  }
  close_file(redirects);close_file(table);close_file(module);close_file(proof);for(unsigned n=0;n<32;++n)close_file(parts[n]);
- printf("%s: %zu descriptors, %u spans, %u instructions, %u owned RMW callbacks\n",prefix,count,spans,instructions,owned);free(rows);return 0;
+ printf("%s: %zu descriptors, %u spans, %u instructions, %u owned RMW callbacks, %u flow spans/%u instructions\n",prefix,count,spans,instructions,owned,flows,flow_instructions);free(rows);return 0;
 }
