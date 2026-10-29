@@ -6,7 +6,7 @@
   "campaign": "beads-2wy8.1",
   "engine_reference": "4166e74299755bcdb582630b70ca62121a842564",
   "engine_production": "50b0854e42c3e458b00071c38c5943559d3939c2",
-  "engine_pr": "pending",
+  "engine_pr": "https://github.com/mstan/segagenesisrecomp/pull/44",
   "validation_status": "Source50b0854 and3/3 each MSVCx64/x86/GCC independently accepted; final complete PR/record gate pending. E11 remains open until that gate.",
   "disposition": "Whole bounded fusion evaluated and rejected versus best existing BATCHED; useful existing BATCHED default adoption and provider compatibility fixes retained. No fusion delivery or universal exhaustion claim.",
   "builds": {
