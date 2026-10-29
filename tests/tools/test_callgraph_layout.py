@@ -51,7 +51,7 @@ def main():
             (root/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.16)\nproject(Callgraph C)\nadd_executable(callgraph\n'+listing+'\n)\ntarget_include_directories(callgraph PRIVATE "'+(repo/'runner/include').as_posix()+'" "'+(repo/'runner').as_posix()+'")\ntarget_compile_features(callgraph PRIVATE c_std_11)\n',encoding='utf8')
             configure=[args.cmake.resolve(),'-S',root,'-B',root/'build']
             if os.name=='nt':configure+=['-G','Visual Studio 17 2022','-A','x64']
-            run(configure,root);run([args.cmake.resolve(),'--build',root/'build','--config','Release','--parallel','1'],root);exe=root/'build/Release/callgraph.exe'
+            run(configure,root);run([args.cmake.resolve(),'--build',root/'build','--config','Release','--parallel','1'],root);exe=root/'build'/('Release/callgraph.exe' if os.name=='nt' else 'callgraph')
         else:
             exe=root/'callgraph';run([args.cc.resolve(),'-std=c11','-O2','-I',repo/'runner/include','-I',repo/'runner',*sources,'-o',exe],root)
         run([exe],root);print('Bounded common-emitter callgraph placement and actual native calls pass')

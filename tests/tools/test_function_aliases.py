@@ -142,7 +142,7 @@ int main(void){
                 if os.name=='nt':configure+=['-G','Visual Studio 17 2022','-A','x64']
                 run(configure,root)
                 run([args.cmake.resolve(),'--build',root/'build','--config','Release','--parallel','1'],root)
-                executable=root/'build/Release/aliases.exe'
+                executable=root/'build'/('Release/aliases.exe' if os.name=='nt' else 'aliases')
             else:
                 executable=root/'aliases';run([args.cc.resolve(),'-std=c11','-O1','-I',repo/'runner/include','-I',repo/'runner',*sources,'-o',executable],root)
             run([executable],root)
