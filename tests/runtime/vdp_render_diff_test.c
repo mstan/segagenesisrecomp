@@ -433,6 +433,59 @@ static int run_capture_rejection(void)
     return 0;
 }
 
+
+/* Warm shared derived scratch, mutate direct storage without notifications,
+ * interleave two machines, then restore old bytes/geometry at the same address.
+ * Both the repeated hits and replacements must match the uncached renderer. */
+static int run_derived_identity_mutations(void)
+{
+    static const unsigned geometry_regs[9]={2,3,4,0x0b,0x0c,0x0d,0x10,0x11,0x12};
+    for(unsigned mode=0;mode<8;++mode) {
+        GVDP machines[2],saved;
+        memset(machines,0,sizeof machines);
+        for(unsigned m=0;m<2;++m) {
+            GVDP *v=&machines[m];
+            v->reg[1]=0x40;v->reg[2]=0x30;v->reg[3]=0x3e;v->reg[4]=7;
+            v->reg[5]=0x70;v->reg[0x0d]=0x28;
+            v->reg[0x0c]=(uint8_t)((mode&1)|((mode&2)?6:0)|((mode&4)?8:0));
+            memset(v->vram,m?0x99:0x11,0x8000);
+        }
+        saved=machines[0];
+        uint8_t original[GVDP_MAX_WIDTH];memset(original,0xa5,sizeof original);
+        head_gvdp_set_ws_extra(0);cand_gvdp_set_ws_extra(0);
+        head_gvdp_set_ws_canvas(0);cand_gvdp_set_ws_canvas(0);
+        head_gvdp_set_ws_bar_black(0);cand_gvdp_set_ws_bar_black(0);
+        head_gvdp_set_bgdiag(0);cand_gvdp_set_bgdiag(0);
+        int changed=0;
+        for(unsigned step=0;step<48;++step) {
+            unsigned which=(step/2)&1u;
+            GVDP a=machines[which],b=a;
+            uint8_t x[GVDP_MAX_WIDTH],y[GVDP_MAX_WIDTH];
+            memset(x,0xa5,sizeof x);memset(y,0xa5,sizeof y);
+            int line=(mode&2)?18:9;
+            int wa=head_gvdp_render_scanline(&a,line,x);
+            int wb=cand_gvdp_render_scanline(&b,line,y);
+            if(wa!=wb || memcmp(x,y,sizeof x) || memcmp(&a,&b,sizeof a)) {
+                fprintf(stderr,"derived identity mismatch mode=%u step=%u\n",mode,step);return 1;
+            }
+            if(step==0)memcpy(original,x,sizeof x);
+            if(step==1 && memcmp(original,x,sizeof x))changed=1;
+            machines[which]=a;
+            /* Same geometry, different complete raw rows, no port callbacks. */
+            memset(machines[which].vram,(int)(0x22u+which*0x33u+step%8u),0x8000);
+            if(step>=8) {
+                unsigned reg=geometry_regs[(step-8)%9];
+                machines[which].reg[reg]^=(uint8_t)(1u<<((step/9)%8));
+                machines[which].vsram[(step*3)%GVDP_VSRAM_ENTRIES]^=(uint16_t)(step*17);
+                machines[which].cram[step%GVDP_CRAM_ENTRIES]^=(uint16_t)(step*31);
+            }
+            if(step==32)machines[which]=saved;
+        }
+        if(!changed) {fprintf(stderr,"direct VRAM mutation did not affect pixels mode=%u\n",mode);return 1;}
+    }
+    return 0;
+}
+
 int main(void)
 {
     int failures = 0;
@@ -443,6 +496,7 @@ int main(void)
     failures += run_reset_restore();
     failures += run_capture_rejection();
     failures += run_eager_providers();
+    failures += run_derived_identity_mutations();
     if (failures) {
         fprintf(stderr, "vdp_render_diff_test failed: %d mismatches\n", failures);
         return 1;
