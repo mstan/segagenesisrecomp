@@ -113,5 +113,6 @@ game launch/compilation; original errors and corrected runs remain documented.
 Evidence roots: `C:/Temp/Codex/genesis-engine-fused-raster-20261029` and
 `G:/Temp/Codex/genesis-engine-fused-raster-20261029`. Retain frozen PEs, source
 prototypes/census hooks, full WAV/screenshots/states, inputs, configs and verifiers.
-Disposable CMake/WSL/temporary trees are removed only after final review;
+After final acceptance, audited owned Windows/WSL CMake and temporary trees
+were removed (436,465,168bytes). Frozen PEs/full raw evidence/configs/source,
 borrowed dependency/UI junctions and private fixtures remain for serial work.
