@@ -6,7 +6,7 @@
   "parent": "beads-3z5k",
   "campaign": "beads-2wy8.1",
   "date": "2026-10-28",
-  "status": "implemented_game_qualified_neutral_ready_for_pr_gate",
+  "status": "implemented_game_qualified_neutral_independent_gate_accepted",
   "engine_code_commit": "899939b0b0119eb1065bfdc4ae7d95c59a288537",
   "runtime_core_commit": "b2d95f2cbe81fd9eee03a00bc2f779e6d1253edd",
   "consumer_commit": "94f57796db9de4990e23476b576b29239095fb22",
@@ -397,6 +397,15 @@
     "views": "Two24-byte views plus resolver/eligibility per CPU on tested x64 ABI; no guest-memory duplicate or page-version table."
   },
   "scope": "General owned byte-memory regions for ONE qualified native operation; exact fallback across callbacks/MMIO/WAIT/protection/1M mappings and every operation exit. All opcode/extension guards remain live. No cross-instruction pinning, second guest-memory representation, game-PC logic or rejected E02 code identity/cache adopted. Reuses independently audited generated context-bus effect grammar/flags2 only. Cartridge bus audited as already decoding complete words once; no cartridge changes or untested game gains claimed.",
-  "merge_release": "Core/engine PR gate pending; owner final visual clearance still required before merge/release. No owner windows launched or delivery folders changed.",
-  "scope_completion": "Original E03 general owned-data contract delivered with required exits/fallback; future cross-instruction designs are not claimed exhausted."
+  "merge_release": "CorePR8/enginePR37 open and independently accepted. Validator explicitly instructed E04 next. Owner final combined visual clearance still required before merge/release; no owner windows or delivery folders changed.",
+  "scope_completion": "Original E03 general owned-data contract delivered with required exits/fallback; future cross-instruction designs are not claimed exhausted.",
+  "prs": [
+    "https://github.com/mstan/m68k-recomp-core/pull/8",
+    "https://github.com/mstan/segagenesisrecomp/pull/37"
+  ],
+  "independent_validation": {
+    "record": "C:/Temp/Codex/genesis-engine-owned-memory-20261028/VALIDATOR_E03.md",
+    "accepted": true,
+    "next": "E04"
+  }
 }

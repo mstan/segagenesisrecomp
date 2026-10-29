@@ -1558,6 +1558,6 @@
       "E02"
     ],
     "validation_workflow": "One validation-only subagent per serial task; PR on success or Beads on failure, explicit reviewer instruction before next.",
-    "pr_gate": "pending"
+    "pr_gate": "E03 accepted; corePR8/enginePR37; validator instructed E04 next"
   }
 }
