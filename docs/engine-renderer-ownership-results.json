@@ -9,7 +9,7 @@
   "consumer_adoption": "6ecb59e (initial mechanical adapter81d3bc6)",
   "engine_pr": "https://github.com/mstan/segagenesisrecomp/pull/43",
   "consumer_pr": "https://github.com/mstan/SonicTheHedgehogRecomp/pull/7",
-  "validation_status": "Implemented and qualified final96be781/main-only fix; independent final gate pending. Precursor39596bf matched performance/source-supported unchanged tests retained distinctly. No merge/release approval.",
+  "validation_status": "FINAL ACCEPTED by fresh validate_e10: production96be781, enginePR43 revieweda75cd9f, companionPR7 head6ecb59e. No merge/release/owner-launch approval. Explicit next original item E11 after status/sync/cleanup.",
   "games": {
     "rka": {
       "classification": "neutral/inconclusive; no demonstrated speedup or reproducible regression under retained shared-host variation",
@@ -3554,5 +3554,62 @@
     "source_sha256": "04d84b8247bfd0e697c1231861b58e0f436c90ae59531d49566fea4a20809650",
     "hook_sha256": "747ad1a52195f3c3022172ff17cd8f207405546c35783c4babd97f0b2d23366a",
     "production_adapter_sha256": "85466c917e8e86b40af8ad99687b07acf4c04911c2256bc3c01a2aa33c31ff7f"
+  },
+  "independent_review": {
+    "record": "C:\\temp\\Codex\\genesis-engine-render-ownership-20261029\\VALIDATOR_E10.md",
+    "sha256": "cbfe4f6256951ac73c181d4ff5c419586065a11f14f494429ed9907c49cc75a4",
+    "artifacts": "C:\\temp\\Codex\\genesis-engine-render-ownership-20261029\\VALIDATOR_E10_ARTIFACTS.json"
+  },
+  "cleanup": {
+    "cleanup-completed.json": [
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-render-ownership-20261029\\rka-build",
+        "bytes": 101961235,
+        "files": 421,
+        "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-render-ownership-20261029\\rka-candidate-build",
+        "bytes": 101683883,
+        "files": 421,
+        "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-render-ownership-20261029\\sonic1-reference-build",
+        "bytes": 68282641,
+        "files": 682,
+        "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-render-ownership-20261029\\sonic1-candidate-build",
+        "bytes": 68111166,
+        "files": 685,
+        "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+        "removed": true
+      },
+      {
+        "path": "C:\\Temp\\Codex\\genesis-engine-render-ownership-20261029\\tests",
+        "bytes": 6443878,
+        "files": 399,
+        "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+        "removed": true
+      }
+    ],
+    "cleanup-gcc-completed.json": {
+      "path": "/tmp/genesis-engine-render-ownership-20261029-tests",
+      "files": 893,
+      "bytes": 3810977,
+      "removed": true,
+      "ownership": "Task-only CMake/GCC build; source, raw/full test logs, XML and disassembly retained outside"
+    },
+    "cleanup-temp-completed.json": {
+      "ownership": "Task process-local TEMP/TMP from all tracked build jobs; logs and source retained outside",
+      "path": "C:\\Temp\\Codex\\genesis-engine-render-ownership-20261029\\temp",
+      "removed": true,
+      "bytes": 0
+    }
   }
 }

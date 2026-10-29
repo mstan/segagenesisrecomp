@@ -4,15 +4,14 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: E01, E03, E04, E05, E06, E07 and E08 now deliver their
-selected original bounded contracts; **24 families remain open**. Fresh E08
-review accepted production11a55fd/ready PR42 reviewed headf462b05, verified
-whole-family dispositions and all retained runtime artifacts, and explicitly
-instructed E10 next with a fresh validation-only reviewer (E09 already delivered).
-Actual72,259,107full inactive-controller calls become phase spans; observed CD
-CPU reductions21.90/10.72percent retain shared-host variation. Combined owner
-visual/merge/release handoff remains pending. Historical audit narrative below
-describes the original released base; current row dispositions are in the
+Current serial update: E01, E03, E04, E05, E06, E07, E08 and E10 now deliver
+selected original bounded contracts; **23 families remain open**. Fresh E10
+review accepted production96be781/ready PR43 reviewed a75cd9f and mechanical
+Sonic1 pin6ecb59e/PR7. Exact built-game outputs and generic local-limit fallback
+are qualified; timing remains neutral/inconclusive. Reviewer explicitly instructed
+E11 next with a fresh validation-only reviewer. Combined owner visual/merge/release
+handoff remains pending. Historical audit narrative below describes the original
+released base; current row dispositions are in the
 [machine-readable audit](engine-optimization-completion-audit.json) and
 [implementation burndown](ENGINE_OPTIMIZATION_BURNDOWN.md).
 
@@ -52,7 +51,7 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E07 | Event-driven waits and scheduling | Partial — open | Memoized scanline deadline calculation. | Broader CPU/device/fiber event coalescing and event-driven waits. |
 | E08 | Transfer spans and layout mapping | Deferred — open | Existing exact word-boundary DMA advancement retained. | Qualified bulk transfer and Word RAM layout spans. |
 | E09 | Single image-production ownership | Delivered (bounded) | Reusable CD lazy original-image capture/composition with exact fallback; cartridge already had lazy rows. | The selected ownership/fallback contract is delivered. Other raster/cache/upload goals remain separate. |
-| E10 | Renderer interface independent of aspect ratio | Deferred — open | No shared aspect-independent renderer selector/adoption. | Renderer ownership selection independent of aspect ratio. |
+| E10 | Renderer interface independent of aspect ratio | Bounded delivered | Used shared ownership/frame contract, mechanical consumer adoption and exact local-limit fallback; final independent gate accepted. | Combined owner merge/release handoff; no title fidelity rollout implied. |
 | E11 | Fused generic VDP raster | Partial — open | Packed tile rows and eight-byte priority/shading composition. | The original full tile/window/scroll/decode/priority production fusion. |
 | E12 | Shared sprite evaluation jobs | Delivered (bounded) | CD sprite evaluation captured once for both CPU-visible status and deferred image production. | The selected shared-evaluation contract is delivered; additional caching belongs to E13/E15. |
 | E13 | Versioned generic graphics derivation | Deferred — open | No new complete versioned graphics ownership/cache. | Complete VRAM/CRAM/register/private-writer invalidation or immutable-input cache ownership. |
@@ -175,11 +174,21 @@ Sources: `runner/cd/machine.c:30`, `runner/cd/machine.c:62`, `runner/video/genes
 
 ### E10: Renderer interface independent of aspect ratio
 
-Title stock-fidelity concerns justify coordinating rollout, not marking the engine interface delivered. Mechanical consumer adoption is permitted; new title rendering logic remains excluded.
+Delivered and independently accepted: used optional ownership predicate and host
+frame plan separate requested simulation width, viewport policy and local output.
+Mechanical Sonic1 adoption retains existing eligibility; legacy RKA is unchanged.
+All insufficient local texture limits choose exact native fallback without
+passing a reduced width to any legacy adapter. Actual H32/H40 native ownership,
+forced160 and supported360 fallback, exact state/audio/fullWAV/pixels/rollback and
+current-build state evidence qualify the contract. Timing neutral/inconclusive.
 
-**Next closure:** Design a used generic selector with mechanical adoption; track title-specific fidelity separately and preserve exact fallback.
+**Next closure:** Combined owner visual/merge/release handoff. Fresh validator
+explicitly instructed serial E11 next. TechnicallyComputers assignment remains
+unavailable through repository eligibility404 and is transparently recorded.
 
-Sources: `runner/main.c`, `runner/game_video.h`, `docs/TITLE_OPTIMIZATION_BACKLOG.md`. Historical evaluation: `deferred`.
+Sources: `runner/main.c`, `runner/game_video.h`,
+`docs/ENGINE_RENDERER_OWNERSHIP.md`, `docs/engine-renderer-ownership-results.json`.
+Production96be781; PR43 revieweda75cd9f; companionPR7 pin6ecb59e.
 
 ### E11: Fused generic VDP raster
 
