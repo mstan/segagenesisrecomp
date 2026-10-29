@@ -3,6 +3,7 @@
 Owner `beads-3z5k.10`, parent `beads-3z5k`, campaign `beads-2wy8.1`.
 Base `0c78fc6` (compiled `50b0854` best-existing BATCHED), whole prototype
 `1d0aab9`, retained palette-only production `999f392`.
+Engine [PR45](https://github.com/mstan/segagenesisrecomp/pull/45) stacks onPR44.
 Source/generator/census reviewed; final complete-record gate pending.
 No merge/release/owner-launch approval.
 

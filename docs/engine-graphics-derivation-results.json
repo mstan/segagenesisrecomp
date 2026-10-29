@@ -7,7 +7,7 @@
   "engine_reference": "50b0854e42c3e458b00071c38c5943559d3939c2",
   "engine_base_docs_head": "0c78fc6",
   "engine_production": "999f39247df21255328b458b967dba0de15ec47d",
-  "engine_pr": "pending",
+  "engine_pr": "https://github.com/mstan/segagenesisrecomp/pull/45",
   "validation_status": "Source999 andgenerator/census reviewed withoutfinding; final complete runtime/PR/Beads gate pending;22familiesremainopen until finalacceptance",
   "whole_family_disposition": "Complete immutable-input art/palette/geometry architecture1d0aab9 implemented/qualified/reached, then bounded rejected for no demonstratedgain over bestexistingBATCHED. Mutable art/geometry removed. Useful finite immutable DAC domain retained and qualified separately, no deliveredfullcache/allfuturedesignsexhausted claim.",
   "final_games": {
