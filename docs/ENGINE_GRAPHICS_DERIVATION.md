@@ -141,3 +141,8 @@ sample was discarded. Source and evidence roots:
 Full prototype/census/frozen PEs/WAV/screenshots/states/configs/verifiers are retained.
 Audited owned build/WSL/TEMP cleanup remains pending final independent acceptance;
 borrowed dependency/UI junctions and private fixtures are preserved.
+
+Independent final review corrected stale Sonic1 diagnostic PE byte-size metadata
+(5,429,760 inherited versus actual5,430,272). PE SHA and every runtime sample
+were already correct. Original metadata is retained under metadata-corrections;
+all embedded copies and receipt hashes are corrected, with no game rerun.

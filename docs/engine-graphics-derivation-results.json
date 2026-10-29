@@ -3249,7 +3249,7 @@
     },
     "runtime-census-r1.json": {
       "raw": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\runtime-census-r1.json",
-      "sha256": "0ce8e599c519d029dec82d22ea1348fbb643495b2ff60641d3998e41fb150ad3",
+      "sha256": "77d998442029696a62a9dbc2e7a22687a4772bbabb720ea84badedc6397a01e1",
       "package": "Rejected whole E13 complete-value art/palette/geometry architecture1d0aab9",
       "data": {
         "rka": {
@@ -3478,7 +3478,7 @@
               "binary": {
                 "binary": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\binaries\\census\\sonic1\\SonicTheHedgehogRecomp.exe",
                 "sha256": "bd8c9fd7f0bfdacce04b802a63394432b5c29020470ba6eda7707d5ceb09df1b",
-                "bytes": 5429760,
+                "bytes": 5430272,
                 "seconds": 31.983999999938533,
                 "engine": "1d0aab9a5038e12e97d45d53f440b2a44f6d6a36",
                 "consumer": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
@@ -3779,7 +3779,7 @@
       "bytes": 3051
     },
     "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\census-builds.json": {
-      "sha256": "1a25bd4b95f76548658b1362e018cbb61117ff416df6c36f73df2eb453e21999",
+      "sha256": "55f4d03f09d947f72caad407beff3268066b14789e68d99cca807f6824a5f9d5",
       "bytes": 7573
     },
     "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\consumer-builds-palette-final.json": {
@@ -3815,7 +3815,7 @@
       "bytes": 480249
     },
     "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\runtime-census-r1.json": {
-      "sha256": "0ce8e599c519d029dec82d22ea1348fbb643495b2ff60641d3998e41fb150ad3",
+      "sha256": "77d998442029696a62a9dbc2e7a22687a4772bbabb720ea84badedc6397a01e1",
       "bytes": 28845
     },
     "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\runtime-palette-final-r1.json": {
@@ -4057,9 +4057,49 @@
     "C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\supported-test.xml": {
       "sha256": "347c9e1d136c2913a17b6e15513f9318c9daf982bf2a675411257b0edc0725a1",
       "bytes": 505
+    },
+    "C:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\build_check_census.py": {
+      "sha256": "076ae4305042aa894da597fa37335157f6995f7f45e4c6a083bb20aa7a429be7",
+      "bytes": 2936
     }
   },
   "source_prototype": "C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\prototype-1d0aab9",
   "cleanup": "Pending finalreview. RetainallPEs/rawfullWAV/screenshots/states/inputs/host/config/source/census; removeauditedownedscratchonly, preserveborrowedjunctions/privatefixtures.",
-  "approval": "No merge/release/delivery/ownerlaunchapproval; combined ownerhandoff remains"
+  "approval": "No merge/release/delivery/ownerlaunchapproval; combined ownerhandoff remains",
+  "evidence_corrections": [
+    {
+      "description": "IndependentfinalreviewfoundinheritedSonic1censusPEsize; actualPEhashcorrect. Correctsizeinmanifest/rawembeddedcopies/committedcopies andrefreshrawhashes. Preservedoriginalmetadata, untouchedactualsamples, no gameplayrepeat. Futurecensusproducerrefreshesbytes.",
+      "records": [
+        {
+          "where": "census-builds.json/builds/sonic1/packages/candidate",
+          "binary": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\binaries\\census\\sonic1\\SonicTheHedgehogRecomp.exe",
+          "old_bytes": 5429760,
+          "corrected_bytes": 5430272,
+          "unchanged_PE_sha256": "bd8c9fd7f0bfdacce04b802a63394432b5c29020470ba6eda7707d5ceb09df1b"
+        },
+        {
+          "where": "runtime-census-r1.json/builds/builds/sonic1/packages/candidate",
+          "binary": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\binaries\\census\\sonic1\\SonicTheHedgehogRecomp.exe",
+          "old_bytes": 5429760,
+          "corrected_bytes": 5430272,
+          "unchanged_PE_sha256": "bd8c9fd7f0bfdacce04b802a63394432b5c29020470ba6eda7707d5ceb09df1b"
+        },
+        {
+          "where": "runtime-census-r1.json/games/sonic1/runs/0/binary",
+          "binary": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\binaries\\census\\sonic1\\SonicTheHedgehogRecomp.exe",
+          "old_bytes": 5429760,
+          "corrected_bytes": 5430272,
+          "unchanged_PE_sha256": "bd8c9fd7f0bfdacce04b802a63394432b5c29020470ba6eda7707d5ceb09df1b"
+        },
+        {
+          "where": "committed-machine-results/rejected_whole_architecture/runtime-census-r1.json/data/sonic1/runs/0/binary",
+          "binary": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\binaries\\census\\sonic1\\SonicTheHedgehogRecomp.exe",
+          "old_bytes": 5429760,
+          "corrected_bytes": 5430272,
+          "unchanged_PE_sha256": "bd8c9fd7f0bfdacce04b802a63394432b5c29020470ba6eda7707d5ceb09df1b"
+        }
+      ],
+      "originals": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\metadata-corrections"
+    }
+  ]
 }
