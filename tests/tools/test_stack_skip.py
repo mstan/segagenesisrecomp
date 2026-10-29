@@ -35,6 +35,7 @@ M68KState g_cpu;
 uint8_t g_rom[0x400000], g_ram[0x10000];
 const GameSpec g_game_spec = {0};
 uint64_t g_native_insn_count, g_native_span_count;
+GenesisNativeRegisterBudget g_native_register_budget={0,0,0,1,0,0};
 uint32_t g_cycle_accumulator, g_audio_cycle_counter, g_vblank_threshold = 0xFFFFFFFFu;
 int pending, *g_rte_pending_ptr = &pending, g_early_return, g_ws_margin;
 uint8_t m68k_read8(uint32_t a) { return g_ram[a & 65535]; }
@@ -45,10 +46,6 @@ void m68k_write16(uint32_t a,uint16_t v) { m68k_write8(a,v>>8);m68k_write8(a+1,v
 void m68k_write32(uint32_t a,uint32_t v) { m68k_write16(a,v>>16);m68k_write16(a+2,v); }
 void recomp_push_return(uint32_t a) { g_cpu.A[7]-=4;m68k_write32(g_cpu.A[7],a); }
 void glue_check_vblank(void) { abort(); }
-int glue_native_register_span_ready(unsigned cycles,unsigned count) {
-    (void)count;return g_cycle_accumulator<g_vblank_threshold && cycles<g_vblank_threshold-g_cycle_accumulator;
-}
-void glue_native_register_span_retired(void) { ++g_native_span_count; }
 uint32_t recomp_resolve_ram_trampoline(uint32_t a) { return a; }
 int recomp_dispatch_ram_stub(uint32_t a) { (void)a; return 0; }
 void genesis_log_dispatch_miss(uint32_t a) { fprintf(stderr,"miss %x\n",a); abort(); }

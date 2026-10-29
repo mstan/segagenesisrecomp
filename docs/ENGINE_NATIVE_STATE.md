@@ -16,9 +16,12 @@ operations, and X/sticky-Z consumers keep their inputs. Unknown effects are
 exits. Adjacent LEA/address additions share local address expressions rather
 than repeatedly publishing/reloading their intermediate global registers.
 
-The cartridge fast path runs only when the entire span finishes strictly before
-the existing timing threshold. Counts and audio clocks are grouped, then all
-architectural registers are materialized. Original instruction paths and entry
+The cartridge fast path uses the runtime's actual read-only scheduling budget.
+It ends strictly before a possible yield, watchdog or counter wrap; scaled-clock
+normalization and a stale audio baseline retain ordinary retirement. Counts and
+audio clocks are grouped, all architectural registers are materialized, then the
+ordinary final check publishes private budget/seen/stall state. Older clients
+without that contract retain the original VBlank-threshold guard. Original instruction paths and entry
 labels remain for threshold crossings, aliases, game instruction hooks,
 stack-unwind bookkeeping, co-simulation and reverse debugging. Memory/MMIO,
 WAIT, faults, variable-charge operations and control transfers remain exact
@@ -75,3 +78,25 @@ Private reproducibility roots (not delivery folders):
 
 Final compiler gates, source/binary identities, per-game observations, runtime
 variation and PR links will be recorded here after the independent gate.
+
+The first built-game package passed exact state/pixels/full-WAV/rollback checks
+for Sonic CD, RKA and Sonic 1. Sonic 1 showed a bounded improvement; CD timing
+was mixed. RKA's workstation pairs were consistently slower, while a reversed
+pair order on SERVER was neutral. This remains an acceptance concern until the
+revised package is qualified; no aggregate improvement overrides it.
+
+The RKA investigation exposed a real interface mismatch: its cycle accumulator
+remains beyond the old VBlank threshold, although the own runtime's next
+observer is its remaining scheduler/watchdog budget. The first guard retired
+only one span in the 6000-frame route. The revised contract checks the actual
+budget and materializes the same ordinary bookkeeping at the exit. A standalone
+state oracle and real generated-code comparisons cover both admitted intervals
+and exact exits, including private scheduler state.
+
+Owned-memory effective-address consolidation is evaluated separately from local
+LEA folding. E03's ordinary read/write views can safely permit latching an EA
+within a complete dual-owned range. Arbitrary callbacks can change the base or
+index; missing callbacks, permission asymmetry, split ranges, WAIT and faults
+require the original body. A bounded common-emitter prototype is being measured
+with those boundaries and full per-operation view lifetime. Its disposition is
+pending; this document does not count memory-EA consolidation as delivered.

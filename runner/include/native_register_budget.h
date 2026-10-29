@@ -2,6 +2,22 @@
 #define GENESIS_NATIVE_REGISTER_BUDGET_H
 #include <stdint.h>
 
+#define GENESIS_NATIVE_WALL_FRAME_CYCLES 127856u
+#ifndef GENESIS_NATIVE_WATCHDOG_LIMIT
+#define GENESIS_NATIVE_WATCHDOG_LIMIT 20000000ull
+#endif
+/* One actual runtime state, shared with generated register intervals. This is
+ * not a mirrored deadline cache: ordinary bus/yield/restore paths write these
+ * same fields, and serialization continues through their original names. */
+typedef struct GenesisNativeRegisterBudget {
+    uint64_t watchdog_base;
+    int interleave_active,in_vblank_service;
+    unsigned main_cpu_divisor;
+    int32_t cycle_budget;
+    uint32_t budget_cyc_seen;
+} GenesisNativeRegisterBudget;
+extern GenesisNativeRegisterBudget g_native_register_budget;
+
 /* Read-only qualification for an unobservable, fixed-charge register interval.
  * The caller publishes its counters and invokes its ordinary retirement check
  * once on exit. No interval may hide a watchdog, wrap, yield or clock rescale. */
