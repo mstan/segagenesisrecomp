@@ -1,7 +1,7 @@
 # Native calls and control-flow regions (E05)
 
 Owners: `beads-3z5k.4` / `beads-rxq.6`; campaign `beads-2wy8.1`.
-Source/test/game gates pass. Final independent PR/record review remains pending;
+Independent final scope/source/test/game/PR/Beads review accepted E05;
 this is not owner approval to merge or release the new engine batch.
 The [machine-readable results](engine-native-control-flow-results.json) retain
 source/binary identities, package labels, raw per-game samples and host receipts.
@@ -117,3 +117,5 @@ builds for the eventual combined owner handoff.
 Stacked review: [Genesis PR #39](https://github.com/mstan/segagenesisrecomp/pull/39), [shared-core PR #10](https://github.com/mstan/m68k-recomp-core/pull/10). GitHub recognizes `TechnicallyComputers` but refuses assignment in both repositories (assignee eligibility404); PRs are unassigned, with no repository-access changes made.
 
 Relative to E04, final binary sizes grow340992bytes RKA,195072bytes Sonic1 and400896bytes SonicCD. CD adds8192bytes of flow qualification bits plus lookup fallback/metadata; cartridge frames add one derived pointer. Process RSS differences were not measured, so no zero-memory-cost claim is made. Raw build/startup costs are retained without comparing unlike cache states.
+
+Independent validator `validate_e05` accepted the complete E05 package on2026-10-29 and explicitly instructed E06 verification with a fresh reviewer before E07. Source/test/runtime and final PR/central-record gates pass; normal Beads remote sync remains pending after transfer timeout/helper contention. No owner visual merge/release clearance is implied.
