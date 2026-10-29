@@ -6,6 +6,7 @@ C compiler. The C harness supplies only the memory bus and timing boundary;
 dispatch, calls, stack adjustment and return propagation come from codegen.
 """
 import argparse
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -35,6 +36,7 @@ M68KState g_cpu;
 uint8_t g_rom[0x400000], g_ram[0x10000];
 const GameSpec g_game_spec = {0};
 uint64_t g_native_insn_count, g_native_span_count;
+uint64_t g_native_direct_calls,g_native_direct_tails;
 GenesisNativeRegisterBudget g_native_register_budget={0,0,0,1,0,0};
 uint32_t g_cycle_accumulator, g_audio_cycle_counter, g_vblank_threshold = 0xFFFFFFFFu;
 int pending, *g_rte_pending_ptr = &pending, g_early_return, g_ws_margin;
@@ -47,11 +49,53 @@ void m68k_write32(uint32_t a,uint32_t v) { m68k_write16(a,v>>16);m68k_write16(a+
 void recomp_push_return(uint32_t a) { g_cpu.A[7]-=4;m68k_write32(g_cpu.A[7],a); }
 void glue_check_vblank(void) { abort(); }
 uint32_t recomp_resolve_ram_trampoline(uint32_t a) { return a; }
-int recomp_dispatch_ram_stub(uint32_t a) { (void)a; return 0; }
+static unsigned dynamic_visits,native_visits;
+int recomp_dispatch_ram_stub(uint32_t a) { if(a==0x800000u){++dynamic_visits;return 1;}return 0; }
 void genesis_log_dispatch_miss(uint32_t a) { fprintf(stderr,"miss %x\n",a); abort(); }
 void hybrid_jmp_interpret(uint32_t a) { call_by_address(a); }
 void hybrid_call_interpret(uint32_t a) { call_by_address(a); }
 void genesis_log_interior_label_miss(uint32_t a) { genesis_log_dispatch_miss(a); }
+#ifdef GENESIS_HAS_NATIVE_CALL_FRAME
+static unsigned walked;
+static void walk(int pending,uint32_t addr,void *user) {
+    if(user!=&walked || (pending && addr!=0x800000u))abort();
+    ++walked;
+}
+static void native_target(void) { ++native_visits; }
+static void overwrite_static(void) {
+    RECOMP_TAIL_NATIVE(0x800002u,native_target);
+    recomp_tail_call(0x800000u); /* A dynamic transfer must erase a stale pointer. */
+}
+static void overwrite_dynamic(void) {
+    recomp_tail_call(0x800000u);
+    RECOMP_TAIL_NATIVE(0x800002u,native_target);
+}
+static void suspended(void) {
+    void *saved=recomp_tail_frame_get();
+    if(!saved)abort();
+    recomp_tail_frame_set(NULL);
+    RECOMP_CALL_NATIVE(native_target);
+    if(recomp_tail_frame_get())abort();
+    recomp_tail_frame_set(saved);
+    recomp_tail_call(0x800000u);
+    walked=0;recomp_tail_frame_walk(walk,&walked);
+    if(walked!=1)abort();
+}
+static void nested(void) {
+    void *parent=recomp_tail_frame_get();
+    RECOMP_CALL_NATIVE(overwrite_dynamic);
+    if(recomp_tail_frame_get()!=parent)abort();
+    RECOMP_CALL_NATIVE(overwrite_static);
+}
+static void frame_contract(void) {
+    RECOMP_CALL_NATIVE(overwrite_static);
+    if(dynamic_visits!=1 || native_visits)abort();
+    RECOMP_CALL_NATIVE(nested);
+    if(dynamic_visits!=2 || native_visits!=1)abort();
+    RECOMP_CALL_NATIVE(suspended);
+    if(dynamic_visits!=3 || native_visits!=2 || recomp_tail_frame_get())abort();
+}
+#endif
 int main(int argc,char **argv) {
     int skip=atoi(argv[1]), mixed=atoi(argv[2]); (void)argc;
     g_cpu.A[7]=0xFFFE00; g_cpu.SR=0x2700;
@@ -62,6 +106,12 @@ int main(int argc,char **argv) {
         fprintf(stderr,"skip=%d D0=%u D1=%u D2=%u A7=%x pending=%d\n",skip,
                 g_cpu.D[0],g_cpu.D[1],g_cpu.D[2],g_cpu.A[7],pending); return 1;
     }
+#ifdef GENESIS_HAS_NATIVE_CALL_FRAME
+    if(!g_native_direct_calls || recomp_tail_frame_get())abort();
+    frame_contract();
+#else
+    if(g_native_direct_calls || g_native_direct_tails)abort();
+#endif
     return 0;
 }
 '''
@@ -74,7 +124,10 @@ def run(cmd, cwd):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--recompiler", type=Path, required=True)
-    ap.add_argument("--cc", type=Path, required=True)
+    compiler = ap.add_mutually_exclusive_group(required=True)
+    compiler.add_argument("--cc", type=Path)
+    compiler.add_argument("--cmake", type=Path)
+    ap.add_argument("--disable-native-frame", action="store_true")
     args = ap.parse_args()
     root = Path(__file__).resolve().parents[2]
     with tempfile.TemporaryDirectory(prefix="genesis-stack-skip-") as temp:
@@ -109,7 +162,18 @@ def main():
                 run([args.recompiler.resolve(),"test.bin","--game","game.toml","--output-dir","generated"],td)
                 exe = td/"test.exe"
                 sources = sorted((td/"generated").glob("skip_part*.c")) + [td/"generated/skip_dispatch.c",td/"harness.c"]
-                run([args.cc.resolve(),"-std=c11","-O1","-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
+                if args.cmake:
+                    listing="\n".join('  "'+p.as_posix()+'"' for p in sources)
+                    flags='target_compile_definitions(skip PRIVATE GENESIS_DISABLE_NATIVE_CALL_FRAME=1)\n' if args.disable_native_frame else ''
+                    (td/"CMakeLists.txt").write_text('cmake_minimum_required(VERSION 3.16)\nproject(Skip C)\nadd_executable(skip\n'+listing+'\n)\ntarget_include_directories(skip PRIVATE "'+(root/"runner/include").as_posix()+'" "'+(root/"runner").as_posix()+'")\ntarget_compile_features(skip PRIVATE c_std_11)\n'+flags,encoding="utf8")
+                    configure=[args.cmake.resolve(),"-S",td,"-B",td/"build"]
+                    if os.name=="nt":configure += ["-G","Visual Studio 17 2022","-A","x64"]
+                    run(configure,td)
+                    run([args.cmake.resolve(),"--build",td/"build","--config","Release","--parallel","1"],td)
+                    exe=td/"build"/("Release/skip.exe" if os.name=="nt" else "skip")
+                else:
+                    flags=["-DGENESIS_DISABLE_NATIVE_CALL_FRAME=1"] if args.disable_native_frame else []
+                    run([args.cc.resolve(),"-std=c11","-O1",*flags,"-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
                 run([exe,str(slots),str(int(mixed))],td)
                 print(f"PASS skip {slots} return slots, split={split}, mixed-width-data={mixed}")
 
