@@ -2,7 +2,7 @@
 
 Owner `beads-3z5k.7`; campaign `beads-2wy8.1`. Production source `11a55fd`,
 parent `e378efa` (E07 production `2079c51`), shared 68000 core `f7dd616`,
-Z80 core `4dfc5fc`. Independent gate is pending; PR [42](https://github.com/mstan/segagenesisrecomp/pull/42), stacked on PR41. No merge/release approval.
+Z80 core `4dfc5fc`. Independent gate accepted; PR [42](https://github.com/mstan/segagenesisrecomp/pull/42), stacked on PR41. No merge/release approval.
 
 The useful repeated transfer work on the current CD route is maintaining an
 inactive controller's six-clock phase: 72,259,107 calls, with zero active DMA
@@ -134,6 +134,11 @@ transfer eligibility/cost data; they are not mislabeled as clean A/B runs.
 
 Complete raw samples, source/binary/settings/host identities, failure labels,
 per-game packages and evidence links are in [engine-transfer-span-results.json](engine-transfer-span-results.json).
-Independent acceptance remains pending. Current-build state layout/serialization
+Fresh validate_e08 accepted production11a55fd / ready PR42 review headf462b05.
+The reviewer independently hashed all88 retained runtime WAV/capture files,
+checked all44 prior-reference checkpoints and both clean PEs, confirmed the
+whole-family dispositions and explicitly instructed E10 next. No objective
+finding remains. Global acceptance/status documentation follows this reviewed
+production head without changing runtime source. Current-build state layout/serialization
 and all cartridge source bodies are unchanged. No merge, release, replacement
 delivery or new owner-facing launch is authorized by this technical gate.

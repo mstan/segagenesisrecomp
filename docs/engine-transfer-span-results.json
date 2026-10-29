@@ -1,6 +1,6 @@
 {
   "schema": "GenesisEngineTransferSpanQualification1",
-  "status": "pending_independent_final_gate",
+  "status": "accepted_independent_final_gate",
   "owner": "beads-3z5k.7",
   "campaign": "beads-2wy8.1",
   "pr": "https://github.com/mstan/segagenesisrecomp/pull/42",
@@ -31665,9 +31665,55 @@
       }
     ],
     "build_and_runtime_artifacts": "Paths and SHA256 identities in build, actual_runtime, census_selection and final_actual_work above",
-    "scratch_cleanup": "Build trees retained until independent gate, then audited nonforced cleanup; source/dependency worktree and private fixture retained for next serial task"
+    "scratch_cleanup": {
+      "windows": [
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\rka-census-build",
+          "bytes": 102046518,
+          "files": 425,
+          "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+          "removed": true
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\sonic1-census-build",
+          "bytes": 63754554,
+          "files": 405,
+          "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+          "removed": true
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\cd-build",
+          "bytes": 332114592,
+          "files": 535,
+          "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+          "removed": true
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\cd-census-build",
+          "bytes": 332354233,
+          "files": 539,
+          "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+          "removed": true
+        },
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\tests",
+          "bytes": 7712196,
+          "files": 869,
+          "ownership": "Task CMake build; source/logs/clean and diagnostic binaries retained outside this directory",
+          "removed": true
+        }
+      ],
+      "linux": {
+        "path": "/tmp/genesis-engine-transfer-spans-20261029-tests",
+        "files": 1264,
+        "bytes": 6987763,
+        "removed": true,
+        "ownership": "Task-only CMake/GCC build; source, raw/full test logs, XML and disassembly retained outside"
+      },
+      "retained": "Frozen clean/diagnostic PEs, raw captures/WAV, logs, tests/XML/full stdout, source/config/host identities remain outside disposable builds. R8 worktree/private512KiB fixture/dependency junctions retained for next serial engine work; preserve borrowed dependency sources."
+    }
   },
-  "acceptance": "Pending fresh validate_e08 final source/test/runtime/PR/Beads review; no merge/release approval",
+  "acceptance": "Fresh validate_e08 independently accepted production11a55fd / ready PR42 review headf462b05; no unresolved findings. Explicitly instructed acceptance record/cleanup then next original E10 with fresh validation-only reviewer. Combined owner merge/release handoff pending.",
   "startup_followup": {
     "package": "E08-inactive-DMA-phase-and-cell-permutation",
     "build": {
@@ -32647,5 +32693,15 @@
     ],
     "passed": true
   },
-  "startup_disposition": "Initial longer candidate wall startup did not reproduce in targeted same-build ABBA check: A2.239/0.833s, B0.699/0.706s. Startup CPU/cycles small/mixed, not a claimed gain or regression; all frame0 inspection state exact. Both sequences retained."
+  "startup_disposition": "Initial longer candidate wall startup did not reproduce in targeted same-build ABBA check: A2.239/0.833s, B0.699/0.706s. Startup CPU/cycles small/mixed, not a claimed gain or regression; all frame0 inspection state exact. Both sequences retained.",
+  "review": {
+    "reviewed_pr_head": "f462b05",
+    "validator": "validate_e08",
+    "record": "C:\\temp\\Codex\\genesis-engine-transfer-spans-20261029\\VALIDATOR_E08.md",
+    "sha256": "832e40a3e874704964d83cb607824cb30ca3533afaf48880389778be7c46b461",
+    "verified_retained_runtime_files": 88,
+    "verified_prior_reference_checkpoints": 44,
+    "next_serial_item": "E10",
+    "central_sync": "Final per-game comments pushed successfully in107.2seconds; acceptance note follows."
+  }
 }
