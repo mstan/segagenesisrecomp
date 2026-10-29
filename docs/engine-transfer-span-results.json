@@ -31642,10 +31642,1010 @@
         "path": "C:\\temp\\Codex\\genesis-engine-transfer-spans-20261029\\vdp_census.c",
         "sha256": "582dc1a73cdba556ab28aa28281ecb78a59598724c01525d1508aabf8bbce478",
         "bytes": 54335
+      },
+      {
+        "path": "C:\\temp\\Codex\\genesis-engine-transfer-spans-20261029\\check_startup.py",
+        "sha256": "731cc306acd740e17c740aace848d82482d85d1e7c3df6cb1e1d58ef8336aa5b",
+        "bytes": 3425
+      },
+      {
+        "path": "C:\\temp\\Codex\\genesis-engine-transfer-spans-20261029\\prepare_startup.py",
+        "sha256": "bcdf462f7ca7c1a9cbdf9ab30271731bdc23e4a9a9e9624077ad11aa344f15f0",
+        "bytes": 1404
+      },
+      {
+        "path": "C:\\temp\\Codex\\genesis-engine-transfer-spans-20261029\\startup-job.json",
+        "sha256": "ae1621596c3f8d0087c9577a06a9f702f560a764fce91596c24c4baaaa1f42dc",
+        "bytes": 274
+      },
+      {
+        "path": "C:\\temp\\Codex\\genesis-engine-transfer-spans-20261029\\capacity-startup-1.json",
+        "sha256": "e56cb5aebadb72a9f0054ce1439635b7349225ccbc59cde05e05727f07c4e5c5",
+        "bytes": 1726
       }
     ],
     "build_and_runtime_artifacts": "Paths and SHA256 identities in build, actual_runtime, census_selection and final_actual_work above",
     "scratch_cleanup": "Build trees retained until independent gate, then audited nonforced cleanup; source/dependency worktree and private fixture retained for next serial task"
   },
-  "acceptance": "Pending fresh validate_e08 final source/test/runtime/PR/Beads review; no merge/release approval"
+  "acceptance": "Pending fresh validate_e08 final source/test/runtime/PR/Beads review; no merge/release approval",
+  "startup_followup": {
+    "package": "E08-inactive-DMA-phase-and-cell-permutation",
+    "build": {
+      "binary": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\binaries\\candidate\\SonicCD.exe",
+      "sha256": "df50db311df368201fe71872391ee71134de9eb775bbbf49ba6b52b01204faac",
+      "bytes": 115635200,
+      "seconds": 27.891000000061467,
+      "SEGACD_DMA_IDLE_SPANS": 1,
+      "SEGACD_CELL_PERMUTATION": 1,
+      "package": "E08-inactive-DMA-phase-and-cell-permutation",
+      "frozen_sources": {
+        "package": "E08-inactive-DMA-phase-and-cell-permutation",
+        "engine": "11a55fdca5143b910cc5383488e57fda724ba7b5",
+        "unchanged_instruction_archive_sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+        "unchanged_catalog_manifest_sha256": "283505cde3d56505353d4d686cbaa517b1b178af17134f40dfed09494f2ed552",
+        "packages": {
+          "reference": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\binaries\\reference\\SonicCD.exe",
+            "sha256": "17c7eea4202b7af6b02690e6db4ffbd0289df4a7fe67478dbf5a1421fe5a7f7f",
+            "bytes": 115635200,
+            "seconds": 87.89000000001397,
+            "SEGACD_DMA_IDLE_SPANS": 0,
+            "SEGACD_CELL_PERMUTATION": 0
+          },
+          "candidate": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\binaries\\candidate\\SonicCD.exe",
+            "sha256": "df50db311df368201fe71872391ee71134de9eb775bbbf49ba6b52b01204faac",
+            "bytes": 115635200,
+            "seconds": 27.891000000061467,
+            "SEGACD_DMA_IDLE_SPANS": 1,
+            "SEGACD_CELL_PERMUTATION": 1
+          }
+        }
+      }
+    },
+    "baseline": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\binaries\\reference\\SonicCD.exe",
+      "bytes": 115635200,
+      "sha256": "17c7eea4202b7af6b02690e6db4ffbd0289df4a7fe67478dbf5a1421fe5a7f7f"
+    },
+    "baseline_receipt": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\cd-builds.json",
+      "bytes": 1057,
+      "sha256": "7da753b0debfd890a9b8be5e6bedda587e35b022693cc9a646304405381ac206"
+    },
+    "host": "Windows workstation, ambient shared-host observations; no quiet-host or physical-GPU claim",
+    "workload": "3000 actually presented full-runtime frames, SDL software/dummy drivers, normal emulated clocks, original title input route; not timing evidence",
+    "runs": [
+      {
+        "arm": "A",
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\binaries\\reference\\SonicCD.exe",
+          "bytes": 115635200,
+          "sha256": "17c7eea4202b7af6b02690e6db4ffbd0289df4a7fe67478dbf5a1421fe5a7f7f"
+        },
+        "checkpoints": [],
+        "capture": true,
+        "startup_wall_seconds": 2.2390218999935314,
+        "startup_process_cost": {
+          "cpu_seconds": 0.4375,
+          "cycles": 2093790310
+        },
+        "inspect": {
+          "ok": true,
+          "frames": 0,
+          "bus_clock": 0,
+          "device_clock": 0,
+          "cpus": {
+            "main": {
+              "pc": "00042E",
+              "sr": "2700",
+              "d": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "a": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "FFFFFD00"
+              ],
+              "stopped": false,
+              "irq_pins": 0,
+              "fault": false,
+              "fault_address": "000000",
+              "fault_opcode": "0000",
+              "exception_vector": 0
+            },
+            "sub": {
+              "pc": "000000",
+              "sr": "0000",
+              "d": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "a": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "stopped": false,
+              "irq_pins": 0,
+              "fault": false,
+              "fault_address": "000000",
+              "fault_opcode": "0000",
+              "exception_vector": 0
+            }
+          },
+          "interrupts": {
+            "accepted": [
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            ],
+            "last": [
+              {
+                "level": 0,
+                "vector": 0,
+                "entry_pc": "000000",
+                "target_pc": "000000"
+              },
+              {
+                "level": 0,
+                "vector": 0,
+                "entry_pc": "000000",
+                "target_pc": "000000"
+              }
+            ],
+            "host": {
+              "irq4": 0,
+              "irq6": 0,
+              "main_level": 0
+            },
+            "vdp": {
+              "reg0": 0,
+              "reg1": 0,
+              "scanline": 0,
+              "vint_pending": 0
+            }
+          },
+          "scheduler": {
+            "busy": [
+              0,
+              0
+            ],
+            "waits": 0,
+            "wait_address": "000000",
+            "wait_cpu": 0,
+            "wait_result": "ok"
+          },
+          "gate_array": {
+            "main_control": 0,
+            "prg_bank": 0,
+            "write_protect": 0,
+            "memory_mode": 1,
+            "word_ram_1m": false,
+            "word_ram_ret": true,
+            "word_ram_dmna": false,
+            "word_ram_owner": "main",
+            "irq_mask": 0,
+            "irq_pending": 0,
+            "commands": [
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000"
+            ],
+            "statuses": [
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000"
+            ],
+            "flags": [
+              0,
+              0
+            ]
+          },
+          "cdc": {
+            "active": false,
+            "end": false,
+            "fifo_count": 0,
+            "remaining": 0,
+            "dbc": 0,
+            "dac": 0,
+            "ifstat": 255,
+            "ifctrl": 0,
+            "decoder_irq_clocks": 0
+          },
+          "cdd": {
+            "status": 0,
+            "control": 0,
+            "report": 0,
+            "command_pending": false,
+            "unsupported_command": false,
+            "motor_started": false,
+            "tray_open": false,
+            "lba": 0,
+            "seek_target": 0,
+            "seek_deadline": 0,
+            "track_skip_active": false,
+            "cycles": 0
+          },
+          "dma": {
+            "active": false,
+            "address_valid": false,
+            "address": "00000",
+            "words": 0,
+            "waits": 0,
+            "last_result": 0
+          },
+          "stamp": {
+            "busy": false,
+            "remaining_clocks": 0,
+            "operations": 0
+          },
+          "cdd_submissions": {
+            "total": 0,
+            "pending_packet": "0000000000",
+            "tx_packet": "0000000000",
+            "events": []
+          },
+          "z80": {
+            "pc": "0000",
+            "halted": false,
+            "iff1": false,
+            "iff2": false,
+            "interrupt_mode": 0,
+            "irq_pending": 0,
+            "in_step": 0
+          }
+        },
+        "passed": true
+      },
+      {
+        "arm": "B",
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\binaries\\candidate\\SonicCD.exe",
+          "bytes": 115635200,
+          "sha256": "df50db311df368201fe71872391ee71134de9eb775bbbf49ba6b52b01204faac"
+        },
+        "checkpoints": [],
+        "capture": true,
+        "startup_wall_seconds": 0.6993103000568226,
+        "startup_process_cost": {
+          "cpu_seconds": 0.5,
+          "cycles": 2088080280
+        },
+        "inspect": {
+          "ok": true,
+          "frames": 0,
+          "bus_clock": 0,
+          "device_clock": 0,
+          "cpus": {
+            "main": {
+              "pc": "00042E",
+              "sr": "2700",
+              "d": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "a": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "FFFFFD00"
+              ],
+              "stopped": false,
+              "irq_pins": 0,
+              "fault": false,
+              "fault_address": "000000",
+              "fault_opcode": "0000",
+              "exception_vector": 0
+            },
+            "sub": {
+              "pc": "000000",
+              "sr": "0000",
+              "d": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "a": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "stopped": false,
+              "irq_pins": 0,
+              "fault": false,
+              "fault_address": "000000",
+              "fault_opcode": "0000",
+              "exception_vector": 0
+            }
+          },
+          "interrupts": {
+            "accepted": [
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            ],
+            "last": [
+              {
+                "level": 0,
+                "vector": 0,
+                "entry_pc": "000000",
+                "target_pc": "000000"
+              },
+              {
+                "level": 0,
+                "vector": 0,
+                "entry_pc": "000000",
+                "target_pc": "000000"
+              }
+            ],
+            "host": {
+              "irq4": 0,
+              "irq6": 0,
+              "main_level": 0
+            },
+            "vdp": {
+              "reg0": 0,
+              "reg1": 0,
+              "scanline": 0,
+              "vint_pending": 0
+            }
+          },
+          "scheduler": {
+            "busy": [
+              0,
+              0
+            ],
+            "waits": 0,
+            "wait_address": "000000",
+            "wait_cpu": 0,
+            "wait_result": "ok"
+          },
+          "gate_array": {
+            "main_control": 0,
+            "prg_bank": 0,
+            "write_protect": 0,
+            "memory_mode": 1,
+            "word_ram_1m": false,
+            "word_ram_ret": true,
+            "word_ram_dmna": false,
+            "word_ram_owner": "main",
+            "irq_mask": 0,
+            "irq_pending": 0,
+            "commands": [
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000"
+            ],
+            "statuses": [
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000"
+            ],
+            "flags": [
+              0,
+              0
+            ]
+          },
+          "cdc": {
+            "active": false,
+            "end": false,
+            "fifo_count": 0,
+            "remaining": 0,
+            "dbc": 0,
+            "dac": 0,
+            "ifstat": 255,
+            "ifctrl": 0,
+            "decoder_irq_clocks": 0
+          },
+          "cdd": {
+            "status": 0,
+            "control": 0,
+            "report": 0,
+            "command_pending": false,
+            "unsupported_command": false,
+            "motor_started": false,
+            "tray_open": false,
+            "lba": 0,
+            "seek_target": 0,
+            "seek_deadline": 0,
+            "track_skip_active": false,
+            "cycles": 0
+          },
+          "dma": {
+            "active": false,
+            "address_valid": false,
+            "address": "00000",
+            "words": 0,
+            "waits": 0,
+            "last_result": 0
+          },
+          "stamp": {
+            "busy": false,
+            "remaining_clocks": 0,
+            "operations": 0
+          },
+          "cdd_submissions": {
+            "total": 0,
+            "pending_packet": "0000000000",
+            "tx_packet": "0000000000",
+            "events": []
+          },
+          "z80": {
+            "pc": "0000",
+            "halted": false,
+            "iff1": false,
+            "iff2": false,
+            "interrupt_mode": 0,
+            "irq_pending": 0,
+            "in_step": 0
+          }
+        },
+        "passed": true
+      },
+      {
+        "arm": "B",
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\binaries\\candidate\\SonicCD.exe",
+          "bytes": 115635200,
+          "sha256": "df50db311df368201fe71872391ee71134de9eb775bbbf49ba6b52b01204faac"
+        },
+        "checkpoints": [],
+        "capture": true,
+        "startup_wall_seconds": 0.7062587999971583,
+        "startup_process_cost": {
+          "cpu_seconds": 0.453125,
+          "cycles": 2101186230
+        },
+        "inspect": {
+          "ok": true,
+          "frames": 0,
+          "bus_clock": 0,
+          "device_clock": 0,
+          "cpus": {
+            "main": {
+              "pc": "00042E",
+              "sr": "2700",
+              "d": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "a": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "FFFFFD00"
+              ],
+              "stopped": false,
+              "irq_pins": 0,
+              "fault": false,
+              "fault_address": "000000",
+              "fault_opcode": "0000",
+              "exception_vector": 0
+            },
+            "sub": {
+              "pc": "000000",
+              "sr": "0000",
+              "d": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "a": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "stopped": false,
+              "irq_pins": 0,
+              "fault": false,
+              "fault_address": "000000",
+              "fault_opcode": "0000",
+              "exception_vector": 0
+            }
+          },
+          "interrupts": {
+            "accepted": [
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            ],
+            "last": [
+              {
+                "level": 0,
+                "vector": 0,
+                "entry_pc": "000000",
+                "target_pc": "000000"
+              },
+              {
+                "level": 0,
+                "vector": 0,
+                "entry_pc": "000000",
+                "target_pc": "000000"
+              }
+            ],
+            "host": {
+              "irq4": 0,
+              "irq6": 0,
+              "main_level": 0
+            },
+            "vdp": {
+              "reg0": 0,
+              "reg1": 0,
+              "scanline": 0,
+              "vint_pending": 0
+            }
+          },
+          "scheduler": {
+            "busy": [
+              0,
+              0
+            ],
+            "waits": 0,
+            "wait_address": "000000",
+            "wait_cpu": 0,
+            "wait_result": "ok"
+          },
+          "gate_array": {
+            "main_control": 0,
+            "prg_bank": 0,
+            "write_protect": 0,
+            "memory_mode": 1,
+            "word_ram_1m": false,
+            "word_ram_ret": true,
+            "word_ram_dmna": false,
+            "word_ram_owner": "main",
+            "irq_mask": 0,
+            "irq_pending": 0,
+            "commands": [
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000"
+            ],
+            "statuses": [
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000"
+            ],
+            "flags": [
+              0,
+              0
+            ]
+          },
+          "cdc": {
+            "active": false,
+            "end": false,
+            "fifo_count": 0,
+            "remaining": 0,
+            "dbc": 0,
+            "dac": 0,
+            "ifstat": 255,
+            "ifctrl": 0,
+            "decoder_irq_clocks": 0
+          },
+          "cdd": {
+            "status": 0,
+            "control": 0,
+            "report": 0,
+            "command_pending": false,
+            "unsupported_command": false,
+            "motor_started": false,
+            "tray_open": false,
+            "lba": 0,
+            "seek_target": 0,
+            "seek_deadline": 0,
+            "track_skip_active": false,
+            "cycles": 0
+          },
+          "dma": {
+            "active": false,
+            "address_valid": false,
+            "address": "00000",
+            "words": 0,
+            "waits": 0,
+            "last_result": 0
+          },
+          "stamp": {
+            "busy": false,
+            "remaining_clocks": 0,
+            "operations": 0
+          },
+          "cdd_submissions": {
+            "total": 0,
+            "pending_packet": "0000000000",
+            "tx_packet": "0000000000",
+            "events": []
+          },
+          "z80": {
+            "pc": "0000",
+            "halted": false,
+            "iff1": false,
+            "iff2": false,
+            "interrupt_mode": 0,
+            "irq_pending": 0,
+            "in_step": 0
+          }
+        },
+        "passed": true
+      },
+      {
+        "arm": "A",
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-transfer-spans-20261029\\binaries\\reference\\SonicCD.exe",
+          "bytes": 115635200,
+          "sha256": "17c7eea4202b7af6b02690e6db4ffbd0289df4a7fe67478dbf5a1421fe5a7f7f"
+        },
+        "checkpoints": [],
+        "capture": true,
+        "startup_wall_seconds": 0.8325068999547511,
+        "startup_process_cost": {
+          "cpu_seconds": 0.515625,
+          "cycles": 2209508540
+        },
+        "inspect": {
+          "ok": true,
+          "frames": 0,
+          "bus_clock": 0,
+          "device_clock": 0,
+          "cpus": {
+            "main": {
+              "pc": "00042E",
+              "sr": "2700",
+              "d": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "a": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "FFFFFD00"
+              ],
+              "stopped": false,
+              "irq_pins": 0,
+              "fault": false,
+              "fault_address": "000000",
+              "fault_opcode": "0000",
+              "exception_vector": 0
+            },
+            "sub": {
+              "pc": "000000",
+              "sr": "0000",
+              "d": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "a": [
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000"
+              ],
+              "stopped": false,
+              "irq_pins": 0,
+              "fault": false,
+              "fault_address": "000000",
+              "fault_opcode": "0000",
+              "exception_vector": 0
+            }
+          },
+          "interrupts": {
+            "accepted": [
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            ],
+            "last": [
+              {
+                "level": 0,
+                "vector": 0,
+                "entry_pc": "000000",
+                "target_pc": "000000"
+              },
+              {
+                "level": 0,
+                "vector": 0,
+                "entry_pc": "000000",
+                "target_pc": "000000"
+              }
+            ],
+            "host": {
+              "irq4": 0,
+              "irq6": 0,
+              "main_level": 0
+            },
+            "vdp": {
+              "reg0": 0,
+              "reg1": 0,
+              "scanline": 0,
+              "vint_pending": 0
+            }
+          },
+          "scheduler": {
+            "busy": [
+              0,
+              0
+            ],
+            "waits": 0,
+            "wait_address": "000000",
+            "wait_cpu": 0,
+            "wait_result": "ok"
+          },
+          "gate_array": {
+            "main_control": 0,
+            "prg_bank": 0,
+            "write_protect": 0,
+            "memory_mode": 1,
+            "word_ram_1m": false,
+            "word_ram_ret": true,
+            "word_ram_dmna": false,
+            "word_ram_owner": "main",
+            "irq_mask": 0,
+            "irq_pending": 0,
+            "commands": [
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000"
+            ],
+            "statuses": [
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000",
+              "0000"
+            ],
+            "flags": [
+              0,
+              0
+            ]
+          },
+          "cdc": {
+            "active": false,
+            "end": false,
+            "fifo_count": 0,
+            "remaining": 0,
+            "dbc": 0,
+            "dac": 0,
+            "ifstat": 255,
+            "ifctrl": 0,
+            "decoder_irq_clocks": 0
+          },
+          "cdd": {
+            "status": 0,
+            "control": 0,
+            "report": 0,
+            "command_pending": false,
+            "unsupported_command": false,
+            "motor_started": false,
+            "tray_open": false,
+            "lba": 0,
+            "seek_target": 0,
+            "seek_deadline": 0,
+            "track_skip_active": false,
+            "cycles": 0
+          },
+          "dma": {
+            "active": false,
+            "address_valid": false,
+            "address": "00000",
+            "words": 0,
+            "waits": 0,
+            "last_result": 0
+          },
+          "stamp": {
+            "busy": false,
+            "remaining_clocks": 0,
+            "operations": 0
+          },
+          "cdd_submissions": {
+            "total": 0,
+            "pending_packet": "0000000000",
+            "tx_packet": "0000000000",
+            "events": []
+          },
+          "z80": {
+            "pc": "0000",
+            "halted": false,
+            "iff1": false,
+            "iff2": false,
+            "interrupt_mode": 0,
+            "irq_pending": 0,
+            "in_step": 0
+          }
+        },
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "startup_disposition": "Initial longer candidate wall startup did not reproduce in targeted same-build ABBA check: A2.239/0.833s, B0.699/0.706s. Startup CPU/cycles small/mixed, not a claimed gain or regression; all frame0 inspection state exact. Both sequences retained."
 }
