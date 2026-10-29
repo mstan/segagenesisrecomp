@@ -43,52 +43,54 @@ void segacd_stamp_start(SegaCDStamp *s,uint16_t vector)
 }
 static uint16_t word_read(const uint8_t *ram,uint32_t a)
 {return (uint16_t)(((unsigned)ram[a&0x3FFFFu]<<8)|ram[(a+1)&0x3FFFFu]);}
-/* Select constant hardware geometry once per existing atomic line job.
- * The included portable C kernel consumes exact <=8-dot destination spans;
- * live Word RAM reads/writes and scheduler observation boundaries are unchanged.
- * Keeping all eight modes as code avoids per-pixel metadata/variable shifts. */
-#define STAMP_JOIN_INNER(a,b) a##b
-#define STAMP_JOIN(a,b) STAMP_JOIN_INNER(a,b)
-#define STAMP_NAME(prefix) STAMP_JOIN(prefix,STAMP_MODE)
-#define STAMP_MODE 0
-#include "stamp_line.inc"
-#undef STAMP_MODE
-#define STAMP_MODE 1
-#include "stamp_line.inc"
-#undef STAMP_MODE
-#define STAMP_MODE 2
-#include "stamp_line.inc"
-#undef STAMP_MODE
-#define STAMP_MODE 3
-#include "stamp_line.inc"
-#undef STAMP_MODE
-#define STAMP_MODE 4
-#include "stamp_line.inc"
-#undef STAMP_MODE
-#define STAMP_MODE 5
-#include "stamp_line.inc"
-#undef STAMP_MODE
-#define STAMP_MODE 6
-#include "stamp_line.inc"
-#undef STAMP_MODE
-#define STAMP_MODE 7
-#include "stamp_line.inc"
-#undef STAMP_MODE
-#undef STAMP_NAME
-#undef STAMP_JOIN
-#undef STAMP_JOIN_INNER
+static unsigned sample(const SegaCDStamp *s,const uint8_t *ram,uint32_t x,uint32_t y)
+{
+    unsigned control=s->active[0],large=control&4u,side=control&2u?32u:16u;
+    uint32_t map_side=large?4096u:256u;
+    if(!(control&1u) && (x>=map_side || y>=map_side))return 0;
+    x&=map_side-1;y&=map_side-1;
+    unsigned entries=map_side/side;
+    /* A 4096-dot map needs 128 KiB (16-dot stamps) or 32 KiB (32-dot).
+     * The p36 labels are transposed; masks follow these table capacities. */
+    unsigned base_mask=large?(side==16?0x8000u:0xE000u):(side==16?0xFF80u:0xFFE0u);
+    uint32_t map=((uint32_t)(s->active[1]&base_mask)<<2)+2*((y/side)*entries+x/side);
+    unsigned entry=word_read(ram,map),id=entry&0x7FFu;
+    if(side==32)id&=~3u;
+    if(!id)return 0; /* Stamp zero is ordinary RAM, never graphics data. */
+    unsigned px=x&(side-1),py=y&(side-1);
+    /* ares's source-coordinate transform order: flip, 180, then 90. */
+    if(entry&0x8000u)px=side-1-px;
+    if(entry&0x4000u){px=side-1-px;py=side-1-py;}
+    if(entry&0x2000u){unsigned old=px;px=side-1-py;py=old;}
+    /* 8x8, 32-byte cells, down each column before the next column. */
+    uint32_t a=id*128u+32*((px/8)*(side/8)+py/8)+4*(py&7u)+(px&7u)/2;
+    unsigned packed=ram[a&0x3FFFFu];
+    return (packed>>(px&1u?0:4))&15u;
+}
 static void render_line(SegaCDStamp *s,uint8_t *ram,unsigned priority)
 {
-    switch(s->active[0]&7u) {
-    case 0:stamp_line_0(s,ram,priority);break;
-    case 1:stamp_line_1(s,ram,priority);break;
-    case 2:stamp_line_2(s,ram,priority);break;
-    case 3:stamp_line_3(s,ram,priority);break;
-    case 4:stamp_line_4(s,ram,priority);break;
-    case 5:stamp_line_5(s,ram,priority);break;
-    case 6:stamp_line_6(s,ram,priority);break;
-    case 7:stamp_line_7(s,ram,priority);break;
+    uint32_t vector=s->vector;
+    /* X/Y are unsigned 13.3. Deltas are signed two's-complement 5.11.
+     * Accumulate in a wrapping 24-bit coordinate with eleven fraction bits;
+     * discarded low bits truncate as shown in the p40 accumulator diagram. */
+    uint32_t x=(uint32_t)word_read(ram,vector)<<8;
+    uint32_t y=(uint32_t)word_read(ram,vector+2)<<8;
+    uint32_t dx=(uint32_t)(int32_t)(int16_t)word_read(ram,vector+4);
+    uint32_t dy=(uint32_t)(int32_t)(int16_t)word_read(ram,vector+6);
+    unsigned yout=(s->active[4]>>3)+s->line;
+    unsigned stride=(s->active[2]+1u)*32u;
+    uint32_t base=(uint32_t)s->active[3]<<2;
+    for(unsigned n=0;n<s->active[5];++n) {
+        unsigned pixel=sample(s,ram,(x&0xFFFFFFu)>>11,(y&0xFFFFFFu)>>11);
+        unsigned xout=(s->active[4]&7u)+n;
+        uint32_t a=(base+(xout/8)*stride+(yout/8)*32+4*(yout&7u)+(xout&7u)/2)&0x3FFFFu;
+        unsigned shift=xout&1u?0:4,old=(ram[a]>>shift)&15u;
+        if((priority!=1 || !old) && (priority!=2 || pixel))
+            ram[a]=(uint8_t)((ram[a]&~(15u<<shift))|(pixel<<shift));
+        x+=dx;y+=dy;
     }
+    s->pixels+=s->active[5];s->vector=(s->vector+8)&0x3FFFFu;
+    ++s->line;s->reg[6]=(uint16_t)(s->active[6]>s->line?s->active[6]-s->line:0);
 }
 int segacd_stamp_advance(SegaCDStamp *s,uint8_t word[0x40000],unsigned priority,uint32_t clocks)
 {
