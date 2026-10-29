@@ -3903,8 +3903,8 @@
       "bytes": 3564
     },
     "C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\build_check_census.py": {
-      "sha256": "3606f35b32f3632625fa6821c09fa4f315c6030bbf9bd7e5a404986ea6fa415c",
-      "bytes": 2894
+      "sha256": "076ae4305042aa894da597fa37335157f6995f7f45e4c6a083bb20aa7a429be7",
+      "bytes": 2936
     },
     "C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\build_consumers.py": {
       "sha256": "f20d5ce004d256dc9b4cd352ef53d541ad4d1bde7e634017f7ba2a5f1d1123d0",
@@ -4090,10 +4090,6 @@
       "sha256": "347c9e1d136c2913a17b6e15513f9318c9daf982bf2a675411257b0edc0725a1",
       "bytes": 505
     },
-    "C:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\build_check_census.py": {
-      "sha256": "076ae4305042aa894da597fa37335157f6995f7f45e4c6a083bb20aa7a429be7",
-      "bytes": 2936
-    },
     "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\runtime-sonic1-final-followup-r1.json": {
       "sha256": "90195e0c45e1896e6a767e24d5de3a0b57336f98cf9e56d17e049d0020db9569",
       "bytes": 23393
@@ -4156,6 +4152,28 @@
         }
       ],
       "originals": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\metadata-corrections"
+    },
+    {
+      "description": "Windows case aliases made the first correction add C:/Temp beside existing C:/temp. Updated the original producer rawreceipt SHA/bytes and deduplicated case-equivalent paths; no source/game/sample change.",
+      "updated": [
+        {
+          "key": "C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\build_check_census.py",
+          "old": {
+            "sha256": "3606f35b32f3632625fa6821c09fa4f315c6030bbf9bd7e5a404986ea6fa415c",
+            "bytes": 2894
+          },
+          "corrected": {
+            "sha256": "076ae4305042aa894da597fa37335157f6995f7f45e4c6a083bb20aa7a429be7",
+            "bytes": 2936
+          }
+        }
+      ],
+      "case_aliases": [
+        {
+          "removed_case_alias": "C:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\build_check_census.py",
+          "canonical_existing_key": "C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\build_check_census.py"
+        }
+      ]
     }
   ]
 }
