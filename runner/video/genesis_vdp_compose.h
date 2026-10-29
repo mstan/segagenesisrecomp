@@ -13,6 +13,14 @@ static inline uint64_t gvdp_compose_load(const uint8_t *p)
 static inline uint64_t gvdp_compose_select(uint64_t under,uint64_t over,uint64_t flags)
 { return under ^ ((under ^ over) & (flags * UINT64_C(255))); }
 
+/* Normalize each byte's arbitrary nonzero value to one. All contributing
+ * shifts sum to seven, so no adjacent lane can reach another lane's bit0. */
+static inline uint64_t gvdp_compose_boolean(uint64_t flags)
+{
+    flags|=flags>>4;flags|=flags>>2;flags|=flags>>1;
+    return flags&UINT64_C(0x0101010101010101);
+}
+
 /* Complete eight-lane compositor shared by retained rows and direct producers.
  * Inputs and result use native byte order, preserving output order on either
  * endian host. Zero/one sprite metadata is the evaluator's existing contract. */

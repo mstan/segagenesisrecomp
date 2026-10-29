@@ -956,7 +956,8 @@ static uint64_t fused_lane_load(const uint8_t *p,int count)
 static void fused_plane_row(const GVDP *v,int line,uint8_t *out,int w,int extra,
     int start,int wt,int ht,uint16_t base_a,uint16_t base_b,uint16_t base_w,
     int win_wt,int hs_a,int hs_b,int two_cell,int full_a,int full_b,int vs_mask,
-    int window_x,int right,int vertical,int im2,uint8_t backdrop,int shadow_mode)
+    int window_x,int right,int vertical,int im2,uint8_t backdrop,int shadow_mode,
+    int host_flags)
 {
     int end=w+extra;
     for(int x=-extra,xo=start;x<end;) {
@@ -976,9 +977,14 @@ static void fused_plane_row(const GVDP *v,int line,uint8_t *out,int w,int extra,
         plane_stream_begin(&b,v,base_b,wt,ht,x-hs_b,line+vb,im2);
         while(x<boundary) {
             int n=boundary-x;if(n>8)n=8;
+            uint64_t opaque=fused_lane_load(s_spr_op+xo,n);
+            uint64_t high=fused_lane_load(s_spr_hi+xo,n);
+            /* Public host drawing accepts any nonzero opacity/priority.
+             * Native evaluator lanes are already normalized. */
+            if(host_flags){opaque=gvdp_compose_boolean(opaque);high=gvdp_compose_boolean(high);}
             uint64_t pixel=gvdp_compose_packed(plane_stream_pull(&a,n),
                 plane_stream_pull(&b,n),fused_lane_load(s_spr_idx+xo,n),
-                fused_lane_load(s_spr_op+xo,n),fused_lane_load(s_spr_hi+xo,n),
+                opaque,high,
                 fused_lane_load(s_spr_shadow_op+xo,n),
                 fused_lane_load(s_spr_hilite_op+xo,n),backdrop,shadow_mode);
             memcpy(out+xo,&pixel,(size_t)n);x+=n;xo+=n;
@@ -1141,20 +1147,22 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
 
     /* Sprite layer for this output row (placed in centered output-column space). */
     sprite_render_line(v, line, total, offset);
-    if (s_host_sprites) {
+    int host_flags=s_host_sprites!=NULL;
+    if (host_flags) {
         GVDPSpriteLayer layer = { line, total, offset, s_spr_idx, s_spr_op, s_spr_hi };
         s_host_sprites(s_host_sprites_user, v, &layer);
     }
 
 #if GENESIS_FUSED_RASTER
-    /* Private art/extended palettes and arbitrary host providers retain their
-     * exact scalar eager fallback. Evaluator and provider ran exactly once. */
-    if(!s_ext_tiles && !s_host_sprites && !s_sprite_patterns[0] && !s_sprite_patterns[1]) {
+    /* Sprite art/providers already produced their complete lanes above;
+     * they impose no plane/composition boundary. Extended plane colors cannot
+     * use native six-bit plane metadata, so retain that exact scalar path. */
+    if(!s_ext_tiles) {
         if(pillar>0)memset(out,bar_idx,(size_t)pillar);
         if(right_bar>0)memset(out+content_end,bar_idx,(size_t)right_bar);
         fused_plane_row(v,line,out,w,content_extra,content_start,wt,ht,
             base_a,base_b,base_w,win_wt,hs_a,hs_b,vmode_2cell,full_vs_a,full_vs_b,
-            vs_mask,window_x,window_h_right,window_v_in,im2,backdrop,sh_mode);
+            vs_mask,window_x,window_h_right,window_v_in,im2,backdrop,sh_mode,host_flags);
         return total;
     }
 #endif
