@@ -610,13 +610,22 @@ static void custom_video_prepare(void)
     int width = s_video_frame.width;
     if (!width) return;
     SDL_RendererInfo info;
+    /* Legacy adapters may derive guest hooks from their published width.
+     * Never invoke one at a smaller local width: preserve its logical request
+     * and use exact native presentation when this host cannot fit it. */
     if (SDL_GetRendererInfo(s_video_renderer, &info) == 0 && info.max_texture_width > 0 &&
-        width > info.max_texture_width) width = info.max_texture_width;
+        width > info.max_texture_width) {
+        game_video_native_fallback(&s_video_frame);
+        return;
+    }
     {   /* Validation only: pretend this machine's GPU has a smaller texture
          * limit (GENESIS_FORCE_MAX_TEXTURE_W), to prove the clamp stays
          * presentation. */
         const char *f = getenv("GENESIS_FORCE_MAX_TEXTURE_W");
-        if (f && f[0] && atoi(f) > 0 && width > atoi(f)) width = atoi(f);
+        if (f && f[0] && atoi(f) > 0 && width > atoi(f)) {
+            game_video_native_fallback(&s_video_frame);
+            return;
+        }
     }
     if (width < 320) { game_video_native_fallback(&s_video_frame); return; }
     if (width > s_frame_stride) {
