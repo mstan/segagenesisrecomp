@@ -5,16 +5,16 @@
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
 Current serial update: E01, E03, E04, E05, E06, E07, E08 and E10 deliver
-selected bounded contracts; E11's complete bounded fusion opportunity was
-implemented/qualified/reached, then decisively rejected versus existing BATCHED.
-Useful BATCHED default adoption/provider fixes50b0854/readyPR44 reviewedc405c7e
-are independently accepted. RKA native-route CPU29.86/30.33percent lower comes
-from reuse/default adoption; S1neutral/inconclusive. **22 families remain open**.
-Reviewer explicitly instructed fresh serial E13; E12alreadydelivered. Combined
-owner visual/merge/release handoff remains pending. Historical narrative below
-describes the original released base; the following36-row table and
-[machine-readable audit](engine-optimization-completion-audit.json) reflect current
-serial dispositions, alongside the [implementation burndown](ENGINE_OPTIMIZATION_BURNDOWN.md).
+selected bounded contracts. E11 whole raster fusion and E13 complete graphics
+derivation architectures were implemented/qualified/actually used, then decisively
+rejected as bounded opportunities; useful BATCHED default/provider repairs and
+pure immutable DAC simplification remain accepted. E13 production999f392 /readyPR45
+reviewed5576577 passes whole-scope independent review, with per-game timing
+neutral/inconclusive and no new speedup claim. **21 families remain open**.
+Reviewer explicitly instructed fresh serial E14. Combined owner visual/merge/release
+handoff remains pending. Historical narrative below describes the original
+released base; the36-row table and [machine-readable audit](engine-optimization-completion-audit.json)
+reflect current serial dispositions alongside the [burndown](ENGINE_OPTIMIZATION_BURNDOWN.md).
 
 ## What was actually closed
 
@@ -55,7 +55,7 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E10 | Renderer interface independent of aspect ratio | Delivered (bounded) | Used independent row-ownership/frame plan, logical viewport preservation, exact all-limit native fallback and mechanical consumer adoption; ENGINE_RENDERER_OWNERSHIP.md. | Selected original bounded contract independently accepted; combined owner visual/merge/release handoff pending. No claim title fidelity rollout or all future optimizations exhausted. |
 | E11 | Fused generic VDP raster | Whole bounded opportunity rejected | Complete native direct-stream fusion implemented/qualified/reached, rejected versus best existing BATCHED. Existing BATCHED default adoption and provider compatibility repaired/qualified in50b0854/PR44. | Selected original bounded whole-fusion opportunity decisively rejected, not deferred/partial; no claim every future algorithm is exhausted. Combined owner merge/release handoff remains for useful adoption. |
 | E12 | Shared sprite evaluation jobs | Delivered (bounded) | CD sprite evaluation captured once for both CPU-visible status and deferred image production. | The selected shared-evaluation contract is delivered; additional caching belongs to E13/E15. |
-| E13 | Versioned generic graphics derivation | Deferred; open | No new complete versioned graphics ownership/cache. | Complete VRAM/CRAM/register/private-writer invalidation or immutable-input cache ownership. |
+| E13 | Versioned generic graphics derivation | Whole bounded opportunity rejected | Full art/palette/geometry complete-input architecture1d0aab9 implemented/qualified/actuallyused, rejected for no demonstratedgain. Useful finite immutable DAC domain999f392/PR45 retained and independentlyaccepted; mutable caches removed. | Selected whole bounded opportunity evaluated/rejected, not partial/deferral or universal futuredesign exhaustion. Combined owner merge/release handoff remains for palette-only package. |
 | E14 | Native Sega CD stamp-device jobs | Deferred; open | Existing native affine stamp device retained. | A new exact block/span stamp kernel. |
 | E15 | Reuse unchanged hardware render results | Deferred; open | No new generic unchanged-job/image reuse. | Complete intermediate hardware-input identity and reusable render output ownership. |
 | E16 | Final pixels and upload ownership | Partial; open | Lazy CD conversion when original pixels are requested. | Conversion/copy/filter/UI staging/upload ownership across the host boundary. |
@@ -210,11 +210,13 @@ Sources: `runner/video/genesis_vdp.c:929`, `runner/video/genesis_vdp.c:954`, `ru
 
 ### E13: Versioned generic graphics derivation
 
-Public/direct/import writes require a complete writer model. The 0.086% CD resolve_row sample does not rule out cartridge decode or art-cache work.
-
-**Next closure:** Use a representative cartridge raster workload; design complete producer ownership or full input identity rather than bus-only epochs.
-
-Sources: `runner/video/genesis_vdp.c`, `runner/video/genesis_bus.c`, `runner/video/genesis_machine.c`. Historical evaluation: `evaluated_deferred`.
+Complete art/palette/geometry immutable-input architecture1d implemented,
+qualified and actually used, then bounded rejected for no demonstrated benefit.
+Pure finite DAC domain999f392/PR45 retained with exact full-platform/color/built-game
+qualification, all timing neutral/inconclusive. Independent final gate accepted
+reviewed5576577. See [full original inventory and evidence](ENGINE_GRAPHICS_DERIVATION.md).
+This is no partial/deferral or universal future-cache exhaustion claim. Reviewer
+explicitly instructed E14 next; combined owner handoff remains.
 
 ### E14: Native Sega CD stamp-device jobs
 
