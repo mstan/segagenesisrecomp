@@ -177,3 +177,7 @@ cycle/ring/scheduler effects and has no complete dual-owned provider; ordinary
 bus exits preserve those effects. Local LEA folding alone is not credited as
 memory-EA consolidation there. Future cross-instruction memory/control-flow
 designs are not claimed exhausted. E02 remains open independently.
+
+Stacked review: [Genesis PR #38](https://github.com/mstan/segagenesisrecomp/pull/38),
+[shared-core PR #9](https://github.com/mstan/m68k-recomp-core/pull/9). The independent validator accepted
+the final runtime gate as neutral/inconclusive; final PR/record review remains.
