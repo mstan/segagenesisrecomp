@@ -43,53 +43,63 @@ void segacd_stamp_start(SegaCDStamp *s,uint16_t vector)
 }
 static uint16_t word_read(const uint8_t *ram,uint32_t a)
 {return (uint16_t)(((unsigned)ram[a&0x3FFFFu]<<8)|ram[(a+1)&0x3FFFFu]);}
-static unsigned sample(const SegaCDStamp *s,const uint8_t *ram,uint32_t x,uint32_t y)
+/* A line is the device's existing atomic job. Decode only its immutable
+ * register geometry here; map words, graphics and destination nibbles remain
+ * live reads in sample-before-write order, including overlapping Word RAM. */
+typedef struct {
+    uint32_t map_base, map_mask;
+    unsigned side_shift, side_mask, entries_shift, repeat;
+} StampLine;
+static unsigned sample(const StampLine *job,const uint8_t *ram,uint32_t x,uint32_t y)
 {
-    unsigned control=s->active[0],large=control&4u,side=control&2u?32u:16u;
-    uint32_t map_side=large?4096u:256u;
-    if(!(control&1u) && (x>=map_side || y>=map_side))return 0;
-    x&=map_side-1;y&=map_side-1;
-    unsigned entries=map_side/side;
-    /* A 4096-dot map needs 128 KiB (16-dot stamps) or 32 KiB (32-dot).
-     * The p36 labels are transposed; masks follow these table capacities. */
-    unsigned base_mask=large?(side==16?0x8000u:0xE000u):(side==16?0xFF80u:0xFFE0u);
-    uint32_t map=((uint32_t)(s->active[1]&base_mask)<<2)+2*((y/side)*entries+x/side);
+    if(!job->repeat && ((x|y)>job->map_mask))return 0;
+    x&=job->map_mask;y&=job->map_mask;
+    uint32_t map=job->map_base+2u*(((y>>job->side_shift)<<job->entries_shift)+(x>>job->side_shift));
     unsigned entry=word_read(ram,map),id=entry&0x7FFu;
-    if(side==32)id&=~3u;
+    if(job->side_shift==5)id&=~3u;
     if(!id)return 0; /* Stamp zero is ordinary RAM, never graphics data. */
-    unsigned px=x&(side-1),py=y&(side-1);
+    unsigned px=x&job->side_mask,py=y&job->side_mask;
     /* ares's source-coordinate transform order: flip, 180, then 90. */
-    if(entry&0x8000u)px=side-1-px;
-    if(entry&0x4000u){px=side-1-px;py=side-1-py;}
-    if(entry&0x2000u){unsigned old=px;px=side-1-py;py=old;}
+    if(entry&0x8000u)px=job->side_mask-px;
+    if(entry&0x4000u){px=job->side_mask-px;py=job->side_mask-py;}
+    if(entry&0x2000u){unsigned old=px;px=job->side_mask-py;py=old;}
     /* 8x8, 32-byte cells, down each column before the next column. */
-    uint32_t a=id*128u+32*((px/8)*(side/8)+py/8)+4*(py&7u)+(px&7u)/2;
+    uint32_t a=id*128u+32u*(((px>>3)<<(job->side_shift-3))+(py>>3))+4u*(py&7u)+((px&7u)>>1);
     unsigned packed=ram[a&0x3FFFFu];
     return (packed>>(px&1u?0:4))&15u;
 }
 static void render_line(SegaCDStamp *s,uint8_t *ram,unsigned priority)
 {
+    unsigned control=s->active[0],large=control&4u,wide=control&2u;
+    StampLine job;
+    job.side_shift=wide?5u:4u;job.side_mask=(1u<<job.side_shift)-1u;
+    job.map_mask=large?4095u:255u;
+    job.entries_shift=(large?12u:8u)-job.side_shift;job.repeat=control&1u;
+    unsigned base_mask=large?(wide?0xE000u:0x8000u):(wide?0xFFE0u:0xFF80u);
+    job.map_base=(uint32_t)(s->active[1]&base_mask)<<2;
     uint32_t vector=s->vector;
     /* X/Y are unsigned 13.3. Deltas are signed two's-complement 5.11.
-     * Accumulate in a wrapping 24-bit coordinate with eleven fraction bits;
-     * discarded low bits truncate as shown in the p40 accumulator diagram. */
+     * Keep fractional bits until sampling, including 24-bit source wrapping. */
     uint32_t x=(uint32_t)word_read(ram,vector)<<8;
     uint32_t y=(uint32_t)word_read(ram,vector+2)<<8;
     uint32_t dx=(uint32_t)(int32_t)(int16_t)word_read(ram,vector+4);
     uint32_t dy=(uint32_t)(int32_t)(int16_t)word_read(ram,vector+6);
     unsigned yout=(s->active[4]>>3)+s->line;
     unsigned stride=(s->active[2]+1u)*32u;
-    uint32_t base=(uint32_t)s->active[3]<<2;
-    for(unsigned n=0;n<s->active[5];++n) {
-        unsigned pixel=sample(s,ram,(x&0xFFFFFFu)>>11,(y&0xFFFFFFu)>>11);
-        unsigned xout=(s->active[4]&7u)+n;
-        uint32_t a=(base+(xout/8)*stride+(yout/8)*32+4*(yout&7u)+(xout&7u)/2)&0x3FFFFu;
-        unsigned shift=xout&1u?0:4,old=(ram[a]>>shift)&15u;
+    unsigned phase=s->active[4]&7u,width=s->active[5];
+    uint32_t a=(((uint32_t)s->active[3]<<2)+(yout>>3)*32u+4u*(yout&7u)+(phase>>1))&0x3FFFFu;
+    for(unsigned n=0;n<width;++n) {
+        unsigned pixel=sample(&job,ram,(x&0xFFFFFFu)>>11,(y&0xFFFFFFu)>>11);
+        unsigned shift=phase&1u?0:4,old=(ram[a]>>shift)&15u;
         if((priority!=1 || !old) && (priority!=2 || pixel))
             ram[a]=(uint8_t)((ram[a]&~(15u<<shift))|(pixel<<shift));
+        /* Advance the column-major cell cursor without remapping each dot.
+         * Do not combine nibble stores: a write can change the next sample. */
+        if(++phase==8){phase=0;a=(a+stride-3u)&0x3FFFFu;}
+        else if(!(phase&1u))a=(a+1u)&0x3FFFFu;
         x+=dx;y+=dy;
     }
-    s->pixels+=s->active[5];s->vector=(s->vector+8)&0x3FFFFu;
+    s->pixels+=width;s->vector=(s->vector+8)&0x3FFFFu;
     ++s->line;s->reg[6]=(uint16_t)(s->active[6]>s->line?s->active[6]-s->line:0);
 }
 int segacd_stamp_advance(SegaCDStamp *s,uint8_t word[0x40000],unsigned priority,uint32_t clocks)

@@ -371,7 +371,7 @@ static int register_native_spans(SegaCDCoordinator *c,SegaCDCpu cpu,
                                 const M68kStepRegisterSpan *spans,size_t count,int flow)
 {
     if(!c || (unsigned)cpu>1 || (count&&!spans) ||
-       count>(flow?SEGACD_FLOW_SPAN_LIMIT:SEGACD_REGISTER_SPAN_LIMIT) ||
+       count>(size_t)(flow?SEGACD_FLOW_SPAN_LIMIT:SEGACD_REGISTER_SPAN_LIMIT) ||
        c->busy[0] || c->busy[1] || c->external_active)return 0;
     c->flow_spans[cpu]=NULL;c->flow_span_count[cpu]=0;
     uint8_t *qualified_bits=flow?c->flow_span_qualified[cpu]:c->register_span_qualified[cpu];
