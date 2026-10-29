@@ -3,7 +3,7 @@
   "issue": "beads-3z5k.11",
   "campaign": "beads-2wy8.1",
   "original_scope": "E14/N18 optimize generic affine/stamp device in exact native jobs/spans/blocks; preserve WordRAM, priority, progress and completion",
-  "status": "proposed_bounded_rejected_pending_final_independent_audit",
+  "status": "bounded_rejected_final_independent_accepted",
   "production": "452f52a",
   "rejected_architectures": [
     "ec9e653",
@@ -2336,6 +2336,26 @@
     "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\correct_build_labels.py": {
       "sha256": "bf651b1405feb34a0c91cf48cc8edebfc4cb85fb7600f58efef55aec350c07d1",
       "bytes": 1175
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\VALIDATOR_E14_FINAL.md": {
+      "sha256": "61e64e4d5818ebab6cff287a0b0366ec0d09e2f8a3966fc7c6090ec6aea08b13",
+      "bytes": 5925
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\VALIDATOR_E14_AUDIT.json": {
+      "sha256": "dc6e04eef366c6079fcd07dd1901a1a681840cbdd679645de874b7750c4d7221",
+      "bytes": 611
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\validator_e14_audit.py": {
+      "sha256": "28840c0a5d598b38bd181fa18e708ac985427bc5f0e572c4032fbed589a9a35a",
+      "bytes": 5480
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\document_final.py": {
+      "sha256": "72706129be4dd960a9adf3dd3448571c558a28234ac06c5178cf4592faab588a",
+      "bytes": 4771
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\compact_evidence.py": {
+      "sha256": "10327fef6fba3ece22cb3ba4ddfefea6abe5becf2cc648a77c991f006736e56a",
+      "bytes": 1687
     }
   },
   "evidence_roots": {
@@ -2343,6 +2363,17 @@
     "bulk": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029"
   },
   "approval": "No merge/release/delivery/ownerlaunch; combinedownerhandoffpending",
-  "validator": "validate_e14 source/scope/platformauditspass; finalPR/evidenceauditpending",
-  "cleanup": "Pendingfinalreview; retainallfrozenPE/raw/source/config/failedsamples; auditexactownedscratchbefore nonforced removal."
+  "validator": {
+    "name": "validate_e14",
+    "verdict": "ACCEPTED full original bounded opportunity decisively evaluated/rejected; useful Win32fix/testPR readyforcombinedhandoff",
+    "reviewed_head": "8029d30212dff734bc52b4b0e30b544f03eff3ad",
+    "report": "ENGINE_STAMP_JOBS_REVIEW.md",
+    "audit": "engine-stamp-jobs-review.json",
+    "raw_receipts_checked": 53,
+    "distinct_artifacts_hashed": 213,
+    "next_task": "E15 afterstatus/cleanup/sync, NEWisolatedWT+freshvalidation-onlyreviewer",
+    "unresolved_findings": []
+  },
+  "cleanup": "Pendingfinalreview; retainallfrozenPE/raw/source/config/failedsamples; auditexactownedscratchbefore nonforced removal.",
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/46"
 }

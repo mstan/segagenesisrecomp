@@ -4,17 +4,15 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: E01, E03, E04, E05, E06, E07, E08 and E10 deliver
-selected bounded contracts. E11 whole raster fusion and E13 complete graphics
-derivation architectures were implemented/qualified/actually used, then decisively
-rejected as bounded opportunities; useful BATCHED default/provider repairs and
-pure immutable DAC simplification remain accepted. E13 production999f392 /readyPR45
-reviewed5576577 passes whole-scope independent review, with per-game timing
-neutral/inconclusive and no new speedup claim. **21 families remain open**.
-Reviewer explicitly instructed fresh serial E14. Combined owner visual/merge/release
-handoff remains pending. Historical narrative below describes the original
-released base; the36-row table and [machine-readable audit](engine-optimization-completion-audit.json)
-reflect current serial dispositions alongside the [burndown](ENGINE_OPTIMIZATION_BURNDOWN.md).
+Current serial update: selected bounded contracts E01/E03-E08/E10 are delivered.
+E11 wholefusion, E13 completegraphicsderivation and E14 completeexactstampjobs
+were implemented, qualified and reached by actualgames, then decisively rejected.
+Useful BATCHED/provider, immutableDAC and Win32-build/oracle packages remain.
+E14 production452f52a/readyPR46 reviewed8029d30 passes fresh independentfull-scope
+review, with no runtimegainclaim. **20 families remain open**. Reviewer explicitly
+instructed freshserialE15 afterstatus/cleanup/sync. Combinedownerhandoffpending.
+Historical narrative below describes the releasedbase; the36-rowtable and
+[machine-readable audit](engine-optimization-completion-audit.json) reflectcurrentdispositions.
 
 ## What was actually closed
 
@@ -56,7 +54,7 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E11 | Fused generic VDP raster | Whole bounded opportunity rejected | Complete native direct-stream fusion implemented/qualified/reached, rejected versus best existing BATCHED. Existing BATCHED default adoption and provider compatibility repaired/qualified in50b0854/PR44. | Selected original bounded whole-fusion opportunity decisively rejected, not deferred/partial; no claim every future algorithm is exhausted. Combined owner merge/release handoff remains for useful adoption. |
 | E12 | Shared sprite evaluation jobs | Delivered (bounded) | CD sprite evaluation captured once for both CPU-visible status and deferred image production. | The selected shared-evaluation contract is delivered; additional caching belongs to E13/E15. |
 | E13 | Versioned generic graphics derivation | Whole bounded opportunity rejected | Full art/palette/geometry complete-input architecture1d0aab9 implemented/qualified/actuallyused, rejected for no demonstratedgain. Useful finite immutable DAC domain999f392/PR45 retained and independentlyaccepted; mutable caches removed. | Selected whole bounded opportunity evaluated/rejected, not partial/deferral or universal futuredesign exhaustion. Combined owner merge/release handoff remains for palette-only package. |
-| E14 | Native Sega CD stamp-device jobs | Deferred; open | Existing native affine stamp device retained. | A new exact block/span stamp kernel. |
+| E14 | Native Sega CD stamp-device jobs | Rejected whole bounded opportunity | Both complete exactjob/span architectures qualified/reached400jobSS1windows, then rejected on observedcost; originalkernel retained. Useful Win32fix+3080joboracle; PR46. | Selected bounded original opportunity decisively rejected; no universalfutureexhaustion. Combinedownerhandoffpending. |
 | E15 | Reuse unchanged hardware render results | Deferred; open | No new generic unchanged-job/image reuse. | Complete intermediate hardware-input identity and reusable render output ownership. |
 | E16 | Final pixels and upload ownership | Partial; open | Lazy CD conversion when original pixels are requested. | Conversion/copy/filter/UI staging/upload ownership across the host boundary. |
 | E17 | Optional generic GPU raster backend | Deferred; open | Immutable CPU raster packets are available; no generic GPU backend was added. | A qualified generic GPU composition implementation with portable CPU fallback. |

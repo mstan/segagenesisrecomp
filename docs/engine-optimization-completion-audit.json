@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Serial E01/E03/E04/E05/E06/E07/E08/E10 selected bounded contracts accepted. E11 wholefusion/E13 completegraphicsderivation architectures bounded rejected after actualqualification; useful existingBATCHED default/providerfix andpureimmutableDAC retained/accepted. E13production999f392/readyPR45 reviewed5576577, pergameallneutral/inconclusive,no gainclaim.21originalfamiliesremainopen; reviewer explicitlyinstructed freshserialE14. Combined ownermerge/releasepending.",
+  "conclusion": "Serial bounded contracts E01/E03-E08/E10 delivered; E11/E13/E14 originalwholeboundedopportunities decisivelyevaluated/rejected afterqualifiedactualruntime, useful BATCHED/provider/DAC/Win32-test packages retained. E14production452f52a/readyPR46 reviewed8029d30 finalindependentaccepted, no newgainclaim.20originalfamiliesopen; reviewer explicitlyinstructed freshserialE15. Combinedownerhandoffpending.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -18,14 +18,14 @@
   "implementation_counts": {
     "bounded_delivered": 12,
     "rejected_mechanism": 1,
-    "bounded_rejected": 2,
-    "deferred": 14,
+    "bounded_rejected": 3,
+    "deferred": 13,
     "partial": 6,
     "existing": 1
   },
-  "remaining_scope_open_count": 21,
+  "remaining_scope_open_count": 20,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
-  "validation": "Historical released-base source audit plus independently accepted serial E01/E03-E08/E10/E11 implementation/whole-family rejection and built runtime gates; detailed per-family records linked.",
+  "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
     {
       "id": "E01",
@@ -405,15 +405,33 @@
       "name": "Native Sega CD stamp-device jobs",
       "original_goal": "Optimize the generic affine/stamp device in exact spans/blocks.",
       "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "Existing native affine stamp device retained.",
-      "remaining": "A new exact block/span stamp kernel.",
-      "audit_basis": "stamp.c is unchanged and had no samples in the recorded CD gameplay route. No stamp-heavy qualification was performed.",
-      "next_closure": "Select a built stamp-heavy workload before choosing a block kernel; preserve partial writes, priority and IRQ timing.",
+      "implementation_state": "bounded_rejected",
+      "remaining_scope_open": false,
+      "delivered": "Complete original generic affine job/span opportunity implemented twice and qualified/reached by real400jobSS1windows; botharchitectures rejected on runtimecost. Originalnativekernel restoredbyteexact; usefulWin32guardrepair+3080joboracle retained, production452f52a/readyPR46 reviewed8029d30.",
+      "remaining": "Selected bounded original opportunity decisively evaluated/rejected; futureguardeddesigns not universallyruledout. UsefulPRcombinedownerhandoffpending.",
+      "audit_basis": "Independentvalidate_e14 FINAL ACCEPTED: exactfrozenoracle/18gatesperarchitecture includingfinal x64/x86/GCC; all8actualgamearms fullstate/RAM/pixel/WAVexact, allnegatives retained, no newgain. ENGINE_STAMP_JOBS.md and engine-stamp-jobs-results.json.",
+      "next_closure": "Complete combined ownervisual/mergehandoff for usefulPR46; reviewer explicitlyinstructed freshserialE15 afterbookkeeping/cleanup/sync.",
       "source_references": [
-        "runner/cd/stamp.c"
-      ]
+        "runner/cd/stamp.c",
+        "runner/cd/segacd_coordinator.c:374",
+        "tests/segacd/stamp_job_test.c",
+        "docs/ENGINE_STAMP_JOBS.md"
+      ],
+      "historical_audit": {
+        "id": "E14",
+        "name": "Native Sega CD stamp-device jobs",
+        "original_goal": "Optimize the generic affine/stamp device in exact spans/blocks.",
+        "recorded_evaluation_status": "evaluated_deferred",
+        "implementation_state": "deferred",
+        "remaining_scope_open": true,
+        "delivered": "Existing native affine stamp device retained.",
+        "remaining": "A new exact block/span stamp kernel.",
+        "audit_basis": "stamp.c is unchanged and had no samples in the recorded CD gameplay route. No stamp-heavy qualification was performed.",
+        "next_closure": "Select a built stamp-heavy workload before choosing a block kernel; preserve partial writes, priority and IRQ timing.",
+        "source_references": [
+          "runner/cd/stamp.c"
+        ]
+      }
     },
     {
       "id": "E15",
