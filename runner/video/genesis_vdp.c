@@ -18,14 +18,6 @@
 #ifndef GENESIS_BATCHED_PLANES
 #define GENESIS_BATCHED_PLANES 0
 #endif
-#ifndef GENESIS_FUSED_RASTER
-#define GENESIS_FUSED_RASTER 0
-#endif
-/* Sprite row decoding is independent of the plane/output representation.
- * Fused production must retain the existing batched evaluator's work. */
-#ifndef GENESIS_BATCHED_SPRITES
-#define GENESIS_BATCHED_SPRITES (GENESIS_BATCHED_PLANES || GENESIS_FUSED_RASTER)
-#endif
 #ifndef GENESIS_NATIVE_COMPOSE
 #define GENESIS_NATIVE_COMPOSE (UINTPTR_MAX > UINT32_MAX)
 #endif
@@ -43,7 +35,7 @@ static const uint8_t s_layer_select[64] = {
 #endif
 const char *gvdp_plane_implementation(void)
 {
-    return GENESIS_FUSED_RASTER ? "FUSED" : GENESIS_BATCHED_PLANES ? "BATCHED" : "SCALAR";
+    return GENESIS_BATCHED_PLANES ? "BATCHED" : "SCALAR";
 }
 #ifdef GEN_DEV_TRACE
 #include <stdio.h>   /* [DMA-STALL] rare-event dev print */
@@ -707,7 +699,7 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
             int iy = vf ? (height - 1 - (line - y)) : (line - y);
             int celly = iy >> cell_h_shift, fy = iy & ((1 << cell_h_shift) - 1);
 
-#if GENESIS_BATCHED_SPRITES
+#if GENESIS_BATCHED_PLANES
             /* Resolve sprite cell/row addresses once per eight output pixels.
              * VRAM is stable during this scanline call; no persistent cache or
              * invalidation/state migration is involved. */
@@ -896,111 +888,6 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
     }
 }
 
-#if GENESIS_FUSED_RASTER
-/* A row-local plane stream owns name-table addressing, pattern decode and
- * scroll geometry. Only the current packed tile survives between pulls; no
- * complete plane image or cross-row cache/invalidation state is produced. */
-typedef struct GVDPPlaneStream {
-    const GVDP *v;
-    uint16_t row_base;
-    int px,mask,fy,fy_mask,tile_bytes,cached_x;
-    uint64_t tile;
-} GVDPPlaneStream;
-
-static void plane_stream_begin(GVDPPlaneStream *p,const GVDP *v,uint16_t base,
-                               int wt,int ht,int px,int py,int im2)
-{
-    int shift=im2?4:3;
-    py&=(ht<<shift)-1;
-    p->v=v;p->row_base=(uint16_t)(base+(py>>shift)*wt*2);
-    p->px=px;p->mask=wt*8-1;p->fy=py&((1<<shift)-1);
-    p->fy_mask=(1<<shift)-1;p->tile_bytes=im2?64:32;p->cached_x=-1;
-}
-
-static uint64_t plane_stream_tile(GVDPPlaneStream *p,int x)
-{
-    x&=p->mask;
-    int cell=x>>3;
-    if(cell!=p->cached_x) {
-        uint16_t e=vram_read_word(p->v,(uint16_t)(p->row_base+cell*2));
-        int fy=p->fy;if(e&0x1000)fy^=p->fy_mask;
-        uint16_t a=(uint16_t)((e&0x7ff)*p->tile_bytes+fy*4);
-        const uint8_t *vram=p->v->vram;
-        uint32_t bits=((uint32_t)vram[a]<<24)|((uint32_t)vram[a+1]<<16)|
-                      ((uint32_t)vram[a+2]<<8)|vram[a+3];
-        uint8_t attr=(uint8_t)(((e>>9)&0x30)|((e>>8)&0x80));
-        p->tile=gtile_packed_row(bits,attr,e&0x800);p->cached_x=cell;
-    }
-    return p->tile;
-}
-
-static uint64_t plane_stream_pull(GVDPPlaneStream *p,int count)
-{
-    int x=p->px& p->mask,fx=x&7;
-    uint64_t first=plane_stream_tile(p,x),result=first;
-    if(fx) {
-        uint64_t second=plane_stream_tile(p,x+8);
-        const uint16_t one=1;
-        if(*(const uint8_t *)&one)
-            result=(first>>(fx*8))|(second<<((8-fx)*8));
-        else result=(first<<(fx*8))|(second>>((8-fx)*8));
-    }
-    p->px+=count;
-    return result;
-}
-
-static uint64_t fused_lane_load(const uint8_t *p,int count)
-{
-    if(count==8)return gvdp_compose_load(p);
-    uint64_t result=0;memcpy(&result,p,(size_t)count);return result;
-}
-
-/* The geometry owns stable scroll/window spans; both tile streams feed the
- * compositor directly in packed registers. Sprite status/callbacks have already
- * run at their original boundary. Last partial groups never overread a lane. */
-static void fused_plane_row(const GVDP *v,int line,uint8_t *out,int w,int extra,
-    int start,int wt,int ht,uint16_t base_a,uint16_t base_b,uint16_t base_w,
-    int win_wt,int hs_a,int hs_b,int two_cell,int full_a,int full_b,int vs_mask,
-    int window_x,int right,int vertical,int im2,uint8_t backdrop,int shadow_mode,
-    int host_flags)
-{
-    int end=w+extra;
-    for(int x=-extra,xo=start;x<end;) {
-        int boundary=x<0?0:x>=w?end:two_cell?((x>>4)+1)*16:w;
-        if(boundary>end)boundary=end;
-        if(window_x>x && window_x<boundary)boundary=window_x;
-        int va=full_a,vb=full_b;
-        if(two_cell) {
-            int xc=x<0?0:x>=w?w-1:x,col=(xc>>4)*2;
-            va=v->vsram[col%GVDP_VSRAM_ENTRIES]&vs_mask;
-            vb=v->vsram[(col+1)%GVDP_VSRAM_ENTRIES]&vs_mask;
-        }
-        int window=x>=0 && x<w && ((right?x>=window_x:x<window_x)||vertical);
-        GVDPPlaneStream a,b;
-        plane_stream_begin(&a,v,window?base_w:base_a,window?win_wt:wt,ht,
-                           window?x:x-hs_a,window?line:line+va,im2);
-        plane_stream_begin(&b,v,base_b,wt,ht,x-hs_b,line+vb,im2);
-        while(x<boundary) {
-            int n=boundary-x;if(n>8)n=8;
-            uint64_t opaque=fused_lane_load(s_spr_op+xo,n);
-            uint64_t high=fused_lane_load(s_spr_hi+xo,n);
-            /* Public host drawing accepts any nonzero opacity/priority.
-             * Native evaluator lanes are already normalized. */
-            if(host_flags){opaque=gvdp_compose_boolean(opaque);high=gvdp_compose_boolean(high);}
-            uint64_t pixel=gvdp_compose_packed(plane_stream_pull(&a,n),
-                plane_stream_pull(&b,n),fused_lane_load(s_spr_idx+xo,n),
-                opaque,high,
-                fused_lane_load(s_spr_shadow_op+xo,n),
-                fused_lane_load(s_spr_hilite_op+xo,n),backdrop,shadow_mode);
-            memcpy(out+xo,&pixel,(size_t)n);x+=n;xo+=n;
-        }
-    }
-    if(s_ws_bgdiag)for(int x=-extra,xo=start;x<end;++x,++xo)
-        if(out[xo]<GVDP_HOST_PALETTE_BASE && !((x-hs_b)&(wt*8-1)))
-            out[xo]=(uint8_t)((out[xo]&63u)+GVDP_PALETTE_SHADOW);
-}
-#endif
-
 int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
 {
     /* These providers can publish private art/palettes or invoke arbitrary
@@ -1158,17 +1045,16 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         s_host_sprites(s_host_sprites_user, v, &layer);
     }
 
-#if GENESIS_FUSED_RASTER
-    /* Sprite art/providers already produced their complete lanes above;
-     * they impose no plane/composition boundary. Extended plane colors cannot
-     * use native six-bit plane metadata, so retain that exact scalar path. */
-    if(!s_ext_tiles) {
-        if(pillar>0)memset(out,bar_idx,(size_t)pillar);
-        if(right_bar>0)memset(out+content_end,bar_idx,(size_t)right_bar);
-        fused_plane_row(v,line,out,w,content_extra,content_start,wt,ht,
-            base_a,base_b,base_w,win_wt,hs_a,hs_b,vmode_2cell,full_vs_a,full_vs_b,
-            vs_mask,window_x,window_h_right,window_v_in,im2,backdrop,sh_mode,host_flags);
-        return total;
+#if GENESIS_BATCHED_PLANES
+    /* Native plane bytes pack six-bit color plus opacity/priority. Extended
+     * plane colors require the existing scalar fetch path with full indices.
+     * Host sprite drawing accepts arbitrary nonzero flags; normalize the row
+     * for both packed composition and the portable selection-table path. The
+     * callback ran exactly once, even if it unregistered itself while drawing. */
+    int batched_planes=s_ext_tiles==NULL;
+    if(host_flags)for(int x=0;x<total;++x) {
+        s_spr_op[x]=(uint8_t)(s_spr_op[x]!=0);
+        s_spr_hi[x]=(uint8_t)(s_spr_hi[x]!=0);
     }
 #endif
 
@@ -1178,42 +1064,40 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
      * window addressing so their independent tables never alias each other. */
 #if GENESIS_BATCHED_PLANES
     uint8_t plane_a[GVDP_MAX_WIDTH], plane_b[GVDP_MAX_WIDTH];
-    for (int x = -content_extra, xo = content_start; xo < content_end;) {
-        int boundary;
-        if (x < 0) boundary = 0;
-        else if (x >= w) boundary = w + content_extra;
-        else boundary = ((x >> 4) + 1) * 16;
-        if (boundary > w + content_extra) boundary = w + content_extra;
-        if (window_x > x && window_x < boundary) boundary = window_x;
-        int n = boundary - x;
-        int vs_a = full_vs_a, vs_b = full_vs_b;
-        if (vmode_2cell) {
-            int xc = x < 0 ? 0 : (x >= w ? w - 1 : x);
-            int col = (xc >> 4) * 2;
-            vs_a = v->vsram[col % GVDP_VSRAM_ENTRIES] & vs_mask;
-            vs_b = v->vsram[(col + 1) % GVDP_VSRAM_ENTRIES] & vs_mask;
+    if(batched_planes) {
+        for (int x = -content_extra, xo = content_start; xo < content_end;) {
+            int boundary;
+            if (x < 0) boundary = 0;
+            else if (x >= w) boundary = w + content_extra;
+            else boundary = ((x >> 4) + 1) * 16;
+            if (boundary > w + content_extra) boundary = w + content_extra;
+            if (window_x > x && window_x < boundary) boundary = window_x;
+            int n = boundary - x;
+            int vs_a = full_vs_a, vs_b = full_vs_b;
+            if (vmode_2cell) {
+                int xc = x < 0 ? 0 : (x >= w ? w - 1 : x);
+                int col = (xc >> 4) * 2;
+                vs_a = v->vsram[col % GVDP_VSRAM_ENTRIES] & vs_mask;
+                vs_b = v->vsram[(col + 1) % GVDP_VSRAM_ENTRIES] & vs_mask;
+            }
+            int window_h_in = window_h_right ? x >= window_x : x < window_x;
+            if (x >= 0 && x < w && (window_h_in || window_v_in))
+                fetch_plane_span(v, plane_a + xo, n, base_w, win_wt, ht, x, line, im2);
+            else
+                fetch_plane_span(v, plane_a + xo, n, base_a, wt, ht,
+                                 x - hs_a, line + vs_a, im2);
+            fetch_plane_span(v, plane_b + xo, n, base_b, wt, ht,
+                             x - hs_b, line + vs_b, im2);
+            x += n; xo += n;
         }
-        int window_h_in = window_h_right ? x >= window_x : x < window_x;
-        if (x >= 0 && x < w && (window_h_in || window_v_in))
-            fetch_plane_span(v, plane_a + xo, n, base_w, win_wt, ht, x, line, im2);
-        else
-            fetch_plane_span(v, plane_a + xo, n, base_a, wt, ht,
-                             x - hs_a, line + vs_a, im2);
-        fetch_plane_span(v, plane_b + xo, n, base_b, wt, ht,
-                         x - hs_b, line + vs_b, im2);
-        x += n; xo += n;
     }
-#else
-    PlanePixelCache cache_a = { ~0u, 0 };
-    PlanePixelCache cache_b = { ~0u, 0 };
-    PlanePixelCache cache_w = { ~0u, 0 };
 #endif
 
     if (pillar > 0) memset(out, bar_idx, (size_t)pillar);
     if (right_bar > 0) memset(out + content_end, bar_idx, (size_t)right_bar);
 
 #if GENESIS_BATCHED_PLANES && GENESIS_NATIVE_COMPOSE
-    if (!s_ws_bgdiag) {
+    if (batched_planes && !s_ws_bgdiag) {
         gvdp_compose_span(out+content_start,plane_a+content_start,plane_b+content_start,
             s_spr_idx+content_start,s_spr_op+content_start,s_spr_hi+content_start,
             s_spr_shadow_op+content_start,s_spr_hilite_op+content_start,
@@ -1222,44 +1106,51 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     }
 #endif
 
+    PlanePixelCache cache_a = { ~0u, 0 };
+    PlanePixelCache cache_b = { ~0u, 0 };
+    PlanePixelCache cache_w = { ~0u, 0 };
     for (int x = -content_extra, xo = content_start; xo < content_end; x++, xo++) {
+        uint8_t a_idx,b_idx;int a_op,a_hi,b_op,b_hi;
 #if GENESIS_BATCHED_PLANES
-        uint8_t a_idx = plane_a[xo] & 0x3f, b_idx = plane_b[xo] & 0x3f;
-#else
-        /* Bars were prefilled above. This loop covers only the authentic view
-         * plus genuine widescreen margins, which the planes wrap-sample. */
-        /* Vertical scroll per plane (full, or per-16px-column 2-cell). */
-        int vs_a, vs_b;
-        if (vmode_2cell) {
-            /* The 2-cell VSRAM table is defined only across the active window;
-             * clamp margin columns to the nearest edge column to avoid a
-             * negative/out-of-range index. */
-            int xc = x < 0 ? 0 : (x >= w ? w - 1 : x);
-            int col = (xc >> 4) * 2;
-            vs_a = v->vsram[(col + 0) % GVDP_VSRAM_ENTRIES] & vs_mask;
-            vs_b = v->vsram[(col + 1) % GVDP_VSRAM_ENTRIES] & vs_mask;
-        } else {
-            vs_a = full_vs_a;
-            vs_b = full_vs_b;
-        }
-
-        uint8_t a_idx, b_idx; int a_op, a_hi, b_op, b_hi;
-
-        /* Plane A — or the window plane (unscrolled) where the window covers.
-         * The window is unscrolled and cell-addressed: in IM2 its vertical
-         * addressing is still double-res (8x16 cells over the output rows). */
-        int window_h_in = window_h_right ? (x >= window_x) : (x < window_x);
-        if (x >= 0 && x < w && (window_h_in || window_v_in)) {
-            fetch_plane_pixel(v, &cache_w, base_w, win_wt, ht,
-                              x, line, im2, &a_idx, &a_op, &a_hi);
-        } else {
-            fetch_plane_pixel(v, &cache_a, base_a, wt, ht,
-                              (x - hs_a), (line + vs_a), im2, &a_idx, &a_op, &a_hi);
-        }
-        /* Plane B. */
-        fetch_plane_pixel(v, &cache_b, base_b, wt, ht,
-                          (x - hs_b), (line + vs_b), im2, &b_idx, &b_op, &b_hi);
+        if(batched_planes) {
+            a_idx=plane_a[xo]&0x3f;b_idx=plane_b[xo]&0x3f;
+            a_op=(plane_a[xo]&0x40)!=0;a_hi=(plane_a[xo]&0x80)!=0;
+            b_op=(plane_b[xo]&0x40)!=0;b_hi=(plane_b[xo]&0x80)!=0;
+        } else
 #endif
+        {
+            /* Bars were prefilled above. This loop covers only the authentic view
+             * plus genuine widescreen margins, which the planes wrap-sample. */
+            /* Vertical scroll per plane (full, or per-16px-column 2-cell). */
+            int vs_a, vs_b;
+            if (vmode_2cell) {
+                /* The 2-cell VSRAM table is defined only across the active window;
+                 * clamp margin columns to the nearest edge column to avoid a
+                 * negative/out-of-range index. */
+                int xc = x < 0 ? 0 : (x >= w ? w - 1 : x);
+                int col = (xc >> 4) * 2;
+                vs_a = v->vsram[(col + 0) % GVDP_VSRAM_ENTRIES] & vs_mask;
+                vs_b = v->vsram[(col + 1) % GVDP_VSRAM_ENTRIES] & vs_mask;
+            } else {
+                vs_a = full_vs_a;
+                vs_b = full_vs_b;
+            }
+
+            /* Plane A — or the window plane (unscrolled) where the window covers.
+             * The window is unscrolled and cell-addressed: in IM2 its vertical
+             * addressing is still double-res (8x16 cells over the output rows). */
+            int window_h_in = window_h_right ? (x >= window_x) : (x < window_x);
+            if (x >= 0 && x < w && (window_h_in || window_v_in)) {
+                fetch_plane_pixel(v, &cache_w, base_w, win_wt, ht,
+                                  x, line, im2, &a_idx, &a_op, &a_hi);
+            } else {
+                fetch_plane_pixel(v, &cache_a, base_a, wt, ht,
+                                  (x - hs_a), (line + vs_a), im2, &a_idx, &a_op, &a_hi);
+            }
+            /* Plane B. */
+            fetch_plane_pixel(v, &cache_b, base_b, wt, ht,
+                              (x - hs_b), (line + vs_b), im2, &b_idx, &b_op, &b_hi);
+        }
 
         /* Sprite layer (indexed in output-column space). */
         int s_op = s_spr_op[xo], s_hi = s_spr_hi[xo];
@@ -1268,31 +1159,30 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         /* Genesis priority order: S-hi > A-hi > B-hi > S-lo > A-lo > B-lo > bg. */
         uint8_t px;
 #if GENESIS_BATCHED_PLANES
-        unsigned key = (plane_a[xo] >> 6) | ((plane_b[xo] >> 6) << 2) |
-            ((unsigned)(s_op | (s_hi << 1)) << 4);
-        unsigned selection = s_layer_select[key];
-        uint32_t colors = (uint32_t)backdrop | ((uint32_t)b_idx << 8) |
-            ((uint32_t)a_idx << 16) | ((uint32_t)s_idx << 24);
-        px = (uint8_t)(colors >> ((selection & 3) * 8));
-#else
-        if      (s_op && s_hi) px = s_idx;
-        else if (a_op && a_hi) px = a_idx;
-        else if (b_op && b_hi) px = b_idx;
-        else if (s_op)         px = s_idx;
-        else if (a_op)         px = a_idx;
-        else if (b_op)         px = b_idx;
-        else                   px = backdrop;
+        if(batched_planes) {
+            unsigned key = (plane_a[xo] >> 6) | ((plane_b[xo] >> 6) << 2) |
+                ((unsigned)(s_op | (s_hi << 1)) << 4);
+            unsigned selection = s_layer_select[key];
+            uint32_t colors = (uint32_t)backdrop | ((uint32_t)b_idx << 8) |
+                ((uint32_t)a_idx << 16) | ((uint32_t)s_idx << 24);
+            px = (uint8_t)(colors >> ((selection & 3) * 8));
+        } else
 #endif
+        {
+            if      (s_op && s_hi) px = s_idx;
+            else if (a_op && a_hi) px = a_idx;
+            else if (b_op && b_hi) px = b_idx;
+            else if (s_op)         px = s_idx;
+            else if (a_op)         px = a_idx;
+            else if (b_op)         px = b_idx;
+            else                   px = backdrop;
+        }
 
         /* Shadow/highlight: when enabled, a pixel with no high-priority layer
          * is shadowed; operator sprites (pal3 colours 14/15) force highlight or
          * shadow on the underlying pixel. */
         if (sh_mode && px < GVDP_CRAM_ENTRIES) {
-#if GENESIS_BATCHED_PLANES
-            int hi_present = selection & 4;
-#else
             int hi_present = (s_op && s_hi) || (a_op && a_hi) || (b_op && b_hi);
-#endif
             int sh = !hi_present;
             int hl = 0;
             if (s_spr_shadow_op[xo]) sh = 1;
