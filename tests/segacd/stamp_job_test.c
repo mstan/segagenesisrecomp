@@ -82,4 +82,4 @@ static void ownership_and_snapshot(void)
     CHECK(!cd.stamp.busy && !memcmp(&cd,&restored,sizeof cd));
     segacd_advance(&control_cd,1395);CHECK(!memcmp(&cd.stamp,&control_cd.stamp,sizeof cd.stamp));CHECK(!memcmp(cd.word,control_cd.word,sizeof cd.word));
 }
-int main(void){random_jobs();feedback_jobs();ownership_and_snapshot();printf("Stamp line jobs: %u cases, full state/RAM, live alias feedback, split clocks, priority, ownership and current-build snapshots pass\n",case_id+1);return 0;}
+int main(void){random_jobs();feedback_jobs();ownership_and_snapshot();printf("Stamp line jobs: %u cases, full state/RAM, live alias feedback, split clocks, priority, ownership and current-build snapshots pass\n",case_id);return 0;}
