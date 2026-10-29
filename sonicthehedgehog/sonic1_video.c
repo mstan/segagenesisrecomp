@@ -629,4 +629,8 @@ void s1_video_command(int id, const char *json)
         s_display?s_display->count:0,s_display?s_display->scene:-1,s_spawned,s_pool_pressure,s_ring_collected);
     cmd_send_response(reply);
 }
-const GameVideo sonic1_video = { configure, enabled, width, scanline };
+/* Mechanical ownership adoption: keep this adapter's existing qualification.
+ * Native stock-fidelity rollout is independent of the shared renderer API. */
+const GameVideo sonic1_video = {
+    configure, enabled, width, scanline, NULL, NULL, enabled
+};

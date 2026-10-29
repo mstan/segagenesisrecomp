@@ -17,7 +17,9 @@ const char *input_button_name(GenesisButton b) {
 }
 static char mode[32];
 static int configure(const char *value) {snprintf(mode,sizeof mode,"%s",value);return 1;}
-static const GameVideo video={.configure=configure};
+static int enabled(void) {return strcmp(mode,"off")!=0;}
+static int width(int dw,int dh,int nw,int nh) {(void)dw;(void)dh;(void)nh;return nw;}
+static const GameVideo video={.configure=configure,.enabled=enabled,.width=width};
 
 int main(int argc,char **argv)
 {
@@ -80,6 +82,11 @@ int main(int argc,char **argv)
     app_config_defaults();CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==2);
     CHECK(app_config_set_video_default(NULL));
     app_config_defaults();CHECK(!g_app_config.custom_widescreen && g_app_config.custom_aspect==0);
+    /* A native row owner is not an elective viewport/widescreen feature. */
+    const GameVideo renderer_only={.renderer_enabled=enabled};
+    CHECK(!game_video_has_viewport(&renderer_only));
+    CHECK(!app_config_video_mods(&renderer_only,argv[1]));
+    app_config_apply_video(&renderer_only); /* no configure callback */
     CHECK(remove(argv[1])==0); /* this executable owns only its explicit CTest fixture */
     puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence and input binding preservation");
     return 0;
