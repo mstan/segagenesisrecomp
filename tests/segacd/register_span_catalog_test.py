@@ -23,12 +23,11 @@ with tempfile.TemporaryDirectory(prefix='register-span-catalog-') as temp:
     assert b'void fixture_at_000000(M68kStepContext *ctx){\n' in first
     (original/'fixture_part00.c').write_bytes(first.replace(b'void fixture_at_000000(M68kStepContext *ctx){\n',b'void fixture_at_000000(M68kStepContext *ctx){\n  g_cpu.D[7]++;\n'))
     hle=root/'pure-hle';compact.compact(catalogs,hle)
-    try:
-        spans.generate(hle,root/'refused-hle',Path(sys.argv[2]))
-        raise AssertionError('pure HLE arithmetic was silently replaced from opcode')
-    except ValueError as error:
-        assert 'noncanonical pure operation body' in str(error),error
-    assert not (root/'refused-hle/native_catalog_manifest.json').exists()
+    spans.generate(hle,root/'filtered-hle',Path(sys.argv[2]))
+    filtered=json.loads((root/'filtered-hle/native_catalog_manifest.json').read_bytes())
+    assert filtered['excluded_noncanonical_symbols']==['fixture_at_000000']
+    assert 'const size_t genesis_spans_main_count=0;' in (root/'filtered-hle/genesis_spans_main_module.c').read_text()
+    assert 'fixture_at_000000' in (root/'filtered-hle/genesis_catalog_main_0000.c').read_text()
     path=next(parent.glob('genesis_catalog_*.c'));path.write_bytes(path.read_bytes()+b'/* stale */\n')
     try:
         spans.generate(parent,root/'refused-stale',Path(sys.argv[2]))
