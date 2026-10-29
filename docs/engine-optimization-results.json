@@ -87,7 +87,7 @@
       "name": "Generated native arithmetic and state",
       "priority": "P2",
       "status": "implemented_native_state_game_qualified_neutral",
-      "disposition": "Implemented common-emitter local D/A/SR spans, backward CCR liveness and exact grouped cycles, plus single-memory-RMW EA/read-write consolidation under complete managed dual ownership. Original bus/control/HLE/WAIT/fault/trace/unsupported exits remain exact. Engine132b84d/core4479e7e; final MSVC/GCC and all three built-game state/pixel/full-WAV routes and cartridge rollback pass. All final game timing neutral/inconclusive, no claimed speedup; r2/r3 regressions rejected, targeted reverse RKA off run does not reproduce the original24percent slowdown. Body proof131573 symbols/36089 redirects; current bytes and descriptor effects/priority unchanged. Cartridge observable bus limits documented. Final independent PR/record gate and owner visual handoff pending. See ENGINE_NATIVE_STATE.md, engine-native-state-results.json, beads-3z5k.3/beads-rxq.5.",
+      "disposition": "Implemented common-emitter local D/A/SR spans, backward CCR liveness and exact grouped cycles, plus single-memory-RMW EA/read-write consolidation under complete managed dual ownership. Original bus/control/HLE/WAIT/fault/trace/unsupported exits remain exact. Engine132b84d/core4479e7e; final MSVC/GCC and all three built-game state/pixel/full-WAV routes and cartridge rollback pass. All final game timing neutral/inconclusive, no claimed speedup; r2/r3 regressions rejected, targeted reverse RKA off run does not reproduce the original24percent slowdown. Body proof131573 symbols/36089 redirects; current bytes and descriptor effects/priority unchanged. Cartridge observable bus limits documented. Independent final PR/record gate accepted; validator instructed E05 next. Owner visual handoff pending. See ENGINE_NATIVE_STATE.md, engine-native-state-results.json, beads-3z5k.3/beads-rxq.5.",
       "evidence": [
         "ENGINE_NATIVE_STATE.md",
         "engine-native-state-results.json",
@@ -1572,6 +1572,6 @@
       "E02"
     ],
     "validation_workflow": "One validation-only subagent per serial task; PR on success or Beads on failure, explicit reviewer instruction before next.",
-    "pr_gate": "E04 compiler/built-game gate independently accepted neutral/inconclusive; stacked PR/Beads final gate pending"
+    "pr_gate": "E04 accepted: enginePR38/corePR9; validator explicitly instructed E05 next. Owner visual handoff pending."
   }
 }
