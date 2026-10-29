@@ -438,18 +438,22 @@ static void step_z80(GenesisMachine *m, uint32_t target)
 #ifndef GENESIS_Z80_RECOMP
     m->z80.cyc = 0;            /* per-slice t-state counter (kept bounded) */
 #endif
+#if defined(GENESIS_Z80_RECOMP) && !defined(GENESIS_Z80_STEP_PUBLICATION_REFERENCE)
+    done=z80_recomp_run_slice(done,target,&s_z80_off,MASTER_PER_Z80);
+#else
     while (done < target) {
         /* Stamp chip writes made by this instruction at its start cycle
          * (master) — machine_z80_stamp() reads this for the event queue. */
         s_z80_off = done * MASTER_PER_Z80;
 #ifdef GENESIS_Z80_RECOMP
-        done += z80_recomp_step_one();
+        done+=z80_recomp_step_one();
 #else
         unsigned long c0 = m->z80.cyc;
         z80_step(&m->z80);     /* one instruction, then interrupt processing */
         done += (uint32_t)(m->z80.cyc - c0);
 #endif
     }
+#endif
     m->z80_cycle_debt = done - target;
 #ifdef GEN_DEV_TRACE
     /* [SND-TRACE] V-int acceptance: pending fell 1->0 during this slice. */

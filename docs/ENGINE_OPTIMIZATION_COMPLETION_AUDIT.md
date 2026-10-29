@@ -4,8 +4,8 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: E01, E03, E04 and E05 now deliver their selected original bounded
-contracts; **26 families remain open**. E05 independent final review accepted and instructed fresh E06 verification;
+Current serial update: E01, E03, E04, E05 and E06 now deliver their selected original bounded
+contracts; **26 families remain open**. Fresh E06 diligence replaced the former existing-only finding; independent final review accepted and instructed fresh E07 verification;
 the combined owner visual handoff remains pending. The audit narrative below
 describes the original released base; current row dispositions are in the
 [machine-readable audit](engine-optimization-completion-audit.json) and
@@ -139,9 +139,9 @@ Sources: `core/profiles/genesis/code_generator.c`, `runner/glue.c`. Historical e
 
 ### E06: Reusable native Z80 backend
 
-Current CD gates record native Z80 execution with zero floor/audio faults. This is an existing capability, not a new speedup.
+Historical existing-only finding was overturned by fresh diligence. Shared build wiring, full-state boundary/variant fixes and bounded cartridge native slice publication are delivered and independently accepted (engine424a990/producerdc775df, PR40/producerPR3). Supported consumer/runtime/portable/current-build state contracts pass; timing neutral/inconclusive. See [E06 qualification](ENGINE_Z80_BACKEND.md).
 
-**Next closure:** Retain reset/BUSREQ/IRQ/mutable-code contracts; revisit backend internals only with new cost evidence.
+**Next closure:** Owner combined merge/release handoff remains; reviewer explicitly instructed serial E07 next. Driver-specific rollout and a full future Z80 ISA audit are not claimed.
 
 Sources: `runner/z80_recomp.c`, `runner/cd/z80_native.c`, `docs/Z80_STATIC_RECOMP.md`. Historical evaluation: `evaluated_already_native`.
 

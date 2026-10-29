@@ -4,7 +4,7 @@ Historical evaluation/release owner: `beads-3vb.31`. Remaining implementation: *
 
 Source audit base: `f422ad52a04b9d253c0e9cbcdb3476aabd563ae8`. Prepared in isolated branch `codex/engine-optimization-burndown-20261027`. Refresh and freeze remote engine/shared-core and representative consumer heads before implementation.
 
-**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04 and E05; **26 families remain open**, alongside eight delivered bounded contracts and two existing findings; family counts overlap and are not speedup counts.
+**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04, E05 and E06; **26 families remain open**, alongside nine delivered bounded contracts and one existing finding; family counts overlap and are not speedup counts.
 
 ## Scope
 
@@ -66,7 +66,7 @@ Current owner instruction (2026-10-28): work serially on one original goal. A va
   - Goal: Qualify and improve the common uploaded-code/variant executor and native blocks, with supported build integration.
   - Boundary: Keep reset, BUSREQ, IRQ, self-modification and timed writes. Driver catalogs, semantic SMPS HLE and game rollout are separate title work.
   - Evidence: `runner/z80_recomp.c`, `runner/cd/z80_native.c`, `docs/Z80_STATIC_RECOMP.md`.
-  - Disposition/evidence: The reusable uploaded-code/variant executor and generated native Z80 step already exist. Current SonicCD gates retire16241534 native Z80 instructions with zero floor/audio faults; cartridge driver qualification is retained in the earlier campaign. New CD attribution places bus-time coordination above the generated Z80 step itself, so E01/E07 address the reusable overhead. New driver catalogs/semantic SMPS HLE are title rollout T02/T13 and excluded. No new native-coverage or speed gain counted.
+  - Disposition/evidence: Fresh diligence repaired missing shared build integration and actual HALT/EI/IRQ/Windows-cycle/producer live-operand defects, then consolidated cartridge native scanline state publication while keeping each instruction guard, stamp, IRQ and fallback; trace retains per-step observations. Engine424a990/producerdc775df, PR40/producerPR3.11/11 MSVC+GCC adapter and2/2 CD targets each pass; supported RKA/S1 builds,16 exact matched runtime arms/full WAV/pixels/rollback/current-build saves and CD A/B plus9-input exact regeneration qualify the original bounded contract. All timing neutral/inconclusive, no claimed speedup. Independent validate_e06 accepted and explicitly instructed E07 next. Owner batch merge/release pending. See [ENGINE_Z80_BACKEND.md](ENGINE_Z80_BACKEND.md), [results](engine-z80-backend-results.json), beads-3z5k.5/beads-xecp.1.5.
 
 - [ ] **E07: Event-driven waits and scheduling** â€” P2; original N09.
   - Goal: Coalesce safe raster/fiber/CPU scheduling spans and handle proven waits through actual event wakeups.

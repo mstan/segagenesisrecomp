@@ -140,7 +140,7 @@ static void test_ei_delay_and_halt_irq(void)
     CHECK(z80.state.iff1 && z80.state.iff2 && z80.irq_pending);
     CHECK(segacd_z80_step(&z80)==SEGACD_Z80_OK);
     CHECK(!z80.state.halted && !z80.state.iff1 && !z80.state.iff2);
-    CHECK(!z80.irq_pending && z80.state.pc==0x0038 && z80.state.sp==0x6FFEu);
+    CHECK(!z80.irq_pending && z80.state.pc==0x0038 && z80.state.wz==0x0038 && z80.state.sp==0x6FFEu);
     CHECK(sound_ram[0x0FFE]==0x02 && sound_ram[0x0FFF]==0x00);
 
     setup(ei_halt,sizeof ei_halt,0,0);z80.step=proof_control_step;
@@ -151,7 +151,18 @@ static void test_ei_delay_and_halt_irq(void)
     CHECK(z80.state.cyc==halt_cycles+4);
     segacd_z80_irq(&z80);
     CHECK(segacd_z80_step(&z80)==SEGACD_Z80_OK && !z80.state.halted);
-    CHECK(!z80.irq_pending && z80.state.pc==0x0038 && z80.state.sp==0x6FFEu);
+    CHECK(!z80.irq_pending && z80.state.pc==0x0038 && z80.state.wz==0x0038 && z80.state.sp==0x6FFEu);
+
+    /* IM2 loads both PC and the internal memory pointer from the live vector. */
+    setup(ei_halt,sizeof ei_halt,0,0);z80.step=proof_control_step;
+    z80.state.pc=1;z80.state.iff1=z80.state.iff2=1;z80.state.sp=0x7000;
+    z80.state.im=2;z80.state.i=0x12;
+    sound_ram[0x12ff]=0x56;sound_ram[0x1300]=0x34;
+    segacd_z80_irq(&z80);
+    CHECK(segacd_z80_step(&z80)==SEGACD_Z80_OK);
+    CHECK(!z80.irq_pending && z80.state.pc==0x3456 && z80.state.wz==0x3456);
+    CHECK(!z80.state.halted && z80.state.cyc==23 && z80.state.sp==0x6ffe);
+    CHECK(sound_ram[0x0ffe]==2 && sound_ram[0x0fff]==0);
 }
 
 static void test_io_in_out_are_unsupported_without_memory_access(void)

@@ -114,7 +114,8 @@ static void accept_irq(void)
     else if(g_z80.im==2){
         g_z80.cyc+=19;target=sms_read16((uint16_t)((g_z80.i<<8)|0xff));
     }else{fail(SEGACD_Z80_BAD_MODULE,M68K_STEP_MISS);return;}
-    g_z80.sp=(uint16_t)(g_z80.sp-2u);sms_write16(g_z80.sp,g_z80.pc);g_z80.pc=target;
+    g_z80.sp=(uint16_t)(g_z80.sp-2u);sms_write16(g_z80.sp,g_z80.pc);
+    g_z80.pc=target;g_z80.wz=target;
 }
 int segacd_z80_init(SegaCDZ80 *s,SegaCDCoordinator *c,const SegaCDZ80Bus *b,
                    void *user,void (*step)(void))
