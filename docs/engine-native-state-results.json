@@ -1225,6 +1225,7 @@
     }
   ],
   "pull_requests": {
+    "engine": "https://github.com/mstan/segagenesisrecomp/pull/38",
     "core": "https://github.com/mstan/m68k-recomp-core/pull/9"
   },
   "owner_visual_merge_clearance": "pending; previous released-batch approvals do not authorize this batch",
@@ -1386,5 +1387,6 @@
     },
     "storage": "New native companions, no duplicate guest-memory representation; unchanged1.39GB ordinary native archive is a borrowed build input. Raw logs/WAV/captures and frozen binaries retained outside delivery folders.",
     "startup": "CD firstB4.885s vs warmB0.996s/A1.021/0.907s; startup processCPU0.563 vs0.469-0.500s. Cold/warm/shared-host differences prevent a startup performance claim. All raw startup costs retained in per_game samples."
-  }
+  },
+  "independent_runtime_gate": "validate_e04 accepted final built-runtime gate2026-10-29 as neutral/inconclusive per game; final PR/record audit pending"
 }
