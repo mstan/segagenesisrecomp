@@ -128,7 +128,7 @@ static M68kStepBusResult read16(void *u,uint32_t a,uint16_t *v)
 static M68kStepBusResult write8(void *u,uint32_t a,uint8_t v)
 {
     SegaCDMachine*m=u;main_stamp(m);
-    if((a&0xffffffu)>=0xff0000u)segacd_coordinator_code_write(&m->coordinator,g_ram+(a&0xffffu),1);
+    if((a&0xffffffu)>=0xff0000u)segacd_coordinator_code_write_range(&m->coordinator,SEGACD_CODE_HOST,a&0xffffu,1);
     gbus_write8(&m->bus,a,v);return M68K_BUS_OK;
 }
 static M68kStepBusResult write16(void *u,uint32_t a,uint16_t v)
@@ -136,10 +136,10 @@ static M68kStepBusResult write16(void *u,uint32_t a,uint16_t v)
     SegaCDMachine*m=u;main_stamp(m);
     if((a&0xffffffu)>=0xff0000u) {
         unsigned offset=a&0xffffu;
-        if(offset<0xffffu)segacd_coordinator_code_write(&m->coordinator,g_ram+offset,2);
+        if(offset<0xffffu)segacd_coordinator_code_write_range(&m->coordinator,SEGACD_CODE_HOST,offset,2);
         else {
-            segacd_coordinator_code_write(&m->coordinator,g_ram+offset,1);
-            segacd_coordinator_code_write(&m->coordinator,g_ram,1);
+            segacd_coordinator_code_write_range(&m->coordinator,SEGACD_CODE_HOST,offset,1);
+            segacd_coordinator_code_write_range(&m->coordinator,SEGACD_CODE_HOST,0,1);
         }
     }
     gbus_write16(&m->bus,a,v);return M68K_BUS_OK;
