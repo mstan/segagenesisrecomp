@@ -1,8 +1,16 @@
-# Engine optimization completion audit (2026-10-28)
+# Engine optimization completion audit (2026-10-28; serial update2026-10-29)
 
 **No: the entire original implementation burndown was not completed.** The previous pass completed evaluations/dispositions and released a useful qualified subset. It did not exhaust the reusable engine opportunities. The all-checked presentation made that distinction too easy to miss.
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
+
+Current serial update: E01, E03 and E04 now deliver their original bounded
+contracts; **27 families remain open**. E04 final independent PR/record review
+and the combined owner visual handoff remain pending. The audit narrative below
+describes the original released base; current row dispositions are in the
+[machine-readable audit](engine-optimization-completion-audit.json) and
+[implementation burndown](ENGINE_OPTIMIZATION_BURNDOWN.md). Historical findings
+are retained explicitly rather than erased.
 
 ## What was actually closed
 
