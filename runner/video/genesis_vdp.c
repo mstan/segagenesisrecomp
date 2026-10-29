@@ -13,7 +13,6 @@
  */
 #include "genesis_vdp.h"
 #include "genesis_tile_row.h"
-#include "genesis_graphics_cache.h"
 #include "genesis_vdp_compose.h"
 #include <string.h>
 #ifndef GENESIS_BATCHED_PLANES
@@ -24,10 +23,6 @@
 #endif
 #ifndef GENESIS_NATIVE_TILE_ROWS
 #define GENESIS_NATIVE_TILE_ROWS (UINTPTR_MAX > UINT32_MAX)
-#endif
-static GenesisGeometryCache s_geometry_cache;
-#if GENESIS_NATIVE_TILE_ROWS
-static GenesisPatternCache s_pattern_cache;
 #endif
 #if GENESIS_BATCHED_PLANES
 /* Four states per layer: transparent/opaque crossed with low/high priority.
@@ -705,9 +700,9 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
             int celly = iy >> cell_h_shift, fy = iy & ((1 << cell_h_shift) - 1);
 
 #if GENESIS_BATCHED_PLANES
-            /* Read complete current pattern bytes once per eight output pixels.
-             * Reusable decoding compares their value, including private art;
-             * no writer notification or device-state migration is needed. */
+            /* Resolve sprite cell/row addresses once per eight output pixels.
+             * VRAM is stable during this scanline call; no persistent cache or
+             * invalidation/state migration is involved. */
             for (int cell = 0; cell < hsz; ++cell) {
                 int cellx = hf ? hsz - 1 - cell : cell;
                 int tileno = (tile + cellx * vsz + celly) & 0x07ff;
@@ -720,18 +715,10 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                     bits=(bits<<8)|byte;
                 }
                 int ext=pal==0?gvdp_sprite_pattern_line(sz,(unsigned)tileno):0;
-#if GENESIS_NATIVE_TILE_ROWS
-                uint64_t pixels=ggraphics_pattern_row(&s_pattern_cache,pattern_address,bits,0,hf);
-                const uint8_t *decoded=(const uint8_t *)&pixels;
-#endif
                 for (int fx = 0; fx < 8; ++fx) {
                     int sx = screen_x + cell * 8 + fx;
                     if (sx < 0 || sx >= total) continue;
-#if GENESIS_NATIVE_TILE_ROWS
-                    int nib = decoded[fx] & 15;
-#else
                     int nib = (bits >> (28 - (fx ^ (hf ? 7 : 0)) * 4)) & 15;
-#endif
                     if (!nib) continue;
                     if (drawn[sx]) { v->sprite_collision = 1; continue; }
                     if (sh_mode && pal == 3 && nib == 14)
@@ -798,6 +785,12 @@ void gvdp_evaluate_scanline(GVDP *v, int line)
     sprite_render_line(v, line, total, (total - w) / 2);
 }
 
+/* Plane geometry: tiles wide/high from reg[16] (00=32,01=64,11=128). */
+static int plane_tiles(unsigned code2)
+{
+    switch (code2 & 0x3) { case 1: return 64; case 3: return 128; default: return 32; }
+}
+
 /* Fetch one plane pixel at plane-space (px,py). Returns palette index 0..63,
  * opaque flag (pixel != 0), and the tile's priority bit.
  * In interlace mode 2 (im2), py is in double-res lines: cells are 8x16
@@ -855,8 +848,8 @@ fetch_plane_pixel(const GVDP *v, PlanePixelCache *cache,
 
 /* Native tile-row service: resolve the name table and fetch four pattern bytes
  * once per tile span, then publish packed index/opacity/priority metadata.
- * Decoded pattern reuse compares every current input byte. No invalidation
- * protocol or additional serialized device state is needed. */
+ * This cache is local to one stable-VRAM scanline, so no invalidation protocol
+ * or additional serialized device state is needed. */
 static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
                              uint16_t base, int wt, int ht, int px, int py, int im2)
 {
@@ -877,7 +870,7 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
                         ((uint32_t)v->vram[pa + 2] << 8) | v->vram[pa + 3];
         uint8_t attr = (uint8_t)(((e >> 9) & 0x30) | ((e >> 8) & 0x80));
 #if GENESIS_NATIVE_TILE_ROWS
-        uint64_t pixels = ggraphics_pattern_row(&s_pattern_cache, pa, bits, attr, e & 0x800);
+        uint64_t pixels = gtile_packed_row(bits, attr, e & 0x800);
         if (n == 8) {
             memcpy(out, &pixels, sizeof pixels);
         } else {
@@ -917,17 +910,20 @@ int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
     if (!row->display) return (int)row->width;
 
     int im2=MODE4_IM2(v),rline=im2?line>>1:line;
-    const GenesisGraphicsGeometry *geometry=ggraphics_geometry(&s_geometry_cache,v->reg);
-    int wt=geometry->wt,ht=geometry->ht,win_wt=geometry->win_wt;
-    uint16_t base_a=geometry->base_a,base_b=geometry->base_b,base_w=geometry->base_w;
-    uint16_t hbase=geometry->hbase;
-    int hmode=geometry->hmode,hidx=hmode==0?0:hmode==2?rline&~7:rline;
+    int wt=plane_tiles(REG_PLANE_SIZE(v)&3),ht=plane_tiles((REG_PLANE_SIZE(v)>>4)&3);
+    uint16_t base_a=(uint16_t)((REG_PLANEA_NT(v)&0x38)<<10);
+    uint16_t base_b=(uint16_t)((REG_PLANEB_NT(v)&7)<<13);
+    int win_wt=MODE4_H40(v)?64:32;
+    uint16_t base_w=(uint16_t)((REG_WINDOW_NT(v)&(MODE4_H40(v)?0x3e:0x3f))<<10);
+    uint16_t hbase=(uint16_t)((REG_HSCROLL_NT(v)&63)<<10);
+    int hmode=REG_MODE3(v)&3,hidx=hmode==0?0:hmode==2?rline&~7:rline;
     int hs_a=vram_read_word(v,(uint16_t)(hbase+hidx*4))&1023;
     int hs_b=vram_read_word(v,(uint16_t)(hbase+(s_ws_bgdiag?0:hidx)*4+2))&1023;
-    int two_cell=geometry->two_cell,vs_mask=im2?2047:1023;
+    int two_cell=(REG_MODE3(v)&4)!=0,vs_mask=im2?2047:1023;
     int full_a=v->vsram[0]&vs_mask,full_b=v->vsram[1]&vs_mask;
-    int window_x=geometry->window_x,window_y=geometry->window_y;
-    int right=geometry->right,vertical=geometry->down?rline>=window_y:rline<window_y;
+    unsigned wx=REG_WINDOW_X(v),wy=REG_WINDOW_Y(v);
+    int window_x=(wx&31)*16,window_y=(wy&31)*8;
+    int right=(wx&128)!=0,vertical=(wy&128)?rline>=window_y:rline<window_y;
     row->diag_mask=(unsigned)(wt*8-1);row->diag_offset=offset+(unsigned)hs_b;
 
     sprite_render_line(v,line,(int)row->width,(int)offset);
@@ -1008,19 +1004,23 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     }
 
     /* Plane geometry. */
-    const GenesisGraphicsGeometry *geometry=ggraphics_geometry(&s_geometry_cache,v->reg);
-    int wt=geometry->wt,ht=geometry->ht,win_wt=geometry->win_wt;
-    uint16_t base_a=geometry->base_a,base_b=geometry->base_b,base_w=geometry->base_w;
+    int wt = plane_tiles(REG_PLANE_SIZE(v) & 0x3);
+    int ht = plane_tiles((REG_PLANE_SIZE(v) >> 4) & 0x3);
+    uint16_t base_a = (uint16_t)((REG_PLANEA_NT(v) & 0x38) << 10);
+    uint16_t base_b = (uint16_t)((REG_PLANEB_NT(v) & 0x07) << 13);
+    int win_wt = MODE4_H40(v) ? 64 : 32;
+    uint16_t base_w = MODE4_H40(v) ? (uint16_t)((REG_WINDOW_NT(v) & 0x3E) << 10)
+                                   : (uint16_t)((REG_WINDOW_NT(v) & 0x3F) << 10);
 
     /* Horizontal scroll for this line (table is per RASTER line). */
-    uint16_t hbase=geometry->hbase;
-    int hmode=geometry->hmode;
+    uint16_t hbase = (uint16_t)((REG_HSCROLL_NT(v) & 0x3F) << 10);
+    int hmode = REG_MODE3(v) & 0x3;
     int hidx  = (hmode == 0) ? 0 : (hmode == 2) ? (rline & ~7) : rline; /* 3=line */
     int hs_a = vram_read_word(v, (uint16_t)(hbase + hidx * 4 + 0)) & 0x3FF;
     int hidx_b = s_ws_bgdiag ? 0 : hidx;   /* diag: force Plane B hscroll constant (line 0) */
     int hs_b = vram_read_word(v, (uint16_t)(hbase + hidx_b * 4 + 2)) & 0x3FF;
 
-    int vmode_2cell=geometry->two_cell;
+    int vmode_2cell = (REG_MODE3(v) & 0x4) != 0;
     /* Vertical scroll: 10 bits normally; 11 bits in interlace mode 2, in
      * double-res units (the game scrolls each split-screen viewport with
      * these). */
@@ -1030,9 +1030,11 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
 
     /* These registers cannot change while a completed scanline is rendered.
      * Resolve their row-invariant portions once rather than once per pixel. */
-    int window_x=geometry->window_x,window_y=geometry->window_y;
-    int window_h_right=geometry->right;
-    int window_v_in=geometry->down?(rline>=window_y):(rline<window_y);
+    unsigned wx = REG_WINDOW_X(v), wy = REG_WINDOW_Y(v);
+    int window_x = (wx & 0x1F) * 16;
+    int window_y = (wy & 0x1F) * 8;
+    int window_h_right = (wx & 0x80) != 0;
+    int window_v_in = (wy & 0x80) ? (rline >= window_y) : (rline < window_y);
     int sh_mode = MODE4_SHI(v) != 0;
 
     /* Sprite layer for this output row (placed in centered output-column space). */
