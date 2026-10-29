@@ -1004,7 +1004,7 @@ static void dump_predrc(const cc_s16l *fm, size_t fm_frames,
 #include "audio/sn76489.h"        /* psg_save/load_state */
 extern uint32_t g_audio_cycle_counter;
 extern uint64_t g_frame_count;
-extern uint64_t g_native_span_count;
+        extern uint64_t g_native_span_count,g_native_direct_calls,g_native_direct_tails;
 extern uint32_t m68k_read32(uint32_t);
 extern uint8_t  m68k_read8 (uint32_t);
 
