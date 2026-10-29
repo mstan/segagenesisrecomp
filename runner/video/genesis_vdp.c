@@ -18,6 +18,9 @@
 #ifndef GENESIS_BATCHED_PLANES
 #define GENESIS_BATCHED_PLANES 0
 #endif
+#ifndef GENESIS_FUSED_RASTER
+#define GENESIS_FUSED_RASTER 0
+#endif
 #ifndef GENESIS_NATIVE_COMPOSE
 #define GENESIS_NATIVE_COMPOSE (UINTPTR_MAX > UINT32_MAX)
 #endif
@@ -35,7 +38,7 @@ static const uint8_t s_layer_select[64] = {
 #endif
 const char *gvdp_plane_implementation(void)
 {
-    return GENESIS_BATCHED_PLANES ? "BATCHED" : "SCALAR";
+    return GENESIS_FUSED_RASTER ? "FUSED" : GENESIS_BATCHED_PLANES ? "BATCHED" : "SCALAR";
 }
 #ifdef GEN_DEV_TRACE
 #include <stdio.h>   /* [DMA-STALL] rare-event dev print */
@@ -888,6 +891,105 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
     }
 }
 
+#if GENESIS_FUSED_RASTER
+/* A row-local plane stream owns name-table addressing, pattern decode and
+ * scroll geometry. Only the current packed tile survives between pulls; no
+ * complete plane image or cross-row cache/invalidation state is produced. */
+typedef struct GVDPPlaneStream {
+    const GVDP *v;
+    uint16_t row_base;
+    int px,mask,fy,fy_mask,tile_bytes,cached_x;
+    uint64_t tile;
+} GVDPPlaneStream;
+
+static void plane_stream_begin(GVDPPlaneStream *p,const GVDP *v,uint16_t base,
+                               int wt,int ht,int px,int py,int im2)
+{
+    int shift=im2?4:3;
+    py&=(ht<<shift)-1;
+    p->v=v;p->row_base=(uint16_t)(base+(py>>shift)*wt*2);
+    p->px=px;p->mask=wt*8-1;p->fy=py&((1<<shift)-1);
+    p->fy_mask=(1<<shift)-1;p->tile_bytes=im2?64:32;p->cached_x=-1;
+}
+
+static uint64_t plane_stream_tile(GVDPPlaneStream *p,int x)
+{
+    x&=p->mask;
+    int cell=x>>3;
+    if(cell!=p->cached_x) {
+        uint16_t e=vram_read_word(p->v,(uint16_t)(p->row_base+cell*2));
+        int fy=p->fy;if(e&0x1000)fy^=p->fy_mask;
+        uint16_t a=(uint16_t)((e&0x7ff)*p->tile_bytes+fy*4);
+        const uint8_t *vram=p->v->vram;
+        uint32_t bits=((uint32_t)vram[a]<<24)|((uint32_t)vram[a+1]<<16)|
+                      ((uint32_t)vram[a+2]<<8)|vram[a+3];
+        uint8_t attr=(uint8_t)(((e>>9)&0x30)|((e>>8)&0x80));
+        p->tile=gtile_packed_row(bits,attr,e&0x800);p->cached_x=cell;
+    }
+    return p->tile;
+}
+
+static uint64_t plane_stream_pull(GVDPPlaneStream *p,int count)
+{
+    int x=p->px& p->mask,fx=x&7;
+    uint64_t first=plane_stream_tile(p,x),result=first;
+    if(fx) {
+        uint64_t second=plane_stream_tile(p,x+8);
+        const uint16_t one=1;
+        if(*(const uint8_t *)&one)
+            result=(first>>(fx*8))|(second<<((8-fx)*8));
+        else result=(first<<(fx*8))|(second>>((8-fx)*8));
+    }
+    p->px+=count;
+    return result;
+}
+
+static uint64_t fused_lane_load(const uint8_t *p,int count)
+{
+    if(count==8)return gvdp_compose_load(p);
+    uint64_t result=0;memcpy(&result,p,(size_t)count);return result;
+}
+
+/* The geometry owns stable scroll/window spans; both tile streams feed the
+ * compositor directly in packed registers. Sprite status/callbacks have already
+ * run at their original boundary. Last partial groups never overread a lane. */
+static void fused_plane_row(const GVDP *v,int line,uint8_t *out,int w,int extra,
+    int start,int wt,int ht,uint16_t base_a,uint16_t base_b,uint16_t base_w,
+    int win_wt,int hs_a,int hs_b,int two_cell,int full_a,int full_b,int vs_mask,
+    int window_x,int right,int vertical,int im2,uint8_t backdrop,int shadow_mode)
+{
+    int end=w+extra;
+    for(int x=-extra,xo=start;x<end;) {
+        int boundary=x<0?0:x>=w?end:two_cell?((x>>4)+1)*16:w;
+        if(boundary>end)boundary=end;
+        if(window_x>x && window_x<boundary)boundary=window_x;
+        int va=full_a,vb=full_b;
+        if(two_cell) {
+            int xc=x<0?0:x>=w?w-1:x,col=(xc>>4)*2;
+            va=v->vsram[col%GVDP_VSRAM_ENTRIES]&vs_mask;
+            vb=v->vsram[(col+1)%GVDP_VSRAM_ENTRIES]&vs_mask;
+        }
+        int window=x>=0 && x<w && ((right?x>=window_x:x<window_x)||vertical);
+        GVDPPlaneStream a,b;
+        plane_stream_begin(&a,v,window?base_w:base_a,window?win_wt:wt,ht,
+                           window?x:x-hs_a,window?line:line+va,im2);
+        plane_stream_begin(&b,v,base_b,wt,ht,x-hs_b,line+vb,im2);
+        while(x<boundary) {
+            int n=boundary-x;if(n>8)n=8;
+            uint64_t pixel=gvdp_compose_packed(plane_stream_pull(&a,n),
+                plane_stream_pull(&b,n),fused_lane_load(s_spr_idx+xo,n),
+                fused_lane_load(s_spr_op+xo,n),fused_lane_load(s_spr_hi+xo,n),
+                fused_lane_load(s_spr_shadow_op+xo,n),
+                fused_lane_load(s_spr_hilite_op+xo,n),backdrop,shadow_mode);
+            memcpy(out+xo,&pixel,(size_t)n);x+=n;xo+=n;
+        }
+    }
+    if(s_ws_bgdiag)for(int x=-extra,xo=start;x<end;++x,++xo)
+        if(out[xo]<GVDP_HOST_PALETTE_BASE && !((x-hs_b)&(wt*8-1)))
+            out[xo]=(uint8_t)((out[xo]&63u)+GVDP_PALETTE_SHADOW);
+}
+#endif
+
 int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
 {
     /* These providers can publish private art/palettes or invoke arbitrary
@@ -1043,6 +1145,19 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         GVDPSpriteLayer layer = { line, total, offset, s_spr_idx, s_spr_op, s_spr_hi };
         s_host_sprites(s_host_sprites_user, v, &layer);
     }
+
+#if GENESIS_FUSED_RASTER
+    /* Private art/extended palettes and arbitrary host providers retain their
+     * exact scalar eager fallback. Evaluator and provider ran exactly once. */
+    if(!s_ext_tiles && !s_host_sprites && !s_sprite_patterns[0] && !s_sprite_patterns[1]) {
+        if(pillar>0)memset(out,bar_idx,(size_t)pillar);
+        if(right_bar>0)memset(out+content_end,bar_idx,(size_t)right_bar);
+        fused_plane_row(v,line,out,w,content_extra,content_start,wt,ht,
+            base_a,base_b,base_w,win_wt,hs_a,hs_b,vmode_2cell,full_vs_a,full_vs_b,
+            vs_mask,window_x,window_h_right,window_v_in,im2,backdrop,sh_mode);
+        return total;
+    }
+#endif
 
     /* A name-table entry covers eight adjacent pixels and each pattern byte
      * covers two. Rendering runs after the line's CPU/Z80 slice, so VRAM
