@@ -4,6 +4,9 @@
 #ifndef SEGACD_OWNED_CODE_SPANS
 #define SEGACD_OWNED_CODE_SPANS 1
 #endif
+#ifndef SEGACD_EVENT_DEADLINES
+#define SEGACD_EVENT_DEADLINES 1
+#endif
 
 /* NTSC master 53,693,175 Hz; main 68000 master/7; sub 12,500,000 Hz.
  * PAL and hardware bus-cycle phasing need separate qualification. */
@@ -35,9 +38,20 @@ static void advance_devices(SegaCDCoordinator *c)
     }
     if(c->host_advance)c->host_advance(c->host_user,c->device_time);
 }
-static uint64_t next_event_time(SegaCDCoordinator*c,uint64_t deadline)
+static int event_intervals_qualified(const SegaCDCoordinator *c)
 {
-    uint64_t now=c->device_time,next=now+SEGACD_TIMER_DIVISOR;
+    /* region_effects also qualifies interval-composable sinks and complete
+     * host observer deadlines. A callback without a deadline provider keeps
+     * the old bounded service cadence, even with native CPU metadata. */
+    return SEGACD_EVENT_DEADLINES &&
+        (c->region_effect_count[0]||c->region_effect_count[1]) &&
+        (!c->host_advance||c->host_next_event);
+}
+static uint64_t event_time(SegaCDCoordinator*c,uint64_t deadline,int qualified)
+{
+    uint64_t now=c->device_time,next=UINT64_MAX;
+    if(!qualified && UINT64_MAX-now>=SEGACD_TIMER_DIVISOR)
+        next=now+SEGACD_TIMER_DIVISOR;
     if(c->devices->timer_reload) {
         uint64_t timer=c->devices->timer_origin+((uint64_t)c->devices->timer_reload+1)*SEGACD_TIMER_DIVISOR;
         if(timer>now && timer<next)next=timer;
@@ -59,6 +73,8 @@ static uint64_t next_event_time(SegaCDCoordinator*c,uint64_t deadline)
         next=now+6u-c->devices->dma.phase;
     return deadline<next?deadline:next;
 }
+static uint64_t next_event_time(SegaCDCoordinator*c,uint64_t deadline)
+{return event_time(c,deadline,0);}
 static void account(SegaCDCoordinator *c,unsigned cpu,uint64_t cycles)
 {
     if(cpu==SEGACD_SUB)c->time[cpu]+=cycles;
@@ -329,6 +345,7 @@ int segacd_coordinator_region_effects(SegaCDCoordinator *c,SegaCDCpu cpu,
 {
     if(!c||(unsigned)cpu>1||(count&&!effects)||c->busy[0]||c->busy[1]||c->external_active)return 0;
     c->region_effects[cpu]=effects;c->region_effect_count[cpu]=count;
+    c->region_event_valid=0;
     c->register_spans[cpu]=NULL;c->register_span_count[cpu]=0;
     c->flow_spans[cpu]=NULL;c->flow_span_count[cpu]=0;
     /* All cached effect decisions belong to the old qualification. */
@@ -386,7 +403,7 @@ int segacd_coordinator_flow_spans(SegaCDCoordinator *c,SegaCDCpu cpu,
 {return register_native_spans(c,cpu,spans,count,1);}
 void segacd_coordinator_main_irq(SegaCDCoordinator*c,unsigned level){if(c && level<=7)c->main_irq=level;}
 void segacd_coordinator_host_clock(SegaCDCoordinator*c,void (*advance)(void *,uint64_t),uint64_t (*next)(void *))
-{if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;}}
+{if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;c->region_event_valid=0;}}
 void segacd_coordinator_device_limit(SegaCDCoordinator*c,uint64_t (*limit)(void *))
 {if(c && !c->busy[0] && !c->busy[1])c->device_limit=limit;}
 void segacd_coordinator_pcm_sink(SegaCDCoordinator*c,Rf5c164Sink sink,void*user)
@@ -446,9 +463,9 @@ size_t segacd_coordinator_cdd_trace(const SegaCDCoordinator*c,SegaCDCddSnapshot*
         events[n]=c->cdd_submissions[(first+n)%SEGACD_CDD_TRACE_CAPACITY];
     return count;
 }
-static void idle_until(SegaCDCoordinator*c,uint64_t deadline)
+static void idle_until(SegaCDCoordinator*c,uint64_t deadline,int qualified)
 {
-    uint64_t next=next_event_time(c,deadline);
+    uint64_t next=event_time(c,deadline,qualified);
     if(c->cpu[0].state.stopped && c->time[0]<next)c->time[0]=next;
     if((!segacd_sub_runnable(c->devices) || c->cpu[1].state.stopped) && c->time[1]<next)c->time[1]=next;
     advance_devices(c);
@@ -464,7 +481,7 @@ M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
     if(r==M68K_STEP_STOPPED) {
         unsigned other=which^1u;
         if(other==0 || segacd_sub_runnable(c->devices))r=execute_cpu(c,other);
-        if(r==M68K_STEP_STOPPED){idle_until(c,c->device_time+SEGACD_TIMER_DIVISOR);r=M68K_STEP_OK;}
+        if(r==M68K_STEP_STOPPED){idle_until(c,c->device_time+SEGACD_TIMER_DIVISOR,0);r=M68K_STEP_OK;}
         else if(c->time[which]<c->time[other])c->time[which]=c->time[other];
     }
     advance_devices(c);
@@ -492,7 +509,7 @@ static int register_irq_ready(const M68kStepContext *cpu,unsigned level)
 static uint64_t region_event(SegaCDCoordinator *c)
 {
     if(!c->region_event_valid) {
-        c->region_event_deadline=next_event_time(c,UINT64_MAX);
+        c->region_event_deadline=event_time(c,UINT64_MAX,event_intervals_qualified(c));
         c->region_event_valid=1;
     }
     return c->region_event_deadline;
@@ -639,7 +656,7 @@ static M68kStepResult run_until(SegaCDCoordinator*c,uint64_t deadline,int publis
             unsigned sub_level=segacd_irq_level(c->devices);
             int main_ready=c->main_irq && (c->main_irq==7 || c->main_irq>((c->cpu[0].state.regs.SR>>8)&7u));
             int sub_ready=sub_level && sub_level>((c->cpu[1].state.regs.SR>>8)&7u);
-            if(!main_ready && !sub_ready){idle_until(c,deadline);continue;}
+            if(!main_ready && !sub_ready){idle_until(c,deadline,event_intervals_qualified(c));continue;}
         }
         M68kStepResult r=segacd_coordinator_step(c);if(r!=M68K_STEP_OK)return r;
     }
