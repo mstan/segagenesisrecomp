@@ -1,9 +1,9 @@
-﻿# E10 renderer ownership and viewport policy
+# E10 renderer ownership and viewport policy
 
 Owner `beads-3z5k.8`, parent `beads-3z5k`, campaign `beads-2wy8.1`.
-Engine production `39596bf`, base `014fa72` (accepted E08); shared core
+Engine production `96be781` (initial implementation `39596bf`), base `014fa72` (accepted E08); shared core
 `f7dd616`. Engine [PR43](https://github.com/mstan/segagenesisrecomp/pull/43)
-stacks on PR42. Mechanical Sonic1 adoption `81d3bc6`,
+stacks on PR42. Mechanical Sonic1 adoption `81d3bc6`, final source pin `6ecb59e`,
 [PR7](https://github.com/mstan/SonicTheHedgehogRecomp/pull/7), pins that source.
 Independent final whole-scope gate is pending. No merge/release approval.
 
@@ -18,7 +18,8 @@ were added.
 local row owner/output width. Width publication always happens before local
 ownership, texture limits and allocation checks. A local failure selects native
 presentation without configuring the game off or enabling legacy guest margins.
-The plan is host-derived; it adds no machine/save/rollback/session state. Online
+A texture limit below the logical request now chooses complete native fallback,
+rather than passing a reduced width into any legacy adapter. The plan is host-derived; it adds no machine/save/rollback/session state. Online
 mode/width inputs keep their existing sealed simulation configuration.
 
 ## Complete original-family inventory
@@ -44,7 +45,7 @@ on fallback. Actual Sonic1 consumer `video_mod` and `sonic1_game_video` tests pa
 for reference and candidate. Full CTest output, XML and build configurations are
 retained outside disposable build trees.
 
-Four clean consumer PEs were built from frozen RKA `de902a0a` / UI `faa3330f`
+Initial four clean consumer PEs were built from frozen RKA `de902a0a` / UI `faa3330f`
 and Sonic1 reference `510679e6` / UI `47005fb`, supported regeneration, default
 Z80 interpreter, trace/reverse/dev off, netplay on, MSVC Release MT. Source and
 binary SHA256, flags, input/ROM identities, capacity reservations, host telemetry
@@ -53,7 +54,7 @@ All A/B pairs used the same local host/configuration, logical CPU14, below-norma
 priority, isolated profiles, dummy video/audio and software SDL output. Audio
 emulation and full WAV recording remained enabled; no physical GPU timing claim.
 
-Clean BAAB runs: RKA6000frames and Sonic12400frames, accepted input routes16:9.
+Initial production39596bf clean BAAB runs: RKA6000frames and Sonic12400frames, accepted input routes16:9.
 All machine/audio state, full WAV, final PNG, frame hashes, rollback and dispatch
 diagnostics match exactly across arms. Both candidate games also restore their
 own current-build state with exact saved/loaded RAM, make progress after load,
@@ -89,12 +90,27 @@ are excluded from performance samples.
   captured-row tests qualify geometry outside this gameplay route; no additional
   title rollout or gameplay matrix was introduced.
 
+Independent final review also found that supported local limits (320 through
+requested-1) still invoked legacy adapters at a smaller width. Both RKA and
+Sonic1 derive guest hooks from their requested width and historically overwrite
+it during rendering. Final96be781 fixes this generically: a local texture limit
+below the logical request selects exact native fallback. No adapter receives a
+reduced width, so legacy consumers require no title logic change. The targeted
+supported360 limit preserves requested398 and chooses native320, with
+exact canonical state/fullWAV/rollback. Final clean RKA/Sonic1 binaries and their
+canonical-route checks pass and are retained separately from all precursor samples.
+Final one-run CPU costs are RKA13.671875seconds and Sonic12.437500seconds; these
+canonical checks are not a new matched performance comparison.
+No initial39596bf result is presented as a test of this final fix.
+
 The initial post-run assertion incorrectly required render-only `s_width` to be
 398 after clamping bypassed all custom rows. `s_width` is assigned only inside
 `render_scanline`; the separate simulation `s_requested_width` is published by
 `width` before ownership. The corrected offline verifier expects rendered0 on
 fallback and validates unchanged state/audio/requests. Original failed assertion
-and all raw runs remain; no game was rerun to hide a failure. Earlier harness
+and all raw runs remain; no game was rerun to hide a failure. Final supplemental
+post-run comparisons also needed JSON tuple/list normalization; offline verifiers
+checked preserved exact records without repeating game runs. Earlier harness
 errors requesting an absent optional RKA test, JSON encoding and optional Pillow
 import were resolved without any game correctness failure; details/identities
 are in machine results.
