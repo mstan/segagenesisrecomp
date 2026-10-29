@@ -1,0 +1,2408 @@
+{
+  "schema": "GenesisEngineStampJobs1",
+  "issue": "beads-3z5k.11",
+  "campaign": "beads-2wy8.1",
+  "original_scope": "E14/N18 optimize generic affine/stamp device in exact native jobs/spans/blocks; preserve WordRAM, priority, progress and completion",
+  "status": "bounded_rejected_final_independent_accepted",
+  "production": "452f52a",
+  "rejected_architectures": [
+    "ec9e653",
+    "d0bf3d1"
+  ],
+  "source_freeze": {
+    "source": {
+      "engine": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine",
+        "head": "ec9e6535465944f9168b75c508b9c33cc2b276b9",
+        "status": " M tests/segacd/stamp_job_test.c\n"
+      },
+      "core": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine\\external\\m68k-recomp-core",
+        "head": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+        "status": ""
+      },
+      "z80": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine\\external\\z80-recomp-core",
+        "head": "4dfc5fc29fd67d23714126348e678e45952e9462",
+        "status": ""
+      },
+      "consumer": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd",
+        "head": "94f57796db9de4990e23476b576b29239095fb22",
+        "status": ""
+      },
+      "ui": {
+        "path": "C:\\Temp\\Codex\\sonic-native-20261027\\cd-ui",
+        "head": "b9ef2f539be3622eeb0e7d4a2ff33c8edf129667",
+        "status": ""
+      }
+    },
+    "unchanged_baseline_sources_since_999f392": "",
+    "state": "R1ec9andR2d0 bothrejected; final452f52a restoresstampbyteexactbase. Onlyruntimechange explicit size_t limitconversion semanticallyidenticalonalltargets, repairsMSVCWin32/WX. Finaltest/code-scopeauditpending. No performancegainclaim.",
+    "frozen_reference_exact": true,
+    "configuration": {
+      "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine\\runner\\cd\\stamp.h": {
+        "sha256": "5fbd979087165d9f41b6a73e60bc50a03739be4d124daf33d99255e3e4fc401f",
+        "bytes": 991
+      },
+      "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd\\CMakeLists.txt": {
+        "sha256": "4135edc071f3542883957a9e4bf6485d5910cddb0b2641c41bfe1ff5e27209c7",
+        "bytes": 3154
+      },
+      "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd\\game\\sonic_cd_render.c": {
+        "sha256": "14b3b1a0f1387ff1cb739f6a923c98e86f6ef4aee2971dab831f4b2910a0f33a",
+        "bytes": 7687
+      },
+      "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd\\game\\sonic_cd_loading.c": {
+        "sha256": "8b9d6d545ecaa9f475ca98696a12a38a84515bf48586a4fa7c283a1872968022",
+        "bytes": 7965
+      }
+    },
+    "post_runtime_source_head": "d0bf3d1f2efab414fc7d6c20752559ef58cc7fc5",
+    "post_runtime_source_status": "",
+    "final_production_head": "452f52a42f24491fa7cc79ef176cf09858c5aab6",
+    "final_stamp_byte_exact_base": true,
+    "final_runtime_diff": "diff --git a/runner/cd/segacd_coordinator.c b/runner/cd/segacd_coordinator.c\nindex 7936302..4c735e0 100644\n--- a/runner/cd/segacd_coordinator.c\n+++ b/runner/cd/segacd_coordinator.c\n@@ -371,7 +371,7 @@ static int register_native_spans(SegaCDCoordinator *c,SegaCDCpu cpu,\n                                 const M68kStepRegisterSpan *spans,size_t count,int flow)\n {\n     if(!c || (unsigned)cpu>1 || (count&&!spans) ||\n-       count>(flow?SEGACD_FLOW_SPAN_LIMIT:SEGACD_REGISTER_SPAN_LIMIT) ||\n+       count>(size_t)(flow?SEGACD_FLOW_SPAN_LIMIT:SEGACD_REGISTER_SPAN_LIMIT) ||\n        c->busy[0] || c->busy[1] || c->external_active)return 0;\n     c->flow_spans[cpu]=NULL;c->flow_span_count[cpu]=0;\n     uint8_t *qualified_bits=flow?c->flow_span_qualified[cpu]:c->register_span_qualified[cpu];\n"
+  },
+  "retained_package": "Originalstampbyteexactfebff84; semantics-identicalsize_tguardconversionrepairsWin32WX + frozenfullstateRAMoracle/suitedependency",
+  "tests": {
+    "rejected_r1": {
+      "scope": "supported device integration + frozen whole-state/RAM stamp oracle",
+      "platforms": {
+        "msvc64": {
+          "passed": true,
+          "commands": [
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine\\tests\\segacd",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc64",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "x64"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "--build",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc64",
+              "--config",
+              "Release",
+              "--target",
+              "segacd_stamp_test",
+              "segacd_stamp_job_test",
+              "segacd_memory_test",
+              "segacd_word_bus_test",
+              "segacd_dma_idle_span_test",
+              "segacd_native_region_test",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+              "--test-dir",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc64",
+              "-C",
+              "Release",
+              "--output-on-failure",
+              "-R",
+              "^segacd_(stamp|stamp_job|memory|word_bus|dma_idle_span|native_region)$",
+              "--output-junit",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc64.xml"
+            ]
+          ]
+        },
+        "msvc32": {
+          "passed": true,
+          "commands": [
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine\\tests\\segacd",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc32",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "Win32"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "--build",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc32",
+              "--config",
+              "Release",
+              "--target",
+              "segacd_stamp_test",
+              "segacd_stamp_job_test",
+              "segacd_memory_test",
+              "segacd_word_bus_test",
+              "segacd_dma_idle_span_test",
+              "segacd_native_region_test",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+              "--test-dir",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc32",
+              "-C",
+              "Release",
+              "--output-on-failure",
+              "-R",
+              "^segacd_(stamp|stamp_job|memory|word_bus|dma_idle_span|native_region)$",
+              "--output-junit",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc32.xml"
+            ]
+          ]
+        },
+        "gcc": {
+          "passed": true
+        }
+      }
+    },
+    "rejected_r2": {
+      "scope": "supported device integration + frozen whole-state/RAM stamp oracle",
+      "platforms": {
+        "msvc64": {
+          "passed": true,
+          "commands": [
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine\\tests\\segacd",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc64",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "x64"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "--build",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc64",
+              "--config",
+              "Release",
+              "--target",
+              "segacd_stamp_test",
+              "segacd_stamp_job_test",
+              "segacd_memory_test",
+              "segacd_word_bus_test",
+              "segacd_dma_idle_span_test",
+              "segacd_native_region_test",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+              "--test-dir",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc64",
+              "-C",
+              "Release",
+              "--output-on-failure",
+              "-R",
+              "^segacd_(stamp|stamp_job|memory|word_bus|dma_idle_span|native_region)$",
+              "--output-junit",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc64.xml"
+            ]
+          ]
+        },
+        "msvc32": {
+          "passed": true,
+          "commands": [
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine\\tests\\segacd",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc32",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "Win32"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "--build",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc32",
+              "--config",
+              "Release",
+              "--target",
+              "segacd_stamp_test",
+              "segacd_stamp_job_test",
+              "segacd_memory_test",
+              "segacd_word_bus_test",
+              "segacd_dma_idle_span_test",
+              "segacd_native_region_test",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+              "--test-dir",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc32",
+              "-C",
+              "Release",
+              "--output-on-failure",
+              "-R",
+              "^segacd_(stamp|stamp_job|memory|word_bus|dma_idle_span|native_region)$",
+              "--output-junit",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc32.xml"
+            ]
+          ]
+        },
+        "gcc": {
+          "passed": true
+        }
+      }
+    },
+    "final": {
+      "scope": "supported device integration + frozen whole-state/RAM stamp oracle",
+      "platforms": {
+        "msvc64": {
+          "passed": true,
+          "commands": [
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine\\tests\\segacd",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc64",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "x64"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "--build",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc64",
+              "--config",
+              "Release",
+              "--target",
+              "segacd_stamp_test",
+              "segacd_stamp_job_test",
+              "segacd_memory_test",
+              "segacd_word_bus_test",
+              "segacd_dma_idle_span_test",
+              "segacd_native_region_test",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+              "--test-dir",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc64",
+              "-C",
+              "Release",
+              "--output-on-failure",
+              "-R",
+              "^segacd_(stamp|stamp_job|memory|word_bus|dma_idle_span|native_region)$",
+              "--output-junit",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc64.xml"
+            ]
+          ]
+        },
+        "msvc32": {
+          "passed": true,
+          "commands": [
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine\\tests\\segacd",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc32",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "Win32"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "--build",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc32",
+              "--config",
+              "Release",
+              "--target",
+              "segacd_stamp_test",
+              "segacd_stamp_job_test",
+              "segacd_memory_test",
+              "segacd_word_bus_test",
+              "segacd_dma_idle_span_test",
+              "segacd_native_region_test",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ],
+            [
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+              "--test-dir",
+              "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-msvc32",
+              "-C",
+              "Release",
+              "--output-on-failure",
+              "-R",
+              "^segacd_(stamp|stamp_job|memory|word_bus|dma_idle_span|native_region)$",
+              "--output-junit",
+              "C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc32.xml"
+            ]
+          ]
+        },
+        "gcc": {
+          "passed": true
+        }
+      }
+    }
+  },
+  "games": {
+    "sonic_cd": {
+      "rejected_r1_abba": {
+        "package": "E14-native-stamp-line-jobs-r1",
+        "raw_file": "G:/Temp/Codex/genesis-engine-stamp-jobs-20261029/game-sonic-cd-special-r1.json",
+        "baseline": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\binaries\\palette-final\\cd\\SonicCD.exe",
+          "sha256": "958b0cd40dfd14049f3bd47684608bf86e832f6fc7304bbec9b949f562520aa3",
+          "bytes": 115646464,
+          "seconds": 16.094000000040978,
+          "engine": "999f39247df21255328b458b967dba0de15ec47d",
+          "configure_argv": [
+            "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\cd-build",
+            "-C",
+            "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\cd-build\\initial-cache.cmake",
+            "-G",
+            "Visual Studio 17 2022",
+            "-A",
+            "x64",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\qualified-cd-native-msvc\\qualified-native-cache.cmake",
+            "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\engine",
+            "-DSEGACD_RECOMP_UI_ROOT=C:/Temp/Codex/sonic-native-20261027/cd-ui",
+            "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\catalogs-flow-r1"
+          ],
+          "plane_impl": "SCALAR-source-default",
+          "mutable_graphics_cache": false
+        },
+        "candidate": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\binaries\\cd\\final\\SonicCD.exe",
+          "sha256": "96a352aa12a89c2ba5fe28fa4ba5d1281afa7f03ef2479cf68823e11529d2522",
+          "bytes": 115646464,
+          "seconds": 66.10900000005495,
+          "engine": "ec9e6535465944f9168b75c508b9c33cc2b276b9",
+          "configure_argv": [
+            "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-build",
+            "-C",
+            "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-build\\initial-cache.cmake",
+            "-G",
+            "Visual Studio 17 2022",
+            "-A",
+            "x64",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\qualified-cd-native-msvc\\qualified-native-cache.cmake",
+            "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine",
+            "-DSEGACD_RECOMP_UI_ROOT=C:/Temp/Codex/sonic-native-20261027/cd-ui",
+            "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\catalogs-flow-r1"
+          ],
+          "plane_impl": "SCALAR-source-default",
+          "source_sha256": {
+            "runner/cd/stamp.c": "c78a6b15104fdbf885f2e753a883f119b464623afe5a72dd9311ed649ff90ff0",
+            "runner/cd/stamp.h": "5fbd979087165d9f41b6a73e60bc50a03739be4d124daf33d99255e3e4fc401f",
+            "runner/cd/segacd_coordinator.c": "c3b65021f21ceb851596c69010bdd3e8f11b55be4ecab4b32492d0d4b2a4e6c5",
+            "tests/segacd/CMakeLists.txt": "1f7fc56a1534fc5a97b37085d1782dcb19cf578429377eb899607f9396175ee1",
+            "tests/segacd/stamp_job_test.c": "788697a82609ecbb810aeee59a92fae3d91809ccd676b223898f48f6afe84e12",
+            "tests/segacd/stamp_reference.c": "794ab9bc180c44f2fd05202a0f8d66c47af9ccf5d6d67d6e9492df6df02afbb0"
+          },
+          "final_rebuild_log": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-final-build.log"
+        },
+        "fixture": "existing qualified SS1 source-gated STSEL row73; demo-input selector only; no results/completion writes",
+        "host": "same capacity-reserved Windows workstation, CPU14, below-normal, full emulated audio with dummy output/software rendering",
+        "settings": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\settings.ini",
+          "bytes": 83,
+          "sha256": "3da14cc45e6fa1b04934248713009472b971e5cdf9df0d0e3acd0148ed38869d"
+        },
+        "bios": {
+          "path": "F:\\Projects\\segagenesisrecomp\\_wt-sonic-cd\\build\\private-inputs\\segacd-bios-us-1.10.bin",
+          "bytes": 131072,
+          "sha256": "807384678ef259494d943eddb6954dfc7069693d0dde0c424e2028488d88e81a"
+        },
+        "disc": {
+          "path": "E:\\Downloads\\segacd-private-qa-cache\\sonic-cd-us-mode1-gaps-4e822010.sgcd",
+          "bytes": 602056768,
+          "qualified_payload_sha256": "4e822010e42092681b238ddc7cbff41802c0cfc006c9b1510dcebd6b9dd452b1"
+        },
+        "seed": {
+          "path": "F:\\Projects\\segagenesisrecomp\\_wt-segacd-general-engine\\build\\qa-bios-brmformat-contract\\guest-format\\formatted-internal-bram.bin",
+          "bytes": 8192,
+          "sha256": "4390aad972163d9bbc8a8cd7d32e86b216e5a17a0d795c7d230942155e6a895b"
+        },
+        "passed": true,
+        "reductions_pct": {
+          "cpu_seconds": [
+            3.618421052631582,
+            -9.18727915194346
+          ],
+          "cycles": [
+            3.6380998555231914,
+            -2.7880751317322927
+          ]
+        },
+        "runs": [
+          {
+            "arm": "A",
+            "cost": {
+              "cpu_seconds": 4.75,
+              "cycles": 22480666350
+            },
+            "wall_seconds": 20.282919400022365,
+            "stamp_operations_during_cost": 400,
+            "passed": true,
+            "gates": {
+              "stsel": {
+                "frame": 1726,
+                "sha256": "3a3863917a07a712dc3043c312506c59618cde9746971e7bd30a30ca1049a95b",
+                "mutable_offsets": "0x100..0x103 only"
+              },
+              "spmm": {
+                "frame": 1759,
+                "exact": true,
+                "owned_body_sha256": "93f90ddb65285ed608a3145dc76f3948a08390acf7f2a8942358386542478f03"
+              },
+              "active_ss1": {
+                "status": {
+                  "ok": true,
+                  "frames": 1791,
+                  "main_pc": 16731456,
+                  "sub_pc": 65738,
+                  "z80_pc": 52,
+                  "result": "ok",
+                  "paused": true
+                },
+                "actor_ids": [
+                  1,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2
+                ],
+                "prefix_exact": true
+              }
+            },
+            "demo_bypass": {
+              "before": "00",
+              "after": "00"
+            },
+            "audio": {
+              "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\audio.wav",
+              "bytes": 53613104,
+              "sha256": "8455b3a569f1b86e3ad979f88dc7bc021bde3478a91437b5d3ce98e7521d21b2"
+            },
+            "final_ram": {
+              "ram": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "word": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\word.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "prg": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "z80": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\z80.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "artifacts": {
+              "backup-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\backup-ram.bin",
+                "bytes": 8192,
+                "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75"
+              },
+              "cram9.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\cram9.be16",
+                "bytes": 128,
+                "sha256": "1c460ce37db36a3c447307a7400f85b0f11d63a8eef65c6979fa3867432ea38b"
+              },
+              "frame.argb": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\frame.argb",
+                "bytes": 491520,
+                "sha256": "f8e07f9f82adc11cf12aef542a3741722ab5069a1a19209bf03ce53b6bc95126"
+              },
+              "main-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\main-ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "ss1-0.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\ss1-0.ppm",
+                "bytes": 267471,
+                "sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829"
+              },
+              "ss1-1200.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\ss1-1200.ppm",
+                "bytes": 267471,
+                "sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0"
+              },
+              "ss1-300.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\ss1-300.ppm",
+                "bytes": 267471,
+                "sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473"
+              },
+              "ss1-600.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\ss1-600.ppm",
+                "bytes": 267471,
+                "sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064"
+              },
+              "ss1-900.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\ss1-900.ppm",
+                "bytes": 267471,
+                "sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05"
+              },
+              "sub-prg.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\sub-prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "vdp-registers.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\vdp-registers.bin",
+                "bytes": 24,
+                "sha256": "8a0427f2fa28c25f35fe80f2f3b6270dea6c42d5d8600389ef6ccfa392ed7c59"
+              },
+              "vram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\vram.bin",
+                "bytes": 65536,
+                "sha256": "74444a67c9f0c60d0ac3fce50e9ea2a3527c57477a8dc6c24de40f259fe310ad"
+              },
+              "vsram.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\vsram.be16",
+                "bytes": 80,
+                "sha256": "5b6fb58e61fa475939767d68a446f97f1bff02c0e5935a3ea8bb51e6515783d8"
+              },
+              "word-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\word-ram.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "z80-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\0-A\\capture\\z80-ram.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "checkpoints": [
+              {
+                "offset": 0,
+                "picture_sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829",
+                "full_inspect_canonical_json_sha256": "81811d7dcf063cf16a574b90dc9bbc4d14a6cc6366df4a066fdaff012aaa527c"
+              },
+              {
+                "offset": 300,
+                "picture_sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473",
+                "full_inspect_canonical_json_sha256": "21e7312175c52bb58536a2a6232070d28b45beac7af470c281b54dccdf757a42"
+              },
+              {
+                "offset": 600,
+                "picture_sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064",
+                "full_inspect_canonical_json_sha256": "8da456675c245581f3aa9bef90612584e9ac2bd4e895935668985244bbae87f6"
+              },
+              {
+                "offset": 900,
+                "picture_sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05",
+                "full_inspect_canonical_json_sha256": "ca044f5c4aefda2f317577b813a641a534beddfcea4b826cb7fd00b07b78808f"
+              },
+              {
+                "offset": 1200,
+                "picture_sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0",
+                "full_inspect_canonical_json_sha256": "acb6f8bd05a49b3dbe34278be09082f0745f565d7412c0f3900c54544ab9d50a"
+              }
+            ]
+          },
+          {
+            "arm": "B",
+            "cost": {
+              "cpu_seconds": 4.578125,
+              "cycles": 21662797260
+            },
+            "wall_seconds": 20.372672200086527,
+            "stamp_operations_during_cost": 400,
+            "passed": true,
+            "gates": {
+              "stsel": {
+                "frame": 1726,
+                "sha256": "3a3863917a07a712dc3043c312506c59618cde9746971e7bd30a30ca1049a95b",
+                "mutable_offsets": "0x100..0x103 only"
+              },
+              "spmm": {
+                "frame": 1759,
+                "exact": true,
+                "owned_body_sha256": "93f90ddb65285ed608a3145dc76f3948a08390acf7f2a8942358386542478f03"
+              },
+              "active_ss1": {
+                "status": {
+                  "ok": true,
+                  "frames": 1791,
+                  "main_pc": 16731456,
+                  "sub_pc": 65738,
+                  "z80_pc": 52,
+                  "result": "ok",
+                  "paused": true
+                },
+                "actor_ids": [
+                  1,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2
+                ],
+                "prefix_exact": true
+              }
+            },
+            "demo_bypass": {
+              "before": "00",
+              "after": "00"
+            },
+            "audio": {
+              "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\audio.wav",
+              "bytes": 53613104,
+              "sha256": "8455b3a569f1b86e3ad979f88dc7bc021bde3478a91437b5d3ce98e7521d21b2"
+            },
+            "final_ram": {
+              "ram": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "word": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\word.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "prg": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "z80": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\z80.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "artifacts": {
+              "backup-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\backup-ram.bin",
+                "bytes": 8192,
+                "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75"
+              },
+              "cram9.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\cram9.be16",
+                "bytes": 128,
+                "sha256": "1c460ce37db36a3c447307a7400f85b0f11d63a8eef65c6979fa3867432ea38b"
+              },
+              "frame.argb": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\frame.argb",
+                "bytes": 491520,
+                "sha256": "f8e07f9f82adc11cf12aef542a3741722ab5069a1a19209bf03ce53b6bc95126"
+              },
+              "main-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\main-ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "ss1-0.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\ss1-0.ppm",
+                "bytes": 267471,
+                "sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829"
+              },
+              "ss1-1200.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\ss1-1200.ppm",
+                "bytes": 267471,
+                "sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0"
+              },
+              "ss1-300.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\ss1-300.ppm",
+                "bytes": 267471,
+                "sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473"
+              },
+              "ss1-600.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\ss1-600.ppm",
+                "bytes": 267471,
+                "sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064"
+              },
+              "ss1-900.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\ss1-900.ppm",
+                "bytes": 267471,
+                "sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05"
+              },
+              "sub-prg.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\sub-prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "vdp-registers.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\vdp-registers.bin",
+                "bytes": 24,
+                "sha256": "8a0427f2fa28c25f35fe80f2f3b6270dea6c42d5d8600389ef6ccfa392ed7c59"
+              },
+              "vram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\vram.bin",
+                "bytes": 65536,
+                "sha256": "74444a67c9f0c60d0ac3fce50e9ea2a3527c57477a8dc6c24de40f259fe310ad"
+              },
+              "vsram.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\vsram.be16",
+                "bytes": 80,
+                "sha256": "5b6fb58e61fa475939767d68a446f97f1bff02c0e5935a3ea8bb51e6515783d8"
+              },
+              "word-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\word-ram.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "z80-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\1-B\\capture\\z80-ram.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "checkpoints": [
+              {
+                "offset": 0,
+                "picture_sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829",
+                "full_inspect_canonical_json_sha256": "81811d7dcf063cf16a574b90dc9bbc4d14a6cc6366df4a066fdaff012aaa527c"
+              },
+              {
+                "offset": 300,
+                "picture_sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473",
+                "full_inspect_canonical_json_sha256": "21e7312175c52bb58536a2a6232070d28b45beac7af470c281b54dccdf757a42"
+              },
+              {
+                "offset": 600,
+                "picture_sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064",
+                "full_inspect_canonical_json_sha256": "8da456675c245581f3aa9bef90612584e9ac2bd4e895935668985244bbae87f6"
+              },
+              {
+                "offset": 900,
+                "picture_sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05",
+                "full_inspect_canonical_json_sha256": "ca044f5c4aefda2f317577b813a641a534beddfcea4b826cb7fd00b07b78808f"
+              },
+              {
+                "offset": 1200,
+                "picture_sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0",
+                "full_inspect_canonical_json_sha256": "acb6f8bd05a49b3dbe34278be09082f0745f565d7412c0f3900c54544ab9d50a"
+              }
+            ]
+          },
+          {
+            "arm": "B",
+            "cost": {
+              "cpu_seconds": 4.828125,
+              "cycles": 21415292910
+            },
+            "wall_seconds": 20.39625430002343,
+            "stamp_operations_during_cost": 400,
+            "passed": true,
+            "gates": {
+              "stsel": {
+                "frame": 1726,
+                "sha256": "3a3863917a07a712dc3043c312506c59618cde9746971e7bd30a30ca1049a95b",
+                "mutable_offsets": "0x100..0x103 only"
+              },
+              "spmm": {
+                "frame": 1759,
+                "exact": true,
+                "owned_body_sha256": "93f90ddb65285ed608a3145dc76f3948a08390acf7f2a8942358386542478f03"
+              },
+              "active_ss1": {
+                "status": {
+                  "ok": true,
+                  "frames": 1791,
+                  "main_pc": 16731456,
+                  "sub_pc": 65738,
+                  "z80_pc": 52,
+                  "result": "ok",
+                  "paused": true
+                },
+                "actor_ids": [
+                  1,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2
+                ],
+                "prefix_exact": true
+              }
+            },
+            "demo_bypass": {
+              "before": "00",
+              "after": "00"
+            },
+            "audio": {
+              "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\audio.wav",
+              "bytes": 53613104,
+              "sha256": "8455b3a569f1b86e3ad979f88dc7bc021bde3478a91437b5d3ce98e7521d21b2"
+            },
+            "final_ram": {
+              "ram": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "word": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\word.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "prg": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "z80": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\z80.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "artifacts": {
+              "backup-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\backup-ram.bin",
+                "bytes": 8192,
+                "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75"
+              },
+              "cram9.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\cram9.be16",
+                "bytes": 128,
+                "sha256": "1c460ce37db36a3c447307a7400f85b0f11d63a8eef65c6979fa3867432ea38b"
+              },
+              "frame.argb": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\frame.argb",
+                "bytes": 491520,
+                "sha256": "f8e07f9f82adc11cf12aef542a3741722ab5069a1a19209bf03ce53b6bc95126"
+              },
+              "main-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\main-ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "ss1-0.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\ss1-0.ppm",
+                "bytes": 267471,
+                "sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829"
+              },
+              "ss1-1200.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\ss1-1200.ppm",
+                "bytes": 267471,
+                "sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0"
+              },
+              "ss1-300.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\ss1-300.ppm",
+                "bytes": 267471,
+                "sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473"
+              },
+              "ss1-600.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\ss1-600.ppm",
+                "bytes": 267471,
+                "sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064"
+              },
+              "ss1-900.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\ss1-900.ppm",
+                "bytes": 267471,
+                "sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05"
+              },
+              "sub-prg.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\sub-prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "vdp-registers.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\vdp-registers.bin",
+                "bytes": 24,
+                "sha256": "8a0427f2fa28c25f35fe80f2f3b6270dea6c42d5d8600389ef6ccfa392ed7c59"
+              },
+              "vram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\vram.bin",
+                "bytes": 65536,
+                "sha256": "74444a67c9f0c60d0ac3fce50e9ea2a3527c57477a8dc6c24de40f259fe310ad"
+              },
+              "vsram.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\vsram.be16",
+                "bytes": 80,
+                "sha256": "5b6fb58e61fa475939767d68a446f97f1bff02c0e5935a3ea8bb51e6515783d8"
+              },
+              "word-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\word-ram.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "z80-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\2-B\\capture\\z80-ram.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "checkpoints": [
+              {
+                "offset": 0,
+                "picture_sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829",
+                "full_inspect_canonical_json_sha256": "81811d7dcf063cf16a574b90dc9bbc4d14a6cc6366df4a066fdaff012aaa527c"
+              },
+              {
+                "offset": 300,
+                "picture_sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473",
+                "full_inspect_canonical_json_sha256": "21e7312175c52bb58536a2a6232070d28b45beac7af470c281b54dccdf757a42"
+              },
+              {
+                "offset": 600,
+                "picture_sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064",
+                "full_inspect_canonical_json_sha256": "8da456675c245581f3aa9bef90612584e9ac2bd4e895935668985244bbae87f6"
+              },
+              {
+                "offset": 900,
+                "picture_sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05",
+                "full_inspect_canonical_json_sha256": "ca044f5c4aefda2f317577b813a641a534beddfcea4b826cb7fd00b07b78808f"
+              },
+              {
+                "offset": 1200,
+                "picture_sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0",
+                "full_inspect_canonical_json_sha256": "acb6f8bd05a49b3dbe34278be09082f0745f565d7412c0f3900c54544ab9d50a"
+              }
+            ]
+          },
+          {
+            "arm": "A",
+            "cost": {
+              "cpu_seconds": 4.421875,
+              "cycles": 20834413800
+            },
+            "wall_seconds": 20.361080300062895,
+            "stamp_operations_during_cost": 400,
+            "passed": true,
+            "gates": {
+              "stsel": {
+                "frame": 1726,
+                "sha256": "3a3863917a07a712dc3043c312506c59618cde9746971e7bd30a30ca1049a95b",
+                "mutable_offsets": "0x100..0x103 only"
+              },
+              "spmm": {
+                "frame": 1759,
+                "exact": true,
+                "owned_body_sha256": "93f90ddb65285ed608a3145dc76f3948a08390acf7f2a8942358386542478f03"
+              },
+              "active_ss1": {
+                "status": {
+                  "ok": true,
+                  "frames": 1791,
+                  "main_pc": 16731456,
+                  "sub_pc": 65738,
+                  "z80_pc": 52,
+                  "result": "ok",
+                  "paused": true
+                },
+                "actor_ids": [
+                  1,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2
+                ],
+                "prefix_exact": true
+              }
+            },
+            "demo_bypass": {
+              "before": "00",
+              "after": "00"
+            },
+            "audio": {
+              "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\audio.wav",
+              "bytes": 53613104,
+              "sha256": "8455b3a569f1b86e3ad979f88dc7bc021bde3478a91437b5d3ce98e7521d21b2"
+            },
+            "final_ram": {
+              "ram": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "word": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\word.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "prg": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "z80": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\z80.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "artifacts": {
+              "backup-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\backup-ram.bin",
+                "bytes": 8192,
+                "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75"
+              },
+              "cram9.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\cram9.be16",
+                "bytes": 128,
+                "sha256": "1c460ce37db36a3c447307a7400f85b0f11d63a8eef65c6979fa3867432ea38b"
+              },
+              "frame.argb": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\frame.argb",
+                "bytes": 491520,
+                "sha256": "f8e07f9f82adc11cf12aef542a3741722ab5069a1a19209bf03ce53b6bc95126"
+              },
+              "main-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\main-ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "ss1-0.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\ss1-0.ppm",
+                "bytes": 267471,
+                "sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829"
+              },
+              "ss1-1200.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\ss1-1200.ppm",
+                "bytes": 267471,
+                "sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0"
+              },
+              "ss1-300.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\ss1-300.ppm",
+                "bytes": 267471,
+                "sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473"
+              },
+              "ss1-600.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\ss1-600.ppm",
+                "bytes": 267471,
+                "sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064"
+              },
+              "ss1-900.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\ss1-900.ppm",
+                "bytes": 267471,
+                "sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05"
+              },
+              "sub-prg.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\sub-prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "vdp-registers.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\vdp-registers.bin",
+                "bytes": 24,
+                "sha256": "8a0427f2fa28c25f35fe80f2f3b6270dea6c42d5d8600389ef6ccfa392ed7c59"
+              },
+              "vram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\vram.bin",
+                "bytes": 65536,
+                "sha256": "74444a67c9f0c60d0ac3fce50e9ea2a3527c57477a8dc6c24de40f259fe310ad"
+              },
+              "vsram.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\vsram.be16",
+                "bytes": 80,
+                "sha256": "5b6fb58e61fa475939767d68a446f97f1bff02c0e5935a3ea8bb51e6515783d8"
+              },
+              "word-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\word-ram.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "z80-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r1\\3-A\\capture\\z80-ram.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "checkpoints": [
+              {
+                "offset": 0,
+                "picture_sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829",
+                "full_inspect_canonical_json_sha256": "81811d7dcf063cf16a574b90dc9bbc4d14a6cc6366df4a066fdaff012aaa527c"
+              },
+              {
+                "offset": 300,
+                "picture_sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473",
+                "full_inspect_canonical_json_sha256": "21e7312175c52bb58536a2a6232070d28b45beac7af470c281b54dccdf757a42"
+              },
+              {
+                "offset": 600,
+                "picture_sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064",
+                "full_inspect_canonical_json_sha256": "8da456675c245581f3aa9bef90612584e9ac2bd4e895935668985244bbae87f6"
+              },
+              {
+                "offset": 900,
+                "picture_sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05",
+                "full_inspect_canonical_json_sha256": "ca044f5c4aefda2f317577b813a641a534beddfcea4b826cb7fd00b07b78808f"
+              },
+              {
+                "offset": 1200,
+                "picture_sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0",
+                "full_inspect_canonical_json_sha256": "acb6f8bd05a49b3dbe34278be09082f0745f565d7412c0f3900c54544ab9d50a"
+              }
+            ]
+          }
+        ]
+      },
+      "rejected_r1_followup": {
+        "package": "E14-native-stamp-line-jobs-r1",
+        "raw_file": "G:/Temp/Codex/genesis-engine-stamp-jobs-20261029/game-sonic-cd-special-followup-r1.json",
+        "baseline": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\binaries\\palette-final\\cd\\SonicCD.exe",
+          "sha256": "958b0cd40dfd14049f3bd47684608bf86e832f6fc7304bbec9b949f562520aa3",
+          "bytes": 115646464,
+          "seconds": 16.094000000040978,
+          "engine": "999f39247df21255328b458b967dba0de15ec47d",
+          "configure_argv": [
+            "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\cd-build",
+            "-C",
+            "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\cd-build\\initial-cache.cmake",
+            "-G",
+            "Visual Studio 17 2022",
+            "-A",
+            "x64",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\qualified-cd-native-msvc\\qualified-native-cache.cmake",
+            "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\engine",
+            "-DSEGACD_RECOMP_UI_ROOT=C:/Temp/Codex/sonic-native-20261027/cd-ui",
+            "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\catalogs-flow-r1"
+          ],
+          "plane_impl": "SCALAR-source-default",
+          "mutable_graphics_cache": false
+        },
+        "candidate": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\binaries\\cd\\final\\SonicCD.exe",
+          "sha256": "96a352aa12a89c2ba5fe28fa4ba5d1281afa7f03ef2479cf68823e11529d2522",
+          "bytes": 115646464,
+          "seconds": 66.10900000005495,
+          "engine": "ec9e6535465944f9168b75c508b9c33cc2b276b9",
+          "configure_argv": [
+            "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-build",
+            "-C",
+            "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-build\\initial-cache.cmake",
+            "-G",
+            "Visual Studio 17 2022",
+            "-A",
+            "x64",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\qualified-cd-native-msvc\\qualified-native-cache.cmake",
+            "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine",
+            "-DSEGACD_RECOMP_UI_ROOT=C:/Temp/Codex/sonic-native-20261027/cd-ui",
+            "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\catalogs-flow-r1"
+          ],
+          "plane_impl": "SCALAR-source-default",
+          "source_sha256": {
+            "runner/cd/stamp.c": "c78a6b15104fdbf885f2e753a883f119b464623afe5a72dd9311ed649ff90ff0",
+            "runner/cd/stamp.h": "5fbd979087165d9f41b6a73e60bc50a03739be4d124daf33d99255e3e4fc401f",
+            "runner/cd/segacd_coordinator.c": "c3b65021f21ceb851596c69010bdd3e8f11b55be4ecab4b32492d0d4b2a4e6c5",
+            "tests/segacd/CMakeLists.txt": "1f7fc56a1534fc5a97b37085d1782dcb19cf578429377eb899607f9396175ee1",
+            "tests/segacd/stamp_job_test.c": "788697a82609ecbb810aeee59a92fae3d91809ccd676b223898f48f6afe84e12",
+            "tests/segacd/stamp_reference.c": "794ab9bc180c44f2fd05202a0f8d66c47af9ccf5d6d67d6e9492df6df02afbb0"
+          },
+          "final_rebuild_log": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-final-build.log"
+        },
+        "fixture": "existing qualified SS1 source-gated STSEL row73; demo-input selector only; no results/completion writes",
+        "host": "same capacity-reserved Windows workstation, CPU14, below-normal, full emulated audio with dummy output/software rendering",
+        "settings": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\settings.ini",
+          "bytes": 83,
+          "sha256": "3da14cc45e6fa1b04934248713009472b971e5cdf9df0d0e3acd0148ed38869d"
+        },
+        "bios": {
+          "path": "F:\\Projects\\segagenesisrecomp\\_wt-sonic-cd\\build\\private-inputs\\segacd-bios-us-1.10.bin",
+          "bytes": 131072,
+          "sha256": "807384678ef259494d943eddb6954dfc7069693d0dde0c424e2028488d88e81a"
+        },
+        "disc": {
+          "path": "E:\\Downloads\\segacd-private-qa-cache\\sonic-cd-us-mode1-gaps-4e822010.sgcd",
+          "bytes": 602056768,
+          "qualified_payload_sha256": "4e822010e42092681b238ddc7cbff41802c0cfc006c9b1510dcebd6b9dd452b1"
+        },
+        "seed": {
+          "path": "F:\\Projects\\segagenesisrecomp\\_wt-segacd-general-engine\\build\\qa-bios-brmformat-contract\\guest-format\\formatted-internal-bram.bin",
+          "bytes": 8192,
+          "sha256": "4390aad972163d9bbc8a8cd7d32e86b216e5a17a0d795c7d230942155e6a895b"
+        },
+        "passed": true,
+        "reductions_pct": {
+          "cpu_seconds": [
+            -5.376344086021501
+          ],
+          "cycles": [
+            -4.211832011314076
+          ]
+        },
+        "runs": [
+          {
+            "arm": "A",
+            "cost": {
+              "cpu_seconds": 4.359375,
+              "cycles": 20262796040
+            },
+            "wall_seconds": 20.354812999954447,
+            "stamp_operations_during_cost": 400,
+            "passed": true,
+            "gates": {
+              "stsel": {
+                "frame": 1726,
+                "sha256": "3a3863917a07a712dc3043c312506c59618cde9746971e7bd30a30ca1049a95b",
+                "mutable_offsets": "0x100..0x103 only"
+              },
+              "spmm": {
+                "frame": 1759,
+                "exact": true,
+                "owned_body_sha256": "93f90ddb65285ed608a3145dc76f3948a08390acf7f2a8942358386542478f03"
+              },
+              "active_ss1": {
+                "status": {
+                  "ok": true,
+                  "frames": 1791,
+                  "main_pc": 16731456,
+                  "sub_pc": 65738,
+                  "z80_pc": 52,
+                  "result": "ok",
+                  "paused": true
+                },
+                "actor_ids": [
+                  1,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2
+                ],
+                "prefix_exact": true
+              }
+            },
+            "demo_bypass": {
+              "before": "00",
+              "after": "00"
+            },
+            "audio": {
+              "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\audio.wav",
+              "bytes": 53613104,
+              "sha256": "8455b3a569f1b86e3ad979f88dc7bc021bde3478a91437b5d3ce98e7521d21b2"
+            },
+            "final_ram": {
+              "ram": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "word": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\word.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "prg": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "z80": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\z80.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "artifacts": {
+              "backup-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\backup-ram.bin",
+                "bytes": 8192,
+                "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75"
+              },
+              "cram9.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\cram9.be16",
+                "bytes": 128,
+                "sha256": "1c460ce37db36a3c447307a7400f85b0f11d63a8eef65c6979fa3867432ea38b"
+              },
+              "frame.argb": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\frame.argb",
+                "bytes": 491520,
+                "sha256": "f8e07f9f82adc11cf12aef542a3741722ab5069a1a19209bf03ce53b6bc95126"
+              },
+              "main-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\main-ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "ss1-0.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\ss1-0.ppm",
+                "bytes": 267471,
+                "sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829"
+              },
+              "ss1-1200.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\ss1-1200.ppm",
+                "bytes": 267471,
+                "sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0"
+              },
+              "ss1-300.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\ss1-300.ppm",
+                "bytes": 267471,
+                "sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473"
+              },
+              "ss1-600.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\ss1-600.ppm",
+                "bytes": 267471,
+                "sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064"
+              },
+              "ss1-900.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\ss1-900.ppm",
+                "bytes": 267471,
+                "sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05"
+              },
+              "sub-prg.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\sub-prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "vdp-registers.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\vdp-registers.bin",
+                "bytes": 24,
+                "sha256": "8a0427f2fa28c25f35fe80f2f3b6270dea6c42d5d8600389ef6ccfa392ed7c59"
+              },
+              "vram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\vram.bin",
+                "bytes": 65536,
+                "sha256": "74444a67c9f0c60d0ac3fce50e9ea2a3527c57477a8dc6c24de40f259fe310ad"
+              },
+              "vsram.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\vsram.be16",
+                "bytes": 80,
+                "sha256": "5b6fb58e61fa475939767d68a446f97f1bff02c0e5935a3ea8bb51e6515783d8"
+              },
+              "word-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\word-ram.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "z80-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\0-A\\capture\\z80-ram.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "checkpoints": [
+              {
+                "offset": 0,
+                "picture_sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829",
+                "full_inspect_canonical_json_sha256": "81811d7dcf063cf16a574b90dc9bbc4d14a6cc6366df4a066fdaff012aaa527c"
+              },
+              {
+                "offset": 300,
+                "picture_sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473",
+                "full_inspect_canonical_json_sha256": "21e7312175c52bb58536a2a6232070d28b45beac7af470c281b54dccdf757a42"
+              },
+              {
+                "offset": 600,
+                "picture_sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064",
+                "full_inspect_canonical_json_sha256": "8da456675c245581f3aa9bef90612584e9ac2bd4e895935668985244bbae87f6"
+              },
+              {
+                "offset": 900,
+                "picture_sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05",
+                "full_inspect_canonical_json_sha256": "ca044f5c4aefda2f317577b813a641a534beddfcea4b826cb7fd00b07b78808f"
+              },
+              {
+                "offset": 1200,
+                "picture_sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0",
+                "full_inspect_canonical_json_sha256": "acb6f8bd05a49b3dbe34278be09082f0745f565d7412c0f3900c54544ab9d50a"
+              }
+            ]
+          },
+          {
+            "arm": "B",
+            "cost": {
+              "cpu_seconds": 4.59375,
+              "cycles": 21116230970
+            },
+            "wall_seconds": 20.349126799963415,
+            "stamp_operations_during_cost": 400,
+            "passed": true,
+            "gates": {
+              "stsel": {
+                "frame": 1726,
+                "sha256": "3a3863917a07a712dc3043c312506c59618cde9746971e7bd30a30ca1049a95b",
+                "mutable_offsets": "0x100..0x103 only"
+              },
+              "spmm": {
+                "frame": 1759,
+                "exact": true,
+                "owned_body_sha256": "93f90ddb65285ed608a3145dc76f3948a08390acf7f2a8942358386542478f03"
+              },
+              "active_ss1": {
+                "status": {
+                  "ok": true,
+                  "frames": 1791,
+                  "main_pc": 16731456,
+                  "sub_pc": 65738,
+                  "z80_pc": 52,
+                  "result": "ok",
+                  "paused": true
+                },
+                "actor_ids": [
+                  1,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2
+                ],
+                "prefix_exact": true
+              }
+            },
+            "demo_bypass": {
+              "before": "00",
+              "after": "00"
+            },
+            "audio": {
+              "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\audio.wav",
+              "bytes": 53613104,
+              "sha256": "8455b3a569f1b86e3ad979f88dc7bc021bde3478a91437b5d3ce98e7521d21b2"
+            },
+            "final_ram": {
+              "ram": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "word": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\word.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "prg": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "z80": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\z80.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "artifacts": {
+              "backup-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\backup-ram.bin",
+                "bytes": 8192,
+                "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75"
+              },
+              "cram9.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\cram9.be16",
+                "bytes": 128,
+                "sha256": "1c460ce37db36a3c447307a7400f85b0f11d63a8eef65c6979fa3867432ea38b"
+              },
+              "frame.argb": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\frame.argb",
+                "bytes": 491520,
+                "sha256": "f8e07f9f82adc11cf12aef542a3741722ab5069a1a19209bf03ce53b6bc95126"
+              },
+              "main-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\main-ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "ss1-0.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\ss1-0.ppm",
+                "bytes": 267471,
+                "sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829"
+              },
+              "ss1-1200.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\ss1-1200.ppm",
+                "bytes": 267471,
+                "sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0"
+              },
+              "ss1-300.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\ss1-300.ppm",
+                "bytes": 267471,
+                "sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473"
+              },
+              "ss1-600.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\ss1-600.ppm",
+                "bytes": 267471,
+                "sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064"
+              },
+              "ss1-900.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\ss1-900.ppm",
+                "bytes": 267471,
+                "sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05"
+              },
+              "sub-prg.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\sub-prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "vdp-registers.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\vdp-registers.bin",
+                "bytes": 24,
+                "sha256": "8a0427f2fa28c25f35fe80f2f3b6270dea6c42d5d8600389ef6ccfa392ed7c59"
+              },
+              "vram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\vram.bin",
+                "bytes": 65536,
+                "sha256": "74444a67c9f0c60d0ac3fce50e9ea2a3527c57477a8dc6c24de40f259fe310ad"
+              },
+              "vsram.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\vsram.be16",
+                "bytes": 80,
+                "sha256": "5b6fb58e61fa475939767d68a446f97f1bff02c0e5935a3ea8bb51e6515783d8"
+              },
+              "word-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\word-ram.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "z80-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-followup-r1\\1-B\\capture\\z80-ram.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "checkpoints": [
+              {
+                "offset": 0,
+                "picture_sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829",
+                "full_inspect_canonical_json_sha256": "81811d7dcf063cf16a574b90dc9bbc4d14a6cc6366df4a066fdaff012aaa527c"
+              },
+              {
+                "offset": 300,
+                "picture_sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473",
+                "full_inspect_canonical_json_sha256": "21e7312175c52bb58536a2a6232070d28b45beac7af470c281b54dccdf757a42"
+              },
+              {
+                "offset": 600,
+                "picture_sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064",
+                "full_inspect_canonical_json_sha256": "8da456675c245581f3aa9bef90612584e9ac2bd4e895935668985244bbae87f6"
+              },
+              {
+                "offset": 900,
+                "picture_sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05",
+                "full_inspect_canonical_json_sha256": "ca044f5c4aefda2f317577b813a641a534beddfcea4b826cb7fd00b07b78808f"
+              },
+              {
+                "offset": 1200,
+                "picture_sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0",
+                "full_inspect_canonical_json_sha256": "acb6f8bd05a49b3dbe34278be09082f0745f565d7412c0f3900c54544ab9d50a"
+              }
+            ]
+          }
+        ]
+      },
+      "rejected_r2_ab": {
+        "package": "E14-fixed-mode-native-cell-spans-r2",
+        "raw_file": "G:/Temp/Codex/genesis-engine-stamp-jobs-20261029/game-sonic-cd-special-r2.json",
+        "baseline": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\binaries\\palette-final\\cd\\SonicCD.exe",
+          "sha256": "958b0cd40dfd14049f3bd47684608bf86e832f6fc7304bbec9b949f562520aa3",
+          "bytes": 115646464,
+          "seconds": 16.094000000040978,
+          "engine": "999f39247df21255328b458b967dba0de15ec47d",
+          "configure_argv": [
+            "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\cd-build",
+            "-C",
+            "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\cd-build\\initial-cache.cmake",
+            "-G",
+            "Visual Studio 17 2022",
+            "-A",
+            "x64",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\qualified-cd-native-msvc\\qualified-native-cache.cmake",
+            "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\engine",
+            "-DSEGACD_RECOMP_UI_ROOT=C:/Temp/Codex/sonic-native-20261027/cd-ui",
+            "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\catalogs-flow-r1"
+          ],
+          "plane_impl": "SCALAR-source-default",
+          "mutable_graphics_cache": false
+        },
+        "candidate": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\binaries\\cd\\r2\\SonicCD.exe",
+          "sha256": "90d9498c71c96a00f42be137207bc62b27ef5e64af7006f908398e1009c46484",
+          "bytes": 115652608,
+          "engine": "d0bf3d1f2efab414fc7d6c20752559ef58cc7fc5",
+          "configure_argv": [
+            "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-build",
+            "-C",
+            "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-build\\initial-cache.cmake",
+            "-G",
+            "Visual Studio 17 2022",
+            "-A",
+            "x64",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\qualified-cd-native-msvc\\qualified-native-cache.cmake",
+            "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-stamp-jobs-20261029\\engine",
+            "-DSEGACD_RECOMP_UI_ROOT=C:/Temp/Codex/sonic-native-20261027/cd-ui",
+            "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\catalogs-flow-r1"
+          ],
+          "plane_impl": "SCALAR-source-default",
+          "source_sha256": {
+            "runner/cd/stamp.c": "3aab3c9c12f235a3e3bc43a04d5bb00359306559c91618b515c77698d9dd62e1",
+            "runner/cd/stamp_line.inc": "af15bdb0bb2d10104b3a288eafdbdfcb2501569ab90e6c23fe03749b8380175d",
+            "runner/cd/stamp.h": "5fbd979087165d9f41b6a73e60bc50a03739be4d124daf33d99255e3e4fc401f",
+            "runner/cd/segacd_coordinator.c": "c3b65021f21ceb851596c69010bdd3e8f11b55be4ecab4b32492d0d4b2a4e6c5",
+            "tests/segacd/CMakeLists.txt": "d0c3a90405bce078950e70b9f58b895cb37c1bd5de4e4e69075793dc56458f86",
+            "tests/segacd/stamp_job_test.c": "6224e338c4c1dcef82ec9b8956602600f6c26967290f3d7c484ff2ae88aa5e3c",
+            "tests/segacd/stamp_reference.c": "794ab9bc180c44f2fd05202a0f8d66c47af9ccf5d6d67d6e9492df6df02afbb0"
+          },
+          "final_rebuild_log": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-r2-build.log",
+          "initial_r1_configure_build_seconds": 66.10900000005495,
+          "r2_incremental_build_wall_seconds": "not separately recorded; full successful build log and capacity receipt retained"
+        },
+        "fixture": "existing qualified SS1 source-gated STSEL row73; demo-input selector only; no results/completion writes",
+        "host": "same capacity-reserved Windows workstation, CPU14, below-normal, full emulated audio with dummy output/software rendering",
+        "settings": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\settings.ini",
+          "bytes": 83,
+          "sha256": "3da14cc45e6fa1b04934248713009472b971e5cdf9df0d0e3acd0148ed38869d"
+        },
+        "bios": {
+          "path": "F:\\Projects\\segagenesisrecomp\\_wt-sonic-cd\\build\\private-inputs\\segacd-bios-us-1.10.bin",
+          "bytes": 131072,
+          "sha256": "807384678ef259494d943eddb6954dfc7069693d0dde0c424e2028488d88e81a"
+        },
+        "disc": {
+          "path": "E:\\Downloads\\segacd-private-qa-cache\\sonic-cd-us-mode1-gaps-4e822010.sgcd",
+          "bytes": 602056768,
+          "qualified_payload_sha256": "4e822010e42092681b238ddc7cbff41802c0cfc006c9b1510dcebd6b9dd452b1"
+        },
+        "seed": {
+          "path": "F:\\Projects\\segagenesisrecomp\\_wt-segacd-general-engine\\build\\qa-bios-brmformat-contract\\guest-format\\formatted-internal-bram.bin",
+          "bytes": 8192,
+          "sha256": "4390aad972163d9bbc8a8cd7d32e86b216e5a17a0d795c7d230942155e6a895b"
+        },
+        "passed": true,
+        "reductions_pct": {
+          "cpu_seconds": [
+            -8.135593220338988
+          ],
+          "cycles": [
+            -1.4485313986048798
+          ]
+        },
+        "runs": [
+          {
+            "arm": "A",
+            "cost": {
+              "cpu_seconds": 4.609375,
+              "cycles": 21846690400
+            },
+            "wall_seconds": 20.34439839993138,
+            "stamp_operations_during_cost": 400,
+            "passed": true,
+            "gates": {
+              "stsel": {
+                "frame": 1726,
+                "sha256": "3a3863917a07a712dc3043c312506c59618cde9746971e7bd30a30ca1049a95b",
+                "mutable_offsets": "0x100..0x103 only"
+              },
+              "spmm": {
+                "frame": 1759,
+                "exact": true,
+                "owned_body_sha256": "93f90ddb65285ed608a3145dc76f3948a08390acf7f2a8942358386542478f03"
+              },
+              "active_ss1": {
+                "status": {
+                  "ok": true,
+                  "frames": 1791,
+                  "main_pc": 16731456,
+                  "sub_pc": 65738,
+                  "z80_pc": 52,
+                  "result": "ok",
+                  "paused": true
+                },
+                "actor_ids": [
+                  1,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2
+                ],
+                "prefix_exact": true
+              }
+            },
+            "demo_bypass": {
+              "before": "00",
+              "after": "00"
+            },
+            "audio": {
+              "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\audio.wav",
+              "bytes": 53613104,
+              "sha256": "8455b3a569f1b86e3ad979f88dc7bc021bde3478a91437b5d3ce98e7521d21b2"
+            },
+            "final_ram": {
+              "ram": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "word": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\word.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "prg": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "z80": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\z80.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "artifacts": {
+              "backup-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\backup-ram.bin",
+                "bytes": 8192,
+                "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75"
+              },
+              "cram9.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\cram9.be16",
+                "bytes": 128,
+                "sha256": "1c460ce37db36a3c447307a7400f85b0f11d63a8eef65c6979fa3867432ea38b"
+              },
+              "frame.argb": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\frame.argb",
+                "bytes": 491520,
+                "sha256": "f8e07f9f82adc11cf12aef542a3741722ab5069a1a19209bf03ce53b6bc95126"
+              },
+              "main-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\main-ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "ss1-0.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\ss1-0.ppm",
+                "bytes": 267471,
+                "sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829"
+              },
+              "ss1-1200.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\ss1-1200.ppm",
+                "bytes": 267471,
+                "sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0"
+              },
+              "ss1-300.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\ss1-300.ppm",
+                "bytes": 267471,
+                "sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473"
+              },
+              "ss1-600.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\ss1-600.ppm",
+                "bytes": 267471,
+                "sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064"
+              },
+              "ss1-900.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\ss1-900.ppm",
+                "bytes": 267471,
+                "sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05"
+              },
+              "sub-prg.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\sub-prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "vdp-registers.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\vdp-registers.bin",
+                "bytes": 24,
+                "sha256": "8a0427f2fa28c25f35fe80f2f3b6270dea6c42d5d8600389ef6ccfa392ed7c59"
+              },
+              "vram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\vram.bin",
+                "bytes": 65536,
+                "sha256": "74444a67c9f0c60d0ac3fce50e9ea2a3527c57477a8dc6c24de40f259fe310ad"
+              },
+              "vsram.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\vsram.be16",
+                "bytes": 80,
+                "sha256": "5b6fb58e61fa475939767d68a446f97f1bff02c0e5935a3ea8bb51e6515783d8"
+              },
+              "word-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\word-ram.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "z80-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\0-A\\capture\\z80-ram.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "startup_wall_seconds": 0.7064383999677375,
+            "startup_process_cost": {
+              "cpu_seconds": 0.421875,
+              "cycles": 1995777450
+            },
+            "startup_memory": {
+              "working_set": 242376704,
+              "peak_working_set": 242376704,
+              "private": 25247744
+            },
+            "gameplay_memory": {
+              "working_set": 251662336,
+              "peak_working_set": 251682816,
+              "private": 28901376
+            },
+            "checkpoints": [
+              {
+                "offset": 0,
+                "picture_sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829",
+                "full_inspect_canonical_json_sha256": "81811d7dcf063cf16a574b90dc9bbc4d14a6cc6366df4a066fdaff012aaa527c"
+              },
+              {
+                "offset": 300,
+                "picture_sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473",
+                "full_inspect_canonical_json_sha256": "21e7312175c52bb58536a2a6232070d28b45beac7af470c281b54dccdf757a42"
+              },
+              {
+                "offset": 600,
+                "picture_sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064",
+                "full_inspect_canonical_json_sha256": "8da456675c245581f3aa9bef90612584e9ac2bd4e895935668985244bbae87f6"
+              },
+              {
+                "offset": 900,
+                "picture_sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05",
+                "full_inspect_canonical_json_sha256": "ca044f5c4aefda2f317577b813a641a534beddfcea4b826cb7fd00b07b78808f"
+              },
+              {
+                "offset": 1200,
+                "picture_sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0",
+                "full_inspect_canonical_json_sha256": "acb6f8bd05a49b3dbe34278be09082f0745f565d7412c0f3900c54544ab9d50a"
+              }
+            ]
+          },
+          {
+            "arm": "B",
+            "cost": {
+              "cpu_seconds": 4.984375,
+              "cycles": 22163146570
+            },
+            "wall_seconds": 20.33180020004511,
+            "stamp_operations_during_cost": 400,
+            "passed": true,
+            "gates": {
+              "stsel": {
+                "frame": 1726,
+                "sha256": "3a3863917a07a712dc3043c312506c59618cde9746971e7bd30a30ca1049a95b",
+                "mutable_offsets": "0x100..0x103 only"
+              },
+              "spmm": {
+                "frame": 1759,
+                "exact": true,
+                "owned_body_sha256": "93f90ddb65285ed608a3145dc76f3948a08390acf7f2a8942358386542478f03"
+              },
+              "active_ss1": {
+                "status": {
+                  "ok": true,
+                  "frames": 1791,
+                  "main_pc": 16731456,
+                  "sub_pc": 65738,
+                  "z80_pc": 52,
+                  "result": "ok",
+                  "paused": true
+                },
+                "actor_ids": [
+                  1,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2,
+                  2
+                ],
+                "prefix_exact": true
+              }
+            },
+            "demo_bypass": {
+              "before": "00",
+              "after": "00"
+            },
+            "audio": {
+              "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\audio.wav",
+              "bytes": 53613104,
+              "sha256": "8455b3a569f1b86e3ad979f88dc7bc021bde3478a91437b5d3ce98e7521d21b2"
+            },
+            "final_ram": {
+              "ram": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "word": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\word.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "prg": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "z80": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\z80.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "artifacts": {
+              "backup-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\backup-ram.bin",
+                "bytes": 8192,
+                "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75"
+              },
+              "cram9.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\cram9.be16",
+                "bytes": 128,
+                "sha256": "1c460ce37db36a3c447307a7400f85b0f11d63a8eef65c6979fa3867432ea38b"
+              },
+              "frame.argb": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\frame.argb",
+                "bytes": 491520,
+                "sha256": "f8e07f9f82adc11cf12aef542a3741722ab5069a1a19209bf03ce53b6bc95126"
+              },
+              "main-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\main-ram.bin",
+                "bytes": 65536,
+                "sha256": "93176f0715601bf5c80b4a397a69ae10d849969bf7f487c33ad784d76b686c02"
+              },
+              "ss1-0.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\ss1-0.ppm",
+                "bytes": 267471,
+                "sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829"
+              },
+              "ss1-1200.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\ss1-1200.ppm",
+                "bytes": 267471,
+                "sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0"
+              },
+              "ss1-300.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\ss1-300.ppm",
+                "bytes": 267471,
+                "sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473"
+              },
+              "ss1-600.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\ss1-600.ppm",
+                "bytes": 267471,
+                "sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064"
+              },
+              "ss1-900.ppm": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\ss1-900.ppm",
+                "bytes": 267471,
+                "sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05"
+              },
+              "sub-prg.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\sub-prg.bin",
+                "bytes": 524288,
+                "sha256": "fb18bfec09d4d376515eda33ad615da4fc2963d711c808f664c5c2ea32d1b3f5"
+              },
+              "vdp-registers.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\vdp-registers.bin",
+                "bytes": 24,
+                "sha256": "8a0427f2fa28c25f35fe80f2f3b6270dea6c42d5d8600389ef6ccfa392ed7c59"
+              },
+              "vram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\vram.bin",
+                "bytes": 65536,
+                "sha256": "74444a67c9f0c60d0ac3fce50e9ea2a3527c57477a8dc6c24de40f259fe310ad"
+              },
+              "vsram.be16": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\vsram.be16",
+                "bytes": 80,
+                "sha256": "5b6fb58e61fa475939767d68a446f97f1bff02c0e5935a3ea8bb51e6515783d8"
+              },
+              "word-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\word-ram.bin",
+                "bytes": 262144,
+                "sha256": "19a0d5c2e564d350081a4472ee89b64da67ef8bd159dfef0247d22a1393ee072"
+              },
+              "z80-ram.bin": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\sonic-cd-special-r2\\1-B\\capture\\z80-ram.bin",
+                "bytes": 8192,
+                "sha256": "621d4bb0d570fef4da99040dfad2892f4cfe18f4795153edb8744e9da20a71a6"
+              }
+            },
+            "startup_wall_seconds": 0.8342799000674859,
+            "startup_process_cost": {
+              "cpu_seconds": 0.4375,
+              "cycles": 2072903510
+            },
+            "startup_memory": {
+              "working_set": 243253248,
+              "peak_working_set": 243253248,
+              "private": 25337856
+            },
+            "gameplay_memory": {
+              "working_set": 252456960,
+              "peak_working_set": 252502016,
+              "private": 28962816
+            },
+            "checkpoints": [
+              {
+                "offset": 0,
+                "picture_sha256": "bb3dfd42d6438d593ec3278d95a5aeabbbde85a60137e661d24eff56808be829",
+                "full_inspect_canonical_json_sha256": "81811d7dcf063cf16a574b90dc9bbc4d14a6cc6366df4a066fdaff012aaa527c"
+              },
+              {
+                "offset": 300,
+                "picture_sha256": "7c7a6e792d2141e7017266a72b52437217562dbae727a4708e624a48b52ae473",
+                "full_inspect_canonical_json_sha256": "21e7312175c52bb58536a2a6232070d28b45beac7af470c281b54dccdf757a42"
+              },
+              {
+                "offset": 600,
+                "picture_sha256": "a0e63c3d728126ed1f2c4d8e5ec8016161dd6bf420311575e822780f53115064",
+                "full_inspect_canonical_json_sha256": "8da456675c245581f3aa9bef90612584e9ac2bd4e895935668985244bbae87f6"
+              },
+              {
+                "offset": 900,
+                "picture_sha256": "dd002af166c7b20fdae70c336258c9ebe1472e61a54ae7e874d3df49bbd86a05",
+                "full_inspect_canonical_json_sha256": "ca044f5c4aefda2f317577b813a641a534beddfcea4b826cb7fd00b07b78808f"
+              },
+              {
+                "offset": 1200,
+                "picture_sha256": "cfdafd76fc931543747f2bb3569510ec34147a120b534eecea8dc19aede25ed0",
+                "full_inspect_canonical_json_sha256": "acb6f8bd05a49b3dbe34278be09082f0745f565d7412c0f3900c54544ab9d50a"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "all_eight_actual_game_correctness_exact": true,
+  "performance": "R1 repeatedadverseCPU/cyclescost,rejected. R2adverseobservedCPU/no demonstratedgain,cycleswithinpriorvariation,rejected. No newgainclaim, retainoriginalkernel. No aggregate/package/featureoffset.",
+  "reassessment": "Original alreadywholeatomicnativelinejob,no per-dotbus/emulatorcallback. Bothcompleteall-modejobs/exactcellspanimplementationsqualifiedandreachedactual400SS1jobs/window. Unguardedcache/store/observercrossingsinvalidunderfeedback; guardedfuturedesignstheoreticallypossiblebutnotdemonstratedsavingtojustifyfurthermachinery. Notpartial/deferral/universaloptimumclaim.",
+  "other_games": "Cartridgesdonotlinkthesefilesanddidnotreceivepackage,newperformanceclaimornewgameplayrun. OrdinaryCDroutehadnostampjobs; no rejectedpackageordinaryrerunrequired, restoredkernelbyteexact/onlyguardcastsameCsemantics; finalplatformgatesprovebranchbuild.",
+  "raw_receipts": {
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\game-sonic-cd-special-r1.json": {
+      "sha256": "e47b0a325cf8eeea47ed947a058c50e0592bec184ee946a6561a9699cf13039a",
+      "bytes": 564978
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\game-sonic-cd-special-followup-r1.json": {
+      "sha256": "8d46f366114b9a773c0a90cf2fda4eed64e654168644ee0e3cab4decbff594e6",
+      "bytes": 285242
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\game-sonic-cd-special-r2.json": {
+      "sha256": "f3102dbeba3d3a374d52f4beadda3e2d85666bec4e211929d63c8717b59905ac",
+      "bytes": 286232
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-builds-r1.json": {
+      "sha256": "cde0b1318a10c53af0d7c028b67f0e188a87e3c43f2d4dcdb3c38f1ee797cde2",
+      "bytes": 2390
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cd-builds-r2.json": {
+      "sha256": "56ac918384f83f778c4ab0e501e2478007b3f663fa094147928de14ab2e0b24b",
+      "bytes": 2648
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\source-freeze.json": {
+      "sha256": "b2924c63462524c219863aa9430a297f0d6afa686b758e7d1e68a69d597467c5",
+      "bytes": 3177
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-qualified-r1.json": {
+      "sha256": "2793d8f49f4d49de3b7404dca1ae930d139113745ea9cb54cb42918a7f25c91e",
+      "bytes": 3542
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-r2.json": {
+      "sha256": "2793d8f49f4d49de3b7404dca1ae930d139113745ea9cb54cb42918a7f25c91e",
+      "bytes": 3542
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\tests-final.json": {
+      "sha256": "2793d8f49f4d49de3b7404dca1ae930d139113745ea9cb54cb42918a7f25c91e",
+      "bytes": 3542
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\capacity-special-r1.json": {
+      "sha256": "510e4e5cefb07611c7158aedcaaa6c9873f4f34826c21d6179d51096d7ad90c8",
+      "bytes": 1699
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\capacity-special-followup-r1.json": {
+      "sha256": "8e96ec5dcbe23271c4a95741bbce4ac5c1cf6353ea9f468d40a69b751a7a8dea",
+      "bytes": 1705
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\capacity-special-r2.json": {
+      "sha256": "84d8e2d4323dbb5117c7242c2b7445997f740b5450a7569fe0848c29362530b8",
+      "bytes": 1686
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\capacity-tests-final-r1.json": {
+      "sha256": "d88c0d0729f1723d84583b62c50538e6ac55b13b48d17c5ddd375d3ff3dd785b",
+      "bytes": 1682
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\capacity-tests-r2-final.json": {
+      "sha256": "8c161734511b2ce719b17a73b46948fd242f1715585283164d4cdcb363b6cd28",
+      "bytes": 1704
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\capacity-tests-final.json": {
+      "sha256": "3334005ddb566a9515aa89a0c3bd9aef532ad8b2ae106fd555d0fbd6165b94e7",
+      "bytes": 1679
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\capacity-build-r2.json": {
+      "sha256": "2590c8e4ec44440ab519b918d4b36016423984812c151a8aac1483f671dc35cd",
+      "bytes": 1699
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\capacity-final-build.json": {
+      "sha256": "049e21a3d783bc3ce732b89d99ffcd66251ab1aee4dd20249535128bebec75d4",
+      "bytes": 1677
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-reference-disasm.txt": {
+      "sha256": "4ee2fcca4300a8ca82b12375d851366f104189ced8200c7a8eb1ae4e7073a4e2",
+      "bytes": 25168
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-r1-disasm.txt": {
+      "sha256": "c1c938db34f2ac04f333a080347ae459367d3fb9ed2be9358348289cac0b856a",
+      "bytes": 25355
+    },
+    "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-r2-disasm.txt": {
+      "sha256": "b31812f343cb68d1f46f89d7d201e047a8c1c2612a91955ab35e2f5dbde2ca64",
+      "bytes": 130398
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc64.log": {
+      "sha256": "6278578dd4dcf2d9b91403c7bcb90f69d6597f73dc8ebc22a39c41181cfbe3d8",
+      "bytes": 2945
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc64.xml": {
+      "sha256": "389a762ddc38cfe4592d118eb0d9800be5df04d601bbdf23448357d80ac574ca",
+      "bytes": 1787
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc64-r1.log": {
+      "sha256": "318c8f50cb8631e62cb590c4fd320df3230d2d795c8c27041963e65c62a01a27",
+      "bytes": 3761
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc64-r1.xml": {
+      "sha256": "d695b3de6fd13cbc7bce856e63939fa9dde27bdd4872ceadbadea87efb08e15b",
+      "bytes": 1792
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc64-r2.log": {
+      "sha256": "e3d1c6a339e828f3327cf963deb1cd062dfb6b418af2a9ecd27f917178938907",
+      "bytes": 2965
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc64-r2.xml": {
+      "sha256": "4a5bffbdd7204e144d41ccc18ce44eaa78b22e1f1c1bda37c318e521723f4a80",
+      "bytes": 1790
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc32.log": {
+      "sha256": "adae9945d06bfb73e9db599f7092219fba6a5400400a8c4809eb829ebaf808b0",
+      "bytes": 2945
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc32.xml": {
+      "sha256": "8b16d9b5c340438e9f9e4f47dcfef870d3fc1427df9f87ec3f23f51addc3bb6c",
+      "bytes": 1789
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc32-r1.log": {
+      "sha256": "81af610c1eddade90a32c1c829af8b3ed6d698b17bdb1aea4b79ee48d1ab3ba0",
+      "bytes": 3761
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc32-r1.xml": {
+      "sha256": "65946bf1a4ebb91db9d7e88b9bebd6e723f45ef01261e12aceb62fbf41f5a4ac",
+      "bytes": 1788
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc32-r2.log": {
+      "sha256": "9129c772e538d94483a88e93360f49406bf005ed331b7e5bd75df6fd4a77333a",
+      "bytes": 2965
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-msvc32-r2.xml": {
+      "sha256": "12685c42a5f3ae0372bcb3e40db132ca5865cdba50852228759b32b5499cd928",
+      "bytes": 1788
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-gcc.log": {
+      "sha256": "1667401fc5088f3ad8b9b4f67bdca5bcbcf4728f041ff58b7f4a371348b65bd0",
+      "bytes": 1898
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-gcc.xml": {
+      "sha256": "9682ef2c76635ddfc3d4f7c95d99587a8f4e273dea4d16cdfdcb9d8c4cf2c4d0",
+      "bytes": 1753
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-gcc-r1.log": {
+      "sha256": "550d6369da5e27ae32f6b613a9292477489bf43813f22c6fb9ded9856f8cc9d5",
+      "bytes": 4580
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-gcc-r1.xml": {
+      "sha256": "0d7693d160ac206611abaed493843a81b02f0d3956b0f1af1fb95a8f0750f374",
+      "bytes": 1754
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-gcc-r2.log": {
+      "sha256": "5bb683e459b082b157764df7d8cff7217f2946b4cf14f8d4aab4f904136b06aa",
+      "bytes": 1979
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\stamp-gcc-r2.xml": {
+      "sha256": "29859acd6b8aa2d666ee5a69d6b4e6cbd558bfe2ce78b39124376cbd9b23c799",
+      "bytes": 1754
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\implement.py": {
+      "sha256": "6d971a2c4fbe0a75364fa9cfc1dc166fada3610cf52b0a931640180102c53e71",
+      "bytes": 4550
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\implement_r2.py": {
+      "sha256": "77d86505709449982fbcd83631c193a32ff56dd5873641098dfc1206b393766d",
+      "bytes": 4722
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\build_cd.py": {
+      "sha256": "ae843035491547883c88f9f4b70eb1125553a665559d3c94f7480fec05c11567",
+      "bytes": 3503
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\rebuild_final.py": {
+      "sha256": "8296af3ca94e3d6a76ea66a5f727ac34d7fdb9b80113217de86103346b83809e",
+      "bytes": 1845
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\build_r2_executed.py": {
+      "sha256": "6ffa5984403746ff2daa98afe2be877c7b0278cc9de6d5ec7c5cec56e4c3d053",
+      "bytes": 1746
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\check_special.py": {
+      "sha256": "b268a04dcbb5382168aeef4e57c38ad9832969e1d3e4dc901e112dcedd11f336",
+      "bytes": 8075
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\check_special_followup.py": {
+      "sha256": "f3bdefe8dbbd6f18438c278dcba3ff9e9037979e0b4620c3f6a7698409b18dc4",
+      "bytes": 8100
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\check_special_r2.py": {
+      "sha256": "f8184d033275f0d81a4c56b992b15f4188a0778c4b4112ca27b6e34b8f19a3bf",
+      "bytes": 8860
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\test_all.py": {
+      "sha256": "819c611804ad8a711cc6b6ace764384abdbe07955589d764f58a466894b67569",
+      "bytes": 2109
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\test_all_r2.py": {
+      "sha256": "f3b831d20eb51bd40a1c417aacef469f6166a4995d191ef97b8272240b58e2c4",
+      "bytes": 2109
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\test_final.py": {
+      "sha256": "7e623663c6ce0bbb694eb74adf7b6a7041cb5eeecd88539d02585af8ec8f2013",
+      "bytes": 2115
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\test_gcc.py": {
+      "sha256": "512e6df11bcb1478359fc884b10784d908cdeaaff864692f24923fd31e87e254",
+      "bytes": 670
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\reject-r1.md": {
+      "sha256": "a271111bf554cf547f533de71a46e57727a628ba46ecbf851e2f5e8a112ea807",
+      "bytes": 1153
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\prequalification-findings.md": {
+      "sha256": "da3d9ae0509767ca33144ec5c4a5d831f2312ad6310398a230b543e928b5fb32",
+      "bytes": 525
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\correct_build_labels.py": {
+      "sha256": "bf651b1405feb34a0c91cf48cc8edebfc4cb85fb7600f58efef55aec350c07d1",
+      "bytes": 1175
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\VALIDATOR_E14_FINAL.md": {
+      "sha256": "61e64e4d5818ebab6cff287a0b0366ec0d09e2f8a3966fc7c6090ec6aea08b13",
+      "bytes": 5925
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\VALIDATOR_E14_AUDIT.json": {
+      "sha256": "dc6e04eef366c6079fcd07dd1901a1a681840cbdd679645de874b7750c4d7221",
+      "bytes": 611
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\validator_e14_audit.py": {
+      "sha256": "5c6e8fa32f431bc199cefa8c7e11dd2aef3c95879edb6822b9d49292d7ce504e",
+      "bytes": 6150
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\document_final.py": {
+      "sha256": "72706129be4dd960a9adf3dd3448571c558a28234ac06c5178cf4592faab588a",
+      "bytes": 4771
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\compact_evidence.py": {
+      "sha256": "10327fef6fba3ece22cb3ba4ddfefea6abe5becf2cc648a77c991f006736e56a",
+      "bytes": 1687
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\validator_e14_audit_precleanup.py": {
+      "sha256": "28840c0a5d598b38bd181fa18e708ac985427bc5f0e572c4032fbed589a9a35a",
+      "bytes": 5480
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cleanup-complete.json": {
+      "sha256": "22cd7cbbec82aa49318d26e73824f8a8e2e6f8eac54afa03ef3a8cf2d5c0f8c4",
+      "bytes": 1230
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cleanup-complete-wsl.json": {
+      "sha256": "be2b7ac77530bd82aa0a4ce206b262186aebf1b53c6a2d7735db9b6a48cd7d31",
+      "bytes": 236
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cleanup-audit.json": {
+      "sha256": "22cd7cbbec82aa49318d26e73824f8a8e2e6f8eac54afa03ef3a8cf2d5c0f8c4",
+      "bytes": 1230
+    },
+    "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029\\cleanup-audit-wsl.json": {
+      "sha256": "6043f603029c5699dbd059d0afa60e35480027de175224a9e04aab65884a0e24",
+      "bytes": 237
+    }
+  },
+  "evidence_roots": {
+    "source": "C:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029",
+    "bulk": "G:\\Temp\\Codex\\genesis-engine-stamp-jobs-20261029"
+  },
+  "approval": "No merge/release/delivery/ownerlaunch; combinedownerhandoffpending",
+  "validator": {
+    "name": "validate_e14",
+    "verdict": "ACCEPTED full original bounded opportunity decisively evaluated/rejected; useful Win32fix/testPR readyforcombinedhandoff",
+    "reviewed_head": "8029d30212dff734bc52b4b0e30b544f03eff3ad",
+    "report": "ENGINE_STAMP_JOBS_REVIEW.md",
+    "audit": "engine-stamp-jobs-review.json",
+    "raw_receipts_checked": 53,
+    "distinct_artifacts_hashed": 213,
+    "next_task": "E15 afterstatus/cleanup/sync, NEWisolatedWT+freshvalidation-onlyreviewer",
+    "unresolved_findings": []
+  },
+  "cleanup": {
+    "completed": true,
+    "removed_bytes": 342910325,
+    "windows_removed_bytes": 339694123,
+    "wsl_removed_bytes": 3216202,
+    "native_nonforced": true,
+    "ownership_containment_no_reparse_no_nestedrepo_verified": true,
+    "retained": "AllfrozenPEs/raw8arms/fullWAV/RAM/images/commands/sourceprototypes/acceptedreview/qualifiedunitPEs/CMakeCTestsettings; originalacceptedmetadataunchanged. Borroweddependency/UI/archive/fixturesuntouched.",
+    "remaining": "Sourceworktrees/retainedevidence/configsneededongoingcampaign, no disposablebuildscratchremains."
+  },
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/46"
+}

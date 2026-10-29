@@ -218,13 +218,25 @@
     "E14": {
       "name": "Native Sega CD stamp-device jobs",
       "priority": "P2",
-      "status": "evaluated_deferred",
-      "disposition": "Generic stamp is already a native affine line job with explicit asynchronous completion, nibble priority and WordRAM writes. It has no samples in the recorded3000frame CD gameplay attribution. Defer a new block kernel pending a stamp-heavy built consumer/workload; neither synthetic throughput nor unrelated Blue Spheres title algorithms establish a current-game benefit. Preserve existing stamp/dma correctness fixtures for that future comparison.",
+      "status": "evaluated_complete_bounded_job_span_opportunity_rejected",
+      "disposition": "Independentvalidate_e14 FINAL ACCEPTED: exactfrozenoracle/18gatesperarchitecture includingfinal x64/x86/GCC; all8actualgamearms fullstate/RAM/pixel/WAVexact, allnegatives retained, no newgain. ENGINE_STAMP_JOBS.md and engine-stamp-jobs-results.json. Selected bounded original opportunity decisively evaluated/rejected; futureguardeddesigns not universallyruledout. UsefulPRcombinedownerhandoffpending.",
       "evidence": [
-        "runner/cd/stamp.c",
-        "tests/segacd/stamp_test.c",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
-      ]
+        "ENGINE_STAMP_JOBS.md",
+        "engine-stamp-jobs-results.json",
+        "ENGINE_STAMP_JOBS_REVIEW.md",
+        "https://github.com/mstan/segagenesisrecomp/pull/46"
+      ],
+      "historical_evaluation": {
+        "name": "Native Sega CD stamp-device jobs",
+        "priority": "P2",
+        "status": "evaluated_deferred",
+        "disposition": "Generic stamp is already a native affine line job with explicit asynchronous completion, nibble priority and WordRAM writes. It has no samples in the recorded3000frame CD gameplay attribution. Defer a new block kernel pending a stamp-heavy built consumer/workload; neither synthetic throughput nor unrelated Blue Spheres title algorithms establish a current-game benefit. Preserve existing stamp/dma correctness fixtures for that future comparison.",
+        "evidence": [
+          "runner/cd/stamp.c",
+          "tests/segacd/stamp_test.c",
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
+        ]
+      }
     },
     "E15": {
       "name": "Reuse unchanged hardware render results",
