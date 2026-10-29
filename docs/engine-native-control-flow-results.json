@@ -568,7 +568,12 @@
       "central Beads push first retry failed under own transfer deadline; no shared server termination/bypass"
     ]
   },
-  "pull_requests": {},
+  "pull_requests": {
+    "engine": "https://github.com/mstan/segagenesisrecomp/pull/39",
+    "core": "https://github.com/mstan/m68k-recomp-core/pull/10",
+    "bases": "Stacked on E04 enginePR38/corePR9",
+    "assignee_limit": "TechnicallyComputers user exists, but both repo assignee eligibility endpoints return404; gh creation with assignee refused. PRs created unassigned. No collaborator/invitation/permission changes made."
+  },
   "retention": "Retain isolated sources/frozen binaries/raw profiles/catalog proof/diagnostic source and patch for ongoing combined handoff; all outside delivery folders. WSL test scratch remains task-owned until no longer needed.",
   "additional_evidence": {
     "current-states-r1.json": {
@@ -683,5 +688,16 @@
       "bytes": 1698,
       "sha256": "735264204e90412df75cbd22b77ef5d9d3272e67cfc540ccbd3a847d54f6bb0c"
     }
+  },
+  "cost_limits": {
+    "binary_deltas_vs_E04_bytes": {
+      "rka": 340992,
+      "sonic1": 195072,
+      "SonicCD": 400896
+    },
+    "process_RSS_delta": "Not measured; no zero-memory-cost claim. Source tables/bitsets/lookup fallback and binary sizes retained.",
+    "cartridge_frame": "One derived pointer per actual active frame; snapshots are current-build only.",
+    "CD_flow_qualification_bits_bytes": 8192,
+    "compiler_layout": "Same32parts and exact body bijection; source clusters bounded, existing large functions indivisible. Raw build times are retained but unlike cache states are not compared as build speedups."
   }
 }
