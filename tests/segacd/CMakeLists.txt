@@ -322,6 +322,19 @@ if(NOT CMAKE_CROSSCOMPILING)
   target_include_directories(segacd_register_span_semantics_test PRIVATE ${step_runtime_includes})
   target_compile_features(segacd_register_span_semantics_test PRIVATE c_std_11)
   add_test(NAME segacd_register_span_semantics COMMAND segacd_register_span_semantics_test)
+  add_executable(segacd_owned_rmw_emit_test owned_rmw_emit_test.c ${step_sources}
+    "${engine_root}/recompiler/src/rom_parser.c" "${engine_root}/recompiler/src/game_config.c"
+    "${engine_root}/recompiler/src/toml.c")
+  target_include_directories(segacd_owned_rmw_emit_test PRIVATE ${step_includes} "${engine_root}/recompiler/src")
+  target_compile_features(segacd_owned_rmw_emit_test PRIVATE c_std_11)
+  set(owned_output "${CMAKE_CURRENT_BINARY_DIR}/owned_rmw_generated.c")
+  add_custom_command(OUTPUT "${owned_output}"
+    COMMAND segacd_owned_rmw_emit_test "${owned_output}" "${CMAKE_CURRENT_SOURCE_DIR}/owned_rmw_harness.c.in"
+    DEPENDS segacd_owned_rmw_emit_test owned_rmw_harness.c.in VERBATIM)
+  add_executable(segacd_owned_rmw_semantics_test "${owned_output}" ${step_runtime_sources})
+  target_include_directories(segacd_owned_rmw_semantics_test PRIVATE ${step_runtime_includes})
+  target_compile_features(segacd_owned_rmw_semantics_test PRIVATE c_std_11)
+  add_test(NAME segacd_owned_rmw_semantics COMMAND segacd_owned_rmw_semantics_test)
   add_executable(segacd_floor_divide_test floor_divide_test.c
     "${engine_root}/runner/m68k_interp.c"
     "${engine_root}/external/m68k-recomp-core/common/m68k_decoder.c"
@@ -344,7 +357,8 @@ if(NOT CMAKE_CROSSCOMPILING)
   if(Python3_Interpreter_FOUND)
     add_test(NAME segacd_register_span_catalog
       COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/register_span_catalog_test.py"
-        "$<TARGET_FILE:segacd_module_recompiler>" "$<TARGET_FILE:segacd_span_recompiler>")
+        "$<TARGET_FILE:segacd_module_recompiler>" "$<TARGET_FILE:segacd_span_recompiler>"
+        "${CMAKE_COMMAND}" "${CMAKE_GENERATOR}")
     add_test(NAME segacd_owned_native_generation
       COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/owned_native_generate_test.py"
         "$<TARGET_FILE:segacd_module_recompiler>")

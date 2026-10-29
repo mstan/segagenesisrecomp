@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-typedef struct {M68KInstr ins;char array[128],symbol[128];unsigned index,cycles;int qualified;} Record;
+typedef struct {M68KInstr ins;char array[128],symbol[128];unsigned index,cycles;int qualified,owned;} Record;
 static void fail(const char*s){fprintf(stderr,"M68kSpanRecomp: %s\n",s);exit(1);}
 static uint8_t read_byte(uint32_t address,void*user)
 {
@@ -51,10 +51,11 @@ int main(int argc,char**argv)
   for(const char*p=record.symbol;*p;++p)if(!isalnum((unsigned char)*p)&&*p!='_')fail("bad operation identifier");
   GenesisRom rom={0};rom.rom_size=0x1000000u;rom.read8_override=read_byte;rom.read8_user=&record;
   M68KInstr decoded;
-  record.qualified=effect==1u&&m68k_decode_68000(&rom,pc,&decoded)&&
-    decoded.word_count==(int)words&&codegen_register_instruction(&decoded,NULL,NULL)&&
+  int exact=m68k_decode_68000(&rom,pc,&decoded)&&decoded.word_count==(int)words&&
     codegen_step_nominal_cycles(&decoded)==record.cycles;
-  if(record.qualified)record.ins=decoded;else record.ins.byte_length=words*2u;
+  record.qualified=exact&&effect==1u&&codegen_register_instruction(&decoded,NULL,NULL);
+  record.owned=exact&&effect==2u&&codegen_owned_rmw_instruction(&decoded);
+  if(record.qualified||record.owned)record.ins=decoded;else record.ins.byte_length=words*2u;
   if(count==capacity){capacity=capacity?capacity*2:4096;Record*next=realloc(rows,capacity*sizeof*rows);if(!next)fail("out of memory");rows=next;}
   rows[count++]=record;previous=pc;
  }
@@ -63,7 +64,7 @@ int main(int argc,char**argv)
  FILE*module=output(argv[2],prefix,"_module.c");fputs("#include \"m68k_step.h\"\n",module);
  FILE*proof=output(argv[2],prefix,"_ordinary_bodies.jsonl");
  GenesisRom proof_rom={0};
- for(size_t n=0;n<count;++n)if(rows[n].qualified)ordinary_body(proof,&rows[n],&proof_rom);
+ for(size_t n=0;n<count;++n)if(rows[n].qualified||rows[n].owned)ordinary_body(proof,&rows[n],&proof_rom);
  FILE*table=tmpfile();if(!table)fail("cannot open table buffer");
  unsigned spans=0,instructions=0;
  for(size_t s=0;s<count;){
@@ -84,6 +85,12 @@ int main(int argc,char**argv)
  if(spans){fprintf(module,"const M68kStepRegisterSpan %s_spans[]={\n",prefix);rewind(table);int ch;while((ch=fgetc(table))!=EOF)fputc(ch,module);fputs("};\n",module);}
  else fprintf(module,"const M68kStepRegisterSpan %s_spans[1]={{0}};\n",prefix);
  fprintf(module,"const size_t %s_count=%u;\n",prefix,spans);
- close_file(table);close_file(module);close_file(proof);for(unsigned n=0;n<32;++n)close_file(parts[n]);
- printf("%s: %zu descriptors, %u spans, %u instructions\n",prefix,count,spans,instructions);free(rows);return 0;
+ FILE*redirects=output(argv[2],prefix,"_owned_redirects.jsonl");unsigned owned=0;
+ for(size_t n=0;n<count;++n)if(rows[n].owned){
+  FILE*part=parts[owned%32];fprintf(part,"void %s_owned_%u(M68kStepContext*ctx){\n",prefix,owned);
+  GenesisRom rom={0};if(!codegen_emit_owned_rmw_operation(part,&rom,&rows[n].ins))fail("owned RMW emission failed");
+  fputs("}\n",part);fprintf(redirects,"[\"%s\",%u,\"%s\",\"%s_owned_%u\"]\n",rows[n].array,rows[n].index,rows[n].symbol,prefix,owned);++owned;
+ }
+ close_file(redirects);close_file(table);close_file(module);close_file(proof);for(unsigned n=0;n<32;++n)close_file(parts[n]);
+ printf("%s: %zu descriptors, %u spans, %u instructions, %u owned RMW callbacks\n",prefix,count,spans,instructions,owned);free(rows);return 0;
 }

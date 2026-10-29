@@ -98,5 +98,21 @@ LEA folding. E03's ordinary read/write views can safely permit latching an EA
 within a complete dual-owned range. Arbitrary callbacks can change the base or
 index; missing callbacks, permission asymmetry, split ranges, WAIT and faults
 require the original body. A bounded common-emitter prototype is being measured
-with those boundaries and full per-operation view lifetime. Its disposition is
-pending; this document does not count memory-EA consolidation as delivered.
+with those boundaries and full per-operation view lifetime. Most component cycle
+pairs improved about 12-24%; one long-displacement case was inconclusive and the
+short CPU-time samples were coarse. These are not built-game gains.
+
+The shared API/emitter now handles a closed single-memory-RMW grammar. It latches
+an EA only after complete independent read/write grants in a managed tracked
+operation; pre/post updates remain exactly once in the selected original body.
+Missing callbacks, partial reads/writes, alignment, WAIT, trace and permissions
+retain the ordinary path. The catalog substitutes only exact body-proved callback
+pointers, without another runtime lookup. Descriptor bytes, cycles, effects and
+priority remain unchanged. Noncanonical/HLE callbacks retain their original body.
+
+Both compiler gates pass 546560 architectural/bus/WAIT/fault/trace/permission
+comparisons over 1220 compiled classes; the opcode/extension audit admits 20418
+cases. This includes 2219 partial-write progress observations. A producer-local
+name collision initially clobbered the span-registry declarations when an owned
+callback existed. A failed-before fixture and real generated-header compilation
+now cover that case. Final built-game disposition remains pending.

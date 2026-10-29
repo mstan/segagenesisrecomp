@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Build fixed-cycle register companions from a qualified compact catalog.
+"""Build native register and dual-owned RMW companions from a qualified catalog.
 
-Freeze and verify every parent output. Export its unchanged entry arrays, then
+Freeze and verify every parent output. Export its exact descriptor arrays, then
 give the common core emitter only each PC's FIRST descriptor/effect in original
 priority order. Other variants and arbitrary/HLE entries retain ordinary steps.
 This produces new native objects; the unchanged instruction archive is separate.
@@ -112,16 +112,48 @@ def generate(source: Path, output: Path, emitter: Path):
             emit_group(group,entries,excluded)
         if any(expected.get(symbol)!=digest for symbol,digest in bodies.items()):
             raise ValueError('noncanonical body survived companion filtering')
+    first_records={(record[0],record[1]):record for entries in first.values() for record in entries.values()}
+    redirects=[]
+    for group,entries in first.items():
+        path=output/('genesis_spans_'+group.lower()+'_owned_redirects.jsonl')
+        for line in path.read_text(encoding='utf8').splitlines():
+            array,index,original,replacement=json.loads(line)
+            if not all(re.fullmatch(r'[A-Za-z_][A-Za-z_0-9]*',s) for s in [array,original,replacement]):
+                raise ValueError('invalid owned callback identifier')
+            if original in excluded or original not in bodies or expected.get(original)!=bodies[original]:
+                raise ValueError('owned callback lacks canonical proof')
+            match=first_records.get((array,index))
+            if match is None or match[5]!=2 or match[7]!=original:
+                raise ValueError('owned callback changed priority/effect identity')
+            redirects.append((array,index,original,replacement))
+    if len({(array,index) for array,index,_,_ in redirects})!=len(redirects):
+        raise ValueError('duplicate owned callback redirect')
+    by_array={}
+    for array,index,original,replacement in redirects:
+        by_array.setdefault(array,[]).append((index,original,replacement))
+    for array,changes in by_array.items():
+        name=array.removesuffix('_entries')+'.c'
+        text=(output/name).read_text(encoding='utf8');lines=text.splitlines(keepends=True)
+        locations=[n for n,line in enumerate(lines) if ENTRY.fullmatch(line.rstrip('\r\n'))]
+        for index,original,replacement in changes:
+            line=lines[locations[index]];record=ENTRY.fullmatch(line.rstrip('\r\n'))
+            if record[5]!=original:
+                raise ValueError('owned callback original differs')
+            a,b=record.span(5);lines[locations[index]]=line[:a]+replacement+line[b:]
+        owned_declarations=''.join(f'extern void {replacement}(M68kStepContext*);\n' for _,_,replacement in changes)
+        (output/name).write_text('#include "m68k_step.h"\n'+owned_declarations+''.join(lines),encoding='utf8',newline='\n')
     (output/'native_register_span_registry.h').write_bytes(('#ifndef NATIVE_REGISTER_SPAN_REGISTRY_H\n#define NATIVE_REGISTER_SPAN_REGISTRY_H\n#include "m68k_step.h"\n#define GENESIS_CATALOG_HAS_REGISTER_SPANS 1\n'+'\n'.join(declarations)+'\n#endif\n').encode())
     (output/'native_catalog_registry.h').write_bytes(files['native_catalog_registry.h']+b'\n#include "native_register_span_registry.h"\n')
     cmake=files['native_catalog_sources.cmake'].decode()+'\nlist(APPEND GENESIS_COMPACT_CATALOG_SOURCES\n'+''.join(f'  "${{CMAKE_CURRENT_LIST_DIR}}/{name}"\n' for name in generated)+')\n'
     (output/'native_catalog_sources.cmake').write_bytes(cmake.encode())
     identities={path.name:sha(path.read_bytes()) for path in output.iterdir() if path.is_file()}
-    parent.update(schema='M68kStepRegisterSpanCatalog1',parent_manifest_sha256=sha(parent_raw),
+    parent.update(schema='M68kStepNativeStateCatalog2',parent_manifest_sha256=sha(parent_raw),
                   companion_generator_sha256=sha(Path(__file__).read_bytes()),
                   companion_emitter_sha256=sha(emitter.read_bytes()),outputs=identities,
                   canonical_ordinary_bodies_verified=len(bodies),
                   excluded_noncanonical_symbols=sorted(excluded),
+                  canonical_owned_rmw_redirects=redirects,
+                  descriptor_transform='Only independently body-proved callback pointers redirected; PC/words/cycles/effects/order unchanged',
                   span_priority='first descriptor at each PC; full live guards; runtime configuration revalidates identity/effects/priority')
     (output/'native_catalog_manifest.json').write_bytes((json.dumps(parent,indent=2)+'\n').encode())
     return {group:len(entries) for group,entries in first.items()}
