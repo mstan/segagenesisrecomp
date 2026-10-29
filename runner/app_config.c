@@ -231,7 +231,7 @@ int app_config_aspect_index(const char *mode)
 }
 void app_config_apply_video(const GameVideo *video)
 {
-    if(video)video->configure(g_app_config.custom_widescreen?
+    if(video && video->configure)video->configure(g_app_config.custom_widescreen?
         app_config_aspect_mode(g_app_config.custom_aspect):"off");
 }
 
@@ -308,7 +308,7 @@ static const char *video_mod_error(void *ctx) { (void)ctx;return s_mod_error; }
 const RecompLauncherCModProvider *app_config_video_mods(const GameVideo *video,const char *path)
 {
     static RecompLauncherCModProvider provider;
-    if(!video)return NULL;
+    if(!game_video_has_viewport(video))return NULL;
     snprintf(s_mod_settings,sizeof s_mod_settings,"%s",path?path:"");s_mod_error[0]=0;
     memset(&provider,0,sizeof provider);
     provider.package_count=video_mod_count;provider.package_get=video_mod_package;
