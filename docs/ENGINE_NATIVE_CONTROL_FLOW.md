@@ -113,3 +113,7 @@ First failed fixtures/builds and the reproduced RAM defect remain explicit in
 the results. They are not hidden as candidate performance samples. Successful
 automation does not authorize merging/releasing this new batch; preserve these
 builds for the eventual combined owner handoff.
+
+Stacked review: [Genesis PR #39](https://github.com/mstan/segagenesisrecomp/pull/39), [shared-core PR #10](https://github.com/mstan/m68k-recomp-core/pull/10). GitHub recognizes `TechnicallyComputers` but refuses assignment in both repositories (assignee eligibility404); PRs are unassigned, with no repository-access changes made.
+
+Relative to E04, final binary sizes grow340992bytes RKA,195072bytes Sonic1 and400896bytes SonicCD. CD adds8192bytes of flow qualification bits plus lookup fallback/metadata; cartridge frames add one derived pointer. Process RSS differences were not measured, so no zero-memory-cost claim is made. Raw build/startup costs are retained without comparing unlike cache states.
