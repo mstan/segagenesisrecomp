@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Historical release evaluation was incomplete. Serial E01/E03/E04/E05 now deliver their selected original bounded contracts;26original scopes remain open. E05 source/test/runtime gates pass andPR39/corePR10 filed; independent final gate accepted and instructed E06 fresh verification next; owner merge/release approval remains pending.",
+  "conclusion": "Serial E01/E03/E04/E05 bounded contracts accepted. E06 fresh diligence reopened prior existing finding: real correctness/build gaps and cartridge publication consolidation under qualification.27 original scopes open; E07 not started. No merge/release approval for this new batch.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -19,10 +19,10 @@
     "bounded_delivered": 8,
     "rejected_mechanism": 1,
     "deferred": 17,
-    "existing": 2,
-    "partial": 8
+    "existing": 1,
+    "partial": 9
   },
-  "remaining_scope_open_count": 26,
+  "remaining_scope_open_count": 27,
   "count_caveat": "Families overlap. Bounded delivered closes only the selected contract, not every possible optimization. Partial/deferred/rejected-mechanism rows stay open; row counts are not speedups.",
   "validation": "Source/diff/evidence audit only. No new runtime build, benchmark, game launch or release change.",
   "entries": [
@@ -179,17 +179,34 @@
       "name": "Reusable native Z80 backend",
       "original_goal": "Qualify and improve the common uploaded-code/variant executor and native blocks, with supported build integration.",
       "recorded_evaluation_status": "evaluated_already_native",
-      "implementation_state": "existing",
-      "remaining_scope_open": false,
-      "delivered": "Reusable native Z80 variant executor already existed and remained qualified.",
-      "remaining": "No new engine implementation required for the selected backend contract; driver-specific rollout stays separate.",
-      "audit_basis": "Current CD gates record native Z80 execution with zero floor/audio faults. This is an existing capability, not a new speedup.",
-      "next_closure": "Retain reset/BUSREQ/IRQ/mutable-code contracts; revisit backend internals only with new cost evidence.",
+      "implementation_state": "partial",
+      "remaining_scope_open": true,
+      "delivered": "Serial diligence repairs and native-slice consolidation working; not accepted yet.",
+      "remaining": "Supported consumer/runtime, PR and independent validation gates remain.",
+      "audit_basis": "Real adapter/producer defects reproduced; per-instruction legacy mirror is a concrete generic consolidation opportunity.",
+      "next_closure": "Complete E06 supported consumer qualification, meaningful PRs and validate_e06 explicit next instruction.",
       "source_references": [
         "runner/z80_recomp.c",
         "runner/cd/z80_native.c",
         "docs/Z80_STATIC_RECOMP.md"
-      ]
+      ],
+      "historical_audit": {
+        "id": "E06",
+        "name": "Reusable native Z80 backend",
+        "original_goal": "Qualify and improve the common uploaded-code/variant executor and native blocks, with supported build integration.",
+        "recorded_evaluation_status": "evaluated_already_native",
+        "implementation_state": "existing",
+        "remaining_scope_open": false,
+        "delivered": "Reusable native Z80 variant executor already existed and remained qualified.",
+        "remaining": "No new engine implementation required for the selected backend contract; driver-specific rollout stays separate.",
+        "audit_basis": "Current CD gates record native Z80 execution with zero floor/audio faults. This is an existing capability, not a new speedup.",
+        "next_closure": "Retain reset/BUSREQ/IRQ/mutable-code contracts; revisit backend internals only with new cost evidence.",
+        "source_references": [
+          "runner/z80_recomp.c",
+          "runner/cd/z80_native.c",
+          "docs/Z80_STATIC_RECOMP.md"
+        ]
+      }
     },
     {
       "id": "E07",
