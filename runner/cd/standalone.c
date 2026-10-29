@@ -312,6 +312,7 @@ int main(int argc,char **argv)
         (unsigned long long)machine.coordinator.catalog_lookup[0].descriptor_searches,
         (unsigned long long)machine.coordinator.catalog_lookup[1].descriptor_searches,
         sizeof machine.coordinator.catalog_lookup);
+    printf("Event service regionAdvances=%llu\n",(unsigned long long)machine.coordinator.region_device_advances);
     printf("Native regions runs=%llu Main=%llu Sub=%llu\n",
         (unsigned long long)machine.coordinator.region_runs,
         (unsigned long long)machine.coordinator.region_instructions[0],

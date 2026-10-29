@@ -77,7 +77,7 @@ struct SegaCDCoordinator {
     size_t region_effect_count[2];
     uint64_t region_instructions[2],region_runs,region_device_advances;
     uint64_t region_event_deadline;
-    uint8_t region_event_valid;
+    uint8_t region_event_valid,event_intervals_qualified;
     const M68kStepRegisterSpan *register_spans[2];
     size_t register_span_count[2];
     uint8_t register_span_qualified[2][SEGACD_REGISTER_SPAN_LIMIT/8];
@@ -105,7 +105,10 @@ int segacd_coordinator_main_data_region(SegaCDCoordinator *,M68kStepDataResolver
 /* Qualify only with complete effect metadata and interval-composable device
  * sinks. Host observers must report every observable deadline through
  * host_next_event; instrumentation observing every old advance call instead
- * of emulated events must retain the ordinary step interface. */
+ * of emulated events must retain the ordinary step interface. Qualified
+ * native regions and all-STOP run_until waits service actual device/host
+ * deadlines, rather than artificial384-clock polls. A host advance callback
+ * without a next-event provider retains the bounded cadence. */
 int segacd_coordinator_region_effects(SegaCDCoordinator *,SegaCDCpu,
                                      const M68kStepEffectModule *,size_t);
 /* Sorted unique-PC companions for the exact current registry's FIRST entries.
