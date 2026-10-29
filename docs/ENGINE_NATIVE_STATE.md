@@ -1,7 +1,7 @@
 # E04: Generated native arithmetic and state
 
 Owner: `beads-3z5k.3`; shared core: `beads-rxq.5`; campaign: `beads-2wy8.1`.
-Independent validator: `validate_e04`. **Compiler and built-game gates pass; final independent PR/record review is pending. Runtime is neutral/inconclusive for all three tested games.**
+Independent validator: `validate_e04`. **Independent final gate accepted. Runtime is neutral/inconclusive for all three tested games; no new game speedup is claimed.**
 
 The package starts from E01 and the independently accepted E03 branch. It does
 not contain E02's rejected page-version/code-identity runtime. Cartridge and CD
@@ -17,8 +17,10 @@ exits. Adjacent LEA/address additions share local address expressions rather
 than repeatedly publishing/reloading their intermediate global registers.
 
 The cartridge fast path uses the runtime's actual read-only scheduling budget.
-It ends strictly before a possible yield, watchdog or counter wrap; scaled-clock
-normalization and a stale audio baseline retain ordinary retirement. Counts and
+The wholly unobserved phase preserves the original unsigned counters' modular
+results. The extended budget path explicitly rejects counter wrap and ends
+before a possible yield or watchdog; scaled-clock normalization and a stale
+audio baseline retain ordinary retirement. Counts and
 audio clocks are grouped, all architectural registers are materialized, then the
 ordinary final check publishes private budget/seen/stall state. Older clients
 without that contract retain the original VBlank-threshold guard. Original instruction paths and entry
@@ -180,4 +182,6 @@ designs are not claimed exhausted. E02 remains open independently.
 
 Stacked review: [Genesis PR #38](https://github.com/mstan/segagenesisrecomp/pull/38),
 [shared-core PR #9](https://github.com/mstan/m68k-recomp-core/pull/9). The independent validator accepted
-the final runtime gate as neutral/inconclusive; final PR/record review remains.
+the final runtime and PR/record gates as neutral/inconclusive, and explicitly
+instructed E05 next. Its saved record is `VALIDATOR_E04.md` at the task root.
+Owner visual clearance is still required before merge/release.
