@@ -99,6 +99,13 @@ with earlier whole-architecture variation retained distinctly.
 | sonic1 custom16_9 | A2.437500, B2.437500 | +0.00% / +1.96% | Neutral/inconclusive; no speedup claimed |
 | Sonic CD accepted route | A5.734375, B5.687500 | +0.82% / +2.72% | One AB; neutral/inconclusive, preceding variation retained |
 
+Final independent review requested exactly one opposite-order native Sonic1 pair
+to resolve its one-CPU-quantum initial cost. The same final PEs/settings produce
+B1.390625/A1.421875CPU seconds, cycles6,642,626,560/6,703,177,600: reductions
++2.198%CPU/+0.903%cycles, with exact prior-final/native correctness. The original
+negative AB and this BA are both retained. The native cost is not reproduced;
+this is neutral/inconclusive, with no gain or cross-feature offset claimed.
+
 All final cartridge machine/audio state/full WAV, frame hashes, final PNG,
 rollback/dispatch match. Each candidate restores its OWN current-build file,
 keeps saved/loaded RAM exact, advances after load and matches accepted lifecycle

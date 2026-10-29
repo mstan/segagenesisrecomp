@@ -8,7 +8,7 @@
   "engine_base_docs_head": "0c78fc6",
   "engine_production": "999f39247df21255328b458b967dba0de15ec47d",
   "engine_pr": "https://github.com/mstan/segagenesisrecomp/pull/45",
-  "validation_status": "Source999 andgenerator/census reviewed withoutfinding; final complete runtime/PR/Beads gate pending;22familiesremainopen until finalacceptance",
+  "validation_status": "Source999/generator/census passed, finalartefacts/PR/BeadscheckedexceptrequestedmetadataandS1uncertainty nowcorrected/clarified. Correctedcensusbytecopiesandhashes(noactualsamplechange), finalS1oppositeBA showsCPU+2.198/cycles+0.903percent reductionsvsinitialABnegative; neutral/inconclusive, no costreproduction/speedupclaim. Finalvalidatoraccept/nextpending;22open.",
   "whole_family_disposition": "Complete immutable-input art/palette/geometry architecture1d0aab9 implemented/qualified/reached, then bounded rejected for no demonstratedgain over bestexistingBATCHED. Mutable art/geometry removed. Useful finite immutable DAC domain retained and qualified separately, no deliveredfullcache/allfuturedesignsexhausted claim.",
   "final_games": {
     "rka": {
@@ -247,6 +247,38 @@
         },
         "saved_RAM_equals_loaded": true,
         "progress_after_load": true
+      },
+      "native_followup": {
+        "scope": "Reviewer-requested exactlyoneoppositeorderfinalPE/nativeSonic1 BA; allprecedingfinalABarmsretained. Originalmarginalcostnotreproduced; neutral/inconclusive,no gainclaim orfeatureoffset.",
+        "measurements": {
+          "reductions_pct": {
+            "cpu_seconds": [
+              2.197802197802201
+            ],
+            "cpu_cycles": [
+              0.9033184500437552
+            ]
+          },
+          "scope": "Reviewer-requested exactly one opposite-order final-source nativeSonic1 BA after one-quantum cost concern; preceding finalAB retained, no same-arm drift estimate from this one pair"
+        },
+        "runs": [
+          {
+            "arm": "B",
+            "binary_sha256": "d2dc3422a6e8d110dd60b3c073abd43c13e447400974b92cdc5889d8ac0af685",
+            "cpu_seconds": 1.390625,
+            "cpu_cycles": 6642626560,
+            "profile": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\runtime-sonic1-final-followup-r1\\sonic1-0-B",
+            "correctness_differences": []
+          },
+          {
+            "arm": "A",
+            "binary_sha256": "f0bb6753538c996f37154549914ff643206b22b74ac47120c1c5763f8348c0d7",
+            "cpu_seconds": 1.421875,
+            "cpu_cycles": 6703177600,
+            "profile": "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\runtime-sonic1-final-followup-r1\\sonic1-1-A",
+            "correctness_differences": []
+          }
+        ]
       }
     },
     "sonic_cd": {
@@ -4061,6 +4093,30 @@
     "C:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\build_check_census.py": {
       "sha256": "076ae4305042aa894da597fa37335157f6995f7f45e4c6a083bb20aa7a429be7",
       "bytes": 2936
+    },
+    "G:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\runtime-sonic1-final-followup-r1.json": {
+      "sha256": "90195e0c45e1896e6a767e24d5de3a0b57336f98cf9e56d17e049d0020db9569",
+      "bytes": 23393
+    },
+    "C:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\capacity-sonic1-final-followup-r1.json": {
+      "sha256": "ecd37ce08a56fe664da47c9d60e9698dd04362d2e395f008a3e144bd555a9228",
+      "bytes": 1717
+    },
+    "C:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\check_sonic1_final_followup.py": {
+      "sha256": "cb70b4d9dc242f06ed15664afb86f04ca5a11833932e6281382b4e4afbaebdf9",
+      "bytes": 5078
+    },
+    "C:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\prepare_sonic1_followup.py": {
+      "sha256": "8f0b21faef89ec4957fccc9a96dfe288d39df7310c2148f414152fa441523041",
+      "bytes": 1381
+    },
+    "C:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\correct_census_metadata.py": {
+      "sha256": "587dc195ec0dab3bfe4046bf0d36abeddfd7818d84ff84442bbfb9ccb2853e04",
+      "bytes": 2926
+    },
+    "C:\\Temp\\Codex\\genesis-engine-graphics-derivation-20261029\\metadata-correction.json": {
+      "sha256": "6be4575a5b874ca62c227c9cd440bad681cbf3a39022c6d64e71178be717b2b9",
+      "bytes": 1507
     }
   },
   "source_prototype": "C:\\temp\\Codex\\genesis-engine-graphics-derivation-20261029\\prototype-1d0aab9",
