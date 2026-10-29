@@ -214,7 +214,11 @@ extern uint64_t g_frame_count;
 extern uint64_t g_native_insn_count;
 /* Host diagnostic only; not simulated state or a speedup measurement. */
 extern uint64_t g_native_span_count;
-#define GEN_NATIVE_SPAN_RETIRED() (++g_native_span_count)
+int glue_native_register_span_ready(unsigned cycles, unsigned instructions);
+void glue_native_register_span_retired(void);
+#define GEN_NATIVE_REGISTER_SPAN_READY(cycles, instructions) \
+    glue_native_register_span_ready((cycles), (instructions))
+#define GEN_NATIVE_SPAN_RETIRED() glue_native_register_span_retired()
 
 /* ---- Contextual recompiler: cycle-accurate VBlank ---- */
 /* Accumulated 68K cycles since frame start. When this reaches the VBlank

@@ -1369,6 +1369,24 @@ void glue_check_vblank(void)
     return;
 }
 
+#include "native_register_budget.h"
+int glue_native_register_span_ready(unsigned cycles,unsigned instructions)
+{
+    return genesis_native_register_budget(g_cycle_accumulator,g_audio_cycle_counter,
+        g_native_insn_count,s_insn_watchdog_base,INSN_WATCHDOG_LIMIT,
+        2u*NTSC_CYCLES_PER_WALL_FRAME,s_interleave_active,s_in_vblank_service,
+        s_main_cpu_divisor,s_cycle_budget,s_budget_cyc_seen,cycles,instructions);
+}
+
+void glue_native_register_span_retired(void)
+{
+    ++g_native_span_count;
+    /* Materialize private budget/seen/stall state at the same final retirement.
+     * Qualification proves that none of the omitted checks could yield, abort
+     * or normalize a scaled clock. Bus accesses remain ordinary boundaries. */
+    if(g_cycle_accumulator>=g_vblank_threshold)glue_check_vblank();
+}
+
 void glue_end_of_wall_frame(void)
 {
     /* Hardware fires VBla every wall frame regardless of what 68K code
