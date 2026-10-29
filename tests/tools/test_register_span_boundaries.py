@@ -81,7 +81,7 @@ uint64_t g_cosim_cycle,g_cosim_next_cp=UINT64_MAX;void cosim_checkpoint(void){ab
 int main(int argc,char**argv){(void)argc;unsigned mode=(unsigned)atoi(argv[2]);
 g_vblank_threshold=109312;g_cycle_accumulator=(uint32_t)strtoul(argv[1],0,10);
 active=mode&1;service=(mode>>1)&1;divisor=1+(mode>>2);budget=atoi(argv[3]);
-g_audio_cycle_counter=100;seen=atoi(argv[4])?120:96;stalls=23;base=0;g_native_insn_count=14;
+g_audio_cycle_counter=100;seen=atoi(argv[4])?120:96;stalls=23;base=0;g_native_insn_count=(atoi(argv[5])&16)?14:0;
 g_cpu.A[7]=0xfffe00;g_cpu.A[0]=0x12345678;g_cpu.SR=(uint16_t)(0x2700|atoi(argv[5]));
 recomp_call_addr(0x200);snapshot();fprintf(stderr,"spans=%llu\n",(unsigned long long)g_native_span_count);return 0;}
 '''
