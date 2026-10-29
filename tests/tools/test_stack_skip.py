@@ -58,7 +58,7 @@ void genesis_log_interior_label_miss(uint32_t a) { genesis_log_dispatch_miss(a);
 #ifdef GENESIS_HAS_NATIVE_CALL_FRAME
 static unsigned walked;
 static void walk(int pending,uint32_t addr,void *user) {
-    if(user!=&walked || (pending && addr!=0x800000u))abort();
+    if(user!=&walked || (pending && addr!=0x800000u && addr!=0x800002u))abort();
     ++walked;
 }
 static void native_target(void) { ++native_visits; }
@@ -87,6 +87,16 @@ static void nested(void) {
     if(recomp_tail_frame_get()!=parent)abort();
     RECOMP_CALL_NATIVE(overwrite_static);
 }
+static void suspended_static(void) {
+    RECOMP_TAIL_NATIVE(0x800002u,native_target);
+    void *saved=recomp_tail_frame_get();
+    recomp_tail_frame_set(NULL);
+    RECOMP_CALL_NATIVE(native_target);
+    if(recomp_tail_frame_get())abort();
+    recomp_tail_frame_set(saved);
+    walked=0;recomp_tail_frame_walk(walk,&walked);
+    if(walked!=1)abort();
+}
 static void frame_contract(void) {
     RECOMP_CALL_NATIVE(overwrite_static);
     if(dynamic_visits!=1 || native_visits)abort();
@@ -94,6 +104,8 @@ static void frame_contract(void) {
     if(dynamic_visits!=2 || native_visits!=1)abort();
     RECOMP_CALL_NATIVE(suspended);
     if(dynamic_visits!=3 || native_visits!=2 || recomp_tail_frame_get())abort();
+    RECOMP_CALL_NATIVE(suspended_static);
+    if(dynamic_visits!=3 || native_visits!=4 || recomp_tail_frame_get())abort();
 }
 #endif
 int main(int argc,char **argv) {
