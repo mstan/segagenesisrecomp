@@ -149,8 +149,10 @@ sample was discarded. Source and evidence roots:
 `C:/Temp/Codex/genesis-engine-graphics-derivation-20261029` and
 `G:/Temp/Codex/genesis-engine-graphics-derivation-20261029`.
 Full prototype/census/frozen PEs/WAV/screenshots/states/configs/verifiers are retained.
-Audited owned build/WSL/TEMP cleanup remains pending final independent acceptance;
-borrowed dependency/UI junctions and private fixtures are preserved.
+After final acceptance, ownership/containment/no-reparse/no-nestedrepo audits
+preceded nonforced Windows/WSL build/TEMP removal (672,362,204bytes). All frozen
+PE/raw/source/census/config/current-build evidence and metadata originals remain;
+borrowed dependency/UI junctions and private fixtures remain for campaign work.
 
 Independent final review corrected stale Sonic1 diagnostic PE byte-size metadata
 (5,429,760 inherited versus actual5,430,272). PE SHA and every runtime sample
