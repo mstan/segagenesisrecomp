@@ -33,16 +33,29 @@
     "E02": {
       "name": "Code identity and invalidation",
       "priority": "P1",
-      "status": "implemented_catalog_guard_elision_deferred",
-      "disposition": "Generic exact-body catalog compaction45b4805 preserves every PC/full-word guard/cycle/operation variant and its original priority in the existing step-module ABI. Qualified source corpus reduces Main descriptors2409238 to1650902 and Sub161321 to137237. Final Windows and four Linux3000-frame runs match the frozen original in full state/pixels/WAV. Windows executable23.13percent smaller; unstripped Linux9.98percent smaller. Linux host instructions3.732percent fewer; CPU timing mixed(-15.08/+11.84percent reductions), not a runtime win. Guard elision remains deferred until all native/direct/import writers have sound ownership/versioning; public arrays are not a reason to preserve that architecture indefinitely.",
+      "status": "completed_unsuccessful_code_identity_package",
+      "remaining_scope_open": true,
+      "disposition": "Final page-version package engine c9db7a1/core5520820 is implemented and correctness-tested but rejected after six variants: 19MSVC+7GCC gates and four exact3000-frame game runs pass; matched Sonic CD CPU cost rises7.71/6.37percent and cycles2.58/2.09percent. Large shared-host variation retained; no adopted gain. Generic qualified ownership, all writers/remaps, opaque callbacks, exact variants and 1M live fallback are documented. Continue from E01 without the rejected runtime. E02 remains unchecked; other identity/region designs are not claimed exhausted. See [ENGINE_CODE_IDENTITY.md](ENGINE_CODE_IDENTITY.md), [results](engine-code-identity-results.json), beads-3z5k.1/beads-rxq.3. Earlier exact catalog compaction remains shipped independently.",
       "evidence": [
-        "runner/cd/catalog_index.h",
-        "runner/cd/segacd.c",
-        "runner/cd/segacd_coordinator.c",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-hybrid-game.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json"
-      ]
+        "ENGINE_CODE_IDENTITY.md",
+        "engine-code-identity-results.json",
+        "beads-3z5k.1",
+        "beads-rxq.3"
+      ],
+      "historical_evaluation": {
+        "name": "Code identity and invalidation",
+        "priority": "P1",
+        "status": "implemented_catalog_guard_elision_deferred",
+        "disposition": "Generic exact-body catalog compaction45b4805 preserves every PC/full-word guard/cycle/operation variant and its original priority in the existing step-module ABI. Qualified source corpus reduces Main descriptors2409238 to1650902 and Sub161321 to137237. Final Windows and four Linux3000-frame runs match the frozen original in full state/pixels/WAV. Windows executable23.13percent smaller; unstripped Linux9.98percent smaller. Linux host instructions3.732percent fewer; CPU timing mixed(-15.08/+11.84percent reductions), not a runtime win. Guard elision remains deferred until all native/direct/import writers have sound ownership/versioning; public arrays are not a reason to preserve that architecture indefinitely.",
+        "evidence": [
+          "runner/cd/catalog_index.h",
+          "runner/cd/segacd.c",
+          "runner/cd/segacd_coordinator.c",
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-hybrid-game.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json"
+        ]
+      }
     },
     "E03": {
       "name": "Owned memory access",
@@ -1519,13 +1532,17 @@
   },
   "evaluation_counts_scope": "Historical released evaluation pass; current serial implementation is tracked separately.",
   "serial_implementation": {
-    "current_goal": "E01",
+    "current_goal": "E02",
     "completed": [
       "E01"
     ],
     "remaining_original_scopes": 29,
     "data": "engine-native-region-results.json",
     "next_task_started": false,
-    "owner_check": "pending"
+    "owner_check": "pending",
+    "unsuccessful": [
+      "E02"
+    ],
+    "validation_workflow": "One validation-only subagent per serial task; PR on success or Beads on failure, explicit reviewer instruction before next."
   }
 }
