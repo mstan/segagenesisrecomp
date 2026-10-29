@@ -83,11 +83,15 @@ int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host
 /* Qualified machine-owned execution only. Unknown operations/host observers
  * must fence all direct writes; bus/DMA/stamp writes are tracked internally.
  * Storage is derived, external to guest snapshots. End before returning to
- * an unowned caller; begin fences arbitrary direct edits/imports/restores. */
+ * an unowned caller; begin fences arbitrary direct edits/imports/restores.
+ * Noncontiguous 1M Word RAM ends the lease and keeps ordinary live guards;
+ * a later 2M lease always validates fresh, including all 1M alias writes. */
 void segacd_coordinator_code_begin(SegaCDCoordinator *,SegaCDCodeIdentity *);
 void segacd_coordinator_code_end(SegaCDCoordinator *);
 void segacd_coordinator_code_observer(SegaCDCoordinator *,int entering);
 void segacd_coordinator_code_write(SegaCDCoordinator *,const uint8_t *,size_t);
+static inline void segacd_coordinator_code_write_range(SegaCDCoordinator *c,unsigned range,size_t offset,size_t bytes)
+{if(c->code_identity)segacd_code_write_range(c->code_identity,range,offset,bytes);}
 /* Independently qualify only host-output-only callbacks AND their user object.
  * Captured by value, so arbitrary rebinding cannot inherit qualification. */
 int segacd_coordinator_readonly_io(SegaCDCoordinator *,const SegaCDIO *bindings);

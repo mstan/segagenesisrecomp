@@ -9,8 +9,18 @@
  * PAL and hardware bus-cycle phasing need separate qualification. */
 enum { MAIN_DENOM=53693175,MAIN_NUMER=87500000 };
 static M68kStepResult execute_cpu(SegaCDCoordinator *,unsigned);
+static void release_code(SegaCDCoordinator *c)
+{
+    if(!c->code_identity)return;
+    segacd_code_fence(c->code_identity);c->code_identity->active=0;c->code_identity->suspended=0;
+    c->code_identity=NULL;
+    for(unsigned n=0;n<2;++n){c->cpu[n].code_guard=NULL;c->cpu[n].code_observer=NULL;}
+}
 void segacd_coordinator_code_observer(SegaCDCoordinator *c,int entering)
-{if(c->code_identity)segacd_code_observer(c->code_identity,entering);}
+{
+    if(c->code_identity)segacd_code_observer(c->code_identity,entering);
+    if(c->devices->memory_mode&4u)release_code(c);
+}
 void segacd_coordinator_code_write(SegaCDCoordinator *c,const uint8_t *p,size_t bytes)
 {if(c->code_identity)segacd_code_write(c->code_identity,p,bytes);}
 static void opaque_code(void *user,int entering)
@@ -33,16 +43,15 @@ int segacd_coordinator_readonly_io(SegaCDCoordinator *c,const SegaCDIO *bindings
 }
 void segacd_coordinator_code_begin(SegaCDCoordinator *c,SegaCDCodeIdentity *id)
 {
-    if(!c||!id||c->code_identity||c->busy[0]||c->busy[1]||c->external_active)return;
+    if(!c||!id||c->code_identity||id->active||c->busy[0]||c->busy[1]||c->external_active||
+       (c->devices->memory_mode&4u))return;
     c->code_identity=id;id->active=1;id->suspended=0;segacd_code_fence(id);
     for(unsigned n=0;n<2;++n){c->cpu[n].code_guard=current_code;c->cpu[n].code_observer=opaque_code;}
 }
 void segacd_coordinator_code_end(SegaCDCoordinator *c)
 {
     if(!c||!c->code_identity||c->busy[0]||c->busy[1]||c->external_active)return;
-    if(c->code_identity){segacd_code_fence(c->code_identity);c->code_identity->active=0;}
-    c->code_identity=NULL;
-    for(unsigned n=0;n<2;++n){c->cpu[n].code_guard=NULL;c->cpu[n].code_observer=NULL;}
+    release_code(c);
 }
 static int device_fault(const SegaCDCoordinator*c)
 {
@@ -68,12 +77,12 @@ static void advance_devices(SegaCDCoordinator *c)
         uint32_t delta=remaining>UINT32_MAX?UINT32_MAX:(uint32_t)remaining;
         /* Physical writers bypassing CPU bus helpers. Fencing before a job
          * also covers callbacks inside it; no CPU executes inside advance_io. */
-        if(c->devices->dma.active) {
-            segacd_coordinator_code_write(c,c->devices->prg,sizeof c->devices->prg);
-            segacd_coordinator_code_write(c,c->devices->word,sizeof c->devices->word);
-        }
-        if(c->devices->stamp.busy)
-            segacd_coordinator_code_write(c,c->devices->word,sizeof c->devices->word);
+        if(c->devices->dma.active&&c->devices->cdc_destination==5)
+            segacd_coordinator_code_write_range(c,SEGACD_CODE_PRG,0,SEGACD_PRG_BYTES);
+        if(c->devices->dma.active&&c->devices->cdc_destination==7)
+            segacd_coordinator_code_write_range(c,SEGACD_CODE_WORD,0,SEGACD_WORD_BYTES);
+        if(c->devices->stamp.busy&&!(c->devices->memory_mode&5u))
+            segacd_coordinator_code_write_range(c,SEGACD_CODE_WORD,0,SEGACD_WORD_BYTES);
         segacd_advance_io_owned(c->devices,delta,&c->io,c->code_identity?observe_io:NULL,c,&c->code_readonly_io);
         c->device_time+=delta;
     }
@@ -157,20 +166,30 @@ static void observe_cdd_submission(SegaCDCoordinator*c,SegaCDCpu cpu,uint32_t a,
 static void code_bus_write(SegaCDCoordinator *c,SegaCDCpu cpu,uint32_t a,size_t bytes)
 {
     if(!c->code_identity)return;
+    if(c->devices->memory_mode&4u){release_code(c);return;}
     if((cpu==SEGACD_MAIN&&a>=0xA12000u&&a<0xA12004u)||
        (cpu==SEGACD_SUB&&a>=0xFF8000u&&a<0xFF8004u))
         segacd_code_fence(c->code_identity);
-    const uint8_t *p=segacd_code_span(c->devices,cpu,a&0xfffffeu,2);
-    if(p)segacd_coordinator_code_write(c,p+(bytes==1?(a&1u):0u),bytes);
-    else if((cpu==SEGACD_MAIN&&a>=0x200000u&&a<0x240000u)||
-            (cpu==SEGACD_SUB&&a>=0x080000u&&a<0x0e0000u))
-        segacd_coordinator_code_write(c,c->devices->word,sizeof c->devices->word);
+    if(cpu==SEGACD_SUB&&a<SEGACD_PRG_BYTES)
+        segacd_code_write_range(c->code_identity,SEGACD_CODE_PRG,a,bytes);
+    else if(cpu==SEGACD_MAIN&&a<SEGACD_BIOS_BYTES)
+        segacd_code_write_range(c->code_identity,SEGACD_CODE_BIOS,a,bytes);
+    else if(cpu==SEGACD_MAIN&&a>=0x20000u&&a<0x40000u) {
+        if(!segacd_sub_runnable(c->devices)&&c->devices->prg_bank<4)
+            segacd_code_write_range(c->code_identity,SEGACD_CODE_PRG,
+                (size_t)c->devices->prg_bank*0x20000u+a-0x20000u,bytes);
+    } else if((cpu==SEGACD_MAIN&&a>=0x200000u&&a<0x240000u)||
+              (cpu==SEGACD_SUB&&a>=0x080000u&&a<0x0e0000u)) {
+        if(cpu==SEGACD_MAIN||a<0x0c0000u)
+            segacd_code_write_range(c->code_identity,SEGACD_CODE_WORD,a-(cpu==SEGACD_MAIN?0x200000u:0x080000u),bytes);
+    }
 }
 static M68kStepBusResult bus_write8(void *user,uint32_t a,uint8_t v)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     code_bus_write(c,b->cpu,a,1);
     SegaCDResult r=segacd_write8(c->devices,b->cpu,a,v);
+    if(c->devices->memory_mode&4u)release_code(c);
     if(r==SEGACD_OK)observe_cdd_submission(c,b->cpu,a,0);
     if(r!=SEGACD_UNMAPPED)return translate(r);
     if(b->cpu==SEGACD_SUB || main_cd_port(a) || !c->host_main.write8)return M68K_BUS_FAULT;
@@ -181,6 +200,7 @@ static M68kStepBusResult bus_write16(void *user,uint32_t a,uint16_t v)
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     code_bus_write(c,b->cpu,a,2);
     SegaCDResult r=segacd_write16(c->devices,b->cpu,a,v);
+    if(c->devices->memory_mode&4u)release_code(c);
     if(r==SEGACD_OK)observe_cdd_submission(c,b->cpu,a,1);
     if(r!=SEGACD_UNMAPPED)return translate(r);
     if(b->cpu==SEGACD_SUB || main_cd_port(a) || !c->host_main.write16)return M68K_BUS_FAULT;
@@ -582,6 +602,7 @@ static M68kStepResult external_byte_once(SegaCDCoordinator *c,ExternalByte *op,i
     if(op->write) {
         code_bus_write(c,SEGACD_MAIN,op->address,1);
         r=segacd_write8(c->devices,SEGACD_MAIN,op->address,op->value);
+        if(c->devices->memory_mode&4u)release_code(c);
     }
     else r=segacd_read8(c->devices,SEGACD_MAIN,op->address,&op->value);
     if(r==SEGACD_WAIT){*wait=1;return M68K_STEP_OK;}

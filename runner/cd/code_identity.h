@@ -11,6 +11,7 @@
  * is trusted. Unknown storage and unowned execution keep the live-byte guard. */
 enum { SEGACD_CODE_RANGES=4, SEGACD_CODE_PAGES=2048,
        SEGACD_CODE_PAGE_BITS=9, SEGACD_CODE_GUARDS=1024 };
+enum { SEGACD_CODE_BIOS,SEGACD_CODE_PRG,SEGACD_CODE_WORD,SEGACD_CODE_HOST };
 typedef struct {
     const uint8_t *base;
     size_t bytes,first_page;
@@ -67,17 +68,29 @@ static inline const SegaCDCodeRange *segacd_code_locate(const SegaCDCodeIdentity
     }
     return NULL;
 }
+static inline void segacd_code_write_range(SegaCDCodeIdentity *id,unsigned range,size_t offset,size_t bytes)
+{
+    if(!id->active||!bytes||range>=SEGACD_CODE_RANGES)return;
+    const SegaCDCodeRange *r=&id->ranges[range];
+    if(offset>=r->bytes||bytes>r->bytes-offset){segacd_code_fence(id);return;}
+    size_t first=r->first_page+(offset>>SEGACD_CODE_PAGE_BITS);
+    size_t last=r->first_page+((offset+bytes-1)>>SEGACD_CODE_PAGE_BITS);
+    if(last>=SEGACD_CODE_PAGES){segacd_code_fence(id);return;}
+    /* Zero means no identity has ever been cached for this physical page.
+     * Its first execution always compares live bytes before subscribing.
+     * Data-only stores therefore need no epoch/counter update. */
+    uint64_t serial=0;
+    for(size_t page=first;page<=last;++page)if(id->pages[page]) {
+        if(!serial){serial=segacd_code_serial(id);++id->writes;}
+        id->pages[page]=serial;
+    }
+}
 static inline void segacd_code_write(SegaCDCodeIdentity *id,const uint8_t *p,size_t bytes)
 {
     if(!id->active||!bytes)return;
     const SegaCDCodeRange *r=segacd_code_locate(id,p,bytes);
     if(!r){segacd_code_fence(id);return;}
-    size_t offset=(size_t)((uintptr_t)p-(uintptr_t)r->base);
-    size_t first=r->first_page+(offset>>SEGACD_CODE_PAGE_BITS);
-    size_t last=r->first_page+((offset+bytes-1)>>SEGACD_CODE_PAGE_BITS);
-    if(last>=SEGACD_CODE_PAGES){segacd_code_fence(id);return;}
-    uint64_t serial=segacd_code_serial(id);++id->writes;
-    for(size_t page=first;page<=last;++page)id->pages[page]=serial;
+    segacd_code_write_range(id,(unsigned)(r-id->ranges),(size_t)((uintptr_t)p-(uintptr_t)r->base),bytes);
 }
 static inline int segacd_code_guard(SegaCDCodeIdentity *id,const M68kStepEntry *entry,
                                     void *owner,M68kStepCodeSpan view)
@@ -99,6 +112,8 @@ static inline int segacd_code_guard(SegaCDCodeIdentity *id,const M68kStepEntry *
     size_t first=r->first_page+(offset>>SEGACD_CODE_PAGE_BITS);
     size_t last=r->first_page+((offset+bytes-1)>>SEGACD_CODE_PAGE_BITS);
     if(last>=SEGACD_CODE_PAGES)return 0;
+    if(!id->pages[first])id->pages[first]=id->serial;
+    if(!id->pages[last])id->pages[last]=id->serial;
     uint64_t serial=0;
     if(id->pages[first]>serial)serial=id->pages[first];
     if(id->pages[last]>serial)serial=id->pages[last];

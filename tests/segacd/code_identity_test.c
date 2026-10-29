@@ -48,8 +48,14 @@ static void versions(void)
     CHECK(id.checks==1&&id.hits==999);
     /* An unrelated physical page keeps this guard. A tracked extension write
      * invalidates it, including mismatch caches and variant priority. */
+    uint64_t serial=id.serial,writes=id.writes;
     m68k_step_write16(cpu,0x1000,0xabcd);
     CHECK(m68k_step_execute_tracked(cpu,&entry)==M68K_STEP_OK&&id.checks==1);
+    CHECK(id.serial==serial&&id.writes==writes);
+    m68k_step_write16(cpu,0x1000,0x4e71);m68k_step_write16(cpu,0x1002,0x1234);
+    M68kStepEntry cold=entry;cold.pc=0x1000;cpu->state.regs.PC=cold.pc;
+    CHECK(m68k_step_execute_tracked(cpu,&cold)==M68K_STEP_OK&&id.checks==2);
+    CHECK(id.serial==serial&&id.writes==writes);
     m68k_step_write8(cpu,0x103,0x35);
     CHECK(m68k_step_execute_tracked(cpu,&entry)==M68K_STEP_MISS);
     CHECK(m68k_step_execute_tracked(cpu,&other)==M68K_STEP_OK);
@@ -118,9 +124,11 @@ static void aliases(void)
     m68k_step_write8(cpu,0xA12003,2);c.cpu[1].state.regs.PC=word.pc;
     CHECK(m68k_step_execute_tracked(&c.cpu[1],&word)==M68K_STEP_MISS);
     m68k_step_write8(&c.cpu[1],0xFF8003,5); /* Main 1M bank1 byte81 aliases physical byte103. */
+    CHECK(!c.code_identity&&!id.active&&!c.cpu[1].code_guard);
     CHECK(c.cpu[0].code_span(c.cpu[0].user,0x200080,4)==NULL);
     m68k_step_write8(&c.cpu[0],0x200081,0x34);
     m68k_step_write8(&c.cpu[1],0xFF8003,0);c.cpu[1].state.regs.PC=word.pc;
+    segacd_coordinator_code_begin(&c,&id);CHECK(c.code_identity==&id);
     CHECK(m68k_step_execute_tracked(&c.cpu[1],&word)==M68K_STEP_OK);
     id.serial=UINT64_MAX;segacd_code_fence(&id);
     CHECK(id.serial==1&&id.fence==1);
