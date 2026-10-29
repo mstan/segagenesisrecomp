@@ -121,8 +121,14 @@ clock advances or CPU work; this does not turn mixed timing into a proven
 whole-game win. The diagnostic binary was retained separately from both clean
 performance binaries. See [machine-readable results](engine-event-scheduling-results.json).
 
-Independent complete gate is pending. Do not mark E07 accepted or move to E08
-before that gate. PR41 is stacked on E06 PR40; combined owner visual approval,
+Independent validate_e07 FINAL ACCEPTED production2079c51 and ready PR41
+head98550e7, with no unresolved objective findings. The reviewer independently
+verified114retained files/557669721bytes, clean and final diagnostic binaries,
+all four WAV/capture sets, raw test/census instrumentation, complete candidate
+inventory and owning tracker records. The historical initial diagnostic PE is
+explicitly unavailable; its execution SHA/source snapshots/raw records remain.
+The reviewer explicitly instructed recording acceptance and proceeding serially
+to E08 with one fresh validation-only reviewer. PR41 is stacked on E06 PR40; combined owner visual approval,
 merge and release remain pending. Task build trees/logs/private fixtures are
 retained outside delivery folders for this campaign; census binaries are
 preserved under `binaries/census` for review before disposable build cleanup.
