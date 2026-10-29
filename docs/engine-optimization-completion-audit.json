@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Serial E01/E03/E04/E05/E06/E07/E08/E10 selected bounded contracts independently accepted;23original scopes remain open. E10 production96be781/readyPR43 revieweda75cd9f pluscompanionPR7 pin6ecb59e accepted. Exact renderer/simulation ownership and native fallback qualified, pergame timing neutral/inconclusive. Reviewer explicitly instructed E11 next. Combined owner merge/release handoff pending.",
+  "conclusion": "Serial E01/E03/E04/E05/E06/E07/E08/E10 bounded contracts accepted; E11 whole bounded fusion decisively rejected vs existingBATCHED, useful default adoption/provider fixes accepted50b0854/readyPR44 reviewedc405c7e.22originalfamilies remainopen. RKA adoption CPU29.86/30.33percent lower, S1neutral/inconclusive. Reviewer explicitly instructed freshserialE13; E12alreadydelivered. Combined owner merge/release pending.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -18,13 +18,14 @@
   "implementation_counts": {
     "bounded_delivered": 12,
     "rejected_mechanism": 1,
-    "partial": 7,
+    "bounded_rejected": 1,
     "deferred": 15,
+    "partial": 6,
     "existing": 1
   },
-  "remaining_scope_open_count": 23,
-  "count_caveat": "Families overlap. Bounded delivered closes only the selected contract, not every possible optimization. Partial/deferred/rejected-mechanism rows stay open; row counts are not speedups.",
-  "validation": "Source/diff/evidence audit only. No new runtime build, benchmark, game launch or release change.",
+  "remaining_scope_open_count": 22,
+  "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
+  "validation": "Historical released-base source audit plus independently accepted serial E01/E03-E08/E10/E11 implementation/whole-family rejection and built runtime gates; detailed per-family records linked.",
   "entries": [
     {
       "id": "E01",
@@ -317,18 +318,36 @@
       "name": "Fused generic VDP raster",
       "original_goal": "Combine tile/window/scroll spans, decode, priority and shadow/highlight composition in the shared renderer.",
       "recorded_evaluation_status": "implemented_game_qualified",
-      "implementation_state": "partial",
-      "remaining_scope_open": true,
-      "delivered": "Packed tile rows and eight-byte priority/shading composition.",
-      "remaining": "The original full tile/window/scroll/decode/priority production fusion.",
-      "audit_basis": "The renderer still prepares separate plane and sprite arrays and composes in a later pass. Faster kernels are useful but narrower than the stated fusion goal.",
-      "next_closure": "Evaluate one coherent raster production representation on a post-change cartridge workload, retaining all VDP modes and the portable path.",
+      "implementation_state": "bounded_rejected",
+      "remaining_scope_open": false,
+      "delivered": "Complete native direct-stream fusion implemented/qualified/reached, rejected versus best existing BATCHED. Existing BATCHED default adoption and provider compatibility repaired/qualified in50b0854/PR44.",
+      "remaining": "Selected original bounded whole-fusion opportunity decisively rejected, not deferred/partial; no claim every future algorithm is exhausted. Combined owner merge/release handoff remains for useful adoption.",
+      "audit_basis": "Independent validate_e11 accepted source50b0854/readyPR44 reviewedc405c7e, all actual final default artifacts and104rawreceipt hashes. RKA reuse CPU29.86/30.33percent lower, S1neutral/inconclusive; rejectedFUSED counterfactuals/census retained. ENGINE_RASTER_FUSION.md andengine-raster-fusion-results.json.",
+      "next_closure": "Bounded E11 evaluation complete. Finish combined owner handoff; proceed serially E13 with fresh validator.",
       "source_references": [
         "runner/video/genesis_tile_row.h",
         "runner/video/genesis_vdp_compose.h",
         "runner/video/genesis_vdp.c:929",
         "runner/video/genesis_vdp.c:954"
-      ]
+      ],
+      "historical_audit": {
+        "id": "E11",
+        "name": "Fused generic VDP raster",
+        "original_goal": "Combine tile/window/scroll spans, decode, priority and shadow/highlight composition in the shared renderer.",
+        "recorded_evaluation_status": "implemented_game_qualified",
+        "implementation_state": "partial",
+        "remaining_scope_open": true,
+        "delivered": "Packed tile rows and eight-byte priority/shading composition.",
+        "remaining": "The original full tile/window/scroll/decode/priority production fusion.",
+        "audit_basis": "The renderer still prepares separate plane and sprite arrays and composes in a later pass. Faster kernels are useful but narrower than the stated fusion goal.",
+        "next_closure": "Evaluate one coherent raster production representation on a post-change cartridge workload, retaining all VDP modes and the portable path.",
+        "source_references": [
+          "runner/video/genesis_tile_row.h",
+          "runner/video/genesis_vdp_compose.h",
+          "runner/video/genesis_vdp.c:929",
+          "runner/video/genesis_vdp.c:954"
+        ]
+      }
     },
     {
       "id": "E12",

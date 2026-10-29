@@ -4,16 +4,17 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: E01, E03, E04, E05, E06, E07, E08 and E10 now deliver
-selected original bounded contracts; **23 families remain open**. Fresh E10
-review accepted production96be781/ready PR43 reviewed a75cd9f and mechanical
-Sonic1 pin6ecb59e/PR7. Exact built-game outputs and generic local-limit fallback
-are qualified; timing remains neutral/inconclusive. Reviewer explicitly instructed
-E11 next with a fresh validation-only reviewer. Combined owner visual/merge/release
-handoff remains pending. Historical audit narrative below describes the original
-released base; current row dispositions are in the
-[machine-readable audit](engine-optimization-completion-audit.json) and
-[implementation burndown](ENGINE_OPTIMIZATION_BURNDOWN.md).
+Current serial update: E01, E03, E04, E05, E06, E07, E08 and E10 deliver
+selected bounded contracts; E11's complete bounded fusion opportunity was
+implemented/qualified/reached, then decisively rejected versus existing BATCHED.
+Useful BATCHED default adoption/provider fixes50b0854/readyPR44 reviewedc405c7e
+are independently accepted. RKA native-route CPU29.86/30.33percent lower comes
+from reuse/default adoption; S1neutral/inconclusive. **22 families remain open**.
+Reviewer explicitly instructed fresh serial E13; E12alreadydelivered. Combined
+owner visual/merge/release handoff remains pending. Historical narrative below
+describes the original released base; the following36-row table and
+[machine-readable audit](engine-optimization-completion-audit.json) reflect current
+serial dispositions, alongside the [implementation burndown](ENGINE_OPTIMIZATION_BURNDOWN.md).
 
 ## What was actually closed
 
@@ -42,42 +43,42 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 
 | ID | Family | Implementation audit | Delivered or existing portion | Remaining original scope |
 | --- | --- | --- | --- | --- |
-| E01 | Native CD execution regions | Rejected mechanism — family open | Two fault-scope layouts were tried and reverted. | Larger deadline-bounded Main/Sub/Z80 native regions were not implemented. Rejecting fault-setup relocation does not reject region execution. |
-| E02 | Code identity and invalidation | Partial — open | Exact-body catalog compaction and immutable descriptor discovery. | Complete writer/remap ownership and region code identity; per-instruction byte guards remain. |
-| E03 | Owned memory access | Partial — open | Side-effect-free instruction-fetch spans. | General data RAM/ROM/Word RAM region ownership and reduced repeated data-bus decoding. |
-| E04 | Generated native arithmetic and state | Deferred — open | No new emitter-local register/flag region implementation. | Effect metadata, local registers, flag liveness, combined effective addresses and grouped cycle accounting. |
-| E05 | Native call/control-flow consolidation | Deferred — open | Existing cartridge direct-call generation was retained. | New control-flow fusion and larger CD native regions. |
-| E06 | Reusable native Z80 backend | Existing (bounded) | Reusable native Z80 variant executor already existed and remained qualified. | No new engine implementation required for the selected backend contract; driver-specific rollout stays separate. |
-| E07 | Event-driven waits and scheduling | Partial — open | Memoized scanline deadline calculation. | Broader CPU/device/fiber event coalescing and event-driven waits. |
-| E08 | Transfer spans and layout mapping | Deferred — open | Existing exact word-boundary DMA advancement retained. | Qualified bulk transfer and Word RAM layout spans. |
+| E01 | Native CD execution regions | Delivered (bounded) | Qualified bounded native CPU/deadline regions; engine-native-region-results.json. | Selected original bounded contract delivered; merge/owner handoff pending. Future variants not claimed exhausted. |
+| E02 | Code identity and invalidation | Rejected mechanism; family open | Page-version runtime rejected, family remains open; engine-code-identity-results.json. | Other code-identity architectures remain open; rejection of page versions is not broader closure. |
+| E03 | Owned memory access | Delivered (bounded) | Qualified operation-scoped owned data regions and word bus; engine-owned-memory-results.json. | Selected original bounded contract delivered; merge/owner handoff pending. Future variants not claimed exhausted. |
+| E04 | Generated native arithmetic and state | Delivered (bounded) | Implemented common-emitter local D/A/SR spans, backward CCR liveness and exact grouped cycles, plus single-memory-RMW EA/read-write consolidation under complete managed dual ownership. Original bus/control/HLE/WAIT/fault/trace/unsupported exits remain exact. Engine132b84d/core4479e7e; final MSVC/GCC and all three built-game state/pixel/full-WAV routes and cartridge rollback pass. All final game timing neutral/inconclusive, no claimed speedup; r2/r3 regressions rejected, targeted reverse RKA off run does not reproduce the original24percent slowdown. Body proof131573 symbols/36089 redirects; current bytes and descriptor effects/priority unchanged. Cartridge observable bus limits documented. Independent final PR/record gate accepted; validator instructed E05 next. Owner visual handoff pending. See ENGINE_NATIVE_STATE.md, engine-native-state-results.json, beads-3z5k.3/beads-rxq.5. | Selected original bounded contract delivered; merge/owner handoff pending. Future variants not claimed exhausted. |
+| E05 | Native call/control-flow consolidation | Delivered (bounded) | Inline complete native call frames and proven tail continuations; bounded complete-body/alias callgraph co-location; canonical live-guarded CD arithmetic/pure-control regions with exact variable retirement and fixed fallback. MSVC/GCC and all3 built-game gates pass; per-game timing neutral/inconclusive. EnginePR39/corePR10; independent final gate accepted. | Selected native-call/inlining/control-region contract delivered. Whole CD pure-leaf folding rejected after live upper-bound census0Main/19Sub fits among849238calls. Broader code-identity and compiler-wide choices remain independently owned E02/E36; no all-future-optimizations claim. Owner combined visual merge/release handoff pending. |
+| E06 | Reusable native Z80 backend | Delivered (bounded) | Qualified shared uploaded-code/variant build integration, cartridge native scanline slice publication and reproduced boundary/producer fixes; engine424a990 / producerdc775df; PR40/producerPR3. | Selected original bounded engine contract delivered and independently accepted. Combined owner merge/release handoff pending. No claim all future ISA/driver/region alternatives exhausted. |
+| E07 | Event-driven waits and scheduling | Delivered (bounded) | Actual event deadlines and qualified unchanged-clock pre-instruction service; production2079c51/PR41. Real service calls18.3569% fewer, exact clock/CPU work; final4-game-arm/checkpoint/pixel/WAV and6/6 MSVC+GCC pass. | Selected original bounded contract delivered; combined owner visual/merge/release handoff pending. No claim every future engine/game variant exhausted. |
+| E08 | Transfer spans and layout mapping | Delivered (bounded) | Exact inactive DMA clock spans and all-five-band direct cell permutation; full selected-family inventory qualified. ENGINE_TRANSFER_SPANS.md / engine-transfer-span-results.json. | Selected original bounded contract accepted; combined owner merge/release handoff pending. Future consumer/ownership variants not claimed impossible. |
 | E09 | Single image-production ownership | Delivered (bounded) | Reusable CD lazy original-image capture/composition with exact fallback; cartridge already had lazy rows. | The selected ownership/fallback contract is delivered. Other raster/cache/upload goals remain separate. |
-| E10 | Renderer interface independent of aspect ratio | Bounded delivered | Used shared ownership/frame contract, mechanical consumer adoption and exact local-limit fallback; final independent gate accepted. | Combined owner merge/release handoff; no title fidelity rollout implied. |
-| E11 | Fused generic VDP raster | Partial — open | Packed tile rows and eight-byte priority/shading composition. | The original full tile/window/scroll/decode/priority production fusion. |
+| E10 | Renderer interface independent of aspect ratio | Delivered (bounded) | Used independent row-ownership/frame plan, logical viewport preservation, exact all-limit native fallback and mechanical consumer adoption; ENGINE_RENDERER_OWNERSHIP.md. | Selected original bounded contract independently accepted; combined owner visual/merge/release handoff pending. No claim title fidelity rollout or all future optimizations exhausted. |
+| E11 | Fused generic VDP raster | Whole bounded opportunity rejected | Complete native direct-stream fusion implemented/qualified/reached, rejected versus best existing BATCHED. Existing BATCHED default adoption and provider compatibility repaired/qualified in50b0854/PR44. | Selected original bounded whole-fusion opportunity decisively rejected, not deferred/partial; no claim every future algorithm is exhausted. Combined owner merge/release handoff remains for useful adoption. |
 | E12 | Shared sprite evaluation jobs | Delivered (bounded) | CD sprite evaluation captured once for both CPU-visible status and deferred image production. | The selected shared-evaluation contract is delivered; additional caching belongs to E13/E15. |
-| E13 | Versioned generic graphics derivation | Deferred — open | No new complete versioned graphics ownership/cache. | Complete VRAM/CRAM/register/private-writer invalidation or immutable-input cache ownership. |
-| E14 | Native Sega CD stamp-device jobs | Deferred — open | Existing native affine stamp device retained. | A new exact block/span stamp kernel. |
-| E15 | Reuse unchanged hardware render results | Deferred — open | No new generic unchanged-job/image reuse. | Complete intermediate hardware-input identity and reusable render output ownership. |
-| E16 | Final pixels and upload ownership | Partial — open | Lazy CD conversion when original pixels are requested. | Conversion/copy/filter/UI staging/upload ownership across the host boundary. |
-| E17 | Optional generic GPU raster backend | Deferred — open | Immutable CPU raster packets are available; no generic GPU backend was added. | A qualified generic GPU composition implementation with portable CPU fallback. |
-| E18 | Independent engine work scheduling | Deferred — open | No new worker scheduling implementation. | Safe independently owned jobs and overlap without extra emulated latency. |
-| E19 | One ordered audio timeline | Partial — open | Cartridge stable natural-run event ordering, reverse FM pairing and shared sort/defer scratch. | Broader timestamp/deferred-stream representation consolidation beyond this cartridge ordering replacement. |
-| E20 | Faithful FM kernels | Deferred — open | Existing FM block wrapper retained; no new operator/channel kernel. | Actual faithful YM2612 arithmetic/layout/kernel optimization. |
-| E21 | PSG event spans | Partial — open | Exact closed-form settled-muted PSG spans. | Active tone/noise generation spans and filter-tail work. |
-| E22 | Sega CD PCM/CDDA spans | Deferred — open | Existing native timed PCM/CDDA advancement retained. | Block source publication instead of per-sample callbacks, including queue/status behavior. |
-| E23 | Synthesis-to-device pipeline | Deferred — open | No new synthesis-to-device fusion. | Equivalent chip staging/mix/interpolation/filter/device-rate production. |
-| E24 | Audio buffer ownership | Deferred — open | Existing bounded mixed frame and device-locked handoff retained. | Qualified reduction of callback locks/copies/shared state. |
-| E25 | Exact constant/silent spans | Partial — open | Exact settled PSG silence, shared with E21. | Constant/silent PCM and CDDA runs with queue/timestamp/fader evolution. |
-| E26 | Bounded generic media prefetch | Partial — open | Redundant seeks removed so bounded 1 MiB stdio read-ahead works. | Actual asynchronous request-driven prefetch off the simulation path. |
-| E27 | Verified media handoff contract | Deferred — open | No generic verified media handoff. | Safe reuse of complete launch verification across a generic immutable media handoff. |
+| E13 | Versioned generic graphics derivation | Deferred; open | No new complete versioned graphics ownership/cache. | Complete VRAM/CRAM/register/private-writer invalidation or immutable-input cache ownership. |
+| E14 | Native Sega CD stamp-device jobs | Deferred; open | Existing native affine stamp device retained. | A new exact block/span stamp kernel. |
+| E15 | Reuse unchanged hardware render results | Deferred; open | No new generic unchanged-job/image reuse. | Complete intermediate hardware-input identity and reusable render output ownership. |
+| E16 | Final pixels and upload ownership | Partial; open | Lazy CD conversion when original pixels are requested. | Conversion/copy/filter/UI staging/upload ownership across the host boundary. |
+| E17 | Optional generic GPU raster backend | Deferred; open | Immutable CPU raster packets are available; no generic GPU backend was added. | A qualified generic GPU composition implementation with portable CPU fallback. |
+| E18 | Independent engine work scheduling | Deferred; open | No new worker scheduling implementation. | Safe independently owned jobs and overlap without extra emulated latency. |
+| E19 | One ordered audio timeline | Partial; open | Cartridge stable natural-run event ordering, reverse FM pairing and shared sort/defer scratch. | Broader timestamp/deferred-stream representation consolidation beyond this cartridge ordering replacement. |
+| E20 | Faithful FM kernels | Deferred; open | Existing FM block wrapper retained; no new operator/channel kernel. | Actual faithful YM2612 arithmetic/layout/kernel optimization. |
+| E21 | PSG event spans | Partial; open | Exact closed-form settled-muted PSG spans. | Active tone/noise generation spans and filter-tail work. |
+| E22 | Sega CD PCM/CDDA spans | Deferred; open | Existing native timed PCM/CDDA advancement retained. | Block source publication instead of per-sample callbacks, including queue/status behavior. |
+| E23 | Synthesis-to-device pipeline | Deferred; open | No new synthesis-to-device fusion. | Equivalent chip staging/mix/interpolation/filter/device-rate production. |
+| E24 | Audio buffer ownership | Deferred; open | Existing bounded mixed frame and device-locked handoff retained. | Qualified reduction of callback locks/copies/shared state. |
+| E25 | Exact constant/silent spans | Partial; open | Exact settled PSG silence, shared with E21. | Constant/silent PCM and CDDA runs with queue/timestamp/fader evolution. |
+| E26 | Bounded generic media prefetch | Partial; open | Redundant seeks removed so bounded 1 MiB stdio read-ahead works. | Actual asynchronous request-driven prefetch off the simulation path. |
+| E27 | Verified media handoff contract | Deferred; open | No generic verified media handoff. | Safe reuse of complete launch verification across a generic immutable media handoff. |
 | E28 | Portable full-media validation | Delivered (bounded) | Optional OpenSSL full-payload SHA outside Windows, existing CNG and full portable restart/fallback. | The selected accelerated full-verification contract is delivered; immutable-sector reuse was not implemented or globally exhausted. |
 | E29 | Resident-media representation | Delivered (bounded) | Read-only mapped first-data-track residency with bounded copied fallback. | The selected lower-private-copy representation is delivered; this does not exhaust all raw/user-sector representation alternatives. |
-| E30 | Reusable console-firmware services | Deferred — open | Native BIOS instruction catalog retained; no new reusable whole-service HLE. | A named standard firmware service ABI with complete reusable effects. |
-| E31 | Engine snapshot representation and identity | Deferred — open | Existing authoritative section table and full-byte checksum retained. | Generic writer ownership, dirty pages/deltas/checkpoints and exact incremental identity. |
-| E32 | Serializer and snapshot storage | Deferred — open | Existing snapshot ownership/atomic-save implementation retained. | Generic transactional borrow/capacity/commit storage or pooling where useful. |
+| E30 | Reusable console-firmware services | Deferred; open | Native BIOS instruction catalog retained; no new reusable whole-service HLE. | A named standard firmware service ABI with complete reusable effects. |
+| E31 | Engine snapshot representation and identity | Deferred; open | Existing authoritative section table and full-byte checksum retained. | Generic writer ownership, dirty pages/deltas/checkpoints and exact incremental identity. |
+| E32 | Serializer and snapshot storage | Deferred; open | Existing snapshot ownership/atomic-save implementation retained. | Generic transactional borrow/capacity/commit storage or pooling where useful. |
 | E33 | Discarded-replay engine work | Existing (bounded) | Discarded cartridge replay already omits derived image work while retaining authoritative status/audio. | No remaining shared cartridge image work demonstrated at this base; title publication remains separate and CD work is E09. |
-| E34 | Host presentation/deadline pipeline | Deferred — open | Previously delivered cartridge D3D11/high-resolution pacing retained. | Further shared presentation/upload/UI ownership and CD pacing consolidation. |
-| E35 | Asynchronous engine persistence and diagnostics | Deferred — open | Existing dirty-tracked/minute-rate evidence and opt-in tracing retained. | Async immutable persistence or bounded trace rings for an enabled costly workload. |
-| E36 | Whole-program native build optimization | Partial — open | Generated catalog compaction under ordinary linking, shared with E02. | Actual matched LTO/PGO/cross-TU/hot-cold layout evaluation and qualification. |
+| E34 | Host presentation/deadline pipeline | Deferred; open | Previously delivered cartridge D3D11/high-resolution pacing retained. | Further shared presentation/upload/UI ownership and CD pacing consolidation. |
+| E35 | Asynchronous engine persistence and diagnostics | Deferred; open | Existing dirty-tracked/minute-rate evidence and opt-in tracing retained. | Async immutable persistence or bounded trace rings for an enabled costly workload. |
+| E36 | Whole-program native build optimization | Partial; open | Generated catalog compaction under ordinary linking, shared with E02. | Actual matched LTO/PGO/cross-TU/hot-cold layout evaluation and qualification. |
 
 ## Why several closures were too weak
 
@@ -192,11 +193,12 @@ Production96be781; PR43 revieweda75cd9f; companionPR7 pin6ecb59e.
 
 ### E11: Fused generic VDP raster
 
-The renderer still prepares separate plane and sprite arrays and composes in a later pass. Faster kernels are useful but narrower than the stated fusion goal.
-
-**Next closure:** Evaluate one coherent raster production representation on a post-change cartridge workload, retaining all VDP modes and the portable path.
-
-Sources: `runner/video/genesis_tile_row.h`, `runner/video/genesis_vdp_compose.h`, `runner/video/genesis_vdp.c:929`, `runner/video/genesis_vdp.c:954`. Historical evaluation: `implemented_game_qualified`.
+Complete bounded opportunity independently evaluated and rejected versus best
+existing BATCHED, not deferred or partially delivered. Useful existing BATCHED
+default adoption/provider fixes50b0854/PR44 accepted with exact built outputs,
+portable tests and per-game runtime qualification. See [complete inventory and
+failed experiment evidence](ENGINE_RASTER_FUSION.md). Reviewer instructed E13 next;
+combined owner handoff remains.
 
 ### E12: Shared sprite evaluation jobs
 
