@@ -2,6 +2,7 @@
 
 Owner `beads-3z5k.9`, parent `beads-3z5k`, campaign `beads-2wy8.1`.
 Base `4166e74` (compiled production `96be781`), retained production `50b0854`.
+Engine [PR44](https://github.com/mstan/segagenesisrecomp/pull/44) stacks on PR43.
 Independent source/tests accepted; final PR/record gate pending. No merge/release approval.
 
 The full native tile/window/scroll/decode/priority/shadow fusion was implemented,
