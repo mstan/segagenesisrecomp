@@ -105,7 +105,10 @@ int segacd_coordinator_main_data_region(SegaCDCoordinator *,M68kStepDataResolver
 /* Qualify only with complete effect metadata and interval-composable device
  * sinks. Host observers must report every observable deadline through
  * host_next_event; instrumentation observing every old advance call instead
- * of emulated events must retain the ordinary step interface. */
+ * of emulated events must retain the ordinary step interface. Qualified
+ * native regions and all-STOP run_until waits service actual device/host
+ * deadlines, rather than artificial384-clock polls. A host advance callback
+ * without a next-event provider retains the bounded cadence. */
 int segacd_coordinator_region_effects(SegaCDCoordinator *,SegaCDCpu,
                                      const M68kStepEffectModule *,size_t);
 /* Sorted unique-PC companions for the exact current registry's FIRST entries.
