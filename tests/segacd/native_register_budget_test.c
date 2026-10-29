@@ -51,7 +51,13 @@ int main(void)
         for(unsigned n=0;n<count;++n)retire(&ordinary,4+(n%3)*2,1);
         retire(&span,total,count);
         CHECK(!ordinary.observable&&!span.observable);
-        CHECK(!memcmp(&ordinary,&span,sizeof ordinary));
+        /* Struct padding is not architectural state and GCC may leave the
+         * assignment's tail padding unspecified. Compare every actual field. */
+        CHECK(ordinary.cycle==span.cycle&&ordinary.audio==span.audio&&ordinary.seen==span.seen&&
+              ordinary.stalls==span.stalls&&ordinary.instructions==span.instructions&&
+              ordinary.base==span.base&&ordinary.budget==span.budget&&
+              ordinary.active==span.active&&ordinary.service==span.service&&
+              ordinary.divisor==span.divisor&&ordinary.observable==span.observable);
         ++hits;if(before.cycle>=BUDGET_CHECK&&before.active&&!before.service)++above;
     }
     CHECK(hits&&above);
