@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Serial E01/E03/E04/E05/E06/E07/E08/E10 bounded contracts accepted; E11 whole bounded fusion decisively rejected vs existingBATCHED, useful default adoption/provider fixes accepted50b0854/readyPR44 reviewedc405c7e.22originalfamilies remainopen. RKA adoption CPU29.86/30.33percent lower, S1neutral/inconclusive. Reviewer explicitly instructed freshserialE13; E12alreadydelivered. Combined owner merge/release pending.",
+  "conclusion": "Serial E01/E03/E04/E05/E06/E07/E08/E10 selected bounded contracts accepted. E11 wholefusion/E13 completegraphicsderivation architectures bounded rejected after actualqualification; useful existingBATCHED default/providerfix andpureimmutableDAC retained/accepted. E13production999f392/readyPR45 reviewed5576577, pergameallneutral/inconclusive,no gainclaim.21originalfamiliesremainopen; reviewer explicitlyinstructed freshserialE14. Combined ownermerge/releasepending.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -18,12 +18,12 @@
   "implementation_counts": {
     "bounded_delivered": 12,
     "rejected_mechanism": 1,
-    "bounded_rejected": 1,
-    "deferred": 15,
+    "bounded_rejected": 2,
+    "deferred": 14,
     "partial": 6,
     "existing": 1
   },
-  "remaining_scope_open_count": 22,
+  "remaining_scope_open_count": 21,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historical released-base source audit plus independently accepted serial E01/E03-E08/E10/E11 implementation/whole-family rejection and built runtime gates; detailed per-family records linked.",
   "entries": [
@@ -371,17 +371,34 @@
       "name": "Versioned generic graphics derivation",
       "original_goal": "Cache decoded VDP art, palettes and geometry only at verified VRAM/CRAM/register change boundaries.",
       "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "No new complete versioned graphics ownership/cache.",
-      "remaining": "Complete VRAM/CRAM/register/private-writer invalidation or immutable-input cache ownership.",
-      "audit_basis": "Public/direct/import writes require a complete writer model. The 0.086% CD resolve_row sample does not rule out cartridge decode or art-cache work.",
-      "next_closure": "Use a representative cartridge raster workload; design complete producer ownership or full input identity rather than bus-only epochs.",
+      "implementation_state": "bounded_rejected",
+      "remaining_scope_open": false,
+      "delivered": "Full art/palette/geometry complete-input architecture1d0aab9 implemented/qualified/actuallyused, rejected for no demonstratedgain. Useful finite immutable DAC domain999f392/PR45 retained and independentlyaccepted; mutable caches removed.",
+      "remaining": "Selected whole bounded opportunity evaluated/rejected, not partial/deferral or universal futuredesign exhaustion. Combined owner merge/release handoff remains for palette-only package.",
+      "audit_basis": "Fresh validate_e13 FINAL ACCEPTED production999/readyPR45 reviewed5576577;78rawhashes302files/3737436522bytes verified, exactplatform/builtstate/fullWAV/pixels/currentstate/CDroutes andpergameneutrality. Actualcachehitproof retained, finalS1oppositeordercostclarification neutral. ENGINE_GRAPHICS_DERIVATION.md/results.",
+      "next_closure": "E13 bounded evaluation complete. Finish combined owner handoff; proceed serially originalE14 with fresh validator.",
       "source_references": [
         "runner/video/genesis_vdp.c",
         "runner/video/genesis_bus.c",
         "runner/video/genesis_machine.c"
-      ]
+      ],
+      "historical_audit": {
+        "id": "E13",
+        "name": "Versioned generic graphics derivation",
+        "original_goal": "Cache decoded VDP art, palettes and geometry only at verified VRAM/CRAM/register change boundaries.",
+        "recorded_evaluation_status": "evaluated_deferred",
+        "implementation_state": "deferred",
+        "remaining_scope_open": true,
+        "delivered": "No new complete versioned graphics ownership/cache.",
+        "remaining": "Complete VRAM/CRAM/register/private-writer invalidation or immutable-input cache ownership.",
+        "audit_basis": "Public/direct/import writes require a complete writer model. The 0.086% CD resolve_row sample does not rule out cartridge decode or art-cache work.",
+        "next_closure": "Use a representative cartridge raster workload; design complete producer ownership or full input identity rather than bus-only epochs.",
+        "source_references": [
+          "runner/video/genesis_vdp.c",
+          "runner/video/genesis_bus.c",
+          "runner/video/genesis_machine.c"
+        ]
+      }
     },
     {
       "id": "E14",
