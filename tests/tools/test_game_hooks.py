@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Execute sparse instruction hooks in real generated C; no game ROM needed."""
 import argparse
+import os
 from pathlib import Path
 import tempfile
 from test_stack_skip import CONFIG, HARNESS, run
@@ -33,7 +34,9 @@ int main(int argc,char **argv) {
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--recompiler",type=Path,required=True)
-    ap.add_argument("--cc",type=Path,required=True)
+    compiler=ap.add_mutually_exclusive_group(required=True)
+    compiler.add_argument("--cc",type=Path)
+    compiler.add_argument("--cmake",type=Path)
     args=ap.parse_args()
     root=Path(__file__).resolve().parents[2]
     with tempfile.TemporaryDirectory(prefix="genesis-game-hooks-") as temp:
@@ -57,7 +60,16 @@ def main():
             count=sum(p.read_text().count("genesis_game_instruction_hook(") for p in sources[:-1])
             if count!=1:raise RuntimeError(f"expected one sparse hook, found {count}")
             exe=td/"test.exe"
-            run([args.cc.resolve(),"-std=c11","-O1","-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
+            if args.cmake:
+                listing='\n'.join(' "'+p.as_posix()+'"' for p in sources)
+                (td/"CMakeLists.txt").write_text('cmake_minimum_required(VERSION 3.16)\nproject(Hooks C)\nadd_executable(hooks\n'+listing+'\n)\ntarget_include_directories(hooks PRIVATE "'+(root/"runner/include").as_posix()+'" "'+(root/"runner").as_posix()+'")\ntarget_compile_features(hooks PRIVATE c_std_11)\n',encoding='utf8')
+                configure=[args.cmake.resolve(),'-S',td,'-B',td/'build']
+                if os.name=='nt':configure+=['-G','Visual Studio 17 2022','-A','x64']
+                run(configure,td)
+                run([args.cmake.resolve(),'--build',td/'build','--config','Release','--parallel','1'],td)
+                exe=td/'build/Release/hooks.exe'
+            else:
+                run([args.cc.resolve(),"-std=c11","-O1","-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
             for mode in (0,1,2):
                 run([exe,str(mode)],td)
                 print(f"PASS game hook mode={mode} split={split}")
