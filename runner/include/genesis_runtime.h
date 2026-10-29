@@ -212,6 +212,9 @@ extern uint64_t g_frame_count;
  * Ticked by generated C once per decoded 68K instruction; defined in
  * runner/glue.c. 0 on oracle (generated functions don't execute). */
 extern uint64_t g_native_insn_count;
+/* Host diagnostic only; not simulated state or a speedup measurement. */
+extern uint64_t g_native_span_count;
+#define GEN_NATIVE_SPAN_RETIRED() (++g_native_span_count)
 
 /* ---- Contextual recompiler: cycle-accurate VBlank ---- */
 /* Accumulated 68K cycles since frame start. When this reaches the VBlank

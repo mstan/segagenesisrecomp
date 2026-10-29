@@ -22,6 +22,7 @@ static uint64_t event(void*u){(void)u;return next_event;}
 static uint64_t third(void*u){(void)u;return third_clock;}
 static void increment(M68kStepContext*cpu){++cpu->state.regs.D[0];cpu->state.regs.SR=(uint16_t)((cpu->state.regs.SR&0xffe0u)|(cpu->state.regs.D[0]&31u));}
 static void span_operation(M68kStepContext*cpu){increment(cpu);increment(cpu);increment(cpu);increment(cpu);}
+static void two_operations(M68kStepContext*cpu){increment(cpu);increment(cpu);}
 static void observed(M68kStepContext*cpu){record();cpu->state.regs.PC=0x100;}
 static const M68kStepEntry entries[]={
  {0x100,{0x7001},1,4,increment},{0x102,{0x7001},1,4,increment},
@@ -91,6 +92,10 @@ int main(void)
  CHECK(segacd_coordinator_region_effects(&c,SEGACD_MAIN,changed,1));CHECK(!segacd_coordinator_register_spans(&c,SEGACD_MAIN,spans,1));
  setup(1,0);CHECK(segacd_coordinator_modules(&c,SEGACD_MAIN,prepend_modules,2));
  CHECK(!segacd_coordinator_register_spans(&c,SEGACD_MAIN,spans,1));
+ const M68kStepRegisterSpan partial[]={{members,two_operations,2,8},{members+2,two_operations,2,8}};
+ CHECK(segacd_coordinator_register_spans(&c,SEGACD_MAIN,partial,2));
+ CHECK(c.register_span_qualified[0][0]==2); /* only the unshadowed second span */
+ CHECK(segacd_coordinator_run_until(&c,300)==M68K_STEP_OK && c.span_instructions[0]>0);
  /* Guard/budget/trace/fault rejection changes no CPU state, including charge. */
  setup(1,0);M68kStepContext *cpu=&c.cpu[0];
  M68kStepContext before=*cpu;CHECK(m68k_step_execute_span(cpu,spans,15)==M68K_STEP_MISS);CHECK(!memcmp(&before,cpu,sizeof before));

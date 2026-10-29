@@ -9,6 +9,7 @@
 typedef struct SegaCDCoordinator SegaCDCoordinator;
 typedef struct {SegaCDCoordinator *owner;SegaCDCpu cpu;} SegaCDBusBinding;
 #define SEGACD_CDD_TRACE_CAPACITY 64u
+enum { SEGACD_REGISTER_SPAN_LIMIT=8192 };
 typedef struct {
     uint8_t packet[10];
     uint32_t instruction_pc;
@@ -78,6 +79,7 @@ struct SegaCDCoordinator {
     uint8_t region_event_valid;
     const M68kStepRegisterSpan *register_spans[2];
     size_t register_span_count[2];
+    uint8_t register_span_qualified[2][SEGACD_REGISTER_SPAN_LIMIT/8];
     uint64_t span_runs[2],span_instructions[2];
 };
 
@@ -102,7 +104,8 @@ int segacd_coordinator_main_data_region(SegaCDCoordinator *,M68kStepDataResolver
 int segacd_coordinator_region_effects(SegaCDCoordinator *,SegaCDCpu,
                                      const M68kStepEffectModule *,size_t);
 /* Sorted unique-PC companions for the exact current registry's FIRST entries.
- * Configuration verifies every member's descriptor/effect/priority. Replacing
+ * Configuration verifies every member's descriptor/effect/priority and filters
+ * spans shadowed by runtime HLE/other modules. Replacing
  * modules or effect metadata revokes spans; requalify after all HLE prepends.
  * No cross-CPU reorder: complete spans must fit before the other CPU is due. */
 int segacd_coordinator_register_spans(SegaCDCoordinator *,SegaCDCpu,

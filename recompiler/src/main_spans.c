@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-typedef struct {M68KInstr ins;char array[128];unsigned index,cycles;int qualified;} Record;
+typedef struct {M68KInstr ins;char array[128],symbol[128];unsigned index,cycles;int qualified;} Record;
 static void fail(const char*s){fprintf(stderr,"M68kSpanRecomp: %s\n",s);exit(1);}
 static uint8_t read_byte(uint32_t address,void*user)
 {
@@ -19,6 +19,19 @@ static FILE *output(const char*dir,const char*name,const char*suffix)
  FILE*f=fopen(path,"wb");if(!f)fail("cannot open output");return f;
 }
 static void close_file(FILE*f){if(ferror(f)||fclose(f))fail("output write failed");}
+static void ordinary_body(FILE *proof,const Record *record,const GenesisRom *rom)
+{
+ FILE*buffer=tmpfile();if(!buffer)fail("cannot open ordinary body buffer");
+ if(!codegen_emit_step_operation(buffer,rom,&record->ins)||fflush(buffer))fail("ordinary emission failed");
+ long size=ftell(buffer);if(size<0||fseek(buffer,0,SEEK_SET))fail("ordinary body read failed");
+ fprintf(proof,"[\"%s\",\"",record->symbol);
+ for(long n=0;n<size;++n){int ch=fgetc(buffer);if(ch==EOF)fail("short ordinary body");
+  if(ch=='\n')fputs("\\n",proof);else if(ch=='\r')fputs("\\r",proof);
+  else if(ch=='\t')fputs("\\t",proof);else if(ch=='\\'||ch=='\"'){fputc('\\',proof);fputc(ch,proof);}
+  else if(ch<32)fail("invalid ordinary body character");else fputc(ch,proof);
+ }
+ fputs("\"]\n",proof);close_file(buffer);
+}
 int main(int argc,char**argv)
 {
  if(argc!=4)fail("usage: M68kSpanRecomp INPUT OUTPUT_DIR PREFIX");
@@ -34,6 +47,8 @@ int main(int argc,char**argv)
   for(const char*p=record.array;*p;++p)if(!isalnum((unsigned char)*p)&&*p!='_')fail("bad array identifier");
   record.ins.addr=pc;
   for(unsigned w=0;w<words;++w){unsigned value;if(fscanf(input,"%x",&value)!=1||value>65535u)fail("bad instruction words");record.ins.words[w]=(uint16_t)value;}
+  if(fscanf(input,"%127s",record.symbol)!=1)fail("missing original symbol");
+  for(const char*p=record.symbol;*p;++p)if(!isalnum((unsigned char)*p)&&*p!='_')fail("bad operation identifier");
   GenesisRom rom={0};rom.rom_size=0x1000000u;rom.read8_override=read_byte;rom.read8_user=&record;
   M68KInstr decoded;
   record.qualified=effect==1u&&m68k_decode_68000(&rom,pc,&decoded)&&
@@ -46,6 +61,7 @@ int main(int argc,char**argv)
  if(ferror(input)||fclose(input))fail("input read failed");
  FILE*parts[32];for(unsigned n=0;n<32;++n){char suffix[32];snprintf(suffix,sizeof suffix,"_part%02u.c",n);parts[n]=output(argv[2],prefix,suffix);fputs("#include \"m68k_step_bind.h\"\n",parts[n]);}
  FILE*module=output(argv[2],prefix,"_module.c");fputs("#include \"m68k_step.h\"\n",module);
+ FILE*proof=output(argv[2],prefix,"_ordinary_bodies.jsonl");
  FILE*table=tmpfile();if(!table)fail("cannot open table buffer");
  unsigned spans=0,instructions=0;
  for(size_t s=0;s<count;){
@@ -58,6 +74,7 @@ int main(int argc,char**argv)
   for(unsigned n=0;n<length;++n)fprintf(part,"%s&%s[%u]",n?",":"",rows[s+n].array,rows[s+n].index);
   fprintf(part,"};\nvoid %s_span_%u(M68kStepContext*ctx){\n",prefix,spans);
   GenesisRom rom={0}; /* Common semantics consume decoded extension words. */
+  for(unsigned n=0;n<length;++n)ordinary_body(proof,&rows[s+n],&rom);
   if(!codegen_emit_register_span(part,&rom,ins,length))fail("span emission failed");fputs("}\n",part);
   fprintf(module,"extern const M68kStepEntry *const %s_members_%u[];\nextern void %s_span_%u(M68kStepContext*);\n",prefix,spans,prefix,spans);
   fprintf(table," {%s_members_%u,%s_span_%u,%u,%u},\n",prefix,spans,prefix,spans,length,cycles);
@@ -66,6 +83,6 @@ int main(int argc,char**argv)
  if(spans){fprintf(module,"const M68kStepRegisterSpan %s_spans[]={\n",prefix);rewind(table);int ch;while((ch=fgetc(table))!=EOF)fputc(ch,module);fputs("};\n",module);}
  else fprintf(module,"const M68kStepRegisterSpan %s_spans[1]={{0}};\n",prefix);
  fprintf(module,"const size_t %s_count=%u;\n",prefix,spans);
- close_file(table);close_file(module);for(unsigned n=0;n<32;++n)close_file(parts[n]);
+ close_file(table);close_file(module);close_file(proof);for(unsigned n=0;n<32;++n)close_file(parts[n]);
  printf("%s: %zu descriptors, %u spans, %u instructions\n",prefix,count,spans,instructions);free(rows);return 0;
 }

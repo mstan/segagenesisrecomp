@@ -333,6 +333,9 @@ if(NOT CMAKE_CROSSCOMPILING)
   target_include_directories(segacd_span_recompiler PRIVATE ${step_includes} "${engine_root}/recompiler/src")
   target_compile_features(segacd_span_recompiler PRIVATE c_std_11)
   if(Python3_Interpreter_FOUND)
+    add_test(NAME segacd_register_span_catalog
+      COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/register_span_catalog_test.py"
+        "$<TARGET_FILE:segacd_module_recompiler>" "$<TARGET_FILE:segacd_span_recompiler>")
     add_test(NAME segacd_owned_native_generation
       COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/owned_native_generate_test.py"
         "$<TARGET_FILE:segacd_module_recompiler>")
