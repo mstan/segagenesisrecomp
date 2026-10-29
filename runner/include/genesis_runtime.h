@@ -214,11 +214,8 @@ extern uint64_t g_frame_count;
 extern uint64_t g_native_insn_count;
 /* Host diagnostic only; not simulated state or a speedup measurement. */
 extern uint64_t g_native_span_count;
-int glue_native_register_span_ready(unsigned cycles, unsigned instructions);
-void glue_native_register_span_retired(void);
-#define GEN_NATIVE_REGISTER_SPAN_READY(cycles, instructions) \
-    glue_native_register_span_ready((cycles), (instructions))
-#define GEN_NATIVE_SPAN_RETIRED() glue_native_register_span_retired()
+#define GEN_NATIVE_SPAN_RETIRED() do { ++g_native_span_count; \
+    if(g_cycle_accumulator>=g_vblank_threshold)glue_check_vblank(); } while(0)
 
 /* ---- Contextual recompiler: cycle-accurate VBlank ---- */
 /* Accumulated 68K cycles since frame start. When this reaches the VBlank
@@ -234,6 +231,26 @@ void glue_check_vblank(void);
  * register writes onto the cycle-stamped event queue consumed by the
  * audio mixer (runner/audio/). Defined in runner/glue.c. */
 extern uint32_t g_audio_cycle_counter;
+
+#include "native_register_budget.h"
+static inline int genesis_native_register_span_ready(unsigned cycles,unsigned count)
+{
+    if(!cycles||!count)return 0;
+    uint32_t cycle=g_cycle_accumulator,threshold=g_vblank_threshold;
+    /* No ordinary retirement check runs in this phase. Retain the small
+     * original guard without reading private budget/watchdog state. */
+    if(threshold<=2u*GENESIS_NATIVE_WALL_FRAME_CYCLES &&
+       cycle<threshold && cycles<threshold-cycle)return 1;
+    const GenesisNativeRegisterBudget *b=&g_native_register_budget;
+    return genesis_native_register_budget(cycle,g_audio_cycle_counter,
+        g_native_insn_count,b->watchdog_base,GENESIS_NATIVE_WATCHDOG_LIMIT,
+        2u*GENESIS_NATIVE_WALL_FRAME_CYCLES,b->interleave_active,b->in_vblank_service,
+        b->main_cpu_divisor,b->cycle_budget,b->budget_cyc_seen,cycles,count);
+}
+#ifndef GEN_NATIVE_REGISTER_SPAN_READY
+#define GEN_NATIVE_REGISTER_SPAN_READY(cycles, count) \
+    genesis_native_register_span_ready((cycles), (count))
+#endif
 
 /* ---- Differential co-simulation per-instruction checkpoint hook ----------
  * GEN_COSIM_TICK(n) is emitted per instruction by the generator
