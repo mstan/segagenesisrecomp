@@ -20,6 +20,9 @@ static M68kStepResult nested_result;
 static unsigned audio_events;
 static int try_reentry;
 static unsigned video_rows;
+static unsigned control_after,control_count,control_kind;
+static uint64_t retired_at_control;
+static int control_inside_z80;
 static void video_observer(void *user,const SegaCDMachine *m,unsigned row)
 {
     CHECK(user==&video_rows&&m==&machine);
@@ -43,6 +46,11 @@ static void first_main_instruction(M68kStepContext *ctx)
 
 static void loop_main_instruction(M68kStepContext *ctx)
 {
+    if(control_after && ++control_count==control_after) {
+        retired_at_control=machine.z80.retired;control_inside_z80=machine.z80.in_step;
+        /* Real 68000 MMIO, not a host-side flag or test-only stop hook. */
+        m68k_step_write16(ctx,control_kind?0xA11200u:0xA11100u,control_kind?0u:0x0100u);
+    }
     /* Read the real Genesis controller bus each pass; RIGHT is active-low in
      * the TH-high 3-button protocol. */
     ctx->state.regs.D[0]=m68k_step_read8(ctx,0xA10003u);
@@ -64,6 +72,7 @@ static void audio_observer(void *user,uint64_t clock,uint8_t port,uint8_t value)
 
 static void setup(int with_main)
 {
+    control_after=control_count=control_kind=0;retired_at_control=0;control_inside_z80=0;
     memset(&machine,0,sizeof machine);memset(bios,0,sizeof bios);
     put32(bios,0xFFFF1800u);put32(bios+4,0x100u);
     /* VDP vertical interrupt autovector 30 returns to the same test loop. */
@@ -82,6 +91,40 @@ static void setup(int with_main)
     machine.bus.pad_type[0]=0;machine.bus.io_data[0]=0x40;
     segacd_machine_pad(&machine,0,GPAD_RIGHT|GPAD_START);
     machine.vdp.reg[1]|=0x20u; /* V interrupt enabled. */
+}
+
+static void test_continuous_busreq_and_reset_boundaries(void)
+{
+    static SegaCDMachine expected;
+    const unsigned positions[]={1,2,7,31};
+    for(unsigned kind=0;kind<2;++kind)for(unsigned n=0;n<sizeof positions/sizeof*positions;++n){
+        uint64_t expected_cutoff=0;
+        for(unsigned interval=0;interval<2;++interval){
+            setup(1);control_kind=kind;control_after=positions[n];audio_events=0;
+            machine.bus.z80_reset_off=1;machine.bus.z80_ram[1]=0x76;machine.z80.state.pc=1;
+            if(interval)CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_OK);
+            else do{CHECK(segacd_machine_step(&machine)==M68K_STEP_OK);}while(!machine.frames);
+            CHECK(control_count>=control_after && control_inside_z80);
+            CHECK(machine.z80.retired==retired_at_control+1); /* finish only the current instruction */
+            CHECK(kind?!machine.bus.z80_reset_off:machine.bus.z80_busreq);
+            CHECK(!machine.z80.in_step && audio_events==1);
+            if(!interval){expected=machine;expected_cutoff=retired_at_control;}
+            else{
+                CHECK(retired_at_control==expected_cutoff);
+                CHECK(!memcmp(&expected.z80,&machine.z80,sizeof machine.z80));
+                CHECK(!memcmp(&expected.coordinator.cpu[0].state,&machine.coordinator.cpu[0].state,sizeof(M68kStepState)));
+                CHECK(!memcmp(&expected.coordinator.cpu[1].state,&machine.coordinator.cpu[1].state,sizeof(M68kStepState)));
+                CHECK(!memcmp(expected.coordinator.time,machine.coordinator.time,sizeof machine.coordinator.time));
+                CHECK(expected.coordinator.device_time==machine.coordinator.device_time&&expected.coordinator.main_remainder==machine.coordinator.main_remainder);
+                CHECK(!memcmp(&expected.devices,&machine.devices,sizeof machine.devices));
+                CHECK(!memcmp(&expected.bus,&machine.bus,sizeof machine.bus));
+                CHECK(!memcmp(&expected.vdp,&machine.vdp,sizeof machine.vdp));
+                CHECK(!memcmp(expected.pixels,machine.pixels,sizeof machine.pixels));
+            }
+            segacd_machine_close(&machine);
+        }
+    }
+    puts("native machine: eight in-interval MMIO BUSREQ/reset boundaries match single-step CPU/device/Z80/bus/pixels");
 }
 
 static void test_full_frame_video_irq_and_controls(void)
@@ -288,6 +331,7 @@ static void test_deferred_raster_contract(void)
 int main(void)
 {
     test_full_frame_video_irq_and_controls();
+    test_continuous_busreq_and_reset_boundaries();
     test_machine_reentry_from_audio_observer();
     test_raster_deadline_counter_replacement();
     test_native_miss_is_terminal_without_floor();

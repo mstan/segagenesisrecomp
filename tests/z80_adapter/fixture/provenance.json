@@ -1,0 +1,20 @@
+{
+  "producer_source_commit": "dc775dfba5c188396f924efa6d756467a87ea866",
+  "producer_binary_sha256": "11a8f4b91a397fa897aded90b671dcd11bd29a8595ff1e55e4cc0e7a8ced4440",
+  "base_hex": "3e1100000000000032004000000000003a0040000000000022004000000000002a00400000000000dd86000000000000fd960000000000000400013412000000",
+  "variant_hex": "3e1100000000000032004000000000003a0040000000000022004000000000002a00400000000000dd86000000000000fd960000000000000500013412000000",
+  "command": [
+    "SmsRecomp",
+    "--game",
+    "game.toml",
+    "--flat-step",
+    "--flat-step-variant",
+    "variant.bin"
+  ],
+  "canonical_newlines": "LF",
+  "stdout": "[SmsRecomp] SMS/GG Z80 static recompiler\n[cfg] prefix=proof_variants platform=sms rom=base.bin extras=0 blacklist=0\n[rom] C:\\Users\\Matthew\\AppData\\Local\\Temp\\genesis-z80-fixture-kwmggkcy\\base.bin\n[rom]   size=64 bytes (1 x 16KB banks)\n[rom]   crc32=0x98BAB8B6\n[rom]   platform=MasterSystem region=Unknown mapper=None(<=48KB)\n[rom]   no TMR SEGA footer (homebrew/Codemasters/early title)\n[rom] C:\\Users\\Matthew\\AppData\\Local\\Temp\\genesis-z80-fixture-kwmggkcy\\variant.bin\n[rom]   size=64 bytes (1 x 16KB banks)\n[rom]   crc32=0x5410B828\n[rom]   platform=MasterSystem region=Unknown mapper=None(<=48KB)\n[rom]   no TMR SEGA footer (homebrew/Codemasters/early title)\n[cg_flat] wrote 64 instruction entries with 1 byte-sequence variants (64-byte image) to C:\\Users\\Matthew\\AppData\\Local\\Temp\\genesis-z80-fixture-kwmggkcy\\generated/proof_variants_step.{c,h}\n",
+  "outputs": {
+    "proof_variants_step.c": "f4ef189080104c5d13d3a87c8cb7b4f0d3fb4d94da409413ed514cabd3f46f58",
+    "proof_variants_step.h": "90090afb519992b04276340678347ef88e1839f6138d514368d5f4ec1e5b4e49"
+  }
+}

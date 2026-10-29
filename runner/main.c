@@ -3839,6 +3839,16 @@ session_begin:;
         }
     }
     rb_probe_summary();
+#ifdef GENESIS_Z80_RECOMP
+    if(benchmark_frames||runtime_measure_frames){
+        extern uint64_t z80_recomp_cycles(void);
+        extern uint64_t z80_recomp_fallback_steps(void);
+        extern uint32_t z80_recomp_fallback_unique_pcs(void);
+        fprintf(stderr,"[Z80-AOT] cycles=%llu fallback_steps=%llu fallback_unique_pcs=%u\n",
+            (unsigned long long)z80_recomp_cycles(),
+            (unsigned long long)z80_recomp_fallback_steps(),z80_recomp_fallback_unique_pcs());
+    }
+#endif
 #if GENESIS_HAS_RECOMP_NET
     if (s_netplay_match_over) {
         s_netplay_match_over = 0;

@@ -26,6 +26,7 @@
 # game repository can migrate.
 
 include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompZ80.cmake")
 option(GENESIS_FM_BLOCK_SAMPLES "Batch faithful FM samples between register writes" ON)
 option(GENESIS_FAST_RB_DIGEST "Use portable XXH64 for complete rollback section bytes" ON)
 set(GENESIS_VDP_PLANE_IMPL "SCALAR" CACHE STRING "VDP scanline renderer (planes, sprites and composition)")
@@ -122,6 +123,7 @@ endfunction()
 
 # Build requirements the runner places on the executable that links it.
 function(genesisrecomp_runner_target target)
+    genesisrecomp_z80_target(${target})
     target_compile_definitions(${target} PRIVATE
         GENESIS_FM_BLOCK_SAMPLES=$<BOOL:${GENESIS_FM_BLOCK_SAMPLES}>
         GENESIS_FAST_RB_DIGEST=$<BOOL:${GENESIS_FAST_RB_DIGEST}>
