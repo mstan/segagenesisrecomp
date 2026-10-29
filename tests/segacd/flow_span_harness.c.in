@@ -1,0 +1,82 @@
+static uint8_t live[512];
+static const uint8_t *view(void*u,uint32_t pc,size_t bytes)
+{(void)u;return pc<=sizeof live&&bytes<=sizeof live-pc?live+pc:NULL;}
+static M68kStepBusResult fetch(void*u,uint32_t pc,uint16_t*v)
+{const uint8_t*p=view(u,pc,2);if(!p)return M68K_BUS_FAULT;*v=(uint16_t)((unsigned)p[0]<<8|p[1]);return M68K_BUS_OK;}
+static int condition(unsigned cc,unsigned sr)
+{
+    unsigned c=sr&1,v=(sr>>1)&1,z=(sr>>2)&1,n=(sr>>3)&1;
+    switch(cc){case 0:return 1;case 1:return 0;case 2:return !c&&!z;case 3:return c||z;
+    case 4:return !c;case 5:return c;case 6:return !z;case 7:return z;case 8:return !v;
+    case 9:return v;case 10:return !n;case 11:return n;case 12:return n==v;
+    case 13:return n!=v;case 14:return !z&&n==v;default:return z||n!=v;}
+}
+/* Independent 68000 effective-address arithmetic, including signed short
+ * absolute and brief-index extension. Odd targets fault on the NEXT fetch. */
+static uint32_t target(const M68kStepRegisters*r,const M68kStepEntry*e,int ea)
+{
+    unsigned mode=(unsigned)ea>>3,reg=(unsigned)ea&7;uint16_t ext=e->words[1];
+    uint32_t base=mode==7?e->pc+2:r->A[reg];
+    if(mode==2)return base&0xffffffu;
+    if(mode==5||(mode==7&&reg==2))return (base+(int16_t)ext)&0xffffffu;
+    if(mode==7&&reg==0)return (uint32_t)(int32_t)(int16_t)ext&0xffffffu;
+    if(mode==7&&reg==1)return ((uint32_t)ext<<16|e->words[2])&0xffffffu;
+    uint32_t index=(ext&0x8000)?r->A[(ext>>12)&7]:r->D[(ext>>12)&7];
+    if(!(ext&0x800))index=(uint32_t)(int32_t)(int16_t)index;
+    return (base+index+(int8_t)ext)&0xffffffu;
+}
+static void miss_unchanged(M68kStepContext*c,const M68kStepFlowSpan*s,uint64_t budget,M68kStepResult result)
+{M68kStepContext old=*c;CHECK(m68k_step_execute_flow_span(c,s,budget)==result);CHECK(!memcmp(c,&old,sizeof old));}
+int main(void)
+{
+    const uint32_t edge[]={0,1,0xffff,0x8000,0x7fffffff,0x80000000,0xffffffff,0x00fffffd};
+    unsigned long comparisons=0,refusals=0;
+    for(unsigned s=0;s<sizeof cases/sizeof*cases;++s){
+        const Case*test=cases[s];const M68kStepFlowSpan*span=&test->span;
+        const M68kStepEntry*last=span->entries[span->count-1];
+        memset(live,0,sizeof live);
+        for(unsigned n=0;n<span->count;++n){const M68kStepEntry*e=span->entries[n];
+            for(unsigned w=0;w<e->word_count;++w){live[e->pc+w*2]=(uint8_t)(e->words[w]>>8);live[e->pc+w*2+1]=(uint8_t)e->words[w];}}
+        for(unsigned sample=0;sample<32*3*4;++sample){
+            M68kStepContext a={0},b,expected; a.bus.fetch16=fetch;a.code_span=view;
+            a.state.regs.PC=0x100;a.state.regs.SR=(uint16_t)(0x2700|(sample&31));
+            a.state.cycles=71;a.state.instructions=23;a.charge=99;a.state.exception_vector=7;
+            for(unsigned r=0;r<8;++r){a.state.regs.A[r]=edge[(sample/32+r)%8];a.state.regs.D[r]=edge[(sample/32+r*3)%8];}
+            unsigned low=sample/32%3;a.state.regs.D[test->reg&7]=0xa5a50000u|(low==0?0:low==1?1:0xffff);
+            b=a;expected=a;
+            /* Prefix state is independently retired, then the control result
+             * is predicted without invoking either generated terminal. */
+            for(unsigned n=0;n+1<span->count;++n)CHECK(m68k_step_execute(&expected,span->entries[n])==M68K_STEP_OK);
+            unsigned cc=(last->words[0]>>8)&15,charge=test->maximum;
+            expected.state.regs.PC=(last->pc+2u*last->word_count)&0xffffffu;
+            if(test->kind==BRA)expected.state.regs.PC=test->target;
+            else if(test->kind==BCC){if(condition(cc,expected.state.regs.SR)){charge=10;expected.state.regs.PC=test->target;}else charge=last->word_count==1?8:12;}
+            else if(test->kind==DBCC){
+                if(condition(cc,expected.state.regs.SR))charge=12;
+                else{unsigned r=test->reg;uint16_t v=(uint16_t)(expected.state.regs.D[r]-1u);
+                    expected.state.regs.D[r]=(expected.state.regs.D[r]&0xffff0000u)|v;
+                    charge=v==0xffff?14:10;if(v!=0xffff)expected.state.regs.PC=test->target;}
+            }else{CHECK(test->kind==JMP);expected.state.regs.PC=target(&expected.state.regs,last,test->ea);}
+            expected.charge=charge;expected.state.cycles+=charge;++expected.state.instructions;
+            expected.state.instruction_pc=last->pc;expected.state.fault_opcode=last->words[0];expected.state.exception_vector=0;
+            for(unsigned n=0;n<span->count;++n)CHECK(m68k_step_execute(&a,span->entries[n])==M68K_STEP_OK);
+            CHECK(m68k_step_execute_flow_span(&b,span,span->cycles)==M68K_STEP_OK);
+            if(memcmp(&a,&b,sizeof a)||memcmp(&a,&expected,sizeof a)){
+                fprintf(stderr,"case %u sample %u PC %x/%x/%x cycles %llu/%llu/%llu\n",s,sample,a.state.regs.PC,b.state.regs.PC,expected.state.regs.PC,(unsigned long long)a.state.cycles,(unsigned long long)b.state.cycles,(unsigned long long)expected.state.cycles);return 1;}
+            ++comparisons;
+        }
+        M68kStepContext c={0};c.bus.fetch16=fetch;c.code_span=view;c.state.regs.PC=0x100;c.state.regs.SR=0x2700;c.charge=99;
+        miss_unchanged(&c,span,span->cycles-1,M68K_STEP_MISS);++refusals;
+        for(unsigned byte=0x100;byte<last->pc+last->word_count*2u;++byte){live[byte]^=1;miss_unchanged(&c,span,span->cycles,M68K_STEP_MISS);live[byte]^=1;++refusals;}
+        c.state.regs.SR|=0x8000;miss_unchanged(&c,span,span->cycles,M68K_STEP_MISS);c.state.regs.SR&=0x7fff;
+        c.fault_escape=&c;miss_unchanged(&c,span,span->cycles,M68K_STEP_REENTERED);c.fault_escape=NULL;
+        c.state.stopped=1;miss_unchanged(&c,span,span->cycles,M68K_STEP_STOPPED);c.state.stopped=0;
+        c.state.fault=M68K_STEP_BUS_ERROR;miss_unchanged(&c,span,span->cycles,M68K_STEP_BUS_ERROR);c.state.fault=0;
+        c.code_span=NULL;miss_unchanged(&c,span,span->cycles,M68K_STEP_MISS);c.code_span=view;
+        c.bus.fetch16=NULL;miss_unchanged(&c,span,span->cycles,M68K_STEP_MISS);c.bus.fetch16=fetch;
+        c.state.regs.PC|=1;miss_unchanged(&c,span,span->cycles,M68K_STEP_MISS);c.state.regs.PC&=~1u;
+        M68kStepFlowSpan malformed=*span;malformed.count=1;miss_unchanged(&c,&malformed,span->cycles,M68K_STEP_MISS);
+        refusals+=8;
+    }
+    printf("%lu compiled ordinary/flow/independent-control comparisons; %lu atomic refusal cases pass\n",comparisons,refusals);return 0;
+}
