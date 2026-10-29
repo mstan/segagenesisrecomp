@@ -4,15 +4,17 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: E01, E03, E04, E05, E06 and E07 now deliver their selected original bounded
-contracts; **25 families remain open**. Independent final E07 review accepted
-production2079c51/ready PR41 head98550e7 and explicitly instructed fresh serial
-E08 next. Actual service work falls18.3569percent; runtime is neutral/inconclusive;
-the combined owner visual handoff remains pending. The audit narrative below
+Current serial update: E01, E03, E04, E05, E06, E07 and E08 now deliver their
+selected original bounded contracts; **24 families remain open**. Fresh E08
+review accepted production11a55fd/ready PR42 reviewed headf462b05, verified
+whole-family dispositions and all retained runtime artifacts, and explicitly
+instructed E10 next with a fresh validation-only reviewer (E09 already delivered).
+Actual72,259,107full inactive-controller calls become phase spans; observed CD
+CPU reductions21.90/10.72percent retain shared-host variation. Combined owner
+visual/merge/release handoff remains pending. Historical audit narrative below
 describes the original released base; current row dispositions are in the
 [machine-readable audit](engine-optimization-completion-audit.json) and
-[implementation burndown](ENGINE_OPTIMIZATION_BURNDOWN.md). Historical findings
-are retained explicitly rather than erased.
+[implementation burndown](ENGINE_OPTIMIZATION_BURNDOWN.md).
 
 ## What was actually closed
 
