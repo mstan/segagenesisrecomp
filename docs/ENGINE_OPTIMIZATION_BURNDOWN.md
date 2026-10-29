@@ -4,7 +4,7 @@ Historical evaluation/release owner: `beads-3vb.31`. Remaining implementation: *
 
 Source audit base: `f422ad52a04b9d253c0e9cbcdb3476aabd563ae8`. Prepared in isolated branch `codex/engine-optimization-burndown-20261027`. Refresh and freeze remote engine/shared-core and representative consumer heads before implementation.
 
-**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04, E05, E06, E07 and E08; **24 families remain open**, alongside eleven delivered bounded contracts and one existing finding; family counts overlap and are not speedup counts.
+**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04, E05, E06, E07, E08 and E10; **23 families remain open**, alongside twelve delivered bounded contracts and one existing finding; family counts overlap and are not speedup counts.
 
 ## Scope
 
