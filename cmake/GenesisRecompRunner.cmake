@@ -29,10 +29,10 @@ include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompZ80.cmake")
 option(GENESIS_FM_BLOCK_SAMPLES "Batch faithful FM samples between register writes" ON)
 option(GENESIS_FAST_RB_DIGEST "Use portable XXH64 for complete rollback section bytes" ON)
-set(GENESIS_VDP_PLANE_IMPL "FUSED" CACHE STRING "VDP scanline renderer (planes, sprites and composition)")
-set_property(CACHE GENESIS_VDP_PLANE_IMPL PROPERTY STRINGS SCALAR BATCHED FUSED)
-if(NOT GENESIS_VDP_PLANE_IMPL MATCHES "^(SCALAR|BATCHED|FUSED)$")
-    message(FATAL_ERROR "GENESIS_VDP_PLANE_IMPL must be SCALAR, BATCHED or FUSED")
+set(GENESIS_VDP_PLANE_IMPL "BATCHED" CACHE STRING "VDP scanline renderer (planes, sprites and composition)")
+set_property(CACHE GENESIS_VDP_PLANE_IMPL PROPERTY STRINGS SCALAR BATCHED)
+if(NOT GENESIS_VDP_PLANE_IMPL MATCHES "^(SCALAR|BATCHED)$")
+    message(FATAL_ERROR "GENESIS_VDP_PLANE_IMPL must be SCALAR or BATCHED")
 endif()
 message(STATUS "Genesis VDP planes = ${GENESIS_VDP_PLANE_IMPL} (build-fixed)")
 
@@ -127,8 +127,7 @@ function(genesisrecomp_runner_target target)
     target_compile_definitions(${target} PRIVATE
         GENESIS_FM_BLOCK_SAMPLES=$<BOOL:${GENESIS_FM_BLOCK_SAMPLES}>
         GENESIS_FAST_RB_DIGEST=$<BOOL:${GENESIS_FAST_RB_DIGEST}>
-        GENESIS_BATCHED_PLANES=$<STREQUAL:${GENESIS_VDP_PLANE_IMPL},BATCHED>
-        GENESIS_FUSED_RASTER=$<STREQUAL:${GENESIS_VDP_PLANE_IMPL},FUSED>)
+        GENESIS_BATCHED_PLANES=$<STREQUAL:${GENESIS_VDP_PLANE_IMPL},BATCHED>)
     get_target_property(_done ${target} GENESIS_RUNNER_REQUIREMENTS)
     if(_done)
         return()

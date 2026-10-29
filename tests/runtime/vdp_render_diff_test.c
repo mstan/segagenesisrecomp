@@ -326,31 +326,33 @@ static int run_reset_restore(void)
 void head_gvdp_set_host_sprites(GVDPHostSprites,void *);
 void head_gvdp_set_ext_tiles(const uint8_t *);
 int head_gvdp_set_sprite_patterns_bank(unsigned,const uint8_t *,unsigned,const uint8_t *);
+typedef struct EagerDrop { void (*set)(GVDPHostSprites,void *); } EagerDrop;
 static unsigned eager_callbacks;
 static void eager_provider(void *user,const GVDP *v,const GVDPSpriteLayer *layer)
 {
-    (void)user;(void)v;++eager_callbacks;
+    (void)v;++eager_callbacks;
     for(int x=3;x<layer->total;x+=17) {
         layer->index[x]=(uint8_t)(GVDP_HOST_PALETTE_BASE+5);
         const uint8_t flags[]={2,0x80,255};
         layer->opaque[x]=flags[(unsigned)x%3];
         layer->high[x]=(x&1)?flags[(unsigned)(x+1)%3]:0;
     }
+    if(user)((EagerDrop *)user)->set(NULL,NULL);
 }
 static int run_eager_providers(void)
 {
     static uint8_t art[65536],tiles[2048];
     for(unsigned i=0;i<sizeof art;++i)art[i]=(uint8_t)(i*37u+0x19u);
     for(unsigned i=0;i<sizeof tiles;++i)tiles[i]=(uint8_t)(i%GVDP_EXT_LINES+1);
-    for(unsigned kind=0;kind<4;++kind) {
+    for(unsigned kind=0;kind<5;++kind) {
         if(kind==0){head_gvdp_set_host_sprites(eager_provider,NULL);cand_gvdp_set_host_sprites(eager_provider,NULL);}
         if(kind==1){head_gvdp_set_ext_tiles(tiles);cand_gvdp_set_ext_tiles(tiles);}
-        if(kind>=2 && (!head_gvdp_set_sprite_patterns_bank(kind-2,art,sizeof art,tiles)||
+        if((kind==2||kind==3) && (!head_gvdp_set_sprite_patterns_bank(kind-2,art,sizeof art,tiles)||
                        !cand_gvdp_set_sprite_patterns_bank(kind-2,art,sizeof art,tiles)))return 1;
         for(int h40=0;h40<2;++h40)for(int im2=0;im2<2;++im2)for(int sh=0;sh<2;++sh) {
             GVDP v,a,b;uint8_t x[GVDP_MAX_WIDTH],y[GVDP_MAX_WIDTH];
             fill_random(&v,1,h40,im2,sh,3,1,0x33);install_directed_sprite(&v,h40,im2,sh);
-            if(kind>=2) {
+            if((kind==2||kind==3)) {
                 uint16_t sat=(uint16_t)((v.reg[5]&0x7fu)<<9);
                 /* Both SAT pieces must actually select the installed bank. */
                 v.vram[(uint16_t)(sat+2)]=(uint8_t)(kind==2?0x80:0xc0);
@@ -361,14 +363,20 @@ static int run_eager_providers(void)
             head_gvdp_set_ws_canvas(511);cand_gvdp_set_ws_canvas(511);
             head_gvdp_set_ws_bar_black(1);cand_gvdp_set_ws_bar_black(1);
             head_gvdp_set_bgdiag(sh);cand_gvdp_set_bgdiag(sh);
+            EagerDrop head_drop={head_gvdp_set_host_sprites};
+            EagerDrop cand_drop={cand_gvdp_set_host_sprites};
+            if(kind==4) {
+                head_gvdp_set_host_sprites(eager_provider,&head_drop);
+                cand_gvdp_set_host_sprites(eager_provider,&cand_drop);
+            }
             unsigned before=eager_callbacks;
             int wa=head_gvdp_render_scanline(&a,im2?17:9,x);
             int wb=cand_gvdp_render_scanline(&b,im2?17:9,y);
             if(wa!=wb || memcmp(x,y,sizeof x) || memcmp(&a,&b,sizeof a) ||
-               eager_callbacks-before!=(kind==0?2u:0u)) {
+               eager_callbacks-before!=((kind==0||kind==4)?2u:0u)) {
                 fprintf(stderr,"eager provider mismatch kind=%u h40=%d im2=%d sh=%d\n",kind,h40,im2,sh);return 1;
             }
-            if(kind>=2) {
+            if((kind==2||kind==3)) {
                 GVDP control=v;uint8_t original[GVDP_MAX_WIDTH];
                 memset(original,0xa5,sizeof original);
                 if(!head_gvdp_set_sprite_patterns_bank(kind-2,NULL,0,NULL))return 1;
