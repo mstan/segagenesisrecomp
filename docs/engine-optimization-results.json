@@ -60,15 +60,28 @@
     "E03": {
       "name": "Owned memory access",
       "priority": "P1",
-      "status": "implemented_game_qualified",
-      "disposition": "Owned code spans core53fc7b4/engine86d2d0c pass final Windows/Linux3000-frame game gates and complete core/machine contracts. Every opcode/extension byte still checks current owned bytes. HINT/MMIO/1M/odd/wrap and ownership WAIT retain the portable fetch path. Remaining data-bus read attribution is below1percent per read helper on the measured route; no unmeasured second data-memory representation added. Generator-core7233852 and runtime-core53fc7b4 identities remain distinct.",
+      "status": "implemented_owned_data_regions_game_qualified_neutral",
+      "remaining_scope_open": false,
+      "disposition": "Implemented generic operation-scoped owned data regions (engine899939b/coreb2d95f2) for qualified generated context-bus operations, with distinct read/write permissions, full live instruction guards, and exits across callbacks/MMIO/WAIT/protection/noncontiguous1M. Complete word-bus mapping is resolved once; cartridge path audited as already single-decode. Two independently found callback/aperture holes reproduced before fixes. 22MSVC+20GCC gates, current-build restore and four exact3000-frame game arms pass. Sonic CD timing is neutral/inconclusive: CPU reductions-3.99/+17.26percent,cycles-0.179/+18.60percent with recorded variation; no proven speedup. Original owned-data contract delivered; no claim cross-instruction designs exhausted. See [ENGINE_OWNED_MEMORY.md](ENGINE_OWNED_MEMORY.md), [results](engine-owned-memory-results.json), beads-3z5k.2/beads-rxq.4. PR/owner handoff pending.",
       "evidence": [
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-owned-spans-game.json",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-windows-game-v8.json",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json"
-      ]
+        "ENGINE_OWNED_MEMORY.md",
+        "engine-owned-memory-results.json",
+        "beads-3z5k.2",
+        "beads-rxq.4"
+      ],
+      "historical_evaluation": {
+        "name": "Owned memory access",
+        "priority": "P1",
+        "status": "implemented_game_qualified",
+        "disposition": "Owned code spans core53fc7b4/engine86d2d0c pass final Windows/Linux3000-frame game gates and complete core/machine contracts. Every opcode/extension byte still checks current owned bytes. HINT/MMIO/1M/odd/wrap and ownership WAIT retain the portable fetch path. Remaining data-bus read attribution is below1percent per read helper on the measured route; no unmeasured second data-memory representation added. Generator-core7233852 and runtime-core53fc7b4 identities remain distinct.",
+        "evidence": [
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-owned-spans-game.json",
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-windows-game-v8.json",
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json"
+        ]
+      }
     },
     "E04": {
       "name": "Generated native arithmetic and state",
@@ -1532,17 +1545,19 @@
   },
   "evaluation_counts_scope": "Historical released evaluation pass; current serial implementation is tracked separately.",
   "serial_implementation": {
-    "current_goal": "E02",
+    "current_goal": "E03",
     "completed": [
-      "E01"
+      "E01",
+      "E03"
     ],
-    "remaining_original_scopes": 29,
+    "remaining_original_scopes": 28,
     "data": "engine-native-region-results.json",
     "next_task_started": false,
     "owner_check": "pending",
     "unsuccessful": [
       "E02"
     ],
-    "validation_workflow": "One validation-only subagent per serial task; PR on success or Beads on failure, explicit reviewer instruction before next."
+    "validation_workflow": "One validation-only subagent per serial task; PR on success or Beads on failure, explicit reviewer instruction before next.",
+    "pr_gate": "pending"
   }
 }
