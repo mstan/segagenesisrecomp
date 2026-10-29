@@ -7234,7 +7234,7 @@
     "Task harness path rename accidentally changed absolute root, CMake failed before compile/game; preserved harness-path-error.log, corrected root",
     "Earlier default-Sonic1 template text said FUSED but cache/PE/runtime correctly BATCHED; raw retained, wording corrected in interpretation"
   ],
-  "cleanup": "Pending final reviewer gate; retain PEs/raw fullWAV/screenshots/states/config/source scripts/prototype/census and private fixtures. Remove only owned CMake/temporary build trees, preserve borrowed junctions.",
+  "cleanup": "Completed after independent finalacceptance: exactowned Windows build/TEMP435669310bytes and WSL CMake795858bytes removed after containment/reparse/nestedrepo/ownership audits. FrozenPEs/rawfullWAV/screenshots/states/configs/source/prototype/census/privatefixtures and borrowedjunctions retained. cleanup-complete.json/cleanup-complete-wsl.json retained in tasksource.",
   "approval": "No merge/release/delivery/owner launch approval; combined owner handoff remains.",
   "independent_validation": {
     "record": "C:\\Temp\\Codex\\genesis-engine-fused-raster-20261029\\VALIDATOR_E11.md",
