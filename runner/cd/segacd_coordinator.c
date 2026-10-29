@@ -19,11 +19,17 @@ static int device_fault(const SegaCDCoordinator*c)
         c->devices->dma.last_result==SEGACD_DMA_ODD_BYTE_COUNT ||
         c->devices->dma.last_result==SEGACD_DMA_UNMAPPED;
 }
-static void advance_devices(SegaCDCoordinator *c)
+static void service_devices(SegaCDCoordinator *c,int coalesce)
 {
     c->region_event_valid=0;
     uint64_t now=c->time[0];
     if(segacd_sub_runnable(c->devices) && c->time[1]<now)now=c->time[1];
+    /* A qualified interval need not republish an unchanged clock before the
+     * next instruction. Keep cache revocation above: preceding writes can
+     * change device deadlines without advancing the shared minimum clock.
+     * A host event already due NOW still requires its real callback. */
+    if(coalesce && now<=c->device_time &&
+       (!c->host_advance || c->host_next_event(c->host_user)>c->device_time))return;
     /* A third master may be the current limiting clock. External Main byte
      * WAIT is the exception: its Sub owner and devices must continue advancing
      * while the Z80/master making that access is synchronously paused. */
@@ -38,14 +44,18 @@ static void advance_devices(SegaCDCoordinator *c)
     }
     if(c->host_advance)c->host_advance(c->host_user,c->device_time);
 }
+static void advance_devices(SegaCDCoordinator *c)
+{service_devices(c,0);}
 static int event_intervals_qualified(const SegaCDCoordinator *c)
+{return SEGACD_EVENT_DEADLINES && c->event_intervals_qualified;}
+static void qualify_event_intervals(SegaCDCoordinator *c)
 {
     /* region_effects also qualifies interval-composable sinks and complete
      * host observer deadlines. A callback without a deadline provider keeps
      * the old bounded service cadence, even with native CPU metadata. */
-    return SEGACD_EVENT_DEADLINES &&
+    c->event_intervals_qualified=(uint8_t)(
         (c->region_effect_count[0]||c->region_effect_count[1]) &&
-        (!c->host_advance||c->host_next_event);
+        (!c->host_advance||c->host_next_event));
 }
 static uint64_t event_time(SegaCDCoordinator*c,uint64_t deadline,int qualified)
 {
@@ -346,6 +356,7 @@ int segacd_coordinator_region_effects(SegaCDCoordinator *c,SegaCDCpu cpu,
     if(!c||(unsigned)cpu>1||(count&&!effects)||c->busy[0]||c->busy[1]||c->external_active)return 0;
     c->region_effects[cpu]=effects;c->region_effect_count[cpu]=count;
     c->region_event_valid=0;
+    qualify_event_intervals(c);
     c->register_spans[cpu]=NULL;c->register_span_count[cpu]=0;
     c->flow_spans[cpu]=NULL;c->flow_span_count[cpu]=0;
     /* All cached effect decisions belong to the old qualification. */
@@ -403,7 +414,7 @@ int segacd_coordinator_flow_spans(SegaCDCoordinator *c,SegaCDCpu cpu,
 {return register_native_spans(c,cpu,spans,count,1);}
 void segacd_coordinator_main_irq(SegaCDCoordinator*c,unsigned level){if(c && level<=7)c->main_irq=level;}
 void segacd_coordinator_host_clock(SegaCDCoordinator*c,void (*advance)(void *,uint64_t),uint64_t (*next)(void *))
-{if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;c->region_event_valid=0;}}
+{if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;c->region_event_valid=0;qualify_event_intervals(c);}}
 void segacd_coordinator_device_limit(SegaCDCoordinator*c,uint64_t (*limit)(void *))
 {if(c && !c->busy[0] && !c->busy[1])c->device_limit=limit;}
 void segacd_coordinator_pcm_sink(SegaCDCoordinator*c,Rf5c164Sink sink,void*user)
@@ -470,12 +481,12 @@ static void idle_until(SegaCDCoordinator*c,uint64_t deadline,int qualified)
     if((!segacd_sub_runnable(c->devices) || c->cpu[1].state.stopped) && c->time[1]<next)c->time[1]=next;
     advance_devices(c);
 }
-M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
+static M68kStepResult coordinator_step(SegaCDCoordinator *c,int coalesce)
 {
     if(!c || c->busy[0] || c->busy[1])return M68K_STEP_REENTERED;
     if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
     M68kStepResult r=refresh_sub(c);if(r!=M68K_STEP_OK)return c->last_result=r;
-    advance_devices(c);
+    service_devices(c,coalesce);
     unsigned which=segacd_sub_runnable(c->devices) && c->time[1]<c->time[0]?1u:0u;
     r=execute_cpu(c,which);
     if(r==M68K_STEP_STOPPED) {
@@ -488,6 +499,8 @@ M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
     if(r==M68K_STEP_OK && device_fault(c)){c->last_cpu=1;r=M68K_STEP_BUS_ERROR;}
     return c->last_result=r;
 }
+M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
+{return coordinator_step(c,0);}
 static SegaCDLookupSlot *register_slot(SegaCDCoordinator *c,unsigned which)
 {
     M68kStepContext *cpu=&c->cpu[which];uint32_t pc=cpu->state.regs.PC;
@@ -658,7 +671,7 @@ static M68kStepResult run_until(SegaCDCoordinator*c,uint64_t deadline,int publis
             int sub_ready=sub_level && sub_level>((c->cpu[1].state.regs.SR>>8)&7u);
             if(!main_ready && !sub_ready){idle_until(c,deadline,event_intervals_qualified(c));continue;}
         }
-        M68kStepResult r=segacd_coordinator_step(c);if(r!=M68K_STEP_OK)return r;
+        M68kStepResult r=coordinator_step(c,event_intervals_qualified(c));if(r!=M68K_STEP_OK)return r;
     }
     if(publish||deadline>=region_event(c))advance_devices(c);
     if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}

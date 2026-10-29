@@ -17,9 +17,12 @@ static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){(void)u;if(a<0xff000
 static M68kStepBusResult read16(void*u,uint32_t a,uint16_t*v){uint8_t h,l;if(read8(u,a,&h)!=M68K_BUS_OK||read8(u,a+1,&l)!=M68K_BUS_OK)return M68K_BUS_FAULT;*v=(uint16_t)((h<<8)|l);return M68K_BUS_OK;}
 static M68kStepBusResult write8(void*u,uint32_t a,uint8_t v){(void)u;if(a<0xff0000)return M68K_BUS_FAULT;ram[a&65535]=v;return M68K_BUS_OK;}
 static M68kStepBusResult write16(void*u,uint32_t a,uint16_t v){if(write8(u,a,(uint8_t)(v>>8))!=M68K_BUS_OK)return M68K_BUS_FAULT;return write8(u,a+1,(uint8_t)v);}
-static uint64_t next_host(void*u){(void)u;return test_case==1?events[event_index]:UINT64_MAX;}
+static uint64_t next_host(void*u){(void)u;if(test_case==10)return event_index==0?0:event_index==1?100:UINT64_MAX;return test_case==1?events[event_index]:UINT64_MAX;}
 static void host(void*u,uint64_t at){
  (void)u;CHECK(call_count<256);calls[call_count++]=at;
+ while(test_case==10&&event_index<2&&at>=(event_index?100u:0u)){
+  CHECK(observation_count<16);observations[observation_count++]=at;++event_index;
+ }
  while(test_case==1&&events[event_index]!=UINT64_MAX&&at>=events[event_index]){
   CHECK((opaque_observer||at==events[event_index])&&observation_count<16);observations[observation_count++]=at;++event_index;
  }
@@ -35,6 +38,17 @@ static const M68kStepModule module={"event-wait",0x100,2,0,&entry,1};
 static const M68kStepModule*const modules[]={&module};
 static const uint8_t flags[]={M68K_STEP_EFFECT_REGISTER};
 static const M68kStepEffectModule effects[]={{&module,flags}};
+static void memory_operation(M68kStepContext*cpu)
+{
+ uint8_t value=m68k_step_read8(cpu,0xff0000);
+ m68k_step_write8(cpu,0xff0000,(uint8_t)(value+1u));
+ m68k_step_write8(cpu,0xff0001,(uint8_t)event_index);cpu->state.regs.PC=0x100;
+}
+static const M68kStepEntry memory_entry={0x100,{0x4e71},1,4,memory_operation};
+static const M68kStepModule memory_module={"event-publication",0x100,2,0,&memory_entry,1};
+static const M68kStepModule*const memory_modules[]={&memory_module};
+static const uint8_t memory_flags[]={M68K_STEP_EFFECT_TRACKED_BUS};
+static const M68kStepEffectModule memory_effects[]={{&memory_module,memory_flags}};
 static void setup(int qualified,int opaque)
 {
  opaque_observer=(unsigned)opaque;
@@ -115,5 +129,29 @@ int main(void)
  call_count=0;segacd_coordinator_host_clock(&c,host,NULL);
  CHECK(segacd_coordinator_run_isolated_until(&c,500)==M68K_STEP_OK&&call_count&&calls[0]<=400);
  CHECK(segacd_coordinator_region_effects(&c,SEGACD_MAIN,NULL,0)&&!c.region_event_valid);
+ /* Coalesce only redundant pre-instruction publication in a qualified run.
+  * Actual bus effects and an observer already due at clock0 stay identical.
+  * The ordinary step interface and opaque callbacks keep every old call. */
+ test_case=10;
+ for(unsigned step=0;step<2;++step)for(unsigned opaque=0;opaque<2;++opaque){
+  uint64_t old_calls=0,old_time=0,old_count=0,old_events[16]={0};M68kStepState old_cpu;
+  for(unsigned qualified=0;qualified<2;++qualified){
+   setup((int)qualified,(int)opaque);CHECK(segacd_write8(&cd,SEGACD_MAIN,0xa12001,0)==SEGACD_OK);
+   c.cpu[0].state.stopped=0;CHECK(segacd_coordinator_modules(&c,SEGACD_MAIN,memory_modules,1));
+   CHECK(segacd_coordinator_region_effects(&c,SEGACD_MAIN,qualified?memory_effects:NULL,qualified?1:0));
+   CHECK(segacd_coordinator_region_effects(&c,SEGACD_SUB,NULL,0));
+   if(step){while(c.time[0]<200)CHECK(segacd_coordinator_step(&c)==M68K_STEP_OK);}
+   else CHECK(segacd_coordinator_run_until(&c,200)==M68K_STEP_OK);
+   CHECK(observation_count==2&&observations[0]==0&&ram[0]>0&&ram[1]==2);
+   if(!qualified){old_cpu=c.cpu[0].state;old_time=c.device_time;old_count=observation_count;memcpy(old_events,observations,sizeof old_events);expected_cd=cd;memcpy(expected_ram,ram,sizeof ram);old_calls=call_count;}
+   else{
+    CHECK(!memcmp(&old_cpu,&c.cpu[0].state,sizeof old_cpu)&&old_time==c.device_time);
+    CHECK(old_count==observation_count&&!memcmp(old_events,observations,sizeof old_events));
+    CHECK(!memcmp(&expected_cd,&cd,sizeof cd)&&!memcmp(expected_ram,ram,sizeof ram));
+    if(step||opaque)CHECK(call_count==old_calls);else CHECK(call_count<old_calls);
+    printf("publication step%u opaque%u bounded=%llu qualified=%llu exact CPU/device/RAM/events\n",step,opaque,(unsigned long long)old_calls,(unsigned long long)call_count);
+   }
+  }
+ }
  puts("qualified event waits: exact timer/host/device/IRQ state, opaque fallback, step cadence, third master and faults pass");return 0;
 }
