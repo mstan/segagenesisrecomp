@@ -5,7 +5,9 @@ Engine production `96be781` (initial implementation `39596bf`), base `014fa72` (
 `f7dd616`. Engine [PR43](https://github.com/mstan/segagenesisrecomp/pull/43)
 stacks on PR42. Mechanical Sonic1 adoption `81d3bc6`, final source pin `6ecb59e`,
 [PR7](https://github.com/mstan/SonicTheHedgehogRecomp/pull/7), pins that source.
-Independent final whole-scope gate is pending. No merge/release approval.
+Independent final whole-scope gate ACCEPTED production96be781 / reviewed a75cd9f
+and companion6ecb59e. Reviewer explicitly instructed E11 next after status/sync/cleanup.
+No merge/release approval.
 
 A complete-row renderer can now own native geometry without enabling expanded
 world simulation. `GameVideo.renderer_enabled` is an optional presentation
@@ -118,7 +120,7 @@ are in machine results.
 Evidence: `C:/Temp/Codex/genesis-engine-render-ownership-20261029` and
 `G:/Temp/Codex/genesis-engine-render-ownership-20261029`. Frozen PEs, WAVs, captures,
 inputs, logs, configs, fixtures and verifier are retained. Disposable CMake/WSL
-builds are cleaned after final independent acceptance; borrowed source/dependency
+builds and process-local compiler TEMP were audited and removed after acceptance; borrowed source/dependency
 junctions and private ROM fixtures are preserved for ongoing serial work.
 
 Workflow gap: GitHub will not assign `TechnicallyComputers` on this repository

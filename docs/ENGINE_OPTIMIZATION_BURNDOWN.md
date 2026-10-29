@@ -88,11 +88,11 @@ Current owner instruction (2026-10-28): work serially on one original goal. A va
   - Evidence: `runner/cd/machine.c`, `runner/video/genesis_machine.c`.
   - Disposition/evidence: Shared CD immutable raster inputs and lazy exact fallback16c14e6 pass final Windows/Linux3000-frame state/pixel/WAV gates.720000rows captured and442800composed:38.5percent original compositions omitted on this route, with898600retained bytes. CPU-visible hardware sprite status remains at its original deadline; per-row CRAM survives fallback. Cartridge already had lazy original rows. Omitted work is not a whole-game FPS claim.
 
-- [ ] **E10: Renderer interface independent of aspect ratio** â€” P1; original N12.
+- [x] **E10: Renderer interface independent of aspect ratio** â€” P1; original N12.
   - Goal: Separate shared renderer ownership/selection from viewport width and elective widescreen policy.
   - Boundary: Keep existing consumers compatible. Stock sprite/scene fidelity and enabling a particular game's custom renderer remain title tasks.
   - Evidence: `runner/main.c`, `runner/game_video.h`.
-  - Disposition/evidence: Requires excluded title stock-fidelity/adoption T08; do not add an unused shared selector.
+  - Disposition/evidence: Independently accepted production96be781/readyPR43 reviewed a75cd9f and mechanicalSonic1pin6ecb59e/PR7. Shared frame plan separates row ownership, logical viewport and local output; width publishes before selection, legacy/eager/lazy/native/overlay and renderer-only controls remain qualified. Any local limit below the logical request chooses exact native fallback, closing independently found supported-clamp coupling for all legacy consumers without title logic changes. 7MSVC+7GCC+4consumer gates, exact RKA/S1 built state/fullWAV/pixels/rollback/current-state evidence, actual nativeownerH32/H40 and supported360=>native320/request398 pass. All precursor/final source identities and harness corrections retained; timing neutral/inconclusive, no gain claim. See [ENGINE_RENDERER_OWNERSHIP.md](ENGINE_RENDERER_OWNERSHIP.md), [results](engine-renderer-ownership-results.json), beads-3z5k.8. Reviewer explicitly instructed E11 next; combined owner merge/release handoff pending.
 
 - [ ] **E11: Fused generic VDP raster** â€” P1; original N14.
   - Goal: Combine tile/window/scroll spans, decode, priority and shadow/highlight composition in the shared renderer.

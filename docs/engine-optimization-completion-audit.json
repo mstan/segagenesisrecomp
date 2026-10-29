@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Serial E01/E03/E04/E05/E06/E07/E08 selected bounded contracts independently accepted;24 original scopes remain open. E08 ready PR42 production11a55fd / reviewed headf462b05 accepted;72,259,107full inactive-controller calls replaced, observed CD CPU reductions21.90/10.72percent with shared-host variation, exact runtime. Reviewer explicitly instructed fresh serial E10 next; E09 already delivered. Combined owner merge/release handoff pending.",
+  "conclusion": "Serial E01/E03/E04/E05/E06/E07/E08/E10 selected bounded contracts independently accepted;23original scopes remain open. E10 production96be781/readyPR43 revieweda75cd9f pluscompanionPR7 pin6ecb59e accepted. Exact renderer/simulation ownership and native fallback qualified, pergame timing neutral/inconclusive. Reviewer explicitly instructed E11 next. Combined owner merge/release handoff pending.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -16,13 +16,13 @@
     "existing": 2
   },
   "implementation_counts": {
-    "bounded_delivered": 11,
+    "bounded_delivered": 12,
     "rejected_mechanism": 1,
-    "deferred": 16,
-    "existing": 1,
-    "partial": 7
+    "partial": 7,
+    "deferred": 15,
+    "existing": 1
   },
-  "remaining_scope_open_count": 24,
+  "remaining_scope_open_count": 23,
   "count_caveat": "Families overlap. Bounded delivered closes only the selected contract, not every possible optimization. Partial/deferred/rejected-mechanism rows stay open; row counts are not speedups.",
   "validation": "Source/diff/evidence audit only. No new runtime build, benchmark, game launch or release change.",
   "entries": [
@@ -282,17 +282,35 @@
       "name": "Renderer interface independent of aspect ratio",
       "original_goal": "Separate shared renderer ownership/selection from viewport width and elective widescreen policy.",
       "recorded_evaluation_status": "deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "No shared aspect-independent renderer selector/adoption.",
-      "remaining": "Renderer ownership selection independent of aspect ratio.",
-      "audit_basis": "Title stock-fidelity concerns justify coordinating rollout, not marking the engine interface delivered. Mechanical consumer adoption is permitted; new title rendering logic remains excluded.",
-      "next_closure": "Design a used generic selector with mechanical adoption; track title-specific fidelity separately and preserve exact fallback.",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Used independent row-ownership/frame plan, logical viewport preservation, exact all-limit native fallback and mechanical consumer adoption; ENGINE_RENDERER_OWNERSHIP.md.",
+      "remaining": "Selected original bounded contract independently accepted; combined owner visual/merge/release handoff pending. No claim title fidelity rollout or all future optimizations exhausted.",
+      "audit_basis": "Fresh validate_e10 FINAL ACCEPTED production96be781, ready PR43 revieweda75cd9f and companionPR7 pin6ecb59e. Complete inventory, real legacy/modern built outputs/state/fullWAV/rollback/currentstate, H32/H40 nativeowner and supported360=>native320/request398 pass. Timings neutral/inconclusive; all precursor extremes/corrections retained.",
+      "next_closure": "Complete combined owner handoff; validator explicitly instructed fresh serial E11 next.",
       "source_references": [
         "runner/main.c",
         "runner/game_video.h",
-        "docs/TITLE_OPTIMIZATION_BACKLOG.md"
-      ]
+        "docs/ENGINE_RENDERER_OWNERSHIP.md",
+        "docs/engine-renderer-ownership-results.json"
+      ],
+      "historical_audit": {
+        "id": "E10",
+        "name": "Renderer interface independent of aspect ratio",
+        "original_goal": "Separate shared renderer ownership/selection from viewport width and elective widescreen policy.",
+        "recorded_evaluation_status": "deferred",
+        "implementation_state": "deferred",
+        "remaining_scope_open": true,
+        "delivered": "No shared aspect-independent renderer selector/adoption.",
+        "remaining": "Renderer ownership selection independent of aspect ratio.",
+        "audit_basis": "Title stock-fidelity concerns justify coordinating rollout, not marking the engine interface delivered. Mechanical consumer adoption is permitted; new title rendering logic remains excluded.",
+        "next_closure": "Design a used generic selector with mechanical adoption; track title-specific fidelity separately and preserve exact fallback.",
+        "source_references": [
+          "runner/main.c",
+          "runner/game_video.h",
+          "docs/TITLE_OPTIMIZATION_BACKLOG.md"
+        ]
+      }
     },
     {
       "id": "E11",
