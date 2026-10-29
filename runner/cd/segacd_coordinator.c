@@ -142,6 +142,32 @@ static M68kStepBusResult bus_fetch(void *user,uint32_t a,uint16_t *v)
         return c->host_main.fetch16(c->host_user,a,v);
     return M68K_BUS_FAULT;
 }
+static int bus_data_region(void *user,uint32_t a,size_t bytes,int write,M68kStepDataRegion *out)
+{
+    SegaCDBusBinding *b=user;SegaCDCoordinator *c=b->owner;
+    SegaCDMemoryRegion region;
+    int memory=b->cpu==SEGACD_MAIN?a<0x40000u||(a>=0x200000u&&a<0x240000u):a<0xe0000u;
+    if(memory) {
+        if(!segacd_memory_region(c->devices,b->cpu,a,bytes,write,&region))return 0;
+        out->address=region.address;out->bytes=region.bytes;out->data=region.data;
+    } else {
+        if(b->cpu!=SEGACD_MAIN||main_cd_port(a)||!c->host_data_region||
+           !c->host_data_region(c->host_user,a,bytes,write,out))return 0;
+        /* A host may expose a broad backing allocation. It never owns the
+         * CD apertures inside that allocation: clip to the one host interval
+         * containing this request before caching the permission/view. */
+        if(!out->data||out->address>0xffffffu||!out->bytes||
+           out->bytes>0x1000000u-out->address)return 0;
+        uint32_t lower=a<0x200000u?0x040000u:a<0xA12000u?0x240000u:0xA12200u;
+        size_t upper=a<0x200000u?0x200000u:a<0xA12000u?0xA12000u:0x1000000u;
+        size_t end=(size_t)out->address+out->bytes;
+        uint32_t start=out->address>lower?out->address:lower;
+        if(end>upper)end=upper;
+        if(a<start||a>=end||bytes>end-a)return 0;
+        out->data+=start-out->address;out->address=start;out->bytes=end-start;
+    }
+    ++c->data_resolutions[b->cpu];return 1;
+}
 #if defined(M68K_STEP_HAS_CODE_SPANS) && M68K_STEP_HAS_CODE_SPANS && SEGACD_OWNED_CODE_SPANS
 static const uint8_t *bus_code_span(void *user,uint32_t a,size_t bytes)
 {
@@ -254,6 +280,7 @@ int segacd_coordinator_init(SegaCDCoordinator *c,SegaCD *devices,const M68kStepB
     M68kStepBus bus={bus_read8,bus_read16,bus_write8,bus_write16,bus_fetch,bus_wait,bus_ack,bus_reset};
     for(unsigned n=0;n<2;++n){
         c->binding[n].owner=c;c->binding[n].cpu=(SegaCDCpu)n;m68k_step_init(&c->cpu[n],&bus,&c->binding[n]);
+        (void)m68k_step_data_regions(&c->cpu[n],bus_data_region);
 #if defined(M68K_STEP_HAS_CODE_SPANS) && M68K_STEP_HAS_CODE_SPANS && SEGACD_OWNED_CODE_SPANS
         (void)m68k_step_code_span(&c->cpu[n],bus_code_span);
 #endif
@@ -284,6 +311,11 @@ int segacd_coordinator_main_code_span(SegaCDCoordinator *c,const uint8_t *(*span
 {
     if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
     c->host_code_span=span;return 1;
+}
+int segacd_coordinator_main_data_region(SegaCDCoordinator *c,M68kStepDataResolver resolver)
+{
+    if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
+    c->host_data_region=resolver;return 1;
 }
 int segacd_coordinator_floor(SegaCDCoordinator *c,M68kStepResult (*step)(M68kStepContext *))
 {
@@ -396,7 +428,7 @@ static SegaCDLookupSlot *register_slot(SegaCDCoordinator *c,unsigned which)
     unsigned index=((pc>>1)^(pc>>9)^(pc>>17))&(SEGACD_LOOKUP_SLOTS-1);
     SegaCDLookupSlot *slot=&c->catalog_lookup[which].slots[index];
     if(!slot->valid||slot->pc!=pc||!slot->count||
-       !slot->register_only[0]||slot->overflow)return NULL;
+       !(slot->register_only[0]&M68K_STEP_EFFECT_REGISTER)||slot->overflow)return NULL;
     return slot;
 }
 static int register_irq_ready(const M68kStepContext *cpu,unsigned level)
@@ -447,7 +479,7 @@ static uint64_t run_register_region_validated(SegaCDCoordinator *c,uint64_t dead
         if(!slot||!register_irq_ready(cpu,level[which]))break;
         M68kStepResult result=M68K_STEP_MISS;
         c->busy[which]=1;
-        for(unsigned i=0;i<slot->count&&slot->register_only[i];++i) {
+        for(unsigned i=0;i<slot->count&&(slot->register_only[i]&M68K_STEP_EFFECT_REGISTER);++i) {
             result=m68k_step_execute_register(cpu,slot->entry[i]);
             if(result!=M68K_STEP_MISS)break;
         }

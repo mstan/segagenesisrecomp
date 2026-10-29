@@ -95,6 +95,13 @@ int segacd_sub_runnable(const SegaCD *cd);
 
 SegaCDResult segacd_read8(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint8_t *value);
 SegaCDResult segacd_read16(SegaCD *cd, SegaCDCpu cpu, uint32_t addr, uint16_t *value);
+typedef struct {uint32_t address;size_t bytes;uint8_t *data;} SegaCDMemoryRegion;
+/* A single uninterrupted qualified bus operation may reuse this ordinary
+ * byte-memory view. Resolve again after any bus/observer call or operation
+ * exit. No MMIO, WAIT, ignored/protected writes or noncontiguous 1M view.
+ * Read and write permission are separately resolved; guest byte order stays
+ * unchanged. Zero preserves the normal lane-aware bus transaction. */
+int segacd_memory_region(SegaCD *,SegaCDCpu,uint32_t,size_t,int write,SegaCDMemoryRegion *);
 /* Ephemeral contiguous current instruction bytes. No pointer is retained or
  * code identity trusted across operations. NULL keeps ordinary fetch/WAIT for
  * patches, mapping boundaries, ownership stalls and noncontiguous 1M views. */

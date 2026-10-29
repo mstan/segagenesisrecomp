@@ -7,9 +7,10 @@ generator's standalone function/descriptor format is accepted. Equal operation
 bodies may share an existing exported symbol; no guest code is decoded here.
 The generated metadata links against the ORIGINAL operation objects.
 
-All opcode/extension guards, cycles and distinct per-PC variants remain. Fetch
-is side-effect-free by the M68kStepBus contract. No code-identity caching, ROM
-knowledge, HLE, fast math, assembly or runtime format is introduced.
+All opcode/extension descriptors, cycles and distinct per-PC variants remain.
+Fetch is side-effect-free by the M68kStepBus contract. Effect flags qualify
+register-only or context-bus-only operations; actual code identity belongs to
+the runtime memory owner. No ROM knowledge, HLE, fast math or assembly.
 """
 from __future__ import annotations
 
@@ -29,7 +30,13 @@ ENTRY = re.compile(r" \{0x([0-9A-Fa-f]+)u,\{([^}]*)\},(\d+),(\d+),(" + IDENT + r
 BUILTINS = {"m68k_step_illegal", "m68k_step_unimplemented"}
 
 
-def register_only(body: str) -> bool:
+TRACKED_HELPERS = {"m68k_read8", "m68k_read16", "m68k_read32", "m68k_write8", "m68k_write16", "m68k_write32",
+                   "m68k_brief_index_value", "m68k_step_supervisor", "m68k_step_set_sr", "m68k_step_rte",
+                   "m68k_step_stop", "m68k_step_reset_devices", "m68k_step_exception", "m68k_step_illegal",
+                   "m68k_step_unimplemented"}
+
+
+def register_only(body: str, *, tracked_bus: bool = False) -> bool:
     """Closed effect grammar, not an opcode/HLE guess. Unknown text is an exit.
 
     The accepted TU has only m68k_step_bind.h, whose g_cpu is ctx->state.regs.
@@ -42,10 +49,17 @@ def register_only(body: str) -> bool:
         return False
     code = re.sub(r"\bg_cpu\.(?:D|A|SR|PC|USP)\b", "REG", code)
     code = re.sub(r"\bctx->charge\b", "CHARGE", code)
+    if tracked_bus:
+        # Only the exact context argument to known runtime helpers is allowed.
+        # Their writes, WAIT, exceptions and reset callbacks use the tracked bus.
+        for helper in TRACKED_HELPERS:
+            code = re.sub(r"\b" + helper + r"\(ctx\s*,", helper + "(", code)
+            code = re.sub(r"\b" + helper + r"\(ctx\)", helper + "()", code)
     if re.search(r"->|\.|[&]\s*REG|\b(?:ctx|g_cpu)\b", code):
         return False
     # No helper calls, including apparently pure custom/HLE functions.
-    if any(name not in {"if", "for", "while", "sizeof"} for name in
+    helpers = TRACKED_HELPERS if tracked_bus else set()
+    if any(name not in {"if", "for", "while", "sizeof"} | helpers for name in
            re.findall(r"\b([A-Za-z_]\w*)\s*\(", code)):
         return False
     types = r"(?:u?int(?:8|16|32|64)_t|unsigned|int|long|short|signed|size_t)"
@@ -59,7 +73,7 @@ def register_only(body: str) -> bool:
                          "unsigned", "signed", "int", "long", "short", "size_t", "void"}
     # Remove integer literals before scanning names (including their C suffix).
     code = re.sub(r"\b(?:0[xX][0-9a-fA-F]+|[0-9]+)[uUlL]*\b", "0", code)
-    return set(re.findall(r"\b[A-Za-z_]\w*\b", code)) <= allowed
+    return set(re.findall(r"\b[A-Za-z_]\w*\b", code)) <= allowed | helpers
 
 
 class CatalogError(ValueError):
@@ -85,7 +99,7 @@ def operations(text: str, prefix: str, effects: dict | None = None):
         if not re.fullmatch(re.escape(prefix) + r"_at_[0-9A-Fa-f]{6}", symbol):
             raise CatalogError(f"unexpected generated operation: {symbol}")
         if effects is not None:
-            effects[symbol] = int(register_only(body))
+            effects[symbol] = 1 if register_only(body) else 2 if register_only(body, tracked_bus=True) else 0
         # Exact text, not algebra or alpha equivalence. Source-location, local
         # static and preprocessing effects must retain their original identity.
         yield symbol, None if UNSAFE.search(body) else digest(body.encode("utf-8"))
@@ -214,7 +228,8 @@ def compact(catalog_list: Path, output: Path, *, parts: int = 32, chunk_entries:
         macros.append("#define GENESIS_CATALOG_" + group + "_MODULES " + ",".join("&" + n for n in modules))
         macros.append("#define GENESIS_CATALOG_" + group + "_EFFECT_MODULES " + ",".join(effect_modules))
         stats[group] = {"input_entries": state["input_entries"], "unique_entries": len(state["seen"]), "output_modules": len(modules),
-                        "register_only_entries": sum(effects.get(r[3], 0) for r in state['seen'])}
+                        "register_only_entries": sum(bool(effects.get(r[3], 0) & 1) for r in state['seen']),
+                        "tracked_bus_entries": sum(bool(effects.get(r[3], 0) & 2) for r in state['seen'])}
     header = output / "native_catalog_registry.h"
     header.write_text('#ifndef GENESIS_NATIVE_CATALOG_REGISTRY_H\n#define GENESIS_NATIVE_CATALOG_REGISTRY_H\n#include "m68k_step.h"\n#define GENESIS_CATALOG_HAS_EFFECTS 1\n' + "\n".join(declarations + macros) + "\n#endif\n", encoding="utf-8", newline="\n")
     generated.append(header)
