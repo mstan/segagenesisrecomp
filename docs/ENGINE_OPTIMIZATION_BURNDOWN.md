@@ -4,7 +4,7 @@ Historical evaluation/release owner: `beads-3vb.31`. Remaining implementation: *
 
 Source audit base: `f422ad52a04b9d253c0e9cbcdb3476aabd563ae8`. Prepared in isolated branch `codex/engine-optimization-burndown-20261027`. Refresh and freeze remote engine/shared-core and representative consumer heads before implementation.
 
-**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04 and E05; **26 families remain open**, alongside eight delivered bounded contracts and two existing findings; family counts overlap and are not speedup counts.
+**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04 and E05; **27 families remain open**, alongside eight delivered bounded contracts and one existing finding (E06 reopened by fresh due diligence); family counts overlap and are not speedup counts.
 
 ## Scope
 
@@ -62,11 +62,11 @@ Current owner instruction (2026-10-28): work serially on one original goal. A va
   - Evidence: `external/m68k-recomp-core/profiles/genesis/code_generator.c`, `runner/glue.c`.
   - Disposition/evidence: Implemented inline complete resumable native-call frames, qualified native tail continuations, bounded same-TU callgraph/alias placement, and canonical live-guarded CD arithmetic regions ending in exact variable-charge pure control (including indirect JMP). Dynamic/RAM/override, nested skip, IRQ/restore and hook boundaries preserved; promoted-RAM qualification defect fixed. MSVC/GCC and all3 built-game gates pass; cartridge actual save/load/rollback and exact state/images/fullWAV match. Per-game performance neutral/inconclusive. Live CD whole pure-leaf folding has only0Main/19Sub upper-budget fits among849238calls and is rejected as unproductive on the measured route. Full inventory: ENGINE_NATIVE_CONTROL_FLOW.md and machine results. EnginePR39/corePR10 stacked onE04; independent final gate accepted and explicitly instructed fresh E06 verification next. Owner combined visual merge/release approval remains pending.
 
-- [x] **E06: Reusable native Z80 backend** â€” P2; original N07.
+- [ ] **E06: Reusable native Z80 backend** â€” P2; original N07.
   - Goal: Qualify and improve the common uploaded-code/variant executor and native blocks, with supported build integration.
   - Boundary: Keep reset, BUSREQ, IRQ, self-modification and timed writes. Driver catalogs, semantic SMPS HLE and game rollout are separate title work.
   - Evidence: `runner/z80_recomp.c`, `runner/cd/z80_native.c`, `docs/Z80_STATIC_RECOMP.md`.
-  - Disposition/evidence: The reusable uploaded-code/variant executor and generated native Z80 step already exist. Current SonicCD gates retire16241534 native Z80 instructions with zero floor/audio faults; cartridge driver qualification is retained in the earlier campaign. New CD attribution places bus-time coordination above the generated Z80 step itself, so E01/E07 address the reusable overhead. New driver catalogs/semantic SMPS HLE are title rollout T02/T13 and excluded. No new native-coverage or speed gain counted.
+  - Disposition/evidence: Fresh serial diligence reopened this family. Actual adapter/generator tests exposed HALT refresh, EI fallback, IRQ WZ, Windows64-cycle preservation and absent supported build wiring. Working fixes and a bounded cartridge native slice remove repeated legacy-state publication; real variants/full-state/timed-write/IRQ/trace and CD BUSREQ/reset tests pass MSVC/GCC. Actual supported consumer builds/runtime, PRs and independent final acceptance remain pending. Owner beads-3z5k.5, shared producer beads-xecp.1.5. No new performance claim or E07 advancement.
 
 - [ ] **E07: Event-driven waits and scheduling** â€” P2; original N09.
   - Goal: Coalesce safe raster/fiber/CPU scheduling spans and handle proven waits through actual event wakeups.
