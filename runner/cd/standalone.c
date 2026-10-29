@@ -316,6 +316,9 @@ int main(int argc,char **argv)
         (unsigned long long)machine.coordinator.region_runs,
         (unsigned long long)machine.coordinator.region_instructions[0],
         (unsigned long long)machine.coordinator.region_instructions[1]);
+    printf("Register spans Main=%llu/%llu Sub=%llu/%llu\n",
+        (unsigned long long)machine.coordinator.span_runs[0],(unsigned long long)machine.coordinator.span_instructions[0],
+        (unsigned long long)machine.coordinator.span_runs[1],(unsigned long long)machine.coordinator.span_instructions[1]);
     printf("Owned data regions Main=%llu Sub=%llu\n",
         (unsigned long long)machine.coordinator.data_resolutions[0],
         (unsigned long long)machine.coordinator.data_resolutions[1]);
