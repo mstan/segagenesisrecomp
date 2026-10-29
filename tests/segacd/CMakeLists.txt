@@ -203,6 +203,24 @@ add_test(NAME segacd_stamp COMMAND segacd_stamp_test)
 add_executable(segacd_dma_test dma_test.c)
 target_link_libraries(segacd_dma_test PRIVATE segacd_devices)
 add_test(NAME segacd_dma COMMAND segacd_dma_test)
+add_executable(segacd_dma_idle_span_test dma_idle_span_test.c dma_reference.c)
+target_link_libraries(segacd_dma_idle_span_test PRIVATE segacd_devices)
+target_compile_features(segacd_dma_idle_span_test PRIVATE c_std_11)
+if(MSVC)
+  target_compile_options(segacd_dma_idle_span_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_dma_idle_span_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_dma_idle_span COMMAND segacd_dma_idle_span_test)
+add_executable(segacd_cell_layout_test cell_layout_test.c dma_reference.c)
+target_link_libraries(segacd_cell_layout_test PRIVATE segacd_devices)
+target_compile_features(segacd_cell_layout_test PRIVATE c_std_11)
+if(MSVC)
+  target_compile_options(segacd_cell_layout_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_cell_layout_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME segacd_cell_layout COMMAND segacd_cell_layout_test)
 add_executable(segacd_disc_probe disc_probe.c)
 target_link_libraries(segacd_disc_probe PRIVATE segacd_disc_image segacd_devices)
 find_package(Python3 COMPONENTS Interpreter QUIET)
@@ -760,7 +778,7 @@ endif()
 add_custom_target(segacd_test_suite)
 foreach(test_target IN ITEMS segacd_memory_test segacd_pcm_test segacd_fader_test segacd_cdda_test segacd_cdda_bus_test segacd_cdd_test
     segacd_cdc_test segacd_disc_image_test segacd_sector_test segacd_media_test
-    segacd_stamp_test segacd_dma_test segacd_step_semantics_test
+    segacd_stamp_test segacd_dma_test segacd_dma_idle_span_test segacd_cell_layout_test segacd_step_semantics_test
     segacd_floor_divide_test segacd_module_test segacd_execution_floor_test segacd_debug_test
     segacd_coordinator_test segacd_external_bus_test segacd_z80_native_test segacd_audio_mix_test segacd_bios_floor_probe
     segacd_audio_native_test segacd_backup_test segacd_machine_test segacd_sonic_cd_render_test segacd_sonic_cd_view_test m68k_step_test)

@@ -33,4 +33,19 @@ void segacd_dma_address_programmed(struct SegaCD *,SegaCDDma *);
 /* Advances the global six-sub-clock cadence, even while inactive. Returns the
  * last event result (WAIT/UNMAPPED leaves FIFO, source and DMA address intact). */
 SegaCDDmaResult segacd_dma_advance(struct SegaCD *,SegaCDDma *,uint32_t clocks);
+/* Internal clock-only span: caller owns a non-null, currently inactive DMA.
+ * Recheck activity after device callbacks. Preserve every field except phase;
+ * an inactive controller still free-runs through the six-clock cadence. */
+static inline void segacd_dma_idle_clock(SegaCDDma *dma,uint32_t clocks)
+{
+    uint32_t total=clocks+dma->phase;
+    unsigned phase=total%6u;
+    /* Carry contributes 2^32 mod 6 = 4. This also handles noncanonical phase
+     * bytes imported into current-build state without overflowing the sum. */
+    if(total<clocks) {
+        phase+=4u;
+        if(phase>=6u)phase-=6u;
+    }
+    dma->phase=(uint8_t)phase;
+}
 #endif
