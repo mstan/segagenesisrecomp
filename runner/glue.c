@@ -76,6 +76,7 @@ uint8_t   g_controller2_buttons = 0;
 
 /* Contextual recompiler cycle tracking */
 uint32_t  g_cycle_accumulator  = 0;
+uint64_t  g_native_span_count  = 0;
 uint32_t  g_vblank_threshold   = 109312;  /* scanline 224 × 488 cycles */
 
 /* Audio event-queue cycle stamp: 68K cycles since wall-frame start. Bumped

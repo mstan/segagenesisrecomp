@@ -8,6 +8,7 @@ This produces new native objects; the unchanged instruction archive is separate.
 """
 from __future__ import annotations
 import argparse
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -52,7 +53,7 @@ def generate(source: Path, output: Path, emitter: Path):
             array=name+'_entries'
             for index,(record,flag) in enumerate(zip(records,flags)):
                 pc=int(record[1],16)
-                first[group].setdefault(pc,(array,index,pc,int(record[3]),int(record[4]),flag,record[2]))
+                first[group].setdefault(pc,(array,index,pc,int(record[3]),int(record[4]),flag,record[2],record[5]))
             if text.count('static const M68kStepEntry entries[]={')!=1:
                 raise ValueError('unsupported entry array')
             text=text.replace('static const M68kStepEntry entries[]={',f'const M68kStepEntry {array}[]={{')
@@ -62,17 +63,40 @@ def generate(source: Path, output: Path, emitter: Path):
         (output/name).write_bytes(raw)
     declarations=[]
     generated=[]
+    bodies={}
     for group,entries in first.items():
         prefix='genesis_spans_'+group.lower()
         input_file=output/(prefix+'.txt')
         with input_file.open('w',encoding='utf8',newline='\n') as stream:
             for _,record in sorted(entries.items()):
-                array,index,pc,count,cycles,flag,words=record
+                array,index,pc,count,cycles,flag,words,symbol=record
                 values=' '.join(f'{int(word,16):04x}' for word in words.split(','))
-                stream.write(f'{array} {index} {pc:06x} {count} {cycles} {flag} {values}\n')
+                stream.write(f'{array} {index} {pc:06x} {count} {cycles} {flag} {values} {symbol}\n')
         subprocess.run([str(emitter),str(input_file),str(output),prefix],check=True)
+        with (output/(prefix+'_ordinary_bodies.jsonl')).open(encoding='utf8') as proof:
+            for line in proof:
+                symbol,body=json.loads(line)
+                digest=sha(body.replace('\r\n','\n').encode())
+                if bodies.setdefault(symbol,digest)!=digest:
+                    raise ValueError('canonical symbol has conflicting ordinary emissions: '+symbol)
         declarations.extend([f'extern const M68kStepRegisterSpan {prefix}_spans[];',f'extern const size_t {prefix}_count;'])
         generated.extend([prefix+'_module.c']+[f'{prefix}_part{part:02}.c' for part in range(32)])
+    # Effect qualification is insufficient: a pure HLE can use different
+    # arithmetic with the same instruction guard. Require EXACT ordinary
+    # common-emitter body equivalence, including PC-bearing temporaries.
+    alias_file=source/'native_catalog_aliases.jsonl.gz'
+    if sha(alias_file.read_bytes())!=parent['alias_map_sha256']:
+        raise ValueError('parent canonical body map hash differs')
+    unmatched=set(bodies)
+    with gzip.open(alias_file,'rt',encoding='utf8') as stream:
+        for line in stream:
+            original,target,digest=json.loads(line)
+            if target in unmatched:
+                if digest!=bodies[target]:
+                    raise ValueError('noncanonical pure operation body: '+target)
+                unmatched.remove(target)
+    if unmatched:
+        raise ValueError('original operation body proof missing: '+next(iter(unmatched)))
     (output/'native_register_span_registry.h').write_bytes(('#ifndef NATIVE_REGISTER_SPAN_REGISTRY_H\n#define NATIVE_REGISTER_SPAN_REGISTRY_H\n#include "m68k_step.h"\n#define GENESIS_CATALOG_HAS_REGISTER_SPANS 1\n'+'\n'.join(declarations)+'\n#endif\n').encode())
     (output/'native_catalog_registry.h').write_bytes(files['native_catalog_registry.h']+b'\n#include "native_register_span_registry.h"\n')
     cmake=files['native_catalog_sources.cmake'].decode()+'\nlist(APPEND GENESIS_COMPACT_CATALOG_SOURCES\n'+''.join(f'  "${{CMAKE_CURRENT_LIST_DIR}}/{name}"\n' for name in generated)+')\n'
@@ -81,6 +105,7 @@ def generate(source: Path, output: Path, emitter: Path):
     parent.update(schema='M68kStepRegisterSpanCatalog1',parent_manifest_sha256=sha(parent_raw),
                   companion_generator_sha256=sha(Path(__file__).read_bytes()),
                   companion_emitter_sha256=sha(emitter.read_bytes()),outputs=identities,
+                  canonical_ordinary_bodies_verified=len(bodies),
                   span_priority='first descriptor at each PC; full live guards; runtime configuration revalidates identity/effects/priority')
     (output/'native_catalog_manifest.json').write_bytes((json.dumps(parent,indent=2)+'\n').encode())
     return {group:len(entries) for group,entries in first.items()}
