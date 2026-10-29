@@ -64,12 +64,14 @@ def generate(source: Path, output: Path, emitter: Path):
     declarations=[]
     generated=[]
     bodies={}
-    for group,entries in first.items():
+    def emit_group(group,entries,excluded):
         prefix='genesis_spans_'+group.lower()
         input_file=output/(prefix+'.txt')
         with input_file.open('w',encoding='utf8',newline='\n') as stream:
             for _,record in sorted(entries.items()):
                 array,index,pc,count,cycles,flag,words,symbol=record
+                if symbol in excluded:
+                    flag=0
                 values=' '.join(f'{int(word,16):04x}' for word in words.split(','))
                 stream.write(f'{array} {index} {pc:06x} {count} {cycles} {flag} {values} {symbol}\n')
         subprocess.run([str(emitter),str(input_file),str(output),prefix],check=True)
@@ -79,6 +81,9 @@ def generate(source: Path, output: Path, emitter: Path):
                 digest=sha(body.replace('\r\n','\n').encode())
                 if bodies.setdefault(symbol,digest)!=digest:
                     raise ValueError('canonical symbol has conflicting ordinary emissions: '+symbol)
+    for group,entries in first.items():
+        prefix='genesis_spans_'+group.lower()
+        emit_group(group,entries,set())
         declarations.extend([f'extern const M68kStepRegisterSpan {prefix}_spans[];',f'extern const size_t {prefix}_count;'])
         generated.extend([prefix+'_module.c']+[f'{prefix}_part{part:02}.c' for part in range(32)])
     # Effect qualification is insufficient: a pure HLE can use different
@@ -88,15 +93,25 @@ def generate(source: Path, output: Path, emitter: Path):
     if sha(alias_file.read_bytes())!=parent['alias_map_sha256']:
         raise ValueError('parent canonical body map hash differs')
     unmatched=set(bodies)
+    expected={}
     with gzip.open(alias_file,'rt',encoding='utf8') as stream:
         for line in stream:
             original,target,digest=json.loads(line)
             if target in unmatched:
-                if digest!=bodies[target]:
-                    raise ValueError('noncanonical pure operation body: '+target)
+                expected[target]=digest
                 unmatched.remove(target)
     if unmatched:
         raise ValueError('original operation body proof missing: '+next(iter(unmatched)))
+    excluded={symbol for symbol,digest in bodies.items() if expected[symbol]!=digest}
+    if excluded:
+        # A different producer revision or a pure HLE is an ordinary-path
+        # boundary, never permission to replace its semantics from the opcode.
+        # Regenerate EVERY part/table so no unproven span remains eligible.
+        bodies.clear()
+        for group,entries in first.items():
+            emit_group(group,entries,excluded)
+        if any(expected.get(symbol)!=digest for symbol,digest in bodies.items()):
+            raise ValueError('noncanonical body survived companion filtering')
     (output/'native_register_span_registry.h').write_bytes(('#ifndef NATIVE_REGISTER_SPAN_REGISTRY_H\n#define NATIVE_REGISTER_SPAN_REGISTRY_H\n#include "m68k_step.h"\n#define GENESIS_CATALOG_HAS_REGISTER_SPANS 1\n'+'\n'.join(declarations)+'\n#endif\n').encode())
     (output/'native_catalog_registry.h').write_bytes(files['native_catalog_registry.h']+b'\n#include "native_register_span_registry.h"\n')
     cmake=files['native_catalog_sources.cmake'].decode()+'\nlist(APPEND GENESIS_COMPACT_CATALOG_SOURCES\n'+''.join(f'  "${{CMAKE_CURRENT_LIST_DIR}}/{name}"\n' for name in generated)+')\n'
@@ -106,6 +121,7 @@ def generate(source: Path, output: Path, emitter: Path):
                   companion_generator_sha256=sha(Path(__file__).read_bytes()),
                   companion_emitter_sha256=sha(emitter.read_bytes()),outputs=identities,
                   canonical_ordinary_bodies_verified=len(bodies),
+                  excluded_noncanonical_symbols=sorted(excluded),
                   span_priority='first descriptor at each PC; full live guards; runtime configuration revalidates identity/effects/priority')
     (output/'native_catalog_manifest.json').write_bytes((json.dumps(parent,indent=2)+'\n').encode())
     return {group:len(entries) for group,entries in first.items()}

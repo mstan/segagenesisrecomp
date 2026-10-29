@@ -53,11 +53,22 @@ int main(int argc,char **argv)
    fputs("}\n",out);fprintf(out,"static void b%u(M68kStepContext*ctx){\n",s);
    CHECK(codegen_emit_register_span(out,&rom,ins,count));fputs("}\n",out);
  }
+ /* The old signed CMPA subtraction is undefined on overflow. GCC exposed
+  * N being optimized away after the preceding SUBI; assert real 68000 flags,
+  * independently of the span/ordinary differential oracle. */
+ {
+  uint8_t bytes[]={0x04,0x81,0xff,0xff,0xff,0xff,0xb1,0xc1};
+  GenesisRom rom={0};rom.rom_data=bytes;rom.rom_size=sizeof bytes;M68KInstr ins;
+  fputs("static void cmpa_overflow(M68kStepContext*ctx){\n",out);
+  CHECK(m68k_decode_68000(&rom,0,&ins));CHECK(codegen_emit_step_semantics(out,&rom,&ins));
+  CHECK(m68k_decode_68000(&rom,6,&ins));CHECK(codegen_emit_step_semantics(out,&rom,&ins));fputs("}\n",out);
+ }
  fputs("typedef void(*Op)(M68kStepContext*);static const Op before[]={",out);
  for(unsigned s=0;s<sequences;++s)fprintf(out,"%sa%u",s?",":"",s);fputs("};\nstatic const Op after[]={",out);
  for(unsigned s=0;s<sequences;++s)fprintf(out,"%sb%u",s?",":"",s);
  fputs("};\nstatic uint32_t seed=0x12345678;static uint32_t random32(void){seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return seed;}\n"
- "int main(void){uint32_t edge[]={0,1,0x7f,0x80,0xff,0x7fff,0x8000,0xffff,0x7fffffff,0x80000000,0xffffffff};unsigned long cases=0;\n"
+ "int main(void){M68kStepContext overflow={0};overflow.state.regs.A[0]=0xffff;overflow.state.regs.D[1]=0x7fffffff;overflow.state.regs.SR=0x2010;cmpa_overflow(&overflow);CHECK(overflow.state.regs.D[1]==0x80000000u&&overflow.state.regs.SR==0x201b);\n"
+ "uint32_t edge[]={0,1,0x7f,0x80,0xff,0x7fff,0x8000,0xffff,0x7fffffff,0x80000000,0xffffffff};unsigned long cases=0;\n"
  "for(unsigned s=0;s<sizeof before/sizeof*before;++s)for(unsigned sample=0;sample<96;++sample){M68kStepContext a={0},b;"
  "for(unsigned r=0;r<8;++r){a.state.regs.D[r]=sample<32?edge[(sample+r)%11]:random32();a.state.regs.A[r]=sample<32?edge[(sample+r*3)%11]:random32();}"
  "a.state.regs.SR=(uint16_t)(0x2700|(sample&31));a.state.regs.PC=0x123456;a.state.cycles=71;a.state.instructions=23;a.charge=99;b=a;before[s](&a);after[s](&b);"

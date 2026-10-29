@@ -62,6 +62,8 @@ int main(int argc,char**argv)
  FILE*parts[32];for(unsigned n=0;n<32;++n){char suffix[32];snprintf(suffix,sizeof suffix,"_part%02u.c",n);parts[n]=output(argv[2],prefix,suffix);fputs("#include \"m68k_step_bind.h\"\n",parts[n]);}
  FILE*module=output(argv[2],prefix,"_module.c");fputs("#include \"m68k_step.h\"\n",module);
  FILE*proof=output(argv[2],prefix,"_ordinary_bodies.jsonl");
+ GenesisRom proof_rom={0};
+ for(size_t n=0;n<count;++n)if(rows[n].qualified)ordinary_body(proof,&rows[n],&proof_rom);
  FILE*table=tmpfile();if(!table)fail("cannot open table buffer");
  unsigned spans=0,instructions=0;
  for(size_t s=0;s<count;){
@@ -74,7 +76,6 @@ int main(int argc,char**argv)
   for(unsigned n=0;n<length;++n)fprintf(part,"%s&%s[%u]",n?",":"",rows[s+n].array,rows[s+n].index);
   fprintf(part,"};\nvoid %s_span_%u(M68kStepContext*ctx){\n",prefix,spans);
   GenesisRom rom={0}; /* Common semantics consume decoded extension words. */
-  for(unsigned n=0;n<length;++n)ordinary_body(proof,&rows[s+n],&rom);
   if(!codegen_emit_register_span(part,&rom,ins,length))fail("span emission failed");fputs("}\n",part);
   fprintf(module,"extern const M68kStepEntry *const %s_members_%u[];\nextern void %s_span_%u(M68kStepContext*);\n",prefix,spans,prefix,spans);
   fprintf(table," {%s_members_%u,%s_span_%u,%u,%u},\n",prefix,spans,prefix,spans,length,cycles);
