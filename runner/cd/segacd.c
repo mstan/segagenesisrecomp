@@ -2,6 +2,14 @@
 #include "sector.h"
 #include <string.h>
 
+/* Qualification switch for matched built-runtime measurements, not a setting. */
+#ifndef SEGACD_DMA_IDLE_SPANS
+#define SEGACD_DMA_IDLE_SPANS 1
+#endif
+#ifndef SEGACD_CELL_PERMUTATION
+#define SEGACD_CELL_PERMUTATION 1
+#endif
+
 enum { RET = 1, DMNA = 2, MODE_1M = 4, PRIORITY = 24 };
 
 void segacd_reset(SegaCD *s)
@@ -102,7 +110,13 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
         segacd_cdc_advance(&s->cdc,delta);
         if(!(s->memory_mode&(MODE_1M|RET)) && segacd_stamp_advance(&s->stamp,s->word,(s->memory_mode>>3)&3u,delta))
             s->irq_pending|=1u<<1;
-        (void)segacd_dma_advance(s,&s->dma,delta);
+#if SEGACD_DMA_IDLE_SPANS
+        /* PCM/CDDA/stamp callbacks above may have started DMA in this span.
+         * Resolve ownership here, at the original controller boundary. */
+        if(!s->dma.active)segacd_dma_idle_clock(&s->dma,delta);
+        else
+#endif
+            (void)segacd_dma_advance(s,&s->dma,delta);
         if(segacd_cdd_advance(&s->drive,delta,deliver_sector,&delivery))s->irq_pending|=1u<<4;
         remaining-=delta;
     }
@@ -148,7 +162,21 @@ static uint32_t cell_to_linear(uint32_t offset)
     /* Hardware Manual pp16-17: column-major 8x8 cells, 512-dot bitmap rows.
      * Five independently mapped bands
      * have 32, 16, 8, 4 and 4 vertical cells respectively. */
-    uint32_t base; unsigned rows;
+    uint32_t base;
+#if SEGACD_CELL_PERMUTATION
+    unsigned row_shift;
+    if (offset < 0x10000u) { base = 0; row_shift = 5; }
+    else if (offset < 0x18000u) { base = 0x10000; row_shift = 4; }
+    else if (offset < 0x1C000u) { base = 0x18000; row_shift = 3; }
+    else if (offset < 0x1E000u) { base = 0x1C000; row_shift = 2; }
+    else { base = 0x1E000; row_shift = 2; }
+    uint32_t n=offset-base,row_mask=((1u<<row_shift)-1u)<<5;
+    /* Permute cell-row/in-cell-row bits above the 64-column byte position.
+     * These fields do not overlap. Both byte lanes and each band stay exact;
+     * no layout table, copied view or retained ownership is needed. */
+    return base+(((n&(row_mask|0x1cu))<<6)|((n>>(5+row_shift))<<2)|(n&3u));
+#else
+    unsigned rows;
     if (offset < 0x10000u) { base = 0; rows = 32; }
     else if (offset < 0x18000u) { base = 0x10000; rows = 16; }
     else if (offset < 0x1C000u) { base = 0x18000; rows = 8; }
@@ -157,6 +185,7 @@ static uint32_t cell_to_linear(uint32_t offset)
     uint32_t n = offset - base, tile = n / 32;
     return base + ((tile % rows) * 8 + (n % 32) / 4) * 256
          + (tile / rows) * 4 + (n & 3);
+#endif
 }
 
 static SegaCDResult word_address(const SegaCD *s, SegaCDCpu cpu,
