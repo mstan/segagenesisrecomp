@@ -5,8 +5,8 @@
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
 Current serial update: E01, E03, E04 and E05 now deliver their selected original bounded
-contracts; **26 families remain open**. E05 final independent PR/record review
-and the combined owner visual handoff remain pending. The audit narrative below
+contracts; **26 families remain open**. E05 independent final review accepted and instructed fresh E06 verification;
+the combined owner visual handoff remains pending. The audit narrative below
 describes the original released base; current row dispositions are in the
 [machine-readable audit](engine-optimization-completion-audit.json) and
 [implementation burndown](ENGINE_OPTIMIZATION_BURNDOWN.md). Historical findings
