@@ -1,0 +1,17 @@
+{
+  "reviewer": "validate_e14",
+  "reviewed_head": "8029d30212dff734bc52b4b0e30b544f03eff3ad",
+  "raw_receipts_checked": 53,
+  "distinct_artifact_files_hashed": 213,
+  "frozen_game_binaries_hashed": 3,
+  "all_eight_game_arms_exact": true,
+  "five_compacted_checkpoint_hashes_per_arm_exact": true,
+  "all_three_architectures_nine_platform_gates": "6/6 each R1/R2/final x64/x86/GCC",
+  "native_windows_test_machines": {
+    "msvc64": "0x8664",
+    "msvc32": "0x14c"
+  },
+  "restored_stamp_and_frozen_oracle_byte_exact": true,
+  "final_runner_change_only_semantics_identical_size_t_cast": true,
+  "findings": []
+}
