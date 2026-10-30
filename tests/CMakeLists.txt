@@ -21,6 +21,15 @@ endif()
 # a top-level project.  Keep its ROM-independent harnesses runnable directly
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
+add_executable(game_video_frame_test runtime/game_video_frame_test.c)
+target_include_directories(game_video_frame_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+target_compile_features(game_video_frame_test PRIVATE c_std_11)
+if(MSVC)
+    target_compile_options(game_video_frame_test PRIVATE /W4 /WX)
+else()
+    target_compile_options(game_video_frame_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME game_video_frame COMMAND game_video_frame_test)
 add_subdirectory(segacd)
 enable_language(CXX)
 

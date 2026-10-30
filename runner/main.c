@@ -218,7 +218,7 @@ static int s_frame_stride = NATIVE_SCREEN_STRIDE;
 
 static uint32_t s_native_storage[NATIVE_SCREEN_STRIDE * MAX_SCREEN_HEIGHT];
 static uint32_t *s_framebuf = s_native_storage; /* ARGB8888 */
-static int s_custom_width;
+static GameVideoFrame s_video_frame;
 static SDL_Renderer *s_video_renderer;
 static SDL_Texture **s_video_texture;
 
@@ -293,7 +293,7 @@ static int runtime_ui_get(void *p, const RecompRuntimeUiItem *i, int *out) {
     else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VIEW_MODE)) *out = c->view_mode;
     else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_LINEAR_FILTER)) *out = g_app_config.linear_filter;
     else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VOLUME)) *out = g_app_config.volume;
-    else if (!strcmp(i->key,"mods.widescreen.enabled")) *out = g_game_spec.video && g_game_spec.video->enabled();
+    else if (!strcmp(i->key,"mods.widescreen.enabled")) *out = game_video_viewport_enabled(g_game_spec.video);
     else if (!strcmp(i->key,"mods.widescreen.aspect")) *out = g_app_config.custom_aspect;
     else if (!strcmp(i->key,"states.slot")) *out = s_quickstate_slot;
     else return 0; return 1;
@@ -305,7 +305,7 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
 #if GENESIS_HAS_RECOMP_NET
         if(genesis_netplay_active())return 0;
 #endif
-        if(!g_game_spec.video)return 0;
+        if(!game_video_has_viewport(g_game_spec.video))return 0;
         if(!strcmp(i->key,"mods.widescreen.enabled"))g_app_config.custom_widescreen=v!=0;
         else if(!strcmp(i->key,"mods.widescreen.aspect") && v>=0 && v<4)g_app_config.custom_aspect=v;
         else return 0;
@@ -323,7 +323,7 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
         if (genesis_netplay_active()) return 0;
 #endif
         c->view_mode = v; s_ws_user_on = v != RECOMP_RUNTIME_UI_VIEW_NATIVE;
-        if (g_game_spec.video)
+        if (game_video_has_viewport(g_game_spec.video))
             g_game_spec.video->configure(v == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE ? "fit" : "off");
         if (v == RECOMP_RUNTIME_UI_VIEW_FIXED_16_9) s_ws_user_cells = 8;
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_LINEAR_FILTER)) {
@@ -411,7 +411,7 @@ int runner_ws_set_user(int on)
 #define WS_ASPECT_H 9
 /* True while the 16:9 presentation is active: user asked for it AND the game
  * supports widescreen content. */
-static int ws_armed(void) { return !s_custom_width && s_ws_user_on && g_game_layout.ws_capable; }
+static int ws_armed(void) { return !s_video_frame.viewport && s_ws_user_on && g_game_layout.ws_capable; }
 /* Width (px) of the fixed widescreen output canvas the VDP emits every frame. */
 static int ws_canvas_w(void) { return 320 + 2 * s_ws_user_cells * 8; }
 /* Height (px) that makes that canvas width a true 16:9 frame. The canvas is
@@ -564,42 +564,31 @@ static void scanline_rendered_cb(void *user_data,
 
 #include "genesis_machine.h"
 /* Own-backend scanline sink: copy our VDP's rendered ARGB row to the framebuf. */
+static const uint32_t *provided_native_row(void *ctx) { return (const uint32_t *)ctx; }
 static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width)
 {
     (void)u;
-    /* `width` already includes any widescreen margins (gvdp_render_scanline
-     * returns w + 2*extra). Track it so the present path scales to the wider
-     * image, mirroring the clownmdemu scanline_rendered_cb. */
-    s_screen_width = s_custom_width ? s_custom_width : width;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
-    if (s_custom_width && g_game_spec.video) {
-        g_game_spec.video->scanline(&g_machine.vdp, line, argb, width, row, s_custom_width);
-    } else {
-        int n = width < MAX_SCREEN_WIDTH ? width : MAX_SCREEN_WIDTH;
-        for (int x = 0; x < n; x++) row[x] = argb[x];
-    }
-    if (g_game_spec.video && g_game_spec.video->overlay_scanline)
-        g_game_spec.video->overlay_scanline(&g_machine.vdp, line, row, s_screen_width);
+    s_screen_width = game_video_draw_row(&s_video_frame, &g_machine.vdp, line,
+        width, row, MAX_SCREEN_WIDTH, provided_native_row, (void *)argb);
 }
 
 static int own_custom_row_enabled(void *user)
 {
     (void)user;
-    return s_custom_width && g_game_spec.video && g_game_spec.video->scanline_lazy;
+    return s_video_frame.owner && s_video_frame.owner->scanline_lazy;
 }
 
 static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
                            GenesisNativeRow native_row, void *native_ctx)
 {
     (void)user;
-    s_screen_width = s_custom_width;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
+    /* The machine supplies actual H32/H40/margin/canvas row geometry. */
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
-    g_game_spec.video->scanline_lazy(vdp, line, native_w, row, s_custom_width,
-                                     native_row, native_ctx);
-    if (g_game_spec.video->overlay_scanline)
-        g_game_spec.video->overlay_scanline(vdp, line, row, s_screen_width);
+    s_screen_width = game_video_draw_row(&s_video_frame, vdp, line, native_w,
+        row, MAX_SCREEN_WIDTH, native_row, native_ctx);
 }
 
 static const GenesisScanlineProducer s_custom_producer = {
@@ -608,25 +597,37 @@ static const GenesisScanlineProducer s_custom_producer = {
 
 static void custom_video_prepare(void)
 {
-    s_custom_width = 0;
-    if (!g_game_spec.video || !g_game_spec.video->enabled()) return;
     int dw = 0, dh = 0;
-    if (s_video_renderer) SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
-    /* width() also sets the game's SIMULATION width from the configured mode
-     * (sealed online), so it runs whether or not this machine can present
-     * it; everything below only decides what this machine draws. */
-    int width = g_game_spec.video->width(dw, dh, 320, 224);
-    if (!s_video_renderer || width < 320) return;
+    if (g_game_spec.video && s_video_renderer)
+        SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
+    s_video_frame = game_video_prepare_frame(g_game_spec.video, dw, dh, 320, 224);
+    if (!s_video_renderer || !s_video_frame.owner) {
+        game_video_native_fallback(&s_video_frame);
+        return;
+    }
+    /* An independently selected native producer needs no wide allocation.
+     * width() already published the configured simulation width above. */
+    int width = s_video_frame.width;
+    if (!width) return;
     SDL_RendererInfo info;
+    /* Legacy adapters may derive guest hooks from their published width.
+     * Never invoke one at a smaller local width: preserve its logical request
+     * and use exact native presentation when this host cannot fit it. */
     if (SDL_GetRendererInfo(s_video_renderer, &info) == 0 && info.max_texture_width > 0 &&
-        width > info.max_texture_width) width = info.max_texture_width;
+        width > info.max_texture_width) {
+        game_video_native_fallback(&s_video_frame);
+        return;
+    }
     {   /* Validation only: pretend this machine's GPU has a smaller texture
          * limit (GENESIS_FORCE_MAX_TEXTURE_W), to prove the clamp stays
          * presentation. */
         const char *f = getenv("GENESIS_FORCE_MAX_TEXTURE_W");
-        if (f && f[0] && atoi(f) > 0 && width > atoi(f)) width = atoi(f);
+        if (f && f[0] && atoi(f) > 0 && width > atoi(f)) {
+            game_video_native_fallback(&s_video_frame);
+            return;
+        }
     }
-    if (width < 320) return;
+    if (width < 320) { game_video_native_fallback(&s_video_frame); return; }
     if (width > s_frame_stride) {
         size_t count = (size_t)width * MAX_SCREEN_HEIGHT;
         uint32_t *frame = (uint32_t *)calloc(count, sizeof(uint32_t));
@@ -635,12 +636,7 @@ static void custom_video_prepare(void)
                                               SDL_TEXTUREACCESS_STREAMING, width, MAX_SCREEN_HEIGHT);
         if (!frame || !present || !next) {
             free(frame); free(present); SDL_DestroyTexture(next);
-#if GENESIS_HAS_RECOMP_NET
-            /* Online the mode is sealed simulation config: present natively
-             * this frame, never switch the mode off under the peers. */
-            if (!genesis_netplay_active())
-#endif
-            g_game_spec.video->configure("off");
+            game_video_native_fallback(&s_video_frame);
             fprintf(stderr, "[VIDEO] custom framebuffer allocation failed (%d pixels): %s\n", width, SDL_GetError());
             return;
         }
@@ -654,19 +650,20 @@ static void custom_video_prepare(void)
         if (s_present_buf != s_present_storage) free(s_present_buf);
         s_framebuf = frame; s_present_buf = present; s_frame_stride = width;
     }
-    s_custom_width = width;
+    s_video_frame.width = width;
 }
 
 /* Presentation-only debug control for deterministic resize/mode probes. */
 int runner_custom_video_set(const char *mode, int window_w, int window_h)
 {
-    if (!g_game_spec.video || !s_video_renderer || window_w < 0 || window_h < 0 ||
+    if (!game_video_has_viewport(g_game_spec.video) || !s_video_renderer || window_w < 0 || window_h < 0 ||
         window_w > 65535 || window_h > 65535 || (!window_w != !window_h)) return 0;
-    if (mode && *mode && !g_game_spec.video->configure(mode)) return 0;
+    if (mode && *mode && (!game_video_has_viewport(g_game_spec.video) ||
+                         !g_game_spec.video->configure(mode))) return 0;
     if (window_w && window_h) SDL_SetWindowSize(SDL_RenderGetWindow(s_video_renderer), window_w, window_h);
     s_ws_user_on = 0;
 #if RECOMP_LAUNCHER
-    s_runtime_ui.view_mode = g_game_spec.video->enabled() ? RECOMP_RUNTIME_UI_VIEW_ADAPTIVE : RECOMP_RUNTIME_UI_VIEW_NATIVE;
+    s_runtime_ui.view_mode = game_video_viewport_enabled(g_game_spec.video) ? RECOMP_RUNTIME_UI_VIEW_ADAPTIVE : RECOMP_RUNTIME_UI_VIEW_NATIVE;
 #endif
     return 1;
 }
@@ -682,7 +679,7 @@ static void widescreen_update_for_frame(void)
     custom_video_prepare();
     extern int      g_ws_margin;   /* runtime widening signal (defined in glue.c) */
     int extra_px = 0;
-    if (!s_custom_width && s_ws_user_on && g_game_layout.ws_capable) {
+    if (!s_video_frame.viewport && s_ws_user_on && g_game_layout.ws_capable) {
         int cells = s_ws_user_cells;
         if (g_game_layout.ws_max_extra_cells > 0 &&
             cells > g_game_layout.ws_max_extra_cells)
@@ -725,7 +722,7 @@ static void widescreen_update_for_frame(void)
      * pillarbox the sides (extra_px==0) — so the window never resizes. The width
      * matches the window the engine opened ((320 + 2*cells*8) * 2). 0 disarms
      * (authentic 4:3, byte-identical). Decoupled from extra_px on purpose. */
-    int canvas_w = (!s_custom_width && s_ws_user_on && g_game_layout.ws_capable)
+    int canvas_w = (!s_video_frame.viewport && s_ws_user_on && g_game_layout.ws_capable)
                        ? (320 + 2 * s_ws_user_cells * 8) : 0;
     gvdp_set_ws_canvas(canvas_w);
     gvdp_set_ws_bar_black(s_ws_bar_black);
@@ -1750,8 +1747,8 @@ static void capture_local_session_config(const RecompLauncherCSettings *settings
                    ((ws[0] == 'o' || ws[0] == 'O') && (ws[1] == 'n' || ws[1] == 'N'))))
             ws_on = 1;
         if (cols && atoi(cols) > 0) ws_cells = atoi(cols);
-        c.ws_on = (uint8_t)(!g_game_spec.video && ws_on != 0);
-        if (g_game_spec.video) {
+        c.ws_on = (uint8_t)(!game_video_has_viewport(g_game_spec.video) && ws_on != 0);
+        if (game_video_has_viewport(g_game_spec.video)) {
             /* The host's custom-video mode, window-independent. */
             const char *m = s_custom_video_cli ? s_custom_video_cli
                           : g_app_config.custom_widescreen ? app_config_aspect_mode(g_app_config.custom_aspect)
@@ -1819,7 +1816,8 @@ static int netplay_next_session(GenesisNetplayConfig *cfg, int round)
         if (!cfg->enabled) {
             genesis_netplay_adopt_session_config(NULL);
             if (g_game_spec.video) {
-                if (s_custom_video_cli) g_game_spec.video->configure(s_custom_video_cli);
+                if (s_custom_video_cli && game_video_has_viewport(g_game_spec.video))
+                    g_game_spec.video->configure(s_custom_video_cli);
                 else app_config_apply_video(g_game_spec.video);
             }
             if (g_game_spec.netplay_config_adopt)
@@ -1847,7 +1845,8 @@ static int netplay_next_session(GenesisNetplayConfig *cfg, int round)
         s_offline_after_netplay = 1;
         genesis_netplay_adopt_session_config(NULL);
         if (g_game_spec.video) {   /* back to this build's own video mode */
-            if (s_custom_video_cli) g_game_spec.video->configure(s_custom_video_cli);
+            if (s_custom_video_cli && game_video_has_viewport(g_game_spec.video))
+                    g_game_spec.video->configure(s_custom_video_cli);
             else app_config_apply_video(g_game_spec.video);
         }
         if (g_game_spec.netplay_config_adopt)
@@ -2327,7 +2326,7 @@ int main(int argc, char *argv[])
              * existing scripts and shortcuts keep working. */
             fprintf(stderr, "[audio] --audio-backend is obsolete (one backend)\n");
         } else if (strcmp(argv[i], "--widescreen") == 0) {
-            if (i + 1 >= argc || !g_game_spec.video || !g_game_spec.video->configure(argv[i+1])) {
+            if (i + 1 >= argc || !game_video_has_viewport(g_game_spec.video) || !g_game_spec.video->configure(argv[i+1])) {
                 fprintf(stderr, "--widescreen requires off, fit, stage, or W:H and a custom renderer\n");
                 return 2;
             }
@@ -2663,7 +2662,7 @@ int main(int argc, char *argv[])
      * on it. Only reads env + the compile-time g_game_layout, so it is safe to
      * run this early. */
     widescreen_setup();
-    if(g_game_spec.video) {
+    if(game_video_has_viewport(g_game_spec.video)) {
         if(custom_video_cli) {
             int aspect=app_config_aspect_index(custom_video_cli);
             g_app_config.custom_widescreen=strcmp(custom_video_cli,"off")!=0;
@@ -2685,7 +2684,7 @@ int main(int argc, char *argv[])
     int win_scale = g_app_config.window_scale;
     if (win_scale < 1) win_scale = 1; else if (win_scale > 8) win_scale = 8;
     int win_w = 320 * win_scale, win_h = 224 * win_scale;   /* scale 2 = 640x448 (4:3) */
-    int custom_video_on = g_game_spec.video && g_game_spec.video->enabled();
+    int custom_video_on = game_video_viewport_enabled(g_game_spec.video);
     if (custom_video_on) {
         win_w = (win_h * 16 + 4) / 9;
     } else if (ws_armed()) {
@@ -2793,7 +2792,7 @@ int main(int argc, char *argv[])
         RecompRuntimeUiStandardConfig cfg = {0};
         s_runtime_ui.window = window; s_runtime_ui.renderer = renderer; s_runtime_ui.texture = texture;
         s_runtime_ui.view_mode = s_ws_user_on ? RECOMP_RUNTIME_UI_VIEW_FIXED_16_9 : RECOMP_RUNTIME_UI_VIEW_NATIVE;
-        if (g_game_spec.video && g_game_spec.video->enabled()) s_runtime_ui.view_mode = RECOMP_RUNTIME_UI_VIEW_ADAPTIVE;
+        if (game_video_viewport_enabled(g_game_spec.video)) s_runtime_ui.view_mode = RECOMP_RUNTIME_UI_VIEW_ADAPTIVE;
         cfg.menu.title = g_game_spec.display_name; cfg.menu.subtitle = "Genesis runtime settings"; cfg.menu.theme = "genesis";
         cfg.menu.callbacks.context = &s_runtime_ui; cfg.menu.callbacks.get_value = runtime_ui_get;
         cfg.menu.callbacks.set_value = runtime_ui_set; cfg.menu.callbacks.run_action = runtime_ui_action;
@@ -2803,7 +2802,7 @@ int main(int argc, char *argv[])
             RECOMP_RUNTIME_UI_STANDARD_VOLUME | RECOMP_RUNTIME_UI_STANDARD_RESUME;
         cfg.view_modes = RECOMP_RUNTIME_UI_VIEW_MODE_NATIVE | RECOMP_RUNTIME_UI_VIEW_MODE_FIXED_16_9 |
             RECOMP_RUNTIME_UI_VIEW_MODE_ADAPTIVE;
-        if(g_game_spec.video) {
+        if(game_video_has_viewport(g_game_spec.video)) {
             cfg.features &= ~RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE;
             cfg.extra_items=s_video_mod_items;
             cfg.extra_item_count=sizeof s_video_mod_items/sizeof s_video_mod_items[0];
@@ -2811,7 +2810,7 @@ int main(int argc, char *argv[])
         if (!g_game_spec.state_unavailable_reason ||
             !g_game_spec.state_unavailable_reason()) {
             static RecompRuntimeUiItem items[5]; unsigned count=0;
-            if (g_game_spec.video) {
+            if (game_video_has_viewport(g_game_spec.video)) {
                 memcpy(items,s_video_mod_items,sizeof s_video_mod_items); count=2;
             }
             memcpy(items+count,s_quickstate_items,sizeof s_quickstate_items);
@@ -3048,7 +3047,7 @@ session_begin:;
         genesis_netplay_set_local_session_config(local_session_config());
         sc = genesis_netplay_session_config();
         /* Apply the settled session configuration (the host's, online). */
-        if (g_game_spec.video && !g_game_spec.video->configure(sc->video[0] ? sc->video : "off")) {
+        if (game_video_has_viewport(g_game_spec.video) && !g_game_spec.video->configure(sc->video[0] ? sc->video : "off")) {
             fprintf(stderr, "genesis_netplay: cannot run the host's custom-video mode (%s) — refusing\n",
                     sc->video);
             return 1;
@@ -3417,7 +3416,7 @@ session_begin:;
            * every tick; the run must end on the undigested run's machine. */
           if (completed && s_digest_every) { GenesisRbDigest dd; genesis_rb_digest(&dd); }
           FRAME_PHASE(1);
-          s_screen_width  = s_custom_width ? s_custom_width : gvdp_active_width(&g_machine.vdp);
+          s_screen_width = game_video_output_width(&s_video_frame, gvdp_active_width(&g_machine.vdp));
           /* Output height doubles in interlace mode 2 (S2 2P split-screen);
            * the existing interlace display modes (tv squash / raw) take over
            * from here, same as the clownmdemu path. */
