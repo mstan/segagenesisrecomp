@@ -107,6 +107,7 @@ static int s_vblank_executed_this_frame = 0; /* did the recompiled VBla body
  * compare native per-wall-frame instruction throughput against oracle.
  * Stays 0 on oracle builds (generated func_* bodies never run there). */
 uint64_t g_native_insn_count = 0;
+uint64_t g_native_direct_calls = 0,g_native_direct_tails = 0;
 
 /* Cycle-pacing telemetry. Updated once per wall frame in
  * glue_end_of_wall_frame. cmd_server_record_frame copies this into

@@ -20,7 +20,8 @@ typedef struct {
     uint8_t valid,count,overflow;
     uint8_t register_only[SEGACD_LOOKUP_VARIANTS];
     const M68kStepRegisterSpan *span;
-    uint8_t span_known;
+    const M68kStepRegisterSpan *span_fallback;
+    uint8_t span_known,span_control;
 } SegaCDLookupSlot;
 typedef struct {
     SegaCDLookupSlot slots[SEGACD_LOOKUP_SLOTS];

@@ -9,7 +9,8 @@
 typedef struct SegaCDCoordinator SegaCDCoordinator;
 typedef struct {SegaCDCoordinator *owner;SegaCDCpu cpu;} SegaCDBusBinding;
 #define SEGACD_CDD_TRACE_CAPACITY 64u
-enum { SEGACD_REGISTER_SPAN_LIMIT=8192 };
+enum { SEGACD_REGISTER_SPAN_LIMIT=8192,SEGACD_FLOW_SPAN_LIMIT=32768 };
+#define SEGACD_HAS_FLOW_SPANS 1
 typedef struct {
     uint8_t packet[10];
     uint32_t instruction_pc;
@@ -81,6 +82,10 @@ struct SegaCDCoordinator {
     size_t register_span_count[2];
     uint8_t register_span_qualified[2][SEGACD_REGISTER_SPAN_LIMIT/8];
     uint64_t span_runs[2],span_instructions[2];
+    const M68kStepFlowSpan *flow_spans[2];
+    size_t flow_span_count[2];
+    uint8_t flow_span_qualified[2][SEGACD_FLOW_SPAN_LIMIT/8];
+    uint64_t flow_runs[2],flow_instructions[2];
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
@@ -110,6 +115,11 @@ int segacd_coordinator_region_effects(SegaCDCoordinator *,SegaCDCpu,
  * No cross-CPU reorder: complete spans must fit before the other CPU is due. */
 int segacd_coordinator_register_spans(SegaCDCoordinator *,SegaCDCpu,
                                       const M68kStepRegisterSpan *,size_t);
+/* Configure after fixed spans. Their ordinary alternative remains available
+ * whenever a terminal's worst-case charge cannot fit the current budget.
+ * Module/effect/fixed-span replacement revokes these derived qualifications. */
+int segacd_coordinator_flow_spans(SegaCDCoordinator *,SegaCDCpu,
+                                const M68kStepFlowSpan *,size_t);
 /* Run only qualified register operations in the ORIGINAL dual-CPU order.
  * End at an unknown/observable operation, trace/IRQ, unavailable current code
  * view, host/device event or caller ceiling. Zero means use the ordinary step.

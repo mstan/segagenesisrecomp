@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build native register and dual-owned RMW companions from a qualified catalog.
+"""Build native register, pure-control and owned-RMW catalog companions.
 
 Freeze and verify every parent output. Export its exact descriptor arrays, then
 give the common core emitter only each PC's FIRST descriptor/effect in original
@@ -85,6 +85,9 @@ def generate(source: Path, output: Path, emitter: Path):
         prefix='genesis_spans_'+group.lower()
         emit_group(group,entries,set())
         declarations.extend([f'extern const M68kStepRegisterSpan {prefix}_spans[];',f'extern const size_t {prefix}_count;'])
+        if f'{prefix}_flow_count=' not in (output/(prefix+'_module.c')).read_text(encoding='utf8'):
+            raise ValueError('emitter lacks required flow-span metadata; rebuild M68kSpanRecomp')
+        declarations.extend([f'extern const M68kStepRegisterSpan {prefix}_flow_spans[];',f'extern const size_t {prefix}_flow_count;'])
         generated.extend([prefix+'_module.c']+[f'{prefix}_part{part:02}.c' for part in range(32)])
     # Effect qualification is insufficient: a pure HLE can use different
     # arithmetic with the same instruction guard. Require EXACT ordinary
@@ -142,17 +145,21 @@ def generate(source: Path, output: Path, emitter: Path):
             a,b=record.span(5);lines[locations[index]]=line[:a]+replacement+line[b:]
         owned_declarations=''.join(f'extern void {replacement}(M68kStepContext*);\n' for _,_,replacement in changes)
         (output/name).write_text('#include "m68k_step.h"\n'+owned_declarations+''.join(lines),encoding='utf8',newline='\n')
-    (output/'native_register_span_registry.h').write_bytes(('#ifndef NATIVE_REGISTER_SPAN_REGISTRY_H\n#define NATIVE_REGISTER_SPAN_REGISTRY_H\n#include "m68k_step.h"\n#define GENESIS_CATALOG_HAS_REGISTER_SPANS 1\n'+'\n'.join(declarations)+'\n#endif\n').encode())
+    (output/'native_register_span_registry.h').write_bytes(('#ifndef NATIVE_REGISTER_SPAN_REGISTRY_H\n#define NATIVE_REGISTER_SPAN_REGISTRY_H\n#include "m68k_step.h"\n#define GENESIS_CATALOG_HAS_REGISTER_SPANS 1\n#define GENESIS_CATALOG_HAS_FLOW_SPANS 1\n'+'\n'.join(declarations)+'\n#endif\n').encode())
     (output/'native_catalog_registry.h').write_bytes(files['native_catalog_registry.h']+b'\n#include "native_register_span_registry.h"\n')
     cmake=files['native_catalog_sources.cmake'].decode()+'\nlist(APPEND GENESIS_COMPACT_CATALOG_SOURCES\n'+''.join(f'  "${{CMAKE_CURRENT_LIST_DIR}}/{name}"\n' for name in generated)+')\n'
     (output/'native_catalog_sources.cmake').write_bytes(cmake.encode())
     identities={path.name:sha(path.read_bytes()) for path in output.iterdir() if path.is_file()}
-    parent.update(schema='M68kStepNativeStateCatalog2',parent_manifest_sha256=sha(parent_raw),
+    flow_counts={group:int(re.search(r'const size_t genesis_spans_'+group.lower()+r'_flow_count=(\d+);',
+                    (output/('genesis_spans_'+group.lower()+'_module.c')).read_text(encoding='utf8'))[1]) for group in groups}
+    parent.update(schema='M68kStepNativeStateCatalog3',parent_manifest_sha256=sha(parent_raw),
                   companion_generator_sha256=sha(Path(__file__).read_bytes()),
                   companion_emitter_sha256=sha(emitter.read_bytes()),outputs=identities,
                   canonical_ordinary_bodies_verified=len(bodies),
                   excluded_noncanonical_symbols=sorted(excluded),
                   canonical_owned_rmw_redirects=redirects,
+                  pure_control_span_counts=flow_counts,
+                  pure_control_contract='fixed register prefix plus canonical bus-free terminal; maximum admission, actual retirement; original fixed-span fallback',
                   descriptor_transform='Only independently body-proved callback pointers redirected; PC/words/cycles/effects/order unchanged',
                   span_priority='first descriptor at each PC; full live guards; runtime configuration revalidates identity/effects/priority')
     (output/'native_catalog_manifest.json').write_bytes((json.dumps(parent,indent=2)+'\n').encode())

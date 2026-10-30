@@ -89,6 +89,7 @@ typedef void (*RecompFuncPtr)(void);
 void recomp_tail_call(uint32_t addr);
 void recomp_call_addr(uint32_t addr);
 void recomp_call_func(RecompFuncPtr fn);
+#include "native_call_frame.h"
 /* Tail-dispatch frame list (defined in the generated <prefix>_dispatch.c).
  * Each active recomp_call_func/recomp_call_addr owns one frame on the GAME
  * FIBER stack; the head pointer is therefore execution state that must travel
