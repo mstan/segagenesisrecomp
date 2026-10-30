@@ -1,0 +1,411 @@
+{
+  "schema": "GenesisOwnedDataRegionResults1",
+  "goal": "E03",
+  "issue": "beads-3z5k.2",
+  "core_issue": "beads-rxq.4",
+  "parent": "beads-3z5k",
+  "campaign": "beads-2wy8.1",
+  "date": "2026-10-28",
+  "status": "implemented_game_qualified_neutral_independent_gate_accepted",
+  "engine_code_commit": "899939b0b0119eb1065bfdc4ae7d95c59a288537",
+  "runtime_core_commit": "b2d95f2cbe81fd9eee03a00bc2f779e6d1253edd",
+  "consumer_commit": "94f57796db9de4990e23476b576b29239095fb22",
+  "instruction_generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
+  "per_game": [
+    {
+      "game": "Sonic CD",
+      "baseline_package": "Qualified E01 native deadline regions v5, engineaec3c9c/core34e5aee",
+      "candidate_package": "E03-owned-data-regions-r1",
+      "baseline": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\e01-baseline\\SonicCD.exe",
+        "bytes": 111279104,
+        "sha256": "ad78fc4d9200fb6d7ef1c14139d4dd2e0247f64a5a182aca249eb0416f08c79d"
+      },
+      "candidate": {
+        "package": "E03-owned-data-regions-r1",
+        "binary": "G:\\Temp\\Codex\\genesis-engine-owned-memory-20261028\\build\\runtime\\Release\\SonicCD.exe",
+        "sha256": "fa03bde6de046bef192199d5d92c7c8213d8a35706fca7ed64d8b6d37925f9ce",
+        "bytes": 111284736,
+        "native_archive": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\qualified-cd-native-msvc\\segacd_owned_native_program.lib",
+        "native_archive_sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+        "consumer": "94f57796db9de4990e23476b576b29239095fb22",
+        "engine_base": "aec3c9ce60187365f1a98a8152f00aee97e9b3e9",
+        "core_base": "34e5aee23348199adfc6eda9a92b9632138b9884",
+        "source_state": "clean committed code",
+        "generation": "G:/Temp/Codex/genesis-engine-code-identity-20261028/generation.json",
+        "engine_code_commit": "899939b0b0119eb1065bfdc4ae7d95c59a288537",
+        "runtime_core_commit": "b2d95f2cbe81fd9eee03a00bc2f779e6d1253edd",
+        "engine_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "core_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "performance_classification": "neutral_inconclusive",
+      "performance_claim": "Mixed paired results within shared-host variation; no reproducible individual-game regression and no proven speedup. Do not advertise the favorable17-19% pair as an established gain.",
+      "samples": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 7.328125,
+            "cycles": 32818514690
+          },
+          "cpu_ms_per_frame": 6.106770833333333,
+          "wall_seconds": 20.483093700022437
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 7.046875,
+            "cycles": 32759888770
+          },
+          "cpu_ms_per_frame": 5.872395833333333,
+          "wall_seconds": 20.37035909993574
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 7.421875,
+            "cycles": 35316533200
+          },
+          "cpu_ms_per_frame": 6.184895833333333,
+          "wall_seconds": 20.286762099945918
+        },
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 6.140625,
+            "cycles": 28747807090
+          },
+          "cpu_ms_per_frame": 5.1171875,
+          "wall_seconds": 20.35017779993359
+        }
+      ],
+      "reductions_pct": {
+        "cpu_seconds": [
+          -3.9911308203991025,
+          17.263157894736846
+        ],
+        "cycles": [
+          -0.17895640736633744,
+          18.59957791666822
+        ]
+      },
+      "AA_drift_pct": {
+        "cpu_seconds": 5.3215077605321515,
+        "cycles": 7.804191424304396
+      },
+      "correctness": "All four3000-frame arms match11checkpoints, complete memory/pixel artifacts and full WAV against frozen reference; identical retirements/CDD timing, zero floors/audio/queue faults.",
+      "host": "Windows11 Ryzen9800X3D, affinity logicalCPU14/below-normal. SDL dummy/software video and dummy audio output with full synthesis/capture. Same input/private native-save seed/view_mode1. Costs frames1800-3000.",
+      "raw": "G:\\Temp\\Codex\\genesis-engine-owned-memory-20261028\\game-r1.json",
+      "raw_sha256": "95d98b9574b405e3a2c437cc394f98fa0fd4ec086563f34838b106554aa1a870",
+      "frozen_candidate": "G:\\Temp\\Codex\\genesis-engine-owned-memory-20261028\\binaries\\r1\\SonicCD.exe"
+    }
+  ],
+  "validation": {
+    "MSVC": {
+      "file": "C:\\temp\\Codex\\genesis-engine-owned-memory-20261028\\msvc-results.xml",
+      "sha256": "e9f6bd8db13ae994743b54af1ce1b4a5227c6c2badb4f9638e01a4bd4c7695ba",
+      "tests": 22,
+      "failures": 0
+    },
+    "GCC": {
+      "file": "C:\\temp\\Codex\\genesis-engine-owned-memory-20261028\\gcc-results.xml",
+      "sha256": "b4d9422268f083e968625bf4a6b2fdb0fe458529ec184020d8e89e425e42a8c3",
+      "tests": 20,
+      "failures": 0
+    }
+  },
+  "contract_tests": {
+    "core_cases": 320,
+    "word_bus_full_state_cases": 82944,
+    "host_aperture_cases": 6,
+    "details": "CPU/full-memory oracles cover bytes/words/longwords, MMIO/direct mapping changes, nested helpers across opaque callbacks, partial first-word effects on WAIT/fault, reset, fetch, trace, 24-bit wrap, odd alignment and malformed providers. Device provider matrix covers all mappings/protection; ordinary/live HLE cannot acquire views.",
+    "restore": "MSVC and GCC restore-between-operations assertion passes: replace CPU state and banked guest bytes, preserve callbacks, require fresh data resolutions and exact ordinary-path CPU/memory equality. Logs restore-between-operations.log/restore-gcc.log; capacity-restore-final.json exit0. No old save-state compatibility requirement."
+  },
+  "regressions_found_fixed": [
+    {
+      "finding": "Nested helpers inside an opaque callback could repopulate and reuse views across direct mapping changes. Suspend eligibility for the entire callback dynamic extent.",
+      "failed_before": "C:\\temp\\Codex\\genesis-engine-owned-memory-20261028\\nested-callback-before-fix.log"
+    },
+    {
+      "finding": "Broad host backing view could cover CD PRG/Word/MMIO apertures. Clip to the contiguous host-only interval containing the request.",
+      "failed_before": "C:\\temp\\Codex\\genesis-engine-owned-memory-20261028\\host-aperture-before-fix.log"
+    }
+  ],
+  "participation": {
+    "main_data_resolutions": 14330018,
+    "sub_data_resolutions": 6678394,
+    "caveat": "Provider participation/reuse contract, not native coverage or a speedup."
+  },
+  "capacity": {
+    "build": {
+      "file": "C:\\temp\\Codex\\genesis-engine-owned-memory-20261028\\capacity-build-r1.json",
+      "sha256": "ced91f107cd114f72a4c4dbd84a02935f386df0c6f02023c06353b6a93ef042c",
+      "receipt": {
+        "before": {
+          "eligible": true,
+          "reasons": [],
+          "requested": {
+            "cpu": 1.0,
+            "gpu": 0.0,
+            "memory": 4.0,
+            "disk": 3.0
+          },
+          "remaining": {
+            "cpu_cores": 4.71875,
+            "memory_gib": 18.809494018554688,
+            "gpu_percent": 71.0
+          },
+          "sample": {
+            "host": "DESKTOP-HN15M1H",
+            "os": "windows",
+            "timestamp": 1793245058.644652,
+            "physical_cores": 8,
+            "logical_cpus": 16,
+            "cpu_busy_percent": 41.015625,
+            "cpu_free_cores": 4.71875,
+            "memory_available_gib": 18.809494018554688,
+            "memory_total_gib": 61.5560188293457,
+            "gpu_busy_percent": 29.0,
+            "gpu_source": "nvidia-smi utilization.gpu",
+            "storage": "G:\\",
+            "storage_free_gib": 7447.889701843262
+          },
+          "active_claims": 4,
+          "policy": "codex-benchmark-capacity-v1",
+          "token": "2161ecf2ea334388a542a2738ea164cd",
+          "phase": "pending",
+          "target": "local",
+          "alias": null,
+          "other_targets": []
+        },
+        "command": [
+          "C:/Users/Matthew/.pyenv/pyenv-win/versions/3.12.5/python.exe",
+          "C:\\Temp\\Codex\\genesis-engine-owned-memory-20261028\\build_game.py",
+          "r1"
+        ],
+        "exit_code": 0,
+        "after": {
+          "host": "DESKTOP-HN15M1H",
+          "os": "windows",
+          "timestamp": 1793245121.3073,
+          "physical_cores": 8,
+          "logical_cpus": 16,
+          "cpu_busy_percent": 55.859375,
+          "cpu_free_cores": 3.53125,
+          "memory_available_gib": 18.487651824951172,
+          "memory_total_gib": 61.5560188293457,
+          "gpu_busy_percent": 30.0,
+          "gpu_source": "nvidia-smi utilization.gpu",
+          "storage": "G:\\",
+          "storage_free_gib": 7447.4864501953125
+        }
+      }
+    },
+    "game": {
+      "file": "C:\\temp\\Codex\\genesis-engine-owned-memory-20261028\\capacity-game-r1.json",
+      "sha256": "6b359ee7509d734cfebc2c5ac3e705d0c450852e823eee55cb56e8e80b9e417a",
+      "receipt": {
+        "before": {
+          "eligible": true,
+          "reasons": [],
+          "requested": {
+            "cpu": 1.0,
+            "gpu": 0.0,
+            "memory": 2.0,
+            "disk": 2.0
+          },
+          "remaining": {
+            "cpu_cores": 4.015625,
+            "memory_gib": 18.58148956298828,
+            "gpu_percent": 70.0
+          },
+          "sample": {
+            "host": "DESKTOP-HN15M1H",
+            "os": "windows",
+            "timestamp": 1793245154.7122104,
+            "physical_cores": 8,
+            "logical_cpus": 16,
+            "cpu_busy_percent": 49.8046875,
+            "cpu_free_cores": 4.015625,
+            "memory_available_gib": 18.58148956298828,
+            "memory_total_gib": 61.5560188293457,
+            "gpu_busy_percent": 30.0,
+            "gpu_source": "nvidia-smi utilization.gpu",
+            "storage": "G:\\",
+            "storage_free_gib": 7447.620510101318
+          },
+          "active_claims": 4,
+          "policy": "codex-benchmark-capacity-v1",
+          "token": "8103d79a557640838d81122108c9f118",
+          "phase": "pending",
+          "target": "local",
+          "alias": null,
+          "other_targets": []
+        },
+        "command": [
+          "C:/Users/Matthew/.pyenv/pyenv-win/versions/3.12.5/python.exe",
+          "C:\\Temp\\Codex\\genesis-engine-owned-memory-20261028\\check_game.py",
+          "r1"
+        ],
+        "exit_code": 0,
+        "after": {
+          "host": "DESKTOP-HN15M1H",
+          "os": "windows",
+          "timestamp": 1793245370.5312126,
+          "physical_cores": 8,
+          "logical_cpus": 16,
+          "cpu_busy_percent": 47.65625,
+          "cpu_free_cores": 4.1875,
+          "memory_available_gib": 18.164531707763672,
+          "memory_total_gib": 61.5560188293457,
+          "gpu_busy_percent": 34.0,
+          "gpu_source": "nvidia-smi utilization.gpu",
+          "storage": "G:\\",
+          "storage_free_gib": 7447.0025634765625
+        }
+      }
+    },
+    "contracts": {
+      "file": "C:\\temp\\Codex\\genesis-engine-owned-memory-20261028\\capacity-tests-fixed-regions.json",
+      "sha256": "e04024b87f6b3e3e93a87f68619b88a24ced0b8efef1b9314e3844523c84de7d",
+      "receipt": {
+        "before": {
+          "eligible": true,
+          "reasons": [],
+          "requested": {
+            "cpu": 1.0,
+            "gpu": 0.0,
+            "memory": 2.0,
+            "disk": 1.0
+          },
+          "remaining": {
+            "cpu_cores": 4.8046875,
+            "memory_gib": 18.57120132446289,
+            "gpu_percent": 68.0
+          },
+          "sample": {
+            "host": "DESKTOP-HN15M1H",
+            "os": "windows",
+            "timestamp": 1793244981.0369856,
+            "physical_cores": 8,
+            "logical_cpus": 16,
+            "cpu_busy_percent": 39.94140625,
+            "cpu_free_cores": 4.8046875,
+            "memory_available_gib": 18.57120132446289,
+            "memory_total_gib": 61.5560188293457,
+            "gpu_busy_percent": 32.0,
+            "gpu_source": "nvidia-smi utilization.gpu",
+            "storage": "G:\\",
+            "storage_free_gib": 7448.375301361084
+          },
+          "active_claims": 3,
+          "policy": "codex-benchmark-capacity-v1",
+          "token": "ed98987dcb934a0abb01d8ed707c6aa2",
+          "phase": "pending",
+          "target": "local",
+          "alias": null,
+          "other_targets": []
+        },
+        "command": [
+          "C:/Users/Matthew/.pyenv/pyenv-win/versions/3.12.5/python.exe",
+          "C:\\Temp\\Codex\\genesis-engine-owned-memory-20261028\\verify_tests.py"
+        ],
+        "exit_code": 0,
+        "after": {
+          "host": "DESKTOP-HN15M1H",
+          "os": "windows",
+          "timestamp": 1793245023.3261049,
+          "physical_cores": 8,
+          "logical_cpus": 16,
+          "cpu_busy_percent": 42.87109375,
+          "cpu_free_cores": 4.5703125,
+          "memory_available_gib": 18.654682159423828,
+          "memory_total_gib": 61.5560188293457,
+          "gpu_busy_percent": 27.0,
+          "gpu_source": "nvidia-smi utilization.gpu",
+          "storage": "G:\\",
+          "storage_free_gib": 7448.07682800293
+        }
+      }
+    },
+    "restore": {
+      "file": "C:\\temp\\Codex\\genesis-engine-owned-memory-20261028\\capacity-restore-final.json",
+      "receipt": {
+        "before": {
+          "eligible": true,
+          "reasons": [],
+          "requested": {
+            "cpu": 1.0,
+            "gpu": 0.0,
+            "memory": 1.0,
+            "disk": 0.1
+          },
+          "remaining": {
+            "cpu_cores": 5.8671875,
+            "memory_gib": 15.642093658447266,
+            "gpu_percent": 65.0
+          },
+          "sample": {
+            "host": "DESKTOP-HN15M1H",
+            "os": "windows",
+            "timestamp": 1793245596.8385565,
+            "physical_cores": 8,
+            "logical_cpus": 16,
+            "cpu_busy_percent": 26.66015625,
+            "cpu_free_cores": 5.8671875,
+            "memory_available_gib": 15.642093658447266,
+            "memory_total_gib": 61.5560188293457,
+            "gpu_busy_percent": 35.0,
+            "gpu_source": "nvidia-smi utilization.gpu",
+            "storage": "G:\\",
+            "storage_free_gib": 7447.249057769775
+          },
+          "active_claims": 3,
+          "policy": "codex-benchmark-capacity-v1",
+          "token": "d56288a925c141f3a409a2e5263536f9",
+          "phase": "pending",
+          "target": "local",
+          "alias": null,
+          "other_targets": []
+        },
+        "command": [
+          "C:/Users/Matthew/.pyenv/pyenv-win/versions/3.12.5/python.exe",
+          "C:\\Temp\\Codex\\genesis-engine-owned-memory-20261028\\verify_restore.py"
+        ],
+        "exit_code": 0,
+        "after": {
+          "host": "DESKTOP-HN15M1H",
+          "os": "windows",
+          "timestamp": 1793245602.88313,
+          "physical_cores": 8,
+          "logical_cpus": 16,
+          "cpu_busy_percent": 28.80859375,
+          "cpu_free_cores": 5.6953125,
+          "memory_available_gib": 14.398616790771484,
+          "memory_total_gib": 61.5560188293457,
+          "gpu_busy_percent": 37.0,
+          "gpu_source": "nvidia-smi utilization.gpu",
+          "storage": "G:\\",
+          "storage_free_gib": 7447.249057769775
+        }
+      }
+    }
+  },
+  "costs": {
+    "baseline_exe_bytes": 111279104,
+    "candidate_exe_bytes": 111284736,
+    "exe_delta_bytes": 5632,
+    "views": "Two24-byte views plus resolver/eligibility per CPU on tested x64 ABI; no guest-memory duplicate or page-version table."
+  },
+  "scope": "General owned byte-memory regions for ONE qualified native operation; exact fallback across callbacks/MMIO/WAIT/protection/1M mappings and every operation exit. All opcode/extension guards remain live. No cross-instruction pinning, second guest-memory representation, game-PC logic or rejected E02 code identity/cache adopted. Reuses independently audited generated context-bus effect grammar/flags2 only. Cartridge bus audited as already decoding complete words once; no cartridge changes or untested game gains claimed.",
+  "merge_release": "CorePR8/enginePR37 open and independently accepted. Validator explicitly instructed E04 next. Owner final combined visual clearance still required before merge/release; no owner windows or delivery folders changed.",
+  "scope_completion": "Original E03 general owned-data contract delivered with required exits/fallback; future cross-instruction designs are not claimed exhausted.",
+  "prs": [
+    "https://github.com/mstan/m68k-recomp-core/pull/8",
+    "https://github.com/mstan/segagenesisrecomp/pull/37"
+  ],
+  "independent_validation": {
+    "record": "C:/Temp/Codex/genesis-engine-owned-memory-20261028/VALIDATOR_E03.md",
+    "accepted": true,
+    "next": "E04"
+  }
+}

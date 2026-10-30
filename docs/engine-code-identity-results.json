@@ -1,0 +1,557 @@
+{
+  "schema": "GenesisCodeIdentityResults1",
+  "goal": "E02",
+  "issue": "beads-3z5k.1",
+  "core_issue": "beads-rxq.3",
+  "parent": "beads-3z5k",
+  "campaign": "beads-2wy8.1",
+  "date": "2026-10-28",
+  "status": "completed_unsuccessful_experiment_not_adopted",
+  "remaining_scope_open": true,
+  "engine_code_commit": "c9db7a1847597f63d1cc294cea55d91940ec0091",
+  "runtime_core_commit": "55208206dceb126d2e0ae84422382b07292d38be",
+  "consumer_commit": "94f57796db9de4990e23476b576b29239095fb22",
+  "instruction_generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
+  "baseline_engine": "aec3c9ce60187365f1a98a8152f00aee97e9b3e9",
+  "baseline_core": "34e5aee23348199adfc6eda9a92b9632138b9884",
+  "per_game": [
+    {
+      "game": "Sonic CD",
+      "baseline_package": "E01 qualified native deadline regions v5",
+      "candidate_package": "E02-physical-code-identity-v6",
+      "candidate": {
+        "package": "E02-physical-code-identity-v6",
+        "binary": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\build-v2\\runtime\\Release\\SonicCD.exe",
+        "sha256": "67c4bea3bf06bc44dade5eb186741ddfdfd9ca1362701c41de5299035cbf048a",
+        "bytes": 111285760,
+        "native_archive": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\qualified-cd-native-msvc\\segacd_owned_native_program.lib",
+        "native_archive_sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+        "consumer": "94f57796db9de4990e23476b576b29239095fb22",
+        "engine_base": "aec3c9ce60187365f1a98a8152f00aee97e9b3e9",
+        "core_base": "34e5aee23348199adfc6eda9a92b9632138b9884",
+        "source_state": "clean committed code",
+        "generation": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\generation.json",
+        "engine_code_commit": "c9db7a1847597f63d1cc294cea55d91940ec0091",
+        "runtime_core_commit": "55208206dceb126d2e0ae84422382b07292d38be",
+        "engine_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "core_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "baseline": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\e01-baseline\\SonicCD.exe",
+        "bytes": 111279104,
+        "sha256": "ad78fc4d9200fb6d7ef1c14139d4dd2e0247f64a5a182aca249eb0416f08c79d"
+      },
+      "performance_classification": "negative_observed_conservatively_rejected",
+      "performance_claim": "No adopted gain. Both final matched pairs cost more CPU time and cycles. Large shared-host variation remains; this does not prove a universal slowdown.",
+      "samples": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 6.765625,
+            "cycles": 31814942020
+          },
+          "cpu_ms_per_frame": 5.638020833333333,
+          "wall_seconds": 20.27745210006833,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 6.28125,
+            "cycles": 31013492850
+          },
+          "cpu_ms_per_frame": 5.234375,
+          "wall_seconds": 20.320109999971464,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 7.609375,
+            "cycles": 35633427410
+          },
+          "cpu_ms_per_frame": 6.341145833333333,
+          "wall_seconds": 20.347567000077106,
+          "passed": true
+        },
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 8.09375,
+            "cycles": 36377611310
+          },
+          "cpu_ms_per_frame": 6.744791666666667,
+          "wall_seconds": 20.369406399899162,
+          "passed": true
+        }
+      ],
+      "reductions_pct": {
+        "cpu_seconds": [
+          -7.7114427860696555,
+          -6.365503080082147
+        ],
+        "cycles": [
+          -2.5841951239619965,
+          -2.0884432233738925
+        ]
+      },
+      "AA_drift_pct": {
+        "cpu_seconds": 21.144278606965173,
+        "cycles": 14.896530946529607
+      },
+      "correctness": "Four full3000-frame arms exactly match the frozen reference in eleven inspect/pixel checkpoints, memory/pixel dumps and full WAV; native totals/CDD timing unchanged, zero floors/audio/queue faults.",
+      "settings": "Windows Ryzen9800X3D; affinity logicalCPU14; below-normal priority; dummy SDL video/software renderer and dummy audio output with full synthesis/capture; same private seed and scripted input; costs frames1800-3000.",
+      "frozen_candidate": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\binaries\\v6-rejected\\SonicCD.exe"
+    }
+  ],
+  "validation": {
+    "MSVC": {
+      "file": "C:\\temp\\Codex\\genesis-engine-code-identity-20261028\\msvc-results.xml",
+      "sha256": "c26ed3595acd70e8b7679fabb99e2f819335236c2a564ad97da44549aa1aa129",
+      "tests": 19,
+      "failures": 0
+    },
+    "GCC": {
+      "file": "C:\\temp\\Codex\\genesis-engine-code-identity-20261028\\portable-results.xml",
+      "sha256": "9d163d09c6e9210e24ca9c94bd15c6774a48d5100953ea68ac30795a702d9a16",
+      "tests": 7,
+      "failures": 0
+    }
+  },
+  "capacity": {
+    "build": {
+      "file": "C:\\temp\\Codex\\genesis-engine-code-identity-20261028\\capacity-build-v6-oneworker.json",
+      "sha256": "d06651f4a67058af759b2ec4f176c967a21ca4f168017bfd6d24d5ad2107fb0e",
+      "receipt": {
+        "before": {
+          "eligible": true,
+          "reasons": [],
+          "requested": {
+            "cpu": 1.0,
+            "gpu": 0.0,
+            "memory": 4.0,
+            "disk": 3.0
+          },
+          "remaining": {
+            "cpu_cores": 2.6640625,
+            "memory_gib": 18.213478088378906,
+            "gpu_percent": 65.0
+          },
+          "sample": {
+            "host": "DESKTOP-HN15M1H",
+            "os": "windows",
+            "timestamp": 1793241154.2817667,
+            "physical_cores": 8,
+            "logical_cpus": 16,
+            "cpu_busy_percent": 66.69921875,
+            "cpu_free_cores": 2.6640625,
+            "memory_available_gib": 18.213478088378906,
+            "memory_total_gib": 61.5560188293457,
+            "gpu_busy_percent": 35.0,
+            "gpu_source": "nvidia-smi utilization.gpu",
+            "storage": "G:\\",
+            "storage_free_gib": 7454.064891815186
+          },
+          "active_claims": 2,
+          "policy": "codex-benchmark-capacity-v1",
+          "token": "25148e32a3af4a4c85e72f9167cb4157",
+          "phase": "pending",
+          "target": "local",
+          "alias": null,
+          "other_targets": []
+        },
+        "command": [
+          "C:/Users/Matthew/.pyenv/pyenv-win/versions/3.12.5/python.exe",
+          "C:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\build_game.py",
+          "v6"
+        ],
+        "exit_code": 0,
+        "after": {
+          "host": "DESKTOP-HN15M1H",
+          "os": "windows",
+          "timestamp": 1793241206.4072895,
+          "physical_cores": 8,
+          "logical_cpus": 16,
+          "cpu_busy_percent": 57.421875,
+          "cpu_free_cores": 3.40625,
+          "memory_available_gib": 18.12816619873047,
+          "memory_total_gib": 61.5560188293457,
+          "gpu_busy_percent": 25.0,
+          "gpu_source": "nvidia-smi utilization.gpu",
+          "storage": "G:\\",
+          "storage_free_gib": 7454.064220428467
+        }
+      }
+    },
+    "game": {
+      "file": "C:\\temp\\Codex\\genesis-engine-code-identity-20261028\\capacity-game-v6-onecpu.json",
+      "sha256": "df24a26c36a7263333ede1dd875d2d2a01e06656f90c9b48f6731dd23e3c9dc7",
+      "receipt": {
+        "before": {
+          "eligible": true,
+          "reasons": [],
+          "requested": {
+            "cpu": 1.0,
+            "gpu": 0.0,
+            "memory": 2.0,
+            "disk": 2.0
+          },
+          "remaining": {
+            "cpu_cores": 2.5390625,
+            "memory_gib": 19.166908264160156,
+            "gpu_percent": 72.0
+          },
+          "sample": {
+            "host": "DESKTOP-HN15M1H",
+            "os": "windows",
+            "timestamp": 1793241311.7696548,
+            "physical_cores": 8,
+            "logical_cpus": 16,
+            "cpu_busy_percent": 68.26171875,
+            "cpu_free_cores": 2.5390625,
+            "memory_available_gib": 19.166908264160156,
+            "memory_total_gib": 61.5560188293457,
+            "gpu_busy_percent": 28.0,
+            "gpu_source": "nvidia-smi utilization.gpu",
+            "storage": "G:\\",
+            "storage_free_gib": 7454.6221923828125
+          },
+          "active_claims": 4,
+          "policy": "codex-benchmark-capacity-v1",
+          "token": "b91010acb0f648e2a8759bbbc1fd5bb9",
+          "phase": "pending",
+          "target": "local",
+          "alias": null,
+          "other_targets": []
+        },
+        "command": [
+          "C:/Users/Matthew/.pyenv/pyenv-win/versions/3.12.5/python.exe",
+          "C:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\check_game.py",
+          "v6"
+        ],
+        "exit_code": 0,
+        "after": {
+          "host": "DESKTOP-HN15M1H",
+          "os": "windows",
+          "timestamp": 1793241527.5919523,
+          "physical_cores": 8,
+          "logical_cpus": 16,
+          "cpu_busy_percent": 71.09375,
+          "cpu_free_cores": 2.3125,
+          "memory_available_gib": 18.227890014648438,
+          "memory_total_gib": 61.5560188293457,
+          "gpu_busy_percent": 31.0,
+          "gpu_source": "nvidia-smi utilization.gpu",
+          "storage": "G:\\",
+          "storage_free_gib": 7453.538146972656
+        }
+      }
+    }
+  },
+  "writer_regression": {
+    "file": "C:\\temp\\Codex\\genesis-engine-code-identity-20261028\\external-writer-before-fix.log",
+    "finding": "New-cache external master write initially missed invalidation; regression failed before570469d and passes after. This is fixed in rejected candidate, not a baseline defect fix being shipped."
+  },
+  "implementation": {
+    "physical_page_bytes": 512,
+    "tracker_bytes": 82072,
+    "full_byte_guards": "Cold/changed versions compare all opcode and extension words exactly; cached positive and negative guards preserve module priority.",
+    "ownership": "Per-machine-run lease; bus/hostRAM/externalZ80/DMA/stamp writers tracked. Mapping and opaque callbacks fence; reentry during unknown callbacks suspends cache. Imports/restores outside the lease get a new root.",
+    "fallback": "1M Word RAM explicitly ends caching; non-owned/unsupported views and unqualified execution retain live byte guards.",
+    "qualification": "Generic coordinator code_begin requires independently qualified host bindings or caller fencing. Automatic observer wrapping is provided for the production machine/standalone bindings, not arbitrary unknown coordinator callbacks.",
+    "portability": "Portable C; MSVC/GCC tests pass. No built Linux/Deck performance qualification or other-game gain claimed."
+  },
+  "costs": {
+    "baseline_exe_bytes": 111279104,
+    "candidate_exe_bytes": 111285760,
+    "exe_delta_bytes": 6656,
+    "metadata_generation_observed_seconds": 940.765999999945,
+    "generation_caveat": "Observed producer run, not a matched generation comparison."
+  },
+  "experiments": [
+    {
+      "package": "v1",
+      "raw": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\game-v1.json",
+      "raw_sha256": "5a53791fc95ff33030ad3be35e02b28bd3294319ffc2ea98ba95c311e1e802fc",
+      "samples": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 8.234375,
+            "cycles": 38061973340
+          },
+          "cpu_ms_per_frame": 6.861979166666667,
+          "wall_seconds": 20.33857630006969,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 8.25,
+            "cycles": 40477011000
+          },
+          "cpu_ms_per_frame": 6.875,
+          "wall_seconds": 23.188270399929024,
+          "passed": true
+        }
+      ],
+      "reductions_pct": {
+        "cpu_seconds": [
+          0.18939393939394478
+        ],
+        "cycles": [
+          5.966442680266093
+        ]
+      },
+      "AA_drift_pct": null
+    },
+    {
+      "package": "v2",
+      "raw": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\game-v2.json",
+      "raw_sha256": "562355f7dd7d47f13cd417a359dcb3987df93a3ff59d1986ae2de45f7f4c9fd1",
+      "samples": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 7.359375,
+            "cycles": 33940217160
+          },
+          "cpu_ms_per_frame": 6.1328125,
+          "wall_seconds": 20.32223829999566,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 6.90625,
+            "cycles": 32154885970
+          },
+          "cpu_ms_per_frame": 5.755208333333333,
+          "wall_seconds": 20.39845790003892,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 6.0625,
+            "cycles": 28302930470
+          },
+          "cpu_ms_per_frame": 5.052083333333333,
+          "wall_seconds": 20.32999540003948,
+          "passed": true
+        },
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 7.921875,
+            "cycles": 37390989120
+          },
+          "cpu_ms_per_frame": 6.6015625,
+          "wall_seconds": 20.398986599990167,
+          "passed": true
+        }
+      ],
+      "reductions_pct": {
+        "cpu_seconds": [
+          -6.561085972850678,
+          -30.670103092783506
+        ],
+        "cycles": [
+          -5.552285869294282,
+          -32.109956457098974
+        ]
+      },
+      "AA_drift_pct": {
+        "cpu_seconds": -12.217194570135748,
+        "cycles": -11.979378510605866
+      }
+    },
+    {
+      "package": "v4",
+      "raw": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\game-v4.json",
+      "raw_sha256": "919e1c7662cd5b9d25dfd94ff00f237890f4e15fc127d863ba1643e8f67bc5a6",
+      "samples": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 9.234375,
+            "cycles": 43047344180
+          },
+          "cpu_ms_per_frame": 7.6953125,
+          "wall_seconds": 20.26667670009192,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 8.734375,
+            "cycles": 41142318560
+          },
+          "cpu_ms_per_frame": 7.278645833333333,
+          "wall_seconds": 20.30588640004862,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 8.8125,
+            "cycles": 40917753970
+          },
+          "cpu_ms_per_frame": 7.34375,
+          "wall_seconds": 20.319741099956445,
+          "passed": true
+        },
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 6.734375,
+            "cycles": 30976099180
+          },
+          "cpu_ms_per_frame": 5.611979166666667,
+          "wall_seconds": 20.483636599965394,
+          "passed": true
+        }
+      ],
+      "reductions_pct": {
+        "cpu_seconds": [
+          -5.7245080500894385,
+          23.581560283687942
+        ],
+        "cycles": [
+          -4.630331217774719,
+          24.296677665369913
+        ]
+      },
+      "AA_drift_pct": {
+        "cpu_seconds": 0.8944543828264706,
+        "cycles": -0.5458238569430729
+      }
+    },
+    {
+      "package": "v5",
+      "raw": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\game-v5.json",
+      "raw_sha256": "63a7f642bb80f930b78d7681405c818cea788c1614881d29e318cc01d25b4897",
+      "samples": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 7.1875,
+            "cycles": 33725161140
+          },
+          "cpu_ms_per_frame": 5.989583333333333,
+          "wall_seconds": 20.314002999919467,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 7.015625,
+            "cycles": 32111124740
+          },
+          "cpu_ms_per_frame": 5.846354166666667,
+          "wall_seconds": 20.295363900018856,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 9.5625,
+            "cycles": 44553889230
+          },
+          "cpu_ms_per_frame": 7.96875,
+          "wall_seconds": 20.352309599984437,
+          "passed": true
+        },
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 9.75,
+            "cycles": 44557272290
+          },
+          "cpu_ms_per_frame": 8.125,
+          "wall_seconds": 20.650755899958313,
+          "passed": true
+        }
+      ],
+      "reductions_pct": {
+        "cpu_seconds": [
+          -2.4498886414253906,
+          -1.9607843137254832
+        ],
+        "cycles": [
+          -5.02640880090206,
+          -0.0075931867194345415
+        ]
+      },
+      "AA_drift_pct": {
+        "cpu_seconds": 36.30289532293987,
+        "cycles": 38.74907712123945
+      }
+    },
+    {
+      "package": "v6",
+      "raw": "G:\\Temp\\Codex\\genesis-engine-code-identity-20261028\\game-v6.json",
+      "raw_sha256": "b6ec029b5509209693f56ebf9fc04cdc50e72291fa15ad9713e44d25f03fb381",
+      "samples": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 6.765625,
+            "cycles": 31814942020
+          },
+          "cpu_ms_per_frame": 5.638020833333333,
+          "wall_seconds": 20.27745210006833,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 6.28125,
+            "cycles": 31013492850
+          },
+          "cpu_ms_per_frame": 5.234375,
+          "wall_seconds": 20.320109999971464,
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 7.609375,
+            "cycles": 35633427410
+          },
+          "cpu_ms_per_frame": 6.341145833333333,
+          "wall_seconds": 20.347567000077106,
+          "passed": true
+        },
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 8.09375,
+            "cycles": 36377611310
+          },
+          "cpu_ms_per_frame": 6.744791666666667,
+          "wall_seconds": 20.369406399899162,
+          "passed": true
+        }
+      ],
+      "reductions_pct": {
+        "cpu_seconds": [
+          -7.7114427860696555,
+          -6.365503080082147
+        ],
+        "cycles": [
+          -2.5841951239619965,
+          -2.0884432233738925
+        ]
+      },
+      "AA_drift_pct": {
+        "cpu_seconds": 21.144278606965173,
+        "cycles": 14.896530946529607
+      }
+    }
+  ],
+  "unqualified_v3": "Built quick-reference variant was not game-qualified after the external writer hole was discovered; retained separately.",
+  "decision": "Reject this page-version/cache package after six layouts/qualifications. Do not open adoption PRs, merge it, enable it in current builds, or mark all E02 mechanisms exhausted. Resume next family from qualified E01, excluding rejected E02 runtime code.",
+  "next": "Independent reviewer must verify final rejection record and Beads checkpoint before instructing move to E03.",
+  "cleanup": "Retain isolated source worktrees, frozen rejected binaries and bounded raw evidence outside delivery folders. No new release or Games folder changes."
+}
