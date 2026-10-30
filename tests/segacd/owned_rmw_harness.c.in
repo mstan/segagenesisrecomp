@@ -1,0 +1,37 @@
+#define CHECK(x) do{if(!(x)){fprintf(stderr,"case%u mode%u line%u: %s\n",test_case,test_mode,(unsigned)__LINE__,#x);exit(1);}}while(0)
+static unsigned test_case,test_mode;static uint8_t code[22];
+typedef struct {uint8_t ram[65536];M68kStepContext*cpu;unsigned waits,events,partial;uint64_t trace;} Bus;
+static void note(Bus*b,uint32_t a,unsigned v){++b->events;b->trace=(b->trace^a^v)*1099511628211ull;}
+static M68kStepBusResult fetch(void*u,uint32_t a,uint16_t*v){(void)u;if(a>=sizeof code||sizeof code-a<2)return M68K_BUS_FAULT;*v=(uint16_t)(((unsigned)code[a]<<8)|code[a+1]);return M68K_BUS_OK;}
+static const uint8_t*view(void*u,uint32_t a,size_t bytes){(void)u;return a<sizeof code&&bytes<=sizeof code-a?code+a:NULL;}
+static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){Bus*b=u;note(b,a,0);if(test_mode==7||a>=sizeof b->ram)return M68K_BUS_FAULT;if(test_mode==6&&!b->waits)return M68K_BUS_WAIT;*v=b->ram[a];if(test_mode==1){b->cpu->state.regs.A[0]+=2;b->cpu->state.regs.D[0]+=2;}return M68K_BUS_OK;}
+static M68kStepBusResult read16(void*u,uint32_t a,uint16_t*v){Bus*b=u;if(test_mode==12&&a>=0x200a){++b->partial;note(b,a,0);return M68K_BUS_FAULT;}uint8_t hi,lo;M68kStepBusResult x=read8(b,a,&hi);if(x!=M68K_BUS_OK)return x;x=read8(b,a+1,&lo);if(x!=M68K_BUS_OK)return x;*v=(uint16_t)(((unsigned)hi<<8)|lo);return x;}
+static M68kStepBusResult write8(void*u,uint32_t a,uint8_t v){Bus*b=u;note(b,a,v);if(a>=sizeof b->ram)return M68K_BUS_FAULT;b->ram[a]=v;return M68K_BUS_OK;}
+static M68kStepBusResult write16(void*u,uint32_t a,uint16_t v){Bus*b=u;if(test_mode==13&&a>=0x200a){++b->partial;note(b,a,v);return M68K_BUS_FAULT;}M68kStepBusResult x=write8(u,a,(uint8_t)(v>>8));return x==M68K_BUS_OK?write8(u,a+1,(uint8_t)v):x;}
+static int wait_bus(void*u,uint32_t a,int write){Bus*b=u;(void)a;(void)write;++b->waits;b->cpu->state.regs.A[0]+=2;return 1;}
+static int region(void*u,uint32_t a,size_t bytes,int write,M68kStepDataRegion*out){Bus*b=u;size_t end=test_mode==8||test_mode==12||(test_mode==13&&write)?0x200a:sizeof b->ram;if(test_mode==1||(test_mode>=5&&test_mode<=7)||(test_mode==2&&write)||(test_mode==3&&!write)||a>=end||bytes>end-a)return 0;out->address=0;out->bytes=end;out->data=b->ram;return 1;}
+static void init(Bus*b,M68kStepContext*c,unsigned seed){
+ static const uint32_t edges[]={0,1,0x7f,0x80,0xff,0x7fff,0x8000,0xffff,0x7fffffff,0x80000000u,0xffffffffu};
+ memset(b,0,sizeof*b);memset(c,0,sizeof*c);b->cpu=c;for(unsigned n=0;n<sizeof b->ram;++n)b->ram[n]=(uint8_t)(n*37+seed);
+ M68kStepBus bus={0};bus.fetch16=fetch;bus.read8=test_mode==9?NULL:read8;bus.read16=test_mode==9?NULL:read16;bus.write8=test_mode==10?NULL:write8;bus.write16=test_mode==10?NULL:write16;bus.wait=wait_bus;
+ m68k_step_init(c,&bus,b);CHECK(m68k_step_code_span(c,view));CHECK(m68k_step_data_regions(c,region));
+ for(unsigned n=0;n<8;++n){c->state.regs.D[n]=edges[(seed+n)%11];c->state.regs.A[n]=test_mode==12||test_mode==13?0x2008:0x2010+(test_mode==4);}
+ c->state.regs.SR=(uint16_t)((test_mode==11?0xa700:0x2700)|(seed&31));
+}
+int main(void){unsigned long comparisons=0,grants=0,partial=0,write_progress=0;M68kStepContext outside={0};M68kStepOwnedRmw token;
+ CHECK(!m68k_step_owned_rmw(&outside,0,2,&token));
+ for(test_case=0;test_case<sizeof cases/sizeof*cases;++test_case){const Case*k=&cases[test_case];for(unsigned w=0;w<k->count;++w){code[w*2]=(uint8_t)(k->words[w]>>8);code[w*2+1]=(uint8_t)k->words[w];}
+ for(test_mode=0;test_mode<14;++test_mode)for(unsigned seed=0;seed<32;++seed){Bus a,b;M68kStepContext ca,cb;init(&a,&ca,seed);init(&b,&cb,seed);
+  M68kStepEntry entry={0};entry.word_count=(uint8_t)k->count;entry.cycles=(uint16_t)k->cycles;memcpy(entry.words,k->words,k->count*2);entry.execute=k->op[0];
+  M68kStepResult ra=m68k_step_execute_tracked(&ca,&entry);entry.execute=k->op[1];M68kStepResult rb=m68k_step_execute_tracked(&cb,&entry);
+  CHECK(ra==rb);CHECK(!memcmp(&ca.state,&cb.state,sizeof ca.state));CHECK(!memcmp(a.ram,b.ram,sizeof a.ram));CHECK(a.events==b.events&&a.trace==b.trace&&a.waits==b.waits&&a.partial==b.partial);
+  if(test_mode==9||test_mode==10||test_mode==11)CHECK(!cb.owned_rmw_grants);
+  if(!test_mode&&ra==M68K_STEP_OK){unsigned mode=k->ea>>3,reg=k->ea&7;
+   /* Independent decoded-width assertion: pre/post update exactly once. */
+   if(mode==3||mode==4){uint32_t delta=mode==3?ca.state.regs.A[reg]-0x2010:0x2010-ca.state.regs.A[reg];CHECK(delta==(reg==7&&k->bytes==1?2:k->bytes));}
+  }
+  if(test_mode==13&&b.partial&&(b.ram[0x2008]!=(uint8_t)(0x2008*37+seed)||b.ram[0x2009]!=(uint8_t)(0x2009*37+seed)))++write_progress;
+  grants+=(unsigned)cb.owned_rmw_grants;partial+=b.partial;++comparisons;
+ }}
+ CHECK(grants&&partial&&write_progress);printf("%lu owned-RMW architectural/bus/WAIT/fault/trace/permission comparisons, %lu real grants, %lu partial-fault observations, %lu partial-write progress cases pass\n",comparisons,grants,partial,write_progress);return 0;
+}

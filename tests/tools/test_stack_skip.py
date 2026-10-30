@@ -34,7 +34,8 @@ HARNESS = r'''
 M68KState g_cpu;
 uint8_t g_rom[0x400000], g_ram[0x10000];
 const GameSpec g_game_spec = {0};
-uint64_t g_native_insn_count;
+uint64_t g_native_insn_count, g_native_span_count;
+GenesisNativeRegisterBudget g_native_register_budget={0,0,0,1,0,0};
 uint32_t g_cycle_accumulator, g_audio_cycle_counter, g_vblank_threshold = 0xFFFFFFFFu;
 int pending, *g_rte_pending_ptr = &pending, g_early_return, g_ws_margin;
 uint8_t m68k_read8(uint32_t a) { return g_ram[a & 65535]; }

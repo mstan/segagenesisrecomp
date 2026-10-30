@@ -3,7 +3,7 @@
   "issue": "beads-3vb.31",
   "campaign": "beads-2wy8.1",
   "status": "released_batch_remaining_engine_scope_open",
-  "updated_utc": "2026-10-28T13:13:39.463580+00:00",
+  "updated_utc": "2026-10-29",
   "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "candidates": {
     "E01": {
@@ -86,13 +86,26 @@
     "E04": {
       "name": "Generated native arithmetic and state",
       "priority": "P2",
-      "status": "evaluated_deferred",
-      "disposition": "Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. The E01 fault-setup-only experiment was evaluated and rejected; a future region package must remove meaningful dispatch/state work rather than only relocating traps.",
+      "status": "implemented_native_state_game_qualified_neutral",
+      "disposition": "Implemented common-emitter local D/A/SR spans, backward CCR liveness and exact grouped cycles, plus single-memory-RMW EA/read-write consolidation under complete managed dual ownership. Original bus/control/HLE/WAIT/fault/trace/unsupported exits remain exact. Engine132b84d/core4479e7e; final MSVC/GCC and all three built-game state/pixel/full-WAV routes and cartridge rollback pass. All final game timing neutral/inconclusive, no claimed speedup; r2/r3 regressions rejected, targeted reverse RKA off run does not reproduce the original24percent slowdown. Body proof131573 symbols/36089 redirects; current bytes and descriptor effects/priority unchanged. Cartridge observable bus limits documented. Independent final PR/record gate accepted; validator instructed E05 next. Owner visual handoff pending. See ENGINE_NATIVE_STATE.md, engine-native-state-results.json, beads-3z5k.3/beads-rxq.5.",
       "evidence": [
-        "external/m68k-recomp-core/profiles/genesis/code_generator.c",
-        "runner/cd/segacd_coordinator.c",
-        "runner/cd/catalog_lookup.h"
-      ]
+        "ENGINE_NATIVE_STATE.md",
+        "engine-native-state-results.json",
+        "beads-3z5k.3",
+        "beads-rxq.5"
+      ],
+      "historical_evaluation": {
+        "name": "Generated native arithmetic and state",
+        "priority": "P2",
+        "status": "evaluated_deferred",
+        "disposition": "Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. The E01 fault-setup-only experiment was evaluated and rejected; a future region package must remove meaningful dispatch/state work rather than only relocating traps.",
+        "evidence": [
+          "external/m68k-recomp-core/profiles/genesis/code_generator.c",
+          "runner/cd/segacd_coordinator.c",
+          "runner/cd/catalog_lookup.h"
+        ]
+      },
+      "remaining_scope_open": false
     },
     "E05": {
       "name": "Native call/control-flow consolidation",
@@ -1545,19 +1558,20 @@
   },
   "evaluation_counts_scope": "Historical released evaluation pass; current serial implementation is tracked separately.",
   "serial_implementation": {
-    "current_goal": "E03",
+    "current_goal": "E04",
     "completed": [
       "E01",
-      "E03"
+      "E03",
+      "E04"
     ],
-    "remaining_original_scopes": 28,
-    "data": "engine-native-region-results.json",
+    "remaining_original_scopes": 27,
+    "data": "engine-native-state-results.json",
     "next_task_started": false,
     "owner_check": "pending",
     "unsuccessful": [
       "E02"
     ],
     "validation_workflow": "One validation-only subagent per serial task; PR on success or Beads on failure, explicit reviewer instruction before next.",
-    "pr_gate": "E03 accepted; corePR8/enginePR37; validator instructed E04 next"
+    "pr_gate": "E04 accepted: enginePR38/corePR9; validator explicitly instructed E05 next. Owner visual handoff pending."
   }
 }

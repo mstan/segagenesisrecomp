@@ -1004,6 +1004,7 @@ static void dump_predrc(const cc_s16l *fm, size_t fm_frames,
 #include "audio/sn76489.h"        /* psg_save/load_state */
 extern uint32_t g_audio_cycle_counter;
 extern uint64_t g_frame_count;
+extern uint64_t g_native_span_count;
 extern uint32_t m68k_read32(uint32_t);
 extern uint8_t  m68k_read8 (uint32_t);
 
@@ -3893,7 +3894,7 @@ session_begin:;
                "\"requested_frames\":%u,\"complete\":%s,"
                "\"audio_flushes\":%u,\"mixed_fm_frames\":%llu,"
                "\"mixed_psg_frames\":%llu,\"audio_pushed_frames\":%llu,"
-               "\"audio_overflow_drops\":%llu}\n",
+               "\"audio_overflow_drops\":%llu,\"native_register_spans\":%llu}\n",
                g_game_spec.short_name ? g_game_spec.short_name : "game",
                frame_num, seconds, fps,
                frame_num ? seconds * 1000.0 / (double)frame_num : 0.0,
@@ -3910,7 +3911,8 @@ session_begin:;
                    ? "true" : "false", delivery_stats.total_flushes,
                (unsigned long long)delivery_stats.total_fm_frames,
                (unsigned long long)delivery_stats.total_psg_frames,
-               (unsigned long long)audio_pushed, (unsigned long long)audio_overflow);
+               (unsigned long long)audio_pushed, (unsigned long long)audio_overflow,
+               (unsigned long long)g_native_span_count);
         fflush(stdout);
     }
 
