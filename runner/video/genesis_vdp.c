@@ -888,6 +888,8 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
     }
 }
 
+#include "genesis_render_job.h"
+
 int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
 {
     /* These providers can publish private art/palettes or invoke arbitrary
@@ -896,6 +898,9 @@ int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
     if (!v || !row || line < 0 || line >= GVDP_MAX_HEIGHT * 2 ||
         s_host_sprites || s_ext_tiles || s_sprite_patterns[0] || s_sprite_patterns[1])
         return 0;
+#if GENESIS_RENDER_REUSE
+    int reuse_safe=job_output_safe(v,row,sizeof *row);
+#endif
     int w=gvdp_screen_width(v),extra=clamp_ws_extra(w);
     unsigned block=(unsigned)(w+2*extra);
     row->width=(unsigned)(s_ws_canvas_w>(int)block?s_ws_canvas_w:(int)block);
@@ -931,6 +936,17 @@ int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
     memcpy(row->high,s_spr_hi,row->width);memcpy(row->shadow_op,s_spr_shadow_op,row->width);
     memcpy(row->hilite_op,s_spr_hilite_op,row->width);
     unsigned end=row->start+block;
+#if GENESIS_RENDER_REUSE
+    if(reuse_safe) {
+        GVDPJobGeometry g={line,w,extra,(int)row->start,(int)end,im2,wt,ht,win_wt,hs_a,hs_b,
+            two_cell,vs_mask,full_a,full_b,window_x,right,vertical,base_a,base_b,base_w};
+        GVDPJobKey key={0};key.width=row->width;key.start=row->start;key.count=block;
+        key.diag_offset=row->diag_offset;key.diag_mask=row->diag_mask;
+        key.backdrop=row->backdrop;key.bar=row->bar;key.shadow=row->shadow_mode;
+        key.diagnostic=row->diagnostic;
+        if(job_result(v,&g,&key,NULL,row->plane_a,row->plane_b))return (int)row->width;
+    }
+#endif
     for (int x=-extra,xo=(int)row->start;xo<(int)end;) {
         int boundary=x<0?0:x>=w?w+extra:((x>>4)+1)*16;
         if(boundary>w+extra)boundary=w+extra;
@@ -1055,6 +1071,20 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     if(host_flags)for(int x=0;x<total;++x) {
         s_spr_op[x]=(uint8_t)(s_spr_op[x]!=0);
         s_spr_hi[x]=(uint8_t)(s_spr_hi[x]!=0);
+    }
+#endif
+
+#if GENESIS_RENDER_REUSE
+    if(job_output_safe(v,out,(size_t)total)) {
+        GVDPJobGeometry g={line,w,content_extra,content_start,content_end,im2,wt,ht,win_wt,hs_a,hs_b,
+            vmode_2cell,vs_mask,full_vs_a,full_vs_b,window_x,window_h_right,window_v_in,
+            base_a,base_b,base_w};
+        GVDPJobKey key={0};key.width=(unsigned)total;key.start=(unsigned)content_start;
+        key.count=(unsigned)content_block;key.diag_offset=(unsigned)(offset+hs_b);
+        key.diag_mask=(unsigned)(wt*8-1);key.backdrop=backdrop;key.bar=bar_idx;
+        key.shadow=(uint8_t)sh_mode;key.diagnostic=(uint8_t)(s_ws_bgdiag!=0);
+        key.extended=(uint8_t)(s_ext_tiles!=NULL);
+        if(job_result(v,&g,&key,out,NULL,NULL))return total;
     }
 #endif
 
