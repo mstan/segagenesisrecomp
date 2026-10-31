@@ -1,6 +1,8 @@
 /* Synchronous final-pixel ownership, shared by native conversion and host
  * color/UI/upload preparation. Borrowed raw input is never modified/retained.
- * Scratch belongs to the caller; filtering's full storage extent is explicit. */
+ * Scratch belongs to the caller; copy_width/copy_height declare the complete
+ * raw storage extent, including inactive filtering/history pixels. Metadata
+ * and writable output must not alias any of that storage. */
 #ifndef GENESIS_FRAME_PIXELS_H
 #define GENESIS_FRAME_PIXELS_H
 #include "genesis_pixel_policy.h"
@@ -26,18 +28,17 @@ static inline int genesis_frame_pixels(GenesisPixelView *view,const void *raw,in
     int copy_width,int copy_height,int need_writable,GenesisPixelTransform transform,void *user)
 {
     size_t raw_span,dst_span;
-    if(!view || !raw || !genesis_pixel_span(raw_pitch,width,height,&raw_span) ||
+    if(!view || !raw || width<=0 || height<=0 || copy_width<width || copy_height<height ||
+       !genesis_pixel_span(raw_pitch,copy_width,copy_height,&raw_span) ||
        genesis_pixel_overlap(raw,raw_span,view,sizeof *view))return 0;
     /* Preserve packed fallback for unusual byte pitches on every SDL backend. */
     if(!need_writable && !transform && !(raw_pitch&3)) {
         view->pixels=raw;view->pitch_bytes=raw_pitch;view->writable=0;return 1;
     }
     int out_w=transform?width:copy_width,out_h=transform?height:copy_height;
-    if(!scratch || out_w<width || out_h<height ||
-       !genesis_pixel_span(raw_pitch,out_w,out_h,&raw_span) ||
+    if(!scratch ||
        !genesis_pixel_span(scratch_pitch,out_w,out_h,&dst_span) || dst_span>scratch_bytes ||
        genesis_pixel_overlap(raw,raw_span,scratch,dst_span) ||
-       genesis_pixel_overlap(raw,raw_span,view,sizeof *view) ||
        genesis_pixel_overlap(scratch,dst_span,view,sizeof *view))return 0;
     for(int y=0;y<out_h;++y) {
         const uint8_t *src=(const uint8_t *)raw+(size_t)y*(size_t)raw_pitch;
