@@ -1,0 +1,30 @@
+# E15 hardware render reuse evaluation
+
+Both complete render reuse architectures were implemented and qualified, then rejected. R1 repeatedly slowed RKA. R2 removed native overhead and achieved high real Sonic CD capture reuse, but still showed no useful gain. The final runner is byte exact `426253e`; the retained change fixes generated empty level-mode initializers on MSVC and adds a ROM-independent compile/value regression fixture. Final independent acceptance is pending.
+
+The original engine goal was reusable generic jobs/regions/images under complete hardware-input identity. Guest execution, timed raster inputs, sprite/status evaluation and audio continue. R1 owns indexed/native and captured-plane results under current 12-byte commands and sprite/operator lanes (3,461,760 bytes). R2 restores the original native renderer and lazily owns only captured planes (1,977,600 bytes), canonicalizing tile identity only after reading the current row bytes. Both preserve direct writes, ports, DMA, imports, aliases, private provider rejection, callbacks and independent output ownership. Allocation failure falls back safely. No title scene eligibility was added.
+
+| Package | Game / feature | Host, order | CPU A / B (s) | Cycles change B vs A | Decision |
+|---|---|---|---|---|---|
+| R1 | rka / native | PC AB | 4.328125 / 4.531250 | +1.41% | repeated adverse CPU/cycles; reject R1 default |
+| R1 | sonic1 / native | PC AB | 1.609375 / 1.609375 | -0.94% | neutral/inconclusive; no demonstrated gain |
+| R1 | rka / native focused reverse | PC BA | 4.375000 / 4.671875 | +5.49% | repeated adverse CPU/cycles; reject R1 default |
+| R1 | rka / game-owned 16:9 | PC AB | 12.015625 / 12.078125 | +1.12% | neutral/inconclusive; no demonstrated gain |
+| R1 | sonic1 / game-owned 16:9 | PC AB | 2.531250 / 2.546875 | -1.20% | neutral/inconclusive; no demonstrated gain |
+| R1 | sonic_cd / shared captured-plane widescreen | PC AB | 6.015625 / 6.359375 | +0.71% | no useful gain; adverse PC observation, mixed SERVER CPU/cycles inconclusive |
+| R2 | sonic_cd / shared captured-plane widescreen | PC BA | 5.875000 / 6.062500 | +3.44% | no useful gain; adverse PC observation, mixed SERVER CPU/cycles inconclusive |
+| R2 | sonic_cd / shared captured-plane widescreen | SERVER AB | 13.125000 / 13.484375 | -0.70% | no useful gain; adverse PC observation, mixed SERVER CPU/cycles inconclusive |
+
+Cartridge figures are the inner runtime benchmark; separate whole-process CPU/cycles and sampled peak memory are retained. CD costs cover frames 1800–3000 in the same 3001-frame route and capture/RPC schedule. Every pair uses one host/config/compiler. These are shared-host CPU observations, with no physical GPU or quiet-host claim. Small mixed results remain neutral/inconclusive; no game offsets another game’s regression. R1 adds about 3.3 MiB peak commit; R2 adds about 2 MiB in its PC CD pair. Startup costs are retained but do not prove a loading improvement.
+
+Actual diagnostic use is separate from clean timing. R1 cartridge custom renderers used native rows, so their hits do not prove shared capture reuse. CD R1 had 105,003 capture hits in 616,816 requests. CD R2 had 496,192 capture hits, 4,002 misses and 116,622 backoffs in 616,816 requests: about 80.4% overall and 99.2% of non-backoff attempts. Fresh status, RAM, pixels and full WAV still matched. Instrumented costs are excluded.
+
+The frozen-original oracle and directed tests cover packed/scalar/portable/disabled paths, raw plane values, sprite limits/collision/overflow, DMA and direct writes, imports, aliases, lifecycle and allocation failure. R2 passed ten gates each on MSVC x64, actual Win32 and GCC. A corrected counter assertion was then refreshed on SERVER x64/Win32 (ten gates each); the runtime stayed byte identical. All R1 cartridge native/custom/rollback and current-build save/load checks match; both CD architectures match all eleven canonical checkpoints, RAM and full WAV. R2 cartridge binaries were built but not runtime measured; no R2 cartridge gain is claimed.
+
+The surviving fix was a real source-regenerated build failure: zero level modes emitted an empty initializer unsupported by MSVC19.29. Emitting `0` matches the existing zero-case policy for widescreen modes. The fixture invokes the real emitter for empty and populated layouts, compiles its C11 output and verifies counts, values and zero-filled tails on x64 and Win32. No runtime machinery or native save contract changes.
+
+Complete current-value identity still derives geometry, name-table and pattern inputs, then adds command materialization/comparison and memory traffic to the packed renderer. Port-only versions cannot cover public direct/alias/import/private writers. Whole-image equality would require the entire timed row/input/status history; end-of-frame VRAM or skipping guest work cannot substitute. The two coherent architectures decisively reject this bounded opportunity on actual cost. This does not claim every future algorithm impossible.
+
+[Machine-readable per-game results and evidence identities](engine-render-reuse-results.json) retain package/source/binary/config/host distinctions, raw paths, unsuccessful attempts and scope corrections. Inherited CD workload prose says “not timing evidence”; its actual cost field is the bounded process sample described above, not physical presentation timing. Initial diagnostic fixture assumptions and equal-arm UI/SDK compatibility adaptations are explicit. Neither rejected cache ships. The useful fix follows the stacked PR and combined owner handoff; no games were relaunched for the owner and no merge or release was made.
+
+Evidence: `C:\temp\Codex\genesis-engine-render-reuse-20261029` and `G:\Temp\Codex\genesis-engine-render-reuse-20261029`. SERVER’s bounded portable toolchain, private CD catalog/native archive and supported build trees remain for E16 reuse; source prototypes, frozen PEs and raw logs/WAV/RAM/images remain for reproducibility. Local disposable build intermediates will be cleaned after retention verification. Beads: `beads-3z5k.12`, campaign `beads-2wy8.1`.
