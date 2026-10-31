@@ -346,3 +346,10 @@ genesisrecomp_register_test(m68k_effective_address_test)
 target_include_directories(m68k_effective_address_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner/include"
 )
+
+# The pure generator/runtime gates remain usable without an SDL development
+# package. Enable the host-worker ownership fixtures on SDL-equipped targets.
+option(GENESIS_ENGINE_WORK_TESTS "Build SDL host-worker ownership fixtures" OFF)
+if(GENESIS_ENGINE_WORK_TESTS)
+    include("${CMAKE_CURRENT_LIST_DIR}/runtime/engine_work.cmake")
+endif()

@@ -1,4 +1,5 @@
 #include "video/genesis_frame_pixels.h"
+#include "frame_work.h"
 /*
  * main.c — shared SDL2 frontend for native Genesis recompilation targets.
  *
@@ -37,6 +38,7 @@
 #include "png_write.h"
 #include "runtime_evidence.h"
 #include "local_states.h"
+#include "sim_step.h"
 
 /* =========================================================================
  * Path helper: resolve filenames relative to the exe directory.
@@ -235,6 +237,12 @@ static uint32_t s_present_storage[NATIVE_SCREEN_STRIDE * MAX_SCREEN_HEIGHT];
 static uint32_t *s_present_buf = s_present_storage;
 static ColorLut s_color_lut;
 static int      s_color_lut_on = 0;   /* 0 = raw passthrough (default) */
+static GenesisFrameWork *s_parallel_pixels;
+static uint64_t s_raw_content_token;
+static void engine_work_cleanup(void)
+{
+    genesis_frame_work_destroy(s_parallel_pixels);s_parallel_pixels=NULL;
+}
 #if GENESIS_FINAL_PIXEL_PIPELINE
 static void present_color_row(void *context,const void *source,void *destination,int count)
 {
@@ -553,6 +561,7 @@ static void scanline_rendered_cb(void *user_data,
     (void)user_data;
 
     /* Track actual screen dimensions reported by VDP */
+    ++s_raw_content_token;
     s_screen_width  = (int)screen_width;
     s_screen_height = (int)screen_height;
 
@@ -580,6 +589,7 @@ static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width
 {
     (void)u;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
+    ++s_raw_content_token;
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
     s_screen_width = game_video_draw_row(&s_video_frame, &g_machine.vdp, line,
         width, row, MAX_SCREEN_WIDTH, provided_native_row, (void *)argb);
@@ -593,6 +603,7 @@ static int own_indexed_accepts(void *user,int line,int width)
 static void own_indexed_sink(void *user,int line,const uint8_t *indices,int width,const uint32_t *palette)
 {
     (void)user;
+    ++s_raw_content_token;
     uint32_t *row=s_framebuf+(size_t)line*(size_t)MAX_SCREEN_WIDTH;
     genesis_pixels_expand(row,indices,width,palette,GVDP_OUTPUT_PALETTE_SIZE,0xff000000u);
     if(s_video_frame.adapter && s_video_frame.adapter->overlay_scanline)
@@ -600,6 +611,17 @@ static void own_indexed_sink(void *user,int line,const uint8_t *indices,int widt
     s_screen_width=width;
 }
 static GenesisIndexedSink s_direct_pixels={NULL,own_scanline_sink,own_indexed_sink,own_indexed_accepts};
+
+static void render_work_start(void *context)
+{
+    (void)context;
+    genesis_frame_work_begin(s_parallel_pixels,s_color_lut_on?s_framebuf:NULL,
+        s_frame_stride,s_screen_width,gvdp_output_height(&g_machine.vdp),
+        &s_color_lut,s_raw_content_token);
+}
+static void render_work_wait(void *context)
+{(void)context;genesis_frame_work_wait(s_parallel_pixels);}
+static const GenesisSimWork s_render_work={render_work_start,render_work_wait,NULL};
 
 static int own_custom_row_enabled(void *user)
 {
@@ -673,6 +695,7 @@ static void custom_video_prepare(void)
 #if RECOMP_LAUNCHER
         s_runtime_ui.texture = next;
 #endif
+        genesis_frame_work_wait(s_parallel_pixels);++s_raw_content_token;
         if (s_framebuf != s_native_storage) free(s_framebuf);
         if (s_present_buf != s_present_storage) free(s_present_buf);
         s_framebuf = frame; s_present_buf = present; s_frame_stride = width;
@@ -2805,6 +2828,13 @@ int main(int argc, char *argv[])
     /* Output at PSG rate (~223721 Hz NTSC) — matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
     if (!benchmark_frames) {
+#if GENESIS_FINAL_PIXEL_PIPELINE
+        const char *work_mode=getenv("GENESIS_ENGINE_WORKERS");
+        if(work_mode && !strcmp(work_mode,"render")){
+            s_parallel_pixels=genesis_frame_work_create();
+            if(s_parallel_pixels)atexit(engine_work_cleanup);
+        }
+#endif
         int audio_status = audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
         if (runtime_measure_frames && audio_status != 0) {
             fprintf(stderr, "--measure-runtime requires a working audio device/mixer\n");
@@ -3432,7 +3462,9 @@ session_begin:;
 #if GENESIS_HAS_RECOMP_NET
           Uint64 tick_t0 = SDL_GetPerformanceCounter();
 #endif
-          int completed = genesis_sim_step(&sim_in, &sim_audio, &sim_hooks);
+          int completed = s_parallel_pixels ?
+              genesis_sim_step_ex(&sim_in,&sim_audio,&sim_hooks,&s_render_work) :
+              genesis_sim_step(&sim_in,&sim_audio,&sim_hooks);
 #if GENESIS_HAS_RECOMP_NET
           if (genesis_netplay_rollback_active())
               genesis_netplay_rb_note_live_tick_us((uint32_t)((SDL_GetPerformanceCounter() - tick_t0) *
@@ -3585,7 +3617,8 @@ session_begin:;
                       (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
                   GenesisSimHooks sim_hooks = { widescreen_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                                 rdb_post_drain, NULL, &s_custom_producer };
-                  if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
+                  if (!(s_parallel_pixels ? genesis_sim_step_ex(&sim_in,&sim_audio,&sim_hooks,&s_render_work) :
+                      genesis_sim_step(&sim_in,&sim_audio,&sim_hooks))) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
             }
             if (s_debug_enabled) cmd_server_send_frame_result(cmd_cr.run_extra_frames);
@@ -3712,7 +3745,11 @@ session_begin:;
 #endif
 #if GENESIS_FINAL_PIXEL_PIPELINE
         GenesisPixelView view;
-        int prepared = genesis_frame_pixels(&view, s_framebuf, s_frame_stride * 4,
+        int prepared = s_color_lut_on && genesis_frame_work_take(s_parallel_pixels,
+            s_framebuf,s_frame_stride,s_screen_width,s_screen_height,&s_color_lut,
+            s_raw_content_token,s_present_buf,MAX_SCREEN_HEIGHT);
+        if(prepared){view.pixels=s_present_buf;view.pitch_bytes=s_frame_stride*4;view.writable=1;}
+        else prepared = genesis_frame_pixels(&view, s_framebuf, s_frame_stride * 4,
             s_present_buf, (size_t)s_frame_stride * MAX_SCREEN_HEIGHT * sizeof(uint32_t),
             s_frame_stride * 4, s_screen_width, s_screen_height,
             s_frame_stride, MAX_SCREEN_HEIGHT, ui_open,
@@ -4038,6 +4075,7 @@ session_begin:;
     glue_shutdown();
     audio_close();
     SDL_DestroyTexture(peer_view_texture);
+    engine_work_cleanup();
     SDL_DestroyTexture(texture);
     if (s_framebuf != s_native_storage) free(s_framebuf);
     if (s_present_buf != s_present_storage) free(s_present_buf);

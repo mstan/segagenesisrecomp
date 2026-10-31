@@ -43,6 +43,11 @@ void genesis_sim_set_tick_count(uint32_t n) { s_ticks = n; }
 int genesis_sim_step(const GenesisSimInput *in, const GenesisSimAudio *audio,
                      const GenesisSimHooks *hooks)
 {
+    return genesis_sim_step_ex(in,audio,hooks,NULL);
+}
+int genesis_sim_step_ex(const GenesisSimInput *in,const GenesisSimAudio *audio,
+                       const GenesisSimHooks *hooks,const GenesisSimWork *work)
+{
     static const GenesisSimHooks no_hooks;
     if (!hooks) hooks = &no_hooks;
     if (in) s_in = *in;
@@ -57,6 +62,11 @@ int genesis_sim_step(const GenesisSimInput *in, const GenesisSimAudio *audio,
     glue_sched_frame_begin();        /* scheduler rule: busy-wait streaks restart */
     machine_run_frame_ex(hooks->sink, hooks->sink_user, hooks->producer);
 
+    /* No guest execution or raw-frame mutation occurs during the chip drain.
+     * Publish only if a matching dependency wait is available. */
+    int started=work && work->start && work->wait;
+    if(started)work->start(work->ctx);
+
     {
         GenesisSimAudio scratch = { s_scratch_fm, SIM_SCRATCH_FM_FRAMES, NULL,
                                     s_scratch_psg, SIM_SCRATCH_PSG_FRAMES, NULL };
@@ -68,6 +78,7 @@ int genesis_sim_step(const GenesisSimInput *in, const GenesisSimAudio *audio,
         if (a->fm_count)  *a->fm_count  = fm_n;
         if (a->psg_count) *a->psg_count = psg_n;
     }
+    if(started)work->wait(work->ctx);
     if (hooks->post_drain && !hooks->post_drain(hooks->ctx))
         return 0;
 
