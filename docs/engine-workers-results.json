@@ -1,0 +1,33 @@
+{
+  "schema": "GenesisEngineWorkers1",
+  "original_id": "E18",
+  "issue": "beads-3z5k.15",
+  "campaign": "beads-2wy8.1",
+  "source": "fa696e2f3f2d72f99695543d5f68f1c594c0bfd1",
+  "reference": "cc4546693fc58f7fe5268e775927dc3278136a44",
+  "state": "implemented/built/qualified; independent final gate pending",
+  "retained": "Same-drain independent opted-in FM shadow, default automatic available worker and functioning serial fallback",
+  "rejected": ["Immutable final-color preparation/audio overlap", "Independent FM/PSG jobs"],
+  "evidence_root": "G:/Temp/Codex/genesis-engine-workers-20261031",
+  "records": {
+    "component_x64": "unit-tests-r4.json",
+    "component_win32": "unit-tests-r5-win32.json",
+    "candidate_builds": "native-builds-r3.json",
+    "reference_builds": "native-builds-reference.json",
+    "frozen_original_qualification": "native-qualification-r1.json",
+    "qualification_sha256": "176adc86fe5da8179293eca7cd721ac72d5a8de43601ab761ed5b188817428e6",
+    "rejected_architectures": ["native-work-selection-r1.json", "native-work-selection-r2.json", "native-work-selection-r3.json"],
+    "shadow_architecture_selection": ["native-work-shadow-r1.json", "native-work-shadow-r2.json", "native-work-shadow-r3.json"]
+  },
+  "per_game": [
+    {"game":"RKA","package":"shadow-off","frames":6000,"A":{"cpu_seconds":4.265625,"cycles":19796712080,"wall_seconds":4.2704985},"B":{"cpu_seconds":4.015625,"cycles":19491096930,"wall_seconds":4.1720436},"disposition":"neutral/inconclusive","exact":true},
+    {"game":"Sonic1","package":"shadow-off","frames":2400,"A":{"cpu_seconds":1.484375,"cycles":7090817620,"wall_seconds":1.5138486},"B":{"cpu_seconds":1.515625,"cycles":7008182690,"wall_seconds":1.4956741},"disposition":"neutral/inconclusive","exact":true},
+    {"game":"RKA","package":"shadow-on","frames":6000,"A":{"cpu_seconds":5.015625,"cycles":23693875000,"wall_seconds":5.0478653},"B":{"cpu_seconds":6.21875,"cycles":28721770970,"wall_seconds":4.9413351},"disposition":"observed wall benefit, increased CPU/cycles; earlier matched selection also beneficial","exact":true},
+    {"game":"Sonic1","package":"shadow-on","frames":2400,"A":{"cpu_seconds":1.734375,"cycles":8297684560,"wall_seconds":1.768511},"B":{"cpu_seconds":1.953125,"cycles":9361999560,"wall_seconds":1.6363635},"disposition":"latest wall benefit but overall mixed/inconclusive; increased CPU/cycles","exact":true},
+    {"game":"SonicCD","package":"not received","disposition":"unchanged standalone/audio_native path; not measured for E18"}
+  ],
+  "limitations": ["No aggregate offsets", "No universal nonregression or energy-efficiency claim", "Selection prototypes are separate packages, not frozen-base qualification", "Unit shadow timeline stub is not actual synthesis evidence", "No full-startup-wall claim from partial wait interval"],
+  "final_review": null,
+  "pr": null,
+  "cleanup": "pending"
+}
