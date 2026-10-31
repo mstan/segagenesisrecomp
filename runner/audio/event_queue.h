@@ -44,6 +44,15 @@ int  audio_event_pop(AudioEvent *out);
  * NULL/zero capacity consumes nothing. Output is distinct from the private ring. */
 size_t audio_event_take_ordered(AudioOrderedEvent *out,size_t capacity);
 
+/* Borrow a sealed sorted deferred interval, copying only new FIFO writes.
+ * Borrowed stamps are modulo-32 absolute: subtract epoch for frame stamps.
+ * Failure changes nothing. Commit once before pushes; consume complete due
+ * pairs and supply stably sorted fresh future events. Public reads/snapshots
+ * always expose relative FIFO events. Physical ownership is disposable. */
+typedef struct {const AudioEvent *events;size_t count;uint32_t epoch;} AudioDeferredSpan;
+int audio_event_interval_begin(AudioDeferredSpan *,AudioOrderedEvent *,size_t,size_t *);
+void audio_event_interval_commit(size_t,const AudioOrderedEvent *,size_t,uint32_t);
+
 /* Reset the queue — called at end-of-wall-frame after drain completes, or
  * on lifecycle init. */
 void audio_event_queue_reset(void);

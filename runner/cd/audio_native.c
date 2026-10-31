@@ -254,7 +254,7 @@ static SegaCDNativeAudioResult render_to_boundary(SegaCDNativeAudio *audio,uint6
     }
     native_event_order(audio);
     size_t applied=0;
-    while(applied<audio->event_count && audio->event[applied].master_clock<=end) {
+    while(applied<audio->event_count && audio->event[audio->event_first+applied].master_clock<=end) {
         SegaCDNativeEvent *event=&audio->event[audio->event_first+applied];
         if(event->master_clock<audio->rendered_master_clock) {
             audio->stats.faults|=SEGACD_NATIVE_AUDIO_FAULT_BACKWARDS;
