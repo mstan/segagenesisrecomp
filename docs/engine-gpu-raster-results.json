@@ -7,19 +7,40 @@
       "path": "G:\\Temp\\Codex\\genesis-engine-gpu-raster-20261031\\prototype-source-9501233d114670f34a9c7b44b8cd664f9c009399.zip",
       "bytes": 13179962,
       "sha256": "c40c4844c7e66b0ac4e1ed266411185122dba9ca3c76de25c3de916511a64c79",
-      "contents": "Tracked engine source only; dependency gitlink identities in archive, readonly dependencies/frozen consumers separately recorded"
+      "contents": "Regular tracked engine files/directories with prototype commit in ZIP comment; no embedded gitlink manifest. Exact dependency gitlink identities are recorded explicitly in this entry, Git and frozen input records; dependency working trees are separate immutable campaign inputs.",
+      "gitlink_identities": {
+        "external/m68k-recomp-core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+        "external/rbengine": "2a03e73693acee0fb78076ea058642c931bef12e",
+        "external/recomp-net": "2103d5eef111ce98846f017fb12d90f5cbe763e6",
+        "external/z80-recomp-core": "4dfc5fc29fd67d23714126348e678e45952e9462",
+        "sonicthehedgehog/s1disasm": "d343882f75b13646ba50ae06b1486f4bd05cb738"
+      }
     },
     "863c24e5fc77adb3f91f10b1aa4e41989ccba586": {
       "path": "G:\\Temp\\Codex\\genesis-engine-gpu-raster-20261031\\prototype-source-863c24e5fc77adb3f91f10b1aa4e41989ccba586.zip",
       "bytes": 13200010,
       "sha256": "5ed3b3593ce931ac7d342fe52e93fcdd895d92848e9df6889a4423d5b8bc1df7",
-      "contents": "Tracked engine source only; dependency gitlink identities in archive, readonly dependencies/frozen consumers separately recorded"
+      "contents": "Regular tracked engine files/directories with prototype commit in ZIP comment; no embedded gitlink manifest. Exact dependency gitlink identities are recorded explicitly in this entry, Git and frozen input records; dependency working trees are separate immutable campaign inputs.",
+      "gitlink_identities": {
+        "external/m68k-recomp-core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+        "external/rbengine": "2a03e73693acee0fb78076ea058642c931bef12e",
+        "external/recomp-net": "2103d5eef111ce98846f017fb12d90f5cbe763e6",
+        "external/z80-recomp-core": "4dfc5fc29fd67d23714126348e678e45952e9462",
+        "sonicthehedgehog/s1disasm": "d343882f75b13646ba50ae06b1486f4bd05cb738"
+      }
     },
     "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498": {
       "path": "G:\\Temp\\Codex\\genesis-engine-gpu-raster-20261031\\prototype-source-ec4cf4c2aacdc6a43f11e38c54834b1d42d95498.zip",
       "bytes": 13200313,
       "sha256": "69867627280f203662ba7469d8803e5bc180b0e5f655bb7b355198b375b8be54",
-      "contents": "Tracked engine source only; dependency gitlink identities in archive, readonly dependencies/frozen consumers separately recorded"
+      "contents": "Regular tracked engine files/directories with prototype commit in ZIP comment; no embedded gitlink manifest. Exact dependency gitlink identities are recorded explicitly in this entry, Git and frozen input records; dependency working trees are separate immutable campaign inputs.",
+      "gitlink_identities": {
+        "external/m68k-recomp-core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+        "external/rbengine": "2a03e73693acee0fb78076ea058642c931bef12e",
+        "external/recomp-net": "2103d5eef111ce98846f017fb12d90f5cbe763e6",
+        "external/z80-recomp-core": "4dfc5fc29fd67d23714126348e678e45952e9462",
+        "sonicthehedgehog/s1disasm": "d343882f75b13646ba50ae06b1486f4bd05cb738"
+      }
     }
   },
   "prepared": true,
