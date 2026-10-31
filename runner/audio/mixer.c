@@ -49,11 +49,8 @@ static int s_mix_toggle_read = 0;
 static int s_no_spread = 0, s_no_pairguard = 0, s_no_leftover = 0, s_no_clamp = 0;
 static AudioMixerExecutor s_executor;
 static void *s_executor_context;
-static int s_executor_shadow;
-void audio_mixer_set_executor(AudioMixerExecutor executor,void *context)
-{s_executor=executor;s_executor_context=context;s_executor_shadow=0;}
 void audio_mixer_set_shadow_executor(AudioMixerExecutor executor,void *context)
-{s_executor=executor;s_executor_context=context;s_executor_shadow=1;}
+{s_executor=executor;s_executor_context=context;}
 static int mixer_outputs_disjoint(const int16_t *fm,size_t fm_cap,
                                   const int16_t *psg,size_t psg_cap)
 {
@@ -66,7 +63,7 @@ static int mixer_outputs_disjoint(const int16_t *fm,size_t fm_cap,
 typedef struct MixerChipJob {
     const AudioOrderedEvent *events;size_t count;
     uint32_t end;int16_t *output;size_t capacity,written;
-    int keep_psg_leftover,separate_shadow;
+    int keep_psg_leftover;
 } MixerChipJob;
 static void mixer_fm_job(void *context)
 {
@@ -75,22 +72,19 @@ static void mixer_fm_job(void *context)
         AudioEvent e=job->events[i].e;if(e.port==AUDIO_PORT_PSG)continue;
         if(e.cycle_stamp<previous)e.cycle_stamp=previous;
         uint32_t delta=e.cycle_stamp-previous;
-        if(delta){ym2612_advance(delta);if(!job->separate_shadow)fm_shadow_advance(delta);}
+        if(delta)ym2612_advance(delta);
         switch(e.port){
-            case AUDIO_PORT_FM1_ADDR:ym2612_write(0,e.value);if(!job->separate_shadow)fm_shadow_write(0,e.value);break;
-            case AUDIO_PORT_FM1_DATA:ym2612_write(1,e.value);if(!job->separate_shadow)fm_shadow_write(1,e.value);break;
-            case AUDIO_PORT_FM2_ADDR:ym2612_write(2,e.value);if(!job->separate_shadow)fm_shadow_write(2,e.value);break;
-            case AUDIO_PORT_FM2_DATA:ym2612_write(3,e.value);if(!job->separate_shadow)fm_shadow_write(3,e.value);break;
+            case AUDIO_PORT_FM1_ADDR:ym2612_write(0,e.value);break;
+            case AUDIO_PORT_FM1_DATA:ym2612_write(1,e.value);break;
+            case AUDIO_PORT_FM2_ADDR:ym2612_write(2,e.value);break;
+            case AUDIO_PORT_FM2_DATA:ym2612_write(3,e.value);break;
             default:break;
         }
         previous=e.cycle_stamp;
     }
-    if(job->end>previous){ym2612_advance(job->end-previous);if(!job->separate_shadow)fm_shadow_advance(job->end-previous);}
+    if(job->end>previous)ym2612_advance(job->end-previous);
     size_t available=ym2612_samples_available();job->written=available<job->capacity?available:job->capacity;
-    if(job->output && job->written){
-        ym2612_render(job->output,job->written);
-        if(!job->separate_shadow)fm_shadow_verify_and_substitute(job->output,job->written);
-    }
+    if(job->output && job->written)ym2612_render(job->output,job->written);
 }
 static void mixer_psg_job(void *context)
 {
@@ -220,15 +214,13 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
         audio_event_requeue(defer, d);
     }
 
-    if(s_executor && (!s_executor_shadow || fm_shadow_enabled()) &&
+    if(s_executor && fm_shadow_enabled() &&
        mixer_outputs_disjoint(fm_stereo_out,fm_cap,psg_mono_out,psg_cap)){
-        MixerChipJob fm={evs,n_apply,frame_end_cycle,fm_stereo_out,fm_cap,0,0,s_executor_shadow};
-        MixerChipJob psg={evs,n_apply,frame_end_cycle,psg_mono_out,psg_cap,0,s_no_leftover,0};
-        if(s_executor_shadow){
-            MixerMainJob main_job={&fm,&psg};
-            s_executor(mixer_main_job,&main_job,mixer_shadow_job,&fm,s_executor_context);
-            if(fm.output && fm.written)fm_shadow_verify_and_substitute(fm.output,fm.written);
-        }else s_executor(mixer_fm_job,&fm,mixer_psg_job,&psg,s_executor_context);
+        MixerChipJob fm={evs,n_apply,frame_end_cycle,fm_stereo_out,fm_cap,0,0};
+        MixerChipJob psg={evs,n_apply,frame_end_cycle,psg_mono_out,psg_cap,0,s_no_leftover};
+        MixerMainJob main_job={&fm,&psg};
+        s_executor(mixer_main_job,&main_job,mixer_shadow_job,&fm,s_executor_context);
+        if(fm.output && fm.written)fm_shadow_verify_and_substitute(fm.output,fm.written);
         /* Diagnostics retain the original merged applied order and clamped
          * stamps. The owner logs only after both jobs really completed. */
         if(s_ad)for(size_t i=0;i<n_apply;i++){

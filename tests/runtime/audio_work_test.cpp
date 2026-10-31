@@ -27,11 +27,25 @@ int ref_psg_rb_load(const void *,size_t);
 unsigned long g_snd_frame=0,g_snd_mc=0;
 unsigned g_snd_pcz=0,g_snd_line=0;
 void snd_trace_chip(int,uint8_t,uint8_t){ }
+static std::vector<uint64_t> shadow_trace,reference_shadow_trace;
+static SDL_threadID owner_thread;
+static bool expect_shadow_worker;
+static void shadow_call(uint64_t value)
+{
+    if((SDL_ThreadID()!=owner_thread)!=expect_shadow_worker)std::abort();
+    shadow_trace.push_back(value);
+}
 void fm_shadow_init(void){ }
-int fm_shadow_enabled(void){return 0;}
-void fm_shadow_advance(uint32_t){ }
-void fm_shadow_write(uint8_t,uint8_t){ }
-void fm_shadow_verify_and_substitute(int16_t *,size_t){ }
+void ref_fm_shadow_init(void){ }
+int fm_shadow_enabled(void){return 1;}
+void fm_shadow_advance(uint32_t n){shadow_call((1ull<<60)|n);}
+void fm_shadow_write(uint8_t p,uint8_t v){shadow_call((2ull<<60)|((uint64_t)p<<8)|v);}
+void ref_fm_shadow_advance(uint32_t n){reference_shadow_trace.push_back((1ull<<60)|n);}
+void ref_fm_shadow_write(uint8_t p,uint8_t v){reference_shadow_trace.push_back((2ull<<60)|((uint64_t)p<<8)|v);}
+void fm_shadow_verify_and_substitute(int16_t *,size_t n)
+{if(SDL_ThreadID()!=owner_thread)std::abort();shadow_trace.push_back((3ull<<60)|n);}
+void ref_fm_shadow_verify_and_substitute(int16_t *,size_t n)
+{reference_shadow_trace.push_back((3ull<<60)|n);}
 static char *reference_trace;
 char *ref_getenv(const char *name)
 {return !std::strcmp(name,"GENESIS_AUDIO_APPLIEDDUMP")?reference_trace:std::getenv(name);}
@@ -61,6 +75,8 @@ static void parity()
     CHECK(snapshot(ym2612_rb_save)==snapshot(ref_ym2612_rb_save));
     CHECK(snapshot(psg_rb_save)==snapshot(ref_psg_rb_save));
     CHECK(snapshot(audio_event_rb_save)==snapshot(ref_audio_event_rb_save));
+    CHECK(shadow_trace==reference_shadow_trace);
+    shadow_trace.clear();reference_shadow_trace.clear();
 }
 static void push(uint32_t stamp,uint8_t port,uint8_t value)
 {audio_event_push(stamp,port,value);ref_audio_event_push(stamp,port,value);}
@@ -72,10 +88,11 @@ static void restore_both(Save save,Save original,Load load,Load original_load)
 int main(int argc,char **argv)
 {
     CHECK(argc==3);reference_trace=argv[1];environment("GENESIS_AUDIO_APPLIEDDUMP",argv[2]);
-    environment("GENESIS_AUDIO_SHADOW","0");
+    environment("GENESIS_AUDIO_SHADOW","1");
     SDL_SetMainReady();CHECK(SDL_Init(SDL_INIT_TIMER)==0);
     GenesisWorker *worker=genesis_worker_create();CHECK(worker);
-    audio_mixer_init();ref_audio_mixer_init();audio_mixer_set_executor(execute,worker);
+    owner_thread=SDL_ThreadID();expect_shadow_worker=true;
+    audio_mixer_init();ref_audio_mixer_init();audio_mixer_set_shadow_executor(execute,worker);
     constexpr uint32_t end=895780u;
     /* Realistic large deferred DAC burst, including an address/data pair near
      * the frame split; ports retain exact original generic event semantics. */
@@ -103,6 +120,7 @@ int main(int argc,char **argv)
         }
     }
     CHECK(genesis_worker_completed(worker)==160);
+    expect_shadow_worker=false;
     /* The original API permits overlapping output arrays. These arms MUST
      * retain serial FM-then-PSG writes, including an overflowing declared cap. */
     for(unsigned i=0;i<4;i++){
@@ -114,7 +132,7 @@ int main(int argc,char **argv)
         ref_audio_mixer_drain(end,b.data(),cap,&fb,b.data()+offset,1024,&pb);
         CHECK(fa==fb&&pa==pb&&a==b);parity();CHECK(genesis_worker_completed(worker)==160);
     }
-    audio_mixer_set_executor(nullptr,nullptr);genesis_worker_destroy(worker);
+    audio_mixer_set_shadow_executor(nullptr,nullptr);genesis_worker_destroy(worker);
     std::fflush(nullptr);std::ifstream a(argv[1],std::ios::binary),b(argv[2],std::ios::binary);
     CHECK(a.good()&&b.good());std::string x((std::istreambuf_iterator<char>(a)),{}),y((std::istreambuf_iterator<char>(b)),{});
     CHECK(!x.empty()&&x==y);SDL_Quit();

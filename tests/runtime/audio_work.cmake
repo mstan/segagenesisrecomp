@@ -9,6 +9,7 @@ add_library(audio_work_original OBJECT
     "${_aw_runner}/audio/ym2612_ymfm.cpp"
     "${_aw_runner}/audio/sn76489.c")
 foreach(_name IN ITEMS audio_mixer_init audio_mixer_drain
+    fm_shadow_init fm_shadow_advance fm_shadow_write fm_shadow_verify_and_substitute
     audio_event_state_size audio_event_rb_save audio_event_rb_load audio_event_state_save audio_event_state_load
     audio_event_cosim_stream_hash audio_event_cosim_hist_total audio_event_cosim_hist
     audio_event_push audio_event_pop audio_event_queue_reset audio_event_requeue audio_event_queue_count audio_event_cosim_hash)
