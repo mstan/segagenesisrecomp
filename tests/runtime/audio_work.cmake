@@ -19,7 +19,7 @@ foreach(_prefix IN ITEMS ym2612 psg)
         target_compile_definitions(audio_work_original PRIVATE ${_prefix}_${_name}=ref_${_prefix}_${_name})
     endforeach()
 endforeach()
-target_include_directories(audio_work_original PRIVATE "${_aw_runner}" "${_aw_runner}/audio" "${_aw_ymfm}")
+target_include_directories(audio_work_original PRIVATE "${_aw_runner}" "${_aw_runner}/include" "${_aw_runner}/audio" "${_aw_ymfm}")
 target_compile_definitions(audio_work_original PRIVATE GENESIS_FM_BLOCK_SAMPLES=1 GENESIS_PSG_SILENT_SPANS=1)
 add_executable(audio_work_test "${CMAKE_CURRENT_LIST_DIR}/audio_work_test.cpp"
     "${_aw_runner}/audio/mixer.c" "${_aw_runner}/audio/event_queue.c"
@@ -28,7 +28,7 @@ add_executable(audio_work_test "${CMAKE_CURRENT_LIST_DIR}/audio_work_test.cpp"
     "${_aw_ymfm}/ymfm_opn.cpp" "${_aw_ymfm}/ymfm_ssg.cpp"
     "${_aw_ymfm}/ymfm_adpcm.cpp" "${_aw_ymfm}/ymfm_pcm.cpp")
 target_compile_features(audio_work_test PRIVATE c_std_11 cxx_std_17)
-target_include_directories(audio_work_test PRIVATE "${_aw_runner}" "${_aw_runner}/audio" "${_aw_ymfm}")
+target_include_directories(audio_work_test PRIVATE "${_aw_runner}" "${_aw_runner}/include" "${_aw_runner}/audio" "${_aw_ymfm}")
 target_compile_definitions(audio_work_test PRIVATE GENESIS_ENGINE_WORKERS=1 GENESIS_FM_BLOCK_SAMPLES=1 GENESIS_PSG_SILENT_SPANS=1)
 target_link_libraries(audio_work_test PRIVATE SDL2::SDL2)
 if(MSVC)
