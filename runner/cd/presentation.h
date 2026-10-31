@@ -27,7 +27,9 @@ int segacd_presentation_blocks_game_input(
    symmetric even guest-pixel width; the native view is the minimum. */
 unsigned segacd_presentation_view_width(const SegaCDPresentation *presentation);
 
-/* Copies and overlays the host frame; the machine's source pixels are untouched. */
+/* Synchronously uploads the frame, borrowing raw pixels while the UI is closed
+   and owning writable staging for overlays/packed fallback. Source pixels are
+   untouched and are not retained beyond this call. */
 int segacd_presentation_present(SegaCDPresentation *presentation,
                                 const uint32_t *pixels, int width, int height,
                                 int source_pitch_bytes);
