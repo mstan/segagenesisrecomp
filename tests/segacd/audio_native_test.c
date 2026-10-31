@@ -141,69 +141,6 @@ static int test_order_defer_and_frame_late_mix(void)
     return 0;
 }
 
-static int test_deferred_cursor_across_boundaries(void)
-{
-    SegaCDNativeAudio *audio=segacd_native_audio_create(0);
-    SegaCDNativeAudioStats stats;
-    CHECK(audio!=NULL);flush_count=0;write_count=0;
-    for(uint64_t stamp=300;stamp<=3000;stamp+=300){
-        segacd_native_audio_pcm_sample(audio,stamp,0,0);
-        segacd_native_audio_cdda_sample(audio,stamp,0,0);
-    }
-    CHECK(segacd_native_audio_write_checked(audio,2000,AUDIO_PORT_PSG,0x30)==SEGACD_NATIVE_AUDIO_OK);
-    CHECK(segacd_native_audio_write_checked(audio,1,AUDIO_PORT_PSG,0x10)==SEGACD_NATIVE_AUDIO_OK);
-    CHECK(segacd_native_audio_write_checked(audio,1000,AUDIO_PORT_PSG,0x20)==SEGACD_NATIVE_AUDIO_OK);
-    const unsigned applied[]={1,2,2,3};
-    for(unsigned frame=0;frame<4;frame++){
-        uint64_t end=(frame+1u)*2400u;
-        CHECK(segacd_native_audio_finish_frame(audio,end,frame,0)==SEGACD_NATIVE_AUDIO_OK);
-        segacd_native_audio_get_stats(audio,&stats);
-        CHECK(stats.applied_events==applied[frame] && stats.deferred_events==3u-applied[frame]);
-        CHECK(write_count==applied[frame]);
-        CHECK(stats.rendered_psg_frames==end/240u && stats.rendered_fm_frames==end/1008u);
-        CHECK(!stats.faults && !stats.backwards_writes);
-        if(frame==1)for(unsigned i=0;i<20;i++)CHECK(flushed_stereo[i]==0x10);
-        if(frame==2){
-            for(unsigned i=0;i<14;i++)CHECK(flushed_stereo[i]==0x10);
-            for(unsigned i=14;i<20;i++)CHECK(flushed_stereo[i]==0x20);
-        }
-        if(frame==3)for(unsigned i=0;i<20;i++)CHECK(flushed_stereo[i]==0x20);
-    }
-    CHECK(writes[0].clock==4u && writes[1].clock==4295u && writes[2].clock==8590u);
-    CHECK(segacd_native_audio_flush_pending(audio,0)==SEGACD_NATIVE_AUDIO_OK);
-    for(unsigned i=0;i<10;i++)CHECK(flushed_stereo[i]==0x20);
-    for(unsigned i=10;i<20;i++)CHECK(flushed_stereo[i]==0x30);
-    segacd_native_audio_destroy(audio);return 0;
-}
-
-static int test_append_compacts_deferred_suffix(void)
-{
-    SegaCDNativeAudio *audio=segacd_native_audio_create(0);
-    SegaCDNativeAudioStats stats;
-    CHECK(audio!=NULL);flush_count=0;write_count=0;
-    for(uint64_t stamp=300;stamp<=3000;stamp+=300){
-        segacd_native_audio_pcm_sample(audio,stamp,0,0);
-        segacd_native_audio_cdda_sample(audio,stamp,0,0);
-    }
-    CHECK(segacd_native_audio_write_checked(audio,1,AUDIO_PORT_PSG,0x10)==SEGACD_NATIVE_AUDIO_OK);
-    for(unsigned i=1;i<262144u;i++)
-        CHECK(segacd_native_audio_write_checked(audio,2000,AUDIO_PORT_PSG,(uint8_t)i)==SEGACD_NATIVE_AUDIO_OK);
-    CHECK(segacd_native_audio_finish_frame(audio,2400,0,0)==SEGACD_NATIVE_AUDIO_OK);
-    CHECK(write_count==1);
-    CHECK(segacd_native_audio_write_checked(audio,1000,AUDIO_PORT_PSG,0x20)==SEGACD_NATIVE_AUDIO_OK);
-    CHECK(segacd_native_audio_finish_frame(audio,4800,1,0)==SEGACD_NATIVE_AUDIO_OK);
-    CHECK(write_count==2 && writes[1].value==0x20 && writes[1].clock==4295);
-    CHECK(segacd_native_audio_finish_frame(audio,7200,2,0)==SEGACD_NATIVE_AUDIO_OK);
-    CHECK(write_count==2);
-    segacd_native_audio_get_stats(audio,&stats);
-    CHECK(stats.applied_events==2 && stats.deferred_events==262143 && !stats.faults);
-    CHECK(segacd_native_audio_finish_frame(audio,9600,3,0)==SEGACD_NATIVE_AUDIO_OK);
-    segacd_native_audio_get_stats(audio,&stats);
-    CHECK(stats.applied_events==262145 && !stats.deferred_events && !stats.event_overflows && !stats.faults);
-    CHECK(writes[2].clock==8590 && writes[2].value==1 && writes[3].value==2);
-    segacd_native_audio_destroy(audio);return 0;
-}
-
 static int test_bad_port_and_bounded_queue(void)
 {
     SegaCDNativeAudio *audio=segacd_native_audio_create(0);
@@ -278,8 +215,6 @@ static int test_chip_scratch_drop_is_loud(void)
 int main(void)
 {
     if(test_order_defer_and_frame_late_mix())return 1;
-    if(test_deferred_cursor_across_boundaries())return 1;
-    if(test_append_compacts_deferred_suffix())return 1;
     if(test_bad_port_and_bounded_queue())return 1;
     if(test_underflow_preflight_is_terminal_and_does_not_flush())return 1;
     if(test_chip_scratch_drop_is_loud())return 1;

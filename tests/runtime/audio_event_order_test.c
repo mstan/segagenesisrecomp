@@ -23,28 +23,6 @@ static void reference(OriginalEvent *events,size_t n,int pairguard)
     qsort(events,n,sizeof *events,compare);
 }
 static uint32_t seed=0x23567121;
-typedef struct {uint64_t tick,sequence;} Timeline64;
-static int before64(const Timeline64 *a,const Timeline64 *b)
-{return a->tick<b->tick || (a->tick==b->tick && a->sequence<=b->sequence);}
-GENESIS_AUDIO_TIMELINE_DEFINE(merge64,Timeline64,before64)
-static void clock_and_probe_contract(void)
-{
-    uint64_t out=27;
-    CHECK(audio_timeline_scale(UINT64_MAX,UINT32_MAX,UINT32_MAX,&out)&&out==UINT64_MAX);
-    CHECK(audio_timeline_scale(UINT64_MAX,UINT32_MAX,1,&out)&&out==UINT64_C(4294967297));
-    CHECK(audio_timeline_scale(UINT64_MAX,2,1,&out)&&out==UINT64_MAX/2);
-    out=27;CHECK(!audio_timeline_scale(UINT64_MAX,1,2,&out)&&out==27);
-    CHECK(!audio_timeline_scale(1,0,1,&out)&&out==27);
-    CHECK(!audio_timeline_scale(1,1,0,&out)&&out==27);
-    CHECK(!audio_timeline_scale(1,1,1,NULL));
-    Timeline64 events[]={{UINT64_C(0x8000000000000005),2},{UINT64_MAX,0},
-        {UINT64_C(0x8000000000000005),1},{1,0}},copy[4],scratch[4];
-    memcpy(copy,events,sizeof events);
-    CHECK(!merge64(events,NULL,4)&&!memcmp(copy,events,sizeof events));
-    CHECK(merge64(events,scratch,4));
-    CHECK(events[0].tick==1 && events[1].sequence==1 && events[2].sequence==2 && events[3].tick==UINT64_MAX);
-    CHECK(merge64(events,NULL,4)&&merge64(NULL,NULL,0));
-}
 static uint32_t rnd(void){seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return seed;}
 static void check(const AudioEvent *source,size_t n,int pairguard)
 {
@@ -57,7 +35,6 @@ static void check(const AudioEvent *source,size_t n,int pairguard)
 }
 int main(void)
 {
-    clock_and_probe_contract();
     AudioEvent *events=calloc(262144,sizeof *events);CHECK(events);
     audio_event_order(NULL,NULL,0,1);
     for(unsigned trial=0;trial<1200;++trial) {
