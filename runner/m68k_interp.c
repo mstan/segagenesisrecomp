@@ -1482,8 +1482,10 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
             return M68KI_HALT_UNIMPL;
         }
 
-        if (depth == 0 && ins.mnemonic == MN_RTE)
+        if (depth == 0 && ins.mnemonic == MN_RTE) {
+            interp_account_cycles(&ins);
             return M68KI_OK;                 /* handler's own return — stop, don't pop */
+        }
 
         uint32_t next;
         s_illegal_ea = 0;
