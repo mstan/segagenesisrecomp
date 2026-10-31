@@ -85,11 +85,56 @@ static void restore_both(Save save,Save original,Load load,Load original_load)
     auto a=snapshot(save),b=snapshot(original);CHECK(a==b);
     CHECK(load(a.data(),a.size())&&original_load(b.data(),b.size()));
 }
+static void queue_contract()
+{
+    constexpr size_t cap=262144;
+    std::vector<AudioEvent> input(cap+8);
+    std::vector<AudioOrderedEvent> output(cap+8);
+    for(size_t i=0;i<input.size();i++)input[i]={(uint32_t)(i*17u),(uint8_t)(i%5),(uint8_t)i};
+    auto equal=[](const AudioEvent &a,const AudioEvent &b){return a.cycle_stamp==b.cycle_stamp&&a.port==b.port&&a.value==b.value;};
+    audio_event_queue_reset();audio_event_requeue(input.data(),cap-2);
+    CHECK(!audio_event_take_ordered(nullptr,20)&&!audio_event_take_ordered(output.data(),0));
+    CHECK(audio_event_queue_count()==cap-2);
+    size_t count=audio_event_take_ordered(output.data(),cap-5);
+    CHECK(count==cap-5);
+    for(size_t i=0;i<count;i++)CHECK(output[i].idx==i&&equal(output[i].e,input[i]));
+    std::vector<AudioEvent> expected(input.begin()+count,input.begin()+cap-2);
+    audio_event_requeue(input.data(),16);expected.insert(expected.end(),input.begin(),input.begin()+16);
+    count=audio_event_take_ordered(output.data(),5);CHECK(count==5);
+    for(size_t i=0;i<count;i++)CHECK(output[i].idx==i&&equal(output[i].e,expected[i]));
+    expected.erase(expected.begin(),expected.begin()+count);
+    size_t room=cap-1-expected.size();audio_event_requeue(input.data(),input.size());
+    expected.insert(expected.end(),input.begin(),input.begin()+room);
+    CHECK(audio_event_queue_count()==cap-1);
+    auto saved=snapshot(audio_event_rb_save);audio_event_queue_reset();CHECK(audio_event_rb_load(saved.data(),saved.size()));
+    CHECK(saved==snapshot(audio_event_rb_save));
+    count=audio_event_take_ordered(output.data(),output.size());CHECK(count==expected.size());
+    for(size_t i=0;i<count;i++)CHECK(output[i].idx==i&&equal(output[i].e,expected[i]));
+    CHECK(!audio_event_queue_count());
+
+    AudioDeferredSpan held;size_t fresh=0;
+    audio_event_push(UINT32_MAX,AUDIO_PORT_PSG,0x61);
+    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&!held.count&&fresh==1);
+    audio_event_interval_commit(0,output.data(),fresh,0xfffffff0u);
+    saved=snapshot(audio_event_rb_save);auto bad=saved;
+    bad[sizeof(uint32_t)+offsetof(AudioEvent,port)]=0xff;
+    CHECK(!audio_event_rb_load(bad.data(),bad.size())&&snapshot(audio_event_rb_save)==saved);
+    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&held.count==1&&!fresh);
+    CHECK(held.events[0].cycle_stamp-held.epoch==15u);
+    audio_event_interval_commit(0,nullptr,0,8);
+    audio_event_push(16,AUDIO_PORT_PSG,0x62);
+    CHECK(audio_event_take_ordered(output.data(),2)==2);
+    CHECK(output[0].e.cycle_stamp==7&&output[0].e.value==0x61&&output[0].idx==0);
+    CHECK(output[1].e.cycle_stamp==16&&output[1].e.value==0x62&&output[1].idx==1);
+    audio_event_queue_reset();
+}
+
 int main(int argc,char **argv)
 {
     CHECK(argc==3);reference_trace=argv[1];environment("GENESIS_AUDIO_APPLIEDDUMP",argv[2]);
     environment("GENESIS_AUDIO_SHADOW","1");
     SDL_SetMainReady();CHECK(SDL_Init(SDL_INIT_TIMER)==0);
+    queue_contract();
     GenesisWorker *worker=genesis_worker_create();CHECK(worker);
     owner_thread=SDL_ThreadID();expect_shadow_worker=true;
     audio_mixer_init();ref_audio_mixer_init();audio_mixer_set_shadow_executor(execute,worker);
@@ -104,7 +149,13 @@ int main(int argc,char **argv)
     std::vector<int16_t> af(8192,-1337),bf(8192,-1337),ap(16384,-2337),bp(16384,-2337);
     for(unsigned frame=0;frame<160;frame++){
         g_snd_frame=frame;
-        for(unsigned i=0;i<80;i++)push(rnd()%(end*2u),(uint8_t)(rnd()%5u),(uint8_t)rnd());
+        if(frame<140){
+            for(unsigned i=0;i<40;i++){
+                uint32_t stamp=rnd()%(end-1u);uint8_t part=(uint8_t)((i%2u)*2u);
+                push(stamp,part,(uint8_t)rnd());push(stamp,part+1u,(uint8_t)rnd());
+            }
+            push(end-1u,AUDIO_PORT_PSG,(uint8_t)rnd());
+        }else for(unsigned i=0;i<80;i++)push(rnd()%(end*2u),(uint8_t)(rnd()%5u),(uint8_t)rnd());
         size_t fm_cap=frame%4==0?0:frame%4==1?31:frame%4==2?1024:4096;
         size_t psg_cap=frame%4==0?127:frame%4==1?0:frame%4==2?4096:16384;
         bool discard_fm=frame%13==0,discard_psg=frame%17==0;
