@@ -1,4 +1,4 @@
-# Complete indexed-job reuse versus the retained original no-reuse renderer.
+# Complete capture-plane-job reuse versus the retained original no-reuse renderer.
 # ROM-independent; object models never change production target definitions.
 set(_job_vdp "${CMAKE_CURRENT_LIST_DIR}/../../runner/video/genesis_vdp.c")
 set(_job_apis
@@ -47,7 +47,8 @@ set(_job_apis
     gvdp_sprite_patterns
     gvdp_sprite_pattern_line
     gvdp_render_reuse_stats
-    gvdp_render_reuse_clear)
+    gvdp_render_reuse_clear
+    gvdp_render_reuse_cache_bytes)
 add_library(vdp_job_reference_model OBJECT "${_job_vdp}")
 target_compile_features(vdp_job_reference_model PRIVATE c_std_11)
 target_compile_definitions(vdp_job_reference_model PRIVATE GENESIS_BATCHED_PLANES=1 GENESIS_RENDER_REUSE=0)
@@ -88,6 +89,31 @@ foreach(_kind IN ITEMS batched portable disabled scalar)
             $<TARGET_OBJECTS:${_job_head}> $<TARGET_OBJECTS:vdp_job_${_kind}_model>)
         target_compile_features(vdp_render_jobs_${_kind}_test PRIVATE c_std_11)
         add_test(NAME vdp_render_jobs_${_kind} COMMAND vdp_render_jobs_${_kind}_test)
+    endif()
+endforeach()
+
+add_library(vdp_job_allocfail_model OBJECT "${CMAKE_CURRENT_LIST_DIR}/vdp_render_job_alloc_model.c")
+target_compile_features(vdp_job_allocfail_model PRIVATE c_std_11)
+target_compile_definitions(vdp_job_allocfail_model PRIVATE GENESIS_BATCHED_PLANES=1 GENESIS_RENDER_REUSE_STATS=1)
+foreach(_api IN LISTS _job_apis)
+    target_compile_definitions(vdp_job_allocfail_model PRIVATE "${_api}=cand_${_api}")
+endforeach()
+foreach(_fixture IN ITEMS diff alloc)
+    if(_fixture STREQUAL "diff")
+        set(_source "${CMAKE_CURRENT_LIST_DIR}/vdp_render_diff_test.c")
+    else()
+        set(_source "${CMAKE_CURRENT_LIST_DIR}/vdp_render_job_alloc_test.c")
+    endif()
+    add_executable(vdp_render_${_fixture}_allocfail_test "${_source}"
+        $<TARGET_OBJECTS:vdp_job_reference_model> $<TARGET_OBJECTS:vdp_job_allocfail_model>)
+    target_compile_features(vdp_render_${_fixture}_allocfail_test PRIVATE c_std_11)
+    add_test(NAME vdp_render_${_fixture}_allocfail COMMAND vdp_render_${_fixture}_allocfail_test)
+endforeach()
+foreach(_target IN ITEMS vdp_job_allocfail_model vdp_render_diff_allocfail_test vdp_render_alloc_allocfail_test)
+    if(MSVC)
+        target_compile_options(${_target} PRIVATE /W3 /WX)
+    else()
+        target_compile_options(${_target} PRIVATE -Wall -Wextra -Werror)
     endif()
 endforeach()
 
