@@ -1,0 +1,1728 @@
+{
+  "schema": "GenesisFinalPixelPipelineResults1",
+  "date": "2026-10-31",
+  "original_id": "E16",
+  "owner": "beads-3z5k.13",
+  "campaign": "beads-2wy8.1",
+  "status": "tested; fresh final source/runtime/per-game/PR/Beads/cleanup review pending",
+  "prepared": true,
+  "built": true,
+  "tested": true,
+  "accepted": false,
+  "source": "ea16061a702bbc0ad3ce769b880ed47cac31a888",
+  "source_base": "c22af45a297c8763401111b5183522b5e9a50d1d",
+  "branch": "codex/engine-final-pixels-20261030",
+  "reference_runtime": "426253e1b76056a45c48347ddcd75eb64e31c1d8; runner byte exact through c22; equal generator zero-case/UI initializer task adaptations",
+  "scope": "Fuse shared indexed/ARGB conversion, copies, color processing, UI staging and upload preparation; preserve raw image, status, timing, caller contexts, custom producer fallback and portable compile0 implementation. No title policy.",
+  "host_scope": "Shared PC software SDL/dummy presentation, real guest/audio execution; no quiet-host/physical-GPU/pacing/startup-loading performance claim. All pairs one host/config/compiler; leases/telemetry retained.",
+  "per_game_acceptance": "No aggregate offset. RKA/Sonic1 CRT observed gains; default raw neutral/inconclusive. Sonic CD adverse and favorable byte-identical-code observations retained; proposed neutral/inconclusive awaits independent reviewer.",
+  "pairs": [
+    {
+      "game": "rka",
+      "feature": "raw",
+      "package": "clean-main-full-presentation",
+      "order": "AB",
+      "frames": 6000,
+      "reference_cpu_seconds": 6.21875,
+      "candidate_cpu_seconds": 4.828125,
+      "cpu_reduction_pct": 22.36180904522613,
+      "reference_cycles": 27641093390,
+      "candidate_cycles": 23579138600,
+      "cycles_reduction_pct": 14.695347729875019,
+      "classification": "neutral/inconclusive; no proven default gain",
+      "correctness_passed": true,
+      "rom_sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+      "inputs_sha256": "e79740e61386cde1f4912a81095bfe9a0dd40498dd68fa99200d6df4d08231ed",
+      "runs": [
+        {
+          "arm": "A",
+          "binary": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\rka\\reference\\RKARecomp.exe",
+            "sha256": "0edf7bacd0f648bb282068c6925e36d9a0100289013c61146d43adfd9965ed26",
+            "bytes": 8710656,
+            "seconds": 73.04699999978766,
+            "engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+            "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+            "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+            "configure_argv": [
+              "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\rka\\reference",
+              "-G",
+              "Visual Studio 16 2019",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine-A",
+              "-DGEN_ENABLE_TRACE=OFF",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF"
+            ],
+            "plane_impl": "BATCHED",
+            "stats": false,
+            "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\rka\\reference\\RKARecomp.exe"
+          },
+          "command": [
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-0-A\\bin\\RKARecomp.exe",
+            "--no-launcher",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-0-A\\rka.bin",
+            "--wav",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-0-A\\audio.wav",
+            "--measure-runtime",
+            "6000",
+            "--runtime-uncapped",
+            "--widescreen",
+            "off",
+            "--hash-frames",
+            "60",
+            "--input-script",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\rka\\tests\\stage1-walk.input"
+          ],
+          "profile": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-0-A",
+          "runtime": {
+            "game": "RKA",
+            "frames": 6000,
+            "seconds": 9.4215058,
+            "fps": 636.841,
+            "ms_per_frame": 1.570251,
+            "cpu_seconds": 6.21875,
+            "cpu_fps": 964.824,
+            "cpu_cycles": 27641093390,
+            "cycles_per_frame": 4606848.898,
+            "state_fnv1a64": "07065520FC059CBC",
+            "audio_state_fnv1a64": "15BFDD457ABC9D99",
+            "vdp_plane_impl": "BATCHED",
+            "host_wait_native": false,
+            "rb_digest_impl": "XXH64-v0.8.3",
+            "workload_scope": "uncapped-runtime",
+            "requested_frames": 6000,
+            "complete": true,
+            "audio_flushes": 6000,
+            "mixed_fm_frames": 5332023,
+            "mixed_psg_frames": 22392000,
+            "audio_pushed_frames": 22392000,
+            "audio_overflow_drops": 20266911,
+            "native_register_spans": 1266132,
+            "native_direct_calls": 587984,
+            "native_direct_tails": 332221
+          },
+          "whole_process": {
+            "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+            "kernel_seconds": 0.25,
+            "user_seconds": 6.046875,
+            "process_cycles": 28147506170,
+            "peak_working_set_bytes": 65060864,
+            "peak_commit_bytes": 75563008,
+            "sampled_peak_private_bytes": 74911744,
+            "memory_samples": 93,
+            "wait_wall_seconds": 10.014999999999418
+          },
+          "renderer": {
+            "name": "software",
+            "reported_vsync_flag": 1
+          }
+        },
+        {
+          "arm": "B",
+          "binary": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\rka\\candidate\\RKARecomp.exe",
+            "sha256": "001cf18a9f13eaa9df937498455217de00ae6d522b4e9e4e4475d9e29d17c989",
+            "bytes": 8712704,
+            "seconds": 102.57800000021234,
+            "engine": "ea16061a702bbc0ad3ce769b880ed47cac31a888",
+            "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+            "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+            "configure_argv": [
+              "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\build-rka",
+              "-G",
+              "Visual Studio 16 2019",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\engine",
+              "-DGEN_ENABLE_TRACE=OFF",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF"
+            ],
+            "toolchain": "SERVER existing MSVC19.29, same as reference",
+            "plane_impl": "BATCHED",
+            "diagnostics": false,
+            "source_equivalence": "Reference426 plus same generator zero-case/UI{0} task adaptations; frozen consumer/UI/dependencies, all base runner sources exact throughc22",
+            "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\binaries\\rka\\RKARecomp.exe"
+          },
+          "command": [
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-1-B\\bin\\RKARecomp.exe",
+            "--no-launcher",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-1-B\\rka.bin",
+            "--wav",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-1-B\\audio.wav",
+            "--measure-runtime",
+            "6000",
+            "--runtime-uncapped",
+            "--widescreen",
+            "off",
+            "--hash-frames",
+            "60",
+            "--input-script",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\rka\\tests\\stage1-walk.input"
+          ],
+          "profile": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-1-B",
+          "runtime": {
+            "game": "RKA",
+            "frames": 6000,
+            "seconds": 6.3957085,
+            "fps": 938.129,
+            "ms_per_frame": 1.065951,
+            "cpu_seconds": 4.828125,
+            "cpu_fps": 1242.718,
+            "cpu_cycles": 23579138600,
+            "cycles_per_frame": 3929856.433,
+            "state_fnv1a64": "07065520FC059CBC",
+            "audio_state_fnv1a64": "15BFDD457ABC9D99",
+            "vdp_plane_impl": "BATCHED",
+            "host_wait_native": false,
+            "rb_digest_impl": "XXH64-v0.8.3",
+            "workload_scope": "uncapped-runtime",
+            "requested_frames": 6000,
+            "complete": true,
+            "audio_flushes": 6000,
+            "mixed_fm_frames": 5332023,
+            "mixed_psg_frames": 22392000,
+            "audio_pushed_frames": 22392000,
+            "audio_overflow_drops": 20938432,
+            "native_register_spans": 1266132,
+            "native_direct_calls": 587984,
+            "native_direct_tails": 332221
+          },
+          "whole_process": {
+            "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+            "kernel_seconds": 0.203125,
+            "user_seconds": 4.734375,
+            "process_cycles": 24080708500,
+            "peak_working_set_bytes": 65081344,
+            "peak_commit_bytes": 75579392,
+            "sampled_peak_private_bytes": 74924032,
+            "memory_samples": 64,
+            "wait_wall_seconds": 6.938000000009197
+          },
+          "renderer": {
+            "name": "software",
+            "reported_vsync_flag": 1
+          }
+        }
+      ],
+      "evidence": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2.json",
+        "sha256": "4a076e4c86f124d5ee9ae7e66016d3d549c077af8bfc1b3d3da47257a1d6b5d7",
+        "bytes": 99776
+      }
+    },
+    {
+      "game": "rka",
+      "feature": "crt",
+      "package": "clean-main-full-presentation",
+      "order": "BA",
+      "frames": 6000,
+      "reference_cpu_seconds": 12.78125,
+      "candidate_cpu_seconds": 5.5625,
+      "cpu_reduction_pct": 56.47921760391198,
+      "reference_cycles": 59610242880,
+      "candidate_cycles": 25119429180,
+      "cycles_reduction_pct": 57.86054884801033,
+      "classification": "observed substantial color-path improvement",
+      "correctness_passed": true,
+      "rom_sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+      "inputs_sha256": "e79740e61386cde1f4912a81095bfe9a0dd40498dd68fa99200d6df4d08231ed",
+      "runs": [
+        {
+          "arm": "B",
+          "binary": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\rka\\candidate\\RKARecomp.exe",
+            "sha256": "001cf18a9f13eaa9df937498455217de00ae6d522b4e9e4e4475d9e29d17c989",
+            "bytes": 8712704,
+            "seconds": 102.57800000021234,
+            "engine": "ea16061a702bbc0ad3ce769b880ed47cac31a888",
+            "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+            "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+            "configure_argv": [
+              "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\build-rka",
+              "-G",
+              "Visual Studio 16 2019",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\engine",
+              "-DGEN_ENABLE_TRACE=OFF",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF"
+            ],
+            "toolchain": "SERVER existing MSVC19.29, same as reference",
+            "plane_impl": "BATCHED",
+            "diagnostics": false,
+            "source_equivalence": "Reference426 plus same generator zero-case/UI{0} task adaptations; frozen consumer/UI/dependencies, all base runner sources exact throughc22",
+            "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\binaries\\rka\\RKARecomp.exe"
+          },
+          "command": [
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-0-B\\bin\\RKARecomp.exe",
+            "--no-launcher",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-0-B\\rka.bin",
+            "--wav",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-0-B\\audio.wav",
+            "--measure-runtime",
+            "6000",
+            "--runtime-uncapped",
+            "--widescreen",
+            "off",
+            "--hash-frames",
+            "60",
+            "--input-script",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\rka\\tests\\stage1-walk.input"
+          ],
+          "profile": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-0-B",
+          "runtime": {
+            "game": "RKA",
+            "frames": 6000,
+            "seconds": 6.8029288,
+            "fps": 881.973,
+            "ms_per_frame": 1.133821,
+            "cpu_seconds": 5.5625,
+            "cpu_fps": 1078.652,
+            "cpu_cycles": 25119429180,
+            "cycles_per_frame": 4186571.53,
+            "state_fnv1a64": "07065520FC059CBC",
+            "audio_state_fnv1a64": "15BFDD457ABC9D99",
+            "vdp_plane_impl": "BATCHED",
+            "host_wait_native": false,
+            "rb_digest_impl": "XXH64-v0.8.3",
+            "workload_scope": "uncapped-runtime",
+            "requested_frames": 6000,
+            "complete": true,
+            "audio_flushes": 6000,
+            "mixed_fm_frames": 5332023,
+            "mixed_psg_frames": 22392000,
+            "audio_pushed_frames": 22392000,
+            "audio_overflow_drops": 20847297,
+            "native_register_spans": 1266132,
+            "native_direct_calls": 587984,
+            "native_direct_tails": 332221
+          },
+          "whole_process": {
+            "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+            "kernel_seconds": 0.140625,
+            "user_seconds": 5.53125,
+            "process_cycles": 25613033990,
+            "peak_working_set_bytes": 65097728,
+            "peak_commit_bytes": 75608064,
+            "sampled_peak_private_bytes": 74956800,
+            "memory_samples": 68,
+            "wait_wall_seconds": 7.297000000005937
+          },
+          "renderer": {
+            "name": "software",
+            "reported_vsync_flag": 1
+          }
+        },
+        {
+          "arm": "A",
+          "binary": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\rka\\reference\\RKARecomp.exe",
+            "sha256": "0edf7bacd0f648bb282068c6925e36d9a0100289013c61146d43adfd9965ed26",
+            "bytes": 8710656,
+            "seconds": 73.04699999978766,
+            "engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+            "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+            "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+            "configure_argv": [
+              "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\rka\\reference",
+              "-G",
+              "Visual Studio 16 2019",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine-A",
+              "-DGEN_ENABLE_TRACE=OFF",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF"
+            ],
+            "plane_impl": "BATCHED",
+            "stats": false,
+            "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\rka\\reference\\RKARecomp.exe"
+          },
+          "command": [
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-1-A\\bin\\RKARecomp.exe",
+            "--no-launcher",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-1-A\\rka.bin",
+            "--wav",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-1-A\\audio.wav",
+            "--measure-runtime",
+            "6000",
+            "--runtime-uncapped",
+            "--widescreen",
+            "off",
+            "--hash-frames",
+            "60",
+            "--input-script",
+            "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\rka\\tests\\stage1-walk.input"
+          ],
+          "profile": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-1-A",
+          "runtime": {
+            "game": "RKA",
+            "frames": 6000,
+            "seconds": 16.7159565,
+            "fps": 358.938,
+            "ms_per_frame": 2.785993,
+            "cpu_seconds": 12.78125,
+            "cpu_fps": 469.438,
+            "cpu_cycles": 59610242880,
+            "cycles_per_frame": 9935040.48,
+            "state_fnv1a64": "07065520FC059CBC",
+            "audio_state_fnv1a64": "15BFDD457ABC9D99",
+            "vdp_plane_impl": "BATCHED",
+            "host_wait_native": false,
+            "rb_digest_impl": "XXH64-v0.8.3",
+            "workload_scope": "uncapped-runtime",
+            "requested_frames": 6000,
+            "complete": true,
+            "audio_flushes": 6000,
+            "mixed_fm_frames": 5332023,
+            "mixed_psg_frames": 22392000,
+            "audio_pushed_frames": 22392000,
+            "audio_overflow_drops": 18674447,
+            "native_register_spans": 1266132,
+            "native_direct_calls": 587984,
+            "native_direct_tails": 332221
+          },
+          "whole_process": {
+            "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+            "kernel_seconds": 0.25,
+            "user_seconds": 12.640625,
+            "process_cycles": 60097256410,
+            "peak_working_set_bytes": 65069056,
+            "peak_commit_bytes": 75567104,
+            "sampled_peak_private_bytes": 74915840,
+            "memory_samples": 161,
+            "wait_wall_seconds": 17.264999999999418
+          },
+          "renderer": {
+            "name": "software",
+            "reported_vsync_flag": 1
+          }
+        }
+      ],
+      "evidence": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2.json",
+        "sha256": "4a076e4c86f124d5ee9ae7e66016d3d549c077af8bfc1b3d3da47257a1d6b5d7",
+        "bytes": 99776
+      }
+    },
+    {
+      "game": "sonic1",
+      "feature": "raw",
+      "package": "clean-main-full-presentation",
+      "order": "AB",
+      "frames": 2400,
+      "reference_cpu_seconds": 1.78125,
+      "candidate_cpu_seconds": 1.703125,
+      "cpu_reduction_pct": 4.385964912280704,
+      "reference_cycles": 8527315750,
+      "candidate_cycles": 8100999900,
+      "cycles_reduction_pct": 4.999414381952494,
+      "classification": "neutral/inconclusive; no proven default gain",
+      "correctness_passed": true,
+      "rom_sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+      "inputs_sha256": "f804456b4a09f570ed1f28d62d906b27bf673ac569d19486d962af0c8af5e8c1",
+      "runs": [
+        {
+          "arm": "A",
+          "binary": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe",
+            "sha256": "fa2e9185890f8609588d5f3ccb5e0e99cc4a19f5f88637711d626f0cc36f2aaa",
+            "bytes": 5410816,
+            "seconds": 71.90700000012293,
+            "engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+            "consumer": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+            "ui": "47005fb27516398381f4fda88413ff74bee14842",
+            "configure_argv": [
+              "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\sonic1",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\sonic1\\reference",
+              "-G",
+              "Visual Studio 16 2019",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine-A",
+              "-DGEN_ENABLE_TRACE=OFF",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF"
+            ],
+            "plane_impl": "BATCHED",
+            "stats": false,
+            "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe"
+          },
+          "command": [
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-0-A\\bin\\SonicTheHedgehogRecomp.exe",
+            "--no-launcher",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-0-A\\sonic.bin",
+            "--wav",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-0-A\\audio.wav",
+            "--measure-runtime",
+            "2400",
+            "--runtime-uncapped",
+            "--widescreen",
+            "off",
+            "--hash-frames",
+            "60",
+            "--input-script",
+            "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input"
+          ],
+          "profile": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-0-A",
+          "runtime": {
+            "game": "Sonic1",
+            "frames": 2400,
+            "seconds": 2.4273367,
+            "fps": 988.738,
+            "ms_per_frame": 1.01139,
+            "cpu_seconds": 1.78125,
+            "cpu_fps": 1347.368,
+            "cpu_cycles": 8527315750,
+            "cycles_per_frame": 3553048.229,
+            "state_fnv1a64": "227659F4B564BDCF",
+            "audio_state_fnv1a64": "94C37F714B488F9E",
+            "vdp_plane_impl": "BATCHED",
+            "host_wait_native": false,
+            "rb_digest_impl": "XXH64-v0.8.3",
+            "workload_scope": "uncapped-runtime",
+            "requested_frames": 2400,
+            "complete": true,
+            "audio_flushes": 2400,
+            "mixed_fm_frames": 2132809,
+            "mixed_psg_frames": 8956800,
+            "audio_pushed_frames": 8956800,
+            "audio_overflow_drops": 8376159,
+            "native_register_spans": 1490263,
+            "native_direct_calls": 208299,
+            "native_direct_tails": 1418684
+          },
+          "whole_process": {
+            "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+            "kernel_seconds": 0.078125,
+            "user_seconds": 1.78125,
+            "process_cycles": 8998898710,
+            "peak_working_set_bytes": 61603840,
+            "peak_commit_bytes": 75763712,
+            "sampled_peak_private_bytes": 75542528,
+            "memory_samples": 28,
+            "wait_wall_seconds": 2.937999999994645
+          },
+          "renderer": {
+            "name": "software",
+            "reported_vsync_flag": 1
+          }
+        },
+        {
+          "arm": "B",
+          "binary": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic1\\candidate\\SonicTheHedgehogRecomp.exe",
+            "sha256": "9e3848380ae11da20f9b7c7d2c2aa2938c0076564f6759facb9295435aaa9f0b",
+            "bytes": 5412864,
+            "seconds": 70.14000000013039,
+            "engine": "ea16061a702bbc0ad3ce769b880ed47cac31a888",
+            "consumer": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+            "ui": "47005fb27516398381f4fda88413ff74bee14842",
+            "configure_argv": [
+              "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\sonic1",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\build-sonic1",
+              "-G",
+              "Visual Studio 16 2019",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\engine",
+              "-DGEN_ENABLE_TRACE=OFF",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF"
+            ],
+            "toolchain": "SERVER existing MSVC19.29, same as reference",
+            "plane_impl": "BATCHED",
+            "diagnostics": false,
+            "source_equivalence": "Reference426 plus same generator zero-case/UI{0} task adaptations; frozen consumer/UI/dependencies, all base runner sources exact throughc22",
+            "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\binaries\\sonic1\\SonicTheHedgehogRecomp.exe"
+          },
+          "command": [
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-1-B\\bin\\SonicTheHedgehogRecomp.exe",
+            "--no-launcher",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-1-B\\sonic.bin",
+            "--wav",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-1-B\\audio.wav",
+            "--measure-runtime",
+            "2400",
+            "--runtime-uncapped",
+            "--widescreen",
+            "off",
+            "--hash-frames",
+            "60",
+            "--input-script",
+            "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input"
+          ],
+          "profile": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-1-B",
+          "runtime": {
+            "game": "Sonic1",
+            "frames": 2400,
+            "seconds": 2.1764124,
+            "fps": 1102.732,
+            "ms_per_frame": 0.906838,
+            "cpu_seconds": 1.703125,
+            "cpu_fps": 1409.174,
+            "cpu_cycles": 8100999900,
+            "cycles_per_frame": 3375416.625,
+            "state_fnv1a64": "227659F4B564BDCF",
+            "audio_state_fnv1a64": "94C37F714B488F9E",
+            "vdp_plane_impl": "BATCHED",
+            "host_wait_native": false,
+            "rb_digest_impl": "XXH64-v0.8.3",
+            "workload_scope": "uncapped-runtime",
+            "requested_frames": 2400,
+            "complete": true,
+            "audio_flushes": 2400,
+            "mixed_fm_frames": 2132809,
+            "mixed_psg_frames": 8956800,
+            "audio_pushed_frames": 8956800,
+            "audio_overflow_drops": 8424100,
+            "native_register_spans": 1490263,
+            "native_direct_calls": 208299,
+            "native_direct_tails": 1418684
+          },
+          "whole_process": {
+            "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+            "kernel_seconds": 0.15625,
+            "user_seconds": 1.625,
+            "process_cycles": 8544506000,
+            "peak_working_set_bytes": 61431808,
+            "peak_commit_bytes": 75591680,
+            "sampled_peak_private_bytes": 75374592,
+            "memory_samples": 25,
+            "wait_wall_seconds": 2.687999999994645
+          },
+          "renderer": {
+            "name": "software",
+            "reported_vsync_flag": 1
+          }
+        }
+      ],
+      "evidence": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2.json",
+        "sha256": "4a076e4c86f124d5ee9ae7e66016d3d549c077af8bfc1b3d3da47257a1d6b5d7",
+        "bytes": 99776
+      }
+    },
+    {
+      "game": "sonic1",
+      "feature": "crt",
+      "package": "clean-main-full-presentation",
+      "order": "BA",
+      "frames": 2400,
+      "reference_cpu_seconds": 5.140625,
+      "candidate_cpu_seconds": 1.734375,
+      "cpu_reduction_pct": 66.26139817629179,
+      "reference_cycles": 24462057570,
+      "candidate_cycles": 8837441490,
+      "cycles_reduction_pct": 63.87286120674436,
+      "classification": "observed substantial color-path improvement",
+      "correctness_passed": true,
+      "rom_sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+      "inputs_sha256": "f804456b4a09f570ed1f28d62d906b27bf673ac569d19486d962af0c8af5e8c1",
+      "runs": [
+        {
+          "arm": "B",
+          "binary": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic1\\candidate\\SonicTheHedgehogRecomp.exe",
+            "sha256": "9e3848380ae11da20f9b7c7d2c2aa2938c0076564f6759facb9295435aaa9f0b",
+            "bytes": 5412864,
+            "seconds": 70.14000000013039,
+            "engine": "ea16061a702bbc0ad3ce769b880ed47cac31a888",
+            "consumer": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+            "ui": "47005fb27516398381f4fda88413ff74bee14842",
+            "configure_argv": [
+              "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\sonic1",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\build-sonic1",
+              "-G",
+              "Visual Studio 16 2019",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\engine",
+              "-DGEN_ENABLE_TRACE=OFF",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF"
+            ],
+            "toolchain": "SERVER existing MSVC19.29, same as reference",
+            "plane_impl": "BATCHED",
+            "diagnostics": false,
+            "source_equivalence": "Reference426 plus same generator zero-case/UI{0} task adaptations; frozen consumer/UI/dependencies, all base runner sources exact throughc22",
+            "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261031-server\\binaries\\sonic1\\SonicTheHedgehogRecomp.exe"
+          },
+          "command": [
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-0-B\\bin\\SonicTheHedgehogRecomp.exe",
+            "--no-launcher",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-0-B\\sonic.bin",
+            "--wav",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-0-B\\audio.wav",
+            "--measure-runtime",
+            "2400",
+            "--runtime-uncapped",
+            "--widescreen",
+            "off",
+            "--hash-frames",
+            "60",
+            "--input-script",
+            "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input"
+          ],
+          "profile": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-0-B",
+          "runtime": {
+            "game": "Sonic1",
+            "frames": 2400,
+            "seconds": 2.3728875,
+            "fps": 1011.426,
+            "ms_per_frame": 0.988703,
+            "cpu_seconds": 1.734375,
+            "cpu_fps": 1383.784,
+            "cpu_cycles": 8837441490,
+            "cycles_per_frame": 3682267.288,
+            "state_fnv1a64": "227659F4B564BDCF",
+            "audio_state_fnv1a64": "94C37F714B488F9E",
+            "vdp_plane_impl": "BATCHED",
+            "host_wait_native": false,
+            "rb_digest_impl": "XXH64-v0.8.3",
+            "workload_scope": "uncapped-runtime",
+            "requested_frames": 2400,
+            "complete": true,
+            "audio_flushes": 2400,
+            "mixed_fm_frames": 2132809,
+            "mixed_psg_frames": 8956800,
+            "audio_pushed_frames": 8956800,
+            "audio_overflow_drops": 8385727,
+            "native_register_spans": 1490263,
+            "native_direct_calls": 208299,
+            "native_direct_tails": 1418684
+          },
+          "whole_process": {
+            "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+            "kernel_seconds": 0.078125,
+            "user_seconds": 1.75,
+            "process_cycles": 9322369160,
+            "peak_working_set_bytes": 61739008,
+            "peak_commit_bytes": 75902976,
+            "sampled_peak_private_bytes": 75681792,
+            "memory_samples": 27,
+            "wait_wall_seconds": 2.875
+          },
+          "renderer": {
+            "name": "software",
+            "reported_vsync_flag": 1
+          }
+        },
+        {
+          "arm": "A",
+          "binary": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe",
+            "sha256": "fa2e9185890f8609588d5f3ccb5e0e99cc4a19f5f88637711d626f0cc36f2aaa",
+            "bytes": 5410816,
+            "seconds": 71.90700000012293,
+            "engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+            "consumer": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+            "ui": "47005fb27516398381f4fda88413ff74bee14842",
+            "configure_argv": [
+              "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+              "-S",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\sonic1",
+              "-B",
+              "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\sonic1\\reference",
+              "-G",
+              "Visual Studio 16 2019",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine-A",
+              "-DGEN_ENABLE_TRACE=OFF",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF"
+            ],
+            "plane_impl": "BATCHED",
+            "stats": false,
+            "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe"
+          },
+          "command": [
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-1-A\\bin\\SonicTheHedgehogRecomp.exe",
+            "--no-launcher",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-1-A\\sonic.bin",
+            "--wav",
+            "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-1-A\\audio.wav",
+            "--measure-runtime",
+            "2400",
+            "--runtime-uncapped",
+            "--widescreen",
+            "off",
+            "--hash-frames",
+            "60",
+            "--input-script",
+            "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input"
+          ],
+          "profile": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-1-A",
+          "runtime": {
+            "game": "Sonic1",
+            "frames": 2400,
+            "seconds": 8.1572058,
+            "fps": 294.218,
+            "ms_per_frame": 3.398836,
+            "cpu_seconds": 5.140625,
+            "cpu_fps": 466.869,
+            "cpu_cycles": 24462057570,
+            "cycles_per_frame": 10192523.988,
+            "state_fnv1a64": "227659F4B564BDCF",
+            "audio_state_fnv1a64": "94C37F714B488F9E",
+            "vdp_plane_impl": "BATCHED",
+            "host_wait_native": false,
+            "rb_digest_impl": "XXH64-v0.8.3",
+            "workload_scope": "uncapped-runtime",
+            "requested_frames": 2400,
+            "complete": true,
+            "audio_flushes": 2400,
+            "mixed_fm_frames": 2132809,
+            "mixed_psg_frames": 8956800,
+            "audio_pushed_frames": 8956800,
+            "audio_overflow_drops": 7119640,
+            "native_register_spans": 1490263,
+            "native_direct_calls": 208299,
+            "native_direct_tails": 1418684
+          },
+          "whole_process": {
+            "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+            "kernel_seconds": 0.25,
+            "user_seconds": 5.0,
+            "process_cycles": 24933024830,
+            "peak_working_set_bytes": 61587456,
+            "peak_commit_bytes": 75751424,
+            "sampled_peak_private_bytes": 75534336,
+            "memory_samples": 83,
+            "wait_wall_seconds": 8.889999999999418
+          },
+          "renderer": {
+            "name": "software",
+            "reported_vsync_flag": 1
+          }
+        }
+      ],
+      "evidence": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2.json",
+        "sha256": "4a076e4c86f124d5ee9ae7e66016d3d549c077af8bfc1b3d3da47257a1d6b5d7",
+        "bytes": 99776
+      }
+    },
+    {
+      "game": "sonic_cd",
+      "feature": "actual game widescreen/shared presentation",
+      "package": "E16-shared-final-pixels-clean-r1",
+      "order": "BA",
+      "frames": 3001,
+      "cost_scope": "process cost frames1800..3000; matched capture/RPC schedule",
+      "reference_cpu_seconds": 6.640625,
+      "candidate_cpu_seconds": 7.296875,
+      "cpu_reduction_pct": -9.882352941176475,
+      "reference_cycles": 31843192780,
+      "candidate_cycles": 32961249460,
+      "cycles_reduction_pct": -3.5111324662840504,
+      "classification": "adverse observation retained",
+      "correctness_passed": true,
+      "runs": [
+        {
+          "arm": "B",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic_cd\\candidate\\SonicCD.exe",
+            "bytes": 115818496,
+            "sha256": "049f00cabdfe2218311313c789b4e635dfa0c74ce2f0fb12db7d68fd5b4cc5eb"
+          },
+          "cost": {
+            "cpu_seconds": 7.296875,
+            "cycles": 32961249460
+          },
+          "startup_wall_seconds": 4.34348239999963,
+          "startup_process_cost": {
+            "cpu_seconds": 0.609375,
+            "cycles": 2486077690
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 242442240,
+            "peak_commit_bytes": 24993792,
+            "private_bytes": 24993792
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 251383808,
+            "peak_commit_bytes": 28327936,
+            "private_bytes": 28327936
+          },
+          "wall_seconds": 20.341596500002197
+        },
+        {
+          "arm": "A",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic_cd\\reference\\SonicCD.exe",
+            "bytes": 115817984,
+            "sha256": "da614219a5c69108ad170a3d20eb56ab76843265b6a5fe3c68e88be80a64cd03"
+          },
+          "cost": {
+            "cpu_seconds": 6.640625,
+            "cycles": 31843192780
+          },
+          "startup_wall_seconds": 0.9267385999992257,
+          "startup_process_cost": {
+            "cpu_seconds": 0.328125,
+            "cycles": 2330281620
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 242720768,
+            "peak_commit_bytes": 25276416,
+            "private_bytes": 25268224
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 251719680,
+            "peak_commit_bytes": 28684288,
+            "private_bytes": 28676096
+          },
+          "wall_seconds": 20.376742399996147
+        }
+      ],
+      "evidence": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1.json",
+        "sha256": "5ec43c9849db18fd4d19d98e0189953c62a0f446f388f9e47cbbc1e75a6e286c",
+        "bytes": 483124
+      }
+    },
+    {
+      "game": "sonic_cd",
+      "feature": "actual game widescreen/shared presentation",
+      "package": "E16-shared-final-pixels-clean-r1",
+      "order": "AB",
+      "frames": 3001,
+      "cost_scope": "process cost frames1800..3000; matched capture/RPC schedule",
+      "reference_cpu_seconds": 5.71875,
+      "candidate_cpu_seconds": 6.765625,
+      "cpu_reduction_pct": -18.306010928961758,
+      "reference_cycles": 26949594610,
+      "candidate_cycles": 31316583160,
+      "cycles_reduction_pct": -16.204282896261347,
+      "classification": "adverse observation retained",
+      "correctness_passed": true,
+      "runs": [
+        {
+          "arm": "A",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic_cd\\reference\\SonicCD.exe",
+            "bytes": 115817984,
+            "sha256": "da614219a5c69108ad170a3d20eb56ab76843265b6a5fe3c68e88be80a64cd03"
+          },
+          "cost": {
+            "cpu_seconds": 5.71875,
+            "cycles": 26949594610
+          },
+          "startup_wall_seconds": 3.4247967999981483,
+          "startup_process_cost": {
+            "cpu_seconds": 0.40625,
+            "cycles": 2171674010
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 241893376,
+            "peak_commit_bytes": 25260032,
+            "private_bytes": 25260032
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 250892288,
+            "peak_commit_bytes": 28655616,
+            "private_bytes": 28655616
+          },
+          "wall_seconds": 20.27495029999409
+        },
+        {
+          "arm": "B",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic_cd\\candidate\\SonicCD.exe",
+            "bytes": 115818496,
+            "sha256": "049f00cabdfe2218311313c789b4e635dfa0c74ce2f0fb12db7d68fd5b4cc5eb"
+          },
+          "cost": {
+            "cpu_seconds": 6.765625,
+            "cycles": 31316583160
+          },
+          "startup_wall_seconds": 2.466348799993284,
+          "startup_process_cost": {
+            "cpu_seconds": 0.46875,
+            "cycles": 2121112350
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 241618944,
+            "peak_commit_bytes": 24961024,
+            "private_bytes": 24961024
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 250572800,
+            "peak_commit_bytes": 28307456,
+            "private_bytes": 28307456
+          },
+          "wall_seconds": 20.272518199999467
+        }
+      ],
+      "evidence": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2.json",
+        "sha256": "073fdd0d7a2072150b9dc979a39c70590aadbb55e8e23920c3ed157d738e63a1",
+        "bytes": 483474
+      }
+    },
+    {
+      "game": "sonic_cd",
+      "feature": "actual game widescreen/shared presentation",
+      "package": "E16-CD-matched-common-object-reference-r2",
+      "order": "AB",
+      "frames": 3001,
+      "cost_scope": "process cost frames1800..3000; matched capture/RPC schedule",
+      "reference_cpu_seconds": 5.578125,
+      "candidate_cpu_seconds": 5.25,
+      "cpu_reduction_pct": 5.882352941176472,
+      "reference_cycles": 25960708970,
+      "candidate_cycles": 25203510770,
+      "cycles_reduction_pct": 2.9167084800149845,
+      "classification": "neutral/inconclusive in mixed repeated observations; no CD gain claim",
+      "correctness_passed": true,
+      "runs": [
+        {
+          "arm": "A",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-matched-r2\\A\\SonicCD.exe",
+            "bytes": 115817984,
+            "sha256": "44e61fac24ffed79b9445757d3a336cd3fc630050eab57174a149e311b9f007f"
+          },
+          "cost": {
+            "cpu_seconds": 5.578125,
+            "cycles": 25960708970
+          },
+          "startup_wall_seconds": 3.744132099993294,
+          "startup_process_cost": {
+            "cpu_seconds": 0.5,
+            "cycles": 2514854850
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 242724864,
+            "peak_commit_bytes": 25292800,
+            "private_bytes": 25292800
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 251719680,
+            "peak_commit_bytes": 28733440,
+            "private_bytes": 28733440
+          },
+          "wall_seconds": 20.343282500005444
+        },
+        {
+          "arm": "B",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-matched-r2\\B\\SonicCD.exe",
+            "bytes": 115818496,
+            "sha256": "9ce167c906304f8b9c8205cabf1b7f1abfa1bd8a8502d68793577cf25e798da1"
+          },
+          "cost": {
+            "cpu_seconds": 5.25,
+            "cycles": 25203510770
+          },
+          "startup_wall_seconds": 3.1043044999969425,
+          "startup_process_cost": {
+            "cpu_seconds": 0.484375,
+            "cycles": 2464006960
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 242413568,
+            "peak_commit_bytes": 24985600,
+            "private_bytes": 24985600
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 251367424,
+            "peak_commit_bytes": 28327936,
+            "private_bytes": 28327936
+          },
+          "wall_seconds": 20.2900171999936
+        }
+      ],
+      "evidence": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2.json",
+        "sha256": "472e0430b57bb6080e2f05378d5e0f992425166f83e1e0e986aad881dabf5fb6",
+        "bytes": 481559
+      }
+    },
+    {
+      "game": "sonic_cd",
+      "feature": "actual game widescreen/shared presentation",
+      "package": "E16-CD-matched-common-object-reference-r2",
+      "order": "BA",
+      "frames": 3001,
+      "cost_scope": "process cost frames1800..3000; matched capture/RPC schedule",
+      "reference_cpu_seconds": 5.546875,
+      "candidate_cpu_seconds": 5.5,
+      "cpu_reduction_pct": 0.8450704225352101,
+      "reference_cycles": 26879531240,
+      "candidate_cycles": 25270927100,
+      "cycles_reduction_pct": 5.984494765318682,
+      "classification": "neutral/inconclusive in mixed repeated observations; no CD gain claim",
+      "correctness_passed": true,
+      "runs": [
+        {
+          "arm": "B",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-matched-r2\\B\\SonicCD.exe",
+            "bytes": 115818496,
+            "sha256": "9ce167c906304f8b9c8205cabf1b7f1abfa1bd8a8502d68793577cf25e798da1"
+          },
+          "cost": {
+            "cpu_seconds": 5.5,
+            "cycles": 25270927100
+          },
+          "startup_wall_seconds": 3.3561147000000346,
+          "startup_process_cost": {
+            "cpu_seconds": 0.421875,
+            "cycles": 2039934890
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 241651712,
+            "peak_commit_bytes": 25001984,
+            "private_bytes": 25001984
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 250605568,
+            "peak_commit_bytes": 28344320,
+            "private_bytes": 28344320
+          },
+          "wall_seconds": 20.269787500001257,
+          "affinity_mask": 49152,
+          "core_selection": {
+            "chosen": {
+              "mask": 49152,
+              "logical_cpus": [
+                14,
+                15
+              ],
+              "max_busy_percent": 0,
+              "sum_busy_percent": 0
+            },
+            "physical_cores": [
+              {
+                "mask": 3,
+                "logical_cpus": [
+                  0,
+                  1
+                ],
+                "max_busy_percent": 1,
+                "sum_busy_percent": 1
+              },
+              {
+                "mask": 12,
+                "logical_cpus": [
+                  2,
+                  3
+                ],
+                "max_busy_percent": 32,
+                "sum_busy_percent": 52
+              },
+              {
+                "mask": 48,
+                "logical_cpus": [
+                  4,
+                  5
+                ],
+                "max_busy_percent": 38,
+                "sum_busy_percent": 64
+              },
+              {
+                "mask": 192,
+                "logical_cpus": [
+                  6,
+                  7
+                ],
+                "max_busy_percent": 14,
+                "sum_busy_percent": 15
+              },
+              {
+                "mask": 768,
+                "logical_cpus": [
+                  8,
+                  9
+                ],
+                "max_busy_percent": 63,
+                "sum_busy_percent": 83
+              },
+              {
+                "mask": 3072,
+                "logical_cpus": [
+                  10,
+                  11
+                ],
+                "max_busy_percent": 1,
+                "sum_busy_percent": 2
+              },
+              {
+                "mask": 12288,
+                "logical_cpus": [
+                  12,
+                  13
+                ],
+                "max_busy_percent": 1,
+                "sum_busy_percent": 1
+              },
+              {
+                "mask": 49152,
+                "logical_cpus": [
+                  14,
+                  15
+                ],
+                "max_busy_percent": 0,
+                "sum_busy_percent": 0
+              }
+            ],
+            "raw_logical_load": [
+              {
+                "Name": "0",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "1",
+                "PercentProcessorTime": 0
+              },
+              {
+                "Name": "10",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "11",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "12",
+                "PercentProcessorTime": 0
+              },
+              {
+                "Name": "13",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "14",
+                "PercentProcessorTime": 0
+              },
+              {
+                "Name": "15",
+                "PercentProcessorTime": 0
+              },
+              {
+                "Name": "2",
+                "PercentProcessorTime": 20
+              },
+              {
+                "Name": "3",
+                "PercentProcessorTime": 32
+              },
+              {
+                "Name": "4",
+                "PercentProcessorTime": 26
+              },
+              {
+                "Name": "5",
+                "PercentProcessorTime": 38
+              },
+              {
+                "Name": "6",
+                "PercentProcessorTime": 14
+              },
+              {
+                "Name": "7",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "8",
+                "PercentProcessorTime": 63
+              },
+              {
+                "Name": "9",
+                "PercentProcessorTime": 20
+              }
+            ],
+            "policy": "Least-busy measured physical core, fixed across pair; no idle-host/core admission requirement. Physical host budget remains reserved by benchmark_hosts."
+          }
+        },
+        {
+          "arm": "A",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-matched-r2\\A\\SonicCD.exe",
+            "bytes": 115817984,
+            "sha256": "44e61fac24ffed79b9445757d3a336cd3fc630050eab57174a149e311b9f007f"
+          },
+          "cost": {
+            "cpu_seconds": 5.546875,
+            "cycles": 26879531240
+          },
+          "startup_wall_seconds": 0.6960160000016913,
+          "startup_process_cost": {
+            "cpu_seconds": 0.390625,
+            "cycles": 1949369650
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 241958912,
+            "peak_commit_bytes": 25325568,
+            "private_bytes": 25325568
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 250970112,
+            "peak_commit_bytes": 28758016,
+            "private_bytes": 28749824
+          },
+          "wall_seconds": 20.272586999999476,
+          "affinity_mask": 49152,
+          "core_selection": {
+            "chosen": {
+              "mask": 49152,
+              "logical_cpus": [
+                14,
+                15
+              ],
+              "max_busy_percent": 0,
+              "sum_busy_percent": 0
+            },
+            "physical_cores": [
+              {
+                "mask": 3,
+                "logical_cpus": [
+                  0,
+                  1
+                ],
+                "max_busy_percent": 1,
+                "sum_busy_percent": 1
+              },
+              {
+                "mask": 12,
+                "logical_cpus": [
+                  2,
+                  3
+                ],
+                "max_busy_percent": 32,
+                "sum_busy_percent": 52
+              },
+              {
+                "mask": 48,
+                "logical_cpus": [
+                  4,
+                  5
+                ],
+                "max_busy_percent": 38,
+                "sum_busy_percent": 64
+              },
+              {
+                "mask": 192,
+                "logical_cpus": [
+                  6,
+                  7
+                ],
+                "max_busy_percent": 14,
+                "sum_busy_percent": 15
+              },
+              {
+                "mask": 768,
+                "logical_cpus": [
+                  8,
+                  9
+                ],
+                "max_busy_percent": 63,
+                "sum_busy_percent": 83
+              },
+              {
+                "mask": 3072,
+                "logical_cpus": [
+                  10,
+                  11
+                ],
+                "max_busy_percent": 1,
+                "sum_busy_percent": 2
+              },
+              {
+                "mask": 12288,
+                "logical_cpus": [
+                  12,
+                  13
+                ],
+                "max_busy_percent": 1,
+                "sum_busy_percent": 1
+              },
+              {
+                "mask": 49152,
+                "logical_cpus": [
+                  14,
+                  15
+                ],
+                "max_busy_percent": 0,
+                "sum_busy_percent": 0
+              }
+            ],
+            "raw_logical_load": [
+              {
+                "Name": "0",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "1",
+                "PercentProcessorTime": 0
+              },
+              {
+                "Name": "10",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "11",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "12",
+                "PercentProcessorTime": 0
+              },
+              {
+                "Name": "13",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "14",
+                "PercentProcessorTime": 0
+              },
+              {
+                "Name": "15",
+                "PercentProcessorTime": 0
+              },
+              {
+                "Name": "2",
+                "PercentProcessorTime": 20
+              },
+              {
+                "Name": "3",
+                "PercentProcessorTime": 32
+              },
+              {
+                "Name": "4",
+                "PercentProcessorTime": 26
+              },
+              {
+                "Name": "5",
+                "PercentProcessorTime": 38
+              },
+              {
+                "Name": "6",
+                "PercentProcessorTime": 14
+              },
+              {
+                "Name": "7",
+                "PercentProcessorTime": 1
+              },
+              {
+                "Name": "8",
+                "PercentProcessorTime": 63
+              },
+              {
+                "Name": "9",
+                "PercentProcessorTime": 20
+              }
+            ],
+            "policy": "Least-busy measured physical core, fixed across pair; no idle-host/core admission requirement. Physical host budget remains reserved by benchmark_hosts."
+          }
+        }
+      ],
+      "evidence": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3.json",
+        "sha256": "1af91ce96300cd4d369e79f5a7b569963c1675fe8224d5dbd173a6db71532a9b",
+        "bytes": 488652
+      }
+    }
+  ],
+  "gates": {
+    "msvc": "19.29 actual x64/Win32, four gates each; source/original oracle and 8 actual PE architectures independently verified",
+    "gcc": "13.3 ASan+UBSan four gates; actual ELF/config/logs retained",
+    "frozen_oracles": "426 original machine/color/DAC with manifests; finite indices/inverse/arbitrary RGB+alpha, general uint32; full storage/padding/odd pitch/alias; actual machine+VDP+Z80 60 synthetic guest cases per executable, production BATCHED",
+    "clean_games": "Three supported native consumer candidates; all raw state/PNG/hash/full WAV match. Cartridge rollback and current-build save/load pass; CD11 canonical checkpoints/RAM/full WAV and execution floors pass",
+    "main_presentation": "48 actual diagnostic snapshots: two games x two arms x12 checkpoints; raw/storage/upload/pre-Present pixels, UI, adaptive window dimensions, nearest/linear, raw/CRT transitions; common candidate runtime with original c22 main inA vs candidate mainB, not a clean timing package",
+    "cd_presentation": "24 actual SDL software/UI cases vs c22 original presentation, open/closed, nearest/linear, dimensions/odd byte pitch/raw immutability; no game or timing claim"
+  },
+  "scope_corrections": [
+    "--measure-runtime includes actual color/UI/upload/present; only --benchmark skips it. Earlier work-ahead note was wrong.",
+    "Initial unpaired main observer wrongly required reported software vsync0; corrected observer retains reported flag1 on both arms. Failed incomplete attempt excluded.",
+    "Native diagnostic r1/r2 setup used SDL_setenv in a different Windows CRT and left app getenv color unchanged. r3 uses public color_lut_build and direct color flag to configure valid raw/CRT input states; production unchanged. Failed source/PE/logs retained.",
+    "Fresh CD corresponding .text sections are byte exact to earlier builds. Rebuilding did not fix code or invalidate adverse data. One-time measured physical-core selection used a fixed mask across focused pair, no idle-core/idle-host admission threshold or proof of the cause of variation."
+  ],
+  "evidence": [
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\consumer-builds-r1.json",
+      "sha256": "0bfdb00c2295814a817385eebc46878f923a573b2374effd9a327a663a249445",
+      "bytes": 14478
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-matched-local-r2.json",
+      "sha256": "31576ee84d187be01aad2d9bca79d0e690e437e97aa053ef3ee139fab2855b8d",
+      "bytes": 4976
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-pe-section-identities.json",
+      "sha256": "5d9e4a36c9305a8cd2ee87b7ad7f635aa16872300d6ad0630636eddc36b95f26",
+      "bytes": 2027
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r1.json",
+      "sha256": "8957e123f96ec6cfb98b31fa37349f3cd591a5b2fa50317f1ab0eea85ccf73a7",
+      "bytes": 15645
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2.json",
+      "sha256": "4a076e4c86f124d5ee9ae7e66016d3d549c077af8bfc1b3d3da47257a1d6b5d7",
+      "bytes": 99776
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1.json",
+      "sha256": "5ec43c9849db18fd4d19d98e0189953c62a0f446f388f9e47cbbc1e75a6e286c",
+      "bytes": 483124
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2.json",
+      "sha256": "073fdd0d7a2072150b9dc979a39c70590aadbb55e8e23920c3ed157d738e63a1",
+      "bytes": 483474
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2.json",
+      "sha256": "472e0430b57bb6080e2f05378d5e0f992425166f83e1e0e986aad881dabf5fb6",
+      "bytes": 481559
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3.json",
+      "sha256": "1af91ce96300cd4d369e79f5a7b569963c1675fe8224d5dbd173a6db71532a9b",
+      "bytes": 488652
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1.json",
+      "sha256": "4063fda70449eb01a4be39fa66c2cb264e39bc83fd576c60fd693c4ed5ec57d2",
+      "bytes": 7395
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\unit-tests-gcc-r1.json",
+      "sha256": "50e349d20ed4e52b9b5d26eb60e55684cb00b193a359ffb5f49db57c000239fe",
+      "bytes": 998
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\tests-gcc-r1.log",
+      "sha256": "55fbcb1acafa5dfe97e4dec375aacf871f1d581e74a139d7a85eba87b0d260ac",
+      "bytes": 3485
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\tests-gcc-r1.xml",
+      "sha256": "8946a911c2b9665e6bad175253a1fbc53452ac658ee79e630c0302554e6c5a52",
+      "bytes": 1153
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\retention-manifest.json",
+      "sha256": "79291a4682ce78219cb9ed5b4b54966e1f58dc1e5905132fee733f798ba85193",
+      "bytes": 2357
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\retention-manifest.json",
+      "sha256": "fc634f1f47bdc8cfcefdea74221b5d00393e2f4d939a642b1789173528be03cc",
+      "bytes": 6954
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\retention-manifest.json",
+      "sha256": "761156b996b4a0271f65a73838b8bfc890f64b8e15bb26d5b096d6849e99dee8",
+      "bytes": 46061
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\native-presentation-qa-r3.json",
+      "sha256": "f4afe5433554d4a6dbb1a9bbc7209fb0615627d6e86fa0b856a8838fc5450d63",
+      "bytes": 54737
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\presentation-fixture.json",
+      "sha256": "44356c4bf112e08827ef018cf3952b59ec8e019894d92b0c5bb45aa2f9a8f03b",
+      "bytes": 14752
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\native-qa-failed-r1-scope.json",
+      "sha256": "30cb126f4ab36aaf51fc9add4e24eec06971c01dc052951ac261d60f4e569119",
+      "bytes": 3346
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\native-qa-failed-r2-scope.json",
+      "sha256": "a61bc9b4b001f25c7b455b38aaa3c37075dbf6faed6946c38d0a8dacbec08ed3",
+      "bytes": 2709
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cleanup-units-r1.json",
+      "sha256": "f2a3370c29d1eab29df8542f155a2c9537db8dfbd4e604624c7d43ab6e0a1844",
+      "bytes": 1207
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-build-local-r2.json",
+      "sha256": "277020b59bb1d916b020605ad61e28695d44dd6c931107bd67e56966b5595af2",
+      "bytes": 1143
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-build-server-r2.json",
+      "sha256": "a04739ab27a4619465c1f62e6f02aca615b11034014c310c56142154ea6054ad",
+      "bytes": 1913
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-cd-matched-build-server-r2.json",
+      "sha256": "7d8a95e862f470c6e2e5bc57852f2f432fc50551432265bdfe717fdea30b2f98",
+      "bytes": 1731
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-current-states-local-r1.json",
+      "sha256": "26798e575affb107bded681f8bf3b77c03c5ef874c885147bc761aecf88b7691",
+      "bytes": 1804
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-gcc-only-local-r1.json",
+      "sha256": "7947253ed29a14a2f56e350902b7917877fbb0a04baec36e0a20889c9e4ee7bd",
+      "bytes": 1171
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-gcc-only-local-r2.json",
+      "sha256": "623611783b8819c0fa5b3de5b23557283193b6c7afb6ad09713333fda9847856",
+      "bytes": 1807
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-initial-build-probe.json",
+      "sha256": "a9bb1b93846ef855972153c9a6ef297f157d29313acf3ed0a32a0e62c7896a37",
+      "bytes": 1949
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-build-server-r1.json",
+      "sha256": "432c730d86d7d20c9444169e925cec1cf16aa0011b0399476caeeed4a54c173e",
+      "bytes": 1715
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-build-server-r2.json",
+      "sha256": "2ee468c4912f18401a2b328cfa08eacd7963919532e5749318fb3bec1bb3732d",
+      "bytes": 1718
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-build-server-r3.json",
+      "sha256": "9728916b532b4ba803d1f9927ab075d61ee02bf60f6935694df0512722c03b6a",
+      "bytes": 1700
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-runtime-server-r1.json",
+      "sha256": "9a35d37a5ff234c96280e8c1fe5875d64d61844f8413257d09e085aab8c51602",
+      "bytes": 1706
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-runtime-server-r2.json",
+      "sha256": "ba42f8a83d22be9b28b584a078795adcd20dbdc753454c407bea0e920a9f1608",
+      "bytes": 1709
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-runtime-server-r3.json",
+      "sha256": "52d84ad5d35cfff1b3e0e24e45c6d20bc59daabefd1511ed0614121ed83ddd6c",
+      "bytes": 1710
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-presentation-server-r1.json",
+      "sha256": "9806399f0f6da8db47fb08c08c99a78ecd0cec40c14415ab30d1e0421efc7597",
+      "bytes": 1714
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-cd-core-local-r3.json",
+      "sha256": "8b6308ea03c56c86d6694ae8b75258755e0eaae8191b52a4df8c95d334650bca",
+      "bytes": 1848
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-cd-local-r1.json",
+      "sha256": "6f0c3eb75ec611e8ad847db3514f7fb22b910fb2107b6efb749188c5ca2a91e5",
+      "bytes": 1747
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-cd-matched-local-r2.json",
+      "sha256": "c6e1bb6c58a86fb8b75f9d0b0d3fc6ddad41ad72f0c92274d90cec616530ea08",
+      "bytes": 1830
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-cd-reverse-local-r2.json",
+      "sha256": "0f415f622eb1aa18ca3920c103392f7bcdacfcb72b3b5dc8d11b657907353e5b",
+      "bytes": 1804
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-present-local-r1.json",
+      "sha256": "9512be7fc1738cbca317a569f1b5a461f35968a0fb84ac2ba8716c1cc56e3852",
+      "bytes": 1736
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-present-local-r2.json",
+      "sha256": "2d9458eb03ccf65ce48aca249befb0aecffb782d8fe35ef9e7ea2e601223f0db",
+      "bytes": 1746
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-server-unit-tests-r1.json",
+      "sha256": "b77542a8b69977f10e3989f9027e7ea8fc3c502acc31785d2a6cec01e1672b11",
+      "bytes": 1166
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-unit-tests-r1.json",
+      "sha256": "61816a0f7025ec78c9ba809c37e334ca6112909a1c4ad0427718b7169f0239ef",
+      "bytes": 1142
+    }
+  ],
+  "retained_roots": {
+    "source": "C:\\temp\\Codex\\genesis-engine-final-pixels-20261030",
+    "bulk": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030",
+    "server": "G:/Temp/Codex/genesis-engine-final-pixels-20261031-server"
+  },
+  "handoff": "New stacked PR requires combined owner visual/play approval before merge/release. No owner-facing launch, delivery replacement or merge occurred."
+}
