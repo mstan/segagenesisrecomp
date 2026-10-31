@@ -1493,7 +1493,7 @@
     "gcc": "13.3 ASan+UBSan four gates; actual ELF/config/logs retained",
     "frozen_oracles": "426 original machine/color/DAC with manifests; finite indices/inverse/arbitrary RGB+alpha, general uint32; full storage/padding/odd pitch/alias; actual machine+VDP+Z80 60 synthetic guest cases per executable, production BATCHED",
     "clean_games": "Three supported native consumer candidates; all raw state/PNG/hash/full WAV match. Cartridge rollback and current-build save/load pass; CD11 canonical checkpoints/RAM/full WAV and execution floors pass",
-    "main_presentation": "48 actual diagnostic snapshots: two games x two arms x12 checkpoints; raw/storage/upload/pre-Present pixels, UI, adaptive window dimensions, nearest/linear, raw/CRT transitions; common candidate runtime with original c22 main inA vs candidate mainB, not a clean timing package",
+    "main_presentation": "48 actual diagnostic snapshots: two games x two arms x12 checkpoints; active raw pixels, full upload storage/padding and pre-Present pixels, UI, adaptive window dimensions, nearest/linear, raw/CRT transitions; storage binaries use upload pointer, full raw-storage immutability separately covered by permanent staging/CD fixture gates. Common candidate runtime with original c22 main inA vs candidate mainB, not a clean timing package",
     "cd_presentation": "24 actual SDL software/UI cases vs c22 original presentation, open/closed, nearest/linear, dimensions/odd byte pitch/raw immutability; no game or timing claim"
   },
   "scope_corrections": [
