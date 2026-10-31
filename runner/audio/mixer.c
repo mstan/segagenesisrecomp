@@ -166,13 +166,7 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
     enum { DRAIN_CAP = 262144 };   /* matches event_queue.c QUEUE_CAP */
     static AudioOrderedEvent evs[DRAIN_CAP];
     static union {AudioOrderedEvent ordered[DRAIN_CAP];AudioEvent deferred[DRAIN_CAP];} scratch;
-    size_t n = 0;
-    {
-        AudioEvent pe;
-        while (n < DRAIN_CAP && audio_event_pop(&pe)) {
-            evs[n].e=pe;evs[n].idx=(uint32_t)n;++n;
-        }
-    }
+    size_t n=audio_event_take_ordered(evs,DRAIN_CAP);
 
     /* Pair guard: give each FM ADDRESS write the stamp of its matching DATA
      * write (the next FM event on the same part, which is its adjacent push

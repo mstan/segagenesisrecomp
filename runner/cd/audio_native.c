@@ -3,6 +3,7 @@
 #include "audio_mix.h"
 #include "../audio.h"
 #include "../audio/event_queue.h"
+#include "../audio/timeline.h"
 #include "../audio/sn76489.h"
 #include "../audio/ym2612.h"
 
@@ -26,7 +27,8 @@ typedef struct {
 
 struct SegaCDNativeAudio {
     SegaCDNativeEvent *event;
-    size_t event_count;
+    SegaCDNativeEvent *event_scratch;
+    size_t event_count,event_first,event_scratch_capacity;
     uint64_t next_sequence;
     uint64_t rendered_master_clock;
     uint64_t output_psg_samples;
@@ -51,15 +53,7 @@ struct SegaCDNativeAudio {
 
 static uint64_t subclock_to_master(uint64_t subclock,int *ok)
 {
-    uint64_t whole=subclock/GENESIS_SUBCLOCK_HZ;
-    uint64_t part=subclock%GENESIS_SUBCLOCK_HZ;
-    uint64_t tail=part*GENESIS_MASTER_HZ/GENESIS_SUBCLOCK_HZ;
-    if(whole>(UINT64_MAX-tail)/GENESIS_MASTER_HZ) {
-        *ok=0;
-        return 0;
-    }
-    *ok=1;
-    return whole*GENESIS_MASTER_HZ+tail;
+    uint64_t out=0;*ok=audio_timeline_scale(subclock,GENESIS_SUBCLOCK_HZ,GENESIS_MASTER_HZ,&out);return out;
 }
 
 static int event_compare(const void *pa,const void *pb)
@@ -68,6 +62,22 @@ static int event_compare(const void *pa,const void *pb)
     const SegaCDNativeEvent *b=(const SegaCDNativeEvent *)pb;
     if(a->subclock!=b->subclock)return a->subclock<b->subclock?-1:1;
     return a->sequence<b->sequence?-1:(a->sequence>b->sequence?1:0);
+}
+static int native_event_before_equal(const SegaCDNativeEvent *a,const SegaCDNativeEvent *b)
+{return event_compare(a,b)<=0;}
+GENESIS_AUDIO_TIMELINE_DEFINE(native_event_merge,SegaCDNativeEvent,native_event_before_equal)
+static void native_event_order(SegaCDNativeAudio *audio)
+{
+    SegaCDNativeEvent *events=audio->event+audio->event_first;
+    SegaCDNativeEvent *scratch=audio->event_scratch_capacity>=audio->event_count?audio->event_scratch:NULL;
+    if(native_event_merge(events,scratch,audio->event_count))return;
+    size_t capacity=audio->event_scratch_capacity?audio->event_scratch_capacity:64u;
+    while(capacity<audio->event_count)capacity*=2u;
+    scratch=(SegaCDNativeEvent *)realloc(audio->event_scratch,capacity*sizeof *scratch);
+    if(scratch){
+        audio->event_scratch=scratch;audio->event_scratch_capacity=capacity;
+        (void)native_event_merge(events,scratch,audio->event_count);
+    }else qsort(events,audio->event_count,sizeof *events,event_compare);
 }
 
 static void record_result(SegaCDNativeAudio *audio,SegaCDNativeAudioResult result)
@@ -147,6 +157,7 @@ void segacd_native_audio_destroy(SegaCDNativeAudio *audio)
         segacd_audio_mix_unbind_audio_extra(&audio->mix);
     }
     if(audio->owns_host_audio)audio_close();
+    free(audio->event_scratch);
     free(audio->event);
     free(audio);
 }
@@ -182,7 +193,11 @@ SegaCDNativeAudioResult segacd_native_audio_write_checked(SegaCDNativeAudio *aud
         record_result(audio,SEGACD_NATIVE_AUDIO_EVENT_OVERFLOW);
         return audio->stats.last_result;
     }
-    SegaCDNativeEvent *event=&audio->event[audio->event_count++];
+    if(audio->event_first+audio->event_count==NATIVE_EVENT_CAPACITY){
+        memmove(audio->event,audio->event+audio->event_first,audio->event_count*sizeof *audio->event);
+        audio->event_first=0;
+    }
+    SegaCDNativeEvent *event=&audio->event[audio->event_first+audio->event_count++];
     event->subclock=subclock;
     event->master_clock=master;
     event->sequence=audio->next_sequence++;
@@ -237,10 +252,10 @@ static SegaCDNativeAudioResult render_to_boundary(SegaCDNativeAudio *audio,uint6
         record_result(audio,SEGACD_NATIVE_AUDIO_RENDER_OVERFLOW);
         return audio->stats.last_result;
     }
-    qsort(audio->event,audio->event_count,sizeof(*audio->event),event_compare);
+    native_event_order(audio);
     size_t applied=0;
     while(applied<audio->event_count && audio->event[applied].master_clock<=end) {
-        SegaCDNativeEvent *event=&audio->event[applied];
+        SegaCDNativeEvent *event=&audio->event[audio->event_first+applied];
         if(event->master_clock<audio->rendered_master_clock) {
             audio->stats.faults|=SEGACD_NATIVE_AUDIO_FAULT_BACKWARDS;
             ++audio->stats.backwards_writes;
@@ -254,8 +269,9 @@ static SegaCDNativeAudioResult render_to_boundary(SegaCDNativeAudio *audio,uint6
         ++audio->stats.applied_events;
     }
     if(applied) {
+        audio->event_first+=applied;
         audio->event_count-=applied;
-        memmove(audio->event,audio->event+applied,audio->event_count*sizeof(*audio->event));
+        if(!audio->event_count)audio->event_first=0;
     }
     audio->stats.deferred_events=audio->event_count;
     advance_chips(end-audio->rendered_master_clock);

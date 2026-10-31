@@ -5,8 +5,11 @@
 #ifndef GENESIS_AUDIO_EVENT_ORDER_H
 #define GENESIS_AUDIO_EVENT_ORDER_H
 #include "event_queue.h"
+#include "timeline.h"
 #include <string.h>
-typedef struct {AudioEvent e;uint32_t idx;} AudioOrderedEvent;
+static int audio_event_before_equal(const AudioOrderedEvent *a,const AudioOrderedEvent *b)
+{return a->e.cycle_stamp<=b->e.cycle_stamp;}
+GENESIS_AUDIO_TIMELINE_DEFINE(audio_event_merge,AudioOrderedEvent,audio_event_before_equal)
 static void audio_event_order(AudioOrderedEvent *events,AudioOrderedEvent *scratch,size_t count,int pairguard)
 {
     if(pairguard) {
@@ -20,32 +23,6 @@ static void audio_event_order(AudioOrderedEvent *events,AudioOrderedEvent *scrat
             }
         }
     }
-    if(count<2)return;
-    AudioOrderedEvent *input=events,*output=scratch;
-    for(;;) {
-        size_t at=0;unsigned merges=0;
-        while(at<count) {
-            size_t mid=at+1;
-            while(mid<count&&input[mid-1].e.cycle_stamp<=input[mid].e.cycle_stamp)++mid;
-            if(mid==count) {
-                if(!merges) {
-                    if(input!=events)memcpy(events,input,count*sizeof *events);
-                    return;
-                }
-                memcpy(output+at,input+at,(count-at)*sizeof *events);break;
-            }
-            size_t end=mid+1;
-            while(end<count&&input[end-1].e.cycle_stamp<=input[end].e.cycle_stamp)++end;
-            size_t left=at,right=mid,out=at;
-            while(left<mid&&right<end) {
-                if(input[left].e.cycle_stamp<=input[right].e.cycle_stamp)output[out++]=input[left++];
-                else output[out++]=input[right++];
-            }
-            if(left<mid)memcpy(output+out,input+left,(mid-left)*sizeof *events);
-            else if(right<end)memcpy(output+out,input+right,(end-right)*sizeof *events);
-            ++merges;at=end;
-        }
-        AudioOrderedEvent *previous=input;input=output;output=previous;
-    }
+    (void)audio_event_merge(events,scratch,count);
 }
 #endif

@@ -30,12 +30,19 @@ typedef struct AudioEvent {
     uint8_t  value;
 } AudioEvent;
 
+typedef struct { AudioEvent e;uint32_t idx; } AudioOrderedEvent;
+
 /* Push one event. Safe to call from anywhere inside the game fiber. */
 void audio_event_push(uint32_t cycle_stamp, uint8_t port, uint8_t value);
 
 /* Drain iterator. Returns 1 if *out was filled, 0 if queue empty.
  * Call repeatedly until it returns 0 to walk the frame's events in order. */
 int  audio_event_pop(AudioEvent *out);
+
+/* Transfer a FIFO prefix to owned ordered-work storage and stamp fresh
+ * frame-local push indices. Equivalent to repeated pop, with no device work.
+ * NULL/zero capacity consumes nothing. Output is distinct from the private ring. */
+size_t audio_event_take_ordered(AudioOrderedEvent *out,size_t capacity);
 
 /* Reset the queue — called at end-of-wall-frame after drain completes, or
  * on lifecycle init. */
