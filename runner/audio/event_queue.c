@@ -16,25 +16,11 @@
  * so the queue must hold the full burst. 8 bytes/event -> 2 MB static. */
 #define QUEUE_CAP 262144
 
-static AudioEvent s_ring_storage[QUEUE_CAP],s_deferred_storage[QUEUE_CAP];
-static AudioEvent *s_ring=s_ring_storage,*s_deferred=s_deferred_storage;
+static AudioEvent s_ring[QUEUE_CAP];
 static size_t     s_head = 0;  /* producer writes here */
 static size_t     s_tail = 0;  /* consumer reads here */
 static size_t     s_overflow_count = 0;
-static size_t s_deferred_first,s_deferred_count;
-static uint32_t s_epoch;
-static int s_deferred_sealed=1;
-static size_t incoming_count(void)
-{return s_head>=s_tail?s_head-s_tail:QUEUE_CAP-s_tail+s_head;}
-static AudioEvent pending_event(size_t i)
-{
-    AudioEvent e=i<s_deferred_count?s_deferred[s_deferred_first+i]:
-        s_ring[(s_tail+i-s_deferred_count)%QUEUE_CAP];
-    e.cycle_stamp-=s_epoch;return e;
-}
-static void pending_reset(void)
-{s_head=s_tail=s_deferred_first=s_deferred_count=0;s_epoch=0;s_deferred_sealed=1;}
-size_t audio_event_state_size(void) { return sizeof(uint32_t)+sizeof s_ring_storage; }
+size_t audio_event_state_size(void) { return sizeof(uint32_t)+sizeof s_ring; }
 size_t audio_event_rb_save(void *dst, size_t cap)
 {
     uint32_t n = (uint32_t)audio_event_queue_count();
@@ -42,10 +28,9 @@ size_t audio_event_rb_save(void *dst, size_t cap)
     if (!dst) return need;
     if (cap < need) return 0;
     memcpy(dst, &n, sizeof n);
-    for (uint32_t i = 0; i < n; ++i){
-        AudioEvent e=pending_event(i);
-        memcpy((uint8_t *)dst+sizeof n+(size_t)i*sizeof e,&e,sizeof e);
-    }
+    for (uint32_t i = 0; i < n; ++i)
+        memcpy((uint8_t *)dst + sizeof n + (size_t)i * sizeof(AudioEvent),
+               &s_ring[(s_tail + i) % QUEUE_CAP], sizeof(AudioEvent));
     return need;
 }
 int audio_event_rb_load(const void *src, size_t len)
@@ -59,7 +44,6 @@ int audio_event_rb_load(const void *src, size_t len)
         memcpy(&e, (const uint8_t *)src + sizeof n + (size_t)i * sizeof e, sizeof e);
         if (e.port > AUDIO_PORT_PSG) return 0;
     }
-    pending_reset();
     memcpy(s_ring, (const uint8_t *)src + sizeof n, (size_t)n * sizeof(AudioEvent));
     s_tail = 0;
     s_head = n;
@@ -70,10 +54,8 @@ int audio_event_state_save(void *data,size_t size)
     if (!data || size!=audio_event_state_size()) return 0;
     uint32_t n=(uint32_t)audio_event_queue_count();
     memset(data,0,size); memcpy(data,&n,sizeof n);
-    for (uint32_t i=0;i<n;++i){
-        AudioEvent e=pending_event(i);
-        memcpy((uint8_t *)data+sizeof n+i*sizeof e,&e,sizeof e);
-    }
+    for (uint32_t i=0;i<n;++i)
+        memcpy((uint8_t *)data+sizeof n+i*sizeof(AudioEvent),&s_ring[(s_tail+i)%QUEUE_CAP],sizeof(AudioEvent));
     return 1;
 }
 int audio_event_state_load(const void *data,size_t size,int apply)
@@ -86,7 +68,6 @@ int audio_event_state_load(const void *data,size_t size,int apply)
         if (e.port>AUDIO_PORT_PSG) return 0;
     }
     if (apply) {
-        pending_reset();
         memcpy(s_ring,(const uint8_t *)data+sizeof n,n*sizeof(AudioEvent));
         s_tail=0; s_head=n;
     }
@@ -186,14 +167,14 @@ void audio_event_push(uint32_t cycle_stamp, uint8_t port, uint8_t value)
     }
 
     size_t next_head = (s_head + 1) % QUEUE_CAP;
-    if (audio_event_queue_count() == QUEUE_CAP-1u) {
+    if (next_head == s_tail) {
         s_overflow_count++;
         if (s_overflow_count < 10)
             fprintf(stderr, "[audio-queue] OVERFLOW cap=%d head=%zu tail=%zu\n",
                     QUEUE_CAP, s_head, s_tail);
         return;
     }
-    s_ring[s_head].cycle_stamp = cycle_stamp+s_epoch;
+    s_ring[s_head].cycle_stamp = cycle_stamp;
     s_ring[s_head].port        = port;
     s_ring[s_head].value       = value;
     s_head = next_head;
@@ -201,85 +182,25 @@ void audio_event_push(uint32_t cycle_stamp, uint8_t port, uint8_t value)
 
 int audio_event_pop(AudioEvent *out)
 {
-    if(!audio_event_queue_count())return 0;
-    *out=pending_event(0);
-    if(s_deferred_count){
-        ++s_deferred_first;--s_deferred_count;
-        if(s_deferred_count)s_deferred_sealed=0;
-        else {s_deferred_first=0;s_deferred_sealed=1;}
-    }else s_tail=(s_tail+1u)%QUEUE_CAP;
+    if (s_tail == s_head) return 0;
+    *out = s_ring[s_tail];
+    s_tail = (s_tail + 1) % QUEUE_CAP;
     return 1;
 }
 
 void audio_event_queue_reset(void)
 {
-    pending_reset();
+    s_head = s_tail = 0;
 }
 
 size_t audio_event_take_ordered(AudioOrderedEvent *out,size_t capacity)
 {
     if(!out || !capacity)return 0;
     size_t count=audio_event_queue_count();if(count>capacity)count=capacity;
-    for(size_t i=0;i<count;i++){out[i].e=pending_event(i);out[i].idx=(uint32_t)i;}
-    size_t old=count<s_deferred_count?count:s_deferred_count;
-    s_deferred_first+=old;s_deferred_count-=old;
-    if(old && s_deferred_count)s_deferred_sealed=0;
-    if(!s_deferred_count){s_deferred_first=0;s_deferred_sealed=1;}
-    s_tail=(s_tail+count-old)%QUEUE_CAP;return count;
-}
-
-static int deferred_sealed(void)
-{
-    uint32_t stamp[2]={0,0};unsigned pending[2]={0,0};
-    for(size_t i=0;i<s_deferred_count;i++){
-        AudioEvent e=s_deferred[s_deferred_first+i];
-        if(e.port==AUDIO_PORT_PSG)continue;
-        if(e.port>3u)return 0;
-        unsigned part=e.port>>1;
-        if(!(e.port&1u)){
-            if(pending[part])return 0;
-            pending[part]=1;stamp[part]=e.cycle_stamp;
-        }else if(pending[part]){
-            if(e.cycle_stamp!=stamp[part])return 0;
-            pending[part]=0;
-        }
-    }
-    return !pending[0] && !pending[1];
-}
-int audio_event_interval_begin(AudioDeferredSpan *span,AudioOrderedEvent *fresh,
-    size_t capacity,size_t *count)
-{
-    size_t n=incoming_count();
-    if(!span || !count || !s_deferred_sealed || n>capacity || (n && !fresh))return 0;
-    span->events=s_deferred+s_deferred_first;span->count=s_deferred_count;span->epoch=s_epoch;
-    for(size_t i=0;i<n;i++){
-        fresh[i].e=s_ring[(s_tail+i)%QUEUE_CAP];fresh[i].e.cycle_stamp-=s_epoch;
-        fresh[i].idx=(uint32_t)(s_deferred_count+i);
-    }
-    s_tail=s_head;*count=n;return 1;
-}
-void audio_event_interval_commit(size_t consumed,const AudioOrderedEvent *fresh,
-    size_t n,uint32_t frame_span)
-{
-    assert(consumed<=s_deferred_count && !incoming_count());
-    s_deferred_first+=consumed;s_deferred_count-=consumed;
-    assert(s_deferred_count+n<QUEUE_CAP);
-    uint32_t old_epoch=s_epoch;s_epoch+=frame_span;
-    if(!n){if(!s_deferred_count){s_deferred_first=0;s_epoch=0;}return;}
-    size_t old=0,add=0,out=0;
-    while(old<s_deferred_count || add<n){
-        if(old<s_deferred_count && (add==n ||
-           s_deferred[s_deferred_first+old].cycle_stamp-old_epoch<=fresh[add].e.cycle_stamp))
-            s_ring[out++]=s_deferred[s_deferred_first+old++];
-        else {
-            AudioEvent e=fresh[add++].e;
-            e.cycle_stamp=(e.cycle_stamp>frame_span?e.cycle_stamp:frame_span)+old_epoch;
-            s_ring[out++]=e;
-        }
-    }
-    AudioEvent *previous=s_deferred;s_deferred=s_ring;s_ring=previous;
-    s_head=s_tail=s_deferred_first=0;s_deferred_count=out;
-    s_deferred_sealed=deferred_sealed();
+    size_t first=QUEUE_CAP-s_tail;if(first>count)first=count;
+    for(size_t i=0;i<first;i++){out[i].e=s_ring[s_tail+i];out[i].idx=(uint32_t)i;}
+    for(size_t i=first;i<count;i++){out[i].e=s_ring[i-first];out[i].idx=(uint32_t)i;}
+    s_tail=(s_tail+count)%QUEUE_CAP;return count;
 }
 
 /* Re-queue events the mixer deferred to a later wall frame (stamps beyond
@@ -291,14 +212,13 @@ void audio_event_requeue(const AudioEvent *evs, size_t n)
     size_t first=QUEUE_CAP-s_head;if(first>take)first=take;
     if(first)memcpy(s_ring+s_head,evs,first*sizeof *evs);
     if(take>first)memcpy(s_ring,evs+first,(take-first)*sizeof *evs);
-    if(s_epoch)for(size_t i=0;i<take;i++)s_ring[(s_head+i)%QUEUE_CAP].cycle_stamp+=s_epoch;
     s_head=(s_head+take)%QUEUE_CAP;
     if(take<n)++s_overflow_count;
 }
 
 size_t audio_event_queue_count(void)
 {
-    return s_deferred_count+incoming_count();
+    return (s_head >= s_tail) ? (s_head - s_tail) : (QUEUE_CAP - s_tail + s_head);
 }
 
 #include "../cosim.h"
@@ -310,11 +230,10 @@ uint64_t audio_event_cosim_hash(void)
     uint64_t h = cosim_fnv_init();
     size_t n = audio_event_queue_count();
     h = cosim_fnv_u64(h, (uint64_t)n);
-    for (size_t i = 0; i < n; i++) {
-        AudioEvent e=pending_event(i);
-        h = cosim_fnv_u32(h, e.cycle_stamp);
-        h = cosim_fnv_u8(h, e.port);
-        h = cosim_fnv_u8(h, e.value);
+    for (size_t i = 0, idx = s_tail; i < n; i++, idx = (idx + 1) % QUEUE_CAP) {
+        h = cosim_fnv_u32(h, s_ring[idx].cycle_stamp);
+        h = cosim_fnv_u8(h, s_ring[idx].port);
+        h = cosim_fnv_u8(h, s_ring[idx].value);
     }
     return h;
 }

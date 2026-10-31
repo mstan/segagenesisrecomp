@@ -164,42 +164,9 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 
     /* Collect the frame's events, then sort by stamp (stable). */
     enum { DRAIN_CAP = 262144 };   /* matches event_queue.c QUEUE_CAP */
-    static AudioOrderedEvent events[DRAIN_CAP];
+    static AudioOrderedEvent evs[DRAIN_CAP];
     static union {AudioOrderedEvent ordered[DRAIN_CAP];AudioEvent deferred[DRAIN_CAP];} scratch;
-    AudioOrderedEvent *evs=events;
-    size_t n=0,n_apply=0,fresh_count=0;
-    AudioDeferredSpan held;
-    if(!s_no_spread && !s_no_pairguard &&
-       audio_event_interval_begin(&held,events,DRAIN_CAP,&fresh_count)){
-        /* A previously sealed future interval is already paired and ordered.
-         * Pair/sort only new writes, then materialize the eligible merged
-         * prefix. Existing future payload stays put; its origin advances. */
-        audio_event_order(events,scratch.ordered,fresh_count,1);
-        size_t old_apply=0,new_apply=fresh_count;
-        while(old_apply<held.count &&
-              held.events[old_apply].cycle_stamp-held.epoch<=frame_end_cycle)++old_apply;
-        while(new_apply && events[new_apply-1].e.cycle_stamp>frame_end_cycle)--new_apply;
-        if(new_apply){
-            AudioEvent last=events[new_apply-1].e;
-            if((last.port==AUDIO_PORT_FM1_ADDR || last.port==AUDIO_PORT_FM2_ADDR) &&
-               (!old_apply || held.events[old_apply-1].cycle_stamp-held.epoch<=last.cycle_stamp))
-                --new_apply; /* Only the globally trailing orphan is held. */
-        }
-        if(held.count){
-        size_t old=0,add=0;
-        while(old<old_apply || add<new_apply){
-            if(old<old_apply && (add==new_apply ||
-               held.events[old].cycle_stamp-held.epoch<=events[add].e.cycle_stamp)){
-                scratch.ordered[n_apply].e=held.events[old];
-                scratch.ordered[n_apply].e.cycle_stamp-=held.epoch;
-                scratch.ordered[n_apply++].idx=(uint32_t)old++;
-            }else scratch.ordered[n_apply++]=events[add++];
-        }
-        evs=scratch.ordered;
-        }else n_apply=new_apply; /* Fresh-only frames need no second copy. */
-        audio_event_interval_commit(old_apply,events+new_apply,fresh_count-new_apply,frame_end_cycle);
-    }else{
-    n=audio_event_take_ordered(evs,DRAIN_CAP);
+    size_t n=audio_event_take_ordered(evs,DRAIN_CAP);
 
     /* Pair guard: give each FM ADDRESS write the stamp of its matching DATA
      * write (the next FM event on the same part, which is its adjacent push
@@ -219,7 +186,7 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * budget). The split point backs up over a trailing incomplete FM
      * (address, data) pair so a pair never straddles the boundary with a
      * foreign write able to sort between its halves next frame. */
-    n_apply = n;
+    size_t n_apply = n;
     if (!s_no_spread) {
     while (n_apply > 0 && evs[n_apply - 1].e.cycle_stamp > frame_end_cycle)
         n_apply--;
@@ -239,7 +206,6 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
             defer[d++] = e;
         }
         audio_event_requeue(defer, d);
-    }
     }
 
     if(s_executor && fm_shadow_enabled() &&
