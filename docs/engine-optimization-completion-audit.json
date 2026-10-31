@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Serial bounded contracts E01/E03-E08/E10/E16 delivered; whole bounded E11/E13/E14/E15/E17 opportunities decisively rejected. Fresh E17 complete source/physical/runtime/per-game/records/cleanup gate accepted; no GPU code ships and no PR for discarded infrastructure.17 original families remain open. Combined owner visual/play handoff for meaningful ready PR stack remains pending; counts are not speedups.",
+  "conclusion": "Serial bounded contracts E01/E03-E08/E10/E16/E18 delivered; whole bounded E11/E13/E14/E15/E17 opportunities decisively rejected. E18 retains independent opted-in FM shadow only; higher CPU/cycles and mixed Sonic1 timings remain explicit.16 original families plus additional E37 remain open,17 total across37. Combined owner visual/play handoff for meaningful ready PR stack pending; counts are not speedups.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -16,14 +16,14 @@
     "existing": 2
   },
   "implementation_counts": {
-    "bounded_delivered": 13,
+    "bounded_delivered": 14,
     "rejected_mechanism": 1,
     "bounded_rejected": 5,
-    "deferred": 11,
+    "deferred": 10,
     "partial": 5,
     "existing": 1
   },
-  "remaining_scope_open_count": 17,
+  "remaining_scope_open_count": 16,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -532,18 +532,35 @@
       "id": "E18",
       "name": "Independent engine work scheduling",
       "original_goal": "Evaluate workers for immutable rendering/audio spans and safe overlap of preparation/upload.",
-      "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "No new worker scheduling implementation.",
-      "remaining": "Safe independently owned jobs and overlap without extra emulated latency.",
-      "audit_basis": "The record is a design deferral, not a worker experiment. Current CD capture/resolve cost is not evidence about every cartridge/audio job.",
-      "next_closure": "Choose a demonstrated heavy immutable job; include dispatch/copy/barrier costs and single-thread fallback in qualification.",
+      "recorded_evaluation_status": "implemented_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Qualified same-drain independent opted-in FM shadow worker; rendering/audio and FM/PSG worker architectures rejected and removed. Ready PR50.",
+      "remaining": "Selected bounded E18 contract delivered; combined owner visual/merge handoff pending. E20 faithful kernels and E37 resident high-resolution jobs remain separate open scopes.",
+      "audit_basis": "Independent full source, 15 matched native pairs/30 actual runs, exact outputs/audio/state/rollback, six final ABI unit passes, caller/fallback/cost/Beads/PR/cleanup gate accepted; ENGINE_WORKERS_REVIEW.md.",
+      "next_closure": "Finish normal central sync, then original E19 with a fresh validation-only reviewer.",
       "source_references": [
-        "runner/sim_step.c",
-        "runner/video/genesis_machine.c",
-        "runner/audio.c"
-      ]
+        "runner/engine_worker.c",
+        "runner/audio/mixer.c",
+        "runner/main.c"
+      ],
+      "historical_audit": {
+        "id": "E18",
+        "name": "Independent engine work scheduling",
+        "original_goal": "Evaluate workers for immutable rendering/audio spans and safe overlap of preparation/upload.",
+        "recorded_evaluation_status": "evaluated_deferred",
+        "implementation_state": "deferred",
+        "remaining_scope_open": true,
+        "delivered": "No new worker scheduling implementation.",
+        "remaining": "Safe independently owned jobs and overlap without extra emulated latency.",
+        "audit_basis": "The record is a design deferral, not a worker experiment. Current CD capture/resolve cost is not evidence about every cartridge/audio job.",
+        "next_closure": "Choose a demonstrated heavy immutable job; include dispatch/copy/barrier costs and single-thread fallback in qualification.",
+        "source_references": [
+          "runner/sim_step.c",
+          "runner/video/genesis_machine.c",
+          "runner/audio.c"
+        ]
+      }
     },
     {
       "id": "E19",
@@ -864,5 +881,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 18
+  "total_remaining_open_count": 17
 }
