@@ -1109,5 +1109,14 @@
   ],
   "scope_decision": "Both complete coherent architectures cover native and deferred captured output ownership at the hardware-input boundary. Full-image reuse requires complete timed row history, sprites/status and live palettes, not frame-end VRAM equality or skipped guest work. Current-value identity still derives geometry/name/pattern inputs and adds command materialization/comparison/memory traffic to an already packed renderer. After two unsuccessful architectures, stop this bounded opportunity; no claim every future algorithm is impossible.",
   "next": "E16 only after independent reviewer final gate and explicit instruction; currently preparation only",
-  "cleanup": "Pending audited local build-intermediate cleanup; preserve bounded source/PE/raw evidence and SERVER portable compiler/CD catalog/native archive for E16 reuse. No delivery or borrowed dependency cleanup."
+  "cleanup": {
+    "receipt": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\local-unit-cleanup-receipt.json",
+      "sha256": "4120ea5b99a6092cace7cc3398938578c088cc84cda5d55b0f7f55553d39ab29",
+      "bytes": 1300
+    },
+    "removed_bytes": 14095398,
+    "retained": "40 original actual unit PE/config/log files in local-retained-unit-builds; source prototypes, frozen game PEs, full raw WAV/RAM/images and commands/capacity evidence retained. SERVER portable toolchain/CD source/catalog/native archive and supported build trees remain for E16 reuse; remove bounded task roots after campaign handoff. WSL temporary unit build retained pending cleanup. No borrowed dependency, save/settings or delivery changes."
+  },
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/47"
 }
