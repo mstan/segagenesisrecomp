@@ -1,0 +1,22 @@
+{
+  "source": "c94ed293a5fc8a904fdd934065cf8f0d7662dae4",
+  "purpose": "Independent frozen original VDP and kernels, never include candidate tile-packet implementation. Only export symbol prefix and original BATCHED choice are changed by compiler definitions.",
+  "files": {
+    "genesis_vdp.c": {
+      "sha256": "6e4fad2ce3e7ca0011aa9dbfb1c214d292917dca138c995c39afa55710903d15",
+      "bytes": 53380
+    },
+    "genesis_vdp.h": {
+      "sha256": "de79123c78034991015287538f56c2512b18c759db25b00f3b645d6063a2590c",
+      "bytes": 16612
+    },
+    "genesis_vdp_compose.h": {
+      "sha256": "26d55e824192a95852a0db055ea6ec76f60990fa2bfc34b7a2b3845d496946bd",
+      "bytes": 2863
+    },
+    "genesis_tile_row.h": {
+      "sha256": "f984b3c462692457ae0eabccef2fc0986badc856bfa5c307fd2854475006d8e7",
+      "bytes": 2289
+    }
+  }
+}
