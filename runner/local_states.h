@@ -11,14 +11,6 @@ void genesis_local_states_shutdown(void);
 void genesis_local_states_clear(void);
 void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
                                      int width, int height);
-/* Optional last-presented image provider. Consumed only by actual thumbnail
- * users at runner frame boundaries, before replacing its GPU image. The
- * provider must fill the same origin-aligned nearest samples as note_frame. */
-typedef int (*GenesisLocalPreview)(void *user,uint32_t *out,int width,int height,
-                                  int source_width,int source_height);
-void genesis_local_states_note_frame_source(GenesisLocalPreview preview,void *user,
-                                            int width,int height);
-void genesis_local_states_materialize_frame(void);
 void genesis_local_states_slot_saved(int slot);
 int  genesis_local_states_open_rewind(void);
 int  genesis_local_states_open_menu(void);

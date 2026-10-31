@@ -14,10 +14,6 @@
 #include <stdio.h>   /* [SND-TRACE] temporary sound-command lifecycle trace */
 
 GenesisMachine g_machine;
-/* Derived host images are build-local and must not survive a restore. This
- * generation is deliberately outside deterministic machine/snapshot state. */
-static uint64_t s_presentation_generation=1;
-uint64_t machine_presentation_generation(void){return s_presentation_generation;}
 
 /* ===================== [SND-TRACE] sound-command lifecycle =================
  * Always-on in-memory ring (no I/O in the hot path — PRINCIPLES #17/#18).
@@ -223,7 +219,6 @@ static void machine_wire_pointers(void)
 
 void machine_init(void)
 {
-    ++s_presentation_generation;
     memset(&g_machine, 0, sizeof(g_machine));
     gvdp_init(&g_machine.vdp);
     gbus_init(&g_machine.bus, &g_machine.vdp);
@@ -277,7 +272,6 @@ int machine_load_state(FILE *f)
      * derived file-static, not part of the snapshot). */
     for (unsigned i = 0; i < GVDP_CRAM_ENTRIES; i++)
         colour_cb(NULL, i, g_machine.vdp.cram[i]);
-    ++s_presentation_generation;
     return 1;
 }
 
@@ -351,7 +345,6 @@ int machine_rb_load(const void *src, size_t len)
 #endif
     for (unsigned c = 0; c < GVDP_CRAM_ENTRIES; c++)
         colour_cb(NULL, c, g_machine.vdp.cram[c]);
-    ++s_presentation_generation;
     return 1;
 }
 
@@ -508,19 +501,12 @@ void genesis_indexed_sink_adapter(void *ctx,int line,const uint32_t *argb,int wi
     GenesisIndexedSink *pixels=(GenesisIndexedSink *)ctx;
     if(pixels && pixels->argb)pixels->argb(pixels->user,line,argb,width);
 }
-void genesis_raster_sink_adapter(void *ctx,int line,const uint32_t *argb,int width)
-{
-    GenesisRasterSink *sink=(GenesisRasterSink *)ctx;
-    if(sink)genesis_indexed_sink_adapter(&sink->pixels,line,argb,width);
-}
 
 void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                           const GenesisScanlineProducer *producer)
 {
     GenesisMachine *m = &g_machine;
-    GenesisRasterSink *raster=sink==genesis_raster_sink_adapter?(GenesisRasterSink *)user:NULL;
-    GenesisIndexedSink *pixels=raster?&raster->pixels:
-        sink==genesis_indexed_sink_adapter?(GenesisIndexedSink *)user:NULL;
+    GenesisIndexedSink *pixels=sink==genesis_indexed_sink_adapter?(GenesisIndexedSink *)user:NULL;
     void *producer_user=pixels?pixels->user:user;
     int active_h = gvdp_screen_height(&m->vdp);
     static uint8_t  idxbuf[GVDP_MAX_WIDTH];
@@ -604,8 +590,6 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                     producer->render(producer_user, &m->vdp, row, gvdp_active_width(&m->vdp),
                                      native_row_fetch, &native);
                 } else {
-                    if(raster && raster->capture && raster->capture(raster->capture_user,&m->vdp,row))
-                        continue;
 #if GENESIS_FINAL_PIXEL_PIPELINE
                     if(pixels && pixels->indexed) {
                         native_row_prepare(&native);

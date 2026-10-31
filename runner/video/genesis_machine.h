@@ -42,15 +42,6 @@ typedef struct GenesisIndexedSink {
     int (*accepts)(void *user,int line,int width);
 } GenesisIndexedSink;
 void genesis_indexed_sink_adapter(void *ctx,int line,const uint32_t *argb,int width);
-/* Additive packet adapter, leaving both legacy hook and indexed-sink layouts
- * intact. A declined capture must perform no guest-visible work. */
-typedef struct GenesisRasterSink {
-    GenesisIndexedSink pixels;
-    int (*capture)(void *user,GVDP *vdp,int line);
-    void *capture_user;
-} GenesisRasterSink;
-void genesis_raster_sink_adapter(void *ctx,int line,const uint32_t *argb,int width);
-uint64_t machine_presentation_generation(void);
 
 typedef const uint32_t *(*GenesisNativeRow)(void *ctx);
 typedef struct GenesisScanlineProducer {
