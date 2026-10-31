@@ -4,6 +4,11 @@
 #include <string.h>
 
 #include "../../runner/video/genesis_vdp.h"
+#ifdef GENESIS_GPU_PACKET_TEST
+#include "../../runner/video/genesis_tile_packet.h"
+int cand_gvdp_capture_tile_scanline(GVDP *,int,GVDPTileRasterRow *);
+int cand_gvdp_compose_tile_captured(const GVDPTileRasterRow *,uint8_t *);
+#endif
 
 int head_gvdp_render_scanline(GVDP *v, int line, uint8_t *out);
 void head_gvdp_reset(GVDP *v);
@@ -165,6 +170,31 @@ static int compare_case(const char *label, const GVDP *src, int line,
     if(wc!=wa || memcmp(out_a,out_b,sizeof out_a)) {
         fprintf(stderr,"%s deferred row mismatch line=%d\n",label,line);return 1;
     }
+#ifdef GENESIS_GPU_PACKET_TEST
+    GVDP tile_device=*src;GVDPTileRasterRow tile_packet;
+    memset(&tile_packet,0,sizeof tile_packet);
+    int tile_width=cand_gvdp_capture_tile_scanline(&tile_device,line,&tile_packet);
+    if(tile_width!=wa || memcmp(&tile_device,&a,sizeof a)) {
+        fprintf(stderr,"%s compact capture status mismatch line=%d\n",label,line);return 1;
+    }
+    memset(&tile_device,0x31,sizeof tile_device);
+    cand_gvdp_set_ws_extra(0);cand_gvdp_set_ws_canvas(0);
+    cand_gvdp_set_ws_bar_black(!bar_black);cand_gvdp_set_bgdiag(!bgdiag);
+    memset(out_b,0xa5,sizeof out_b);
+    tile_width=cand_gvdp_compose_tile_captured(&tile_packet,out_b);
+    cand_gvdp_set_ws_extra(ws_extra);cand_gvdp_set_ws_canvas(ws_canvas);
+    cand_gvdp_set_ws_bar_black(bar_black);cand_gvdp_set_bgdiag(bgdiag);
+    if(tile_width!=wa || memcmp(out_a,out_b,sizeof out_a)) {
+        fprintf(stderr,"%s compact owned output mismatch line=%d\n",label,line);return 1;
+    }
+    for(int x=0;x<wa;x++)if(gvdp_packet_index(&tile_packet,(unsigned)x,1)!=out_a[x]) {
+        fprintf(stderr,"%s sparse preview mismatch line=%d x=%d\n",label,line,x);return 1;
+    }
+    tile_packet.raster=packet;
+    for(int x=0;x<wa;x++)if(gvdp_packet_index(&tile_packet,(unsigned)x,0)!=out_a[x]) {
+        fprintf(stderr,"%s expanded sparse sample mismatch line=%d x=%d\n",label,line,x);return 1;
+    }
+#endif
     /* A discarded replay row must have exactly the full renderer's device
      * effects. Use direct state images, then repeat the view: neither writes
      * bypassing VDP ports nor reset/restore may require cache invalidation. */
@@ -410,6 +440,14 @@ static int run_capture_rejection(void)
         if(kind==2||kind==3)if(!cand_gvdp_set_sprite_patterns_bank(kind-2,art,sizeof art,NULL))return 1;
         int line=kind==4?-1:kind==5?GVDP_MAX_HEIGHT*2:0;
         int width=cand_gvdp_capture_scanline(kind==6?NULL:&v,line,&row);
+#ifdef GENESIS_GPU_PACKET_TEST
+        GVDPTileRasterRow tile,saved_tile;
+        memset(&tile,0xa6,sizeof tile);saved_tile=tile;
+        if(cand_gvdp_capture_tile_scanline(kind==6?NULL:&v,line,&tile) ||
+           memcmp(&tile,&saved_tile,sizeof tile) || memcmp(&v,&before,sizeof v) || rejected_callbacks) {
+            fprintf(stderr,"compact rejection mutated input kind=%u\n",kind);return 1;
+        }
+#endif
         cand_gvdp_set_host_sprites(NULL,NULL);cand_gvdp_set_ext_tiles(NULL);
         if(!cand_gvdp_set_sprite_patterns_bank(0,NULL,0,NULL)||
            !cand_gvdp_set_sprite_patterns_bank(1,NULL,0,NULL))return 1;

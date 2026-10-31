@@ -279,6 +279,19 @@ typedef struct GVDPRasterRow {
 } GVDPRasterRow;
 int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row);
 int gvdp_compose_captured(const GVDPRasterRow *row, uint8_t *out);
+/* Compact immutable alternative: keep each fetched pattern word instead of
+ * expanding both planes on the CPU. Sprite status still runs at capture.
+ * Descriptor maps cover only the active content interval, never the bars. */
+#define GVDP_TILE_PACKET_SPANS (GVDP_MAX_WIDTH / 4 + 8)
+typedef struct GVDPTileSpan { uint32_t bits, meta; } GVDPTileSpan;
+typedef struct GVDPTileRasterRow {
+    GVDPRasterRow raster;
+    unsigned span_count[2];
+    uint8_t map[2][GVDP_MAX_WIDTH];
+    GVDPTileSpan spans[2][GVDP_TILE_PACKET_SPANS];
+} GVDPTileRasterRow;
+int gvdp_capture_tile_scanline(GVDP *v, int line, GVDPTileRasterRow *row);
+int gvdp_compose_tile_captured(const GVDPTileRasterRow *row, uint8_t *out);
 /* Run the guest-visible sprite evaluation for a discarded output row. Uses
  * exactly the renderer's sprite limits, pattern reads and collision rules;
  * background fetch/composition and host drawing have no device side effects.
