@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Serial bounded contracts E01/E03-E08/E10 delivered; E11/E13/E14 originalwholeboundedopportunities decisivelyevaluated/rejected afterqualifiedactualruntime, useful BATCHED/provider/DAC/Win32-test packages retained. E14production452f52a/readyPR46 reviewed8029d30 finalindependentaccepted, no newgainclaim.20originalfamiliesopen; reviewer explicitlyinstructed freshserialE15. Combinedownerhandoffpending.",
+  "conclusion": "Serial bounded contracts E01/E03-E08/E10 delivered; E11/E13/E14/E15 complete original bounded opportunities implemented/qualified/reached then decisively rejected, useful fixes retained. Fresh E15 independent gate accepted full scope and useful a20ecc5/PR47; no new runtime gain claimed.19 original families remain open; reviewer explicitly instructed fresh serial E16. Combined owner handoff pending.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -18,12 +18,12 @@
   "implementation_counts": {
     "bounded_delivered": 12,
     "rejected_mechanism": 1,
-    "bounded_rejected": 3,
-    "deferred": 13,
+    "bounded_rejected": 4,
     "partial": 6,
+    "deferred": 12,
     "existing": 1
   },
-  "remaining_scope_open_count": 20,
+  "remaining_scope_open_count": 19,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -438,16 +438,35 @@
       "name": "Reuse unchanged hardware render results",
       "original_goal": "Reuse generic render jobs/regions/images when the complete hardware input identity is unchanged.",
       "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "No new generic unchanged-job/image reuse.",
-      "remaining": "Complete intermediate hardware-input identity and reusable render output ownership.",
-      "audit_basis": "Frame-end equality cannot establish identical raster history. A cold CD resolve_row does not rule out static-render-heavy consumers.",
-      "next_closure": "Build on immutable packets and exact raster identity where actual repeated work justifies reuse.",
+      "implementation_state": "bounded_rejected",
+      "remaining_scope_open": false,
+      "delivered": "Both complete generic native/capture and capture-only hardware render-result architectures implemented, qualified and reached by actual games; rejected for repeated RKA adverse cost and no useful CD gain despite high real reuse. Runtime restored byte exact426253e. Useful portable generated-layout fix and actual C compile/value fixture retained in a20ecc5/PR47.",
+      "remaining": "Selected original bounded opportunity decisively evaluated/rejected; no claim every future algorithm impossible. Combined owner handoff for useful PR remains pending.",
+      "audit_basis": "Fresh validate_e15_resumed final independent acceptance: full original scope, frozen-original directed MSVCx64/Win32/GCC tests, actual supported per-game raw CPU/cycle/memory and state/pixel/full-WAV/current-save/rollback evidence, high real capture hits, precise package/host distinctions and cleanup. See ENGINE_RENDER_REUSE.md and engine-render-reuse-results.json.",
+      "next_closure": "Useful PR47 awaits combined owner visual/merge/release handoff; reviewer explicitly instructed fresh serial E16 after bookkeeping/sync.",
       "source_references": [
         "runner/video/genesis_vdp.c",
-        "runner/video/genesis_machine.c"
-      ]
+        "runner/video/genesis_machine.c",
+        "recompiler/src/game_config.c",
+        "tests/runtime/layout_emit.cmake",
+        "docs/ENGINE_RENDER_REUSE.md"
+      ],
+      "historical_audit": {
+        "id": "E15",
+        "name": "Reuse unchanged hardware render results",
+        "original_goal": "Reuse generic render jobs/regions/images when the complete hardware input identity is unchanged.",
+        "recorded_evaluation_status": "evaluated_deferred",
+        "implementation_state": "deferred",
+        "remaining_scope_open": true,
+        "delivered": "No new generic unchanged-job/image reuse.",
+        "remaining": "Complete intermediate hardware-input identity and reusable render output ownership.",
+        "audit_basis": "Frame-end equality cannot establish identical raster history. A cold CD resolve_row does not rule out static-render-heavy consumers.",
+        "next_closure": "Build on immutable packets and exact raster identity where actual repeated work justifies reuse.",
+        "source_references": [
+          "runner/video/genesis_vdp.c",
+          "runner/video/genesis_machine.c"
+        ]
+      }
     },
     {
       "id": "E16",
@@ -802,5 +821,5 @@
     }
   ],
   "historical_audit_date": "2026-10-28",
-  "current_update_date": "2026-10-29"
+  "current_update_date": "2026-10-31"
 }
