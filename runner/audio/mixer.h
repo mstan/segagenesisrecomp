@@ -27,4 +27,12 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 /* Call once at boot. */
 void audio_mixer_init(void);
 
+/* Host executor for two disjoint chip jobs after common stable ordering,
+ * pairguard and deferred-event ownership. MUST execute each job exactly once
+ * and return only after both finish. NULL retains the original serial path.
+ * Set only outside a drain; capability/selection stays fixed for the context. */
+typedef void (*AudioMixerJob)(void *);
+typedef void (*AudioMixerExecutor)(AudioMixerJob,void *,AudioMixerJob,void *,void *);
+void audio_mixer_set_executor(AudioMixerExecutor executor,void *context);
+
 #endif

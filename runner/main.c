@@ -1,5 +1,7 @@
 #include "video/genesis_frame_pixels.h"
 #include "frame_work.h"
+#include "engine_worker.h"
+#include "audio/mixer.h"
 /*
  * main.c — shared SDL2 frontend for native Genesis recompilation targets.
  *
@@ -238,10 +240,22 @@ static uint32_t *s_present_buf = s_present_storage;
 static ColorLut s_color_lut;
 static int      s_color_lut_on = 0;   /* 0 = raw passthrough (default) */
 static GenesisFrameWork *s_parallel_pixels;
+static GenesisWorker *s_parallel_audio;
 static uint64_t s_raw_content_token;
 static void engine_work_cleanup(void)
 {
     genesis_frame_work_destroy(s_parallel_pixels);s_parallel_pixels=NULL;
+    audio_mixer_set_executor(NULL,NULL);
+    if(s_parallel_audio)fprintf(stderr,"[Engine work] mode=chips completed=%llu\n",
+        (unsigned long long)genesis_worker_completed(s_parallel_audio));
+    genesis_worker_destroy(s_parallel_audio);s_parallel_audio=NULL;
+}
+static void execute_chip_jobs(AudioMixerJob fm,void *fm_context,
+    AudioMixerJob psg,void *psg_context,void *context)
+{
+    GenesisWorker *worker=(GenesisWorker *)context;
+    (void)genesis_worker_start(worker,psg,psg_context);
+    fm(fm_context);genesis_worker_join(worker);
 }
 #if GENESIS_FINAL_PIXEL_PIPELINE
 static void present_color_row(void *context,const void *source,void *destination,int count)
@@ -634,6 +648,7 @@ static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
 {
     (void)user;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
+    ++s_raw_content_token;
     /* The machine supplies actual H32/H40/margin/canvas row geometry. */
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
     s_screen_width = game_video_draw_row(&s_video_frame, vdp, line, native_w,
@@ -2828,13 +2843,17 @@ int main(int argc, char *argv[])
     /* Output at PSG rate (~223721 Hz NTSC) — matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
     if (!benchmark_frames) {
-#if GENESIS_FINAL_PIXEL_PIPELINE
         const char *work_mode=getenv("GENESIS_ENGINE_WORKERS");
+#if GENESIS_FINAL_PIXEL_PIPELINE
         if(work_mode && !strcmp(work_mode,"render")){
             s_parallel_pixels=genesis_frame_work_create();
             if(s_parallel_pixels)atexit(engine_work_cleanup);
         }
 #endif
+        if(work_mode && !strcmp(work_mode,"chips")){
+            s_parallel_audio=genesis_worker_create();
+            if(s_parallel_audio){audio_mixer_set_executor(execute_chip_jobs,s_parallel_audio);atexit(engine_work_cleanup);}
+        }
         int audio_status = audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
         if (runtime_measure_frames && audio_status != 0) {
             fprintf(stderr, "--measure-runtime requires a working audio device/mixer\n");
