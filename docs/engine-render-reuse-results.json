@@ -1,0 +1,1138 @@
+{
+  "schema": "GenesisEngineRenderReuse1",
+  "issue": "beads-3z5k.12",
+  "campaign": "beads-2wy8.1",
+  "date": "2026-10-31",
+  "original_scope": "E15/N19 generic render jobs/regions/images under complete current hardware input identity, preserving guest execution, raster history, status, audio, ownership and every writer path",
+  "status": "bounded_rejected_final_independent_accepted",
+  "production": "a20ecc5fab83ac0cef53737a0ec1d8f72cd16894",
+  "base": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+  "runtime_diff_from_base": "",
+  "retained_change": "Portable empty level-mode C initializer plus actual emitter-generated C11 compile/value regression fixtures; all runtime source byte exact base",
+  "rejected_architectures": [
+    {
+      "commit": "55d85ee669ae36fddb4e570cd17ad237cb48e7fb",
+      "name": "R1 complete indexed native/capture render jobs",
+      "bytes": 3461760,
+      "design": "Current 12-byte plane commands and current sprite/operator lanes; complete metadata and independently owned indexed/captured outputs; fresh sprite/status evaluation and live color conversion; every current direct/port/DMA/import/alias input read before reuse",
+      "disposition": "Correctly implemented and actually reached; RKA adverse both test orders, no compensating per-game claim; rejected"
+    },
+    {
+      "commit": "7a04f06399fe98b8197aeb62a08f42c8a3d8374f",
+      "fixture_correction": "e2d47390ae80f6110cf08a4690dfd83f9baddbec",
+      "name": "R2 canonical captured planes only",
+      "bytes": 1977600,
+      "design": "Remove native cache entirely, retain only complete current plane command identity and independently owned plane values; live sprites/status/palette metadata; lazy allocation with safe OOM and atexit fallback",
+      "disposition": "High real CD hit rate but no useful gain on PC or SERVER and added memory; rejected"
+    }
+  ],
+  "per_game_samples": [
+    {
+      "package": "R1 complete indexed native/capture jobs",
+      "game": "rka",
+      "feature": "native",
+      "host": "PC",
+      "order": [
+        "A",
+        "B"
+      ],
+      "frames": 6000,
+      "sample_scope": "inner runtime benchmark; separate whole-process telemetry retained",
+      "A": {
+        "game": "RKA",
+        "frames": 6000,
+        "seconds": 4.4797607,
+        "fps": 1339.357,
+        "ms_per_frame": 0.746627,
+        "cpu_seconds": 4.328125,
+        "cpu_fps": 1386.282,
+        "cpu_cycles": 20721854440,
+        "cycles_per_frame": 3453642.407,
+        "state_fnv1a64": "07065520FC059CBC",
+        "audio_state_fnv1a64": "15BFDD457ABC9D99",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 6000,
+        "complete": true,
+        "audio_flushes": 6000,
+        "mixed_fm_frames": 5332023,
+        "mixed_psg_frames": 22392000,
+        "audio_pushed_frames": 22392000,
+        "audio_overflow_drops": 21350887,
+        "native_register_spans": 1266132,
+        "native_direct_calls": 587984,
+        "native_direct_tails": 332221,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\reference\\RKARecomp.exe",
+          "sha256": "0edf7bacd0f648bb282068c6925e36d9a0100289013c61146d43adfd9965ed26",
+          "bytes": 8710656,
+          "seconds": 73.04699999978766,
+          "engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+          "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+          "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\rka\\reference",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine-A",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\rka\\reference\\RKARecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.09375,
+          "user_seconds": 4.3125,
+          "process_cycles": 21128157220,
+          "peak_working_set_bytes": 65097728,
+          "peak_commit_bytes": 75587584,
+          "sampled_peak_private_bytes": 74936320,
+          "memory_samples": 45,
+          "wait_wall_seconds": 4.843000000008033
+        }
+      },
+      "B": {
+        "game": "RKA",
+        "frames": 6000,
+        "seconds": 4.5232491,
+        "fps": 1326.48,
+        "ms_per_frame": 0.753875,
+        "cpu_seconds": 4.53125,
+        "cpu_fps": 1324.138,
+        "cpu_cycles": 21014431320,
+        "cycles_per_frame": 3502405.22,
+        "state_fnv1a64": "07065520FC059CBC",
+        "audio_state_fnv1a64": "15BFDD457ABC9D99",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 6000,
+        "complete": true,
+        "audio_flushes": 6000,
+        "mixed_fm_frames": 5332023,
+        "mixed_psg_frames": 22392000,
+        "audio_pushed_frames": 22392000,
+        "audio_overflow_drops": 21341294,
+        "native_register_spans": 1266132,
+        "native_direct_calls": 587984,
+        "native_direct_tails": 332221,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\candidate\\RKARecomp.exe",
+          "sha256": "6b963a5dc87136a11273a3693b10b1e2cb7f752c9bc2187a5b0fb86cc576ae14",
+          "bytes": 8714752,
+          "seconds": 100.65700000012293,
+          "engine": "55d85ee669ae36fddb4e570cd17ad237cb48e7fb",
+          "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+          "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\rka\\candidate",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\rka\\candidate\\RKARecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.1875,
+          "user_seconds": 4.40625,
+          "process_cycles": 21427483300,
+          "peak_working_set_bytes": 68542464,
+          "peak_commit_bytes": 79032320,
+          "sampled_peak_private_bytes": 78376960,
+          "memory_samples": 46,
+          "wait_wall_seconds": 4.922000000005937
+        }
+      },
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1.json",
+      "correctness_passed": true,
+      "classification": "repeated adverse CPU/cycles; reject R1 default",
+      "candidate_cpu_change_pct": 4.693140794223827,
+      "candidate_cycles_change_pct": 1.4119242119336128
+    },
+    {
+      "package": "R1 complete indexed native/capture jobs",
+      "game": "sonic1",
+      "feature": "native",
+      "host": "PC",
+      "order": [
+        "A",
+        "B"
+      ],
+      "frames": 2400,
+      "sample_scope": "inner runtime benchmark; separate whole-process telemetry retained",
+      "A": {
+        "game": "Sonic1",
+        "frames": 2400,
+        "seconds": 1.6393061,
+        "fps": 1464.034,
+        "ms_per_frame": 0.683044,
+        "cpu_seconds": 1.609375,
+        "cpu_fps": 1491.262,
+        "cpu_cycles": 7429436640,
+        "cycles_per_frame": 3095598.6,
+        "state_fnv1a64": "227659F4B564BDCF",
+        "audio_state_fnv1a64": "94C37F714B488F9E",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 2400,
+        "complete": true,
+        "audio_flushes": 2400,
+        "mixed_fm_frames": 2132809,
+        "mixed_psg_frames": 8956800,
+        "audio_pushed_frames": 8956800,
+        "audio_overflow_drops": 8544039,
+        "native_register_spans": 1490263,
+        "native_direct_calls": 208299,
+        "native_direct_tails": 1418684,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe",
+          "sha256": "fa2e9185890f8609588d5f3ccb5e0e99cc4a19f5f88637711d626f0cc36f2aaa",
+          "bytes": 5410816,
+          "seconds": 71.90700000012293,
+          "engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+          "consumer": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+          "ui": "47005fb27516398381f4fda88413ff74bee14842",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\sonic1",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\sonic1\\reference",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine-A",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.15625,
+          "user_seconds": 1.53125,
+          "process_cycles": 7813101400,
+          "peak_working_set_bytes": 61997056,
+          "peak_commit_bytes": 76173312,
+          "sampled_peak_private_bytes": 75517952,
+          "memory_samples": 19,
+          "wait_wall_seconds": 2.0310000000026776
+        }
+      },
+      "B": {
+        "game": "Sonic1",
+        "frames": 2400,
+        "seconds": 1.6204339,
+        "fps": 1481.085,
+        "ms_per_frame": 0.675181,
+        "cpu_seconds": 1.609375,
+        "cpu_fps": 1491.262,
+        "cpu_cycles": 7359929750,
+        "cycles_per_frame": 3066637.396,
+        "state_fnv1a64": "227659F4B564BDCF",
+        "audio_state_fnv1a64": "94C37F714B488F9E",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 2400,
+        "complete": true,
+        "audio_flushes": 2400,
+        "mixed_fm_frames": 2132809,
+        "mixed_psg_frames": 8956800,
+        "audio_pushed_frames": 8956800,
+        "audio_overflow_drops": 8548886,
+        "native_register_spans": 1490263,
+        "native_direct_calls": 208299,
+        "native_direct_tails": 1418684,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\sonic1\\candidate\\SonicTheHedgehogRecomp.exe",
+          "sha256": "403458441cdc0de3b1a4e6bbe4081f75ab55485a9c2e5626a111eb9404dcd037",
+          "bytes": 5414912,
+          "seconds": 70.09400000004098,
+          "engine": "55d85ee669ae36fddb4e570cd17ad237cb48e7fb",
+          "consumer": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+          "ui": "47005fb27516398381f4fda88413ff74bee14842",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\sonic1",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\sonic1\\candidate",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\sonic1\\candidate\\SonicTheHedgehogRecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.125,
+          "user_seconds": 1.609375,
+          "process_cycles": 7752914140,
+          "peak_working_set_bytes": 65261568,
+          "peak_commit_bytes": 79425536,
+          "sampled_peak_private_bytes": 78991360,
+          "memory_samples": 20,
+          "wait_wall_seconds": 2.0780000000086147
+        }
+      },
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1.json",
+      "correctness_passed": true,
+      "classification": "neutral/inconclusive; no demonstrated gain",
+      "candidate_cpu_change_pct": 0.0,
+      "candidate_cycles_change_pct": -0.9355607076016459
+    },
+    {
+      "package": "R1 complete indexed native/capture jobs",
+      "game": "rka",
+      "feature": "native focused reverse",
+      "host": "PC",
+      "order": [
+        "B",
+        "A"
+      ],
+      "frames": 6000,
+      "sample_scope": "inner runtime benchmark; separate whole-process telemetry retained",
+      "A": {
+        "game": "RKA",
+        "frames": 6000,
+        "seconds": 4.5094383,
+        "fps": 1330.543,
+        "ms_per_frame": 0.751573,
+        "cpu_seconds": 4.375,
+        "cpu_fps": 1371.429,
+        "cpu_cycles": 20810886540,
+        "cycles_per_frame": 3468481.09,
+        "state_fnv1a64": "07065520FC059CBC",
+        "audio_state_fnv1a64": "15BFDD457ABC9D99",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 6000,
+        "complete": true,
+        "audio_flushes": 6000,
+        "mixed_fm_frames": 5332023,
+        "mixed_psg_frames": 22392000,
+        "audio_pushed_frames": 22392000,
+        "audio_overflow_drops": 21350838,
+        "native_register_spans": 1266132,
+        "native_direct_calls": 587984,
+        "native_direct_tails": 332221,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\reference\\RKARecomp.exe",
+          "sha256": "0edf7bacd0f648bb282068c6925e36d9a0100289013c61146d43adfd9965ed26",
+          "bytes": 8710656,
+          "seconds": 73.04699999978766,
+          "engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+          "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+          "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\rka\\reference",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine-A",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\rka\\reference\\RKARecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.109375,
+          "user_seconds": 4.328125,
+          "process_cycles": 21219351320,
+          "peak_working_set_bytes": 40198144,
+          "peak_commit_bytes": 75563008,
+          "sampled_peak_private_bytes": 74907648,
+          "memory_samples": 46,
+          "wait_wall_seconds": 4.937000000005355
+        }
+      },
+      "B": {
+        "game": "RKA",
+        "frames": 6000,
+        "seconds": 5.1371718,
+        "fps": 1167.958,
+        "ms_per_frame": 0.856195,
+        "cpu_seconds": 4.671875,
+        "cpu_fps": 1284.281,
+        "cpu_cycles": 21952367550,
+        "cycles_per_frame": 3658727.925,
+        "state_fnv1a64": "07065520FC059CBC",
+        "audio_state_fnv1a64": "15BFDD457ABC9D99",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 6000,
+        "complete": true,
+        "audio_flushes": 6000,
+        "mixed_fm_frames": 5332023,
+        "mixed_psg_frames": 22392000,
+        "audio_pushed_frames": 22392000,
+        "audio_overflow_drops": 21206990,
+        "native_register_spans": 1266132,
+        "native_direct_calls": 587984,
+        "native_direct_tails": 332221,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\candidate\\RKARecomp.exe",
+          "sha256": "6b963a5dc87136a11273a3693b10b1e2cb7f752c9bc2187a5b0fb86cc576ae14",
+          "bytes": 8714752,
+          "seconds": 100.65700000012293,
+          "engine": "55d85ee669ae36fddb4e570cd17ad237cb48e7fb",
+          "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+          "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\rka\\candidate",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\rka\\candidate\\RKARecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.171875,
+          "user_seconds": 4.5625,
+          "process_cycles": 22382520480,
+          "peak_working_set_bytes": 41824256,
+          "peak_commit_bytes": 79028224,
+          "sampled_peak_private_bytes": 78376960,
+          "memory_samples": 51,
+          "wait_wall_seconds": 5.547000000005937
+        }
+      },
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-rka-reverse-r2.json",
+      "correctness_passed": true,
+      "classification": "repeated adverse CPU/cycles; reject R1 default",
+      "candidate_cpu_change_pct": 6.785714285714284,
+      "candidate_cycles_change_pct": 5.48501865985378
+    },
+    {
+      "package": "R1 complete indexed native/capture jobs",
+      "game": "rka",
+      "feature": "game-owned 16:9",
+      "host": "PC",
+      "order": [
+        "A",
+        "B"
+      ],
+      "frames": 6000,
+      "sample_scope": "inner runtime benchmark; separate whole-process telemetry retained",
+      "A": {
+        "game": "RKA",
+        "frames": 6000,
+        "seconds": 12.1916783,
+        "fps": 492.139,
+        "ms_per_frame": 2.031946,
+        "cpu_seconds": 12.015625,
+        "cpu_fps": 499.35,
+        "cpu_cycles": 55962755710,
+        "cycles_per_frame": 9327125.952,
+        "state_fnv1a64": "71BEDAF80C86DA0F",
+        "audio_state_fnv1a64": "15BFDD457ABC9D99",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 6000,
+        "complete": true,
+        "audio_flushes": 6000,
+        "mixed_fm_frames": 5332023,
+        "mixed_psg_frames": 22392000,
+        "audio_pushed_frames": 22392000,
+        "audio_overflow_drops": 19652924,
+        "native_register_spans": 1253051,
+        "native_direct_calls": 583514,
+        "native_direct_tails": 350044,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\reference\\RKARecomp.exe",
+          "sha256": "0edf7bacd0f648bb282068c6925e36d9a0100289013c61146d43adfd9965ed26",
+          "bytes": 8710656,
+          "seconds": 73.04699999978766,
+          "engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+          "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+          "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\rka\\reference",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine-A",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\rka\\reference\\RKARecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.234375,
+          "user_seconds": 11.859375,
+          "process_cycles": 56358539420,
+          "peak_working_set_bytes": 41295872,
+          "peak_commit_bytes": 75894784,
+          "sampled_peak_private_bytes": 75083776,
+          "memory_samples": 116,
+          "wait_wall_seconds": 12.60899999999674
+        }
+      },
+      "B": {
+        "game": "RKA",
+        "frames": 6000,
+        "seconds": 12.3090794,
+        "fps": 487.445,
+        "ms_per_frame": 2.051513,
+        "cpu_seconds": 12.078125,
+        "cpu_fps": 496.766,
+        "cpu_cycles": 56590057660,
+        "cycles_per_frame": 9431676.277,
+        "state_fnv1a64": "71BEDAF80C86DA0F",
+        "audio_state_fnv1a64": "15BFDD457ABC9D99",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 6000,
+        "complete": true,
+        "audio_flushes": 6000,
+        "mixed_fm_frames": 5332023,
+        "mixed_psg_frames": 22392000,
+        "audio_pushed_frames": 22392000,
+        "audio_overflow_drops": 19614526,
+        "native_register_spans": 1253051,
+        "native_direct_calls": 583514,
+        "native_direct_tails": 350044,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\candidate\\RKARecomp.exe",
+          "sha256": "6b963a5dc87136a11273a3693b10b1e2cb7f752c9bc2187a5b0fb86cc576ae14",
+          "bytes": 8714752,
+          "seconds": 100.65700000012293,
+          "engine": "55d85ee669ae36fddb4e570cd17ad237cb48e7fb",
+          "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+          "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\rka",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\rka\\candidate",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\rka\\candidate\\RKARecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.140625,
+          "user_seconds": 12.03125,
+          "process_cycles": 56977702380,
+          "peak_working_set_bytes": 42930176,
+          "peak_commit_bytes": 79376384,
+          "sampled_peak_private_bytes": 78565376,
+          "memory_samples": 118,
+          "wait_wall_seconds": 12.703000000008615
+        }
+      },
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1.json",
+      "correctness_passed": true,
+      "classification": "neutral/inconclusive; no demonstrated gain",
+      "candidate_cpu_change_pct": 0.5201560468140354,
+      "candidate_cycles_change_pct": 1.1209275562674037
+    },
+    {
+      "package": "R1 complete indexed native/capture jobs",
+      "game": "sonic1",
+      "feature": "game-owned 16:9",
+      "host": "PC",
+      "order": [
+        "A",
+        "B"
+      ],
+      "frames": 2400,
+      "sample_scope": "inner runtime benchmark; separate whole-process telemetry retained",
+      "A": {
+        "game": "Sonic1",
+        "frames": 2400,
+        "seconds": 2.5704685,
+        "fps": 933.682,
+        "ms_per_frame": 1.071029,
+        "cpu_seconds": 2.53125,
+        "cpu_fps": 948.148,
+        "cpu_cycles": 11945928900,
+        "cycles_per_frame": 4977470.375,
+        "state_fnv1a64": "72B7DABDBA87A4E0",
+        "audio_state_fnv1a64": "D2594B68B2FE758A",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 2400,
+        "complete": true,
+        "audio_flushes": 2400,
+        "mixed_fm_frames": 2132809,
+        "mixed_psg_frames": 8956800,
+        "audio_pushed_frames": 8956800,
+        "audio_overflow_drops": 8337786,
+        "native_register_spans": 1444682,
+        "native_direct_calls": 196753,
+        "native_direct_tails": 1411162,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe",
+          "sha256": "fa2e9185890f8609588d5f3ccb5e0e99cc4a19f5f88637711d626f0cc36f2aaa",
+          "bytes": 5410816,
+          "seconds": 71.90700000012293,
+          "engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+          "consumer": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+          "ui": "47005fb27516398381f4fda88413ff74bee14842",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\sonic1",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\sonic1\\reference",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine-A",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.078125,
+          "user_seconds": 2.546875,
+          "process_cycles": 12288589920,
+          "peak_working_set_bytes": 39952384,
+          "peak_commit_bytes": 76525568,
+          "sampled_peak_private_bytes": 75984896,
+          "memory_samples": 28,
+          "wait_wall_seconds": 2.9839999999967404
+        }
+      },
+      "B": {
+        "game": "Sonic1",
+        "frames": 2400,
+        "seconds": 2.5381248,
+        "fps": 945.58,
+        "ms_per_frame": 1.057552,
+        "cpu_seconds": 2.546875,
+        "cpu_fps": 942.331,
+        "cpu_cycles": 11802661620,
+        "cycles_per_frame": 4917775.675,
+        "state_fnv1a64": "72B7DABDBA87A4E0",
+        "audio_state_fnv1a64": "D2594B68B2FE758A",
+        "vdp_plane_impl": "BATCHED",
+        "host_wait_native": false,
+        "rb_digest_impl": "XXH64-v0.8.3",
+        "workload_scope": "uncapped-runtime",
+        "requested_frames": 2400,
+        "complete": true,
+        "audio_flushes": 2400,
+        "mixed_fm_frames": 2132809,
+        "mixed_psg_frames": 8956800,
+        "audio_pushed_frames": 8956800,
+        "audio_overflow_drops": 8342583,
+        "native_register_spans": 1444682,
+        "native_direct_calls": 196753,
+        "native_direct_tails": 1411162,
+        "binary": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\sonic1\\candidate\\SonicTheHedgehogRecomp.exe",
+          "sha256": "403458441cdc0de3b1a4e6bbe4081f75ab55485a9c2e5626a111eb9404dcd037",
+          "bytes": 5414912,
+          "seconds": 70.09400000004098,
+          "engine": "55d85ee669ae36fddb4e570cd17ad237cb48e7fb",
+          "consumer": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+          "ui": "47005fb27516398381f4fda88413ff74bee14842",
+          "configure_argv": [
+            "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\sonic1",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\build\\sonic1\\candidate",
+            "-G",
+            "Visual Studio 16 2019",
+            "-A",
+            "x64",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\engine",
+            "-DGEN_ENABLE_TRACE=OFF",
+            "-DGEN_DEV_TRACE=OFF",
+            "-DSONIC_REVERSE_DEBUG=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+            "-DGENESISRECOMP_NETPLAY=ON",
+            "-DGENESIS_Z80_RECOMP=OFF",
+            "-DBUILD_TESTS=OFF"
+          ],
+          "plane_impl": "BATCHED",
+          "stats": false,
+          "build_binary_path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\binaries\\sonic1\\candidate\\SonicTheHedgehogRecomp.exe",
+          "runtime_host": "local (reserved independently)"
+        },
+        "process_costs": {
+          "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+          "kernel_seconds": 0.125,
+          "user_seconds": 2.5,
+          "process_cycles": 12163471220,
+          "peak_working_set_bytes": 41697280,
+          "peak_commit_bytes": 80109568,
+          "sampled_peak_private_bytes": 79568896,
+          "memory_samples": 28,
+          "wait_wall_seconds": 2.985000000000582
+        }
+      },
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1.json",
+      "correctness_passed": true,
+      "classification": "neutral/inconclusive; no demonstrated gain",
+      "candidate_cpu_change_pct": 0.6172839506172867,
+      "candidate_cycles_change_pct": -1.1992979466000309
+    },
+    {
+      "package": "R1 complete indexed native/capture jobs",
+      "game": "sonic_cd",
+      "feature": "shared captured-plane widescreen",
+      "host": "PC",
+      "order": [
+        "A",
+        "B"
+      ],
+      "frames": 3001,
+      "sample_scope": "process CPU/cycles between frames 1800 and 3000; same frame/RPC schedule in each arm",
+      "A": {
+        "cpu_seconds": 6.015625,
+        "cycles": 29044185800,
+        "cpu_cycles": 29044185800,
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\binaries\\reference\\SonicCD.exe",
+          "bytes": 115817984,
+          "sha256": "da614219a5c69108ad170a3d20eb56ab76843265b6a5fe3c68e88be80a64cd03"
+        },
+        "final_memory": {
+          "peak_working_set_bytes": 251711488,
+          "peak_commit_bytes": 28696576,
+          "private_bytes": 28696576
+        },
+        "startup_process_cost": {
+          "cpu_seconds": 0.546875,
+          "cycles": 2494524060
+        }
+      },
+      "B": {
+        "cpu_seconds": 6.359375,
+        "cycles": 29251760830,
+        "cpu_cycles": 29251760830,
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\binaries\\candidate\\SonicCD.exe",
+          "bytes": 115822080,
+          "sha256": "419678a3150729d4e1cb718bad0b0d9112803579a760e6511d2ea8576ca4b846"
+        },
+        "final_memory": {
+          "peak_working_set_bytes": 253431808,
+          "peak_commit_bytes": 32194560,
+          "private_bytes": 32194560
+        },
+        "startup_process_cost": {
+          "cpu_seconds": 0.5,
+          "cycles": 2415988470
+        }
+      },
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1.json",
+      "correctness_passed": true,
+      "classification": "single PC AB observation; adverse CPU and cycles, no useful gain; no R1 SERVER runtime sample",
+      "candidate_cpu_change_pct": 5.714285714285716,
+      "candidate_cycles_change_pct": 0.7146870338503364
+    },
+    {
+      "package": "R2 captured planes only",
+      "game": "sonic_cd",
+      "feature": "shared captured-plane widescreen",
+      "host": "PC",
+      "order": [
+        "B",
+        "A"
+      ],
+      "frames": 3001,
+      "sample_scope": "process CPU/cycles between frames 1800 and 3000; same frame/RPC schedule in each arm",
+      "A": {
+        "cpu_seconds": 5.875,
+        "cycles": 27596763930,
+        "cpu_cycles": 27596763930,
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\binaries\\reference\\SonicCD.exe",
+          "bytes": 115817984,
+          "sha256": "da614219a5c69108ad170a3d20eb56ab76843265b6a5fe3c68e88be80a64cd03"
+        },
+        "final_memory": {
+          "peak_working_set_bytes": 250875904,
+          "peak_commit_bytes": 28663808,
+          "private_bytes": 28655616
+        },
+        "startup_process_cost": {
+          "cpu_seconds": 0.421875,
+          "cycles": 1981128020
+        }
+      },
+      "B": {
+        "cpu_seconds": 6.0625,
+        "cycles": 28546084970,
+        "cpu_cycles": 28546084970,
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\r2-game-evidence\\cd-portable\\binaries\\candidate-r2\\SonicCD.exe",
+          "bytes": 115820544,
+          "sha256": "501b8dba6c938d65fcc4eb9b0e096de9e34eaf727a1f4268c9b05703fb3e8612"
+        },
+        "final_memory": {
+          "peak_working_set_bytes": 252723200,
+          "peak_commit_bytes": 30748672,
+          "private_bytes": 30748672
+        },
+        "startup_process_cost": {
+          "cpu_seconds": 0.453125,
+          "cycles": 2229000850
+        }
+      },
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2.json",
+      "correctness_passed": true,
+      "classification": "no useful gain; adverse PC observation, mixed SERVER CPU/cycles inconclusive",
+      "candidate_cpu_change_pct": 3.1914893617021267,
+      "candidate_cycles_change_pct": 3.4399723185224884
+    },
+    {
+      "package": "R2 captured planes only",
+      "game": "sonic_cd",
+      "feature": "shared captured-plane widescreen",
+      "host": "SERVER",
+      "order": [
+        "A",
+        "B"
+      ],
+      "frames": 3001,
+      "sample_scope": "process CPU/cycles between frames 1800 and 3000; same frame/RPC schedule in each arm",
+      "A": {
+        "cpu_seconds": 13.125,
+        "cycles": 46088591795,
+        "cpu_cycles": 46088591795,
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\binaries\\reference\\SonicCD.exe",
+          "bytes": 115817984,
+          "sha256": "da614219a5c69108ad170a3d20eb56ab76843265b6a5fe3c68e88be80a64cd03"
+        },
+        "final_memory": {
+          "peak_working_set_bytes": 246788096,
+          "peak_commit_bytes": 28168192,
+          "private_bytes": 28168192
+        },
+        "startup_process_cost": {
+          "cpu_seconds": 3.125,
+          "cycles": 10509336455
+        }
+      },
+      "B": {
+        "cpu_seconds": 13.484375,
+        "cycles": 45767513688,
+        "cpu_cycles": 45767513688,
+        "binary": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\binaries\\candidate-r2\\SonicCD.exe",
+          "bytes": 115820544,
+          "sha256": "501b8dba6c938d65fcc4eb9b0e096de9e34eaf727a1f4268c9b05703fb3e8612"
+        },
+        "final_memory": {
+          "peak_working_set_bytes": 247791616,
+          "peak_commit_bytes": 30154752,
+          "private_bytes": 30154752
+        },
+        "startup_process_cost": {
+          "cpu_seconds": 3.078125,
+          "cycles": 10433185813
+        }
+      },
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server.json",
+      "correctness_passed": true,
+      "classification": "no useful gain; adverse PC observation, mixed SERVER CPU/cycles inconclusive",
+      "candidate_cpu_change_pct": 2.7380952380952284,
+      "candidate_cycles_change_pct": -0.6966541924911529
+    }
+  ],
+  "actual_capture_use": [
+    {
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1.json",
+      "package": "E15-CD-shared-render-job-reuse-portable-MSVC1441",
+      "counts": {
+        "requests": 616816,
+        "hits": 105003,
+        "misses": 16331,
+        "bypasses": 495482,
+        "native_hits": 0,
+        "capture_hits": 105003,
+        "cache_bytes": 3461760
+      },
+      "costs_excluded": true,
+      "correctness_passed": true
+    },
+    {
+      "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server.json",
+      "package": "E15-R2-capture-plane-only-lazy-allocation",
+      "counts": {
+        "requests": 616816,
+        "hits": 496192,
+        "misses": 4002,
+        "bypasses": 116622,
+        "native_hits": 0,
+        "capture_hits": 496192,
+        "cache_bytes": 1977600
+      },
+      "costs_excluded": true,
+      "correctness_passed": true
+    }
+  ],
+  "evidence": [
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1.json",
+      "sha256": "3bf44d7d7f20d220732d2423a5f65d5626a3a689c793694cdeeb29519490ec45",
+      "bytes": 61129
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-rka-reverse-r2.json",
+      "sha256": "56321d2e6897d0da4b31035745b06b7f360a512602c0f001fd87ebc8ee7a1308",
+      "bytes": 44237
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1.json",
+      "sha256": "19e22cd4c9f03f67cbd301ba90018a2d47b7bd0f86ed3ba44c186c350464f9dc",
+      "bytes": 61134
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1.json",
+      "sha256": "4e3658b4f01e39dddac1ccd541d4941c79a7952eb879061f5b461330d4a3d026",
+      "bytes": 488269
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2.json",
+      "sha256": "20e81b5041b695b80039f55a80837b0e60b76f38cb6832c4796146fed76bf35e",
+      "bytes": 488836
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server.json",
+      "sha256": "629177b810755b4c6160c652a0146bec5cdcda9e0353903fc4c00ae755033722",
+      "bytes": 490251
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1.json",
+      "sha256": "34ec0057b475563a0dc765250450b770feb9b6ce20d621fa35007185c7a5408f",
+      "bytes": 251878
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server.json",
+      "sha256": "f97ef740c9cd56b77580e93f728f466325180870692edd5a97d6f3c1016d2b74",
+      "bytes": 253290
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1.json",
+      "sha256": "1109ac3c26f4fa9a80167344488af78edcb6252a1fe8a126685a7bc6f5bd626a",
+      "bytes": 7209
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-suite\\local-runtime-builds.json",
+      "sha256": "bd819415e6efa8040364e8af622e6ca819705c310cbaed3f612f64f61645252a",
+      "bytes": 17645
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\cd-portable-local-builds.json",
+      "sha256": "83cd980bf7e241a6eb6106505acb90b0edf05ec660f7ab41ece8eace792e2635",
+      "bytes": 10500
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\r2-cd-local-builds.json",
+      "sha256": "0a4ecc31e2f518f9539f92f9acc90a60b85b6cb2bb42e9b6d68f299b501ff135",
+      "bytes": 11667
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\retention-manifest.json",
+      "sha256": "0705ba0702be2f7c44a256e7b7b658d2aabc0fbd8280132ef5108ae9f5ec74a7",
+      "bytes": 23274
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\server-ui-compat.json",
+      "sha256": "7aea432c896bdaaff8a69d9c8f884ae4f18952a213a44423431679603bb6397b",
+      "bytes": 9410
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\cd-portable-input-manifest.json",
+      "sha256": "8af5bb702bd65eef1101ceb02f5a0c5ac9a0cb59dc15c12edb29089607b391cb",
+      "bytes": 3245983
+    }
+  ],
+  "tests": {
+    "R1": "Initial3 then directed6 each MSVC x64, actual Win32 and GCC; expanded8 SERVER MSVC19.29. Exact frozen426 oracle; scalar/portable/disabled/provider/hot-DMA/status/alias/overflow paths. Logs retained; CTest3.20 has no JUnit.",
+    "R2": "10/10 each MSVC x64, actual Win32 and GCC on7a04. Corrected counter fixture e2d (runtime byte exact7a04) refreshed10/10 each SERVER x64/Win32; GCC original fixture proof not represented as a rerun of the correction. Safe OOM/ownership/native-zero-allocation tested.",
+    "retained_fix": "Real game_config_emit_layout emits empty and populated layouts; generated C is compiled, counts/values/zero tails verified. SERVER MSVC19.29 x64 and Win32 pass. Root tests/CMakeLists registers the same module; no private ROM."
+  },
+  "evidence_roots": [
+    "C:\\temp\\Codex\\genesis-engine-render-reuse-20261029",
+    "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029",
+    "G:/Temp/Codex/genesis-engine-render-reuse-20261030-server"
+  ],
+  "measurement_limits": [
+    "Matched A/B on one host/config per pair, same compiler per pair; cartridge19.29 and CD14.41 are distinct packages, not cross-compared.",
+    "Ambient shared-host observations under headroom reservations. No quiet-host, physical-GPU, optional-filter, end-to-end loading, or universal gameplay claim. CPU/cycles/peak memory and raw correctness retained.",
+    "Raw CD workload prose inherited \"not timing evidence\" from its correctness fixture. The recorded cost field is actual process CPU/cycles sampled at1800/3000 under identical RPC/capture schedules, used here only for that bounded runtime observation; not physical presentation timing or startup latency. Raw JSON unchanged.",
+    "R1 game-owned cartridge widescreen uses native rows, not shared capture. Initial diagnostic fixture wrongly required capture hits; original failure and corrected scope retained, no rerun of already passed RKA gameplay.",
+    "Shared UI empty-initializer task patches apply equally both cartridge arms; generator zero-case equally applied to baseline. SDK external-warning classification only applies equally both CD arms; first-party W4/WX retained.",
+    "R2 cartridge candidates built but not runtime measured. Native source is byte exact base and native cache has zero calls/heap; no R2 cartridge speedup or measured neutrality claimed.",
+    "Current-build cartridge save/load/rollback, raw states/full WAV/frames and all CD11 canonical checkpoints pass. Shared uncapped dummy-device audio drops remain explicit in raw records and are not hidden.",
+    "All original source prototypes, failed fixtures/build attempts, actual PEs, compiler/config/input identities, raw samples and capacity receipts retained. No new game builds delivered, owner launches, merges or releases."
+  ],
+  "scope_decision": "Both complete coherent architectures cover native and deferred captured output ownership at the hardware-input boundary. Full-image reuse requires complete timed row history, sprites/status and live palettes, not frame-end VRAM equality or skipped guest work. Current-value identity still derives geometry/name/pattern inputs and adds command materialization/comparison/memory traffic to an already packed renderer. After two unsuccessful architectures, stop this bounded opportunity; no claim every future algorithm is impossible.",
+  "next": "E16 only after independent reviewer final gate and explicit instruction; currently preparation only",
+  "cleanup": {
+    "receipt": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\local-unit-cleanup-receipt.json",
+      "sha256": "4120ea5b99a6092cace7cc3398938578c088cc84cda5d55b0f7f55553d39ab29",
+      "bytes": 1300
+    },
+    "removed_bytes": 14095398,
+    "retained": "40 original actual unit PE/config/log files in local-retained-unit-builds; source prototypes, frozen game PEs, full raw WAV/RAM/images and commands/capacity evidence retained. SERVER portable toolchain/CD source/catalog/native archive and supported build trees remain for E16 reuse; remove bounded task roots after campaign handoff. Both task WSL unit build roots now cleaned after retaining65 ELF/config/log/command files including16 original actual ELF binaries. No borrowed dependency, save/settings or delivery changes.",
+    "wsl": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\wsl-unit-cleanup-receipt.json",
+      "sha256": "e9aa8e9798da2b395755b40dc1434c5fa22a6a4c6839a197f286da6e11cffa27",
+      "removed_bytes": 3169347,
+      "retained_files": 65,
+      "retained_ELFs": 16
+    }
+  },
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/47",
+  "independent_review": {
+    "verdict": "C:\\temp\\Codex\\genesis-engine-render-reuse-20261029\\VALIDATOR_E15_FINAL.json",
+    "reviewed_head": "199a313",
+    "next": "Fresh serial E16 after final bookkeeping/sync, as explicitly instructed by validator",
+    "report": "ENGINE_RENDER_REUSE_REVIEW.md",
+    "immutable_audit": "engine-render-reuse-review.json",
+    "immutable_audit_original_sha256": "a92b8862eb3e9c23bf8849e973cdf7b07adf8d1de1deca488a9cae1317119217",
+    "original_review_source": "C:/Temp/Codex/genesis-engine-render-reuse-20261029/VALIDATOR_E15_FINAL_AUDIT.json"
+  }
+}

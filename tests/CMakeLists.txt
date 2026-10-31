@@ -21,6 +21,7 @@ endif()
 # a top-level project.  Keep its ROM-independent harnesses runnable directly
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
+include("${CMAKE_CURRENT_LIST_DIR}/runtime/layout_emit.cmake")
 add_executable(game_video_frame_test runtime/game_video_frame_test.c)
 target_include_directories(game_video_frame_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_compile_features(game_video_frame_test PRIVATE c_std_11)
