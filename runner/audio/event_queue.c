@@ -193,17 +193,27 @@ void audio_event_queue_reset(void)
     s_head = s_tail = 0;
 }
 
+size_t audio_event_take_ordered(AudioOrderedEvent *out,size_t capacity)
+{
+    if(!out || !capacity)return 0;
+    size_t count=audio_event_queue_count();if(count>capacity)count=capacity;
+    size_t first=QUEUE_CAP-s_tail;if(first>count)first=count;
+    for(size_t i=0;i<first;i++){out[i].e=s_ring[s_tail+i];out[i].idx=(uint32_t)i;}
+    for(size_t i=first;i<count;i++){out[i].e=s_ring[i-first];out[i].idx=(uint32_t)i;}
+    s_tail=(s_tail+count)%QUEUE_CAP;return count;
+}
+
 /* Re-queue events the mixer deferred to a later wall frame (stamps beyond
  * the frame just drained, already rebased by the caller). Single-threaded:
  * called right after a drain that emptied the queue, so capacity is free. */
 void audio_event_requeue(const AudioEvent *evs, size_t n)
 {
-    for (size_t i = 0; i < n; i++) {
-        size_t next_head = (s_head + 1) % QUEUE_CAP;
-        if (next_head == s_tail) { s_overflow_count++; return; }
-        s_ring[s_head] = evs[i];
-        s_head = next_head;
-    }
+    size_t space=QUEUE_CAP-1u-audio_event_queue_count(),take=n<space?n:space;
+    size_t first=QUEUE_CAP-s_head;if(first>take)first=take;
+    if(first)memcpy(s_ring+s_head,evs,first*sizeof *evs);
+    if(take>first)memcpy(s_ring,evs+first,(take-first)*sizeof *evs);
+    s_head=(s_head+take)%QUEUE_CAP;
+    if(take<n)++s_overflow_count;
 }
 
 size_t audio_event_queue_count(void)
