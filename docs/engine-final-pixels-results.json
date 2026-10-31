@@ -4,18 +4,18 @@
   "original_id": "E16",
   "owner": "beads-3z5k.13",
   "campaign": "beads-2wy8.1",
-  "status": "tested; fresh final source/runtime/per-game/PR/Beads/cleanup review pending",
+  "status": "Whole original bounded E16 contract independently accepted; ready PR48; combined owner handoff pending",
   "prepared": true,
   "built": true,
   "tested": true,
-  "accepted": false,
+  "accepted": true,
   "source": "ea16061a702bbc0ad3ce769b880ed47cac31a888",
   "source_base": "c22af45a297c8763401111b5183522b5e9a50d1d",
   "branch": "codex/engine-final-pixels-20261030",
   "reference_runtime": "426253e1b76056a45c48347ddcd75eb64e31c1d8; runner byte exact through c22; equal generator zero-case/UI initializer task adaptations",
   "scope": "Fuse shared indexed/ARGB conversion, copies, color processing, UI staging and upload preparation; preserve raw image, status, timing, caller contexts, custom producer fallback and portable compile0 implementation. No title policy.",
   "host_scope": "Shared PC software SDL/dummy presentation, real guest/audio execution; no quiet-host/physical-GPU/pacing/startup-loading performance claim. All pairs one host/config/compiler; leases/telemetry retained.",
-  "per_game_acceptance": "No aggregate offset. RKA/Sonic1 CRT observed gains; default raw neutral/inconclusive. Sonic CD adverse and favorable byte-identical-code observations retained; proposed neutral/inconclusive awaits independent reviewer.",
+  "per_game_acceptance": "RKA/Sonic1 CRT observed gains; raw/default neutral/inconclusive. CD explicitly MIXED shared-host evidence with substantial negatives retained; neutral/inconclusive, no proven universal nonregression or speedup, no aggregate offset. Independent reviewer accepted this bounded honest disposition.",
   "pairs": [
     {
       "game": "rka",
@@ -1717,6 +1717,11 @@
       "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-unit-tests-r1.json",
       "sha256": "61816a0f7025ec78c9ba809c37e334ca6112909a1c4ad0427718b7169f0239ef",
       "bytes": 1142
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\storage-inventory.json",
+      "bytes": 5519,
+      "sha256": "a6affe2f2421dde567520ae4a3f681ee0434fd3b352545be48771a5d35cf6527"
     }
   ],
   "retained_roots": {
@@ -1724,5 +1729,18 @@
     "bulk": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030",
     "server": "G:/Temp/Codex/genesis-engine-final-pixels-20261031-server"
   },
-  "handoff": "New stacked PR requires combined owner visual/play approval before merge/release. No owner-facing launch, delivery replacement or merge occurred."
+  "handoff": "New stacked PR requires combined owner visual/play approval before merge/release. No owner-facing launch, delivery replacement or merge occurred.",
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/48",
+  "reviewed_head": "c20f9668214a99aa9cb38eed1d8010de19a3a211",
+  "independent_review": {
+    "verdict": {
+      "path": "C:\\temp\\Codex\\genesis-engine-final-pixels-20261030\\VALIDATOR_E16_FINAL.md",
+      "sha256": "decf7af11af7841a1a36d8f7f24caae9139e1a11676ffb428d7bb1d277d89f96"
+    },
+    "receipt": {
+      "path": "C:\\temp\\Codex\\genesis-engine-final-pixels-20261030\\VALIDATOR_E16_FINAL_AUDIT.json",
+      "sha256": "fd295aeb76e27b61944a72516dee38259964ea496427d4b5399e371bd13aa839"
+    },
+    "source_unit_and_runtime_audits_preserved": true
+  }
 }
