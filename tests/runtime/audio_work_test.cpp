@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iterator>
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <vector>
 extern "C" {
@@ -100,7 +101,19 @@ int main(int argc,char **argv)
             restore_both(audio_event_rb_save,ref_audio_event_rb_save,audio_event_rb_load,ref_audio_event_rb_load);parity();
         }
     }
-    CHECK(genesis_worker_completed(worker)==160);audio_mixer_set_executor(nullptr,nullptr);genesis_worker_destroy(worker);
+    CHECK(genesis_worker_completed(worker)==160);
+    /* The original API permits overlapping output arrays. These arms MUST
+     * retain serial FM-then-PSG writes, including an overflowing declared cap. */
+    for(unsigned i=0;i<4;i++){
+        g_snd_frame=160+i;std::vector<int16_t> a(32768,-317),b=a;
+        push(17,AUDIO_PORT_PSG,0x80);push(19,AUDIO_PORT_PSG,0x0f);
+        size_t fa=0,fb=0,pa=0,pb=0;unsigned offset=i==0?0:i==1?1:17;
+        size_t cap=i==3?std::numeric_limits<size_t>::max():512;
+        audio_mixer_drain(end,a.data(),cap,&fa,a.data()+offset,1024,&pa);
+        ref_audio_mixer_drain(end,b.data(),cap,&fb,b.data()+offset,1024,&pb);
+        CHECK(fa==fb&&pa==pb&&a==b);parity();CHECK(genesis_worker_completed(worker)==160);
+    }
+    audio_mixer_set_executor(nullptr,nullptr);genesis_worker_destroy(worker);
     std::fflush(nullptr);std::ifstream a(argv[1],std::ios::binary),b(argv[2],std::ios::binary);
     CHECK(a.good()&&b.good());std::string x((std::istreambuf_iterator<char>(a)),{}),y((std::istreambuf_iterator<char>(b)),{});
     CHECK(!x.empty()&&x==y);SDL_Quit();
