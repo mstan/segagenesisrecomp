@@ -73,7 +73,8 @@ struct GenesisGpuRaster {
     uint32_t *words,*preview;size_t capacity,used,preview_capacity;
     int stride,sync,ready,last_drawn,broken;
     void (*before_replace)(void *);void *user;
-    uint64_t draws,upload_bytes,previews;
+    uint64_t draws,upload_bytes,previews,preview_readbacks,preview_samples;
+    uint64_t frame_serial,display_serial;
 };
 typedef struct GpuState {
     GLint program,vao,buffer,fbo,active,texture_buffer,viewport[4];
@@ -135,7 +136,7 @@ GenesisGpuRaster *genesis_gpu_raster_create(SDL_Renderer *renderer,void (*notify
     g->renderer=renderer;g->window=window;g->context=context;
     g->before_replace=notify;g->user=user;g->sync=1;
 #define GPU_LOAD(type,name) do { void *p=SDL_GL_GetProcAddress("gl" #name); \
-    if(!p){free(g);return NULL;} _Static_assert(sizeof(g->gl.name)==sizeof p,"SDL GL ABI"); \
+    if(!p || sizeof(g->gl.name)!=sizeof p){free(g);return NULL;} \
     memcpy((void *)&g->gl.name,&p,sizeof p); } while(0);
     GPU_PROCS(GPU_LOAD)
 #undef GPU_LOAD
@@ -175,9 +176,10 @@ void genesis_gpu_raster_destroy(GenesisGpuRaster *g)
 {
     if(!g)return;genesis_gpu_raster_invalidate(g);
     (void)SDL_GL_MakeCurrent(g->window,g->context);
-    fprintf(stderr,"[GPU raster] draws=%llu captured_rows=%llu materialized_rows=%llu upload_bytes=%llu previews=%llu\n",
+    fprintf(stderr,"[GPU raster] draws=%llu captured_rows=%llu materialized_rows=%llu upload_bytes=%llu previews=%llu preview_readbacks=%llu preview_samples=%llu\n",
         (unsigned long long)g->draws,(unsigned long long)g->frame->captures,(unsigned long long)g->frame->resolves,
-        (unsigned long long)g->upload_bytes,(unsigned long long)g->previews);
+        (unsigned long long)g->upload_bytes,(unsigned long long)g->previews,
+        (unsigned long long)g->preview_readbacks,(unsigned long long)g->preview_samples);
     if(g->texture)SDL_DestroyTexture(g->texture);
     if(g->fbo)g->gl.DeleteFramebuffers(1,&g->fbo);if(g->buffer_texture)g->gl.DeleteTextures(1,&g->buffer_texture);
     if(g->buffer)g->gl.DeleteBuffers(1,&g->buffer);if(g->vao)g->gl.DeleteVertexArrays(1,&g->vao);
@@ -187,7 +189,7 @@ int genesis_gpu_raster_begin(GenesisGpuRaster *g,uint32_t *raw,int stride,uint64
 {
     if(!g)return 0;
     if(!raw || stride<GVDP_MAX_WIDTH || stride>0x1fffffff){genesis_raster_frame_abort(g->frame);g->ready=0;return 0;}
-    if(!eligible || g->broken){genesis_raster_frame_abort(g->frame);g->ready=0;g->last_drawn=0;g->sync=1;return 0;}
+    if(!eligible || g->broken){++g->frame_serial;genesis_raster_frame_abort(g->frame);g->ready=0;g->last_drawn=0;g->sync=1;return 0;}
     if(g->stride!=stride || g->frame->raw!=raw || g->frame->generation!=generation)g->sync=1;
     if(g->sync){
         if(g->before_replace)g->before_replace(g->user);
@@ -206,6 +208,7 @@ int genesis_gpu_raster_begin(GenesisGpuRaster *g,uint32_t *raw,int stride,uint64
         if(tw!=1.0f || th!=1.0f){g->broken=1;return 0;}
         g->sync=0;
     }
+    ++g->frame_serial;
     g->ready=genesis_raster_frame_begin(g->frame,raw,stride,generation);return g->ready;
 }
 int genesis_gpu_raster_capture(GenesisGpuRaster *g,GVDP *v,int line)
@@ -244,7 +247,7 @@ static int gpu_pack(GenesisGpuRaster *g)
 }
 SDL_Texture *genesis_gpu_raster_draw(GenesisGpuRaster *g)
 {
-    if(!g || !g->ready || !g->texture)return NULL;
+    if(!g || !g->ready || !g->texture){if(g)g->last_drawn=0;return NULL;}
     if(!gpu_pack(g) || SDL_RenderFlush(g->renderer)!=0 || SDL_GL_MakeCurrent(g->window,g->context)!=0)goto fail;
     GpuState state;gpu_save(g,&state);
     int ok=SDL_GL_BindTexture(g->texture,NULL,NULL)==0;GLint target=0;
@@ -263,7 +266,7 @@ SDL_Texture *genesis_gpu_raster_draw(GenesisGpuRaster *g)
     }
     gpu_restore(g,&state);
     if(!ok)goto fail;
-    ++g->draws;g->upload_bytes+=g->used*4u;g->last_drawn=1;return g->texture;
+    ++g->draws;g->upload_bytes+=g->used*4u;g->last_drawn=1;g->display_serial=g->frame_serial;return g->texture;
 fail:
     genesis_raster_frame_abort(g->frame);g->ready=0;g->sync=1;g->last_drawn=0;g->broken=1;
     fprintf(stderr,"[GPU raster] resource/dispatch unavailable; using complete CPU output\n");return NULL;
@@ -273,6 +276,17 @@ int genesis_gpu_raster_preview(void *ctx,uint32_t *out,int width,int height,int 
 {
     GenesisGpuRaster *g=(GenesisGpuRaster *)ctx;
     if(!g || !g->texture || !out || width<=0 || height<=0 || sw<=0 || sh<=0 || sw>g->stride || sh>GENESIS_RASTER_ROWS)return 0;
+    if((size_t)width>SIZE_MAX/(size_t)height/sizeof(uint32_t))return 0;
+    /* A rewind capture immediately after publication still owns that exact
+     * packet image. Sampling it avoids both full image work and a GPU fence.
+     * Once another guest frame starts, only the old GPU image is authoritative. */
+    if(g->last_drawn && g->frame->raw && g->frame_serial==g->display_serial){
+        for(int y=0;y<height;y++)for(int x=0;x<width;x++)
+            out[(size_t)y*(size_t)width+x]=genesis_raster_frame_sample(g->frame,
+                (unsigned)((size_t)x*(size_t)sw/(size_t)width),
+                (unsigned)((size_t)y*(size_t)sh/(size_t)height))|0xff000000u;
+        ++g->previews;g->preview_samples+=(uint64_t)(unsigned)width*(unsigned)height;return 1;
+    }
     size_t capacity=(size_t)g->stride*GENESIS_RASTER_ROWS;
     if(g->preview_capacity<capacity){uint32_t *p=(uint32_t *)realloc(g->preview,capacity*4u);if(!p)return 0;g->preview=p;g->preview_capacity=capacity;}
     if(SDL_RenderFlush(g->renderer)!=0 || SDL_GL_MakeCurrent(g->window,g->context)!=0)return 0;
@@ -301,8 +315,8 @@ int genesis_gpu_raster_preview(void *ctx,uint32_t *out,int width,int height,int 
     (void)SDL_GL_UnbindTexture(g->texture);a->ActiveTexture((GLenum)active);
     if(!ok)return 0;
     for(int y=0;y<height;y++)for(int x=0;x<width;x++)out[(size_t)y*(size_t)width+x]=
-        g->preview[(size_t)(y*sh/height)*(size_t)g->stride+x*sw/width]|0xff000000u;
-    ++g->previews;return 1;
+        g->preview[((size_t)y*(size_t)sh/(size_t)height)*(size_t)g->stride+(size_t)x*(size_t)sw/(size_t)width]|0xff000000u;
+    ++g->previews;++g->preview_readbacks;return 1;
 }
 #else
 struct GenesisGpuRaster { int unavailable; };
