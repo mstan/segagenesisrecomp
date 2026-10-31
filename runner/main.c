@@ -241,12 +241,13 @@ static ColorLut s_color_lut;
 static int      s_color_lut_on = 0;   /* 0 = raw passthrough (default) */
 static GenesisFrameWork *s_parallel_pixels;
 static GenesisWorker *s_parallel_audio;
+static const char *s_parallel_audio_mode="chips";
 static uint64_t s_raw_content_token;
 static void engine_work_cleanup(void)
 {
     genesis_frame_work_destroy(s_parallel_pixels);s_parallel_pixels=NULL;
     audio_mixer_set_executor(NULL,NULL);
-    if(s_parallel_audio)fprintf(stderr,"[Engine work] mode=chips completed=%llu\n",
+    if(s_parallel_audio)fprintf(stderr,"[Engine work] mode=%s completed=%llu\n",s_parallel_audio_mode,
         (unsigned long long)genesis_worker_completed(s_parallel_audio));
     genesis_worker_destroy(s_parallel_audio);s_parallel_audio=NULL;
 }
@@ -2853,6 +2854,9 @@ int main(int argc, char *argv[])
         if(work_mode && !strcmp(work_mode,"chips")){
             s_parallel_audio=genesis_worker_create();
             if(s_parallel_audio){audio_mixer_set_executor(execute_chip_jobs,s_parallel_audio);atexit(engine_work_cleanup);}
+        }else if(work_mode && !strcmp(work_mode,"shadow")){
+            s_parallel_audio=genesis_worker_create();s_parallel_audio_mode="shadow";
+            if(s_parallel_audio){audio_mixer_set_shadow_executor(execute_chip_jobs,s_parallel_audio);atexit(engine_work_cleanup);}
         }
         int audio_status = audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
         if (runtime_measure_frames && audio_status != 0) {
