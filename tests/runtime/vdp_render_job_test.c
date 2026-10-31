@@ -69,9 +69,10 @@ static void status_and_backoff(void)
 {
     presentation();GVDP a,b;scene(&a);b=a;uint8_t x[GVDP_MAX_WIDTH],y[GVDP_MAX_WIDTH];uint64_t before[6],after[6];
     capture_pair(&a,&b,9,x,y);CHECK(a.sprite_collision && b.sprite_collision);
+    capture_pair(&a,&b,9,x,y); /* Ensure the prior capture-hit counter is nonzero. */
     a.sprite_collision=b.sprite_collision=a.sprite_overflow=b.sprite_overflow=0;
     cand_gvdp_render_reuse_stats(before);capture_pair(&a,&b,9,x,y);cand_gvdp_render_reuse_stats(after);
-    CHECK(b.sprite_collision && after[1]==before[1]+1 && after[5]==before[4]+1);
+    CHECK(b.sprite_collision && after[1]==before[1]+1 && after[5]==before[5]+1);
     /* Same-pointer direct art write must change visible output and miss. */
     a.vram[4*32+4]^=0xf0;b.vram[4*32+4]^=0xf0;
     capture_pair(&a,&b,9,x,y);cand_gvdp_render_reuse_stats(before);CHECK(before[2]==2);
