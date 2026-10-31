@@ -304,6 +304,8 @@ static int eval_cond(int cc) {
 /* ---- stack helpers (active SP = A[7]) ---- */
 static void push32(uint32_t v) { g_cpu.A[7] -= 4; m68k_write32(g_cpu.A[7], v); }
 static uint32_t pop32(void)    { uint32_t v = m68k_read32(g_cpu.A[7]); g_cpu.A[7] += 4; return v; }
+/* RTS pop: generated code returns through C without a bus access. */
+static uint32_t pop32_rts(void) { uint32_t v = glue_peek32(g_cpu.A[7]); g_cpu.A[7] += 4; return v; }
 
 /* Game-owned instruction hooks run at the same audited sites as in generated
  * code, so a routine reached only through the floor keeps its game extension.
@@ -903,7 +905,7 @@ static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
         return M68KI_OK;
     }
     case MN_RTS:
-        *next_pc = pop32();
+        *next_pc = pop32_rts();
         return M68KI_OK;
     case MN_RTR: {                       /* pop CCR (word), then PC (long) */
         uint16_t ccr = pop16();
@@ -1311,7 +1313,7 @@ static void interp_account_cycles(const M68KInstr *ins) {
 M68kiStatus m68k_interp_step(void) {
     uint32_t pc = g_cpu.PC & 0xFFFFFFu;
     if (!pc_fetchable(pc)) { g_m68ki_bad_pc = pc; return M68KI_HALT_BADADDR; }
-    if (interp_game_hook(pc)) { g_cpu.PC = pop32() & 0xFFFFFFu; return M68KI_OK; }
+    if (interp_game_hook(pc)) { g_cpu.PC = pop32_rts() & 0xFFFFFFu; return M68KI_OK; }
 
     M68KInstr ins;
     if (!m68k_decode(busview(), pc, &ins)) {
@@ -1398,7 +1400,7 @@ M68kiStatus m68k_interp_run_framed(uint32_t entry_pc, uint32_t *out_exit_pc) {
                 if (out_exit_pc) *out_exit_pc = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;
                 return M68KI_OK;
             }
-            g_cpu.PC = pop32() & 0xFFFFFFu;
+            g_cpu.PC = pop32_rts() & 0xFFFFFFu;
             depth--;
             continue;
         }
@@ -1468,7 +1470,7 @@ M68kiStatus m68k_interp_run_handler(uint32_t entry_pc) {
         if (interp_game_hook(pc)) {
             /* Implicit RTS; at depth 0 it ends the handler body like RTE. */
             if (depth == 0) return M68KI_OK;
-            g_cpu.PC = pop32() & 0xFFFFFFu;
+            g_cpu.PC = pop32_rts() & 0xFFFFFFu;
             depth--;
             continue;
         }
@@ -1548,7 +1550,7 @@ M68kiStatus m68k_interp_run_ram_handler(uint32_t entry_pc, uint32_t *out_exit_pc
                 if (out_exit_pc) *out_exit_pc = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;
                 return M68KI_OK;
             }
-            g_cpu.PC = pop32() & 0xFFFFFFu;
+            g_cpu.PC = pop32_rts() & 0xFFFFFFu;
             depth--;
             continue;
         }
