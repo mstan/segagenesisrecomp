@@ -1,3 +1,4 @@
+#include "video/genesis_frame_pixels.h"
 /*
  * main.c — shared SDL2 frontend for native Genesis recompilation targets.
  *
@@ -234,6 +235,16 @@ static uint32_t s_present_storage[NATIVE_SCREEN_STRIDE * MAX_SCREEN_HEIGHT];
 static uint32_t *s_present_buf = s_present_storage;
 static ColorLut s_color_lut;
 static int      s_color_lut_on = 0;   /* 0 = raw passthrough (default) */
+#if GENESIS_FINAL_PIXEL_PIPELINE
+static void present_color_row(void *context,const void *source,void *destination,int count)
+{
+    const ColorLut *lut=(const ColorLut *)context;
+    const uint32_t *src=(const uint32_t *)source;
+    uint32_t *dst=(uint32_t *)destination;
+    for(int x=0;x<count;++x)dst[x]=color_lut_map_argb(lut,src[x]);
+}
+#endif
+
 
 static void color_lut_setup(void)
 {
@@ -573,6 +584,22 @@ static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width
     s_screen_width = game_video_draw_row(&s_video_frame, &g_machine.vdp, line,
         width, row, MAX_SCREEN_WIDTH, provided_native_row, (void *)argb);
 }
+
+static int own_indexed_accepts(void *user,int line,int width)
+{
+    (void)user;
+    return !s_video_frame.owner && line>=0 && line<MAX_SCREEN_HEIGHT && width>0 && width<=MAX_SCREEN_WIDTH;
+}
+static void own_indexed_sink(void *user,int line,const uint8_t *indices,int width,const uint32_t *palette)
+{
+    (void)user;
+    uint32_t *row=s_framebuf+(size_t)line*(size_t)MAX_SCREEN_WIDTH;
+    genesis_pixels_expand(row,indices,width,palette,GVDP_OUTPUT_PALETTE_SIZE,0xff000000u);
+    if(s_video_frame.adapter && s_video_frame.adapter->overlay_scanline)
+        s_video_frame.adapter->overlay_scanline(&g_machine.vdp,line,row,width);
+    s_screen_width=width;
+}
+static GenesisIndexedSink s_direct_pixels={NULL,own_scanline_sink,own_indexed_sink,own_indexed_accepts};
 
 static int own_custom_row_enabled(void *user)
 {
@@ -3394,7 +3421,7 @@ session_begin:;
           GenesisSimAudio sim_audio = {
               (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
               (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
-          GenesisSimHooks sim_hooks = { live_pre_raster, own_scanline_sink, NULL,
+          GenesisSimHooks sim_hooks = { live_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                         live_post_drain, NULL, &s_custom_producer };
           int probing = rb_probe_armed()
 #if GENESIS_HAS_RECOMP_NET
@@ -3556,7 +3583,7 @@ session_begin:;
                   GenesisSimAudio sim_audio = {
                       (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
                       (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
-                  GenesisSimHooks sim_hooks = { widescreen_pre_raster, own_scanline_sink, NULL,
+                  GenesisSimHooks sim_hooks = { widescreen_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                                 rdb_post_drain, NULL, &s_custom_producer };
                   if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
@@ -3668,12 +3695,6 @@ session_begin:;
          * s_framebuf (the verified/hashed raw VDP output) is never modified. */
         if (!benchmark_frames) {
         const uint32_t *present_src = s_framebuf;
-        if (s_color_lut_on) {
-            color_lut_map_frame(&s_color_lut, s_framebuf, s_present_buf,
-                                s_screen_width, s_screen_height,
-                                MAX_SCREEN_WIDTH);
-            present_src = s_present_buf;
-        }
 #if RECOMP_LAUNCHER
         if (!g_game_spec.video && s_runtime_ui.view_mode == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE
 #if GENESIS_HAS_RECOMP_NET
@@ -3684,12 +3705,37 @@ session_begin:;
             int ow, oh; SDL_GetRendererOutputSize(renderer, &ow, &oh);
             if (oh > 0) { int cells = (((224 * ow + oh/2) / oh) - 320 + 15) / 16; if (cells < 1) cells = 1; if (cells > 12) cells = 12; s_ws_user_cells = cells; s_ws_user_on = 1; }
         }
-        if (recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
-            if (present_src != s_present_buf) memcpy(s_present_buf, present_src,
-                (size_t)s_frame_stride * MAX_SCREEN_HEIGHT * sizeof(uint32_t));
-            recomp_runtime_ui_render_argb8888(s_runtime_ui.ui, s_present_buf, s_screen_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
-            present_src = s_present_buf;
+#endif
+        int ui_open = 0;
+#if RECOMP_LAUNCHER
+        ui_open = recomp_runtime_ui_is_open(s_runtime_ui.ui);
+#endif
+#if GENESIS_FINAL_PIXEL_PIPELINE
+        GenesisPixelView view;
+        int prepared = genesis_frame_pixels(&view, s_framebuf, s_frame_stride * 4,
+            s_present_buf, (size_t)s_frame_stride * MAX_SCREEN_HEIGHT * sizeof(uint32_t),
+            s_frame_stride * 4, s_screen_width, s_screen_height,
+            s_frame_stride, MAX_SCREEN_HEIGHT, ui_open,
+            s_color_lut_on ? present_color_row : NULL, &s_color_lut);
+        if (prepared) present_src = (const uint32_t *)view.pixels;
+        else
+#endif
+        {
+            if (s_color_lut_on) {
+                color_lut_map_frame(&s_color_lut, s_framebuf, s_present_buf,
+                    s_screen_width, s_screen_height, MAX_SCREEN_WIDTH);
+                present_src = s_present_buf;
+            }
+            if (ui_open && present_src != s_present_buf) {
+                memcpy(s_present_buf, present_src,
+                    (size_t)s_frame_stride * MAX_SCREEN_HEIGHT * sizeof(uint32_t));
+                present_src = s_present_buf;
+            }
         }
+#if RECOMP_LAUNCHER
+        if (ui_open)
+            recomp_runtime_ui_render_argb8888(s_runtime_ui.ui, s_present_buf,
+                s_screen_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
 #endif
         update_render_logical_size(renderer);
         SDL_RenderClear(renderer);

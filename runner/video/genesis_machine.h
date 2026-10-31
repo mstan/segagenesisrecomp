@@ -31,6 +31,18 @@ extern GenesisMachine g_machine;
 /* Emit a rendered scanline (ARGB row) to the display. The host (main.c) copies
  * it into its framebuffer. */
 typedef void (*GenesisScanlineSink)(void *user, int line, const uint32_t *argb, int width);
+/* Optional synchronous indexed consumer. Palette/indices are current-row
+ * borrowed inputs; callbacks must not mutate or advance the guest. The adapter
+ * transparently forwards legacy ARGB and producer calls with the original user.
+ * Existing hooks and callers retain their layout and ordinary ARGB contract. */
+typedef struct GenesisIndexedSink {
+    void *user;
+    GenesisScanlineSink argb;
+    void (*indexed)(void *user,int line,const uint8_t *indices,int width,const uint32_t *palette);
+    int (*accepts)(void *user,int line,int width);
+} GenesisIndexedSink;
+void genesis_indexed_sink_adapter(void *ctx,int line,const uint32_t *argb,int width);
+
 typedef const uint32_t *(*GenesisNativeRow)(void *ctx);
 typedef struct GenesisScanlineProducer {
     /* Queried at the current raster position, before rendering/status work. */
