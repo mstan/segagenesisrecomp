@@ -848,5 +848,21 @@
     }
   ],
   "historical_audit_date": "2026-10-28",
-  "current_update_date": "2026-10-31"
+  "current_update_date": "2026-10-31",
+  "additional_owner_requirements": [
+    {
+      "id": "E37",
+      "name": "GPU-resident high-resolution rendering",
+      "issue": "beads-3z5k.17",
+      "implementation_state": "unimplemented",
+      "remaining_scope_open": true,
+      "directive": "C:/Users/Matthew/Desktop/GPU-HIGH-RESOLUTION-RENDERING-GUIDE.md",
+      "required": "Qualified16x internal resolution at full speed with headroom on owner PC",
+      "desired": "32x/64x; lower-end16x later",
+      "coverage_gap": "Original E17 native-resolution rejection did not evaluate resident-source/dirty-upload/scale-independent high-resolution jobs",
+      "instrumentation": "No expansion approved; owner stop-and-ask applies"
+    }
+  ],
+  "total_tracked_families": 37,
+  "total_remaining_open_count": 18
 }
