@@ -30,10 +30,6 @@ static int s_depth, s_interval, s_count, s_head, s_cadence, s_mode, s_selected;
 static uint32_t s_tick;
 static char s_dir[512];
 static uint32_t s_live_thumb[THUMB_W * THUMB_H];
-static uint32_t s_preview_thumb[THUMB_W * THUMB_H];
-static GenesisLocalPreview s_preview;
-static void *s_preview_user;
-static int s_preview_width,s_preview_height;
 static uint32_t s_panel[PANEL_W * PANEL_H];
 static uint32_t s_slot_thumb[SLOT_COUNT][THUMB_W * THUMB_H];
 static int s_slot_has_thumb[SLOT_COUNT], s_slot_exists[SLOT_COUNT];
@@ -49,7 +45,6 @@ static void path_for_slot(int slot, int thumb, char *out, size_t cap)
 
 void genesis_local_states_clear(void)
 {
-    genesis_local_states_materialize_frame();
     if (s_ring) rbe_snap_ring_clear(s_ring);
     s_count = s_head = s_cadence = 0;
     s_tick = 0;
@@ -57,8 +52,6 @@ void genesis_local_states_clear(void)
 
 void genesis_local_states_shutdown(void)
 {
-    genesis_local_states_materialize_frame();
-    s_preview=NULL;s_preview_user=NULL;
     if (s_ring) fprintf(stderr, "[rewind] shutdown: %d snapshots retained\n", s_count);
     rbe_snap_ring_destroy(s_ring);
     s_ring = NULL;
@@ -126,7 +119,6 @@ static void refresh_slots(void)
 void genesis_local_states_slot_saved(int slot)
 {
     if (slot < 1 || slot > SLOT_COUNT) return;
-    genesis_local_states_materialize_frame();
     char path[640];
     path_for_slot(slot, 1, path, sizeof path);
     FILE *f = fopen(path, "wb");
@@ -138,16 +130,16 @@ void genesis_local_states_slot_saved(int slot)
     refresh_slots();
 }
 
-void genesis_local_states_materialize_frame(void)
+void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
+                                     int width, int height)
 {
-    if(!s_preview)return;
-    if(s_preview(s_preview_user,s_preview_thumb,THUMB_W,THUMB_H,s_preview_width,s_preview_height))
-        for(unsigned i=0;i<THUMB_W*THUMB_H;i++)s_live_thumb[i]=s_preview_thumb[i]|0xff000000u;
-    s_preview=NULL;s_preview_user=NULL;
-}
-
-static void local_states_note_snapshot(void)
-{
+    if (!pixels || stride < width || width <= 0 || height <= 0 || s_mode)
+        return;
+    for (int y = 0; y < THUMB_H; ++y)
+        for (int x = 0; x < THUMB_W; ++x)
+            s_live_thumb[y * THUMB_W + x] =
+                pixels[(size_t)(y * height / THUMB_H) * (size_t)stride +
+                       x * width / THUMB_W] | 0xFF000000u;
     if (!s_ring || ++s_cadence < s_interval) return;
     s_cadence = 0;
     size_t cap = genesis_rb_bound();
@@ -163,29 +155,9 @@ static void local_states_note_snapshot(void)
                 n, (double)n * s_depth / (1024.0 * 1024.0));
     LocalSnap *snap = &s_meta[s_head];
     snap->tick = s_tick;
-    genesis_local_states_materialize_frame();
     memcpy(snap->thumb, s_live_thumb, sizeof snap->thumb);
     s_head = (s_head + 1) % s_depth;
     if (s_count < s_depth) ++s_count;
-}
-
-void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
-                                     int width, int height)
-{
-    if (!pixels || stride < width || width <= 0 || height <= 0 || s_mode)return;
-    s_preview=NULL;s_preview_user=NULL;
-    for(int y=0;y<THUMB_H;y++)for(int x=0;x<THUMB_W;x++)
-        s_live_thumb[y*THUMB_W+x]=pixels[(size_t)(y*height/THUMB_H)*(size_t)stride+
-                                      x*width/THUMB_W]|0xff000000u;
-    local_states_note_snapshot();
-}
-
-void genesis_local_states_note_frame_source(GenesisLocalPreview preview,void *user,
-                                            int width,int height)
-{
-    if(!preview || width<=0 || height<=0 || s_mode)return;
-    s_preview=preview;s_preview_user=user;s_preview_width=width;s_preview_height=height;
-    local_states_note_snapshot();
 }
 
 int genesis_local_states_open_rewind(void)

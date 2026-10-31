@@ -14,7 +14,6 @@
 #include "genesis_vdp.h"
 #include "genesis_tile_row.h"
 #include "genesis_vdp_compose.h"
-#include "genesis_tile_packet.h"
 #include <string.h>
 #ifndef GENESIS_BATCHED_PLANES
 #define GENESIS_BATCHED_PLANES 0
@@ -949,114 +948,6 @@ int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
         fetch_plane_span(v,row->plane_b+xo,n,base_b,wt,ht,x-hs_b,line+vb,im2);
         x+=n;xo+=n;
     }
-    return (int)row->width;
-}
-
-/* Copy pattern words and their exact output mapping instead of decoding
- * eight plane pixels per word. No live VRAM/pointer survives this capture. */
-static int capture_tile_span(const GVDP *v,GVDPTileRasterRow *packet,unsigned plane,
-    int out,int count,uint16_t base,int wt,int ht,int px,int py,int im2)
-{
-    if(out<0 || count<0 || (unsigned)out>GVDP_MAX_WIDTH ||
-       (unsigned)count>GVDP_MAX_WIDTH-(unsigned)out)return 0;
-    int shift=im2?4:3,fy_mask=(1<<shift)-1,tile_bytes=im2?64:32;
-    int mask=wt*8-1;py&=(ht<<shift)-1;
-    uint16_t row_base=(uint16_t)(base+(py>>shift)*wt*2);
-    while(count) {
-        px&=mask;int fx=px&7,n=8-fx;if(n>count)n=count;
-        unsigned slot=packet->span_count[plane];
-        if(slot>=GVDP_TILE_PACKET_SPANS || slot>255u)return 0;
-        uint16_t e=vram_read_word(v,(uint16_t)(row_base+(px>>3)*2));
-        int fy=py&fy_mask;if(e&0x1000)fy^=fy_mask;
-        uint16_t pa=(uint16_t)((e&0x7ff)*tile_bytes+fy*4);
-        GVDPTileSpan *span=&packet->spans[plane][slot];
-        span->bits=((uint32_t)v->vram[pa]<<24)|((uint32_t)v->vram[pa+1]<<16)|
-                   ((uint32_t)v->vram[pa+2]<<8)|v->vram[pa+3];
-        unsigned attr=((e>>9)&0x30)|((e>>8)&0x80)|((e&0x800)?1u:0u);
-        span->meta=(uint32_t)out|((uint32_t)fx<<16)|(attr<<24);
-        memset(packet->map[plane]+out,(int)slot,(size_t)n);
-        packet->span_count[plane]=slot+1;out+=n;count-=n;px+=n;
-    }
-    return 1;
-}
-
-int gvdp_capture_tile_scanline(GVDP *v, int line, GVDPTileRasterRow *packet)
-{
-    if(!packet)return 0;
-    GVDPRasterRow *row=&packet->raster;
-    /* These providers can publish private art/palettes or invoke arbitrary
-     * host drawing. The original path owns them until they supply an explicit
-     * immutable capture contract. No callback/status work has run on rejection. */
-    if (!v || !row || line < 0 || line >= GVDP_MAX_HEIGHT * 2 ||
-        s_host_sprites || s_ext_tiles || s_sprite_patterns[0] || s_sprite_patterns[1])
-        return 0;
-    int w=gvdp_screen_width(v),extra=clamp_ws_extra(w);
-    unsigned block=(unsigned)(w+2*extra);
-    row->width=(unsigned)(s_ws_canvas_w>(int)block?s_ws_canvas_w:(int)block);
-    row->start=(row->width-block)/2u;row->count=block;
-    unsigned offset=row->start+(unsigned)extra;
-    row->backdrop=(uint8_t)(REG_BACKDROP(v)&63u);
-    row->bar=s_ws_bar_black?(uint8_t)GVDP_WS_BAR_INDEX:row->backdrop;
-    row->display=(uint8_t)(gvdp_display_enabled(v)!=0);
-    row->shadow_mode=(uint8_t)(MODE4_SHI(v)!=0);
-    row->diagnostic=(uint8_t)(s_ws_bgdiag!=0);
-    row->diag_offset=row->diag_mask=0;
-    packet->span_count[0]=packet->span_count[1]=0;
-    if(row->width>GVDP_MAX_WIDTH || row->start>row->width || row->count>row->width-row->start)return 0;
-    if (!row->display) return (int)row->width;
-
-    int im2=MODE4_IM2(v),rline=im2?line>>1:line;
-    int wt=plane_tiles(REG_PLANE_SIZE(v)&3),ht=plane_tiles((REG_PLANE_SIZE(v)>>4)&3);
-    uint16_t base_a=(uint16_t)((REG_PLANEA_NT(v)&0x38)<<10);
-    uint16_t base_b=(uint16_t)((REG_PLANEB_NT(v)&7)<<13);
-    int win_wt=MODE4_H40(v)?64:32;
-    uint16_t base_w=(uint16_t)((REG_WINDOW_NT(v)&(MODE4_H40(v)?0x3e:0x3f))<<10);
-    uint16_t hbase=(uint16_t)((REG_HSCROLL_NT(v)&63)<<10);
-    int hmode=REG_MODE3(v)&3,hidx=hmode==0?0:hmode==2?rline&~7:rline;
-    int hs_a=vram_read_word(v,(uint16_t)(hbase+hidx*4))&1023;
-    int hs_b=vram_read_word(v,(uint16_t)(hbase+(s_ws_bgdiag?0:hidx)*4+2))&1023;
-    int two_cell=(REG_MODE3(v)&4)!=0,vs_mask=im2?2047:1023;
-    int full_a=v->vsram[0]&vs_mask,full_b=v->vsram[1]&vs_mask;
-    unsigned wx=REG_WINDOW_X(v),wy=REG_WINDOW_Y(v);
-    int window_x=(wx&31)*16,window_y=(wy&31)*8;
-    int right=(wx&128)!=0,vertical=(wy&128)?rline>=window_y:rline<window_y;
-    row->diag_mask=(unsigned)(wt*8-1);row->diag_offset=offset+(unsigned)hs_b;
-
-    unsigned end=row->start+block;
-    for (int x=-extra,xo=(int)row->start;xo<(int)end;) {
-        int boundary=x<0?0:x>=w?w+extra:((x>>4)+1)*16;
-        if(boundary>w+extra)boundary=w+extra;
-        if(window_x>x && window_x<boundary)boundary=window_x;
-        int n=boundary-x,va=full_a,vb=full_b;
-        if(two_cell) {
-            int xc=x<0?0:x>=w?w-1:x,col=(xc>>4)*2;
-            va=v->vsram[col%GVDP_VSRAM_ENTRIES]&vs_mask;
-            vb=v->vsram[(col+1)%GVDP_VSRAM_ENTRIES]&vs_mask;
-        }
-        int horizontal=right?x>=window_x:x<window_x;
-        if(x>=0 && x<w && (horizontal||vertical))
-            { if(!capture_tile_span(v,packet,0,xo,n,base_w,win_wt,ht,x,line,im2))return 0; }
-        else { if(!capture_tile_span(v,packet,0,xo,n,base_a,wt,ht,x-hs_a,line+va,im2))return 0; }
-        if(!capture_tile_span(v,packet,1,xo,n,base_b,wt,ht,x-hs_b,line+vb,im2))return 0;
-        x+=n;xo+=n;
-    }
-    /* Pure geometry/pattern capture finishes before status mutation. Capacity
-     * rejection therefore permits the ordinary path without duplicate effects. */
-    sprite_render_line(v,line,(int)row->width,(int)offset);
-    memcpy(row->sprite,s_spr_idx,row->width);memcpy(row->opaque,s_spr_op,row->width);
-    memcpy(row->high,s_spr_hi,row->width);memcpy(row->shadow_op,s_spr_shadow_op,row->width);
-    memcpy(row->hilite_op,s_spr_hilite_op,row->width);
-    return (int)row->width;
-}
-
-int gvdp_compose_tile_captured(const GVDPTileRasterRow *packet,uint8_t *out)
-{
-    if(!packet || !out)return 0;
-    const GVDPRasterRow *row=&packet->raster;
-    if(!row->width || row->width>GVDP_MAX_WIDTH || row->start>row->width ||
-       row->count>row->width-row->start || packet->span_count[0]>GVDP_TILE_PACKET_SPANS ||
-       packet->span_count[1]>GVDP_TILE_PACKET_SPANS)return 0;
-    for(unsigned x=0;x<row->width;x++)out[x]=(uint8_t)gvdp_packet_index(packet,x,1);
     return (int)row->width;
 }
 

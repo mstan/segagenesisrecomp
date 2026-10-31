@@ -1,5 +1,4 @@
 #include "video/genesis_frame_pixels.h"
-#include "video/genesis_gpu_raster.h"
 /*
  * main.c — shared SDL2 frontend for native Genesis recompilation targets.
  *
@@ -223,7 +222,6 @@ static uint32_t *s_framebuf = s_native_storage; /* ARGB8888 */
 static GameVideoFrame s_video_frame;
 static SDL_Renderer *s_video_renderer;
 static SDL_Texture **s_video_texture;
-static GenesisGpuRaster *s_gpu_raster;
 
 /* ── Present-time screen-color LUT (verified-enhancement video) ──────────
  * Opt-in via GENESIS_SCREEN={raw,crt,trinitron,composite,linear}; default
@@ -602,35 +600,6 @@ static void own_indexed_sink(void *user,int line,const uint8_t *indices,int widt
     s_screen_width=width;
 }
 static GenesisIndexedSink s_direct_pixels={NULL,own_scanline_sink,own_indexed_sink,own_indexed_accepts};
-static int own_packet_sink(void *ctx,GVDP *vdp,int line)
-{
-    int width=genesis_gpu_raster_capture((GenesisGpuRaster *)ctx,vdp,line);
-    if(width)s_screen_width=width;
-    return width;
-}
-static GenesisRasterSink s_raster_pixels={
-    {NULL,own_scanline_sink,own_indexed_sink,own_indexed_accepts},own_packet_sink,NULL};
-
-static void gpu_before_replace(void *user)
-{
-    (void)user;genesis_local_states_materialize_frame();
-}
-static void gpu_prepare_frame(void)
-{
-    if(!s_gpu_raster)return;
-    int eligible=!s_video_frame.owner && !s_color_lut_on &&
-        !(s_video_frame.adapter && s_video_frame.adapter->overlay_scanline) &&
-        !genesis_local_states_is_open();
-#if RECOMP_LAUNCHER
-    eligible=eligible && !recomp_runtime_ui_is_open(s_runtime_ui.ui);
-#endif
-#if GENESIS_HAS_RECOMP_NET
-    eligible=eligible && !genesis_netplay_active();
-#endif
-    (void)genesis_gpu_raster_begin(s_gpu_raster,s_framebuf,s_frame_stride,
-                                  machine_presentation_generation(),eligible);
-}
-
 
 static int own_custom_row_enabled(void *user)
 {
@@ -704,7 +673,6 @@ static void custom_video_prepare(void)
 #if RECOMP_LAUNCHER
         s_runtime_ui.texture = next;
 #endif
-        genesis_gpu_raster_invalidate(s_gpu_raster);
         if (s_framebuf != s_native_storage) free(s_framebuf);
         if (s_present_buf != s_present_storage) free(s_present_buf);
         s_framebuf = frame; s_present_buf = present; s_frame_stride = width;
@@ -1324,7 +1292,6 @@ static uint64_t sram_content_hash(void)
  * and the state-anchored [MODEHASH] path. */
 static uint64_t framebuf_active_hash(void)
 {
-    genesis_gpu_raster_resolve(s_gpu_raster);
     uint64_t h = 0xCBF29CE484222325ULL;
     const uint8_t *p = (const uint8_t *)s_framebuf;
     int row_bytes = s_screen_width * (int)sizeof(uint32_t);
@@ -1516,7 +1483,6 @@ static int runner_dump_vram_file(const char *path)
 
 int runner_write_screenshot_file(const char *path)
 {
-    genesis_gpu_raster_resolve(s_gpu_raster);
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
     int ok = png_write_argb(resolved, s_framebuf,
@@ -1702,11 +1668,6 @@ static void widescreen_pre_raster(void *ctx)
     widescreen_update_for_frame();   /* set VDP margin + game RAM word */
 }
 
-static void debugger_pre_raster(void *ctx)
-{
-    widescreen_pre_raster(ctx);gpu_prepare_frame();
-}
-
 /* Pre-raster, live tick: the chip-trace stamp, then the widescreen margin. */
 static void live_pre_raster(void *ctx)
 {
@@ -1715,7 +1676,6 @@ static void live_pre_raster(void *ctx)
       g_snd_vint = g_game_layout.vint_runcount_addr
           ? (unsigned long)glue_peek32(g_game_layout.vint_runcount_addr) : 0ul; }
     widescreen_update_for_frame();   /* set VDP margin + game RAM word */
-    gpu_prepare_frame();
 }
 
 /* A REPLAYED tick (rollback resim, determinism probe): only the pre-raster
@@ -2829,8 +2789,6 @@ int main(int argc, char *argv[])
     }
     s_video_renderer = renderer;
     s_video_texture = &texture;
-    if(!benchmark_frames)s_gpu_raster=genesis_gpu_raster_create(renderer,gpu_before_replace,NULL);
-    s_raster_pixels.capture_user=s_gpu_raster;
     {
         SDL_ScaleMode mode = SDL_ScaleModeNearest;
         if (SDL_GetTextureScaleMode(texture, &mode) == 0)
@@ -3343,8 +3301,7 @@ session_begin:;
                 int opened = overlay_request == 1 ? genesis_local_states_open_rewind()
                                                   : genesis_local_states_open_menu();
                 if (opened) {
-                    SDL_Texture *last_gpu=genesis_gpu_raster_last_texture(s_gpu_raster);
-                    local_states_modal(renderer,last_gpu?last_gpu:texture,&running,turbo);
+                    local_states_modal(renderer, texture, &running, turbo);
                     if (!running) { window_close_requested = 1; break; }
                     prev_overlay_pad = gamepad_overlay_mask();
                     continue;
@@ -3464,9 +3421,7 @@ session_begin:;
           GenesisSimAudio sim_audio = {
               (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
               (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
-          GenesisSimHooks sim_hooks = { live_pre_raster,
-              s_gpu_raster?genesis_raster_sink_adapter:genesis_indexed_sink_adapter,
-              s_gpu_raster?(void *)&s_raster_pixels:(void *)&s_direct_pixels,
+          GenesisSimHooks sim_hooks = { live_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                         live_post_drain, NULL, &s_custom_producer };
           int probing = rb_probe_armed()
 #if GENESIS_HAS_RECOMP_NET
@@ -3628,9 +3583,7 @@ session_begin:;
                   GenesisSimAudio sim_audio = {
                       (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
                       (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
-                  GenesisSimHooks sim_hooks = { debugger_pre_raster,
-                      s_gpu_raster?genesis_raster_sink_adapter:genesis_indexed_sink_adapter,
-                      s_gpu_raster?(void *)&s_raster_pixels:(void *)&s_direct_pixels,
+                  GenesisSimHooks sim_hooks = { widescreen_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                                 rdb_post_drain, NULL, &s_custom_producer };
                   if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
@@ -3757,12 +3710,6 @@ session_begin:;
 #if RECOMP_LAUNCHER
         ui_open = recomp_runtime_ui_is_open(s_runtime_ui.ui);
 #endif
-        SDL_Texture *gpu_texture=NULL;
-        if(!ui_open && !s_color_lut_on)gpu_texture=genesis_gpu_raster_draw(s_gpu_raster);
-        else if(s_gpu_raster)(void)genesis_gpu_raster_begin(s_gpu_raster,s_framebuf,s_frame_stride,
-                                                          machine_presentation_generation(),0);
-        if(!gpu_texture) {
-        genesis_gpu_raster_resolve(s_gpu_raster);
 #if GENESIS_FINAL_PIXEL_PIPELINE
         GenesisPixelView view;
         int prepared = genesis_frame_pixels(&view, s_framebuf, s_frame_stride * 4,
@@ -3790,7 +3737,6 @@ session_begin:;
             recomp_runtime_ui_render_argb8888(s_runtime_ui.ui, s_present_buf,
                 s_screen_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
 #endif
-        }
         update_render_logical_size(renderer);
         SDL_RenderClear(renderer);
 
@@ -3801,9 +3747,7 @@ session_begin:;
         SDL_Rect upload_rect = src;
         const SDL_Rect *base_upload_rect =
             s_frame_texture_filtered ? NULL : &upload_rect;
-        SDL_Texture *frame_texture = gpu_texture?gpu_texture:texture;
-        if(gpu_texture)SDL_SetTextureScaleMode(gpu_texture,s_frame_texture_filtered?SDL_ScaleModeLinear:SDL_ScaleModeNearest);
-        if(!gpu_texture)
+        SDL_Texture *frame_texture = texture;
         {
             static int peer_view_was_active = 0;
             int peer_view_is_active = netplay_peer_view_active();
@@ -3875,11 +3819,8 @@ session_begin:;
 #if RECOMP_LAUNCHER
         if (!recomp_runtime_ui_is_open(s_runtime_ui.ui))
 #endif
-        {
-            if(gpu_texture)genesis_local_states_note_frame_source(genesis_gpu_raster_preview,s_gpu_raster,
-                                                                  s_screen_width,s_screen_height);
-            else genesis_local_states_note_frame(present_src,s_frame_stride,s_screen_width,s_screen_height);
-        }
+            genesis_local_states_note_frame(present_src, s_frame_stride,
+                                            s_screen_width, s_screen_height);
         }
         FRAME_PHASE(6);
 #if GEN_ENABLE_TRACE
@@ -4094,7 +4035,6 @@ session_begin:;
     { extern int audio_wav_active(void); extern void audio_wav_stop(void);
       if (audio_wav_active()) audio_wav_stop(); }
     genesis_local_states_shutdown();
-    genesis_gpu_raster_destroy(s_gpu_raster);s_gpu_raster=NULL;
     glue_shutdown();
     audio_close();
     SDL_DestroyTexture(peer_view_texture);
