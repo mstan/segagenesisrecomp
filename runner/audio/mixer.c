@@ -51,6 +51,15 @@ static AudioMixerExecutor s_executor;
 static void *s_executor_context;
 void audio_mixer_set_executor(AudioMixerExecutor executor,void *context)
 {s_executor=executor;s_executor_context=context;}
+static int mixer_outputs_disjoint(const int16_t *fm,size_t fm_cap,
+                                  const int16_t *psg,size_t psg_cap)
+{
+    if(!fm || !psg || !fm_cap || !psg_cap)return 1;
+    if(fm_cap>SIZE_MAX/(2u*sizeof *fm) || psg_cap>SIZE_MAX/sizeof *psg)return 0;
+    size_t fn=fm_cap*2u*sizeof *fm,pn=psg_cap*sizeof *psg;
+    uintptr_t f=(uintptr_t)fm,p=(uintptr_t)psg;
+    return f<=p ? p-f>=fn : f-p>=pn;
+}
 typedef struct MixerChipJob {
     const AudioOrderedEvent *events;size_t count;
     uint32_t end;int16_t *output;size_t capacity,written;
@@ -187,7 +196,7 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
         audio_event_requeue(defer, d);
     }
 
-    if(s_executor){
+    if(s_executor && mixer_outputs_disjoint(fm_stereo_out,fm_cap,psg_mono_out,psg_cap)){
         MixerChipJob fm={evs,n_apply,frame_end_cycle,fm_stereo_out,fm_cap,0,0};
         MixerChipJob psg={evs,n_apply,frame_end_cycle,psg_mono_out,psg_cap,0,s_no_leftover};
         s_executor(mixer_fm_job,&fm,mixer_psg_job,&psg,s_executor_context);
