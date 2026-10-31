@@ -4,15 +4,16 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: selected bounded contracts E01/E03–E08/E10 are delivered.
-E11, E13, E14 and E15 complete original bounded opportunities were implemented,
-qualified and reached by actual games, then decisively rejected. Useful fixes
-remain. E15 fresh independent validation accepted the full scope, actual runtime
-evidence and useful portable layout fix a20ecc5/ready PR47. No new gain is claimed.
-**19 families remain open**. Reviewer explicitly instructed fresh serial E16
-after bookkeeping and synchronization. Combined owner handoff remains pending.
-Historical narrative below describes the releasedbase; the36-rowtable and
-[machine-readable audit](engine-optimization-completion-audit.json) reflectcurrentdispositions.
+Current serial update: selected bounded contracts E01/E03–E08/E10/E16 are delivered.
+E11, E13, E14 and E15 whole bounded opportunities were implemented, qualified
+and reached by actual games, then decisively rejected; useful fixes remain.
+Fresh E16 independent validation accepted its whole source/platform/runtime,
+per-game cost, PR and cleanup gate. Ready PR48 retains actual color-enabled
+CPU gains and explicitly mixed CD neutral/inconclusive evidence, including
+substantial adverse observations; no proven universal CD nonregression or gain.
+**18 families remain open**. Combined owner visual/play handoff remains pending.
+Historical narrative below describes the released base; the 36-row table and
+[machine-readable audit](engine-optimization-completion-audit.json) reflect current dispositions.
 
 ## What was actually closed
 
@@ -56,7 +57,7 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E13 | Versioned generic graphics derivation | Whole bounded opportunity rejected | Full art/palette/geometry complete-input architecture1d0aab9 implemented/qualified/actuallyused, rejected for no demonstratedgain. Useful finite immutable DAC domain999f392/PR45 retained and independentlyaccepted; mutable caches removed. | Selected whole bounded opportunity evaluated/rejected, not partial/deferral or universal futuredesign exhaustion. Combined owner merge/release handoff remains for palette-only package. |
 | E14 | Native Sega CD stamp-device jobs | Rejected whole bounded opportunity | Both complete exactjob/span architectures qualified/reached400jobSS1windows, then rejected on observedcost; originalkernel retained. Useful Win32fix+3080joboracle; PR46. | Selected bounded original opportunity decisively rejected; no universalfutureexhaustion. Combinedownerhandoffpending. |
 | E15 | Reuse unchanged hardware render results | Rejected whole bounded opportunity | Both complete current-input result-reuse architectures implemented, qualified and reached; repeated RKA adverse cost and no useful CD gain despite high capture hits. Runtime restored exact; useful portable layout fix/test PR47. | Selected original bounded opportunity decisively rejected; no universal future-algorithm claim. Combined owner handoff pending. |
-| E16 | Final pixels and upload ownership | Partial; open | Lazy CD conversion when original pixels are requested. | Conversion/copy/filter/UI staging/upload ownership across the host boundary. |
+| E16 | Final pixels and upload ownership | Delivered (bounded) | Shared indexed conversion, exact inverse-DAC lookup and raw/color/UI/upload ownership in main/CD; functional ea16061, ready PR48. Independent full gate accepted; ENGINE_FINAL_PIXELS.md/results/review. | Selected original bounded contract delivered; combined owner visual/play merge/release handoff pending. No all-future-optimization claim. |
 | E17 | Optional generic GPU raster backend | Deferred; open | Immutable CPU raster packets are available; no generic GPU backend was added. | A qualified generic GPU composition implementation with portable CPU fallback. |
 | E18 | Independent engine work scheduling | Deferred; open | No new worker scheduling implementation. | Safe independently owned jobs and overlap without extra emulated latency. |
 | E19 | One ordered audio timeline | Partial; open | Cartridge stable natural-run event ordering, reverse FM pairing and shared sort/defer scratch. | Broader timestamp/deferred-stream representation consolidation beyond this cartridge ordering replacement. |
