@@ -113,6 +113,19 @@ static void queue_contract()
     CHECK(!audio_event_queue_count());
 
     AudioDeferredSpan held;size_t fresh=0;
+    audio_event_push(100,AUDIO_PORT_FM1_ADDR,0x22);
+    audio_event_push(100,AUDIO_PORT_FM2_ADDR,0x23);
+    audio_event_push(100,AUDIO_PORT_FM1_DATA,0x24);
+    audio_event_push(100,AUDIO_PORT_FM2_DATA,0x25);
+    audio_event_push(120,AUDIO_PORT_FM1_DATA,0x26);
+    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&!held.count&&fresh==5);
+    audio_event_interval_commit(0,output.data(),fresh,50);
+    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&held.count==5&&!fresh);
+    CHECK(held.events[0].cycle_stamp-held.epoch==50);
+    audio_event_interval_commit(4,nullptr,0,60);
+    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&held.count==1&&!fresh);
+    CHECK(held.events[0].cycle_stamp-held.epoch==10 && held.events[0].port==AUDIO_PORT_FM1_DATA);
+    audio_event_interval_commit(1,nullptr,0,20);
     audio_event_push(UINT32_MAX,AUDIO_PORT_PSG,0x61);
     CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&!held.count&&fresh==1);
     audio_event_interval_commit(0,output.data(),fresh,0xfffffff0u);

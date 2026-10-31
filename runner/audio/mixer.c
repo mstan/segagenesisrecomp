@@ -185,6 +185,7 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
                (!old_apply || held.events[old_apply-1].cycle_stamp-held.epoch<=last.cycle_stamp))
                 --new_apply; /* Only the globally trailing orphan is held. */
         }
+        if(held.count){
         size_t old=0,add=0;
         while(old<old_apply || add<new_apply){
             if(old<old_apply && (add==new_apply ||
@@ -194,8 +195,9 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
                 scratch.ordered[n_apply++].idx=(uint32_t)old++;
             }else scratch.ordered[n_apply++]=events[add++];
         }
-        audio_event_interval_commit(old_apply,events+new_apply,fresh_count-new_apply,frame_end_cycle);
         evs=scratch.ordered;
+        }else n_apply=new_apply; /* Fresh-only frames need no second copy. */
+        audio_event_interval_commit(old_apply,events+new_apply,fresh_count-new_apply,frame_end_cycle);
     }else{
     n=audio_event_take_ordered(evs,DRAIN_CAP);
 
