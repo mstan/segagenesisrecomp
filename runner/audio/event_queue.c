@@ -230,14 +230,21 @@ size_t audio_event_take_ordered(AudioOrderedEvent *out,size_t capacity)
 
 static int deferred_sealed(void)
 {
-    unsigned address=0;uint32_t stamp=0;int have=0;
+    uint32_t stamp[2]={0,0};unsigned pending[2]={0,0};
     for(size_t i=0;i<s_deferred_count;i++){
         AudioEvent e=s_deferred[s_deferred_first+i];
         if(e.port==AUDIO_PORT_PSG)continue;
-        if(!have){if(e.port!=0u && e.port!=2u)return 0;address=e.port;stamp=e.cycle_stamp;have=1;}
-        else {if(e.port!=address+1u || e.cycle_stamp!=stamp)return 0;have=0;}
+        if(e.port>3u)return 0;
+        unsigned part=e.port>>1;
+        if(!(e.port&1u)){
+            if(pending[part])return 0;
+            pending[part]=1;stamp[part]=e.cycle_stamp;
+        }else if(pending[part]){
+            if(e.cycle_stamp!=stamp[part])return 0;
+            pending[part]=0;
+        }
     }
-    return !have;
+    return !pending[0] && !pending[1];
 }
 int audio_event_interval_begin(AudioDeferredSpan *span,AudioOrderedEvent *fresh,
     size_t capacity,size_t *count)
@@ -258,7 +265,7 @@ void audio_event_interval_commit(size_t consumed,const AudioOrderedEvent *fresh,
     s_deferred_first+=consumed;s_deferred_count-=consumed;
     assert(s_deferred_count+n<QUEUE_CAP);
     uint32_t old_epoch=s_epoch;s_epoch+=frame_span;
-    if(!n){if(!s_deferred_count)s_deferred_first=0;return;}
+    if(!n){if(!s_deferred_count){s_deferred_first=0;s_epoch=0;}return;}
     size_t old=0,add=0,out=0;
     while(old<s_deferred_count || add<n){
         if(old<s_deferred_count && (add==n ||
