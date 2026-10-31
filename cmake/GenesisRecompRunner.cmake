@@ -29,6 +29,7 @@ include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompZ80.cmake")
 option(GENESIS_FM_BLOCK_SAMPLES "Batch faithful FM samples between register writes" ON)
 option(GENESIS_FAST_RB_DIGEST "Use portable XXH64 for complete rollback section bytes" ON)
+option(GENESIS_GPU_RASTER "Build optional OpenGL VDP raster backend with portable CPU fallback" ON)
 set(GENESIS_VDP_PLANE_IMPL "BATCHED" CACHE STRING "VDP scanline renderer (planes, sprites and composition)")
 set_property(CACHE GENESIS_VDP_PLANE_IMPL PROPERTY STRINGS SCALAR BATCHED)
 if(NOT GENESIS_VDP_PLANE_IMPL MATCHES "^(SCALAR|BATCHED)$")
@@ -78,6 +79,7 @@ set(GENESIS_RUNNER_CORE_SOURCES
     audio/fm_shadow.cpp
     video/color_lut.c
     video/genesis_vdp.c
+    video/genesis_gpu_raster.c
     video/genesis_bus.c
     video/genesis_machine.c
     external/superzazu/z80.c
@@ -88,6 +90,7 @@ set(GENESIS_RUNNER_CORE_SOURCES
 # and is listed by every consumer; a consumer lacking one of those is a
 # deliberate divergence the reconciler must not paper over.
 set(GENESIS_RUNNER_RECONCILED_SOURCES
+    video/genesis_gpu_raster.c
     host_wait.c
     cosim_state.c
     sim_step.c
@@ -127,6 +130,7 @@ function(genesisrecomp_runner_target target)
     target_compile_definitions(${target} PRIVATE
         GENESIS_FM_BLOCK_SAMPLES=$<BOOL:${GENESIS_FM_BLOCK_SAMPLES}>
         GENESIS_FAST_RB_DIGEST=$<BOOL:${GENESIS_FAST_RB_DIGEST}>
+        GENESIS_GPU_RASTER=$<BOOL:${GENESIS_GPU_RASTER}>
         GENESIS_BATCHED_PLANES=$<STREQUAL:${GENESIS_VDP_PLANE_IMPL},BATCHED>)
     get_target_property(_done ${target} GENESIS_RUNNER_REQUIREMENTS)
     if(_done)
