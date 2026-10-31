@@ -11,7 +11,7 @@ The original engine goal was reusable generic jobs/regions/images under complete
 | R1 | rka / native focused reverse | PC BA | 4.375000 / 4.671875 | +5.49% | repeated adverse CPU/cycles; reject R1 default |
 | R1 | rka / game-owned 16:9 | PC AB | 12.015625 / 12.078125 | +1.12% | neutral/inconclusive; no demonstrated gain |
 | R1 | sonic1 / game-owned 16:9 | PC AB | 2.531250 / 2.546875 | -1.20% | neutral/inconclusive; no demonstrated gain |
-| R1 | sonic_cd / shared captured-plane widescreen | PC AB | 6.015625 / 6.359375 | +0.71% | no useful gain; adverse PC observation, mixed SERVER CPU/cycles inconclusive |
+| R1 | sonic_cd / shared captured-plane widescreen | PC AB | 6.015625 / 6.359375 | +0.71% | single PC AB observation; adverse CPU and cycles, no useful gain; no R1 SERVER runtime sample |
 | R2 | sonic_cd / shared captured-plane widescreen | PC BA | 5.875000 / 6.062500 | +3.44% | no useful gain; adverse PC observation, mixed SERVER CPU/cycles inconclusive |
 | R2 | sonic_cd / shared captured-plane widescreen | SERVER AB | 13.125000 / 13.484375 | -0.70% | no useful gain; adverse PC observation, mixed SERVER CPU/cycles inconclusive |
 

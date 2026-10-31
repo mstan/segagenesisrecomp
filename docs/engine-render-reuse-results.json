@@ -863,7 +863,7 @@
       },
       "raw": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1.json",
       "correctness_passed": true,
-      "classification": "no useful gain; adverse PC observation, mixed SERVER CPU/cycles inconclusive",
+      "classification": "single PC AB observation; adverse CPU and cycles, no useful gain; no R1 SERVER runtime sample",
       "candidate_cpu_change_pct": 5.714285714285716,
       "candidate_cycles_change_pct": 0.7146870338503364
     },
