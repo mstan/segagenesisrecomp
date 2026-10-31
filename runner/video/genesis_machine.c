@@ -7,6 +7,7 @@
 #ifdef GENESIS_Z80_RECOMP
 #include "../z80_recomp.h"
 #endif
+#include "genesis_frame_pixels.h"
 #include "genesis_dac.h"  /* authentic Genesis output-DAC color ladder */
 #include "chip_trace.h"   /* [CHIP-TRACE] shared FM/PSG stream ring + g_snd_* globals */
 #include <string.h>
@@ -472,35 +473,41 @@ static void step_z80(GenesisMachine *m, uint32_t target)
 
 typedef struct NativeRowContext {
     GVDP *vdp;
-    int line, width, ready;
+    int line, width, ready, indices_ready;
     uint8_t *indices;
     uint32_t *pixels;
 } NativeRowContext;
 
+static void native_row_prepare(NativeRowContext *r)
+{
+    if(r->indices_ready)return;
+    r->width=gvdp_render_scanline(r->vdp,r->line,r->indices);
+    const uint32_t *host_palette=gvdp_host_palette();
+    if(host_palette)memcpy(s_cram_argb+GVDP_HOST_PALETTE_BASE,host_palette,
+        GVDP_HOST_PALETTE_SIZE*sizeof(uint32_t));
+    else if(gvdp_ext_active())for(int k=0;k<GVDP_EXT_LINES*16;++k)
+        s_cram_argb[GVDP_HOST_PALETTE_BASE+k]=bgr9_to_argb(gvdp_ext_color(r->line,1+k/16,k%16),0);
+    r->indices_ready=1;
+}
 static const uint32_t *native_row_fetch(void *ctx)
 {
-    NativeRowContext *r = (NativeRowContext *)ctx;
-    if (!r->ready) {
-        r->width = gvdp_render_scanline(r->vdp, r->line, r->indices);
-        const uint32_t *host_palette = gvdp_host_palette();
-        if (host_palette)
-            memcpy(s_cram_argb + GVDP_HOST_PALETTE_BASE, host_palette,
-                   GVDP_HOST_PALETTE_SIZE * sizeof(uint32_t));
-        else if (gvdp_ext_active())
-            for (int k = 0; k < GVDP_EXT_LINES * 16; k++)
-                s_cram_argb[GVDP_HOST_PALETTE_BASE + k] =
-                    bgr9_to_argb(gvdp_ext_color(r->line, 1 + k / 16, k % 16), 0);
-        for (int x = 0; x < r->width; x++)
-            r->pixels[x] = s_cram_argb[r->indices[x]];
-        r->ready = 1;
-    }
+    NativeRowContext *r=(NativeRowContext *)ctx;
+    if(!r->ready){native_row_prepare(r);genesis_pixels_expand(r->pixels,r->indices,r->width,
+        s_cram_argb,GVDP_OUTPUT_PALETTE_SIZE,0xff000000u);r->ready=1;}
     return r->pixels;
+}
+void genesis_indexed_sink_adapter(void *ctx,int line,const uint32_t *argb,int width)
+{
+    GenesisIndexedSink *pixels=(GenesisIndexedSink *)ctx;
+    if(pixels && pixels->argb)pixels->argb(pixels->user,line,argb,width);
 }
 
 void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                           const GenesisScanlineProducer *producer)
 {
     GenesisMachine *m = &g_machine;
+    GenesisIndexedSink *pixels=sink==genesis_indexed_sink_adapter?(GenesisIndexedSink *)user:NULL;
+    void *producer_user=pixels?pixels->user:user;
     int active_h = gvdp_screen_height(&m->vdp);
     static uint8_t  idxbuf[GVDP_MAX_WIDTH];
     static uint32_t rowbuf[GVDP_MAX_WIDTH];
@@ -574,17 +581,26 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                     gvdp_evaluate_scanline(&m->vdp, row);
                     continue;
                 }
-                NativeRowContext native = { &m->vdp, row, 0, 0, idxbuf, rowbuf };
-                if (producer && producer->enabled(user)) {
+                NativeRowContext native = { &m->vdp, row, 0, 0, 0, idxbuf, rowbuf };
+                if (producer && producer->enabled(producer_user)) {
                     /* Status remains hardware-owned even when the original
                      * image is unused. A lazy fallback re-evaluates the same
                      * row; collision/overflow are sticky, not counters. */
                     gvdp_evaluate_scanline(&m->vdp, row);
-                    producer->render(user, &m->vdp, row, gvdp_active_width(&m->vdp),
+                    producer->render(producer_user, &m->vdp, row, gvdp_active_width(&m->vdp),
                                      native_row_fetch, &native);
                 } else {
-                    const uint32_t *pixels = native_row_fetch(&native);
-                    sink(user, row, pixels, native.width);
+#if GENESIS_FINAL_PIXEL_PIPELINE
+                    if(pixels && pixels->indexed) {
+                        native_row_prepare(&native);
+                        if(!pixels->accepts || pixels->accepts(pixels->user,row,native.width)) {
+                            pixels->indexed(pixels->user,row,native.indices,native.width,s_cram_argb);
+                            continue;
+                        }
+                    }
+#endif
+                    const uint32_t *argb=native_row_fetch(&native);
+                    sink(user,row,argb,native.width);
                 }
             }
         }

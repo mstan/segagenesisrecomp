@@ -1,3 +1,4 @@
+#include "../video/genesis_frame_pixels.h"
 #include "presentation.h"
 
 #include "presentation_ui.h"
@@ -524,7 +525,9 @@ int segacd_presentation_present(SegaCDPresentation *presentation,
                                 int source_pitch_bytes) {
     size_t row_bytes;
     size_t count;
+#if !GENESIS_FINAL_PIXEL_PIPELINE
     int y;
+#endif
     if (!presentation || !pixels || width <= 0 || height <= 0 ||
         width > INT_MAX / (int)sizeof(uint32_t))
         return 0;
@@ -535,9 +538,22 @@ int segacd_presentation_present(SegaCDPresentation *presentation,
              SIZE_MAX / (size_t)source_pitch_bytes))
         return 0;
     count = (size_t)width * (size_t)height;
-    if (count > SIZE_MAX / sizeof(uint32_t) ||
-        !ensure_frame_capacity(presentation, count))
-        return 0;
+    if (count > SIZE_MAX / sizeof(uint32_t))return 0;
+    const void *upload_pixels=pixels;
+    int upload_pitch=source_pitch_bytes;
+#if GENESIS_FINAL_PIXEL_PIPELINE
+    int ui_open=segacd_presentation_ui_is_open(presentation->ui);
+    int stage=ui_open || (source_pitch_bytes&3);
+    if(stage && !ensure_frame_capacity(presentation,count))return 0;
+    GenesisPixelView frame;
+    if(!genesis_frame_pixels(&frame,pixels,source_pitch_bytes,presentation->frame_copy,
+            presentation->frame_capacity*sizeof(uint32_t),width*4,width,height,width,height,
+            stage,NULL,NULL))return 0;
+    if(ui_open)segacd_presentation_ui_render_argb8888(presentation->ui,
+        (void *)frame.pixels,width,height,frame.pitch_bytes);
+    upload_pixels=frame.pixels;upload_pitch=frame.pitch_bytes;
+#else
+    if(!ensure_frame_capacity(presentation,count))return 0;
     for (y = 0; y < height; ++y) {
         const uint8_t *source_row = (const uint8_t *)pixels +
                                     (size_t)y * (size_t)source_pitch_bytes;
@@ -547,9 +563,11 @@ int segacd_presentation_present(SegaCDPresentation *presentation,
     segacd_presentation_ui_render_argb8888(presentation->ui,
                                            presentation->frame_copy, width,
                                            height, width * (int)sizeof(uint32_t));
+    upload_pixels=presentation->frame_copy;upload_pitch=width*(int)sizeof(uint32_t);
+#endif
     if (!ensure_texture(presentation, width, height)) return 0;
-    if (SDL_UpdateTexture(presentation->texture, NULL, presentation->frame_copy,
-                          width * (int)sizeof(uint32_t)) != 0)
+    if (SDL_UpdateTexture(presentation->texture, NULL, upload_pixels,
+                          upload_pitch) != 0)
         return 0;
     SDL_RenderSetLogicalSize(presentation->renderer, width, height);
     if (SDL_RenderClear(presentation->renderer) != 0) return 0;
