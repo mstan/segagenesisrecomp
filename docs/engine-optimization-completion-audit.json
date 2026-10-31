@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Serial bounded contracts E01/E03-E08/E10/E16 delivered; E11/E13/E14/E15 whole bounded opportunities decisively rejected with useful fixes retained. Fresh E16 final independent gate accepted full source/platform/runtime/per-game/PR/Beads/cleanup disposition; ready PR #48.18 original families remain open. Combined owner visual/play handoff pending; counts are not speedups.",
+  "conclusion": "Serial bounded contracts E01/E03-E08/E10/E16 delivered; whole bounded E11/E13/E14/E15/E17 opportunities decisively rejected. Fresh E17 complete source/physical/runtime/per-game/records/cleanup gate accepted; no GPU code ships and no PR for discarded infrastructure.17 original families remain open. Combined owner visual/play handoff for meaningful ready PR stack remains pending; counts are not speedups.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -18,12 +18,12 @@
   "implementation_counts": {
     "bounded_delivered": 13,
     "rejected_mechanism": 1,
-    "bounded_rejected": 4,
-    "deferred": 12,
+    "bounded_rejected": 5,
+    "deferred": 11,
     "partial": 5,
     "existing": 1
   },
-  "remaining_scope_open_count": 18,
+  "remaining_scope_open_count": 17,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -514,16 +514,18 @@
       "id": "E17",
       "name": "Optional generic GPU raster backend",
       "original_goal": "Evaluate hardware tile/sprite/priority composition from reusable immutable render packets.",
-      "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "Immutable CPU raster packets are available; no generic GPU backend was added.",
-      "remaining": "A qualified generic GPU composition implementation with portable CPU fallback.",
-      "audit_basis": "No physical GPU A/B qualifies this alternative. One CD software/dummy route cannot globally reject it.",
-      "next_closure": "Pursue only if actual composition/upload cost supports packet-to-GPU implementation; preserve CPU-visible effects and exact raw output.",
+      "recorded_evaluation_status": "evaluated_rejected",
+      "implementation_state": "bounded_rejected",
+      "remaining_scope_open": false,
+      "delivered": "Both coherent expanded-lane and compact-pattern optional GPU architectures implemented, physically correct and exercised in actual native games; discarded after full measured evaluation. All production/build/test wiring restored byte-exact to c94.",
+      "remaining": "No implementation remains for the selected bounded GPU packet architecture opportunity; no claim every future GPU algorithm is impossible.",
+      "audit_basis": "Fresh independent whole-family gate accepted physical full GPU/SDL/raw proof, actual11 game pairs/22 runs, source/binary/ROM/input/configuration/host identities, full prototype retention, exact restoration, Beads disposition and181080028byte audited cleanup. Expanded neutral/inconclusive without useful gain; compact repeatedly adverse RKA completion/cycles. No aggregate offset or speedup claim.",
+      "next_closure": "Selected bounded E17 rejection accepted; original E18 independent work scheduling next with a new validation-only reviewer.",
       "source_references": [
-        "runner/video/genesis_vdp.c:891",
-        "runner/cd/presentation.c"
+        "docs/ENGINE_GPU_RASTER.md",
+        "docs/engine-gpu-raster-results.json",
+        "docs/ENGINE_GPU_RASTER_REVIEW.md",
+        "docs/engine-gpu-raster-review.json"
       ]
     },
     {

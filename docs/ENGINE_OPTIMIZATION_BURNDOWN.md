@@ -4,7 +4,7 @@ Historical evaluation/release owner: `beads-3vb.31`. Remaining implementation: *
 
 Source audit base: `f422ad52a04b9d253c0e9cbcdb3476aabd563ae8`. Prepared in isolated branch `codex/engine-optimization-burndown-20261027`. Refresh and freeze remote engine/shared-core and representative consumer heads before implementation.
 
-**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04, E05, E06, E07, E08, E10 and E16; **18 families remain open**, alongside thirteen delivered bounded contracts, four decisively rejected whole-family opportunities and one existing finding; family counts overlap and are not speedup counts.
+**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04, E05, E06, E07, E08, E10 and E16; **17 families remain open**, alongside thirteen delivered bounded contracts, five decisively rejected whole-family opportunities and one existing finding; family counts overlap and are not speedup counts.
 
 ## Scope
 
@@ -130,11 +130,10 @@ Current owner instruction (2026-10-28): work serially on one original goal. A va
   - Evidence: `runner/main.c`, `runner/cd/presentation.c`.
   - Disposition/evidence: Whole bounded shared indexed/raw/color/UI/upload ownership delivered in ea16061/ready PR #48 and independently accepted. Actual indexed destination delivery, exact inverse-DAC lookup and synchronous staging replace repeated work across main/CD. All platform/frozen-original/game/current-state/actualSDL gates pass. CRT CPU observations RKA 56.48% and Sonic 1 66.26% lower; raw/default and explicitly mixed CD neutral/inconclusive, substantial adverse CD samples retained, no proven universal CD nonregression or speedup. See ENGINE_FINAL_PIXELS.md, engine-final-pixels-results.json and immutable final review. 18 original families remain open; combined owner visual/play handoff pending.
 
-- [ ] **E17: Optional generic GPU raster backend** â€” P3; original N21.
+- [x] **E17: Optional generic GPU raster backend** - P3; original N21.
   - Goal: Evaluate hardware tile/sprite/priority composition from reusable immutable render packets.
-  - Boundary: Keep CPU-visible VDP effects and exact supported output with a complete portable CPU path. Per-title custom GPU adapters are outside scope.
-  - Evidence: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`, `runner/cd/presentation.c`.
-  - Disposition/evidence: Immutable raster packets now provide a valid generic CPU-status/GPU-input boundary; the old subsystem split is not a design restriction. Current CD CPU composition is0.086percent and capture0.487percent in the sampled route. SDL software/dummy attribution does not measure a physical GPU. Defer a new shader/upload/backend until a real GPU workload demonstrates a worthwhile affected cost; preserve universal CPU output and raw capture.
+  - Boundary: Preserve CPU-visible status/effects, exact raw output/history and complete portable CPU fallback; no per-title adapters.
+  - Disposition/evidence: Both expanded-lane and compact-pattern raw GPU architectures implemented, built, physically correct and used by actual native games. Corrected sparse preview ownership removed initial readback costs. Eleven matched game pairs retain all source/binary/config/host/raw costs and exact state/pixels/full WAV/rollback. Expanded neutral/inconclusive without useful gain; compact repeatedly adverse RKA wall/cycles. Entire selected bounded opportunity rejected; all production and build/test wiring restored byte-exact c94. Fresh independent gate accepted full scope/evidence/Beads/cleanup; no PR for discarded infrastructure. See [ENGINE_GPU_RASTER.md](ENGINE_GPU_RASTER.md), [results](engine-gpu-raster-results.json), [review](ENGINE_GPU_RASTER_REVIEW.md), beads-3z5k.14. No all-future-GPU impossibility claim. Explicit next E18 with fresh validator after bookkeeping/sync.
 
 - [ ] **E18: Independent engine work scheduling** â€” P3; original N22.
   - Goal: Evaluate workers for immutable rendering/audio spans and safe overlap of preparation/upload.

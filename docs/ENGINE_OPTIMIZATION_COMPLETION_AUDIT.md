@@ -5,13 +5,13 @@
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
 Current serial update: selected bounded contracts E01/E03–E08/E10/E16 are delivered.
-E11, E13, E14 and E15 whole bounded opportunities were implemented, qualified
+E11, E13, E14, E15 and E17 whole bounded opportunities were implemented, qualified
 and reached by actual games, then decisively rejected; useful fixes remain.
 Fresh E16 independent validation accepted its whole source/platform/runtime,
 per-game cost, PR and cleanup gate. Ready PR48 retains actual color-enabled
 CPU gains and explicitly mixed CD neutral/inconclusive evidence, including
 substantial adverse observations; no proven universal CD nonregression or gain.
-**18 families remain open**. Combined owner visual/play handoff remains pending.
+Fresh E17 independent gate accepted full GPU implementation/evaluation and bounded rejection; no GPU code ships. **17 families remain open**. Combined owner visual/play handoff remains pending.
 Historical narrative below describes the released base; the 36-row table and
 [machine-readable audit](engine-optimization-completion-audit.json) reflect current dispositions.
 
@@ -58,7 +58,7 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E14 | Native Sega CD stamp-device jobs | Rejected whole bounded opportunity | Both complete exactjob/span architectures qualified/reached400jobSS1windows, then rejected on observedcost; originalkernel retained. Useful Win32fix+3080joboracle; PR46. | Selected bounded original opportunity decisively rejected; no universalfutureexhaustion. Combinedownerhandoffpending. |
 | E15 | Reuse unchanged hardware render results | Rejected whole bounded opportunity | Both complete current-input result-reuse architectures implemented, qualified and reached; repeated RKA adverse cost and no useful CD gain despite high capture hits. Runtime restored exact; useful portable layout fix/test PR47. | Selected original bounded opportunity decisively rejected; no universal future-algorithm claim. Combined owner handoff pending. |
 | E16 | Final pixels and upload ownership | Delivered (bounded) | Shared indexed conversion, exact inverse-DAC lookup and raw/color/UI/upload ownership in main/CD; functional ea16061, ready PR48. Independent full gate accepted; ENGINE_FINAL_PIXELS.md/results/review. | Selected original bounded contract delivered; combined owner visual/play merge/release handoff pending. No all-future-optimization claim. |
-| E17 | Optional generic GPU raster backend | Deferred; open | Immutable CPU raster packets are available; no generic GPU backend was added. | A qualified generic GPU composition implementation with portable CPU fallback. |
+| E17 | Optional generic GPU raster backend | Rejected (whole bounded opportunity) | Two complete expanded/compact GPU architectures physically correct and actual native game measured; expanded neutral without useful gain, compact repeatedly adverse RKA completion/cycles; all source/build/test wiring restored c94. ENGINE_GPU_RASTER.md/results/review. | Fresh independent whole-family rejection accepted, no production change or PR; no claim all future GPU designs impossible. |
 | E18 | Independent engine work scheduling | Deferred; open | No new worker scheduling implementation. | Safe independently owned jobs and overlap without extra emulated latency. |
 | E19 | One ordered audio timeline | Partial; open | Cartridge stable natural-run event ordering, reverse FM pairing and shared sort/defer scratch. | Broader timestamp/deferred-stream representation consolidation beyond this cartridge ordering replacement. |
 | E20 | Faithful FM kernels | Deferred; open | Existing FM block wrapper retained; no new operator/channel kernel. | Actual faithful YM2612 arithmetic/layout/kernel optimization. |
@@ -243,11 +243,7 @@ Sources: `runner/cd/machine.c`, `runner/cd/presentation.c:522`, `runner/main.c`.
 
 ### E17: Optional generic GPU raster backend
 
-No physical GPU A/B qualifies this alternative. One CD software/dummy route cannot globally reject it.
-
-**Next closure:** Pursue only if actual composition/upload cost supports packet-to-GPU implementation; preserve CPU-visible effects and exact raw output.
-
-Sources: `runner/video/genesis_vdp.c:891`, `runner/cd/presentation.c`. Historical evaluation: `evaluated_deferred`.
+Whole selected bounded opportunity rejected after implementing both coherent expanded-lane and compact-pattern architectures, exact physical GPU/SDL/raw proof and11 actual matched native game pairs. Expanded has no proven useful gain; compact repeatedly increases RKA completion/cycles. Source/build/test wiring restored byte-exact c94. All prototype source/binary/raw identities and181080028byte audited cleanup retained. Fresh independent final gate accepted. See ENGINE_GPU_RASTER.md, machine results and immutable review. No discarded infrastructure ships or needs a PR; this is not proof all future GPU approaches are impossible.
 
 ### E18: Independent engine work scheduling
 

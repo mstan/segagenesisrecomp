@@ -1,0 +1,808 @@
+{
+  "schema": "GenesisE17FinalIndependentAudit1",
+  "reviewer": "validate_e17",
+  "date_utc": "2026-10-31T16:44:37.717859+00:00",
+  "verdict": "ACCEPTED",
+  "implementation_state": "bounded_rejected",
+  "accepted_scope": "Whole selected original E17 evaluation and rejection, not GPU code adoption",
+  "reviewed_head": "adce4a985a5afaeef67c155f5c1eac2c20befdda",
+  "base": "c94ed293a5fc8a904fdd934065cf8f0d7662dae4",
+  "issue": "beads-3z5k.14",
+  "campaign": "beads-2wy8.1",
+  "optimization_adopted": false,
+  "no_unresolved_objective_findings": true,
+  "production_build_test_tree_restored": true,
+  "restored_tree": "c54e22b27f02773dc4fdb4a7bbf4dfa63563ea66",
+  "only_changed_paths": [
+    "docs/ENGINE_GPU_RASTER.md",
+    "docs/engine-gpu-raster-results.json"
+  ],
+  "clean_worktree": true,
+  "diff_whitespace_check_passed": true,
+  "raw_game_pairs_verified": 11,
+  "raw_game_runs_verified": 22,
+  "physical_oracle_draws": 24,
+  "windows_packet_architectures": [
+    "x64",
+    "Win32"
+  ],
+  "unrun_discarded_code_gates": [
+    "GNU",
+    "portable GPU stub/fallback matrix",
+    "current-build state/UI prototype adoption matrix"
+  ],
+  "prototype_sources_verified": [
+    "9501233d114670f34a9c7b44b8cd664f9c009399",
+    "863c24e5fc77adb3f91f10b1aa4e41989ccba586",
+    "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498"
+  ],
+  "cost_summaries": [
+    {
+      "evidence": "native-gpu-selection-r1.json",
+      "source": "863c24e5fc77adb3f91f10b1aa4e41989ccba586",
+      "game": "rka",
+      "mode": "expanded",
+      "order": "AB",
+      "frames": 6000,
+      "reference": {
+        "cpu_seconds": 4.5625,
+        "cpu_cycles": 20882372130,
+        "seconds": 6.5167326
+      },
+      "candidate": {
+        "cpu_seconds": 5.03125,
+        "cpu_cycles": 23351255810,
+        "seconds": 7.0628218
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 10.273972602739722,
+        "cpu_cycles": 11.822812392339067,
+        "seconds": 8.379800638129598
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 0.65625,
+        "user_seconds": 4.34375,
+        "process_cycles": 22859300230,
+        "peak_working_set_bytes": 172425216,
+        "peak_commit_bytes": 182288384,
+        "sampled_peak_private_bytes": 182288384,
+        "memory_samples": 64,
+        "wait_wall_seconds": 6.89100000000326
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.6875,
+        "user_seconds": 3.71875,
+        "process_cycles": 25154752500,
+        "peak_working_set_bytes": 183050240,
+        "peak_commit_bytes": 203436032,
+        "sampled_peak_private_bytes": 203436032,
+        "memory_samples": 69,
+        "wait_wall_seconds": 7.4060000000026776
+      },
+      "candidate_counters": [
+        "6000",
+        "1344000",
+        "25088",
+        "3352696384",
+        "1007"
+      ],
+      "binary_sha256": "2d3da881e28f39fef3df1005309f6c11c9cbf9f41d7ca1e5f140a488a109df96",
+      "mask": 49152,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r1.json",
+      "source": "863c24e5fc77adb3f91f10b1aa4e41989ccba586",
+      "game": "rka",
+      "mode": "tiles",
+      "order": "BA",
+      "frames": 6000,
+      "reference": {
+        "cpu_seconds": 4.453125,
+        "cpu_cycles": 21692596200,
+        "seconds": 6.7395204
+      },
+      "candidate": {
+        "cpu_seconds": 5.34375,
+        "cpu_cycles": 24734186630,
+        "seconds": 7.4244035
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 19.999999999999996,
+        "cpu_cycles": 14.021329682981886,
+        "seconds": 10.16219344035223
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 2.03125,
+        "user_seconds": 2.765625,
+        "process_cycles": 23349456650,
+        "peak_working_set_bytes": 111104000,
+        "peak_commit_bytes": 127627264,
+        "sampled_peak_private_bytes": 127627264,
+        "memory_samples": 66,
+        "wait_wall_seconds": 7.078000000008615
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.609375,
+        "user_seconds": 4.078125,
+        "process_cycles": 26378647070,
+        "peak_working_set_bytes": 121556992,
+        "peak_commit_bytes": 148180992,
+        "sampled_peak_private_bytes": 148180992,
+        "memory_samples": 72,
+        "wait_wall_seconds": 7.75
+      },
+      "candidate_counters": [
+        "6000",
+        "1344000",
+        "25088",
+        "4397679680",
+        "1007"
+      ],
+      "binary_sha256": "2d3da881e28f39fef3df1005309f6c11c9cbf9f41d7ca1e5f140a488a109df96",
+      "mask": 3072,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r1.json",
+      "source": "863c24e5fc77adb3f91f10b1aa4e41989ccba586",
+      "game": "sonic1",
+      "mode": "expanded",
+      "order": "AB",
+      "frames": 2400,
+      "reference": {
+        "cpu_seconds": 1.59375,
+        "cpu_cycles": 7367210050,
+        "seconds": 2.1567812
+      },
+      "candidate": {
+        "cpu_seconds": 1.6875,
+        "cpu_cycles": 8120422650,
+        "seconds": 2.3936994
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 5.882352941176472,
+        "cpu_cycles": 10.223851293611474,
+        "seconds": 10.984804578229813
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 0.453125,
+        "user_seconds": 1.53125,
+        "process_cycles": 9249273820,
+        "peak_working_set_bytes": 169017344,
+        "peak_commit_bytes": 182595584,
+        "sampled_peak_private_bytes": 182595584,
+        "memory_samples": 24,
+        "wait_wall_seconds": 2.577999999994063
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 0.71875,
+        "user_seconds": 1.375,
+        "process_cycles": 9884686560,
+        "peak_working_set_bytes": 180666368,
+        "peak_commit_bytes": 206376960,
+        "sampled_peak_private_bytes": 206155776,
+        "memory_samples": 25,
+        "wait_wall_seconds": 2.688000000009197
+      },
+      "candidate_counters": [
+        "2400",
+        "537600",
+        "12768",
+        "1361509952",
+        "412"
+      ],
+      "binary_sha256": "a62c83480430ed99c8973ab93645abd2f8f63489ae199980bc6db8bbadaed687",
+      "mask": 12288,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r1.json",
+      "source": "863c24e5fc77adb3f91f10b1aa4e41989ccba586",
+      "game": "sonic1",
+      "mode": "tiles",
+      "order": "BA",
+      "frames": 2400,
+      "reference": {
+        "cpu_seconds": 1.828125,
+        "cpu_cycles": 7522034160,
+        "seconds": 2.1963824
+      },
+      "candidate": {
+        "cpu_seconds": 1.71875,
+        "cpu_cycles": 8456953460,
+        "seconds": 2.394975
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -5.982905982905984,
+        "cpu_cycles": 12.429075435094816,
+        "seconds": 9.041804377962603
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.140625,
+        "user_seconds": 0.96875,
+        "process_cycles": 9077929210,
+        "peak_working_set_bytes": 107905024,
+        "peak_commit_bytes": 128143360,
+        "sampled_peak_private_bytes": 128143360,
+        "memory_samples": 23,
+        "wait_wall_seconds": 2.4689999999973224
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 0.734375,
+        "user_seconds": 1.34375,
+        "process_cycles": 10026054100,
+        "peak_working_set_bytes": 118546432,
+        "peak_commit_bytes": 150040576,
+        "sampled_peak_private_bytes": 149831680,
+        "memory_samples": 26,
+        "wait_wall_seconds": 2.7340000000112923
+      },
+      "candidate_counters": [
+        "2400",
+        "537600",
+        "12768",
+        "1762828352",
+        "412"
+      ],
+      "binary_sha256": "a62c83480430ed99c8973ab93645abd2f8f63489ae199980bc6db8bbadaed687",
+      "mask": 12288,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r2.json",
+      "source": "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498",
+      "game": "rka",
+      "mode": "expanded",
+      "order": "AB",
+      "frames": 6000,
+      "reference": {
+        "cpu_seconds": 4.421875,
+        "cpu_cycles": 20750046450,
+        "seconds": 6.4680204
+      },
+      "candidate": {
+        "cpu_seconds": 4.34375,
+        "cpu_cycles": 21034466950,
+        "seconds": 6.506305
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -1.7667844522968212,
+        "cpu_cycles": 1.3706981364371762,
+        "seconds": 0.5919059871858146
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.1875,
+        "user_seconds": 3.625,
+        "process_cycles": 22349643980,
+        "peak_working_set_bytes": 111124480,
+        "peak_commit_bytes": 127627264,
+        "sampled_peak_private_bytes": 127627264,
+        "memory_samples": 63,
+        "wait_wall_seconds": 6.7810000000026776
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.25,
+        "user_seconds": 3.453125,
+        "process_cycles": 22573594280,
+        "peak_working_set_bytes": 121098240,
+        "peak_commit_bytes": 148869120,
+        "sampled_peak_private_bytes": 148869120,
+        "memory_samples": 63,
+        "wait_wall_seconds": 6.734000000011292
+      },
+      "candidate_counters": [
+        "6000",
+        "1344000",
+        "25088",
+        "3352696384",
+        "1007",
+        "0",
+        "11600640"
+      ],
+      "binary_sha256": "3d41501a8cb39e77aa85aad56979f2e4b64a0932b48e22b8b8eb3579c0f4ca73",
+      "mask": 49152,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r2.json",
+      "source": "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498",
+      "game": "rka",
+      "mode": "tiles",
+      "order": "BA",
+      "frames": 6000,
+      "reference": {
+        "cpu_seconds": 4.4375,
+        "cpu_cycles": 21401169410,
+        "seconds": 6.6400459
+      },
+      "candidate": {
+        "cpu_seconds": 4.390625,
+        "cpu_cycles": 22330217470,
+        "seconds": 7.0729358
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -1.0563380281690127,
+        "cpu_cycles": 4.341108853453068,
+        "seconds": 6.519381138615321
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.1875,
+        "user_seconds": 3.5625,
+        "process_cycles": 22999097970,
+        "peak_working_set_bytes": 111128576,
+        "peak_commit_bytes": 127631360,
+        "sampled_peak_private_bytes": 127631360,
+        "memory_samples": 65,
+        "wait_wall_seconds": 6.9210000000020955
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.28125,
+        "user_seconds": 3.453125,
+        "process_cycles": 23937297870,
+        "peak_working_set_bytes": 120512512,
+        "peak_commit_bytes": 148369408,
+        "sampled_peak_private_bytes": 148369408,
+        "memory_samples": 67,
+        "wait_wall_seconds": 7.235000000000582
+      },
+      "candidate_counters": [
+        "6000",
+        "1344000",
+        "25088",
+        "4397679680",
+        "1007",
+        "0",
+        "11600640"
+      ],
+      "binary_sha256": "3d41501a8cb39e77aa85aad56979f2e4b64a0932b48e22b8b8eb3579c0f4ca73",
+      "mask": 48,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r2.json",
+      "source": "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498",
+      "game": "sonic1",
+      "mode": "expanded",
+      "order": "AB",
+      "frames": 2400,
+      "reference": {
+        "cpu_seconds": 1.4375,
+        "cpu_cycles": 7318004810,
+        "seconds": 2.1527086
+      },
+      "candidate": {
+        "cpu_seconds": 1.640625,
+        "cpu_cycles": 7492555760,
+        "seconds": 2.0532547
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 14.130434782608692,
+        "cpu_cycles": 2.3852259534111964,
+        "seconds": -4.619942522643328
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 0.78125,
+        "user_seconds": 0.96875,
+        "process_cycles": 8857479940,
+        "peak_working_set_bytes": 107888640,
+        "peak_commit_bytes": 128266240,
+        "sampled_peak_private_bytes": 128266240,
+        "memory_samples": 23,
+        "wait_wall_seconds": 2.437999999994645
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.0625,
+        "user_seconds": 0.9375,
+        "process_cycles": 9048957940,
+        "peak_working_set_bytes": 117387264,
+        "peak_commit_bytes": 148336640,
+        "sampled_peak_private_bytes": 148336640,
+        "memory_samples": 21,
+        "wait_wall_seconds": 2.2660000000032596
+      },
+      "candidate_counters": [
+        "2400",
+        "537600",
+        "12768",
+        "1361509952",
+        "412",
+        "0",
+        "4746240"
+      ],
+      "binary_sha256": "231320698cee3b416b2ea21a1884206764b750539f34469095fda70501df3ff3",
+      "mask": 192,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r2.json",
+      "source": "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498",
+      "game": "sonic1",
+      "mode": "tiles",
+      "order": "BA",
+      "frames": 2400,
+      "reference": {
+        "cpu_seconds": 1.421875,
+        "cpu_cycles": 7657550670,
+        "seconds": 2.1646746
+      },
+      "candidate": {
+        "cpu_seconds": 1.640625,
+        "cpu_cycles": 7646373600,
+        "seconds": 2.162855
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 15.384615384615374,
+        "cpu_cycles": -0.14596142398102252,
+        "seconds": -0.08405882343702764
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 0.765625,
+        "user_seconds": 1.015625,
+        "process_cycles": 9226068510,
+        "peak_working_set_bytes": 107880448,
+        "peak_commit_bytes": 128192512,
+        "sampled_peak_private_bytes": 128192512,
+        "memory_samples": 22,
+        "wait_wall_seconds": 2.375
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 0.78125,
+        "user_seconds": 1.203125,
+        "process_cycles": 9370055830,
+        "peak_working_set_bytes": 117268480,
+        "peak_commit_bytes": 147615744,
+        "sampled_peak_private_bytes": 147615744,
+        "memory_samples": 23,
+        "wait_wall_seconds": 2.4060000000026776
+      },
+      "candidate_counters": [
+        "2400",
+        "537600",
+        "12768",
+        "1762828352",
+        "412",
+        "0",
+        "4746240"
+      ],
+      "binary_sha256": "231320698cee3b416b2ea21a1884206764b750539f34469095fda70501df3ff3",
+      "mask": 3072,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r4.json",
+      "source": "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498",
+      "game": "rka",
+      "mode": "tiles",
+      "order": "AB",
+      "frames": 6000,
+      "reference": {
+        "cpu_seconds": 4.734375,
+        "cpu_cycles": 22039146940,
+        "seconds": 6.7952828
+      },
+      "candidate": {
+        "cpu_seconds": 4.6875,
+        "cpu_cycles": 23284926590,
+        "seconds": 7.4403038
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -0.990099009900991,
+        "cpu_cycles": 5.652576542057397,
+        "seconds": 9.492187727639534
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.5625,
+        "user_seconds": 3.5,
+        "process_cycles": 23682605340,
+        "peak_working_set_bytes": 111128576,
+        "peak_commit_bytes": 127741952,
+        "sampled_peak_private_bytes": 127741952,
+        "memory_samples": 68,
+        "wait_wall_seconds": 7.281999999991967
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.640625,
+        "user_seconds": 3.421875,
+        "process_cycles": 25022587090,
+        "peak_working_set_bytes": 120438784,
+        "peak_commit_bytes": 148262912,
+        "sampled_peak_private_bytes": 147943424,
+        "memory_samples": 82,
+        "wait_wall_seconds": 8.781999999991967
+      },
+      "candidate_counters": [
+        "6000",
+        "1344000",
+        "25088",
+        "4397679680",
+        "1007",
+        "0",
+        "11600640"
+      ],
+      "binary_sha256": "3d41501a8cb39e77aa85aad56979f2e4b64a0932b48e22b8b8eb3579c0f4ca73",
+      "mask": 12288,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r4.json",
+      "source": "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498",
+      "game": "sonic1",
+      "mode": "expanded",
+      "order": "BA",
+      "frames": 2400,
+      "reference": {
+        "cpu_seconds": 1.59375,
+        "cpu_cycles": 7198614000,
+        "seconds": 2.0494526
+      },
+      "candidate": {
+        "cpu_seconds": 1.5625,
+        "cpu_cycles": 7379297040,
+        "seconds": 2.0430196
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -1.9607843137254943,
+        "cpu_cycles": 2.509969835860071,
+        "seconds": -0.3138886939858976
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.078125,
+        "user_seconds": 0.828125,
+        "process_cycles": 8772446130,
+        "peak_working_set_bytes": 107900928,
+        "peak_commit_bytes": 128126976,
+        "sampled_peak_private_bytes": 128126976,
+        "memory_samples": 22,
+        "wait_wall_seconds": 2.297000000005937
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 0.84375,
+        "user_seconds": 1.046875,
+        "process_cycles": 9007901090,
+        "peak_working_set_bytes": 117370880,
+        "peak_commit_bytes": 148983808,
+        "sampled_peak_private_bytes": 148983808,
+        "memory_samples": 25,
+        "wait_wall_seconds": 2.6090000000112923
+      },
+      "candidate_counters": [
+        "2400",
+        "537600",
+        "12768",
+        "1361509952",
+        "412",
+        "0",
+        "4746240"
+      ],
+      "binary_sha256": "231320698cee3b416b2ea21a1884206764b750539f34469095fda70501df3ff3",
+      "mask": 49152,
+      "correctness_exact": true
+    },
+    {
+      "evidence": "native-gpu-selection-r4.json",
+      "source": "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498",
+      "game": "sonic1",
+      "mode": "tiles",
+      "order": "AB",
+      "frames": 2400,
+      "reference": {
+        "cpu_seconds": 1.53125,
+        "cpu_cycles": 7555575710,
+        "seconds": 2.0969637
+      },
+      "candidate": {
+        "cpu_seconds": 1.828125,
+        "cpu_cycles": 8112247940,
+        "seconds": 2.5492631
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 19.387755102040828,
+        "cpu_cycles": 7.367701037833951,
+        "seconds": 21.569252724784892
+      },
+      "whole_process_reference": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 1.15625,
+        "user_seconds": 0.71875,
+        "process_cycles": 9219410960,
+        "peak_working_set_bytes": 107868160,
+        "peak_commit_bytes": 128184320,
+        "sampled_peak_private_bytes": 128184320,
+        "memory_samples": 31,
+        "wait_wall_seconds": 3.297000000005937
+      },
+      "whole_process_candidate": {
+        "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+        "kernel_seconds": 0.921875,
+        "user_seconds": 1.21875,
+        "process_cycles": 9761715290,
+        "peak_working_set_bytes": 117559296,
+        "peak_commit_bytes": 147492864,
+        "sampled_peak_private_bytes": 147492864,
+        "memory_samples": 38,
+        "wait_wall_seconds": 4.10899999999674
+      },
+      "candidate_counters": [
+        "2400",
+        "537600",
+        "12768",
+        "1762828352",
+        "412",
+        "0",
+        "4746240"
+      ],
+      "binary_sha256": "231320698cee3b416b2ea21a1884206764b750539f34469095fda70501df3ff3",
+      "mask": 48,
+      "correctness_exact": true
+    }
+  ],
+  "prior_cost_audit_coverage": {
+    "distinct_files_hashed": 121,
+    "bytes_hashed": 1529873972
+  },
+  "additional_evidence_coverage": {
+    "declared_evidence_count": 66,
+    "distinct_files_hashed": 106,
+    "bytes_hashed": 45675456,
+    "source_archive_blob_proofs": {
+      "9501233d114670f34a9c7b44b8cd664f9c009399": {
+        "archive": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-gpu-raster-20261031\\prototype-source-9501233d114670f34a9c7b44b8cd664f9c009399.zip",
+          "bytes": 13179962,
+          "sha256": "c40c4844c7e66b0ac4e1ed266411185122dba9ca3c76de25c3de916511a64c79",
+          "contents": "Tracked engine source only; dependency gitlink identities in archive, readonly dependencies/frozen consumers separately recorded"
+        },
+        "git_blobs_verified": 813,
+        "blob_bytes": 34128885,
+        "dependency_gitlinks": {
+          "external/m68k-recomp-core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+          "external/rbengine": "2a03e73693acee0fb78076ea058642c931bef12e",
+          "external/recomp-net": "2103d5eef111ce98846f017fb12d90f5cbe763e6",
+          "external/z80-recomp-core": "4dfc5fc29fd67d23714126348e678e45952e9462",
+          "sonicthehedgehog/s1disasm": "d343882f75b13646ba50ae06b1486f4bd05cb738"
+        },
+        "extra_files": {},
+        "archive_comment": "9501233d114670f34a9c7b44b8cd664f9c009399"
+      },
+      "863c24e5fc77adb3f91f10b1aa4e41989ccba586": {
+        "archive": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-gpu-raster-20261031\\prototype-source-863c24e5fc77adb3f91f10b1aa4e41989ccba586.zip",
+          "bytes": 13200010,
+          "sha256": "5ed3b3593ce931ac7d342fe52e93fcdd895d92848e9df6889a4423d5b8bc1df7",
+          "contents": "Tracked engine source only; dependency gitlink identities in archive, readonly dependencies/frozen consumers separately recorded"
+        },
+        "git_blobs_verified": 823,
+        "blob_bytes": 34190293,
+        "dependency_gitlinks": {
+          "external/m68k-recomp-core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+          "external/rbengine": "2a03e73693acee0fb78076ea058642c931bef12e",
+          "external/recomp-net": "2103d5eef111ce98846f017fb12d90f5cbe763e6",
+          "external/z80-recomp-core": "4dfc5fc29fd67d23714126348e678e45952e9462",
+          "sonicthehedgehog/s1disasm": "d343882f75b13646ba50ae06b1486f4bd05cb738"
+        },
+        "extra_files": {},
+        "archive_comment": "863c24e5fc77adb3f91f10b1aa4e41989ccba586"
+      },
+      "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498": {
+        "archive": {
+          "path": "G:\\Temp\\Codex\\genesis-engine-gpu-raster-20261031\\prototype-source-ec4cf4c2aacdc6a43f11e38c54834b1d42d95498.zip",
+          "bytes": 13200313,
+          "sha256": "69867627280f203662ba7469d8803e5bc180b0e5f655bb7b355198b375b8be54",
+          "contents": "Tracked engine source only; dependency gitlink identities in archive, readonly dependencies/frozen consumers separately recorded"
+        },
+        "git_blobs_verified": 823,
+        "blob_bytes": 34191406,
+        "dependency_gitlinks": {
+          "external/m68k-recomp-core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+          "external/rbengine": "2a03e73693acee0fb78076ea058642c931bef12e",
+          "external/recomp-net": "2103d5eef111ce98846f017fb12d90f5cbe763e6",
+          "external/z80-recomp-core": "4dfc5fc29fd67d23714126348e678e45952e9462",
+          "sonicthehedgehog/s1disasm": "d343882f75b13646ba50ae06b1486f4bd05cb738"
+        },
+        "extra_files": {},
+        "archive_comment": "ec4cf4c2aacdc6a43f11e38c54834b1d42d95498"
+      }
+    }
+  },
+  "server_archive_verified_files": 510,
+  "server_archive_verified_bytes": 12052278,
+  "server_absence_verified": true,
+  "cleanup_removed_bytes": 181080028,
+  "beads_hierarchy_campaign_backlink_verified": true,
+  "pr_required": false,
+  "no_pr_reason": "No useful production change retained; failed whole bounded opportunity is documented in owning/parent/campaign Beads with source/evidence, per owner instruction.",
+  "resolved_findings": [
+    {
+      "id": "E17-S1",
+      "resolution": "Bounded ReadPixels/layout guard in discarded prototype; all new runtime removed by exact restoration."
+    },
+    {
+      "id": "E17-S2",
+      "origin": "root-discovered",
+      "resolution": "Clear stale last_drawn on early draw failure; R5 rejection/modal flag proof; all new runtime restored."
+    },
+    {
+      "id": "E17-F1",
+      "resolution": "No embedded pin-manifest claim; explicit five gitlink identities in machine record."
+    },
+    {
+      "id": "E17-F2",
+      "resolution": "Both new tracked docs LF; diff --check passes."
+    },
+    {
+      "id": "tracking-backlink",
+      "resolution": "Owning Bead frozen source document external_ref verified."
+    }
+  ],
+  "milestone_audits_immutable": {
+    "VALIDATOR_E17_INITIAL_SCOPE.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-gpu-raster-20261031\\VALIDATOR_E17_INITIAL_SCOPE.json",
+      "sha256": "5cd91c3792d4d67d5f245bf3f079ea00d144cfd4aa239ed04a7f722a5c04318a",
+      "bytes": 3078
+    },
+    "VALIDATOR_E17_PACKETS_AUDIT.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-gpu-raster-20261031\\VALIDATOR_E17_PACKETS_AUDIT.json",
+      "sha256": "0e101de24e5a01d6edaea04bb03ac9881a58d86bb74b4df3b7126d8758f78fba",
+      "bytes": 548175
+    },
+    "VALIDATOR_E17_PRODUCTION_SOURCE_REVIEW.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-gpu-raster-20261031\\VALIDATOR_E17_PRODUCTION_SOURCE_REVIEW.json",
+      "sha256": "45c087479f1cbd377b12a14f9ec761f602d2996a057f24cef0cda8620f46310f",
+      "bytes": 7003
+    },
+    "VALIDATOR_E17_SERIAL_SOURCE_REVIEW.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-gpu-raster-20261031\\VALIDATOR_E17_SERIAL_SOURCE_REVIEW.json",
+      "sha256": "786f927954b776060d4987276b6ab8c6f9838af835fc9960c8ae2891f18f42fd",
+      "bytes": 9997
+    },
+    "VALIDATOR_E17_NATIVE_COST_AUDIT.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-gpu-raster-20261031\\VALIDATOR_E17_NATIVE_COST_AUDIT.json",
+      "sha256": "d08f39dc15b104bf56975b67083940969348da483b011e9bac85662e3f8ef92b",
+      "bytes": 55691
+    },
+    "VALIDATOR_E17_COST_ADMISSION_SUPPLEMENT.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-gpu-raster-20261031\\VALIDATOR_E17_COST_ADMISSION_SUPPLEMENT.json",
+      "sha256": "aa9592941902072b95ea43c67abe7ef79393c550fb13b0bb7406d460f6ee8ccf",
+      "bytes": 5102
+    },
+    "VALIDATOR_E17_FINAL_EVIDENCE_CHECK.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-gpu-raster-20261031\\VALIDATOR_E17_FINAL_EVIDENCE_CHECK.json",
+      "sha256": "d0a00f19bf7718f0efa48939546f51cc480ef93937da6e7d717ac32ab7483d23",
+      "bytes": 35611
+    },
+    "VALIDATOR_E17_SERVER_RECORDS_CHECK.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-gpu-raster-20261031\\VALIDATOR_E17_SERVER_RECORDS_CHECK.json",
+      "sha256": "6245bf99d68e1803e2e9065bcdbd93e99eff6001d8e4f96b284b10e787bd110b",
+      "bytes": 473260
+    }
+  },
+  "final_verdict_file": {
+    "path": "C:\\temp\\Codex\\genesis-engine-gpu-raster-20261031\\VALIDATOR_E17_FINAL.md",
+    "sha256": "e168b120a6e3a818236aa4a86a886b5b85f643df731fcb1fd609b5744e71790f"
+  },
+  "remaining_original_families_before_bookkeeping": 18,
+  "remaining_original_families_after_bookkeeping": 17,
+  "next_instruction": "After attaching immutable verdict/receipt, original E17/count18->17/Beads closure and completed central sync, proceed ORIGINAL E18 with a NEW validation-only reviewer. Preserve serial gates; no extra prototype tests or owner launch needed.",
+  "authorization": "No merge/release/delivery or owner-facing launch approval."
+}

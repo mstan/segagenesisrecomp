@@ -47,7 +47,7 @@
   "built": true,
   "tested": true,
   "accepted": false,
-  "disposition": "bounded rejection proposed, all source restored; final independent acceptance pending",
+  "disposition": "bounded_rejected",
   "game_costs": [
     {
       "revision": "r1",
@@ -6247,8 +6247,8 @@
     "total_removed_bytes_including_server": 181080028
   },
   "optimization_adopted": false,
-  "independent_final_review": "pending",
-  "remaining_original_families": 18,
+  "independent_final_review": "ACCEPTED",
+  "remaining_original_families": 17,
   "evidence_manifest": [
     {
       "path": "G:\\Temp\\Codex\\genesis-engine-gpu-raster-20261031\\capability-probe-r2.json",
@@ -17142,5 +17142,10 @@
       "retention": "Bounded staged source, packet test proof, probe/module PEs, build configs/logs retained; no remote native game builds; SDK/toolchain borrowed outside this task root untouched",
       "current_status": "Removed after byteverified local full archive; this inventory describes retained archive contents, not currently allocated SERVER storage"
     }
+  },
+  "reviewed_head": "adce4a985a5afaeef67c155f5c1eac2c20befdda",
+  "review": {
+    "ENGINE_GPU_RASTER_REVIEW.md": "e168b120a6e3a818236aa4a86a886b5b85f643df731fcb1fd609b5744e71790f",
+    "engine-gpu-raster-review.json": "2126319c2d02149fea58b55658740f7b064d7ddb7780092cd550eab5da57d2d7"
   }
 }
