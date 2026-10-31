@@ -28,6 +28,7 @@ unsigned long g_snd_frame=0,g_snd_mc=0;
 unsigned g_snd_pcz=0,g_snd_line=0;
 void snd_trace_chip(int,uint8_t,uint8_t){ }
 void fm_shadow_init(void){ }
+int fm_shadow_enabled(void){return 0;}
 void fm_shadow_advance(uint32_t){ }
 void fm_shadow_write(uint8_t,uint8_t){ }
 void fm_shadow_verify_and_substitute(int16_t *,size_t){ }

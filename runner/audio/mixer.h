@@ -34,5 +34,8 @@ void audio_mixer_init(void);
 typedef void (*AudioMixerJob)(void *);
 typedef void (*AudioMixerExecutor)(AudioMixerJob,void *,AudioMixerJob,void *,void *);
 void audio_mixer_set_executor(AudioMixerExecutor executor,void *context);
+/* Alternative independent heavy job: enabled FM shadow synthesis. Canonical
+ * FM/PSG stay on the owner; join precedes verification/substitution. */
+void audio_mixer_set_shadow_executor(AudioMixerExecutor executor,void *context);
 
 #endif
