@@ -4,7 +4,7 @@
   "campaign": "beads-2wy8.1",
   "date": "2026-10-31",
   "original_scope": "E15/N19 generic render jobs/regions/images under complete current hardware input identity, preserving guest execution, raster history, status, audio, ownership and every writer path",
-  "status": "bounded_rejected_pending_final_independent_gate",
+  "status": "bounded_rejected_final_independent_accepted",
   "production": "a20ecc5fab83ac0cef53737a0ec1d8f72cd16894",
   "base": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
   "runtime_diff_from_base": "",
@@ -1116,7 +1116,23 @@
       "bytes": 1300
     },
     "removed_bytes": 14095398,
-    "retained": "40 original actual unit PE/config/log files in local-retained-unit-builds; source prototypes, frozen game PEs, full raw WAV/RAM/images and commands/capacity evidence retained. SERVER portable toolchain/CD source/catalog/native archive and supported build trees remain for E16 reuse; remove bounded task roots after campaign handoff. WSL temporary unit build retained pending cleanup. No borrowed dependency, save/settings or delivery changes."
+    "retained": "40 original actual unit PE/config/log files in local-retained-unit-builds; source prototypes, frozen game PEs, full raw WAV/RAM/images and commands/capacity evidence retained. SERVER portable toolchain/CD source/catalog/native archive and supported build trees remain for E16 reuse; remove bounded task roots after campaign handoff. Both task WSL unit build roots now cleaned after retaining65 ELF/config/log/command files including16 original actual ELF binaries. No borrowed dependency, save/settings or delivery changes.",
+    "wsl": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261029\\wsl-unit-cleanup-receipt.json",
+      "sha256": "e9aa8e9798da2b395755b40dc1434c5fa22a6a4c6839a197f286da6e11cffa27",
+      "removed_bytes": 3169347,
+      "retained_files": 65,
+      "retained_ELFs": 16
+    }
   },
-  "pr": "https://github.com/mstan/segagenesisrecomp/pull/47"
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/47",
+  "independent_review": {
+    "verdict": "C:\\temp\\Codex\\genesis-engine-render-reuse-20261029\\VALIDATOR_E15_FINAL.json",
+    "reviewed_head": "199a313",
+    "next": "Fresh serial E16 after final bookkeeping/sync, as explicitly instructed by validator",
+    "report": "ENGINE_RENDER_REUSE_REVIEW.md",
+    "immutable_audit": "engine-render-reuse-review.json",
+    "immutable_audit_original_sha256": "a92b8862eb3e9c23bf8849e973cdf7b07adf8d1de1deca488a9cae1317119217",
+    "original_review_source": "C:/Temp/Codex/genesis-engine-render-reuse-20261029/VALIDATOR_E15_FINAL_AUDIT.json"
+  }
 }

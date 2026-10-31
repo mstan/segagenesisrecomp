@@ -1,16 +1,16 @@
-# Engine optimization completion audit (2026-10-28; serial update2026-10-29)
+# Engine optimization completion audit (2026-10-28; serial update2026-10-31)
 
 **No: the entire original implementation burndown was not completed.** The previous pass completed evaluations/dispositions and released a useful qualified subset. It did not exhaust the reusable engine opportunities. The all-checked presentation made that distinction too easy to miss.
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: selected bounded contracts E01/E03-E08/E10 are delivered.
-E11 wholefusion, E13 completegraphicsderivation and E14 completeexactstampjobs
-were implemented, qualified and reached by actualgames, then decisively rejected.
-Useful BATCHED/provider, immutableDAC and Win32-build/oracle packages remain.
-E14 production452f52a/readyPR46 reviewed8029d30 passes fresh independentfull-scope
-review, with no runtimegainclaim. **20 families remain open**. Reviewer explicitly
-instructed freshserialE15 afterstatus/cleanup/sync. Combinedownerhandoffpending.
+Current serial update: selected bounded contracts E01/E03–E08/E10 are delivered.
+E11, E13, E14 and E15 complete original bounded opportunities were implemented,
+qualified and reached by actual games, then decisively rejected. Useful fixes
+remain. E15 fresh independent validation accepted the full scope, actual runtime
+evidence and useful portable layout fix a20ecc5/ready PR47. No new gain is claimed.
+**19 families remain open**. Reviewer explicitly instructed fresh serial E16
+after bookkeeping and synchronization. Combined owner handoff remains pending.
 Historical narrative below describes the releasedbase; the36-rowtable and
 [machine-readable audit](engine-optimization-completion-audit.json) reflectcurrentdispositions.
 
@@ -55,7 +55,7 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E12 | Shared sprite evaluation jobs | Delivered (bounded) | CD sprite evaluation captured once for both CPU-visible status and deferred image production. | The selected shared-evaluation contract is delivered; additional caching belongs to E13/E15. |
 | E13 | Versioned generic graphics derivation | Whole bounded opportunity rejected | Full art/palette/geometry complete-input architecture1d0aab9 implemented/qualified/actuallyused, rejected for no demonstratedgain. Useful finite immutable DAC domain999f392/PR45 retained and independentlyaccepted; mutable caches removed. | Selected whole bounded opportunity evaluated/rejected, not partial/deferral or universal futuredesign exhaustion. Combined owner merge/release handoff remains for palette-only package. |
 | E14 | Native Sega CD stamp-device jobs | Rejected whole bounded opportunity | Both complete exactjob/span architectures qualified/reached400jobSS1windows, then rejected on observedcost; originalkernel retained. Useful Win32fix+3080joboracle; PR46. | Selected bounded original opportunity decisively rejected; no universalfutureexhaustion. Combinedownerhandoffpending. |
-| E15 | Reuse unchanged hardware render results | Deferred; open | No new generic unchanged-job/image reuse. | Complete intermediate hardware-input identity and reusable render output ownership. |
+| E15 | Reuse unchanged hardware render results | Rejected whole bounded opportunity | Both complete current-input result-reuse architectures implemented, qualified and reached; repeated RKA adverse cost and no useful CD gain despite high capture hits. Runtime restored exact; useful portable layout fix/test PR47. | Selected original bounded opportunity decisively rejected; no universal future-algorithm claim. Combined owner handoff pending. |
 | E16 | Final pixels and upload ownership | Partial; open | Lazy CD conversion when original pixels are requested. | Conversion/copy/filter/UI staging/upload ownership across the host boundary. |
 | E17 | Optional generic GPU raster backend | Deferred; open | Immutable CPU raster packets are available; no generic GPU backend was added. | A qualified generic GPU composition implementation with portable CPU fallback. |
 | E18 | Independent engine work scheduling | Deferred; open | No new worker scheduling implementation. | Safe independently owned jobs and overlap without extra emulated latency. |
@@ -226,11 +226,11 @@ Sources: `runner/cd/stamp.c`. Historical evaluation: `evaluated_deferred`.
 
 ### E15: Reuse unchanged hardware render results
 
-Frame-end equality cannot establish identical raster history. A cold CD resolve_row does not rule out static-render-heavy consumers.
+Both complete current-input architectures were implemented and reached by actual games. R1 owns native indexed and captured-plane results; R2 removes native overhead and lazily owns only captured planes. Fresh sprites/status/callbacks, live palettes and every direct/port/DMA/import/alias/provider/lifecycle path remain observed. Both passed frozen-original platform and built-game correctness gates. R1 repeatedly slowed RKA; R2 achieved high real CD hit rates without useful gain on PC or SERVER. Both caches are removed and all runner source is byte exact426253e. This decisively rejects the selected bounded opportunity, without claiming every future design impossible.
 
-**Next closure:** Build on immutable packets and exact raster identity where actual repeated work justifies reuse.
+Useful portable generated-layout fix and actual emitted-C regression fixture remain in a20ecc5/readyPR47. Fresh independent validation accepted whole scope/source/tests/per-game costs/records/cleanup and explicitly instructed E16 after bookkeeping/sync. Combined owner handoff remains pending.
 
-Sources: `runner/video/genesis_vdp.c`, `runner/video/genesis_machine.c`. Historical evaluation: `evaluated_deferred`.
+Sources/results: [ENGINE_RENDER_REUSE.md](ENGINE_RENDER_REUSE.md), [engine-render-reuse-results.json](engine-render-reuse-results.json); beads-3z5k.12. Historical evaluation: `evaluated_deferred`.
 
 ### E16: Final pixels and upload ownership
 
