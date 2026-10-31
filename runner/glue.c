@@ -553,7 +553,7 @@ static void interp_drive_mainloop(uint32_t entry_pc) {
         if (wpc && (g_cpu.PC & 0xFFFFFFu) == wpc) {
             g_cpu.SR = 0x2300u;
             glue_yield_for_vblank();
-            g_cpu.PC = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;   /* RTS: pop return */
+            g_cpu.PC = glue_peek32(g_cpu.A[7]) & 0xFFFFFFu;   /* RTS: pop return */
             g_cpu.A[7] += 4;
             continue;
         }
