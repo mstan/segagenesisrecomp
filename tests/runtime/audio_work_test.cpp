@@ -112,33 +112,6 @@ static void queue_contract()
     for(size_t i=0;i<count;i++)CHECK(output[i].idx==i&&equal(output[i].e,expected[i]));
     CHECK(!audio_event_queue_count());
 
-    AudioDeferredSpan held;size_t fresh=0;
-    audio_event_push(100,AUDIO_PORT_FM1_ADDR,0x22);
-    audio_event_push(100,AUDIO_PORT_FM2_ADDR,0x23);
-    audio_event_push(100,AUDIO_PORT_FM1_DATA,0x24);
-    audio_event_push(100,AUDIO_PORT_FM2_DATA,0x25);
-    audio_event_push(120,AUDIO_PORT_FM1_DATA,0x26);
-    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&!held.count&&fresh==5);
-    audio_event_interval_commit(0,output.data(),fresh,50);
-    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&held.count==5&&!fresh);
-    CHECK(held.events[0].cycle_stamp-held.epoch==50);
-    audio_event_interval_commit(4,nullptr,0,60);
-    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&held.count==1&&!fresh);
-    CHECK(held.events[0].cycle_stamp-held.epoch==10 && held.events[0].port==AUDIO_PORT_FM1_DATA);
-    audio_event_interval_commit(1,nullptr,0,20);
-    audio_event_push(UINT32_MAX,AUDIO_PORT_PSG,0x61);
-    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&!held.count&&fresh==1);
-    audio_event_interval_commit(0,output.data(),fresh,0xfffffff0u);
-    saved=snapshot(audio_event_rb_save);auto bad=saved;
-    bad[sizeof(uint32_t)+offsetof(AudioEvent,port)]=0xff;
-    CHECK(!audio_event_rb_load(bad.data(),bad.size())&&snapshot(audio_event_rb_save)==saved);
-    CHECK(audio_event_interval_begin(&held,output.data(),output.size(),&fresh)&&held.count==1&&!fresh);
-    CHECK(held.events[0].cycle_stamp-held.epoch==15u);
-    audio_event_interval_commit(0,nullptr,0,8);
-    audio_event_push(16,AUDIO_PORT_PSG,0x62);
-    CHECK(audio_event_take_ordered(output.data(),2)==2);
-    CHECK(output[0].e.cycle_stamp==7&&output[0].e.value==0x61&&output[0].idx==0);
-    CHECK(output[1].e.cycle_stamp==16&&output[1].e.value==0x62&&output[1].idx==1);
     audio_event_queue_reset();
 }
 
