@@ -36,6 +36,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include "genesis_pixel_policy.h"
+#if GENESIS_FINAL_PIXEL_PIPELINE
+#include "genesis_dac_inverse8.h"
+#endif
 #include "genesis_dac.h"   /* authentic DAC ladder + nearest-index recovery */
 
 #ifdef __cplusplus
@@ -84,9 +88,15 @@ static inline uint32_t color_lut_map_cram(const ColorLut* lut, uint16_t cram) {
  * where only ARGB is left. Recovers the 3-bit channel as the nearest normal
  * DAC level (inverse of the authentic ladder). */
 static inline uint32_t color_lut_map_argb(const ColorLut* lut, uint32_t argb) {
+#if GENESIS_FINAL_PIXEL_PIPELINE
+  uint32_t r = genesis_dac_inverse8[(argb >> 16) & 255u];
+  uint32_t g = genesis_dac_inverse8[(argb >> 8) & 255u];
+  uint32_t b = genesis_dac_inverse8[argb & 255u];
+#else
   uint32_t r = (uint32_t)genesis_dac_nearest_normal_idx((argb >> 16) & 0xFFu);
   uint32_t g = (uint32_t)genesis_dac_nearest_normal_idx((argb >>  8) & 0xFFu);
   uint32_t b = (uint32_t)genesis_dac_nearest_normal_idx( argb        & 0xFFu);
+#endif
   uint32_t idx = r | (g << 3) | (b << 6);
   return lut->table[idx & 0x1FFu];
 }

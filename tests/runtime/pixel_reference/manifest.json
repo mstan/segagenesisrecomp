@@ -1,0 +1,21 @@
+{
+  "frozen_engine": "426253e1b76056a45c48347ddcd75eb64e31c1d8",
+  "files": {
+    "color_lut.h": {
+      "sha256": "33c233e86d6ec14518b93e3cee80010fc1e219e9e38323335a198a515a04973d",
+      "bytes": 5125
+    },
+    "genesis_dac.h": {
+      "sha256": "bb712db1617ab0307e3cec1783d8a237a0c42266caef2e388732eb5bb1a558ef",
+      "bytes": 2591
+    },
+    "genesis_dac_table.h": {
+      "sha256": "00b4fd8c111fecbd21116ac2fbd1f1649c858b4fd209903f90b4e3d5bba370dc",
+      "bytes": 21818
+    },
+    "genesis_machine.c": {
+      "sha256": "9d2589ca857d0b31ba4953292d76d13dd11828bcf38d4d4106388ab01c0a5033",
+      "bytes": 25652
+    }
+  }
+}

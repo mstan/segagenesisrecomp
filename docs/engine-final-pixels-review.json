@@ -1,0 +1,3396 @@
+{
+  "schema": "GenesisE16IndependentFinal1",
+  "reviewer": "validate_e16",
+  "date_utc": "2026-10-31T13:40:27.927506+00:00",
+  "verdict": "ACCEPTED",
+  "implementation_state": "bounded_delivered",
+  "original_scope": "E16/N20 complete shared indexed/ARGB conversion, copies, color processing, raw/UI staging and upload preparation under required observable behavior",
+  "reviewed_head": "c20f9668214a99aa9cb38eed1d8010de19a3a211",
+  "production": "ea16061a702bbc0ad3ce769b880ed47cac31a888",
+  "base": "c22af45a297c8763401111b5183522b5e9a50d1d",
+  "functional_machine_pixels_tests_qualified_at": "2981cf88f0b64cb328844b7a899de3c3bcdb453b",
+  "source_functional_unchanged_since_qualification": true,
+  "scope_judgment": "Coherent shared ownership pipeline covers machine-to-raw indexed delivery, finite exact color conversion, combined writable color/UI staging and CD borrowed/packed upload preparation. Native raw/capture/status/current palette/custom contexts and full-storage/filter history preserved. All stages of selected original contract implemented and qualified; not one CD-copy or inverse-table tweak counted as whole closure. No claim every possible future fusion/backend variant exhausted.",
+  "platform_gates": {
+    "MSVC19_29_x64": 4,
+    "MSVC19_29_actual_Win32": 4,
+    "GCC13_3_x64_ASan_UBSan": 4,
+    "actual_unit_PE_architectures_verified": 8,
+    "actual_sanitized_ELFs_verified": 4,
+    "adapter_cases_per_executable": 60,
+    "oracle_source_bytes_exact_426": true
+  },
+  "actual_native_consumer_PE_architectures": {
+    "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\rka\\reference\\RKARecomp.exe": "AMD64",
+    "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\rka\\candidate\\RKARecomp.exe": "AMD64",
+    "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe": "AMD64",
+    "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic1\\candidate\\SonicTheHedgehogRecomp.exe": "AMD64"
+  },
+  "native_clean_costs": [
+    {
+      "game": "rka",
+      "screen": "raw",
+      "order": [
+        "A",
+        "B"
+      ],
+      "A": 6.21875,
+      "B": 4.828125,
+      "cpu_change_pct": -22.36180904522613,
+      "cycles_change_pct": -14.695347729875019
+    },
+    {
+      "game": "rka",
+      "screen": "crt",
+      "order": [
+        "B",
+        "A"
+      ],
+      "A": 12.78125,
+      "B": 5.5625,
+      "cpu_change_pct": -56.47921760391198,
+      "cycles_change_pct": -57.86054884801033
+    },
+    {
+      "game": "sonic1",
+      "screen": "raw",
+      "order": [
+        "A",
+        "B"
+      ],
+      "A": 1.78125,
+      "B": 1.703125,
+      "cpu_change_pct": -4.385964912280704,
+      "cycles_change_pct": -4.999414381952494
+    },
+    {
+      "game": "sonic1",
+      "screen": "crt",
+      "order": [
+        "B",
+        "A"
+      ],
+      "A": 5.140625,
+      "B": 1.734375,
+      "cpu_change_pct": -66.26139817629179,
+      "cycles_change_pct": -63.87286120674436
+    }
+  ],
+  "cd_clean_costs": [
+    {
+      "raw": "game-cd-final-pixels-r1.json",
+      "order": [
+        "B",
+        "A"
+      ],
+      "A": {
+        "cpu_seconds": 6.640625,
+        "cycles": 31843192780
+      },
+      "B": {
+        "cpu_seconds": 7.296875,
+        "cycles": 32961249460
+      },
+      "candidate_cpu_change_pct": 9.882352941176475,
+      "candidate_cycles_change_pct": 3.5111324662840504,
+      "before_busy_percent": 56.8359375,
+      "after_busy_percent": 58.77192982456141,
+      "affinity": "fixed logical14 (retained executed producer)"
+    },
+    {
+      "raw": "game-cd-final-pixels-reverse-r2.json",
+      "order": [
+        "A",
+        "B"
+      ],
+      "A": {
+        "cpu_seconds": 5.71875,
+        "cycles": 26949594610
+      },
+      "B": {
+        "cpu_seconds": 6.765625,
+        "cycles": 31316583160
+      },
+      "candidate_cpu_change_pct": 18.306010928961758,
+      "candidate_cycles_change_pct": 16.204282896261347,
+      "before_busy_percent": 42.96875,
+      "after_busy_percent": 52.24609375,
+      "affinity": "fixed logical14 (retained executed producer)"
+    },
+    {
+      "raw": "game-cd-matched-presentation-r2.json",
+      "order": [
+        "A",
+        "B"
+      ],
+      "A": {
+        "cpu_seconds": 5.578125,
+        "cycles": 25960708970
+      },
+      "B": {
+        "cpu_seconds": 5.25,
+        "cycles": 25203510770
+      },
+      "candidate_cpu_change_pct": -5.882352941176472,
+      "candidate_cycles_change_pct": -2.9167084800149845,
+      "before_busy_percent": 9.135559921414538,
+      "after_busy_percent": 13.28125,
+      "affinity": "fixed logical14 (retained executed producer)"
+    },
+    {
+      "raw": "game-cd-core-selected-focused-r3.json",
+      "order": [
+        "B",
+        "A"
+      ],
+      "A": {
+        "cpu_seconds": 5.546875,
+        "cycles": 26879531240
+      },
+      "B": {
+        "cpu_seconds": 5.5,
+        "cycles": 25270927100
+      },
+      "candidate_cpu_change_pct": -0.8450704225352101,
+      "candidate_cycles_change_pct": -5.984494765318682,
+      "before_busy_percent": 20.29411764705882,
+      "after_busy_percent": 20.058422590068158,
+      "affinity": "physical core [14,15]"
+    }
+  ],
+  "per_game_judgment": {
+    "rka_raw": "neutral/inconclusive; no proven default gain",
+    "rka_CRT": "observed substantial matched color-path CPU reduction56.48%, cycles57.86%; software/shared-host scope",
+    "sonic1_raw": "neutral/inconclusive; no proven default gain",
+    "sonic1_CRT": "observed substantial matched color-path CPU reduction66.26%, cycles63.87%; software/shared-host scope",
+    "sonic_cd": "mixed neutral/inconclusive bounded disposition; initial substantial adverse BA/AB retained, later fixed-logical AB reverses and focused physical-core BA near neutral. No CD speedup, no proven universal absence of regression; not offset by cartridge gains."
+  },
+  "CD_interpretation": "Corresponding old/fresh text sections exact, so rebuild did not repair code or invalidate negatives. Same logical14 later AB is favorable. Focused BA uses one measured physical core with both SMT threads and is a distinct matched configuration, not pooled. Earlier headroom CPU42-59percent vs later9-20percent makes ambient variation plausible, but its precise cause is unproven. Mixed retained evidence supports neutral/inconclusive for the qualified bounded package, not a claimed regression-free universal theorem. No additional benchmark matrix is required to make that honest disposition.",
+  "CD_binary_sections": {
+    "oldB": {
+      ".text": "64f9773eb57c52f5b7ea02137a66767579f02ea2d72ab4c58e766b97a88614a7",
+      ".rdata": "a14d2d9f0e20c1d55955fecf18e83ea7e43a2677ae45116ebd54b43d82748b1c",
+      ".data": "8b761d5b6f3f8f6294fc7d0f28056febafec87c47fa980d1ca01fb49b75a6152",
+      ".pdata": "e74afe8a74e478647bf5302462a11bbab54d20c6454616f0f4d75f8ec9cdcce4",
+      ".rsrc": "8bd3584945acd0227493232f1cb7884aff107123edd8fded6bfaf24f1cc16846",
+      ".reloc": "39b2af19ecef02fe7f870aecca837f4af1bea86dd0e5ace964c1f17b88595189"
+    },
+    "oldA": {
+      ".text": "3107324c9fce6da04a5acf08d76e5029556297a572c961009946cf8cee11a9d3",
+      ".rdata": "69bfcb2565531f1c2bd044395f611fcf1c1e884bf2147bb1205d19c028afdca1",
+      ".data": "7cda887ea323e27a3a0b75261e9447eb395e4f69b269316a1ea8d5017f4c6c87",
+      ".pdata": "b93f4c88b50cfc627a6a430645f409056af6c334d0ee79f3e795db0ebf1db17d",
+      ".rsrc": "8bd3584945acd0227493232f1cb7884aff107123edd8fded6bfaf24f1cc16846",
+      ".reloc": "39b2af19ecef02fe7f870aecca837f4af1bea86dd0e5ace964c1f17b88595189"
+    },
+    "freshA": {
+      ".text": "3107324c9fce6da04a5acf08d76e5029556297a572c961009946cf8cee11a9d3",
+      ".rdata": "c06da14e48533034bf862a87f6fb4b308a9d5fe14398a66b1d92078790582c25",
+      ".data": "8b761d5b6f3f8f6294fc7d0f28056febafec87c47fa980d1ca01fb49b75a6152",
+      ".pdata": "b93f4c88b50cfc627a6a430645f409056af6c334d0ee79f3e795db0ebf1db17d",
+      ".rsrc": "8bd3584945acd0227493232f1cb7884aff107123edd8fded6bfaf24f1cc16846",
+      ".reloc": "39b2af19ecef02fe7f870aecca837f4af1bea86dd0e5ace964c1f17b88595189"
+    },
+    "freshB": {
+      ".text": "64f9773eb57c52f5b7ea02137a66767579f02ea2d72ab4c58e766b97a88614a7",
+      ".rdata": "b609c8886217e92f9d6d9c54de3ecf009df34fcdf42a3f44fe21a8501221d817",
+      ".data": "8b761d5b6f3f8f6294fc7d0f28056febafec87c47fa980d1ca01fb49b75a6152",
+      ".pdata": "e74afe8a74e478647bf5302462a11bbab54d20c6454616f0f4d75f8ec9cdcce4",
+      ".rsrc": "8bd3584945acd0227493232f1cb7884aff107123edd8fded6bfaf24f1cc16846",
+      ".reloc": "39b2af19ecef02fe7f870aecca837f4af1bea86dd0e5ace964c1f17b88595189"
+    }
+  },
+  "presentation_gates": {
+    "native_actual_snapshots": 48,
+    "native_scope": "Common candidate runtime/original c22main versus EA main, observation-only clones independently reconstructed; active raw pixels, full upload storage/padding and pre-Present software surfaces exact",
+    "CD_actual_SDL_UI_cases": 24,
+    "CD_scope": "Exact original/candidate source plus pre-Present observation wrapper; source raw-memory immutability, open/closed UI, nearest/linear/dimensions/odd-pitch cases",
+    "final_QA_retention_entries_verified": 283,
+    "costs_excluded": true
+  },
+  "correctness": "All8clean pairs retain exact raw state/image/frame/fullWAV outputs; cartridge rollback/current-own-build save-load/progression; CD11canonical checkpoints/RAM/fullWAV and execution floors. Synthetic unit glue/bus stubs are not gameplay. Native raw-storage immutability separately covered by permanent staging oracle/CD fixture, not mislabeled upload dumps.",
+  "resolved_findings": {
+    "E16-V1": "Inactive full raw-storage metadata/destination alias guards fixed before qualification",
+    "E16-V2": "Portable aligned union backing for alias fixtures fixed before qualification",
+    "E16-V3": "Native storage artifacts correctly labeled full upload storage/padding, separate from active raw snapshots and other raw immutability proofs; corrected MD/JSON/Beads before final verdict"
+  },
+  "unresolved_objective_findings": [],
+  "prior_scope_correction": "--measure-runtime includes main color/UI/upload/present; only --benchmark skips. Historical mistaken preparation/preliminary note preserved and corrected explicitly.",
+  "ready_PR": {
+    "baseRefName": "codex/engine-render-reuse-20261029",
+    "headRefOid": "c20f9668214a99aa9cb38eed1d8010de19a3a211",
+    "isDraft": false,
+    "state": "OPEN",
+    "url": "https://github.com/mstan/segagenesisrecomp/pull/48"
+  },
+  "durable_beads_owner": {
+    "id": "beads-3z5k.13",
+    "status": "in_progress",
+    "assignee": "codex",
+    "external_ref": "https://github.com/mstan/segagenesisrecomp/pull/48",
+    "parent": "beads-3z5k",
+    "labels": [
+      "campaign:optimization-campaign",
+      "project:segagenesisrecomp",
+      "repo:segagenesisrecomp",
+      "scope:meta",
+      "state:qualifying",
+      "system:genesis"
+    ]
+  },
+  "durable_beads_comment_ids": {
+    "beads-3z5k.13": [
+      "01a19224-95b9-7a0a-9d58-c5ef7b5c01d7",
+      "01a19226-6d8c-72bc-af3a-07f6ba31e595"
+    ],
+    "beads-3z5k": [
+      "01a19224-a5c2-7852-a87b-4d974486ac3c"
+    ],
+    "beads-2wy8.1": [
+      "01a19224-a77a-7957-bbef-a06e4b209bde",
+      "01a19226-7c36-7c3a-8a18-6e2271a6f55a"
+    ]
+  },
+  "cleanup": {
+    "WSL_removed_bytes": 3995547,
+    "SERVER_unit_removed_bytes": 2875004,
+    "retained_actual_PEs_ELFs_configs_logs_verified": true,
+    "remaining": "Bounded supported build/common objects, private qualified catalogs/archive/tools, failed and final QA/runtime artifacts retained for combined review/campaign reuse; copied disposable profile/build duplicates have explicit cleanup needs. Preserve borrowed worktrees/junctions, owner saves/settings, frozen sources and raw evidence.",
+    "retained_bulk_inventory": {
+      "files": 868,
+      "bytes": 2259440616,
+      "no_links_or_nested_repositories": true
+    }
+  },
+  "checked_files": [
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2.json",
+      "sha256": "4a076e4c86f124d5ee9ae7e66016d3d549c077af8bfc1b3d3da47257a1d6b5d7",
+      "bytes": 99776
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\rka\\reference\\RKARecomp.exe",
+      "sha256": "0edf7bacd0f648bb282068c6925e36d9a0100289013c61146d43adfd9965ed26",
+      "bytes": 8710656
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-0-A\\bin\\RKARecomp.exe",
+      "sha256": "0edf7bacd0f648bb282068c6925e36d9a0100289013c61146d43adfd9965ed26",
+      "bytes": 8710656
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-0-A\\raw.png",
+      "sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-0-A\\audio.wav",
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-0-A\\rka.bin",
+      "sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+      "bytes": 1048576
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-0-A\\run.log",
+      "sha256": "d7b28261fefd5752130b96ee57ccd906203df1c47acd443716c3ebc528570486",
+      "bytes": 8501
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\rka\\candidate\\RKARecomp.exe",
+      "sha256": "001cf18a9f13eaa9df937498455217de00ae6d522b4e9e4e4475d9e29d17c989",
+      "bytes": 8712704
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-1-B\\bin\\RKARecomp.exe",
+      "sha256": "001cf18a9f13eaa9df937498455217de00ae6d522b4e9e4e4475d9e29d17c989",
+      "bytes": 8712704
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-1-B\\raw.png",
+      "sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-1-B\\audio.wav",
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-1-B\\rka.bin",
+      "sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+      "bytes": 1048576
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-raw-1-B\\run.log",
+      "sha256": "6ec4be89a80c929c910eb58550f71fc98f3b16b0a1ca06c4dc72ec730817a423",
+      "bytes": 8496
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-0-B\\bin\\RKARecomp.exe",
+      "sha256": "001cf18a9f13eaa9df937498455217de00ae6d522b4e9e4e4475d9e29d17c989",
+      "bytes": 8712704
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-0-B\\raw.png",
+      "sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-0-B\\audio.wav",
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-0-B\\rka.bin",
+      "sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+      "bytes": 1048576
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-0-B\\run.log",
+      "sha256": "138186e0a659ba5f25d93a1421bf8980aef2762754db90beda0dfd5223ab16bb",
+      "bytes": 8611
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-1-A\\bin\\RKARecomp.exe",
+      "sha256": "0edf7bacd0f648bb282068c6925e36d9a0100289013c61146d43adfd9965ed26",
+      "bytes": 8710656
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-1-A\\raw.png",
+      "sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-1-A\\audio.wav",
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-1-A\\rka.bin",
+      "sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+      "bytes": 1048576
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\rka-crt-1-A\\run.log",
+      "sha256": "7f780d5be6519d7dd5a0947e5a576d4b6736aac9de9d15c3f64f01f14fe5c20e",
+      "bytes": 8618
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic1\\reference\\SonicTheHedgehogRecomp.exe",
+      "sha256": "fa2e9185890f8609588d5f3ccb5e0e99cc4a19f5f88637711d626f0cc36f2aaa",
+      "bytes": 5410816
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-0-A\\bin\\SonicTheHedgehogRecomp.exe",
+      "sha256": "fa2e9185890f8609588d5f3ccb5e0e99cc4a19f5f88637711d626f0cc36f2aaa",
+      "bytes": 5410816
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-0-A\\raw.png",
+      "sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-0-A\\audio.wav",
+      "sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+      "bytes": 35827244
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-0-A\\sonic.bin",
+      "sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-0-A\\run.log",
+      "sha256": "06a0b21d5c8fe04c99b610cac7cabcfa65461ce5d574170d91a5a85ed22189b1",
+      "bytes": 5401
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic1\\candidate\\SonicTheHedgehogRecomp.exe",
+      "sha256": "9e3848380ae11da20f9b7c7d2c2aa2938c0076564f6759facb9295435aaa9f0b",
+      "bytes": 5412864
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-1-B\\bin\\SonicTheHedgehogRecomp.exe",
+      "sha256": "9e3848380ae11da20f9b7c7d2c2aa2938c0076564f6759facb9295435aaa9f0b",
+      "bytes": 5412864
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-1-B\\raw.png",
+      "sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-1-B\\audio.wav",
+      "sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+      "bytes": 35827244
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-1-B\\sonic.bin",
+      "sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-raw-1-B\\run.log",
+      "sha256": "1700a5747c71c6e82a24d0f8724eb1f8b59989884d7b0e6c953a916bde0a0d13",
+      "bytes": 5396
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-0-B\\bin\\SonicTheHedgehogRecomp.exe",
+      "sha256": "9e3848380ae11da20f9b7c7d2c2aa2938c0076564f6759facb9295435aaa9f0b",
+      "bytes": 5412864
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-0-B\\raw.png",
+      "sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-0-B\\audio.wav",
+      "sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+      "bytes": 35827244
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-0-B\\sonic.bin",
+      "sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-0-B\\run.log",
+      "sha256": "1b4531ae78775797af2b19e8de1416cf994da6bc15e4b2106880e9c8623e5274",
+      "bytes": 5511
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-1-A\\bin\\SonicTheHedgehogRecomp.exe",
+      "sha256": "fa2e9185890f8609588d5f3ccb5e0e99cc4a19f5f88637711d626f0cc36f2aaa",
+      "bytes": 5410816
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-1-A\\raw.png",
+      "sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-1-A\\audio.wav",
+      "sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+      "bytes": 35827244
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-1-A\\sonic.bin",
+      "sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r2\\sonic1-crt-1-A\\run.log",
+      "sha256": "178d3006942356128f08496bd81b72d82fee0a376583128d821635a7dc11809b",
+      "bytes": 5517
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1.json",
+      "sha256": "5ec43c9849db18fd4d19d98e0189953c62a0f446f388f9e47cbbc1e75a6e286c",
+      "bytes": 483124
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-local-builds.json",
+      "sha256": "b16add5e03070fcaeda46d5f55033a2f163ec539628526c1afb83aa2f402fcb7",
+      "bytes": 6118
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic_cd\\candidate\\SonicCD.exe",
+      "sha256": "049f00cabdfe2218311313c789b4e635dfa0c74ce2f0fb12db7d68fd5b4cc5eb",
+      "bytes": 115818496
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\audio.wav",
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\backup-ram.bin",
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\cram9.be16",
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-0.ppm",
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-1200.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-1500.ppm",
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-1800.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-2100.ppm",
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-2400.ppm",
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-2700.ppm",
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-300.ppm",
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-3000.ppm",
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-600.ppm",
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame-900.ppm",
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\frame.argb",
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\main-ram.bin",
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\sub-prg.bin",
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\vdp-registers.bin",
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\vram.bin",
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\vsram.be16",
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\word-ram.bin",
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\0-B\\capture\\z80-ram.bin",
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-games\\binaries\\sonic_cd\\reference\\SonicCD.exe",
+      "sha256": "da614219a5c69108ad170a3d20eb56ab76843265b6a5fe3c68e88be80a64cd03",
+      "bytes": 115817984
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\audio.wav",
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\backup-ram.bin",
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\cram9.be16",
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-0.ppm",
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-1200.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-1500.ppm",
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-1800.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-2100.ppm",
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-2400.ppm",
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-2700.ppm",
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-300.ppm",
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-3000.ppm",
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-600.ppm",
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame-900.ppm",
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\frame.argb",
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\main-ram.bin",
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\sub-prg.bin",
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\vdp-registers.bin",
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\vram.bin",
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\vsram.be16",
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\word-ram.bin",
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-r1\\1-A\\capture\\z80-ram.bin",
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-cd-local-r1.json",
+      "sha256": "6f0c3eb75ec611e8ad847db3514f7fb22b910fb2107b6efb749188c5ca2a91e5",
+      "bytes": 1747
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2.json",
+      "sha256": "073fdd0d7a2072150b9dc979a39c70590aadbb55e8e23920c3ed157d738e63a1",
+      "bytes": 483474
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\audio.wav",
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\backup-ram.bin",
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\cram9.be16",
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-0.ppm",
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-1200.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-1500.ppm",
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-1800.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-2100.ppm",
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-2400.ppm",
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-2700.ppm",
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-300.ppm",
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-3000.ppm",
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-600.ppm",
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame-900.ppm",
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\frame.argb",
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\main-ram.bin",
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\sub-prg.bin",
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\vdp-registers.bin",
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\vram.bin",
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\vsram.be16",
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\word-ram.bin",
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\0-A\\capture\\z80-ram.bin",
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\audio.wav",
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\backup-ram.bin",
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\cram9.be16",
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-0.ppm",
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-1200.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-1500.ppm",
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-1800.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-2100.ppm",
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-2400.ppm",
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-2700.ppm",
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-300.ppm",
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-3000.ppm",
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-600.ppm",
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame-900.ppm",
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\frame.argb",
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\main-ram.bin",
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\sub-prg.bin",
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\vdp-registers.bin",
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\vram.bin",
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\vsram.be16",
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\word-ram.bin",
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-final-pixels-reverse-r2\\1-B\\capture\\z80-ram.bin",
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-cd-reverse-local-r2.json",
+      "sha256": "0f415f622eb1aa18ca3920c103392f7bcdacfcb72b3b5dc8d11b657907353e5b",
+      "bytes": 1804
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2.json",
+      "sha256": "472e0430b57bb6080e2f05378d5e0f992425166f83e1e0e986aad881dabf5fb6",
+      "bytes": 481559
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-matched-local-r2.json",
+      "sha256": "31576ee84d187be01aad2d9bca79d0e690e437e97aa053ef3ee139fab2855b8d",
+      "bytes": 4976
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-matched-r2\\A\\SonicCD.exe",
+      "sha256": "44e61fac24ffed79b9445757d3a336cd3fc630050eab57174a149e311b9f007f",
+      "bytes": 115817984
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\audio.wav",
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\backup-ram.bin",
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\cram9.be16",
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-0.ppm",
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-1200.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-1500.ppm",
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-1800.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-2100.ppm",
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-2400.ppm",
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-2700.ppm",
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-300.ppm",
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-3000.ppm",
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-600.ppm",
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame-900.ppm",
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\frame.argb",
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\main-ram.bin",
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\sub-prg.bin",
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\vdp-registers.bin",
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\vram.bin",
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\vsram.be16",
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\word-ram.bin",
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\0-A\\capture\\z80-ram.bin",
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-matched-r2\\B\\SonicCD.exe",
+      "sha256": "9ce167c906304f8b9c8205cabf1b7f1abfa1bd8a8502d68793577cf25e798da1",
+      "bytes": 115818496
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\audio.wav",
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\backup-ram.bin",
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\cram9.be16",
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-0.ppm",
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-1200.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-1500.ppm",
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-1800.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-2100.ppm",
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-2400.ppm",
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-2700.ppm",
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-300.ppm",
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-3000.ppm",
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-600.ppm",
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame-900.ppm",
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\frame.argb",
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\main-ram.bin",
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\sub-prg.bin",
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\vdp-registers.bin",
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\vram.bin",
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\vsram.be16",
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\word-ram.bin",
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-matched-presentation-r2\\1-B\\capture\\z80-ram.bin",
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-cd-matched-local-r2.json",
+      "sha256": "c6e1bb6c58a86fb8b75f9d0b0d3fc6ddad41ad72f0c92274d90cec616530ea08",
+      "bytes": 1830
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3.json",
+      "sha256": "1af91ce96300cd4d369e79f5a7b569963c1675fe8224d5dbd173a6db71532a9b",
+      "bytes": 488652
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\audio.wav",
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\backup-ram.bin",
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\cram9.be16",
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-0.ppm",
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-1200.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-1500.ppm",
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-1800.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-2100.ppm",
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-2400.ppm",
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-2700.ppm",
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-300.ppm",
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-3000.ppm",
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-600.ppm",
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame-900.ppm",
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\frame.argb",
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\main-ram.bin",
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\sub-prg.bin",
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\vdp-registers.bin",
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\vram.bin",
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\vsram.be16",
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\word-ram.bin",
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\0-B\\capture\\z80-ram.bin",
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\audio.wav",
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\backup-ram.bin",
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\cram9.be16",
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-0.ppm",
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-1200.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-1500.ppm",
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-1800.ppm",
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-2100.ppm",
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-2400.ppm",
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-2700.ppm",
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-300.ppm",
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-3000.ppm",
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-600.ppm",
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame-900.ppm",
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\frame.argb",
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\main-ram.bin",
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\sub-prg.bin",
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\vdp-registers.bin",
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\vram.bin",
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\vsram.be16",
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\word-ram.bin",
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\game-cd-core-selected-focused-r3\\1-A\\capture\\z80-ram.bin",
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-cd-core-local-r3.json",
+      "sha256": "8b6308ea03c56c86d6694ae8b75258755e0eaae8191b52a4df8c95d334650bca",
+      "bytes": 1848
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cd-pe-section-identities.json",
+      "sha256": "5d9e4a36c9305a8cd2ee87b7ad7f635aa16872300d6ad0630636eddc36b95f26",
+      "bytes": 2027
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\retention-manifest.json",
+      "sha256": "761156b996b4a0271f65a73838b8bfc890f64b8e15bb26d5b096d6849e99dee8",
+      "bytes": 46061
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\audio.wav",
+      "sha256": "7d02a9a006f565adbbe5cd2a0bf858931029c995b14d268cc603452ac3b99c1d",
+      "bytes": 18809324
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\raw-final.png",
+      "sha256": "8b3576c440e1c50e3a628f2d9a8ea4a44eab29376dc4e2704fb837c639f4a3df",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\rka.bin",
+      "sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+      "bytes": 1048576
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\run.log",
+      "sha256": "64d66985c99c28e45fb7f4a4bb8767c5a2b4b9f9f520036645641de57415fa57",
+      "bytes": 4679
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\frames.jsonl",
+      "sha256": "012674c9545d3a729fc29adb8b8ec03b6c49a59e8f7f810a43d7a0b242638699",
+      "bytes": 1596
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-1200.png",
+      "sha256": "3d0a7b83e820f52d592e5f54280e2d7929b1ec25a2b08b2f32d76f5baf1a17eb",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-32.png",
+      "sha256": "4d27c97cd4a7c96bd46d5c6b247ffc09e6335f8d511b8b2b7e541b8ffece9efd",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-799.png",
+      "sha256": "835705804264afe5794d110f8dc40ab234d61f76ec51420360eadc226c33d572",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-801.png",
+      "sha256": "aa346e8e6e4c2bfa0b88f974bebadff07eab3f4ea50e2fc44baa247a82e570e0",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-804.png",
+      "sha256": "aa346e8e6e4c2bfa0b88f974bebadff07eab3f4ea50e2fc44baa247a82e570e0",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-806.png",
+      "sha256": "38e46de3204cb297324eb2f356b38d213a51dba5434c0f1c2ee6fb7f7e649e42",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-809.png",
+      "sha256": "38e46de3204cb297324eb2f356b38d213a51dba5434c0f1c2ee6fb7f7e649e42",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-812.png",
+      "sha256": "aa346e8e6e4c2bfa0b88f974bebadff07eab3f4ea50e2fc44baa247a82e570e0",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-821.png",
+      "sha256": "91f48639a27845f418cb37845ab72b378fa7bc39edcc8c664c14fab89ec4e342",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-831.png",
+      "sha256": "2263587399fe3cb1f74f0a3518572b0d694af9aa9781b3965bff99b576b0b169",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-851.png",
+      "sha256": "ee3fefd2be270c8fccd8ec85eba7eb66908bcc2883a756ba82d073c5759bcdfc",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\present-901.png",
+      "sha256": "835705804264afe5794d110f8dc40ab234d61f76ec51420360eadc226c33d572",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-1200.png",
+      "sha256": "dd676db0f44c196e60b868ed03d088be0e47044c3cd6a23b5600c4021473e88f",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-32.png",
+      "sha256": "4a46dde00b8ea5da76fe07b58e7e403657b1a0237484769ac875873775e78b18",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-799.png",
+      "sha256": "e65568aaf7b89cffb526f8854ae57200759b0d6c119045e8257d31706a240107",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-801.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-804.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-806.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-809.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-812.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-821.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-831.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-851.png",
+      "sha256": "e65568aaf7b89cffb526f8854ae57200759b0d6c119045e8257d31706a240107",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\raw-901.png",
+      "sha256": "e65568aaf7b89cffb526f8854ae57200759b0d6c119045e8257d31706a240107",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-1200.bin",
+      "sha256": "a80339f5f744840d6529c563aafd8fc27aaac4dbb08c8f977bb24c3f53c7994b",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-32.bin",
+      "sha256": "9d5ad8393349ffac5eaafa7b33a802ab9197df8a9bdf7b15a7b6d99a9bb2d0c1",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-799.bin",
+      "sha256": "fd7d2245eed1c7919beff1d6c4e48bb2c6930391c8fb6b3b0014294081fa6ff0",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-801.bin",
+      "sha256": "118f8597991b68deb5f6eb3e36b971a69611c929ffb283c8ee80ff25305b36f6",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-804.bin",
+      "sha256": "118f8597991b68deb5f6eb3e36b971a69611c929ffb283c8ee80ff25305b36f6",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-806.bin",
+      "sha256": "381be09e24254a5d0476205bf429e8597317e2cdd710a1b5e4662387f743ccb0",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-809.bin",
+      "sha256": "381be09e24254a5d0476205bf429e8597317e2cdd710a1b5e4662387f743ccb0",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-812.bin",
+      "sha256": "118f8597991b68deb5f6eb3e36b971a69611c929ffb283c8ee80ff25305b36f6",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-821.bin",
+      "sha256": "118f8597991b68deb5f6eb3e36b971a69611c929ffb283c8ee80ff25305b36f6",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-831.bin",
+      "sha256": "65673d8ada95de4bba56c9e1e183a3cb10cc9932dfd706a4b5a7d573bc68b071",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-851.bin",
+      "sha256": "7bd51b44080820865b54f877604406d0e7693a00e8f91555b738ef589d065ad9",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\storage-901.bin",
+      "sha256": "8f1aff85c4e32196db1a8c82ab8b3c6cf58f46fd232c0661f442620febd8a4ce",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-1200.png",
+      "sha256": "e57cd0be4e971de0eecbd4262cd653a38330624c8157441cda56d6fa8850cf12",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-32.png",
+      "sha256": "437f2d3162dbe19ac99eecb85f9c22c209e119f5b9234eba8df92c98271675e3",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-799.png",
+      "sha256": "402fcde729ab9748156b68ed2e7d853f5c0f1501fa7c988e175843ac8a697889",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-801.png",
+      "sha256": "9a4ac679d381452f9d4fedfc2149839e2591ce514f9a8d2478498ee9f9d5b399",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-804.png",
+      "sha256": "9a4ac679d381452f9d4fedfc2149839e2591ce514f9a8d2478498ee9f9d5b399",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-806.png",
+      "sha256": "178034ea5c6fbee6588189135a3255b213f08c39154b71016af2b6b7a7ef4821",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-809.png",
+      "sha256": "178034ea5c6fbee6588189135a3255b213f08c39154b71016af2b6b7a7ef4821",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-812.png",
+      "sha256": "9a4ac679d381452f9d4fedfc2149839e2591ce514f9a8d2478498ee9f9d5b399",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-821.png",
+      "sha256": "9a4ac679d381452f9d4fedfc2149839e2591ce514f9a8d2478498ee9f9d5b399",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-831.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-851.png",
+      "sha256": "e65568aaf7b89cffb526f8854ae57200759b0d6c119045e8257d31706a240107",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-A\\capture\\upload-901.png",
+      "sha256": "402fcde729ab9748156b68ed2e7d853f5c0f1501fa7c988e175843ac8a697889",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\audio.wav",
+      "sha256": "7d02a9a006f565adbbe5cd2a0bf858931029c995b14d268cc603452ac3b99c1d",
+      "bytes": 18809324
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\raw-final.png",
+      "sha256": "8b3576c440e1c50e3a628f2d9a8ea4a44eab29376dc4e2704fb837c639f4a3df",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\rka.bin",
+      "sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+      "bytes": 1048576
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\run.log",
+      "sha256": "7ddcf2bb28aee33d271759d41d105601ef5638553c527e4eebdecc4f7e104053",
+      "bytes": 4684
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\frames.jsonl",
+      "sha256": "012674c9545d3a729fc29adb8b8ec03b6c49a59e8f7f810a43d7a0b242638699",
+      "bytes": 1596
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-1200.png",
+      "sha256": "3d0a7b83e820f52d592e5f54280e2d7929b1ec25a2b08b2f32d76f5baf1a17eb",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-32.png",
+      "sha256": "4d27c97cd4a7c96bd46d5c6b247ffc09e6335f8d511b8b2b7e541b8ffece9efd",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-799.png",
+      "sha256": "835705804264afe5794d110f8dc40ab234d61f76ec51420360eadc226c33d572",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-801.png",
+      "sha256": "aa346e8e6e4c2bfa0b88f974bebadff07eab3f4ea50e2fc44baa247a82e570e0",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-804.png",
+      "sha256": "aa346e8e6e4c2bfa0b88f974bebadff07eab3f4ea50e2fc44baa247a82e570e0",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-806.png",
+      "sha256": "38e46de3204cb297324eb2f356b38d213a51dba5434c0f1c2ee6fb7f7e649e42",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-809.png",
+      "sha256": "38e46de3204cb297324eb2f356b38d213a51dba5434c0f1c2ee6fb7f7e649e42",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-812.png",
+      "sha256": "aa346e8e6e4c2bfa0b88f974bebadff07eab3f4ea50e2fc44baa247a82e570e0",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-821.png",
+      "sha256": "91f48639a27845f418cb37845ab72b378fa7bc39edcc8c664c14fab89ec4e342",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-831.png",
+      "sha256": "2263587399fe3cb1f74f0a3518572b0d694af9aa9781b3965bff99b576b0b169",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-851.png",
+      "sha256": "ee3fefd2be270c8fccd8ec85eba7eb66908bcc2883a756ba82d073c5759bcdfc",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\present-901.png",
+      "sha256": "835705804264afe5794d110f8dc40ab234d61f76ec51420360eadc226c33d572",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-1200.png",
+      "sha256": "dd676db0f44c196e60b868ed03d088be0e47044c3cd6a23b5600c4021473e88f",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-32.png",
+      "sha256": "4a46dde00b8ea5da76fe07b58e7e403657b1a0237484769ac875873775e78b18",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-799.png",
+      "sha256": "e65568aaf7b89cffb526f8854ae57200759b0d6c119045e8257d31706a240107",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-801.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-804.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-806.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-809.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-812.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-821.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-831.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-851.png",
+      "sha256": "e65568aaf7b89cffb526f8854ae57200759b0d6c119045e8257d31706a240107",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\raw-901.png",
+      "sha256": "e65568aaf7b89cffb526f8854ae57200759b0d6c119045e8257d31706a240107",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-1200.bin",
+      "sha256": "a80339f5f744840d6529c563aafd8fc27aaac4dbb08c8f977bb24c3f53c7994b",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-32.bin",
+      "sha256": "9d5ad8393349ffac5eaafa7b33a802ab9197df8a9bdf7b15a7b6d99a9bb2d0c1",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-799.bin",
+      "sha256": "fd7d2245eed1c7919beff1d6c4e48bb2c6930391c8fb6b3b0014294081fa6ff0",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-801.bin",
+      "sha256": "118f8597991b68deb5f6eb3e36b971a69611c929ffb283c8ee80ff25305b36f6",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-804.bin",
+      "sha256": "118f8597991b68deb5f6eb3e36b971a69611c929ffb283c8ee80ff25305b36f6",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-806.bin",
+      "sha256": "381be09e24254a5d0476205bf429e8597317e2cdd710a1b5e4662387f743ccb0",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-809.bin",
+      "sha256": "381be09e24254a5d0476205bf429e8597317e2cdd710a1b5e4662387f743ccb0",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-812.bin",
+      "sha256": "118f8597991b68deb5f6eb3e36b971a69611c929ffb283c8ee80ff25305b36f6",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-821.bin",
+      "sha256": "118f8597991b68deb5f6eb3e36b971a69611c929ffb283c8ee80ff25305b36f6",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-831.bin",
+      "sha256": "65673d8ada95de4bba56c9e1e183a3cb10cc9932dfd706a4b5a7d573bc68b071",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-851.bin",
+      "sha256": "7bd51b44080820865b54f877604406d0e7693a00e8f91555b738ef589d065ad9",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\storage-901.bin",
+      "sha256": "8f1aff85c4e32196db1a8c82ab8b3c6cf58f46fd232c0661f442620febd8a4ce",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-1200.png",
+      "sha256": "e57cd0be4e971de0eecbd4262cd653a38330624c8157441cda56d6fa8850cf12",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-32.png",
+      "sha256": "437f2d3162dbe19ac99eecb85f9c22c209e119f5b9234eba8df92c98271675e3",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-799.png",
+      "sha256": "402fcde729ab9748156b68ed2e7d853f5c0f1501fa7c988e175843ac8a697889",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-801.png",
+      "sha256": "9a4ac679d381452f9d4fedfc2149839e2591ce514f9a8d2478498ee9f9d5b399",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-804.png",
+      "sha256": "9a4ac679d381452f9d4fedfc2149839e2591ce514f9a8d2478498ee9f9d5b399",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-806.png",
+      "sha256": "178034ea5c6fbee6588189135a3255b213f08c39154b71016af2b6b7a7ef4821",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-809.png",
+      "sha256": "178034ea5c6fbee6588189135a3255b213f08c39154b71016af2b6b7a7ef4821",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-812.png",
+      "sha256": "9a4ac679d381452f9d4fedfc2149839e2591ce514f9a8d2478498ee9f9d5b399",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-821.png",
+      "sha256": "9a4ac679d381452f9d4fedfc2149839e2591ce514f9a8d2478498ee9f9d5b399",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-831.png",
+      "sha256": "f52869affeaf83e72dcb93d9754f6d4663cc5c4df669d27f0cc2bceccba52f16",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-851.png",
+      "sha256": "e65568aaf7b89cffb526f8854ae57200759b0d6c119045e8257d31706a240107",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\rka-B\\capture\\upload-901.png",
+      "sha256": "402fcde729ab9748156b68ed2e7d853f5c0f1501fa7c988e175843ac8a697889",
+      "bytes": 172334
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\audio.wav",
+      "sha256": "f0b211e00902a2107e2ec662c9339b3f4f0b39433b23b7837ba94606e5b2cca6",
+      "bytes": 18809324
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\raw-final.png",
+      "sha256": "cb5e8eba2b06151c7871681b02012e675664b11c91c06515c4b094370541c6f6",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\run.log",
+      "sha256": "58eff6927d52f8b093856000bd03be604108e7ae2f71b68a344fb400cac48fb8",
+      "bytes": 4737
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\sonic1.bin",
+      "sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\frames.jsonl",
+      "sha256": "80ad93f480d17c30ec6f7ff9fea4c860fc5e3ef81869453cc5d71bc5270b3429",
+      "bytes": 1596
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-1200.png",
+      "sha256": "435802c125456d19a0fce1bac885c1227d219bcaa05c5042e9b2421cf887ecf0",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-32.png",
+      "sha256": "4d27c97cd4a7c96bd46d5c6b247ffc09e6335f8d511b8b2b7e541b8ffece9efd",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-799.png",
+      "sha256": "9c34fa39bbfc90c02c234f6a776fd6c4b16e1dbf0a2e9ef86acdd15d2b5ef4da",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-801.png",
+      "sha256": "6d5f1016871fc7b717cf40da86094aa903e48bc736d4bc7db2b72c9620e34eab",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-804.png",
+      "sha256": "4c38e272ef110453896964e009c94535662edd447aa5d2fc4d6950e536caaa9a",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-806.png",
+      "sha256": "75b6d811beefd445f83531979e877afadea0c154b987c16a40f7bd412428c464",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-809.png",
+      "sha256": "75b6d811beefd445f83531979e877afadea0c154b987c16a40f7bd412428c464",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-812.png",
+      "sha256": "4c38e272ef110453896964e009c94535662edd447aa5d2fc4d6950e536caaa9a",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-821.png",
+      "sha256": "99a9df78fec6ef0ba268173597126fadc7048a2d7228c1dcb63ae528b65e4877",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-831.png",
+      "sha256": "b358e8786dab5b75d539e19eef4beba9fa78851d29aa438058de4a05e26252e6",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-851.png",
+      "sha256": "cacd734c4dc62c824160bdf88ff2a3c0b2680f3c8ea022dcf0312c262ec2af7f",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\present-901.png",
+      "sha256": "eddf2188cc1ce91ea94d5ff0e656ccfa9cd557dc0d609458c44a5165783ac46b",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-1200.png",
+      "sha256": "3f52077a04a6ab58f6776f584ff8fa4af5217540b9debb883eb2732b6533fb41",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-32.png",
+      "sha256": "4a46dde00b8ea5da76fe07b58e7e403657b1a0237484769ac875873775e78b18",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-799.png",
+      "sha256": "7171617e843acbab9494fbad4c309f9597a68d89e00b6e003d5391b2ecf8d1b9",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-801.png",
+      "sha256": "a331a43ce49311a8055e2e934359c21c0203f01098c5e4ac736848dc9b9df87f",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-804.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-806.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-809.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-812.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-821.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-831.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-851.png",
+      "sha256": "4bb39438d010404a0deeb2c794a9b42e6002ee7798c6318d45fcdd6605c0c10e",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\raw-901.png",
+      "sha256": "138f276b7314f8232a0f61fda3887842ae0ae38aa871e32ec264e13c9488b7bb",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-1200.bin",
+      "sha256": "90da73dbb132e5d7a9860f8ffcb08ddcf5105ed0e94263b67d1dc2286d8ccbe8",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-32.bin",
+      "sha256": "9d5ad8393349ffac5eaafa7b33a802ab9197df8a9bdf7b15a7b6d99a9bb2d0c1",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-799.bin",
+      "sha256": "01b963dd50bdc2b38027dfa4cf459c24f7255e9fcd0dcf38a87f3bfcfb98bc4d",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-801.bin",
+      "sha256": "87f2edcd8654be264dc66efdd3cd86823d0b083d073ea99bdff8b378d516edc1",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-804.bin",
+      "sha256": "91e1c711846c8d34681e60a07fd8f5b71b6fdf3c227d7126d65b19381dc8075b",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-806.bin",
+      "sha256": "084fc0c0dbad02bed625d4bd9924a9970efa6b70f838caebce585e6a2db7bbde",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-809.bin",
+      "sha256": "084fc0c0dbad02bed625d4bd9924a9970efa6b70f838caebce585e6a2db7bbde",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-812.bin",
+      "sha256": "91e1c711846c8d34681e60a07fd8f5b71b6fdf3c227d7126d65b19381dc8075b",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-821.bin",
+      "sha256": "91e1c711846c8d34681e60a07fd8f5b71b6fdf3c227d7126d65b19381dc8075b",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-831.bin",
+      "sha256": "de567e54aa6b370fc2063ee9a9fd1a5566b0e74880e121cf663d3b4a9cfd3a70",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-851.bin",
+      "sha256": "53982125dd26e41569ed3f6c741320a4337c1a9c657cc92cac932aada38a10c2",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\storage-901.bin",
+      "sha256": "a1398d878c28e5b0cfaa5067e2e110c289017b14af61d4d0bbf5afd58e5580c2",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-1200.png",
+      "sha256": "3ed52b62a0a3ff700af130d213143d35898f2aacd9a2946c48625eeb0e8e7e99",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-32.png",
+      "sha256": "437f2d3162dbe19ac99eecb85f9c22c209e119f5b9234eba8df92c98271675e3",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-799.png",
+      "sha256": "11521fb33da9cf6334541caee8be92ccb0dcb1e7fa71f2b5c2e35d7f53cbb2c4",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-801.png",
+      "sha256": "b705b0351ec68aeb30f97cf8324cf508f3f0dbe533f02799cc53d288e3efa008",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-804.png",
+      "sha256": "642b29ff2969f5616588a360976308c1c7f718e4508024b4697ff77c3a18db65",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-806.png",
+      "sha256": "4a9575e3d9a9630a975dd161372aea648ff5ce55515801f50d5e2e922838770e",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-809.png",
+      "sha256": "4a9575e3d9a9630a975dd161372aea648ff5ce55515801f50d5e2e922838770e",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-812.png",
+      "sha256": "642b29ff2969f5616588a360976308c1c7f718e4508024b4697ff77c3a18db65",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-821.png",
+      "sha256": "642b29ff2969f5616588a360976308c1c7f718e4508024b4697ff77c3a18db65",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-831.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-851.png",
+      "sha256": "4bb39438d010404a0deeb2c794a9b42e6002ee7798c6318d45fcdd6605c0c10e",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-A\\capture\\upload-901.png",
+      "sha256": "92ff8c593a767aa2a46c257d205e18efe336e4e0fa6b319c7100dea97f49c417",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\audio.wav",
+      "sha256": "f0b211e00902a2107e2ec662c9339b3f4f0b39433b23b7837ba94606e5b2cca6",
+      "bytes": 18809324
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\raw-final.png",
+      "sha256": "cb5e8eba2b06151c7871681b02012e675664b11c91c06515c4b094370541c6f6",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\run.log",
+      "sha256": "41e2b5388d0bbecfa2ecb945e7f7f072395f6e477248bb543914d71a7a6c46ef",
+      "bytes": 4742
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\sonic1.bin",
+      "sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+      "bytes": 524288
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\frames.jsonl",
+      "sha256": "80ad93f480d17c30ec6f7ff9fea4c860fc5e3ef81869453cc5d71bc5270b3429",
+      "bytes": 1596
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-1200.png",
+      "sha256": "435802c125456d19a0fce1bac885c1227d219bcaa05c5042e9b2421cf887ecf0",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-32.png",
+      "sha256": "4d27c97cd4a7c96bd46d5c6b247ffc09e6335f8d511b8b2b7e541b8ffece9efd",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-799.png",
+      "sha256": "9c34fa39bbfc90c02c234f6a776fd6c4b16e1dbf0a2e9ef86acdd15d2b5ef4da",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-801.png",
+      "sha256": "6d5f1016871fc7b717cf40da86094aa903e48bc736d4bc7db2b72c9620e34eab",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-804.png",
+      "sha256": "4c38e272ef110453896964e009c94535662edd447aa5d2fc4d6950e536caaa9a",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-806.png",
+      "sha256": "75b6d811beefd445f83531979e877afadea0c154b987c16a40f7bd412428c464",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-809.png",
+      "sha256": "75b6d811beefd445f83531979e877afadea0c154b987c16a40f7bd412428c464",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-812.png",
+      "sha256": "4c38e272ef110453896964e009c94535662edd447aa5d2fc4d6950e536caaa9a",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-821.png",
+      "sha256": "99a9df78fec6ef0ba268173597126fadc7048a2d7228c1dcb63ae528b65e4877",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-831.png",
+      "sha256": "b358e8786dab5b75d539e19eef4beba9fa78851d29aa438058de4a05e26252e6",
+      "bytes": 1684689
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-851.png",
+      "sha256": "cacd734c4dc62c824160bdf88ff2a3c0b2680f3c8ea022dcf0312c262ec2af7f",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\present-901.png",
+      "sha256": "eddf2188cc1ce91ea94d5ff0e656ccfa9cd557dc0d609458c44a5165783ac46b",
+      "bytes": 860741
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-1200.png",
+      "sha256": "3f52077a04a6ab58f6776f584ff8fa4af5217540b9debb883eb2732b6533fb41",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-32.png",
+      "sha256": "4a46dde00b8ea5da76fe07b58e7e403657b1a0237484769ac875873775e78b18",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-799.png",
+      "sha256": "7171617e843acbab9494fbad4c309f9597a68d89e00b6e003d5391b2ecf8d1b9",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-801.png",
+      "sha256": "a331a43ce49311a8055e2e934359c21c0203f01098c5e4ac736848dc9b9df87f",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-804.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-806.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-809.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-812.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-821.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-831.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-851.png",
+      "sha256": "4bb39438d010404a0deeb2c794a9b42e6002ee7798c6318d45fcdd6605c0c10e",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\raw-901.png",
+      "sha256": "138f276b7314f8232a0f61fda3887842ae0ae38aa871e32ec264e13c9488b7bb",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-1200.bin",
+      "sha256": "90da73dbb132e5d7a9860f8ffcb08ddcf5105ed0e94263b67d1dc2286d8ccbe8",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-32.bin",
+      "sha256": "9d5ad8393349ffac5eaafa7b33a802ab9197df8a9bdf7b15a7b6d99a9bb2d0c1",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-799.bin",
+      "sha256": "01b963dd50bdc2b38027dfa4cf459c24f7255e9fcd0dcf38a87f3bfcfb98bc4d",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-801.bin",
+      "sha256": "87f2edcd8654be264dc66efdd3cd86823d0b083d073ea99bdff8b378d516edc1",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-804.bin",
+      "sha256": "91e1c711846c8d34681e60a07fd8f5b71b6fdf3c227d7126d65b19381dc8075b",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-806.bin",
+      "sha256": "084fc0c0dbad02bed625d4bd9924a9970efa6b70f838caebce585e6a2db7bbde",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-809.bin",
+      "sha256": "084fc0c0dbad02bed625d4bd9924a9970efa6b70f838caebce585e6a2db7bbde",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-812.bin",
+      "sha256": "91e1c711846c8d34681e60a07fd8f5b71b6fdf3c227d7126d65b19381dc8075b",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-821.bin",
+      "sha256": "91e1c711846c8d34681e60a07fd8f5b71b6fdf3c227d7126d65b19381dc8075b",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-831.bin",
+      "sha256": "de567e54aa6b370fc2063ee9a9fd1a5566b0e74880e121cf663d3b4a9cfd3a70",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-851.bin",
+      "sha256": "53982125dd26e41569ed3f6c741320a4337c1a9c657cc92cac932aada38a10c2",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\storage-901.bin",
+      "sha256": "a1398d878c28e5b0cfaa5067e2e110c289017b14af61d4d0bbf5afd58e5580c2",
+      "bytes": 983040
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-1200.png",
+      "sha256": "3ed52b62a0a3ff700af130d213143d35898f2aacd9a2946c48625eeb0e8e7e99",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-32.png",
+      "sha256": "437f2d3162dbe19ac99eecb85f9c22c209e119f5b9234eba8df92c98271675e3",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-799.png",
+      "sha256": "11521fb33da9cf6334541caee8be92ccb0dcb1e7fa71f2b5c2e35d7f53cbb2c4",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-801.png",
+      "sha256": "b705b0351ec68aeb30f97cf8324cf508f3f0dbe533f02799cc53d288e3efa008",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-804.png",
+      "sha256": "642b29ff2969f5616588a360976308c1c7f718e4508024b4697ff77c3a18db65",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-806.png",
+      "sha256": "4a9575e3d9a9630a975dd161372aea648ff5ce55515801f50d5e2e922838770e",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-809.png",
+      "sha256": "4a9575e3d9a9630a975dd161372aea648ff5ce55515801f50d5e2e922838770e",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-812.png",
+      "sha256": "642b29ff2969f5616588a360976308c1c7f718e4508024b4697ff77c3a18db65",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-821.png",
+      "sha256": "642b29ff2969f5616588a360976308c1c7f718e4508024b4697ff77c3a18db65",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-831.png",
+      "sha256": "b39aa12d1a66d6c398c77d8aa9d8efdc588b79e6fe635fd0d5db99cb8a7a133b",
+      "bytes": 267096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-851.png",
+      "sha256": "4bb39438d010404a0deeb2c794a9b42e6002ee7798c6318d45fcdd6605c0c10e",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\runtime\\qa-runtime-r3\\sonic1-B\\capture\\upload-901.png",
+      "sha256": "92ff8c593a767aa2a46c257d205e18efe336e4e0fa6b319c7100dea97f49c417",
+      "bytes": 215347
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\native-presentation-qa-r3.json",
+      "sha256": "f4afe5433554d4a6dbb1a9bbc7209fb0615627d6e86fa0b856a8838fc5450d63",
+      "bytes": 54737
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\qa-builds-r3.json",
+      "sha256": "ba4e43bc3f18ea802bd44005c5f7118ee3c70a4983b7def80f7473cb0088e494",
+      "bytes": 6660
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\build_native_qa-r3.py",
+      "sha256": "9049052fbee224aaa7732d670e0adbff1efb1ec08fa186d9e0d9d4ed03a6367b",
+      "bytes": 2255
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\check_native_qa_server_r3.py",
+      "sha256": "e7cf4ba61a1393e13b8db6c2301f75d86b94177a6b8d869a8ecd41190086051b",
+      "bytes": 4113
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\qa-hooks\\main-A.c",
+      "sha256": "874efcf2d37384209aa9d719d14d4a7e4e6f0535a62e583c531851d167714606",
+      "bytes": 187370
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\qa-hooks\\main-B.c",
+      "sha256": "f04740ba970cb0fb7c5d27df75a6fefe75adc44a1cb66eddd6fb949aeda3983e",
+      "bytes": 189257
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\qa-hooks\\main-override.cmake",
+      "sha256": "70ba85b3d75f024ef9ab05cda0e7e91d4f26855ecba8b5be7bf8156a98401d94",
+      "bytes": 1083
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\qa-hooks\\present_qa.h",
+      "sha256": "e9c373dcca78a87b8e5986c63be11634a6d3b846d9d23a705248d5a56336f3b4",
+      "bytes": 3312
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\qa-hooks\\source-manifest.json",
+      "sha256": "32366a691dea5ac5a3d4aeb2eff14db208253891fe5ab53c1b028f19a746bd37",
+      "bytes": 555
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\binaries\\rka\\A\\RKARecomp.exe",
+      "sha256": "92a5e39bf6a02b781ee40cacc2ccc241a24c14a9d721f7de0ac5f788e51a1292",
+      "bytes": 8713216
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\binaries\\rka\\A\\SDL2.dll",
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\configs\\rka\\A\\CMakeCache.txt",
+      "sha256": "987242eaff88e3458fd02eb12b76159fb3ed1461f6df6fe94bdd151cd61880ff",
+      "bytes": 18433
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\configs\\rka\\A\\RKARecomp.vcxproj",
+      "sha256": "c56e4f7c84c6bc900a01491814e217a6fffff7e24d9cefb4edfe8229ef8e1125",
+      "bytes": 112339
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\logs\\rka-A.log",
+      "sha256": "708deb377cb83d3c1485300aea1a26f847094ecd6f024f9b92eb9c808563f61a",
+      "bytes": 1506
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\binaries\\rka\\B\\RKARecomp.exe",
+      "sha256": "432de0cc875bd520a696bf7c9d57a81e4a996729fa33c7f1fdde76b617bb85ed",
+      "bytes": 8714752
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\binaries\\rka\\B\\SDL2.dll",
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\configs\\rka\\B\\CMakeCache.txt",
+      "sha256": "308550680cf5a7dfb091c90cee125352be8c31edccebc98261035b0bc39da693",
+      "bytes": 18433
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\configs\\rka\\B\\RKARecomp.vcxproj",
+      "sha256": "4baef3ad99379dd3181112fc07310662f86552213ef897bafd6dd2fa2c21de3e",
+      "bytes": 112339
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\logs\\rka-B.log",
+      "sha256": "35e7734767baac23d9a7b88449f1cd792164d33c31d47172ec6d649a6c110b11",
+      "bytes": 1506
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\binaries\\sonic1\\A\\SDL2.dll",
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\binaries\\sonic1\\A\\SonicTheHedgehogRecomp.exe",
+      "sha256": "9afb9be2413cbfed25eea8a955baa0d01c3db5e77f92f14501e452d2543bd939",
+      "bytes": 5413376
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\configs\\sonic1\\A\\CMakeCache.txt",
+      "sha256": "ae13bd31d917631473608b9533e4920a79ae8c86f24f0a820c99453b5d8618a4",
+      "bytes": 18472
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\configs\\sonic1\\A\\SonicTheHedgehogRecomp.vcxproj",
+      "sha256": "5298f25b7c335378fa5b7b0702e7f102d70b932aae2be364b9f9b7c015114402",
+      "bytes": 110042
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\logs\\sonic1-A.log",
+      "sha256": "f0dadbb59dd4b4a9e9ecc89f1979c059e4ad884f8308cc41bf6fd7a47073ca5c",
+      "bytes": 1645
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\binaries\\sonic1\\B\\SDL2.dll",
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\binaries\\sonic1\\B\\SonicTheHedgehogRecomp.exe",
+      "sha256": "5b0fbc0e63b1f824772c90747acdb0603a34fe36ea1cea35936c1c3e4dd670d2",
+      "bytes": 5414912
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\configs\\sonic1\\B\\CMakeCache.txt",
+      "sha256": "8c954d4cc7be738fdb86ebbe10f28d7164bfe4a995560ae2d522a13c6b18b5ba",
+      "bytes": 18472
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\configs\\sonic1\\B\\SonicTheHedgehogRecomp.vcxproj",
+      "sha256": "19fa6c5436ce0cf1f97f42f146f5d837ee481da6cee3ca55f76b4753ac7e1d90",
+      "bytes": 110042
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\logs\\sonic1-B.log",
+      "sha256": "906c47c1f6b7a0ecc37e903afbc07729e4a6980244b5d2aaf0fe3d0216b2b9f1",
+      "bytes": 1645
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\CMakeLists.txt",
+      "sha256": "a68023bd17c470c8bb2884a792b09e5ef8cbf4346390ca0b22c948f04cfafc6d",
+      "bytes": 2143
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\presentation-A.c",
+      "sha256": "93ff673ec4e888ffb92832266dbec808535385baac8c1572bce6dffea90f0ba7",
+      "bytes": 21937
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\presentation-B.c",
+      "sha256": "67cc1852941d60affe9442c10dc405ee2ac924969a40a29c7964c28c0e02909a",
+      "bytes": 22828
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\presentation_pixels.c",
+      "sha256": "17806fdc528ff4ebab2dccd8efb86da544c621648244aca86d51ee89a4c7acd6",
+      "bytes": 5211
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\source-manifest.json",
+      "sha256": "372b0d736f8d26542ef9aa68b4968033306b707bd1102f2c82eef971cba84aff",
+      "bytes": 647
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\run_fixture.py",
+      "sha256": "549650645a717fed8cb3db34cb77f42146d4eb9fa989d010a2f5cf64b6eeba32",
+      "bytes": 2357
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\presentation-fixture.json",
+      "sha256": "44356c4bf112e08827ef018cf3952b59ec8e019894d92b0c5bb45aa2f9a8f03b",
+      "bytes": 14752
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\build-and-test.log",
+      "sha256": "6a348502eb06fa1f8b087960308ddbc13e7fcb73823be3b1884ae18ee86b8e1c",
+      "bytes": 1645
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\frames.jsonl",
+      "sha256": "d2fa757f7c7362866f3d30fb38490fea341d34113bef00079732601741c3bf0e",
+      "bytes": 3508
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\settings-A-0.ini",
+      "sha256": "2cd6269c001ee9867d498ebdcda7e7a8b3606bbbce066fd27508b61fe495dbdb",
+      "bytes": 89
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\settings-A-1.ini",
+      "sha256": "9e69ded6316769ac3de363995912c4aa558c1e758924e24a1e941a3a37f5237f",
+      "bytes": 89
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\settings-B-0.ini",
+      "sha256": "2cd6269c001ee9867d498ebdcda7e7a8b3606bbbce066fd27508b61fe495dbdb",
+      "bytes": 89
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\settings-B-1.ini",
+      "sha256": "9e69ded6316769ac3de363995912c4aa558c1e758924e24a1e941a3a37f5237f",
+      "bytes": 89
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-00.argb",
+      "sha256": "bec3566fbc955ae59ba0a10d31cd66989ce4b98138fdaf9de4347dd3d70be395",
+      "bytes": 1146880
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-01.argb",
+      "sha256": "a1cc4bb9d5fe79ba39d46d20b156b5472eb973df24878056b3d6aef15cb3d012",
+      "bytes": 1237324
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-02.argb",
+      "sha256": "a93f9882b4f2a3efa9f8860277d6f67fbc235a43cfed4c460cd4b0d1446a22e3",
+      "bytes": 1257984
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-03.argb",
+      "sha256": "e3a8b3834187edb369aef4e6b905a37e162917376871de02c9239082c26c0948",
+      "bytes": 1180160
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-04.argb",
+      "sha256": "09e6be7bf6611de7faf21a1250a737cc1814bec8b196159e9e2b57f8c6595b11",
+      "bytes": 1202432
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-05.argb",
+      "sha256": "500040407fa1834f25f31f3d40587cd70f5fcdcbf437a996998e056732aa94c3",
+      "bytes": 1294488
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-06.argb",
+      "sha256": "303b4837b9040626978367aed93db4efe0c823564bb4026f3e17cd39b0a33cbe",
+      "bytes": 1146880
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-07.argb",
+      "sha256": "82b2d2f9d8896338db11656c46fb4a069f8b1dd5d53b56130d287c14b2e0a37c",
+      "bytes": 1237324
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-08.argb",
+      "sha256": "10183bbcd7f27625648f2ef4b35a8d9795c44d8bff3350e55f5386fb28c5da68",
+      "bytes": 1257984
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-09.argb",
+      "sha256": "0687052cad4ff940bf3e3ff2568ca2c70ad88e59d708aedc64eabfb3388bd1cd",
+      "bytes": 1180160
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-10.argb",
+      "sha256": "66ce383c7c9c603c61a288dec2449fded4a64971a79ec0e164fbe0b14aead47b",
+      "bytes": 1202432
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-0-11.argb",
+      "sha256": "84a89a65762d39a3ad0930618d936f0c7a43cf11da096f65976e2e98bc587755",
+      "bytes": 1294488
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-00.argb",
+      "sha256": "04baa9fdf3dc867e6f3513452c869b81abe66bd33de10e04b55455de5bbcf628",
+      "bytes": 1146880
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-01.argb",
+      "sha256": "886991cc9f7918e1980ed02608cb44449185d42e4526dfc222b7a3f82f0b3055",
+      "bytes": 1237324
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-02.argb",
+      "sha256": "d904784c92e4b2e475fa4d00f5c3879ab1500fbcccc034e1eda8208c3ff21eaf",
+      "bytes": 1257984
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-03.argb",
+      "sha256": "ff948ce049d2540df1f6d36901090746b3e01ed0360910382f32ef5dba2f681d",
+      "bytes": 1180160
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-04.argb",
+      "sha256": "2e1c0f93151ceb87581ad7c7d75210e570901e8067fc5ad624b4a6c3298ebc17",
+      "bytes": 1202432
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-05.argb",
+      "sha256": "67244c3ead6569167866071fc802d262faf8c7bf6a2812d7b27eaad8aae31896",
+      "bytes": 1294488
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-06.argb",
+      "sha256": "8248cfe3dc733aada942f69ac67e858afcb1acce6c525beb08bf77dafd7dafb9",
+      "bytes": 1146880
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-07.argb",
+      "sha256": "eb0d3e7a8be00e428d41ca738f16708ba9ac884d6a4bbccbc813dfcc9edb574e",
+      "bytes": 1237324
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-08.argb",
+      "sha256": "8e508060f710ffbcdd14e7461c2d2518b9ce5681b3e8a29b5fa0887685a7efae",
+      "bytes": 1257984
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-09.argb",
+      "sha256": "f6a8527303c2d6e0c6a78b013a92af0abb9cd51078c12d14c63b54a65b9e00f0",
+      "bytes": 1180160
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-10.argb",
+      "sha256": "d6222a0c2987e4125798ef4bd6cc0bf52b435c7195300ef14e56740f0a23989b",
+      "bytes": 1202432
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\cases\\surface-1-11.argb",
+      "sha256": "647f70c543cb7e8e546b14c4c7053ba8b8aa004b94f2d0272a0a5bad3d450546",
+      "bytes": 1294488
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\binaries\\presentation_pixels.exe",
+      "sha256": "ec92e86695e22e3cd4157985779df02ba410dcada9f46fbcdcbd98d1069ccd22",
+      "bytes": 179200
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\binaries\\SDL2.dll",
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\config\\CMakeCache.txt",
+      "sha256": "250b204286cf324cb7c445ac06fa51869affd9470e7a6b63a62903ab56696ed4",
+      "bytes": 15002
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\config\\build.ninja",
+      "sha256": "525ff3f60eb7f67ca7009bec0240cce543a2e17a4bd3d92bf2d904e8289bb633",
+      "bytes": 43292
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-final-qa\\presentation\\config\\rules.ninja",
+      "sha256": "86bd08f5f782b1c0260663dce886ede1fbc26fce184ef122cf82b1002b721767",
+      "bytes": 4462
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\unit-tests-gcc-r1.json",
+      "sha256": "50e349d20ed4e52b9b5d26eb60e55684cb00b193a359ffb5f49db57c000239fe",
+      "bytes": 998
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\retention-manifest.json",
+      "sha256": "79291a4682ce78219cb9ed5b4b54966e1f58dc1e5905132fee733f798ba85193",
+      "bytes": 2357
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\pixels_fallback",
+      "sha256": "bc47030f1646aa78ff27bf7c6eb06b73eca03b0fc1a2c44c22e5dd95755214b1",
+      "bytes": 203520
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\indexed_machine_pipeline",
+      "sha256": "f86db8b4b668e05e85e3e170bdfc52119962e3a3d9621682a77457c0e827471d",
+      "bytes": 673744
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\pixels_pipeline",
+      "sha256": "ca882f732c4e367bf63d3cefa5ad77bfb0658fbccca86b77533ce5a1f5ed73b7",
+      "bytes": 155680
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\indexed_machine_fallback",
+      "sha256": "56e5d37f5ec345451890ba43495f5a940d2c8573108b110bd3d8d3a6800bf4e5",
+      "bytes": 672744
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeCache.txt",
+      "sha256": "a4953fdd4c274f156e232e7c33a607b6fd01370c8075fb32b8c8955109a8c1ff",
+      "bytes": 12728
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CTestTestfile.cmake",
+      "sha256": "5d16680ad2c3fb6e6c0148aea91d1dfb046a0e9e99884e89d4efbdd9e494e93e",
+      "bytes": 2578
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\Testing\\Temporary\\LastTest.log",
+      "sha256": "9fa7714cbdd1b121464b4fdf6956b0b2a5d28226d7c1830aec1c514ccf66f6f1",
+      "bytes": 2801
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeFiles\\pixels_pipeline.dir\\flags.make",
+      "sha256": "196a249f31ac32cb62a3b6432f4b7fe64a59c4240bee3fc597d5f80d6cfa0d42",
+      "bytes": 556
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeFiles\\pixel_original_machine.dir\\flags.make",
+      "sha256": "a4b3ed352f01eeaa56925f6432dd86aa8e167a7f50fdb5fb2f755ead55690393",
+      "bytes": 1315
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeFiles\\indexed_machine_pipeline.dir\\flags.make",
+      "sha256": "6b3705b640156cbc83508551d15ffc67287718c7cd9a39559dd62ebb403200ef",
+      "bytes": 582
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeFiles\\indexed_machine_fallback.dir\\flags.make",
+      "sha256": "720f4257f07b336fd2ab873285a7fa00bbb821007c2f6df049005fd258739185",
+      "bytes": 615
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeFiles\\pixels_fallback.dir\\flags.make",
+      "sha256": "30f2edc70121a7ab9f6ba26238ed46a998ec3a6e9db18f03b9c64a6973ebea18",
+      "bytes": 588
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeFiles\\pixels_pipeline.dir\\link.txt",
+      "sha256": "4c0baa3297c7cbae87447faadf29c85c375a28683a675e48052c7c6d9bc43295",
+      "bytes": 388
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeFiles\\indexed_machine_pipeline.dir\\link.txt",
+      "sha256": "e2ad425be631fb18c0f3bfaa3b5312cc5835fdf85e98598b52b2dfed8bee8fd7",
+      "bytes": 836
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeFiles\\indexed_machine_fallback.dir\\link.txt",
+      "sha256": "1e92a4ce03111c0a8f0a60778437750f9fd91f5db0db4cd00993e74b5430a043",
+      "bytes": 836
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\gcc-retained-units\\CMakeFiles\\pixels_fallback.dir\\link.txt",
+      "sha256": "c37a09ec3045330e83ae875e97a51104326e18779204bf8d7a369a98a9139426",
+      "bytes": 388
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\tests-gcc-r1.xml",
+      "sha256": "8946a911c2b9665e6bad175253a1fbc53452ac658ee79e630c0302554e6c5a52",
+      "bytes": 1153
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\tests-gcc-r1.log",
+      "sha256": "55fbcb1acafa5dfe97e4dec375aacf871f1d581e74a139d7a85eba87b0d260ac",
+      "bytes": 3485
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1.json",
+      "sha256": "4063fda70449eb01a4be39fa66c2cb264e39bc83fd576c60fd693c4ed5ec57d2",
+      "bytes": 7395
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\rka\\current.state",
+      "sha256": "eb061935b6b7ce5749ab84915642ca3b32010fca98ae4dc3a96de7a1b91a90d0",
+      "bytes": 157106
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\rka\\saved.ram",
+      "sha256": "6a77e55073de24cba712a4930759de4ffb54f98eb1f5920220e4a138778b3114",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\rka\\loaded.ram",
+      "sha256": "6a77e55073de24cba712a4930759de4ffb54f98eb1f5920220e4a138778b3114",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\rka\\progressed.ram",
+      "sha256": "7aa88d10649a99a5cfbbb0f8eaa3b1f8a564702f563823381b26513c8cf196bd",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\rka\\final.png",
+      "sha256": "cd4a39a1c4143ee66383299f72e8b0156eaa83cfe232574eff62dd947a12a58d",
+      "bytes": 267768
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\rka\\bin\\RKARecomp.exe",
+      "sha256": "001cf18a9f13eaa9df937498455217de00ae6d522b4e9e4e4475d9e29d17c989",
+      "bytes": 8712704
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\sonic1\\current.state",
+      "sha256": "c22bb3eeda1bcb3038cb78c56f0e3cd54dafbeba5be24c9f4ec59bdc80959140",
+      "bytes": 157106
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\sonic1\\saved.ram",
+      "sha256": "67b5dfcdaea15f7a19d12bbf315d4b650966f36cdca16ba4737dd7ac22e58b5a",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\sonic1\\loaded.ram",
+      "sha256": "67b5dfcdaea15f7a19d12bbf315d4b650966f36cdca16ba4737dd7ac22e58b5a",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\sonic1\\progressed.ram",
+      "sha256": "3bfa9a59ca55c9c7975f0df1edd95c7d3c379010b4099f4bddb87e4f5f437017",
+      "bytes": 65536
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\sonic1\\final.png",
+      "sha256": "519164594772c86beae05e5918590b30069be0dfe6c3711f43e8ce45dcdaef38",
+      "bytes": 267768
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\current-states-r1\\sonic1\\bin\\SonicTheHedgehogRecomp.exe",
+      "sha256": "9e3848380ae11da20f9b7c7d2c2aa2938c0076564f6759facb9295435aaa9f0b",
+      "bytes": 5412864
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\cleanup-units-r1.json",
+      "sha256": "f2a3370c29d1eab29df8542f155a2c9537db8dfbd4e604624c7d43ab6e0a1844",
+      "bytes": 1207
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\consumer-builds-r1.json",
+      "sha256": "0bfdb00c2295814a817385eebc46878f923a573b2374effd9a327a663a249445",
+      "bytes": 14478
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\runtime-present-r1.json",
+      "sha256": "8957e123f96ec6cfb98b31fa37349f3cd591a5b2fa50317f1ab0eea85ccf73a7",
+      "bytes": 15645
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\retention-manifest.json",
+      "sha256": "fc634f1f47bdc8cfcefdea74221b5d00393e2f4d939a642b1789173528be03cc",
+      "bytes": 6954
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\native-qa-failed-r1-scope.json",
+      "sha256": "30cb126f4ab36aaf51fc9add4e24eec06971c01dc052951ac261d60f4e569119",
+      "bytes": 3346
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\native-qa-failed-r2-scope.json",
+      "sha256": "a61bc9b4b001f25c7b455b38aaa3c37075dbf6faed6946c38d0a8dacbec08ed3",
+      "bytes": 2709
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-build-local-r2.json",
+      "sha256": "277020b59bb1d916b020605ad61e28695d44dd6c931107bd67e56966b5595af2",
+      "bytes": 1143
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-build-server-r2.json",
+      "sha256": "a04739ab27a4619465c1f62e6f02aca615b11034014c310c56142154ea6054ad",
+      "bytes": 1913
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-cd-matched-build-server-r2.json",
+      "sha256": "7d8a95e862f470c6e2e5bc57852f2f432fc50551432265bdfe717fdea30b2f98",
+      "bytes": 1731
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-current-states-local-r1.json",
+      "sha256": "26798e575affb107bded681f8bf3b77c03c5ef874c885147bc761aecf88b7691",
+      "bytes": 1804
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-gcc-only-local-r1.json",
+      "sha256": "7947253ed29a14a2f56e350902b7917877fbb0a04baec36e0a20889c9e4ee7bd",
+      "bytes": 1171
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-gcc-only-local-r2.json",
+      "sha256": "623611783b8819c0fa5b3de5b23557283193b6c7afb6ad09713333fda9847856",
+      "bytes": 1807
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-initial-build-probe.json",
+      "sha256": "a9bb1b93846ef855972153c9a6ef297f157d29313acf3ed0a32a0e62c7896a37",
+      "bytes": 1949
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-build-server-r1.json",
+      "sha256": "432c730d86d7d20c9444169e925cec1cf16aa0011b0399476caeeed4a54c173e",
+      "bytes": 1715
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-build-server-r2.json",
+      "sha256": "2ee468c4912f18401a2b328cfa08eacd7963919532e5749318fb3bec1bb3732d",
+      "bytes": 1718
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-build-server-r3.json",
+      "sha256": "9728916b532b4ba803d1f9927ab075d61ee02bf60f6935694df0512722c03b6a",
+      "bytes": 1700
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-runtime-server-r1.json",
+      "sha256": "9a35d37a5ff234c96280e8c1fe5875d64d61844f8413257d09e085aab8c51602",
+      "bytes": 1706
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-runtime-server-r2.json",
+      "sha256": "ba42f8a83d22be9b28b584a078795adcd20dbdc753454c407bea0e920a9f1608",
+      "bytes": 1709
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-native-qa-runtime-server-r3.json",
+      "sha256": "52d84ad5d35cfff1b3e0e24e45c6d20bc59daabefd1511ed0614121ed83ddd6c",
+      "bytes": 1710
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-presentation-server-r1.json",
+      "sha256": "9806399f0f6da8db47fb08c08c99a78ecd0cec40c14415ab30d1e0421efc7597",
+      "bytes": 1714
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-present-local-r1.json",
+      "sha256": "9512be7fc1738cbca317a569f1b5a461f35968a0fb84ac2ba8716c1cc56e3852",
+      "bytes": 1736
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-runtime-present-local-r2.json",
+      "sha256": "2d9458eb03ccf65ce48aca249befb0aecffb782d8fe35ef9e7ea2e601223f0db",
+      "bytes": 1746
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-server-unit-tests-r1.json",
+      "sha256": "b77542a8b69977f10e3989f9027e7ea8fc3c502acc31785d2a6cec01e1672b11",
+      "bytes": 1166
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\capacity-unit-tests-r1.json",
+      "sha256": "61816a0f7025ec78c9ba809c37e334ca6112909a1c4ad0427718b7169f0239ef",
+      "bytes": 1142
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\color_lut.c",
+      "sha256": "22bf6cfe181d08ae5dd93ec7742be8b84ff0fd7f1ab92839005f92d05fa43ad9",
+      "bytes": 9235
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\color_lut.h",
+      "sha256": "afb01d94c2ef8da82174bba6a73f3216e6888507a8ff594981ad61628fc415ae",
+      "bytes": 5444
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_bus.c",
+      "sha256": "49e88d7c42ac4c2033404df96dae025af31b78ddcbd0952b73cf2bcee55513dc",
+      "bytes": 24863
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_bus.h",
+      "sha256": "c4f3638c6714f4b22ca923f5e6aff25a3694ed5d148a6e24e0b31ac1191b5028",
+      "bytes": 6277
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_dac.h",
+      "sha256": "bb712db1617ab0307e3cec1783d8a237a0c42266caef2e388732eb5bb1a558ef",
+      "bytes": 2591
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_dac_inverse8.h",
+      "sha256": "7632ae409825e7467eac41b8d5250bafe26ae1d0eff1adb68f3f34700f1e3c64",
+      "bytes": 900
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_dac_table.h",
+      "sha256": "00b4fd8c111fecbd21116ac2fbd1f1649c858b4fd209903f90b4e3d5bba370dc",
+      "bytes": 21818
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_expansion.h",
+      "sha256": "7e0c0e5261fa368606aa02be2be1ab238c1b646f90b9115c81f97379d3930de1",
+      "bytes": 763
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_frame_pixels.h",
+      "sha256": "9fb1e4c739c1f7315adf2c43592e305b8922ae3548d2694b366f645e2de3ef23",
+      "bytes": 2926
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_machine.c",
+      "sha256": "5da911dd8003058c2c1cf70809c79414a71c3526329a0fcde99045cdc9ded31b",
+      "bytes": 26525
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_machine.h",
+      "sha256": "3e17cd5e7d8eec61f54a9e770e44f36d8559e8b781e53f43c3139bae549329eb",
+      "bytes": 3988
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_pixel_policy.h",
+      "sha256": "f00f841fbc24bf29375de4235bd8d61e4bca454f774348ad654d853983823e8a",
+      "bytes": 227
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_tile_row.h",
+      "sha256": "f984b3c462692457ae0eabccef2fc0986badc856bfa5c307fd2854475006d8e7",
+      "bytes": 2289
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_vdp.c",
+      "sha256": "6e4fad2ce3e7ca0011aa9dbfb1c214d292917dca138c995c39afa55710903d15",
+      "bytes": 53380
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_vdp.h",
+      "sha256": "de79123c78034991015287538f56c2512b18c759db25b00f3b645d6063a2590c",
+      "bytes": 16612
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\video\\genesis_vdp_compose.h",
+      "sha256": "26d55e824192a95852a0db055ea6ec76f60990fa2bfc34b7a2b3845d496946bd",
+      "bytes": 2863
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\chip_trace.h",
+      "sha256": "c666dc9700bd068aa2f143f979cb97e636ab4fbf56d27db26bd37b42c1cf3072",
+      "bytes": 2733
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\external\\superzazu\\z80.h",
+      "sha256": "b5fcab1cbd3fd3b6683b91dc9e9da9d9e388600cd720e75e2c183036f31b9fce",
+      "bytes": 1403
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\runner\\external\\superzazu\\z80.c",
+      "sha256": "bce340cf4d64748bd8030c887a6fbebda265b05dd049513d618b369ffbfe0f58",
+      "bytes": 50929
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\final_pixels.cmake",
+      "sha256": "f3ac65de79a5fb8c4b1c00884793328d0f8e18a49e635a0fe3d7e5e90c01b41b",
+      "bytes": 2139
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\pixel_pipeline_test.c",
+      "sha256": "4db35d37d6440e4b6c3771f19dc8b332cabc1aa2fc8a6f07e5537150546f9c4c",
+      "bytes": 5505
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\pixel_original.c",
+      "sha256": "6dc24be1f72d4380dcf06134165b113fa44e7f771d8aa16b741cd93c546ae49d",
+      "bytes": 1042
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\indexed_machine_test.c",
+      "sha256": "5740e6977752f1c7d4f78bf912e29f8cd13e273ff0854b0dd6136ee58d973195",
+      "bytes": 7802
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\pixel_reference\\color_lut.h",
+      "sha256": "33c233e86d6ec14518b93e3cee80010fc1e219e9e38323335a198a515a04973d",
+      "bytes": 5125
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\pixel_reference\\genesis_dac.h",
+      "sha256": "bb712db1617ab0307e3cec1783d8a237a0c42266caef2e388732eb5bb1a558ef",
+      "bytes": 2591
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\pixel_reference\\genesis_dac_table.h",
+      "sha256": "00b4fd8c111fecbd21116ac2fbd1f1649c858b4fd209903f90b4e3d5bba370dc",
+      "bytes": 21818
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\pixel_reference\\genesis_machine.c",
+      "sha256": "9d2589ca857d0b31ba4953292d76d13dd11828bcf38d4d4106388ab01c0a5033",
+      "bytes": 25652
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\pixel_reference\\manifest.json",
+      "sha256": "a0007206b15060ad434938a914ed40200cf445a7443fbfd13ed77ba1d740b61b",
+      "bytes": 629
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source\\tests\\runtime\\pixel_reference\\README.md",
+      "sha256": "3dc81d2d5e319159801231d4c4601708ae293dd38e34ad138798abf894bf53a7",
+      "bytes": 607
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\unit-tests.json",
+      "sha256": "7443b41d04a3fa8f8d00f882107d50de86220b05e36da27dcb117eb116b31345",
+      "bytes": 2729
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\source-manifest.json",
+      "sha256": "fd34c8b12621af789675263d7d583935777eda7812d8ebaf31c13fed9a333bfc",
+      "bytes": 4501
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\run_units.py",
+      "sha256": "3d6ef546e674da1cfbabefd92a139f3a715ea85eca8dbf242bf5dcd18c531ec8",
+      "bytes": 1401
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\CMakeLists.txt",
+      "sha256": "40229180274086b790a6ec7ee2bfb8e4b0e1ae878df4a5898c610a0551662de3",
+      "bytes": 157
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\x64.log",
+      "sha256": "87b96c3a3e69a68b19ca20873906a3c7958a35014910769629a02ed7dfc44b1c",
+      "bytes": 3173
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\Win32.log",
+      "sha256": "456eb43bf9cf2e08c585f842e5cdb17e7d3cec9c3f36ff00ed8a775c47162c82",
+      "bytes": 3189
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\x64\\CMakeCache.txt",
+      "sha256": "e48f7df855239104950ba5abefd2c3a8d88f30a84fb03db226d3487c93b4e09e",
+      "bytes": 13083
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\x64\\Testing\\Temporary\\LastTest.log",
+      "sha256": "424c4998e58d66219045e7a8ae67643d8daccf56b139ae34d3dd16c3d8189b44",
+      "bytes": 3328
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\x64\\Release\\indexed_machine_fallback.exe",
+      "sha256": "eadcd719d9c15b47e3b73cf30e9090077fe05a121f84d5bf74b8d6c3bb075661",
+      "bytes": 69632
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\x64\\Release\\indexed_machine_pipeline.exe",
+      "sha256": "ec40ab765852fd4370790d1dfe07fa200425f5aeace739efed568d564089de8a",
+      "bytes": 69632
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\x64\\Release\\pixels_fallback.exe",
+      "sha256": "b0a794ea9e9cae52d8d98173652c0b097c13953c7ea62ff35cb0fb7d8a874fff",
+      "bytes": 24064
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\x64\\Release\\pixels_pipeline.exe",
+      "sha256": "f7003a908c6434dcfaf3adbbba2bf7c3c1a1cd7d7044067596efca2e817a2e77",
+      "bytes": 24576
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\Win32\\CMakeCache.txt",
+      "sha256": "7ed202d16d0128143b73215f7cc208049066548535dbbde308f7eb2cb6c170d5",
+      "bytes": 13097
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\Win32\\Testing\\Temporary\\LastTest.log",
+      "sha256": "75510a9699a9a68c638faa30d80f81544f6409a5cd66e5b1d4df4e4a554e0dfa",
+      "bytes": 3344
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\Win32\\Release\\indexed_machine_fallback.exe",
+      "sha256": "90b37550d3f2e7a2b35be1f02fa2aa2a1e2d0b59064290c9b334a360544679f3",
+      "bytes": 57344
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\Win32\\Release\\indexed_machine_pipeline.exe",
+      "sha256": "6d623d442d92b218275f13ddf3ef4da1e7e963d1a26b55079344d62f8199aaa3",
+      "bytes": 57856
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\Win32\\Release\\pixels_fallback.exe",
+      "sha256": "2c197e63afadd03fd030d5401301e38633a27555d51eb9ca4cb6b8201e9da280",
+      "bytes": 20992
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-final-pixels-20261030\\server-unit-evidence\\Win32\\Release\\pixels_pipeline.exe",
+      "sha256": "009b84e62c899d5f0ab35bb850dea3bc3e604a2f4958a4d7c25ce8b4f1858373",
+      "bytes": 22016
+    }
+  ],
+  "distinct_files_verified": 624,
+  "total_bytes_verified": 1755700977,
+  "immutable_inputs": {
+    "VALIDATOR_E16_UNITS_AUDIT.json": "2fea3d0ac3da7d28d7ea8897e42985bcfc627271ec9f986289f86cd6dd748012",
+    "VALIDATOR_E16_RUNTIME_AUDIT.json": "60589383526f2863f8ee30e6e1d997a2e20d361e717189e8fa2ca186eb87551b",
+    "VALIDATOR_E16_FINAL_RECORDS_AUDIT.json": "9404dbfe5bf6f74f4ff04f5b7cc7662c33e73622057e463b18f5e70b4d06599d",
+    "VALIDATOR_E16_REPORT_IDENTITY_AUDIT.json": "ea7d9dbe3e3b9f432ca6cedbde8d96909c608effb70af3620bb1da6334b97ee8"
+  },
+  "next_instruction": "Record original E16 as accepted bounded_delivered, update remaining19to18, attach this verdict/immutable receipt to ready PR48 and owning beads-3z5k.13, parent3z5k and campaign2wy8.1; finish evidence-preserving bounded cleanup/retention disposition and central sync. Then proceed serially to ORIGINAL E17 with a NEW validation-only reviewer. Do not reopen accepted prior checks or owner playtests. No merge/release/delivery or owner-launch authorization."
+}
