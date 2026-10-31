@@ -79,6 +79,17 @@ typedef struct GenesisSimHooks {
 int genesis_sim_step(const GenesisSimInput *in, const GenesisSimAudio *audio,
                      const GenesisSimHooks *hooks);
 
+/* Optional host-only work between complete raster and complete audio. start
+ * may publish an immutable job; wait MUST finish it before post_drain/Vblank.
+ * Existing hook layout/callers remain unchanged; replay normally uses NULL. */
+typedef struct GenesisSimWork {
+    void (*start)(void *);
+    void (*wait)(void *);
+    void *ctx;
+} GenesisSimWork;
+int genesis_sim_step_ex(const GenesisSimInput *,const GenesisSimAudio *,
+    const GenesisSimHooks *,const GenesisSimWork *);
+
 /* The sealed inputs of the tick in progress (or last run). Game adapters read
  * players through these instead of SDL / input maps. */
 uint16_t genesis_sim_pad(int player);
