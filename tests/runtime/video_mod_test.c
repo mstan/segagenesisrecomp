@@ -79,7 +79,8 @@ int main(int argc,char **argv)
         g_app_config.audio_freq=rates[r];CHECK(app_config_save(argv[1]));
         app_config_defaults();CHECK(app_config_load(argv[1]) && g_app_config.audio_freq==rates[r]);
     }
-    legacy=fopen(argv[1],"wb");CHECK(legacy);fputs("[audio]\nfrequency=-1\n",legacy);fclose(legacy);
+    legacy=fopen(argv[1],"wb");CHECK(legacy);
+    fputs("[audio]\nfrequency=-1\n[mods.widescreen]\nenabled=0\n",legacy);fclose(legacy);
     CHECK(app_config_load(argv[1]) && g_app_config.audio_freq==48000);
     app_config_defaults();CHECK(app_config_load(argv[1]) && g_app_config.replay_diagnostics);
     p=app_config_video_mods(&video,argv[1]);
