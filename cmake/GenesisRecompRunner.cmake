@@ -27,6 +27,7 @@
 
 include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompZ80.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompOptimization.cmake")
 option(GENESIS_FM_BLOCK_SAMPLES "Batch faithful FM samples between register writes" ON)
 option(GENESIS_FAST_RB_DIGEST "Use portable XXH64 for complete rollback section bytes" ON)
 option(GENESIS_ENGINE_WORKERS "Allow same-drain synthesis of the opted-in FM shadow on a host worker" ON)
@@ -146,6 +147,7 @@ function(genesisrecomp_runner_target target)
     endif()
     set_property(TARGET ${target} PROPERTY GENESIS_RUNNER_REQUIREMENTS ON)
     target_link_libraries(${target} PRIVATE retcomm_rbengine)
+    genesisrecomp_native_optimization(${target})
     _genesisrecomp_build_info(${target})
     # The game fiber's context switch (runner/fiber_compat.c, minicoro)
     # replaces the stack pointer without a shadow-stack switch, so the image
