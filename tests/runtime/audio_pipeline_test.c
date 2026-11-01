@@ -19,7 +19,7 @@ SegaCDAudioMixResult ref_segacd_audio_mix_bind_audio_extra(SegaCDAudioMix *);
 void ref_segacd_audio_mix_unbind_audio_extra(SegaCDAudioMix *);
 void ref_segacd_audio_mix_audio_extra_source(int16_t *,size_t,double);
 static SegaCDAudioMix reference_mix,owned_mix;
-static int16_t psg[16384],fm[32768],reference_output[32768],pull_reference[1024],pull_owned[1024];
+static int16_t psg[16384],fm[32768],reference_output[32768],expected_output[32768],pull_reference[1024],pull_owned[1024],pull_expected[1024];
 static unsigned producer_calls,nonzero_pulls;
 static uint32_t rng=0x834721u;
 static uint32_t random_value(void){rng^=rng<<13;rng^=rng>>17;rng^=rng<<5;return rng;}
@@ -33,8 +33,10 @@ static void reset_bridge(void)
      * preserves production preroll, concealment, recovery and reset behavior. */
     s_bridge.prime_ms=0;
 }
+static rab_bridge without_pointers(rab_bridge value)
+{value.ring=NULL;value.coeffs=NULL;return value;}
 static rab_bridge state_without_pointers(void)
-{rab_bridge value=s_bridge;value.ring=NULL;value.coeffs=NULL;return value;}
+{return without_pointers(s_bridge);}
 static int files_equal(const char *a,const char *b)
 {
     FILE *fa=fopen(a,"rb"),*fb=fopen(b,"rb");CHECK(fa&&fb);
@@ -71,8 +73,23 @@ int main(int argc,char **argv)
         CHECK(ref_segacd_audio_mix_bind_audio_extra(&reference_mix)==SEGACD_AUDIO_MIX_OK);
         audio_set_extra_source(ref_segacd_audio_mix_audio_extra_source);
         CHECK(!audio_wav_start(wave_reference));audio_flush(k,1,fm,fn,psg,n);audio_wav_stop();
+        /* Independently check the actual flush wiring: recover the generated
+         * pre-volume stream, apply the OLD integer master formula, and use
+         * unchanged rab_push rather than sharing the new scaled producer. */
+        FILE *wave=fopen(wave_reference,"rb");CHECK(wave);CHECK(!fseek(wave,44,SEEK_SET));
+        CHECK(fread(expected_output,sizeof(int16_t),n*2,wave)==n*2);CHECK(fgetc(wave)==EOF);fclose(wave);
+        int expected_gain=percents[k%6u]*256/100;
+        for(size_t i=0;i<n*2;++i)expected_output[i]=(int16_t)((int32_t)expected_output[i]*expected_gain/256);
+        CHECK(!memcmp(expected_output,s_out,n*2*sizeof(int16_t)));
+        rab_bridge expected;CHECK(!rab_init(&expected,&s_bridge.cfg));rab_reset(&expected);
+        memset(expected.ring,0,ring_bytes);expected.prime_ms=0;
+        rab_push(&expected,expected_output,(int)n);
+        rab_bridge actual_input=state_without_pointers(),expected_input=without_pointers(expected);
+        CHECK(!memcmp(&actual_input,&expected_input,sizeof actual_input));CHECK(!memcmp(expected.ring,s_bridge.ring,ring_bytes));
         memcpy(reference_output,s_out,n*2*sizeof(int16_t));memcpy(ring_reference,s_bridge.ring,ring_bytes);
         rab_bridge before=state_without_pointers();rab_pull(&s_bridge,pull_reference,512);rab_bridge after=state_without_pointers();
+        rab_pull(&expected,pull_expected,512);expected_input=without_pointers(expected);
+        CHECK(!memcmp(&after,&expected_input,sizeof after));CHECK(!memcmp(pull_reference,pull_expected,sizeof pull_reference));rab_free(&expected);
         ref_segacd_audio_mix_unbind_audio_extra(&reference_mix);
 
         reset_bridge();CHECK(segacd_audio_mix_bind_audio_extra(&owned_mix)==SEGACD_AUDIO_MIX_OK);
