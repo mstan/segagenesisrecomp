@@ -83,6 +83,7 @@ if(TARGET SDL2::SDL2)
             set(_output "${CMAKE_CURRENT_BINARY_DIR}/${_fixture}-${_writer_threads}")
             file(MAKE_DIRECTORY "${_output}")
             add_test(NAME ${_fixture}_${_writer_threads} COMMAND ${_target} "${_output}")
+            set_tests_properties(${_fixture}_${_writer_threads} PROPERTIES TIMEOUT 30)
         endforeach()
         add_test(NAME host_stream_format_failure_${_writer_threads}
             COMMAND host_writers_${_writer_threads}_test --format-failure)

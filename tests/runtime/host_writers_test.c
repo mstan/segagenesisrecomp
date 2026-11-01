@@ -56,8 +56,18 @@ static void *format_malloc(size_t size)
 #include "../../runner/cd/backup.c"
 
 static unsigned checks;
+static void fixture_fail(int line,const char *condition)
+{
+    fprintf(stderr,"FAIL line %d: %s\n",line,condition);
+    /* A failed assertion must not leave our synthetic sink gates closed while
+     * production atexit correctly drains accepted writes. */
+    SDL_AtomicSet(&stream_gate.enabled,0);SDL_AtomicSet(&persist_gate.enabled,0);
+    if(stream_gate.allow)SDL_SemPost(stream_gate.allow);
+    if(persist_gate.allow)SDL_SemPost(persist_gate.allow);
+    exit(2);
+}
 #define CHECK(c) do { ++checks; if (!(c)) { \
-    fprintf(stderr, "FAIL line %d: %s\n", __LINE__, #c); exit(2); \
+    fixture_fail(__LINE__,#c); \
 } } while (0)
 static void init_gate(Gate *g)
 {
@@ -124,7 +134,7 @@ static void stream_extension(const char *dir)
     CHECK(genesis_host_stream_flush_async(s));
 #if GENESIS_ENGINE_WORKERS
     wait_started(&stream_gate);live_text(path,"row:1\n");
-    SDL_Thread *release=release_thread(&stream_gate);uint64_t start=SDL_GetPerformanceCounter();
+    uint64_t start=SDL_GetPerformanceCounter();SDL_Thread *release=release_thread(&stream_gate);
 #endif
     CHECK(genesis_host_stream_write(s,"abcdefghijklmnopq",17));
 #if GENESIS_ENGINE_WORKERS
@@ -133,12 +143,16 @@ static void stream_extension(const char *dir)
 #endif
     /* Exact-full writes leave used==0 but still need a worker fflush. */
 #if GENESIS_ENGINE_WORKERS
+    /* Settle the exact-full data job before arming a gate for the following
+     * zero-byte flush. Otherwise that earlier job can consume the gate while
+     * flush_async is joining it, before this test can release anything. */
+    genesis_worker_join(s->worker);
     SDL_AtomicSet(&stream_gate.enabled,1);
 #endif
     CHECK(genesis_host_stream_flush_async(s));
 #if GENESIS_ENGINE_WORKERS
     wait_started(&stream_gate);CHECK(s->inflight&&s->pending_size==0);
-    release=release_thread(&stream_gate);start=SDL_GetPerformanceCounter();
+    start=SDL_GetPerformanceCounter();release=release_thread(&stream_gate);
 #endif
     CHECK(genesis_host_stream_destroy(s));
 #if GENESIS_ENGINE_WORKERS
@@ -188,8 +202,8 @@ static void stream_checks(void)
     memset(a, 'Z', sizeof a); /* Caller mutation cannot change pending bytes. */
     CHECK(genesis_host_stream_write(s, b, 8));
 #if GENESIS_ENGINE_WORKERS
-    SDL_Thread *release = release_thread(&stream_gate);
     uint64_t start = SDL_GetPerformanceCounter();
+    SDL_Thread *release = release_thread(&stream_gate);
 #endif
     CHECK(genesis_host_stream_write(s, b + 8, 9));
 #if GENESIS_ENGINE_WORKERS
