@@ -283,6 +283,12 @@ int main(int argc,char **argv)
     }
     GenesisPersistWriter *backup_writer=genesis_persist_create(backup_path,persisted,
         sizeof persisted,segacd_atomic_file_store);
+#ifndef SEGACD_IMMUTABLE_CODE
+#define SEGACD_IMMUTABLE_CODE 1
+#endif
+    /* Verified media worker, audio queue and read-only presentation/debug
+     * callbacks never mutate the BIOS; debugger commands run between frames. */
+    (void)segacd_machine_immutable_bios(&machine,SEGACD_IMMUTABLE_CODE);
     int quit=0,paused=0,exit_code=0;
     while(!quit&&(!frame_limit||machine.frames<frame_limit)) {
         if(backup_writer&&!genesis_persist_poll(backup_writer)) {
@@ -373,7 +379,7 @@ int main(int argc,char **argv)
         (unsigned long long)machine.coordinator.catalog_lookup[1].descriptor_searches,
         sizeof machine.coordinator.catalog_lookup);
     printf("Event service regionAdvances=%llu\n",(unsigned long long)machine.coordinator.region_device_advances);
-    printf("Exclusive code interval reuses=%llu\n",(unsigned long long)machine.coordinator.code_interval_reuses);
+    printf("Immutable code lease reuses=%llu\n",(unsigned long long)(machine.coordinator.catalog_lookup[0].code_reuses+machine.coordinator.catalog_lookup[1].code_reuses));
     printf("Native regions runs=%llu Main=%llu Sub=%llu\n",
         (unsigned long long)machine.coordinator.region_runs,
         (unsigned long long)machine.coordinator.region_instructions[0],

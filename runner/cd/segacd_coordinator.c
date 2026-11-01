@@ -348,19 +348,31 @@ int segacd_coordinator_catalog_index(SegaCDCoordinator *c,int enabled)
     }
     c->catalog_index_enabled=(uint8_t)(enabled!=0);return 1;
 }
-int segacd_coordinator_code_intervals(SegaCDCoordinator *c,int enabled)
+void segacd_coordinator_end_code_lease(SegaCDCoordinator *c,SegaCDCpu cpu)
+{if(c&&(cpu==SEGACD_MAIN||cpu==SEGACD_SUB))c->catalog_lookup[cpu].code_epoch=0;}
+int segacd_coordinator_begin_code_lease(SegaCDCoordinator *c,SegaCDCpu cpu,uint32_t begin,uint32_t end)
 {
-    if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
+    if(!c||(cpu!=SEGACD_MAIN&&cpu!=SEGACD_SUB)||c->busy[0]||c->busy[1]||c->external_active||
+       begin>=end||end>0x1000000u||c->catalog_lookup[cpu].code_epoch)return 0;
 #if defined(M68K_STEP_HAS_CODE_INTERVALS) && M68K_STEP_HAS_CODE_INTERVALS
-    c->code_intervals_qualified=(uint8_t)(enabled!=0);return 1;
+    if(c->code_lease_serial==UINT64_MAX) {
+        /* A wrapped serial cannot revive old sparse/front proofs. */
+        for(unsigned n=0;n<2;++n) {
+            segacd_catalog_lookup_reset(&c->catalog_lookup[n]);
+            segacd_catalog_index_destroy(c->catalog_index[n]);c->catalog_index[n]=NULL;
+        }
+        c->code_lease_serial=0;
+    }
+    SegaCDCatalogLookup *cache=&c->catalog_lookup[cpu];
+    cache->code_begin=begin;cache->code_end=end;cache->code_epoch=++c->code_lease_serial;return 1;
 #else
-    c->code_intervals_qualified=0;return !enabled;
+    return 0;
 #endif
 }
 int segacd_coordinator_main_code_span(SegaCDCoordinator *c,const uint8_t *(*span)(void *,uint32_t,size_t))
 {
     if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
-    c->host_code_span=span;c->code_intervals_qualified=0;return 1;
+    segacd_coordinator_end_code_lease(c,SEGACD_MAIN);c->host_code_span=span;return 1;
 }
 int segacd_coordinator_main_data_region(SegaCDCoordinator *c,M68kStepDataResolver resolver)
 {
@@ -605,16 +617,6 @@ static uint64_t run_register_region_validated(SegaCDCoordinator *c,uint64_t dead
         boundary=region_event(c);
     }
     unsigned level[2]={c->main_irq,sub?segacd_irq_level(c->devices):0};
-    /* Only pure CPU operations execute until this function returns. No bus,
-     * DMA, stamp, opaque callback or other master can write/remap their code.
-     * A successful live guard can therefore be borrowed for loop revisits.
-     * Front slots cannot be replaced here (a cache miss exits the interval).
-     * Track only successful proofs; clear them BEFORE any final observer. */
-    SegaCDLookupSlot *owned[2*SEGACD_LOOKUP_SLOTS];unsigned owned_count=0;
-    int own=c->code_intervals_qualified;
-#if !defined(M68K_STEP_HAS_CODE_INTERVALS) || !M68K_STEP_HAS_CODE_INTERVALS
-    own=0;
-#endif
     /* No unobservable instruction starts after the ceiling. Finishing the
      * instruction that crosses it is identical to ordinary step retirement. */
     while(c->time[0]<deadline || (sub&&c->time[1]<deadline)) {
@@ -629,16 +631,16 @@ static uint64_t run_register_region_validated(SegaCDCoordinator *c,uint64_t dead
             slot->span=flow?flow:fixed;slot->span_control=(uint8_t)(flow!=NULL);
             slot->span_fallback=flow?fixed:NULL;slot->span_known=1;
         }
+        SegaCDCatalogLookup *code_cache=&c->catalog_lookup[which];
         const M68kStepRegisterSpan *span=slot->span;
         if(span) {
             uint64_t budget=register_span_budget(c,which,sub,deadline,boundary);
             int flow=slot->span_control;
             if(budget>=span->cycles) {
 #if defined(M68K_STEP_HAS_CODE_INTERVALS) && M68K_STEP_HAS_CODE_INTERVALS
-                if(own&&slot->owned_span==span) {
-                    result=flow?m68k_step_execute_validated_flow_span(cpu,span,budget):
-                                m68k_step_execute_validated_span(cpu,span,budget);
-                    if(result==M68K_STEP_OK)++c->code_interval_reuses;
+                if(segacd_catalog_code_owned(code_cache,slot)&&slot->owned_span==span) {
+                    result=flow?m68k_step_execute_validated_flow_span(cpu,span,budget):m68k_step_execute_validated_span(cpu,span,budget);
+                    if(result==M68K_STEP_OK)++code_cache->code_reuses;
                 } else
 #endif
                     result=flow?m68k_step_execute_flow_span(cpu,span,budget):m68k_step_execute_span(cpu,span,budget);
@@ -647,42 +649,31 @@ static uint64_t run_register_region_validated(SegaCDCoordinator *c,uint64_t dead
                 span=slot->span_fallback;flow=0;
                 if(budget>=span->cycles) {
 #if defined(M68K_STEP_HAS_CODE_INTERVALS) && M68K_STEP_HAS_CODE_INTERVALS
-                    if(own&&slot->owned_span==span) {
-                        result=m68k_step_execute_validated_span(cpu,span,budget);
-                        if(result==M68K_STEP_OK)++c->code_interval_reuses;
+                    if(segacd_catalog_code_owned(code_cache,slot)&&slot->owned_span==span) {
+                        result=m68k_step_execute_validated_span(cpu,span,budget);if(result==M68K_STEP_OK)++code_cache->code_reuses;
                     } else
 #endif
                         result=m68k_step_execute_span(cpu,span,budget);
                 }
             }
             if(result==M68K_STEP_OK) {
-                if(own) {
-                    if(!slot->owned_entry&&!slot->owned_span) {
-                        if(owned_count<2*SEGACD_LOOKUP_SLOTS)owned[owned_count++]=slot;
-                        else own=0;
-                    }
-                    if(own)slot->owned_span=span;
-                }
+                const M68kStepEntry *first=span->entries[0],*last=span->entries[span->count-1u];
+                if(segacd_catalog_code_claim(code_cache,slot,first->pc,(size_t)(last->pc-first->pc)+last->word_count*2u))slot->owned_span=span;
                 completed=span->count;
                 if(flow){++c->flow_runs[which];c->flow_instructions[which]+=completed;}
                 else {++c->span_runs[which];c->span_instructions[which]+=completed;}
             }
         }
         if(result==M68K_STEP_MISS) {
-#if defined(M68K_STEP_HAS_CODE_INTERVALS) && M68K_STEP_HAS_CODE_INTERVALS
-            if(own&&slot->owned_entry) {
-                result=m68k_step_execute_validated_register(cpu,slot->owned_entry);
-                if(result==M68K_STEP_OK)++c->code_interval_reuses;
-            } else
-#endif
             for(unsigned i=0;i<slot->count&&(slot->register_only[i]&M68K_STEP_EFFECT_REGISTER);++i) {
-                result=m68k_step_execute_register(cpu,slot->entry[i]);
-                if(result==M68K_STEP_OK&&own) {
-                    if(!slot->owned_entry&&!slot->owned_span) {
-                        if(owned_count<2*SEGACD_LOOKUP_SLOTS)owned[owned_count++]=slot;
-                        else own=0;
-                    }
-                    if(own)slot->owned_entry=slot->entry[i];
+#if defined(M68K_STEP_HAS_CODE_INTERVALS) && M68K_STEP_HAS_CODE_INTERVALS
+                if(segacd_catalog_code_owned(code_cache,slot)&&slot->owned_entry==slot->entry[i]) {
+                    result=m68k_step_execute_validated_register(cpu,slot->entry[i]);if(result==M68K_STEP_OK)++code_cache->code_reuses;
+                } else
+#endif
+                    result=m68k_step_execute_register(cpu,slot->entry[i]);
+                if(result==M68K_STEP_OK&&segacd_catalog_code_claim(code_cache,slot,slot->entry[i]->pc,(size_t)slot->entry[i]->word_count*2u)) {
+                    slot->owned_entry=slot->entry[i];slot->owned_tracked=0;
                 }
                 if(result!=M68K_STEP_MISS)break;
             }
@@ -703,9 +694,6 @@ static uint64_t run_register_region_validated(SegaCDCoordinator *c,uint64_t dead
         if(now>=boundary)break;
         which=sub&&c->time[1]<c->time[0]?1u:0u;
         slot=register_slot(c,which);
-    }
-    for(unsigned n=0;n<owned_count;++n) {
-        owned[n]->owned_entry=NULL;owned[n]->owned_span=NULL;
     }
     if(retired) {
         ++c->region_runs;

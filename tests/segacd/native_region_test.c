@@ -10,24 +10,15 @@ typedef struct {uint64_t time;uint32_t pc[2],value[2];unsigned kind;} Observatio
 static Observation observations[8192],reference_observations[8192];
 static unsigned observation_count;static uint64_t host_event;
 static unsigned device_case;
+static int lease_enabled;
 static unsigned staged_clock;static uint64_t clock_ceiling;
-static unsigned host_patch;
-static void unowned(void)
-{
-    for(unsigned cpu=0;cpu<2;++cpu)for(unsigned n=0;n<SEGACD_LOOKUP_SLOTS;++n)
-        CHECK(!c.catalog_lookup[cpu].slots[n].owned_entry&&!c.catalog_lookup[cpu].slots[n].owned_span);
-}
 static uint64_t third_master_limit(void *user){(void)user;return clock_ceiling;}
 static void observe(unsigned kind)
 {
-    unowned();
     CHECK(observation_count<8192);
     Observation *o=&observations[observation_count++];memset(o,0,sizeof *o);
     o->time=c.device_time;o->kind=kind;
     for(unsigned n=0;n<2;++n){o->pc[n]=c.cpu[n].state.regs.PC;o->value[n]=c.cpu[n].state.regs.D[0];}
-    if(host_patch&&kind==2) {
-        host_patch=0;cd.bios[0x101]^=1;cd.prg[0x101]^=1;
-    }
 }
 static void host_advance(void *user,uint64_t now)
 {(void)user;if(now>=host_event){observe(2);host_event=now+31;}}
@@ -60,6 +51,7 @@ static void put32(uint8_t *p,uint32_t v)
 {p[0]=(uint8_t)(v>>24);p[1]=(uint8_t)(v>>16);p[2]=(uint8_t)(v>>8);p[3]=(uint8_t)v;}
 static void setup(int qualified,int enable_sub)
 {
+    lease_enabled=qualified;
     memset(bios,0,sizeof bios);put32(bios,0xff1000);put32(bios+4,0x100);
     bios[0x100]=bios[0x102]=0x4e;bios[0x101]=bios[0x103]=0x71;
     CHECK(segacd_init(&cd,bios,sizeof bios));
@@ -84,8 +76,6 @@ static void setup(int qualified,int enable_sub)
         CHECK(segacd_write8(&cd,SEGACD_SUB,0xFF8031,1)==SEGACD_OK);
     }
     CHECK(segacd_coordinator_init(&c,&cd,NULL,NULL));
-    CHECK(!c.code_intervals_qualified); /* Generic owners are never assumed safe. */
-    if(qualified)CHECK(segacd_coordinator_code_intervals(&c,1));
     CHECK(segacd_coordinator_modules(&c,SEGACD_MAIN,modules,1));
     CHECK(segacd_coordinator_modules(&c,SEGACD_SUB,modules,1));
     if(qualified) {
@@ -96,7 +86,7 @@ static void setup(int qualified,int enable_sub)
     segacd_coordinator_host_clock(&c,host_advance,host_next);
     if(staged_clock){clock_ceiling=0;segacd_coordinator_device_limit(&c,third_master_limit);}
 }
-static M68kStepResult run_to(unsigned stop,unsigned isolated)
+static M68kStepResult run_to_guarded(unsigned stop,unsigned isolated)
 {
     if(staged_clock)for(unsigned next=13;next<stop;next+=13) {
         clock_ceiling=next;
@@ -107,6 +97,13 @@ static M68kStepResult run_to(unsigned stop,unsigned isolated)
     M68kStepResult result=isolated?segacd_coordinator_run_isolated_until(&c,stop):segacd_coordinator_run_until(&c,stop);
     if(isolated&&result==M68K_STEP_OK)result=segacd_coordinator_run_until(&c,stop);
     return result;
+}
+static M68kStepResult run_to(unsigned stop,unsigned isolated)
+{
+    if(lease_enabled)CHECK(segacd_coordinator_begin_code_lease(&c,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES));
+    M68kStepResult result=run_to_guarded(stop,isolated);
+    segacd_coordinator_end_code_lease(&c,SEGACD_MAIN);
+    CHECK(!c.catalog_lookup[0].code_epoch);return result;
 }
 int main(void)
 {
@@ -121,7 +118,6 @@ int main(void)
       for(unsigned isolated=0;isolated<2;++isolated) {
         setup(1,sub);
         CHECK(run_to(stop,isolated)==result);
-        unowned();
         CHECK(!memcmp(&reference_cd,&cd,sizeof cd));
         CHECK(!memcmp(&state[0],&c.cpu[0].state,sizeof state[0]));
         CHECK(!memcmp(&state[1],&c.cpu[1].state,sizeof state[1]));
@@ -131,17 +127,6 @@ int main(void)
       }
     }
     device_case=staged_clock=0;
-    /* An unannounced direct host write at an observer boundary is complete
-     * invalidation without page/write tracking. The next interval must miss. */
-    for(unsigned qualified=0;qualified<2;++qualified) {
-        setup((int)qualified,0);host_patch=1;
-        CHECK(segacd_coordinator_run_until(&c,300)==M68K_STEP_MISS);unowned();
-        if(!qualified){reference_cd=cd;memcpy(reference_observations,&c.cpu[0].state,sizeof c.cpu[0].state);}
-        else {CHECK(!memcmp(&reference_cd,&cd,sizeof cd));CHECK(!memcmp(reference_observations,&c.cpu[0].state,sizeof c.cpu[0].state));}
-    }
-    setup(1,0);CHECK(segacd_coordinator_run_until(&c,100)==M68K_STEP_OK);
-    CHECK(c.code_interval_reuses>0);unowned();
-    CHECK(segacd_coordinator_main_code_span(&c,NULL));CHECK(!c.code_intervals_qualified);
     setup(1,1);CHECK(segacd_coordinator_run_until(&c,100)==M68K_STEP_OK);
     /* Complete live guard, unknown callback and qualification replacement exits. */
     c.cpu[0].state.regs.PC=c.cpu[1].state.regs.PC=0x100;cd.bios[0x101]^=1;cd.prg[0x101]^=1;
@@ -164,6 +149,13 @@ int main(void)
     CHECK(segacd_coordinator_region_effects(&c,SEGACD_MAIN,NULL,0));
     CHECK(segacd_coordinator_region_effects(&c,SEGACD_SUB,NULL,0));
     CHECK(!segacd_coordinator_native_region(&c,c.device_time+100));
+    setup(1,0);c.code_lease_serial=UINT64_MAX;
+    CHECK(segacd_coordinator_begin_code_lease(&c,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES));
+    CHECK(c.catalog_lookup[0].code_epoch==1);
+    CHECK(!segacd_coordinator_begin_code_lease(&c,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES));
+    CHECK(segacd_coordinator_main_code_span(&c,NULL));CHECK(!c.catalog_lookup[0].code_epoch);
+    CHECK(segacd_coordinator_begin_code_lease(&c,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES));
+    CHECK(segacd_coordinator_modules(&c,SEGACD_MAIN,priority_modules,2));CHECK(!c.catalog_lookup[0].code_epoch);
     puts("regions preserve CPU/device/observer order across 1308 cases including staged third-master ceilings and DMA/stamp/timer");
     return 0;
 }
