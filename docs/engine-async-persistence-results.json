@@ -4,7 +4,7 @@
   "engine_base": "630a953",
   "owner": "beads-3z5k.30",
   "campaign": "beads-2wy8.1",
-  "decision": "Selected five-family implementation qualified technically; final independent PR/records/cleanup closure pending",
+  "decision": "Qualified original bounded E35:five retained implementations and seven evidence-backed integrated text-package rejections; independent full-scope technical acceptance, no deferred E35 owner.",
   "selected_families": [
     "mixed PCM WAV",
     "pre-DRC FM/PSG PCM stems",
@@ -3465,7 +3465,14 @@
     "Same pair fixes cores/configuration; raw telemetry, input masks, source/binary identities and whole-process costs retained.",
     "Initial partial-package gains are not full selected-package measurements."
   ],
-  "pr": null,
+  "pr": {
+    "number": 59,
+    "url": "https://github.com/mstan/segagenesisrecomp/pull/59",
+    "base": "codex/engine-host-presentation-20261101",
+    "state": "OPEN READY",
+    "merge_owner_handoff_pending": true,
+    "requested_assignee": "TechnicallyComputers; already verified repo-unassignable404, no access changes"
+  },
   "cleanup": {
     "manifest": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\cleanup-profile-copies.json",
     "manifest_sha256": "d9fd58fb47632fea15612b73fdc4157c6eff926d5841d231198d1662964dae53",
@@ -3476,8 +3483,39 @@
   },
   "remaining_campaign_items": [
     "E02",
-    "E35 pending final closure",
     "E36",
     "E37"
-  ]
+  ],
+  "consumer_sources": {
+    "rka": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka",
+      "head": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+      "recomp_ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4"
+    },
+    "sonic1": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-snapshot-identity-20261101\\sonic1",
+      "head": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+      "recomp_ui": "47005fb27516398381f4fda88413ff74bee14842"
+    },
+    "sonic3k": {
+      "path": "C:\\Temp\\Codex\\sonic-native-20261027\\s3-family",
+      "head": "6ce74a70161f0fe42dd8deda5cc9108c4ed0fd90",
+      "recomp_ui": "4261bad384df17e9b4123c9323939770c12ab0bf"
+    }
+  },
+  "campaign_burndown": {
+    "frozen_families": 37,
+    "resolved": 34,
+    "open": 3,
+    "remaining_families": [
+      "E02",
+      "E36",
+      "E37"
+    ]
+  },
+  "final_independent_review": {
+    "agent": "validate_e35",
+    "technical_acceptance": true,
+    "findings": "No objective implementation or qualification fix remains. Exact source/receipt/PE/CD identities,16/16 each compiler, all12 recurring/cold decisions, candid per-game classifications and cleanup verified. No further benchmark or owner gate required for E35burndown; final combined ownerhandoff remains."
+  }
 }
