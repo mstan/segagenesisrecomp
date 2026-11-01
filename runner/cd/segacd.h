@@ -43,6 +43,9 @@ typedef struct {
      * sink; sample events use device cycles and the RF5C164 384-clock phase. */
     SegaCDPcmTimedSample pcm_timed_sink;
     void *pcm_timed_user;
+    /* Optional pure host publication capabilities; legacy replacement revokes
+     * eligibility. Appended to preserve positional source initializers. */
+    SegaCDAudioOwnedSink pcm_owned,cdda_owned;
 } SegaCDIO;
 
 enum {

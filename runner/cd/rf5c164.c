@@ -82,3 +82,47 @@ void rf5c164_advance_timed(Rf5c164 *p,uint64_t start,uint32_t clocks,Rf5c164Time
         if(sink)sink(user,stamp,p->left,p->right);
     }
 }
+
+void rf5c164_advance_owned(Rf5c164 *p,uint64_t start,uint32_t clocks,
+    Rf5c164TimedSink sink,void *user,const SegaCDAudioOwnedSink *owned)
+{
+    uint32_t phase=p->phase;uint64_t total=(uint64_t)phase+clocks;
+    uint32_t count=(uint32_t)(total/384u);
+    if(!sink||!owned||owned->legacy!=sink||owned->legacy_user!=user||
+       !owned->begin||!owned->commit||phase>=384u||count<2u) {
+        rf5c164_advance_timed(p,start,clocks,sink,user);return;
+    }
+    uint64_t first=start+384u-phase,last=first+(uint64_t)(count-1u)*384u;
+    SegaCDAudioWriteGrant grant;
+    if(!owned->begin(owned->user,first,last,count,&grant)||!grant.frame||grant.count!=count) {
+        rf5c164_advance_timed(p,start,clocks,sink,user);return;
+    }
+    typedef struct {unsigned channel;uint32_t address,loop,step;int32_t left,right;} Voice;
+    Voice voice[8];unsigned voices=0;
+    if(p->enabled)for(unsigned i=0;i<8;++i)if(p->channel[i].on) {
+        const Rf5c164Channel *c=&p->channel[i];Voice *v=&voice[voices++];
+        v->channel=i;v->address=c->address;v->loop=(uint32_t)(((unsigned)c->lsh<<8)|c->lsl)<<11;
+        v->step=((uint32_t)c->fdh<<8)+c->fdl;
+        v->left=(c->pan&15u)*c->env;v->right=(c->pan>>4)*c->env;
+    }
+    p->phase=(uint16_t)(total%384u);
+    for(uint32_t n=0;n<count;++n) {
+        int32_t l=0,r=0;
+        for(unsigned j=0;j<voices;++j) {
+            Voice *v=&voice[j];uint8_t sample=p->wave[(v->address>>11)&65535u];
+            if(sample==255) {
+                v->address=v->loop;sample=p->wave[(v->address>>11)&65535u];
+                if(sample==255)continue;
+            } else v->address=(v->address+v->step)&0x7FFFFFFu;
+            int32_t magnitude=sample&127u;
+            int32_t lv=(magnitude*v->left)>>5,rv=(magnitude*v->right)>>5;
+            if(sample&128u){l+=lv;r+=rv;}else{l-=lv;r-=rv;}
+        }
+        SegaCDAudioFrame *out=segacd_audio_grant_frame(&grant,n);
+        out->subclock=first+(uint64_t)n*384u;out->left=saturate(l);out->right=saturate(r);
+    }
+    for(unsigned j=0;j<voices;++j)p->channel[voice[j].channel].address=voice[j].address;
+    const SegaCDAudioFrame *last_frame=segacd_audio_grant_frame(&grant,count-1u);
+    p->left=last_frame->left;p->right=last_frame->right;p->samples+=count;
+    owned->commit(owned->user,&grant);
+}

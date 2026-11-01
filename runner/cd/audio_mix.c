@@ -430,3 +430,33 @@ void segacd_audio_mix_get_stats(const SegaCDAudioMix *mix,SegaCDAudioMixStats *o
     out->cdda_discarded_frames=mix->source[SEGACD_AUDIO_SOURCE_CDDA].discarded_frames;
     out->last_result=mix->last_result;
 }
+
+int segacd_audio_mix_begin_span(SegaCDAudioMix *mix,SegaCDAudioSource source,
+    uint64_t first,uint64_t last,size_t count,SegaCDAudioWriteGrant *g)
+{
+    if(!mix||!g||!valid_source(source)||!count||mix->paused)return 0;
+    SegaCDAudioQueue *q=&mix->source[source];
+    if(!q->active||q->count>SEGACD_AUDIO_MIX_QUEUE_CAPACITY||count>SEGACD_AUDIO_MIX_QUEUE_CAPACITY-q->count||
+       last<first||(count>1&&last==first)||last-first>SEGACD_AUDIO_MIX_CLOCK_HZ)return 0;
+    if(q->have_last_subclock&&(first<=q->last_subclock||
+       first-q->last_subclock>SEGACD_AUDIO_MIX_CLOCK_HZ))return 0;
+    g->frame=q->frame;g->count=count;g->first=((unsigned)q->head+q->count)&QUEUE_MASK;
+    g->mask=QUEUE_MASK;g->old_head=q->head;g->old_count=q->count;
+    g->source=(unsigned)source;g->first_subclock=first;g->last_subclock=last;g->owner=mix;
+    return 1;
+}
+SegaCDAudioMixResult segacd_audio_mix_commit_span(SegaCDAudioMix *mix,const SegaCDAudioWriteGrant *g)
+{
+    if(!mix||!g||g->owner!=mix||!valid_source((SegaCDAudioSource)g->source))return SEGACD_AUDIO_MIX_INVALID;
+    SegaCDAudioQueue *q=&mix->source[g->source];
+    if(mix->paused||!q->active||g->frame!=q->frame||g->mask!=QUEUE_MASK||
+       q->head!=g->old_head||q->count!=g->old_count||!g->count||
+       g->count>SEGACD_AUDIO_MIX_QUEUE_CAPACITY-q->count||
+       g->first!=(((unsigned)q->head+q->count)&QUEUE_MASK)||
+       segacd_audio_grant_frame(g,0)->subclock!=g->first_subclock||
+       segacd_audio_grant_frame(g,g->count-1)->subclock!=g->last_subclock)
+        return SEGACD_AUDIO_MIX_INVALID;
+    q->count=(uint16_t)(q->count+g->count);q->accepted_frames+=g->count;
+    q->last_subclock=g->last_subclock;q->have_last_subclock=1;
+    set_result(mix,SEGACD_AUDIO_MIX_OK);return SEGACD_AUDIO_MIX_OK;
+}
