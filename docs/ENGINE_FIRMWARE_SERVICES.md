@@ -2,7 +2,7 @@
 
 Runtime `f13bf7c`, based on accepted E27 `d4a88d5`, implements a guarded native
 protection-table operation used by the standard Sega CD BRMINIT service.
-The original whole-family decision is awaiting its independent final gate.
+The original whole-family decision is independently accepted; [PR56](https://github.com/mstan/segagenesisrecomp/pull/56) carries it.
 Owns `beads-3z5k.26`; campaign `beads-2wy8.1`. Combined owner play/merge/release
 handoff remains pending. Exact builds, inputs, raw paths and samples are in
 [the results](engine-firmware-services-results.json).
@@ -111,3 +111,8 @@ Earlier installer mask, accidental IPL7/PRG-only/stack restrictions and nonquali
 runs are retained in raw records. They are corrected; no unused path counts as a
 performance result. No benchmark host was required to be idle. Unattended outputs
 were silent and no owner play window was opened for these tests.
+
+591,730,688 bytes of superseded SERVER candidate binaries were removed after
+verifying the final replacement; baseline/final binaries and raw evidence remain.
+The current bounded Linux build/probe workspace is retained for the combined
+regression handoff; it remains task-owned scratch for campaign-end cleanup.

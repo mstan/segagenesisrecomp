@@ -4,7 +4,7 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18/E22/E24/E25/E26/E27 are delivered or qualified. E11/E13/E14/E15/E17/E19/E20/E21/E23 whole bounded opportunities were implemented and evaluated, then rejected. E18 is ready PR50; E22 is ready PR51; E24 is ready PR52; E25 is ready PR53 with modest observed CD gain; E26 is ready PR54 with qualified raw-media prefetch and modest observed CD gain. E22/E24 overall performance is neutral/inconclusive; E24 has a measured component reduction. E27 is ready enginePR55/SonicCDPR2, with bounded Windows loading CPU benefit, neutral gameplay and436.64MiB explicit Linux peakRSS cost. **7 original families plus E37 remain open:8 across37,29 resolved.** Counts are dispositions, not speedups. Combined owner visual/play and merge handoff remains for meaningful PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions. E23 retains no new runtime after full pipeline and unity-bypass qualification; acceptedfe668 restored exactly.
+Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18/E22/E24/E25/E26/E27/E30 are delivered or qualified. E11/E13/E14/E15/E17/E19/E20/E21/E23 whole bounded opportunities were implemented and evaluated, then rejected. E18 is ready PR50; E22 is ready PR51; E24 is ready PR52; E25 is ready PR53 with modest observed CD gain; E26 is ready PR54 with qualified raw-media prefetch and modest observed CD gain. E22/E24 overall performance is neutral/inconclusive; E24 has a measured component reduction. E27 is ready enginePR55/SonicCDPR2, with bounded Windows loading CPU benefit, neutral gameplay and436.64MiB explicit Linux peakRSS cost. E30 is readyPR56 with complete firmware ABI/menu/native-save qualification and34frame earlier gameplay; CPU neutral/inconclusive. **6 original families plus E37 remain open:7 across37,30 resolved.** Counts are dispositions, not speedups. Combined owner visual/play and merge handoff remains for meaningful PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions. E23 retains no new runtime after full pipeline and unity-bypass qualification; acceptedfe668 restored exactly.
 
 ## What was actually closed
 
@@ -62,7 +62,7 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E27 | Verified media handoff contract | Delivered (bounded) | Actual single-pass whole/payload validation on immutable owned image2276caa, mechanically adopted; ready enginePR55/SonicCDPR2, full Windows/Linux canonical gates. | Selected original contract qualified; explicit Linux RAM cost, owner combined handoff pending. |
 | E28 | Portable full-media validation | Delivered (bounded) | Optional OpenSSL full-payload SHA outside Windows, existing CNG and full portable restart/fallback. | The selected accelerated full-verification contract is delivered; immutable-sector reuse was not implemented or globally exhausted. |
 | E29 | Resident-media representation | Delivered (bounded) | Read-only mapped first-data-track residency with bounded copied fallback. | The selected lower-private-copy representation is delivered; this does not exhaust all raw/user-sector representation alternatives. |
-| E30 | Reusable console-firmware services | Deferred; open | Native BIOS instruction catalog retained; no new reusable whole-service HLE. | A named standard firmware service ABI with complete reusable effects. |
+| E30 | Reusable console-firmware services | Delivered (bounded) | Guarded native BRMINIT table operation f13bf7c, complete ABI/state/BRAM/UI gates and57-service bounded remainder decisions; readyPR56. | Original selected contract complete; combined owner play/merge/release handoff remains. |
 | E31 | Engine snapshot representation and identity | Deferred; open | Existing authoritative section table and full-byte checksum retained. | Generic writer ownership, dirty pages/deltas/checkpoints and exact incremental identity. |
 | E32 | Serializer and snapshot storage | Deferred; open | Existing snapshot ownership/atomic-save implementation retained. | Generic transactional borrow/capacity/commit storage or pooling where useful. |
 | E33 | Discarded-replay engine work | Existing (bounded) | Discarded cartridge replay already omits derived image work while retaining authoritative status/audio. | No remaining shared cartridge image work demonstrated at this base; title publication remains separate and CD work is E09. |
@@ -337,11 +337,18 @@ Sources: `runner/cd/disc_image.c:40`, `runner/cd/disc_image.h`. Historical evalu
 
 ### E30: Reusable console-firmware services
 
-Catalog execution is not service HLE. A gameplay-only profile does not cover boot, BRAM/UI or firmware control waits; title file/SP routines remain excluded.
+Qualified native BRMINIT table operation f13bf7c replaces the dominant quadratic
+firmware computation; all57 manual services have bounded implemented/retained
+decisions. Complete ABI, normal menu format/reboot, actual native save preservation,
+Windows/Linux and atomic snapshot replay pass. Four gameplay pictures match34frames
+earlier; host CPU/startup remains neutral/inconclusive. ReadyPR56; no title-PC HLE
+was moved into the engine. See [whole-family evidence](ENGINE_FIRMWARE_SERVICES.md)
+and [raw results](engine-firmware-services-results.json).
 
-**Next closure:** Find a costly standard firmware service and specify its complete ABI/effects before replacing it; do not move a title routine into engine code.
+**Next closure:** Combined owner play, merge and release handoff. Current technical
+original E30 is complete; E31 uses a fresh validation-only reviewer.
 
-Sources: `runner/cd/standalone_program.c`, `runner/cd/segacd_coordinator.c`. Historical evaluation: `evaluated_deferred`.
+Sources: `runner/cd/bios_services.c`, `runner/cd/bios_tables.c`, `tests/segacd/bios_tables_test.c`.
 
 ### E31: Engine snapshot representation and identity
 

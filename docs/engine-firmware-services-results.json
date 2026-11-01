@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "scope": "Original E30 reusable firmware services, supported US Model1 v1.10 BIOS; pending whole-family independent verdict",
+  "scope": "Original E30 reusable firmware services, supported US Model1 v1.10 BIOS; independently accepted whole original bounded opportunity",
   "owner": "beads-3z5k.26",
   "campaign": "beads-2wy8.1",
-  "runtime_commit": "f13bf7c",
+  "runtime_commit": "f13bf7c66046221f304b2e91935d0d60e2bfbbe4",
   "base": "d4a88d559d3ea5a7a5f1308c187621534265ac19",
   "firmware": {
     "path": "F:\\Projects\\segagenesisrecomp\\_wt-sonic-cd\\build\\private-inputs\\segacd-bios-us-1.10.bin",
@@ -464,5 +464,16 @@
     "r2 IPL7-only guard:8declines",
     "r3 private guard trace only",
     "UI initialPRG/stack restrictions:2declines, corrected and requalified; intermediate source not retained as accepted package"
-  ]
+  ],
+  "independent_review": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\VALIDATOR_E30.md",
+    "sha256": "bcb6976a3b8558f89c57fa6663f8729821f408d22a81f663098dd3b116d30e1d",
+    "verdict": "Full original E30 technical accepted; final PR/records/durable closeout required"
+  },
+  "pull_request": "https://github.com/mstan/segagenesisrecomp/pull/56",
+  "cleanup": {
+    "removed_server_binary_bytes": 591730688,
+    "preserved": "FinalR6 candidate/reference binaries, all raw game/ABI/menu/native-save evidence; current bounded Linux workspace for combined handoff; isolated source worktree",
+    "campaign_end_cleanup_required": true
+  }
 }
