@@ -29,6 +29,7 @@ typedef struct AppConfig {
     int custom_aspect;      /* 0 adaptive, 1 16:9, 2 21:9, 3 32:9 */
     /* audio */
     int volume;             /* 0..100 */
+    int audio_freq;         /* requested host-device rate, Hz */
     /* launcher */
     int skip_launcher;      /* 1 = boot straight to the game next time */
     int rewind_enabled;     /* local rewind; never available in netplay */

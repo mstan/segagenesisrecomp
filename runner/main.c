@@ -1943,7 +1943,7 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         ls.widescreen       = g_app_config.widescreen;
         ls.widescreen_cells = g_app_config.widescreen_cells;
         ls.enable_audio     = 1;
-        ls.audio_freq       = 48000;   /* engine device rate (audio.c want.freq) */
+        ls.audio_freq       = g_app_config.audio_freq;
         ls.volume           = g_app_config.volume;
         ls.skip_launcher    = g_app_config.skip_launcher;
 #ifdef RECOMP_LAUNCHER_HAS_REWIND_ENABLED
@@ -2049,6 +2049,7 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
             g_app_config.widescreen       = ls.widescreen;
             g_app_config.widescreen_cells = ls.widescreen_cells;
             g_app_config.volume           = ls.volume;
+            g_app_config.audio_freq       = ls.audio_freq;
             g_app_config.skip_launcher    = ls.skip_launcher;
 #ifdef RECOMP_LAUNCHER_HAS_REWIND_ENABLED
             g_app_config.rewind_enabled   = ls.rewind_enabled != 0;
@@ -2847,6 +2848,7 @@ int main(int argc, char *argv[])
     /* Output at PSG rate (~223721 Hz NTSC) — matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
     if (!benchmark_frames) {
+        audio_set_output_rate(g_app_config.audio_freq);
         int audio_status = audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
         if (runtime_measure_frames && audio_status != 0) {
             fprintf(stderr, "--measure-runtime requires a working audio device/mixer\n");
