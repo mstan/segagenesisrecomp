@@ -136,7 +136,7 @@ void gvdp_set_host_sprites(GVDPHostSprites draw, void *user);
  * the host sprite callback clears these colors too. Returns 0 for oversize. */
 int gvdp_set_host_palette(const uint32_t *argb, unsigned count);
 
-/* Extended sprite lines (opt-in, presentation only): sprite pixels drawn with
+/* Extended lines (opt-in, presentation only): plane/sprite pixels drawn with
  * CRAM line 0 from VRAM tiles flagged in `tile_lines` (2048 entries: 0 = none,
  * 1..GVDP_EXT_LINES = extra line) take their colour from up to three extra
  * 16-colour lines instead of CRAM, written as host palette indices. Colours
@@ -277,8 +277,11 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out);
  * zero BEFORE device mutation and retain the ordinary renderer. */
 typedef struct GVDPRasterRow {
     unsigned width, start, count, diag_offset, diag_mask;
-    uint8_t backdrop, bar, display, shadow_mode, diagnostic;
+    uint8_t backdrop, bar, display, shadow_mode, diagnostic, private_planes;
     uint8_t plane_a[GVDP_MAX_WIDTH], plane_b[GVDP_MAX_WIDTH];
+    /* Packed plane metadata stays native. Optional nonzero private indices
+     * carry the existing source-palette-0 remap without losing priority. */
+    uint8_t plane_a_private[GVDP_MAX_WIDTH], plane_b_private[GVDP_MAX_WIDTH];
     uint8_t sprite[GVDP_MAX_WIDTH], opaque[GVDP_MAX_WIDTH], high[GVDP_MAX_WIDTH];
     uint8_t shadow_op[GVDP_MAX_WIDTH], hilite_op[GVDP_MAX_WIDTH];
     uint32_t host_palette[GVDP_HOST_PALETTE_SIZE];
