@@ -546,7 +546,7 @@ int segacd_audio_mix_begin_constant(SegaCDAudioMix *mix,SegaCDAudioSource source
     if(!run||!g||!count||count>SEGACD_AUDIO_MIX_QUEUE_CAPACITY||
        !run->denominator||run->denominator>1000000u||run->phase>=run->denominator||
        run->step_numerator<run->denominator)return 0;
-    uint64_t span=((uint64_t)run->phase+(count-1u)*run->step_numerator)/run->denominator;
+    uint64_t span=((uint64_t)run->phase+(uint64_t)(count-1u)*run->step_numerator)/run->denominator;
     if(run->first>UINT64_MAX-span)return 0;
     SegaCDAudioWriteGrant candidate;
     if(!segacd_audio_mix_begin_span(mix,source,run->first,run->first+span,count,&candidate))return 0;
