@@ -1,3 +1,6 @@
+#if defined(__linux__) && !defined(_DEFAULT_SOURCE)
+#define _DEFAULT_SOURCE 1
+#endif
 #if !defined(_WIN32) && !defined(_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE 200809L
 #endif
@@ -15,6 +18,9 @@
 #include <share.h>
 #elif defined(__unix__) || defined(__APPLE__)
 #include <unistd.h>
+#endif
+#if defined(__linux__)
+#include <sys/mman.h>
 #endif
 
 #ifndef SEGACD_IMAGE_PLATFORM_SHA
@@ -59,6 +65,9 @@ struct SegaCDImage {
     uint8_t digest[32];
     uint8_t whole_digest[32];
     size_t private_snapshot_bytes;
+#if defined(__linux__)
+    void *snapshot_memory;
+#endif
     int whole_identity_checked;
     uint8_t *resident;
     int32_t resident_first;
@@ -221,6 +230,12 @@ static void prefetch_schedule(SegaCDImage *image,int32_t next,int sequential)
 
 static int map_resident(SegaCDImage *image,uint64_t offset,size_t bytes)
 {
+#if defined(__linux__)
+    if(image->snapshot_memory) {
+        image->resident=(uint8_t *)image->snapshot_memory+(size_t)offset;
+        return 1;
+    }
+#endif
 #if SEGACD_IMAGE_MAP_RESIDENT && defined(_WIN32)
     SYSTEM_INFO info;GetSystemInfo(&info);
     uint64_t aligned=offset-offset%info.dwAllocationGranularity;
@@ -509,7 +524,7 @@ static int hash_payload(SegaCDImage *image,uint64_t offset,uint64_t size,uint8_t
  * This bounded fallback can cost one full-image temporary copy; Windows uses
  * enforced read sharing instead. Provider failure restarts on this same copy. */
 #if !defined(_WIN32) || (defined(SEGACD_IMAGE_FORCE_SNAPSHOT) && SEGACD_IMAGE_FORCE_SNAPSHOT)
-static FILE *private_snapshot(FILE *source,size_t *bytes)
+static FILE *private_snapshot(FILE *source,size_t *bytes,void **memory)
 {
     uint8_t buffer[32768];
     uint64_t limit=HEADER_BYTES+MAX_TRACKS*TRACK_BYTES+
@@ -517,6 +532,28 @@ static FILE *private_snapshot(FILE *source,size_t *bytes)
     if(fseek(source,0,SEEK_END))return NULL;
     long length=ftell(source);
     if(length<HEADER_BYTES||(uint64_t)length>limit||fseek(source,0,SEEK_SET))return NULL;
+#if defined(__linux__) && !(defined(SEGACD_IMAGE_FORCE_SNAPSHOT) && SEGACD_IMAGE_FORCE_SNAPSHOT)
+    /* A private read-only memory stream avoids copying the snapshot through a
+     * second filesystem. Keep the portable file fallback under low headroom. */
+    long pages=sysconf(_SC_AVPHYS_PAGES),page_size=sysconf(_SC_PAGESIZE);
+    if(pages>0&&page_size>0&&(uint64_t)pages*(uint64_t)page_size>=
+       (uint64_t)length+64u*1024u*1024u) {
+        void *data=mmap(NULL,(size_t)length,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+        if(data!=MAP_FAILED) {
+            if(!read_exact(source,data,(size_t)length)||fgetc(source)!=EOF||ferror(source)) {
+                munmap(data,(size_t)length);return NULL;
+            }
+            if(!mprotect(data,(size_t)length,PROT_READ)) {
+                FILE *owned=fmemopen(data,(size_t)length,"rb");
+                if(owned){*bytes=(size_t)length;*memory=data;return owned;}
+            }
+            munmap(data,(size_t)length);
+            if(fseek(source,0,SEEK_SET))return NULL;
+        }
+    }
+#else
+    (void)memory;
+#endif
     FILE *owned=tmpfile();if(!owned)return NULL;
     (void)setvbuf(owned,NULL,_IOFBF,1024u*1024u);
     size_t remaining=(size_t)length;
@@ -539,6 +576,9 @@ SegaCDImage *segacd_image_open_expected(const char *path,const uint8_t expected[
     uint8_t header[HEADER_BYTES], entry[TRACK_BYTES], digest[32];
     uint8_t prefix[HEADER_BYTES+MAX_TRACKS*TRACK_BYTES];
     size_t snapshot_bytes=0;
+#if !defined(_WIN32) || (defined(SEGACD_IMAGE_FORCE_SNAPSHOT) && SEGACD_IMAGE_FORCE_SNAPSHOT)
+    void *snapshot_memory=NULL;
+#endif
     SegaCDImage *image = NULL;
     FILE *file = NULL;
     long file_length;
@@ -564,7 +604,7 @@ SegaCDImage *segacd_image_open_expected(const char *path,const uint8_t expected[
     (void)setvbuf(file, NULL, _IOFBF, 1024u * 1024u);
 #if !defined(_WIN32) || (defined(SEGACD_IMAGE_FORCE_SNAPSHOT) && SEGACD_IMAGE_FORCE_SNAPSHOT)
     if(expected) {
-        FILE *owned=private_snapshot(file,&snapshot_bytes);
+        FILE *owned=private_snapshot(file,&snapshot_bytes,&snapshot_memory);
         if(!owned){set_error(error,capacity,"cannot own immutable image snapshot");goto fail;}
         fclose(file);file=owned;
     }
@@ -595,6 +635,9 @@ SegaCDImage *segacd_image_open_expected(const char *path,const uint8_t expected[
     if (image == NULL) { set_error(error, capacity, "out of memory"); goto fail; }
     image->file = file;
     image->private_snapshot_bytes=snapshot_bytes;
+#if defined(__linux__)
+    image->snapshot_memory=snapshot_memory;
+#endif
     image->prefetch.last_lba=INT32_MIN;
     const char *trace=getenv("GENESIS_CD_MEDIA_TRACE");
     image->measure_reads=trace&&*trace&&strcmp(trace,"0");
@@ -652,6 +695,13 @@ SegaCDImage *segacd_image_open_expected(const char *path,const uint8_t expected[
     set_error(error, capacity, "");
     return image;
 fail:
+#if defined(__linux__)
+    if(image==NULL) {
+        if(file)fclose(file);
+        if(snapshot_memory)munmap(snapshot_memory,snapshot_bytes);
+        return NULL;
+    }
+#endif
     if (image != NULL) segacd_image_close(image);
     if (file != NULL) fclose(file);
     return NULL;
@@ -670,8 +720,16 @@ void segacd_image_close(SegaCDImage *image)
 #elif SEGACD_IMAGE_MAP_RESIDENT && (defined(__unix__) || defined(__APPLE__))
         (void)munmap(image->mapping_base,image->mapping_size);
 #endif
-    }else free(image->resident);
+    }
+#if defined(__linux__)
+    else if(!image->snapshot_memory)free(image->resident);
+#else
+    else free(image->resident);
+#endif
     if (image->file != NULL) fclose(image->file);
+#if defined(__linux__)
+    if(image->snapshot_memory)munmap(image->snapshot_memory,image->private_snapshot_bytes);
+#endif
     free(image);
 }
 
@@ -749,6 +807,9 @@ int segacd_image_host_stats(const SegaCDImage *image,SegaCDImageHostStats *stats
     stats->raw_reads=image->raw_reads;stats->resident_reads=image->resident_reads;
     stats->host_seeks=image->host_seeks;stats->mapped_view_bytes=image->mapping_size;
     stats->private_resident_bytes=image->mapping_base?0:image->resident_size;
+#if defined(__linux__)
+    if(image->snapshot_memory)stats->private_resident_bytes=0;
+#endif
     stats->prefetch_jobs=image->prefetch_jobs;stats->prefetch_hits=image->prefetch_hits;
     stats->prefetch_failures=image->prefetch_failures;stats->prefetch_cancels=image->prefetch_cancels;
     stats->sync_read_ns=image->sync_read_ns;stats->max_sync_read_ns=image->max_sync_read_ns;
