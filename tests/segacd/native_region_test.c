@@ -11,13 +11,23 @@ static Observation observations[8192],reference_observations[8192];
 static unsigned observation_count;static uint64_t host_event;
 static unsigned device_case;
 static unsigned staged_clock;static uint64_t clock_ceiling;
+static unsigned host_patch;
+static void unowned(void)
+{
+    for(unsigned cpu=0;cpu<2;++cpu)for(unsigned n=0;n<SEGACD_LOOKUP_SLOTS;++n)
+        CHECK(!c.catalog_lookup[cpu].slots[n].owned_entry&&!c.catalog_lookup[cpu].slots[n].owned_span);
+}
 static uint64_t third_master_limit(void *user){(void)user;return clock_ceiling;}
 static void observe(unsigned kind)
 {
+    unowned();
     CHECK(observation_count<8192);
     Observation *o=&observations[observation_count++];memset(o,0,sizeof *o);
     o->time=c.device_time;o->kind=kind;
     for(unsigned n=0;n<2;++n){o->pc[n]=c.cpu[n].state.regs.PC;o->value[n]=c.cpu[n].state.regs.D[0];}
+    if(host_patch&&kind==2) {
+        host_patch=0;cd.bios[0x101]^=1;cd.prg[0x101]^=1;
+    }
 }
 static void host_advance(void *user,uint64_t now)
 {(void)user;if(now>=host_event){observe(2);host_event=now+31;}}
@@ -74,6 +84,8 @@ static void setup(int qualified,int enable_sub)
         CHECK(segacd_write8(&cd,SEGACD_SUB,0xFF8031,1)==SEGACD_OK);
     }
     CHECK(segacd_coordinator_init(&c,&cd,NULL,NULL));
+    CHECK(!c.code_intervals_qualified); /* Generic owners are never assumed safe. */
+    if(qualified)CHECK(segacd_coordinator_code_intervals(&c,1));
     CHECK(segacd_coordinator_modules(&c,SEGACD_MAIN,modules,1));
     CHECK(segacd_coordinator_modules(&c,SEGACD_SUB,modules,1));
     if(qualified) {
@@ -109,6 +121,7 @@ int main(void)
       for(unsigned isolated=0;isolated<2;++isolated) {
         setup(1,sub);
         CHECK(run_to(stop,isolated)==result);
+        unowned();
         CHECK(!memcmp(&reference_cd,&cd,sizeof cd));
         CHECK(!memcmp(&state[0],&c.cpu[0].state,sizeof state[0]));
         CHECK(!memcmp(&state[1],&c.cpu[1].state,sizeof state[1]));
@@ -118,6 +131,17 @@ int main(void)
       }
     }
     device_case=staged_clock=0;
+    /* An unannounced direct host write at an observer boundary is complete
+     * invalidation without page/write tracking. The next interval must miss. */
+    for(unsigned qualified=0;qualified<2;++qualified) {
+        setup((int)qualified,0);host_patch=1;
+        CHECK(segacd_coordinator_run_until(&c,300)==M68K_STEP_MISS);unowned();
+        if(!qualified){reference_cd=cd;memcpy(reference_observations,&c.cpu[0].state,sizeof c.cpu[0].state);}
+        else {CHECK(!memcmp(&reference_cd,&cd,sizeof cd));CHECK(!memcmp(reference_observations,&c.cpu[0].state,sizeof c.cpu[0].state));}
+    }
+    setup(1,0);CHECK(segacd_coordinator_run_until(&c,100)==M68K_STEP_OK);
+    CHECK(c.code_interval_reuses>0);unowned();
+    CHECK(segacd_coordinator_main_code_span(&c,NULL));CHECK(!c.code_intervals_qualified);
     setup(1,1);CHECK(segacd_coordinator_run_until(&c,100)==M68K_STEP_OK);
     /* Complete live guard, unknown callback and qualification replacement exits. */
     c.cpu[0].state.regs.PC=c.cpu[1].state.regs.PC=0x100;cd.bios[0x101]^=1;cd.prg[0x101]^=1;

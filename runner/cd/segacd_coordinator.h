@@ -76,8 +76,10 @@ struct SegaCDCoordinator {
     const M68kStepEffectModule *region_effects[2];
     size_t region_effect_count[2];
     uint64_t region_instructions[2],region_runs,region_device_advances;
+    uint64_t code_interval_reuses;
     uint64_t region_event_deadline;
     uint8_t region_event_valid,event_intervals_qualified;
+    uint8_t code_intervals_qualified;
     const M68kStepRegisterSpan *register_spans[2];
     size_t register_span_count[2];
     uint8_t register_span_qualified[2][SEGACD_REGISTER_SPAN_LIMIT/8];
@@ -94,6 +96,12 @@ int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host
 /* Descriptors/arrays must remain immutable and alive during execution. */
 int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
                               const M68kStepModule *const *,size_t);
+/* Opt in only when executable host memory is exclusively owned by this
+ * coordinator during independently qualified register/flow execution. No
+ * asynchronous writers or mutating code-span resolvers are permitted. Proofs
+ * expire on EVERY interval return, before devices, host observers or ordinary
+ * instructions execute; unqualified/default owners retain full live guards. */
+int segacd_coordinator_code_intervals(SegaCDCoordinator *,int enabled);
 /* Optional bounded derived lookup; fixed-cache execution remains the default
  * for generic callers. Disable before destroying an enabled coordinator.
  * Configure between completed operations; allocation failure retains fallback. */
