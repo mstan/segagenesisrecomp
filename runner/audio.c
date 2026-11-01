@@ -1,4 +1,5 @@
 #include "audio.h"
+#include "host_stream.h"
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <string.h>
@@ -122,6 +123,7 @@ static void delivery_event(uint32_t wall_frame, uint32_t detail, uint8_t kind)
 
 /* WAV capture state */
 static FILE *s_wav_file = NULL;
+static GenesisHostStream *s_wav_stream;
 static uint32_t s_wav_data_bytes = 0;
 
 /* Scratch output buffer — sized for worst-case PSG frames per video frame.
@@ -347,7 +349,8 @@ void audio_flush(uint32_t wall_frame, int realtime,
      * rings, not the WAV, are the record of what the speaker got. */
     if (s_wav_file) {
         uint32_t bytes = (uint32_t)(psg_frames * 2 * sizeof(int16_t));
-        fwrite(s_out, 1, bytes, s_wav_file);
+        if (s_wav_stream) genesis_host_stream_write(s_wav_stream, s_out, bytes);
+        else fwrite(s_out, 1, bytes, s_wav_file);
         s_wav_data_bytes += bytes;
     }
 
@@ -467,6 +470,7 @@ int audio_wav_start(const char *path)
     s_wav_data_bytes = 0;
     /* Write placeholder header — will be updated on stop */
     wav_write_header(s_wav_file, 223721, 0);
+    s_wav_stream = genesis_host_stream_create(s_wav_file, 256u * 1024u);
     fprintf(stderr, "[audio] WAV capture started: %s\n", path);
     return 0;
 }
@@ -474,11 +478,16 @@ int audio_wav_start(const char *path)
 void audio_wav_stop(void)
 {
     if (!s_wav_file) return;
+    /* Drain immutable PCM before seeking back to finalize the RIFF header. */
+    int ok = genesis_host_stream_destroy(s_wav_stream);
+    s_wav_stream = NULL;
     /* Rewrite header with correct data size */
-    fseek(s_wav_file, 0, SEEK_SET);
-    wav_write_header(s_wav_file, 223721, s_wav_data_bytes);
-    fclose(s_wav_file);
+    if (fseek(s_wav_file, 0, SEEK_SET)) ok = 0;
+    else wav_write_header(s_wav_file, 223721, s_wav_data_bytes);
+    if (ferror(s_wav_file)) ok = 0;
+    if (fclose(s_wav_file)) ok = 0;
     s_wav_file = NULL;
+    if (!ok) fprintf(stderr, "[audio] WAV capture write failed\n");
     fprintf(stderr, "[audio] WAV capture stopped: %u bytes\n", s_wav_data_bytes);
 }
 

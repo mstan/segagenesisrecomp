@@ -121,7 +121,7 @@ add_test(NAME segacd_audio_mix COMMAND segacd_audio_mix_test)
 add_executable(segacd_audio_native_test audio_native_test.c ../../runner/cd/audio_native.c ../../runner/cd/audio_mix.c)
 target_link_libraries(segacd_audio_native_test PRIVATE segacd_devices)
 add_test(NAME segacd_audio_native COMMAND segacd_audio_native_test)
-add_executable(segacd_backup_test backup_test.c ../../runner/cd/backup.c)
+add_executable(segacd_backup_test backup_test.c ../../runner/cd/backup.c ../../runner/host_atomic_file.c)
 target_link_libraries(segacd_backup_test PRIVATE segacd_devices)
 add_test(NAME segacd_backup COMMAND segacd_backup_test "${CMAKE_CURRENT_BINARY_DIR}/backup-test.brm")
 if(MSVC)
@@ -794,7 +794,8 @@ if(NOT CMAKE_CROSSCOMPILING)
           ../../runner/cd/machine.c ../../runner/cd/z80_native.c ../../runner/cd/segacd_coordinator.c
           ../../runner/cd/backup.c ../../runner/cd/audio_mix.c ../../runner/cd/audio_native.c ../../runner/cd/debug.c
           ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c
-          ../../runner/audio.c ../../runner/engine_worker.c ../../runner/audio/sn76489.c ../../runner/audio/ym2612_ymfm.cpp
+          ../../runner/audio.c ../../runner/engine_worker.c ../../runner/host_stream.c ../../runner/persist_writer.c ../../runner/host_atomic_file.c
+          ../../runner/audio/sn76489.c ../../runner/audio/ym2612_ymfm.cpp
           ../../runner/external/ymfm/src/ymfm_opn.cpp ../../runner/external/ymfm/src/ymfm_ssg.cpp
           ../../runner/external/ymfm/src/ymfm_adpcm.cpp ../../runner/external/ymfm/src/ymfm_pcm.cpp
           ${step_runtime_sources})

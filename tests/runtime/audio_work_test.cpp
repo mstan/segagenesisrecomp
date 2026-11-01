@@ -15,6 +15,7 @@ extern "C" {
 #include "audio/ym2612.h"
 #include "audio/sn76489.h"
 #include "engine_worker.h"
+#include "host_stream.h"
 void ref_audio_mixer_init(void);
 void ref_audio_mixer_drain(uint32_t,int16_t *,size_t,size_t *,int16_t *,size_t,size_t *);
 void ref_audio_event_push(uint32_t,uint8_t,uint8_t);
@@ -133,6 +134,7 @@ int main(int argc,char **argv)
         CHECK(fa==fb&&pa==pb&&a==b);parity();CHECK(genesis_worker_completed(worker)==160);
     }
     audio_mixer_set_shadow_executor(nullptr,nullptr);genesis_worker_destroy(worker);
+    CHECK(genesis_host_stream_flush_all());
     std::fflush(nullptr);std::ifstream a(argv[1],std::ios::binary),b(argv[2],std::ios::binary);
     CHECK(a.good()&&b.good());std::string x((std::istreambuf_iterator<char>(a)),{}),y((std::istreambuf_iterator<char>(b)),{});
     CHECK(!x.empty()&&x==y);SDL_Quit();

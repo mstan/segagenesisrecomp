@@ -1,3 +1,4 @@
+#include "../host_stream.h"
 /*
  * event_queue.c — single-threaded cycle-stamped audio event ring.
  */
@@ -149,18 +150,22 @@ void audio_event_push(uint32_t cycle_stamp, uint8_t port, uint8_t value)
     {
         extern unsigned long g_snd_frame;
         static FILE *s_wd = NULL; static int s_wd_init = 0;
+        static GenesisHostStream *s_wd_stream;
         if (!s_wd_init) {
             s_wd_init = 1;
             const char *p = getenv("GENESIS_AUDIO_WRITEDUMP");
-            if (p && *p) s_wd = fopen(p, "w");
+            if (p && *p) {
+                s_wd = fopen(p, "w");
+                if(s_wd)s_wd_stream=genesis_host_stream_create(s_wd,64u*1024u);
+            }
         }
         if (s_wd) {
             if (port == AUDIO_PORT_PSG)
-                fprintf(s_wd, "f=%lu sl=%u PSG $%02X mc=%lu wf=%lu pcz=$%04X\n",
+                genesis_host_stream_fprintf(s_wd_stream,s_wd, "f=%lu sl=%u PSG $%02X mc=%lu wf=%lu pcz=$%04X\n",
                         g_snd_frame, (unsigned)(cycle_stamp/3420u), value,
                         (unsigned long)cycle_stamp, g_snd_frame, g_snd_pcz);
             else
-                fprintf(s_wd, "f=%lu sl=%u FM  p%u $%02X mc=%lu wf=%lu pcz=$%04X\n",
+                genesis_host_stream_fprintf(s_wd_stream,s_wd, "f=%lu sl=%u FM  p%u $%02X mc=%lu wf=%lu pcz=$%04X\n",
                         g_snd_frame, (unsigned)(cycle_stamp/3420u), port, value,
                         (unsigned long)cycle_stamp, g_snd_frame, g_snd_pcz);
         }

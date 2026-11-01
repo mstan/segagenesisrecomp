@@ -72,6 +72,29 @@ target_compile_definitions(fm_block_test PRIVATE GENESIS_FM_BLOCK_SAMPLES=1)
 add_test(NAME fm_block COMMAND fm_block_test)
 
 if(TARGET SDL2::SDL2)
+    foreach(_writer_threads 1 0)
+        foreach(_fixture host_writers evidence_ownership persist_callbacks)
+            set(_target ${_fixture}_${_writer_threads}_test)
+            add_executable(${_target} runtime/${_fixture}_test.c)
+            target_compile_features(${_target} PRIVATE c_std_11)
+            target_compile_definitions(${_target} PRIVATE
+                GENESIS_ENGINE_WORKERS=${_writer_threads} _CRT_SECURE_NO_WARNINGS)
+            target_link_libraries(${_target} PRIVATE SDL2::SDL2)
+            set(_output "${CMAKE_CURRENT_BINARY_DIR}/${_fixture}-${_writer_threads}")
+            file(MAKE_DIRECTORY "${_output}")
+            add_test(NAME ${_fixture}_${_writer_threads} COMMAND ${_target} "${_output}")
+        endforeach()
+        add_test(NAME host_stream_format_failure_${_writer_threads}
+            COMMAND host_writers_${_writer_threads}_test --format-failure)
+        foreach(_quit_first 0 1)
+            add_test(NAME host_stream_exit_${_writer_threads}_${_quit_first}
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DEXE=$<TARGET_FILE:host_writers_${_writer_threads}_test>"
+                    "-DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/host-exit-${_writer_threads}-${_quit_first}.bin"
+                    "-DQUIT_FIRST=${_quit_first}"
+                    -P "${CMAKE_CURRENT_LIST_DIR}/runtime/host_stream_exit.cmake")
+        endforeach()
+    endforeach()
     foreach(_host_wait_variant native portable)
         add_executable(host_wait_${_host_wait_variant}_test runtime/host_wait_test.c
             "${CMAKE_CURRENT_LIST_DIR}/../runner/host_wait.c")
@@ -84,7 +107,9 @@ if(TARGET SDL2::SDL2)
         add_test(NAME host_wait_${_host_wait_variant} COMMAND host_wait_${_host_wait_variant}_test)
     endforeach()
     add_executable(audio_extra_test runtime/audio_extra_test.c
-        "${CMAKE_CURRENT_LIST_DIR}/../runner/audio.c")
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/audio.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/host_stream.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/engine_worker.c")
     target_include_directories(audio_extra_test PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/../runner")
     target_link_libraries(audio_extra_test PRIVATE SDL2::SDL2)
@@ -92,7 +117,9 @@ if(TARGET SDL2::SDL2)
         target_link_libraries(audio_extra_test PRIVATE m)
     endif()
     add_test(NAME audio_extra COMMAND audio_extra_test "${CMAKE_CURRENT_BINARY_DIR}/audio-extra-test.wav")
-    add_executable(audio_buffer_test runtime/audio_buffer_test.c)
+    add_executable(audio_buffer_test runtime/audio_buffer_test.c
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/host_stream.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/engine_worker.c")
     target_include_directories(audio_buffer_test PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/../runner")
     target_link_libraries(audio_buffer_test PRIVATE SDL2::SDL2)
