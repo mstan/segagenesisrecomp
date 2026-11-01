@@ -92,6 +92,21 @@ if(TARGET SDL2::SDL2)
         target_link_libraries(audio_extra_test PRIVATE m)
     endif()
     add_test(NAME audio_extra COMMAND audio_extra_test "${CMAKE_CURRENT_BINARY_DIR}/audio-extra-test.wav")
+    add_executable(audio_pipeline_test runtime/audio_pipeline_test.c
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/cd/audio_mix.c"
+        runtime/pipeline_reference/mix_wrapper.c)
+    target_include_directories(audio_pipeline_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/cd")
+    target_compile_features(audio_pipeline_test PRIVATE c_std_11)
+    target_link_libraries(audio_pipeline_test PRIVATE SDL2::SDL2)
+    if(WIN32)
+        add_custom_command(TARGET audio_pipeline_test POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:SDL2::SDL2>" "$<TARGET_FILE_DIR:audio_pipeline_test>")
+    endif()
+    if(UNIX)
+        target_link_libraries(audio_pipeline_test PRIVATE m)
+    endif()
+    add_test(NAME audio_pipeline COMMAND audio_pipeline_test "${CMAKE_CURRENT_BINARY_DIR}/audio-pipeline")
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/GenesisRecompRunner.cmake")
