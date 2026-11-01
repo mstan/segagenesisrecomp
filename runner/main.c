@@ -2878,6 +2878,7 @@ int main(int argc, char *argv[])
         cfg.menu.callbacks.context = &s_runtime_ui; cfg.menu.callbacks.get_value = runtime_ui_get;
         cfg.menu.callbacks.set_value = runtime_ui_set; cfg.menu.callbacks.run_action = runtime_ui_action;
         cfg.menu.callbacks.save = runtime_ui_save;
+        cfg.menu.callbacks.visibility_changed = input_gameplay_capture_changed;
         cfg.features = RECOMP_RUNTIME_UI_STANDARD_FULLSCREEN | RECOMP_RUNTIME_UI_STANDARD_WINDOW_SCALE |
             RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE | RECOMP_RUNTIME_UI_STANDARD_LINEAR_FILTER |
             RECOMP_RUNTIME_UI_STANDARD_VOLUME | RECOMP_RUNTIME_UI_STANDARD_RESUME;

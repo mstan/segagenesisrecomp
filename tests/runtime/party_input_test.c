@@ -3,6 +3,7 @@
 #include "input_map.h"
 #include "gamepad.h"
 #include "app_config.h"
+#include "recomp_runtime_ui.h"
 #include "consoles/genesis/genesis_binds.h"
 #ifndef RUI_GEN_MAX_PLAYERS
 /* Older supported launcher bridges expose two bind pages. The engine's
@@ -24,6 +25,10 @@ static const Uint8 *test_keyboard_state(int *count)
 #undef SDL_GetKeyboardState
 #define CHECK(c) do { if (!(c)) { fprintf(stderr,"line %d: %s (%s)\n",__LINE__,#c,SDL_GetError()); exit(1); } } while (0)
 static void events(void) { SDL_Event e; while (SDL_PollEvent(&e)) gamepad_handle_event(&e); }
+static int menu_get(void *ctx,const RecompRuntimeUiItem *item,int *value)
+{ (void)item;*value=*(int *)ctx;return 1; }
+static int menu_set(void *ctx,const RecompRuntimeUiItem *item,int value)
+{ (void)item;*(int *)ctx=value;return 1; }
 int main(int argc,char **argv)
 {
     CHECK(argc == 2);
@@ -78,9 +83,19 @@ int main(int argc,char **argv)
     CHECK(!input_current_mask(0) && !input_current_mask(1));
     keyboard[g_input_map.p[0].key[GB_RIGHT]]=1;
     CHECK(input_current_mask(0)==input_button_bit(GB_RIGHT));
-    input_set_gameplay_blocked(1);
+    static const RecompRuntimeUiItem item={"filter","Graphics","Filter","",RECOMP_RUNTIME_UI_BOOL,0,1,1,NULL,0,NULL};
+    int menu_value=0;RecompRuntimeUiConfig menu={0};
+    menu.title="Input isolation";menu.theme="genesis";menu.items=&item;menu.item_count=1;
+    menu.callbacks.context=&menu_value;menu.callbacks.get_value=menu_get;menu.callbacks.set_value=menu_set;
+    menu.callbacks.visibility_changed=input_gameplay_capture_changed;
+    RecompRuntimeUi *ui=recomp_runtime_ui_create(&menu);CHECK(ui);
+    CHECK(recomp_runtime_ui_handle_input(ui,RECOMP_RUNTIME_UI_INPUT_TOGGLE,1,0));
+    CHECK(recomp_runtime_ui_is_open(ui));
     CHECK(input_gameplay_blocked());
     for (int p=0;p<INPUT_MAX_PLAYERS;++p) CHECK(!input_current_mask(p));
+    CHECK(recomp_runtime_ui_handle_input(ui,RECOMP_RUNTIME_UI_INPUT_ACCEPT,1,0));
+    CHECK(recomp_runtime_ui_handle_input(ui,RECOMP_RUNTIME_UI_INPUT_ACCEPT,1,0));
+    CHECK(menu_value==1 && !input_current_mask(0) && !input_current_mask(3));
     /* UI/raw device state stays available, and releases still arrive while
      * the gameplay channel is captured. Held inputs resume on close. */
     CHECK(input_map_key_mask(0)==input_button_bit(GB_RIGHT));
@@ -88,15 +103,16 @@ int main(int argc,char **argv)
     CHECK(SDL_JoystickSetVirtualButton(joystick[2],SDL_CONTROLLER_BUTTON_A,0)==0);
     SDL_JoystickUpdate(); events();
     CHECK(!gamepad_player_mask(2) && !input_current_mask(2));
-    input_set_gameplay_blocked(0);
+    recomp_runtime_ui_close(ui);
     CHECK(!input_gameplay_blocked());
     CHECK(input_current_mask(0)==input_button_bit(GB_RIGHT));
     CHECK(!input_current_mask(2) && input_current_mask(3)==input_button_bit(GB_RIGHT));
-    input_set_gameplay_blocked(1);
+    recomp_runtime_ui_open(ui);
     keyboard[g_input_map.p[0].key[GB_RIGHT]]=0;
     CHECK(!input_current_mask(0));
-    input_set_gameplay_blocked(0);
+    recomp_runtime_ui_close(ui);
     CHECK(!input_current_mask(0));
+    recomp_runtime_ui_destroy(ui);
     CHECK(SDL_JoystickSetVirtualButton(joystick[4],SDL_CONTROLLER_BUTTON_B,1)==0);
     CHECK(SDL_JoystickSetVirtualButton(joystick[5],SDL_CONTROLLER_BUTTON_X,1)==0);
     SDL_JoystickUpdate(); events();

@@ -12,6 +12,8 @@ static int s_gameplay_blocked;
 
 void input_set_gameplay_blocked(int blocked) { s_gameplay_blocked = !!blocked; }
 int input_gameplay_blocked(void) { return s_gameplay_blocked; }
+void input_gameplay_capture_changed(void *context,int open)
+{ (void)context;input_set_gameplay_blocked(open); }
 
 /* GPAD_* hardware bit per logical button. MUST stay in sync with the GPAD_*
  * enum in video/genesis_bus.h (mirrored here so shared code needn't include the
