@@ -807,6 +807,10 @@ static cc_bool input_requested_cb(void *user_data,
     }
 #endif
 
+    /* Published netplay rows above stay authoritative. Only local sampling
+     * (including script/TCP input) belongs to the host options UI. */
+    if (input_gameplay_blocked()) return cc_false;
+
     /* Dev-driven sources ((.input scripts, --script-* flags, TCP set_input)
      * MERGE with the live keyboard/gamepad instead of replacing it: a button
      * held by ANY source reads as held. Unattended runs stay deterministic
@@ -954,7 +958,8 @@ static void collect_sim_input(GenesisSimInput *in)
         in->pad[port] = pad_mask;
     }
     for (int p = 2; p < GENESIS_SIM_MAX_PLAYERS; p++)
-        in->pad[p] = (uint16_t)(input_current_mask(p) | input_script_player_mask(p));
+        if (!input_gameplay_blocked())
+            in->pad[p] = (uint16_t)(input_current_mask(p) | input_script_player_mask(p));
     for (int p = 0; p < GENESIS_SIM_MAX_PLAYERS; p++)
         if (input_player_connected(p) || input_script_player_used(p))
             in->human_mask |= 1u << p;
@@ -3373,13 +3378,17 @@ session_begin:;
             }
         }
 
+#if RECOMP_LAUNCHER
+        input_set_gameplay_blocked(recomp_runtime_ui_is_open(s_runtime_ui.ui));
+#endif
+
         /* Controller shoulder taps: LB = quicksave slot 1, RB = quickload
          * slot 1. Edge-triggered inside gamepad_handle_event so a single
          * press fires once even at 60 Hz polling. */
         {
             int save_slot = gamepad_consume_quicksave();
             int load_slot = gamepad_consume_quickload();
-            if (save_slot || load_slot) {
+            if ((save_slot || load_slot) && !input_gameplay_blocked()) {
                 int slot = save_slot ? save_slot : load_slot;
                 char slot_name[48];
                 snprintf(slot_name, sizeof(slot_name), "native_save_%d.bin", slot);
@@ -3398,7 +3407,8 @@ session_begin:;
 
         /* Tab OR controller Back = hold for turbo */
         { const Uint8 *ks = SDL_GetKeyboardState(NULL);
-          int held = ks[SDL_SCANCODE_TAB] || gamepad_turbo_held();
+          int held = !input_gameplay_blocked() &&
+                     (ks[SDL_SCANCODE_TAB] || gamepad_turbo_held());
           turbo = held ? 1 : (start_turbo ? 1 : 0);
           if (runtime_measure_frames) turbo = 0;
 #if GENESIS_HAS_RECOMP_NET
