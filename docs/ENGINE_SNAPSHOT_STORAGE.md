@@ -8,7 +8,7 @@ Both local rewind and the netplay snapshot adapter serialize directly into rbeng
 
 Stable-size capture reuses depth+1 allocations after warmup rather than calling the allocator for every snapshot. The callback allows up to4096B of spare capacity for small size fluctuations; larger excess shrinks on the next successful capture. A failed resize keeps the old unpublished allocation and does not publish a replacement. Clear/shutdown free the owned ring and spare. This is host storage only, with no new simulation profile or wire format.
 
-**This is not a proven whole-game speedup or memory reduction.** Actual timing is neutral/inconclusive. Sonic1 peak committed memory rises about3?3.5MB; RKA rises about0.2?1.2MB in the measured pairs. These costs are retained, rather than representing fewer allocator calls as lower RSS. The component improvement is bounded allocation reuse, verified with the actual callback and ring. No unmeasured stutter/latency claim is made.
+**This is not a proven whole-game speedup or memory reduction.** Actual timing is neutral/inconclusive. Sonic1 peak committed memory rises about3-3.5MB; RKA rises about0.2-1.2MB in the measured pairs. These costs are retained, rather than representing fewer allocator calls as lower RSS. The component improvement is bounded allocation reuse, verified with the actual callback and ring. No unmeasured stutter/latency claim is made.
 
 The optional GRHOST2 save path no longer allocates a second complete body solely to calculate its checksum. It reads the same temporary-file body through a fixed64KiB stack buffer and computes exactly the original CRC polynomial/initialization/final complement. The old opaque title payload and load-preflight body are still required. Existing header update, flush/close, atomic replacement and error cleanup remain. The32MiB maximum test demonstrates bounded checksum storage; GCC reports a65,632B helper stack frame, not an RSS measurement. Representative RKA/Sonic1 specs use GROWNS2, so no per-game host-save latency or memory benefit is claimed from this optional path.
 
@@ -29,14 +29,14 @@ The bounded original opportunity is resolved with independent dispositions; this
 
 WindowsMSVC19.44 actual native games run matched inputs/softwareSDL presentation/full audio emulation with dummy output, two fixed measured physical cores per pair, uncapped runtime, shadow off, isolated profiles and hidden normal windows. Each pair uses one host/configuration. Baseline is frozen71b19b0 with the same diagnostic rewind hook; candidate source hashes match the committed implementation. Raw files are under `C:/Temp/Codex/genesis-engine-snapshot-storage-20261101`.
 
-| Game/run | CPU change | Cycles change | Peak commit A?B |
+| Game/run | CPU change | Cycles change | Peak commit A to B |
 | --- | ---: | ---: | ---: |
-| RKA6000, BA | +3.488% | +2.737% | 75,956,224?76,926,976B |
-| RKA6000, AB | -0.380% | -0.236% | 75,718,656?76,922,880B |
-| RKA6000, rewind branch | -4.332% | -2.594% | 75,857,920?76,054,528B |
-| Sonic1 2400, BA | +2.151% | -0.006% | 76,046,336?79,446,016B |
-| Sonic1 2400, AB | -1.031% | +1.176% | 76,066,816?79,548,416B |
-| Sonic1 2400, rewind branch | +2.062% | +1.482% | 75,882,496?78,970,880B |
+| RKA6000, BA | +3.488% | +2.737% | 75,956,224 to 76,926,976B |
+| RKA6000, AB | -0.380% | -0.236% | 75,718,656 to 76,922,880B |
+| RKA6000, rewind branch | -4.332% | -2.594% | 75,857,920 to 76,054,528B |
+| Sonic1 2400, BA | +2.151% | -0.006% | 76,046,336 to 79,446,016B |
+| Sonic1 2400, AB | -1.031% | +1.176% | 76,066,816 to 79,548,416B |
+| Sonic1 2400, rewind branch | +2.062% | +1.482% | 75,882,496 to 78,970,880B |
 
 The RKA direction reverses across orders; Sonic1 small mixed results are neutral/inconclusive. No aggregate offset or speedup claim is made. Guest/audio identities, periodic pixels, raw PNG, full WAV, rollback diagnostics and actual oldest/middle/newest rewind resumption match A/B. The branch route covers three RKA restores and one Sonic1 restore.
 
