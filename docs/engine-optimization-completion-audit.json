@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Selected original bounded contracts through E26 are independently source-reviewed and qualified, or whole bounded opportunities rejected with evidence. E26 implements actual asynchronous generic raw-media prefetch and retains exact recorded behavior with modest observed CD cost gains.8 original families plus E37 remain open,9 across37;28 resolved. Counts are dispositions, not speedups. Combined owner handoff remains for meaningful PRs.",
+  "conclusion": "E27 joins the qualified bounded engine contracts: actual full-identity immutable image verification is consolidated and mechanically adopted, with Windows bounded loading CPU benefit, neutral gameplay and explicit Linux memory cost.7 original families plus E37 remain open:8 across37;29 resolved. Counts are dispositions, not speedups. Combined owner handoff remains.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -16,14 +16,14 @@
     "existing": 2
   },
   "implementation_counts": {
-    "bounded_delivered": 18,
+    "bounded_delivered": 19,
     "rejected_mechanism": 1,
     "bounded_rejected": 9,
-    "deferred": 6,
+    "deferred": 5,
     "existing": 1,
     "partial": 1
   },
-  "remaining_scope_open_count": 8,
+  "remaining_scope_open_count": 7,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -782,13 +782,13 @@
       "id": "E27",
       "name": "Verified media handoff contract",
       "original_goal": "Provide a safe common way to reuse completed media verification within one launch instead of independent redundant payload reads.",
-      "recorded_evaluation_status": "deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "No generic verified media handoff.",
-      "remaining": "Safe reuse of complete launch verification across a generic immutable media handoff.",
-      "audit_basis": "The prior T12 exclusion is too broad if applied to mechanical adoption of an engine contract, which the scope explicitly allows. New title converter/cache design stays separate.",
-      "next_closure": "Design a full-identity immutable handle/buffer or equivalent proof without a TOCTOU gap and with portable full-verification fallback; mechanically adopt where applicable.",
+      "recorded_evaluation_status": "implemented_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Actual whole/payload single-pass verification on immutable owned image2276caa, mechanically adopted by cached-CUE launcher; ready enginePR55/SonicCDPR2.",
+      "remaining": "Selected original bounded contract delivered; combined owner visual/play and merge/release handoff remains. Title converter/cache redesign stays separate.",
+      "audit_basis": "Full independent source/Windows/Linux actual-game gate: all canonical outputs exact, bounded Windows startupCPU benefit, neutral gameplay and explicit436.64MiB Linux peakRSS cost. Known baseline Win32 media failure retained with individual log.",
+      "next_closure": "Finish consolidated records/durable tracking and combined owner handoff; original E30 follows fresh validator.",
       "source_references": [
         "runner/cd/disc_image.c",
         "docs/ENGINE_OPTIMIZATION_BURNDOWN.md",
@@ -963,5 +963,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 9
+  "total_remaining_open_count": 8
 }
