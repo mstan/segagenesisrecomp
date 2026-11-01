@@ -2,7 +2,7 @@
 
 Candidate `f88e90b6fcefd1188ed73c87314757810c8d85ee` builds on accepted E25
 `8efa456ffe0cf8c315772d6fbc28c0ab91a4b59f`. Owning issue: `beads-3z5k.24`;
-campaign: `beads-2wy8.1`. [PR54](https://github.com/mstan/segagenesisrecomp/pull/54). The original bounded contract is qualified; combined owner handoff remains.
+campaign: `beads-2wy8.1`. [PR54](https://github.com/mstan/segagenesisrecomp/pull/54). The original bounded contract is independently accepted; combined owner handoff remains.
 
 The raw image reader predicts adjacent requests and reads ahead on the existing
 persistent host worker. Two 512-sector buffers retain the current block while
@@ -49,3 +49,7 @@ no startup gain is claimed. Final private bytes increase by 2,445,312/2,613,248;
 the PE grows 5,120 bytes. Exact raw samples/identities and limitations are in
 [the results](engine-media-prefetch-results.json).
 Unchanged cartridge packages inherit E24 evidence; they are not new E26 tests.
+
+Independent final source/runtime/record/cleanup review accepted the original E26
+contract. Its verdict identity is retained in the results. No further E26 testing
+is required; durable tracking closeout precedes original E27.

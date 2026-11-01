@@ -309,7 +309,7 @@ Qualified f88e90b/PR54 implements actual request-driven raw-sector jobs outside 
 
 Focused source/lifetime/bytes/failure/cancellation checks pass x64 and Win32 except the identical accepted-baseline Win32 media assertion. Six actualCD arms preserve full11checkpoints/21artifacts/fullWAV; four timed arms/two matched SERVER pairs show observedCPU3.17/4.68% andcycles2.59/6.69% lower, with explicit ambient variation. Raw reads2139 become10/12 plus2129/2127cachehits. Initialpair is correctness-only and excluded from timing. Startupwallmixed; no cold-disk/startup/universalFPS or POSIXruntime claim.
 
-**Next closure:** Original bounded contract qualified; final independent records/cleanup/durable gate, then E27 and combined owner handoff. Evidence: ENGINE_MEDIA_PREFETCH.md, engine-media-prefetch-results.json, beads-3z5k.24. Historical read-ahead-only partial evaluation is superseded.
+**Next closure:** Original bounded contract independently accepted; durable closeout, then E27 and combined owner handoff. Evidence: ENGINE_MEDIA_PREFETCH.md, engine-media-prefetch-results.json, beads-3z5k.24. Historical read-ahead-only partial evaluation is superseded.
 
 ### E27: Verified media handoff contract
 

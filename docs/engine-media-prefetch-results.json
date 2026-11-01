@@ -279,7 +279,11 @@
       "evidence": "docs/ENGINE_AUDIO_BUFFER_OWNERSHIP.md; docs/engine-audio-buffer-ownership-results.json"
     }
   ],
-  "raw_profiles_server": "G:/Temp/Codex/genesis-engine-media-prefetch-20261101-server/game-e26-media-prefetch-r{1b,2,3}-server",
+  "raw_profiles_server": [
+    "G:/Temp/Codex/genesis-engine-media-prefetch-20261101-server/game-e26-media-prefetch-r1b-server",
+    "G:/Temp/Codex/genesis-engine-media-prefetch-20261101-server/game-e26-media-prefetch-r2-server",
+    "G:/Temp/Codex/genesis-engine-media-prefetch-20261101-server/game-e26-media-prefetch-r3-server"
+  ],
   "recipes": [
     {
       "path": "C:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\build_cd.py",
@@ -319,7 +323,14 @@
       "bytes": 941
     }
   ],
-  "review": "Source and BA independently passed; final AB/PR/records/cleanup/durable gate pending",
+  "review": {
+    "status": "accepted",
+    "reviewer": "/root/validate_e26",
+    "path": "C:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\VALIDATOR_E26_FINAL.md",
+    "sha256": "d47428251684b5053457c65fbeb82598967c69489c39fbae57e40b8300723dd1",
+    "reviewed_head": "7ddca9eec85e09daa4c9332e74a2350cd08399ac",
+    "instruction": "After PR ready and successful durable own/parent/campaign closeout, proceed to original E27 with new validation-only reviewer; no further E26 testing."
+  },
   "owner_handoff": "combined normal-window/audio visual/play, merge and release pending; no owner launch for E26",
   "retained_data": "Current candidatePE/DLL, acceptedE25 baselinePE, units/fixtureinputs/logs/configs/rawJSON/headroom retained locally; full6run captures/WAV/commands/settings retained SERVER; S22 build cache and existing privateinput/native/UI cache retained for E27; serverduplicatePEs and disposable staging removed after hash verification. Shared caches cleanup due at campaign completion."
 }
