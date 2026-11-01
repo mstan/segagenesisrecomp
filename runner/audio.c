@@ -2,6 +2,7 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifndef GENESIS_AUDIO_FRAME_PIPELINE
 #define GENESIS_AUDIO_FRAME_PIPELINE 1
@@ -47,6 +48,8 @@ static uint64_t   s_prev_underruns = 0;
 static Uint64     s_perf_freq = 0;
 static uint32_t   s_callback_peak_us = 0; /* device lock protects callback data */
 static AudioHostTiming s_host_timing;   /* written/read on the main thread */
+static int s_pipeline_trace;
+static uint64_t s_owned_frame_samples,s_scaled_push_blocks;
 
 /* SDL pull callback: the device asks for `len` bytes of stereo S16; the bridge
  * resamples from the internal mix rate to the device rate under DRC and emits
@@ -135,6 +138,9 @@ void audio_set_owned_frame_source(AudioExtraSource expected,AudioFrameSource sou
 int audio_init(int psg_sample_rate)
 {
     s_mix_rate = (double)psg_sample_rate;
+    const char *trace=getenv("GENESIS_AUDIO_PIPELINE_TRACE");
+    s_pipeline_trace=trace&&*trace&&strcmp(trace,"0")!=0;
+    s_owned_frame_samples=s_scaled_push_blocks=0;
     SDL_AudioSpec want, got;
     SDL_memset(&want, 0, sizeof(want));
     /* Open at a normal host rate and let the DRC bridge own the (large)
@@ -196,6 +202,8 @@ void audio_close(void)
 {
     audio_set_extra_source(NULL);
     if (s_dev != 0) {
+        if(s_pipeline_trace)fprintf(stderr,"[audio frame pipeline] generated=%llu bridge=%llu\n",
+            (unsigned long long)s_owned_frame_samples,(unsigned long long)s_scaled_push_blocks);
         SDL_LockAudioDevice(s_dev);
         s_bridge_ready = 0;
         SDL_UnlockAudioDevice(s_dev);
@@ -314,6 +322,7 @@ void audio_flush(uint32_t wall_frame, int realtime,
         if (s_extra_source)
             s_extra_source(s_out, psg_frames, s_mix_rate);
     }
+    if(produced&&s_pipeline_trace)s_owned_frame_samples+=psg_frames;
 
     /* WAV capture taps the GENERATED stream at ratio 1, before master volume
      * and before the bridge — WAV content stays bit-deterministic across runs
@@ -349,7 +358,10 @@ void audio_flush(uint32_t wall_frame, int realtime,
         s_host_timing.conceal_events = s_bridge.stats.stretch_events;
         s_host_timing.concealed_frames = s_bridge.stats.stretch_frames;
         s_host_timing.fill_us = (uint32_t)(rab_fill_ms(&s_bridge) * 1000.0);
-        if(fused_gain)rab_push_scaled(&s_bridge,s_out,(int)psg_frames,s_master_vol);
+        if(fused_gain) {
+            rab_push_scaled(&s_bridge,s_out,(int)psg_frames,s_master_vol);
+            if(s_pipeline_trace)++s_scaled_push_blocks;
+        }
         else rab_push(&s_bridge, s_out, (int)psg_frames);
         SDL_UnlockAudioDevice(s_dev);
     } else if (!realtime) {
