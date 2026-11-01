@@ -104,7 +104,7 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
          * its actual CDD event boundary, even during a long stopped interval. */
         if(io && io->pcm_timed_sink) {
 #if SEGACD_AUDIO_SOURCE_SPANS
-            if(io->pcm_owned.begin&&delta>=768u)
+            if(io->pcm_owned.begin&&(uint64_t)s->pcm.phase+delta>=384u)
                 rf5c164_advance_owned(&s->pcm,s->drive.cycles,delta,io->pcm_timed_sink,io->pcm_timed_user,&io->pcm_owned);
             else
 #endif
@@ -114,7 +114,7 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
         if(!s->cdda_error) {
             SegaCDCddaResult result;
 #if SEGACD_AUDIO_SOURCE_SPANS
-            if(io&&io->cdda_owned.begin&&delta>=568u)
+            if(io&&io->cdda_owned.begin&&s->cdda.phase+(uint64_t)delta*SEGACD_CDDA_RATE>=SEGACD_CDDA_CLOCK)
                 result=segacd_cdda_advance_owned(&s->cdda,s->drive.cycles+delta,
                     io->cdda_sample,io->cdda_sample_user,NULL,&io->cdda_owned);
             else
