@@ -1,0 +1,468 @@
+{
+  "schema": 1,
+  "scope": "Original E30 reusable firmware services, supported US Model1 v1.10 BIOS; pending whole-family independent verdict",
+  "owner": "beads-3z5k.26",
+  "campaign": "beads-2wy8.1",
+  "runtime_commit": "f13bf7c",
+  "base": "d4a88d559d3ea5a7a5f1308c187621534265ac19",
+  "firmware": {
+    "path": "F:\\Projects\\segagenesisrecomp\\_wt-sonic-cd\\build\\private-inputs\\segacd-bios-us-1.10.bin",
+    "bytes": 131072,
+    "crc32": "c6d10268",
+    "sha256": "807384678ef259494d943eddb6954dfc7069693d0dde0c424e2028488d88e81a",
+    "scope": "matches the only currently qualified standalone firmware identity; this is identity evidence, not HLE ABI/closure proof"
+  },
+  "windows_build": {
+    "package": "E30-firmware-protection-service",
+    "source": "d4a88d5+recorded-E30-working-tree",
+    "scope": "Accepted E27 engine with E30 guarded native firmware operation; all changed live header consumers rebuilt by Ninja; unchanged qualified generic CPU native archive/UI/toolchain 19.41; unqualified until runtime.",
+    "commands": [
+      [
+        "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+        "--build",
+        "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+        "--target",
+        "SonicCD",
+        "segacd_bios_tables_test",
+        "segacd_disc_image_test",
+        "segacd_disc_image_portable_test",
+        "--parallel",
+        "1"
+      ]
+    ],
+    "baseline_input_record": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\cd-builds-r3.json",
+      "sha256": "c7c920d911a0e52418720422dd0ed7bf59b1a82e3f45456b4fd5d92b66c27c7b"
+    },
+    "previous_source": {
+      "runner/cd/disc_image.c": "6fa1383ced710cb371f67232846ef39971ad00dc9c4f50d252ed3747849d8633",
+      "runner/cd/standalone.c": "58a11bc560845e1a486e5b6591e844954164290011b695ea47a911e65ad35a45",
+      "tests/segacd/CMakeLists.txt": "89d1dd52cd0efc8dc26a1d2025184bd44d436ae4512c6f65ad4d3b6014413b5c",
+      "runner/cd/bios_tables.c": "0359b52aa61e479f3f08f84b7957b8196f2d4bb18b6aa18eaf375a9b75c0428e",
+      "runner/cd/bios_tables.h": "825c3c8ac4cf8857dec854028fb25d8899ad36d779c594728ef8537164450965",
+      "runner/cd/bios_services.c": "0ae7d56344d0106e375a99e19d63de52105cddd56e1da0c86616c9a9e3fd7941",
+      "runner/cd/bios_services.h": "9366f53b07146b1fb0df44f18a456fb2eddd4e046b77c7ebc2e988e0cc73d5f4",
+      "runner/cd/sha256.h": "b3c0190d33dc189cc3ac01cca6fb800f502778a959d33725fb9e7c8dd086fe56",
+      "tests/segacd/bios_tables_test.c": "de586d64524e522010656e39ce4578296c1ae04ddad01c90d4d71855bad971e6",
+      "tests/segacd/bios_dual_probe.c": "5d96bf64c6cbf380afee9c961fd65bc95230637046d2d7ed419419a86bb6c1f4"
+    },
+    "patched_source": {
+      "runner/cd/disc_image.c": "6fa1383ced710cb371f67232846ef39971ad00dc9c4f50d252ed3747849d8633",
+      "runner/cd/standalone.c": "58a11bc560845e1a486e5b6591e844954164290011b695ea47a911e65ad35a45",
+      "tests/segacd/CMakeLists.txt": "89d1dd52cd0efc8dc26a1d2025184bd44d436ae4512c6f65ad4d3b6014413b5c",
+      "runner/cd/bios_tables.c": "72d2b1516e6387c591c15d4248b6b7b87852616f9dd8cf533eeb0c045eeaf51d",
+      "runner/cd/bios_tables.h": "825c3c8ac4cf8857dec854028fb25d8899ad36d779c594728ef8537164450965",
+      "runner/cd/bios_services.c": "0ae7d56344d0106e375a99e19d63de52105cddd56e1da0c86616c9a9e3fd7941",
+      "runner/cd/bios_services.h": "9366f53b07146b1fb0df44f18a456fb2eddd4e046b77c7ebc2e988e0cc73d5f4",
+      "runner/cd/sha256.h": "b3c0190d33dc189cc3ac01cca6fb800f502778a959d33725fb9e7c8dd086fe56",
+      "tests/segacd/bios_tables_test.c": "de586d64524e522010656e39ce4578296c1ae04ddad01c90d4d71855bad971e6",
+      "tests/segacd/bios_dual_probe.c": "5d96bf64c6cbf380afee9c961fd65bc95230637046d2d7ed419419a86bb6c1f4"
+    },
+    "packages": {
+      "candidate": {
+        "binary": "G:\\Temp\\Codex\\genesis-engine-firmware-services-20261101-server\\cd-binaries\\candidate-r6\\SonicCD.exe",
+        "sha256": "8f4d7a7f3d61a8a03af1cabe50b639ad0666f7f18a63cbf649e715a1562348d6",
+        "bytes": 115845632,
+        "seconds": 52.813000000081956
+      },
+      "reference": {
+        "binary": "G:\\Temp\\Codex\\genesis-engine-firmware-services-20261101-server\\cd-binaries\\reference\\SonicCD.exe",
+        "sha256": "c49ad52b74fc6717a2274a8bdb3c767ef86df4ac306839609483bb457b8911b6",
+        "bytes": 115837440,
+        "seconds": 96.3910000002943,
+        "owner_pc_binary": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\cd-binaries\\candidate-r2\\SonicCD.exe"
+      }
+    }
+  },
+  "linux_build": {
+    "host": "local WSL Ubuntu24.04 Linux, CPU13.3 GNU, no Deck performance claim",
+    "compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "package": "E30-firmware-protection-service",
+    "runtime_commit": "f13bf7c",
+    "binaries": {
+      "SonicCD": {
+        "path": "/tmp/codex-genesis-e30/runtime/SonicCD",
+        "bytes": 513704184,
+        "sha256": "512a49118b34f0487c4b66e20f4396f9134668994e1d6b0863f3c6a6005835d1"
+      },
+      "segacd_bios_dual_probe": {
+        "path": "/tmp/codex-genesis-e30/runtime/segacd_bios_dual_probe",
+        "bytes": 550064776,
+        "sha256": "29c9fce2c176667f0b7af4f2130f4ae0372e89761621cc00785fc3f208f26615"
+      },
+      "segacd_bios_tables_test": {
+        "path": "/tmp/codex-genesis-e30/runtime/segacd_bios_tables_test",
+        "bytes": 69512,
+        "sha256": "9f18b8d1d91ea3e1f0c2b0b10a39175c5730eedb7525f4802c463d7d4daf9721"
+      },
+      "segacd_disc_image_test": {
+        "path": "/tmp/codex-genesis-e30/runtime/segacd_disc_image_test",
+        "bytes": 43768,
+        "sha256": "db248a34d32e85cbfc39b413d670781db59f058c81e13c1e2880fba3b3871129"
+      },
+      "segacd_disc_image_portable_test": {
+        "path": "/tmp/codex-genesis-e30/runtime/segacd_disc_image_portable_test",
+        "bytes": 39312,
+        "sha256": "b0625585676727953028b0ed462c5ed7a0cbd5907b2a9f6077e98f5b3189b9e4"
+      }
+    },
+    "configuration": {
+      "path": "/tmp/codex-genesis-e30/CMakeCache.txt",
+      "bytes": 74463,
+      "sha256": "b0aa43978e4dbf29aa8ecc13950836b236323874de536d2aac88a39ae236f274"
+    },
+    "build_log": {
+      "path": "/mnt/c/Temp/Codex/genesis-engine-firmware-services-20261101/linux-final-stack-build.log",
+      "bytes": 634,
+      "sha256": "1825492c52895cbfbfcbba1720928a7ccd4c4354f59390905fead50e9818fb7a"
+    },
+    "unit_log": {
+      "path": "/mnt/c/Temp/Codex/genesis-engine-firmware-services-20261101/linux-final-stack-unit.log",
+      "bytes": 512,
+      "sha256": "445b0ed67a015849f38cc7a914e7ff54fdbaae8645648913c71b011bb6c7f158"
+    }
+  },
+  "abi": {
+    "report": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\abi-review\\VALIDATION.md",
+      "bytes": 11013,
+      "sha256": "10c779527ebcc8767cc91381fbbf6a9b6e3584915b286ba19eebeb638bb2a52a"
+    },
+    "raw": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\abi-review\\results.json",
+      "bytes": 18945,
+      "sha256": "bb554e341a3d8f2ea3ea5a8fe8c0b4a86619ae600f617f7d6f0d9dbaf14de835"
+    },
+    "tests": "4 actual helper comparisons;12 SR/IRQ;12 Word/mixed;8 low-stack;88+36 unchanged declines;4native fallbacks;4 completed-boundary snapshot/replays",
+    "qualification_uses_reference_floor_only_outside_production": true
+  },
+  "game": "Sonic CD US",
+  "package": "Engine E30 table service on accepted E27, unchanged title-owned loading/render services",
+  "performance_classification": "Earlier gameplay34 frames (~0.5674seconds NTSC); host CPU/startup neutral/inconclusive, no proven CPU throughput gain",
+  "measurements": [
+    {
+      "label": "r4-first-supported-real-game",
+      "receipt": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\game-e30-firmware-r4-server.json",
+        "bytes": 481280,
+        "sha256": "87e2ad566905b97ec2b050c7c8b9c74b570a53ef6f3d93d54553308e1be140c5"
+      },
+      "runs": [
+        {
+          "arm": "A",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-firmware-services-20261101-server\\cd-binaries\\reference\\SonicCD.exe",
+            "bytes": 115837440,
+            "sha256": "c49ad52b74fc6717a2274a8bdb3c767ef86df4ac306839609483bb457b8911b6"
+          },
+          "startup_process_cost": {
+            "cpu_seconds": 5.84375,
+            "cycles": 19678153762
+          },
+          "startup_wall_seconds": 9.050127599854022,
+          "boot_300_process_cost": {
+            "cpu_seconds": 7.65625,
+            "cycles": 26208642649
+          },
+          "whole_3000_process_cost": {
+            "cpu_seconds": 34.203125,
+            "cycles": 114398210423
+          },
+          "cost": {
+            "cpu_seconds": 13.96875,
+            "cycles": 45966911227
+          },
+          "wall_seconds": 21.319243399892002,
+          "bios_services": [],
+          "summary": [
+            "Event service regionAdvances=897820",
+            "Native regions runs=25475716 Main=16655599 Sub=20310398",
+            "Register spans Main=15313/30734 Sub=63075/127882",
+            "Owned RMW Main=249046 Sub=136475",
+            "Flow spans Main=339/832 Sub=28353/75325",
+            "Owned data regions Main=14330018 Sub=6678394",
+            "Sonic CD frames=3000 Subclock=625805802 nativeMain=33378803 nativeSub=48429321 nativeZ80=16241534 floor=0/0 audioFaults=0 audioOutput=11200500",
+            "Audio events=36062 applied=36062 deferred=0 underflows=0 overflows=0 backwards=0 FM=2666785 PSG=11200500",
+            "Sonic CD widescreen expanded=1156 original=1844 rejectedScenes=0",
+            "Audio intervals delivered=2999; final lookahead interval ends at stop."
+          ],
+          "final_memory": {
+            "peak_working_set_bytes": 248938496,
+            "peak_commit_bytes": 30347264,
+            "private_bytes": 30285824
+          }
+        },
+        {
+          "arm": "B",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-firmware-services-20261101-server\\cd-binaries\\candidate-r4\\SonicCD.exe",
+            "bytes": 115846144,
+            "sha256": "a4531d77f44fa3fba2afa39cc16f4b2af79a3790a01f0171d9d3c16cb964e303"
+          },
+          "startup_process_cost": {
+            "cpu_seconds": 6.046875,
+            "cycles": 19850251259
+          },
+          "startup_wall_seconds": 10.349562300369143,
+          "boot_300_process_cost": {
+            "cpu_seconds": 7.859375,
+            "cycles": 26483477076
+          },
+          "whole_3000_process_cost": {
+            "cpu_seconds": 34.5625,
+            "cycles": 115337399561
+          },
+          "cost": {
+            "cpu_seconds": 13.8125,
+            "cycles": 46059689154
+          },
+          "wall_seconds": 20.644235199782997,
+          "bios_services": [
+            [
+              "8",
+              "0"
+            ]
+          ],
+          "summary": [
+            "Event service regionAdvances=916610",
+            "Native regions runs=25478174 Main=16616661 Sub=20103811",
+            "Register spans Main=15286/30687 Sub=2627/5421",
+            "Owned RMW Main=251978 Sub=130803",
+            "Flow spans Main=345/849 Sub=10295/21098",
+            "Owned data regions Main=14642607 Sub=6078911",
+            "Sonic CD frames=3000 Subclock=625805823 nativeMain=33385151 nativeSub=48255648 nativeZ80=16218760 floor=0/0 audioFaults=0 audioOutput=11200500",
+            "Audio events=36418 applied=36418 deferred=0 underflows=0 overflows=0 backwards=0 FM=2666785 PSG=11200500",
+            "Sonic CD widescreen expanded=1190 original=1810 rejectedScenes=0",
+            "Audio intervals delivered=2999; final lookahead interval ends at stop."
+          ],
+          "final_memory": {
+            "peak_working_set_bytes": 248950784,
+            "peak_commit_bytes": 30363648,
+            "private_bytes": 30306304
+          }
+        }
+      ]
+    },
+    {
+      "label": "r6-final-owned-ram",
+      "receipt": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\game-e30-firmware-r6-server.json",
+        "bytes": 481467,
+        "sha256": "656fa348048f16fc1f72f95d49900a2c334dca7cf1abd06ad0b8b2591dac0605"
+      },
+      "runs": [
+        {
+          "arm": "A",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-firmware-services-20261101-server\\cd-binaries\\reference\\SonicCD.exe",
+            "bytes": 115837440,
+            "sha256": "c49ad52b74fc6717a2274a8bdb3c767ef86df4ac306839609483bb457b8911b6"
+          },
+          "startup_process_cost": {
+            "cpu_seconds": 6.09375,
+            "cycles": 19891178801
+          },
+          "startup_wall_seconds": 8.349944000132382,
+          "boot_300_process_cost": {
+            "cpu_seconds": 8.125,
+            "cycles": 26584116228
+          },
+          "whole_3000_process_cost": {
+            "cpu_seconds": 34.59375,
+            "cycles": 115053017942
+          },
+          "cost": {
+            "cpu_seconds": 14.09375,
+            "cycles": 45952757846
+          },
+          "wall_seconds": 20.566359700169414,
+          "bios_services": [],
+          "summary": [
+            "Event service regionAdvances=897820",
+            "Native regions runs=25475716 Main=16655599 Sub=20310398",
+            "Register spans Main=15313/30734 Sub=63075/127882",
+            "Owned RMW Main=249046 Sub=136475",
+            "Flow spans Main=339/832 Sub=28353/75325",
+            "Owned data regions Main=14330018 Sub=6678394",
+            "Sonic CD frames=3000 Subclock=625805802 nativeMain=33378803 nativeSub=48429321 nativeZ80=16241534 floor=0/0 audioFaults=0 audioOutput=11200500",
+            "Audio events=36062 applied=36062 deferred=0 underflows=0 overflows=0 backwards=0 FM=2666785 PSG=11200500",
+            "Sonic CD widescreen expanded=1156 original=1844 rejectedScenes=0",
+            "Audio intervals delivered=2999; final lookahead interval ends at stop."
+          ],
+          "final_memory": {
+            "peak_working_set_bytes": 248340480,
+            "peak_commit_bytes": 30326784,
+            "private_bytes": 30326784
+          }
+        },
+        {
+          "arm": "B",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-firmware-services-20261101-server\\cd-binaries\\candidate-r6\\SonicCD.exe",
+            "bytes": 115845632,
+            "sha256": "8f4d7a7f3d61a8a03af1cabe50b639ad0666f7f18a63cbf649e715a1562348d6"
+          },
+          "startup_process_cost": {
+            "cpu_seconds": 6.078125,
+            "cycles": 19668723713
+          },
+          "startup_wall_seconds": 8.323622699826956,
+          "boot_300_process_cost": {
+            "cpu_seconds": 7.796875,
+            "cycles": 26263520949
+          },
+          "whole_3000_process_cost": {
+            "cpu_seconds": 33.625,
+            "cycles": 114605209590
+          },
+          "cost": {
+            "cpu_seconds": 13.640625,
+            "cycles": 46050715136
+          },
+          "wall_seconds": 20.56211689999327,
+          "bios_services": [
+            [
+              "8",
+              "0"
+            ]
+          ],
+          "summary": [
+            "Event service regionAdvances=916610",
+            "Native regions runs=25478174 Main=16616661 Sub=20103811",
+            "Register spans Main=15286/30687 Sub=2627/5421",
+            "Owned RMW Main=251978 Sub=130803",
+            "Flow spans Main=345/849 Sub=10295/21098",
+            "Owned data regions Main=14642607 Sub=6078911",
+            "Sonic CD frames=3000 Subclock=625805823 nativeMain=33385151 nativeSub=48255648 nativeZ80=16218760 floor=0/0 audioFaults=0 audioOutput=11200500",
+            "Audio events=36418 applied=36418 deferred=0 underflows=0 overflows=0 backwards=0 FM=2666785 PSG=11200500",
+            "Sonic CD widescreen expanded=1190 original=1810 rejectedScenes=0",
+            "Audio intervals delivered=2999; final lookahead interval ends at stop."
+          ],
+          "final_memory": {
+            "peak_working_set_bytes": 248938496,
+            "peak_commit_bytes": 30347264,
+            "private_bytes": 30347264
+          }
+        }
+      ]
+    }
+  ],
+  "game_correctness": {
+    "candidate_completed": 8,
+    "candidate_declined": 0,
+    "floor": [
+      0,
+      0
+    ],
+    "audio_faults": 0,
+    "audio_queues": "no underflow/overflow/backwards",
+    "r6_candidate_vs_r4_11checkpoints_21artifacts_complete_wav": "bit-identical",
+    "baseline_gameplay_picture_frames": [
+      2100,
+      2400,
+      2700,
+      3000
+    ],
+    "candidate_same_picture_frames": [
+      2066,
+      2366,
+      2666,
+      2966
+    ],
+    "native_bram": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\game-r6-candidate-save.brm",
+      "bytes": 8192,
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75"
+    },
+    "baseline_bram_identical": true
+  },
+  "ui": [
+    {
+      "route": "ui-no-disc-r5",
+      "receipt": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\ui-no-disc-r5\\results.json",
+        "bytes": 26251,
+        "sha256": "8244f911b6c2f20fbc8aaa09bce6dfccd7d679dbd6666ddbd04c5435e45661cd"
+      },
+      "matched_picture_frames": [
+        1650,
+        1750,
+        1950,
+        2050,
+        2200,
+        2350,
+        2500,
+        2600
+      ],
+      "baseline_and_candidate_bram_equal": true,
+      "saved_items_and_free_blocks": null,
+      "candidate_table_completions": 2,
+      "native_floor_steps": [
+        0,
+        0
+      ]
+    },
+    {
+      "route": "ui-reboot-format-r6",
+      "receipt": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\ui-reboot-format-r6\\results.json",
+        "bytes": 18408,
+        "sha256": "610ec0ddfc3d74614cf795de4526210fd657bcc184c85eccfa11a2ee71bce2f9"
+      },
+      "matched_picture_frames": [
+        1400
+      ],
+      "baseline_and_candidate_bram_equal": true,
+      "saved_items_and_free_blocks": [
+        0,
+        125
+      ],
+      "candidate_table_completions": 2,
+      "native_floor_steps": [
+        0,
+        0
+      ]
+    },
+    {
+      "route": "ui-native-save-r7",
+      "receipt": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\ui-native-save-r7\\results.json",
+        "bytes": 18398,
+        "sha256": "81af07a52d34c2a7d7674b93417f530f681ae70aba586bcf1fc96c828e8cf36a"
+      },
+      "matched_picture_frames": [
+        1400
+      ],
+      "baseline_and_candidate_bram_equal": true,
+      "saved_items_and_free_blocks": [
+        1,
+        114
+      ],
+      "candidate_table_completions": 2,
+      "native_floor_steps": [
+        0,
+        0
+      ]
+    }
+  ],
+  "state_contract": "Atomic helper boundary snapshot/replay, reboot, formatted and actual native-save BRAM preservation qualified. Baseline SonicCD has no whole-game save/load/rewind/rollback API; none claimed. Cartridge snapshot sources unchanged. Diagnostic counters excluded from semantic identity.",
+  "units": {
+    "windows": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\cd-unit-r6.log",
+      "bytes": 604,
+      "sha256": "9701fb53c0f9b042a571c63ab0c7621ae9e3ad7176113cbf864804cf6db87105"
+    },
+    "linux": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-firmware-services-20261101\\linux-final-stack-unit.log",
+      "bytes": 512,
+      "sha256": "445b0ed67a015849f38cc7a914e7ff54fdbaae8645648913c71b011bb6c7f158"
+    },
+    "passed_per_os": 3
+  },
+  "earlier_nonqualifying_runs": [
+    "r1 installer MOVEM mask3 instead0300:0calls",
+    "r2 IPL7-only guard:8declines",
+    "r3 private guard trace only",
+    "UI initialPRG/stack restrictions:2declines, corrected and requalified; intermediate source not retained as accepted package"
+  ]
+}
