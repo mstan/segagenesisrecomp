@@ -630,18 +630,22 @@ static GenesisIndexedSink s_direct_pixels={NULL,own_scanline_sink,own_indexed_si
 static int own_custom_row_enabled(void *user)
 {
     (void)user;
-    return s_video_frame.owner && s_video_frame.owner->scanline_lazy;
+    const GameVideo *owner=s_video_frame.owner;
+    if(!owner || (!owner->scanline_lazy && !owner->scanline_presented))return 0;
+    return 1 | (owner->scanline_presented && owner->raster_enabled &&
+                owner->raster_enabled(&g_machine.vdp) ? 2 : 0);
 }
 
 static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
-                           GenesisNativeRow native_row, void *native_ctx)
+                           GenesisNativeRow native_row, void *native_ctx,
+                           const GVDPRasterRow *raster)
 {
     (void)user;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
     /* The machine supplies actual H32/H40/margin/canvas row geometry. */
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
-    s_screen_width = game_video_draw_row(&s_video_frame, vdp, line, native_w,
-        row, MAX_SCREEN_WIDTH, native_row, native_ctx);
+    s_screen_width = game_video_draw_presented_row(&s_video_frame, vdp, line, native_w,
+        row, MAX_SCREEN_WIDTH, native_row, native_ctx, raster);
 }
 
 static const GenesisScanlineProducer s_custom_producer = {
