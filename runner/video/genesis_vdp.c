@@ -26,8 +26,9 @@
 #endif
 #if GENESIS_BATCHED_PLANES
 /* Four states per layer: transparent/opaque crossed with low/high priority.
- * Select byte 0=backdrop, 1=B, 2=A, 3=sprite; bit 2 reports any opaque high
- * layer for shadow/highlight. Immutable and shared by every scanline. */
+ * Select byte 0=backdrop, 1=B, 2=A, 3=sprite; bit 2 (any opaque high layer)
+ * is unused since shadow/highlight reads the layer bits directly.
+ * Immutable and shared by every scanline. */
 static const uint8_t s_layer_select[64] = {
     0, 2, 0, 6, 1, 2, 1, 6, 0, 2, 0, 6, 5, 5, 5, 6, 3, 3, 3, 6, 3, 3, 3, 6, 3, 3, 3, 6, 5, 5, 5, 6,
     0, 2, 0, 6, 1, 2, 1, 6, 0, 2, 0, 6, 5, 5, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
@@ -626,7 +627,8 @@ int gvdp_active_width(const GVDP *v)
 /* Sprite engine: evaluate the sprite attribute table in link-list order for
  * `line`, fill the per-pixel sprite layer, and update overflow/collision. In
  * shadow/highlight mode, palette-line-3 colours 14/15 are operator pixels
- * (transparent, they modulate the underlying pixel) rather than drawn colours.
+ * (they modulate the underlying pixel) rather than drawn colours; they still
+ * occupy the sprite layer, hiding the sprites behind them.
  *
  * Sprite cell ordering is column-major (cells go down a column, then across),
  * the tile layout the Genesis hardware uses.
@@ -729,9 +731,9 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                         s_spr_idx[sx] = ext?(uint8_t)(GVDP_HOST_PALETTE_BASE+(ext-1)*16+nib)
                                           :(uint8_t)(pal*16+nib);
                         s_spr_op[sx] = 1;
-                        s_spr_hi[sx] = (uint8_t)pri;
-                        drawn[sx] = 1;
                     }
+                    s_spr_hi[sx] = (uint8_t)pri;   /* operators occupy the layer too */
+                    drawn[sx] = 1;
                 }
             }
 #else
@@ -759,9 +761,11 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                     s_spr_idx[sx] = ext ? (uint8_t)(GVDP_HOST_PALETTE_BASE + (ext - 1) * 16 + nib)
                                         : (uint8_t)(pal * 16 + nib);
                     s_spr_op[sx]  = 1;
-                    s_spr_hi[sx]  = (uint8_t)pri;
-                    drawn[sx] = 1;
                 }
+                /* An operator pixel is still the front sprite pixel: it hides
+                 * the sprites behind it, like any opaque sprite pixel. */
+                s_spr_hi[sx] = (uint8_t)pri;
+                drawn[sx] = 1;
             }
 
 #endif
@@ -1040,8 +1044,16 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     /* Sprite layer for this output row (placed in centered output-column space). */
     sprite_render_line(v, line, total, offset);
     if (s_host_sprites) {
+        /* Operator pixels are SAT sprite pixels too: present them as opaque so
+         * host sprites, which sit behind every SAT sprite, stay out of them. */
+        if (sh_mode)
+            for (int x = 0; x < total; ++x)
+                s_spr_op[x] |= s_spr_shadow_op[x] | s_spr_hilite_op[x];
         GVDPSpriteLayer layer = { line, total, offset, s_spr_idx, s_spr_op, s_spr_hi };
         s_host_sprites(s_host_sprites_user, v, &layer);
+        if (sh_mode)
+            for (int x = 0; x < total; ++x)
+                if (s_spr_shadow_op[x] | s_spr_hilite_op[x]) s_spr_op[x] = 0;
     }
 
     /* A name-table entry covers eight adjacent pixels and each pattern byte
@@ -1156,21 +1168,37 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         else                   px = backdrop;
 #endif
 
-        /* Shadow/highlight: when enabled, a pixel with no high-priority layer
-         * is shadowed; operator sprites (pal3 colours 14/15) force highlight or
-         * shadow on the underlying pixel. */
+        /* Shadow/highlight intensity (tests/runtime/vdp_shadow_highlight_test.c
+         * covers each rule; Genesis Plus GX and ares agree on all of them):
+         *  - Background: normal when the plane A or B tile has its priority
+         *    bit set, even where that tile's pixel is transparent; else
+         *    shadowed.
+         *  - The front sprite pixel (operators included) takes part only when
+         *    it is high priority or the background pixel is not an opaque
+         *    high-priority one; otherwise the background intensity stands.
+         *  - Shadow operator (pal3 colour 15): shadowed. Highlight operator
+         *    (pal3 colour 14): highlight over a normal background, normal over
+         *    a shadowed one. Both keep the background colour.
+         *  - Colour 14 of palettes 0-2 is never shadowed.
+         *  - Other sprite pixels: normal when high priority or over a normal
+         *    background, else shadowed. */
         if (sh_mode && px < GVDP_CRAM_ENTRIES) {
 #if GENESIS_BATCHED_PLANES
-            int hi_present = selection & 4;
-#else
-            int hi_present = (s_op && s_hi) || (a_op && a_hi) || (b_op && b_hi);
+            int a_hi = plane_a[xo] & 0x80, a_op = plane_a[xo] & 0x40;
+            int b_hi = plane_b[xo] & 0x80, b_op = plane_b[xo] & 0x40;
 #endif
-            int sh = !hi_present;
-            int hl = 0;
-            if (s_spr_shadow_op[xo]) sh = 1;
-            if (s_spr_hilite_op[xo]) { if (sh) sh = 0; else hl = 1; }
-            if (hl)      px += GVDP_PALETTE_HIGHLIGHT;
-            else if (sh) px += GVDP_PALETTE_SHADOW;
+            int bg_normal = a_hi || b_hi;
+            int sh_op = s_spr_shadow_op[xo], hl_op = s_spr_hilite_op[xo];
+            int sprite_wins = (s_op || sh_op || hl_op) &&
+                              (s_hi || !((a_op && a_hi) || (b_op && b_hi)));
+            int level;                      /* 0 shadow, 1 normal, 2 highlight */
+            if (!sprite_wins)                level = bg_normal;
+            else if (sh_op)                  level = 0;
+            else if (hl_op)                  level = bg_normal ? 2 : 1;
+            else if ((s_idx & 15) == 14)     level = 1;
+            else                             level = s_hi || bg_normal;
+            if (level == 2)      px += GVDP_PALETTE_HIGHLIGHT;
+            else if (level == 0) px += GVDP_PALETTE_SHADOW;
         }
 
         out[xo] = px;
