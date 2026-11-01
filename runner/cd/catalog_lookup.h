@@ -22,6 +22,10 @@ typedef struct {
     const M68kStepRegisterSpan *span;
     const M68kStepRegisterSpan *span_fallback;
     uint8_t span_known,span_control;
+    /* Borrowed only inside one exclusive register interval; cleared before
+     * returning to any observer/writer. Never serialized or persisted. */
+    const M68kStepEntry *owned_entry;
+    const M68kStepRegisterSpan *owned_span;
 } SegaCDLookupSlot;
 typedef struct {
     SegaCDLookupSlot slots[SEGACD_LOOKUP_SLOTS];

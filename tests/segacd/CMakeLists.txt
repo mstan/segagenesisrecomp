@@ -43,8 +43,9 @@ add_test(NAME segacd_word_bus COMMAND segacd_word_bus_test)
 option(SEGACD_CATALOG_LOOKUP_CACHE "Cache immutable native descriptor discovery, preserving live guards" ON)
 option(SEGACD_OWNED_CODE_SPANS "Resolve current instruction guard ranges through owned memory views" ON)
 option(SEGACD_CATALOG_PC_INDEX "Use bounded direct-PC native catalog lookup" ON)
+option(SEGACD_CODE_INTERVALS "Reuse code proof only inside exclusive pure-register intervals" ON)
 set_source_files_properties("../../runner/cd/machine.c" PROPERTIES
-    COMPILE_DEFINITIONS "SEGACD_CATALOG_PC_INDEX=$<AND:$<BOOL:${SEGACD_CATALOG_PC_INDEX}>,$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>>")
+    COMPILE_DEFINITIONS "SEGACD_CATALOG_PC_INDEX=$<AND:$<BOOL:${SEGACD_CATALOG_PC_INDEX}>,$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>>;SEGACD_CODE_INTERVALS=$<BOOL:${SEGACD_CODE_INTERVALS}>")
 set_source_files_properties("../../runner/cd/segacd_coordinator.c" PROPERTIES
     COMPILE_DEFINITIONS "SEGACD_CATALOG_LOOKUP_CACHE=$<BOOL:${SEGACD_CATALOG_LOOKUP_CACHE}>;SEGACD_OWNED_CODE_SPANS=$<BOOL:${SEGACD_OWNED_CODE_SPANS}>")
 set(SEGACD_GAME_RENDER_SOURCE "${CMAKE_CURRENT_LIST_DIR}/../../runner/cd/sonic_cd_render.c"

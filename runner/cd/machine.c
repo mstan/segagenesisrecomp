@@ -226,6 +226,12 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
     segacd_coordinator_host_clock(&m->coordinator,host_advance,next_host_event);
     segacd_coordinator_device_limit(&m->coordinator,sound_limit);
     (void)segacd_coordinator_catalog_index(&m->coordinator,SEGACD_CATALOG_PC_INDEX);
+#ifndef SEGACD_CODE_INTERVALS
+#define SEGACD_CODE_INTERVALS 1
+#endif
+    /* This machine exclusively owns all host RAM/code views and advances
+     * every other master only at coordinator boundaries. */
+    (void)segacd_coordinator_code_intervals(&m->coordinator,SEGACD_CODE_INTERVALS);
     video_observer=NULL;video_user=NULL;observing_video=0;current=m;return 1;
 }
 void segacd_machine_close(SegaCDMachine *m)
