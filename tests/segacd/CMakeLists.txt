@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.16)
 project(SegaCDDeviceTests C)
 enable_testing()
+add_executable(segacd_bios_tables_test bios_tables_test.c ../../runner/cd/bios_tables.c)
+target_include_directories(segacd_bios_tables_test PRIVATE ../../runner/cd ../../external/m68k-recomp-core/runtime)
+target_compile_features(segacd_bios_tables_test PRIVATE c_std_11)
+if(MSVC)
+  target_compile_options(segacd_bios_tables_test PRIVATE /W4 /WX)
+else()
+  target_compile_options(segacd_bios_tables_test PRIVATE -Wall -Wextra -Werror)
+endif()
+target_link_libraries(segacd_bios_tables_test PRIVATE segacd_devices)
+add_test(NAME segacd_bios_tables COMMAND segacd_bios_tables_test)
 add_executable(genesis_native_register_budget_test native_register_budget_test.c)
 target_include_directories(genesis_native_register_budget_test PRIVATE ../../runner/include)
 target_compile_features(genesis_native_register_budget_test PRIVATE c_std_11)
@@ -555,7 +565,7 @@ if(NOT CMAKE_CROSSCOMPILING)
   add_subdirectory("${engine_root}/external/m68k-recomp-core/tests/step" "core-step")
 
   # No owned generated catalogs needed for diagnosing the live-code floor.
-  add_executable(segacd_bios_floor_probe bios_dual_probe.c ${step_runtime_sources}
+  add_executable(segacd_bios_floor_probe bios_dual_probe.c ../../runner/cd/bios_services.c ../../runner/cd/bios_tables.c ${step_runtime_sources}
     ../../runner/cd/segacd_coordinator.c ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c)
   target_compile_definitions(segacd_bios_floor_probe PRIVATE SEGACD_BIOS_PROBE_NO_CATALOGS=1)
   target_include_directories(segacd_bios_floor_probe PRIVATE ../../runner/video)
@@ -709,7 +719,7 @@ if(NOT CMAKE_CROSSCOMPILING)
       set(extra_registry_header "${extra_registry_dir}/segacd_bios_extra_modules.h")
       configure_file(bios_extra_modules.h.in "${extra_registry_header}" @ONLY)
 
-      add_executable(segacd_bios_dual_probe bios_dual_probe.c ${dual_sources} ${step_runtime_sources}
+      add_executable(segacd_bios_dual_probe bios_dual_probe.c ../../runner/cd/bios_services.c ../../runner/cd/bios_tables.c ${dual_sources} ${step_runtime_sources}
         ../../runner/cd/segacd_coordinator.c
         ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c)
       target_include_directories(segacd_bios_dual_probe PRIVATE "${SEGACD_BIOS_PROBE_MODULE_DIR}"
@@ -770,7 +780,7 @@ if(NOT CMAKE_CROSSCOMPILING)
           find_package(SDL2 REQUIRED)
         endif()
         get_target_property(native_catalog_sources segacd_bios_dual_probe SOURCES)
-        list(FILTER native_catalog_sources EXCLUDE REGEX "(bios_dual_probe|segacd_coordinator|genesis_bus|genesis_vdp|z80_native|m68k_step)\\.c$")
+        list(FILTER native_catalog_sources EXCLUDE REGEX "(bios_dual_probe|bios_services|bios_tables|segacd_coordinator|genesis_bus|genesis_vdp|z80_native|m68k_step)\\.c$")
         get_target_property(native_includes segacd_bios_dual_probe INCLUDE_DIRECTORIES)
         get_target_property(native_definitions segacd_bios_dual_probe COMPILE_DEFINITIONS)
         add_library(segacd_owned_native_program STATIC ${native_catalog_sources})
@@ -778,6 +788,7 @@ if(NOT CMAKE_CROSSCOMPILING)
         target_compile_features(segacd_owned_native_program PRIVATE c_std_11)
         add_executable(SonicCD ../../runner/cd/standalone.c ../../runner/cd/standalone_program.c
           "${SEGACD_GAME_SERVICES_SOURCE}"
+          ../../runner/cd/bios_services.c ../../runner/cd/bios_tables.c
           ../../runner/cd/sonic_cd_world.c ../../runner/cd/sonic_cd_view.c ../../runner/cd/sonic_cd_culls.c
           ../../runner/cd/sonic_cd_scene.c "${SEGACD_GAME_RENDER_SOURCE}" ../../runner/cd/sonic_cd_widescreen.c
           ../../runner/cd/machine.c ../../runner/cd/z80_native.c ../../runner/cd/segacd_coordinator.c
