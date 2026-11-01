@@ -56,6 +56,10 @@ Track any future implementation under the owning game's normal Beads hierarchy, 
   - Scope: SP/file-engine or other title routines identified by game-specific code/PC/state; these are not generic BIOS services.
   - Disposition: Deferred outside engine goal.
 
+- [ ] **T14: Sonic 3 & Knuckles campaign save journal** — discovered during E35.
+  - Scope: `tri_save_sram_flushed` calls the title's synchronous `campaign_confirm` journal after a native SRAM commit. This is title policy outside the engine persistence owner; its callback does not mutate guest memory.
+  - Disposition: Retained for a separate title investigation. E35 preserves producer-side acknowledgment of the actual committed bytes; it does not claim to optimize this journal.
+
 ## Retained context
 
 The Sonic CD eager original/custom double-render is confirmed, but an engine implementation must remain reusable. The title's scene eligibility and fallback policy remain here. Cartridge320px custom-renderer adoption likewise requires title-specific stock fidelity. Bios/system routines are engine work only when a standard reusable console-firmware contract is established; Sonic CD's original SP loader is title-owned.
