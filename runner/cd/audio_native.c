@@ -40,10 +40,10 @@ struct SegaCDNativeAudio {
     int cdda_started;
     int owns_host_audio;
     int registered;
-    int16_t pending_fm[NATIVE_FM_CAPACITY * 2u];
-    int16_t pending_psg[NATIVE_PSG_CAPACITY];
-    int16_t current_fm[NATIVE_FM_CAPACITY * 2u];
-    int16_t current_psg[NATIVE_PSG_CAPACITY];
+    int16_t fm_slot[2][NATIVE_FM_CAPACITY * 2u];
+    int16_t psg_slot[2][NATIVE_PSG_CAPACITY];
+    int16_t *pending_fm,*pending_psg;
+    int16_t *current_fm,*current_psg;
     size_t pending_fm_frames,pending_psg_frames;
     size_t current_fm_frames,current_psg_frames;
     SegaCDAudioMix mix;
@@ -96,6 +96,10 @@ SegaCDNativeAudio *segacd_native_audio_create(int initialize_host_audio)
 {
     SegaCDNativeAudio *audio=(SegaCDNativeAudio *)calloc(1,sizeof *audio);
     if(!audio)return NULL;
+    audio->current_fm=audio->fm_slot[0];
+    audio->current_psg=audio->psg_slot[0];
+    audio->pending_fm=audio->fm_slot[1];
+    audio->pending_psg=audio->psg_slot[1];
     audio->event=(SegaCDNativeEvent *)malloc(sizeof(*audio->event)*NATIVE_EVENT_CAPACITY);
     if(!audio->event) {
         free(audio);
@@ -353,8 +357,15 @@ SegaCDNativeAudioResult segacd_native_audio_finish_frame(SegaCDNativeAudio *audi
         result=flush_pending(audio,audio->pending_realtime);
         if(result!=SEGACD_NATIVE_AUDIO_OK)return result;
     }
-    memcpy(audio->pending_fm,audio->current_fm,audio->current_fm_frames*2u*sizeof(int16_t));
-    memcpy(audio->pending_psg,audio->current_psg,audio->current_psg_frames*sizeof(int16_t));
+    /* The old pending frame is no longer borrowed after a successful flush.
+     * Exchange its storage with the newly rendered frame, retaining the same
+     * render-before-flush ordering and one-frame CD source lookahead. Failure
+     * returns above without handing either live slot to the next render. */
+    int16_t *old_fm=audio->pending_fm,*old_psg=audio->pending_psg;
+    audio->pending_fm=audio->current_fm;
+    audio->pending_psg=audio->current_psg;
+    audio->current_fm=old_fm;
+    audio->current_psg=old_psg;
     audio->pending_first_psg_index=audio->current_first_psg_index;
     audio->pending_fm_frames=audio->current_fm_frames;
     audio->pending_psg_frames=audio->current_psg_frames;

@@ -26,6 +26,8 @@ static size_t psg_test_limit=256u;
 static AudioExtraSource extra_source;
 static unsigned flush_count;
 static uint32_t flushed_wall_frame;
+static int flushed_realtime;
+static const int16_t *flushed_fm_pointer,*flushed_psg_pointer;
 static size_t flushed_fm_frames,flushed_psg_frames;
 static int16_t flushed_stereo[256*2];
 
@@ -35,7 +37,8 @@ void audio_set_extra_source(AudioExtraSource source){extra_source=source;}
 void audio_flush(uint32_t wall_frame,int realtime,const int16_t *fm,size_t fm_frames,
                  const int16_t *psg,size_t psg_frames)
 {
-    (void)realtime;
+    flushed_realtime=realtime;
+    flushed_fm_pointer=fm;flushed_psg_pointer=psg;
     flushed_wall_frame=wall_frame;
     flushed_fm_frames=fm_frames;
     flushed_psg_frames=psg_frames;
@@ -169,6 +172,45 @@ static int test_bad_port_and_bounded_queue(void)
     return 0;
 }
 
+static int test_frame_slot_rotations(void)
+{
+    SegaCDNativeAudio *audio=segacd_native_audio_create(0);
+    CHECK(audio!=NULL);
+    flush_count=0;
+    const int16_t *fm_slot[2]={0},*psg_slot[2]={0};
+    uint64_t boundary=0;
+    size_t previous_frames=0;
+    for(unsigned frame=0;frame<6;++frame) {
+        uint64_t next=boundary+(frame%2?3600:2400);
+        CHECK(segacd_native_audio_write_checked(audio,(boundary*12500000u+53693174u)/53693175u,
+                                               AUDIO_PORT_PSG,(uint8_t)(frame*19+7))==SEGACD_NATIVE_AUDIO_OK);
+        /* Both CD sources are explicitly covered beyond the pending window. */
+        uint64_t until=next*12500000u/53693175u+1000u;
+        segacd_native_audio_pcm_sample(audio,until,0,0);
+        segacd_native_audio_cdda_sample(audio,until,0,0);
+        CHECK(segacd_native_audio_finish_frame(audio,next,100+frame,(int)(frame&1))==SEGACD_NATIVE_AUDIO_OK);
+        if(frame) {
+            unsigned slot=(frame-1)&1;
+            CHECK(flush_count==frame && flushed_wall_frame==99+frame);
+            CHECK(flushed_realtime==(int)((frame-1)&1));
+            CHECK(flushed_psg_frames==previous_frames);
+            for(size_t i=1;i<previous_frames;++i)
+                CHECK(flushed_stereo[i*2]==(int16_t)((frame-1)*19+7));
+            if(frame<3) {fm_slot[slot]=flushed_fm_pointer;psg_slot[slot]=flushed_psg_pointer;}
+            else {CHECK(fm_slot[slot]==flushed_fm_pointer);CHECK(psg_slot[slot]==flushed_psg_pointer);}
+        }
+        previous_frames=(size_t)(next/240-boundary/240);
+        boundary=next;
+    }
+    CHECK(fm_slot[0]!=fm_slot[1] && psg_slot[0]!=psg_slot[1]);
+    CHECK(segacd_native_audio_flush_pending(audio,0)==SEGACD_NATIVE_AUDIO_OK);
+    CHECK(flush_count==6 && flushed_wall_frame==105 && flushed_realtime==0);
+    CHECK(flushed_psg_frames==previous_frames && flushed_psg_pointer==psg_slot[1]);
+    CHECK(segacd_native_audio_flush_pending(audio,1)==SEGACD_NATIVE_AUDIO_OK && flush_count==6);
+    segacd_native_audio_destroy(audio);
+    return 0;
+}
+
 static int test_underflow_preflight_is_terminal_and_does_not_flush(void)
 {
     SegaCDNativeAudio *audio=segacd_native_audio_create(0);
@@ -275,6 +317,7 @@ static int test_owned_binding_output_and_terminal_prefix(void)
 int main(void)
 {
     if(test_order_defer_and_frame_late_mix())return 1;
+    if(test_frame_slot_rotations())return 1;
     if(test_bad_port_and_bounded_queue())return 1;
     if(test_underflow_preflight_is_terminal_and_does_not_flush())return 1;
     if(test_chip_scratch_drop_is_loud())return 1;

@@ -66,7 +66,7 @@ static AudioStats s_stats = {0};
 /* =========================================================================
  * Delivery observability — always-on rings (PRINCIPLES.md #17).
  *
- * Depth ring: SDL queue depth at the entry of every realtime flush.
+ * Depth ring: synchronized bridge fill before each realtime publication.
  * 4096 entries ≈ 68 s of history at 59.94 fps.
  * Event ring: drops (queue over cap) and underruns (queue found empty).
  * Probes query backward after a heard artifact; nothing is "armed".
@@ -119,6 +119,13 @@ static uint32_t s_wav_data_bytes = 0;
  * PSG rate ~223721 Hz / 50 Hz (PAL) ≈ 4475 frames.  Double for headroom. */
 #define OUT_BUF_FRAMES 16384
 static int16_t s_out[OUT_BUF_FRAMES * 2];
+/* Producer-owned preparation storage, never shared with the callback. Keeping
+ * the S16 frame intact preserves the original overflow fallback and borrowed
+ * extra-source/WAV/gain ordering. Cost: 128 KiB of fixed host-only scratch. */
+static float s_prepared[OUT_BUF_FRAMES * 2];
+static int s_buffer_trace;
+static uint64_t s_prepare_ticks,s_publish_ticks,s_publish_max_ticks,s_exclusion_ticks;
+static uint64_t s_prepared_blocks,s_legacy_blocks;
 static AudioExtraSource s_extra_source;
 static double s_mix_rate;
 void audio_set_extra_source(AudioExtraSource source) { s_extra_source = source; }
@@ -126,6 +133,11 @@ void audio_set_extra_source(AudioExtraSource source) { s_extra_source = source; 
 int audio_init(int psg_sample_rate)
 {
     s_mix_rate = (double)psg_sample_rate;
+    const char *buffer_trace = getenv("GENESIS_AUDIO_BUFFER_TRACE");
+    s_buffer_trace = buffer_trace && *buffer_trace && strcmp(buffer_trace, "0");
+    s_prepare_ticks = s_publish_ticks = s_publish_max_ticks = 0;
+    s_exclusion_ticks = 0;
+    s_prepared_blocks = s_legacy_blocks = 0;
     SDL_AudioSpec want, got;
     SDL_memset(&want, 0, sizeof(want));
     /* Open at a normal host rate and let the DRC bridge own the (large)
@@ -195,6 +207,17 @@ void audio_close(void)
         rab_free(&s_bridge);
         s_playback_enabled = 0;
     }
+    if (s_buffer_trace && s_perf_freq) {
+        uint64_t blocks = s_prepared_blocks + s_legacy_blocks;
+        fprintf(stderr, "[audio buffer ownership] prepared=%llu fallback=%llu "
+                "prepare_us=%.3f publish_body_us=%.3f publish_max_us=%.3f exclusion_us=%.3f\n",
+                (unsigned long long)s_prepared_blocks,
+                (unsigned long long)s_legacy_blocks,
+                blocks ? 1e6 * (double)s_prepare_ticks / s_perf_freq / blocks : 0,
+                blocks ? 1e6 * (double)s_publish_ticks / s_perf_freq / blocks : 0,
+                1e6 * (double)s_publish_max_ticks / s_perf_freq,
+                blocks ? 1e6 * (double)s_exclusion_ticks / s_perf_freq / blocks : 0);
+    }
 }
 
 void audio_set_playback_enabled(int enabled)
@@ -238,34 +261,21 @@ void audio_flush(uint32_t wall_frame, int realtime,
     if (psg_frames > OUT_BUF_FRAMES)
         psg_frames = OUT_BUF_FRAMES;
 
-    /* Delivery observability: the bridge ring fill (ms) at flush entry is the
+    /* Delivery observability: capture the flush-entry timestamp here. Snapshot
+     * the bridge's callback-owned counters/fill under the publication lock
+     * below, then record/print events after releasing it. The pre-publication
+     * bridge ring fill (ms) is the
      * analogue of the old SDL-queue depth, and the bridge's own underrun
      * counter is the authoritative record of the device starving (a splice the
      * generated WAV stream can never show). The queued_bytes field now carries
      * ring fill in milliseconds. */
+    uint32_t dt_us = 0;
     if (realtime) {
         Uint64 pc_now = SDL_GetPerformanceCounter();
-        uint32_t dt_us = 0;
         if (s_last_flush_pc)
             dt_us = (uint32_t)((pc_now - s_last_flush_pc) * 1000000ull
                                / s_perf_freq);
         s_last_flush_pc = pc_now;
-        rab_stats bst; rab_get_stats(&s_bridge, &bst);
-        uint32_t fill_ms = (uint32_t)(rab_fill_ms(&s_bridge) + 0.5);
-        s_depth_ring[s_depth_head].wall_frame   = wall_frame;
-        s_depth_ring[s_depth_head].queued_bytes = fill_ms; /* ring fill, ms */
-        s_depth_ring[s_depth_head].wall_dt_us   = dt_us;
-        s_depth_head = (s_depth_head + 1) % DEPTH_RING_SIZE;
-        s_depth_count++;
-        if (s_stats.total_flushes >= DELIVERY_WARMUP_FLUSHES) {
-            if (fill_ms < s_stats.min_queued_bytes)
-                s_stats.min_queued_bytes = fill_ms;
-            if (bst.underrun_events != s_prev_underruns) {
-                s_stats.underrun_flushes++;
-                delivery_event(wall_frame, dt_us, 0);
-            }
-        }
-        s_prev_underruns = bst.underrun_events;
     }
 
     /* Reference mixer approach: iterate at PSG rate (no PSG resampling at
@@ -322,18 +332,54 @@ void audio_flush(uint32_t wall_frame, int realtime,
      * callback. The bridge's P-only controller + faded/pitch-preserving conceal
      * replace the old ±0.5% nearest-neighbor servo and the >8-frame hard drop
      * (every one of which was a discard = a click/crackle). */
-    if (realtime && s_playback_enabled && s_bridge_ready) {
+    if (realtime && s_bridge_ready) {
+        Uint64 prepare_begin = s_buffer_trace ? SDL_GetPerformanceCounter() : 0;
+        if (s_playback_enabled) {
+            for (size_t i = 0; i < psg_frames * 2; ++i)
+                s_prepared[i] = (float)s_out[i] * (1.0f / 32768.0f);
+        }
+        if (s_buffer_trace && s_playback_enabled)
+            s_prepare_ticks += SDL_GetPerformanceCounter() - prepare_begin;
         Uint64 begin = SDL_GetPerformanceCounter();
         SDL_LockAudioDevice(s_dev);
-        s_host_timing.lock_us = (uint32_t)((SDL_GetPerformanceCounter() - begin)
+        Uint64 locked_at = SDL_GetPerformanceCounter();
+        s_host_timing.lock_us = (uint32_t)((locked_at - begin)
                                          * 1000000ull / s_perf_freq);
+        rab_stats bst; rab_get_stats(&s_bridge, &bst);
+        uint32_t fill_ms = (uint32_t)(rab_fill_ms(&s_bridge) + 0.5);
         s_host_timing.callback_us = s_callback_peak_us;
         s_callback_peak_us = 0;
         s_host_timing.conceal_events = s_bridge.stats.stretch_events;
         s_host_timing.concealed_frames = s_bridge.stats.stretch_frames;
         s_host_timing.fill_us = (uint32_t)(rab_fill_ms(&s_bridge) * 1000.0);
-        rab_push(&s_bridge, s_out, (int)psg_frames);
+        if (s_playback_enabled) {
+            Uint64 publish_begin = s_buffer_trace ? SDL_GetPerformanceCounter() : 0;
+            int prepared = rab_try_push_prepared(&s_bridge, s_prepared, (int)psg_frames);
+            if (!prepared) rab_push(&s_bridge, s_out, (int)psg_frames);
+            if (s_buffer_trace) {
+                Uint64 ended = SDL_GetPerformanceCounter();
+                Uint64 ticks = ended - publish_begin;
+                s_publish_ticks += ticks;
+                s_exclusion_ticks += ended - locked_at;
+                if (ticks > s_publish_max_ticks) s_publish_max_ticks = ticks;
+                if (prepared) ++s_prepared_blocks; else ++s_legacy_blocks;
+            }
+        }
         SDL_UnlockAudioDevice(s_dev);
+        s_depth_ring[s_depth_head].wall_frame   = wall_frame;
+        s_depth_ring[s_depth_head].queued_bytes = fill_ms;
+        s_depth_ring[s_depth_head].wall_dt_us   = dt_us;
+        s_depth_head = (s_depth_head + 1) % DEPTH_RING_SIZE;
+        s_depth_count++;
+        if (s_stats.total_flushes >= DELIVERY_WARMUP_FLUSHES) {
+            if (fill_ms < s_stats.min_queued_bytes)
+                s_stats.min_queued_bytes = fill_ms;
+            if (bst.underrun_events != s_prev_underruns) {
+                s_stats.underrun_flushes++;
+                delivery_event(wall_frame, dt_us, 0);
+            }
+        }
+        s_prev_underruns = bst.underrun_events;
     } else if (!realtime) {
         s_stats.turbo_dropped_flushes++;
     }
