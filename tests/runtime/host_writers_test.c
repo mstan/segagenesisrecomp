@@ -250,6 +250,7 @@ static void stream_checks(void)
     CHECK(genesis_host_stream_write(s,"abcdefghi",9));
     CHECK(genesis_host_stream_write(t,"0123456789",10));
     CHECK(genesis_host_stream_flush_async(s));
+    CHECK(genesis_host_stream_flush(s));
     gated_file=f;SDL_AtomicSet(&fail_flush,1);
     CHECK(genesis_host_stream_flush_async(s));
     CHECK(genesis_host_stream_write(t,"X",1));
