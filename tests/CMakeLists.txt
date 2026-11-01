@@ -193,12 +193,18 @@ target_include_directories(vdp_sprite_limit_test PRIVATE "${CMAKE_CURRENT_LIST_D
 add_test(NAME vdp_sprite_limit COMMAND vdp_sprite_limit_test)
 
 add_executable(vdp_host_sprite_test runtime/vdp_host_sprite_test.c
-    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")
-target_include_directories(vdp_host_sprite_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_machine.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/external/superzazu/z80.c")
+target_include_directories(vdp_host_sprite_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/external/superzazu")
 add_test(NAME vdp_host_sprite COMMAND vdp_host_sprite_test)
 add_executable(vdp_host_sprite_batched_test runtime/vdp_host_sprite_test.c
-    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")
-target_include_directories(vdp_host_sprite_batched_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_machine.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/external/superzazu/z80.c")
+target_include_directories(vdp_host_sprite_batched_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/external/superzazu")
 target_compile_definitions(vdp_host_sprite_batched_test PRIVATE GENESIS_BATCHED_PLANES=1)
 add_test(NAME vdp_host_sprite_batched COMMAND vdp_host_sprite_batched_test)
 add_executable(expansion_rom_test runtime/expansion_rom_test.c)

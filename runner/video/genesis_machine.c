@@ -524,7 +524,6 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
         step_z80(m, Z80_PER_LINE);
 
         /* Deliver interrupts to the 68K (and the Z80 at vblank). */
-        if (irq & GVDP_IRQ_HBLANK) glue_own_interrupt(4, &m->vdp);
         if (irq & GVDP_IRQ_VBLANK) {
             /* Assert the Z80 vblank IRQ and LEAVE it pending — the Z80 takes it
              * on a later step_z80 (when IFF1 is enabled) and superzazu clears
@@ -595,6 +594,11 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                 }
             }
         }
+
+        /* IRQ4 follows the completed active scanline. Its palette/plane
+         * writes affect the next row, including a counter of223 used to
+         * prepare an offscreen water palette after the last visible row. */
+        if (irq & GVDP_IRQ_HBLANK) glue_own_interrupt(4, &m->vdp);
 
         m->master_cycle += MASTER_PER_LINE;
     }

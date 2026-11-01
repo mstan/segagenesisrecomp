@@ -2,12 +2,77 @@
  * priority, without touching the hardware overflow/collision flags. */
 #include "genesis_vdp.h"
 #include "genesis_dac.h"
+#include "genesis_machine.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #define CHECK(c) do { if (!(c)) { fprintf(stderr,"line %d: %s\n",__LINE__,#c); exit(1); } } while (0)
 static GVDP v;
 static int calls, high, color = 2;
+int g_snd_trace;
+unsigned long g_snd_frame;
+unsigned g_snd_line;
+/* The real scheduler/VDP run below without a ROM, CPU program or sound bus. */
+void gbus_init(GenesisBus *b,GVDP *p){memset(b,0,sizeof *b);b->vdp=p;}
+uint16_t gbus_read16(GenesisBus *b,uint32_t a){(void)b;(void)a;return 0;}
+uint8_t gbus_z80_read(GenesisBus *b,uint16_t a){(void)b;(void)a;return 0;}
+void gbus_z80_write(GenesisBus *b,uint16_t a,uint8_t x){(void)b;(void)a;(void)x;}
+void glue_run_game_chunk(uint32_t cycles){(void)cycles;}
+int glue_own_vint_service_latched(GVDP *p){(void)p;return 0;}
+static int split_line,last_row,hints,vints,raster_calls,has_output;
+static void raster_color(uint16_t c)
+{
+    g_machine.vdp.cram[0]=c;
+    g_machine.vdp.colour_updated(NULL,0,c);
+}
+void glue_own_interrupt(int level,GVDP *p)
+{
+    if(level==4){
+        CHECK(p->scanline==split_line && (!has_output || last_row==split_line));
+        if(split_line==0)CHECK(p->sprite_collision); /* status already evaluated */
+        ++hints;raster_color(0xE00);
+    }else{
+        CHECK(level==6 && p->scanline==224 && (!has_output || last_row==223));
+        ++vints;
+    }
+}
+static void raster_sprites(void *user,const GVDP *p,const GVDPSpriteLayer *layer)
+{(void)user;(void)p;(void)layer;++raster_calls;}
+static void raster_sink(void *user,int line,const uint32_t *pixels,int width)
+{
+    (void)user;CHECK(line==last_row+1 && width==320);
+    CHECK(pixels[width-1]==genesis_dac_cram_to_argb(line<=split_line?0x00E:0xE00,GENESIS_DAC_NORMAL));
+    last_row=line;
+}
+static int raster_enabled(void *user){(void)user;return 3;}
+static void raster_custom(void *user,const GVDP *p,int line,int width,
+                          GenesisNativeRow native,void *ctx,const GVDPRasterRow *row)
+{
+    (void)p;CHECK(row);const uint32_t *pixels=native(ctx);CHECK(native(ctx)==pixels);
+    raster_sink(user,line,pixels,width); /* deferred native composition is cached */
+}
+static void raster_order(void)
+{
+    const GenesisScanlineProducer producer={raster_enabled,raster_custom};
+    const int splits[]={0,100,223};
+    for(int mode=0;mode<3;++mode)for(unsigned n=0;n<sizeof splits/sizeof *splits;++n){
+        machine_init();GVDP *p=&g_machine.vdp;
+        split_line=splits[n];last_row=-1;hints=vints=raster_calls=0;has_output=mode!=2;
+        p->reg[0]=0x10;p->reg[1]=0x60;p->reg[5]=0x7C;p->reg[10]=255;
+        p->reg[12]=1;p->hint_counter=(uint8_t)split_line;raster_color(0x00E);
+        memset(p->vram+32,0x11,32);
+        for(int s=0;s<2;++s){unsigned a=0xF800+s*8;
+            p->vram[a+1]=128;p->vram[a+3]=(uint8_t)(s?0:1);
+            p->vram[a+5]=1;p->vram[a+7]=128;
+        }
+        gvdp_set_host_sprites(raster_sprites,NULL);
+        machine_run_frame_ex(has_output?raster_sink:NULL,NULL,mode==1?&producer:NULL);
+        CHECK(hints==1 && vints==1 && p->sprite_collision);
+        CHECK(raster_calls==(has_output?224:0));
+        if(has_output)CHECK(last_row==223);
+    }
+    gvdp_set_host_sprites(NULL,NULL);
+}
 static void word(unsigned a,unsigned n) { v.vram[a]=n>>8; v.vram[a+1]=n; }
 static void draw(void *user, const GVDP *vdp, const GVDPSpriteLayer *layer)
 {
@@ -142,6 +207,7 @@ int main(void)
     memset(top,0,sizeof top);gvdp_set_ext_colors(top,top,0);
     CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(expected,composed,320));
     CHECK(captured.host_palette[35]==genesis_dac_cram_to_argb(0xE0,GENESIS_DAC_NORMAL));
+    raster_order();
     puts("host sprites composite behind native sprites with plane priority");
     return 0;
 }
