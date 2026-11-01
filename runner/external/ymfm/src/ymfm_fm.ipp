@@ -1075,52 +1075,6 @@ void fm_channel<RegisterType>::output_4op(output_data &output, uint32_t rshift, 
 }
 
 
-// Fixed OPN2 9-bit routes retain each original int16 intermediate and each
-// saturating addition, in order. No register, clock or serialization state is
-// duplicated. Other chip families keep the generic routing implementation.
-template<class RegisterType>
-template<unsigned Algorithm>
-void fm_channel<RegisterType>::output_4op_opn2_algorithm(output_data &output, int16_t op1, uint32_t am_offset) const
-{
-	int32_t mod2 = (Algorithm == 0 || Algorithm == 3 || Algorithm == 4 || Algorithm == 5 || Algorithm == 6) ? (op1 >> 1) : 0;
-	int16_t op2 = int16_t(m_op[1]->compute_volume(m_op[1]->phase() + mod2, am_offset));
-	int32_t mod3 = (Algorithm == 0 || Algorithm == 2) ? (op2 >> 1) :
-		Algorithm == 1 ? (int16_t(op1 + op2) >> 1) : Algorithm == 5 ? (op1 >> 1) : 0;
-	int16_t op3 = int16_t(m_op[2]->compute_volume(m_op[2]->phase() + mod3, am_offset));
-	int32_t mod4 = (Algorithm == 0 || Algorithm == 1 || Algorithm == 4) ? (op3 >> 1) :
-		Algorithm == 2 ? (int16_t(op1 + op3) >> 1) :
-		Algorithm == 3 ? (int16_t(op2 + op3) >> 1) : Algorithm == 5 ? (op1 >> 1) : 0;
-	int32_t result = m_op[3]->compute_volume(m_op[3]->phase() + mod4, am_offset) >> 5;
-	if (Algorithm == 7) result = clamp(result + (op1 >> 5), -257, 256);
-	if (Algorithm >= 4) result = clamp(result + (op2 >> 5), -257, 256);
-	if (Algorithm >= 5) result = clamp(result + (op3 >> 5), -257, 256);
-	add_to_output(m_choffs, output, result);
-}
-
-template<class RegisterType>
-void fm_channel<RegisterType>::output_4op_opn2(output_data &output) const
-{
-	assert(m_op[0] && m_op[1] && m_op[2] && m_op[3]);
-	uint32_t am_offset = m_regs.lfo_am_offset(m_choffs);
-	uint32_t feedback = m_regs.ch_feedback(m_choffs);
-	int32_t mod = feedback ? ((m_feedback[0] + m_feedback[1]) >> (10 - feedback)) : 0;
-	int32_t op1 = m_feedback_in = m_op[0]->compute_volume(m_op[0]->phase() + mod, am_offset);
-	// OP1 feedback updates even when neither stereo output is enabled.
-	if (m_regs.ch_output_any(m_choffs) == 0) return;
-	switch (m_regs.ch_algorithm(m_choffs))
-	{
-		case 0: output_4op_opn2_algorithm<0>(output, int16_t(op1), am_offset); break;
-		case 1: output_4op_opn2_algorithm<1>(output, int16_t(op1), am_offset); break;
-		case 2: output_4op_opn2_algorithm<2>(output, int16_t(op1), am_offset); break;
-		case 3: output_4op_opn2_algorithm<3>(output, int16_t(op1), am_offset); break;
-		case 4: output_4op_opn2_algorithm<4>(output, int16_t(op1), am_offset); break;
-		case 5: output_4op_opn2_algorithm<5>(output, int16_t(op1), am_offset); break;
-		case 6: output_4op_opn2_algorithm<6>(output, int16_t(op1), am_offset); break;
-		case 7: output_4op_opn2_algorithm<7>(output, int16_t(op1), am_offset); break;
-		default: output_4op(output, 5, 256); break;
-	}
-}
-
 //-------------------------------------------------
 //  output_rhythm_ch6 - special case output
 //  computation for OPL channel 6 in rhythm mode,
@@ -1437,10 +1391,6 @@ void fm_engine_base<RegisterType>::output(output_data &output, uint32_t rshift, 
 }
 
 
-//-------------------------------------------------
-//  write - handle writes to the OPN registers
-//-------------------------------------------------
-
 // Per-channel OPN2 outputs in one scan. Keep zero outputs for masked/inactive
 // channels: YM2612 applies its nonzero DAC discontinuity to those too.
 template<class RegisterType>
@@ -1454,10 +1404,14 @@ void fm_engine_base<RegisterType>::output_opn2_channels(output_data *output, uin
 	for (uint32_t ch = 0; ch < CHANNELS; ++ch)
 	{
 		output[ch].clear();
-		if (bitfield(chanmask, ch)) m_channel[ch]->output_4op_opn2(output[ch]);
+		if (bitfield(chanmask, ch)) m_channel[ch]->output_4op(output[ch], 5, 256);
 	}
 #endif
 }
+
+//-------------------------------------------------
+//  write - handle writes to the OPN registers
+//-------------------------------------------------
 
 template<class RegisterType>
 void fm_engine_base<RegisterType>::write(uint16_t regnum, uint8_t data)
