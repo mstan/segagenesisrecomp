@@ -127,6 +127,10 @@ static void observe_cdd_submission(SegaCDCoordinator*c,SegaCDCpu cpu,uint32_t a,
      * are only staging; an ignored submit (HOCK low) leaves no pending
      * command. Command zero is a status poll, not a transport request. */
     if(!d->command_pending || !d->pending[0])return;
+    unsigned command=d->pending[0];
+    if(c->media_cancel&&(command==1||command==3||command==4||
+        (command>=6&&command<=10)||command==12||command==13))
+        c->media_cancel(c->io.media_user);
     uint64_t sequence=c->cdd_submission_total++;
     SegaCDCddSubmission*entry=&c->cdd_submissions[sequence%SEGACD_CDD_TRACE_CAPACITY];
     memcpy(entry->packet,d->pending,sizeof entry->packet);
@@ -140,7 +144,11 @@ static M68kStepBusResult bus_write8(void *user,uint32_t a,uint8_t v)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     SegaCDResult r=segacd_write8(c->devices,b->cpu,a,v);
-    if(r==SEGACD_OK)observe_cdd_submission(c,b->cpu,a,0);
+    if(r==SEGACD_OK) {
+        if(b->cpu==SEGACD_SUB&&(a&0xFFFFFFu)==0xFF8001u&&!(v&1)&&c->media_cancel)
+            c->media_cancel(c->io.media_user);
+        observe_cdd_submission(c,b->cpu,a,0);
+    }
     if(r!=SEGACD_UNMAPPED)return translate(r);
     if(b->cpu==SEGACD_SUB || main_cd_port(a) || !c->host_main.write8)return M68K_BUS_FAULT;
     return c->host_main.write8(c->host_user,a,v);
@@ -149,7 +157,11 @@ static M68kStepBusResult bus_write16(void *user,uint32_t a,uint16_t v)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     SegaCDResult r=segacd_write16(c->devices,b->cpu,a,v);
-    if(r==SEGACD_OK)observe_cdd_submission(c,b->cpu,a,1);
+    if(r==SEGACD_OK) {
+        if(b->cpu==SEGACD_SUB&&(a&0xFFFFFFu)==0xFF8000u&&!(v&1)&&c->media_cancel)
+            c->media_cancel(c->io.media_user);
+        observe_cdd_submission(c,b->cpu,a,1);
+    }
     if(r!=SEGACD_UNMAPPED)return translate(r);
     if(b->cpu==SEGACD_SUB || main_cd_port(a) || !c->host_main.write16)return M68K_BUS_FAULT;
     return c->host_main.write16(c->host_user,a,v);
@@ -219,6 +231,7 @@ static void bus_reset(void *user)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     if(b->cpu==SEGACD_MAIN) {
+        if(c->media_cancel)c->media_cancel(c->io.media_user);
         segacd_reset(c->devices);
         if(c->host_main.reset_devices)c->host_main.reset_devices(c->host_user);
     }
@@ -443,10 +456,14 @@ void segacd_coordinator_media(SegaCDCoordinator*c,SegaCDReadSector read_sector,v
                              SegaCDCddaSector sink,void*cdda_user)
 {
     if(c && !c->busy[0] && !c->busy[1]) {
+        if(c->media_cancel)c->media_cancel(c->io.media_user);
+        c->media_cancel=NULL;
         c->io.read_sector=read_sector;c->io.media_user=media_user;
         c->io.cdda_sector=sink;c->io.cdda_user=cdda_user;
     }
 }
+void segacd_coordinator_media_cancel(SegaCDCoordinator*c,void (*cancel)(void *))
+{if(c&&!c->busy[0]&&!c->busy[1])c->media_cancel=cancel;}
 size_t segacd_coordinator_cdd_trace(const SegaCDCoordinator*c,SegaCDCddSnapshot*snapshot,
                                     SegaCDCddSubmission*events,size_t capacity)
 {

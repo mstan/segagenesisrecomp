@@ -7,6 +7,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <time.h>
+#if defined(_WIN32)
+#include <windows.h>
+#include <io.h>
+#elif defined(__unix__) || defined(__APPLE__)
+#include <unistd.h>
+#endif
 
 #ifndef SEGACD_IMAGE_PLATFORM_SHA
 #define SEGACD_IMAGE_PLATFORM_SHA 1
@@ -30,6 +38,18 @@
 
 enum { SECTOR_BYTES = 2352, HEADER_BYTES = 96, TRACK_BYTES = 32,
        MAX_TRACKS = 99, MAX_LEADOUT = 449849 };
+enum { PREFETCH_SECTORS=512, PREFETCH_BYTES=PREFETCH_SECTORS*SECTOR_BYTES };
+
+typedef struct {
+    SegaCDImageAsyncHost host;
+    void *worker;
+    uint8_t *ready,*loading;
+    int32_t last_lba,ready_first,job_first;
+    unsigned ready_count,job_count;
+    int attempted,pending,discard,job_ok,io_ready;
+    intptr_t file;
+    void *event;
+} ImagePrefetch;
 
 struct SegaCDImage {
     FILE *file;
@@ -42,7 +62,158 @@ struct SegaCDImage {
     void *mapping_base,*mapping_handle;
     size_t mapping_size;
     uint64_t read_cursor,raw_reads,resident_reads,host_seeks;
+    ImagePrefetch prefetch;
+    uint64_t prefetch_jobs,prefetch_hits,prefetch_failures,prefetch_cancels;
+    uint64_t sync_read_ns,max_sync_read_ns;
+    int measure_reads;
 };
+
+static uint64_t image_clock_ns(void)
+{
+#if defined(_WIN32)
+    LARGE_INTEGER now,freq;
+    if(!QueryPerformanceCounter(&now)||!QueryPerformanceFrequency(&freq)||freq.QuadPart<=0)return 0;
+    uint64_t t=(uint64_t)now.QuadPart,f=(uint64_t)freq.QuadPart;
+    return t/f*UINT64_C(1000000000)+(t%f)*UINT64_C(1000000000)/f;
+#elif defined(CLOCK_MONOTONIC)
+    struct timespec t;if(clock_gettime(CLOCK_MONOTONIC,&t))return 0;
+    return (uint64_t)t.tv_sec*UINT64_C(1000000000)+(uint64_t)t.tv_nsec;
+#else
+    return 0;
+#endif
+}
+
+static void prefetch_job(void *user)
+{
+    SegaCDImage *image=(SegaCDImage *)user;ImagePrefetch *p=&image->prefetch;
+    uint64_t offset=image->payload_offset+(uint64_t)(p->job_first+150)*SECTOR_BYTES;
+    size_t bytes=(size_t)p->job_count*SECTOR_BYTES;
+    p->job_ok=0;
+#if defined(_WIN32)
+    /* ReOpenFile(OVERLAPPED) has no shared file cursor. The stack OVERLAPPED
+     * and buffer remain alive through completion/cancellation acknowledgement.
+     * https://learn.microsoft.com/windows/win32/api/winbase/nf-winbase-reopenfile */
+    OVERLAPPED ov;memset(&ov,0,sizeof ov);
+    ov.Offset=(DWORD)offset;ov.OffsetHigh=(DWORD)(offset>>32);ov.hEvent=(HANDLE)p->event;
+    DWORD got=0;ResetEvent(ov.hEvent);
+    BOOL ok=ReadFile((HANDLE)p->file,p->loading,(DWORD)bytes,&got,&ov);
+    if(!ok&&GetLastError()==ERROR_IO_PENDING)
+        ok=GetOverlappedResult((HANDLE)p->file,&ov,&got,TRUE);
+    p->job_ok=ok&&got==bytes;
+#elif defined(__unix__) || defined(__APPLE__)
+    size_t done=0;
+    while(done<bytes) {
+        uint64_t at=offset+done;if((uint64_t)(off_t)at!=at)return;
+        ssize_t got=pread((int)p->file,p->loading+done,bytes-done,(off_t)at);
+        if(got<0&&errno==EINTR)continue;
+        if(got<=0)return;
+        done+=(size_t)got;
+    }
+    p->job_ok=1;
+#else
+    (void)offset;(void)bytes;
+#endif
+}
+
+void segacd_image_prefetch_cancel(SegaCDImage *image)
+{
+    if(!image)return;
+    ImagePrefetch *p=&image->prefetch;
+    if(p->ready_count||p->pending)++image->prefetch_cancels;
+    p->ready_count=0;p->last_lba=INT32_MIN;
+    if(p->pending)p->discard=1;
+#if defined(_WIN32)
+    if(p->io_ready)(void)CancelIoEx((HANDLE)p->file,NULL);
+#endif
+}
+
+static void prefetch_close(SegaCDImage *image)
+{
+    ImagePrefetch *p=&image->prefetch;segacd_image_prefetch_cancel(image);
+    if(p->worker)p->host.destroy(p->worker); /* joins before freeing job inputs */
+    free(p->ready);free(p->loading);
+    if(p->io_ready) {
+#if defined(_WIN32)
+        CloseHandle((HANDLE)p->file);CloseHandle((HANDLE)p->event);
+#elif defined(__unix__) || defined(__APPLE__)
+        close((int)p->file);
+#endif
+    }
+    memset(p,0,sizeof *p);p->last_lba=INT32_MIN;
+}
+
+void segacd_image_set_async_host(SegaCDImage *image,const SegaCDImageAsyncHost *host)
+{
+    if(!image)return;
+    prefetch_close(image);
+    if(host&&host->create&&host->try_start&&host->busy&&host->destroy)
+        image->prefetch.host=*host;
+}
+
+static int prefetch_init(SegaCDImage *image)
+{
+    ImagePrefetch *p=&image->prefetch;
+    if(p->attempted)return p->worker!=NULL;
+    p->attempted=1;
+    if(!p->host.create)return 0;
+#if defined(_WIN32)
+    HANDLE original=(HANDLE)_get_osfhandle(_fileno(image->file));
+    HANDLE file=ReOpenFile(original,GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
+                           FILE_FLAG_OVERLAPPED|FILE_FLAG_SEQUENTIAL_SCAN);
+    if(file==INVALID_HANDLE_VALUE)return 0;
+    HANDLE event=CreateEventW(NULL,TRUE,FALSE,NULL);
+    if(!event){CloseHandle(file);return 0;}
+    p->file=(intptr_t)file;p->event=event;p->io_ready=1;
+#elif defined(__unix__) || defined(__APPLE__)
+    int fd=dup(fileno(image->file));if(fd<0)return 0;
+    p->file=fd;p->io_ready=1;
+#else
+    return 0;
+#endif
+    p->ready=(uint8_t *)malloc(PREFETCH_BYTES);p->loading=(uint8_t *)malloc(PREFETCH_BYTES);
+    if(p->ready&&p->loading)p->worker=p->host.create();
+    if(!p->worker) {
+        SegaCDImageAsyncHost host=p->host;
+        prefetch_close(image);p->host=host;p->attempted=1;return 0;
+    }
+    return 1;
+}
+
+static int prefetch_contains(int32_t first,unsigned count,int32_t lba)
+{return lba>=first&&(uint64_t)((int64_t)lba-first)<count;}
+
+static void prefetch_poll(SegaCDImage *image,int32_t lba)
+{
+    ImagePrefetch *p=&image->prefetch;
+    if(!p->pending||p->host.busy(p->worker))return;
+    if(!p->discard&&p->job_ok&&prefetch_contains(p->ready_first,p->ready_count,lba))
+        return; /* retain old ready block until demand reaches the next block */
+    p->pending=0;
+    if(!p->discard&&p->job_ok) {
+        uint8_t *old=p->ready;p->ready=p->loading;p->loading=old;
+        p->ready_first=p->job_first;p->ready_count=p->job_count;
+    } else if(!p->discard)++image->prefetch_failures;
+    p->discard=0;
+}
+
+static void prefetch_schedule(SegaCDImage *image,int32_t next,int sequential)
+{
+    ImagePrefetch *p=&image->prefetch;
+    if(!sequential||p->pending||next>=image->toc.leadout)return;
+    if(prefetch_contains(p->ready_first,p->ready_count,next)) {
+        int32_t end=p->ready_first+(int32_t)p->ready_count;
+        if(end-next>PREFETCH_SECTORS/4)return;
+        next=end;
+    }
+    if(next>=image->toc.leadout||segacd_image_resident_sector(image,next))return;
+    if(!prefetch_init(image))return;
+    unsigned count=(unsigned)(image->toc.leadout-next);
+    if(count>PREFETCH_SECTORS)count=PREFETCH_SECTORS;
+    p->job_first=next;p->job_count=count;p->job_ok=0;p->discard=0;
+    if(p->host.try_start(p->worker,prefetch_job,image)) {
+        p->pending=1;++image->prefetch_jobs;
+    }
+}
 
 static int map_resident(SegaCDImage *image,uint64_t offset,size_t bytes)
 {
@@ -369,6 +540,9 @@ SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
     image = (SegaCDImage *)calloc(1, sizeof(*image));
     if (image == NULL) { set_error(error, capacity, "out of memory"); goto fail; }
     image->file = file;
+    image->prefetch.last_lba=INT32_MIN;
+    const char *trace=getenv("GENESIS_CD_MEDIA_TRACE");
+    image->measure_reads=trace&&*trace&&strcmp(trace,"0");
     file = NULL;
     image->toc.count = count;
     image->toc.leadout = leadout;
@@ -425,6 +599,7 @@ fail:
 void segacd_image_close(SegaCDImage *image)
 {
     if (image == NULL) return;
+    prefetch_close(image);
     if(image->mapping_base) {
 #if SEGACD_IMAGE_MAP_RESIDENT && defined(_WIN32)
         UnmapViewOfFile(image->mapping_base);CloseHandle((HANDLE)image->mapping_handle);
@@ -446,19 +621,42 @@ int segacd_image_read(SegaCDImage *image, int32_t lba, uint8_t raw[SECTOR_BYTES]
     uint8_t temporary[SECTOR_BYTES];
     uint64_t offset;
     if (image == NULL || raw == NULL || lba < -150 || lba >= image->toc.leadout) return 0;
+    ImagePrefetch *p=&image->prefetch;
+    int sequential=p->last_lba!=INT32_MIN&&lba==p->last_lba+1;
+    if(!sequential)segacd_image_prefetch_cancel(image);
+    prefetch_poll(image,lba);
     const uint8_t *resident = segacd_image_resident_sector(image, lba);
-    if (resident != NULL) { memcpy(raw, resident, SECTOR_BYTES);++image->resident_reads;return 1; }
+    if (resident != NULL) {
+        memcpy(raw,resident,SECTOR_BYTES);++image->resident_reads;
+        p->last_lba=lba;prefetch_schedule(image,lba+1,sequential);return 1;
+    }
+    if(prefetch_contains(p->ready_first,p->ready_count,lba)) {
+        memcpy(raw,p->ready+(size_t)(lba-p->ready_first)*SECTOR_BYTES,SECTOR_BYTES);
+        ++image->prefetch_hits;p->last_lba=lba;
+        prefetch_schedule(image,lba+1,sequential);return 1;
+    }
     offset = image->payload_offset + (uint64_t)(lba + 150) * SECTOR_BYTES;
     ++image->raw_reads;
     if(offset>(uint64_t)LONG_MAX)return 0;
+    uint64_t started=image->measure_reads?image_clock_ns():0;
+    int ok=0;
     if(offset!=image->read_cursor) {
         ++image->host_seeks;
-        if(fseek(image->file,(long)offset,SEEK_SET)!=0){image->read_cursor=UINT64_MAX;return 0;}
+        if(fseek(image->file,(long)offset,SEEK_SET)!=0)goto finished;
     }
-    if(!read_exact(image->file,temporary,sizeof temporary)){image->read_cursor=UINT64_MAX;return 0;}
-    image->read_cursor=offset+SECTOR_BYTES;
+    if(!read_exact(image->file,temporary,sizeof temporary))goto finished;
     memcpy(raw, temporary, sizeof(temporary));
-    return 1;
+    ok=1;
+finished:
+    if(image->measure_reads) {
+        uint64_t elapsed=image_clock_ns()-started;
+        image->sync_read_ns+=elapsed;
+        if(elapsed>image->max_sync_read_ns)image->max_sync_read_ns=elapsed;
+    }
+    image->read_cursor=ok?offset+SECTOR_BYTES:UINT64_MAX;
+    if(ok){p->last_lba=lba;prefetch_schedule(image,lba+1,sequential);}
+    else segacd_image_prefetch_cancel(image);
+    return ok;
 }
 
 const uint8_t *segacd_image_sha256(const SegaCDImage *image)
@@ -484,5 +682,9 @@ int segacd_image_host_stats(const SegaCDImage *image,SegaCDImageHostStats *stats
     if(!image||!stats)return 0;
     stats->raw_reads=image->raw_reads;stats->resident_reads=image->resident_reads;
     stats->host_seeks=image->host_seeks;stats->mapped_view_bytes=image->mapping_size;
-    stats->private_resident_bytes=image->mapping_base?0:image->resident_size;return 1;
+    stats->private_resident_bytes=image->mapping_base?0:image->resident_size;
+    stats->prefetch_jobs=image->prefetch_jobs;stats->prefetch_hits=image->prefetch_hits;
+    stats->prefetch_failures=image->prefetch_failures;stats->prefetch_cancels=image->prefetch_cancels;
+    stats->sync_read_ns=image->sync_read_ns;stats->max_sync_read_ns=image->max_sync_read_ns;
+    stats->prefetch_bytes=image->prefetch.worker?2u*PREFETCH_BYTES:0;return 1;
 }

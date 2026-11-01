@@ -86,6 +86,8 @@ struct SegaCDCoordinator {
     size_t flow_span_count[2];
     uint8_t flow_span_qualified[2][SEGACD_FLOW_SPAN_LIMIT/8];
     uint64_t flow_runs[2],flow_instructions[2];
+    /* Host-only cancellation notification; never advances guest media state. */
+    void (*media_cancel)(void *);
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
@@ -149,6 +151,9 @@ void segacd_coordinator_main_stall(SegaCDCoordinator *,uint32_t main_cycles);
  * TOC on devices->drive and keeps host handles alive until unmounted. */
 void segacd_coordinator_media(SegaCDCoordinator *,SegaCDReadSector,void *media_user,
                              SegaCDCddaSector,void *cdda_user);
+/* Optional non-reentrant host cancellation. Replacement revokes this hook;
+ * install after media(). Transport submissions/reset cancel speculation only. */
+void segacd_coordinator_media_cancel(SegaCDCoordinator *,void (*)(void *));
 /* Run until both elapsed CPU timelines reach the absolute sub-clock deadline.
  * If a device_limit is installed, deadline must not exceed its current value;
  * otherwise returns NO_WAIT_HANDLER without advancing CPUs/devices. Returns
