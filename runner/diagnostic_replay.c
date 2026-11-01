@@ -126,6 +126,8 @@ int genesis_replay_mods(const struct RecompLauncherCModProvider *p,
   effective[0] = 0;
 #if RECOMP_LAUNCHER
   if (playback) {
+    /* Providers also need the playback policy while restoring resources. */
+    playing = 1;
     char name[1400], row[2048];
     snprintf(name, sizeof name, "%s.mods.txt", playback);
     FILE *f = fopen(name, "rb");
