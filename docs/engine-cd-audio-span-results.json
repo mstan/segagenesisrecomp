@@ -6,9 +6,9 @@
   "source": "a8f45ad36bf1c38d4890dc0d0c27ed727595b73b",
   "accepted_base": "d8685cdc08a986a54cbec06ce56c9073292f19ed",
   "disposition": "qualified bounded engine contract; per-game neutral/inconclusive with lower CPU observations, no proven general speedup",
-  "final_gate": "pending source/records/cleanup/durable sync review",
+  "final_gate": "Independent source/records/cleanup accepted. Final issue closure and central durability are verified in the owning Beads record and reviewer handoff before E23.",
   "adopted_runtime": true,
-  "pr": null,
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/51",
   "packages": {
     "candidate": {
       "binary": "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031\\cd-binaries\\candidate-r3\\SonicCD.exe",
@@ -634,5 +634,13 @@
     ],
     "cleanup_due": "remove retained build scratch after campaign integration; preserve requested evidence"
   },
-  "handoff": "No owner launch or merge; combined owner playtest and merge pipeline remain pending."
+  "handoff": "No owner launch or merge; combined owner playtest and merge pipeline remain pending.",
+  "independent_review": {
+    "ENGINE_CD_AUDIO_SPANS_REVIEW.md": {
+      "sha256": "0751e97156c073b1033d6041711272bb62f0ce469224feef0ec1598d366878d3"
+    },
+    "engine-cd-audio-span-review.json": {
+      "sha256": "a399bac3bf4d3df33dc614bf863cd8b22b25faf7217be81ec44c4ba503890926"
+    }
+  }
 }

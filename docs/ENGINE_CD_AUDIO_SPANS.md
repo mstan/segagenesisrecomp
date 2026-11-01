@@ -2,8 +2,9 @@
 
 The selected engine contract is qualified for a PR, with a neutral/inconclusive
 performance classification and lower CPU observations. It is not a proven
-general speedup. Final record/durability review and the combined owner playtest
-and merge handoff remain pending. Owning issue: beads-3z5k.20; campaign:
+general speedup. Independent source/records/cleanup review passes; final central durability is
+checked before E23. The combined owner playtest and merge handoff remain pending. PR: https://github.com/mstan/segagenesisrecomp/pull/51.
+Owning issue: beads-3z5k.20; campaign:
 beads-2wy8.1. Exact measured source: a8f45ad36bf1c38d4890dc0d0c27ed727595b73b.
 
 PCM voice jobs, CDDA FIFO/fader work and timestamped mixer queues share a
@@ -92,3 +93,6 @@ source ZIP were removed after retaining test PEs/configuration, game binaries
 and raw evidence. One local source ZIP and the consistent SERVER source/build
 cache remain for immediate E23 reuse; clean that bounded scratch after campaign
 integration. No owner windows, release replacement or merge occurred.
+
+Independent verdict: [review](ENGINE_CD_AUDIO_SPANS_REVIEW.md) and
+[machine-readable review](engine-cd-audio-span-review.json).
