@@ -6,6 +6,7 @@
 #include "debug.h"
 #include "disc_image.h"
 #include "standalone_services.h"
+#include "bios_services.h"
 #include "presentation.h"
 #include "sonic_cd_widescreen.h"
 #include "sonic_cd_limits.h"
@@ -239,6 +240,7 @@ int main(int argc,char **argv)
         segacd_image_set_async_host(image,&host);
         segacd_coordinator_media_cancel(&machine.coordinator,media_cancel);
     }
+    segacd_bios_services_install(&machine.coordinator,bios,sizeof bios);
     segacd_standalone_services_install(&machine,image);
     segacd_standalone_qualify_regions(&machine);
     SegaCDNativeAudio*audio=segacd_native_audio_create(1);
@@ -328,6 +330,10 @@ int main(int argc,char **argv)
     if(!exit_code&&memcmp(persisted,machine.devices.backup,sizeof persisted)&&segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK)exit_code=4;
     if(dump_dir&&!dump_state(dump_dir))exit_code=4;
     SegaCDNativeAudioStats stats;segacd_native_audio_get_stats(audio,&stats);
+    uint64_t bios_completed=0,bios_declined=0;
+    segacd_bios_services_stats(&bios_completed,&bios_declined);
+    printf("BIOS table services completed=%llu declined=%llu\n",
+        (unsigned long long)bios_completed,(unsigned long long)bios_declined);
     SegaCDImageHostStats image_stats;
     if(segacd_image_host_stats(image,&image_stats))
         printf("Media rawReads=%llu residentReads=%llu hostSeeks=%llu mappedBytes=%zu privateResidentBytes=%zu\n",
