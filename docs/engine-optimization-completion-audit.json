@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Serial bounded contracts E01/E03-E08/E10/E16/E18 delivered; whole bounded E11/E13/E14/E15/E17 opportunities decisively rejected. E18 retains independent opted-in FM shadow only; higher CPU/cycles and mixed Sonic1 timings remain explicit.16 original families plus additional E37 remain open,17 total across37. Combined owner visual/play handoff for meaningful ready PR stack pending; counts are not speedups.",
+  "conclusion": "Serial bounded contracts E01/E03-E08/E10/E16/E18 delivered; selected remaining E11/E13/E14/E15/E17/E19 opportunities decisively rejected. E19 preserves existing delivered cartridge ordering; all new timeline source/build/test wiring restored exact5d after repeated per-game regressions.15 original plus E37 remain open,16 total across37;21 resolved. Combined owner visual/play handoff for meaningful ready PR stack pending. Counts are not speedups.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -18,12 +18,12 @@
   "implementation_counts": {
     "bounded_delivered": 14,
     "rejected_mechanism": 1,
-    "bounded_rejected": 5,
+    "bounded_rejected": 6,
     "deferred": 10,
-    "partial": 5,
+    "partial": 4,
     "existing": 1
   },
-  "remaining_scope_open_count": 16,
+  "remaining_scope_open_count": 15,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -566,19 +566,37 @@
       "id": "E19",
       "name": "One ordered audio timeline",
       "original_goal": "Consolidate engine timestamps, stable ordering, register pairing and deferred DAC-stream representation.",
-      "recorded_evaluation_status": "implemented_game_qualified",
-      "implementation_state": "partial",
-      "remaining_scope_open": true,
-      "delivered": "Cartridge stable natural-run event ordering, reverse FM pairing and shared sort/defer scratch.",
-      "remaining": "Broader timestamp/deferred-stream representation consolidation beyond this cartridge ordering replacement.",
-      "audit_basis": "event_order.h/mixer.c changed, but event_queue and CD native scheduler did not. CD receives no cartridge timeline gain. Storage rises from 5 to 6 MiB. A common scheduler is not automatically required.",
-      "next_closure": "Treat ordering as delivered; pursue broader stream representation only where it removes repeated work while retaining ordering, push-index traces and DAC bursts.",
+      "recorded_evaluation_status": "evaluated_whole_remaining_bounded_rejected",
+      "implementation_state": "bounded_rejected",
+      "remaining_scope_open": false,
+      "delivered": "Existing delivered cartridge stable natural-run ordering/reverse FM pairing/scratch retained unchanged; no new E19 runtime code adopted.",
+      "remaining": "Selected remaining common/flat/owned cartridge and CD timestamp/deferred-stream architectures fully implemented/built/measured and rejected. No all-future-algorithm impossibility claim; E20 and later audio/host scopes remain open.",
+      "audit_basis": "Fresh full gate accepted16 matched pairs/32 actual runs, source/real outputs/current rollback/caller/fallback/evidence/Beads/cleanup; repeated Sonic1 shadow and CD cost regressions cannot be offset by RKA gains. All source/build/test restored byteexact5d. ENGINE_AUDIO_TIMELINE_REVIEW.md.",
+      "next_closure": "Finish normal central sync then original E20 with fresh validation-only reviewer.",
       "source_references": [
         "runner/audio/event_order.h",
         "runner/audio/mixer.c:97",
         "runner/audio/event_queue.c",
         "runner/cd/audio_native.c"
-      ]
+      ],
+      "historical_audit": {
+        "id": "E19",
+        "name": "One ordered audio timeline",
+        "original_goal": "Consolidate engine timestamps, stable ordering, register pairing and deferred DAC-stream representation.",
+        "recorded_evaluation_status": "implemented_game_qualified",
+        "implementation_state": "partial",
+        "remaining_scope_open": true,
+        "delivered": "Cartridge stable natural-run event ordering, reverse FM pairing and shared sort/defer scratch.",
+        "remaining": "Broader timestamp/deferred-stream representation consolidation beyond this cartridge ordering replacement.",
+        "audit_basis": "event_order.h/mixer.c changed, but event_queue and CD native scheduler did not. CD receives no cartridge timeline gain. Storage rises from 5 to 6 MiB. A common scheduler is not automatically required.",
+        "next_closure": "Treat ordering as delivered; pursue broader stream representation only where it removes repeated work while retaining ordering, push-index traces and DAC bursts.",
+        "source_references": [
+          "runner/audio/event_order.h",
+          "runner/audio/mixer.c:97",
+          "runner/audio/event_queue.c",
+          "runner/cd/audio_native.c"
+        ]
+      }
     },
     {
       "id": "E20",
@@ -881,5 +899,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 17
+  "total_remaining_open_count": 16
 }
