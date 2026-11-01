@@ -82,3 +82,7 @@ preserved for the continuing campaign. The CD cache is restored to its original
 qualified source selection. See engine-fm-kernel-results.json for per-game results,
 cleanup status and final independent gate. No adoption-only extra-platform/stress
 matrix was added for discarded code. Original code/build/test restoration is exact.
+
+Independent final gate accepted; owning issueclosed and central push12.4seconds
+exit0. See ENGINE_FM_KERNELS_REVIEW.md and engine-fm-kernel-review.json. The
+validator explicitly instructed original E21 next after this evidence-only push.
