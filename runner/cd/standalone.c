@@ -33,6 +33,19 @@ static int parse_number(const char *text,uint64_t *out)
     if(errno||*end)return 0;
     *out=(uint64_t)v;return 1;
 }
+static int parse_sha256(const char *text,uint8_t out[32])
+{
+    if(!text||strlen(text)!=64)return 0;
+    for(unsigned n=0;n<64;n++) {
+        unsigned char c=(unsigned char)text[n];unsigned v;
+        if(c>='0'&&c<='9')v=c-'0';
+        else if(c>='a'&&c<='f')v=c-'a'+10u;
+        else if(c>='A'&&c<='F')v=c-'A'+10u;
+        else return 0;
+        if(n&1)out[n/2]|=(uint8_t)v;else out[n/2]=(uint8_t)(v<<4);
+    }
+    return 1;
+}
 static int parse_pad(const char *text)
 {
     char*end;uint64_t frame,duration,mask;
@@ -156,6 +169,7 @@ static int debug_capture(void *user,const char *path,const SegaCDMachine *m)
 int main(int argc,char **argv)
 {
     const char *bios_path=NULL,*disc_path=NULL,*backup_path=NULL,*dump_dir=NULL,*wav_path=NULL,*settings_path=NULL;
+    const char *disc_identity=NULL;uint8_t expected_disc[32];
     uint64_t frame_limit=0,debug_port=0,view_width=0;int headless=0,mute=0,debug_requested=0,start_paused=0,scripted_input_only=0;
     for(int i=1;i<argc;++i) {
         if(!strcmp(argv[i],"--headless"))headless=1;
@@ -165,6 +179,7 @@ int main(int argc,char **argv)
         else if(i+1<argc&&!strcmp(argv[i],"--debug-port")){if(!parse_number(argv[++i],&debug_port)||debug_port>65535)return 2;debug_requested=1;}
         else if(i+1<argc&&!strcmp(argv[i],"--bios"))bios_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--disc"))disc_path=argv[++i];
+        else if(i+1<argc&&!strcmp(argv[i],"--disc-image-sha256"))disc_identity=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--backup"))backup_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--settings"))settings_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--dump"))dump_dir=argv[++i];
@@ -175,7 +190,10 @@ int main(int argc,char **argv)
         else {fprintf(stderr,"Unknown/incomplete option: %s\n",argv[i]);return 2;}
     }
     if(!bios_path||!disc_path||(headless&&!frame_limit)||(start_paused&&!debug_requested)) {
-        fprintf(stderr,"Sonic CD --bios <owned BIOS> --disc <verified SGCD> [--backup file] [--settings file] [--headless --frames N --mute] [--pad frame:duration:mask] [--dump directory] [--wav file] [--debug-port N [--start-paused]]\n");return 2;
+        fprintf(stderr,"Sonic CD --bios <owned BIOS> --disc <verified SGCD> [--disc-image-sha256 <expected complete image>] [--backup file] [--settings file] [--headless --frames N --mute] [--pad frame:duration:mask] [--dump directory] [--wav file] [--debug-port N [--start-paused]]\n");return 2;
+    }
+    if(disc_identity&&!parse_sha256(disc_identity,expected_disc)) {
+        fprintf(stderr,"Expected disc image SHA-256 must be exactly 64 hex digits\n");return 2;
     }
     if(!headless&&view_width) {
         fprintf(stderr,"--view-width is a headless QA override; use the Graphics menu in a window.\n");
@@ -205,7 +223,7 @@ int main(int argc,char **argv)
     static uint8_t bios[SEGACD_BIOS_BYTES];char error[512];
     if(!read_bios(bios_path,bios)){fprintf(stderr,"BIOS must be exactly %u readable bytes\n",SEGACD_BIOS_BYTES);SDL_Quit();return 2;}
     if(!segacd_standalone_accept_bios(bios,sizeof bios)){fprintf(stderr,"This build requires the qualified US Model 1 v1.10 BIOS (CRC32 C6D10268).\n");SDL_Quit();return 2;}
-    SegaCDImage*image=segacd_image_open(disc_path,error,sizeof error);
+    SegaCDImage*image=segacd_image_open_expected(disc_path,disc_identity?expected_disc:NULL,error,sizeof error);
     if(!image){fprintf(stderr,"Disc: %s\n",error);SDL_Quit();return 2;}
     if(!segacd_standalone_accept_disc(segacd_image_sha256(image))){fprintf(stderr,"This build requires the qualified original Sonic CD US disc image.\n");segacd_image_close(image);SDL_Quit();return 2;}
     if(!segacd_machine_init(&machine,bios,sizeof bios,segacd_standalone_program())){fprintf(stderr,"Native program initialization failed\n");segacd_image_close(image);SDL_Quit();return 2;}
@@ -321,6 +339,9 @@ int main(int argc,char **argv)
             (unsigned long long)image_stats.prefetch_failures,(unsigned long long)image_stats.prefetch_cancels,
             image_stats.prefetch_bytes,(unsigned long long)image_stats.sync_read_ns,
             (unsigned long long)image_stats.max_sync_read_ns);
+    if(segacd_image_host_stats(image,&image_stats))
+        printf("Media wholeIdentityChecked=%d privateSnapshotBytes=%zu\n",
+            image_stats.whole_identity_checked,image_stats.private_snapshot_bytes);
     SegaCDMachineVideoStats video_stats;
     if(segacd_machine_video_stats(&machine,&video_stats))
         printf("Raster captured=%llu composed=%llu eager=%llu retainedBytes=%zu deferred=%d\n",
