@@ -34,6 +34,16 @@ void audio_discard_playback(void);
 typedef void (*AudioExtraSource)(int16_t *mix_stereo, size_t frames, double rate);
 void audio_set_extra_source(AudioExtraSource source);
 
+/* Optional synchronous complete-frame producer. The caller owns immutable chip
+ * inputs until return. It must reproduce base FM/PSG clipping before extras,
+ * and return zero without side effects to use the legacy extra callback.
+ * Replacing the extra source revokes this registration, even if later restored.
+ * This producer never runs on the host audio callback thread. */
+typedef int (*AudioFrameSource)(int16_t *out,size_t frames,double rate,
+                               const int16_t *fm,size_t fm_frames,
+                               const int16_t *psg,int psg_divisor);
+void audio_set_owned_frame_source(AudioExtraSource expected,AudioFrameSource source);
+
 /*
  * Mix one video frame and push to the SDL ring buffer.
  *
