@@ -15,9 +15,16 @@ int main(void)
         genesis_host_wait_until(target,frequency);
         uint64_t end = SDL_GetPerformanceCounter();
         if (end < target || end-start > frequency*2) return 1;
+        start = SDL_GetPerformanceCounter();
+        target = start + frequency/1000;
+        genesis_host_park_until(target,frequency);
+        end = SDL_GetPerformanceCounter();
+        if (end < target || end-start > frequency*2) return 1;
     }
     genesis_host_wait_until(SDL_GetPerformanceCounter(),frequency);
     genesis_host_wait_until(SDL_GetPerformanceCounter()+1,0);
+    genesis_host_park_until(SDL_GetPerformanceCounter(),frequency);
+    genesis_host_park_until(SDL_GetPerformanceCounter()+1,0);
     printf("host wait: deadlines honored, native=%d\n",genesis_host_wait_native_active());
     genesis_host_wait_shutdown();
     genesis_host_wait_shutdown();

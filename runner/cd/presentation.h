@@ -14,6 +14,8 @@ SegaCDPresentation *segacd_presentation_create(SDL_Window *window,
                                                const char *settings_path,
                                                int force_mute);
 void segacd_presentation_destroy(SegaCDPresentation *presentation);
+/* Paused/menu/debug-stopped frames do not advance a delivery schedule. */
+void segacd_presentation_set_running(SegaCDPresentation *presentation, int running);
 
 /* Call for every SDL event. Returns nonzero when the event belongs to the menu
    or must be withheld from the game while held inputs drain after menu close. */
