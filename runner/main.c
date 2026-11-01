@@ -588,18 +588,23 @@ static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width
 static int own_custom_row_enabled(void *user)
 {
     (void)user;
-    return s_custom_width && g_game_spec.video && g_game_spec.video->scanline_lazy;
+    if (!s_custom_width || !g_game_spec.video ||
+        (!g_game_spec.video->scanline_lazy && !g_game_spec.video->scanline_presented)) return 0;
+    return 1 | (g_game_spec.video->scanline_presented && g_game_spec.video->raster_enabled &&
+        g_game_spec.video->raster_enabled(&g_machine.vdp) ? 2 : 0);
 }
 
 static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
-                           GenesisNativeRow native_row, void *native_ctx)
+                           GenesisNativeRow native_row, void *native_ctx,
+                           const GVDPRasterRow *raster)
 {
     (void)user;
     s_screen_width = s_custom_width;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
-    g_game_spec.video->scanline_lazy(vdp, line, native_w, row, s_custom_width,
-                                     native_row, native_ctx);
+    if (g_game_spec.video->scanline_presented)
+        g_game_spec.video->scanline_presented(vdp,line,native_w,row,s_custom_width,native_row,native_ctx,raster);
+    else g_game_spec.video->scanline_lazy(vdp,line,native_w,row,s_custom_width,native_row,native_ctx);
     if (g_game_spec.video->overlay_scanline)
         g_game_spec.video->overlay_scanline(vdp, line, row, s_screen_width);
 }

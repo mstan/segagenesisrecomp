@@ -161,6 +161,11 @@ int gvdp_set_sprite_patterns_bank(unsigned bank, const uint8_t *patterns,
                                   unsigned bytes, const uint8_t *tile_lines);
 const uint8_t *gvdp_sprite_patterns(unsigned size_flags, unsigned *bytes);
 int gvdp_sprite_pattern_line(unsigned size_flags, unsigned tile);
+/* Sprite-only explicit palette overrides. Values 1..3 in tile_lines retain
+ * their line-0 contract; GVDP_EXT_SPRITE_FORCE | line applies to any source
+ * sprite palette. Plane fetches never honor this marker. */
+#define GVDP_EXT_SPRITE_FORCE 0x80u
+int gvdp_sprite_palette_line(unsigned size_flags, unsigned tile, unsigned source_line);
 /* Read-only color table for index-to-ARGB sinks; NULL when disabled. */
 const uint32_t *gvdp_host_palette(void);
 
@@ -276,8 +281,15 @@ typedef struct GVDPRasterRow {
     uint8_t plane_a[GVDP_MAX_WIDTH], plane_b[GVDP_MAX_WIDTH];
     uint8_t sprite[GVDP_MAX_WIDTH], opaque[GVDP_MAX_WIDTH], high[GVDP_MAX_WIDTH];
     uint8_t shadow_op[GVDP_MAX_WIDTH], hilite_op[GVDP_MAX_WIDTH];
+    uint32_t host_palette[GVDP_HOST_PALETTE_SIZE];
 } GVDPRasterRow;
 int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row);
+/* Explicit synchronous presentation capture: private sprite patterns, extra
+ * palettes and the presentation-only host callback are consumed exactly once.
+ * The row owns their resulting pixels/masks and final host colors; it retains
+ * no provider pointers. Strict gvdp_capture_scanline keeps rejecting providers
+ * before mutation. Both APIs perform the native sprite/status evaluation. */
+int gvdp_capture_presented_scanline(GVDP *v, int line, GVDPRasterRow *row);
 int gvdp_compose_captured(const GVDPRasterRow *row, uint8_t *out);
 /* Run the guest-visible sprite evaluation for a discarded output row. Uses
  * exactly the renderer's sprite limits, pattern reads and collision rules;

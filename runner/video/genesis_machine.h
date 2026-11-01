@@ -33,12 +33,14 @@ extern GenesisMachine g_machine;
 typedef void (*GenesisScanlineSink)(void *user, int line, const uint32_t *argb, int width);
 typedef const uint32_t *(*GenesisNativeRow)(void *ctx);
 typedef struct GenesisScanlineProducer {
-    /* Queried at the current raster position, before rendering/status work. */
+    /* Queried before rendering/status work: 1 enables custom output; bit 1
+     * additionally requests immutable native layer capture for this row. */
     int (*enabled)(void *user);
     /* Supplies/delivers a complete row. Sprite status is evaluated first;
      * native_row lazily supplies the original ARGB image if required. */
     void (*render)(void *user, const GVDP *vdp, int line, int native_w,
-                   GenesisNativeRow native_row, void *native_ctx);
+                   GenesisNativeRow native_row, void *native_ctx,
+                   const GVDPRasterRow *raster);
 } GenesisScanlineProducer;
 
 void machine_init(void);
