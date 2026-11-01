@@ -3079,11 +3079,16 @@ int main(int argc, char *argv[])
         s_framelog_file = fopen(framelog_path, "w");
 
     if (yield_log) {
-        /* Explicit capture uses bounded immutable host buffers. The frame and
-         * host timing rings remain the default retrospective evidence. */
+        extern FILE *g_yield_log_file;
+        /* File streaming is an explicit development capture. A buffered
+         * fprintf eventually calls WriteFile on the game fiber; busy disks
+         * have blocked this for >1 second during normal gameplay. The frame
+         * and host timing rings remain the default retrospective evidence. */
         const char *yp = getenv("GENESIS_YIELD_LOG");
         if (!yp || !*yp || !strcmp(yp, "1")) yp = exe_relative("yield_log_native.log");
-        if (glue_yield_log_start(yp)) {
+        g_yield_log_file = fopen(yp, "w");
+        if (g_yield_log_file) {
+            fprintf(g_yield_log_file, "# frame cycle_acc v_vblank_count vbla_routine\n");
             fprintf(stderr, "[yield-log] writing %s\n", yp);
         } else {
             fprintf(stderr, "[yield-log] cannot open %s\n", yp);
