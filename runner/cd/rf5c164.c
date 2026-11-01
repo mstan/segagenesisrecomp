@@ -93,10 +93,6 @@ void rf5c164_advance_owned(Rf5c164 *p,uint64_t start,uint32_t clocks,
         rf5c164_advance_timed(p,start,clocks,sink,user);return;
     }
     uint64_t first=start+384u-phase,last=first+(uint64_t)(count-1u)*384u;
-    SegaCDAudioWriteGrant grant;
-    if(!owned->begin(owned->user,first,last,count,&grant)||!grant.frame||grant.count!=count) {
-        rf5c164_advance_timed(p,start,clocks,sink,user);return;
-    }
     typedef struct {unsigned channel;uint32_t address,loop,step;int32_t left,right;} Voice;
     Voice voice[8];unsigned voices=0;
     if(p->enabled)for(unsigned i=0;i<8;++i)if(p->channel[i].on) {
@@ -104,6 +100,34 @@ void rf5c164_advance_owned(Rf5c164 *p,uint64_t start,uint32_t clocks,
         v->channel=i;v->address=c->address;v->loop=(uint32_t)(((unsigned)c->lsh<<8)|c->lsl)<<11;
         v->step=((uint32_t)c->fdh<<8)+c->fdl;
         v->left=(c->pan&15u)*c->env;v->right=(c->pan>>4)*c->env;
+    }
+    SegaCDAudioWriteGrant grant;
+    if(owned->begin_constant) {
+        int constant=1;int32_t l=0,r=0;
+        for(unsigned j=0;j<voices;++j) {
+            Voice *v=&voice[j];
+            if(v->step){constant=0;break;}
+            uint8_t sample=p->wave[(v->address>>11)&65535u];
+            if(sample==255){v->address=v->loop;sample=p->wave[(v->address>>11)&65535u];}
+            if(sample!=255) {
+                int32_t magnitude=sample&127u;
+                int32_t lv=(magnitude*v->left)>>5,rv=(magnitude*v->right)>>5;
+                if(sample&128u){l+=lv;r+=rv;}else{l-=lv;r-=rv;}
+            }
+        }
+        SegaCDAudioConstant run={first,0,384u,1u,saturate(l),saturate(r)};
+        if(constant&&owned->begin_constant(owned->user,&run,count,&grant)&&grant.constant_run==1&&grant.count==count) {
+            p->phase=(uint16_t)(total%384u);
+            for(unsigned j=0;j<voices;++j)p->channel[voice[j].channel].address=voice[j].address;
+            p->left=run.left;p->right=run.right;p->samples+=count;
+            owned->commit(owned->user,&grant);return;
+        }
+        /* A declined reservation is read-only; restore local loop preview
+         * before the original sample kernel, not authoritative device state. */
+        for(unsigned j=0;j<voices;++j)voice[j].address=p->channel[voice[j].channel].address;
+    }
+    if(!owned->begin(owned->user,first,last,count,&grant)||!grant.frame||grant.count!=count) {
+        rf5c164_advance_timed(p,start,clocks,sink,user);return;
     }
     p->phase=(uint16_t)(total%384u);
     for(uint32_t n=0;n<count;++n) {

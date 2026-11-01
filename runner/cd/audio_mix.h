@@ -50,6 +50,10 @@ typedef struct {
     uint16_t count;
     uint8_t active;
     uint8_t have_last_subclock;
+    /* Host storage only. One logical tail run can survive subsequent ordinary
+     * frames until retired; other runs use the original physical slots. */
+    SegaCDAudioConstant run;
+    uint16_t run_first,run_count;
 } SegaCDAudioQueue;
 
 typedef struct {
@@ -112,6 +116,11 @@ int segacd_audio_mix_begin_span(SegaCDAudioMix *,SegaCDAudioSource,
                                 uint64_t first,uint64_t last,size_t count,
                                 SegaCDAudioWriteGrant *);
 SegaCDAudioMixResult segacd_audio_mix_commit_span(SegaCDAudioMix *,const SegaCDAudioWriteGrant *);
+int segacd_audio_mix_begin_constant(SegaCDAudioMix *,SegaCDAudioSource,
+                                    const SegaCDAudioConstant *,size_t,SegaCDAudioWriteGrant *);
+/* Observe logical frames, independent of compressed physical host storage. */
+int segacd_audio_mix_queue_frame(const SegaCDAudioMix *,SegaCDAudioSource,
+                                 unsigned index,SegaCDAudioFrame *);
 /* Pause is an explicit timeline discontinuity: it drops queued host audio,
  * records the count, and makes further pushes return PAUSED. Resume clears
  * the output window; sources must be activated again before pushing. */

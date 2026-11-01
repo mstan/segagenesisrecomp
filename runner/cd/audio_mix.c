@@ -45,6 +45,7 @@ static void clear_queue(SegaCDAudioQueue *queue)
     queue->head=0;
     queue->count=0;
     queue->have_last_subclock=0;
+    queue->run_count=0;
 }
 
 SegaCDAudioMixResult segacd_audio_mix_set_active(SegaCDAudioMix *mix,
@@ -199,9 +200,36 @@ static int compare_stamp(uint64_t stamp,uint64_t clock,uint32_t phase)
     return phase? -1:0;
 }
 
-static const SegaCDAudioFrame *frame_at(const SegaCDAudioQueue *queue,unsigned index)
+static uint64_t constant_stamp(const SegaCDAudioConstant *run,unsigned index)
 {
-    return &queue->frame[((unsigned)queue->head+index)&QUEUE_MASK];
+    return run->first+((uint64_t)run->phase+(uint64_t)index*run->step_numerator)/run->denominator;
+}
+
+static void advance_constant(SegaCDAudioConstant *run,unsigned count)
+{
+    uint64_t n=(uint64_t)run->phase+(uint64_t)count*run->step_numerator;
+    run->first+=n/run->denominator;
+    run->phase=(uint32_t)(n%run->denominator);
+}
+
+static SegaCDAudioFrame frame_at(const SegaCDAudioQueue *queue,unsigned index)
+{
+    unsigned slot=((unsigned)queue->head+index)&QUEUE_MASK;
+    unsigned offset=(slot-queue->run_first)&QUEUE_MASK;
+    if(offset<queue->run_count) {
+        SegaCDAudioFrame frame={0};
+        frame.subclock=constant_stamp(&queue->run,offset);
+        frame.left=queue->run.left;frame.right=queue->run.right;
+        return frame;
+    }
+    return queue->frame[slot];
+}
+
+int segacd_audio_mix_queue_frame(const SegaCDAudioMix *mix,SegaCDAudioSource source,
+                                 unsigned index,SegaCDAudioFrame *out)
+{
+    if(!mix||!out||!valid_source(source)||index>=mix->source[source].count)return 0;
+    *out=frame_at(&mix->source[source],index);return 1;
 }
 
 static int interpolated_sample(const SegaCDAudioQueue *queue,
@@ -210,17 +238,25 @@ static int interpolated_sample(const SegaCDAudioQueue *queue,
 {
     if(!queue->active)return 1;
     if(!queue->count)return 0;
+    if(queue->run_count &&
+       compare_stamp(queue->run.first,clock,phase)<=0 &&
+       compare_stamp(constant_stamp(&queue->run,queue->run_count-1u),clock,phase)>=0) {
+        /* Equal adjacent values interpolate to the same exact S16. No need to
+         * visit or expand each implicit timestamp; the scalar cursor catches
+         * up once if output later leaves the run. */
+        *left=queue->run.left;*right=queue->run.right;return 1;
+    }
     while(*cursor+1u<queue->count &&
-          compare_stamp(frame_at(queue,*cursor+1u)->subclock,clock,phase)<=0)
+           compare_stamp(frame_at(queue,*cursor+1u).subclock,clock,phase)<=0)
         ++*cursor;
-    const SegaCDAudioFrame *a=frame_at(queue,*cursor);
+    SegaCDAudioFrame av=frame_at(queue,*cursor);const SegaCDAudioFrame *a=&av;
     int cmp=compare_stamp(a->subclock,clock,phase);
     if(cmp==0) {
         *left=a->left;*right=a->right;
         return 1;
     }
     if(cmp>0 || *cursor+1u>=queue->count)return 0;
-    const SegaCDAudioFrame *b=frame_at(queue,*cursor+1u);
+    SegaCDAudioFrame bv=frame_at(queue,*cursor+1u);const SegaCDAudioFrame *b=&bv;
     uint64_t elapsed=(clock-a->subclock)*(uint64_t)denominator+phase;
     uint64_t span=(b->subclock-a->subclock)*(uint64_t)denominator;
     if(!span || elapsed>span)return 0;
@@ -245,10 +281,27 @@ static void advance_position(uint64_t *clock,uint32_t *phase,
     *phase=(uint32_t)(numerator%denominator);
 }
 
+static int source_constant_window(const SegaCDAudioQueue *queue,
+                                   const SegaCDAudioWindow *window,int16_t *left,int16_t *right)
+{
+    if(!queue->active){*left=0;*right=0;return 1;}
+    if(queue->run_count) {
+        uint64_t n=(uint64_t)window->first_phase+
+            (uint64_t)(window->frames-1u)*window->step_numerator;
+        uint64_t end=window->first_subclock+n/window->step_denominator;
+        uint32_t end_phase=(uint32_t)(n%window->step_denominator);
+        if(compare_stamp(queue->run.first,window->first_subclock,window->first_phase)<=0 &&
+           compare_stamp(constant_stamp(&queue->run,queue->run_count-1u),end,end_phase)>=0)
+            {*left=queue->run.left;*right=queue->run.right;return 1;}
+    }
+    return 0;
+}
+
 static int source_window_available(const SegaCDAudioQueue *queue,
                                    const SegaCDAudioWindow *window)
 {
-    if(!queue->active)return 1;
+    int16_t constant_left=0,constant_right=0;
+    if(source_constant_window(queue,window,&constant_left,&constant_right))return 1;
     unsigned cursor=0;
     uint64_t clock=window->first_subclock;
     uint32_t phase=window->first_phase;
@@ -291,7 +344,26 @@ static void consume_before_window_end(SegaCDAudioQueue *queue,
                                       uint64_t end_clock,uint32_t end_phase)
 {
     while(queue->count>1u &&
-          stamp_at_or_before(frame_at(queue,1u)->subclock,end_clock,end_phase)) {
+          stamp_at_or_before(frame_at(queue,1u).subclock,end_clock,end_phase)) {
+        if(queue->run_count && queue->head==queue->run_first) {
+            /* Retire the same logical prefix as the scalar loop, retaining
+             * the exact final anchor. At most one divide for the whole run. */
+            uint64_t delta=end_clock-queue->run.first;
+            uint64_t n=((delta+1u)*queue->run.denominator-1u-queue->run.phase)/queue->run.step_numerator;
+            if(n>=queue->run_count)n=queue->run_count-1u;
+            if(n>=queue->count)n=queue->count-1u;
+            if(n) {
+                advance_constant(&queue->run,(unsigned)n);
+                queue->run_first=(uint16_t)((queue->run_first+n)&QUEUE_MASK);
+                queue->run_count=(uint16_t)(queue->run_count-n);
+                queue->head=(uint16_t)((queue->head+n)&QUEUE_MASK);
+                queue->count=(uint16_t)(queue->count-n);
+                continue;
+            }
+            /* The next physical frame is beyond the run; retire its last
+             * logical sample using the ordinary boundary check above. */
+            queue->run_count=0;
+        }
         queue->head=(uint16_t)(((unsigned)queue->head+1u)&QUEUE_MASK);
         --queue->count;
     }
@@ -335,10 +407,28 @@ SegaCDAudioMixResult segacd_audio_mix_render_window(SegaCDAudioMix *mix,
     uint64_t clock=window->first_subclock;
     uint32_t phase=window->first_phase;
     unsigned cursor[SEGACD_AUDIO_SOURCE_COUNT]={0,0};
-    for(size_t i=0;i<frames;++i) {
+    int constant[SEGACD_AUDIO_SOURCE_COUNT];
+    int16_t constant_left[SEGACD_AUDIO_SOURCE_COUNT]={0,0},constant_right[SEGACD_AUDIO_SOURCE_COUNT]={0,0};
+    for(unsigned source=0;source<SEGACD_AUDIO_SOURCE_COUNT;++source)
+        constant[source]=source_constant_window(&mix->source[source],window,
+            &constant_left[source],&constant_right[source]);
+    int both_constant=constant[0]&&constant[1];
+    if(both_constant) {
+        int32_t l=(int32_t)constant_left[0]+constant_left[1];
+        int32_t r=(int32_t)constant_right[0]+constant_right[1];
+        if(l||r)for(size_t i=0;i<frames;++i) {
+            stereo[i*2u]=saturate_s16((int32_t)stereo[i*2u]+l);
+            stereo[i*2u+1u]=saturate_s16((int32_t)stereo[i*2u+1u]+r);
+        }
+        uint64_t n=(uint64_t)window->first_phase+(uint64_t)frames*window->step_numerator;
+        clock+=n/window->step_denominator;phase=(uint32_t)(n%window->step_denominator);
+    } else for(size_t i=0;i<frames;++i) {
         int16_t left[SEGACD_AUDIO_SOURCE_COUNT]={0,0};
         int16_t right[SEGACD_AUDIO_SOURCE_COUNT]={0,0};
         for(unsigned source=0;source<SEGACD_AUDIO_SOURCE_COUNT;++source) {
+            if(constant[source]) {
+                left[source]=constant_left[source];right[source]=constant_right[source];continue;
+            }
             if(!interpolated_sample(&mix->source[source],clock,phase,
                                     window->step_denominator,&cursor[source],
                                     &left[source],&right[source])) {
@@ -364,7 +454,10 @@ SegaCDAudioMixResult segacd_audio_mix_render_window(SegaCDAudioMix *mix,
     mix->next_output_valid=1;
     phase=window->first_phase;
     clock=window->first_subclock;
-    for(size_t i=1;i<frames;++i)
+    if(both_constant) {
+        uint64_t n=(uint64_t)phase+(uint64_t)(frames-1u)*window->step_numerator;
+        clock+=n/window->step_denominator;phase=(uint32_t)(n%window->step_denominator);
+    } else for(size_t i=1;i<frames;++i)
         advance_position(&clock,&phase,window->step_numerator,window->step_denominator);
     for(unsigned source=0;source<SEGACD_AUDIO_SOURCE_COUNT;++source)
         consume_before_window_end(&mix->source[source],clock,phase);
@@ -440,15 +533,50 @@ int segacd_audio_mix_begin_span(SegaCDAudioMix *mix,SegaCDAudioSource source,
        last<first||(count>1&&last==first)||last-first>SEGACD_AUDIO_MIX_CLOCK_HZ)return 0;
     if(q->have_last_subclock&&(first<=q->last_subclock||
        first-q->last_subclock>SEGACD_AUDIO_MIX_CLOCK_HZ))return 0;
+    memset(g,0,sizeof *g);
     g->frame=q->frame;g->count=count;g->first=((unsigned)q->head+q->count)&QUEUE_MASK;
     g->mask=QUEUE_MASK;g->old_head=q->head;g->old_count=q->count;
     g->source=(unsigned)source;g->first_subclock=first;g->last_subclock=last;g->owner=mix;
     return 1;
 }
+
+int segacd_audio_mix_begin_constant(SegaCDAudioMix *mix,SegaCDAudioSource source,
+    const SegaCDAudioConstant *run,size_t count,SegaCDAudioWriteGrant *g)
+{
+    if(!run||!g||!count||count>SEGACD_AUDIO_MIX_QUEUE_CAPACITY||
+       !run->denominator||run->denominator>1000000u||run->phase>=run->denominator||
+       run->step_numerator<run->denominator)return 0;
+    uint64_t span=((uint64_t)run->phase+(count-1u)*run->step_numerator)/run->denominator;
+    if(run->first>UINT64_MAX-span)return 0;
+    SegaCDAudioWriteGrant candidate;
+    if(!segacd_audio_mix_begin_span(mix,source,run->first,run->first+span,count,&candidate))return 0;
+    SegaCDAudioQueue *q=&mix->source[source];
+    if(q->run_count) {
+        SegaCDAudioConstant next=q->run;advance_constant(&next,q->run_count);
+        if(((q->run_first+q->run_count)&QUEUE_MASK)!=candidate.first||
+           next.first!=run->first||next.phase!=run->phase||
+           next.step_numerator!=run->step_numerator||next.denominator!=run->denominator||
+           next.left!=run->left||next.right!=run->right)return 0;
+    }
+    candidate.constant=*run;candidate.constant_run=1;*g=candidate;return 1;
+}
 SegaCDAudioMixResult segacd_audio_mix_commit_span(SegaCDAudioMix *mix,const SegaCDAudioWriteGrant *g)
 {
     if(!mix||!g||g->owner!=mix||!valid_source((SegaCDAudioSource)g->source))return SEGACD_AUDIO_MIX_INVALID;
     SegaCDAudioQueue *q=&mix->source[g->source];
+    if(g->constant_run) {
+        SegaCDAudioWriteGrant expected;
+        if(g->constant_run!=1 || !segacd_audio_mix_begin_constant(mix,(SegaCDAudioSource)g->source,
+            &g->constant,g->count,&expected)||g->frame!=expected.frame||g->mask!=expected.mask||
+            g->old_head!=expected.old_head||g->old_count!=expected.old_count||
+            g->first!=expected.first||g->first_subclock!=expected.first_subclock||
+            g->last_subclock!=expected.last_subclock)return SEGACD_AUDIO_MIX_INVALID;
+        if(!q->run_count){q->run=g->constant;q->run_first=(uint16_t)g->first;}
+        q->run_count=(uint16_t)(q->run_count+g->count);
+        q->count=(uint16_t)(q->count+g->count);q->accepted_frames+=g->count;
+        q->last_subclock=g->last_subclock;q->have_last_subclock=1;
+        set_result(mix,SEGACD_AUDIO_MIX_OK);return SEGACD_AUDIO_MIX_OK;
+    }
     if(mix->paused||!q->active||g->frame!=q->frame||g->mask!=QUEUE_MASK||
        q->head!=g->old_head||q->count!=g->old_count||q->count>SEGACD_AUDIO_MIX_QUEUE_CAPACITY||!g->count||
        g->count>(size_t)SEGACD_AUDIO_MIX_QUEUE_CAPACITY-q->count||
