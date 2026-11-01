@@ -241,37 +241,97 @@ static void sn_constant_filter(SN76489 *p,int16_t *out,size_t samples)
     }
     p->lpf_y=previous;
 }
+/* A write-bounded interval owns a derived input buffer. Generate each
+ * channel's constant runs without retiring every other channel at each edge. */
+static void sn_add_mix(int16_t *mix,size_t first,size_t count,int value)
+{
+    for(size_t i=first;i<first+count;++i)mix[i]=(int16_t)(mix[i]+value);
+}
+static void sn_mix_tone(const SN76489 *p,unsigned ch,int16_t *mix,size_t samples)
+{
+    int amplitude=SN_VOL[p->vol[ch]];
+    if(!amplitude)return;
+    unsigned first=p->tone_counter[ch]>0?(unsigned)p->tone_counter[ch]:1u;
+    unsigned period=p->tone_period[ch]?p->tone_period[ch]:1u;
+    unsigned phase=p->tone_out[ch];
+    size_t count=first-1u;
+    if(count>samples)count=samples;
+    sn_add_mix(mix,0,count,phase?amplitude:-amplitude);
+    size_t done=count;
+    while(done<samples) {
+        phase^=1u;
+        count=samples-done;
+        if(count>period)count=period;
+        sn_add_mix(mix,done,count,phase?amplitude:-amplitude);
+        done+=count;
+    }
+}
+static void sn_mix_noise(const SN76489 *p,int16_t *mix,size_t samples)
+{
+    int amplitude=SN_VOL[p->vol[3]];
+    if(!amplitude)return;
+    unsigned first=p->noise_counter>0?(unsigned)p->noise_counter:1u;
+    unsigned period=(unsigned)sn_noise_reload(p);
+    unsigned ff=p->noise_ff,phase=p->noise_out;
+    uint16_t bits=p->lfsr;
+    size_t count=first-1u;
+    if(count>samples)count=samples;
+    /* A control write resets bits without resetting this stale output. */
+    sn_add_mix(mix,0,count,phase?amplitude:-amplitude);
+    size_t done=count;
+    while(done<samples) {
+        ff^=1u;
+        if(ff) {
+            if(p->noise_ctrl&4u)bits=sn_white_step(bits);
+            else bits=(uint16_t)((bits>>1)|((bits&1u)<<15));
+            phase=bits&1u;
+        }
+        count=samples-done;
+        if(count>period)count=period;
+        sn_add_mix(mix,done,count,phase?amplitude:-amplitude);
+        done+=count;
+    }
+}
+static void sn_filter_input(SN76489 *p,const int16_t *mix,int16_t *out,size_t samples)
+{
+    int32_t previous=p->lpf_prev,y=p->lpf_y;
+    for(size_t i=0;i<samples;++i) {
+        int32_t input=mix[i];
+        int64_t lp=((int64_t)(input+previous)*SN_LPF_SAMPLE_MAGIC+
+                    (int64_t)y*SN_LPF_OUTPUT_MAGIC)/65536;
+        int32_t value=(int32_t)lp;
+        if(value>32767)value=32767;
+        if(value<-32768)value=-32768;
+        out[i]=(int16_t)value;
+        if(input==previous&&value==y)
+            while(i+1u<samples&&mix[i+1u]==input)out[++i]=(int16_t)value;
+        previous=input;y=value;
+    }
+    p->lpf_prev=previous;p->lpf_y=y;
+}
 static int sn_event_span(SN76489 *p,int16_t *out,size_t samples)
 {
-    /* Short and high-frequency intervals retain the inexpensive scalar loop.
-     * This is a hardware/work-size decision, independent of title semantics. */
     if(samples<32u||p->noise_ff>1||p->noise_out>1)return 0;
     for(unsigned i=0;i<4;++i)if(p->vol[i]>15)return 0;
     for(unsigned i=0;i<3;++i) {
         if(p->tone_out[i]>1)return 0;
-        if(p->vol[i]!=15&&(p->tone_period[i]<8))return 0;
+        if(p->vol[i]!=15&&p->tone_period[i]<8)return 0;
     }
     if(p->vol[3]!=15&&sn_noise_reload(p)<8)return 0;
-    size_t done=0;
-    while(done<samples) {
-        /* Counter edges happen BEFORE their sample is mixed. One scalar
-         * edge sample establishes the exact constant input for following ticks. */
-        out[done++]=sn_render_sample(p);
-        size_t run=samples-done;
-        for(unsigned i=0;i<3;++i)if(p->vol[i]!=15) {
-            unsigned quiet=p->tone_counter[i]>0?(unsigned)p->tone_counter[i]-1u:0u;
-            if(run>quiet)run=quiet;
-        }
-        if(p->vol[3]!=15) {
-            unsigned quiet=p->noise_counter>0?(unsigned)p->noise_counter-1u:0u;
-            if(run>quiet)run=quiet;
-        }
-        if(run) {
-            sn_constant_filter(p,out+done,run);
-            sn_timing_span(p,(unsigned)run);
-            done+=run;
-        }
+    if(p->vol[0]==15&&p->vol[1]==15&&p->vol[2]==15&&p->vol[3]==15) {
+        out[0]=sn_render_sample(p);
+        sn_constant_filter(p,out+1,samples-1u);
+        sn_timing_span(p,(unsigned)samples-1u);
+        return 1;
     }
+    /* Four maximum amplitudes sum to32764, so every partial sum fits int16.
+     * This scratch is fully overwritten, derived, owner-only and never saved. */
+    static int16_t input[PSG_SCRATCH_SAMPLES];
+    memset(input,0,samples*sizeof *input);
+    for(unsigned ch=0;ch<3;++ch)sn_mix_tone(p,ch,input,samples);
+    sn_mix_noise(p,input,samples);
+    sn_filter_input(p,input,out,samples);
+    sn_timing_span(p,(unsigned)samples);
     return 1;
 }
 #endif
