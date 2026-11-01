@@ -1,0 +1,1057 @@
+{
+    "schema":  "GenesisEngineAudioTimeline1",
+    "original_id":  "E19",
+    "issue":  "beads-3z5k.16",
+    "campaign":  "beads-2wy8.1",
+    "disposition":  "whole selected bounded rejection supported; final restore/cleanup/Beads review pending",
+    "scope":  [
+                  "common stable typed natural-run ordering and exact clock conversion",
+                  "flat cartridge bulk FIFO drain/requeue and preserved pairing/diagnostics",
+                  "owned cartridge sealed deferred span/lazy modulo origin with canonical snapshots and original fallback",
+                  "CD deferred cursor, lazy merge scratch, stable subclock/sequence ordering"
+              ],
+    "prototypes":  [
+                       "9e921b6778255cc8ca86bd446e90f68056956290",
+                       "a33431e305186edc0e0b3615c8f6973ab404faf9",
+                       "f0899611a6674ed1f99d14f1a9f18f25b42d874b"
+                   ],
+    "restored_head":  "4bd78ef92d200e90461f323727c0ee4eb614fdc0",
+    "restored_tree":  "026ed5bd73874949b3a8fd15aacd23ddee6ae48c",
+    "accepted_base":  "5d7ff7a",
+    "accepted_base_tree":  "026ed5bd73874949b3a8fd15aacd23ddee6ae48c",
+    "all_production_and_build_test_wiring_exact":  true,
+    "distinct_matched_pairs":  16,
+    "actual_complete_runs":  32,
+    "observer_partial":  "native-qualification-r1.json also retains one completed baseline shadow-on run rejected by the old observer expectation; no engine failure, excluded from matched-pair count",
+    "source_guard_correction":  "CD original staged source CRLF normalized to exact accepted baseline text; raw sha8b0f2795e5ce4f6cb0675e845f1134d090f73ed4a8511237658f940687c4b964 and normalized shaca3b82fcaf977c183fa61ab46f1b1f52800bc28a609a0ec229c7b4bdd2104239 retained",
+    "tests":  "Existing order/CD/mixer3/3 at9e; changed mixer1/1 at a33431e and f089961, unchanged tests reused. Unit queue/order helpers partly shared; independent explicit FIFO/capacity/restore and qsort expectations cover those changes. No positive-adoption-only portability/stress matrix for discarded code.",
+    "per_game_samples":  [
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r1.json",
+                                 "package":  "E19-owned-timeline-frozen-original-qualification-r1",
+                                 "source":  "9e921b6778255cc8ca86bd446e90f68056956290",
+                                 "game":  "rka",
+                                 "feature":  "shadow-off",
+                                 "frames":  6000,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r1\\rka-shadow-off-0-A",
+                                           "binary_sha256":  "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                                           "runtime":  {
+                                                           "cpu_seconds":  5.515625,
+                                                           "cpu_cycles":  26906100810,
+                                                           "seconds":  6.3590164
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.359375,
+                                                           "user_seconds":  5.34375,
+                                                           "process_cycles":  27603870800,
+                                                           "peak_working_set_bytes":  67325952,
+                                                           "peak_commit_bytes":  75796480,
+                                                           "sampled_peak_private_bytes":  75145216,
+                                                           "memory_samples":  61,
+                                                           "wait_wall_seconds":  6.562000000005355
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r1\\rka-shadow-off-1-B",
+                                           "binary_sha256":  "ed4ee3c40c54e06d1c7678861b23d1e1e30d0ad6cf1983d79b32a902a5647fce",
+                                           "runtime":  {
+                                                           "cpu_seconds":  5.890625,
+                                                           "cpu_cycles":  28614969580,
+                                                           "seconds":  7.6442078
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.34375,
+                                                           "user_seconds":  5.75,
+                                                           "process_cycles":  29323362980,
+                                                           "peak_working_set_bytes":  69394432,
+                                                           "peak_commit_bytes":  77901824,
+                                                           "sampled_peak_private_bytes":  77250560,
+                                                           "memory_samples":  73,
+                                                           "wait_wall_seconds":  7.922000000005937
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  6.798866855524088,
+                                                              "cpu_cycles":  6.351231574085525,
+                                                              "seconds":  20.210537591945823
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r2.json",
+                                 "package":  "E19-owned-timeline-frozen-original-qualification-r1",
+                                 "source":  "9e921b6778255cc8ca86bd446e90f68056956290",
+                                 "game":  "rka",
+                                 "feature":  "shadow-on",
+                                 "frames":  6000,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r2\\rka-shadow-on-0-A",
+                                           "binary_sha256":  "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                                           "runtime":  {
+                                                           "cpu_seconds":  7.59375,
+                                                           "cpu_cycles":  35960546470,
+                                                           "seconds":  8.3514352
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.453125,
+                                                           "user_seconds":  7.296875,
+                                                           "process_cycles":  36670735270,
+                                                           "peak_working_set_bytes":  67215360,
+                                                           "peak_commit_bytes":  75706368,
+                                                           "sampled_peak_private_bytes":  75272192,
+                                                           "memory_samples":  80,
+                                                           "wait_wall_seconds":  8.75
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r2\\rka-shadow-on-1-B",
+                                           "binary_sha256":  "ed4ee3c40c54e06d1c7678861b23d1e1e30d0ad6cf1983d79b32a902a5647fce",
+                                           "runtime":  {
+                                                           "cpu_seconds":  6.671875,
+                                                           "cpu_cycles":  32092450230,
+                                                           "seconds":  6.2536036
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.40625,
+                                                           "user_seconds":  6.390625,
+                                                           "process_cycles":  32653608610,
+                                                           "peak_working_set_bytes":  69324800,
+                                                           "peak_commit_bytes":  77828096,
+                                                           "sampled_peak_private_bytes":  77393920,
+                                                           "memory_samples":  61,
+                                                           "wait_wall_seconds":  6.60899999999674
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  -12.139917695473246,
+                                                              "cpu_cycles":  -10.756500163942029,
+                                                              "seconds":  -25.11941420559666
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r2.json",
+                                 "package":  "E19-owned-timeline-frozen-original-qualification-r1",
+                                 "source":  "9e921b6778255cc8ca86bd446e90f68056956290",
+                                 "game":  "sonic1",
+                                 "feature":  "shadow-off",
+                                 "frames":  2400,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r2\\sonic1-shadow-off-0-A",
+                                           "binary_sha256":  "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                                           "runtime":  {
+                                                           "cpu_seconds":  1.859375,
+                                                           "cpu_cycles":  9036700340,
+                                                           "seconds":  2.0728006
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.171875,
+                                                           "user_seconds":  1.84375,
+                                                           "process_cycles":  9550665550,
+                                                           "peak_working_set_bytes":  63877120,
+                                                           "peak_commit_bytes":  76124160,
+                                                           "sampled_peak_private_bytes":  75907072,
+                                                           "memory_samples":  22,
+                                                           "wait_wall_seconds":  2.3589999999967404
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r2\\sonic1-shadow-off-1-B",
+                                           "binary_sha256":  "7037a5db2f09be593f1f5d3726fe43b5f1ba8e292b5648dd380451aaed5fe6ff",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.015625,
+                                                           "cpu_cycles":  9266778500,
+                                                           "seconds":  2.0567489
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.125,
+                                                           "user_seconds":  1.953125,
+                                                           "process_cycles":  9851172740,
+                                                           "peak_working_set_bytes":  65691648,
+                                                           "peak_commit_bytes":  78012416,
+                                                           "sampled_peak_private_bytes":  77795328,
+                                                           "memory_samples":  22,
+                                                           "wait_wall_seconds":  2.375
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  8.403361344537807,
+                                                              "cpu_cycles":  2.5460417115037437,
+                                                              "seconds":  -0.7743967268245555
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r2.json",
+                                 "package":  "E19-owned-timeline-frozen-original-qualification-r1",
+                                 "source":  "9e921b6778255cc8ca86bd446e90f68056956290",
+                                 "game":  "sonic1",
+                                 "feature":  "shadow-on",
+                                 "frames":  2400,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r2\\sonic1-shadow-on-0-A",
+                                           "binary_sha256":  "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.28125,
+                                                           "cpu_cycles":  10339567130,
+                                                           "seconds":  1.9528787
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.3125,
+                                                           "user_seconds":  2.078125,
+                                                           "process_cycles":  10899565080,
+                                                           "peak_working_set_bytes":  63664128,
+                                                           "peak_commit_bytes":  75988992,
+                                                           "sampled_peak_private_bytes":  75771904,
+                                                           "memory_samples":  20,
+                                                           "wait_wall_seconds":  2.1719999999913853
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r2\\sonic1-shadow-on-1-B",
+                                           "binary_sha256":  "7037a5db2f09be593f1f5d3726fe43b5f1ba8e292b5648dd380451aaed5fe6ff",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.296875,
+                                                           "cpu_cycles":  11220627720,
+                                                           "seconds":  2.1364066
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.359375,
+                                                           "user_seconds":  2.09375,
+                                                           "process_cycles":  11780255310,
+                                                           "peak_working_set_bytes":  65740800,
+                                                           "peak_commit_bytes":  78057472,
+                                                           "sampled_peak_private_bytes":  77840384,
+                                                           "memory_samples":  21,
+                                                           "wait_wall_seconds":  2.2659999999887077
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  0.6849315068493178,
+                                                              "cpu_cycles":  8.521252185148299,
+                                                              "seconds":  9.397813596922312
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r3.json",
+                                 "package":  "E19-owned-timeline-r2-frozen-original-qualification",
+                                 "source":  "a33431e305186edc0e0b3615c8f6973ab404faf9",
+                                 "game":  "rka",
+                                 "feature":  "shadow-off",
+                                 "frames":  6000,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r3\\rka-shadow-off-1-A",
+                                           "binary_sha256":  "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                                           "runtime":  {
+                                                           "cpu_seconds":  5.546875,
+                                                           "cpu_cycles":  24865642340,
+                                                           "seconds":  6.3026654
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.296875,
+                                                           "user_seconds":  5.421875,
+                                                           "process_cycles":  25547887760,
+                                                           "peak_working_set_bytes":  67186688,
+                                                           "peak_commit_bytes":  75685888,
+                                                           "sampled_peak_private_bytes":  75251712,
+                                                           "memory_samples":  61,
+                                                           "wait_wall_seconds":  6.64100000000326
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r3\\rka-shadow-off-0-B",
+                                           "binary_sha256":  "35ea9fb8c615dc5737538686842c6f7a346ee32dffeba1ce4660a99c9c8330f1",
+                                           "runtime":  {
+                                                           "cpu_seconds":  5.1875,
+                                                           "cpu_cycles":  25552198600,
+                                                           "seconds":  6.3099314
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.296875,
+                                                           "user_seconds":  5.015625,
+                                                           "process_cycles":  26164467130,
+                                                           "peak_working_set_bytes":  69423104,
+                                                           "peak_commit_bytes":  77922304,
+                                                           "sampled_peak_private_bytes":  77266944,
+                                                           "memory_samples":  64,
+                                                           "wait_wall_seconds":  6.889999999999418
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  -6.478873239436622,
+                                                              "cpu_cycles":  2.7610638430826784,
+                                                              "seconds":  0.11528455881537614
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r3.json",
+                                 "package":  "E19-owned-timeline-r2-frozen-original-qualification",
+                                 "source":  "a33431e305186edc0e0b3615c8f6973ab404faf9",
+                                 "game":  "rka",
+                                 "feature":  "shadow-on",
+                                 "frames":  6000,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r3\\rka-shadow-on-1-A",
+                                           "binary_sha256":  "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                                           "runtime":  {
+                                                           "cpu_seconds":  8.09375,
+                                                           "cpu_cycles":  37250374050,
+                                                           "seconds":  11.4842842
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.546875,
+                                                           "user_seconds":  7.6875,
+                                                           "process_cycles":  38012710760,
+                                                           "peak_working_set_bytes":  67403776,
+                                                           "peak_commit_bytes":  75882496,
+                                                           "sampled_peak_private_bytes":  75227136,
+                                                           "memory_samples":  110,
+                                                           "wait_wall_seconds":  11.843000000008033
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r3\\rka-shadow-on-0-B",
+                                           "binary_sha256":  "35ea9fb8c615dc5737538686842c6f7a346ee32dffeba1ce4660a99c9c8330f1",
+                                           "runtime":  {
+                                                           "cpu_seconds":  7.890625,
+                                                           "cpu_cycles":  36326566490,
+                                                           "seconds":  10.4258965
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.703125,
+                                                           "user_seconds":  7.3125,
+                                                           "process_cycles":  37109197800,
+                                                           "peak_working_set_bytes":  69492736,
+                                                           "peak_commit_bytes":  77983744,
+                                                           "sampled_peak_private_bytes":  77332480,
+                                                           "memory_samples":  99,
+                                                           "wait_wall_seconds":  10.672000000005937
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  -2.5096525096525046,
+                                                              "cpu_cycles":  -2.4799953921536555,
+                                                              "seconds":  -9.215965763020728
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r3.json",
+                                 "package":  "E19-owned-timeline-r2-frozen-original-qualification",
+                                 "source":  "a33431e305186edc0e0b3615c8f6973ab404faf9",
+                                 "game":  "sonic1",
+                                 "feature":  "shadow-off",
+                                 "frames":  2400,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r3\\sonic1-shadow-off-1-A",
+                                           "binary_sha256":  "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.09375,
+                                                           "cpu_cycles":  9375004460,
+                                                           "seconds":  2.3497055
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.1875,
+                                                           "user_seconds":  1.984375,
+                                                           "process_cycles":  10021732920,
+                                                           "peak_working_set_bytes":  63791104,
+                                                           "peak_commit_bytes":  76017664,
+                                                           "sampled_peak_private_bytes":  75800576,
+                                                           "memory_samples":  24,
+                                                           "wait_wall_seconds":  2.5780000000086147
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r3\\sonic1-shadow-off-0-B",
+                                           "binary_sha256":  "e77ece6c1403be6843813c97d52316591f093182f00d03d2c9994cb8ba1edb91",
+                                           "runtime":  {
+                                                           "cpu_seconds":  1.9375,
+                                                           "cpu_cycles":  9495552880,
+                                                           "seconds":  2.3834573
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.171875,
+                                                           "user_seconds":  1.859375,
+                                                           "process_cycles":  10078465210,
+                                                           "peak_working_set_bytes":  66162688,
+                                                           "peak_commit_bytes":  78405632,
+                                                           "sampled_peak_private_bytes":  77967360,
+                                                           "memory_samples":  25,
+                                                           "wait_wall_seconds":  2.639999999999418
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  -7.462686567164178,
+                                                              "cpu_cycles":  1.2858492016120104,
+                                                              "seconds":  1.4364268202972763
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r3.json",
+                                 "package":  "E19-owned-timeline-r2-frozen-original-qualification",
+                                 "source":  "a33431e305186edc0e0b3615c8f6973ab404faf9",
+                                 "game":  "sonic1",
+                                 "feature":  "shadow-on",
+                                 "frames":  2400,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r3\\sonic1-shadow-on-1-A",
+                                           "binary_sha256":  "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.203125,
+                                                           "cpu_cycles":  11220510690,
+                                                           "seconds":  2.2153678
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.3125,
+                                                           "user_seconds":  2.078125,
+                                                           "process_cycles":  11790909270,
+                                                           "peak_working_set_bytes":  63623168,
+                                                           "peak_commit_bytes":  75935744,
+                                                           "sampled_peak_private_bytes":  75718656,
+                                                           "memory_samples":  22,
+                                                           "wait_wall_seconds":  2.375
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r3\\sonic1-shadow-on-0-B",
+                                           "binary_sha256":  "e77ece6c1403be6843813c97d52316591f093182f00d03d2c9994cb8ba1edb91",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.6875,
+                                                           "cpu_cycles":  12330599930,
+                                                           "seconds":  2.523063
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.296875,
+                                                           "user_seconds":  2.5,
+                                                           "process_cycles":  12912681770,
+                                                           "peak_working_set_bytes":  65748992,
+                                                           "peak_commit_bytes":  78057472,
+                                                           "sampled_peak_private_bytes":  77840384,
+                                                           "memory_samples":  26,
+                                                           "wait_wall_seconds":  2.7189999999973224
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  21.98581560283688,
+                                                              "cpu_cycles":  9.893393185653654,
+                                                              "seconds":  13.88912486676026
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r4.json",
+                                 "package":  "E19-flat-bulk-timeline-r3-frozen-original-qualification",
+                                 "source":  "f0899611a6674ed1f99d14f1a9f18f25b42d874b",
+                                 "game":  "rka",
+                                 "feature":  "shadow-off",
+                                 "frames":  6000,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r4\\rka-shadow-off-0-A",
+                                           "binary_sha256":  "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                                           "runtime":  {
+                                                           "cpu_seconds":  5.125,
+                                                           "cpu_cycles":  24912114530,
+                                                           "seconds":  5.635652
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.3125,
+                                                           "user_seconds":  5.0,
+                                                           "process_cycles":  25599062300,
+                                                           "peak_working_set_bytes":  67321856,
+                                                           "peak_commit_bytes":  75816960,
+                                                           "sampled_peak_private_bytes":  75165696,
+                                                           "memory_samples":  55,
+                                                           "wait_wall_seconds":  5.797000000005937
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r4\\rka-shadow-off-1-B",
+                                           "binary_sha256":  "ebea6dfe3d52c7250e8174476fa1615920cf19d5fd38f0a4da885d3c3b19a097",
+                                           "runtime":  {
+                                                           "cpu_seconds":  5.21875,
+                                                           "cpu_cycles":  25070112080,
+                                                           "seconds":  5.9704763
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.296875,
+                                                           "user_seconds":  5.0625,
+                                                           "process_cycles":  25656341200,
+                                                           "peak_working_set_bytes":  67309568,
+                                                           "peak_commit_bytes":  75788288,
+                                                           "sampled_peak_private_bytes":  75788288,
+                                                           "memory_samples":  58,
+                                                           "wait_wall_seconds":  6.187000000005355
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  1.8292682926829285,
+                                                              "cpu_cycles":  0.6342197480255329,
+                                                              "seconds":  5.941181251077943
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r4.json",
+                                 "package":  "E19-flat-bulk-timeline-r3-frozen-original-qualification",
+                                 "source":  "f0899611a6674ed1f99d14f1a9f18f25b42d874b",
+                                 "game":  "rka",
+                                 "feature":  "shadow-on",
+                                 "frames":  6000,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r4\\rka-shadow-on-0-A",
+                                           "binary_sha256":  "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                                           "runtime":  {
+                                                           "cpu_seconds":  6.546875,
+                                                           "cpu_cycles":  30789763920,
+                                                           "seconds":  7.0136225
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.5,
+                                                           "user_seconds":  6.15625,
+                                                           "process_cycles":  31405320100,
+                                                           "peak_working_set_bytes":  67379200,
+                                                           "peak_commit_bytes":  75866112,
+                                                           "sampled_peak_private_bytes":  75210752,
+                                                           "memory_samples":  67,
+                                                           "wait_wall_seconds":  7.25
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r4\\rka-shadow-on-1-B",
+                                           "binary_sha256":  "ebea6dfe3d52c7250e8174476fa1615920cf19d5fd38f0a4da885d3c3b19a097",
+                                           "runtime":  {
+                                                           "cpu_seconds":  6.3125,
+                                                           "cpu_cycles":  29297034050,
+                                                           "seconds":  5.4460834
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.75,
+                                                           "user_seconds":  5.6875,
+                                                           "process_cycles":  29880103360,
+                                                           "peak_working_set_bytes":  67391488,
+                                                           "peak_commit_bytes":  75890688,
+                                                           "sampled_peak_private_bytes":  75239424,
+                                                           "memory_samples":  53,
+                                                           "wait_wall_seconds":  5.656999999991967
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  -3.5799522673030992,
+                                                              "cpu_cycles":  -4.848136782985768,
+                                                              "seconds":  -22.3499211712635
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r4.json",
+                                 "package":  "E19-flat-bulk-timeline-r3-frozen-original-qualification",
+                                 "source":  "f0899611a6674ed1f99d14f1a9f18f25b42d874b",
+                                 "game":  "sonic1",
+                                 "feature":  "shadow-off",
+                                 "frames":  2400,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r4\\sonic1-shadow-off-0-A",
+                                           "binary_sha256":  "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                                           "runtime":  {
+                                                           "cpu_seconds":  1.8125,
+                                                           "cpu_cycles":  8272689020,
+                                                           "seconds":  1.8820727
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.109375,
+                                                           "user_seconds":  1.796875,
+                                                           "process_cycles":  8795525480,
+                                                           "peak_working_set_bytes":  63549440,
+                                                           "peak_commit_bytes":  75902976,
+                                                           "sampled_peak_private_bytes":  75685888,
+                                                           "memory_samples":  21,
+                                                           "wait_wall_seconds":  2.187999999994645
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r4\\sonic1-shadow-off-1-B",
+                                           "binary_sha256":  "2d7f83fc94b27536044a756a5b6a22ce04b3e523ea4ce06ffec628352c535dae",
+                                           "runtime":  {
+                                                           "cpu_seconds":  1.75,
+                                                           "cpu_cycles":  8058308860,
+                                                           "seconds":  1.832238
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.1875,
+                                                           "user_seconds":  1.65625,
+                                                           "process_cycles":  8575236480,
+                                                           "peak_working_set_bytes":  63844352,
+                                                           "peak_commit_bytes":  76070912,
+                                                           "sampled_peak_private_bytes":  75853824,
+                                                           "memory_samples":  19,
+                                                           "wait_wall_seconds":  2.0310000000026776
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  -3.4482758620689613,
+                                                              "cpu_cycles":  -2.5914205100870613,
+                                                              "seconds":  -2.647862646326038
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r4.json",
+                                 "package":  "E19-flat-bulk-timeline-r3-frozen-original-qualification",
+                                 "source":  "f0899611a6674ed1f99d14f1a9f18f25b42d874b",
+                                 "game":  "sonic1",
+                                 "feature":  "shadow-on",
+                                 "frames":  2400,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r4\\sonic1-shadow-on-0-A",
+                                           "binary_sha256":  "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.28125,
+                                                           "cpu_cycles":  10675297530,
+                                                           "seconds":  1.9802157
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.5,
+                                                           "user_seconds":  1.921875,
+                                                           "process_cycles":  11192403750,
+                                                           "peak_working_set_bytes":  64065536,
+                                                           "peak_commit_bytes":  76316672,
+                                                           "sampled_peak_private_bytes":  75882496,
+                                                           "memory_samples":  21,
+                                                           "wait_wall_seconds":  2.2189999999973224
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r4\\sonic1-shadow-on-1-B",
+                                           "binary_sha256":  "2d7f83fc94b27536044a756a5b6a22ce04b3e523ea4ce06ffec628352c535dae",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.390625,
+                                                           "cpu_cycles":  11021786230,
+                                                           "seconds":  2.0766595
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.4375,
+                                                           "user_seconds":  2.03125,
+                                                           "process_cycles":  11532786210,
+                                                           "peak_working_set_bytes":  63766528,
+                                                           "peak_commit_bytes":  75948032,
+                                                           "sampled_peak_private_bytes":  75730944,
+                                                           "memory_samples":  22,
+                                                           "wait_wall_seconds":  2.312000000005355
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  4.794520547945202,
+                                                              "cpu_cycles":  3.2457053213391873,
+                                                              "seconds":  4.8703684149155935
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r5.json",
+                                 "package":  "E19-flat-bulk-targeted-reverse",
+                                 "source":  "f0899611a6674ed1f99d14f1a9f18f25b42d874b",
+                                 "game":  "rka",
+                                 "feature":  "shadow-off",
+                                 "frames":  6000,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r5\\rka-shadow-off-1-A",
+                                           "binary_sha256":  "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                                           "runtime":  {
+                                                           "cpu_seconds":  5.125,
+                                                           "cpu_cycles":  24472436110,
+                                                           "seconds":  6.8559741
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.234375,
+                                                           "user_seconds":  5.03125,
+                                                           "process_cycles":  25018996760,
+                                                           "peak_working_set_bytes":  67342336,
+                                                           "peak_commit_bytes":  75812864,
+                                                           "sampled_peak_private_bytes":  75161600,
+                                                           "memory_samples":  65,
+                                                           "wait_wall_seconds":  7.10899999999674
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r5\\rka-shadow-off-0-B",
+                                           "binary_sha256":  "ebea6dfe3d52c7250e8174476fa1615920cf19d5fd38f0a4da885d3c3b19a097",
+                                           "runtime":  {
+                                                           "cpu_seconds":  4.625,
+                                                           "cpu_cycles":  22422044660,
+                                                           "seconds":  5.5680446
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.21875,
+                                                           "user_seconds":  4.46875,
+                                                           "process_cycles":  22929355610,
+                                                           "peak_working_set_bytes":  67354624,
+                                                           "peak_commit_bytes":  75821056,
+                                                           "sampled_peak_private_bytes":  75169792,
+                                                           "memory_samples":  53,
+                                                           "wait_wall_seconds":  5.703000000008615
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  -9.756097560975608,
+                                                              "cpu_cycles":  -8.378370836412818,
+                                                              "seconds":  -18.7855070806058
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-cart",
+                                 "record":  "native-qualification-r5.json",
+                                 "package":  "E19-flat-bulk-targeted-reverse",
+                                 "source":  "f0899611a6674ed1f99d14f1a9f18f25b42d874b",
+                                 "game":  "sonic1",
+                                 "feature":  "shadow-on",
+                                 "frames":  2400,
+                                 "exact":  true,
+                                 "A":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r5\\sonic1-shadow-on-1-A",
+                                           "binary_sha256":  "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.265625,
+                                                           "cpu_cycles":  10425983210,
+                                                           "seconds":  1.9935034
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.359375,
+                                                           "user_seconds":  2.015625,
+                                                           "process_cycles":  10942213350,
+                                                           "peak_working_set_bytes":  63647744,
+                                                           "peak_commit_bytes":  75968512,
+                                                           "sampled_peak_private_bytes":  75751424,
+                                                           "memory_samples":  22,
+                                                           "wait_wall_seconds":  2.2810000000026776
+                                                       }
+                                       },
+                                 "B":  {
+                                           "profile":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r5\\sonic1-shadow-on-0-B",
+                                           "binary_sha256":  "2d7f83fc94b27536044a756a5b6a22ce04b3e523ea4ce06ffec628352c535dae",
+                                           "runtime":  {
+                                                           "cpu_seconds":  2.4375,
+                                                           "cpu_cycles":  10828442330,
+                                                           "seconds":  2.05393
+                                                       },
+                                           "process":  {
+                                                           "scope":  "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                                                           "kernel_seconds":  0.421875,
+                                                           "user_seconds":  2.109375,
+                                                           "process_cycles":  11409571010,
+                                                           "peak_working_set_bytes":  63651840,
+                                                           "peak_commit_bytes":  75984896,
+                                                           "sampled_peak_private_bytes":  75763712,
+                                                           "memory_samples":  22,
+                                                           "wait_wall_seconds":  2.3439999999973224
+                                                       }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  7.586206896551717,
+                                                              "cpu_cycles":  3.860155075005145,
+                                                              "seconds":  3.0311761695515527
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-CD",
+                                 "record":  "game-e19-owned-audio-r1.json",
+                                 "package":  "E19-CD-native-audio-matched-r1",
+                                 "source":  "9e921b6 CD source byte-identical through f089961",
+                                 "game":  "sonic_cd",
+                                 "feature":  "actual standalone audio, paced full presentation",
+                                 "measured_frames":  [
+                                                         1800,
+                                                         3000
+                                                     ],
+                                 "exact":  true,
+                                 "A":  {
+                                           "binary":  {
+                                                          "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\cd-binaries\\reference\\SonicCD.exe",
+                                                          "bytes":  115818496,
+                                                          "sha256":  "9ce167c906304f8b9c8205cabf1b7f1abfa1bd8a8502d68793577cf25e798da1"
+                                                      },
+                                           "cost":  {
+                                                        "cpu_seconds":  6.59375,
+                                                        "cycles":  30125331500
+                                                    },
+                                           "wall_seconds":  20.28907280000567,
+                                           "memory":  {
+                                                          "peak_working_set_bytes":  251379712,
+                                                          "peak_commit_bytes":  28323840,
+                                                          "private_bytes":  28323840
+                                                      },
+                                           "startup_cpu":  {
+                                                               "cpu_seconds":  0.5625,
+                                                               "cycles":  2321894000
+                                                           }
+                                       },
+                                 "B":  {
+                                           "binary":  {
+                                                          "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\cd-binaries\\candidate\\SonicCD.exe",
+                                                          "bytes":  115819520,
+                                                          "sha256":  "70b4cbc4448e59ecbb37e1f5a0d81b1d80cdc00b4203af6747aa01665fb5044c"
+                                                      },
+                                           "cost":  {
+                                                        "cpu_seconds":  8.09375,
+                                                        "cycles":  37780615360
+                                                    },
+                                           "wall_seconds":  20.345568000004278,
+                                           "memory":  {
+                                                          "peak_working_set_bytes":  251367424,
+                                                          "peak_commit_bytes":  28336128,
+                                                          "private_bytes":  28336128
+                                                      },
+                                           "startup_cpu":  {
+                                                               "cpu_seconds":  0.484375,
+                                                               "cycles":  2203347310
+                                                           }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  22.748815165876767,
+                                                              "cycles":  25.411451024198684
+                                                          }
+                             },
+                             {
+                                 "kind":  "native-CD",
+                                 "record":  "game-e19-owned-audio-r2-reverse.json",
+                                 "package":  "E19-CD-native-audio-matched-r1",
+                                 "source":  "9e921b6 CD source byte-identical through f089961",
+                                 "game":  "sonic_cd",
+                                 "feature":  "actual standalone audio, paced full presentation",
+                                 "measured_frames":  [
+                                                         1800,
+                                                         3000
+                                                     ],
+                                 "exact":  true,
+                                 "A":  {
+                                           "binary":  {
+                                                          "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\cd-binaries\\reference\\SonicCD.exe",
+                                                          "bytes":  115818496,
+                                                          "sha256":  "9ce167c906304f8b9c8205cabf1b7f1abfa1bd8a8502d68793577cf25e798da1"
+                                                      },
+                                           "cost":  {
+                                                        "cpu_seconds":  6.5625,
+                                                        "cycles":  30246936950
+                                                    },
+                                           "wall_seconds":  20.310876400006237,
+                                           "memory":  {
+                                                          "peak_working_set_bytes":  250572800,
+                                                          "peak_commit_bytes":  28327936,
+                                                          "private_bytes":  28319744
+                                                      },
+                                           "startup_cpu":  {
+                                                               "cpu_seconds":  0.46875,
+                                                               "cycles":  2209139120
+                                                           }
+                                       },
+                                 "B":  {
+                                           "binary":  {
+                                                          "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\cd-binaries\\candidate\\SonicCD.exe",
+                                                          "bytes":  115819520,
+                                                          "sha256":  "70b4cbc4448e59ecbb37e1f5a0d81b1d80cdc00b4203af6747aa01665fb5044c"
+                                                      },
+                                           "cost":  {
+                                                        "cpu_seconds":  6.90625,
+                                                        "cycles":  31209925120
+                                                    },
+                                           "wall_seconds":  20.452186099995743,
+                                           "memory":  {
+                                                          "peak_working_set_bytes":  250540032,
+                                                          "peak_commit_bytes":  28311552,
+                                                          "private_bytes":  28311552
+                                                      },
+                                           "startup_cpu":  {
+                                                               "cpu_seconds":  0.421875,
+                                                               "cycles":  2106916000
+                                                           }
+                                       },
+                                 "candidate_change_pct":  {
+                                                              "cpu_seconds":  5.238095238095242,
+                                                              "cycles":  3.1837543470662144
+                                                          }
+                             }
+                         ],
+    "records":  [
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r1.json",
+                        "sha256":  "55b5b70f7ee68a6c57d8e1ca4de4114f77249ab0b87b3907cb6c08a688251726"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r2.json",
+                        "sha256":  "10e7777a32b3ea0ef794885bfdb30c0ee9eeb9df62d900474cc20d9de8425b18"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r3.json",
+                        "sha256":  "188d6d50a90fb0a07e15b7abf2c35ed77b76185e384c5551db633c86335205a6"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r4.json",
+                        "sha256":  "a7514568bdbeffccae101f4e49b981441befb63a436140fed5c50de81f35c469"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-qualification-r5.json",
+                        "sha256":  "6a9787c2f23e9bff52728b90432ae00b8ca7cdf129fbe80f2d02b09af050eb3a"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\game-e19-owned-audio-r1.json",
+                        "sha256":  "af947f718467132ca523a0ef9f6761d5a46c9c8bce1b7ff60173d46a7e1e2466"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\game-e19-owned-audio-r2-reverse.json",
+                        "sha256":  "061790d7993f50835be68280784241b9e3c089adeb2c64c3be89766151d2a367"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-builds-r1.json",
+                        "sha256":  "c6e066d0b19597e40c5033d081a7606a870fcbf4f682c9ab200e7ac4ab65e3ab"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-builds-r2.json",
+                        "sha256":  "4a0d3015ef0c02a931436f9fe2eb455ad8d8d90532a01e4951126a3a61b22d8b"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-builds-r3.json",
+                        "sha256":  "c74486a0a015be212e87616605a14d5cb9c14196097381e24c2ab590c80536cf"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-tests-r1.json",
+                        "sha256":  "f6be290e58a3ac136596aac82e8a5d81928ad7b086f38f98323c03ede40a90bf"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-tests-r2.json",
+                        "sha256":  "dc2622d8980cabe5d96cc29e2867d562407886ad799fb2c812f3c13f795f75e7"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-tests-r3.json",
+                        "sha256":  "6f3692ae7fae339f2375421d189c96945dc10f9d5e1f9b69aa670532fcf2ba18"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\cd-server-builds-r1.json",
+                        "sha256":  "537e4eaa98a658add301b2a29dd3ccb2c52076e28e59fbbba1d73497dce5be6c"
+                    },
+                    {
+                        "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\cd-builds-local-r1.json",
+                        "sha256":  "a7d78c63e98ca97fcd67d4723b373092b1aea70ef902e64af0b895a7e00bd754"
+                    }
+                ],
+    "cost_disposition":  "All outputs exact, but repeated supported Sonic1 shadow regressions reject owned and flat packages. RKA gains cannot offset this. CD CPU/cycles adverse in both orders; paced wall is not throughput proof. Owned package also adds about2MiB; flat removes that cost but still fails. Default cartridge observations mixed/inconclusive. No universal all-future-algorithm impossibility claim.",
+    "retained_runtime_changes":  [
+
+                                 ],
+    "pr":  null,
+    "cleanup":  {
+                    "local_removed":  [
+                                          {
+                                              "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-build-r1-rka",
+                                              "files":  422,
+                                              "bytes":  101766965,
+                                              "removed":  true
+                                          },
+                                          {
+                                              "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\native-build-r1-sonic1",
+                                              "files":  402,
+                                              "bytes":  63470994,
+                                              "removed":  true
+                                          },
+                                          {
+                                              "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-build-r1",
+                                              "files":  313,
+                                              "bytes":  17227807,
+                                              "removed":  true
+                                          }
+                                      ],
+                    "local_removed_bytes":  182465766,
+                    "retained_final_units":  [
+                                                 {
+                                                     "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-binaries-r3\\audio_work_test.exe",
+                                                     "sha256":  "e624e1e4646f372446cd643e735441b75e7f30f0d553db9eb472325d2cc56404",
+                                                     "bytes":  77824
+                                                 },
+                                                 {
+                                                     "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-binaries-r3\\audio_event_order_test.exe",
+                                                     "sha256":  "9618afbed3f55d2637fa91edda33d6791ba7f67ba5ba552b3634e347e428887d",
+                                                     "bytes":  15360
+                                                 },
+                                                 {
+                                                     "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-binaries-r3\\segacd_audio_native_test.exe",
+                                                     "sha256":  "bcce159b9757af56ac4a81deb89f3ba06c84411ffd00bfe0d0cf000829434f70",
+                                                     "bytes":  33792
+                                                 },
+                                                 {
+                                                     "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-binaries-r3\\SDL2.dll",
+                                                     "sha256":  "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+                                                     "bytes":  2500096
+                                                 },
+                                                 {
+                                                     "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-binaries-r3\\CMakeCache.txt",
+                                                     "sha256":  "1fcdc7dbda98419f4214c95283f517059e6c0b440cf6fa25af54350bd024f320",
+                                                     "bytes":  17398
+                                                 },
+                                                 {
+                                                     "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-binaries-r3\\LastTest.log",
+                                                     "sha256":  "a08775f344db6fdacb6b005d2b9197f049498f052d961b4ed5a4d06bbcf9d996",
+                                                     "bytes":  1155
+                                                 },
+                                                 {
+                                                     "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-binaries-r3\\audio-original-applied.log",
+                                                     "sha256":  "f6b5276f2dddf25dd3e75f6d93040aa1f6292c0c6e6c47eda68b80580bcac7f1",
+                                                     "bytes":  5198380
+                                                 },
+                                                 {
+                                                     "path":  "G:\\Temp\\Codex\\genesis-engine-audio-timeline-20261031\\unit-binaries-r3\\audio-worker-applied.log",
+                                                     "sha256":  "f6b5276f2dddf25dd3e75f6d93040aa1f6292c0c6e6c47eda68b80580bcac7f1",
+                                                     "bytes":  5198380
+                                                 }
+                                             ],
+                    "earlier_units":  [
+                                          "unit-binaries-r1",
+                                          "unit-binaries-r2"
+                                      ],
+                    "remote":  "cache restore and duplicate binary cleanup pending",
+                    "retention":  "Pushed prototype Git history, three native binary/config manifests, unit binaries/traces/logs, full per-game raw A/B samples outside delivery folders; frozen consumers/SDK/dependencies remain ongoing campaign inputs"
+                },
+    "final_review":  null
+}
