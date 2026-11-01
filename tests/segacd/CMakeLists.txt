@@ -798,7 +798,7 @@ foreach(test_target IN ITEMS segacd_memory_test segacd_pcm_test segacd_fader_tes
 endforeach()
 
 # Owned publication is compared with independently frozen old device kernels.
-add_library(segacd_source_span_reference OBJECT source_span_reference/rf5c164.c source_span_reference/cdda.c)
+add_library(segacd_source_span_reference OBJECT source_span_reference/rf5c164.c source_span_reference/cdda.c source_span_reference/audio_mix.c)
 target_include_directories(segacd_source_span_reference PRIVATE ../../runner/cd)
 target_compile_features(segacd_source_span_reference PRIVATE c_std_11)
 foreach(api init reset read write sample advance advance_timed)
@@ -806,6 +806,9 @@ foreach(api init reset read write sample advance advance_timed)
 endforeach()
 foreach(api reset play pause stop seek clear_for_data set_modes set_fader_target_raw advance_to push_raw_sector)
   target_compile_definitions(segacd_source_span_reference PRIVATE segacd_cdda_${api}=ref_segacd_cdda_${api})
+endforeach()
+foreach(api init reset set_active push begin_span commit_span pause resume clear_faults set_window check_window render_window next_output_position bind_audio_extra unbind_audio_extra audio_extra_source get_stats)
+  target_compile_definitions(segacd_source_span_reference PRIVATE segacd_audio_mix_${api}=ref_mix_${api})
 endforeach()
 add_executable(segacd_audio_source_span_test audio_source_span_test.c ../../runner/cd/audio_mix.c $<TARGET_OBJECTS:segacd_source_span_reference>)
 target_link_libraries(segacd_audio_source_span_test PRIVATE segacd_devices)

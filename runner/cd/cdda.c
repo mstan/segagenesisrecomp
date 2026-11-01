@@ -128,11 +128,64 @@ SegaCDCddaResult segacd_cdda_advance_owned(SegaCDCdda *s,uint64_t target,
     uint64_t first_delta=(SEGACD_CDDA_CLOCK-s->phase+SEGACD_CDDA_RATE-1u)/SEGACD_CDDA_RATE;
     uint64_t first=s->clock_now+first_delta;
     uint64_t last=s->clock_now+(emitted*SEGACD_CDDA_CLOCK-s->phase+SEGACD_CDDA_RATE-1u)/SEGACD_CDDA_RATE;
+    uint32_t first_phase=(uint32_t)(s->phase+first_delta*SEGACD_CDDA_RATE-SEGACD_CDDA_CLOCK);
     SegaCDAudioWriteGrant grant;
+    if(owned->begin_constant) {
+        unsigned field=s->fader.current_field,target_field=s->fader.target_field;
+        int constant=!data || (!field&&!target_field);
+        int16_t left=0,right=0;
+        if(data&&!constant) {
+            /* Inspect only until a difference. Constant input is useful even
+             * at nonzero gain; a zero sector remains zero during a fade. */
+            left=s->fifo[s->fifo_head][s->fifo_frame][0];
+            right=s->fifo[s->fifo_head][s->fifo_frame][1];
+            if(field==target_field || (!left&&!right)) {
+                constant=1;unsigned head=s->fifo_head,frame=s->fifo_frame;
+                for(uint64_t i=1;i<emitted;++i) {
+                    if(++frame==SEGACD_CDDA_SECTOR_FRAMES){frame=0;head=(head+1u)%SEGACD_CDDA_FIFO_SECTORS;}
+                    if(s->fifo[head][frame][0]!=left||s->fifo[head][frame][1]!=right){constant=0;break;}
+                }
+                int32_t numerator=(int32_t)(field<4u?field:field>>2);
+                unsigned shift=field<4u?10u:8u;
+                left=owned_scale(left,numerator,shift);right=owned_scale(right,numerator,shift);
+            }
+        }
+        SegaCDAudioConstant run={first,SEGACD_CDDA_RATE-1u-first_phase,
+                                SEGACD_CDDA_CLOCK,SEGACD_CDDA_RATE,left,right};
+        if(constant&&owned->begin_constant(owned->user,&run,(size_t)emitted,&grant)&&grant.constant_run==1&&grant.count==emitted) {
+            if(field<target_field) {
+                unsigned distance=target_field-field;
+                field+=emitted<distance?(unsigned)emitted:distance;
+            } else if(field>target_field) {
+                unsigned distance=field-target_field;
+                field-=emitted<distance?(unsigned)emitted:distance;
+            }
+            s->fader.current_field=(uint16_t)field;
+            if(data) {
+                uint64_t remaining=emitted;
+                while(remaining) {
+                    unsigned chunk=SEGACD_CDDA_SECTOR_FRAMES-s->fifo_frame;
+                    if(remaining<chunk)chunk=(unsigned)remaining;
+                    s->fifo_frame=(uint16_t)(s->fifo_frame+chunk);remaining-=chunk;
+                    if(s->fifo_frame==SEGACD_CDDA_SECTOR_FRAMES) {
+                        s->fifo_frame=0;s->fifo_head=(uint8_t)((s->fifo_head+1u)%SEGACD_CDDA_FIFO_SECTORS);--s->fifo_count;
+                    }
+                }
+            }
+            s->clock_now=target;s->phase=total%SEGACD_CDDA_CLOCK;
+            s->total_sample_ticks+=ticks;s->delivered_frames+=emitted;
+            if(!data)s->silence_frames+=ticks;
+            int underflow=ticks>emitted;
+            if(underflow){s->underflow_frames+=ticks-emitted;s->status|=SEGACD_CDDA_STATUS_UNDERFLOW;}
+            owned->commit(owned->user,&grant);
+            if(frames_emitted)*frames_emitted=emitted;
+            return underflow?SEGACD_CDDA_UNDERFLOW:SEGACD_CDDA_OK;
+        }
+    }
     if(!owned->begin(owned->user,first,last,(size_t)emitted,&grant)||!grant.frame||grant.count!=emitted)
         return segacd_cdda_advance_to(s,target,sink,user,frames_emitted);
     uint64_t stamp=first;
-    uint32_t phase=(uint32_t)(s->phase+first_delta*SEGACD_CDDA_RATE-SEGACD_CDDA_CLOCK);
+    uint32_t phase=first_phase;
     size_t done=0;
     while(done<(size_t)emitted) {
         size_t count=(size_t)emitted-done;
