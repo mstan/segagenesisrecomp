@@ -485,13 +485,15 @@ typedef struct NativeRowContext {
     int line, width, ready, indices_ready;
     uint8_t *indices;
     uint32_t *pixels;
+    const GVDPRasterRow *raster;
 } NativeRowContext;
 
 static void native_row_prepare(NativeRowContext *r)
 {
     if(r->indices_ready)return;
-    r->width=gvdp_render_scanline(r->vdp,r->line,r->indices);
-    const uint32_t *host_palette=gvdp_host_palette();
+    r->width=r->raster ? gvdp_compose_captured(r->raster,r->indices) :
+                         gvdp_render_scanline(r->vdp,r->line,r->indices);
+    const uint32_t *host_palette=r->raster ? r->raster->host_palette : gvdp_host_palette();
     if(host_palette)memcpy(s_cram_argb+GVDP_HOST_PALETTE_BASE,host_palette,
         GVDP_HOST_PALETTE_SIZE*sizeof(uint32_t));
     else if(gvdp_ext_active())for(int k=0;k<GVDP_EXT_LINES*16;++k)
@@ -520,6 +522,7 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
     int active_h = gvdp_screen_height(&m->vdp);
     static uint8_t  idxbuf[GVDP_MAX_WIDTH];
     static uint32_t rowbuf[GVDP_MAX_WIDTH];
+    static GVDPRasterRow raster;
 
     for (int line = 0; line < LINES_TOTAL; line++) {
         unsigned irq = gvdp_begin_scanline(&m->vdp, line);
@@ -590,14 +593,21 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                     gvdp_evaluate_scanline(&m->vdp, row);
                     continue;
                 }
-                NativeRowContext native = { &m->vdp, row, 0, 0, 0, idxbuf, rowbuf };
-                if (producer && producer->enabled(producer_user)) {
-                    /* Status remains hardware-owned even when the original
-                     * image is unused. A lazy fallback re-evaluates the same
-                     * row; collision/overflow are sticky, not counters. */
-                    gvdp_evaluate_scanline(&m->vdp, row);
+                NativeRowContext native = { &m->vdp, row, 0, 0, 0, idxbuf, rowbuf, NULL };
+                int custom = producer ? producer->enabled(producer_user) : 0;
+                if (custom) {
+                    /* Requested layers evaluate native sprites and consume
+                     * presentation providers once. Their pixels/masks/colors
+                     * survive deferred native composition. The legacy path
+                     * retains its original sticky-status evaluation. */
+                    if (custom & 2) {
+                        if (gvdp_capture_presented_scanline(&m->vdp, row, &raster))
+                            native.raster = &raster;
+                        else
+                            native_row_fetch(&native);
+                    } else gvdp_evaluate_scanline(&m->vdp, row);
                     producer->render(producer_user, &m->vdp, row, gvdp_active_width(&m->vdp),
-                                     native_row_fetch, &native);
+                                     native_row_fetch, &native, native.raster);
                 } else {
 #if GENESIS_FINAL_PIXEL_PIPELINE
                     if(pixels && pixels->indexed) {
