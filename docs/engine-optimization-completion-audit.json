@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "E27 joins the qualified bounded engine contracts: actual full-identity immutable image verification is consolidated and mechanically adopted, with Windows bounded loading CPU benefit, neutral gameplay and explicit Linux memory cost.7 original families plus E37 remain open:8 across37;29 resolved. Counts are dispositions, not speedups. Combined owner handoff remains.",
+  "conclusion": "E30 joins qualified bounded engine contracts with a complete guarded firmware table operation and finite57-service assessment. Actual BIOS menu/BRAM/native-save and portable state gates pass; Sonic CD gameplay appears34frames earlier; host CPU/startup neutral/inconclusive.6 original families plus E37 remain open:7 across37;30 resolved. Counts are dispositions, not speedups. Combined owner handoff remains.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -16,14 +16,14 @@
     "existing": 2
   },
   "implementation_counts": {
-    "bounded_delivered": 19,
+    "bounded_delivered": 20,
     "rejected_mechanism": 1,
     "bounded_rejected": 9,
-    "deferred": 5,
+    "deferred": 4,
     "existing": 1,
     "partial": 1
   },
-  "remaining_scope_open_count": 7,
+  "remaining_scope_open_count": 6,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -831,16 +831,19 @@
       "id": "E30",
       "name": "Reusable console-firmware services",
       "original_goal": "Assess closed standard Sega CD BIOS services that can be replaced once for supported firmware profiles across games.",
-      "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "Native BIOS instruction catalog retained; no new reusable whole-service HLE.",
-      "remaining": "A named standard firmware service ABI with complete reusable effects.",
-      "audit_basis": "Catalog execution is not service HLE. A gameplay-only profile does not cover boot, BRAM/UI or firmware control waits; title file/SP routines remain excluded.",
-      "next_closure": "Find a costly standard firmware service and specify its complete ABI/effects before replacing it; do not move a title routine into engine code.",
+      "recorded_evaluation_status": "implemented_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Guarded native BRMINIT protection-table operationf13bf7c with complete ABI, real BIOS menu/BRAM/native-save, portable and snapshot-replay qualification; finite57-service remainder decisions; readyPR56.",
+      "remaining": "Selected original bounded contract complete; combined owner play/merge/release handoff remains.",
+      "audit_basis": "Independent full source/ABI/boot/menu/BRAM/Windows game/Linux gate; natural8game+2UI calls, four exact pictures34frames earlier; host CPU/startup neutral/inconclusive. Native-save bytes preserved. No unsupported CD whole-game serializer claim.",
+      "next_closure": "Finish consolidated records/durable tracking, then original E31 with fresh validation-only reviewer; final combined owner handoff remains.",
       "source_references": [
-        "runner/cd/standalone_program.c",
-        "runner/cd/segacd_coordinator.c"
+        "runner/cd/bios_services.c",
+        "runner/cd/bios_tables.c",
+        "tests/segacd/bios_tables_test.c",
+        "docs/ENGINE_FIRMWARE_SERVICES.md",
+        "docs/engine-firmware-services-results.json"
       ]
     },
     {
@@ -963,5 +966,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 8
+  "total_remaining_open_count": 7
 }

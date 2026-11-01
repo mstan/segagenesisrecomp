@@ -4,7 +4,7 @@ Historical evaluation/release owner: `beads-3vb.31`. Remaining implementation: *
 
 Source audit base: `f422ad52a04b9d253c0e9cbcdb3476aabd563ae8`. Prepared in isolated branch `codex/engine-optimization-burndown-20261027`. Refresh and freeze remote engine/shared-core and representative consumer heads before implementation.
 
-**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04, E05, E06, E07, E08, E10, E16, E18, E22, E24, E25, E26 and E27; **7 of the original36 families remain open**, alongside nineteen delivered or qualified bounded contracts, nine decisively rejected whole-family opportunities and one existing finding; family counts overlap and are not speedup counts.
+**Implementation burndown remains open.** The prior evaluation/release pass resolved dispositions for all 36 families; it did not implement or exhaust all 36 opportunities. See the [36-family completion audit](ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md) and [machine-readable audit](engine-optimization-completion-audit.json). The released-base audit left 30 families open. The serial runs now implement and qualify E01, E03, E04, E05, E06, E07, E08, E10, E16, E18, E22, E24, E25, E26, E27 and E30; **6 of the original36 families remain open** (plus E37:7 across37,30 resolved), alongside twenty delivered or qualified bounded contracts, nine decisively rejected whole-family opportunities and one existing finding; family counts overlap and are not speedup counts.
 
 ## Scope
 
@@ -211,11 +211,11 @@ Current owner instruction (2026-10-28): work serially on one original goal. A va
   - Evidence: `runner/cd/disc_image.c`.
   - Disposition/evidence: Read-only mapped first-data-track residency96a2e2f shares bytes verified during mandatory full payload hashing; the256MiB cap and copied fallback remain. Windows/Linux full game proof and forced mapping-failure checks pass. Current mappedBytes139735888/privateResidentBytes0 removes the separate private copy; mapping length is not an RSS saving claim. Catalog-only matched Linux RSS samples are retained separately with their raw process status.
 
-- [ ] **E30: Reusable console-firmware services** â€” P2; original N36.
+- [x] **E30: Reusable console-firmware services** â€” P2; original N36.
   - Goal: Assess closed standard Sega CD BIOS services that can be replaced once for supported firmware profiles across games.
   - Boundary: Require a real reusable firmware ABI and complete state/BRAM/UI/IRQ behavior. Game SP/file-engine routines and game-PC exceptions are deferred; do not generalize a title handler merely by moving it into the engine.
   - Evidence: `runner/cd/segacd_coordinator.c`, `runner/cd/standalone_program.c`.
-  - Disposition/evidence: The native BIOS instruction catalog is reusable, but a ROM hash/entry PC is not a closed high-level BIOS service ABI. Disc command timing, ownership, IRQs, BRAM and BIOS UI remain observable. The current loading HLE is a game-owned file/SP service, so moving it into the engine would not generalize it. No standard BIOS service is demonstrated hot in the current gameplay profile. Defer whole-service HLE until a named reusable firmware ABI and its complete effects/workload are established; title services stay in T01/T05/T12.
+  - Disposition/evidence: Qualified native BRMINIT protection-table operation f13bf7c replaces the quadratic sort with direct finite-field tables and complete guarded return/stack/state behavior, including PRG and owned Word RAM. Full57-service bounded remainder assessment retains required drive/control/native-save semantics. Actual normal BIOS menu formatting/reboot/native-save preservation and Windows/Linux gates pass. Sonic CD gameplay appears34frames (~0.57s) earlier; host CPU/startup neutral/inconclusive. ReadyPR56; [complete family evidence](ENGINE_FIRMWARE_SERVICES.md), [raw results](engine-firmware-services-results.json). Combined owner handoff remains.
 
 ### State and replay
 
