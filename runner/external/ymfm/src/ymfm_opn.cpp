@@ -31,10 +31,6 @@
 #include "ymfm_opn.h"
 #include "ymfm_fm.ipp"
 
-#ifndef YMFM_OPN2_NATIVE_KERNEL
-#define YMFM_OPN2_NATIVE_KERNEL 1
-#endif
-
 namespace ymfm
 {
 
@@ -2393,26 +2389,16 @@ void ym2612::generate(output_data *output, uint32_t numsamples)
 
 		// sum individual channels to apply DAC discontinuity on each
 		output->clear();
+		output_data temp;
 
 		// first do FM-only channels; OPN2 is 9-bit with intermediate clipping
 		int const last_fm_channel = m_dac_enable ? 5 : 6;
-#if YMFM_OPN2_NATIVE_KERNEL && !YMFM_DEBUG_LOG_WAVFILES
-		output_data channels[6];
-		m_fm.output_opn2_channels(channels, (1U << last_fm_channel) - 1U);
-		for (int chan = 0; chan < last_fm_channel; chan++)
-		{
-			output->data[0] += dac_discontinuity(channels[chan].data[0]);
-			output->data[1] += dac_discontinuity(channels[chan].data[1]);
-		}
-#else
-		output_data temp;
 		for (int chan = 0; chan < last_fm_channel; chan++)
 		{
 			m_fm.output(temp.clear(), 5, 256, 1 << chan);
 			output->data[0] += dac_discontinuity(temp.data[0]);
 			output->data[1] += dac_discontinuity(temp.data[1]);
 		}
-#endif
 
 		// add in DAC
 		if (m_dac_enable)

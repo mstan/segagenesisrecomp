@@ -374,7 +374,6 @@ public:
 
 	// compute sum of channel outputs
 	void output(output_data &output, uint32_t rshift, int32_t clipmax, uint32_t chanmask) const;
-	void output_opn2_channels(output_data *output, uint32_t chanmask) const;
 
 	// write to the OPN registers
 	void write(uint16_t regnum, uint8_t data);

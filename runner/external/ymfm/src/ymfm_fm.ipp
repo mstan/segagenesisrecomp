@@ -1391,24 +1391,6 @@ void fm_engine_base<RegisterType>::output(output_data &output, uint32_t rshift, 
 }
 
 
-// Per-channel OPN2 outputs in one scan. Keep zero outputs for masked/inactive
-// channels: YM2612 applies its nonzero DAC discontinuity to those too.
-template<class RegisterType>
-void fm_engine_base<RegisterType>::output_opn2_channels(output_data *output, uint32_t chanmask) const
-{
-#if YMFM_DEBUG_LOG_WAVFILES
-	for (uint32_t ch = 0; ch < CHANNELS; ++ch)
-		this->output(output[ch].clear(), 5, 256, chanmask & (1U << ch));
-#else
-	chanmask &= debug::GLOBAL_FM_CHANNEL_MASK & m_active_channels;
-	for (uint32_t ch = 0; ch < CHANNELS; ++ch)
-	{
-		output[ch].clear();
-		if (bitfield(chanmask, ch)) m_channel[ch]->output_4op(output[ch], 5, 256);
-	}
-#endif
-}
-
 //-------------------------------------------------
 //  write - handle writes to the OPN registers
 //-------------------------------------------------
