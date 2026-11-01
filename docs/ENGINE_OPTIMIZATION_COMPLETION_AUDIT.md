@@ -250,7 +250,7 @@ Evidence: ENGINE_AUDIO_TIMELINE.md, engine-audio-timeline-results.json, ENGINE_A
 
 ### E20: Faithful FM kernels
 
-Whole selected bounded opportunity rejected after two actual arithmetic/layout implementations. Independent frozen-core/wrapper native/fallback checks4/4 and20 matched game pairs preserve outputs/state. Global variants fail per-game costs; CD-only rollout not justified by neutral/inconclusive samples. All runtime/test/build source restored exact10ace05; no new runtime/PR. No claim every future FM design is impossible. Final record/cleanup/sync gate pending, then E21.
+Whole selected bounded opportunity rejected after two actual arithmetic/layout implementations. Independent frozen-core/wrapper native/fallback checks4/4 and20 matched game pairs preserve outputs/state. Global variants fail per-game costs; CD-only rollout not justified by neutral/inconclusive samples. All runtime/test/build source restored exact10ace05; no new runtime/PR. No claim every future FM design is impossible. Independent final source/records/cleanup gate accepted; owning issueclosed and central push12.4s exit0; original E21 explicitly next.
 
 Evidence: ENGINE_FM_KERNELS.md, engine-fm-kernel-results.json; beads-3z5k.18.
 

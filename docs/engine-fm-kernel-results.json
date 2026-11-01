@@ -823,12 +823,22 @@
       "bytes": 118319104
     }
   ],
-  "validation_gate": "Independent source/results decision accepted; final restoration/record/cleanup/sync check pending",
+  "validation_gate": "PASS; independent whole bounded rejection/restoration/records/cleanup verified; owning/parent/campaign durable; central push12.4s exit0; explicit original E21 instruction received",
   "cleanup_bytes": 289373158,
   "CD_cache_restore": {
     "passed": true,
     "capacity_record": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\capacity-CD-restore.json",
     "selection": "CMAKE_PROJECT_INCLUDE:UNINITIALIZED=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
     "source": "original accepted qualified-source.cmake; no E20 source override"
+  },
+  "review": {
+    "verdict": "ENGINE_FM_KERNELS_REVIEW.md",
+    "sha256": "0d0fbf4db52fd52b393a05bef3fc1bf23d517eb4f79f69c12e4f2c88e18dc8a2",
+    "audit": "engine-fm-kernel-review.json",
+    "audit_sha256": "0288de1ada54f77bbb81ad058a9aa1b65643030540ed4e2376a6c5401c3a997f",
+    "reviewed_head": "f6a605d4ad4451ebc8289a0325b3ed86f154a35c",
+    "central_push_seconds": 12.4,
+    "central_push_exit": 0,
+    "explicit_next": "E21"
   }
 }
