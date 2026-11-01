@@ -853,12 +853,22 @@
       "bytes": 236640256
     }
   ],
-  "validation_gate": "Independent source/per-game rejection supported; final restoration/record/cleanup/durable sync gate pending",
+  "validation_gate": "PASS: whole bounded rejection, exact source restoration, records, cleanup and durable own/parent/campaign updates independently verified; central push16.7s exit0",
   "cleanup_bytes": 404764155,
   "CD_cache_restore": {
     "passed": true,
     "selection": "CMAKE_PROJECT_INCLUDE:UNINITIALIZED=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
     "capacity_record": "G:\\Temp\\Codex\\genesis-engine-psg-spans-20261031\\capacity-CD-restore.json",
     "exit_code": 0
+  },
+  "review": {
+    "verdict": "ENGINE_PSG_EVENT_SPANS_REVIEW.md",
+    "sha256": "908d3688e3047fe1788b88540c8c04d2071b6a3109c2eb1077ec100363ef13af",
+    "audit": "engine-psg-event-span-review.json",
+    "audit_sha256": "bcdeeb76890ef9897dc01d3e9b46d18475ebf7a1566a9a66b086cd62e0bb27c4",
+    "reviewed_head": "e3cdfa293dd4fd37b482ccba2deffe55574ddc54",
+    "central_push_seconds": 16.7,
+    "central_push_exit": 0,
+    "next": "Original E22, serial with a fresh validation-only reviewer after verification of this evidence-only copy/push"
   }
 }

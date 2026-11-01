@@ -81,3 +81,8 @@ cache is restored to its original qualified source selection. See
 engine-psg-event-span-results.json for cleanup and final independent gate.
 No E21 runtime PR is appropriate; owner merge/release handoff remains for earlier
 meaningful PRs. No owner game windows, merge or release were performed here.
+
+Independent final source/records/cleanup and durability gates PASS. Owning issue
+is closed; central push16.7seconds exit0. See ENGINE_PSG_EVENT_SPANS_REVIEW.md
+and engine-psg-event-span-review.json. Original E22 follows verification of this
+evidence-only copy/push, with a new validation-only reviewer.
