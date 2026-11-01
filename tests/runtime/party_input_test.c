@@ -11,6 +11,17 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+/* Exercise the real mapper with deterministic held keys, without sending
+ * desktop input or changing the owner's keyboard state. Pads below use SDL. */
+static Uint8 keyboard[SDL_NUM_SCANCODES];
+static const Uint8 *test_keyboard_state(int *count)
+{
+    if (count) *count=SDL_NUM_SCANCODES;
+    return keyboard;
+}
+#define SDL_GetKeyboardState test_keyboard_state
+#include "input_map.c"
+#undef SDL_GetKeyboardState
 #define CHECK(c) do { if (!(c)) { fprintf(stderr,"line %d: %s (%s)\n",__LINE__,#c,SDL_GetError()); exit(1); } } while (0)
 static void events(void) { SDL_Event e; while (SDL_PollEvent(&e)) gamepad_handle_event(&e); }
 int main(int argc,char **argv)
@@ -65,6 +76,27 @@ int main(int argc,char **argv)
     CHECK(input_current_mask(2)==input_button_bit(GB_B));
     CHECK(input_current_mask(3)==input_button_bit(GB_RIGHT));
     CHECK(!input_current_mask(0) && !input_current_mask(1));
+    keyboard[g_input_map.p[0].key[GB_RIGHT]]=1;
+    CHECK(input_current_mask(0)==input_button_bit(GB_RIGHT));
+    input_set_gameplay_blocked(1);
+    CHECK(input_gameplay_blocked());
+    for (int p=0;p<INPUT_MAX_PLAYERS;++p) CHECK(!input_current_mask(p));
+    /* UI/raw device state stays available, and releases still arrive while
+     * the gameplay channel is captured. Held inputs resume on close. */
+    CHECK(input_map_key_mask(0)==input_button_bit(GB_RIGHT));
+    CHECK(gamepad_player_mask(3)==input_button_bit(GB_RIGHT));
+    CHECK(SDL_JoystickSetVirtualButton(joystick[2],SDL_CONTROLLER_BUTTON_A,0)==0);
+    SDL_JoystickUpdate(); events();
+    CHECK(!gamepad_player_mask(2) && !input_current_mask(2));
+    input_set_gameplay_blocked(0);
+    CHECK(!input_gameplay_blocked());
+    CHECK(input_current_mask(0)==input_button_bit(GB_RIGHT));
+    CHECK(!input_current_mask(2) && input_current_mask(3)==input_button_bit(GB_RIGHT));
+    input_set_gameplay_blocked(1);
+    keyboard[g_input_map.p[0].key[GB_RIGHT]]=0;
+    CHECK(!input_current_mask(0));
+    input_set_gameplay_blocked(0);
+    CHECK(!input_current_mask(0));
     CHECK(SDL_JoystickSetVirtualButton(joystick[4],SDL_CONTROLLER_BUTTON_B,1)==0);
     CHECK(SDL_JoystickSetVirtualButton(joystick[5],SDL_CONTROLLER_BUTTON_X,1)==0);
     SDL_JoystickUpdate(); events();
