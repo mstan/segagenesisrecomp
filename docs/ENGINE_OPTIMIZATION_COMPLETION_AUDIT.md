@@ -4,7 +4,7 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18/E22 are delivered or qualified. E11/E13/E14/E15/E17/E19/E20/E21 whole bounded opportunities were implemented and evaluated, then rejected. E18 is ready PR50; E22 is ready PR51 with neutral/inconclusive performance and lower CPU observations. **12 original families plus E37 remain open:13 across37,24 resolved.** Counts are dispositions, not speedups. Combined owner visual/play and merge handoff remains for meaningful PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions.
+Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18/E22 are delivered or qualified. E11/E13/E14/E15/E17/E19/E20/E21/E23 whole bounded opportunities were implemented and evaluated, then rejected. E18 is ready PR50; E22 is ready PR51 with neutral/inconclusive performance and lower CPU observations. **11 original families plus E37 remain open:12 across37,25 resolved.** Counts are dispositions, not speedups. Combined owner visual/play and merge handoff remains for meaningful PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions. E23 retains no new runtime after full pipeline and unity-bypass qualification; acceptedfe668 restored exactly.
 
 ## What was actually closed
 
@@ -55,7 +55,7 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E20 | Faithful FM kernels | Whole bounded opportunity rejected | Fixed routes and compact channel scan independently exact;18 cart plus2 CD pairs. No qualified retained package; all source/test/build restored exact10ace05. | No new runtime/PR; per-game adverse and CD inconclusive evidence retained; ENGINE_FM_KERNELS.md/results. |
 | E21 | PSG event spans | Whole bounded opportunity rejected | Existing settled-muted spans retained; active-run and whole-interval producer architectures independently exact, then rejected by per-game costs. | All new runtime/test/build restored exactf4b10d7; ENGINE_PSG_EVENT_SPANS.md/results; no new PR; independent final gate accepted and central push16.7s exit0. |
 | E22 | Sega CD PCM/CDDA spans | Qualified (bounded); PR51 | Synchronous owned PCM/CDDA queue publication, single-sample and block cadence; frozen complete-state/native x64/Win32 tests and four exact-output Sonic CD pairs. Neutral/inconclusive performance; all adverse/favorable observations retained. Independent source/record/cleanup gate accepted. | Selected contract qualified; combined owner handoff pending. E23/E25 remain open. |
-| E23 | Synthesis-to-device pipeline | Deferred; open | No new synthesis-to-device fusion. | Equivalent chip staging/mix/interpolation/filter/device-rate production. |
+| E23 | Synthesis-to-device pipeline | Rejected whole bounded opportunity | Coherent owned complete-frame source/mix/bridge pipeline and generic unity correction implemented, built and measured. All recorded behavior passes, but RKA cost remains adverse/unresolved. Entire acceptedfe668 tree and shared cache restored; no new runtime/PR. Independent source/records/cleanup gate accepted. | Whole selected opportunity rejected; future algorithms not claimed impossible. E24/E25 remain open. |
 | E24 | Audio buffer ownership | Deferred; open | Existing bounded mixed frame and device-locked handoff retained. | Qualified reduction of callback locks/copies/shared state. |
 | E25 | Exact constant/silent spans | Partial; open | Exact settled PSG silence, shared with E21. | Constant/silent PCM and CDDA runs with queue/timestamp/fader evolution. |
 | E26 | Bounded generic media prefetch | Partial; open | Redundant seeks removed so bounded 1 MiB stdio read-ahead works. | Actual asynchronous request-driven prefetch off the simulation path. |
@@ -276,11 +276,16 @@ E25 constant spans remain open.
 
 ### E23: Synthesis-to-device pipeline
 
-Host and CD audio pipeline files are unchanged. Clipping, integer divisions, capture taps and phase constrain equivalent fusion; they do not establish that it is impossible.
-
-**Next closure:** Specify the exact stream computation/ownership, then remove redundant passes while preserving generated-WAV/device contracts.
-
-Sources: `runner/audio.c`, `runner/audio/mixer.c`, `runner/cd/audio_native.c`, `runner/cd/audio_mix.c`. Historical evaluation: `evaluated_deferred`.
+Whole selected bounded opportunity rejected after a coherent owned complete-frame
+producer combining base/CD mixing, trusted window coverage and gain/bridge
+publication, then a generic unity-gain bypass. Five contracts/ten passing checks
+and20 actual game runs preserve recorded behavior, but RKA default costs remain
+adverse/unresolved in paired order and the final balanced check. CD/Sonic mixed
+observations do not offset. Exact acceptedfe668 complete tree restored by4191f56;
+six remote overlays match Git bytes and cached original graph rebuilt. No new
+runtime/test/build selection or PR. Independent source/records/cleanup gate passes;
+E24 follows durable reviewer instruction. See ENGINE_AUDIO_DEVICE_PIPELINE.md,
+engine-audio-device-pipeline-results.json and ENGINE_AUDIO_DEVICE_PIPELINE_REVIEW.md.
 
 ### E24: Audio buffer ownership
 
