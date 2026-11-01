@@ -450,7 +450,7 @@ SegaCDAudioMixResult segacd_audio_mix_commit_span(SegaCDAudioMix *mix,const Sega
     if(!mix||!g||g->owner!=mix||!valid_source((SegaCDAudioSource)g->source))return SEGACD_AUDIO_MIX_INVALID;
     SegaCDAudioQueue *q=&mix->source[g->source];
     if(mix->paused||!q->active||g->frame!=q->frame||g->mask!=QUEUE_MASK||
-       q->head!=g->old_head||q->count!=g->old_count||!g->count||
+       q->head!=g->old_head||q->count!=g->old_count||q->count>SEGACD_AUDIO_MIX_QUEUE_CAPACITY||!g->count||
        g->count>SEGACD_AUDIO_MIX_QUEUE_CAPACITY-q->count||
        g->first!=(((unsigned)q->head+q->count)&QUEUE_MASK)||
        segacd_audio_grant_frame(g,0)->subclock!=g->first_subclock||
