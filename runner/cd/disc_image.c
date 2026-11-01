@@ -490,7 +490,11 @@ static int hash_payload_pass(SegaCDImage *image,uint64_t offset,uint64_t size,
                 uint8_t *resident=image->resident+(size_t)(first-cache_start);
                 const uint8_t *source=buffer+(size_t)(first-position);
                 size_t bytes=(size_t)(end-first);
-                if(image->mapping_base) {
+                if(image->mapping_base
+#if defined(__linux__)
+                   ||image->snapshot_memory
+#endif
+                ) {
                     /* Compare/prefault EVERY published mapped byte during
                      * validation. The mounted file must remain immutable. */
                     if(memcmp(resident,source,bytes))goto done;
