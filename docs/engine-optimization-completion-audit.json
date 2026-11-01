@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "E30 joins qualified bounded engine contracts with a complete guarded firmware table operation and finite57-service assessment. Actual BIOS menu/BRAM/native-save and portable state gates pass; Sonic CD gameplay appears34frames earlier; host CPU/startup neutral/inconclusive.6 original families plus E37 remain open:7 across37;30 resolved. Counts are dispositions, not speedups. Combined owner handoff remains.",
+  "conclusion": "E31 joins whole bounded rejections after three implemented generic representation/identity architectures; actual RKA adverse runtime disqualifies the memory-saving final delta package. Original runtime restored exactly71b19b0.5original families plusE37 remainopen:6across37;31resolved. Counts are dispositions, not speedups; combined owner handoff remains.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -18,12 +18,12 @@
   "implementation_counts": {
     "bounded_delivered": 20,
     "rejected_mechanism": 1,
-    "bounded_rejected": 9,
-    "deferred": 4,
+    "bounded_rejected": 10,
+    "deferred": 3,
     "existing": 1,
     "partial": 1
   },
-  "remaining_scope_open_count": 6,
+  "remaining_scope_open_count": 5,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -851,16 +851,32 @@
       "name": "Engine snapshot representation and identity",
       "original_goal": "Evaluate generic authoritative/derived state separation, dirty pages/deltas/checkpoints and exact incremental state identity.",
       "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "Existing authoritative section table and full-byte checksum retained.",
-      "remaining": "Generic writer ownership, dirty pages/deltas/checkpoints and exact incremental identity.",
-      "audit_basis": "rb_state.c is unchanged. Dominant title fiber payload is outside scope, but does not rule out generic representation work. Old save-state compatibility is not required.",
-      "next_closure": "Establish complete writer/restore ownership and current per-section cost before choosing a generic page/delta representation.",
+      "implementation_state": "bounded_rejected",
+      "remaining_scope_open": false,
+      "delivered": "No retained runtime; three generic representation/identity architectures implemented and evaluated, then rejected. ENGINE_SNAPSHOT_REPRESENTATION.md / engine-snapshot-representation-results.json.",
+      "remaining": "Selected original bounded opportunity rejected; E32 remains independently open. No all-future-algorithm exhaustion claim.",
+      "audit_basis": "Actual complete-writer delta/checkpoint ownership and game correctness pass, but final production RKA cycles+1.610/+2.040percent in opposite-order pairs; original code restored exact71b19b0.",
+      "next_closure": "Full original bounded opportunity resolved; complete combined owner handoff for other retained PRs.",
       "source_references": [
         "runner/rb_state.c",
         "runner/frame_snapshots.c"
-      ]
+      ],
+      "historical_audit": {
+        "id": "E31",
+        "name": "Engine snapshot representation and identity",
+        "original_goal": "Evaluate generic authoritative/derived state separation, dirty pages/deltas/checkpoints and exact incremental state identity.",
+        "recorded_evaluation_status": "evaluated_deferred",
+        "implementation_state": "deferred",
+        "remaining_scope_open": true,
+        "delivered": "Existing authoritative section table and full-byte checksum retained.",
+        "remaining": "Generic writer ownership, dirty pages/deltas/checkpoints and exact incremental identity.",
+        "audit_basis": "rb_state.c is unchanged. Dominant title fiber payload is outside scope, but does not rule out generic representation work. Old save-state compatibility is not required.",
+        "next_closure": "Establish complete writer/restore ownership and current per-section cost before choosing a generic page/delta representation.",
+        "source_references": [
+          "runner/rb_state.c",
+          "runner/frame_snapshots.c"
+        ]
+      }
     },
     {
       "id": "E32",
@@ -966,5 +982,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 7
+  "total_remaining_open_count": 6
 }
