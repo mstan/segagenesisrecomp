@@ -17,6 +17,11 @@ struct GenesisHostStream {
 /* Stream creation/destruction and the exit handler share the single producer
  * thread. Workers only access their published file/pending/job_ok fields. */
 static GenesisHostStream *s_streams;
+/* All captures share one bounded I/O lane. A new publication joins the prior
+ * job through GenesisWorker; unrelated captures must not each wake a thread
+ * for every frame while competing with the game and audio workers. The lane
+ * lives until its last borrowed stream is drained and unregistered. */
+static GenesisWorker *s_stream_worker;
 static int s_exit_registered;
 
 static void write_job(void *context)
@@ -70,7 +75,8 @@ GenesisHostStream *genesis_host_stream_create(FILE *file, size_t capacity)
     s->file = file; s->capacity = capacity;
     s->buffer[0] = (unsigned char *)(s+1);
     s->buffer[1] = s->buffer[0] + capacity;
-    s->worker = genesis_worker_create();
+    if (!s_streams) s_stream_worker = genesis_worker_create();
+    s->worker = s_stream_worker;
     s->next = s_streams; s_streams = s;
     return s;
 }
@@ -147,10 +153,13 @@ int genesis_host_stream_destroy(GenesisHostStream *s)
 {
     if (!s) return 1;
     int ok = genesis_host_stream_flush(s);
-    genesis_worker_destroy(s->worker);
     GenesisHostStream **at = &s_streams;
     while (*at && *at != s) at = &(*at)->next;
     if (*at) *at = s->next;
+    if (!s_streams) {
+        genesis_worker_destroy(s_stream_worker);
+        s_stream_worker = NULL;
+    }
     free(s);
     return ok;
 }
