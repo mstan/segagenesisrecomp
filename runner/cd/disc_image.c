@@ -12,6 +12,7 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include <io.h>
+#include <share.h>
 #elif defined(__unix__) || defined(__APPLE__)
 #include <unistd.h>
 #endif
@@ -56,6 +57,9 @@ struct SegaCDImage {
     SegaCDTOC toc;
     uint64_t payload_offset;
     uint8_t digest[32];
+    uint8_t whole_digest[32];
+    size_t private_snapshot_bytes;
+    int whole_identity_checked;
     uint8_t *resident;
     int32_t resident_first;
     size_t resident_size;
@@ -443,15 +447,19 @@ static void payload_hash_close(PayloadHash *hash)
 #endif
 }
 static int hash_payload_pass(SegaCDImage *image,uint64_t offset,uint64_t size,
-                             uint8_t digest[32],int platform)
+                             uint8_t digest[32],const uint8_t *prefix,
+                             uint8_t whole_digest[32],int platform)
 {
     FILE *file=image->file;
-    PayloadHash hash;
+    PayloadHash hash,whole;
     uint8_t buffer[32768];
     uint64_t remaining=size;
     int result = 0;
+    memset(&whole,0,sizeof whole);
     image->read_cursor=UINT64_MAX;
     if(!payload_hash_init(&hash,platform)){result=-1;goto done;}
+    if(prefix&&(!payload_hash_init(&whole,platform)||
+                !payload_hash_update(&whole,prefix,(size_t)offset))){result=-1;goto done;}
     if (offset > (uint64_t)LONG_MAX || fseek(file, (long)offset, SEEK_SET) != 0) goto done;
     while (remaining != 0) {
         const size_t amount = remaining < sizeof(buffer) ? (size_t)remaining : sizeof(buffer);
@@ -475,27 +483,62 @@ static int hash_payload_pass(SegaCDImage *image,uint64_t offset,uint64_t size,
             }
         }
         if(!payload_hash_update(&hash,buffer,amount)){result=-1;goto done;}
+        if(prefix&&!payload_hash_update(&whole,buffer,amount)){result=-1;goto done;}
         remaining -= amount;
     }
-    result=payload_hash_final(&hash,digest)?1:-1;
+    result=payload_hash_final(&hash,digest)&&
+        (!prefix||payload_hash_final(&whole,whole_digest))?1:-1;
 done:
     payload_hash_close(&hash);
+    payload_hash_close(&whole);
     return result;
 }
 
-static int hash_payload(SegaCDImage *image, uint64_t offset, uint64_t size, uint8_t digest[32])
+static int hash_payload(SegaCDImage *image,uint64_t offset,uint64_t size,uint8_t digest[32],
+                        const uint8_t *prefix,uint8_t whole_digest[32])
 {
-    int result = hash_payload_pass(image, offset, size, digest, 1);
+    int result = hash_payload_pass(image,offset,size,digest,prefix,whole_digest,1);
     /* Provider failure restarts a complete portable validation. No failed or
      * partial digest can qualify the image or expose its resident sectors. */
-    if (result < 0) result = hash_payload_pass(image, offset, size, digest, 0);
+    if (result < 0) result = hash_payload_pass(image,offset,size,digest,prefix,whole_digest,0);
     return result == 1;
 }
 
-SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
+/* Portable ownership fallback. Only the private completed copy is parsed,
+ * hashed, mapped and served. The caller never supplies a snapshot pathname.
+ * This bounded fallback can cost one full-image temporary copy; Windows uses
+ * enforced read sharing instead. Provider failure restarts on this same copy. */
+#if !defined(_WIN32) || (defined(SEGACD_IMAGE_FORCE_SNAPSHOT) && SEGACD_IMAGE_FORCE_SNAPSHOT)
+static FILE *private_snapshot(FILE *source,size_t *bytes)
+{
+    uint8_t buffer[32768];
+    uint64_t limit=HEADER_BYTES+MAX_TRACKS*TRACK_BYTES+
+        (uint64_t)(MAX_LEADOUT+150)*SECTOR_BYTES;
+    if(fseek(source,0,SEEK_END))return NULL;
+    long length=ftell(source);
+    if(length<HEADER_BYTES||(uint64_t)length>limit||fseek(source,0,SEEK_SET))return NULL;
+    FILE *owned=tmpfile();if(!owned)return NULL;
+    (void)setvbuf(owned,NULL,_IOFBF,1024u*1024u);
+    size_t remaining=(size_t)length;
+    while(remaining) {
+        size_t amount=remaining<sizeof buffer?remaining:sizeof buffer;
+        if(!read_exact(source,buffer,amount)||fwrite(buffer,1,amount,owned)!=amount)goto fail;
+        remaining-=amount;
+    }
+    if(fgetc(source)!=EOF||ferror(source)||fflush(owned)||fseek(owned,0,SEEK_SET))goto fail;
+    *bytes=(size_t)length;return owned;
+fail:
+    fclose(owned);return NULL;
+}
+#endif
+
+SegaCDImage *segacd_image_open_expected(const char *path,const uint8_t expected[32],
+                                       char *error,size_t capacity)
 {
     static const uint8_t magic[8] = {'S','G','C','D','I','M','G',0};
     uint8_t header[HEADER_BYTES], entry[TRACK_BYTES], digest[32];
+    uint8_t prefix[HEADER_BYTES+MAX_TRACKS*TRACK_BYTES];
+    size_t snapshot_bytes=0;
     SegaCDImage *image = NULL;
     FILE *file = NULL;
     long file_length;
@@ -503,11 +546,14 @@ SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
     uint64_t payload_offset, payload_size, expected_size;
     int32_t leadout;
     set_error(error, capacity, "invalid SGCDIMG1 image");
-    if (path == NULL) { set_error(error, capacity, "missing image path"); return NULL; }
+    if (path == NULL || !*path) { set_error(error, capacity, "missing image path"); return NULL; }
 #ifdef _WIN32
     /* The complete payload is read sequentially for identity validation.
      * This CRT hint preserves later random sector access. */
-    file = fopen(path, "rbS");
+    /* Keep the verified object immutable through close. A pre-existing writer
+     * or a later write/replace attempt is rejected by Windows sharing rules.
+     * https://learn.microsoft.com/cpp/c-runtime-library/reference/fsopen-wfsopen */
+    file = _fsopen(path,"rbS",_SH_DENYWR);
 #else
     file = fopen(path, "rb");
 #endif
@@ -516,10 +562,18 @@ SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
      * reads on a busy disk. A failed optional buffer allocation leaves the
      * default buffering usable; validation still hashes every payload byte. */
     (void)setvbuf(file, NULL, _IOFBF, 1024u * 1024u);
+#if !defined(_WIN32) || (defined(SEGACD_IMAGE_FORCE_SNAPSHOT) && SEGACD_IMAGE_FORCE_SNAPSHOT)
+    if(expected) {
+        FILE *owned=private_snapshot(file,&snapshot_bytes);
+        if(!owned){set_error(error,capacity,"cannot own immutable image snapshot");goto fail;}
+        fclose(file);file=owned;
+    }
+#endif
     if (fseek(file, 0, SEEK_END) != 0 || (file_length = ftell(file)) < 0 || fseek(file, 0, SEEK_SET) != 0) {
         set_error(error, capacity, "cannot size image"); goto fail;
     }
     if (!read_exact(file, header, sizeof(header))) { set_error(error, capacity, "truncated image header"); goto fail; }
+    if(expected)memcpy(prefix,header,sizeof header);
     if (memcmp(header, magic, sizeof(magic)) != 0 || le32(header+8) != 1u ||
         le32(header+16) != SECTOR_BYTES || le32(header+20) < 1u || le32(header+20) > MAX_TRACKS ||
         lei32(header+24) != -150) {
@@ -540,6 +594,7 @@ SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
     image = (SegaCDImage *)calloc(1, sizeof(*image));
     if (image == NULL) { set_error(error, capacity, "out of memory"); goto fail; }
     image->file = file;
+    image->private_snapshot_bytes=snapshot_bytes;
     image->prefetch.last_lba=INT32_MIN;
     const char *trace=getenv("GENESIS_CD_MEDIA_TRACE");
     image->measure_reads=trace&&*trace&&strcmp(trace,"0");
@@ -552,6 +607,7 @@ SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
         SegaCDTrack *track = &image->toc.track[i];
         uint32_t number, kind;
         if (!read_exact(image->file, entry, sizeof(entry))) { set_error(error, capacity, "truncated track table"); goto fail; }
+        if(expected)memcpy(prefix+HEADER_BYTES+(size_t)i*TRACK_BYTES,entry,sizeof entry);
         number = le32(entry);
         kind = le32(entry+4);
         track->index00 = lei32(entry+8);
@@ -584,10 +640,15 @@ SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity)
         }
         break;
     }
-    if (!hash_payload(image, payload_offset, payload_size, digest)) {
+    if (!hash_payload(image,payload_offset,payload_size,digest,
+                       expected?prefix:NULL,image->whole_digest)) {
         set_error(error, capacity, "cannot read image payload"); goto fail;
     }
     if (memcmp(digest, image->digest, sizeof(digest)) != 0) { set_error(error, capacity, "payload SHA-256 mismatch"); goto fail; }
+    if(expected&&memcmp(image->whole_digest,expected,32)) {
+        set_error(error,capacity,"complete image SHA-256 mismatch");goto fail;
+    }
+    image->whole_identity_checked=expected!=NULL;
     set_error(error, capacity, "");
     return image;
 fail:
@@ -595,6 +656,9 @@ fail:
     if (file != NULL) fclose(file);
     return NULL;
 }
+
+SegaCDImage *segacd_image_open(const char *path,char *error,size_t capacity)
+{return segacd_image_open_expected(path,NULL,error,capacity);}
 
 void segacd_image_close(SegaCDImage *image)
 {
@@ -663,6 +727,8 @@ const uint8_t *segacd_image_sha256(const SegaCDImage *image)
 {
     return image == NULL ? NULL : image->digest;
 }
+const uint8_t *segacd_image_whole_sha256(const SegaCDImage *image)
+{return image&&image->whole_identity_checked?image->whole_digest:NULL;}
 
 const uint8_t *segacd_image_resident_sector(const SegaCDImage *image, int32_t lba)
 {
@@ -686,5 +752,7 @@ int segacd_image_host_stats(const SegaCDImage *image,SegaCDImageHostStats *stats
     stats->prefetch_jobs=image->prefetch_jobs;stats->prefetch_hits=image->prefetch_hits;
     stats->prefetch_failures=image->prefetch_failures;stats->prefetch_cancels=image->prefetch_cancels;
     stats->sync_read_ns=image->sync_read_ns;stats->max_sync_read_ns=image->max_sync_read_ns;
-    stats->prefetch_bytes=image->prefetch.worker?2u*PREFETCH_BYTES:0;return 1;
+    stats->prefetch_bytes=image->prefetch.worker?2u*PREFETCH_BYTES:0;
+    stats->private_snapshot_bytes=image->private_snapshot_bytes;
+    stats->whole_identity_checked=image->whole_identity_checked;return 1;
 }
