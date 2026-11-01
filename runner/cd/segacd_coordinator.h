@@ -68,6 +68,7 @@ struct SegaCDCoordinator {
     SegaCDCatalogLookup catalog_lookup[2];
     SegaCDCatalogIndex *catalog_index[2];
     uint8_t catalog_index_enabled;
+    uint64_t code_lease_serial;
     const uint8_t *(*host_code_span)(void *,uint32_t,size_t);
     M68kStepDataResolver host_data_region;
     uint64_t data_resolutions[2];
@@ -76,10 +77,8 @@ struct SegaCDCoordinator {
     const M68kStepEffectModule *region_effects[2];
     size_t region_effect_count[2];
     uint64_t region_instructions[2],region_runs,region_device_advances;
-    uint64_t code_interval_reuses;
     uint64_t region_event_deadline;
     uint8_t region_event_valid,event_intervals_qualified;
-    uint8_t code_intervals_qualified;
     const M68kStepRegisterSpan *register_spans[2];
     size_t register_span_count[2];
     uint8_t register_span_qualified[2][SEGACD_REGISTER_SPAN_LIMIT/8];
@@ -96,12 +95,13 @@ int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host
 /* Descriptors/arrays must remain immutable and alive during execution. */
 int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
                               const M68kStepModule *const *,size_t);
-/* Opt in only when executable host memory is exclusively owned by this
- * coordinator during independently qualified register/flow execution. No
- * asynchronous writers or mutating code-span resolvers are permitted. Proofs
- * expire on EVERY interval return, before devices, host observers or ordinary
- * instructions execute; unqualified/default owners retain full live guards. */
-int segacd_coordinator_code_intervals(SegaCDCoordinator *,int enabled);
+/* Immutable executable-region lease. Generic owners default to no lease.
+ * Qualify ALL callbacks/other masters as unable to mutate or remap [begin,end)
+ * until end_code_lease. First use still checks every word. Mutable/unknown
+ * regions retain live guards. End before returning to unqualified host code,
+ * import/restore or mutation; no asynchronous writer is permitted. */
+int segacd_coordinator_begin_code_lease(SegaCDCoordinator *,SegaCDCpu,uint32_t begin,uint32_t end);
+void segacd_coordinator_end_code_lease(SegaCDCoordinator *,SegaCDCpu);
 /* Optional bounded derived lookup; fixed-cache execution remains the default
  * for generic callers. Disable before destroying an enabled coordinator.
  * Configure between completed operations; allocation failure retains fallback. */

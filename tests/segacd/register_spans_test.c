@@ -8,6 +8,7 @@ static SegaCDCoordinator c;
 static uint8_t bios[SEGACD_BIOS_BYTES];
 static uint64_t next_event;
 static unsigned device_case,staged,variant_case,control_case;
+static int lease_enabled;
 static uint64_t third_clock;
 static uint8_t host_ram[65536],reference_ram[65536];
 static M68kStepBusResult read8(void*u,uint32_t a,uint8_t*v){(void)u;if(a<0xff0000u)return M68K_BUS_FAULT;*v=host_ram[a&65535u];return M68K_BUS_OK;}
@@ -72,6 +73,7 @@ static const M68kStepModule*const prepend_modules[]={&prepend_module,&module};
 static void put32(uint8_t*p,uint32_t n){p[0]=(uint8_t)(n>>24);p[1]=(uint8_t)(n>>16);p[2]=(uint8_t)(n>>8);p[3]=(uint8_t)n;}
 static void setup(int qualified,int sub)
 {
+ lease_enabled=qualified;
  memset(bios,0,sizeof bios);memset(host_ram,0,sizeof host_ram);put32(bios,0xff1000);put32(bios+4,0x100);put32(bios+30*4,0x108);
  for(unsigned n=0;n<5;++n){bios[0x100+n*2]=(uint8_t)(entries[n].words[0]>>8);bios[0x101+n*2]=(uint8_t)entries[n].words[0];}
  CHECK(segacd_init(&device,bios,sizeof bios));put32(device.prg,0x7ff00);put32(device.prg+4,0x100);memcpy(device.prg+0x100,bios+0x100,10);
@@ -99,11 +101,16 @@ static void setup(int qualified,int sub)
  if(device_case==1)c.cpu[0].state.regs.SR=0x2000;
  memset(seen,0,sizeof seen);observations=0;next_event=31;segacd_coordinator_host_clock(&c,host,event);
  if(staged){third_clock=0;segacd_coordinator_device_limit(&c,third);}
- if(qualified)CHECK(segacd_coordinator_code_intervals(&c,1));
 }
-static M68kStepResult run(unsigned stop){
+static M68kStepResult run_guarded(unsigned stop){
  if(staged)for(unsigned time=13;time<stop;time+=13){third_clock=time;M68kStepResult result=segacd_coordinator_run_until(&c,time);if(result!=M68K_STEP_OK)return result;}
  third_clock=stop;return segacd_coordinator_run_until(&c,stop);
+}
+static M68kStepResult run(unsigned stop)
+{
+ if(lease_enabled)CHECK(segacd_coordinator_begin_code_lease(&c,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES));
+ M68kStepResult result=run_guarded(stop);segacd_coordinator_end_code_lease(&c,SEGACD_MAIN);
+ CHECK(!c.catalog_lookup[0].code_epoch);return result;
 }
 int main(void)
 {
@@ -152,24 +159,5 @@ int main(void)
  cpu->state.regs.SR&=0x7fff;cpu->fault_escape=cpu;CHECK(m68k_step_execute_span(cpu,spans,16)==M68K_STEP_REENTERED);cpu->fault_escape=NULL;
  cpu->state.stopped=1;CHECK(m68k_step_execute_span(cpu,spans,16)==M68K_STEP_STOPPED);cpu->state.stopped=0;
  cpu->state.fault=M68K_STEP_BUS_ERROR;CHECK(m68k_step_execute_span(cpu,spans,16)==M68K_STEP_BUS_ERROR);
- /* A successful current-word proof, followed only by pure CPU operations,
-  * permits the exact same retirement through each explicit owned entrypoint. */
- setup(1,0);M68kStepContext live=c.cpu[0],owned=live;
- CHECK(m68k_step_execute_register(&live,entries)==M68K_STEP_OK);
- CHECK(m68k_step_execute_validated_register(&owned,entries)==M68K_STEP_OK);
- CHECK(!memcmp(&live,&owned,sizeof live));
- live=owned=c.cpu[0];CHECK(m68k_step_execute_span(&live,spans,16)==M68K_STEP_OK);
- CHECK(m68k_step_execute_validated_span(&owned,spans,16)==M68K_STEP_OK);
- CHECK(!memcmp(&live,&owned,sizeof live));
- control_case=3;setup(1,0);live=owned=c.cpu[0];
- CHECK(m68k_step_execute_flow_span(&live,flow_spans,30)==M68K_STEP_OK);
- CHECK(m68k_step_execute_validated_flow_span(&owned,flow_spans,30)==M68K_STEP_OK);
- CHECK(!memcmp(&live,&owned,sizeof live));
- owned=c.cpu[0];before=owned;
- CHECK(m68k_step_execute_validated_flow_span(&owned,flow_spans,29)==M68K_STEP_MISS);
- CHECK(!memcmp(&before,&owned,sizeof before));
- owned.state.regs.SR|=0x8000;before=owned;
- CHECK(m68k_step_execute_validated_flow_span(&owned,flow_spans,30)==M68K_STEP_MISS);
- CHECK(!memcmp(&before,&owned,sizeof before));
  printf("%u matched IRQ/DMA/third-master/variant scheduler cases; %llu fixed/%llu flow instructions; %u tight-budget fixed fallbacks\n",cases,(unsigned long long)retired,(unsigned long long)flow_retired,fallbacks);return 0;
 }

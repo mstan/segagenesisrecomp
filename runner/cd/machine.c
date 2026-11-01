@@ -226,12 +226,6 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
     segacd_coordinator_host_clock(&m->coordinator,host_advance,next_host_event);
     segacd_coordinator_device_limit(&m->coordinator,sound_limit);
     (void)segacd_coordinator_catalog_index(&m->coordinator,SEGACD_CATALOG_PC_INDEX);
-#ifndef SEGACD_CODE_INTERVALS
-#define SEGACD_CODE_INTERVALS 1
-#endif
-    /* This machine exclusively owns all host RAM/code views and advances
-     * every other master only at coordinator boundaries. */
-    (void)segacd_coordinator_code_intervals(&m->coordinator,SEGACD_CODE_INTERVALS);
     video_observer=NULL;video_user=NULL;observing_video=0;current=m;return 1;
 }
 void segacd_machine_close(SegaCDMachine *m)
@@ -269,7 +263,7 @@ static int z80_interval_running(void *user)
     SegaCDMachine *m=user;
     return !m->bus.z80_reset_pending&&m->bus.z80_reset_off&&!m->bus.z80_busreq;
 }
-M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
+static M68kStepResult run_frame(SegaCDMachine *m)
 {
     if(!m||m!=current||observing_video)return M68K_STEP_REENTERED;
     if(m->coordinator.busy[0]||m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)
@@ -295,4 +289,20 @@ M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
     }
     while(m->frames==frame);
     return M68K_STEP_OK;
+}
+
+int segacd_machine_immutable_bios(SegaCDMachine *m,int enabled)
+{
+    if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||m->z80.in_step)return 0;
+    segacd_coordinator_end_code_lease(&m->coordinator,SEGACD_MAIN);
+    m->immutable_bios_qualified=(uint8_t)(enabled!=0);return 1;
+}
+M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
+{
+    if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)
+        return M68K_STEP_REENTERED;
+    int lease=m->immutable_bios_qualified&&segacd_coordinator_begin_code_lease(&m->coordinator,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES);
+    M68kStepResult result=run_frame(m);
+    if(lease)segacd_coordinator_end_code_lease(&m->coordinator,SEGACD_MAIN);
+    return result;
 }

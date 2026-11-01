@@ -328,6 +328,24 @@ static void test_deferred_raster_contract(void)
     gvdp_set_ws_canvas(0);gvdp_set_bgdiag(0);gvdp_set_ws_bar_black(0);
 }
 
+static void test_immutable_bios_lease(void)
+{
+    setup(1);CHECK(!machine.immutable_bios_qualified&&!machine.coordinator.catalog_lookup[0].code_epoch);
+    CHECK(segacd_machine_immutable_bios(&machine,1));
+    CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_OK);
+    CHECK(!machine.coordinator.catalog_lookup[0].code_epoch&&machine.coordinator.catalog_lookup[0].code_reuses>0);
+    /* Raw replacement/import between frames always gets a fresh first guard.
+     * An early native MISS must also release the lease. */
+    machine.devices.bios[0x103]^=1;
+    CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_MISS);
+    CHECK(!machine.coordinator.catalog_lookup[0].code_epoch);
+    machine.devices.bios[0x103]^=1;machine.result=M68K_STEP_OK;
+    CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_OK&&!machine.coordinator.catalog_lookup[0].code_epoch);
+    CHECK(segacd_machine_immutable_bios(&machine,0));
+    machine.devices.bios[0x103]^=1;
+    CHECK(segacd_machine_step(&machine)==M68K_STEP_MISS);
+    segacd_machine_close(&machine);
+}
 int main(void)
 {
     test_full_frame_video_irq_and_controls();
@@ -337,6 +355,7 @@ int main(void)
     test_native_miss_is_terminal_without_floor();
     test_widescreen_original_frame_and_safe_teardown();
     test_deferred_raster_contract();
+    test_immutable_bios_lease();
     puts("native machine: frame/raster IRQ, controller bus, Z80 clock ceiling, reentry and strict missing-code stop pass");
     return 0;
 }
