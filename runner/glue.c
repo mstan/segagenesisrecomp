@@ -2245,7 +2245,6 @@ void     vdp_render_frame(uint32_t *fb) { (void)fb; /* rendering via clownmdemu 
  * ========================================================================= */
 
 static FILE *s_framelog = NULL;
-static GenesisHostStream *s_frame_stream;
 static int s_framelog_initialized;
 
 void glue_log_frame_state(uint64_t frame)
@@ -2253,13 +2252,10 @@ void glue_log_frame_state(uint64_t frame)
     if (!s_framelog_initialized) {
         s_framelog_initialized=1;
         /* The retrospective FrameRecord ring is the normal diagnostic path.
-         * Publish frozen rows to the worker when explicitly requested; each
-         * row becomes visible after its worker-side flush completes. */
+         * Synchronous per-frame fflush can stall a real game for hundreds of
+         * milliseconds on a busy disk. Stream only when explicitly requested. */
         const char *path=getenv("GENESIS_FRAME_LOG");
-        if (path && *path) {
-            s_framelog=fopen(path,"w");
-            if(s_framelog)s_frame_stream=genesis_host_stream_create(s_framelog,64u*1024u);
-        }
+        if (path && *path) s_framelog=fopen(path,"w");
     }
     if (!s_framelog) return;
     if (frame > 9999) return;  /* cap framelog at 10000 frames */
@@ -2286,14 +2282,13 @@ void glue_log_frame_state(uint64_t frame)
     uint8_t  obj0_id   = EMU_RAM_BYTE(g_game_layout.player_object_addr + 0);
     uint8_t  obj0_rt   = EMU_RAM_BYTE(g_game_layout.player_object_addr + 1);
 
-    genesis_host_stream_fprintf(s_frame_stream,s_framelog,
+    fprintf(s_framelog,
             "F%03llu mode=%02X vbl=%02X cnt=%04X scrl=%04X plc=%04X "
             "fcnt=%08X obj0=%02X/%02X\n",
             (unsigned long long)frame,
             game_mode, vbl_flag, vbl_count, scroll_x, plc_ptr,
             frame_cnt, obj0_id, obj0_rt);
-    if(s_frame_stream)genesis_host_stream_flush_async(s_frame_stream);
-    else fflush(s_framelog);
+    fflush(s_framelog);
 }
 
 void runtime_init(void)             { /* nothing; glue_init() serves this role */ }

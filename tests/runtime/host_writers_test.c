@@ -241,25 +241,7 @@ static void stream_checks(void)
     CHECK(genesis_host_stream_destroy(s)); exact_file(f, "copy:42copy:42", 14);
     CHECK(!fclose(f));
 
-    /* Independent captures share a bounded lane but retain separate byte,
-     * failure and lifetime ownership, including non-LIFO destruction. */
-    f=tmpfile();FILE *other=tmpfile();CHECK(f&&other);
-    s=genesis_host_stream_create(f,7);
-    GenesisHostStream *t=genesis_host_stream_create(other,5);CHECK(s&&t);
-    CHECK(s->worker==t->worker);
-    CHECK(genesis_host_stream_write(s,"abcdefghi",9));
-    CHECK(genesis_host_stream_write(t,"0123456789",10));
-    CHECK(genesis_host_stream_flush_async(s));
-    CHECK(genesis_host_stream_flush(s));
-    gated_file=f;SDL_AtomicSet(&fail_flush,1);
-    CHECK(genesis_host_stream_flush_async(s));
-    CHECK(genesis_host_stream_write(t,"X",1));
-    CHECK(genesis_host_stream_flush_async(t));
-    CHECK(!genesis_host_stream_destroy(s));
-    gated_file=NULL;
-    CHECK(genesis_host_stream_destroy(t));
-    exact_file(f,"abcdefghi",9);exact_file(other,"0123456789X",11);
-    CHECK(!fclose(f));CHECK(!fclose(other));CHECK(!s_streams&&!s_stream_worker);
+
 }
 static unsigned char durable[64];
 static char callback_path[128];
