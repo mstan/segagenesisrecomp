@@ -25,7 +25,6 @@
 #ifndef GENESIS_NATIVE_TILE_ROWS
 #define GENESIS_NATIVE_TILE_ROWS (UINTPTR_MAX > UINT32_MAX)
 #endif
-#if GENESIS_BATCHED_PLANES
 /* Four states per layer: transparent/opaque crossed with low/high priority.
  * Select byte 0=backdrop, 1=B, 2=A, 3=sprite; bit 2 reports any opaque high
  * layer for shadow/highlight. Immutable and shared by every scanline. */
@@ -33,7 +32,6 @@ static const uint8_t s_layer_select[64] = {
     0, 2, 0, 6, 1, 2, 1, 6, 0, 2, 0, 6, 5, 5, 5, 6, 3, 3, 3, 6, 3, 3, 3, 6, 3, 3, 3, 6, 5, 5, 5, 6,
     0, 2, 0, 6, 1, 2, 1, 6, 0, 2, 0, 6, 5, 5, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
 };
-#endif
 const char *gvdp_plane_implementation(void)
 {
     return GENESIS_BATCHED_PLANES ? "BATCHED" : "SCALAR";
@@ -863,7 +861,7 @@ fetch_plane_pixel(const GVDP *v, PlanePixelCache *cache,
  * once per tile span, then publish packed index/opacity/priority metadata.
  * This cache is local to one stable-VRAM scanline, so no invalidation protocol
  * or additional serialized device state is needed. */
-static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
+static void fetch_plane_span(const GVDP *v, uint8_t *out, uint8_t *private_out, int count,
                              uint16_t base, int wt, int ht, int px, int py, int im2)
 {
     int shift = im2 ? 4 : 3, fy_mask = (1 << shift) - 1;
@@ -897,7 +895,33 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
             out[i] = (uint8_t)(attr | nib | (nib ? 0x40 : 0));
         }
 #endif
+        if (private_out) {
+            int ext = !(e & 0x6000) ? gvdp_ext_line(e & 0x7ff) : 0;
+            for (int i = 0; i < n; ++i) {
+                unsigned nib = out[i] & 15u;
+                private_out[i] = ext && nib ?
+                    (uint8_t)(GVDP_HOST_PALETTE_BASE + (ext - 1) * 16 + nib) : 0;
+            }
+            private_out += n;
+        }
         out += n; count -= n; px += n;
+    }
+}
+
+/* Preserve packed composition for ordinary colors. Private plane colors use
+ * the same winner as native metadata; their owner already supplies shading,
+ * so hardware shadow/highlight operators do not alter the private index. */
+static void compose_private_planes(uint8_t *out,const uint8_t *a,const uint8_t *b,
+    const uint8_t *private_a,const uint8_t *private_b,const uint8_t *opaque,
+    const uint8_t *high,int count)
+{
+    for (int i = 0; i < count; ++i) {
+        if (!private_a[i] && !private_b[i]) continue;
+        unsigned key = (a[i] >> 6) | ((b[i] >> 6) << 2) |
+            ((unsigned)(opaque[i] | (high[i] << 1)) << 4);
+        unsigned winner = s_layer_select[key] & 3u;
+        if (winner == 2 && private_a[i]) out[i] = private_a[i];
+        else if (winner == 1 && private_b[i]) out[i] = private_b[i];
     }
 }
 
@@ -919,6 +943,7 @@ static int capture_scanline(GVDP *v, int line, GVDPRasterRow *row,int presented)
     row->display=(uint8_t)(gvdp_display_enabled(v)!=0);
     row->shadow_mode=(uint8_t)(MODE4_SHI(v)!=0);
     row->diagnostic=(uint8_t)(s_ws_bgdiag!=0);
+    row->private_planes=0;
     row->diag_offset=row->diag_mask=0;
     if(presented)for(unsigned i=0;i<GVDP_HOST_PALETTE_SIZE;++i)row->host_palette[i]=0xFF000000u;
     if (!row->display) return (int)row->width;
@@ -955,6 +980,7 @@ static int capture_scanline(GVDP *v, int line, GVDPRasterRow *row,int presented)
                 row->host_palette[i]=genesis_dac_cram_to_argb(gvdp_ext_color(line,1+(int)i/16,(int)i%16),GENESIS_DAC_NORMAL);
     }
     unsigned end=row->start+block;
+    row->private_planes=(uint8_t)(presented && s_ext_tiles != NULL);
     for (int x=-extra,xo=(int)row->start;xo<(int)end;) {
         int boundary=x<0?0:x>=w?w+extra:((x>>4)+1)*16;
         if(boundary>w+extra)boundary=w+extra;
@@ -967,9 +993,9 @@ static int capture_scanline(GVDP *v, int line, GVDPRasterRow *row,int presented)
         }
         int horizontal=right?x>=window_x:x<window_x;
         if(x>=0 && x<w && (horizontal||vertical))
-            fetch_plane_span(v,row->plane_a+xo,n,base_w,win_wt,ht,x,line,im2);
-        else fetch_plane_span(v,row->plane_a+xo,n,base_a,wt,ht,x-hs_a,line+va,im2);
-        fetch_plane_span(v,row->plane_b+xo,n,base_b,wt,ht,x-hs_b,line+vb,im2);
+            fetch_plane_span(v,row->plane_a+xo,row->private_planes?row->plane_a_private+xo:NULL,n,base_w,win_wt,ht,x,line,im2);
+        else fetch_plane_span(v,row->plane_a+xo,row->private_planes?row->plane_a_private+xo:NULL,n,base_a,wt,ht,x-hs_a,line+va,im2);
+        fetch_plane_span(v,row->plane_b+xo,row->private_planes?row->plane_b_private+xo:NULL,n,base_b,wt,ht,x-hs_b,line+vb,im2);
         x+=n;xo+=n;
     }
     return (int)row->width;
@@ -991,6 +1017,10 @@ int gvdp_compose_captured(const GVDPRasterRow *row,uint8_t *out)
             row->sprite+start,row->opaque+start,row->high+start,
             row->shadow_op+start,row->hilite_op+start,(int)row->count,
             row->backdrop,row->shadow_mode);
+        if(row->private_planes)
+            compose_private_planes(out+start,row->plane_a+start,row->plane_b+start,
+                row->plane_a_private+start,row->plane_b_private+start,
+                row->opaque+start,row->high+start,(int)row->count);
         if(row->diagnostic)for(unsigned x=start;x<start+row->count;++x)
             if(out[x]<GVDP_HOST_PALETTE_BASE && !((x-row->diag_offset)&row->diag_mask))
                 out[x]=(uint8_t)((out[x]&63u)+GVDP_PALETTE_SHADOW);
@@ -1078,6 +1108,8 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
      * window addressing so their independent tables never alias each other. */
 #if GENESIS_BATCHED_PLANES
     uint8_t plane_a[GVDP_MAX_WIDTH], plane_b[GVDP_MAX_WIDTH];
+    uint8_t private_a[GVDP_MAX_WIDTH], private_b[GVDP_MAX_WIDTH];
+    int private_planes=s_ext_tiles!=NULL;
     for (int x = -content_extra, xo = content_start; xo < content_end;) {
         int boundary;
         if (x < 0) boundary = 0;
@@ -1095,11 +1127,11 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         }
         int window_h_in = window_h_right ? x >= window_x : x < window_x;
         if (x >= 0 && x < w && (window_h_in || window_v_in))
-            fetch_plane_span(v, plane_a + xo, n, base_w, win_wt, ht, x, line, im2);
+            fetch_plane_span(v, plane_a + xo, private_planes?private_a+xo:NULL, n, base_w, win_wt, ht, x, line, im2);
         else
-            fetch_plane_span(v, plane_a + xo, n, base_a, wt, ht,
+            fetch_plane_span(v, plane_a + xo, private_planes?private_a+xo:NULL, n, base_a, wt, ht,
                              x - hs_a, line + vs_a, im2);
-        fetch_plane_span(v, plane_b + xo, n, base_b, wt, ht,
+        fetch_plane_span(v, plane_b + xo, private_planes?private_b+xo:NULL, n, base_b, wt, ht,
                          x - hs_b, line + vs_b, im2);
         x += n; xo += n;
     }
@@ -1118,13 +1150,18 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
             s_spr_idx+content_start,s_spr_op+content_start,s_spr_hi+content_start,
             s_spr_shadow_op+content_start,s_spr_hilite_op+content_start,
             content_block,backdrop,sh_mode);
+        if(private_planes)
+            compose_private_planes(out+content_start,plane_a+content_start,plane_b+content_start,
+                private_a+content_start,private_b+content_start,
+                s_spr_op+content_start,s_spr_hi+content_start,content_block);
         return total;
     }
 #endif
 
     for (int x = -content_extra, xo = content_start; xo < content_end; x++, xo++) {
 #if GENESIS_BATCHED_PLANES
-        uint8_t a_idx = plane_a[xo] & 0x3f, b_idx = plane_b[xo] & 0x3f;
+        uint8_t a_idx = private_planes && private_a[xo] ? private_a[xo] : plane_a[xo] & 0x3f;
+        uint8_t b_idx = private_planes && private_b[xo] ? private_b[xo] : plane_b[xo] & 0x3f;
 #else
         /* Bars were prefilled above. This loop covers only the authentic view
          * plus genuine widescreen margins, which the planes wrap-sample. */
