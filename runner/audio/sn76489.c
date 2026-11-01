@@ -145,7 +145,10 @@ static int16_t sn_render_sample(SN76489 *p)
 #ifndef GENESIS_PSG_SILENT_SPANS
 #define GENESIS_PSG_SILENT_SPANS 1
 #endif
-#if GENESIS_PSG_SILENT_SPANS
+#ifndef GENESIS_PSG_EVENT_SPANS
+#define GENESIS_PSG_EVENT_SPANS 1
+#endif
+#if GENESIS_PSG_SILENT_SPANS || GENESIS_PSG_EVENT_SPANS
 /* No writes occur inside an advance interval. Once every channel is muted
  * and the filter has settled exactly to zero, samples are known, but chip
  * counters/phase/noise must still advance for a later unmute or snapshot. */
@@ -181,11 +184,10 @@ static uint16_t sn_white_span(uint16_t bits,unsigned steps)
     for(unsigned p=0;steps;++p,steps>>=1)if(steps&1u)bits=sn_linear_apply(powers[p],bits);
     return bits;
 }
-static int sn_silent_span(SN76489 *p,int16_t *out,size_t samples)
+/* Retire every channel, including muted channels whose later unmute/state
+ * must observe the same counters, phase, divider and LFSR. */
+static void sn_timing_span(SN76489 *p,unsigned samples)
 {
-    if(p->vol[0]!=15||p->vol[1]!=15||p->vol[2]!=15||p->vol[3]!=15||
-       p->lpf_y||p->lpf_prev||p->noise_ff>1||p->noise_out>1||
-       p->tone_out[0]>1||p->tone_out[1]>1||p->tone_out[2]>1)return 0;
     for(unsigned i=0;i<3;++i) {
         unsigned period=p->tone_period[i]?p->tone_period[i]:1u;
         p->tone_out[i]^=(uint8_t)(sn_counter_span(&p->tone_counter[i],period,(unsigned)samples)&1u);
@@ -203,7 +205,73 @@ static int sn_silent_span(SN76489 *p,int16_t *out,size_t samples)
          * Preserve that stale output until an actual rising clock edge. */
         p->noise_out=(uint8_t)(p->lfsr&1u);
     }
+}
+#endif
+#if GENESIS_PSG_SILENT_SPANS
+static int sn_silent_span(SN76489 *p,int16_t *out,size_t samples)
+{
+    if(p->vol[0]!=15||p->vol[1]!=15||p->vol[2]!=15||p->vol[3]!=15||
+       p->lpf_y||p->lpf_prev||p->noise_ff>1||p->noise_out>1||
+       p->tone_out[0]>1||p->tone_out[1]>1||p->tone_out[2]>1)return 0;
+    sn_timing_span(p,(unsigned)samples);
     memset(out,0,samples*sizeof *out);
+    return 1;
+}
+#endif
+
+#if GENESIS_PSG_EVENT_SPANS
+/* Exact integer filter for a constant input. Once a value is an actual fixed
+ * point, later samples are identical; no floating powers or rounded skips. */
+static void sn_constant_filter(SN76489 *p,int16_t *out,size_t samples)
+{
+    int32_t mix=p->lpf_prev;
+    int64_t input=(int64_t)mix*2*SN_LPF_SAMPLE_MAGIC;
+    int32_t previous=p->lpf_y;
+    for(size_t i=0;i<samples;++i) {
+        int64_t lp=(input+(int64_t)previous*SN_LPF_OUTPUT_MAGIC)/65536;
+        int32_t value=(int32_t)lp;
+        if(value>32767)value=32767;
+        if(value<-32768)value=-32768;
+        out[i]=(int16_t)value;
+        if(value==previous) {
+            for(++i;i<samples;++i)out[i]=(int16_t)value;
+            break;
+        }
+        previous=value;
+    }
+    p->lpf_y=previous;
+}
+static int sn_event_span(SN76489 *p,int16_t *out,size_t samples)
+{
+    /* Short and high-frequency intervals retain the inexpensive scalar loop.
+     * This is a hardware/work-size decision, independent of title semantics. */
+    if(samples<32u||p->noise_ff>1||p->noise_out>1)return 0;
+    for(unsigned i=0;i<4;++i)if(p->vol[i]>15)return 0;
+    for(unsigned i=0;i<3;++i) {
+        if(p->tone_out[i]>1)return 0;
+        if(p->vol[i]!=15&&(p->tone_period[i]<8))return 0;
+    }
+    if(p->vol[3]!=15&&sn_noise_reload(p)<8)return 0;
+    size_t done=0;
+    while(done<samples) {
+        /* Counter edges happen BEFORE their sample is mixed. One scalar
+         * edge sample establishes the exact constant input for following ticks. */
+        out[done++]=sn_render_sample(p);
+        size_t run=samples-done;
+        for(unsigned i=0;i<3;++i)if(p->vol[i]!=15) {
+            unsigned quiet=p->tone_counter[i]>0?(unsigned)p->tone_counter[i]-1u:0u;
+            if(run>quiet)run=quiet;
+        }
+        if(p->vol[3]!=15) {
+            unsigned quiet=p->noise_counter>0?(unsigned)p->noise_counter-1u:0u;
+            if(run>quiet)run=quiet;
+        }
+        if(run) {
+            sn_constant_filter(p,out+done,run);
+            sn_timing_span(p,(unsigned)run);
+            done+=run;
+        }
+    }
     return 1;
 }
 #endif
@@ -229,9 +297,14 @@ void psg_advance(uint32_t cycles_master)
         size_t avail = PSG_SCRATCH_SAMPLES - s_scratch_write;
         if (avail == 0) return;  /* scratch full; drop */
         size_t chunk = samples_to_emit < avail ? samples_to_emit : avail;
+        int rendered=0;
 #if GENESIS_PSG_SILENT_SPANS
-        if(!sn_silent_span(&s_sn,s_scratch+s_scratch_write,chunk))
+        rendered=sn_silent_span(&s_sn,s_scratch+s_scratch_write,chunk);
 #endif
+#if GENESIS_PSG_EVENT_SPANS
+        if(!rendered)rendered=sn_event_span(&s_sn,s_scratch+s_scratch_write,chunk);
+#endif
+        if(!rendered)
             for (size_t i = 0; i < chunk; i++)
                 s_scratch[s_scratch_write + i] = sn_render_sample(&s_sn);
         s_scratch_write  += chunk;
