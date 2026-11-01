@@ -1,0 +1,199 @@
+{
+  "schema": "GenesisEngineHostPresentationResults1",
+  "date": "2026-11-01",
+  "original_family": "E34",
+  "issue": "beads-3z5k.29",
+  "related": "beads-hj4v",
+  "campaign": "beads-2wy8.1",
+  "status": "qualified_bounded_contract",
+  "runtime_commit": "81f76825dc17f9235a6ae557093de7f141c76d5a",
+  "base": "6fefc01",
+  "evidence_root": "C:\\Temp\\Codex\\genesis-engine-host-presentation-20261101",
+  "source_identities": {
+    "base": "6fefc01",
+    "runtime_base": "717565c",
+    "candidate": {
+      "runner/cd/presentation.c": "6ec46f5d0dc63e6e101c3ffd0e35e2c6c94d56c3fa6a988f8ba328b40711878d",
+      "runner/cd/presentation.h": "b944d790b4a731b90a6c681bc26a27d87064ae9c6a1ea3cd504102927b3e741f",
+      "runner/cd/recomp_ui.cmake": "4fec57724c7b16c6e9ee216c2f28ced759dcc8ea00466ba03b9be7db2d296893",
+      "runner/cd/standalone.c": "75098508a2cc78b906fc643b1b7689912dff91320dcbb77835c1efeee066888c",
+      "runner/frame_pacer.h": "66d5df68642905d6c41fcff7895c153b603548ad226dd28ebfdafd3cac7a8b76",
+      "runner/host_wait.c": "f22b904a56278c01d0dd25109a216a548d6954ca95b1ebaaaa13b2915b974bfd",
+      "runner/host_wait.h": "4ee38a5392095dcbcdbeb033b45e93af3fe29c1813941261bb43a3cf7e9cb5be",
+      "tests/runtime/frame_pacer_test.c": "36ed70ae27dc8d74861072688ff328bb20a37853b6fc4cbe5ed725ef3261569b",
+      "tests/runtime/host_wait_test.c": "65ab9ae7631b30d65d98a51da0101168828bfd85b5e5df0ec01918b3072041fe"
+    },
+    "reference": {
+      "presentation.c": "350ca83fc39bffbc0c94aced17db3f72b6dbe523e2babccd34662bffe0c387c2",
+      "standalone.c": "7cb362d03f60a6f4cf9b60c36b7c3afa02334acfdbaeb2cd5e6b3280414d0df6"
+    },
+    "baseline_note": "Original exact post-present coarse rational scheduler, same new diagnostic sampler/run-state callback/commonheaders otherwise. Host presentation only, no guest semantic change."
+  },
+  "build_record": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-host-presentation-20261101\\cd-builds.json",
+    "sha256": "7b358af8946c3ba1bff057fb6b74d6a3a34163463d55c7000c8b582d5f5cd131"
+  },
+  "qualified_native_archive": {
+    "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\native\\segacd_owned_native_program.lib",
+    "sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+    "bytes": 1390473432,
+    "qualification_hook": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+    "hook_sha256": "ac85c2bb77b42c6358d10f40287cabbd82f1f6c69ea1b4a40aea251626163cd1",
+    "scope": "Existing qualified native archive, identical in both arms; restored original include chain instead of rebuilding unmodified generated catalog"
+  },
+  "binaries": {
+    "A": {
+      "binary": "G:\\Temp\\Codex\\genesis-engine-host-presentation-20261101-server\\binaries\\A\\SonicCD.exe",
+      "sha256": "27ebf4349c90be04f157196a74d17bba5fd5ed6730621667b448a6554b75b22a",
+      "bytes": 115847168
+    },
+    "B": {
+      "binary": "G:\\Temp\\Codex\\genesis-engine-host-presentation-20261101-server\\binaries\\B\\SonicCD.exe",
+      "sha256": "ef3e625665d77b10ff4f19e48bc422e4da46f14f7fa2dbaf76d67dba8648e3f1",
+      "bytes": 115847680
+    }
+  },
+  "raw_game": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-host-presentation-20261101\\cd-game.json",
+    "sha256": "bf90d14df5b75e7914e60f3e156a5f71313311fbc6318fcdceb9ceba9013b31c",
+    "remote": "G:/Temp/Codex/genesis-engine-host-presentation-20261101-server/game-e34-deadline-server.json"
+  },
+  "unit_record": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-host-presentation-20261101\\unit-results.json",
+    "sha256": "1a081e4492526a7ab7ca344aac0aed70c171c349095a5bf66cdefbb42d4d38f9",
+    "msvc": "3/3 frame_pacer,host_wait_native,host_wait_portable PASS",
+    "linux": "3/3 same targets PASS;Ubuntu24.04GCC13.3",
+    "coverage": "3millionexactrationalrecurrences plusoldfloatmillionframes, fullperiodoverrun/pause/reset/invalid/overflow andnative/forcedportableparkdeadline/cleanup. Actualpacedgame isWindowsMSVC19.41; noLinuxgameperformanceclaim."
+  },
+  "games": [
+    {
+      "game": "Sonic CD",
+      "arm": "A",
+      "frames": 3000,
+      "cpu_cost_1800_to_3000": {
+        "cpu_seconds": 14.546875,
+        "cycles": 49553826708
+      },
+      "wall_seconds_1800_to_3000": 48.70975609961897,
+      "final_memory": {
+        "peak_working_set_bytes": 249040896,
+        "peak_commit_bytes": 30429184,
+        "private_bytes": 30314496
+      },
+      "presentation": {
+        "backend": "software",
+        "renderer_flags": 13,
+        "video_driver": "dummy",
+        "native_wait_active": false,
+        "frequency": 10000000,
+        "samples": 3000,
+        "eligible_interval_count": 1188,
+        "scope": "Submission intervals on actual paced routeframes1800-3000, only first3samples after predeclared QA pauses excluded. No valuebased filtering, GPU/display/compositor metric or uncappedthroughput claim.",
+        "nominal_ms": 16.68815450008311,
+        "median_interval_ms": 31.1494,
+        "p99_interval_ms": 168.1974,
+        "max_interval_ms": 396.6332,
+        "median_abs_error_ms": 14.461245499916888,
+        "p99_abs_error_ms": 151.5092454999169,
+        "max_abs_error_ms": 379.9450454999169,
+        "present_block_p99_ms": 0.0945,
+        "present_block_max_ms": 12.6525
+      },
+      "correctness": {
+        "passed": true,
+        "differences": [],
+        "checkpoints": 11,
+        "artifacts": 21,
+        "wav_sha256": "900be7b00ca9928f8306988ab270e5f3c04021a648452cdadd91164fbad3277c"
+      }
+    },
+    {
+      "game": "Sonic CD",
+      "arm": "B",
+      "frames": 3000,
+      "cpu_cost_1800_to_3000": {
+        "cpu_seconds": 13.953125,
+        "cycles": 46697909811
+      },
+      "wall_seconds_1800_to_3000": 22.664440399967134,
+      "final_memory": {
+        "peak_working_set_bytes": 249073664,
+        "peak_commit_bytes": 30511104,
+        "private_bytes": 30453760
+      },
+      "presentation": {
+        "backend": "software",
+        "renderer_flags": 13,
+        "video_driver": "dummy",
+        "native_wait_active": true,
+        "frequency": 10000000,
+        "samples": 3000,
+        "eligible_interval_count": 1188,
+        "scope": "Submission intervals on actual paced routeframes1800-3000, only first3samples after predeclared QA pauses excluded. No valuebased filtering, GPU/display/compositor metric or uncappedthroughput claim.",
+        "nominal_ms": 16.68815450008311,
+        "median_interval_ms": 16.791449999999998,
+        "p99_interval_ms": 50.1382,
+        "max_interval_ms": 247.9297,
+        "median_abs_error_ms": 1.463604500083112,
+        "p99_abs_error_ms": 33.45004549991688,
+        "max_abs_error_ms": 231.2415454999169,
+        "present_block_p99_ms": 0.2267,
+        "present_block_max_ms": 7.0914,
+        "deadline_late_p99_ms": 16.1118,
+        "deadline_late_max_ms": 61.1027
+      },
+      "correctness": {
+        "passed": true,
+        "differences": [],
+        "checkpoints": 11,
+        "artifacts": 21,
+        "wav_sha256": "900be7b00ca9928f8306988ab270e5f3c04021a648452cdadd91164fbad3277c"
+      }
+    }
+  ],
+  "bounded_remainder": [
+    {
+      "candidate": "CDsubmissiondeadlineownership",
+      "decision": "Deliveredexact896040/53693175rationalpacingatlastSDLpresentboundaryafterupload/commandpreparation;resetoverfullperiodoverrunandpaused/menu/debugstopped;headlessunchanged."
+    },
+    {
+      "candidate": "Portable/nativewaitcost",
+      "decision": "Deliverednonspinningpark;Windowsoptionalhighrestimerwaitsfullinterval,SDLfallbackceil-sleeps. Existingcartridgelowjitterspinwaitunchanged. Universalportablefallbackcompiledandrun."
+    },
+    {
+      "candidate": "Cartridgebackend/deadlinepolicy",
+      "decision": "AlreadyqualifiedD3D11preferenceanddeadlinepipeline reusedasexistingcapability, notnewgain. Existingbeads-hj4vphysical165/60Hzcaveatsretained; no promisezeroDWMdrops."
+    },
+    {
+      "candidate": "CPUview/UI/uploadcopies",
+      "decision": "ExistingE16directrawborrowandconditionalwritablestaging alreadyremoveunnecessarycopies;requiredUI/raw/captureownershipretained. Nodoubleupload/newnativeimage mutation. GPUresidentHDjobsremainE37, notclosedhere."
+    },
+    {
+      "candidate": "Driver/compositorfences",
+      "decision": "MeasureactualRenderPresentblockingandkeepexistingSDLrenderer/drivercontract. Backendflagsalonearenotphysicaldeliveryevidence; no newlyunqualifiedGPUfence/rendererreplacement. Physicaldisplaylimitsremainexplicitratherthancallinghiddensubmitdataadrop-freewin."
+    }
+  ],
+  "cleanup": {
+    "removed_failed_objects": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd\\runtime\\CMakeFiles\\segacd_owned_native_program.dir",
+      "files": 1565,
+      "bytes": 138936213,
+      "removed": true,
+      "scope": "Discardable objects from the task-owned mistaken native rebuild; qualified archive is elsewhere and retained"
+    },
+    "retained": "ActualA/BPEs,qualifiednativearchive,rawlogs/3000timingsamplesperarm/WAV/11images/BRAMandother21artifacts/source/buildIDs remaininprivateSERVERtaskroot; no redundantper-runPEorROMcopiescreated. LocalCtasksource/unitcache andWSL/tmp/codex-genesis-e34units retainedforcombinedhandoff/endcampaigncleanup."
+  },
+  "acceptance": {
+    "correctness": "All11checkpointdictionaries/21artifacts/fullWAV/summarycounters matchqualifiedE30finalinBOTHarms. Audiofloor0/0/faults0/underflows0/overflows0/backwards0. Nativeclock/CPU/device/sourcepixels unchanged.",
+    "timing": "Neutral/inconclusive CPU; observedsubmitmetrics improved butsingleheavilycontendedSERVERpair cannotisolateeffectsize. No physicaldisplay/compositor/uncappedFPSclaim.",
+    "hardware": "ActualSDLdummyvideo/softwarebackendflags13botharms;flagsnotproofactivevsync. Presentblockingmeasuredseparately;p99.0945/.2267ms. NativewaitactiveB;all3000Bsubmitsat/afterselecteddeadline.",
+    "window_scope": "Noowner-facinglaunches;dummyvideoanddummyoutputwithfullaudioemulation.",
+    "cartridge": "Existingfloatpacer+WindowsD3D11policyandspintailbehaviorpreserved;clockunitcoverage, no repeatacceptedphysicaldisplaymatrix.",
+    "review": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-host-presentation-20261101\\VALIDATOR_E34.md",
+      "sha256": "c8de1000c58ae207d7d2fbaf3927f5a03c059603b2378f35b8a298a75fea2972",
+      "verdict": "Fulloriginaltechnicalacceptance"
+    }
+  },
+  "pr": 58
+}

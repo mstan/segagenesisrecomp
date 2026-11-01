@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "E32 bounded directsnapshotcapture/streamedchecksum contractqualified, runtime717565c/readyPR57. Timingneutral/inconclusive; explicitS1memorycost andsharedbaselinecoldloadfailure retained. E31 remainswholeboundedrejection.4originalfamilies plusE37 remainopen:5across37;32resolved. Countsaredispositions,notspeedups. Combinedownerhandoff remains.",
+  "conclusion": "E34boundedCDdeliverydeadlinecontractqualifiedruntime81f7682/readyPR58. Existingcartridge/E16ownershippreserved; contendedhostobservationsonly, nophysicaldisplay/FPSclaim.3originalfamilies plusE37remainopen:4across37;33resolved. Countsaredispositions,notspeedups. Finalcombinedownerhandoff remains.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -16,14 +16,14 @@
     "existing": 2
   },
   "implementation_counts": {
-    "bounded_delivered": 21,
+    "bounded_delivered": 22,
     "rejected_mechanism": 1,
     "bounded_rejected": 10,
-    "deferred": 2,
+    "deferred": 1,
     "existing": 1,
     "partial": 1
   },
-  "remaining_scope_open_count": 4,
+  "remaining_scope_open_count": 3,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -932,18 +932,36 @@
       "name": "Host presentation/deadline pipeline",
       "original_goal": "Consolidate shared pacing, upload/present queue behavior and remaining compositor/CD coarse-wait costs.",
       "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "Previously delivered cartridge D3D11/high-resolution pacing retained.",
-      "remaining": "Further shared presentation/upload/UI ownership and CD pacing consolidation.",
-      "audit_basis": "presentation.c is unchanged and CD still uses coarse SDL_Delay. Blind sleep/spin reuse is not a qualified solution; no new physical delivery comparison was made.",
-      "next_closure": "Reuse beads-hj4v. Select an actual delivery/jitter or copy cost and implement a suitable shared pipeline/nonspinning fallback.",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Qualified exactrationalpre-PresentCDdeadline/nonspinningpark withoverrun/pausereset; runtime81f7682/readyPR58. ExistingcartridgeD3D11/pacer/E16ownershippreserved; ENGINE_HOST_PRESENTATION.md/results.",
+      "remaining": "Selected original bounded contractresolved; combinedownerhandoff andexistingphysicalcompositorlimits remain. GPUhighresolutionE37isindependent.",
+      "audit_basis": "3/3MSVC+3/3Linux clock/waitgates, actualpacedCD11checkpoints/21artifacts/fullWAV/countersexact, all3000Bsubmitsafterdeadline. SharedSERVERcontentionprecludesisolatedeffectsize/physicaldisplayclaim; CPUneutral/inconclusive.",
+      "next_closure": "Completecombinedownerplay/merge/releasehandoff; no furtherE34experimentneeded.",
       "source_references": [
         "runner/cd/presentation.c:522",
         "runner/cd/standalone.c:291",
         "runner/host_wait.c",
         "runner/main.c"
-      ]
+      ],
+      "historical_audit": {
+        "id": "E34",
+        "name": "Host presentation/deadline pipeline",
+        "original_goal": "Consolidate shared pacing, upload/present queue behavior and remaining compositor/CD coarse-wait costs.",
+        "recorded_evaluation_status": "evaluated_deferred",
+        "implementation_state": "deferred",
+        "remaining_scope_open": true,
+        "delivered": "Previously delivered cartridge D3D11/high-resolution pacing retained.",
+        "remaining": "Further shared presentation/upload/UI ownership and CD pacing consolidation.",
+        "audit_basis": "presentation.c is unchanged and CD still uses coarse SDL_Delay. Blind sleep/spin reuse is not a qualified solution; no new physical delivery comparison was made.",
+        "next_closure": "Reuse beads-hj4v. Select an actual delivery/jitter or copy cost and implement a suitable shared pipeline/nonspinning fallback.",
+        "source_references": [
+          "runner/cd/presentation.c:522",
+          "runner/cd/standalone.c:291",
+          "runner/host_wait.c",
+          "runner/main.c"
+        ]
+      }
     },
     {
       "id": "E35",
@@ -998,5 +1016,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 5
+  "total_remaining_open_count": 4
 }
