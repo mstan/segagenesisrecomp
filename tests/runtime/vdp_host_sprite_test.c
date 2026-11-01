@@ -18,6 +18,64 @@ static void draw(void *user, const GVDP *vdp, const GVDPSpriteLayer *layer)
         layer->index[x]=(uint8_t)color; layer->opaque[x]=1; layer->high[x]=(uint8_t)high;
     }
 }
+static void private_planes(void)
+{
+    uint8_t markers[2048]={0},pixels[GVDP_MAX_WIDTH],composed[GVDP_MAX_WIDTH];
+    uint16_t top[GVDP_EXT_LINES*16]={0},bottom[GVDP_EXT_LINES*16]={0};
+    GVDPRasterRow captured;
+    markers[1]=1;markers[2]=2;markers[4]=GVDP_EXT_SPRITE_FORCE|3;markers[7]=3;
+    top[1]=0xE;bottom[1]=0xE00;top[18]=0xE0;bottom[18]=0xEEE;
+    gvdp_set_ext_tiles(markers);gvdp_set_ext_colors(top,bottom,8);
+    /* Same expected native priority and source-palette contract in scalar
+     * and batched builds, including window replacement and operator sprites. */
+    for(unsigned test=0;test<1024;++test){
+        unsigned ap=test&3,bp=(test>>2)&3,ah=(test>>4)&1,bh=(test>>5)&1;
+        unsigned sh=(test>>6)&1,win=(test/128)%3,spr=(test/29)%7,off=(test/11)%2;
+        int line=(test&1)?8:0;
+        memset(&v,0,sizeof v);v.reg[1]=64;v.reg[2]=0x30;v.reg[3]=0x2C;
+        v.reg[4]=7;v.reg[5]=0x7C;v.reg[12]=(uint8_t)(1|sh*8);v.reg[13]=0x3F;
+        if(win==1)v.reg[17]=1;
+        if(win==2)v.reg[18]=0x80;
+        memset(v.vram+32,0x11,32);memset(v.vram+64,0x22,32);
+        memset(v.vram+128,0x33,32);memset(v.vram+160,0x33,32);
+        memset(v.vram+192,spr==3?0xEE:0xFF,32);memset(v.vram+224,0x44,32);
+        for(unsigned cell=0;cell<64*4;++cell){
+            word(0xC000+cell*2,(ap<<13)|(ah<<15)|(off?3:1));
+            word(0xE000+cell*2,(bp<<13)|(bh<<15)|2);
+            word(0xB000+cell*2,(ap<<13)|(ah<<15)|(win==2?4:off?3:2));
+        }
+        if(spr){
+            word(0xF800,(unsigned)(128+line));word(0xF806,128);
+            word(0xF804,spr>=5?(spr==6?0x8007:7):spr>=3?0x6006:spr==2?0xA005:0x2005);
+        }
+        CHECK(gvdp_render_scanline(&v,line,pixels)==320);
+        for(unsigned x=0;x<320;++x){
+            unsigned tile=(win==2||(win==1&&x<16))?(win==2?4:off?3:2):off?3:1;
+            unsigned ao=tile!=3,ai=tile==4?ap*16+3:ap?ap*16+tile:
+                GVDP_HOST_PALETTE_BASE+(tile==2?16:0)+tile;
+            unsigned bi=bp?bp*16+2:GVDP_HOST_PALETTE_BASE+18;
+            unsigned so=x<8&&(spr==1||spr==2||spr>=5||(!sh&&spr>=3)),hi=spr==2||spr==6;
+            unsigned si=spr>=5?GVDP_HOST_PALETTE_BASE+36:spr==3?62:spr==4?63:19;
+            unsigned expected=so&&hi?si:ao&&ah?ai:bh?bi:so?si:ao?ai:bi;
+            if(sh&&expected<64){
+                unsigned shade=!((ao&&ah)||bh||(so&&hi)),light=0;
+                if(x<8&&spr==4)shade=1;
+                if(x<8&&spr==3){if(shade)shade=0;else light=1;}
+                expected+=light?128:shade?64:0;
+            }
+            CHECK(pixels[x]==expected);
+        }
+        CHECK(gvdp_capture_presented_scanline(&v,line,&captured)==320 && captured.private_planes);
+        CHECK(captured.host_palette[1]==genesis_dac_cram_to_argb(line<8?0xE:0xE00,GENESIS_DAC_NORMAL));
+        CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(pixels,composed,320));
+    }
+    /* A presented packet keeps plane indices/colors after all providers and
+     * the complete live VRAM image have been retired or overwritten. */
+    gvdp_set_ext_tiles(NULL);memset(markers,0,sizeof markers);memset(&v,0,sizeof v);
+    memset(top,0,sizeof top);memset(bottom,0,sizeof bottom);gvdp_set_ext_colors(top,bottom,0);
+    CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(pixels,composed,320));
+    CHECK(captured.host_palette[1]==genesis_dac_cram_to_argb(0xE00,GENESIS_DAC_NORMAL));
+}
 int main(void)
 {
     uint8_t row[320];
@@ -142,6 +200,7 @@ int main(void)
     memset(top,0,sizeof top);gvdp_set_ext_colors(top,top,0);
     CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(expected,composed,320));
     CHECK(captured.host_palette[35]==genesis_dac_cram_to_argb(0xE0,GENESIS_DAC_NORMAL));
+    private_planes();
     puts("host sprites composite behind native sprites with plane priority");
     return 0;
 }
