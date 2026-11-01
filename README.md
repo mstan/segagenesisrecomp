@@ -4,6 +4,9 @@
 
 # Genesis Recomp
 
+Game runners include default-on [replayable player feedback](docs/PLAYER_FEEDBACK.md)
+for bug reports, including settings, active mods, inputs, and state checks.
+
 **[Windows x64 recompiler tool v0.1.2](https://github.com/mstan/segagenesisrecomp/releases/tag/v0.1.2)**
 includes `GenesisRecomp.exe`, its license/notices and usage instructions. Game
 runners and their launcher assets are distributed by the title projects below.

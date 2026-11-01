@@ -36,6 +36,7 @@
 #include "png_write.h"
 #include "runtime_evidence.h"
 #include "local_states.h"
+#include "diagnostic_replay.h"
 
 /* =========================================================================
  * Path helper: resolve filenames relative to the exe directory.
@@ -44,6 +45,7 @@
  * ========================================================================= */
 
 static char s_exe_dir[512] = "";
+static char s_data_dir[512] = "";
 
 static double benchmark_process_cpu_seconds(void)
 {
@@ -127,7 +129,7 @@ static void init_exe_dir(const char *argv0)
 const char *exe_relative(const char *filename)
 {
     static char buf[512];
-    snprintf(buf, sizeof(buf), "%s%s", s_exe_dir, filename);
+    snprintf(buf, sizeof(buf), "%s%s", *s_data_dir?s_data_dir:s_exe_dir, filename);
     return buf;
 }
 
@@ -612,6 +614,7 @@ static void custom_video_prepare(void)
     if (!g_game_spec.video || !g_game_spec.video->enabled()) return;
     int dw = 0, dh = 0;
     if (s_video_renderer) SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
+    genesis_replay_viewport(&dw,&dh);
     /* width() also sets the game's SIMULATION width from the configured mode
      * (sealed online), so it runs whether or not this machine can present
      * it; everything below only decides what this machine draws. */
@@ -1112,7 +1115,11 @@ int runner_save_state_file(const char *path)
     if (reason) { fprintf(stderr,"[SAVE] unavailable: %s\n",reason); return 0; }
     char full_path[512];
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
-    if (g_game_spec.state_size) return host_state_save(resolved);
+    if (g_game_spec.state_size) {
+        int ok=host_state_save(resolved);
+        if(ok)genesis_replay_save_requested();
+        return ok;
+    }
     FILE *sf = fopen(resolved, "wb");
     if (!sf) {
         fprintf(stderr, "[SAVE] failed to open %s\n", resolved);
@@ -1148,6 +1155,7 @@ int runner_load_state_file(const char *path)
             genesis_local_states_clear();
             if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
             audio_discard_playback();
+            genesis_replay_file_loaded(resolved);
         }
         return ok;
     }
@@ -1220,6 +1228,7 @@ int runner_load_state_file(const char *path)
         genesis_local_states_clear();
         if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
         audio_discard_playback();
+        genesis_replay_file_loaded(resolved);
     }
     return ok;
 }
@@ -1241,6 +1250,9 @@ int runner_load_state_file(const char *path)
 
 static char     s_sram_path[512] = "";
 static int      s_sram_active    = 0;  /* battery SRAM present this run */
+static int      s_sram_loaded_at_boot;
+static unsigned char *s_sram_boot_image;
+static const char *s_replay_boot_path;
 static uint64_t s_sram_hash      = 0;  /* last-seen content hash */
 static int      s_sram_dirty     = 0;  /* content changed since last flush */
 static uint32_t s_sram_dirty_at  = 0;  /* frame the pending change was seen */
@@ -1278,8 +1290,14 @@ static uint64_t framebuf_active_hash(void)
     return h;
 }
 
+void runner_replay_sram_flushed(void)
+{
+    s_sram_dirty=0;
+    if(g_game_spec.sram_flushed)g_game_spec.sram_flushed(s_sram_path,sram_buf(),sram_size());
+}
 static void runner_sram_flush(void)
 {
+    if(genesis_replay_playing())return;
     if (!s_sram_active) return;
 #if GENESIS_HAS_RECOMP_NET
     /* Guest sandbox: during a session only the host (the SRAM authority)
@@ -1311,6 +1329,7 @@ static void runner_sram_flush(void)
     if(!ok){fprintf(stderr,"[SRAM] atomic flush failed: %s\n",s_sram_path);return;}
     s_sram_dirty = 0;
     if(g_game_spec.sram_flushed)g_game_spec.sram_flushed(s_sram_path,sram_buf(),n);
+    genesis_replay_sram_flushed();
     fprintf(stderr, "[SRAM] flushed %zu bytes to %s\n", wrote, s_sram_path);
 }
 
@@ -1372,6 +1391,15 @@ static void runner_sram_init_and_load(const char *rom_path)
         fclose(f);
     } else {
         fprintf(stderr, "[SRAM] no save file yet (%s) — starting fresh\n", s_sram_path);
+    }
+    if(s_replay_boot_path && !genesis_replay_boot_sram(s_replay_boot_path,sram_buf(),sram_size(),&loaded)) {
+        fprintf(stderr,"[feedback-replay] invalid startup SRAM attachment\n");exit(2);
+    }
+    s_sram_loaded_at_boot=loaded;
+    if(!s_replay_boot_path && !s_sram_boot_image) {
+        s_sram_boot_image=malloc(sram_size());
+        if(s_sram_boot_image)memcpy(s_sram_boot_image,sram_buf(),sram_size());
+        else {fprintf(stderr,"[feedback-replay] cannot preserve startup SRAM; recording disabled\n");g_app_config.replay_diagnostics=0;}
     }
     s_sram_hash  = sram_content_hash();
     s_sram_dirty = 0;
@@ -2153,9 +2181,30 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
     audio_set_playback_enabled(!turbo);
 }
 
+static void replay_view(GenesisReplayView *v,int apply)
+{
+    if(apply) {
+        int changed=g_app_config.custom_widescreen!=v->custom_on || g_app_config.custom_aspect!=v->custom_aspect;
+        g_app_config.custom_widescreen=v->custom_on;g_app_config.custom_aspect=v->custom_aspect;
+        if(changed)app_config_apply_video(g_game_spec.video);
+        s_ws_user_on=v->widescreen;s_ws_user_cells=v->cells;g_pacing_mode=(GluePacingMode)v->pacing;
+    } else {
+        if(s_video_renderer)SDL_GetRendererOutputSize(s_video_renderer,&v->drawable_w,&v->drawable_h);
+        v->custom_on=g_app_config.custom_widescreen;v->custom_aspect=g_app_config.custom_aspect;
+        v->widescreen=s_ws_user_on;v->cells=s_ws_user_cells;v->pacing=g_pacing_mode;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     init_exe_dir(argv[0]);
+    const char *user_dir=getenv("GENESIS_USER_DIR");
+    if(user_dir && *user_dir) {
+        if(!path_is_absolute(user_dir) || strlen(user_dir)>sizeof s_data_dir-2) {
+            fprintf(stderr,"GENESIS_USER_DIR must be an absolute directory path\n");return 1;
+        }
+        snprintf(s_data_dir,sizeof s_data_dir,"%s/",user_dir);
+    }
     input_map_init_defaults();   /* today's mapping; app_config_load may override */
 #if GENESIS_HAS_RECOMP_NET
     GenesisNetplayConfig netplay_config;
@@ -2165,6 +2214,7 @@ int main(int argc, char *argv[])
 
     /* --- Parse arguments --- */
     const char *rom_path = NULL;
+    const char *replay_path = NULL;
     const char *framelog_path = NULL;
     uint32_t max_frames  = 0;   /* 0 = unlimited */
     int start_turbo      = 0;   /* --turbo: skip frame delay + audio */
@@ -2272,6 +2322,8 @@ int main(int argc, char *argv[])
             start_turbo = 1;
         } else if (strcmp(argv[i], "--launcher") == 0) {
             force_launcher = 1;
+        } else if (strcmp(argv[i], "--replay-diagnostic") == 0 && i+1<argc) {
+            replay_path=argv[++i];no_launcher=1;
         } else if (strcmp(argv[i], "--no-launcher") == 0) {
             no_launcher = 1;
         } else if (strcmp(argv[i], "--port") == 0 && i + 1 < argc) {
@@ -2355,6 +2407,13 @@ int main(int argc, char *argv[])
         no_launcher = 1;
     }
 
+    if(replay_path) {
+        s_replay_boot_path=replay_path;
+        if(!*s_data_dir) {fprintf(stderr,"Replay requires an isolated GENESIS_USER_DIR; use tools/replay_diagnostic.py\n");return 1;}
+#if GENESIS_HAS_RECOMP_NET
+        if(netplay_config.enabled) {fprintf(stderr,"Diagnostic playback is offline only\n");return 1;}
+#endif
+    }
     /* ---- Settings + pre-boot launcher ------------------------------------
      * settings.ini (display/audio/launcher + controller bindings) and rom.cfg
      * (last ROM) live next to the exe. Loaded unconditionally so the persisted
@@ -2616,6 +2675,16 @@ int main(int argc, char *argv[])
         }
     }
 
+    if(replay_path) {
+#if RECOMP_LAUNCHER
+        const RecompLauncherCModProvider *p=app_config_video_mods(g_game_spec.video,settings_ini);
+        if(g_game_spec.mods)p=g_game_spec.mods(p);
+#else
+        const struct RecompLauncherCModProvider *p=NULL;
+#endif
+        if(!genesis_replay_mods(p,replay_path)) {fprintf(stderr,"[feedback-replay] cannot restore recorded mods\n");return 1;}
+    }
+    uint32_t replay_rom_crc=rom_crc32(rom_raw,rom_raw_len);
     /* --- Load input script (if requested) before the SDL window opens
      * so any parse error fails fast without a flash of black window. */
     if (input_script_path) input_script_load(input_script_path);
@@ -3023,6 +3092,21 @@ int main(int argc, char *argv[])
      * offline Play after netplay restores it in-process (genesis_session_reset:
      * NETPLAY.md section 3, every session starts from a deterministic cold
      * boot), so nothing a previous session left behind reaches the next. */
+    {
+#if RECOMP_LAUNCHER
+        const RecompLauncherCModProvider *p=app_config_video_mods(g_game_spec.video,settings_ini);
+        if(g_game_spec.mods)p=g_game_spec.mods(p);
+#else
+        const struct RecompLauncherCModProvider *p=NULL;
+#endif
+        if(!replay_path && !genesis_replay_mods(p,NULL)) {
+            fprintf(stderr,"[feedback-replay] cannot capture effective mod settings; capture disabled\n");
+            g_app_config.replay_diagnostics=0;
+        }
+        if(!genesis_replay_init(*s_data_dir?s_data_dir:s_exe_dir,replay_path,replay_rom_crc,rom_raw_len,
+            replay_path?sram_buf():s_sram_boot_image,sram_size(),s_sram_loaded_at_boot,settings_ini,replay_view)) {genesis_replay_shutdown();return 1;}
+        free(s_sram_boot_image);s_sram_boot_image=NULL;
+    }
     genesis_session_capture_cold();
     int session_round = 1;
 session_begin:;
@@ -3106,7 +3190,7 @@ session_begin:;
     int window_close_requested = 0;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
     uint32_t prev_overlay_pad = 0;
-    genesis_local_states_configure(s_exe_dir, g_app_config.rewind_enabled &&
+    genesis_local_states_configure(*s_data_dir?s_data_dir:s_exe_dir, g_app_config.rewind_enabled &&
                                    (!g_game_spec.state_unavailable_reason ||
                                     !g_game_spec.state_unavailable_reason()),
                                    g_app_config.rewind_depth,
@@ -3422,7 +3506,8 @@ session_begin:;
            * from here, same as the clownmdemu path. */
           s_screen_height = gvdp_output_height(&g_machine.vdp);
           if (!completed) {                        /* reverse-debug quit */
-              fprintf(stderr, "[session] tick stopped by the post-drain hook (reverse-debug quit)\n");
+              fprintf(stderr,genesis_replay_finished()?"[session] diagnostic replay completed\n":
+                  "[session] tick stopped by the post-drain hook (reverse-debug quit)\n");
               running = 0; break;
           }
           FRAME_PHASE(7);
@@ -3615,6 +3700,7 @@ session_begin:;
                 fprintf(stderr, "[input_script] exiting per script directive (code=%d)\n",
                         input_script_exit_code());
                 if (s_sram_dirty) runner_sram_flush();
+                genesis_replay_shutdown();
                 return input_script_exit_code();
             }
         }
@@ -3984,7 +4070,9 @@ session_begin:;
     gamepad_shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    genesis_replay_shutdown();
     SDL_Quit();
     free(rom_buf);
+    if(replay_path && (genesis_replay_failed() || !genesis_replay_finished()))return 2;
     return runtime_measure_frames && frame_num != runtime_measure_frames ? 2 : 0;
 }

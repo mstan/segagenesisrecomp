@@ -56,6 +56,8 @@ set(GENESIS_RUNNER_CORE_SOURCES
     audio.c
     glue.c
     runtime_evidence.c
+    diagnostic_replay.c
+    replay_writer.c
     fiber_compat.c
     crash_report.c
     input_script.c
@@ -94,7 +96,9 @@ set(GENESIS_RUNNER_RECONCILED_SOURCES
     rb_probe.c
     local_states.c
     overlay_draw.c
-    runtime_evidence.c)
+    runtime_evidence.c
+    diagnostic_replay.c
+    replay_writer.c)
 
 function(genesisrecomp_runner_sources out_var)
     cmake_parse_arguments(GRS "" "TRACE;REVERSE_DEBUG" "" ${ARGN})
