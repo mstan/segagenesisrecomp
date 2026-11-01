@@ -4,7 +4,7 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18 are delivered. E11/E13/E14/E15/E17/E19/E20 whole bounded opportunities were implemented and evaluated, then rejected; useful earlier fixes remain. E18's independently qualified shadow worker is ready PR50. E19's broader timelines and E20's FM kernels retain no new runtime. E20 source/test/build is restored exactly to accepted10ace05. **14 original families plus E37 remain open:15 across37,22 resolved.** Counts are dispositions, not speedups. Combined owner visual/play handoff remains for meaningful new PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions.
+Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18 are delivered. E11/E13/E14/E15/E17/E19/E20/E21 whole bounded opportunities were implemented and evaluated, then rejected; useful earlier fixes remain. E18's independently qualified shadow worker is ready PR50. E19's broader timelines and E20's FM kernels retain no new runtime. E20 source/test/build is restored exactly to accepted10ace05. **13 original families plus E37 remain open:14 across37,23 resolved.** Counts are dispositions, not speedups. Combined owner visual/play handoff remains for meaningful new PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions.
 
 ## What was actually closed
 
@@ -53,7 +53,7 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E18 | Independent engine work scheduling | Delivered (bounded) | Qualified persistent same-drain independent FM shadow workerfa696e2, ready PR50. Rendering/chips variants rejected. | Selected bounded contract delivered; per-game mixed costs retained, no universal gain claim; owner handoff pending. |
 | E19 | One ordered audio timeline | Whole bounded remaining opportunity rejected | Three broader stream/merge/ownership architectures implemented and measured; source restored exact5d. Existing delivered ordering retained. | No new runtime/PR; repeated per-game regression, independent gate accepted; ENGINE_AUDIO_TIMELINE.md/results/review. |
 | E20 | Faithful FM kernels | Whole bounded opportunity rejected | Fixed routes and compact channel scan independently exact;18 cart plus2 CD pairs. No qualified retained package; all source/test/build restored exact10ace05. | No new runtime/PR; per-game adverse and CD inconclusive evidence retained; ENGINE_FM_KERNELS.md/results. |
-| E21 | PSG event spans | Partial; open | Exact closed-form settled-muted PSG spans. | Active tone/noise generation spans and filter-tail work. |
+| E21 | PSG event spans | Whole bounded opportunity rejected | Existing settled-muted spans retained; active-run and whole-interval producer architectures independently exact, then rejected by per-game costs. | All new runtime/test/build restored exactf4b10d7; ENGINE_PSG_EVENT_SPANS.md/results; no new PR; final gate pending. |
 | E22 | Sega CD PCM/CDDA spans | Deferred; open | Existing native timed PCM/CDDA advancement retained. | Block source publication instead of per-sample callbacks, including queue/status behavior. |
 | E23 | Synthesis-to-device pipeline | Deferred; open | No new synthesis-to-device fusion. | Equivalent chip staging/mix/interpolation/filter/device-rate production. |
 | E24 | Audio buffer ownership | Deferred; open | Existing bounded mixed frame and device-locked handoff retained. | Qualified reduction of callback locks/copies/shared state. |
@@ -256,11 +256,9 @@ Evidence: ENGINE_FM_KERNELS.md, engine-fm-kernel-results.json; beads-3z5k.18.
 
 ### E21: PSG event spans
 
-sn_silent_span requires all four volumes muted and filters exactly zero; otherwise psg_advance calls sn_render_sample for each sample. This overlaps E25.
+Whole selected bounded opportunity rejected after active-run retirement11e2bac and whole-interval channel/input/filter producerb95058e. Six independent frozen scalar checks and20 matched game pairs preserve recorded behavior, but both fail Sonic1 shadow performance acceptance. RKA/CD mixed observations do not offset; whole-interval CD is adverse. No new runtime/test/build retained; originalf4b10d7 restored exactly byd96ca6b. Existing settled-muted spans are unchanged. Final record/cleanup/sync gate pending, then original E22. No every-future-algorithm impossibility claim.
 
-**Next closure:** Keep the silent path; consider active runs only with a concrete exact phase/filter/kernel design and meaningful affected cost.
-
-Sources: `runner/audio/sn76489.c:184`, `runner/audio/sn76489.c:233`. Historical evaluation: `implemented_game_qualified`.
+Evidence: ENGINE_PSG_EVENT_SPANS.md, engine-psg-event-span-results.json; beads-3z5k.19. E25 PCM/CDDA constant spans remain separate.
 
 ### E22: Sega CD PCM/CDDA spans
 
