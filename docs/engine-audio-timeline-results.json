@@ -3,7 +3,7 @@
   "original_id": "E19",
   "issue": "beads-3z5k.16",
   "campaign": "beads-2wy8.1",
-  "disposition": "whole selected bounded rejection supported; restoration and cleanup complete, final independent records gate pending",
+  "disposition": "bounded_rejected; whole selected remaining opportunity independently accepted, no new runtime adopted",
   "scope": [
     "common stable typed natural-run ordering and exact clock conversion",
     "flat cartridge bulk FIFO drain/requeue and preserved pairing/diagnostics",
@@ -1081,5 +1081,12 @@
     },
     "remote_source_retention": "Small staged CD source/header/hook/logs retained for independent reproducibility; large duplicate binaries/configuration removed after eight exact local-mirror comparisons. Existing SERVER common object/toolchain cache remains ongoing campaign input, restored to accepted source selection."
   },
-  "final_review": null
+  "final_review": {
+    "reviewed_head": "fae9b4e2845e0586084a86219c5689df2f5f1ca0",
+    "verdict": "ENGINE_AUDIO_TIMELINE_REVIEW.md",
+    "verdict_sha256": "21ef8b63c67ee7bc1a5a77fdd591e03e62c6236b138feeb3351623a96adf44ed",
+    "audit": "engine-audio-timeline-review.json",
+    "audit_sha256": "760ca36edd1059d15968809a90f9b8ece636bc8f4fba05d8083c8e148418f131",
+    "next": "Close/count/sync then original E20 with a new validation-only reviewer"
+  }
 }
