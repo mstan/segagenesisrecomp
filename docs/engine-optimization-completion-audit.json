@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Serial bounded contracts E01/E03-E08/E10/E16/E18 delivered; selected remaining E11/E13/E14/E15/E17/E19 opportunities decisively rejected. E19 preserves existing delivered cartridge ordering; all new timeline source/build/test wiring restored exact5d after repeated per-game regressions.15 original plus E37 remain open,16 total across37;21 resolved. Combined owner visual/play handoff for meaningful ready PR stack pending. Counts are not speedups.",
+  "conclusion": "Selected bounded contracts E01/E03-E08/E10/E16/E18 delivered; E11/E13/E14/E15/E17/E19/E20 whole bounded opportunities decisively rejected. E20 original runtime/test/build tree restored exact10ace05.14 original plus E37 remain open,15 total across37;22 resolved. Counts are decisions, not speedups. Combined owner handoff remains for meaningful PRs.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -18,12 +18,12 @@
   "implementation_counts": {
     "bounded_delivered": 14,
     "rejected_mechanism": 1,
-    "bounded_rejected": 6,
-    "deferred": 10,
+    "bounded_rejected": 7,
+    "deferred": 9,
     "partial": 4,
     "existing": 1
   },
-  "remaining_scope_open_count": 15,
+  "remaining_scope_open_count": 14,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -603,12 +603,12 @@
       "name": "Faithful FM kernels",
       "original_goal": "Optimize actual YM2612 operator/channel kernels beyond the already-shipped sample-block wrapper.",
       "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "Existing FM block wrapper retained; no new operator/channel kernel.",
-      "remaining": "Actual faithful YM2612 arithmetic/layout/kernel optimization.",
-      "audit_basis": "ym2612_ymfm.cpp and ymfm_fm.ipp are unchanged in the batch. Vendor API and exact arithmetic are implementation constraints, not a rejection of kernel replacement.",
-      "next_closure": "Use current operator/channel attribution and a concrete equivalent layout/kernel; qualify register writes, feedback/LFO/envelopes/DAC and state.",
+      "implementation_state": "bounded_rejected",
+      "remaining_scope_open": false,
+      "delivered": "No new runtime; two faithful FM operator/channel architectures implemented and correctness-qualified, then rejected for per-game costs. Original production/test/build tree restored exact10ace05.",
+      "remaining": "Selected whole bounded E20 opportunity rejected; no claim every future FM algorithm exhausted.",
+      "audit_basis": "Independent frozen-core+wrapper tests4/4;18 cart plus2 CD matched pairs, all full outputs/state exact. Global designs unqualified by per-game costs; CD-only selection rejected for no established benefit. ENGINE_FM_KERNELS.md and engine-fm-kernel-results.json; beads-3z5k.18.",
+      "next_closure": "Independent final restoration/records/cleanup/sync gate; proceed E21 afterward.",
       "source_references": [
         "runner/audio/ym2612_ymfm.cpp",
         "runner/external/ymfm/src/ymfm_fm.ipp"
@@ -899,5 +899,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 16
+  "total_remaining_open_count": 15
 }

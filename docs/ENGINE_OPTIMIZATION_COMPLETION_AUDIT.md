@@ -4,16 +4,7 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: selected bounded contracts E01/E03–E08/E10/E16 are delivered.
-E11, E13, E14, E15 and E17 whole bounded opportunities were implemented, qualified
-and reached by actual games, then decisively rejected; useful fixes remain.
-Fresh E16 independent validation accepted its whole source/platform/runtime,
-per-game cost, PR and cleanup gate. Ready PR48 retains actual color-enabled
-CPU gains and explicitly mixed CD neutral/inconclusive evidence, including
-substantial adverse observations; no proven universal CD nonregression or gain.
-Fresh E17 independent gate accepted full GPU implementation/evaluation and bounded rejection; no GPU code ships. **17 families remain open**. Combined owner visual/play handoff remains pending.
-Historical narrative below describes the released base; the 36-row table and
-[machine-readable audit](engine-optimization-completion-audit.json) reflect current dispositions.
+Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18 are delivered. E11/E13/E14/E15/E17/E19/E20 whole bounded opportunities were implemented and evaluated, then rejected; useful earlier fixes remain. E18's independently qualified shadow worker is ready PR50. E19's broader timelines and E20's FM kernels retain no new runtime. E20 source/test/build is restored exactly to accepted10ace05. **14 original families plus E37 remain open:15 across37,22 resolved.** Counts are dispositions, not speedups. Combined owner visual/play handoff remains for meaningful new PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions.
 
 ## What was actually closed
 
@@ -59,9 +50,9 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E15 | Reuse unchanged hardware render results | Rejected whole bounded opportunity | Both complete current-input result-reuse architectures implemented, qualified and reached; repeated RKA adverse cost and no useful CD gain despite high capture hits. Runtime restored exact; useful portable layout fix/test PR47. | Selected original bounded opportunity decisively rejected; no universal future-algorithm claim. Combined owner handoff pending. |
 | E16 | Final pixels and upload ownership | Delivered (bounded) | Shared indexed conversion, exact inverse-DAC lookup and raw/color/UI/upload ownership in main/CD; functional ea16061, ready PR48. Independent full gate accepted; ENGINE_FINAL_PIXELS.md/results/review. | Selected original bounded contract delivered; combined owner visual/play merge/release handoff pending. No all-future-optimization claim. |
 | E17 | Optional generic GPU raster backend | Rejected (whole bounded opportunity) | Two complete expanded/compact GPU architectures physically correct and actual native game measured; expanded neutral without useful gain, compact repeatedly adverse RKA completion/cycles; all source/build/test wiring restored c94. ENGINE_GPU_RASTER.md/results/review. | Fresh independent whole-family rejection accepted, no production change or PR; no claim all future GPU designs impossible. |
-| E18 | Independent engine work scheduling | Deferred; open | No new worker scheduling implementation. | Safe independently owned jobs and overlap without extra emulated latency. |
-| E19 | One ordered audio timeline | Partial; open | Cartridge stable natural-run event ordering, reverse FM pairing and shared sort/defer scratch. | Broader timestamp/deferred-stream representation consolidation beyond this cartridge ordering replacement. |
-| E20 | Faithful FM kernels | Deferred; open | Existing FM block wrapper retained; no new operator/channel kernel. | Actual faithful YM2612 arithmetic/layout/kernel optimization. |
+| E18 | Independent engine work scheduling | Delivered (bounded) | Qualified persistent same-drain independent FM shadow workerfa696e2, ready PR50. Rendering/chips variants rejected. | Selected bounded contract delivered; per-game mixed costs retained, no universal gain claim; owner handoff pending. |
+| E19 | One ordered audio timeline | Whole bounded remaining opportunity rejected | Three broader stream/merge/ownership architectures implemented and measured; source restored exact5d. Existing delivered ordering retained. | No new runtime/PR; repeated per-game regression, independent gate accepted; ENGINE_AUDIO_TIMELINE.md/results/review. |
+| E20 | Faithful FM kernels | Whole bounded opportunity rejected | Fixed routes and compact channel scan independently exact;18 cart plus2 CD pairs. No qualified retained package; all source/test/build restored exact10ace05. | No new runtime/PR; per-game adverse and CD inconclusive evidence retained; ENGINE_FM_KERNELS.md/results. |
 | E21 | PSG event spans | Partial; open | Exact closed-form settled-muted PSG spans. | Active tone/noise generation spans and filter-tail work. |
 | E22 | Sega CD PCM/CDDA spans | Deferred; open | Existing native timed PCM/CDDA advancement retained. | Block source publication instead of per-sample callbacks, including queue/status behavior. |
 | E23 | Synthesis-to-device pipeline | Deferred; open | No new synthesis-to-device fusion. | Equivalent chip staging/mix/interpolation/filter/device-rate production. |
@@ -247,27 +238,21 @@ Whole selected bounded opportunity rejected after implementing both coherent exp
 
 ### E18: Independent engine work scheduling
 
-The record is a design deferral, not a worker experiment. Current CD capture/resolve cost is not evidence about every cartridge/audio job.
+Selected bounded contract delivered: persistent independent same-drain FM shadow workerfa696e2, default only when the existing shadow feature is opted in. Canonical synthesis and state boundaries remain owner-controlled; original serial fallbacks retained. Rendering/chips worker alternatives rejected. Actual mixed per-game costs are explicit; no universal throughput/energy claim. Ready PR50; independent whole gate accepted.
 
-**Next closure:** Choose a demonstrated heavy immutable job; include dispatch/copy/barrier costs and single-thread fallback in qualification.
-
-Sources: `runner/sim_step.c`, `runner/video/genesis_machine.c`, `runner/audio.c`. Historical evaluation: `evaluated_deferred`.
+Evidence: ENGINE_WORKERS.md, engine-workers-results.json, ENGINE_WORKERS_REVIEW.md; beads-3z5k.15.
 
 ### E19: One ordered audio timeline
 
-event_order.h/mixer.c changed, but event_queue and CD native scheduler did not. CD receives no cartridge timeline gain. Storage rises from 5 to 6 MiB. A common scheduler is not automatically required.
+Whole selected remaining opportunity rejected after three broader typed merge/owned deferred/flat FIFO architectures and16 matched pairs. Per-game repeated regressions prevent adoption. Production/build/test restored exact5d; existing delivered ordering remains. No new runtime/PR. Independent full gate accepted.
 
-**Next closure:** Treat ordering as delivered; pursue broader stream representation only where it removes repeated work while retaining ordering, push-index traces and DAC bursts.
-
-Sources: `runner/audio/event_order.h`, `runner/audio/mixer.c:97`, `runner/audio/event_queue.c`, `runner/cd/audio_native.c`. Historical evaluation: `implemented_game_qualified`.
+Evidence: ENGINE_AUDIO_TIMELINE.md, engine-audio-timeline-results.json, ENGINE_AUDIO_TIMELINE_REVIEW.md; beads-3z5k.16.
 
 ### E20: Faithful FM kernels
 
-ym2612_ymfm.cpp and ymfm_fm.ipp are unchanged in the batch. Vendor API and exact arithmetic are implementation constraints, not a rejection of kernel replacement.
+Whole selected bounded opportunity rejected after two actual arithmetic/layout implementations. Independent frozen-core/wrapper native/fallback checks4/4 and20 matched game pairs preserve outputs/state. Global variants fail per-game costs; CD-only rollout not justified by neutral/inconclusive samples. All runtime/test/build source restored exact10ace05; no new runtime/PR. No claim every future FM design is impossible. Final record/cleanup/sync gate pending, then E21.
 
-**Next closure:** Use current operator/channel attribution and a concrete equivalent layout/kernel; qualify register writes, feedback/LFO/envelopes/DAC and state.
-
-Sources: `runner/audio/ym2612_ymfm.cpp`, `runner/external/ymfm/src/ymfm_fm.ipp`. Historical evaluation: `evaluated_deferred`.
+Evidence: ENGINE_FM_KERNELS.md, engine-fm-kernel-results.json; beads-3z5k.18.
 
 ### E21: PSG event spans
 
