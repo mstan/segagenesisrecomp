@@ -1,6 +1,7 @@
 /* Host sprites join the sprite layer behind every SAT sprite and obey plane
  * priority, without touching the hardware overflow/collision flags. */
 #include "genesis_vdp.h"
+#include "genesis_dac.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,6 +72,19 @@ int main(void)
     gvdp_render_scanline(&v,0,row);CHECK(row[4]==GVDP_HOST_PALETTE_BASE+1);
     CHECK(gvdp_ext_color(7,1,1)==0xE && gvdp_ext_color(8,1,1)==0xE00);
     CHECK(v.cram[1]==0 && !v.sprite_overflow && !v.sprite_collision);
+    /* Ordinary extra lines remain line-0-only. An explicit sprite marker
+     * can isolate imported UI on another source line, without coloring a
+     * plane that uses the exact same pattern or changing CRAM. */
+    word(0xF804,0x2001);gvdp_render_scanline(&v,0,row);CHECK(row[4]==17);
+    CHECK(!gvdp_sprite_palette_line(0,1,1));
+    ext_tiles[1]=GVDP_EXT_SPRITE_FORCE|2;word(0xC004,0xA001);
+    gvdp_render_scanline(&v,0,row);
+    CHECK(row[4]==GVDP_HOST_PALETTE_BASE+16+1 && row[20]==17);
+    CHECK(gvdp_sprite_palette_line(0,1,1)==2 && !gvdp_ext_line(1));
+    CHECK(v.cram[17]==0 && !v.sprite_overflow && !v.sprite_collision);
+    ext_tiles[1]=3;word(0xF804,1);gvdp_render_scanline(&v,0,row);
+    CHECK(row[4]==GVDP_HOST_PALETTE_BASE+32+1);
+    ext_tiles[1]=1;word(0xC004,0xA002);
     gvdp_set_ext_tiles(NULL);gvdp_render_scanline(&v,0,row);CHECK(row[4]==1);
     /* An explicit marker selects private art without touching VRAM or plane
      * pixels, at native width as well as the game's custom renderer width. */
@@ -97,6 +111,37 @@ int main(void)
     CHECK(row[4]==GVDP_HOST_PALETTE_BASE+16+4 && v.vram[32]==0x11);
     CHECK(gvdp_set_sprite_patterns_bank(1,NULL,0,NULL));v.vram[0xF802]=0x80;
     gvdp_render_scanline(&v,0,row);CHECK(row[4]==1);
+    /* Presented captures own callback pixels, private art and final colors.
+     * The older strict capture must still reject every provider before doing
+     * any callback/device work. Capture itself invokes the callback once. */
+    GVDPRasterRow captured,untouched;GVDP before=v;
+    memset(&captured,0xA6,sizeof captured);untouched=captured;
+    gvdp_set_host_sprites(draw,&calls);CHECK(gvdp_set_host_palette(colors,2));
+    color=GVDP_HOST_PALETTE_BASE+1;high=1;
+    CHECK(gvdp_set_sprite_patterns(patterns,sizeof patterns,pattern_lines));
+    CHECK(gvdp_set_sprite_patterns_bank(1,second,sizeof second,second_lines));
+    gvdp_set_ext_tiles(ext_tiles);gvdp_set_ext_colors(top,bottom,8);
+    int old_calls=calls;
+    CHECK(!gvdp_capture_scanline(&v,0,&captured));
+    CHECK(calls==old_calls && !memcmp(&v,&before,sizeof v) && !memcmp(&captured,&untouched,sizeof captured));
+    CHECK(gvdp_capture_presented_scanline(&v,0,&captured)==320 && calls==old_calls+1);
+    CHECK(captured.host_palette[1]==colors[1] && captured.opaque[12] && captured.high[12]);
+    uint8_t expected[320],composed[320];
+    gvdp_render_scanline(&v,0,expected);
+    CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(expected,composed,320));
+    CHECK(gvdp_set_host_palette(NULL,0));
+    pattern_lines[1]=GVDP_EXT_SPRITE_FORCE|3;top[35]=0xE0;word(0xF804,0x2001);
+    gvdp_set_ext_colors(top,bottom,8);color=2;
+    old_calls=calls;
+    CHECK(gvdp_capture_presented_scanline(&v,0,&captured)==320 && calls==old_calls+1);
+    CHECK(captured.sprite[4]==GVDP_HOST_PALETTE_BASE+35 && captured.host_palette[35]==0xFF00FF00u);
+    CHECK(gvdp_compose_captured(&captured,expected)==320);
+    gvdp_set_host_sprites(NULL,NULL);gvdp_set_ext_tiles(NULL);
+    CHECK(gvdp_set_sprite_patterns(NULL,0,NULL) && gvdp_set_sprite_patterns_bank(1,NULL,0,NULL));
+    memset(patterns,0,sizeof patterns);memset(second,0,sizeof second);memset(&v,0,sizeof v);
+    memset(top,0,sizeof top);gvdp_set_ext_colors(top,top,0);
+    CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(expected,composed,320));
+    CHECK(captured.host_palette[35]==genesis_dac_cram_to_argb(0xE0,GENESIS_DAC_NORMAL));
     puts("host sprites composite behind native sprites with plane priority");
     return 0;
 }

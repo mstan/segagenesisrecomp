@@ -14,6 +14,7 @@
 #include "genesis_vdp.h"
 #include "genesis_tile_row.h"
 #include "genesis_vdp_compose.h"
+#include "genesis_dac.h"
 #include <string.h>
 #ifndef GENESIS_BATCHED_PLANES
 #define GENESIS_BATCHED_PLANES 0
@@ -564,6 +565,18 @@ int gvdp_sprite_pattern_line(unsigned flags,unsigned tile)
         ?s_sprite_pattern_lines[bank][tile]:0;
     return line<=GVDP_EXT_LINES?(int)line:0;
 }
+int gvdp_sprite_palette_line(unsigned flags,unsigned tile,unsigned source_line)
+{
+    unsigned bank=(flags>>6)&1u;
+    unsigned line;
+    if((flags&0x80u) && s_sprite_patterns[bank])
+        line=s_sprite_pattern_lines[bank] && tile<s_sprite_pattern_bytes[bank]/32
+            ?s_sprite_pattern_lines[bank][tile]:0;
+    else line=s_ext_tiles?s_ext_tiles[tile&0x7FFu]:0;
+    if(source_line && !(line&GVDP_EXT_SPRITE_FORCE))return 0;
+    line&=~GVDP_EXT_SPRITE_FORCE;
+    return line<=GVDP_EXT_LINES?(int)line:0;
+}
 void gvdp_set_host_sprites(GVDPHostSprites draw, void *user)
 {
     s_host_sprites = draw;
@@ -714,16 +727,16 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                                          :v->vram[(uint16_t)(pa+b)];
                     bits=(bits<<8)|byte;
                 }
-                int ext=pal==0?gvdp_sprite_pattern_line(sz,(unsigned)tileno):0;
+                int ext=gvdp_sprite_palette_line(sz,(unsigned)tileno,(unsigned)pal);
                 for (int fx = 0; fx < 8; ++fx) {
                     int sx = screen_x + cell * 8 + fx;
                     if (sx < 0 || sx >= total) continue;
                     int nib = (bits >> (28 - (fx ^ (hf ? 7 : 0)) * 4)) & 15;
                     if (!nib) continue;
                     if (drawn[sx]) { v->sprite_collision = 1; continue; }
-                    if (sh_mode && pal == 3 && nib == 14)
+                    if (!ext && sh_mode && pal == 3 && nib == 14)
                         s_spr_hilite_op[sx] = 1;
-                    else if (sh_mode && pal == 3 && nib == 15)
+                    else if (!ext && sh_mode && pal == 3 && nib == 15)
                         s_spr_shadow_op[sx] = 1;
                     else {
                         s_spr_idx[sx] = ext?(uint8_t)(GVDP_HOST_PALETTE_BASE+(ext-1)*16+nib)
@@ -750,12 +763,12 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
 
                 if (drawn[sx]) { v->sprite_collision = 1; continue; } /* first wins */
 
-                if (sh_mode && pal == 3 && nib == 14) {        /* highlight op */
+                int ext=gvdp_sprite_palette_line(sz,(unsigned)tileno,(unsigned)pal);
+                if (!ext && sh_mode && pal == 3 && nib == 14) {        /* highlight op */
                     s_spr_hilite_op[sx] = 1;
-                } else if (sh_mode && pal == 3 && nib == 15) { /* shadow op    */
+                } else if (!ext && sh_mode && pal == 3 && nib == 15) { /* shadow op    */
                     s_spr_shadow_op[sx] = 1;
                 } else {
-                    int ext = pal == 0 ? gvdp_sprite_pattern_line(sz,(unsigned)tileno) : 0;
                     s_spr_idx[sx] = ext ? (uint8_t)(GVDP_HOST_PALETTE_BASE + (ext - 1) * 16 + nib)
                                         : (uint8_t)(pal * 16 + nib);
                     s_spr_op[sx]  = 1;
@@ -888,13 +901,13 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, int count,
     }
 }
 
-int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
+static int capture_scanline(GVDP *v, int line, GVDPRasterRow *row,int presented)
 {
     /* These providers can publish private art/palettes or invoke arbitrary
      * host drawing. The original path owns them until they supply an explicit
      * immutable capture contract. No callback/status work has run on rejection. */
     if (!v || !row || line < 0 || line >= GVDP_MAX_HEIGHT * 2 ||
-        s_host_sprites || s_ext_tiles || s_sprite_patterns[0] || s_sprite_patterns[1])
+        (!presented && (s_host_sprites || s_ext_tiles || s_sprite_patterns[0] || s_sprite_patterns[1])))
         return 0;
     int w=gvdp_screen_width(v),extra=clamp_ws_extra(w);
     unsigned block=(unsigned)(w+2*extra);
@@ -907,6 +920,7 @@ int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
     row->shadow_mode=(uint8_t)(MODE4_SHI(v)!=0);
     row->diagnostic=(uint8_t)(s_ws_bgdiag!=0);
     row->diag_offset=row->diag_mask=0;
+    if(presented)for(unsigned i=0;i<GVDP_HOST_PALETTE_SIZE;++i)row->host_palette[i]=0xFF000000u;
     if (!row->display) return (int)row->width;
 
     int im2=MODE4_IM2(v),rline=im2?line>>1:line;
@@ -927,9 +941,19 @@ int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
     row->diag_mask=(unsigned)(wt*8-1);row->diag_offset=offset+(unsigned)hs_b;
 
     sprite_render_line(v,line,(int)row->width,(int)offset);
+    if(presented && s_host_sprites) {
+        GVDPSpriteLayer layer={line,(int)row->width,(int)offset,s_spr_idx,s_spr_op,s_spr_hi};
+        s_host_sprites(s_host_sprites_user,v,&layer);
+    }
     memcpy(row->sprite,s_spr_idx,row->width);memcpy(row->opaque,s_spr_op,row->width);
     memcpy(row->high,s_spr_hi,row->width);memcpy(row->shadow_op,s_spr_shadow_op,row->width);
     memcpy(row->hilite_op,s_spr_hilite_op,row->width);
+    if(presented) {
+        if(s_host_palette_enabled)memcpy(row->host_palette,s_host_palette,sizeof row->host_palette);
+        else if(s_ext_tiles || s_sprite_patterns[0] || s_sprite_patterns[1])
+            for(unsigned i=0;i<GVDP_EXT_LINES*16;++i)
+                row->host_palette[i]=genesis_dac_cram_to_argb(gvdp_ext_color(line,1+(int)i/16,(int)i%16),GENESIS_DAC_NORMAL);
+    }
     unsigned end=row->start+block;
     for (int x=-extra,xo=(int)row->start;xo<(int)end;) {
         int boundary=x<0?0:x>=w?w+extra:((x>>4)+1)*16;
@@ -950,6 +974,10 @@ int gvdp_capture_scanline(GVDP *v, int line, GVDPRasterRow *row)
     }
     return (int)row->width;
 }
+int gvdp_capture_scanline(GVDP *v,int line,GVDPRasterRow *row)
+{ return capture_scanline(v,line,row,0); }
+int gvdp_capture_presented_scanline(GVDP *v,int line,GVDPRasterRow *row)
+{ return capture_scanline(v,line,row,1); }
 
 int gvdp_compose_captured(const GVDPRasterRow *row,uint8_t *out)
 {

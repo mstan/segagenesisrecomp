@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 struct GVDP;
+struct GVDPRasterRow;
 /* Synchronous, memoized original image for the current row. Valid only during
  * scanline_lazy; callers that fully draw the row need not request it. */
 typedef const uint32_t *(*GameVideoNativeRow)(void *ctx);
@@ -35,4 +36,16 @@ typedef struct GameVideo {
     void (*scanline_lazy)(const struct GVDP *vdp, int line, int native_w,
                           uint32_t *out, int width,
                           GameVideoNativeRow native_row, void *native_ctx);
+    /* Request immutable native plane/sprite inputs before evaluation. Only
+     * requested rows pay for plane capture. Presentation providers are consumed
+     * synchronously into owned pixels/masks/colors. NULL raster retains the
+     * ordinary image for unsupported captures. Capture or fallback evaluates
+     * device-visible sprite status exactly once. */
+    int (*raster_enabled)(const struct GVDP *vdp);
+    /* Complete-row producer with optional presented layers. Appended to keep
+     * existing lazy producers' signatures and initializers compatible. */
+    void (*scanline_presented)(const struct GVDP *vdp, int line, int native_w,
+                          uint32_t *out, int width,
+                          GameVideoNativeRow native_row, void *native_ctx,
+                          const struct GVDPRasterRow *raster);
 } GameVideo;
