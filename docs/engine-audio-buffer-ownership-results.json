@@ -1,0 +1,487 @@
+{
+  "schema": "genesis-e24-audio-ownership-v1",
+  "issue": "beads-3z5k.22",
+  "campaign": "beads-2wy8.1",
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/52",
+  "branch": "codex/engine-audio-buffer-ownership-20261031",
+  "base": "704a63b0153221fb42d25944ff197880a4e8e900",
+  "accepted_runtime_baseline": "fe66879a240fc408c88de42bc1f08c66deacc479",
+  "measured_runtime": "42130bc407077d11b3f17ae63cbf7152d2e9386b",
+  "tested_source": "0f032082634c4dc3b146e484491e4e54f9a79b22",
+  "test_only_changes_after_runtime": true,
+  "qualified": true,
+  "disposition": "bounded-delivered-qualified-neutral",
+  "runtime_conclusion": "Mixed/noisy per-game CPU and cycles: neutral/inconclusive, no general game speedup. Both initial adverse RKA observations reversed sign on targeted reverse-order repeats; no reproduced individual-game regression. Other titles do not offset harm.",
+  "component_scope": "Paused-dummy identical-input component test; not physical-device contention/jitter/deadline or matched actual-device held-time reduction. Timings informational, no CI performance thresholds.",
+  "ownership_contract": [
+    "Two private CD frame slots exchange only after successful pending flush; render-before-flush/lookahead/error behavior unchanged",
+    "Immutable producer-owned normalized F32 block, synchronized two-span publication when exact-count/no-overflow proof holds",
+    "Unchanged scalar S16 push for overflow/large-count refusal; callback controller/history/cursors remain protected by original SDL exclusion",
+    "Pre-publication bridge telemetry snapshot shares publication lock, events/printing happen after unlock"
+  ],
+  "costs": {
+    "fixed_host_scratch_extra_bytes": 131072,
+    "cd_extra_private_pointers": 4,
+    "no_new_worker_or_callback_allocation": true
+  },
+  "unchanged_scalar_oracle_sha256": "e1a2b6cc90f5365f3003cb190e349dba2ce9bfc18dbc5eb1086911fea36ab840",
+  "unit_checks": [
+    {
+      "arch": "x64",
+      "source": "0f032082634c4dc3b146e484491e4e54f9a79b22",
+      "record": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-tests-r3.json",
+      "record_sha256": "0b1905f3da77c6b40d5aade55d8fb7d37ba945962c47669a76994349c4e2ead1",
+      "detail": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-detail-x64.log",
+      "binaries": [
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-x64\\audio_buffer_test.exe",
+          "sha256": "46b06cf3235efdd30fdf97b02a9bbf2bf51c21a8a2df62ac66aacb8bb6f05724",
+          "machine": "0x8664",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-r1\\Release\\audio_buffer_test.exe"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-x64\\audio_drc_test.exe",
+          "sha256": "b4340d315b07c6293017752579e601bfa8c8c092abe83ba059a4e9c2ec257e54",
+          "machine": "0x8664",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-r1\\Release\\audio_drc_test.exe"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-x64\\audio_extra_test.exe",
+          "sha256": "7a55f610475b07ed4f013579ea49ae876e5d1c9a5004b9ab6c60e0ecc4727ddb",
+          "machine": "0x8664",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-r1\\Release\\audio_extra_test.exe"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-x64\\segacd_audio_mix_test.exe",
+          "sha256": "893959d28f013e5adc9dc35f1262c705b7418dd0fbff316532abceb6b3a155ad",
+          "machine": "0x8664",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-r1\\cd\\Release\\segacd_audio_mix_test.exe"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-x64\\segacd_audio_native_test.exe",
+          "sha256": "a977dd4e1e0a19142b7867268b926b8ddeedcb594e2e8d6bc94f784a15ac8b06",
+          "machine": "0x8664",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-r1\\cd\\Release\\segacd_audio_native_test.exe"
+        }
+      ],
+      "SDL2": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-x64\\SDL2.dll",
+        "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+      }
+    },
+    {
+      "arch": "win32",
+      "source": "0f032082634c4dc3b146e484491e4e54f9a79b22",
+      "record": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-tests-win32-r1.json",
+      "record_sha256": "634a999feb86c8cfda51f0c2934ad7ae046a56f691e393a1748ee89b82b8ba16",
+      "detail": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-detail-win32.log",
+      "binaries": [
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-win32\\audio_buffer_test.exe",
+          "sha256": "1290b9c7379241d3e63776203a8da7a47116baf45bc41723c23c53e6e3287155",
+          "machine": "0x14c",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-win32-r1\\Release\\audio_buffer_test.exe"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-win32\\audio_drc_test.exe",
+          "sha256": "475134144a6574a1c22e7238369ed992e64ae11f5893041415632a5d5f89b43e",
+          "machine": "0x14c",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-win32-r1\\Release\\audio_drc_test.exe"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-win32\\audio_extra_test.exe",
+          "sha256": "0092ad0aa675f5218ac6eab54adfb9eed5a74a2f33512cef632b49bdfe7bda79",
+          "machine": "0x14c",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-win32-r1\\Release\\audio_extra_test.exe"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-win32\\segacd_audio_mix_test.exe",
+          "sha256": "a4fff2f195780a8be116670744bb75b6c8447f18827d66fd1aefc5c1e91ce361",
+          "machine": "0x14c",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-win32-r1\\cd\\Release\\segacd_audio_mix_test.exe"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-win32\\segacd_audio_native_test.exe",
+          "sha256": "f9d7c6dc7bd1cd8bc88946b25f3bc700b0fd089f1b366019888a452bcb55abce",
+          "machine": "0x14c",
+          "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-build-win32-r1\\cd\\Release\\segacd_audio_native_test.exe"
+        }
+      ],
+      "SDL2": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\unit-binaries-win32\\SDL2.dll",
+        "sha256": "f89c0b06883ae03bf82c1ecd3524d3baf07660933fda59039b9d43e9d2593981"
+      }
+    }
+  ],
+  "component_samples": {
+    "x64": [
+      {
+        "round": 0,
+        "old_body_us": 6.659,
+        "prepare_us": 0.536,
+        "new_body_us": 0.287,
+        "total_us": 0.824
+      },
+      {
+        "round": 1,
+        "old_body_us": 7.192,
+        "prepare_us": 0.611,
+        "new_body_us": 0.424,
+        "total_us": 1.035
+      },
+      {
+        "round": 2,
+        "old_body_us": 7.661,
+        "prepare_us": 0.613,
+        "new_body_us": 0.319,
+        "total_us": 0.932
+      },
+      {
+        "round": 3,
+        "old_body_us": 9.323,
+        "prepare_us": 0.765,
+        "new_body_us": 0.338,
+        "total_us": 1.103
+      },
+      {
+        "round": 4,
+        "old_body_us": 8.653,
+        "prepare_us": 0.943,
+        "new_body_us": 0.368,
+        "total_us": 1.31
+      }
+    ],
+    "win32": [
+      {
+        "round": 0,
+        "old_body_us": 26.732,
+        "prepare_us": 0.804,
+        "new_body_us": 0.389,
+        "total_us": 1.193
+      },
+      {
+        "round": 1,
+        "old_body_us": 24.094,
+        "prepare_us": 0.753,
+        "new_body_us": 0.374,
+        "total_us": 1.127
+      },
+      {
+        "round": 2,
+        "old_body_us": 22.899,
+        "prepare_us": 0.631,
+        "new_body_us": 0.327,
+        "total_us": 0.959
+      },
+      {
+        "round": 3,
+        "old_body_us": 26.929,
+        "prepare_us": 0.826,
+        "new_body_us": 0.351,
+        "total_us": 1.178
+      },
+      {
+        "round": 4,
+        "old_body_us": 21.603,
+        "prepare_us": 0.637,
+        "new_body_us": 0.345,
+        "total_us": 0.982
+      }
+    ]
+  },
+  "real_game_pairs": [
+    {
+      "game": "rka",
+      "profile": "shadow-off",
+      "driver": "dummy100",
+      "order": [
+        "A",
+        "B"
+      ],
+      "baseline": {
+        "cpu_seconds": 1.984375,
+        "cpu_cycles": 9859807110,
+        "seconds": 30.866887
+      },
+      "candidate": {
+        "cpu_seconds": 2.359375,
+        "cpu_cycles": 10130650250,
+        "seconds": 30.4091987
+      },
+      "cost_change_pct": {
+        "cpu_seconds": 18.8976377952756,
+        "cpu_cycles": 2.7469415677037423,
+        "seconds": -1.4827808842530765
+      },
+      "correctness_exact": true,
+      "raw": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-qualification-r1.json",
+      "candidate_ownership": [
+        "[audio buffer ownership] prepared=1768 fallback=32 prepare_us=1.697 publish_body_us=1.415 publish_max_us=37.200 exclusion_us=1.539"
+      ],
+      "candidate_device": [],
+      "candidate_callback": []
+    },
+    {
+      "game": "rka",
+      "profile": "shadow-on",
+      "driver": "dummy100",
+      "order": [
+        "A",
+        "B"
+      ],
+      "baseline": {
+        "cpu_seconds": 2.625,
+        "cpu_cycles": 11835978510,
+        "seconds": 30.1213159
+      },
+      "candidate": {
+        "cpu_seconds": 2.734375,
+        "cpu_cycles": 12057288350,
+        "seconds": 30.0186625
+      },
+      "cost_change_pct": {
+        "cpu_seconds": 4.166666666666674,
+        "cpu_cycles": 1.8698060309337183,
+        "seconds": -0.3407998519745825
+      },
+      "correctness_exact": true,
+      "raw": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-qualification-r1.json",
+      "candidate_ownership": [
+        "[audio buffer ownership] prepared=1545 fallback=255 prepare_us=1.502 publish_body_us=2.816 publish_max_us=522.700 exclusion_us=2.938"
+      ],
+      "candidate_device": [],
+      "candidate_callback": []
+    },
+    {
+      "game": "sonic1",
+      "profile": "shadow-off",
+      "driver": "dummy100",
+      "order": [
+        "A",
+        "B"
+      ],
+      "baseline": {
+        "cpu_seconds": 1.140625,
+        "cpu_cycles": 5119451970,
+        "seconds": 16.4310507
+      },
+      "candidate": {
+        "cpu_seconds": 1.265625,
+        "cpu_cycles": 4971790190,
+        "seconds": 15.0056746
+      },
+      "cost_change_pct": {
+        "cpu_seconds": 10.95890410958904,
+        "cpu_cycles": -2.8843278707427755,
+        "seconds": -8.674893200834678
+      },
+      "correctness_exact": true,
+      "raw": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-qualification-r1.json",
+      "candidate_ownership": [
+        "[audio buffer ownership] prepared=777 fallback=123 prepare_us=1.772 publish_body_us=2.620 publish_max_us=64.900 exclusion_us=2.737"
+      ],
+      "candidate_device": [],
+      "candidate_callback": []
+    },
+    {
+      "game": "sonic1",
+      "profile": "shadow-on",
+      "driver": "dummy100",
+      "order": [
+        "A",
+        "B"
+      ],
+      "baseline": {
+        "cpu_seconds": 1.359375,
+        "cpu_cycles": 5523086090,
+        "seconds": 15.0736735
+      },
+      "candidate": {
+        "cpu_seconds": 1.0,
+        "cpu_cycles": 5376672160,
+        "seconds": 15.0008696
+      },
+      "cost_change_pct": {
+        "cpu_seconds": -26.436781609195403,
+        "cpu_cycles": -2.650944193411986,
+        "seconds": -0.4829871099437111
+      },
+      "correctness_exact": true,
+      "raw": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-qualification-r1.json",
+      "candidate_ownership": [
+        "[audio buffer ownership] prepared=762 fallback=138 prepare_us=1.484 publish_body_us=2.688 publish_max_us=227.200 exclusion_us=2.796"
+      ],
+      "candidate_device": [],
+      "candidate_callback": []
+    },
+    {
+      "game": "rka",
+      "profile": "shadow-off",
+      "driver": "dummy100 reverse",
+      "order": [
+        "B",
+        "A"
+      ],
+      "baseline": {
+        "cpu_seconds": 2.265625,
+        "cpu_cycles": 10507684720,
+        "seconds": 30.2010437
+      },
+      "candidate": {
+        "cpu_seconds": 2.0625,
+        "cpu_cycles": 10439137570,
+        "seconds": 30.0374725
+      },
+      "cost_change_pct": {
+        "cpu_seconds": -8.965517241379306,
+        "cpu_cycles": -0.6523525574528288,
+        "seconds": -0.5416077723168211
+      },
+      "correctness_exact": true,
+      "raw": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-qualification-reverse-r1.json",
+      "candidate_ownership": [
+        "[audio buffer ownership] prepared=1537 fallback=263 prepare_us=1.604 publish_body_us=2.612 publish_max_us=41.100 exclusion_us=2.713"
+      ],
+      "candidate_device": [],
+      "candidate_callback": []
+    },
+    {
+      "game": "rka",
+      "profile": "shadow-off",
+      "driver": "wasapi0",
+      "order": [
+        "A",
+        "B"
+      ],
+      "baseline": {
+        "cpu_seconds": 2.03125,
+        "cpu_cycles": 9480162730,
+        "seconds": 30.8156209
+      },
+      "candidate": {
+        "cpu_seconds": 2.375,
+        "cpu_cycles": 10372481230,
+        "seconds": 30.0704118
+      },
+      "cost_change_pct": {
+        "cpu_seconds": 16.92307692307693,
+        "cpu_cycles": 9.41248083407109,
+        "seconds": -2.4182835790272805
+      },
+      "correctness_exact": true,
+      "raw": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\physical-qualification-r1.json",
+      "candidate_ownership": [
+        "[audio buffer ownership] prepared=1800 fallback=0 prepare_us=1.532 publish_body_us=1.259 publish_max_us=4.600 exclusion_us=1.388"
+      ],
+      "candidate_device": [
+        "[audio device] driver=wasapi rate=48000 samples=1024 channels=2 format=32784"
+      ],
+      "candidate_callback": [
+        "[audio callback ownership] callbacks=1419 callback_peak_us=467 wait_peak_us=207 conceals=1 repeated=1981 underruns=0 overflows=0 fill_us=54"
+      ]
+    },
+    {
+      "game": "rka",
+      "profile": "shadow-off",
+      "driver": "wasapi0 reverse",
+      "order": [
+        "B",
+        "A"
+      ],
+      "baseline": {
+        "cpu_seconds": 2.25,
+        "cpu_cycles": 10263530530,
+        "seconds": 31.0737456
+      },
+      "candidate": {
+        "cpu_seconds": 1.75,
+        "cpu_cycles": 9896758980,
+        "seconds": 30.0963538
+      },
+      "cost_change_pct": {
+        "cpu_seconds": -22.22222222222222,
+        "cpu_cycles": -3.573541764482868,
+        "seconds": -3.145394226307885
+      },
+      "correctness_exact": true,
+      "raw": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\physical-qualification-reverse-r1.json",
+      "candidate_ownership": [
+        "[audio buffer ownership] prepared=1800 fallback=0 prepare_us=2.378 publish_body_us=1.284 publish_max_us=47.900 exclusion_us=1.416"
+      ],
+      "candidate_device": [
+        "[audio device] driver=wasapi rate=48000 samples=1024 channels=2 format=32784"
+      ],
+      "candidate_callback": [
+        "[audio callback ownership] callbacks=1419 callback_peak_us=407 wait_peak_us=211 conceals=2 repeated=3363 underruns=0 overflows=0 fill_us=53"
+      ]
+    },
+    {
+      "game": "sonic_cd",
+      "profile": "qualified native CD",
+      "driver": "dummy100",
+      "order": [
+        "A",
+        "B"
+      ],
+      "baseline": {
+        "cpu_seconds": 7.359375,
+        "cycles": 33859151560
+      },
+      "candidate": {
+        "cpu_seconds": 7.265625,
+        "cycles": 33955016520
+      },
+      "cost_change_pct": {
+        "cpu_seconds": -1.273885350318471,
+        "cycles": 0.283128653800202
+      },
+      "correctness_exact": true,
+      "raw": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\game-e24-audio-ownership-r1.json",
+      "candidate_ownership": [
+        "[audio buffer ownership] prepared=2829 fallback=170 prepare_us=1.410 publish_body_us=1.658 publish_max_us=420.700 exclusion_us=1.747"
+      ],
+      "limits": "11 checkpoints,21 artifacts/full WAV; CD rollback/save-load not claimed"
+    }
+  ],
+  "actual_game_runs": 16,
+  "raw_records": [
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-qualification-r1.json",
+      "sha256": "0985af89da63f1f3818b78d27fc4727e5ba12fad7735598e0b0e8b6617e843f3"
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-qualification-reverse-r1.json",
+      "sha256": "921f05a31027e830a8e428d493ce566925d349af41d05b4311e7cd29679be02c"
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\physical-qualification-r1.json",
+      "sha256": "e1a246925a11c5ee3564e12eed9fd711d63d672b0a74ff11f3848ceeaf96adf0"
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\physical-qualification-reverse-r1.json",
+      "sha256": "6bb414c63b8481a57a0aad3e6ced61cb9d5f050fba00c464ca64a50504f797cf"
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\game-e24-audio-ownership-r1.json",
+      "sha256": "fcc7f8dc16901b792d927c8b0aacecb6e95625481fcea7977a9d8bcddbdbfc89"
+    }
+  ],
+  "limits": [
+    "Baseline callback/wait/fill fields exist only for its retained hitch events; candidate-only trace is descriptive",
+    "Candidate exclusion timer covers production snapshot/publication before optional diagnostic bookkeeping/unlock, not exact wall time of all diagnostic exclusion",
+    "Actual device was WASAPI48000Hz/1024frames/stereo/S16; silent master0; normal nonzero100/37 gain qualified separately",
+    "Cartridge current-build rollback exact; no CD rollback/save-load qualification or owner visual approval claimed",
+    "No merge/release/owner game launch performed; combined owner handoff remains"
+  ],
+  "cleanup": {
+    "state": "complete",
+    "local_removed_bytes": 354903929,
+    "server_removed_bytes": 236687155,
+    "total_removed_bytes": 591591084,
+    "local_audit": "C:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\cleanup-audit.json",
+    "server_audit": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\remote-cleanup-audit.json",
+    "removed": "34 owned local build/duplicate-bin/ROM targets,5 SERVER duplicate/staging targets; non-forced audited native removals, no reparse/nested repositories",
+    "retained": "Current candidate title PEs/DLL/configs;10 final unit PEs/configs/details; source worktree/scripts; raw per-game logs/PNGs/WAVs/settings; shared SERVER S22 engine/build cache retained for next serial item and due cleanup after campaign",
+    "interim_preparation": "Unrun source1 candidate PE copies removed; their original build records remain explicitly preparation only. Raw unit r1/r2 cache paths are superseded by the qualified final unit-retention paths."
+  }
+}

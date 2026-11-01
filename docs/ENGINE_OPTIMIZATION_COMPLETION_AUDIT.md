@@ -4,7 +4,7 @@
 
 Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
 
-Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18/E22 are delivered or qualified. E11/E13/E14/E15/E17/E19/E20/E21/E23 whole bounded opportunities were implemented and evaluated, then rejected. E18 is ready PR50; E22 is ready PR51 with neutral/inconclusive performance and lower CPU observations. **11 original families plus E37 remain open:12 across37,25 resolved.** Counts are dispositions, not speedups. Combined owner visual/play and merge handoff remains for meaningful PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions. E23 retains no new runtime after full pipeline and unity-bypass qualification; acceptedfe668 restored exactly.
+Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18/E22/E24 are delivered or qualified. E11/E13/E14/E15/E17/E19/E20/E21/E23 whole bounded opportunities were implemented and evaluated, then rejected. E18 is ready PR50; E22 is ready PR51; E24 is ready PR52. E22/E24 overall performance is neutral/inconclusive; E24 has a measured component reduction. **10 original families plus E37 remain open:11 across37,26 resolved.** Counts are dispositions, not speedups. Combined owner visual/play and merge handoff remains for meaningful PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions. E23 retains no new runtime after full pipeline and unity-bypass qualification; acceptedfe668 restored exactly.
 
 ## What was actually closed
 
@@ -54,9 +54,9 @@ The retained CD profile is **an earlier candidate on one gameplay route**, not a
 | E19 | One ordered audio timeline | Whole bounded remaining opportunity rejected | Three broader stream/merge/ownership architectures implemented and measured; source restored exact5d. Existing delivered ordering retained. | No new runtime/PR; repeated per-game regression, independent gate accepted; ENGINE_AUDIO_TIMELINE.md/results/review. |
 | E20 | Faithful FM kernels | Whole bounded opportunity rejected | Fixed routes and compact channel scan independently exact;18 cart plus2 CD pairs. No qualified retained package; all source/test/build restored exact10ace05. | No new runtime/PR; per-game adverse and CD inconclusive evidence retained; ENGINE_FM_KERNELS.md/results. |
 | E21 | PSG event spans | Whole bounded opportunity rejected | Existing settled-muted spans retained; active-run and whole-interval producer architectures independently exact, then rejected by per-game costs. | All new runtime/test/build restored exactf4b10d7; ENGINE_PSG_EVENT_SPANS.md/results; no new PR; independent final gate accepted and central push16.7s exit0. |
-| E22 | Sega CD PCM/CDDA spans | Qualified (bounded); PR51 | Synchronous owned PCM/CDDA queue publication, single-sample and block cadence; frozen complete-state/native x64/Win32 tests and four exact-output Sonic CD pairs. Neutral/inconclusive performance; all adverse/favorable observations retained. Independent source/record/cleanup gate accepted. | Selected contract qualified; combined owner handoff pending. E23/E25 remain open. |
-| E23 | Synthesis-to-device pipeline | Rejected whole bounded opportunity | Coherent owned complete-frame source/mix/bridge pipeline and generic unity correction implemented, built and measured. All recorded behavior passes, but RKA cost remains adverse/unresolved. Entire acceptedfe668 tree and shared cache restored; no new runtime/PR. Independent source/records/cleanup gate accepted. | Whole selected opportunity rejected; future algorithms not claimed impossible. E24/E25 remain open. |
-| E24 | Audio buffer ownership | Deferred; open | Existing bounded mixed frame and device-locked handoff retained. | Qualified reduction of callback locks/copies/shared state. |
+| E22 | Sega CD PCM/CDDA spans | Qualified (bounded); PR51 | Synchronous owned PCM/CDDA queue publication, single-sample and block cadence; frozen complete-state/native x64/Win32 tests and four exact-output Sonic CD pairs. Neutral/inconclusive performance; all adverse/favorable observations retained. Independent source/record/cleanup gate accepted. | Selected contract qualified; combined owner handoff pending. E25 remains open. |
+| E23 | Synthesis-to-device pipeline | Rejected whole bounded opportunity | Coherent owned complete-frame source/mix/bridge pipeline and generic unity correction implemented, built and measured. All recorded behavior passes, but RKA cost remains adverse/unresolved. Entire acceptedfe668 tree and shared cache restored; no new runtime/PR. Independent source/records/cleanup gate accepted. | Whole selected opportunity rejected; future algorithms not claimed impossible. E25 remains open. |
+| E24 | Audio buffer ownership | Qualified (bounded); PR52 | CD slots and immutable prepared ring publication preserve exact output; shared telemetry race fixed. Five contracts x64/Win32 and16 game runs/8pairs including actual WASAPI/reverse. Neutral/inconclusive whole-game costs; component reduction measured,128KiB scratch cost explicit. | Selected contract qualified; final durability gate and combined owner handoff remain. |
 | E25 | Exact constant/silent spans | Partial; open | Exact settled PSG silence, shared with E21. | Constant/silent PCM and CDDA runs with queue/timestamp/fader evolution. |
 | E26 | Bounded generic media prefetch | Partial; open | Redundant seeks removed so bounded 1 MiB stdio read-ahead works. | Actual asynchronous request-driven prefetch off the simulation path. |
 | E27 | Verified media handoff contract | Deferred; open | No generic verified media handoff. | Safe reuse of complete launch verification across a generic immutable media handoff. |
@@ -76,7 +76,7 @@ The weakest closure pattern made the necessary replacement architecture a prereq
 
 E27 used the title-backlog exclusion too broadly. A new game-specific launcher/converter/cache design remains title work. A reusable verified media contract plus mechanical consumer adoption is explicitly permitted engine work. It still needs immutable ownership/full-identity proof, including time-of-check/time-of-use behavior and a portable verification fallback.
 
-Other deferrals are reasonable prioritization decisions: no stamp-heavy workload for E14, no default persistence stall for E35, no physical device evidence for E24/E34. They remain deferrals rather than delivered implementations or universally ruled-out candidates. Rejected narrow cache/tail/fault-scope mechanisms must not be repeated unchanged, but do not eliminate materially broader designs.
+Other deferrals are reasonable prioritization decisions: no stamp-heavy workload for E14, no default persistence stall for E35, remaining host-delivery scope for E34. They remain deferrals rather than delivered implementations or universally ruled-out candidates. Rejected narrow cache/tail/fault-scope mechanisms must not be repeated unchanged, but do not eliminate materially broader designs.
 
 ## Coherent remaining packages
 
@@ -289,11 +289,11 @@ engine-audio-device-pipeline-results.json and ENGINE_AUDIO_DEVICE_PIPELINE_REVIE
 
 ### E24: Audio buffer ownership
 
-audio.c is unchanged; dummy-device throughput does not measure actual callback contention or jitter.
+Qualified CD frame-slot exchange, immutable normalized producer blocks and synchronized ring-span publication in PR52; existing callback lock and exact scalar overflow/large-count fallback retained. The same lock now protects the previously racy telemetry snapshot.
 
-**Next closure:** Use existing timing for a physical-device symptom; redesign all shared callback ownership rather than removing a lock alone.
+Five focused contracts pass x64/Win32; sixteen actual runs/eight matched pairs preserve recorded output/state/current cartridge rollback, including actual WASAPI delivery. First adverse RKA observations did not reproduce in reverse order. Overall runtime is neutral/inconclusive; the paused-dummy component reduction is separately measured. Cost:128KiB fixed host scratch plus four private CD pointers. No physical jitter/deadline win or CD rollback qualification is claimed.
 
-Sources: `runner/audio.c`. Historical evaluation: `evaluated_deferred`.
+See [ownership evidence](ENGINE_AUDIO_BUFFER_OWNERSHIP.md), [raw identities and samples](engine-audio-buffer-ownership-results.json), PR52 and beads-3z5k.22. Final durability review precedes E25; combined owner visual/play and merge handoff remain. Historical evaluation: `evaluated_deferred`, superseded by this serial qualification.
 
 ### E25: Exact constant/silent spans
 

@@ -16,14 +16,14 @@
     "existing": 2
   },
   "implementation_counts": {
-    "bounded_delivered": 15,
+    "bounded_delivered": 16,
     "rejected_mechanism": 1,
     "bounded_rejected": 9,
-    "deferred": 7,
+    "deferred": 6,
     "partial": 3,
     "existing": 1
   },
-  "remaining_scope_open_count": 11,
+  "remaining_scope_open_count": 10,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -708,15 +708,19 @@
       "id": "E24",
       "name": "Audio buffer ownership",
       "original_goal": "Reduce avoidable callback handoff locks, copies and temporary storage.",
-      "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "Existing bounded mixed frame and device-locked handoff retained.",
-      "remaining": "Qualified reduction of callback locks/copies/shared state.",
-      "audit_basis": "audio.c is unchanged; dummy-device throughput does not measure actual callback contention or jitter.",
-      "next_closure": "Use existing timing for a physical-device symptom; redesign all shared callback ownership rather than removing a lock alone.",
+      "recorded_evaluation_status": "implemented_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Qualified CD frame-slot exchange and immutable F32 synchronized publication plus telemetry race fix; PR52. Per-game neutral/inconclusive, same-input component reduction measured.",
+      "remaining": "Combined owner visual/play and merge handoff; selected original bounded ownership contract qualified.",
+      "audit_basis": "Five focused x64/Win32 contracts and16 actual game runs/8 matched pairs including WASAPI/reverse; exact recorded behavior and no reproduced individual-game regression. 128KiB extra scratch explicit.",
+      "next_closure": "Final source/records/cleanup durability review, then original E25; no further E24 benchmark matrix.",
       "source_references": [
-        "runner/audio.c"
+        "runner/audio.c",
+        "runner/recomp_audio_drc.h",
+        "runner/cd/audio_native.c",
+        "docs/ENGINE_AUDIO_BUFFER_OWNERSHIP.md",
+        "docs/engine-audio-buffer-ownership-results.json"
       ]
     },
     {
@@ -938,5 +942,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 12
+  "total_remaining_open_count": 11
 }
