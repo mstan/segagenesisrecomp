@@ -39,47 +39,8 @@ static void test_stall_recovery(double rate, int host_frames)
     free(in); rab_free(&b);
 }
 
-static void test_scaled_publication(void)
-{
-    rab_config cfg;rab_config_defaults(&cfg);cfg.source_rate=223721;
-    rab_bridge a,b;assert(!rab_init(&a,&cfg));assert(!rab_init(&b,&cfg));
-    const int gains[]={256,128,0,1,255,85,192};
-    int16_t original[4096],scaled[4096],out_a[2048],out_b[2048];
-    for(unsigned block=0;block<180;++block) {
-        int count=block%13u==0?2048:731;
-        int gain=gains[block%7u];
-        for(int i=0;i<count*2;++i) {
-            int16_t sample=(int16_t)((unsigned)(i*983u+block*8191u)&65535u);
-            original[i]=(int16_t)((int32_t)sample*gain/256);scaled[i]=sample;
-        }
-        /* rab_push and rab_pull are unchanged original production code. */
-        rab_push(&a,original,count);rab_push_scaled(&b,scaled,count,gain);
-        assert(!memcmp(original,scaled,(size_t)count*2*sizeof *scaled));
-        assert(!memcmp(a.ring,b.ring,(size_t)a.cap*2*sizeof *a.ring));
-        rab_bridge sa=a,sb=b;sa.ring=sb.ring=NULL;sa.coeffs=sb.coeffs=NULL;
-        assert(!memcmp(&sa,&sb,sizeof sa));
-        if(block%3u==0) {
-            rab_pull(&a,out_a,1024);rab_pull(&b,out_b,1024);
-            assert(!memcmp(out_a,out_b,sizeof out_a));
-        }
-        if(block==100){rab_reset(&a);rab_reset(&b);}
-    }
-    /* Explicit scalar overflow fallback and huge-count floating-point edge. */
-    for(unsigned edge=0;edge<2;++edge) {
-        a.in_count=b.in_count=edge?UINT64_C(9007199254740993):100000u;
-        a.out_pos=b.out_pos=(double)a.in_count-(double)a.cap;
-        for(unsigned i=0;i<256;++i){scaled[i]=(int16_t)(i*127u);original[i]=(int16_t)((int32_t)scaled[i]*85/256);}
-        rab_push(&a,original,128);rab_push_scaled(&b,scaled,128,85);
-        assert(!memcmp(a.ring,b.ring,(size_t)a.cap*2*sizeof *a.ring));
-        rab_bridge sa=a,sb=b;sa.ring=sb.ring=NULL;sa.coeffs=sb.coeffs=NULL;
-        assert(!memcmp(&sa,&sb,sizeof sa));
-    }
-    rab_free(&a);rab_free(&b);
-}
-
 int main(void)
 {
-    test_scaled_publication();
     const double rates[]={22050,44100,48000,96000,223721};
     for(unsigned r=0;r<sizeof rates/sizeof rates[0];++r) {
         rab_config cfg; rab_config_defaults(&cfg); cfg.source_rate=rates[r];

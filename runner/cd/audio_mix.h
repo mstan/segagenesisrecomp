@@ -137,13 +137,6 @@ SegaCDAudioMixResult segacd_audio_mix_set_window(SegaCDAudioMix *mix,
 SegaCDAudioMixResult segacd_audio_mix_check_window(const SegaCDAudioMix *mix,
                                                     size_t frames,
                                                     uint32_t rate_hz);
-/* Native-owner preflight: queues/window must have been constructed through
- * these APIs (including owned grants), and remain exclusively owned through
- * rendering. Monotonic queue stamps make endpoint coverage sufficient. Generic
- * callers and opaque extra callbacks retain the original full preflight. */
-SegaCDAudioMixResult segacd_audio_mix_check_owned_window(const SegaCDAudioMix *,size_t,uint32_t);
-int segacd_audio_mix_owned_frame_source(int16_t *,size_t,double,
-                                       const int16_t *,size_t,const int16_t *,int);
 /* Add linearly interpolated PCM/CDDA to existing PSG/FM mix. If either active
  * source lacks a bracketing sample anywhere in the window, returns NEED_INPUT,
  * sets a sticky underflow fault, and leaves the entire output buffer and both
