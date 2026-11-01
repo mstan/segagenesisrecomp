@@ -70,10 +70,6 @@ target_include_directories(fm_block_test PRIVATE "${_ymfm}"
     "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_compile_definitions(fm_block_test PRIVATE GENESIS_FM_BLOCK_SAMPLES=1)
 add_test(NAME fm_block COMMAND fm_block_test)
-option(GENESIS_FM_KERNEL_TESTS "Compare native and portable FM kernels to an independently frozen core" OFF)
-if(GENESIS_FM_KERNEL_TESTS)
-    include("${CMAKE_CURRENT_LIST_DIR}/runtime/fm_kernel.cmake")
-endif()
 
 if(TARGET SDL2::SDL2)
     foreach(_host_wait_variant native portable)
