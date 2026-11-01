@@ -32,8 +32,6 @@ static int16_t flushed_stereo[256*2];
 int audio_init(int rate){return rate==223721?0:-1;}
 void audio_close(void){}
 void audio_set_extra_source(AudioExtraSource source){extra_source=source;}
-void audio_set_owned_frame_source(AudioExtraSource expected,AudioFrameSource source)
-{(void)expected;(void)source;} /* Fake flush below exercises the legacy adapter. */
 void audio_flush(uint32_t wall_frame,int realtime,const int16_t *fm,size_t fm_frames,
                  const int16_t *psg,size_t psg_frames)
 {
