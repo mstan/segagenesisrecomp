@@ -34,6 +34,7 @@ typedef struct AppConfig {
     int rewind_enabled;     /* local rewind; never available in netplay */
     int rewind_depth;       /* snapshot slots */
     int rewind_interval;    /* guest frames between snapshots */
+    int replay_diagnostics; /* default-on replayable player feedback */
 } AppConfig;
 
 extern AppConfig g_app_config;

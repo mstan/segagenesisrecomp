@@ -72,6 +72,17 @@ if(TARGET SDL2::SDL2)
         endif()
         add_test(NAME host_wait_${_host_wait_variant} COMMAND host_wait_${_host_wait_variant}_test)
     endforeach()
+    add_executable(diagnostic_replay_test runtime/diagnostic_replay_test.c
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/diagnostic_replay.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/replay_writer.c")
+    target_include_directories(diagnostic_replay_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/external/superzazu")
+    target_link_libraries(diagnostic_replay_test PRIVATE SDL2::SDL2)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
+        target_compile_definitions(diagnostic_replay_test PRIVATE RECOMP_LAUNCHER=1)
+        target_include_directories(diagnostic_replay_test PRIVATE "${CMAKE_SOURCE_DIR}/recomp-ui/src")
+    endif()
     add_executable(audio_extra_test runtime/audio_extra_test.c
         "${CMAKE_CURRENT_LIST_DIR}/../runner/audio.c")
     target_include_directories(audio_extra_test PRIVATE
@@ -115,6 +126,11 @@ find_package(Python3 QUIET COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
     add_test(NAME paired_benchmark_gate COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_LIST_DIR}/runtime/test_paired_benchmark.py")
+    if(TARGET diagnostic_replay_test)
+        add_test(NAME diagnostic_replay COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_LIST_DIR}/runtime/test_diagnostic_replay.py"
+            --fixture "$<TARGET_FILE:diagnostic_replay_test>")
+    endif()
     add_test(NAME segacd_owned_extract COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_LIST_DIR}/../tools/segacd/test_sgcd_owned_extract.py")
     add_test(NAME segacd_owned_media COMMAND "${Python3_EXECUTABLE}"

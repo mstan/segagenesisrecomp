@@ -25,7 +25,11 @@ int main(int argc,char **argv)
     app_config_defaults();app_config_apply_video(&video);
     CHECK(!g_app_config.custom_widescreen && !strcmp(mode,"off"));
     const RecompLauncherCModProvider *p=app_config_video_mods(&video,argv[1]);
-    CHECK(p && p->package_count(p->ctx)==1 && p->feature_count(p->ctx)==1);
+    CHECK(p && p->package_count(p->ctx)==2 && p->feature_count(p->ctx)==2);
+    CHECK(g_app_config.replay_diagnostics);
+    RecompLauncherCModFeature diagnostics;
+    CHECK(p->feature_get(p->ctx,1,&diagnostics));
+    CHECK(diagnostics.enabled && !strcmp(diagnostics.id,"replay") && diagnostics.option_count==0);
     RecompLauncherCGameInfo game={0};game.name="Sonic the Hedgehog";game.mods=p;
     LauncherModel model;launcher_model_init(&model,NULL,&game,NULL);
 #if RECOMP_UI_ENABLE_MODS || EXPECT_CUSTOM_VIDEO_MODS
@@ -59,7 +63,16 @@ int main(int argc,char **argv)
     app_config_apply_video(&video);CHECK(!strcmp(mode,"21:9"));
     CHECK(p->feature_enable(p->ctx,feature.package_id,feature.id,0));CHECK(p->commit(p->ctx,NULL));
     app_config_defaults();CHECK(app_config_load(argv[1]));app_config_apply_video(&video);
-    CHECK(!strcmp(mode,"off"));CHECK(!app_config_video_mods(NULL,argv[1]));
+    CHECK(!strcmp(mode,"off"));
+    CHECK(p->feature_enable(p->ctx,"playtest-diagnostics","replay",0));
+    CHECK(p->commit(p->ctx,NULL));app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(!g_app_config.replay_diagnostics);
+    p=app_config_video_mods(NULL,argv[1]);CHECK(p && p->feature_count(p->ctx)==1);
+    CHECK(p->feature_get(p->ctx,0,&diagnostics) && !strcmp(diagnostics.id,"replay"));
+    /* Old installations without a Diagnostics setting inherit default-on. */
+    FILE *legacy=fopen(argv[1],"wb");CHECK(legacy);fputs("[video]\nwindow_scale=2\n[mods.widescreen]\nenabled=0\n",legacy);fclose(legacy);
+    app_config_defaults();CHECK(app_config_load(argv[1]) && g_app_config.replay_diagnostics);
+    p=app_config_video_mods(&video,argv[1]);
     /* GameSpec.video_default: a game may enable its renderer on a fresh
      * install, while a saved choice (including off) still wins. */
     CHECK(!app_config_set_video_default("garbage"));
