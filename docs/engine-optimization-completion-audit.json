@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Selected bounded contracts E01/E03-E08/E10/E16/E18/E22 delivered or qualified; E11/E13/E14/E15/E17/E19/E20/E21/E23 whole bounded opportunities rejected after actual evaluation. E23 coherent pipeline and generic unity correction retain no new runtime; complete tree restored exactfe668.11 original plus E37 remain open,12 total across37;25 resolved. Counts are dispositions, not speedups. Combined owner handoff remains for meaningful PRs.",
+  "conclusion": "Selected original bounded contracts through E26 are independently source-reviewed and qualified, or whole bounded opportunities rejected with evidence. E26 implements actual asynchronous generic raw-media prefetch and retains exact recorded behavior with modest observed CD cost gains.8 original families plus E37 remain open,9 across37;28 resolved. Counts are dispositions, not speedups. Combined owner handoff remains for meaningful PRs.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -16,14 +16,14 @@
     "existing": 2
   },
   "implementation_counts": {
-    "bounded_delivered": 17,
+    "bounded_delivered": 18,
     "rejected_mechanism": 1,
     "bounded_rejected": 9,
     "deferred": 6,
-    "partial": 2,
-    "existing": 1
+    "existing": 1,
+    "partial": 1
   },
-  "remaining_scope_open_count": 9,
+  "remaining_scope_open_count": 8,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -748,18 +748,35 @@
       "id": "E26",
       "name": "Bounded generic media prefetch",
       "original_goal": "Read upcoming raw CDDA/movie/nonresident sectors off the simulation path using actual device requests/transport information.",
-      "recorded_evaluation_status": "implemented_read_ahead_async_deferred",
-      "implementation_state": "partial",
-      "remaining_scope_open": true,
-      "delivered": "Redundant seeks removed so bounded 1 MiB stdio read-ahead works.",
-      "remaining": "Actual asynchronous request-driven prefetch off the simulation path.",
-      "audit_basis": "There is no async prefetch worker in the new disc_image implementation. Raw-read/seek counts establish reduced seeks, not zero I/O stalls in every route.",
-      "next_closure": "Retain read-ahead; add bounded cancellable request-driven prefetch only if actual media wait cost warrants it, with synchronous fallback.",
+      "recorded_evaluation_status": "implemented_and_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Bounded actual request-driven raw-media prefetch off simulation path with same-file positioned I/O and exact synchronous fallback; f88e90b.",
+      "remaining": "Selected original bounded contract delivered; combined owner merge/release handoff pending.",
+      "audit_basis": "Focused native/portable/worker/cancel/failure gates and six exact actualCD arms; two matched timed pairs with modest observed gain and explicit ambient/startup/portability caveats. docs/ENGINE_MEDIA_PREFETCH.md and engine-media-prefetch-results.json.",
+      "next_closure": "Complete combined owner visual/play merge handoff.",
       "source_references": [
-        "runner/cd/disc_image.c:446",
-        "runner/cd/cdd.c",
-        "runner/cd/cdc.c"
-      ]
+        "runner/cd/disc_image.c",
+        "runner/engine_worker.c",
+        "runner/cd/segacd_coordinator.c"
+      ],
+      "historical_audit": {
+        "id": "E26",
+        "name": "Bounded generic media prefetch",
+        "original_goal": "Read upcoming raw CDDA/movie/nonresident sectors off the simulation path using actual device requests/transport information.",
+        "recorded_evaluation_status": "implemented_read_ahead_async_deferred",
+        "implementation_state": "partial",
+        "remaining_scope_open": true,
+        "delivered": "Redundant seeks removed so bounded 1 MiB stdio read-ahead works.",
+        "remaining": "Actual asynchronous request-driven prefetch off the simulation path.",
+        "audit_basis": "There is no async prefetch worker in the new disc_image implementation. Raw-read/seek counts establish reduced seeks, not zero I/O stalls in every route.",
+        "next_closure": "Retain read-ahead; add bounded cancellable request-driven prefetch only if actual media wait cost warrants it, with synchronous fallback.",
+        "source_references": [
+          "runner/cd/disc_image.c:446",
+          "runner/cd/cdd.c",
+          "runner/cd/cdc.c"
+        ]
+      }
     },
     {
       "id": "E27",
@@ -946,5 +963,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 10
+  "total_remaining_open_count": 9
 }

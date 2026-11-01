@@ -1,0 +1,325 @@
+{
+  "schema": "genesis-e26-media-prefetch-v1",
+  "date": "2026-11-01",
+  "issue": "beads-3z5k.24",
+  "campaign": "beads-2wy8.1",
+  "branch": "codex/engine-media-prefetch-20261101",
+  "base": "8efa456ffe0cf8c315772d6fbc28c0ab91a4b59f",
+  "production": "f88e90b6fcefd1188ed73c87314757810c8d85ee",
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/54",
+  "qualified": true,
+  "disposition": "bounded-delivered-modest-observed-CD-route-gain",
+  "conclusion": "Exact recorded behavior; observed Sonic CD CPU3.1697%/4.6778% lower, cycles2.5933%/6.6889% lower. Ambient SERVER paced gameplay observations; no universal FPS/cold-disk/startup gain claim.",
+  "costs": {
+    "lazy_buffer_bytes_per_active_image": 2408448,
+    "additional_worker_and_handles": true,
+    "binary_growth_bytes": 5120,
+    "private_memory_growth_bytes": [
+      2445312,
+      2613248
+    ],
+    "speculative_sectors_per_job_max": 512,
+    "full_payload_validation_unchanged": true,
+    "synchronous_seek_misses_remain": true
+  },
+  "contract": [
+    "Adjacent real requests predict future generic raw2352-byte sectors; no title tables or guest clock changes",
+    "Separate sameverifiedfile positioned I/O and ready/loading blocks; only completed publication serves reads",
+    "Transport/peripheral/Main reset and media replacement cancel; close joins before freeing inputs/handles",
+    "Busy/allocation/create/admission/background-error demand fallback; no inline/join in try_start",
+    "First-data residency priority, exact bytes/errors/delivery/audio/CDC/device state retained"
+  ],
+  "unit_checks": {
+    "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\unit-retention.json",
+    "sha256": "1494c0076d9096371b30cb6a57aa7741ceb7915adcea66225dbec83a1c2d3e6b",
+    "bytes": 6831
+  },
+  "unit_summary": {
+    "x64": "8/8 pass",
+    "win32": "7/8 pass; same media_test line69 failure in separately built accepted E25 baseline",
+    "GCC_Windows_portable_reader": "pass",
+    "POSIX": "source-reviewed only; no runtime qualification claim"
+  },
+  "game": "Sonic CD",
+  "packages": {
+    "source": "f88e90b6fcefd1188ed73c87314757810c8d85ee",
+    "candidate": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\cd-binaries\\candidate\\SonicCD.exe",
+      "sha256": "eff739d4fb3f1a92ea4085fde37c44f607cdf29cb6bb45bdada1aa5082aa8f65",
+      "bytes": 115835904
+    },
+    "reference": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\cd-binaries\\candidate-r2\\SonicCD.exe",
+      "sha256": "197fa9141cd8408715ca4b4bd989dbaa715e6e472ec022c52275550c2dc79e69",
+      "bytes": 115830784
+    },
+    "SDL2.dll": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\cd-binaries\\candidate\\SDL2.dll",
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+    },
+    "binary_growth_bytes": 5120,
+    "shared_server_cache": "G:/Temp/Codex/genesis-engine-cd-audio-spans-20261031-server/build-cd/runtime; still needed for next item"
+  },
+  "build": {
+    "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\cd-builds.json",
+    "sha256": "7aec7c02d815f1acecebeef5e6145cf2441edcd45858b59caf02071078c8fe87",
+    "bytes": 6201
+  },
+  "baseline_build": {
+    "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\cd-builds-r2.json",
+    "sha256": "3dc30ac963c04d87ed65a501a9160c309f069787b2e8daaa250359884d8e9f3a",
+    "bytes": 2967
+  },
+  "matched_pairs": [
+    {
+      "order": [
+        "B",
+        "A"
+      ],
+      "raw": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\game-e26-media-prefetch-r2-server.json",
+        "sha256": "7facdf2461fd07fa6642ec21d00630c4382639d17d7d5acb8faeae89a0d17663",
+        "bytes": 482393
+      },
+      "headroom": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\core-headroom-r2-server.json",
+        "sha256": "6499205f0cd937abe7088bdc87836a2bf0a1bb9b71ef802d91df066e43fdf951",
+        "bytes": 432
+      },
+      "reductions_pct": {
+        "cpu_seconds": [
+          3.16973415132924
+        ],
+        "cycles": [
+          2.5933155876536773
+        ]
+      },
+      "runs": [
+        {
+          "arm": "B",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101-server\\cd-binaries\\candidate\\SonicCD.exe",
+            "bytes": 115835904,
+            "sha256": "eff739d4fb3f1a92ea4085fde37c44f607cdf29cb6bb45bdada1aa5082aa8f65"
+          },
+          "cost": {
+            "cpu_seconds": 14.796875,
+            "cycles": 50107535321
+          },
+          "startup_wall_seconds": 14.21303420001641,
+          "startup_process_cost": {
+            "cpu_seconds": 3.203125,
+            "cycles": 10488952952
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 236859392,
+            "peak_commit_bytes": 24514560,
+            "private_bytes": 24514560
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 248266752,
+            "peak_commit_bytes": 30240768,
+            "private_bytes": 30101504
+          },
+          "media": [
+            "Media rawReads=10 residentReads=116 hostSeeks=2 mappedBytes=139735888 privateResidentBytes=0",
+            "Media prefetchJobs=6 prefetchHits=2129 prefetchFailures=0 prefetchCancels=1 prefetchBytes=2408448 syncReadNs=40364200 maxSyncReadNs=21499000"
+          ],
+          "passed": true
+        },
+        {
+          "arm": "A",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101-server\\cd-binaries\\reference\\SonicCD.exe",
+            "bytes": 115830784,
+            "sha256": "197fa9141cd8408715ca4b4bd989dbaa715e6e472ec022c52275550c2dc79e69"
+          },
+          "cost": {
+            "cpu_seconds": 15.28125,
+            "cycles": 51441577776
+          },
+          "startup_wall_seconds": 12.535276100039482,
+          "startup_process_cost": {
+            "cpu_seconds": 3.3125,
+            "cycles": 10555920779
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 236896256,
+            "peak_commit_bytes": 24526848,
+            "private_bytes": 24526848
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 245829632,
+            "peak_commit_bytes": 27807744,
+            "private_bytes": 27656192
+          },
+          "media": [
+            "Media rawReads=2139 residentReads=116 hostSeeks=2 mappedBytes=139735888 privateResidentBytes=0"
+          ],
+          "passed": true
+        }
+      ]
+    },
+    {
+      "order": [
+        "A",
+        "B"
+      ],
+      "raw": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\game-e26-media-prefetch-r3-server.json",
+        "sha256": "0d431aa26a04ac74c2ecb5b24b586f11e323f70142ff4840bf08a07ba22ee7a1",
+        "bytes": 482395
+      },
+      "headroom": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\core-headroom-r3-server.json",
+        "sha256": "cd3318b58a16b997b0ab34c206ef840b4ec9bcef93b01c0aa11b23ecd90cb2b5",
+        "bytes": 430
+      },
+      "reductions_pct": {
+        "cpu_seconds": [
+          4.677754677754676
+        ],
+        "cycles": [
+          6.688893511012051
+        ]
+      },
+      "runs": [
+        {
+          "arm": "A",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101-server\\cd-binaries\\reference\\SonicCD.exe",
+            "bytes": 115830784,
+            "sha256": "197fa9141cd8408715ca4b4bd989dbaa715e6e472ec022c52275550c2dc79e69"
+          },
+          "cost": {
+            "cpu_seconds": 15.03125,
+            "cycles": 50980039679
+          },
+          "startup_wall_seconds": 12.605699900072068,
+          "startup_process_cost": {
+            "cpu_seconds": 3.34375,
+            "cycles": 10409538296
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 236888064,
+            "peak_commit_bytes": 24514560,
+            "private_bytes": 24514560
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 245817344,
+            "peak_commit_bytes": 27799552,
+            "private_bytes": 27652096
+          },
+          "media": [
+            "Media rawReads=2139 residentReads=116 hostSeeks=2 mappedBytes=139735888 privateResidentBytes=0"
+          ],
+          "passed": true
+        },
+        {
+          "arm": "B",
+          "binary": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101-server\\cd-binaries\\candidate\\SonicCD.exe",
+            "bytes": 115835904,
+            "sha256": "eff739d4fb3f1a92ea4085fde37c44f607cdf29cb6bb45bdada1aa5082aa8f65"
+          },
+          "cost": {
+            "cpu_seconds": 14.328125,
+            "cycles": 47570039113
+          },
+          "startup_wall_seconds": 9.256556699983776,
+          "startup_process_cost": {
+            "cpu_seconds": 3.109375,
+            "cycles": 10448686108
+          },
+          "startup_memory": {
+            "peak_working_set_bytes": 236871680,
+            "peak_commit_bytes": 24506368,
+            "private_bytes": 24506368
+          },
+          "final_memory": {
+            "peak_working_set_bytes": 248299520,
+            "peak_commit_bytes": 30314496,
+            "private_bytes": 30265344
+          },
+          "media": [
+            "Media rawReads=12 residentReads=116 hostSeeks=2 mappedBytes=139735888 privateResidentBytes=0",
+            "Media prefetchJobs=6 prefetchHits=2127 prefetchFailures=0 prefetchCancels=1 prefetchBytes=2408448 syncReadNs=131548400 maxSyncReadNs=116457500"
+          ],
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "A_drift_pct": {
+    "cpu_seconds": -1.6359918200409052,
+    "cycles": -0.8972082835595474
+  },
+  "correctness_only_initial_pair": {
+    "raw": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\game-e26-media-prefetch-r1b-server.json",
+      "sha256": "a7313930f7ea036d009e2d8509243c7680c9cb7848e22a8fd74860b02dbb3803",
+      "bytes": 474199
+    },
+    "complete_correctness": true,
+    "performance_qualified": false,
+    "reason": "Inherited E25 optional trace assertion interrupted postprocessing; B cost not retained. Existing command traces/images/21artifacts/fullWAV independently recovered against frozen canonical. Excluded all timing comparisons."
+  },
+  "correctness_scope": "All11 full checkpoint objects,21 final artifacts and fullWAV per run match frozen canonical; floor0/0 and no guest audio faults/underflow/overflow/backwards. No CD save/RB claim.",
+  "inherited_games": [
+    {
+      "game": "Rocket Knight Adventures",
+      "new_E26_test": false,
+      "package": "accepted E24 cart package; existingworker entrypoints unchanged, new unused APIs only",
+      "evidence": "docs/ENGINE_AUDIO_BUFFER_OWNERSHIP.md; docs/engine-audio-buffer-ownership-results.json"
+    },
+    {
+      "game": "Sonic the Hedgehog",
+      "new_E26_test": false,
+      "package": "accepted E24 cart package; existingworker entrypoints unchanged, new unused APIs only",
+      "evidence": "docs/ENGINE_AUDIO_BUFFER_OWNERSHIP.md; docs/engine-audio-buffer-ownership-results.json"
+    }
+  ],
+  "raw_profiles_server": "G:/Temp/Codex/genesis-engine-media-prefetch-20261101-server/game-e26-media-prefetch-r{1b,2,3}-server",
+  "recipes": [
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\build_cd.py",
+      "sha256": "dd43ffe859dfcd3dda10e8372db88636110736d5fa3323598d81705f8e45762f",
+      "bytes": 3860
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\check_cd_server.py",
+      "sha256": "158062b7d52ee27c0ba6aab9639a467e864607973d972aaee5684d558f8c9bc9",
+      "bytes": 8445
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\check_cd_server_reverse.py",
+      "sha256": "44fa6f30fc18a03dcdb0ab2f39a9b67903f9b7e7a40fed818b9996dd9b18a481",
+      "bytes": 8445
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\recover_initial_pair.py",
+      "sha256": "4e32baf88c25f50c832270ee414d2e29c7f41a12ccd8906f404e173699020a9e",
+      "bytes": 1752
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\cd_control.py",
+      "sha256": "2eedc53b07907977159192d77eec079cce52a0e46166e5ae090f7a2d65da2a02",
+      "bytes": 4481
+    }
+  ],
+  "cleanup": [
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\cleanup-units.json",
+      "sha256": "96c5df1fb1fcede08e70e581923c51eb56c1c4303ed9c03d0ab723bfb5908135",
+      "bytes": 708
+    },
+    {
+      "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\cleanup-server.json",
+      "sha256": "3f2f573b46eb059b955847cd5d6be6680b587050c696293d6507f8d119884ee7",
+      "bytes": 941
+    }
+  ],
+  "review": "Source and BA independently passed; final AB/PR/records/cleanup/durable gate pending",
+  "owner_handoff": "combined normal-window/audio visual/play, merge and release pending; no owner launch for E26",
+  "retained_data": "Current candidatePE/DLL, acceptedE25 baselinePE, units/fixtureinputs/logs/configs/rawJSON/headroom retained locally; full6run captures/WAV/commands/settings retained SERVER; S22 build cache and existing privateinput/native/UI cache retained for E27; serverduplicatePEs and disposable staging removed after hash verification. Shared caches cleanup due at campaign completion."
+}
