@@ -1,0 +1,42 @@
+# Native game optimization only: do not change the generator, build tools,
+# debug configurations, arithmetic model or required CPU instruction set.
+include_guard(GLOBAL)
+set(GENESIS_NATIVE_IPO "AUTO" CACHE STRING "Native game IPO: AUTO, ON or OFF")
+set_property(CACHE GENESIS_NATIVE_IPO PROPERTY STRINGS AUTO ON OFF)
+string(TOUPPER "${GENESIS_NATIVE_IPO}" _genesis_ipo_mode)
+if(NOT _genesis_ipo_mode MATCHES "^(AUTO|ON|OFF)$")
+    message(FATAL_ERROR "GENESIS_NATIVE_IPO must be AUTO, ON or OFF")
+endif()
+
+function(genesisrecomp_native_optimization target)
+    string(TOUPPER "${GENESIS_NATIVE_IPO}" _genesis_ipo_mode)
+    foreach(_config RELEASE RELWITHDEBINFO MINSIZEREL)
+        set_property(TARGET ${target} PROPERTY
+            INTERPROCEDURAL_OPTIMIZATION_${_config} FALSE)
+    endforeach()
+    if(_genesis_ipo_mode STREQUAL "OFF")
+        return()
+    endif()
+
+    get_property(_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
+    list(FILTER _languages INCLUDE REGEX "^(C|CXX)$")
+    include(CheckIPOSupported)
+    cmake_policy(PUSH)
+    cmake_policy(SET CMP0069 NEW)
+    if(POLICY CMP0138)
+        cmake_policy(SET CMP0138 NEW) # Check the actual caller's compiler flags.
+    endif()
+    check_ipo_supported(RESULT _supported OUTPUT _reason LANGUAGES ${_languages})
+    cmake_policy(POP)
+    if(_supported)
+        foreach(_config RELEASE RELWITHDEBINFO MINSIZEREL)
+            set_property(TARGET ${target} PROPERTY
+                INTERPROCEDURAL_OPTIMIZATION_${_config} TRUE)
+        endforeach()
+        message(STATUS "Genesis native IPO: ${target} enabled (${_languages})")
+    elseif(_genesis_ipo_mode STREQUAL "ON")
+        message(FATAL_ERROR "Genesis native IPO requested but unsupported: ${_reason}")
+    else()
+        message(STATUS "Genesis native IPO: ${target} unavailable; ordinary compilation retained: ${_reason}")
+    endif()
+endfunction()
