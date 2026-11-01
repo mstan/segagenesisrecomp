@@ -7,11 +7,8 @@
 extern "C" {
 #endif
 typedef struct GenesisHostStream GenesisHostStream;
-/* One shared producer performs all stream creation, publication and destruction;
- * separate streams do not permit concurrent producer threads. It owns each
- * borrowed FILE until destroy completes. Two fixed
+/* One producer owns the borrowed FILE until destroy completes. Two fixed
  * buffers bound storage; a full pair applies backpressure without dropping.
- * Captures share one worker lane; publication also bounds cross-stream work.
  * Worker inputs are copied before return and immutable until completion.
  * NULL on allocation failure lets callers keep their original stdio path. */
 GenesisHostStream *genesis_host_stream_create(FILE *, size_t capacity);

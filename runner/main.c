@@ -1546,7 +1546,6 @@ int runner_write_screenshot_file(const char *path)
  * ========================================================================= */
 
 static FILE *s_framelog_file = NULL;
-static GenesisHostStream *s_framelog_stream;
 
 /* Dump full 64KB work RAM at a specific game frame counter for comparison */
 static void check_ramdump(void)
@@ -1635,7 +1634,7 @@ static void write_framelog(uint32_t frame)
         wh *= 0x100000001B3ULL;
     }
 
-    genesis_host_stream_fprintf(s_framelog_stream,s_framelog_file,
+    fprintf(s_framelog_file,
             "F%03u wh=%016llX mode=%02X vbl=%02X cnt=%04X scrl=%04X plc=%04X "
             "fcnt=%08X obj0=%02X/%02X xpos=%04X ypos=%04X xvel=%04X yvel=%04X inrt=%04X "
             "rtn=%02X log=%02X/%02X phys=%02X/%02X st=%02X lk=%02X "
@@ -1667,8 +1666,7 @@ static void write_framelog(uint32_t frame)
             EMU_BYTE(0xB1C0), EMU_BYTE(0xB1E4),
             EMU_BYTE(0xB180), EMU_BYTE(0xB1A4),
             EMU_BYTE(0xF623));
-    if(s_framelog_stream)genesis_host_stream_flush_async(s_framelog_stream);
-    else fflush(s_framelog_file);
+    fflush(s_framelog_file);
 
     #undef EMU_BYTE
     #undef EMU_WORD
@@ -3077,10 +3075,8 @@ int main(int argc, char *argv[])
             fprintf(stderr, "[WAV] failed to open %s\n", wav_path);
     }
 
-    if (framelog_path) {
+    if (framelog_path)
         s_framelog_file = fopen(framelog_path, "w");
-        if(s_framelog_file)s_framelog_stream=genesis_host_stream_create(s_framelog_file,64u*1024u);
-    }
 
     if (yield_log) {
         /* Explicit capture uses bounded immutable host buffers. The frame and
@@ -4108,8 +4104,6 @@ session_begin:;
     genesis_netplay_shutdown();
 #endif
     if (s_debug_enabled) cmd_server_shutdown();
-    if(!genesis_host_stream_destroy(s_framelog_stream))fprintf(stderr,"[framelog] write failed\n");
-    s_framelog_stream=NULL;
     if (s_framelog_file) fclose(s_framelog_file);
     { extern int audio_wav_active(void); extern void audio_wav_stop(void);
       if (audio_wav_active()) audio_wav_stop(); }
