@@ -16,14 +16,14 @@
     "existing": 2
   },
   "implementation_counts": {
-    "bounded_delivered": 16,
+    "bounded_delivered": 17,
     "rejected_mechanism": 1,
     "bounded_rejected": 9,
     "deferred": 6,
-    "partial": 3,
+    "partial": 2,
     "existing": 1
   },
-  "remaining_scope_open_count": 10,
+  "remaining_scope_open_count": 9,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -727,17 +727,21 @@
       "id": "E25",
       "name": "Exact constant/silent spans",
       "original_goal": "Represent provably constant output efficiently without per-sample queue work where valid.",
-      "recorded_evaluation_status": "implemented_psg_other_sources_deferred",
-      "implementation_state": "partial",
-      "remaining_scope_open": true,
-      "delivered": "Exact settled PSG silence, shared with E21.",
-      "remaining": "Constant/silent PCM and CDDA runs with queue/timestamp/fader evolution.",
-      "audit_basis": "Other sources still publish samples individually. Silence does not imply the absence of authoritative state changes.",
-      "next_closure": "Combine with E22 timed span sinks if source/mixer cost justifies compression.",
+      "recorded_evaluation_status": "implemented_qualified",
+      "implementation_state": "bounded_delivered",
+      "remaining_scope_open": false,
+      "delivered": "Exact PCM/CDDA compressed timed runs and constant-window rendering with unchanged logical capacity/counters/future state and fallback; PR53. Observed CDcycles2.24?3.86% lower, CPUneutral to3.61% lower.",
+      "remaining": "Selected original bounded contract qualified; combined owner visual/play/merge handoff remains.",
+      "audit_basis": "Frozen complete logical/device/future-state source/mixer comparisons; five contracts x64/Win32; four real CD runs in two matched SERVER pairs with exact11checkpoints/21artifacts/WAV and active bothsource paths.",
+      "next_closure": "No further E25 tuning/profiling. Final source/records/cleanup/durable gate, then original E26.",
       "source_references": [
-        "runner/audio/sn76489.c:184",
+        "runner/cd/audio_owned_span.h",
+        "runner/cd/audio_mix.c",
+        "runner/cd/rf5c164.c",
         "runner/cd/cdda.c",
-        "runner/cd/rf5c164.c"
+        "runner/cd/audio_native.c",
+        "docs/ENGINE_SOURCE_CONSTANT_SPANS.md",
+        "docs/engine-source-constant-span-results.json"
       ]
     },
     {
@@ -926,7 +930,7 @@
     }
   ],
   "historical_audit_date": "2026-10-28",
-  "current_update_date": "2026-10-31",
+  "current_update_date": "2026-11-01",
   "additional_owner_requirements": [
     {
       "id": "E37",
@@ -942,5 +946,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 11
+  "total_remaining_open_count": 10
 }
