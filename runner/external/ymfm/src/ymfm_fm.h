@@ -285,6 +285,7 @@ public:
 	// specific 2-operator and 4-operator output handlers
 	void output_2op(output_data &output, uint32_t rshift, int32_t clipmax) const;
 	void output_4op(output_data &output, uint32_t rshift, int32_t clipmax) const;
+	void output_4op_opn2(output_data &output) const;
 
 	// compute the special OPL rhythm channel outputs
 	void output_rhythm_ch6(output_data &output, uint32_t rshift, int32_t clipmax) const;
@@ -306,6 +307,10 @@ public:
 	fm_operator<RegisterType> *debug_operator(uint32_t index) const { return m_op[index]; }
 
 private:
+	// fixed OPN2 operator routing; generic output remains available
+	template<unsigned Algorithm>
+	void output_4op_opn2_algorithm(output_data &output, int16_t op1, uint32_t am_offset) const;
+
 	// helper to add values to the outputs based on channel enables
 	void add_to_output(uint32_t choffs, output_data &output, int32_t value) const
 	{
@@ -374,6 +379,7 @@ public:
 
 	// compute sum of channel outputs
 	void output(output_data &output, uint32_t rshift, int32_t clipmax, uint32_t chanmask) const;
+	void output_opn2_channels(output_data *output, uint32_t chanmask) const;
 
 	// write to the OPN registers
 	void write(uint16_t regnum, uint8_t data);
