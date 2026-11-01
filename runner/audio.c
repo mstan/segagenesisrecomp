@@ -49,7 +49,7 @@ static Uint64     s_perf_freq = 0;
 static uint32_t   s_callback_peak_us = 0; /* device lock protects callback data */
 static AudioHostTiming s_host_timing;   /* written/read on the main thread */
 static int s_pipeline_trace;
-static uint64_t s_owned_frame_samples,s_scaled_push_blocks;
+static uint64_t s_owned_frame_samples,s_scaled_push_blocks,s_unity_push_blocks;
 
 /* SDL pull callback: the device asks for `len` bytes of stereo S16; the bridge
  * resamples from the internal mix rate to the device rate under DRC and emits
@@ -140,7 +140,7 @@ int audio_init(int psg_sample_rate)
     s_mix_rate = (double)psg_sample_rate;
     const char *trace=getenv("GENESIS_AUDIO_PIPELINE_TRACE");
     s_pipeline_trace=trace&&*trace&&strcmp(trace,"0")!=0;
-    s_owned_frame_samples=s_scaled_push_blocks=0;
+    s_owned_frame_samples=s_scaled_push_blocks=s_unity_push_blocks=0;
     SDL_AudioSpec want, got;
     SDL_memset(&want, 0, sizeof(want));
     /* Open at a normal host rate and let the DRC bridge own the (large)
@@ -202,8 +202,9 @@ void audio_close(void)
 {
     audio_set_extra_source(NULL);
     if (s_dev != 0) {
-        if(s_pipeline_trace)fprintf(stderr,"[audio frame pipeline] generated=%llu bridge=%llu\n",
-            (unsigned long long)s_owned_frame_samples,(unsigned long long)s_scaled_push_blocks);
+        if(s_pipeline_trace)fprintf(stderr,"[audio frame pipeline] generated=%llu bridge=%llu unity=%llu\n",
+            (unsigned long long)s_owned_frame_samples,(unsigned long long)s_scaled_push_blocks,
+            (unsigned long long)s_unity_push_blocks);
         SDL_LockAudioDevice(s_dev);
         s_bridge_ready = 0;
         SDL_UnlockAudioDevice(s_dev);
@@ -336,7 +337,7 @@ void audio_flush(uint32_t wall_frame, int realtime,
 
     /* Master volume — speaker output only (applied after the WAV tap, so paired
      * captures stay bit-deterministic regardless of this setting). */
-    int fused_gain=GENESIS_AUDIO_FRAME_PIPELINE&&realtime&&s_playback_enabled&&s_bridge_ready;
+    int fused_gain=GENESIS_AUDIO_FRAME_PIPELINE&&s_master_vol!=256&&realtime&&s_playback_enabled&&s_bridge_ready;
     if (!fused_gain&&s_master_vol != 256) {
         for (size_t i = 0; i < psg_frames * 2; i++)
             s_out[i] = (int16_t)((int32_t)s_out[i] * s_master_vol / 256);
@@ -362,7 +363,10 @@ void audio_flush(uint32_t wall_frame, int realtime,
             rab_push_scaled(&s_bridge,s_out,(int)psg_frames,s_master_vol);
             if(s_pipeline_trace)++s_scaled_push_blocks;
         }
-        else rab_push(&s_bridge, s_out, (int)psg_frames);
+        else {
+            rab_push(&s_bridge, s_out, (int)psg_frames);
+            if(s_pipeline_trace&&s_master_vol==256)++s_unity_push_blocks;
+        }
         SDL_UnlockAudioDevice(s_dev);
     } else if (!realtime) {
         s_stats.turbo_dropped_flushes++;
