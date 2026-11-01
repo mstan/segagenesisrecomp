@@ -13,6 +13,18 @@ typedef struct SegaCDImage SegaCDImage;
  * On failure, returns NULL and writes a short error when capacity is nonzero. */
 SegaCDImage *segacd_image_open(const char *path, char *error, size_t capacity);
 void segacd_image_close(SegaCDImage *image);
+/* Optional host execution service. The reader remains a pure portable module
+ * with no SDL/thread dependency when no service is installed. try_start must
+ * never join/execute inline; busy()==0 publishes completed writes; destroy
+ * joins before returning. Replacement/close quiesces the prior service. */
+typedef struct {
+    void *(*create)(void);
+    int (*try_start)(void *,void (*)(void *),void *);
+    int (*busy)(void *);
+    void (*destroy)(void *);
+} SegaCDImageAsyncHost;
+void segacd_image_set_async_host(SegaCDImage *,const SegaCDImageAsyncHost *);
+void segacd_image_prefetch_cancel(SegaCDImage *);
 const SegaCDTOC *segacd_image_toc(const SegaCDImage *image);
 /* Returns nonzero on success. On invalid LBA or I/O failure, raw is unchanged. */
 int segacd_image_read(SegaCDImage *image, int32_t lba, uint8_t raw[2352]);
@@ -27,6 +39,9 @@ size_t segacd_image_resident_bytes(const SegaCDImage *);
 typedef struct {
     uint64_t raw_reads,resident_reads,host_seeks;
     size_t mapped_view_bytes,private_resident_bytes;
+    uint64_t prefetch_jobs,prefetch_hits,prefetch_failures,prefetch_cancels;
+    uint64_t sync_read_ns,max_sync_read_ns;
+    size_t prefetch_bytes;
 } SegaCDImageHostStats;
 int segacd_image_host_stats(const SegaCDImage *,SegaCDImageHostStats *);
 

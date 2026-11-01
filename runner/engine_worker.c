@@ -54,6 +54,19 @@ uint64_t genesis_worker_completed(const GenesisWorker *w)
     SDL_LockMutex(w->mutex);uint64_t count=w->completed;SDL_UnlockMutex(w->mutex);
     return count;
 }
+int genesis_worker_try_start(GenesisWorker *w,GenesisWorkFunction task,void *context)
+{
+    if(!w||!task)return 0;
+    SDL_LockMutex(w->mutex);
+    int ready=!w->task&&!w->stop;
+    if(ready){w->context=context;w->task=task;SDL_CondSignal(w->condition);}
+    SDL_UnlockMutex(w->mutex);return ready;
+}
+int genesis_worker_busy(GenesisWorker *w)
+{
+    if(!w)return 0;
+    SDL_LockMutex(w->mutex);int busy=w->task!=NULL;SDL_UnlockMutex(w->mutex);return busy;
+}
 void genesis_worker_destroy(GenesisWorker *w)
 {
     if(!w)return;genesis_worker_join(w);SDL_LockMutex(w->mutex);
@@ -68,4 +81,7 @@ int genesis_worker_start(GenesisWorker *w,GenesisWorkFunction task,void *context
 void genesis_worker_join(GenesisWorker *w){(void)w;}
 void genesis_worker_destroy(GenesisWorker *w){(void)w;}
 uint64_t genesis_worker_completed(const GenesisWorker *w){(void)w;return 0;}
+int genesis_worker_try_start(GenesisWorker *w,GenesisWorkFunction task,void *context)
+{(void)w;(void)task;(void)context;return 0;}
+int genesis_worker_busy(GenesisWorker *w){(void)w;return 0;}
 #endif

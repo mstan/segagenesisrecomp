@@ -10,6 +10,7 @@
 #include "sonic_cd_widescreen.h"
 #include "sonic_cd_limits.h"
 #include "../audio.h"
+#include "../engine_worker.h"
 #include <SDL2/SDL.h>
 #include <errno.h>
 #include <stdio.h>
@@ -59,6 +60,12 @@ static int read_bios(const char *path,uint8_t *bytes)
 }
 static int media_read(void*image,int32_t lba,uint8_t raw[2352])
 {return segacd_image_read(image,lba,raw);}
+static void media_cancel(void *image){segacd_image_prefetch_cancel(image);}
+static void *media_worker_create(void){return genesis_worker_create();}
+static int media_worker_start(void*w,void(*task)(void*),void*user)
+{return genesis_worker_try_start((GenesisWorker*)w,task,user);}
+static int media_worker_busy(void*w){return genesis_worker_busy((GenesisWorker*)w);}
+static void media_worker_destroy(void*w){genesis_worker_destroy((GenesisWorker*)w);}
 static uint16_t keyboard_pad(void)
 {
     const Uint8*k=SDL_GetKeyboardState(NULL);uint16_t mask=0;
@@ -207,6 +214,13 @@ int main(int argc,char **argv)
     uint8_t persisted[SEGACD_BACKUP_BYTES];memcpy(persisted,machine.devices.backup,sizeof persisted);
     if(!segacd_cdd_mount(&machine.devices.drive,segacd_image_toc(image))){segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
     segacd_coordinator_media(&machine.coordinator,media_read,image,NULL,NULL);
+    const char *prefetch=getenv("GENESIS_CD_MEDIA_PREFETCH");
+    if(!prefetch||strcmp(prefetch,"0")) {
+        const SegaCDImageAsyncHost host={media_worker_create,media_worker_start,
+                                       media_worker_busy,media_worker_destroy};
+        segacd_image_set_async_host(image,&host);
+        segacd_coordinator_media_cancel(&machine.coordinator,media_cancel);
+    }
     segacd_standalone_services_install(&machine,image);
     segacd_standalone_qualify_regions(&machine);
     SegaCDNativeAudio*audio=segacd_native_audio_create(1);
@@ -301,6 +315,12 @@ int main(int argc,char **argv)
         printf("Media rawReads=%llu residentReads=%llu hostSeeks=%llu mappedBytes=%zu privateResidentBytes=%zu\n",
             (unsigned long long)image_stats.raw_reads,(unsigned long long)image_stats.resident_reads,
             (unsigned long long)image_stats.host_seeks,image_stats.mapped_view_bytes,image_stats.private_resident_bytes);
+    if(segacd_image_host_stats(image,&image_stats))
+        printf("Media prefetchJobs=%llu prefetchHits=%llu prefetchFailures=%llu prefetchCancels=%llu prefetchBytes=%zu syncReadNs=%llu maxSyncReadNs=%llu\n",
+            (unsigned long long)image_stats.prefetch_jobs,(unsigned long long)image_stats.prefetch_hits,
+            (unsigned long long)image_stats.prefetch_failures,(unsigned long long)image_stats.prefetch_cancels,
+            image_stats.prefetch_bytes,(unsigned long long)image_stats.sync_read_ns,
+            (unsigned long long)image_stats.max_sync_read_ns);
     SegaCDMachineVideoStats video_stats;
     if(segacd_machine_video_stats(&machine,&video_stats))
         printf("Raster captured=%llu composed=%llu eager=%llu retainedBytes=%zu deferred=%d\n",
