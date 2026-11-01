@@ -123,7 +123,7 @@ SegaCDCddaResult segacd_cdda_advance_owned(SegaCDCdda *s,uint64_t target,
     int data=s->transport==SEGACD_CDDA_PLAYING&&s->source_anchored;
     uint64_t available=s->fifo_count?(uint64_t)s->fifo_count*SEGACD_CDDA_SECTOR_FRAMES-s->fifo_frame:0;
     uint64_t emitted=data&&ticks>available?available:ticks;
-    if(emitted<2u||emitted>UINT32_MAX)
+    if(!emitted||emitted>UINT32_MAX)
         return segacd_cdda_advance_to(s,target,sink,user,frames_emitted);
     uint64_t first_delta=(SEGACD_CDDA_CLOCK-s->phase+SEGACD_CDDA_RATE-1u)/SEGACD_CDDA_RATE;
     uint64_t first=s->clock_now+first_delta;

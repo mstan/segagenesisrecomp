@@ -89,7 +89,7 @@ void rf5c164_advance_owned(Rf5c164 *p,uint64_t start,uint32_t clocks,
     uint32_t phase=p->phase;uint64_t total=(uint64_t)phase+clocks;
     uint32_t count=(uint32_t)(total/384u);
     if(!sink||!owned||owned->legacy!=sink||owned->legacy_user!=user||
-       !owned->begin||!owned->commit||phase>=384u||count<2u) {
+       !owned->begin||!owned->commit||phase>=384u||!count) {
         rf5c164_advance_timed(p,start,clocks,sink,user);return;
     }
     uint64_t first=start+384u-phase,last=first+(uint64_t)(count-1u)*384u;

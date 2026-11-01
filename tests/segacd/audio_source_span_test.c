@@ -158,6 +158,22 @@ int main(void)
         if(k==18)CHECK(b.attempts==attempts);
     }
     CHECK(grants>100u);
+    /* Real machines also service between adjacent sample ticks. A one-clock
+     * interval crossing one tick must publish through ownership, not remain a
+     * fixture-only multi-sample optimization. */
+    ref_rf5c164_init(&pa);rf5c164_init(&pb);pa.phase=pb.phase=383;
+    prepare(&a,SEGACD_AUDIO_SOURCE_PCM,100000,0,4095);prepare(&b,SEGACD_AUDIO_SOURCE_PCM,100000,0,4095);
+    SegaCDAudioOwnedSink single={sample,&b,&b,begin,commit};
+    ref_rf5c164_advance_timed(&pa,100000,1,sample,&a);
+    rf5c164_advance_owned(&pb,100000,1,sample,&b,&single);
+    CHECK(!memcmp(&pa,&pb,sizeof pa));compare();CHECK(b.grants==1&&!b.calls);grants+=b.grants;
+    ref_segacd_cdda_reset(&da,100000,0x4000);segacd_cdda_reset(&db,100000,0x4000);
+    ref_segacd_cdda_play(&da);segacd_cdda_play(&db);
+    CHECK(ref_segacd_cdda_push_raw_sector(&da,100000,7,sector)==segacd_cdda_push_raw_sector(&db,100000,7,sector));
+    da.phase=db.phase=SEGACD_CDDA_CLOCK-1;
+    prepare(&a,SEGACD_AUDIO_SOURCE_CDDA,100000,0,4095);prepare(&b,SEGACD_AUDIO_SOURCE_CDDA,100000,0,4095);
+    CHECK(ref_segacd_cdda_advance_to(&da,100001,sample,&a,NULL)==segacd_cdda_advance_owned(&db,100001,sample,&b,NULL,&single));
+    CHECK(!memcmp(&da,&db,sizeof da));compare();CHECK(b.grants==1&&!b.calls);grants+=b.grants;
     printf("Owned PCM/CDDA spans: frozen complete state/stamps/PCM, fader/FIFO/underflow, queue prefix/faults and stale/reentrant callbacks PASS (%u owned jobs)\n",grants);
     return 0;
 }
