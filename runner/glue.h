@@ -63,7 +63,6 @@ GlueYieldSite glue_yield_site(void);
 
 /* Shutdown: signal game thread to stop (if running). */
 void glue_shutdown(void);
-int glue_yield_log_start(const char *path);
 
 /* Pacing mode selector.
  *   FIBER_FULL      — game fiber runs to WaitForVBlank per wall frame at

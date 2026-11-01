@@ -38,7 +38,6 @@ typedef int sock_t;
 #include "cmd_server.h"
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
 #include "audio.h"
-#include "host_stream.h"
 #include "game_layout.h"
 #if SONIC_REVERSE_DEBUG
 #include "reverse_debug.h"
@@ -114,18 +113,6 @@ static uint32_t s_current_frame = 0;
 extern void (*g_fm_write_trace_fn)(uint32_t address, uint8_t value, uint32_t target_cycle);
 extern uint64_t g_frame_count;
 
-/* The producer formats live CPU/RAM observations before publication. Workers
- * only receive copied bytes; closing/restarting a trace drains them first. */
-static int trace_close(FILE **file,GenesisHostStream **stream)
-{
-    int ok=genesis_host_stream_destroy(*stream);
-    *stream=NULL;
-    if(*file&&fclose(*file))ok=0;
-    *file=NULL;
-    if(!ok)fprintf(stderr,"[trace] file write failed\n");
-    return ok;
-}
-static GenesisHostStream *s_fm_trace_stream;
 static FILE *s_fm_trace_file = NULL;
 static int    s_fm_trace_active = 0;
 static int    s_fm_trace_max_frames = 0;
@@ -170,7 +157,7 @@ static void fm_trace_callback(uint32_t address, uint8_t value, uint32_t target_c
     uint32_t r3  = fm_trace_stack_read32(a7 + 12);
     /* Use our own frame counter (incremented by tick) rather than
      * g_frame_count which only works in Step 2 mode. */
-    genesis_host_stream_fprintf(s_fm_trace_stream,s_fm_trace_file,
+    fprintf(s_fm_trace_file,
             "%d %u 0x%06X 0x%02X 0x%06X 0x%06X 0x%06X 0x%06X 0x%06X\n",
             s_fm_trace_frame_count, (unsigned)target_cycle, address, value,
             a7 & 0xFFFFFFu, r0 & 0xFFFFFFu, r1 & 0xFFFFFFu,
@@ -183,7 +170,7 @@ void cmd_server_fm_trace_tick(void)
     if (!s_fm_trace_active) return;
     s_fm_trace_frame_count++;
     if (s_fm_trace_max_frames > 0 && s_fm_trace_frame_count >= s_fm_trace_max_frames) {
-        trace_close(&s_fm_trace_file,&s_fm_trace_stream);
+        fclose(s_fm_trace_file);
         s_fm_trace_file = NULL;
         s_fm_trace_active = 0;
         g_fm_write_trace_fn = NULL;
@@ -205,7 +192,6 @@ extern void (*g_mem_write_trace_fn)(uint32_t byte_address, uint8_t value, uint32
 
 #define MEM_WRITE_LOG_MAX_WATCH 32
 static FILE    *s_mem_write_log_file = NULL;
-static GenesisHostStream *s_mem_write_log_stream;
 static int      s_mem_write_log_active = 0;
 static int      s_mem_write_log_max_frames = 0;
 static int      s_mem_write_log_frame_count = 0;
@@ -240,7 +226,7 @@ static void mem_write_log_callback(uint32_t byte_address, uint8_t value, uint32_
     uint8_t  game_mode      = emu_read8 (g_game_layout.game_mode_addr);
 
     extern uint64_t g_chunk_yield_count;
-    genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file,
+    fprintf(s_mem_write_log_file,
             "%d %u %u 0x%06X 0x%02X 0x%06X 0x%06X 0x%06X 0x%06X 0x%06X %u %llu "
 #if SONIC_REVERSE_DEBUG
             "0x%06X 0x%06X "
@@ -279,10 +265,9 @@ int cmd_server_mem_write_log_start_ranges(const uint32_t *lo, const uint32_t *hi
                                           int n_ranges, int frames, const char *path)
 {
     if (n_ranges <= 0 || n_ranges > MEM_WRITE_LOG_MAX_WATCH) return 0;
-    if (s_mem_write_log_file) trace_close(&s_mem_write_log_file,&s_mem_write_log_stream);
+    if (s_mem_write_log_file) fclose(s_mem_write_log_file);
     s_mem_write_log_file = fopen(path, "w");
     if (!s_mem_write_log_file) return 0;
-    s_mem_write_log_stream=genesis_host_stream_create(s_mem_write_log_file,64u*1024u);
 
     s_mem_write_log_watch_count = n_ranges;
     for (int i = 0; i < n_ranges; i++) {
@@ -293,21 +278,21 @@ int cmd_server_mem_write_log_start_ranges(const uint32_t *lo, const uint32_t *hi
         s_mem_write_log_watch_hi[i] = b;
     }
 
-    genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file,
+    fprintf(s_mem_write_log_file,
         "# wall_frame internal_frame game_mode address value a7 ret0 ret1 ret2 ret3 target_cycle yield"
 #if SONIC_REVERSE_DEBUG
         " func pc D0 D1 D2 D3 D4 D5 D6 D7 A0 A1 A2 A3 A4 A5 A6 A7"
 #endif
         "\n");
-    genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file, "# watching:");
+    fprintf(s_mem_write_log_file, "# watching:");
     for (int i = 0; i < n_ranges; i++) {
         if (s_mem_write_log_watch_lo[i] == s_mem_write_log_watch_hi[i])
-            genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file, " 0x%06X", s_mem_write_log_watch_lo[i]);
+            fprintf(s_mem_write_log_file, " 0x%06X", s_mem_write_log_watch_lo[i]);
         else
-            genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file, " 0x%06X-0x%06X",
+            fprintf(s_mem_write_log_file, " 0x%06X-0x%06X",
                     s_mem_write_log_watch_lo[i], s_mem_write_log_watch_hi[i]);
     }
-    genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file, "\n");
+    fprintf(s_mem_write_log_file, "\n");
 
     s_mem_write_log_active = 1;
     s_mem_write_log_max_frames = frames > 0 ? frames : 0;
@@ -331,7 +316,7 @@ void cmd_server_mem_write_log_tick(void)
     if (!s_mem_write_log_active) return;
     s_mem_write_log_frame_count++;
     if (s_mem_write_log_max_frames > 0 && s_mem_write_log_frame_count >= s_mem_write_log_max_frames) {
-        trace_close(&s_mem_write_log_file,&s_mem_write_log_stream);
+        fclose(s_mem_write_log_file);
         s_mem_write_log_file = NULL;
         s_mem_write_log_active = 0;
         g_mem_write_trace_fn = NULL;
@@ -2399,11 +2384,10 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
                 if (max_f <= 0) max_f = 300;
                 const char *path =
                     "fm_trace_native.log";
-                if (s_fm_trace_file) trace_close(&s_fm_trace_file,&s_fm_trace_stream);
+                if (s_fm_trace_file) fclose(s_fm_trace_file);
                 s_fm_trace_file = fopen(path, "w");
                 if (s_fm_trace_file) {
-                    s_fm_trace_stream=genesis_host_stream_create(s_fm_trace_file,64u*1024u);
-                    genesis_host_stream_fprintf(s_fm_trace_stream,s_fm_trace_file, "# frame master_cycle address value a7 ret0 ret1 ret2 ret3\n");
+                    fprintf(s_fm_trace_file, "# frame master_cycle address value a7 ret0 ret1 ret2 ret3\n");
                     s_fm_trace_active = 1;
                     s_fm_trace_max_frames = max_f;
                     s_fm_trace_frame_count = 0;
@@ -2425,7 +2409,7 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
                     send_err(id, "failed to open trace file");
                 }
             } else if (strcmp(action, "off") == 0) {
-                if (s_fm_trace_file) { trace_close(&s_fm_trace_file,&s_fm_trace_stream); s_fm_trace_file = NULL; }
+                if (s_fm_trace_file) { fclose(s_fm_trace_file); s_fm_trace_file = NULL; }
                 s_fm_trace_active = 0;
                 g_fm_write_trace_fn = NULL;
                 fprintf(stderr, "[FM-TRACE] Stopped (%d frames)\n", s_fm_trace_frame_count);
@@ -2468,16 +2452,15 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
                 if (max_f <= 0) max_f = 600;
                 const char *path =
                     "mem_write_log_native.log";
-                if (s_mem_write_log_file) trace_close(&s_mem_write_log_file,&s_mem_write_log_stream);
+                if (s_mem_write_log_file) fclose(s_mem_write_log_file);
                 s_mem_write_log_file = fopen(path, "w");
                 if (!s_mem_write_log_file) { send_err(id, "failed to open log file"); return cr; }
-                s_mem_write_log_stream=genesis_host_stream_create(s_mem_write_log_file,64u*1024u);
-                genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file,
+                fprintf(s_mem_write_log_file,
                     "# wall_frame internal_frame game_mode address value a7 ret0 ret1 ret2 ret3 target_cycle\n");
-                genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file, "# watching:");
+                fprintf(s_mem_write_log_file, "# watching:");
                 for (int i = 0; i < s_mem_write_log_watch_count; i++)
-                    genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file, " 0x%06X", s_mem_write_log_watch_lo[i]);
-                genesis_host_stream_fprintf(s_mem_write_log_stream,s_mem_write_log_file, "\n");
+                    fprintf(s_mem_write_log_file, " 0x%06X", s_mem_write_log_watch_lo[i]);
+                fprintf(s_mem_write_log_file, "\n");
 
                 s_mem_write_log_active = 1;
                 s_mem_write_log_max_frames = max_f;
@@ -2492,7 +2475,7 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
                 fprintf(stderr, "[MEM-WRITE-LOG] Started: %s (%d addrs, %d frames)\n",
                         path, s_mem_write_log_watch_count, max_f);
             } else if (strcmp(action, "off") == 0) {
-                if (s_mem_write_log_file) { trace_close(&s_mem_write_log_file,&s_mem_write_log_stream); s_mem_write_log_file = NULL; }
+                if (s_mem_write_log_file) { fclose(s_mem_write_log_file); s_mem_write_log_file = NULL; }
                 s_mem_write_log_active = 0;
                 g_mem_write_trace_fn = NULL;
                 fprintf(stderr, "[MEM-WRITE-LOG] Stopped (%d frames)\n", s_mem_write_log_frame_count);
@@ -2694,10 +2677,6 @@ void cmd_server_record_frame(uint32_t frame_num)
 
 void cmd_server_shutdown(void)
 {
-    g_fm_write_trace_fn=NULL;g_mem_write_trace_fn=NULL;
-    s_fm_trace_active=s_mem_write_log_active=0;
-    trace_close(&s_fm_trace_file,&s_fm_trace_stream);
-    trace_close(&s_mem_write_log_file,&s_mem_write_log_stream);
     if (s_client != SOCK_INVALID) { sock_close(s_client); s_client = SOCK_INVALID; }
     if (s_listen != SOCK_INVALID) { sock_close(s_listen); s_listen = SOCK_INVALID; }
 #ifdef _WIN32

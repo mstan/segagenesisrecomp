@@ -7,7 +7,6 @@
  */
 
 #include "glue.h"
-#include "host_stream.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1071,16 +1070,6 @@ int glue_cosim_vint_latched(void) { return s_own_vint_latched; }
  *   frame cycle_acc v_vblank_count vbla_routine
  */
 FILE *g_yield_log_file = NULL;
-static GenesisHostStream *s_yield_stream;
-int glue_yield_log_start(const char *path)
-{
-    if (g_yield_log_file) return 0;
-    g_yield_log_file = fopen(path, "w");
-    if (!g_yield_log_file) return 0;
-    fprintf(g_yield_log_file, "# frame cycle_acc v_vblank_count vbla_routine\n");
-    s_yield_stream = genesis_host_stream_create(g_yield_log_file, 64u * 1024u);
-    return 1;
-}
 extern uint16_t m68k_read16(uint32_t);
 extern uint8_t  m68k_read8(uint32_t);
 extern uint32_t m68k_read32(uint32_t);
@@ -1102,10 +1091,7 @@ void glue_yield_for_vblank(void)
     if (g_yield_log_file) {
         uint32_t vbc = glue_peek32(g_game_layout.vint_runcount_addr & 0xFFFF);
         uint8_t  vr  = glue_peek8 (g_game_layout.vint_routine_addr  & 0xFFFF);
-        if (s_yield_stream) genesis_host_stream_printf(s_yield_stream,
-                "%llu %u %u %u\n", (unsigned long long)g_frame_count,
-                g_cycle_accumulator, vbc, vr);
-        else fprintf(g_yield_log_file,
+        fprintf(g_yield_log_file,
                 "%llu %u %u %u\n",
                 (unsigned long long)g_frame_count,
                 g_cycle_accumulator,
@@ -1449,11 +1435,6 @@ void glue_wait_vblank_done(void)
 
 void glue_shutdown(void)
 {
-    int yield_ok = genesis_host_stream_destroy(s_yield_stream);
-    s_yield_stream = NULL;
-    if (g_yield_log_file && fclose(g_yield_log_file)) yield_ok = 0;
-    g_yield_log_file = NULL;
-    if (!yield_ok) fprintf(stderr, "[yield-log] write failed\n");
     runtime_evidence_flush();   /* final session counters (also via atexit) */
     if (s_game_fiber) {
         fiber_destroy(s_game_fiber);
