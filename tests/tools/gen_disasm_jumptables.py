@@ -128,6 +128,10 @@ BRA_S_RE = re.compile(
     r"^\s*(?:\.?[A-Za-z_][\w.]*\s*:\s*)*"
     r"bra(?:\.s)?\s+(" + LBL_NAME + r")\s*(?:;.*)?$"
 )
+INDEXED_TABLE_RE = re.compile(
+    r"\b(?:jmp|jsr)\s+(" + LBL_NAME + r")\s*\(\s*pc\s*,\s*[ad][0-7]\.[wl]\s*\)",
+    re.IGNORECASE,
+)
 
 # Labels pinned to the current address. AS produces several forms in
 # the listing depending on how the label was declared:
@@ -331,6 +335,7 @@ def main() -> int:
     pcrel_tables: list[dict] = []
     abs_tables: list[dict] = []
     bra_tables: list[dict] = []
+    inline_targets: set[int] = set()
     used_rows: set[int] = set()
 
     # Pre-compute the set of addresses that have at least one NAMED
@@ -346,6 +351,23 @@ def main() -> int:
         if name.startswith(_AUTO_PREFIX): continue
         if name.startswith(("+", "-", ".")): continue
         table_base_addrs.add(name_addr)
+    # An actual indexed dispatch proves its table base even when the
+    # disassembler gave it an automatic loc_/off_ or local label.
+    indexed_names = {m.group(1) for _, _, source in rows
+                     for m in INDEXED_TABLE_RE.finditer(source)}
+    indexed_addrs = {label_addr[n] for n in indexed_names if n in label_addr}
+    table_base_addrs.update(indexed_addrs)
+
+    def terminal_inline_case(base: int, end: int) -> None:
+        # Some ladders end with an inline handler instead of another BRA.
+        # S&K's Slots_CycleOptions sub-dispatch lands on CLR.B at base+8.
+        # Seed that instruction separately: it is code, not a BRA record.
+        if base in indexed_addrs and end < args.rom_max and end in code_addrs:
+            row = by_idx_addr.get(end)
+            if row is not None:
+                source = re.sub(r"^(?:\s*" + LBL_NAME + r"\s*:\s*)+", "", rows[row][2])
+                if not DATA_DIRECTIVE_RE.match(source):
+                    inline_targets.add(end)
 
     for i, (addr, bytes_hex, source) in enumerate(rows):
         if i in used_rows:
@@ -488,6 +510,7 @@ def main() -> int:
                     "format": "bra_w",
                     "entries": entries,
                 })
+                terminal_inline_case(addr, expected_addr)
                 used_rows.update(row_idxs)
                 continue
 
@@ -533,6 +556,7 @@ def main() -> int:
                     "format": "bra_s",
                     "entries": entries,
                 })
+                terminal_inline_case(addr, expected_addr)
                 used_rows.update(row_idxs)
                 continue
 
@@ -545,8 +569,8 @@ def main() -> int:
     abs_tables.sort(key=lambda t: t["start"])
     bra_tables.sort(key=lambda t: t["start"])
 
-    targets: set[int] = set()
-    target_names: dict[int, str] = {}
+    targets: set[int] = set(inline_targets)
+    target_names: dict[int, str] = {a: "terminal inline case" for a in inline_targets}
     for t in pcrel_tables + abs_tables:
         for addr_t, name in t["entries"]:
             targets.add(addr_t)
