@@ -25,7 +25,7 @@ target_compile_definitions(audio_work_original PRIVATE GENESIS_FM_BLOCK_SAMPLES=
 add_executable(audio_work_test "${CMAKE_CURRENT_LIST_DIR}/audio_work_test.cpp"
     "${_aw_runner}/audio/mixer.c" "${_aw_runner}/audio/event_queue.c"
     "${_aw_runner}/audio/ym2612_ymfm.cpp" "${_aw_runner}/audio/sn76489.c"
-    "${_aw_runner}/engine_worker.c" $<TARGET_OBJECTS:audio_work_original>
+    "${_aw_runner}/engine_worker.c" "${_aw_runner}/host_stream.c" $<TARGET_OBJECTS:audio_work_original>
     "${_aw_ymfm}/ymfm_opn.cpp" "${_aw_ymfm}/ymfm_ssg.cpp"
     "${_aw_ymfm}/ymfm_adpcm.cpp" "${_aw_ymfm}/ymfm_pcm.cpp")
 target_compile_features(audio_work_test PRIVATE c_std_11 cxx_std_17)

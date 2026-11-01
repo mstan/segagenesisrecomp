@@ -1,3 +1,4 @@
+#include "../host_stream.h"
 /*
  * mixer.c — cycle-stamped event drain + sample render.
  *
@@ -147,10 +148,14 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * stamps disagree with the faithful push order (which matches the oracle
      * at envelope corr 1.000). No-op unless the env is set. */
     static FILE *s_ad = NULL; static int s_ad_init = 0;
+    static GenesisHostStream *s_ad_stream;
     if (!s_ad_init) {
         s_ad_init = 1;
         const char *p = getenv("GENESIS_AUDIO_APPLIEDDUMP");
-        if (p && *p) s_ad = fopen(p, "w");
+        if (p && *p) {
+            s_ad = fopen(p, "w");
+            if(s_ad)s_ad_stream=genesis_host_stream_create(s_ad,64u*1024u);
+        }
     }
     extern unsigned long g_snd_frame;
 
@@ -228,8 +233,8 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
             if(e.cycle_stamp<*previous)e.cycle_stamp=*previous;
             *previous=e.cycle_stamp;
             if(e.port==AUDIO_PORT_PSG)
-                fprintf(s_ad,"f=%lu APP PSG $%02X cyc=%u pi=%u\n",g_snd_frame,e.value,e.cycle_stamp,(unsigned)evs[i].idx);
-            else fprintf(s_ad,"f=%lu APP FM  p%u $%02X cyc=%u pi=%u\n",g_snd_frame,e.port,e.value,e.cycle_stamp,(unsigned)evs[i].idx);
+                genesis_host_stream_fprintf(s_ad_stream,s_ad,"f=%lu APP PSG $%02X cyc=%u pi=%u\n",g_snd_frame,e.value,e.cycle_stamp,(unsigned)evs[i].idx);
+            else genesis_host_stream_fprintf(s_ad_stream,s_ad,"f=%lu APP FM  p%u $%02X cyc=%u pi=%u\n",g_snd_frame,e.port,e.value,e.cycle_stamp,(unsigned)evs[i].idx);
         }
         if(fm_written)*fm_written=fm.written;
         if(psg_written)*psg_written=psg.written;
@@ -262,10 +267,10 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
         }
         if (s_ad) {
             if (e.port == AUDIO_PORT_PSG)
-                fprintf(s_ad, "f=%lu APP PSG $%02X cyc=%u pi=%u\n",
+                genesis_host_stream_fprintf(s_ad_stream,s_ad, "f=%lu APP PSG $%02X cyc=%u pi=%u\n",
                         g_snd_frame, e.value, e.cycle_stamp, (unsigned)evs[i].idx);
             else
-                fprintf(s_ad, "f=%lu APP FM  p%u $%02X cyc=%u pi=%u\n",
+                genesis_host_stream_fprintf(s_ad_stream,s_ad, "f=%lu APP FM  p%u $%02X cyc=%u pi=%u\n",
                         g_snd_frame, e.port, e.value, e.cycle_stamp, (unsigned)evs[i].idx);
         }
     }

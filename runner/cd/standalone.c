@@ -13,6 +13,7 @@
 #include "../audio.h"
 #include "../engine_worker.h"
 #include "../host_wait.h"
+#include "../persist_writer.h"
 #include <SDL2/SDL.h>
 #include <errno.h>
 #include <stdio.h>
@@ -280,8 +281,13 @@ int main(int argc,char **argv)
             segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;
         }
     }
+    GenesisPersistWriter *backup_writer=genesis_persist_create(backup_path,persisted,
+        sizeof persisted,segacd_atomic_file_store);
     int quit=0,paused=0,exit_code=0;
     while(!quit&&(!frame_limit||machine.frames<frame_limit)) {
+        if(backup_writer&&!genesis_persist_poll(backup_writer)) {
+            fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;
+        }
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
             if(event.type==SDL_QUIT)quit=1;
@@ -309,9 +315,15 @@ int main(int argc,char **argv)
             if(result!=M68K_STEP_OK){fprintf(stderr,"Native execution stopped result=%u cpu=%u main=%06X sub=%06X Z80=%04X miss=%04X at Subclock=%llu\n",result,machine.coordinator.last_cpu,machine.coordinator.cpu[0].state.regs.PC,machine.coordinator.cpu[1].state.regs.PC,machine.z80.state.pc,machine.z80.miss_pc,(unsigned long long)machine.coordinator.device_time);exit_code=3;break;}
             SegaCDNativeAudioResult ar=segacd_native_audio_finish_frame(audio,machine.frames*896040u,(uint32_t)machine.frames,!headless);
             if(ar!=SEGACD_NATIVE_AUDIO_OK){fprintf(stderr,"Audio stopped result=%u at frame=%llu\n",ar,(unsigned long long)machine.frames);exit_code=3;break;}
-            if(machine.frames%60==0&&memcmp(persisted,machine.devices.backup,sizeof persisted)) {
-                if(segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK){fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;}
-                memcpy(persisted,machine.devices.backup,sizeof persisted);
+            if(machine.frames%60==0) {
+                if(backup_writer) {
+                    if(genesis_persist_submit(backup_writer,machine.devices.backup)<0) {
+                        fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;
+                    }
+                } else if(memcmp(persisted,machine.devices.backup,sizeof persisted)) {
+                    if(segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK){fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;}
+                    memcpy(persisted,machine.devices.backup,sizeof persisted);
+                }
             }
         }
         if(!headless) {
@@ -325,7 +337,10 @@ int main(int argc,char **argv)
         }
         if(!run){SDL_Delay(5);continue;}
     }
-    if(!exit_code&&memcmp(persisted,machine.devices.backup,sizeof persisted)&&segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK)exit_code=4;
+    if(backup_writer) {
+        if(!exit_code&&!genesis_persist_flush(backup_writer,machine.devices.backup))exit_code=4;
+        if(!genesis_persist_destroy(backup_writer)&&!exit_code)exit_code=4;
+    } else if(!exit_code&&memcmp(persisted,machine.devices.backup,sizeof persisted)&&segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK)exit_code=4;
     if(dump_dir&&!dump_state(dump_dir))exit_code=4;
     SegaCDNativeAudioStats stats;segacd_native_audio_get_stats(audio,&stats);
     uint64_t bios_completed=0,bios_declined=0;

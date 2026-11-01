@@ -7,6 +7,7 @@
  */
 
 #include "glue.h"
+#include "host_stream.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1070,6 +1071,16 @@ int glue_cosim_vint_latched(void) { return s_own_vint_latched; }
  *   frame cycle_acc v_vblank_count vbla_routine
  */
 FILE *g_yield_log_file = NULL;
+static GenesisHostStream *s_yield_stream;
+int glue_yield_log_start(const char *path)
+{
+    if (g_yield_log_file) return 0;
+    g_yield_log_file = fopen(path, "w");
+    if (!g_yield_log_file) return 0;
+    fprintf(g_yield_log_file, "# frame cycle_acc v_vblank_count vbla_routine\n");
+    s_yield_stream = genesis_host_stream_create(g_yield_log_file, 64u * 1024u);
+    return 1;
+}
 extern uint16_t m68k_read16(uint32_t);
 extern uint8_t  m68k_read8(uint32_t);
 extern uint32_t m68k_read32(uint32_t);
@@ -1091,7 +1102,10 @@ void glue_yield_for_vblank(void)
     if (g_yield_log_file) {
         uint32_t vbc = glue_peek32(g_game_layout.vint_runcount_addr & 0xFFFF);
         uint8_t  vr  = glue_peek8 (g_game_layout.vint_routine_addr  & 0xFFFF);
-        fprintf(g_yield_log_file,
+        if (s_yield_stream) genesis_host_stream_printf(s_yield_stream,
+                "%llu %u %u %u\n", (unsigned long long)g_frame_count,
+                g_cycle_accumulator, vbc, vr);
+        else fprintf(g_yield_log_file,
                 "%llu %u %u %u\n",
                 (unsigned long long)g_frame_count,
                 g_cycle_accumulator,
@@ -1435,6 +1449,11 @@ void glue_wait_vblank_done(void)
 
 void glue_shutdown(void)
 {
+    int yield_ok = genesis_host_stream_destroy(s_yield_stream);
+    s_yield_stream = NULL;
+    if (g_yield_log_file && fclose(g_yield_log_file)) yield_ok = 0;
+    g_yield_log_file = NULL;
+    if (!yield_ok) fprintf(stderr, "[yield-log] write failed\n");
     runtime_evidence_flush();   /* final session counters (also via atexit) */
     if (s_game_fiber) {
         fiber_destroy(s_game_fiber);
@@ -2226,6 +2245,7 @@ void     vdp_render_frame(uint32_t *fb) { (void)fb; /* rendering via clownmdemu 
  * ========================================================================= */
 
 static FILE *s_framelog = NULL;
+static GenesisHostStream *s_frame_stream;
 static int s_framelog_initialized;
 
 void glue_log_frame_state(uint64_t frame)
@@ -2233,10 +2253,13 @@ void glue_log_frame_state(uint64_t frame)
     if (!s_framelog_initialized) {
         s_framelog_initialized=1;
         /* The retrospective FrameRecord ring is the normal diagnostic path.
-         * Synchronous per-frame fflush can stall a real game for hundreds of
-         * milliseconds on a busy disk. Stream only when explicitly requested. */
+         * Publish frozen rows to the worker when explicitly requested; each
+         * row becomes visible after its worker-side flush completes. */
         const char *path=getenv("GENESIS_FRAME_LOG");
-        if (path && *path) s_framelog=fopen(path,"w");
+        if (path && *path) {
+            s_framelog=fopen(path,"w");
+            if(s_framelog)s_frame_stream=genesis_host_stream_create(s_framelog,64u*1024u);
+        }
     }
     if (!s_framelog) return;
     if (frame > 9999) return;  /* cap framelog at 10000 frames */
@@ -2263,13 +2286,14 @@ void glue_log_frame_state(uint64_t frame)
     uint8_t  obj0_id   = EMU_RAM_BYTE(g_game_layout.player_object_addr + 0);
     uint8_t  obj0_rt   = EMU_RAM_BYTE(g_game_layout.player_object_addr + 1);
 
-    fprintf(s_framelog,
+    genesis_host_stream_fprintf(s_frame_stream,s_framelog,
             "F%03llu mode=%02X vbl=%02X cnt=%04X scrl=%04X plc=%04X "
             "fcnt=%08X obj0=%02X/%02X\n",
             (unsigned long long)frame,
             game_mode, vbl_flag, vbl_count, scroll_x, plc_ptr,
             frame_cnt, obj0_id, obj0_rt);
-    fflush(s_framelog);
+    if(s_frame_stream)genesis_host_stream_flush_async(s_frame_stream);
+    else fflush(s_framelog);
 }
 
 void runtime_init(void)             { /* nothing; glue_init() serves this role */ }

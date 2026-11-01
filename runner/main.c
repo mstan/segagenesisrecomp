@@ -31,6 +31,9 @@
 #include "genesis_clocks.h"
 #include "frame_pacer.h"
 #include "host_wait.h"
+#include "host_stream.h"
+#include "persist_writer.h"
+#include "host_atomic_file.h"
 #include "audio.h"
 #include "host_timing.h"
 #include "cosim.h"
@@ -1003,6 +1006,7 @@ static size_t  s_psg_count = 0;
 static void dump_predrc(const cc_s16l *fm, size_t fm_frames,
                         const cc_s16l *psg, size_t psg_frames) {
     static FILE *ff = NULL, *pf = NULL;
+    static GenesisHostStream *fs,*ps;
     static int inited = 0;
     if (!inited) {
         inited = 1;
@@ -1010,12 +1014,20 @@ static void dump_predrc(const cc_s16l *fm, size_t fm_frames,
         if (pfx && *pfx) {
             char p[512];
             snprintf(p, sizeof p, "%s.fm.s16",  pfx); ff = fopen(p, "wb");
+            if(ff)fs=genesis_host_stream_create(ff,256u*1024u);
             snprintf(p, sizeof p, "%s.psg.s16", pfx); pf = fopen(p, "wb");
+            if(pf)ps=genesis_host_stream_create(pf,256u*1024u);
             fprintf(stderr, "[PREDRC] dumping pre-resample mixer output to %s.{fm,psg}.s16\n", pfx);
         }
     }
-    if (ff && fm  && fm_frames)  fwrite(fm,  sizeof(cc_s16l), fm_frames * 2, ff);
-    if (pf && psg && psg_frames) fwrite(psg, sizeof(cc_s16l), psg_frames,    pf);
+    if (ff && fm && fm_frames) {
+        if(fs)genesis_host_stream_write(fs,fm,sizeof(cc_s16l)*fm_frames*2);
+        else fwrite(fm,sizeof(cc_s16l),fm_frames*2,ff);
+    }
+    if (pf && psg && psg_frames) {
+        if(ps)genesis_host_stream_write(ps,psg,sizeof(cc_s16l)*psg_frames);
+        else fwrite(psg,sizeof(cc_s16l),psg_frames,pf);
+    }
 }
 
 #include "audio/mixer.h"          /* audio_mixer_drain */
@@ -1283,6 +1295,8 @@ static int      s_sram_active    = 0;  /* battery SRAM present this run */
 static uint64_t s_sram_hash      = 0;  /* last-seen content hash */
 static int      s_sram_dirty     = 0;  /* content changed since last flush */
 static uint32_t s_sram_dirty_at  = 0;  /* frame the pending change was seen */
+static GenesisPersistWriter *s_sram_writer;
+static int s_sram_io_pending;
 
 /* SRAM storage source: the own backend keeps cartridge SRAM in the own bus
  * (header-parsed geometry, genesis_bus.c); the clownmdemu path keeps it in
@@ -1317,40 +1331,50 @@ static uint64_t framebuf_active_hash(void)
     return h;
 }
 
+/* Callbacks remain on the producer and receive the actual committed image.
+ * Autosave may overlap presentation/pacing, but drains before another guest
+ * frame or input/session/reset change; no simulation advances for a save ACK. */
+static void runner_sram_completed(const char *path,const void *data,size_t n,void *context)
+{
+    (void)context;s_sram_io_pending=0;
+    s_sram_dirty=n!=sram_size()||memcmp(data,sram_buf(),n)!=0;
+    if(g_game_spec.sram_flushed)g_game_spec.sram_flushed(path,data,n);
+    fprintf(stderr,"[SRAM] flushed %zu bytes to %s\n",n,path);
+}
+static void runner_sram_complete(int wait)
+{
+    if(!s_sram_writer||!s_sram_io_pending)return;
+    int ok=wait?genesis_persist_wait(s_sram_writer):genesis_persist_poll(s_sram_writer);
+    if(!ok) {
+        (void)genesis_persist_destroy(s_sram_writer);s_sram_writer=NULL;
+        s_sram_io_pending=0;s_sram_dirty=1;
+        fprintf(stderr,"[SRAM] atomic flush failed; previous save retained, retry pending: %s\n",s_sram_path);
+    }
+}
+static void runner_sram_writer_init(void)
+{
+    (void)genesis_persist_destroy(s_sram_writer);
+    s_sram_writer=genesis_persist_create(s_sram_path,sram_buf(),sram_size(),genesis_atomic_file_store);
+    genesis_persist_on_completed(s_sram_writer,runner_sram_completed,NULL);
+}
 static void runner_sram_flush(void)
 {
+    runner_sram_complete(1);
     if (!s_sram_active) return;
 #if GENESIS_HAS_RECOMP_NET
-    /* Guest sandbox: during a session only the host (the SRAM authority)
-     * persists the battery save; a guest's SRAM holds the host's image and
-     * must never overwrite the guest's own file. */
-    if (!genesis_netplay_sram_writes_allowed()) {
-        s_sram_dirty = 0;
-        return;
+    /* A guest never publishes the host's SRAM to its local progress file. */
+    if (!genesis_netplay_sram_writes_allowed()) {s_sram_dirty=0;return;}
+#endif
+    size_t n=sram_size();
+    if(!genesis_atomic_file_store(s_sram_path,sram_buf(),n)) {
+        fprintf(stderr,"[SRAM] atomic flush failed: %s\n",s_sram_path);return;
     }
-#endif
-    char temporary[sizeof s_sram_path+8];
-    snprintf(temporary,sizeof temporary,"%s.tmp",s_sram_path);
-    FILE *f = fopen(temporary, "wb");
-    if (!f) { fprintf(stderr, "[SRAM] flush failed to open %s\n", s_sram_path); return; }
-    size_t n = sram_size();
-    size_t wrote = fwrite(sram_buf(), 1, n, f);
-    int ok=wrote==n && fflush(f)==0;
-#ifdef _WIN32
-    if(ok)ok=_commit(_fileno(f))==0;
-#else
-    if(ok)ok=fsync(fileno(f))==0;
-#endif
-    if(fclose(f))ok=0;
-#ifdef _WIN32
-    if(ok)ok=MoveFileExA(temporary,s_sram_path,MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)!=0;
-#else
-    if(ok)ok=rename(temporary,s_sram_path)==0;
-#endif
-    if(!ok){fprintf(stderr,"[SRAM] atomic flush failed: %s\n",s_sram_path);return;}
-    s_sram_dirty = 0;
+    s_sram_dirty=0;
+    /* Rebase the committed marker before the notification can modify live
+     * memory. Allocation failure retains the synchronous fallback. */
+    runner_sram_writer_init();
     if(g_game_spec.sram_flushed)g_game_spec.sram_flushed(s_sram_path,sram_buf(),n);
-    fprintf(stderr, "[SRAM] flushed %zu bytes to %s\n", wrote, s_sram_path);
+    fprintf(stderr,"[SRAM] flushed %zu bytes to %s\n",n,s_sram_path);
 }
 
 /* Resolve <rom-basename>.srm next to the exe, then load it (if present) into
@@ -1414,6 +1438,7 @@ static void runner_sram_init_and_load(const char *rom_path)
     }
     s_sram_hash  = sram_content_hash();
     s_sram_dirty = 0;
+    runner_sram_writer_init();
     if(g_game_spec.sram_loaded)g_game_spec.sram_loaded(s_sram_path,sram_buf(),sram_size(),loaded);
 }
 
@@ -1430,8 +1455,15 @@ static void runner_sram_autosave_tick(uint32_t frame_num)
         s_sram_dirty    = 1;
         s_sram_dirty_at = frame_num;
     }
-    if (s_sram_dirty && (frame_num - s_sram_dirty_at) >= 30)
-        runner_sram_flush();
+    if (s_sram_dirty && (frame_num - s_sram_dirty_at) >= 30) {
+#if GENESIS_HAS_RECOMP_NET
+        if(!genesis_netplay_sram_writes_allowed()){s_sram_dirty=0;return;}
+#endif
+        if(s_sram_writer) {
+            s_sram_io_pending=1;
+            if(genesis_persist_submit_force(s_sram_writer,sram_buf())<0)runner_sram_complete(1);
+        } else runner_sram_flush();
+    }
 }
 
 static uint8_t runner_ram_byte(uint32_t addr)
@@ -1514,6 +1546,7 @@ int runner_write_screenshot_file(const char *path)
  * ========================================================================= */
 
 static FILE *s_framelog_file = NULL;
+static GenesisHostStream *s_framelog_stream;
 
 /* Dump full 64KB work RAM at a specific game frame counter for comparison */
 static void check_ramdump(void)
@@ -1602,7 +1635,7 @@ static void write_framelog(uint32_t frame)
         wh *= 0x100000001B3ULL;
     }
 
-    fprintf(s_framelog_file,
+    genesis_host_stream_fprintf(s_framelog_stream,s_framelog_file,
             "F%03u wh=%016llX mode=%02X vbl=%02X cnt=%04X scrl=%04X plc=%04X "
             "fcnt=%08X obj0=%02X/%02X xpos=%04X ypos=%04X xvel=%04X yvel=%04X inrt=%04X "
             "rtn=%02X log=%02X/%02X phys=%02X/%02X st=%02X lk=%02X "
@@ -1634,7 +1667,8 @@ static void write_framelog(uint32_t frame)
             EMU_BYTE(0xB1C0), EMU_BYTE(0xB1E4),
             EMU_BYTE(0xB180), EMU_BYTE(0xB1A4),
             EMU_BYTE(0xF623));
-    fflush(s_framelog_file);
+    if(s_framelog_stream)genesis_host_stream_flush_async(s_framelog_stream);
+    else fflush(s_framelog_file);
 
     #undef EMU_BYTE
     #undef EMU_WORD
@@ -1747,6 +1781,7 @@ static void runner_sram_init_and_load(const char *rom_path);
  * fresh process reads it, and host-side playback is flushed. */
 static int genesis_session_reset(const char *rom_path)
 {
+    runner_sram_complete(1);
     if (!s_cold_len || !genesis_rb_load(s_cold_blob, s_cold_len)) {
         fprintf(stderr, "[session] cold reset FAILED\n");
         return 0;
@@ -3042,20 +3077,17 @@ int main(int argc, char *argv[])
             fprintf(stderr, "[WAV] failed to open %s\n", wav_path);
     }
 
-    if (framelog_path)
+    if (framelog_path) {
         s_framelog_file = fopen(framelog_path, "w");
+        if(s_framelog_file)s_framelog_stream=genesis_host_stream_create(s_framelog_file,64u*1024u);
+    }
 
     if (yield_log) {
-        extern FILE *g_yield_log_file;
-        /* File streaming is an explicit development capture. A buffered
-         * fprintf eventually calls WriteFile on the game fiber; busy disks
-         * have blocked this for >1 second during normal gameplay. The frame
-         * and host timing rings remain the default retrospective evidence. */
+        /* Explicit capture uses bounded immutable host buffers. The frame and
+         * host timing rings remain the default retrospective evidence. */
         const char *yp = getenv("GENESIS_YIELD_LOG");
         if (!yp || !*yp || !strcmp(yp, "1")) yp = exe_relative("yield_log_native.log");
-        g_yield_log_file = fopen(yp, "w");
-        if (g_yield_log_file) {
-            fprintf(g_yield_log_file, "# frame cycle_acc v_vblank_count vbla_routine\n");
+        if (glue_yield_log_start(yp)) {
             fprintf(stderr, "[yield-log] writing %s\n", yp);
         } else {
             fprintf(stderr, "[yield-log] cannot open %s\n", yp);
@@ -3188,6 +3220,8 @@ session_begin:;
         Uint64 frame_start=phase_start;
         uint32_t phase_us[9]={0};
 #define FRAME_PHASE(n) do { Uint64 now=SDL_GetPerformanceCounter(); phase_us[n]=(uint32_t)((now-phase_start)*1000000ull/host_perf_freq); phase_start=now; } while (0)
+
+        runner_sram_complete(1); /* before guest progress or session/input changes */
 
         /* Poll TCP debug server */
         CmdResult cmd_cr = {0};
@@ -3667,7 +3701,17 @@ session_begin:;
                 host_timing_dump(&host_timing, stderr);
                 fprintf(stderr, "[input_script] exiting per script directive (code=%d)\n",
                         input_script_exit_code());
-                if (s_sram_dirty) runner_sram_flush();
+                /* EXIT precedes the ordinary autosave tick. Observe changes
+                 * made by this last guest/script frame, while benchmark runs
+                 * keep their existing read-only battery-save policy. */
+                if(!benchmark_frames&&s_sram_active) {
+                    if(sram_content_hash()!=s_sram_hash)s_sram_dirty=1;
+                    if(s_sram_dirty)runner_sram_flush();
+                }
+                runner_sram_complete(1);
+                (void)genesis_persist_destroy(s_sram_writer);s_sram_writer=NULL;
+                audio_wav_stop();
+                if(!genesis_host_stream_flush_all())fprintf(stderr,"[capture] final write failed\n");
                 return input_script_exit_code();
             }
         }
@@ -3873,6 +3917,7 @@ session_begin:;
         SDL_HideWindow(window);
         audio_close(); /* stop playback before persistence/optional diagnostics */
     }
+    runner_sram_complete(1); /* settle last-frame ACK before final state/report */
     host_timing_dump(&host_timing, stderr);
     if (!window_close_requested || host_timing_dump_requested())
         fprintf(stderr, "[session] loop ended: running=%d frame=%u\n", running, (unsigned)frame_num);
@@ -3925,9 +3970,11 @@ session_begin:;
         s_netplay_match_over = 0;
         genesis_netplay_print_summary();
         const char *refusal = genesis_netplay_refusal();
-        genesis_netplay_shutdown();
-        /* The host is the SRAM authority: its save is written once, now. */
+        /* Settle while the session role still identifies its SRAM authority.
+         * shutdown clears that role; flushing afterward would allow a guest's
+         * received host image to overwrite the guest's local progress. */
         if (s_sram_dirty || sram_battery_present()) runner_sram_flush();
+        genesis_netplay_shutdown();
         if (refusal) genesis_host_lobby_set_runtime_error(refusal);
         if (netplay_next_session(&netplay_config, session_round)) {
             genesis_session_reset(rom_path);
@@ -4053,13 +4100,20 @@ session_begin:;
     genesis_host_wait_shutdown();
 #if GENESIS_HAS_RECOMP_NET
     genesis_netplay_print_summary();
+#endif
+    runner_sram_complete(1);
+    if (s_sram_dirty) runner_sram_flush();  /* final flush of any pending save */
+    (void)genesis_persist_destroy(s_sram_writer);s_sram_writer=NULL;
+#if GENESIS_HAS_RECOMP_NET
     genesis_netplay_shutdown();
 #endif
-    if (s_sram_dirty) runner_sram_flush();  /* final flush of any pending save */
     if (s_debug_enabled) cmd_server_shutdown();
+    if(!genesis_host_stream_destroy(s_framelog_stream))fprintf(stderr,"[framelog] write failed\n");
+    s_framelog_stream=NULL;
     if (s_framelog_file) fclose(s_framelog_file);
     { extern int audio_wav_active(void); extern void audio_wav_stop(void);
       if (audio_wav_active()) audio_wav_stop(); }
+    if(!genesis_host_stream_flush_all())fprintf(stderr,"[capture] final write failed\n");
     genesis_local_states_shutdown();
     glue_shutdown();
     audio_close();

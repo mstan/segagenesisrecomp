@@ -52,6 +52,9 @@ set(GENESIS_RUNNER_CORE_SOURCES
     host_wait.c
     sim_step.c
     engine_worker.c
+    host_stream.c
+    host_atomic_file.c
+    persist_writer.c
     rb_state.c
     rb_capture.c
     rb_probe.c
@@ -96,6 +99,9 @@ set(GENESIS_RUNNER_RECONCILED_SOURCES
     cosim_state.c
     sim_step.c
     engine_worker.c
+    host_stream.c
+    host_atomic_file.c
+    persist_writer.c
     rb_state.c
     rb_probe.c
     local_states.c
