@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef GENESIS_AUDIO_FRAME_PIPELINE
+#define GENESIS_AUDIO_FRAME_PIPELINE 1
+#endif
+
 /* Shared clock-domain bridge: persistent band-limited polyphase resampler + a
  * P-only normalized-fill controller, plus Phase-1 stall concealment (boot
  * pre-roll + pitch-preserving underrun loop). Replaces the old nearest-neighbor
@@ -120,8 +124,13 @@ static uint32_t s_wav_data_bytes = 0;
 #define OUT_BUF_FRAMES 16384
 static int16_t s_out[OUT_BUF_FRAMES * 2];
 static AudioExtraSource s_extra_source;
+static AudioExtraSource s_frame_expected;
+static AudioFrameSource s_frame_source;
 static double s_mix_rate;
-void audio_set_extra_source(AudioExtraSource source) { s_extra_source = source; }
+void audio_set_extra_source(AudioExtraSource source)
+{s_extra_source=source;s_frame_expected=NULL;s_frame_source=NULL;}
+void audio_set_owned_frame_source(AudioExtraSource expected,AudioFrameSource source)
+{s_frame_expected=expected;s_frame_source=expected?source:NULL;}
 
 int audio_init(int psg_sample_rate)
 {
@@ -185,7 +194,7 @@ int audio_init(int psg_sample_rate)
 
 void audio_close(void)
 {
-    s_extra_source = NULL;
+    audio_set_extra_source(NULL);
     if (s_dev != 0) {
         SDL_LockAudioDevice(s_dev);
         s_bridge_ready = 0;
@@ -295,9 +304,16 @@ void audio_flush(uint32_t wall_frame, int realtime,
     /* Mix one video frame at the internal PSG rate into s_out (PSG ratio 1; FM
      * upsampled to PSG rate). This is the single mix, a FIXED conversion, so it
      * no longer crackles. The DRC bridge owns the downsample and the servo. */
-    MIX_INTO(psg_frames);
-    if (s_extra_source)
-        s_extra_source(s_out, psg_frames, s_mix_rate);
+    int produced=0;
+#if GENESIS_AUDIO_FRAME_PIPELINE
+    if(s_frame_source&&s_extra_source==s_frame_expected)
+        produced=s_frame_source(s_out,psg_frames,s_mix_rate,fm_buf,fm_frames,psg_buf,s_psg_vol_div);
+#endif
+    if(!produced) {
+        MIX_INTO(psg_frames);
+        if (s_extra_source)
+            s_extra_source(s_out, psg_frames, s_mix_rate);
+    }
 
     /* WAV capture taps the GENERATED stream at ratio 1, before master volume
      * and before the bridge — WAV content stays bit-deterministic across runs
@@ -311,7 +327,8 @@ void audio_flush(uint32_t wall_frame, int realtime,
 
     /* Master volume — speaker output only (applied after the WAV tap, so paired
      * captures stay bit-deterministic regardless of this setting). */
-    if (s_master_vol != 256) {
+    int fused_gain=GENESIS_AUDIO_FRAME_PIPELINE&&realtime&&s_playback_enabled&&s_bridge_ready;
+    if (!fused_gain&&s_master_vol != 256) {
         for (size_t i = 0; i < psg_frames * 2; i++)
             s_out[i] = (int16_t)((int32_t)s_out[i] * s_master_vol / 256);
     }
@@ -332,7 +349,8 @@ void audio_flush(uint32_t wall_frame, int realtime,
         s_host_timing.conceal_events = s_bridge.stats.stretch_events;
         s_host_timing.concealed_frames = s_bridge.stats.stretch_frames;
         s_host_timing.fill_us = (uint32_t)(rab_fill_ms(&s_bridge) * 1000.0);
-        rab_push(&s_bridge, s_out, (int)psg_frames);
+        if(fused_gain)rab_push_scaled(&s_bridge,s_out,(int)psg_frames,s_master_vol);
+        else rab_push(&s_bridge, s_out, (int)psg_frames);
         SDL_UnlockAudioDevice(s_dev);
     } else if (!realtime) {
         s_stats.turbo_dropped_flushes++;

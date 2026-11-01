@@ -275,6 +275,26 @@ SegaCDAudioMixResult segacd_audio_mix_check_window(const SegaCDAudioMix *mix,
     return SEGACD_AUDIO_MIX_OK;
 }
 
+SegaCDAudioMixResult segacd_audio_mix_check_owned_window(const SegaCDAudioMix *mix,
+                                                        size_t frames,uint32_t rate)
+{
+    if(!mix||!mix->window.pending)return SEGACD_AUDIO_MIX_INVALID;
+    if(mix->paused)return SEGACD_AUDIO_MIX_PAUSED;
+    const SegaCDAudioWindow *w=&mix->window;
+    if(frames!=w->frames||rate!=w->rate_hz)return SEGACD_AUDIO_MIX_WINDOW_MISMATCH;
+    uint64_t n=(uint64_t)(frames-1u)*w->step_numerator+w->first_phase;
+    uint64_t last=w->first_subclock+n/w->step_denominator;
+    uint32_t phase=(uint32_t)(n%w->step_denominator);
+    for(unsigned i=0;i<SEGACD_AUDIO_SOURCE_COUNT;++i) {
+        const SegaCDAudioQueue *q=&mix->source[i];
+        if(!q->active)continue;
+        if(!q->count||compare_stamp(frame_at(q,0)->subclock,w->first_subclock,w->first_phase)>0||
+           compare_stamp(frame_at(q,q->count-1u)->subclock,last,phase)<0)
+            return SEGACD_AUDIO_MIX_NEED_INPUT;
+    }
+    return SEGACD_AUDIO_MIX_OK;
+}
+
 static int16_t saturate_s16(int32_t value)
 {
     if(value>INT16_MAX)return INT16_MAX;
@@ -297,10 +317,12 @@ static void consume_before_window_end(SegaCDAudioQueue *queue,
     }
 }
 
-SegaCDAudioMixResult segacd_audio_mix_render_window(SegaCDAudioMix *mix,
+static SegaCDAudioMixResult render_window(SegaCDAudioMix *mix,
                                                     int16_t *stereo,
                                                     size_t frames,
-                                                    uint32_t rate_hz)
+                                                    uint32_t rate_hz,
+                                                    const int16_t *fm,size_t fm_frames,
+                                                    const int16_t *psg,int divisor)
 {
     if(!mix || !stereo || !mix->window.pending) {
         if(mix) {
@@ -314,7 +336,8 @@ SegaCDAudioMixResult segacd_audio_mix_render_window(SegaCDAudioMix *mix,
         set_result(mix,SEGACD_AUDIO_MIX_PAUSED);
         return mix->last_result;
     }
-    SegaCDAudioMixResult preflight=segacd_audio_mix_check_window(mix,frames,rate_hz);
+    SegaCDAudioMixResult preflight=psg?segacd_audio_mix_check_owned_window(mix,frames,rate_hz):
+                                     segacd_audio_mix_check_window(mix,frames,rate_hz);
     if(preflight==SEGACD_AUDIO_MIX_WINDOW_MISMATCH) {
         mix->faults|=SEGACD_AUDIO_FAULT_WINDOW;
         set_result(mix,SEGACD_AUDIO_MIX_WINDOW_MISMATCH);
@@ -334,6 +357,10 @@ SegaCDAudioMixResult segacd_audio_mix_render_window(SegaCDAudioMix *mix,
 
     uint64_t clock=window->first_subclock;
     uint32_t phase=window->first_phase;
+    uint64_t last_clock=clock;
+    uint32_t last_phase=phase;
+    uint32_t whole=window->step_numerator/window->step_denominator;
+    uint32_t part=window->step_numerator%window->step_denominator;
     unsigned cursor[SEGACD_AUDIO_SOURCE_COUNT]={0,0};
     for(size_t i=0;i<frames;++i) {
         int16_t left[SEGACD_AUDIO_SOURCE_COUNT]={0,0};
@@ -350,11 +377,24 @@ SegaCDAudioMixResult segacd_audio_mix_render_window(SegaCDAudioMix *mix,
                 return mix->last_result;
             }
         }
-        int32_t l=(int32_t)stereo[i*2u]+left[SEGACD_AUDIO_SOURCE_PCM]+left[SEGACD_AUDIO_SOURCE_CDDA];
-        int32_t r=(int32_t)stereo[i*2u+1u]+right[SEGACD_AUDIO_SOURCE_PCM]+right[SEGACD_AUDIO_SOURCE_CDDA];
+        int16_t base_l=psg?0:stereo[i*2u],base_r=psg?0:stereo[i*2u+1u];
+        if(psg) {
+            int32_t p=(int32_t)psg[i]/divisor,l=p,r=p;
+            if(fm&&fm_frames) {
+                size_t fi=i*fm_frames/frames;
+                l+=fm[fi*2u];r+=fm[fi*2u+1u];
+            }
+            base_l=saturate_s16(l);base_r=saturate_s16(r);
+        }
+        int32_t l=(int32_t)base_l+left[SEGACD_AUDIO_SOURCE_PCM]+left[SEGACD_AUDIO_SOURCE_CDDA];
+        int32_t r=(int32_t)base_r+right[SEGACD_AUDIO_SOURCE_PCM]+right[SEGACD_AUDIO_SOURCE_CDDA];
         stereo[i*2u]=saturate_s16(l);
         stereo[i*2u+1u]=saturate_s16(r);
-        advance_position(&clock,&phase,window->step_numerator,window->step_denominator);
+        last_clock=clock;last_phase=phase;
+        if(psg) {
+            clock+=whole;phase+=part;
+            if(phase>=window->step_denominator){phase-=window->step_denominator;++clock;}
+        } else advance_position(&clock,&phase,window->step_numerator,window->step_denominator);
     }
     mix->next_output_subclock=clock;
     mix->next_output_phase=phase;
@@ -362,16 +402,35 @@ SegaCDAudioMixResult segacd_audio_mix_render_window(SegaCDAudioMix *mix,
     mix->next_output_step_numerator=window->step_numerator;
     mix->next_output_rate_hz=window->rate_hz;
     mix->next_output_valid=1;
-    phase=window->first_phase;
-    clock=window->first_subclock;
-    for(size_t i=1;i<frames;++i)
-        advance_position(&clock,&phase,window->step_numerator,window->step_denominator);
+    if(psg){clock=last_clock;phase=last_phase;}
+    else {
+        phase=window->first_phase;clock=window->first_subclock;
+        for(size_t i=1;i<frames;++i)
+            advance_position(&clock,&phase,window->step_numerator,window->step_denominator);
+    }
     for(unsigned source=0;source<SEGACD_AUDIO_SOURCE_COUNT;++source)
         consume_before_window_end(&mix->source[source],clock,phase);
     mix->rendered_frames+=frames;
     window->pending=0;
     set_result(mix,SEGACD_AUDIO_MIX_OK);
     return mix->last_result;
+}
+
+SegaCDAudioMixResult segacd_audio_mix_render_window(SegaCDAudioMix *mix,int16_t *stereo,
+                                                    size_t frames,uint32_t rate)
+{return render_window(mix,stereo,frames,rate,NULL,0,NULL,1);}
+
+int segacd_audio_mix_owned_frame_source(int16_t *out,size_t frames,double rate,
+                                       const int16_t *fm,size_t fm_frames,
+                                       const int16_t *psg,int divisor)
+{
+    SegaCDAudioMix *mix=s_audio_extra_mix;
+    if(!mix||!out||!psg||!frames||frames>SEGACD_AUDIO_MIX_MAX_WINDOW_FRAMES||
+       divisor<1||divisor>64||rate!=rate||rate<1.0||rate>1000000.0||
+       (fm_frames&&fm_frames>SIZE_MAX/frames))return 0;
+    uint32_t rounded=(uint32_t)(rate+0.5);
+    if(segacd_audio_mix_check_owned_window(mix,frames,rounded)!=SEGACD_AUDIO_MIX_OK)return 0;
+    return render_window(mix,out,frames,rounded,fm,fm_frames,psg,divisor)==SEGACD_AUDIO_MIX_OK;
 }
 
 int segacd_audio_mix_next_output_position(const SegaCDAudioMix *mix,

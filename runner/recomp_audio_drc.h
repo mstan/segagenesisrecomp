@@ -117,6 +117,11 @@ void rab_free(rab_bridge *b);
 
 /* Producer: append `frames` interleaved int16 source samples. Thread: emu side. */
 void rab_push(rab_bridge *b, const int16_t *interleaved, int frames);
+/* Exclusive producer-side mutable scratch: apply integer gain/256 in place
+ * after the generated-stream capture, then append exactly those S16 values.
+ * Gain is an integer in0..256; input scratch does not alias the bridge ring.
+ * The caller holds the same producer/consumer exclusion as rab_push. */
+void rab_push_scaled(rab_bridge *b,int16_t *interleaved,int frames,int gain);
 
 /* Consumer: render exactly `frames` interleaved int16 host samples (never
  * blocks; emits faded silence on underrun / before prime). Thread: callback. */
@@ -281,6 +286,40 @@ void rab_push(rab_bridge *b, const int16_t *in, int frames) {
         b->in_count++;
     }
     b->stats.pushed_frames += (uint64_t)frames;
+}
+
+void rab_push_scaled(rab_bridge *b,int16_t *in,int frames,int gain) {
+    int ch=b->cfg.channels;
+    /* Below2^53, input counts are exact doubles. Qualify the complete block
+     * without changing the scalar overflow/read-cursor behavior at its edge. */
+    if(frames>0&&b->in_count<UINT64_C(9007199254740992)&&
+       (uint64_t)frames<UINT64_C(9007199254740992)-b->in_count&&
+       (double)(b->in_count+(uint64_t)frames-1u)-b->out_pos<(double)(b->cap-1)) {
+        int done=0;int64_t slot=(int64_t)(b->in_count%(uint64_t)b->cap);
+        while(done<frames) {
+            int count=frames-done;
+            if((int64_t)count>b->cap-slot)count=(int)(b->cap-slot);
+            float *dst=b->ring+slot*ch;int16_t *src=in+done*ch;
+            for(int i=0;i<count*ch;++i) {
+                int16_t value=gain==256?src[i]:(int16_t)((int32_t)src[i]*gain/256);
+                src[i]=value;dst[i]=(float)value*(1.0f/32768.0f);
+            }
+            done+=count;slot=0;
+        }
+        b->in_count+=(uint64_t)frames;b->stats.pushed_frames+=(uint64_t)frames;return;
+    }
+    for(int f=0;f<frames;++f) {
+        double fill=(double)b->in_count-b->out_pos;
+        if(fill>=(double)(b->cap-1)){b->out_pos+=1.0;b->stats.overflow_drops++;}
+        int64_t slot=(int64_t)(b->in_count%(uint64_t)b->cap);
+        for(int c=0;c<ch;++c) {
+            int16_t *src=&in[f*ch+c];
+            int16_t value=gain==256?*src:(int16_t)((int32_t)*src*gain/256);
+            *src=value;b->ring[slot*ch+c]=(float)value*(1.0f/32768.0f);
+        }
+        b->in_count++;
+    }
+    b->stats.pushed_frames+=(uint64_t)frames;
 }
 
 static void rab__update_controller(rab_bridge *b) {

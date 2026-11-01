@@ -129,6 +129,7 @@ SegaCDNativeAudio *segacd_native_audio_create(int initialize_host_audio)
         return NULL;
     }
     audio_set_extra_source(segacd_audio_mix_audio_extra_source);
+    audio_set_owned_frame_source(segacd_audio_mix_audio_extra_source,segacd_audio_mix_owned_frame_source);
     audio->registered=1;
     if(initialize_host_audio) {
         if(audio_init((int)psg_sample_rate())!=0) {
@@ -310,7 +311,7 @@ static SegaCDNativeAudioResult flush_pending(SegaCDNativeAudio *audio,int realti
         record_result(audio,SEGACD_NATIVE_AUDIO_MIX_ERROR);
         return audio->stats.last_result;
     }
-    mr=segacd_audio_mix_check_window(&audio->mix,audio->pending_psg_frames,
+    mr=segacd_audio_mix_check_owned_window(&audio->mix,audio->pending_psg_frames,
                                      psg_sample_rate());
     if(mr==SEGACD_AUDIO_MIX_NEED_INPUT) {
         audio->stats.faults|=SEGACD_NATIVE_AUDIO_FAULT_MIX;
