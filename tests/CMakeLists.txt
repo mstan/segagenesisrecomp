@@ -216,6 +216,8 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/recomp_launcher.h")
         add_executable(party_input_test runtime/party_input_test.c
             "${CMAKE_CURRENT_LIST_DIR}/../runner/gamepad.c"
             "${CMAKE_CURRENT_LIST_DIR}/../runner/app_config.c"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/recomp_runtime_ui.c"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/recomp_runtime_settings.c"
             "${CMAKE_SOURCE_DIR}/recomp-ui/src/consoles/genesis/genesis_binds.c")
         target_include_directories(party_input_test PRIVATE
             "${CMAKE_CURRENT_LIST_DIR}/../runner"
