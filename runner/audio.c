@@ -43,6 +43,11 @@ static uint64_t   s_prev_underruns = 0;
 static Uint64     s_perf_freq = 0;
 static uint32_t   s_callback_peak_us = 0; /* device lock protects callback data */
 static AudioHostTiming s_host_timing;   /* written/read on the main thread */
+static int s_buffer_trace;
+static uint64_t s_trace_callbacks,s_trace_callback_peak_us;
+static uint64_t s_trace_wait_peak_us,s_trace_conceals,s_trace_repeated;
+static uint64_t s_trace_underruns,s_trace_overflows;
+static uint64_t s_trace_final_fill_us;
 
 /* SDL pull callback: the device asks for `len` bytes of stereo S16; the bridge
  * resamples from the internal mix rate to the device rate under DRC and emits
@@ -58,6 +63,10 @@ static void genesis_audio_callback(void *user, Uint8 *stream, int len)
     uint32_t elapsed = (uint32_t)((SDL_GetPerformanceCounter() - begin)
                                 * 1000000ull / s_perf_freq);
     if (elapsed > s_callback_peak_us) s_callback_peak_us = elapsed;
+    if (s_buffer_trace) {
+        ++s_trace_callbacks;
+        if (elapsed > s_trace_callback_peak_us) s_trace_callback_peak_us = elapsed;
+    }
 }
 
 /* Audio stats */
@@ -123,7 +132,6 @@ static int16_t s_out[OUT_BUF_FRAMES * 2];
  * the S16 frame intact preserves the original overflow fallback and borrowed
  * extra-source/WAV/gain ordering. Cost: 128 KiB of fixed host-only scratch. */
 static float s_prepared[OUT_BUF_FRAMES * 2];
-static int s_buffer_trace;
 static uint64_t s_prepare_ticks,s_publish_ticks,s_publish_max_ticks,s_exclusion_ticks;
 static uint64_t s_prepared_blocks,s_legacy_blocks;
 static AudioExtraSource s_extra_source;
@@ -138,6 +146,9 @@ int audio_init(int psg_sample_rate)
     s_prepare_ticks = s_publish_ticks = s_publish_max_ticks = 0;
     s_exclusion_ticks = 0;
     s_prepared_blocks = s_legacy_blocks = 0;
+    s_trace_callbacks = s_trace_callback_peak_us = s_trace_wait_peak_us = 0;
+    s_trace_conceals = s_trace_repeated = s_trace_underruns = s_trace_overflows = 0;
+    s_trace_final_fill_us = 0;
     SDL_AudioSpec want, got;
     SDL_memset(&want, 0, sizeof(want));
     /* Open at a normal host rate and let the DRC bridge own the (large)
@@ -160,6 +171,10 @@ int audio_init(int psg_sample_rate)
         fprintf(stderr, "audio: SDL_OpenAudioDevice failed: %s\n", SDL_GetError());
         return -1;
     }
+    if (s_buffer_trace)
+        fprintf(stderr, "[audio device] driver=%s rate=%d samples=%u channels=%u format=%u\n",
+                SDL_GetCurrentAudioDriver(), got.freq, (unsigned)got.samples,
+                (unsigned)got.channels, (unsigned)got.format);
 
     rab_config cfg;
     rab_config_defaults(&cfg);
@@ -200,6 +215,13 @@ void audio_close(void)
     s_extra_source = NULL;
     if (s_dev != 0) {
         SDL_LockAudioDevice(s_dev);
+        if (s_buffer_trace) {
+            s_trace_conceals = s_bridge.stats.stretch_events;
+            s_trace_repeated = s_bridge.stats.stretch_frames;
+            s_trace_underruns = s_bridge.stats.underrun_events;
+            s_trace_overflows = s_bridge.stats.overflow_drops;
+            s_trace_final_fill_us = (uint64_t)(rab_fill_ms(&s_bridge) * 1000.0);
+        }
         s_bridge_ready = 0;
         SDL_UnlockAudioDevice(s_dev);
         SDL_CloseAudioDevice(s_dev);
@@ -217,6 +239,16 @@ void audio_close(void)
                 blocks ? 1e6 * (double)s_publish_ticks / s_perf_freq / blocks : 0,
                 1e6 * (double)s_publish_max_ticks / s_perf_freq,
                 blocks ? 1e6 * (double)s_exclusion_ticks / s_perf_freq / blocks : 0);
+        fprintf(stderr, "[audio callback ownership] callbacks=%llu callback_peak_us=%llu "
+                "wait_peak_us=%llu conceals=%llu repeated=%llu underruns=%llu overflows=%llu fill_us=%llu\n",
+                (unsigned long long)s_trace_callbacks,
+                (unsigned long long)s_trace_callback_peak_us,
+                (unsigned long long)s_trace_wait_peak_us,
+                (unsigned long long)s_trace_conceals,
+                (unsigned long long)s_trace_repeated,
+                (unsigned long long)s_trace_underruns,
+                (unsigned long long)s_trace_overflows,
+                (unsigned long long)s_trace_final_fill_us);
     }
 }
 
@@ -363,6 +395,12 @@ void audio_flush(uint32_t wall_frame, int realtime,
                 s_exclusion_ticks += ended - locked_at;
                 if (ticks > s_publish_max_ticks) s_publish_max_ticks = ticks;
                 if (prepared) ++s_prepared_blocks; else ++s_legacy_blocks;
+                if (s_host_timing.lock_us > s_trace_wait_peak_us)
+                    s_trace_wait_peak_us = s_host_timing.lock_us;
+                s_trace_conceals = s_bridge.stats.stretch_events;
+                s_trace_repeated = s_bridge.stats.stretch_frames;
+                s_trace_underruns = s_bridge.stats.underrun_events;
+                s_trace_overflows = s_bridge.stats.overflow_drops;
             }
         }
         SDL_UnlockAudioDevice(s_dev);
