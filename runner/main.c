@@ -1057,15 +1057,10 @@ extern uint8_t  m68k_read8 (uint32_t);
  * ROM loading
  * ========================================================================= */
 
+#include "state_crc.h"
 static uint32_t rom_crc32(const uint8_t *data, size_t len)
 {
-    uint32_t crc = 0xFFFFFFFFu;
-    for (size_t i = 0; i < len; ++i) {
-        crc ^= data[i];
-        for (int bit = 0; bit < 8; ++bit)
-            crc = (crc >> 1) ^ (0xEDB88320u & (uint32_t)-(int32_t)(crc & 1u));
-    }
-    return ~crc;
+    return ~genesis_state_crc32_update(UINT32_MAX, data, len);
 }
 
 /* Reads the ROM file at path.  Allocates and returns a cc_u16l[] buffer

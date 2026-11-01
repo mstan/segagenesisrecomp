@@ -142,17 +142,15 @@ void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
                        x * width / THUMB_W] | 0xFF000000u;
     if (!s_ring || ++s_cadence < s_interval) return;
     s_cadence = 0;
-    size_t cap = genesis_rb_bound();
-    uint8_t *blob = (uint8_t *)malloc(cap);
-    if (!blob) return;
-    size_t n = genesis_rb_save(blob, cap);
-    if (!n || !rbe_snap_ring_store(s_ring, ++s_tick, blob, n)) {
-        free(blob);
-        return;
-    }
-    if (!s_count)
+    uint32_t tick = s_tick + 1u;
+    if (!rbe_snap_ring_capture(s_ring, tick, genesis_rb_capture, NULL)) return;
+    s_tick = tick;
+    if (!s_count) {
+        size_t n = 0;
+        (void)rbe_snap_ring_peek(s_ring, tick, &n);
         fprintf(stderr, "[rewind] snapshot size %zu bytes; full ring about %.1f MiB\n",
                 n, (double)n * s_depth / (1024.0 * 1024.0));
+    }
     LocalSnap *snap = &s_meta[s_head];
     snap->tick = s_tick;
     memcpy(snap->thumb, s_live_thumb, sizeof snap->thumb);
