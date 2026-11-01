@@ -8,7 +8,7 @@
   "audited_core": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60",
   "engine_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "generator_core": "7233852a6e45d8779b9dae8b29afd6b94d5231dc",
-  "conclusion": "Selected bounded contracts E01/E03-E08/E10/E16/E18/E22 delivered or qualified; E11/E13/E14/E15/E17/E19/E20/E21 whole bounded opportunities rejected after actual evaluation. E22 ready PR51, per-game neutral/inconclusive with lower CPU observations, no proven general speedup.12 original plus E37 remain open,13 total across37;24 resolved. Counts are dispositions, not speedups. Combined owner handoff remains for meaningful PRs.",
+  "conclusion": "Selected bounded contracts E01/E03-E08/E10/E16/E18/E22 delivered or qualified; E11/E13/E14/E15/E17/E19/E20/E21/E23 whole bounded opportunities rejected after actual evaluation. E23 coherent pipeline and generic unity correction retain no new runtime; complete tree restored exactfe668.11 original plus E37 remain open,12 total across37;25 resolved. Counts are dispositions, not speedups. Combined owner handoff remains for meaningful PRs.",
   "historical_evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -18,12 +18,12 @@
   "implementation_counts": {
     "bounded_delivered": 15,
     "rejected_mechanism": 1,
-    "bounded_rejected": 8,
-    "deferred": 8,
+    "bounded_rejected": 9,
+    "deferred": 7,
     "partial": 3,
     "existing": 1
   },
-  "remaining_scope_open_count": 12,
+  "remaining_scope_open_count": 11,
   "count_caveat": "Families overlap. Bounded delivered/rejected closes only the selected original contract/opportunity, not every possible algorithm. Partial/deferred/rejected-mechanism rows remainopen. Rejected whole fusion is not delivered fusion; reuse gain is not novel fusion. Counts are not speedups.",
   "validation": "Historicalreleased-baseaudit plus independentlyacceptedserial boundedcontracts/whole-familyrejections, source+platform+actualbuiltgamegates. Detailed per-familyrecords/verdictslinked.",
   "entries": [
@@ -670,19 +670,39 @@
       "id": "E23",
       "name": "Synthesis-to-device pipeline",
       "original_goal": "Combine generic chip staging, multi-source mixing, interpolation, filters and device-rate conversion.",
-      "recorded_evaluation_status": "evaluated_deferred",
-      "implementation_state": "deferred",
-      "remaining_scope_open": true,
-      "delivered": "No new synthesis-to-device fusion.",
-      "remaining": "Equivalent chip staging/mix/interpolation/filter/device-rate production.",
-      "audit_basis": "Host and CD audio pipeline files are unchanged. Clipping, integer divisions, capture taps and phase constrain equivalent fusion; they do not establish that it is impossible.",
-      "next_closure": "Specify the exact stream computation/ownership, then remove redundant passes while preserving generated-WAV/device contracts.",
+      "recorded_evaluation_status": "whole_bounded_pipeline_evaluated_rejected",
+      "implementation_state": "bounded_rejected",
+      "remaining_scope_open": false,
+      "delivered": "Full owned generated-frame/CD mixing and gain/float-ring publication plus generic unity-bypass variant implemented and measured; no new runtime retained.",
+      "remaining": "Whole selected bounded opportunity rejected; exact accepted fe668 tree restored by4191f56. Future designs not claimed impossible. E24/E25 remain separate open work.",
+      "audit_basis": "Five focused contracts/ten passing check executions and20 actual game runs preserve output; RKA default cost remains adverse/unresolved after final balanced check. Other games do not offset it. See ENGINE_AUDIO_DEVICE_PIPELINE.md/results/review.",
+      "next_closure": "Original E24 only after final durable reviewer instruction; combined owner handoff remains for existing meaningful PRs.",
       "source_references": [
         "runner/audio.c",
         "runner/audio/mixer.c",
         "runner/cd/audio_native.c",
         "runner/cd/audio_mix.c"
-      ]
+      ],
+      "historical_audit": {
+        "id": "E23",
+        "name": "Synthesis-to-device pipeline",
+        "original_goal": "Combine generic chip staging, multi-source mixing, interpolation, filters and device-rate conversion.",
+        "recorded_evaluation_status": "evaluated_deferred",
+        "implementation_state": "deferred",
+        "remaining_scope_open": true,
+        "delivered": "No new synthesis-to-device fusion.",
+        "remaining": "Equivalent chip staging/mix/interpolation/filter/device-rate production.",
+        "audit_basis": "Host and CD audio pipeline files are unchanged. Clipping, integer divisions, capture taps and phase constrain equivalent fusion; they do not establish that it is impossible.",
+        "next_closure": "Specify the exact stream computation/ownership, then remove redundant passes while preserving generated-WAV/device contracts.",
+        "source_references": [
+          "runner/audio.c",
+          "runner/audio/mixer.c",
+          "runner/cd/audio_native.c",
+          "runner/cd/audio_mix.c"
+        ]
+      },
+      "issue": "beads-3z5k.21",
+      "pr": null
     },
     {
       "id": "E24",
@@ -918,5 +938,5 @@
     }
   ],
   "total_tracked_families": 37,
-  "total_remaining_open_count": 13
+  "total_remaining_open_count": 12
 }

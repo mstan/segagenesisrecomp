@@ -5,7 +5,8 @@ feature selection or test/build wiring remains. Restoration commit
 4191f5685f6b2402dcbea7e2cf321bc93755bd7f has the exact complete tree of accepted
 fe66879a240fc408c88de42bc1f08c66deacc479:
 cdceab20c456df607f8799da28967f37109925d8. No PR is warranted. Owning issue:
-beads-3z5k.21; campaign: beads-2wy8.1. Final records/durability review remains.
+beads-3z5k.21; campaign: beads-2wy8.1. Independent source/records/cleanup review passes; final central durability
+is verified before E24.
 
 This was a coherent pipeline replacement, not a copy-only experiment. The
 prototype combines FM/PSG base mixing and saturation with qualified PCM/CDDA
@@ -112,3 +113,6 @@ and delivery folders are preserved. No owner launch, merge or release occurred.
 Raw evidence: G:/Temp/Codex/genesis-engine-audio-device-pipeline-20261031.
 Exact source/binary/package identities, per-game samples, raw record hashes,
 binary relocations and cleanup are in engine-audio-device-pipeline-results.json.
+
+Independent verdict: [review](ENGINE_AUDIO_DEVICE_PIPELINE_REVIEW.md) and
+[machine-readable review](engine-audio-device-pipeline-review.json).
