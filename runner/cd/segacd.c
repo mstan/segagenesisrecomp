@@ -10,6 +10,10 @@
 #define SEGACD_CELL_PERMUTATION 1
 #endif
 
+#ifndef SEGACD_AUDIO_SOURCE_SPANS
+#define SEGACD_AUDIO_SOURCE_SPANS 1
+#endif
+
 enum { RET = 1, DMNA = 2, MODE_1M = 4, PRIORITY = 24 };
 
 void segacd_reset(SegaCD *s)
@@ -98,13 +102,25 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
             delta=s->stamp.remaining_clocks;
         /* Age the preceding decoder pulse before delivering a new sector at
          * its actual CDD event boundary, even during a long stopped interval. */
-        if(io && io->pcm_timed_sink)
-            rf5c164_advance_timed(&s->pcm,s->drive.cycles,delta,io->pcm_timed_sink,io->pcm_timed_user);
-        else
+        if(io && io->pcm_timed_sink) {
+#if SEGACD_AUDIO_SOURCE_SPANS
+            if(io->pcm_owned.begin&&delta>=768u)
+                rf5c164_advance_owned(&s->pcm,s->drive.cycles,delta,io->pcm_timed_sink,io->pcm_timed_user,&io->pcm_owned);
+            else
+#endif
+                rf5c164_advance_timed(&s->pcm,s->drive.cycles,delta,io->pcm_timed_sink,io->pcm_timed_user);
+        } else
             rf5c164_advance(&s->pcm,delta,io?io->pcm_sink:NULL,io?io->pcm_user:NULL);
         if(!s->cdda_error) {
-            SegaCDCddaResult result=segacd_cdda_advance_to(&s->cdda,s->drive.cycles+delta,
-                io?io->cdda_sample:NULL,io?io->cdda_sample_user:NULL,NULL);
+            SegaCDCddaResult result;
+#if SEGACD_AUDIO_SOURCE_SPANS
+            if(io&&io->cdda_owned.begin&&delta>=568u)
+                result=segacd_cdda_advance_owned(&s->cdda,s->drive.cycles+delta,
+                    io->cdda_sample,io->cdda_sample_user,NULL,&io->cdda_owned);
+            else
+#endif
+                result=segacd_cdda_advance_to(&s->cdda,s->drive.cycles+delta,
+                    io?io->cdda_sample:NULL,io?io->cdda_sample_user:NULL,NULL);
             if(result!=SEGACD_CDDA_OK)s->cdda_error=(uint8_t)result;
         }
         segacd_cdc_advance(&s->cdc,delta);

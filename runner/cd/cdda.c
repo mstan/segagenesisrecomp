@@ -94,3 +94,96 @@ SegaCDCddaResult segacd_cdda_push_raw_sector(SegaCDCdda *s,uint64_t stamp,int32_
     s->fifo_lba[slot]=lba;++s->fifo_count;++s->sectors_accepted;
     return SEGACD_CDDA_OK;
 }
+
+static int16_t owned_scale(int16_t sample,int32_t numerator,unsigned shift)
+{
+    if(!numerator)return 0;
+    if((uint32_t)numerator==(1u<<shift))return sample;
+    /* Even a directly restored uint16 field gives numerator<=16383. */
+    int32_t product=(int32_t)sample*numerator;
+    uint32_t magnitude=product<0?(uint32_t)(-product):(uint32_t)product;
+    int32_t value=(int32_t)((magnitude+(1u<<(shift-1u)))>>shift);
+    if(product<0)value=-value;
+    return (int16_t)(value>32767?32767:value<-32768?-32768:value);
+}
+SegaCDCddaResult segacd_cdda_advance_owned(SegaCDCdda *s,uint64_t target,
+    SegaCDCddaSample sink,void *user,uint64_t *frames_emitted,const SegaCDAudioOwnedSink *owned)
+{
+    if(frames_emitted)*frames_emitted=0;
+    if(!s||!sink||!owned||owned->legacy!=sink||owned->legacy_user!=user||
+       !owned->begin||!owned->commit||target<s->clock_now||s->phase>=SEGACD_CDDA_CLOCK||
+       s->status&(SEGACD_CDDA_STATUS_DEEMPHASIS_UNSUPPORTED|SEGACD_CDDA_STATUS_DOUBLE_SPEED_UNSUPPORTED)||
+       s->fifo_count>SEGACD_CDDA_FIFO_SECTORS||s->fifo_head>=SEGACD_CDDA_FIFO_SECTORS||
+       s->fifo_frame>=SEGACD_CDDA_SECTOR_FRAMES)
+        return segacd_cdda_advance_to(s,target,sink,user,frames_emitted);
+    uint64_t delta=target-s->clock_now;
+    if(delta>(UINT64_MAX-s->phase)/SEGACD_CDDA_RATE)
+        return segacd_cdda_advance_to(s,target,sink,user,frames_emitted);
+    uint64_t total=s->phase+delta*SEGACD_CDDA_RATE,ticks=total/SEGACD_CDDA_CLOCK;
+    int data=s->transport==SEGACD_CDDA_PLAYING&&s->source_anchored;
+    uint64_t available=s->fifo_count?(uint64_t)s->fifo_count*SEGACD_CDDA_SECTOR_FRAMES-s->fifo_frame:0;
+    uint64_t emitted=data&&ticks>available?available:ticks;
+    if(emitted<2u||emitted>UINT32_MAX)
+        return segacd_cdda_advance_to(s,target,sink,user,frames_emitted);
+    uint64_t first_delta=(SEGACD_CDDA_CLOCK-s->phase+SEGACD_CDDA_RATE-1u)/SEGACD_CDDA_RATE;
+    uint64_t first=s->clock_now+first_delta;
+    uint64_t last=s->clock_now+(emitted*SEGACD_CDDA_CLOCK-s->phase+SEGACD_CDDA_RATE-1u)/SEGACD_CDDA_RATE;
+    SegaCDAudioWriteGrant grant;
+    if(!owned->begin(owned->user,first,last,(size_t)emitted,&grant)||!grant.frame||grant.count!=emitted)
+        return segacd_cdda_advance_to(s,target,sink,user,frames_emitted);
+    uint64_t stamp=first;
+    uint32_t phase=(uint32_t)(s->phase+first_delta*SEGACD_CDDA_RATE-SEGACD_CDDA_CLOCK);
+    size_t done=0;
+    while(done<(size_t)emitted) {
+        size_t count=(size_t)emitted-done;
+        unsigned field=s->fader.current_field,target_field=s->fader.target_field;
+        int32_t numerator=0;unsigned shift=8;
+        if(data) {
+            unsigned remaining=SEGACD_CDDA_SECTOR_FRAMES-s->fifo_frame;
+            if(count>remaining)count=remaining;
+            numerator=(int32_t)(field<4u?field:field>>2);shift=field<4u?10u:8u;
+            if(field!=target_field) {
+                unsigned distance=field<target_field?target_field-field:field-target_field;
+                unsigned plateau=field<4u?1u:field<target_field?4u-(field&3u):(field&3u)+1u;
+                if(distance>=plateau&&count>plateau)count=plateau;
+            }
+        }
+        const int16_t (*input)[2]=data?&s->fifo[s->fifo_head][s->fifo_frame]:NULL;
+        for(size_t i=0;i<count;++i) {
+            SegaCDAudioFrame *out=segacd_audio_grant_frame(&grant,done+i);
+            out->subclock=stamp;
+            out->left=data?owned_scale(input[i][0],numerator,shift):0;
+            out->right=data?owned_scale(input[i][1],numerator,shift):0;
+            /* After the first sample the rational phase is below RATE.
+             * Replace repeated divides with the exact283/284-clock recurrence. */
+            unsigned step=SEGACD_CDDA_CLOCK/SEGACD_CDDA_RATE;
+            if(phase<SEGACD_CDDA_CLOCK%SEGACD_CDDA_RATE) {
+                phase+=SEGACD_CDDA_RATE-SEGACD_CDDA_CLOCK%SEGACD_CDDA_RATE;++step;
+            } else phase-=SEGACD_CDDA_CLOCK%SEGACD_CDDA_RATE;
+            stamp+=step;
+        }
+        if(field<target_field) {
+            unsigned distance=target_field-field;
+            field+=count<distance?(unsigned)count:distance;
+        } else if(field>target_field) {
+            unsigned distance=field-target_field;
+            field-=count<distance?(unsigned)count:distance;
+        }
+        s->fader.current_field=(uint16_t)field;
+        if(data) {
+            s->fifo_frame=(uint16_t)(s->fifo_frame+count);
+            if(s->fifo_frame==SEGACD_CDDA_SECTOR_FRAMES) {
+                s->fifo_frame=0;s->fifo_head=(uint8_t)((s->fifo_head+1u)%SEGACD_CDDA_FIFO_SECTORS);--s->fifo_count;
+            }
+        }
+        done+=count;
+    }
+    s->clock_now=target;s->phase=total%SEGACD_CDDA_CLOCK;
+    s->total_sample_ticks+=ticks;s->delivered_frames+=emitted;
+    if(!data)s->silence_frames+=ticks;
+    int underflow=ticks>emitted;
+    if(underflow){s->underflow_frames+=ticks-emitted;s->status|=SEGACD_CDDA_STATUS_UNDERFLOW;}
+    owned->commit(owned->user,&grant);
+    if(frames_emitted)*frames_emitted=emitted;
+    return underflow?SEGACD_CDDA_UNDERFLOW:SEGACD_CDDA_OK;
+}

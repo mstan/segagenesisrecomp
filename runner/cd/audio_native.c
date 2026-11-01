@@ -6,6 +6,7 @@
 #include "../audio/sn76489.h"
 #include "../audio/ym2612.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -47,6 +48,8 @@ struct SegaCDNativeAudio {
     size_t current_fm_frames,current_psg_frames;
     SegaCDAudioMix mix;
     SegaCDNativeAudioStats stats;
+    int trace_spans;
+    uint64_t owned_spans[2],owned_frames[2];
 };
 
 static uint64_t subclock_to_master(uint64_t subclock,int *ok)
@@ -98,6 +101,8 @@ SegaCDNativeAudio *segacd_native_audio_create(int initialize_host_audio)
         free(audio);
         return NULL;
     }
+    const char *trace=getenv("GENESIS_CD_AUDIO_SPANS");
+    audio->trace_spans=trace&&*trace&&strcmp(trace,"0")!=0;
     ym2612_init();
     psg_init();
     segacd_audio_mix_init(&audio->mix);
@@ -142,6 +147,9 @@ SegaCDNativeAudio *segacd_native_audio_create(int initialize_host_audio)
 void segacd_native_audio_destroy(SegaCDNativeAudio *audio)
 {
     if(!audio)return;
+    if(audio->trace_spans)fprintf(stderr,"[CD audio spans] pcm=%llu/%llu cdda=%llu/%llu\n",
+        (unsigned long long)audio->owned_spans[0],(unsigned long long)audio->owned_frames[0],
+        (unsigned long long)audio->owned_spans[1],(unsigned long long)audio->owned_frames[1]);
     if(audio->registered) {
         audio_set_extra_source(NULL);
         segacd_audio_mix_unbind_audio_extra(&audio->mix);
@@ -449,6 +457,26 @@ void segacd_native_audio_cdda_sample(void *user,uint64_t subclock,int16_t left,i
     push_cdda_sample((SegaCDNativeAudio *)user,subclock,left,right);
 }
 
+static int begin_pcm_span(void *user,uint64_t first,uint64_t last,size_t count,SegaCDAudioWriteGrant *g)
+{
+    SegaCDNativeAudio *audio=(SegaCDNativeAudio *)user;
+    return audio&&!has_fatal_error(audio)&&segacd_audio_mix_begin_span(&audio->mix,SEGACD_AUDIO_SOURCE_PCM,first,last,count,g);
+}
+static int begin_cdda_span(void *user,uint64_t first,uint64_t last,size_t count,SegaCDAudioWriteGrant *g)
+{
+    SegaCDNativeAudio *audio=(SegaCDNativeAudio *)user;
+    return audio&&!has_fatal_error(audio)&&audio->cdda_active&&audio->cdda_started&&
+        segacd_audio_mix_begin_span(&audio->mix,SEGACD_AUDIO_SOURCE_CDDA,first,last,count,g);
+}
+static void commit_source_span(void *user,const SegaCDAudioWriteGrant *g)
+{
+    SegaCDNativeAudio *audio=(SegaCDNativeAudio *)user;
+    SegaCDAudioMixResult result=segacd_audio_mix_commit_span(&audio->mix,g);
+    record_mix_error(audio,result);
+    if(result==SEGACD_AUDIO_MIX_OK&&audio->trace_spans) {
+        ++audio->owned_spans[g->source];audio->owned_frames[g->source]+=g->count;
+    }
+}
 void segacd_native_audio_attach_io(SegaCDNativeAudio *audio,SegaCDIO *io)
 {
     if(!io)return;
@@ -456,6 +484,14 @@ void segacd_native_audio_attach_io(SegaCDNativeAudio *audio,SegaCDIO *io)
     io->pcm_timed_user=audio;
     io->cdda_sample=audio?segacd_native_audio_cdda_sample:NULL;
     io->cdda_sample_user=audio;
+    memset(&io->pcm_owned,0,sizeof io->pcm_owned);
+    memset(&io->cdda_owned,0,sizeof io->cdda_owned);
+    if(audio) {
+        io->pcm_owned.legacy=segacd_native_audio_pcm_sample;io->pcm_owned.legacy_user=audio;
+        io->pcm_owned.user=audio;io->pcm_owned.begin=begin_pcm_span;io->pcm_owned.commit=commit_source_span;
+        io->cdda_owned.legacy=segacd_native_audio_cdda_sample;io->cdda_owned.legacy_user=audio;
+        io->cdda_owned.user=audio;io->cdda_owned.begin=begin_cdda_span;io->cdda_owned.commit=commit_source_span;
+    }
 }
 
 void segacd_native_audio_get_stats(const SegaCDNativeAudio *audio,SegaCDNativeAudioStats *out)
