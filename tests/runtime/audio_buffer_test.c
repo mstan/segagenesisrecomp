@@ -14,6 +14,49 @@ static void add_source(int16_t *out,size_t count,double rate)
     }
 }
 
+/* Informational only: compare the unchanged scalar producer with preparation
+ * plus publication on identical input and ring positions. Callback is paused;
+ * these are component costs, never physical-device contention/deadline claims. */
+static void report_publication_cost(void)
+{
+    int16_t input[3728*2]; float prepared[3728*2];
+    rab_bridge a,b;CHECK(!rab_init(&a,&s_bridge.cfg));CHECK(!rab_init(&b,&s_bridge.cfg));
+    for(unsigned i=0;i<3728*2;++i)input[i]=(int16_t)(i*3571);
+    for(unsigned round=0;round<5;++round) {
+        Uint64 old_ticks=0,prepare_ticks=0,publish_ticks=0;
+        for(unsigned iteration=0;iteration<2000;++iteration) {
+            /* Alternate arm order by round; no allocation or I/O in timers. */
+            for(unsigned arm=0;arm<2;++arm) {
+                unsigned candidate=(arm+round)&1;
+                rab_bridge *bridge=candidate?&b:&a;
+                bridge->in_count=(uint64_t)bridge->cap*3-11+iteration;
+                bridge->out_pos=(double)bridge->in_count-100;
+                if(candidate) {
+                    Uint64 begin=SDL_GetPerformanceCounter();
+                    for(unsigned i=0;i<3728*2;++i)
+                        prepared[i]=(float)input[i]*(1.0f/32768.0f);
+                    prepare_ticks+=SDL_GetPerformanceCounter()-begin;
+                }
+                SDL_LockAudioDevice(s_dev);
+                Uint64 begin=SDL_GetPerformanceCounter();
+                int pushed=1;
+                if(candidate)pushed=rab_try_push_prepared(bridge,prepared,3728);
+                else rab_push(bridge,input,3728);
+                Uint64 elapsed=SDL_GetPerformanceCounter()-begin;
+                SDL_UnlockAudioDevice(s_dev);CHECK(pushed);
+                if(candidate)publish_ticks+=elapsed;else old_ticks+=elapsed;
+            }
+        }
+        CHECK(a.in_count==b.in_count && a.out_pos==b.out_pos);
+        CHECK(!memcmp(a.ring,b.ring,(size_t)a.cap*2*sizeof(float)));
+        double scale=1e6/(double)s_perf_freq/2000;
+        printf("publication round=%u old_body_us=%.3f prepare_us=%.3f new_body_us=%.3f total_us=%.3f\n",
+               round,old_ticks*scale,prepare_ticks*scale,publish_ticks*scale,
+               (prepare_ticks+publish_ticks)*scale);
+    }
+    rab_free(&a);rab_free(&b);
+}
+
 int main(int argc,char **argv)
 {
     CHECK(argc==2);
@@ -56,6 +99,7 @@ int main(int argc,char **argv)
     audio_flush(125,1,fm,97,psg,251);CHECK(s_bridge.in_count==251);
     audio_discard_playback();CHECK(s_bridge.in_count==0);
     audio_flush(126,0,fm,97,psg,251);CHECK(s_bridge.in_count==0);
+    report_publication_cost();
     audio_close();SDL_Quit();remove(argv[1]);
     puts("PASS production audio ownership: gain, extra source, pre-volume WAV, ring, pause/reset/turbo");
     return 0;
