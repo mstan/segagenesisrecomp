@@ -11,6 +11,8 @@ void ref_rf5c164_advance_timed(Rf5c164 *,uint64_t,uint32_t,Rf5c164TimedSink,void
 void ref_segacd_cdda_reset(SegaCDCdda *,uint64_t,uint16_t);
 void ref_segacd_cdda_play(SegaCDCdda *);
 void ref_segacd_cdda_pause(SegaCDCdda *);
+void ref_segacd_cdda_seek(SegaCDCdda *);
+SegaCDCddaResult ref_segacd_cdda_set_fader_target_raw(SegaCDCdda *,uint16_t);
 SegaCDCddaResult ref_segacd_cdda_push_raw_sector(SegaCDCdda *,uint64_t,int32_t,const uint8_t *);
 SegaCDCddaResult ref_segacd_cdda_advance_to(SegaCDCdda *,uint64_t,SegaCDCddaSample,void *,uint64_t *);
 typedef struct {
@@ -77,12 +79,13 @@ int main(void)
         unsigned mode=k%31u==0?(k/31u)%7u:0u,head=rnd()&4095u;
         prepare(&a,SEGACD_AUDIO_SOURCE_PCM,start,mode,head);prepare(&b,SEGACD_AUDIO_SOURCE_PCM,start,mode,head);
         SegaCDAudioOwnedSink owned={sample,&b,&b,begin,commit};
+        if(k%43u==0)owned.legacy_user=&a;
         Rf5c164TimedSink sink=sample;
         if(k%29u==0){sink=opaque_sample;a.pcm=&pa;b.pcm=&pb;}
         ref_rf5c164_advance_timed(&pa,start,clocks,sink,&a);
         rf5c164_advance_owned(&pb,start,clocks,sink,&b,&owned);
         CHECK(!memcmp(&pa,&pb,sizeof pa));compare();
-        if(sink!=sample)CHECK(!b.attempts);
+        if(sink!=sample||owned.legacy_user!=&b)CHECK(!b.attempts);
         grants+=b.grants;
     }
     static const unsigned fields[]={0,1,2,3,4,5,6,7,8,1023,1024,1025,1027,1028,2047,65535};
@@ -115,6 +118,7 @@ int main(void)
         unsigned mode=k%31u==0?(k/31u)%7u:0u,head=rnd()&4095u;
         prepare(&a,SEGACD_AUDIO_SOURCE_CDDA,start,mode,head);prepare(&b,SEGACD_AUDIO_SOURCE_CDDA,start,mode,head);
         SegaCDAudioOwnedSink owned={sample,&b,&b,begin,commit};
+        if(k%43u==0)owned.legacy_user=&a;
         SegaCDCddaSample sink=sample;
         if(k%29u==0){sink=opaque_sample;a.cdda=&da;b.cdda=&db;}
         uint64_t emitted_a=123,emitted_b=123,target=start+clocks[k%11u];
@@ -122,8 +126,36 @@ int main(void)
         SegaCDCddaResult ra=ref_segacd_cdda_advance_to(&da,target,sink,&a,ea);
         SegaCDCddaResult rb=segacd_cdda_advance_owned(&db,target,sink,&b,eb,&owned);
         CHECK(ra==rb&&*ea==*eb);CHECK(!memcmp(&da,&db,sizeof da));compare();
-        if(sink!=sample)CHECK(!b.attempts);
+        if(sink!=sample||owned.legacy_user!=&b)CHECK(!b.attempts);
         grants+=b.grants;
+    }
+    /* Reuse the same state and queue through partial advances and real
+     * sector/fader/transport discontinuities, including FIFO ring reuse. */
+    ref_segacd_cdda_reset(&da,1000000u,0x4000);segacd_cdda_reset(&db,1000000u,0x4000);
+    ref_segacd_cdda_play(&da);segacd_cdda_play(&db);
+    CHECK(ref_segacd_cdda_push_raw_sector(&da,da.clock_now,40,sector)==SEGACD_CDDA_OK);
+    CHECK(segacd_cdda_push_raw_sector(&db,db.clock_now,40,sector)==SEGACD_CDDA_OK);
+    CHECK(ref_segacd_cdda_push_raw_sector(&da,da.clock_now,41,sector2)==SEGACD_CDDA_OK);
+    CHECK(segacd_cdda_push_raw_sector(&db,db.clock_now,41,sector2)==SEGACD_CDDA_OK);
+    prepare(&a,SEGACD_AUDIO_SOURCE_CDDA,1000000u,0,4090);prepare(&b,SEGACD_AUDIO_SOURCE_CDDA,1000000u,0,4090);
+    for(unsigned k=0;k<20;++k) {
+        if(k==5||k==13) {
+            uint16_t raw=k==5?0x3ff0u:0;
+            CHECK(ref_segacd_cdda_set_fader_target_raw(&da,raw)==segacd_cdda_set_fader_target_raw(&db,raw));
+        }
+        if(k==10){ref_segacd_cdda_pause(&da);segacd_cdda_pause(&db);}
+        if(k==11||k==19){ref_segacd_cdda_play(&da);segacd_cdda_play(&db);}
+        if(k==16){ref_segacd_cdda_seek(&da);segacd_cdda_seek(&db);}
+        if(k==8||k==11||k==15||k==17||k==19)
+            CHECK(ref_segacd_cdda_push_raw_sector(&da,da.clock_now,(int32_t)(50+k),sector2)==
+                  segacd_cdda_push_raw_sector(&db,db.clock_now,(int32_t)(50+k),sector2));
+        SegaCDAudioOwnedSink owned={sample,&b,&b,begin,commit};
+        SegaCDCddaSample sink=sample;unsigned attempts=b.attempts;
+        if(k==18){sink=opaque_sample;a.cdda=&da;b.cdda=&db;a.calls=b.calls=0;}
+        uint64_t ea=0,eb=0,target=da.clock_now+20000u+k*1000u;
+        CHECK(ref_segacd_cdda_advance_to(&da,target,sink,&a,&ea)==segacd_cdda_advance_owned(&db,target,sink,&b,&eb,&owned));
+        CHECK(ea==eb&&!memcmp(&da,&db,sizeof da));compare();
+        if(k==18)CHECK(b.attempts==attempts);
     }
     CHECK(grants>100u);
     printf("Owned PCM/CDDA spans: frozen complete state/stamps/PCM, fader/FIFO/underflow, queue prefix/faults and stale/reentrant callbacks PASS (%u owned jobs)\n",grants);

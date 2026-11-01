@@ -212,12 +212,73 @@ static int test_chip_scratch_drop_is_loud(void)
     return 0;
 }
 
+static SegaCD owned_device[2];
+static uint8_t owned_bios[SEGACD_BIOS_BYTES];
+static unsigned replaced_samples;
+static void replacement_sample(void *user,uint64_t at,int16_t left,int16_t right)
+{(void)user;(void)at;(void)left;(void)right;++replaced_samples;}
+static int test_owned_binding_output_and_terminal_prefix(void)
+{
+    SegaCDNativeAudioStats result[2];
+    int16_t output[2][256*2];
+    for(unsigned mode=0;mode<2;++mode) {
+        SegaCDNativeAudio *audio=segacd_native_audio_create(0);SegaCDIO io={0};
+        CHECK(audio&&segacd_init(&owned_device[mode],owned_bios,sizeof owned_bios));
+        segacd_native_audio_attach_io(audio,&io);
+        CHECK(io.pcm_owned.begin&&io.cdda_owned.begin);
+        if(!mode){memset(&io.pcm_owned,0,sizeof io.pcm_owned);memset(&io.cdda_owned,0,sizeof io.cdda_owned);}
+        flush_count=0;memset(flushed_stereo,0,sizeof flushed_stereo);
+        segacd_advance_io(&owned_device[mode],20000,&io);
+        CHECK(segacd_native_audio_finish_frame(audio,40000,1,0)==SEGACD_NATIVE_AUDIO_OK);
+        segacd_advance_io(&owned_device[mode],20000,&io);
+        CHECK(segacd_native_audio_finish_frame(audio,80000,2,0)==SEGACD_NATIVE_AUDIO_OK);
+        CHECK(flush_count==1u);
+        memcpy(output[mode],flushed_stereo,sizeof output[mode]);
+        segacd_native_audio_get_stats(audio,&result[mode]);
+        segacd_native_audio_destroy(audio);
+    }
+    CHECK(!memcmp(&owned_device[0],&owned_device[1],sizeof owned_device[0]));
+    CHECK(!memcmp(&result[0],&result[1],sizeof result[0]));
+    CHECK(!memcmp(output[0],output[1],sizeof output[0]));
+    for(unsigned mode=0;mode<2;++mode) {
+        SegaCDNativeAudio *audio=segacd_native_audio_create(0);SegaCDIO io={0};
+        CHECK(audio&&segacd_init(&owned_device[mode],owned_bios,sizeof owned_bios));
+        segacd_native_audio_attach_io(audio,&io);
+        if(!mode)memset(&io.pcm_owned,0,sizeof io.pcm_owned);
+        /* One remaining slot: preserve the successful prefix, first FULL
+         * fault, and suppression of every later native sample push. */
+        for(unsigned i=1;i<4095u;++i)segacd_native_audio_pcm_sample(audio,i,0,0);
+        rf5c164_advance_owned(&owned_device[mode].pcm,100000,1536,io.pcm_timed_sink,io.pcm_timed_user,&io.pcm_owned);
+        segacd_native_audio_get_stats(audio,&result[mode]);
+        CHECK(result[mode].faults&SEGACD_NATIVE_AUDIO_FAULT_MIX);
+        CHECK(result[mode].last_result==SEGACD_NATIVE_AUDIO_MIX_ERROR);
+        rf5c164_advance_owned(&owned_device[mode].pcm,200000,1536,io.pcm_timed_sink,io.pcm_timed_user,&io.pcm_owned);
+        SegaCDNativeAudioStats later;segacd_native_audio_get_stats(audio,&later);
+        CHECK(!memcmp(&later,&result[mode],sizeof later));
+        segacd_native_audio_destroy(audio);
+    }
+    CHECK(!memcmp(&result[0],&result[1],sizeof result[0]));
+    {
+        SegaCDNativeAudio *audio=segacd_native_audio_create(0);SegaCDIO io={0};
+        CHECK(audio&&segacd_init(&owned_device[0],owned_bios,sizeof owned_bios));
+        segacd_native_audio_attach_io(audio,&io);
+        io.pcm_timed_sink=replacement_sample;io.pcm_timed_user=NULL;
+        io.cdda_sample=replacement_sample;io.cdda_sample_user=NULL;
+        replaced_samples=0;segacd_advance_io(&owned_device[0],4000,&io);
+        CHECK(replaced_samples==owned_device[0].pcm.samples+owned_device[0].cdda.delivered_frames);
+        CHECK(replaced_samples>0u);
+        segacd_native_audio_destroy(audio);
+    }
+    return 0;
+}
+
 int main(void)
 {
     if(test_order_defer_and_frame_late_mix())return 1;
     if(test_bad_port_and_bounded_queue())return 1;
     if(test_underflow_preflight_is_terminal_and_does_not_flush())return 1;
     if(test_chip_scratch_drop_is_loud())return 1;
+    if(test_owned_binding_output_and_terminal_prefix())return 1;
     puts("Segacd native audio tests passed");
     return 0;
 }
