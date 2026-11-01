@@ -22,6 +22,7 @@ static uint64_t fm_clock,psg_clock;
 static size_t fm_samples,psg_samples;
 static uint64_t fm_generated,psg_generated;
 static int16_t fm_buffer[64*2],psg_buffer[256];
+static int16_t fm_test_level,flushed_fm[64*2];
 static size_t psg_test_limit=256u;
 static AudioExtraSource extra_source;
 static unsigned flush_count;
@@ -42,7 +43,7 @@ void audio_flush(uint32_t wall_frame,int realtime,const int16_t *fm,size_t fm_fr
     flushed_wall_frame=wall_frame;
     flushed_fm_frames=fm_frames;
     flushed_psg_frames=psg_frames;
-    if(fm_frames&&fm)memcpy(fm_buffer,fm,fm_frames*2u*sizeof(int16_t));
+    if(fm_frames&&fm)memcpy(flushed_fm,fm,fm_frames*2u*sizeof(int16_t));
     for(size_t i=0;i<psg_frames;++i) {
         flushed_stereo[i*2u]=psg[i];
         flushed_stereo[i*2u+1u]=psg[i];
@@ -51,12 +52,12 @@ void audio_flush(uint32_t wall_frame,int realtime,const int16_t *fm,size_t fm_fr
     ++flush_count;
 }
 
-void ym2612_init(void){fm_clock=0;fm_samples=0;fm_generated=0;write_count=0;}
+void ym2612_init(void){fm_clock=0;fm_samples=0;fm_generated=0;write_count=0;fm_test_level=0;}
 void ym2612_advance(uint32_t cycles)
 {
     fm_clock+=cycles;
     while(fm_generated<fm_clock/1008u) {
-        fm_buffer[2u*fm_samples]=fm_buffer[2u*fm_samples+1u]=0;
+        fm_buffer[2u*fm_samples]=fm_buffer[2u*fm_samples+1u]=fm_test_level;
         ++fm_samples;++fm_generated;
     }
 }
@@ -179,7 +180,7 @@ static int test_frame_slot_rotations(void)
     flush_count=0;
     const int16_t *fm_slot[2]={0},*psg_slot[2]={0};
     uint64_t boundary=0;
-    size_t previous_frames=0;
+    size_t previous_frames=0,previous_fm_frames=0;
     for(unsigned frame=0;frame<6;++frame) {
         uint64_t next=boundary+(frame%2?3600:2400);
         CHECK(segacd_native_audio_write_checked(audio,(boundary*12500000u+53693174u)/53693175u,
@@ -188,18 +189,23 @@ static int test_frame_slot_rotations(void)
         uint64_t until=next*12500000u/53693175u+1000u;
         segacd_native_audio_pcm_sample(audio,until,0,0);
         segacd_native_audio_cdda_sample(audio,until,0,0);
+        fm_test_level=(int16_t)(1000+frame*37);
         CHECK(segacd_native_audio_finish_frame(audio,next,100+frame,(int)(frame&1))==SEGACD_NATIVE_AUDIO_OK);
         if(frame) {
             unsigned slot=(frame-1)&1;
             CHECK(flush_count==frame && flushed_wall_frame==99+frame);
             CHECK(flushed_realtime==(int)((frame-1)&1));
             CHECK(flushed_psg_frames==previous_frames);
+            CHECK(flushed_fm_frames==previous_fm_frames);
+            for(size_t i=0;i<previous_fm_frames*2;++i)
+                CHECK(flushed_fm[i]==(int16_t)(1000+(frame-1)*37));
             for(size_t i=1;i<previous_frames;++i)
                 CHECK(flushed_stereo[i*2]==(int16_t)((frame-1)*19+7));
             if(frame<3) {fm_slot[slot]=flushed_fm_pointer;psg_slot[slot]=flushed_psg_pointer;}
             else {CHECK(fm_slot[slot]==flushed_fm_pointer);CHECK(psg_slot[slot]==flushed_psg_pointer);}
         }
         previous_frames=(size_t)(next/240-boundary/240);
+        previous_fm_frames=(size_t)(next/1008-boundary/1008);
         boundary=next;
     }
     CHECK(fm_slot[0]!=fm_slot[1] && psg_slot[0]!=psg_slot[1]);
