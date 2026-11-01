@@ -53,6 +53,7 @@ set(GENESIS_RUNNER_CORE_SOURCES
     sim_step.c
     engine_worker.c
     rb_state.c
+    rb_capture.c
     rb_probe.c
     local_states.c
     overlay_draw.c
@@ -90,6 +91,7 @@ set(GENESIS_RUNNER_CORE_SOURCES
 # and is listed by every consumer; a consumer lacking one of those is a
 # deliberate divergence the reconciler must not paper over.
 set(GENESIS_RUNNER_RECONCILED_SOURCES
+    rb_capture.c
     host_wait.c
     cosim_state.c
     sim_step.c

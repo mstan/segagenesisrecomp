@@ -90,36 +90,23 @@ static RNetRbDriver *rb_drv(void)
 
 /* ---- snapshots: rb_state blobs in rbengine's tick ring ---------------------------- */
 
-static int rb_snap_serialize(void *ctx, uint32_t tick, uint8_t **out, size_t *len)
-{
-    (void)ctx; (void)tick;
-    size_t need = genesis_rb_bound();
-    uint8_t *blob = (uint8_t *)malloc(need);
-    if (!blob) return 0;
-    size_t n = genesis_rb_save(blob, need);
-    if (!n) { free(blob); return 0; }
-    *out = blob;
-    *len = n;
-    return 1;
-}
-
 static int rb_snap_deserialize(void *ctx, uint32_t tick, const uint8_t *data, size_t len)
 {
     (void)ctx; (void)tick;
     return genesis_rb_load(data, len);
 }
 
-static const RbeSnapVTable g_snap_vt = { NULL, rb_snap_serialize, rb_snap_deserialize };
+static const RbeSnapVTable g_snap_vt = { NULL, NULL, rb_snap_deserialize };
 
 static uint64_t rb_now_us(void);
-/* Timed: the ring path as the driver uses it (serialize into a fresh blob,
+/* Timed: the ring path as the driver uses it (serialize into unpublished capacity,
  * ring store / ring peek + restore), NETPLAY_FIELDS snap_save/snap_load. */
 static int h_snap_save(void *c, uint32_t t)
 {
     (void)c;
     if (!g_rb.snaps) return 0;
     uint64_t t0 = rb_now_us();
-    int ok = rbe_snap_ring_save(g_rb.snaps, t, &g_snap_vt);
+    int ok = rbe_snap_ring_capture(g_rb.snaps, t, genesis_rb_capture, NULL);
     cost_add(&s_cost_save, (uint32_t)(rb_now_us() - t0));
     return ok;
 }

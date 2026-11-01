@@ -86,6 +86,10 @@ const char *genesis_rb_digest_implementation(void);
 /* 32-bit folds for the wire (recomp-net RNetRbDigestParts). */
 uint32_t genesis_rb_fold32(uint64_t h);
 
+/* RbeSnapCaptureFn: only unpublished owned capacity may be passed here. */
+int genesis_rb_capture(void *ctx, uint32_t tick, uint8_t **data,
+                       size_t *capacity, size_t *size);
+
 /* Mutation self-test over the section table: for every section, a flipped
  * byte must change that section's partition(s) and no other, and loading
  * the original snapshot must restore the original digest exactly. Prints one

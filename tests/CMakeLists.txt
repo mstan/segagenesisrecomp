@@ -104,12 +104,30 @@ endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/GenesisRecompRunner.cmake")
 add_executable(local_states_test runtime/local_states_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/rb_capture.c"
     "${CMAKE_CURRENT_LIST_DIR}/../runner/local_states.c"
     "${CMAKE_CURRENT_LIST_DIR}/../runner/overlay_draw.c")
 target_include_directories(local_states_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_link_libraries(local_states_test PRIVATE retcomm_rbengine)
 add_test(NAME local_states COMMAND local_states_test "${CMAKE_CURRENT_BINARY_DIR}/")
+
+# Both fixtures include production sources directly for allocator interception.
+# Do not also link retcomm_rbengine or compile rb_capture.c into these targets.
+foreach(_fixture rb_capture state_crc)
+    add_executable(${_fixture}_test runtime/${_fixture}_test.c)
+    target_compile_features(${_fixture}_test PRIVATE c_std_11)
+    target_include_directories(${_fixture}_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner"
+        "${CMAKE_CURRENT_LIST_DIR}/../external/rbengine/include")
+    if(MSVC)
+        target_compile_definitions(${_fixture}_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+        target_compile_options(${_fixture}_test PRIVATE /W4 /WX)
+    else()
+        target_compile_options(${_fixture}_test PRIVATE -Wall -Wextra -Werror)
+    endif()
+    add_test(NAME ${_fixture} COMMAND ${_fixture}_test)
+endforeach()
 
 add_executable(frame_pacer_test runtime/frame_pacer_test.c)
 target_include_directories(frame_pacer_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")

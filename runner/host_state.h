@@ -58,15 +58,12 @@ static int host_state_save_now(const char *path)
     free(host);
     long end=ftell(f);
     if (end<(long)sizeof h || end-(long)sizeof h>HOST_STATE_LIMIT) ok=0;
-    uint8_t *body=ok?malloc((size_t)end-sizeof h):NULL;
-    if (!body) ok=0;
     if (ok) {
         h.bytes=(uint32_t)(end-sizeof h);
-        ok=!fseek(f,sizeof h,SEEK_SET) && fread(body,1,h.bytes,f)==h.bytes;
-        h.crc=rom_crc32(body,h.bytes);
+        ok=!fseek(f,sizeof h,SEEK_SET) && genesis_state_crc32_file(f,h.bytes,&h.crc);
         ok=ok && !fseek(f,0,SEEK_SET) && fwrite(&h,sizeof h,1,f)==1 && !fflush(f);
     }
-    free(body); if (fclose(f)) ok=0;
+    if (fclose(f)) ok=0;
     if (ok) {
 #ifdef _WIN32
         ok=MoveFileExA(tmp,path,MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)!=0;
