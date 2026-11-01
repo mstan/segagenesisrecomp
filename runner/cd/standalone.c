@@ -12,6 +12,7 @@
 #include "sonic_cd_limits.h"
 #include "../audio.h"
 #include "../engine_worker.h"
+#include "../host_wait.h"
 #include <SDL2/SDL.h>
 #include <errno.h>
 #include <stdio.h>
@@ -279,7 +280,7 @@ int main(int argc,char **argv)
             segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;
         }
     }
-    int quit=0,paused=0,exit_code=0;uint64_t freq=SDL_GetPerformanceFrequency(),target=SDL_GetPerformanceCounter(),phase=0;
+    int quit=0,paused=0,exit_code=0;
     while(!quit&&(!frame_limit||machine.frames<frame_limit)) {
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
@@ -293,6 +294,7 @@ int main(int argc,char **argv)
         if(quit||segacd_debug_quit_requested(debug))break;
         int run=!segacd_presentation_is_open(presentation)&&
             (debug?segacd_debug_should_run_frame(debug):!paused);
+        segacd_presentation_set_running(presentation,run);
         audio_set_playback_enabled(run);
         if(run) {
             unsigned desired_width=headless ? (view_width ? (unsigned)view_width : 320u) :
@@ -321,11 +323,7 @@ int main(int argc,char **argv)
                 fprintf(stderr,"Presentation: %s\n",SDL_GetError());exit_code=2;break;
             }
         }
-        if(!run){target=SDL_GetPerformanceCounter();phase=0;SDL_Delay(5);continue;}
-        if(!headless) {
-            phase+=freq*896040u;target+=phase/53693175u;phase%=53693175u;
-            uint64_t now=SDL_GetPerformanceCounter();if(target>now){uint64_t ms=(target-now)*1000u/freq;if(ms)SDL_Delay((Uint32)ms);}
-        }
+        if(!run){SDL_Delay(5);continue;}
     }
     if(!exit_code&&memcmp(persisted,machine.devices.backup,sizeof persisted)&&segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK)exit_code=4;
     if(dump_dir&&!dump_state(dump_dir))exit_code=4;
@@ -402,6 +400,7 @@ int main(int argc,char **argv)
         } else widescreen=NULL;
     }
     segacd_presentation_destroy(presentation);
+    genesis_host_wait_shutdown();
     if(renderer)SDL_DestroyRenderer(renderer);
     if(window)SDL_DestroyWindow(window);
     /* Delivery has one emulated frame of lookahead latency. Stopping does
