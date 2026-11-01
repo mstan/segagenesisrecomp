@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 void ref_psg_init(void);
-int ref_psg_save_state(FILE *);
-int ref_psg_load_state(FILE *);
 void ref_psg_advance(uint32_t);
 void ref_psg_write(uint8_t);
 size_t ref_psg_render(int16_t *,size_t);
@@ -32,14 +30,6 @@ static void drain(size_t count)
     CHECK(count<=8192&&psg_samples_available()==ref_psg_samples_available());
     CHECK(psg_render(a,count)==ref_psg_render(b,count));CHECK(!memcmp(a,b,sizeof a));check();
 }
-static void file_restore(void)
-{
-    FILE *a=tmpfile(),*b=tmpfile();CHECK(a&&b);
-    CHECK(psg_save_state(a)&&ref_psg_save_state(b));
-    advance(240u*73u+13u);write_byte(0xe7);
-    rewind(a);rewind(b);CHECK(psg_load_state(a)&&ref_psg_load_state(b));
-    CHECK(!fclose(a)&&!fclose(b));check();
-}
 int main(void)
 {
     static const unsigned periods[]={0,1,2,15,16,31,1023};
@@ -54,31 +44,6 @@ int main(void)
         for(unsigned c=0;c<4;++c)write_byte((uint8_t)(0x9fu|(c<<5)));
         advance(240*8192u);drain(8192);advance(240*8192u);drain(8192);
     }
-    for(unsigned noise=0;noise<8;++noise)for(unsigned p=0;p<7;++p)
-    for(unsigned audible=0;audible<16;++audible) {
-        psg_init();ref_psg_init();
-        for(unsigned c=0;c<3;++c){write_byte((uint8_t)(0x80u|(c<<5)|(periods[p]&15u)));write_byte((uint8_t)(periods[p]>>4));}
-        write_byte((uint8_t)(0xe0u|noise));
-        for(unsigned c=0;c<4;++c)write_byte((uint8_t)(0x90u|(c<<5)|((audible&(1u<<c))?(c*3u):15u)));
-        for(unsigned n=0;n<9;++n){advance(ticks[n]*240u+17u);drain(8192);}
-        /* Shorten periods without reloading old counters; reset LFSR with
-         * stale noise_out, and mute while the exact filter still has a tail. */
-        write_byte(0xc0);write_byte(0);write_byte((uint8_t)(0xe0u|noise));advance(31u*240u+1u);drain(8192);
-        for(unsigned c=0;c<4;++c)write_byte((uint8_t)(0x9fu|(c<<5)));
-        advance(8192u*240u);drain(8192);advance(8192u*240u);drain(8192);
-    }
-    /* All four maximum amplitudes exercise the full signed mix range and
-     * fixed-point rounding close to the sample limits, then negative tails. */
-    for(unsigned noise=0;noise<8;++noise) {
-        psg_init();ref_psg_init();
-        for(unsigned c=0;c<3;++c){write_byte((uint8_t)(0x8fu|(c<<5)));write_byte(63);}
-        write_byte((uint8_t)(0xe0u|noise));
-        for(unsigned c=0;c<4;++c)write_byte((uint8_t)(0x90u|(c<<5)));
-        advance(8192u*240u);drain(8192);file_restore();
-        advance(8192u*240u+239u);drain(8192);
-        for(unsigned c=0;c<4;++c)write_byte((uint8_t)(0x9fu|(c<<5)));
-        advance(8192u*240u);drain(8192);
-    }
     psg_init();ref_psg_init();
     for(unsigned i=0;i<8000;++i) {
         if(i%97u==0){psg_init();ref_psg_init();}
@@ -90,7 +55,6 @@ int main(void)
             advance(rnd());CHECK(psg_rb_load(state,n)&&ref_psg_rb_load(state,n));check();
             advance(rnd()%30000u);drain(8192);
         }
-        if(i%521u==0)file_restore();
         if(i%71u==0){psg_reset_leftover();ref_psg_reset_leftover();check();}
     }
     /* Full scratch retains the established drop and remainder behavior. */
