@@ -289,6 +289,9 @@ void rab_push(rab_bridge *b, const int16_t *in, int frames) {
 }
 
 void rab_push_scaled(rab_bridge *b,int16_t *in,int frames,int gain) {
+    /* Identity gain has no work to combine. Preserve the original native push
+     * without rewriting immutable input samples or adding a gain loop. */
+    if(gain==256){rab_push(b,in,frames);return;}
     int ch=b->cfg.channels;
     /* Below2^53, input counts are exact doubles. Qualify the complete block
      * without changing the scalar overflow/read-cursor behavior at its edge. */
