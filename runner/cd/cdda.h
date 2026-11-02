@@ -6,6 +6,7 @@
 #define SEGACD_CDDA_H
 #include <stdint.h>
 #include "fader.h"
+#include "audio_owned_span.h"
 
 enum { SEGACD_CDDA_CLOCK=12500000u, SEGACD_CDDA_RATE=44100u, SEGACD_CDDA_SECTOR_FRAMES=588u, SEGACD_CDDA_FIFO_SECTORS=2u };
 typedef enum { SEGACD_CDDA_STOPPED=0, SEGACD_CDDA_PLAYING=1, SEGACD_CDDA_PAUSED=2 } SegaCDCddaTransport;
@@ -46,5 +47,7 @@ SegaCDCddaResult segacd_cdda_push_raw_sector(SegaCDCdda *,uint64_t stamp,int32_t
  * sticky underflow and emits no fabricated sample; inactive transport emits
  * clocked zero frames. Sink is per stereo frame; fader ticks exactly once. */
 SegaCDCddaResult segacd_cdda_advance_to(SegaCDCdda *,uint64_t stamp,SegaCDCddaSample,void *,uint64_t *frames_emitted);
+SegaCDCddaResult segacd_cdda_advance_owned(SegaCDCdda *,uint64_t stamp,
+    SegaCDCddaSample,void *,uint64_t *frames_emitted,const SegaCDAudioOwnedSink *);
 
 #endif

@@ -18,11 +18,16 @@ void audio_event_requeue(const AudioEvent *,size_t) {}
 }
 #define CHECK(c) do { if(!(c)) { std::fprintf(stderr,"audio filter line%d: %s\n",__LINE__,#c);std::exit(1); } } while(0)
 static bool shadow_active;
+static bool worker_enabled;
+static unsigned worker_jobs;
 static uint64_t shadow_input;
 extern "C" void fm_shadow_init(void) {}
 extern "C" void fm_shadow_advance(uint32_t) {}
 extern "C" void fm_shadow_write(uint8_t,uint8_t) {}
 extern "C" int fm_shadow_active(void) { return shadow_active; }
+extern "C" int fm_shadow_enabled(void) { return worker_enabled; }
+static void execute(AudioMixerJob first,void *a,AudioMixerJob second,void *b,void *)
+{ first(a);second(b);worker_jobs+=2; }
 extern "C" void fm_shadow_verify_and_substitute(int16_t *out,size_t n)
 {
     shadow_input=14695981039346656037ull;
@@ -44,6 +49,7 @@ static void reg(uint8_t a,uint8_t d) { ym2612_write(0,a);ym2612_write(1,d); }
 static void setup(int bypass)
 {
     shadow_active=false;audio_mixer_set_filter_bypass(bypass);audio_mixer_init();
+    audio_mixer_set_shadow_executor(worker_enabled?execute:nullptr,nullptr);
     ym2612_write(2,0xb6);ym2612_write(3,0xc0);reg(0x2b,0x80);reg(0x2a,0xd0);
     psg_write(0x87);psg_write(0);psg_write(0x90);psg_write(0xe4);psg_write(0xf4);
 }
@@ -138,5 +144,7 @@ static void test_filter_history_and_restore()
 int main()
 {
     test_selection_and_fade();test_filter_history_and_restore();
+    worker_enabled=true;test_selection_and_fade();test_filter_history_and_restore();
+    CHECK(worker_jobs>0);
     std::puts("Hardware filter: default PCM, raw pairing, equal clocks/state,5ms live fades, shadow oracle and current-build restore PASS");
 }

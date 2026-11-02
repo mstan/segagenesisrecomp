@@ -1,0 +1,219 @@
+{
+  "schema": "GenesisE18FinalIndependentVerdict1",
+  "reviewer": "validate_e18",
+  "verdict": "ACCEPTED",
+  "disposition": "bounded_delivered",
+  "reviewed_head": "02af399729f6595a3e4d4ceea80eba4824fdc0ce",
+  "production_head": "fa696e2f3f2d72f99695543d5f68f1c594c0bfd1",
+  "reference_head": "cc4546693fc58f7fe5268e775927dc3278136a44",
+  "owning_issue": "beads-3z5k.15",
+  "campaign": "beads-2wy8.1",
+  "pr": {
+    "url": "https://github.com/mstan/segagenesisrecomp/pull/50",
+    "state": "OPEN",
+    "ready": true,
+    "base": "codex/engine-final-pixels-20261030"
+  },
+  "selected_contract": "Same-drain independent FM-shadow synthesis when the existing shadow option is enabled, immutable common event interval, canonical FM/PSG on owner and completed shadow joined before verification/substitution/state boundaries; complete serial fallback",
+  "whole_scope_disposition": {
+    "retained": "Independent heavy canonical/shadow synthesis, selected after actual alternatives",
+    "rejected": [
+      "Private final-color preparation overlapped with audio",
+      "Independent FM/PSG worker jobs"
+    ],
+    "separate_open_work": [
+      "E20 faithful below-chip FM-kernel redesign",
+      "E37 GPU-resident high-resolution rendering"
+    ],
+    "no_claim_every_future_partition_exhausted": true
+  },
+  "source": {
+    "clean": true,
+    "production_unchanged_since_source_pass": true,
+    "whitespace_check_clean": true,
+    "discarded_render_and_simulation_hooks_removed": true,
+    "no_new_shadow_opt_in_or_graphics_behavior": true,
+    "logical_cpu_fallback_wording_corrected": true
+  },
+  "evidence": {
+    "records": {
+      "native-work-selection-r1.json": {
+        "sha256": "c08f0653ed0264a191423cf4b5c779a0a047bb9b917cc9ce6fd09db6dc02d6f0",
+        "bytes": 42533
+      },
+      "native-work-selection-r2.json": {
+        "sha256": "ef172063827e49f94d19db93c5d9e866f325bc66358e7cbacfb9fe83f11e3ea3",
+        "bytes": 101352
+      },
+      "native-work-selection-r3.json": {
+        "sha256": "5918c9ac3bce49ef60826815bb082dee3a1c40f4816d6281387f5ec438db3119",
+        "bytes": 101330
+      },
+      "native-work-shadow-r1.json": {
+        "sha256": "0a39617920c42e7356e635be1b2316de4d5d9170c58100bd8b39893eaccfc6c3",
+        "bytes": 54303
+      },
+      "native-work-shadow-r2.json": {
+        "sha256": "820773912c9a14748d58059a896f217b3f686b6c42ab66208233825e05a5fa38",
+        "bytes": 54332
+      },
+      "native-work-shadow-r3.json": {
+        "sha256": "6d0cab802665b3be0c22e82253e9f6c5efc15bdd3c43b030d8be57ad9a6dad5c",
+        "bytes": 26276
+      },
+      "native-qualification-r1.json": {
+        "sha256": "176adc86fe5da8179293eca7cd721ac72d5a8de43601ab761ed5b188817428e6",
+        "bytes": 108457
+      },
+      "unit-tests-r4.json": {
+        "sha256": "891f1275796328f01439da7fd1ddeaf9a4198003b89486d974d5ef4534ef1667",
+        "bytes": 1734
+      },
+      "unit-tests-r5-win32.json": {
+        "sha256": "9e4c080e64f8535c2831a64a760e36a8fb803d89d4c2c1a07538e051797947a9",
+        "bytes": 1766
+      }
+    },
+    "distinct_matched_pairs": 15,
+    "distinct_actual_runs": 30,
+    "files_verified": 185,
+    "bytes_verified": 2150304895,
+    "checks": [
+      "Actual native/reference PE and executed copy hashes",
+      "ROM/input identities, exact command/configuration and paired two-physical-core affinity",
+      "Actual benchmark logs, raw PNG/full WAV/frame hashes/state/sample counts and current rollback equality",
+      "Automatic worker6044 RKA/2472 Sonic1 only when shadow enabled; no worker when shadow off",
+      "Per-game cost arithmetic and live process memory",
+      "Existing source/fixture/owning-tracker/PR records; no reviewer runtime jobs"
+    ],
+    "excluded": [
+      {
+        "record": "native-work-selection-r1.json",
+        "game": "rka",
+        "mode": "chips",
+        "reason": "incomplete/failed observer pair excluded"
+      }
+    ],
+    "unit_results": {
+      "unit-tests-r4.json": {
+        "passed": 3,
+        "machine": "0x8664",
+        "pe_binaries": {
+          "audio_work_test.exe": "d769745c944f78f33eea6caa0326b1797de9d82dac456b8592468080bed311fc",
+          "engine_work_fallback.exe": "dbbacadbd1d9b5958823630ab0a6d3e1a838e11aeadea82400cb77e6f1696a8e",
+          "engine_work_threads.exe": "dd5c849cc98dabd9f73f65d4728148500c7e82b0b431e2c4004513ce78a266a9"
+        }
+      },
+      "unit-tests-r5-win32.json": {
+        "passed": 3,
+        "machine": "0x14c",
+        "pe_binaries": {
+          "audio_work_test.exe": "386f23baccce2826af30cffbf89e97e2365cf53d0f66cac214067d3e8712b495",
+          "engine_work_fallback.exe": "75cbf93c5ed2cddb7c3bf0e52803d59e6ace3707652feeda20447ac5ba5dd1a0",
+          "engine_work_threads.exe": "1b5be9ccabbe466016743deeead2c6952fe4e8070a022b3fbecaba66c335deb8"
+        }
+      }
+    },
+    "unit_scope": "Real worker ownership/join/destruction and compile-disabled fallback; exact frozen-original real FM/PSG/queue/sample oracle plus independent shadow event timelines and owner-only verification. Real shadow synthesis is established by native games, not timeline stubs.",
+    "final_frozen_original_pairs": [
+      {
+        "game": "rka",
+        "feature": "shadow-off",
+        "order": "AB",
+        "change_percent": {
+          "cpu_seconds": -5.860805860805862,
+          "cpu_cycles": -1.543767211267133,
+          "seconds": -2.3054662119656566
+        }
+      },
+      {
+        "game": "rka",
+        "feature": "shadow-on",
+        "order": "AB",
+        "change_percent": {
+          "cpu_seconds": 23.987538940809962,
+          "cpu_cycles": 21.220235060748816,
+          "seconds": -2.1104010045592925
+        }
+      },
+      {
+        "game": "sonic1",
+        "feature": "shadow-off",
+        "order": "AB",
+        "change_percent": {
+          "cpu_seconds": 2.1052631578947434,
+          "cpu_cycles": -1.1653794305317322,
+          "seconds": -1.2005493812261014
+        }
+      },
+      {
+        "game": "sonic1",
+        "feature": "shadow-on",
+        "order": "AB",
+        "change_percent": {
+          "cpu_seconds": 12.612612612612617,
+          "cpu_cycles": 12.82665052285381,
+          "seconds": -7.472246426513596
+        }
+      }
+    ]
+  },
+  "performance_acceptance": {
+    "default_shadow_off": "Neutral/inconclusive on measured RKA and Sonic1 routes",
+    "shadow_enabled": "Useful observed RKA throughput tradeoff; Sonic1 overall elapsed-time evidence remains mixed/inconclusive, despite later lower-wall observations",
+    "cost": "Higher summed CPU/cycles are an explicit resource cost, not an energy-efficiency improvement",
+    "no_aggregate_game_offset": true,
+    "no_universal_speedup_or_nonregression_claim": true,
+    "prototype_selection_separate_from_final_frozen_original_qualification": true
+  },
+  "caller_portability": {
+    "serial_paths": "Existing shadow disabled, diagnostic off/0, compile-disabled workers, fewer than two logical CPUs reported by SDL, worker creation failure and aliased/uncertain output spans",
+    "validated_abis": [
+      "Windows x64",
+      "Windows Win32"
+    ],
+    "api": "Portable SDL worker interface; no new assembly/mandatory OS-specific worker dependency; no claim of additional platform runtime qualification",
+    "state": "Same-drain join keeps existing post-drain/restore/snapshot consumers synchronous; actual current-build rollback save/restore passes; serialization/persistence interfaces unchanged",
+    "sega_cd": "Standalone CD audio does not use this mixer/executor; no E18 CD package/speedup claim"
+  },
+  "cleanup": {
+    "removed_bytes": 194843675,
+    "removed_build_roots": 4,
+    "absence_verified": true,
+    "retained_binaries_and_configs_verified": true,
+    "ongoing_evidence": "Raw before/after samples, prototype commits, native/reference/unit PEs and configurations remain outside delivery folders for campaign/review; borrowed consumers/dependencies preserved"
+  },
+  "tracker": {
+    "verified_status": "in_progress pending final verdict",
+    "assignee": "codex",
+    "parent": "beads-3z5k",
+    "direct_campaign_relation": true,
+    "frozen_source_backlink": true,
+    "closing_updates_and_sync_follow_verdict": true
+  },
+  "counts": {
+    "before": {
+      "original_rows": 36,
+      "original_open": 17,
+      "additional_E37_open": 1,
+      "total_tracked": 37,
+      "total_open": 18
+    },
+    "after_E18_bookkeeping_expected": {
+      "original_open": 16,
+      "additional_E37_open": 1,
+      "total_open": 17
+    }
+  },
+  "resolved_findings": [
+    "E18-S1 custom raw writer invalidation fixed in evaluated prototype; render prototype later removed",
+    "E18-S2 output-alias serial behavior preserved and actual comparison cases pass",
+    "E18-M1 queue false preparation statements corrected",
+    "Final logical-CPU wording clarified; PR50 marked ready"
+  ],
+  "unresolved_objective_findings": [],
+  "next_instruction": "Attach immutable verdict copies; update only original E18/counts, owning/parent/campaign records and central sync. Then proceed to ORIGINAL E19 with a NEW validation-only reviewer. E37 remains open and separate.",
+  "owner_handoff": "Combined owner play/visual approval still required before merge/release; this verdict authorizes no merge, release, delivery replacement or owner game launch.",
+  "reviewer_ran_runtime_jobs": false
+}
+

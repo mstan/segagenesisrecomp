@@ -15,6 +15,9 @@
 #include "diagnostic_replay.h"
 #include "include/genesis_runtime.h"  /* g_cpu, g_ram, M68KState */
 #include "video/genesis_machine.h"
+#if GENESIS_HD_JOBS
+#include "video/genesis_raster_jobs.h"
+#endif
 #include "audio/ym2612.h"
 #include "audio/sn76489.h"
 #include "audio/event_queue.h"
@@ -267,6 +270,9 @@ int genesis_rb_load(const void *src, size_t len)
         fprintf(stderr, "[rb_state] load: malformed blob (%zu bytes)\n", len);
         return 0;
     }
+#if GENESIS_HD_JOBS
+    gvdp_hd_reset();
+#endif
     for (size_t i = 0; i < RB_NSEC; i++) {
         if (sl[i] == 0 && k_sections[i].save(NULL, 0) == 0) continue;   /* empty game */
         if (skip && !strcmp(skip, k_sections[i].name)) continue;

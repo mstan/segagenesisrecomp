@@ -17,6 +17,7 @@
 #endif
 #endif
 #include "segacd_coordinator.h"
+#include "bios_services.h"
 #include "genesis_bus.h"
 #include "genesis_dac.h"
 #include "disc_image.h"
@@ -724,6 +725,8 @@ int main(int argc,char**argv)
 #else
     int floor_only=1;
 #endif
+    if(getenv("SEGACD_PROBE_FIRMWARE_SERVICES") && !strcmp(getenv("SEGACD_PROBE_FIRMWARE_SERVICES"),"1"))
+        segacd_bios_services_install(&coordinator,g_rom,SEGACD_BIOS_BYTES);
     int require_native=getenv("SEGACD_PROBE_REQUIRE_NATIVE") && !strcmp(getenv("SEGACD_PROBE_REQUIRE_NATIVE"),"1");
     if(!require_native && !segacd_coordinator_floor(&coordinator,segacd_m68k_floor_step))return 2;
     segacd_coordinator_host_clock(&coordinator,advance_host,next_host_event);
@@ -916,5 +919,8 @@ int main(int argc,char**argv)
     int roots_ok=!pc_roots_error&&write_floor_pc_roots(floor_pc_epoch,(uint32_t)(line_number/262u),coordinator.device_time);
     int vector_changes_ok=close_sub_vector_change_log();
     segacd_image_close(image);
+    uint64_t service_done=0,service_declined=0;
+    segacd_bios_services_stats(&service_done,&service_declined);
+    printf("BIOS table services completed=%llu declined=%llu\n",(unsigned long long)service_done,(unsigned long long)service_declined);
     return capture_ok && !capture_error && roots_ok && !pc_roots_error && vector_changes_ok && !sub_vector_capture_error && status==M68K_STEP_OK && coordinator.device_time>=deadline?0:3;
 }

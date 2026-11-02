@@ -8,7 +8,8 @@
 #include <string.h>
 #define CHECK(c) do { if (!(c)) { fprintf(stderr,"line %d: %s\n",__LINE__,#c); exit(1); } } while (0)
 static GVDP v;
-static int calls, high, color = 2;
+static int calls, high, color = 2, opacity=1, unregister_callback;
+
 int g_snd_trace;
 unsigned long g_snd_frame;
 unsigned g_snd_line;
@@ -80,8 +81,33 @@ static void draw(void *user, const GVDP *vdp, const GVDPSpriteLayer *layer)
     ++calls;
     for (int x=0;x<32;++x) {
         if (layer->opaque[x]) continue;
-        layer->index[x]=(uint8_t)color; layer->opaque[x]=1; layer->high[x]=(uint8_t)high;
+        layer->index[x]=(uint8_t)color; layer->opaque[x]=(uint8_t)opacity; layer->high[x]=(uint8_t)high;
     }
+    if(unregister_callback)gvdp_set_host_sprites(NULL,NULL);
+}
+static void noncanonical_host_flags(void)
+{
+    uint8_t markers[2048]={0},expected[GVDP_MAX_WIDTH],composed[GVDP_MAX_WIDTH];
+    GVDPRasterRow captured;
+    markers[1]=1;
+    for(int private_plane=0;private_plane<2;++private_plane)
+    for(int unregister=0;unregister<2;++unregister)
+    for(int priority=0;priority<2;++priority) {
+        memset(&v,0,sizeof v);v.reg[1]=64;v.reg[2]=0x30;v.reg[4]=7;
+        v.reg[5]=0x7C;v.reg[12]=1;v.reg[13]=0x3F;
+        memset(v.vram+32,0x11,32);
+        for(unsigned i=0;i<40;++i)word(0xC000+i*2,0x8001);
+        gvdp_set_ext_tiles(private_plane?markers:NULL);
+        opacity=0xC0;high=priority?0x80:0;color=2;unregister_callback=unregister;
+        gvdp_set_host_sprites(draw,&calls);int old_calls=calls;
+        CHECK(gvdp_capture_presented_scanline(&v,0,&captured)==320 && calls==old_calls+1);
+        CHECK(captured.opaque[12]==1 && captured.high[12]==priority);
+        CHECK(gvdp_compose_captured(&captured,composed)==320);
+        gvdp_set_host_sprites(draw,&calls);
+        CHECK(gvdp_render_scanline(&v,0,expected)==320 && calls==old_calls+2);
+        CHECK(!memcmp(expected,composed,320));
+    }
+    opacity=1;high=0;unregister_callback=0;gvdp_set_host_sprites(NULL,NULL);gvdp_set_ext_tiles(NULL);
 }
 static void private_planes(void)
 {
@@ -265,7 +291,9 @@ int main(void)
     memset(top,0,sizeof top);gvdp_set_ext_colors(top,top,0);
     CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(expected,composed,320));
     CHECK(captured.host_palette[35]==genesis_dac_cram_to_argb(0xE0,GENESIS_DAC_NORMAL));
-    private_planes();raster_order();
+    private_planes();
+    noncanonical_host_flags();
+    raster_order();
     puts("host sprites composite behind native sprites with plane priority");
     return 0;
 }

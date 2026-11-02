@@ -758,8 +758,7 @@ void z80_init(z80* const z) {
   z->int_data = 0;
 }
 
-// executes the next instruction in memory + handles interrupts
-void z80_step(z80* const z) {
+static void execute_next(z80* const z) {
   if (z->halted) {
     exec_opcode(z, 0x00);
   } else {
@@ -767,7 +766,21 @@ void z80_step(z80* const z) {
     exec_opcode(z, opcode);
   }
 
+}
+
+// executes the next instruction in memory + handles interrupts
+void z80_step(z80* const z) {
+  execute_next(z);
   process_interrupts(z);
+}
+
+bool z80_step_no_interrupts(z80* const z) {
+  execute_next(z);
+  // Only this branch is permitted to enter process_interrupts: its existing
+  // EI-delay case returns before inspecting/consuming any interrupt latch.
+  bool blocked = z->iff_delay > 0;
+  if (blocked) process_interrupts(z);
+  return blocked;
 }
 
 // outputs to stdout a debug trace of the emulator

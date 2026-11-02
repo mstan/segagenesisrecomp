@@ -1,8 +1,13 @@
+#include "../video/genesis_frame_pixels.h"
+#include "../video/genesis_hd_gpu.h"
+#include "../video/genesis_raster_jobs.h"
 #include "presentation.h"
 
 #include "presentation_ui.h"
 #include "sonic_cd_limits.h"
 #include "../audio.h"
+#include "../frame_pacer.h"
+#include "../host_wait.h"
 #include "backup.h"
 
 #include <errno.h>
@@ -15,11 +20,19 @@
 #define SEGACD_DEFAULT_HEIGHT 224
 #define SEGACD_MAX_SETTINGS_BYTES 4096
 #define SEGACD_GAME_KEY_COUNT 9
+#define SEGACD_PRESENT_SAMPLES 4096
+
+typedef struct SegaCDPresentSample {
+    uint64_t ready, deadline, submit, complete;
+} SegaCDPresentSample;
 
 struct SegaCDPresentation {
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *texture;
+    GenesisHdGpu *hd_gpu;
+    unsigned internal_scale;
+    int hd_requested,hd_checked,native_jobs;
     SegaCDPresentationUI *ui;
     SegaCDPresentationSettings settings;
     char *settings_path;
@@ -33,6 +46,11 @@ struct SegaCDPresentation {
     int height;
     int force_mute;
     int block_until_release;
+    int running;
+    uint64_t frequency;
+    FramePacer pacer;
+    SegaCDPresentSample *timing;
+    unsigned timing_count;
 };
 
 static char *copy_string(const char *value) {
@@ -75,6 +93,8 @@ static void load_one_setting(char *line, SegaCDPresentationSettings *settings) {
         settings->volume = clamp_value((int)value, 0, 100);
     else if (strcmp(line, "view_mode") == 0)
         settings->view_mode = clamp_value((int)value, 0, 2);
+    else if (strcmp(line, "internal_scale") == 0)
+        settings->internal_scale = clamp_value((int)value, 1, 64);
 }
 
 static void load_settings(const char *path,
@@ -114,10 +134,17 @@ static void load_settings(const char *path,
     free(data);
 }
 
+unsigned segacd_presentation_startup_scale(const char *path) {
+    SegaCDPresentationSettings settings={0};settings.internal_scale=1;
+    load_settings(path,&settings);return genesis_hd_scale((unsigned)settings.internal_scale);
+}
+void segacd_presentation_native_jobs(SegaCDPresentation *p,int eligible) {
+    if(p)p->native_jobs=eligible!=0;
+}
 static int save_settings(SegaCDPresentation *presentation) {
     static const char format[] =
         "fullscreen=%d\nwindow_scale=%d\nlinear_filter=%d\n"
-        "audio_enabled=%d\nvolume=%d\nview_mode=%d\n";
+        "audio_enabled=%d\nvolume=%d\nview_mode=%d\ninternal_scale=%d\n";
     char contents[192];
     int content_length;
     if (!presentation || !presentation->settings_path) return 0;
@@ -127,7 +154,8 @@ static int save_settings(SegaCDPresentation *presentation) {
                               presentation->settings.linear_filter,
                               presentation->settings.audio_enabled,
                               presentation->settings.volume,
-                              presentation->settings.view_mode);
+                              presentation->settings.view_mode,
+                              presentation->settings.internal_scale);
     if (content_length < 0 || (size_t)content_length >= sizeof(contents)) {
         return 0;
     }
@@ -147,6 +175,10 @@ static void apply_audio(SegaCDPresentation *presentation) {
 static int apply_setting(void *context, const char *key, int value) {
     SegaCDPresentation *presentation = (SegaCDPresentation *)context;
     if (!presentation || !key) return 0;
+    if(!strcmp(key,"video.internal_resolution")){
+        if(value<1||value>64)return 0;
+        presentation->settings.internal_scale=value;return 1;
+    }
     if (strcmp(key, RECOMP_RUNTIME_UI_KEY_FULLSCREEN) == 0) {
         Uint32 flags = 0;
         if (value == 1) flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -325,6 +357,16 @@ SegaCDPresentation *segacd_presentation_create(SDL_Window *window,
     if (!presentation) return NULL;
     presentation->window = window;
     presentation->renderer = renderer;
+    presentation->frequency = SDL_GetPerformanceFrequency();
+    if (!frame_pacer_init_ratio(&presentation->pacer, presentation->frequency,
+                               896040u, 53693175u)) {
+        free(presentation);
+        return NULL;
+    }
+    presentation->running = 1;
+    const char *timing = getenv("GENESIS_PRESENT_TIMING");
+    if (timing && *timing && *timing != '0')
+        presentation->timing = calloc(SEGACD_PRESENT_SAMPLES, sizeof *presentation->timing);
     presentation->settings_path = copy_string(settings_path);
     presentation->width = SEGACD_DEFAULT_WIDTH;
     presentation->height = SEGACD_DEFAULT_HEIGHT;
@@ -335,17 +377,23 @@ SegaCDPresentation *segacd_presentation_create(SDL_Window *window,
     presentation->settings.audio_enabled = 1;
     presentation->settings.volume = 100;
     presentation->settings.view_mode = RECOMP_RUNTIME_UI_VIEW_NATIVE;
+    presentation->settings.internal_scale=1;
     if (!presentation->settings_path) {
+        free(presentation->timing);
         free(presentation);
         return NULL;
     }
     load_settings(presentation->settings_path, &presentation->settings);
+    presentation->internal_scale=genesis_hd_scale((unsigned)presentation->settings.internal_scale);
+    presentation->hd_requested=presentation->internal_scale>1||getenv("GENESIS_INTERNAL_SCALE")!=NULL;
+    gvdp_hd_enable(presentation->hd_requested);
 
     /* Owner-facing launches always start in a normal window, even if an older
        settings file requested fullscreen. The UI can still change it in-session. */
     presentation->settings.fullscreen = 0;
     SDL_SetWindowTitle(window, "Sonic CD");
     if (SDL_SetWindowFullscreen(window, 0) != 0) {
+        free(presentation->timing);
         free(presentation->settings_path);
         free(presentation);
         return NULL;
@@ -368,6 +416,7 @@ SegaCDPresentation *segacd_presentation_create(SDL_Window *window,
     ui_config.window_scale_max = 8;
     presentation->ui = segacd_presentation_ui_create(&ui_config);
     if (!presentation->ui) {
+        free(presentation->timing);
         free(presentation->settings_path);
         free(presentation);
         return NULL;
@@ -377,11 +426,32 @@ SegaCDPresentation *segacd_presentation_create(SDL_Window *window,
 
 void segacd_presentation_destroy(SegaCDPresentation *presentation) {
     if (!presentation) return;
+    if (presentation->timing) {
+        SDL_RendererInfo info = {0};
+        SDL_GetRendererInfo(presentation->renderer, &info);
+        fprintf(stderr,"[CD_PRESENT] frequency=%llu backend=%s flags=%u native_wait=%d samples=%u\n",
+            (unsigned long long)presentation->frequency, info.name ? info.name : "unknown",
+            info.flags, genesis_host_wait_native_active(), presentation->timing_count);
+        for (unsigned i = 0; i < presentation->timing_count; ++i) {
+            const SegaCDPresentSample *s = &presentation->timing[i];
+            fprintf(stderr,"[CD_PRESENT] sample=%u ready=%llu deadline=%llu submit=%llu complete=%llu\n",
+                i,(unsigned long long)s->ready,(unsigned long long)s->deadline,
+                (unsigned long long)s->submit,(unsigned long long)s->complete);
+        }
+        free(presentation->timing);
+    }
     segacd_presentation_ui_destroy(presentation->ui);
+    genesis_hd_gpu_destroy(presentation->hd_gpu);
     if (presentation->texture) SDL_DestroyTexture(presentation->texture);
     free(presentation->frame_copy);
     free(presentation->settings_path);
     free(presentation);
+}
+
+void segacd_presentation_set_running(SegaCDPresentation *presentation, int running) {
+    if (!presentation) return;
+    presentation->running = running != 0;
+    if (!running) frame_pacer_reset(&presentation->pacer);
 }
 
 int segacd_presentation_handle_event(SegaCDPresentation *presentation,
@@ -391,6 +461,9 @@ int segacd_presentation_handle_event(SegaCDPresentation *presentation,
     int was_draining;
     int consumed = 0;
     if (!presentation || !event) return 0;
+    if(event->type==SDL_RENDER_TARGETS_RESET||event->type==SDL_RENDER_DEVICE_RESET){
+        genesis_hd_gpu_destroy(presentation->hd_gpu);presentation->hd_gpu=NULL;presentation->hd_checked=0;
+    }
     was_open = segacd_presentation_ui_is_open(presentation->ui);
     was_draining = presentation->block_until_release;
     if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) {
@@ -524,7 +597,9 @@ int segacd_presentation_present(SegaCDPresentation *presentation,
                                 int source_pitch_bytes) {
     size_t row_bytes;
     size_t count;
+#if !GENESIS_FINAL_PIXEL_PIPELINE
     int y;
+#endif
     if (!presentation || !pixels || width <= 0 || height <= 0 ||
         width > INT_MAX / (int)sizeof(uint32_t))
         return 0;
@@ -535,9 +610,22 @@ int segacd_presentation_present(SegaCDPresentation *presentation,
              SIZE_MAX / (size_t)source_pitch_bytes))
         return 0;
     count = (size_t)width * (size_t)height;
-    if (count > SIZE_MAX / sizeof(uint32_t) ||
-        !ensure_frame_capacity(presentation, count))
-        return 0;
+    if (count > SIZE_MAX / sizeof(uint32_t))return 0;
+    const void *upload_pixels=pixels;
+    int upload_pitch=source_pitch_bytes;
+    int ui_open=segacd_presentation_ui_is_open(presentation->ui);
+#if GENESIS_FINAL_PIXEL_PIPELINE
+    int stage=ui_open || (source_pitch_bytes&3);
+    if(stage && !ensure_frame_capacity(presentation,count))return 0;
+    GenesisPixelView frame;
+    if(!genesis_frame_pixels(&frame,pixels,source_pitch_bytes,presentation->frame_copy,
+            presentation->frame_capacity*sizeof(uint32_t),width*4,width,height,width,height,
+            stage,NULL,NULL))return 0;
+    if(ui_open)segacd_presentation_ui_render_argb8888(presentation->ui,
+        (void *)frame.pixels,width,height,frame.pitch_bytes);
+    upload_pixels=frame.pixels;upload_pitch=frame.pitch_bytes;
+#else
+    if(!ensure_frame_capacity(presentation,count))return 0;
     for (y = 0; y < height; ++y) {
         const uint8_t *source_row = (const uint8_t *)pixels +
                                     (size_t)y * (size_t)source_pitch_bytes;
@@ -547,16 +635,46 @@ int segacd_presentation_present(SegaCDPresentation *presentation,
     segacd_presentation_ui_render_argb8888(presentation->ui,
                                            presentation->frame_copy, width,
                                            height, width * (int)sizeof(uint32_t));
+    upload_pixels=presentation->frame_copy;upload_pitch=width*(int)sizeof(uint32_t);
+#endif
     if (!ensure_texture(presentation, width, height)) return 0;
-    if (SDL_UpdateTexture(presentation->texture, NULL, presentation->frame_copy,
-                          width * (int)sizeof(uint32_t)) != 0)
+    SDL_Texture *frame_texture=presentation->texture;
+    if(presentation->hd_requested&&presentation->native_jobs&&!ui_open){
+        if(!presentation->hd_checked){presentation->hd_gpu=genesis_hd_gpu_create(presentation->renderer,presentation->texture);presentation->hd_checked=1;}
+        const GVDPRasterFrame *jobs=gvdp_hd_acquire();
+        if(jobs&&jobs->width==(unsigned)width&&jobs->height==(unsigned)height){
+            SDL_Texture *enhanced=genesis_hd_gpu_render(presentation->hd_gpu,jobs,presentation->internal_scale,NULL);
+            if(enhanced){
+#if SDL_VERSION_ATLEAST(2,0,12)
+                SDL_SetTextureScaleMode(enhanced,presentation->settings.linear_filter?SDL_ScaleModeLinear:SDL_ScaleModeNearest);
+#endif
+                frame_texture=enhanced;
+            }
+        }
+        if(jobs)gvdp_hd_release(jobs);
+    }
+    if (frame_texture==presentation->texture&&SDL_UpdateTexture(presentation->texture, NULL, upload_pixels,
+                          upload_pitch) != 0)
         return 0;
     SDL_RenderSetLogicalSize(presentation->renderer, width, height);
     if (SDL_RenderClear(presentation->renderer) != 0) return 0;
-    if (SDL_RenderCopy(presentation->renderer, presentation->texture, NULL,
+    if (SDL_RenderCopy(presentation->renderer, frame_texture, NULL,
                        NULL) != 0)
         return 0;
+    uint64_t ready = presentation->running ? SDL_GetPerformanceCounter() : 0;
+    uint64_t deadline = 0;
+    if (presentation->running) {
+        deadline = frame_pacer_deadline(&presentation->pacer, ready);
+        genesis_host_park_until(deadline, presentation->frequency);
+    }
+    uint64_t submit = presentation->timing ? SDL_GetPerformanceCounter() : 0;
     SDL_RenderPresent(presentation->renderer);
+    if (presentation->timing && presentation->running &&
+        presentation->timing_count < SEGACD_PRESENT_SAMPLES) {
+        SegaCDPresentSample *s = &presentation->timing[presentation->timing_count++];
+        s->ready = ready; s->deadline = deadline; s->submit = submit;
+        s->complete = SDL_GetPerformanceCounter();
+    }
     presentation->width = width;
     presentation->height = height;
     return 1;

@@ -1,0 +1,365 @@
+{
+  "schema": "GenesisEngineVerifiedMediaHandoff1",
+  "issue": "beads-3z5k.25",
+  "campaign": "beads-2wy8.1",
+  "state": "qualified_owner_handoff_pending",
+  "original_family": "E27",
+  "baseline_engine": "070dcdb95056d3b2909b7e49ac7967c31e530b74",
+  "runtime_candidate": "2276caa2ab94db546759e6f4f3334a742027f721",
+  "consumer_base": "94f57796db9de4990e23476b576b29239095fb22",
+  "consumer_candidate": "2350575",
+  "source_changes": [
+    "runner/cd/disc_image.c",
+    "runner/cd/disc_image.h",
+    "runner/cd/standalone.c",
+    "tests/segacd/CMakeLists.txt",
+    "tests/segacd/disc_image_provider_failure_test.c",
+    "tests/segacd/disc_image_reader_test.c"
+  ],
+  "scope": "One-launch expected complete identity verified from actual owned bytes, payload+whole SHA in one read pass; never a bypass/proof token. Cached CUE launch only; source inspection/first conversion/direct SGCD unchanged.",
+  "windows": {
+    "correctness": "Six actual3000-frame runs exact11 checkpoints/21 artifacts/full WAV, no emulation/audio faults; complete check used.",
+    "gameplay_disposition": "neutral/inconclusive shared-host cost; no gameplay gain/universal nonregression claim",
+    "pairs": [
+      {
+        "raw": "game-e27-owned-handoff-r1-server.json",
+        "reductions_pct": {
+          "cpu_seconds": [
+            -2.453271028037385
+          ],
+          "cycles": [
+            3.4743100329822862
+          ]
+        }
+      },
+      {
+        "raw": "game-e27-owned-handoff-r2-server.json",
+        "reductions_pct": {
+          "cpu_seconds": [
+            -6.108597285067874
+          ],
+          "cycles": [
+            -6.643470313740396
+          ]
+        }
+      },
+      {
+        "raw": "game-e27-owned-handoff-r3-server.json",
+        "reductions_pct": {
+          "cpu_seconds": [
+            0.9719222462203025
+          ],
+          "cycles": [
+            -3.865827887185924
+          ]
+        }
+      }
+    ],
+    "baseline_cpu_span_pct": 8.177570093457941,
+    "candidate_cpu_span_pct": 6.955530216647654,
+    "startup": {
+      "scope": "Old complete Get-FileHash internal cost plus actual native frame0 initialization vs consolidated actual native initialization; helper process startup/common CUE work excluded; same asserted affinity15/BelowNormal; not first-visible-screen latency",
+      "reductions_pct": [
+        {
+          "cpu_seconds": 10.023310023310028,
+          "wall_seconds": 23.109450317870227
+        },
+        {
+          "cpu_seconds": 6.157635467980294,
+          "wall_seconds": 68.35962728581347
+        }
+      ],
+      "disposition": "bounded CPU benefit; wall observations noisy",
+      "excluded": "Summed startup wall in full-game R1/R2/R3 is unmatched affinity and excluded; raw preserved."
+    }
+  },
+  "linux": {
+    "file_snapshot_disposition": "rejected as preferred; actual image component CPU+20.8percent/wall+44.7percent; correct fallback retained",
+    "ram_snapshot_disposition": "component warm neutral/inconclusive (~0.75percent), ~441MiB RSS increase,602056768 snapshot bytes; no gain claimed",
+    "actual_game_gate": "PASS: actual3000-frame A/B runs each exact canonicalWindows11 checkpoints/21 artifact bytes+SHA/full WAV; no emulation/audio faults; actual RAM no-FD path required/exercised",
+    "bounded_bytes": 1058400912,
+    "gameplay_disposition": "neutral; CPU18.61->18.46s (~0.806percent), wall20.402226->20.401103; not a gain/FPS claim",
+    "startup_disposition": "neutral/no gain claim: total CPU incl old whole-file preflight1.36457337->1.35, wall2.416547->2.518509s",
+    "actual_peak_rss_bytes": {
+      "baseline": 305192960,
+      "candidate": 763043840,
+      "delta": 457850880
+    },
+    "actual_peak_rss_delta_mib": 436.640625,
+    "media": {
+      "A": [
+        "Media rawReads=4 residentReads=116 hostSeeks=2 mappedBytes=139735888 privateResidentBytes=0",
+        "Media prefetchJobs=6 prefetchHits=2135 prefetchFailures=0 prefetchCancels=1 prefetchBytes=2408448 syncReadNs=45460 maxSyncReadNs=18310"
+      ],
+      "B": [
+        "Media rawReads=2139 residentReads=116 hostSeeks=2 mappedBytes=0 privateResidentBytes=0",
+        "Media prefetchJobs=0 prefetchHits=0 prefetchFailures=0 prefetchCancels=0 prefetchBytes=0 syncReadNs=5734150 maxSyncReadNs=291410",
+        "Media wholeIdentityChecked=1 privateSnapshotBytes=602056768"
+      ]
+    },
+    "build": {
+      "package": "E27-owned-complete-media-handoff-Linux",
+      "compiler": "Ubuntu24.04 GCC13.3; CMake/Ninja Release -O3 -DNDEBUG; system SDL2/OpenSSL",
+      "baseline_source": "070dcdb95056d3b2909b7e49ac7967c31e530b74",
+      "candidate_source": "2276caa2ab94db546759e6f4f3334a742027f721",
+      "consumer_runtime_source": "3fc4aa5d3fcd74151dbacc1df9d665ed07ab089a",
+      "consumer_current_tests": "2350575",
+      "native_core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+      "native_source_count": 10957,
+      "native_archive": {
+        "build_path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\linux-game-B\\runtime\\libsegacd_owned_native_program.a",
+        "bytes": 904430974,
+        "sha256": "99f94206680d301f482d1cded5d3d42344553d4f0e93b25a34568c7f128bc7bf"
+      },
+      "packages": {
+        "candidate": {
+          "build_path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\linux-game-B\\runtime\\SonicCD",
+          "bytes": 513691168,
+          "sha256": "febce916370edcb62b2759166b89e96ca1784339acef7b1dab36e2038ff5e989",
+          "binary": "/home/deck/codex-genesis-e27-20261101/SonicCD-B"
+        },
+        "reference": {
+          "build_path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\linux-game-A\\runtime\\SonicCD",
+          "bytes": 513690808,
+          "sha256": "98b1e671671c3593589e7215b5af8feb9969ef7e63e98b91fd369e92c39880ec",
+          "binary": "/home/deck/codex-genesis-e27-20261101/SonicCD-A"
+        }
+      },
+      "candidate_deck_dependencies": "ldd resolves SDL2/libcrypto3/libstdc++/libm/libgcc_s/libc; installed candidate SHA matches build"
+    }
+  },
+  "units": {
+    "windows_source": "3704c3b1a323a0b1993d8b8592e849923c5e24d6; subsequent changes Linux-gated",
+    "x64": "12/12 pass",
+    "win32": "11/12 pass; media_test line69 same separately qualified baseline defect",
+    "linux": "Four current2276 GCC13.3/OpenSSL reader/provider failure suites pass on Deck",
+    "consumer": "15/15 including actual PowerShell first-conversion/cache-hit argument bridge",
+    "win32_raw_summary_caveat": "Original script raw JSON built=false/tested=false reflects overall nonzero ctest (known shared failure), not unbuilt/unrun tests. Existing retained LastTest.log proves11pass/1fail; raw JSON unchanged.",
+    "shared_baseline_proof": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-media-prefetch-20261101\\unit-retention.json",
+      "bytes": 6831,
+      "sha256": "1494c0076d9096371b30cb6a57aa7741ceb7915adcea66225dbec83a1c2d3e6b"
+    }
+  },
+  "raw_evidence": {
+    "game-e27-owned-handoff-r1-server.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\game-e27-owned-handoff-r1-server.json",
+      "bytes": 483189,
+      "sha256": "61ddc488151e632452d57374654972f314d29dc147d66c8e24b74642f9790d9d"
+    },
+    "game-e27-owned-handoff-r2-server.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\game-e27-owned-handoff-r2-server.json",
+      "bytes": 483193,
+      "sha256": "aa3417a518e4f8a661d2d27df00f0032a435032d0c56df2bfd84f344ede22692"
+    },
+    "game-e27-owned-handoff-r3-server.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\game-e27-owned-handoff-r3-server.json",
+      "bytes": 483196,
+      "sha256": "c8fc43b6fb20e6ba93de79e20022b1abdb84e3ae58a8b6fb9350b89ddf885826"
+    },
+    "startup-matched-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\startup-matched-r1.json",
+      "bytes": 29958,
+      "sha256": "c838ec77634a3de4aee9c18cd824b4191a97892c5f4163710287427f19132261"
+    },
+    "deck-media-file-results.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\deck-media-file-results.json",
+      "bytes": 4213,
+      "sha256": "7b20167995f86518adc91861af0390d2eb6ce3986866dab5ac26d1e5386a7257"
+    },
+    "deck-media-ram-results.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\deck-media-ram-results.json",
+      "bytes": 4212,
+      "sha256": "37dbd99eb621f22350ce1000627da283549164c194eeded96af7cc9ee0c3481d"
+    },
+    "unit-tests-x64.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\unit-tests-x64.json",
+      "bytes": 4249,
+      "sha256": "79c7e406772d29fdafe4949dff72ed2a065357019b85cc1a9a0d7935ddc0df1a"
+    },
+    "unit-tests-win32.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\unit-tests-win32.json",
+      "bytes": 1868,
+      "sha256": "b92ecee9ae1474e1a8f9d9c3c69fc5c9e6a66cdf97c70b99a14f13ede665b104"
+    },
+    "game-e27-owned-handoff-linux-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\game-e27-owned-handoff-linux-r1.json",
+      "bytes": 476924,
+      "sha256": "76f126ea0f6a42ee6f8fa33e6355adbfe5ea40258f8105f3bd7f738175adb709"
+    },
+    "cd-builds-linux.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\cd-builds-linux.json",
+      "bytes": 1585,
+      "sha256": "7cfba19702cfdf260d0fc859c1ee604e79555b5fb3414a8e64322a2d84f7e53f"
+    },
+    "unit-win32-LastTest.log": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\unit-win32-LastTest.log",
+      "bytes": 10101,
+      "sha256": "0c8b9d54ea7640d6675742dd5d9401a619ac434e54caf93ac3b62327918fb29b"
+    },
+    "unit-win32-LastTestsFailed.log": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\unit-win32-LastTestsFailed.log",
+      "bytes": 17,
+      "sha256": "f6e932f9116f6e0f558421418901c8ccdb7de2c4368d981454be4ceabba66e67"
+    },
+    "unit-binary-identities.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\unit-binary-identities.json",
+      "bytes": 3243,
+      "sha256": "126c449be9ad72d4a4eb3b9e9c58eaa0c350125fa354721c299bdc06e1bcbf8a"
+    },
+    "linux-game-evidence.tar.gz": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\linux-game-evidence.tar.gz",
+      "bytes": 24654918,
+      "sha256": "b3de7f3d352a1a3ed60e91b8da03edd9b17435170239111262acdc3db6ad9ab0"
+    },
+    "server-qa-records.zip": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\server-qa-records.zip",
+      "bytes": 137349,
+      "sha256": "20deab841f7ee8b7e563f1b93b144f81cac1584c740a33576b8ce742a3f682e6"
+    },
+    "cleanup-local.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\cleanup-local.json",
+      "bytes": 1061,
+      "sha256": "acd571636198ffab551f2129c32b8ef38b75f651e72cd80259f75c33e98d9251"
+    },
+    "cleanup-deck.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\cleanup-deck.json",
+      "bytes": 251,
+      "sha256": "0229eab76a5726e29bdd8c63550ed787ad094dc3bf38cd1cddd5643a284172fd"
+    },
+    "cleanup-server.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\cleanup-server.json",
+      "bytes": 2721,
+      "sha256": "9bf22d3e2086203fe964dfbf850d4a2d82dcf68120d79330d0dc1b4c047fc0be"
+    }
+  },
+  "remaining": [
+    "final consolidated source/records/durable-tracking review",
+    "combined owner visual/play and merge/release handoff after remaining families"
+  ],
+  "technical_review": "Independent validate_e27 accepted full original technical gate including actual Linux memory path, exact cross-platform canonical outputs and explicit436.64MiB actual game peakRSS cost. Final PR/records/cleanup/durability review remains.",
+  "pr": {
+    "engine": "https://github.com/mstan/segagenesisrecomp/pull/55",
+    "consumer": "https://github.com/mstan/SonicCDRecomp/pull/2"
+  },
+  "cleanup": {
+    "cleanup-local.json": [
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\unit-build-x64",
+        "bytes": 13072408,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\unit-build-win32",
+        "bytes": 12377146,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\linux-game-B\\runtime\\CMakeFiles",
+        "bytes": 1021602776,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\linux-game-A\\runtime\\CMakeFiles",
+        "bytes": 221816008,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\temp-posix",
+        "bytes": null,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\linux-temp",
+        "bytes": null,
+        "removed": true
+      }
+    ],
+    "cleanup-deck.json": {
+      "path": "/home/deck/codex-genesis-e27-20261101",
+      "bytes": 1754586819,
+      "removed": true,
+      "preserved": "Original private media, local ELF/archive identities and complete candidate visual/audio evidence are retained outside this owned staged copy."
+    },
+    "cleanup-server.json": [
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\cd-binaries\\candidate",
+        "bytes": 118337536,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r1-server\\0-A\\capture",
+        "bytes": 4315405,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r1-server\\0-A\\audio.wav",
+        "bytes": 44787108,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r1-server\\1-B\\capture",
+        "bytes": 4315405,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r1-server\\1-B\\audio.wav",
+        "bytes": 44787108,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r2-server\\0-B\\capture",
+        "bytes": 4315405,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r2-server\\0-B\\audio.wav",
+        "bytes": 44787108,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r2-server\\1-A\\capture",
+        "bytes": 4315405,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r2-server\\1-A\\audio.wav",
+        "bytes": 44787108,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r3-server\\0-A\\capture",
+        "bytes": 4315405,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r3-server\\0-A\\audio.wav",
+        "bytes": 44787108,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r3-server\\1-B\\capture",
+        "bytes": 4315405,
+        "removed": true
+      },
+      {
+        "path": "G:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101-server\\game-e27-owned-handoff-r3-server\\1-B\\audio.wav",
+        "bytes": 44787108,
+        "removed": true
+      }
+    ]
+  },
+  "retained_data": [
+    "G:/Temp/Codex/genesis-engine-verified-media-handoff-20261101: frozen1.6GB Linux inputs,600MB generic native archive, two tested Linux ELFs, small recipes/build metadata/raw JSON/logs and24.7MB visual/audio evidence for reproducibility and remaining campaign work; remove after final handoff. Compiled object/unit scratch removed.",
+    "SERVER E27 baseline/candidate-r2 PE+SDL and small logs retained for remaining qualification; unused candidate and all six repeated capture/WAV sets removed after retaining small records and identical Linux visuals/audio. Shared S22/SERVER portable caches are preexisting and remain needed.",
+    "Source worktrees C:/Temp/Codex/genesis-engine-verified-media-handoff-20261101 retained for PRs/remaining campaign; original private media remains in its original locations. Entire staged Deck taskroot removed."
+  ],
+  "inherited_games": "Unchanged cartridge runtime packages inherit prior accepted evidence; no new cartridge test/gain claimed. Direct SGCD and first conversion do not receive the cached-image handoff package.",
+  "review": {
+    "artifact": "C:\\Temp\\Codex\\genesis-engine-verified-media-handoff-20261101\\VALIDATOR_E27_FINAL.md",
+    "bytes": 9541,
+    "sha256": "996f7f10d80bc8397ad2bf594ffb9a36f3a83e3ad0e69735d7d7989a2a60c035",
+    "verdict": "ACCEPT full selected original E27; no technical/evidence/cleanup blocker; final records-only engine/consumer pin publication and durable Beads gate precede E30",
+    "next": "Original E30 only, with one new validation-only reviewer; combined owner handoff pending"
+  }
+}

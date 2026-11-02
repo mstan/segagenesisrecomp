@@ -15,6 +15,9 @@
 #include <string.h>
 
 Z80State g_z80;
+#ifdef GENESIS_CONFIGURED_Z80_STEP
+extern void GENESIS_CONFIGURED_Z80_STEP(void);
+#endif
 
 static uint64_t s_fallback_steps;
 static uint32_t s_fallback_unique_pcs;
@@ -105,18 +108,18 @@ void sms_dispatch_miss(uint16_t addr)
 {
     z80 *fallback = &g_machine.z80;
     z80_recomp_mirror_to_interpreter(fallback);
-    /* z80_step() also services the interpreter's interrupt latches. Interrupt
-     * acceptance belongs to accept_interrupts() after this generated/fallback
-     * instruction boundary, so suppress it for the one-instruction capsule
-     * without losing a pending level asserted by the Genesis scheduler. */
-    int int_pending = fallback->int_pending;
-    int nmi_pending = fallback->nmi_pending;
-    fallback->int_pending = 0;
-    fallback->nmi_pending = 0;
-    z80_step(fallback);
+    /* One real interpreted instruction, with interrupt acceptance still owned
+     * by the outer scheduler. Preserve the EI boundary itself, not just its
+     * already-decremented delay counter; this also handles prefixed EI.
+     * Latches stay live throughout the capsule, including newly asserted IRQs. */
+    uint64_t native_before=g_z80.cyc;
+    unsigned long legacy_before=fallback->cyc;
+    int ei_boundary=z80_step_no_interrupts(fallback);
+    unsigned long elapsed=fallback->cyc-legacy_before;
     z80_recomp_restore_from_interpreter(fallback);
-    fallback->int_pending = int_pending;
-    fallback->nmi_pending = nmi_pending;
+    /* unsigned long is32 bits on Windows, while native time is64 bits. */
+    g_z80.cyc=native_before+elapsed;
+    g_z80.ei_block=(uint8_t)ei_boundary;
     s_fallback_steps++;
     unsigned byte = addr >> 3;
     uint8_t bit = (uint8_t)(1u << (addr & 7));
@@ -156,6 +159,7 @@ static void accept_interrupts(void)
         g_z80.cyc += 19; push16(g_z80.pc); g_z80.pc=target; break;
     }
     }
+    g_z80.wz=g_z80.pc;
 }
 
 void z80_recomp_init(void)
@@ -175,19 +179,54 @@ void z80_recomp_reset(void)
     g_machine.z80.int_pending=0; g_machine.z80.nmi_pending=0;
 }
 
-uint32_t z80_recomp_step_one(void)
+static uint32_t step_architecture(void)
 {
     uint64_t before=g_z80.cyc;
-    if (g_z80.halted) g_z80.cyc += 4;
+    if (g_z80.halted) {
+        g_z80.cyc += 4;
+        g_z80.r=(uint8_t)((g_z80.r&0x80u)|((g_z80.r+1u)&0x7fu));
+    }
     else if (g_game_spec.z80_step) g_game_spec.z80_step();
+#ifdef GENESIS_CONFIGURED_Z80_STEP
+    else GENESIS_CONFIGURED_Z80_STEP();
+#else
     else sms_dispatch_miss(g_z80.pc);
+#endif
     accept_interrupts();
-    z80_recomp_mirror_to_interpreter(&g_machine.z80);
     return (uint32_t)(g_z80.cyc-before);
+}
+
+uint32_t z80_recomp_step_one(void)
+{
+    uint32_t cycles=step_architecture();
+    z80_recomp_mirror_to_interpreter(&g_machine.z80);
+    return cycles;
+}
+
+uint32_t z80_recomp_run_slice(uint32_t done,uint32_t target,
+                              uint32_t *master_offset,uint32_t master_per_cycle)
+{
+    /* The cartridge scheduler has already settled reset/BUSREQ and runs no
+     * other CPU until this slice ends. Keep EVERY instruction's live guards,
+     * bus operations, start stamp and IRQ acceptance; only defer the legacy
+     * representation that ordinary observers consume at the slice edge.
+     * Fallback explicitly materializes before entering the interpreter. */
+    while(done<target){
+        *master_offset=done*master_per_cycle;
+        done+=step_architecture();
+#ifdef GEN_DEV_TRACE
+        /* Bus trace callbacks observe the previous completed instruction's
+         * legacy PC. Preserve that diagnostic contract in traced builds. */
+        z80_recomp_mirror_to_interpreter(&g_machine.z80);
+#endif
+    }
+    z80_recomp_mirror_to_interpreter(&g_machine.z80);
+    return done;
 }
 
 void z80_recomp_assert_irq(void) { g_machine.z80.int_pending=1; }
 uint16_t z80_recomp_pc(void) { return g_z80.pc; }
+uint64_t z80_recomp_cycles(void) { return g_z80.cyc; }
 int z80_recomp_irq_pending(void) { return g_machine.z80.int_pending ? 1:0; }
 int z80_recomp_iff1(void) { return g_z80.iff1 ? 1:0; }
 uint64_t z80_recomp_fallback_steps(void) { return s_fallback_steps; }

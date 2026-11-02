@@ -17,13 +17,15 @@ const char *input_button_name(GenesisButton b) {
 }
 static char mode[32];
 static int configure(const char *value) {snprintf(mode,sizeof mode,"%s",value);return 1;}
-static const GameVideo video={.configure=configure};
+static int enabled(void) {return strcmp(mode,"off")!=0;}
+static int width(int dw,int dh,int nw,int nh) {(void)dw;(void)dh;(void)nh;return nw;}
+static const GameVideo video={.configure=configure,.enabled=enabled,.width=width};
 static int presentation_enabled;
 static void presentation_configure(int on){presentation_enabled=on;}
 static void presentation_capture(const struct GVDP *v,int l,const uint32_t *p,int w,int n,const struct GVDPRasterRow *r)
 {(void)v;(void)l;(void)p;(void)w;(void)n;(void)r;}
 static int interpolate(double t,uint32_t *p,int s,int h){(void)t;(void)p;(void)s;(void)h;return 0;}
-static const GameVideo interpolated_video={.configure=configure,.presentation_configure=presentation_configure,
+static const GameVideo interpolated_video={.configure=configure,.enabled=enabled,.width=width,.presentation_configure=presentation_configure,
     .presentation_capture=presentation_capture,.interpolate=interpolate};
 
 int main(int argc,char **argv)
@@ -131,6 +133,15 @@ int main(int argc,char **argv)
     CHECK(p->feature_enable(p->ctx,"audio-output","unfiltered",0));
     CHECK(p->commit(p->ctx,NULL));app_config_defaults();CHECK(app_config_load(argv[1]));
     CHECK(!g_app_config.presentation_rate && !g_app_config.audio_filter_bypass);
+    /* A native row owner is not an elective viewport/widescreen feature. */
+    const GameVideo renderer_only={.renderer_enabled=enabled};
+    CHECK(!game_video_has_viewport(&renderer_only));
+    p=app_config_video_mods(&renderer_only,argv[1]);
+    CHECK(p && p->package_count(p->ctx)==2 && p->feature_count(p->ctx)==2);
+    CHECK(p->feature_get(p->ctx,0,&diagnostics) && !strcmp(diagnostics.id,"replay"));
+    CHECK(p->feature_get(p->ctx,1,&feature) && !strcmp(feature.id,"unfiltered"));
+    CHECK(!p->feature_get(p->ctx,2,&feature)); /* no viewport/widescreen feature */
+    app_config_apply_video(&renderer_only); /* no configure callback */
     CHECK(remove(argv[1])==0); /* this executable owns only its explicit CTest fixture */
     puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence and input binding preservation");
     return 0;
