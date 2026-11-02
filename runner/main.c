@@ -4082,7 +4082,10 @@ session_begin:;
             SDL_DisplayMode dm;int display=SDL_GetWindowDisplayIndex(window);
             display_rate=display>=0 && SDL_GetCurrentDisplayMode(display,&dm)==0 && dm.refresh_rate>0?dm.refresh_rate:target_fps;
         }
-        int want_vsync=high_refresh?0:original_vsync;
+        /* SDL's renderer info can advertise vsync even for an uncapped
+         * software renderer. Do not re-enable it after the finite-work or
+         * turbo path deliberately disabled host pacing. */
+        int want_vsync=(high_refresh || turbo || runtime_uncapped || benchmark_frames)?0:original_vsync;
         if(want_vsync!=presentation_vsync) {
             if(SDL_RenderSetVSync(renderer,want_vsync)==0)presentation_vsync=want_vsync;
         }

@@ -308,9 +308,9 @@ static int video_mod_package(void *ctx,int i,RecompLauncherCModPackage *out)
         MOD_COPY(out->description,"Automatically record replayable bug reports in logs. Attach the replay and its sidecars when reporting a problem.");
         out->enabled=g_app_config.replay_diagnostics;return 1;
     }
-    MOD_COPY(out->id,"custom-widescreen");MOD_COPY(out->name,"Widescreen");MOD_COPY(out->version,"1");
+    MOD_COPY(out->id,"custom-widescreen");MOD_COPY(out->name,"Widescreen (experimental)");MOD_COPY(out->version,"1");
     MOD_COPY(out->author,"GenesisRecomp contributors");
-    MOD_COPY(out->description,"Custom scene renderer with expanded scenery, objects and screen-anchored HUD.");
+    MOD_COPY(out->description,"Experimental opt-in custom scene renderer with expanded scenery, objects and screen-anchored HUD.");
     MOD_COPY(out->license,"PolyForm Noncommercial 1.0.0");
     out->enabled=g_app_config.custom_widescreen;out->option_count=1;return 1;
 }
@@ -340,10 +340,10 @@ static int video_mod_feature(void *ctx,int i,RecompLauncherCModFeature *out)
         out->enabled=g_app_config.replay_diagnostics;return 1;
     }
     MOD_COPY(out->id,"widescreen");MOD_COPY(out->package_id,"custom-widescreen");
-    MOD_COPY(out->package_name,"Widescreen");MOD_COPY(out->package_version,"1");
-    MOD_COPY(out->name,"Widescreen");MOD_COPY(out->group,"Presentation");
+    MOD_COPY(out->package_name,"Widescreen (experimental)");MOD_COPY(out->package_version,"1");
+    MOD_COPY(out->name,"Widescreen (experimental)");MOD_COPY(out->group,"Presentation");
     MOD_COPY(out->author,"GenesisRecomp contributors");
-    MOD_COPY(out->description,"Use the custom scene renderer. Adaptive follows the entire window without a 32:9 cap. Disabled restores native rendering.");
+    MOD_COPY(out->description,"Experimental custom scene renderer. Adaptive follows the entire window without a 32:9 cap. Disabled restores native rendering.");
     out->enabled=g_app_config.custom_widescreen;out->option_count=1;
     MOD_COPY(out->status,out->enabled?"Enabled (experimental)":"Disabled (native renderer)");return 1;
 }
