@@ -48,4 +48,18 @@ typedef struct GameVideo {
                           uint32_t *out, int width,
                           GameVideoNativeRow native_row, void *native_ctx,
                           const struct GVDPRasterRow *raster);
+    /* Optional host-only interpolation. Configuration must not change guest
+     * activation, timing or canonical state. Capture runs synchronously on a
+     * genuine completed row, after the one guest-visible sprite evaluation;
+     * it must copy anything needed later (never retain providers/native_row).
+     * Existing adapters and their positional initializer prefix stay valid. */
+    void (*presentation_configure)(int enabled);
+    void (*presentation_capture)(const struct GVDP *vdp, int line,
+                          const uint32_t *image, int width, int native_w,
+                          const struct GVDPRasterRow *raster);
+    /* Previous completed image (0) to latest (1), overlays included. Return
+     * zero to repeat the ordinary image. May only read owned presentation
+     * snapshots; no guest execution, provider calls or canonical mutations. */
+    int (*interpolate)(double phase, uint32_t *image, int stride, int height);
+    void (*presentation_reset)(void);
 } GameVideo;

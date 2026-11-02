@@ -49,4 +49,39 @@ static inline uint64_t frame_pacer_deadline(FramePacer *p, uint64_t now)
     return deadline;
 }
 
+/* A second clock enumerates display deadlines inside each guest interval.
+ * Never round display/guest to an integer: 144 Hz needs alternating two/three
+ * presentations per NTSC tick. This clock cannot advance the simulation. */
+typedef struct PresentationClock {
+    FramePacer display;
+    uint64_t frequency;
+    double rate;
+    int active;
+} PresentationClock;
+static inline void presentation_clock_reset(PresentationClock *p)
+{ p->active = 0; }
+static inline void presentation_clock_begin(PresentationClock *p, uint64_t frequency,
+                                            double rate, uint64_t start)
+{
+    if (!p->active || p->rate != rate || p->frequency != frequency ||
+        (start > p->display.next && start - p->display.next > frequency / 4)) {
+        frame_pacer_init(&p->display, frequency, rate);
+        p->display.next = start; p->display.active = 1;
+        p->frequency = frequency; p->rate = rate; p->active = 1;
+    }
+    /* Drop overdue output, never emit a burst or speed the guest up. */
+    while (p->display.next < start)
+        (void)frame_pacer_deadline(&p->display, p->display.next);
+}
+static inline int presentation_clock_next(PresentationClock *p, uint64_t start,
+                                          double guest_period, uint64_t *deadline,
+                                          double *phase)
+{
+    uint64_t at = p->display.next;
+    if ((double)(at - start) >= guest_period) return 0;
+    *deadline = frame_pacer_deadline(&p->display, at);
+    *phase = (double)(at - start) / guest_period;
+    return 1;
+}
+
 #endif

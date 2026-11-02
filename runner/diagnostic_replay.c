@@ -402,14 +402,14 @@ int genesis_replay_init(const char *directory, const char *playback,
   char config[1200];
   snprintf(config, sizeof config,
            "[video]\nwindow_scale = %d\nfullscreen = 0\nlinear_filter = "
-           "%d\nwidescreen = %d\nwidescreen_cells = %d\n"
-           "[audio]\nvolume = %d\n[launcher]\nskip_launcher = "
+           "%d\nwidescreen = %d\nwidescreen_cells = %d\npresentation_rate = %d\n"
+           "[audio]\nvolume = %d\nbypass_filter = %d\n[launcher]\nskip_launcher = "
            "1\n[rewind]\nenabled = 0\n"
            "[mods.widescreen]\nenabled = %d\naspect = "
            "%s\n[mods.diagnostics]\nenabled = 0\n",
            g_app_config.window_scale, g_app_config.linear_filter,
-           g_app_config.widescreen, g_app_config.widescreen_cells,
-           g_app_config.volume, g_app_config.custom_widescreen,
+           g_app_config.widescreen, g_app_config.widescreen_cells, g_app_config.presentation_rate,
+           g_app_config.volume, g_app_config.audio_filter_bypass, g_app_config.custom_widescreen,
            app_config_aspect_mode(g_app_config.custom_aspect));
   if (!GenesisReplayWriterBegin(writer, path, header, config, "", effective)) {
     fail(GenesisReplayWriterError(writer));
