@@ -43,6 +43,9 @@ harnesses, and recomp-vs-interpreter co-simulation.
 5. **No dev diagnostics.** The exe was built with the default (prod)
    configuration: `GEN_DEV_TRACE=OFF` and `SONIC_REVERSE_DEBUG=OFF` where the
    game repo offers the option.
+   [Replayable player feedback](docs/PLAYER_FEEDBACK.md) is a production
+   feature and stays enabled by default. Never package recordings or their
+   sidecars; the packager rejects `*.replay*` and `*.sav`.
 6. **README** states: bring-your-own-ROM, the project license, and where the
    source lives.
 

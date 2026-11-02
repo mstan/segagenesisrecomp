@@ -1,5 +1,5 @@
 /*
- * app_config.c — settings.ini + rom.cfg load/save (see app_config.h).
+ * app_config.c â€” settings.ini + rom.cfg load/save (see app_config.h).
  */
 #include "app_config.h"
 #include "input_map.h"
@@ -40,6 +40,7 @@ void app_config_defaults(void)
     g_app_config.rewind_enabled   = 1;
     g_app_config.rewind_depth     = 60;
     g_app_config.rewind_interval  = 6;
+    g_app_config.replay_diagnostics = 1;
 }
 
 /* ---- tiny ini helpers ---------------------------------------------------- */
@@ -110,6 +111,7 @@ int app_config_load(const char *path)
             else if (!strcmp(name, "launcher")) section = 2;
             else if (!strcmp(name, "mods.widescreen")) section = 3;
             else if (!strcmp(name, "rewind"))   section = 4;
+            else if (!strcmp(name, "mods.diagnostics")) section = 5;
             else if (!strcmp(name, "input.p1")) section = 10;
             else if (!strcmp(name, "input.p2")) section = 11;
             else if (!strcmp(name, "input.p3")) section = 12;
@@ -150,6 +152,8 @@ int app_config_load(const char *path)
             if (!strcmp(key, "enabled")) g_app_config.rewind_enabled = atoi(val) != 0;
             else if (!strcmp(key, "depth")) g_app_config.rewind_depth = atoi(val);
             else if (!strcmp(key, "interval")) g_app_config.rewind_interval = atoi(val);
+        } else if (section == 5) {
+            if (!strcmp(key,"enabled")) g_app_config.replay_diagnostics=atoi(val)!=0;
         } else if (section >= 10 && section < 10 + INPUT_MAX_PLAYERS) {
             PlayerInput *pi = &g_input_map.p[section - 10];
             if      (!strcmp(key, "device"))   pi->device       = atoi(val);
@@ -209,6 +213,7 @@ int app_config_save(const char *path)
             g_app_config.rewind_interval);
     fprintf(f, "[mods.widescreen]\nenabled = %d\naspect = %s\n\n",
             g_app_config.custom_widescreen, app_config_aspect_mode(g_app_config.custom_aspect));
+    fprintf(f,"[mods.diagnostics]\nenabled = %d\n\n",g_app_config.replay_diagnostics);
 
     for (int p = 0; p < INPUT_MAX_PLAYERS; ++p) write_player(f, p);
 
@@ -241,16 +246,26 @@ void app_config_apply_video(const GameVideo *video)
  * offered only when the game supplies a custom renderer; no external archive
  * or game-specific addresses belong in the shared settings bridge. */
 static char s_mod_settings[600],s_mod_error[128];
+static int s_mod_video_available;
+static int diagnostic_identity(const char *package,const char *feature) {
+    return package && feature && !strcmp(package,"playtest-diagnostics") && !strcmp(feature,"replay");
+}
 static int video_mod_identity(const char *package,const char *feature)
 {
     return package && feature && !strcmp(package,"custom-widescreen") && !strcmp(feature,"widescreen");
 }
-static int video_mod_count(void *ctx) { (void)ctx;return 1; }
+static int video_mod_count(void *ctx) { (void)ctx;return s_mod_video_available?2:1; }
 #define MOD_COPY(dst,src) snprintf(dst,sizeof(dst),"%s",src)
 static int video_mod_package(void *ctx,int i,RecompLauncherCModPackage *out)
 {
-    (void)ctx;if(!out || i!=0)return 0;
+    (void)ctx;if(!out || i<0 || i>=video_mod_count(ctx))return 0;
     memset(out,0,sizeof(*out));
+    if(i==s_mod_video_available) {
+        MOD_COPY(out->id,"playtest-diagnostics");MOD_COPY(out->name,"Playtest Diagnostics");MOD_COPY(out->version,"1");
+        MOD_COPY(out->author,"GenesisRecomp contributors");MOD_COPY(out->license,"PolyForm Noncommercial 1.0.0");
+        MOD_COPY(out->description,"Automatically record replayable bug reports in logs. Attach the replay and its sidecars when reporting a problem.");
+        out->enabled=g_app_config.replay_diagnostics;return 1;
+    }
     MOD_COPY(out->id,"custom-widescreen");MOD_COPY(out->name,"Widescreen");MOD_COPY(out->version,"1");
     MOD_COPY(out->author,"GenesisRecomp contributors");
     MOD_COPY(out->description,"Custom scene renderer with expanded scenery, objects and screen-anchored HUD.");
@@ -259,8 +274,17 @@ static int video_mod_package(void *ctx,int i,RecompLauncherCModPackage *out)
 }
 static int video_mod_feature(void *ctx,int i,RecompLauncherCModFeature *out)
 {
-    (void)ctx;if(!out || i!=0)return 0;
+    (void)ctx;if(!out || i<0 || i>=video_mod_count(ctx))return 0;
     memset(out,0,sizeof(*out));
+    if(i==s_mod_video_available) {
+        MOD_COPY(out->id,"replay");MOD_COPY(out->package_id,"playtest-diagnostics");
+        MOD_COPY(out->package_name,"Playtest Diagnostics");MOD_COPY(out->package_version,"1");
+        MOD_COPY(out->name,"Replayable feedback");MOD_COPY(out->group,"Diagnostics");
+        MOD_COPY(out->author,"GenesisRecomp contributors");
+        MOD_COPY(out->description,"Default on. Records controller inputs, settings, mods and state checks for offline reproduction. Zip the game's feedback replay and all sidecars from logs after a problem.");
+        MOD_COPY(out->status,g_app_config.replay_diagnostics?"Recording on next launch":"Disabled");
+        out->enabled=g_app_config.replay_diagnostics;return 1;
+    }
     MOD_COPY(out->id,"widescreen");MOD_COPY(out->package_id,"custom-widescreen");
     MOD_COPY(out->package_name,"Widescreen");MOD_COPY(out->package_version,"1");
     MOD_COPY(out->name,"Widescreen");MOD_COPY(out->group,"Presentation");
@@ -285,6 +309,7 @@ static int video_mod_choice(void *ctx,const char *package,const char *feature,co
 }
 static int video_mod_enable(void *ctx,const char *package,const char *feature,int on)
 {
+    if(diagnostic_identity(package,feature)) {g_app_config.replay_diagnostics=on!=0;return 1;}
     (void)ctx;if(!video_mod_identity(package,feature))return 0;
     g_app_config.custom_widescreen=on!=0;return 1;
 }
@@ -298,9 +323,10 @@ static int video_mod_commit(void *ctx,const char *image)
 {
     (void)ctx;(void)image;s_mod_error[0]=0;
     /* Keep any controller rebindings the launcher already persisted. */
-    int on=g_app_config.custom_widescreen,aspect=g_app_config.custom_aspect;
+    int on=g_app_config.custom_widescreen,aspect=g_app_config.custom_aspect,diagnostics=g_app_config.replay_diagnostics;
     app_config_load(s_mod_settings);
     g_app_config.custom_widescreen=on;g_app_config.custom_aspect=aspect;
+    g_app_config.replay_diagnostics=diagnostics;
     if(app_config_save(s_mod_settings))return 1;
     MOD_COPY(s_mod_error,"Unable to save widescreen settings.ini");return 0;
 }
@@ -308,7 +334,7 @@ static const char *video_mod_error(void *ctx) { (void)ctx;return s_mod_error; }
 const RecompLauncherCModProvider *app_config_video_mods(const GameVideo *video,const char *path)
 {
     static RecompLauncherCModProvider provider;
-    if(!game_video_has_viewport(video))return NULL;
+    s_mod_video_available=game_video_has_viewport(video);
     snprintf(s_mod_settings,sizeof s_mod_settings,"%s",path?path:"");s_mod_error[0]=0;
     memset(&provider,0,sizeof provider);
     provider.package_count=video_mod_count;provider.package_get=video_mod_package;
