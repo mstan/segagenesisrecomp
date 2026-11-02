@@ -2074,9 +2074,14 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
 #endif
             for (int p = 0; p < gi.num_players; p++) {
                 int src = ls.player_src[p];
-                g_input_map.p[p].device       = (src == 1) ? INPUT_DEV_KEYBOARD
-                                              : (src == 2) ? INPUT_DEV_GAMEPAD
-                                              : INPUT_DEV_NONE;
+                /* The UI's source vocabulary has no combined keyboard/pad
+                 * entry. Keep that native choice when its displayed keyboard
+                 * source was left selected; choosing None/Gamepad still edits it. */
+                if (!(src == 1 && g_input_map.p[p].device ==
+                      (INPUT_DEV_KEYBOARD | INPUT_DEV_GAMEPAD)))
+                    g_input_map.p[p].device = (src == 1) ? INPUT_DEV_KEYBOARD
+                                                : (src == 2) ? INPUT_DEV_GAMEPAD
+                                                : INPUT_DEV_NONE;
                 g_input_map.p[p].pad_type     = (ls.pad_mode[p] == 1) ? PAD_6BUTTON : PAD_3BUTTON;
                 g_input_map.p[p].deadzone_pct = ls.deadzone[p];
             }
