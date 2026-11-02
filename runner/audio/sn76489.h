@@ -15,6 +15,8 @@ void   psg_init(void);
 void   psg_advance(uint32_t cycles_master);
 void   psg_write(uint8_t value);
 size_t psg_render(int16_t *out, size_t sample_count);
+/* One drain, two optional outputs; the canonical filter always advances. */
+size_t psg_render_pair(int16_t *filtered, int16_t *unfiltered, size_t sample_count);
 size_t psg_samples_available(void);
 uint32_t psg_sample_rate(void);
 /* Reset per-frame leftover cycle accumulator. Matches clownmdemu's

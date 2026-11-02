@@ -32,6 +32,11 @@ void ym2612_write(uint8_t port, uint8_t value);
  * than `sample_count` if the internal scratch didn't have that many). */
 size_t ym2612_render(int16_t *out, size_t sample_count);
 
+/* Drain the same samples once into the canonical hardware-filtered stream
+ * and/or its gain-matched, saturated pre-filter partner. Both streams are
+ * always generated and snapshotted, independent of presentation settings. */
+size_t ym2612_render_pair(int16_t *filtered, int16_t *unfiltered, size_t sample_count);
+
 /* How many stereo samples are sitting in the internal scratch waiting to
  * be rendered. Call after ym2612_advance / write to know how many to
  * request from ym2612_render. */
