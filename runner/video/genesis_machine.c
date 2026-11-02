@@ -148,6 +148,7 @@ uint32_t machine_z80_pc(void)
 /* glue.c hooks (recompiled-68K fiber + own-backend interrupt delivery). */
 extern void glue_run_game_chunk(uint32_t cycles);
 extern void glue_own_interrupt(int level, GVDP *vdp);
+extern int  glue_own_hint_service_latched(GVDP *vdp);
 extern int  glue_own_vint_service_latched(GVDP *vdp);  /* deliver a V-int latched while 68K IRQs were masked */
 
 /* ARGB palette cache: CRAM normal/shadow/highlight, the black-bar sentinel,
@@ -519,6 +520,7 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
          * may have dropped the mask — keeps v_vblank_count in step with the
          * oracle instead of losing the masked V-int. */
         glue_own_vint_service_latched(&m->vdp);
+        glue_own_hint_service_latched(&m->vdp);
 
         /* Step the Z80 (SMPS driver) for its share of the line. */
         step_z80(m, Z80_PER_LINE);

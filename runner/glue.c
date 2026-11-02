@@ -802,6 +802,9 @@ void glue_charge_68k_stall(uint32_t cycles)
  * desynced VRAM. We now LATCH it and deliver at the next scanline whose mask
  * permits — see glue_own_vint_service_latched(). */
 static int s_own_vint_latched = 0;
+/* IRQ4 is level-triggered too: masked split-screen/water requests must wait
+ * for the CPU mask, rather than disappear until the next counter expiry. */
+static int s_own_hint_latched = 0;
 
 /* --- STAGE 1: interleaved interrupt delivery (behind GENESIS_INTERLEAVE_IRQ) --
  * The atomic model runs a V-int/H-int handler to completion on the MAIN fiber
@@ -957,7 +960,11 @@ void glue_own_interrupt(int level, GVDP *vdp)
      * a crossing V-int and let it deliver after the current handler RTEs. (SR
      * mask=level usually makes imask>=6 below anyway; this guards the case where
      * the handler itself drops the mask mid-run.) */
-    if (s_irq_in_progress) { if (level == 6) s_own_vint_latched = 1; return; }
+    if (s_irq_in_progress) {
+        if (level == 6) s_own_vint_latched = 1;
+        if (level == 4) s_own_hint_latched = 1;
+        return;
+    }
     int imask = (g_cpu.SR >> 8) & 7;
 
     if (level == 6) {
@@ -1002,7 +1009,10 @@ void glue_own_interrupt(int level, GVDP *vdp)
 #endif
             s_own_vint_latched = 1;
         }
-    } else if (level == 4 && imask < 4) {
+    } else if (level == 4 && imask >= 4) {
+        s_own_hint_latched = 1;
+    } else if (level == 4) {
+        s_own_hint_latched = 0;
         const uint32_t STK = g_game_layout.intr_stack;
         uint32_t byteoff = (STK - 256u) & 0xFFFFu;
         uint8_t save[256];
@@ -1051,6 +1061,18 @@ int glue_own_vint_service_latched(GVDP *vdp)
     own_deliver_vint(vdp);
     return 1;
 }
+
+/* V-int is serviced first by the scheduler. A pending H-int becomes eligible
+ * only once that handler and the main program allow IRQ4, and while IE1 is on.
+ * Multiple expiries coalesce into the same asserted request. */
+int glue_own_hint_service_latched(GVDP *vdp)
+{
+    if (!s_own_hint_latched || !s_game_running || s_irq_in_progress || s_pending_irq ||
+        !(vdp->reg[0]&16) || ((g_cpu.SR>>8)&7)>=4) return 0;
+    glue_own_interrupt(4,vdp);
+    return 1;
+}
+int glue_cosim_hint_latched(void) { return s_own_hint_latched; }
 
 /* Non-clearing read of the masked-V-int latch for full-state hashing
  * (glue_own_vint_service_latched() would consume it — must not, during a
@@ -1458,7 +1480,8 @@ void glue_save_state(FILE *sf)
     /* A V-int latched across the save point (masked transition) must survive
      * the restore or the game loses one v_vblank_count. */
     { uint8_t latched = (uint8_t)s_own_vint_latched;
-      fwrite(&latched, 1, 1, sf); }
+      fwrite(&latched, 1, 1, sf);
+      latched=(uint8_t)s_own_hint_latched; fwrite(&latched,1,1,sf); }
 }
 
 void glue_load_state(FILE *sf)
@@ -1469,7 +1492,8 @@ void glue_load_state(FILE *sf)
     fread(&g_vblank_threshold, 1, sizeof(g_vblank_threshold), sf);
     { uint8_t latched = 0;
       fread(&latched, 1, 1, sf);
-      s_own_vint_latched = latched ? 1 : 0; }
+      s_own_vint_latched = latched ? 1 : 0;
+      latched=0; fread(&latched,1,1,sf); s_own_hint_latched=latched?1:0; }
 }
 
 void glue_restart_game_fiber(uint32_t resume_pc)
@@ -2394,7 +2418,7 @@ typedef struct GlueRbSched {
     uint32_t budget_cyc_seen;
     int32_t  game_yielded_break, interleave_active;
     uint32_t chunk_cycles;
-    int32_t  own_vint_latched, pending_irq;
+    int32_t  own_vint_latched, own_hint_latched, pending_irq;
     int32_t  state_requested, state_parked;
     uint32_t spin_addr;
     int32_t  spin_count;
@@ -2449,6 +2473,7 @@ size_t glue_rb_sched_save(void *dst, size_t cap)
     s.interleave_active    = s_interleave_active;
     s.chunk_cycles         = (uint32_t)s_chunk_cycles;
     s.own_vint_latched     = s_own_vint_latched;
+    s.own_hint_latched     = s_own_hint_latched;
     s.pending_irq          = s_pending_irq;
     s.state_requested      = s_state_requested;
     s.state_parked         = s_state_parked;
@@ -2502,6 +2527,7 @@ int glue_rb_sched_load(const void *src, size_t len)
     s_interleave_active         = s.interleave_active;
     s_chunk_cycles              = s.chunk_cycles;
     s_own_vint_latched          = s.own_vint_latched;
+    s_own_hint_latched          = s.own_hint_latched;
     s_pending_irq               = s.pending_irq;
     s_state_requested           = s.state_requested;
     s_state_parked              = s.state_parked;
