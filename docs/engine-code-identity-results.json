@@ -553,5 +553,607 @@
   "unqualified_v3": "Built quick-reference variant was not game-qualified after the external writer hole was discovered; retained separately.",
   "decision": "Reject this page-version/cache package after six layouts/qualifications. Do not open adoption PRs, merge it, enable it in current builds, or mark all E02 mechanisms exhausted. Resume next family from qualified E01, excluding rejected E02 runtime code.",
   "next": "Independent reviewer must verify final rejection record and Beads checkpoint before instructing move to E03.",
-  "cleanup": "Retain isolated source worktrees, frozen rejected binaries and bounded raw evidence outside delivery folders. No new release or Games folder changes."
+  "cleanup": "Retain isolated source worktrees, frozen rejected binaries and bounded raw evidence outside delivery folders. No new release or Games folder changes.",
+  "followup_2026_11_01": {
+    "date": "2026-11-01",
+    "scope": "Two additional implemented code-ownership architectures, evaluated from accepted E35, independently of rejected physical-page package. Parent independently reviews adoption/family disposition.",
+    "recommendation": "immutable_contract_qualified_performance_neutral_inconclusive_ready_for_independent_review",
+    "baseline_engine": "be957a4a542ab3895711102e2633b27bd709fc0c",
+    "baseline_core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+    "qualified_native_archive": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\native\\segacd_owned_native_program.lib",
+      "sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+      "bytes": 1390473432,
+      "qualification_hook": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+      "hook_sha256": "ac85c2bb77b42c6358d10f40287cabbd82f1f6c69ea1b4a40aea251626163cd1",
+      "scope": "Existing qualified native archive, identical in both arms; restored original include chain instead of rebuilding unmodified generated catalog"
+    },
+    "implementations": [
+      {
+        "name": "exclusive_writer_free_interval",
+        "engine": "d0b3e176eb4fd156ef0886980149ad3499d21abc",
+        "core": "21169f0de49b379770a2b07b6ab65ef2b9dc46cd",
+        "build": {
+          "package": "E02-exclusive-code-intervals",
+          "engine_commit": "d0b3e176eb4fd156ef0886980149ad3499d21abc",
+          "core_commit": "21169f0de49b379770a2b07b6ab65ef2b9dc46cd",
+          "source_manifest": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\source-identities.json",
+            "sha256": "578b9925f016c52317b9bedb81c98324e0bcd9decaaa4aa87581a0267e512a44"
+          },
+          "built": true,
+          "packages": {
+            "A": {
+              "binary": "G:\\Temp\\Codex\\genesis-engine-persistence-20261101-server\\binaries-complete\\B\\SonicCD.exe",
+              "sha256": "80d9a08ddd92d13a0ced8150abe207c6da10851e67eb5efb9692f6603bf99ad2",
+              "bytes": 115852288,
+              "seconds": 41.485000000335276,
+              "commands": [
+                [
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+                  "-S",
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd",
+                  "-B",
+                  "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+                  "-C",
+                  "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd\\initial-cache.cmake",
+                  "-G",
+                  "Ninja",
+                  "-DCMAKE_BUILD_TYPE=Release",
+                  "-DCMAKE_MAKE_PROGRAM=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\ninja\\ninja.exe",
+                  "-DCMAKE_C_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+                  "-DCMAKE_CXX_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+                  "-DCMAKE_C_FLAGS=/DWIN32 /D_WINDOWS /external:env:INCLUDE /external:W0",
+                  "-DCMAKE_CXX_FLAGS=/DWIN32 /D_WINDOWS /GR /EHsc /external:env:INCLUDE /external:W0",
+                  "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+                  "-DE15_VDP_SOURCE_OVERRIDE=G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\engine\\runner\\video\\genesis_vdp.c",
+                  "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\engine",
+                  "-DSEGACD_RECOMP_UI_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd-ui",
+                  "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\compact",
+                  "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-persistence-20261101-server\\variant.cmake",
+                  "-DE35_REFERENCE=OFF"
+                ],
+                [
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+                  "--build",
+                  "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+                  "--target",
+                  "SonicCD",
+                  "--parallel",
+                  "1"
+                ]
+              ]
+            },
+            "B": {
+              "binary": "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\binaries\\B\\SonicCD.exe",
+              "sha256": "be7385532f389099df91e96234bdef94963775a8bc4af6981c0dd3a9e68e0ae7",
+              "bytes": 115852800,
+              "seconds": 358.04699999978766,
+              "commands": [
+                [
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+                  "-S",
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd",
+                  "-B",
+                  "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\build-cd",
+                  "-C",
+                  "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\build-cd\\initial-cache.cmake",
+                  "-G",
+                  "Ninja",
+                  "-DCMAKE_BUILD_TYPE=Release",
+                  "-DCMAKE_MAKE_PROGRAM=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\ninja\\ninja.exe",
+                  "-DCMAKE_C_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+                  "-DCMAKE_CXX_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+                  "-DCMAKE_C_FLAGS=/DWIN32 /D_WINDOWS /external:env:INCLUDE /external:W0",
+                  "-DCMAKE_CXX_FLAGS=/DWIN32 /D_WINDOWS /GR /EHsc /external:env:INCLUDE /external:W0",
+                  "-DE15_VDP_SOURCE_OVERRIDE=G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\engine\\runner\\video\\genesis_vdp.c",
+                  "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\engine",
+                  "-DSEGACD_RECOMP_UI_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd-ui",
+                  "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\compact",
+                  "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+                  "-DSEGACD_CODE_INTERVALS=ON"
+                ],
+                [
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+                  "--build",
+                  "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\build-cd",
+                  "--target",
+                  "SonicCD",
+                  "--parallel",
+                  "1"
+                ]
+              ]
+            }
+          },
+          "qualified_native_archive": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\native\\segacd_owned_native_program.lib",
+            "sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+            "bytes": 1390473432,
+            "qualification_hook": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+            "hook_sha256": "ac85c2bb77b42c6358d10f40287cabbd82f1f6c69ea1b4a40aea251626163cd1",
+            "scope": "Existing qualified native archive, identical in both arms; restored original include chain instead of rebuilding unmodified generated catalog"
+          },
+          "read_only_z80_header": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\engine\\external\\z80-recomp-core\\include\\sms_runtime.h",
+            "sha256": "5e498c4461dd495718888962e2f1c8f8ff2e48b9523450011f92cb06789d7eb1"
+          },
+          "scope": "Baseline acceptedE35 frozenPE; candidate exactsame sourcebase with exclusive codeintervals and additive runtime methods, context/generatedoperation ABI unchanged. Same MSVC19.41 portable toolchain/settings/privateinputs. No10957catalog rebuild."
+        },
+        "timing_scope": "fixed core within each A/B or B/A pair; shared SERVER Windows; frames1800-3000 process CPU/cycles include identical checkpoint work; SDL software/dummy video and dummy audio, full emulation",
+        "samples_in_order": [
+          {
+            "arm": "A",
+            "cost": {
+              "cpu_seconds": 13.578125,
+              "cycles": 46276556101
+            },
+            "startup_process_cost": {
+              "cpu_seconds": 6.0,
+              "cycles": 19529974525
+            },
+            "boot_300_process_cost": {
+              "cpu_seconds": 7.9375,
+              "cycles": 26100539082
+            },
+            "whole_3000_process_cost": {
+              "cpu_seconds": 34.59375,
+              "cycles": 116742457356
+            },
+            "final_memory": {
+              "peak_working_set_bytes": 248893440,
+              "peak_commit_bytes": 30937088,
+              "private_bytes": 30883840
+            },
+            "code_interval_reuses": [],
+            "passed": true
+          },
+          {
+            "arm": "B",
+            "cost": {
+              "cpu_seconds": 14.0625,
+              "cycles": 47704393082
+            },
+            "startup_process_cost": {
+              "cpu_seconds": 6.0625,
+              "cycles": 19810369970
+            },
+            "boot_300_process_cost": {
+              "cpu_seconds": 8.21875,
+              "cycles": 26573430760
+            },
+            "whole_3000_process_cost": {
+              "cpu_seconds": 35.453125,
+              "cycles": 118830715233
+            },
+            "final_memory": {
+              "peak_working_set_bytes": 249757696,
+              "peak_commit_bytes": 31223808,
+              "private_bytes": 31162368
+            },
+            "code_interval_reuses": [
+              53
+            ],
+            "passed": true
+          },
+          {
+            "arm": "B",
+            "cost": {
+              "cpu_seconds": 14.578125,
+              "cycles": 48641866993
+            },
+            "startup_process_cost": {
+              "cpu_seconds": 5.75,
+              "cycles": 19434203268
+            },
+            "boot_300_process_cost": {
+              "cpu_seconds": 7.625,
+              "cycles": 26235243211
+            },
+            "whole_3000_process_cost": {
+              "cpu_seconds": 35.359375,
+              "cycles": 119685474385
+            },
+            "final_memory": {
+              "peak_working_set_bytes": 249167872,
+              "peak_commit_bytes": 31219712,
+              "private_bytes": 31170560
+            },
+            "code_interval_reuses": [
+              53
+            ],
+            "passed": true
+          },
+          {
+            "arm": "A",
+            "cost": {
+              "cpu_seconds": 14.421875,
+              "cycles": 47520848731
+            },
+            "startup_process_cost": {
+              "cpu_seconds": 5.96875,
+              "cycles": 19451526997
+            },
+            "boot_300_process_cost": {
+              "cpu_seconds": 7.859375,
+              "cycles": 26424609318
+            },
+            "whole_3000_process_cost": {
+              "cpu_seconds": 34.796875,
+              "cycles": 117304547575
+            },
+            "final_memory": {
+              "peak_working_set_bytes": 248864768,
+              "peak_commit_bytes": 30883840,
+              "private_bytes": 30859264
+            },
+            "code_interval_reuses": [],
+            "passed": true
+          }
+        ],
+        "pair_reductions_pct": [
+          {
+            "cpu_seconds": [
+              -3.567318757192184
+            ],
+            "cycles": [
+              -3.085443475706584
+            ]
+          },
+          {
+            "cpu_seconds": [
+              -1.0834236186348933
+            ],
+            "cycles": [
+              -2.359003031165785
+            ]
+          }
+        ],
+        "AA_drift_pct": {
+          "cpu_seconds": 6.214039125431525,
+          "cycles": 2.688818561355988
+        },
+        "whole_run_candidate_increases_pct": [
+          {
+            "cpu_seconds": 2.4841915085817456,
+            "cycles": 1.7887732743469442
+          },
+          {
+            "cpu_seconds": 1.6165244723843841,
+            "cycles": 2.0296969377745055
+          }
+        ],
+        "disposition": "rejected_only_53_real_reuses_and_both_pairs_cost_more"
+      },
+      {
+        "name": "immutable_frame_region",
+        "engine": "235cd3e700e93e51ee7055c2f92c6eaaaadb6596",
+        "core": "df39ba669e3af540cf08f3eb3f5827737e5233aa",
+        "build": {
+          "package": "E02-immutable-frame-code-leases",
+          "engine_commit": "235cd3e700e93e51ee7055c2f92c6eaaaadb6596",
+          "core_commit": "df39ba669e3af540cf08f3eb3f5827737e5233aa",
+          "source_manifest": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\immutable-identities.json",
+            "sha256": "6ea975fe7e9f39d6e001bdf9e0a2e5d5c8c55b48c68526dbde3b8629f47ba0bc"
+          },
+          "built": true,
+          "packages": {
+            "A": {
+              "binary": "G:\\Temp\\Codex\\genesis-engine-persistence-20261101-server\\binaries-complete\\B\\SonicCD.exe",
+              "sha256": "80d9a08ddd92d13a0ced8150abe207c6da10851e67eb5efb9692f6603bf99ad2",
+              "bytes": 115852288,
+              "seconds": 41.485000000335276,
+              "commands": [
+                [
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+                  "-S",
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd",
+                  "-B",
+                  "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+                  "-C",
+                  "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd\\initial-cache.cmake",
+                  "-G",
+                  "Ninja",
+                  "-DCMAKE_BUILD_TYPE=Release",
+                  "-DCMAKE_MAKE_PROGRAM=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\ninja\\ninja.exe",
+                  "-DCMAKE_C_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+                  "-DCMAKE_CXX_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+                  "-DCMAKE_C_FLAGS=/DWIN32 /D_WINDOWS /external:env:INCLUDE /external:W0",
+                  "-DCMAKE_CXX_FLAGS=/DWIN32 /D_WINDOWS /GR /EHsc /external:env:INCLUDE /external:W0",
+                  "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+                  "-DE15_VDP_SOURCE_OVERRIDE=G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\engine\\runner\\video\\genesis_vdp.c",
+                  "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\engine",
+                  "-DSEGACD_RECOMP_UI_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd-ui",
+                  "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\compact",
+                  "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-persistence-20261101-server\\variant.cmake",
+                  "-DE35_REFERENCE=OFF"
+                ],
+                [
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+                  "--build",
+                  "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+                  "--target",
+                  "SonicCD",
+                  "--parallel",
+                  "1"
+                ]
+              ]
+            },
+            "B": {
+              "binary": "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\binaries\\immutable-B\\SonicCD.exe",
+              "sha256": "a1898a6470b7773deb7506e368edac54b6624e7d128c98f68e8557bdbbfa980e",
+              "bytes": 115855872,
+              "seconds": 222.20300000021234,
+              "commands": [
+                [
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+                  "-S",
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd",
+                  "-B",
+                  "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\build-cd",
+                  "-C",
+                  "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\build-cd\\initial-cache.cmake",
+                  "-G",
+                  "Ninja",
+                  "-DCMAKE_BUILD_TYPE=Release",
+                  "-DCMAKE_MAKE_PROGRAM=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\ninja\\ninja.exe",
+                  "-DCMAKE_C_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+                  "-DCMAKE_CXX_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+                  "-DCMAKE_C_FLAGS=/DWIN32 /D_WINDOWS /external:env:INCLUDE /external:W0",
+                  "-DCMAKE_CXX_FLAGS=/DWIN32 /D_WINDOWS /GR /EHsc /external:env:INCLUDE /external:W0",
+                  "-DE15_VDP_SOURCE_OVERRIDE=G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\engine\\runner\\video\\genesis_vdp.c",
+                  "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\engine",
+                  "-DSEGACD_RECOMP_UI_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd-ui",
+                  "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\compact",
+                  "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+                  "-DSEGACD_IMMUTABLE_CODE=ON"
+                ],
+                [
+                  "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+                  "--build",
+                  "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\build-cd",
+                  "--target",
+                  "SonicCD",
+                  "--parallel",
+                  "1"
+                ]
+              ]
+            }
+          },
+          "qualified_native_archive": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\native\\segacd_owned_native_program.lib",
+            "sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+            "bytes": 1390473432,
+            "qualification_hook": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+            "hook_sha256": "ac85c2bb77b42c6358d10f40287cabbd82f1f6c69ea1b4a40aea251626163cd1",
+            "scope": "Existing qualified native archive, identical in both arms; restored original include chain instead of rebuilding unmodified generated catalog"
+          },
+          "read_only_z80_header": {
+            "path": "G:\\Temp\\Codex\\genesis-engine-code-ownership-20261101-server\\engine\\external\\z80-recomp-core\\include\\sms_runtime.h",
+            "sha256": "5e498c4461dd495718888962e2f1c8f8ff2e48b9523450011f92cb06789d7eb1"
+          },
+          "scope": "Baseline acceptedE35 frozenPE; candidate exactsame sourcebase with immutable framecode leases and additive runtime methods, context/generatedoperation ABI unchanged. Same MSVC19.41 portable toolchain/settings/privateinputs. No10957catalog rebuild."
+        },
+        "timing_scope": "fixed core within each A/B or B/A pair; shared SERVER Windows; frames1800-3000 process CPU/cycles include identical checkpoint work; SDL software/dummy video and dummy audio, full emulation",
+        "samples_in_order": [
+          {
+            "arm": "A",
+            "cost": {
+              "cpu_seconds": 13.9375,
+              "cycles": 46971427177
+            },
+            "startup_process_cost": {
+              "cpu_seconds": 5.953125,
+              "cycles": 19820893032
+            },
+            "boot_300_process_cost": {
+              "cpu_seconds": 8.03125,
+              "cycles": 26663801687
+            },
+            "whole_3000_process_cost": {
+              "cpu_seconds": 34.1875,
+              "cycles": 116787571087
+            },
+            "final_memory": {
+              "peak_working_set_bytes": 248877056,
+              "peak_commit_bytes": 30908416,
+              "private_bytes": 30859264
+            },
+            "code_interval_reuses": [],
+            "passed": true
+          },
+          {
+            "arm": "B",
+            "cost": {
+              "cpu_seconds": 13.84375,
+              "cycles": 46893253980
+            },
+            "startup_process_cost": {
+              "cpu_seconds": 6.15625,
+              "cycles": 19726623521
+            },
+            "boot_300_process_cost": {
+              "cpu_seconds": 7.890625,
+              "cycles": 26462138813
+            },
+            "whole_3000_process_cost": {
+              "cpu_seconds": 34.734375,
+              "cycles": 117579663938
+            },
+            "final_memory": {
+              "peak_working_set_bytes": 249917440,
+              "peak_commit_bytes": 31350784,
+              "private_bytes": 31293440
+            },
+            "code_interval_reuses": [
+              11467628
+            ],
+            "passed": true
+          },
+          {
+            "arm": "B",
+            "cost": {
+              "cpu_seconds": 13.875,
+              "cycles": 47004772516
+            },
+            "startup_process_cost": {
+              "cpu_seconds": 5.9375,
+              "cycles": 19443057842
+            },
+            "boot_300_process_cost": {
+              "cpu_seconds": 7.953125,
+              "cycles": 26273395515
+            },
+            "whole_3000_process_cost": {
+              "cpu_seconds": 34.28125,
+              "cycles": 116433136738
+            },
+            "final_memory": {
+              "peak_working_set_bytes": 249294848,
+              "peak_commit_bytes": 31318016,
+              "private_bytes": 31268864
+            },
+            "code_interval_reuses": [
+              11467628
+            ],
+            "passed": true
+          },
+          {
+            "arm": "A",
+            "cost": {
+              "cpu_seconds": 13.359375,
+              "cycles": 46202084779
+            },
+            "startup_process_cost": {
+              "cpu_seconds": 5.890625,
+              "cycles": 19565983359
+            },
+            "boot_300_process_cost": {
+              "cpu_seconds": 7.875,
+              "cycles": 26218033438
+            },
+            "whole_3000_process_cost": {
+              "cpu_seconds": 33.453125,
+              "cycles": 115392014975
+            },
+            "final_memory": {
+              "peak_working_set_bytes": 248864768,
+              "peak_commit_bytes": 30859264,
+              "private_bytes": 30859264
+            },
+            "code_interval_reuses": [],
+            "passed": true
+          }
+        ],
+        "pair_reductions_pct": [
+          {
+            "cpu_seconds": [
+              0.6726457399103158
+            ],
+            "cycles": [
+              0.1664271275075846
+            ]
+          },
+          {
+            "cpu_seconds": [
+              -3.8596491228070073
+            ],
+            "cycles": [
+              -1.737340946495225
+            ]
+          }
+        ],
+        "AA_drift_pct": {
+          "cpu_seconds": -4.147982062780264,
+          "cycles": -1.637894448258781
+        },
+        "whole_run_candidate_increases_pct": [
+          {
+            "cpu_seconds": 1.5996343692870285,
+            "cycles": 0.6782338596715398
+          },
+          {
+            "cpu_seconds": 2.475478748248472,
+            "cycles": 0.9022476669859447
+          }
+        ],
+        "disposition": "correctness_qualified_performance_neutral_inconclusive_no_proven_gain_small_whole_run_increases_retained_for_review_not_a_proven_regression"
+      }
+    ],
+    "qualification": {
+      "MSVC": 10,
+      "GCC_13_3": 10,
+      "unit_result": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\unit-immutable-results.json",
+        "sha256": "ab6670437767441070a2a22eeefccc4586908101f39b37bc9f11cbb45e0c21e1"
+      },
+      "actual_game": "Sonic CD",
+      "canonical_frames": 3000,
+      "checkpoints": 11,
+      "all_8_game_arms_exact": true,
+      "contract_cases": [
+        "default-off generic owners",
+        "exact callback and user binding qualification/revocation",
+        "sparse/front variant precedence and eviction",
+        "cross-range/extension guards",
+        "epoch wrap",
+        "between-frame raw BIOS replacement and early-MISS lease expiry",
+        "DMA/stamp/Sub self-modification remains ordinarily guarded",
+        "IRQ/trace/WAIT/reentry/faults",
+        "third-master ordering and scheduler ceilings"
+      ],
+      "code_scope": "Only runner/cd uses modified explicit-step runtime entry points; cartridge generator/native execution paths are unchanged. No new cartridge performance claim.",
+      "no_gameplay_omission": "full memory/pixels/audio and existing zero floor/audio-fault/queue-error counters exact; no physical-display or native Linux game timing claim"
+    },
+    "evidence": {
+      "local_root": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101",
+      "server_root": "G:/Temp/Codex/genesis-engine-code-ownership-20261101-server",
+      "records": [
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\game-e02-exclusive-interval-server.json",
+          "sha256": "82ba64b7518d6e25ad2e9e4c2bf6b910ab4b266c362d5a02c0c6c48767ac664e"
+        },
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\game-e02-exclusive-interval-reverse-server.json",
+          "sha256": "4d26de608a513ffe3503f46307cc2b595a47f96a084bcd325fde4bf4ee394849"
+        },
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\game-e02-immutable-frame-server.json",
+          "sha256": "f5ab06e202e55f42f0c56755eadba503cb3ab5ec081a2b114a9bdf15e8f9a503"
+        },
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\game-e02-immutable-frame-reverse-server.json",
+          "sha256": "039f16645fb69d70bcc38b638a68292b8793b0f7b529f3c1be013d72fb85c666"
+        }
+      ],
+      "builds": [
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\cd-builds.json",
+          "sha256": "5221edc0ebff74b42d41379439269d5b7ec621b7bfee670e160eb47a56b4b302"
+        },
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\cd-builds-immutable.json",
+          "sha256": "ae04c7db41bbba6c9882a6c6049316ae9996f2513add31c30924e6de58899f2e"
+        }
+      ],
+      "capacity": [
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\cd-check-host.json",
+          "sha256": "d1a539624417783782e5d5ca665c23d54fcbc82816b853591cbbec39a4e4c7af"
+        },
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\cd-check-reverse-host.json",
+          "sha256": "b06e2b5612bfbb346d1d5474dbea9c86ffdda73ba284ca0be322fb1b16e89b37"
+        },
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\cd-check-immutable-host.json",
+          "sha256": "79bb867ff8bf4a65fd3ad02be4210f0af3552fdf43cf749097a6a463fd663bfc"
+        },
+        {
+          "path": "C:\\Temp\\Codex\\genesis-engine-code-ownership-20261101\\cd-check-immutable-reverse-host.json",
+          "sha256": "e9769cee8e3cd99be39efbeff0aab104e5514f6a1e54df40eeefb4aedf4f1a17"
+        }
+      ]
+    }
+  }
 }
