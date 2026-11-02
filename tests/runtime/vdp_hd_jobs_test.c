@@ -64,6 +64,18 @@ int main(void)
         if(held){CHECK(gvdp_hd_render_argb(held,&actual[0][0],GVDP_MAX_WIDTH));CHECK(actual[0][0]==held_pixel);gvdp_hd_release(held);}
         held=f;held_pixel=expected[0][0];
     }
+    /* A frontend overlay can invalidate the last row after end_row and before
+     * its palette binding. No subsequent row may revoke a stale publication. */
+    fill(0);device.reg[1]=0;gvdp_set_ws_extra(0);gvdp_set_ws_canvas(0);
+    gvdp_set_bgdiag(0);gvdp_set_host_sprites(NULL,NULL);
+    for(unsigned y=0;y<224;++y) {
+        uint8_t indices[GVDP_MAX_WIDTH];uint32_t palette[256]={0};
+        gvdp_render_scanline(&device,(int)y,indices);
+        if(y==223)gvdp_hd_ineligible();
+        gvdp_hd_bind_palette(y,palette,256);
+    }
+    CHECK(!gvdp_hd_acquire());
+    CHECK(gvdp_hd_render_argb(held,&actual[0][0],GVDP_MAX_WIDTH));CHECK(actual[0][0]==held_pixel);
     gvdp_reset(&device);CHECK(!gvdp_hd_acquire());
     CHECK(gvdp_hd_render_argb(held,&actual[0][0],GVDP_MAX_WIDTH));CHECK(actual[0][0]==held_pixel);
     gvdp_hd_release(held);
