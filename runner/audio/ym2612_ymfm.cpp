@@ -65,6 +65,7 @@ int             s_inited = 0;
 /* Output scratch ring, mirroring ym2612.c's so ym2612_render semantics match. */
 constexpr size_t FM_SCRATCH_STEREO_SAMPLES = 8192;
 int16_t s_scratch[FM_SCRATCH_STEREO_SAMPLES * 2];
+int16_t s_raw_scratch[FM_SCRATCH_STEREO_SAMPLES * 2];
 size_t  s_scratch_write = 0; /* next free stereo-sample index */
 size_t  s_scratch_read  = 0; /* next unread stereo-sample index */
 
@@ -110,6 +111,8 @@ void emit_one_sample() {
     int32_t r = out.data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
     s_scratch[s_scratch_write * 2 + 0] = (int16_t)fm_lpf(0, l);   /* hardware FM output LPF (matches reference; tames ymfm's excess highs) */
     s_scratch[s_scratch_write * 2 + 1] = (int16_t)fm_lpf(1, r);
+    s_raw_scratch[s_scratch_write * 2 + 0] = clamp16(l);
+    s_raw_scratch[s_scratch_write * 2 + 1] = clamp16(r);
     s_scratch_write++;
 }
 #else
@@ -127,6 +130,8 @@ void emit_samples(uint32_t count) {
             int32_t r = block[i].data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
             s_scratch[s_scratch_write * 2] = (int16_t)fm_lpf(0, l);
             s_scratch[s_scratch_write * 2 + 1] = (int16_t)fm_lpf(1, r);
+            s_raw_scratch[s_scratch_write * 2] = clamp16(l);
+            s_raw_scratch[s_scratch_write * 2 + 1] = clamp16(r);
             ++s_scratch_write;
         }
         count -= chunk;
@@ -174,11 +179,16 @@ extern "C" void ym2612_write(uint8_t port, uint8_t value) {
 }
 
 extern "C" size_t ym2612_render(int16_t *out, size_t sample_count) {
-    if (!out || sample_count == 0) return 0;
+    return ym2612_render_pair(out, nullptr, sample_count);
+}
+
+extern "C" size_t ym2612_render_pair(int16_t *filtered, int16_t *unfiltered, size_t sample_count) {
+    if ((!filtered && !unfiltered) || sample_count == 0) return 0;
     size_t available = s_scratch_write - s_scratch_read;
     size_t copy = sample_count < available ? sample_count : available;
     if (copy > 0) {
-        std::memcpy(out, &s_scratch[s_scratch_read * 2], copy * 2 * sizeof(int16_t));
+        if (filtered) std::memcpy(filtered, &s_scratch[s_scratch_read * 2], copy * 2 * sizeof(int16_t));
+        if (unfiltered) std::memcpy(unfiltered, &s_raw_scratch[s_scratch_read * 2], copy * 2 * sizeof(int16_t));
         s_scratch_read += copy;
     }
     if (s_scratch_read >= s_scratch_write)
@@ -242,7 +252,7 @@ extern "C" size_t ym2612_rb_save(void *dst, size_t cap) {
     uint32_t n = (uint32_t)buf.size();
     uint32_t pend = (uint32_t)(s_scratch_write - s_scratch_read);
     size_t need = sizeof n + n + sizeof s_master_accum + sizeof s_fm_lpf_prev +
-                  sizeof s_fm_lpf_out + sizeof pend + (size_t)pend * 2u * sizeof(int16_t);
+                  sizeof s_fm_lpf_out + sizeof pend + (size_t)pend * 4u * sizeof(int16_t);
     if (!dst) return need;
     if (cap < need) return 0;
     uint8_t *o = (uint8_t *)dst;
@@ -253,6 +263,8 @@ extern "C" size_t ym2612_rb_save(void *dst, size_t cap) {
     std::memcpy(o, s_fm_lpf_out, sizeof s_fm_lpf_out); o += sizeof s_fm_lpf_out;
     std::memcpy(o, &pend, sizeof pend); o += sizeof pend;
     std::memcpy(o, &s_scratch[s_scratch_read * 2], (size_t)pend * 2u * sizeof(int16_t));
+    o += (size_t)pend * 2u * sizeof(int16_t);
+    std::memcpy(o, &s_raw_scratch[s_scratch_read * 2], (size_t)pend * 2u * sizeof(int16_t));
     return need;
 }
 
@@ -267,7 +279,7 @@ extern "C" int ym2612_rb_load(const void *src, size_t len) {
     if (n > (1u << 20) || (size_t)(end - i) < (size_t)n + fixed) return 0;
     std::memcpy(&pend, i + n + fixed - sizeof pend, sizeof pend);
     if (pend > FM_SCRATCH_STEREO_SAMPLES ||
-        (size_t)(end - i) != (size_t)n + fixed + (size_t)pend * 2u * sizeof(int16_t)) return 0;
+        (size_t)(end - i) != (size_t)n + fixed + (size_t)pend * 4u * sizeof(int16_t)) return 0;
     std::vector<uint8_t> buf(i, i + n); i += n;
     ymfm::ymfm_saved_state st(buf, false);
     s_chip->save_restore(st);
@@ -276,6 +288,8 @@ extern "C" int ym2612_rb_load(const void *src, size_t len) {
     std::memcpy(s_fm_lpf_out, i, sizeof s_fm_lpf_out); i += sizeof s_fm_lpf_out;
     i += sizeof pend;
     std::memcpy(s_scratch, i, (size_t)pend * 2u * sizeof(int16_t));
+    i += (size_t)pend * 2u * sizeof(int16_t);
+    std::memcpy(s_raw_scratch, i, (size_t)pend * 2u * sizeof(int16_t));
     s_scratch_read = 0;
     s_scratch_write = pend;
     return 1;

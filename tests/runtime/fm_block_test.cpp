@@ -9,6 +9,7 @@ void ref_ym2612_init(void);
 void ref_ym2612_advance(uint32_t);
 void ref_ym2612_write(uint8_t,uint8_t);
 size_t ref_ym2612_render(int16_t *,size_t);
+size_t ref_ym2612_render_pair(int16_t *,int16_t *,size_t);
 size_t ref_ym2612_samples_available(void);
 size_t ref_ym2612_rb_save(void *,size_t);
 int ref_ym2612_rb_load(const void *,size_t);
@@ -17,6 +18,7 @@ uint64_t ref_ym2612_cosim_hash(void);
 }
 #define CHECK(c) do { if(!(c)) { std::fprintf(stderr,"FM parity failed line %d\n",__LINE__);std::exit(1); } } while(0)
 static uint32_t seed=0x12345678;
+static bool raw_differs;
 static uint32_t random_u32() { seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return seed; }
 static void write(uint8_t port,uint8_t value) { ym2612_write(port,value);ref_ym2612_write(port,value); }
 static void reg(uint8_t part,uint8_t addr,uint8_t value) { write(part,addr);write(part+1,value); }
@@ -32,9 +34,9 @@ static void advance(uint32_t n) { ym2612_advance(n);ref_ym2612_advance(n);check_
 static void drain(size_t requested)
 {
     CHECK(ym2612_samples_available()==ref_ym2612_samples_available());
-    std::vector<int16_t> a(requested*2),b(requested*2);
-    CHECK(ym2612_render(a.data(),requested)==ref_ym2612_render(b.data(),requested));
-    CHECK(a==b);check_state();
+    std::vector<int16_t> a(requested*2),b(requested*2),raw_a(requested*2),raw_b(requested*2);
+    CHECK(ym2612_render_pair(a.data(),raw_a.data(),requested)==ref_ym2612_render_pair(b.data(),raw_b.data(),requested));
+    CHECK(a==b && raw_a==raw_b);raw_differs|=a!=raw_a;check_state();
 }
 int main()
 {
@@ -63,6 +65,14 @@ int main()
     advance(20000);drain(100);
     CHECK(ym2612_rb_load(a.data(),a.size()));CHECK(ref_ym2612_rb_load(b.data(),b.size()));
     advance(15000);drain(1000);
-    std::puts("FM block/scalar: PCM, chip/filter state, arbitrary writes, remainder/wrap, full scratch and restore matched");
+    CHECK(raw_differs);
+    /* The old API remains exactly the filtered member of a paired drain. */
+    advance(1008*64);n=ym2612_rb_save(nullptr,0);a.resize(n);ym2612_rb_save(a.data(),n);
+    int16_t filtered[128],raw[128],legacy[128];
+    CHECK(ym2612_render_pair(filtered,raw,64)==64);
+    CHECK(ym2612_rb_load(a.data(),a.size()));CHECK(ym2612_render(legacy,64)==64);
+    CHECK(!std::memcmp(filtered,legacy,sizeof filtered));
+    CHECK(!ym2612_rb_load(a.data(),a.size()-1));
+    std::puts("FM block/scalar: paired raw/filtered PCM, chip/filter state, arbitrary writes, remainder/wrap, full scratch and restore matched");
     return 0;
 }
