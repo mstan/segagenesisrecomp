@@ -43,6 +43,9 @@
 
 #include "rb_state.h"
 #include "sim_step.h"
+#include "local_states.h"
+#include "game_spec.h"
+#include "audio.h"
 
 #define RB_PROBE_MAX_DEPTH 64
 
@@ -73,6 +76,8 @@ static int s_period = -1;          /* -1 unread, 0 disarmed */
 static int s_depth = 8;
 static int s_statics, s_stackscan;
 static long s_selftest_tick = -1;
+static unsigned s_rewind_test_phase;
+static long s_rewind_test_tick=-1;
 static const GenesisSimHooks *s_resim_hooks;
 
 static uint8_t *s_s0;
@@ -89,6 +94,7 @@ void rb_probe_set_resim_hooks(const GenesisSimHooks *hooks) { s_resim_hooks = ho
 static void probe_read_env(void)
 {
     const char *v = getenv("GENESIS_RB_PROBE");
+    {const char *at=getenv("GENESIS_RB_REWIND_TEST");if(at && *at)s_rewind_test_tick=atol(at);}
     s_period = 0;
     s_statics = getenv("GENESIS_RB_PROBE_STATICS") && atoi(getenv("GENESIS_RB_PROBE_STATICS"));
     s_stackscan = getenv("GENESIS_RB_PROBE_STACKSCAN") && atoi(getenv("GENESIS_RB_PROBE_STACKSCAN"));
@@ -214,6 +220,19 @@ static int first_diff_parts(const GenesisRbDigest *a, const GenesisRbDigest *b, 
 void rb_probe_pre_tick(void)
 {
     if (!rb_probe_armed()) return;
+    if(s_rewind_test_tick>=0 && s_rewind_test_phase<3 && !s_recording &&
+       s_ticks_seen>=(uint32_t)s_rewind_test_tick+s_rewind_test_phase*1600u){
+        uint32_t before=genesis_sim_tick_count();
+        if(!genesis_local_states_open_rewind()){fprintf(stderr,"rb_probe: rewind test open FAIL\n");abort();}
+        int move=s_rewind_test_phase==0?-240:s_rewind_test_phase==1?-30:0;
+        genesis_local_states_move(move);int selected=genesis_local_states_selected_slot();
+        if(!genesis_local_states_accept()){fprintf(stderr,"rb_probe: rewind test restore FAIL\n");abort();}
+        if(g_game_spec.on_state_loaded)g_game_spec.on_state_loaded();
+        audio_discard_playback();
+        fprintf(stderr,"rb_probe: rewind test phase=%u selected=%d before=%u after=%u OK\n",s_rewind_test_phase,selected,before,genesis_sim_tick_count());
+        ++s_rewind_test_phase;
+    }
+
     if (s_selftest_tick >= 0 && (long)s_ticks_seen == s_selftest_tick) {
         fprintf(stderr, "rb_probe: selftest at tick %u\n", s_ticks_seen);
         (void)genesis_rb_selftest();

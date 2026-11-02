@@ -3,6 +3,7 @@
 #ifndef RF5C164_H
 #define RF5C164_H
 #include <stdint.h>
+#include "audio_owned_span.h"
 typedef struct {
     uint8_t env,pan,fdl,fdh,lsl,lsh,start,on;
     uint32_t address; /* 16-bit wave address + 11 fractional bits */
@@ -30,4 +31,8 @@ void rf5c164_advance(Rf5c164 *,uint32_t clocks,Rf5c164Sink,void *);
  * the chip's 384-clock phase reaches a boundary; legacy sink behavior/state is
  * unchanged when callers continue to use rf5c164_advance. */
 void rf5c164_advance_timed(Rf5c164 *,uint64_t start_subclock,uint32_t clocks,Rf5c164TimedSink,void *);
+/* Atomic device/output job for an explicitly pure owned sink. Opaque or
+ * replaced bindings and unqualified reservations retain the timed API. */
+void rf5c164_advance_owned(Rf5c164 *,uint64_t start,uint32_t clocks,
+                          Rf5c164TimedSink,void *,const SegaCDAudioOwnedSink *);
 #endif

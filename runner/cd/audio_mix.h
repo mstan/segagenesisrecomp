@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "audio_owned_span.h"
 
 /* Host-side clock-domain mixer. All input timestamps and output-window
  * positions use the Sega CD 12.5 MHz subclock. The audio_extra adapter runs
@@ -40,12 +41,6 @@ enum {
 };
 
 typedef struct {
-    uint64_t subclock;
-    int16_t left;
-    int16_t right;
-} SegaCDAudioFrame;
-
-typedef struct {
     SegaCDAudioFrame frame[SEGACD_AUDIO_MIX_QUEUE_CAPACITY];
     uint64_t last_subclock;
     uint64_t accepted_frames;
@@ -55,6 +50,10 @@ typedef struct {
     uint16_t count;
     uint8_t active;
     uint8_t have_last_subclock;
+    /* Host storage only. One logical tail run can survive subsequent ordinary
+     * frames until retired; other runs use the original physical slots. */
+    SegaCDAudioConstant run;
+    uint16_t run_first,run_count;
 } SegaCDAudioQueue;
 
 typedef struct {
@@ -111,6 +110,17 @@ SegaCDAudioMixResult segacd_audio_mix_push(SegaCDAudioMix *mix,
                                            SegaCDAudioSource source,
                                            uint64_t subclock,
                                            int16_t left,int16_t right);
+/* Read-only whole-span qualification; failure leaves all counters/results
+ * unchanged so callers can use the original per-sample failure path. */
+int segacd_audio_mix_begin_span(SegaCDAudioMix *,SegaCDAudioSource,
+                                uint64_t first,uint64_t last,size_t count,
+                                SegaCDAudioWriteGrant *);
+SegaCDAudioMixResult segacd_audio_mix_commit_span(SegaCDAudioMix *,const SegaCDAudioWriteGrant *);
+int segacd_audio_mix_begin_constant(SegaCDAudioMix *,SegaCDAudioSource,
+                                    const SegaCDAudioConstant *,size_t,SegaCDAudioWriteGrant *);
+/* Observe logical frames, independent of compressed physical host storage. */
+int segacd_audio_mix_queue_frame(const SegaCDAudioMix *,SegaCDAudioSource,
+                                 unsigned index,SegaCDAudioFrame *);
 /* Pause is an explicit timeline discontinuity: it drops queued host audio,
  * records the count, and makes further pushes return PAUSED. Resume clears
  * the output window; sources must be activated again before pushing. */

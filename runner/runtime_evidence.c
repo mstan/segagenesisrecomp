@@ -3,6 +3,7 @@
  * See runtime_evidence.h for the lifecycle and file format.
  */
 #include "runtime_evidence.h"
+#include "engine_worker.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,6 +78,7 @@ typedef struct {
     unsigned           sessions;       /* sessions recorded, this one included */
     unsigned long long frames_before;  /* frames emulated by earlier sessions */
     char               first_updated[32];
+    unsigned long long generation;
 } EvFile;
 
 static EvFile s_files[RT_EVIDENCE_KIND_COUNT] = {
@@ -337,7 +339,8 @@ static void read_file(EvFile *f, const char *path, EvHeader *h)
     fclose(fp);
 }
 
-static int emit_file(FILE *fp, const EvFile *f, const char *when)
+static int emit_file(FILE *fp, const EvFile *f, const char *when,
+                     unsigned long long frames)
 {
     fprintf(fp,
             "# %s\n"
@@ -362,7 +365,7 @@ static int emit_file(FILE *fp, const EvFile *f, const char *when)
             "%s = [\n",
             f->title, f->guidance, f->stem,
             s_game, s_game_name, s_build_id, s_build_info,
-            f->sessions, f->frames_before + s_session_frames, s_session_frames,
+            f->sessions, f->frames_before + frames, frames,
             f->n, f->first_updated, when,
             f->kind, f->table, f->key);
     /* Every element keeps its comma so a trailing comment never touches the
@@ -374,33 +377,121 @@ static int emit_file(FILE *fp, const EvFile *f, const char *when)
             fprintf(fp, "  0x%06X,\n", f->e[k].addr);
     }
     fprintf(fp, "]\n");
-    int ok = fflush(fp) == 0;
+    int ok = !ferror(fp);
+    if (fflush(fp)) ok = 0;
 #ifdef _WIN32
-    if (ok) _commit(_fileno(fp));
+    if (ok && _commit(_fileno(fp))) ok = 0;
 #else
-    if (ok) fsync(fileno(fp));
+    if (ok && fsync(fileno(fp))) ok = 0;
 #endif
     return (fclose(fp) == 0) && ok;
 }
 
 /* Crash-safe rewrite: temp file + atomic replace. */
+static int write_file_at(const EvFile *f,const char *path,const char *when,
+                         unsigned long long frames)
+{
+    char tmp[640];
+    snprintf(tmp, sizeof tmp, "%s.tmp", path);
+    FILE *fp = fopen(tmp, "w");
+    if (!fp) return 0;
+    if (emit_file(fp, f, when, frames) && replace_file(tmp, path)) return 1;
+    remove(tmp);
+    /* A failed replacement retains the previous valid file and dirty data.
+     * Never truncate it as a fallback for a sharing/permission failure. */
+    return 0;
+}
 static int write_file(const EvFile *f)
 {
-    char path[600], tmp[640], rel[200], when[32];
+    char path[600], rel[200], when[32];
     snprintf(rel, sizeof rel, "%s.toml", f->stem);
-    path_of(path, sizeof path, rel);
-    snprintf(tmp, sizeof tmp, "%s.tmp", path);
-    now_iso(when, sizeof when);
+    path_of(path, sizeof path, rel); now_iso(when, sizeof when);
+    return write_file_at(f,path,when,s_session_frames);
+}
 
-    FILE *fp = fopen(tmp, "w");
-    if (fp) {
-        if (emit_file(fp, f, when) && replace_file(tmp, path)) return 1;
-        remove(tmp);
+/* A single bounded in-flight snapshot owns all entries/notes, paths, timestamp
+ * and frame metadata. Live hash tables and new entries stay on the producer.
+ * Dirty changes made after publication survive successful older writes. */
+#define EV_ALL ((1u << RT_EVIDENCE_KIND_COUNT)-1u)
+typedef struct {
+    EvFile file[RT_EVIDENCE_KIND_COUNT];
+    char path[RT_EVIDENCE_KIND_COUNT][600],when[32];
+    unsigned mask,ok;
+    unsigned long long frames;
+} EvWrite;
+static GenesisWorker *s_writer;
+static EvWrite *s_write;
+static unsigned s_requested;
+static int s_writer_attempted;
+static void free_write(EvWrite *w)
+{
+    for(int k=0;k<RT_EVIDENCE_KIND_COUNT;k++) {
+        for(int i=0;w->file[k].e&&i<w->file[k].n;i++)free(w->file[k].e[i].note);
+        free(w->file[k].e);
     }
-    /* No temp file, or the destination is held open (Windows sharing): keep
-     * the evidence by writing in place rather than dropping it. */
-    fp = fopen(path, "w");
-    return fp ? emit_file(fp, f, when) : 0;
+    free(w);
+}
+static void evidence_write_job(void *context)
+{
+    EvWrite *w=context;
+    for(int k=0;k<RT_EVIDENCE_KIND_COUNT;k++)
+        if((w->mask&(1u<<k))&&write_file_at(&w->file[k],w->path[k],w->when,w->frames))
+            w->ok|=1u<<k;
+}
+static void poll_write(int wait)
+{
+    if(!s_write||(!wait&&genesis_worker_busy(s_writer)))return;
+    genesis_worker_join(s_writer);
+    unsigned failed=s_write->mask&~s_write->ok;
+    for(int k=0;k<RT_EVIDENCE_KIND_COUNT;k++)if(s_write->mask&(1u<<k)) {
+        if(failed&(1u<<k))s_files[k].dirty=1;
+        else if(s_files[k].generation==s_write->file[k].generation)s_files[k].dirty=0;
+    }
+    if(failed)fprintf(stderr,"[evidence] write failed; previous files retained, changes kept for retry\n");
+    else if(s_write->mask==EV_ALL)s_flushed_frames=s_write->frames;
+    free_write(s_write);s_write=NULL;
+}
+static void write_requested(void)
+{
+    if(s_write||!s_requested)return;
+    unsigned mask=s_requested;
+    if(!s_writer_attempted){s_writer_attempted=1;s_writer=genesis_worker_create();}
+    EvWrite *w=s_writer?calloc(1,sizeof *w):NULL;
+    if(w) {
+        w->mask=mask;w->frames=s_session_frames;now_iso(w->when,sizeof w->when);
+        for(int k=0;k<RT_EVIDENCE_KIND_COUNT;k++)if(mask&(1u<<k)) {
+            EvFile *to=&w->file[k],*from=&s_files[k];
+            *to=*from;to->e=NULL;to->slot=NULL;
+            if(from->n) {
+                to->e=calloc((size_t)from->n,sizeof *to->e);
+                if(!to->e)goto fallback;
+                for(int i=0;i<from->n;i++) {
+                    to->e[i].addr=from->e[i].addr;
+                    if(from->e[i].note) {
+                        size_t n=strlen(from->e[i].note)+1;
+                        to->e[i].note=malloc(n);
+                        if(!to->e[i].note)goto fallback;
+                        memcpy(to->e[i].note,from->e[i].note,n);
+                    }
+                }
+            }
+            char rel[200];snprintf(rel,sizeof rel,"%s.toml",from->stem);
+            path_of(w->path[k],sizeof w->path[k],rel);
+        }
+        s_requested&=~mask;
+        s_write=w;genesis_worker_start(s_writer,evidence_write_job,w);return;
+    }
+fallback:
+    if(w)free_write(w);
+    /* Universal/no-worker and allocation-failure fallback keeps the original
+     * synchronous contract, including successful-write acknowledgment. */
+    s_requested&=~mask;
+    int ok=1;
+    for(int k=0;k<RT_EVIDENCE_KIND_COUNT;k++)if(mask&(1u<<k)) {
+        if(write_file(&s_files[k]))s_files[k].dirty=0;
+        else{s_files[k].dirty=1;ok=0;}
+    }
+    if(ok&&mask==EV_ALL)s_flushed_frames=s_session_frames;
 }
 
 static void game_variant_name(char *out, size_t n, const char *stem, const char *game)
@@ -452,8 +543,7 @@ static void load_one(EvFile *f)
     f->frames_before = h.frames;
     if (h.first[0]) snprintf(f->first_updated, sizeof f->first_updated, "%s", h.first);
     else            now_iso(f->first_updated, sizeof f->first_updated);
-    f->dirty = 0;
-    write_file(f);
+    f->dirty = !write_file(f);
     if (f->n)
         fprintf(stderr, "[evidence] %s.toml: %d entries from %u earlier session(s) of this build\n",
                 f->stem, f->n, h.sessions);
@@ -522,16 +612,18 @@ int runtime_evidence_add(RuntimeEvidenceKind kind, uint32_t addr, uint64_t frame
              (unsigned long long)frame, note && note[0] ? " " : "", note ? note : "");
     if (!set_insert(f, addr, full)) return 0;
     f->dirty = 1;
+    f->generation++;
     return 1;
 }
 
 void runtime_evidence_sync(RuntimeEvidenceKind kind)
 {
     if ((unsigned)kind >= RT_EVIDENCE_KIND_COUNT || !s_inited) return;
-    EvFile *f = &s_files[kind];
-    if (!f->dirty) return;
-    f->dirty = 0;
-    write_file(f);
+    poll_write(0);
+    if(s_files[kind].dirty&&(!s_write||!(s_write->mask&(1u<<(unsigned)kind))||
+       s_write->file[kind].generation!=s_files[kind].generation))
+        s_requested|=1u<<(unsigned)kind;
+    write_requested();
 }
 
 int runtime_evidence_count(RuntimeEvidenceKind kind)
@@ -542,21 +634,29 @@ int runtime_evidence_count(RuntimeEvidenceKind kind)
 void runtime_evidence_tick(void)
 {
     s_session_frames++;
-    if (!s_inited || s_session_frames % FLUSH_CHECK_FRAMES) return;
-    time_t now = time(NULL);
-    if (now - s_last_flush >= FLUSH_MIN_SECONDS) runtime_evidence_flush();
+    if (!s_inited) return;
+    if(s_write||s_requested){poll_write(0);write_requested();}
+    if(s_session_frames%FLUSH_CHECK_FRAMES)return;
+    time_t now=time(NULL);
+    if(now-s_last_flush>=FLUSH_MIN_SECONDS) {
+        s_last_flush=now;s_requested|=EV_ALL;write_requested();
+    }
 }
 
 void runtime_evidence_flush(void)
 {
     if (!s_inited) return;
-    int any_dirty = 0;
-    for (int k = 0; k < RT_EVIDENCE_KIND_COUNT; k++) any_dirty |= s_files[k].dirty;
-    s_last_flush = time(NULL);
-    if (!any_dirty && s_flushed_frames == s_session_frames) return;
-    s_flushed_frames = s_session_frames;
-    for (int k = 0; k < RT_EVIDENCE_KIND_COUNT; k++) {
-        s_files[k].dirty = 0;
-        write_file(&s_files[k]);
+    poll_write(1);
+    unsigned mask=s_requested;s_requested=0;
+    for(int k=0;k<RT_EVIDENCE_KIND_COUNT;k++)if(s_files[k].dirty)mask|=1u<<k;
+    if(s_flushed_frames!=s_session_frames)mask=EV_ALL;
+    int ok=1;
+    for(int k=0;k<RT_EVIDENCE_KIND_COUNT;k++)if(mask&(1u<<k)) {
+        if(write_file(&s_files[k]))s_files[k].dirty=0;
+        else{s_files[k].dirty=1;ok=0;}
     }
+    if(ok&&mask==EV_ALL)s_flushed_frames=s_session_frames;
+    if(!ok)fprintf(stderr,"[evidence] final write failed; changes retained for retry\n");
+    s_last_flush=time(NULL);
+    genesis_worker_destroy(s_writer);s_writer=NULL;s_writer_attempted=0;
 }

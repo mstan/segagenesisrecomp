@@ -28,12 +28,17 @@ static int is_extra(const SegaCDPresentationUI *ui,
 static int equal_key(const RecompRuntimeUiItem *item, const char *key) {
     return item && item->key && strcmp(item->key, key) == 0;
 }
+static const int hd_scales[]={1,2,4,8,16,32,64};
+static const char *hd_labels[]={"Native","2x","4x","8x","16x","32x","64x"};
+static const RecompRuntimeUiItem hd_item={"video.internal_resolution","Video","Internal resolution (restart)",
+    "Applies next launch. Unsupported hardware keeps native presentation.",RECOMP_RUNTIME_UI_CHOICE,0,6,1,hd_labels,7,NULL};
 
 static int get_value(void *context, const RecompRuntimeUiItem *item,
                      int *value_out) {
     SegaCDPresentationUI *ui = (SegaCDPresentationUI *)context;
     SegaCDPresentationSettings *s = ui->settings;
     if (!item || !value_out) return 0;
+    if(equal_key(item,hd_item.key)){*value_out=0;for(int i=0;i<7;++i)if(s->internal_scale==hd_scales[i])*value_out=i;return 1;}
     if (is_extra(ui, item))
         return ui->callbacks.get_extra_value &&
                ui->callbacks.get_extra_value(ui->callbacks.context, item,
@@ -63,6 +68,11 @@ static int set_value(void *context, const RecompRuntimeUiItem *item, int value) 
     int minimum;
     int maximum;
     if (!item) return 0;
+    if(equal_key(item,hd_item.key)){
+        if(value<0||value>6||!ui->callbacks.apply_setting||
+           !ui->callbacks.apply_setting(ui->callbacks.context,item->key,hd_scales[value]))return 0;
+        s->internal_scale=hd_scales[value];return 1;
+    }
     if (is_extra(ui, item))
         return ui->callbacks.set_extra_value &&
                ui->callbacks.set_extra_value(ui->callbacks.context, item, value);
@@ -119,6 +129,7 @@ static int run_action(void *context, const RecompRuntimeUiItem *item) {
 
 static int is_enabled(void *context, const RecompRuntimeUiItem *item) {
     SegaCDPresentationUI *ui = (SegaCDPresentationUI *)context;
+    if(equal_key(item,hd_item.key))return 1;
     if (!is_extra(ui, item)) return 1;
     return !ui->callbacks.is_extra_enabled ||
            ui->callbacks.is_extra_enabled(ui->callbacks.context, item);
@@ -160,21 +171,18 @@ SegaCDPresentationUI *segacd_presentation_ui_create(
         ui->supported_view_modes = RECOMP_RUNTIME_UI_VIEW_MODE_NATIVE;
     }
 
+    ui->owned_extra_items=(RecompRuntimeUiItem *)calloc(config->extra_item_count+1,sizeof(*ui->owned_extra_items));
+    if(!ui->owned_extra_items){free(ui);return NULL;}
     if (config->extra_items && config->extra_item_count &&
         ui->callbacks.get_extra_value && ui->callbacks.set_extra_value) {
-        ui->owned_extra_items = (RecompRuntimeUiItem *)calloc(
-            config->extra_item_count, sizeof(*ui->owned_extra_items));
-        if (!ui->owned_extra_items) {
-            free(ui);
-            return NULL;
-        }
         for (i = 0; i < config->extra_item_count; ++i) {
             const RecompRuntimeUiItem *item = &config->extra_items[i];
             ui->owned_extra_items[extra_count++] = *item;
         }
-        ui->extra_items = ui->owned_extra_items;
-        ui->extra_item_count = extra_count;
     }
+    ui->owned_extra_items[extra_count++]=hd_item;
+    ui->extra_items=ui->owned_extra_items;
+    ui->extra_item_count=extra_count;
 
     memset(&standard, 0, sizeof(standard));
     standard.menu.title = "Sonic CD";

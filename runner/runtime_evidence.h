@@ -73,7 +73,9 @@ int runtime_evidence_add(RuntimeEvidenceKind kind, uint32_t addr,
 /* 1 when addr is already recorded for this build (one hash probe). */
 int runtime_evidence_has(RuntimeEvidenceKind kind, uint32_t addr);
 
-/* Rewrite the kind's file if anything new was added since the last write. */
+/* Request an immutable background rewrite when the kind changed. A completed
+ * successful replacement acknowledges only that snapshot's generation; newer
+ * entries/errors remain dirty. No-worker/allocation failure writes inline. */
 void runtime_evidence_sync(RuntimeEvidenceKind kind);
 
 /* Number of addresses recorded for this build (all sessions). */
@@ -83,7 +85,8 @@ int runtime_evidence_count(RuntimeEvidenceKind kind);
  * flushes the counters (bounded wall-clock rate, no per-frame I/O). */
 void runtime_evidence_tick(void);
 
-/* Rewrite every file with current counters. Registered with atexit() too. */
+/* Drain pending writes and synchronously persist latest entries/counters.
+ * Registered with atexit() too. Failed writes retain dirty data for retry. */
 void runtime_evidence_flush(void);
 
 /* FNV-1a 32 of the running executable module's bytes — the exact build

@@ -26,9 +26,12 @@
 # game repository can migrate.
 
 include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompZ80.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompOptimization.cmake")
 option(GENESIS_FM_BLOCK_SAMPLES "Batch faithful FM samples between register writes" ON)
 option(GENESIS_FAST_RB_DIGEST "Use portable XXH64 for complete rollback section bytes" ON)
-set(GENESIS_VDP_PLANE_IMPL "SCALAR" CACHE STRING "VDP scanline renderer (planes, sprites and composition)")
+option(GENESIS_ENGINE_WORKERS "Allow same-drain synthesis of the opted-in FM shadow on a host worker" ON)
+set(GENESIS_VDP_PLANE_IMPL "BATCHED" CACHE STRING "VDP scanline renderer (planes, sprites and composition)")
 set_property(CACHE GENESIS_VDP_PLANE_IMPL PROPERTY STRINGS SCALAR BATCHED)
 if(NOT GENESIS_VDP_PLANE_IMPL MATCHES "^(SCALAR|BATCHED)$")
     message(FATAL_ERROR "GENESIS_VDP_PLANE_IMPL must be SCALAR or BATCHED")
@@ -49,7 +52,12 @@ set(GENESIS_RUNNER_CORE_SOURCES
     main.c
     host_wait.c
     sim_step.c
+    engine_worker.c
+    host_stream.c
+    host_atomic_file.c
+    persist_writer.c
     rb_state.c
+    rb_capture.c
     rb_probe.c
     local_states.c
     overlay_draw.c
@@ -78,6 +86,8 @@ set(GENESIS_RUNNER_CORE_SOURCES
     audio/audio_shadow.c
     audio/fm_shadow.cpp
     video/color_lut.c
+    video/genesis_raster_jobs.c
+    video/genesis_hd_gpu.c
     video/genesis_vdp.c
     video/genesis_bus.c
     video/genesis_machine.c
@@ -89,9 +99,14 @@ set(GENESIS_RUNNER_CORE_SOURCES
 # and is listed by every consumer; a consumer lacking one of those is a
 # deliberate divergence the reconciler must not paper over.
 set(GENESIS_RUNNER_RECONCILED_SOURCES
+    rb_capture.c
     host_wait.c
     cosim_state.c
     sim_step.c
+    engine_worker.c
+    host_stream.c
+    host_atomic_file.c
+    persist_writer.c
     rb_state.c
     rb_probe.c
     local_states.c
@@ -99,6 +114,7 @@ set(GENESIS_RUNNER_RECONCILED_SOURCES
     runtime_evidence.c
     diagnostic_replay.c
     replay_writer.c)
+list(APPEND GENESIS_RUNNER_RECONCILED_SOURCES video/genesis_raster_jobs.c video/genesis_hd_gpu.c)
 
 function(genesisrecomp_runner_sources out_var)
     cmake_parse_arguments(GRS "" "TRACE;REVERSE_DEBUG" "" ${ARGN})
@@ -126,9 +142,12 @@ endfunction()
 
 # Build requirements the runner places on the executable that links it.
 function(genesisrecomp_runner_target target)
+    genesisrecomp_z80_target(${target})
     target_compile_definitions(${target} PRIVATE
+        GENESIS_HD_JOBS=1
         GENESIS_FM_BLOCK_SAMPLES=$<BOOL:${GENESIS_FM_BLOCK_SAMPLES}>
         GENESIS_FAST_RB_DIGEST=$<BOOL:${GENESIS_FAST_RB_DIGEST}>
+        GENESIS_ENGINE_WORKERS=$<BOOL:${GENESIS_ENGINE_WORKERS}>
         GENESIS_BATCHED_PLANES=$<STREQUAL:${GENESIS_VDP_PLANE_IMPL},BATCHED>)
     get_target_property(_done ${target} GENESIS_RUNNER_REQUIREMENTS)
     if(_done)
@@ -242,6 +261,7 @@ function(_genesisrecomp_reconcile_runner_targets)
             endif()
         endforeach()
         genesisrecomp_runner_target(${_t})
+        genesisrecomp_native_optimization(${_t})
         if(_added)
             string(REPLACE ";" ", " _added_s "${_added}")
             message(STATUS "genesis runner: ${_t} did not list ${_added_s}; added "

@@ -1,5 +1,5 @@
 /*
- * app_config.c — settings.ini + rom.cfg load/save (see app_config.h).
+ * app_config.c â€” settings.ini + rom.cfg load/save (see app_config.h).
  */
 #include "app_config.h"
 #include "input_map.h"
@@ -31,6 +31,7 @@ void app_config_defaults(void)
     g_app_config.window_scale     = 2;
     g_app_config.fullscreen       = 0;
     g_app_config.linear_filter    = 0;
+    g_app_config.internal_scale   = 1;
     g_app_config.widescreen       = 0;
     g_app_config.widescreen_cells = 8;
     g_app_config.custom_widescreen = s_default_custom_widescreen;
@@ -139,6 +140,9 @@ int app_config_load(const char *path)
                 g_app_config.fullscreen = (fs < 0) ? 0 : (fs > 2) ? 2 : fs;
             }
             else if (!strcmp(key, "linear_filter"))    g_app_config.linear_filter    = atoi(val);
+            else if (!strcmp(key, "internal_scale")) {
+                int scale=atoi(val);g_app_config.internal_scale=scale>=1&&scale<=64?scale:1;
+            }
             else if (!strcmp(key, "widescreen"))       g_app_config.widescreen       = atoi(val);
             else if (!strcmp(key, "widescreen_cells")) g_app_config.widescreen_cells = atoi(val);
             else if (!strcmp(key,"presentation_rate")) {
@@ -224,6 +228,7 @@ int app_config_save(const char *path)
     fprintf(f, "window_scale = %d\n",     g_app_config.window_scale);
     fprintf(f, "fullscreen = %d\n",       g_app_config.fullscreen);
     fprintf(f, "linear_filter = %d\n",    g_app_config.linear_filter);
+    fprintf(f, "internal_scale = %d\n",   g_app_config.internal_scale);
     fprintf(f, "widescreen = %d\n",       g_app_config.widescreen);
     fprintf(f, "widescreen_cells = %d\n", g_app_config.widescreen_cells);
     fprintf(f, "presentation_rate = %d\n\n", g_app_config.presentation_rate);
@@ -267,7 +272,7 @@ void app_config_apply_video(const GameVideo *video)
 {
     if(video && video->presentation_configure)
         video->presentation_configure(g_app_config.presentation_rate!=0);
-    if(video)video->configure(g_app_config.custom_widescreen?
+    if(video && video->configure)video->configure(g_app_config.custom_widescreen?
         app_config_aspect_mode(g_app_config.custom_aspect):"off");
 }
 
@@ -409,7 +414,7 @@ static const char *video_mod_error(void *ctx) { (void)ctx;return s_mod_error; }
 const RecompLauncherCModProvider *app_config_video_mods(const GameVideo *video,const char *path)
 {
     static RecompLauncherCModProvider provider;
-    s_mod_video_available=video!=NULL;
+    s_mod_video_available=game_video_has_viewport(video);
     s_mod_interp_available=video && video->interpolate && video->presentation_capture && video->presentation_configure;
     snprintf(s_mod_settings,sizeof s_mod_settings,"%s",path?path:"");s_mod_error[0]=0;
     memset(&provider,0,sizeof provider);

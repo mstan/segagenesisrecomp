@@ -118,6 +118,13 @@ void rab_free(rab_bridge *b);
 /* Producer: append `frames` interleaved int16 source samples. Thread: emu side. */
 void rab_push(rab_bridge *b, const int16_t *interleaved, int frames);
 
+/* Publish an immutable, normalized F32 block prepared by the producer outside
+ * callback exclusion. Same synchronization as rab_push. Returns 1 on success;
+ * returns 0 WITHOUT changing the bridge when the original per-frame overflow
+ * handling is needed. In that case the caller must use rab_push on its S16
+ * input. Does not retain the prepared pointer. */
+int rab_try_push_prepared(rab_bridge *b, const float *interleaved, int frames);
+
 /* Consumer: render exactly `frames` interleaved int16 host samples (never
  * blocks; emits faded silence on underrun / before prime). Thread: callback. */
 void rab_pull(rab_bridge *b, int16_t *out, int frames);
@@ -281,6 +288,32 @@ void rab_push(rab_bridge *b, const int16_t *in, int frames) {
         b->in_count++;
     }
     b->stats.pushed_frames += (uint64_t)frames;
+}
+
+int rab_try_push_prepared(rab_bridge *b, const float *in, int frames) {
+    /* Below 2^53, every source count in this block has an exact double
+     * representation. The last frame has the greatest pre-push fill. Proving
+     * it below the overflow boundary therefore proves every original scalar
+     * check false. Leave rare overflow/large-count semantics to rab_push. */
+    const uint64_t exact_count = UINT64_C(9007199254740992);
+    if (frames <= 0 || b->cap <= 1 || (uint64_t)frames > (uint64_t)b->cap ||
+        (uint64_t)b->cap > exact_count ||
+        b->in_count > exact_count - (uint64_t)frames ||
+        !((double)(b->in_count + (uint64_t)frames - 1) - b->out_pos <
+          (double)(b->cap - 1)))
+        return 0;
+
+    size_t ch = (size_t)b->cfg.channels;
+    size_t w = (size_t)(b->in_count % (uint64_t)b->cap);
+    size_t first = (size_t)b->cap - w;
+    if (first > (size_t)frames) first = (size_t)frames;
+    memcpy(b->ring + w * ch, in, first * ch * sizeof(float));
+    if (first < (size_t)frames)
+        memcpy(b->ring, in + first * ch,
+               ((size_t)frames - first) * ch * sizeof(float));
+    b->in_count += (uint64_t)frames;
+    b->stats.pushed_frames += (uint64_t)frames;
+    return 1;
 }
 
 static void rab__update_controller(rab_bridge *b) {

@@ -4,9 +4,13 @@
  * Z80, and our VDP, delivering V/H interrupts. Original implementation.
  */
 #include "genesis_machine.h"
+#if GENESIS_HD_JOBS
+#include "genesis_raster_jobs.h"
+#endif
 #ifdef GENESIS_Z80_RECOMP
 #include "../z80_recomp.h"
 #endif
+#include "genesis_frame_pixels.h"
 #include "genesis_dac.h"  /* authentic Genesis output-DAC color ladder */
 #include "chip_trace.h"   /* [CHIP-TRACE] shared FM/PSG stream ring + g_snd_* globals */
 #include <string.h>
@@ -146,7 +150,6 @@ uint32_t machine_z80_pc(void)
 }
 
 /* glue.c hooks (recompiled-68K fiber + own-backend interrupt delivery). */
-extern void glue_run_game_chunk(uint32_t cycles);
 extern void glue_own_interrupt(int level, GVDP *vdp);
 extern int  glue_own_hint_service_latched(GVDP *vdp);
 extern int  glue_own_vint_service_latched(GVDP *vdp);  /* deliver a V-int latched while 68K IRQs were masked */
@@ -257,6 +260,10 @@ int machine_save_state(FILE *f)
 
 int machine_load_state(FILE *f)
 {
+#if GENESIS_HD_JOBS
+    /* Even a short fread can partially overwrite the hardware image. */
+    gvdp_hd_reset();
+#endif
     if (fread(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
     { uint64_t clk = 0;
       if (fread(&clk, sizeof clk, 1, f) != 1) return 0;
@@ -322,6 +329,9 @@ size_t machine_rb_save(void *dst, size_t cap)
 int machine_rb_load(const void *src, size_t len)
 {
     if (!src || len != machine_rb_save(NULL, 0)) return 0;
+#if GENESIS_HD_JOBS
+    gvdp_hd_reset();
+#endif
     const uint8_t *i = (const uint8_t *)src;
     GVDP_BusReadWord br = g_machine.vdp.bus_read;
     void *bru = g_machine.vdp.bus_read_user;
@@ -439,18 +449,22 @@ static void step_z80(GenesisMachine *m, uint32_t target)
 #ifndef GENESIS_Z80_RECOMP
     m->z80.cyc = 0;            /* per-slice t-state counter (kept bounded) */
 #endif
+#if defined(GENESIS_Z80_RECOMP) && !defined(GENESIS_Z80_STEP_PUBLICATION_REFERENCE)
+    done=z80_recomp_run_slice(done,target,&s_z80_off,MASTER_PER_Z80);
+#else
     while (done < target) {
         /* Stamp chip writes made by this instruction at its start cycle
          * (master) — machine_z80_stamp() reads this for the event queue. */
         s_z80_off = done * MASTER_PER_Z80;
 #ifdef GENESIS_Z80_RECOMP
-        done += z80_recomp_step_one();
+        done+=z80_recomp_step_one();
 #else
         unsigned long c0 = m->z80.cyc;
         z80_step(&m->z80);     /* one instruction, then interrupt processing */
         done += (uint32_t)(m->z80.cyc - c0);
 #endif
     }
+#endif
     m->z80_cycle_debt = done - target;
 #ifdef GEN_DEV_TRACE
     /* [SND-TRACE] V-int acceptance: pending fell 1->0 during this slice. */
@@ -469,38 +483,43 @@ static void step_z80(GenesisMachine *m, uint32_t target)
 
 typedef struct NativeRowContext {
     GVDP *vdp;
-    int line, width, ready;
+    int line, width, ready, indices_ready;
     uint8_t *indices;
     uint32_t *pixels;
     const GVDPRasterRow *raster;
 } NativeRowContext;
 
+static void native_row_prepare(NativeRowContext *r)
+{
+    if(r->indices_ready)return;
+    r->width=r->raster ? gvdp_compose_captured(r->raster,r->indices) :
+                         gvdp_render_scanline(r->vdp,r->line,r->indices);
+    const uint32_t *host_palette=r->raster ? r->raster->host_palette : gvdp_host_palette();
+    if(host_palette)memcpy(s_cram_argb+GVDP_HOST_PALETTE_BASE,host_palette,
+        GVDP_HOST_PALETTE_SIZE*sizeof(uint32_t));
+    else if(gvdp_ext_active())for(int k=0;k<GVDP_EXT_LINES*16;++k)
+        s_cram_argb[GVDP_HOST_PALETTE_BASE+k]=bgr9_to_argb(gvdp_ext_color(r->line,1+k/16,k%16),0);
+    r->indices_ready=1;
+}
 static const uint32_t *native_row_fetch(void *ctx)
 {
-    NativeRowContext *r = (NativeRowContext *)ctx;
-    if (!r->ready) {
-        r->width = r->raster ? gvdp_compose_captured(r->raster, r->indices) :
-                              gvdp_render_scanline(r->vdp, r->line, r->indices);
-        const uint32_t *host_palette = gvdp_host_palette();
-        if (host_palette)
-            memcpy(s_cram_argb + GVDP_HOST_PALETTE_BASE, host_palette,
-                   GVDP_HOST_PALETTE_SIZE * sizeof(uint32_t));
-        else if (gvdp_ext_active())
-            for (int k = 0; k < GVDP_EXT_LINES * 16; k++)
-                s_cram_argb[GVDP_HOST_PALETTE_BASE + k] =
-                    bgr9_to_argb(gvdp_ext_color(r->line, 1 + k / 16, k % 16), 0);
-        for (int x = 0; x < r->width; x++)
-            r->pixels[x] = r->raster && r->indices[x]>=GVDP_HOST_PALETTE_BASE ?
-                r->raster->host_palette[r->indices[x]-GVDP_HOST_PALETTE_BASE] : s_cram_argb[r->indices[x]];
-        r->ready = 1;
-    }
+    NativeRowContext *r=(NativeRowContext *)ctx;
+    if(!r->ready){native_row_prepare(r);genesis_pixels_expand(r->pixels,r->indices,r->width,
+        s_cram_argb,GVDP_OUTPUT_PALETTE_SIZE,0xff000000u);r->ready=1;}
     return r->pixels;
+}
+void genesis_indexed_sink_adapter(void *ctx,int line,const uint32_t *argb,int width)
+{
+    GenesisIndexedSink *pixels=(GenesisIndexedSink *)ctx;
+    if(pixels && pixels->argb)pixels->argb(pixels->user,line,argb,width);
 }
 
 void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                           const GenesisScanlineProducer *producer)
 {
     GenesisMachine *m = &g_machine;
+    GenesisIndexedSink *pixels=sink==genesis_indexed_sink_adapter?(GenesisIndexedSink *)user:NULL;
+    void *producer_user=pixels?pixels->user:user;
     int active_h = gvdp_screen_height(&m->vdp);
     static uint8_t  idxbuf[GVDP_MAX_WIDTH];
     static uint32_t rowbuf[GVDP_MAX_WIDTH];
@@ -575,8 +594,8 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                     gvdp_evaluate_scanline(&m->vdp, row);
                     continue;
                 }
-                NativeRowContext native = { &m->vdp, row, 0, 0, idxbuf, rowbuf, NULL };
-                int custom = producer ? producer->enabled(user) : 0;
+                NativeRowContext native = { &m->vdp, row, 0, 0, 0, idxbuf, rowbuf, NULL };
+                int custom = producer ? producer->enabled(producer_user) : 0;
                 if (custom) {
                     /* Requested layers evaluate native sprites and consume
                      * presentation providers once. Their pixels/masks/colors
@@ -588,11 +607,20 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                         else
                             native_row_fetch(&native);
                     } else gvdp_evaluate_scanline(&m->vdp, row);
-                    producer->render(user, &m->vdp, row, gvdp_active_width(&m->vdp),
+                    producer->render(producer_user, &m->vdp, row, gvdp_active_width(&m->vdp),
                                      native_row_fetch, &native, native.raster);
                 } else {
-                    const uint32_t *pixels = native_row_fetch(&native);
-                    sink(user, row, pixels, native.width);
+#if GENESIS_FINAL_PIXEL_PIPELINE
+                    if(pixels && pixels->indexed) {
+                        native_row_prepare(&native);
+                        if(!pixels->accepts || pixels->accepts(pixels->user,row,native.width)) {
+                            pixels->indexed(pixels->user,row,native.indices,native.width,s_cram_argb);
+                            continue;
+                        }
+                    }
+#endif
+                    const uint32_t *argb=native_row_fetch(&native);
+                    sink(user,row,argb,native.width);
                 }
             }
         }

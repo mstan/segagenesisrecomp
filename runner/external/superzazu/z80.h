@@ -34,6 +34,10 @@ struct z80 {
 
 void z80_init(z80* const z);
 void z80_step(z80* const z);
+/* Execute one instruction without consuming IRQ/NMI latches. Apply the
+ * ordinary EI-delay boundary and return whether that boundary was blocked.
+ * A scheduler-owned adapter must honor the result before accepting IRQ. */
+bool z80_step_no_interrupts(z80* const z);
 void z80_debug_output(z80* const z);
 void z80_gen_nmi(z80* const z);
 void z80_gen_int(z80* const z, uint8_t data);

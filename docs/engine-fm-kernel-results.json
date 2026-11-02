@@ -1,0 +1,844 @@
+{
+  "schema": "GenesisEngineFmKernels1",
+  "original_id": "E20",
+  "issue": "beads-3z5k.18",
+  "campaign": "beads-2wy8.1",
+  "disposition": "whole selected bounded opportunity rejected; no new runtime or test/build infrastructure retained",
+  "accepted_base": "10ace05",
+  "restored_head": "02c0fa8d32d1099f8b2d1728301e4b8cbc6a3b92",
+  "restored_tree": "d5ae13ffcc16f6fb652c1343bb3ffbcc0acfb9f0",
+  "accepted_base_tree": "d5ae13ffcc16f6fb652c1343bb3ffbcc0acfb9f0",
+  "all_production_and_build_test_wiring_exact": true,
+  "prototypes": [
+    {
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "design": "Eight fixed OPN2 operator routes plus one six-channel output scan",
+      "decision": "Unqualified global adoption: RKA default wall repeatedly adverse, CPU/cycles mixed; Sonic1 shadowoff gains cannot offset other configurations."
+    },
+    {
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "design": "Compact fused channel scan using original generic 4op arithmetic; no duplicated routes",
+      "decision": "Global rejected: Sonic1 shadowoff cycles/wall repeatedly adverse despite shadowon gains. CD-only selection rejected: neutral/inconclusive CPU/cycles with large ambient variation does not justify new backend/compiler selection."
+    }
+  ],
+  "distinct_matched_pairs": 20,
+  "actual_complete_runs": 40,
+  "raw_root": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031",
+  "per_game_samples": [
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r1.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "rka",
+      "feature": "shadow-off",
+      "frames": 6000,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+        "runtime": {
+          "cpu_seconds": 4.71875,
+          "cpu_cycles": 22174469340,
+          "seconds": 4.7881162
+        }
+      },
+      "B": {
+        "binary_sha256": "f6e448c30c904de0d1e6e74aa882197648ea9c23833bbac2fa3083470677634a",
+        "runtime": {
+          "cpu_seconds": 5.140625,
+          "cpu_cycles": 24304342020,
+          "seconds": 5.3021213
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 8.940397350993369,
+        "cpu_cycles": 9.605067193910122,
+        "seconds": 10.735017249581347
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r1.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "rka",
+      "feature": "shadow-on",
+      "frames": 6000,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+        "runtime": {
+          "cpu_seconds": 7.140625,
+          "cpu_cycles": 33876022680,
+          "seconds": 6.3739672
+        }
+      },
+      "B": {
+        "binary_sha256": "f6e448c30c904de0d1e6e74aa882197648ea9c23833bbac2fa3083470677634a",
+        "runtime": {
+          "cpu_seconds": 7.046875,
+          "cpu_cycles": 33480427910,
+          "seconds": 6.3916537
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -1.3129102844638973,
+        "cpu_cycles": -1.1677721842876077,
+        "seconds": 0.27748024809415295
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r1.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "sonic1",
+      "feature": "shadow-off",
+      "frames": 2400,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+        "runtime": {
+          "cpu_seconds": 1.921875,
+          "cpu_cycles": 8806440760,
+          "seconds": 1.9604795
+        }
+      },
+      "B": {
+        "binary_sha256": "8919ed48d498e05a96aecdb29899b83604dd7c3a1a9c17c3545cf68eb5793428",
+        "runtime": {
+          "cpu_seconds": 1.765625,
+          "cpu_cycles": 8226871070,
+          "seconds": 1.7974497
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -8.130081300813007,
+        "cpu_cycles": -6.581202392599749,
+        "seconds": -8.315812534637567
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r1.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "sonic1",
+      "feature": "shadow-on",
+      "frames": 2400,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+        "runtime": {
+          "cpu_seconds": 2.25,
+          "cpu_cycles": 10773702370,
+          "seconds": 2.0589457
+        }
+      },
+      "B": {
+        "binary_sha256": "8919ed48d498e05a96aecdb29899b83604dd7c3a1a9c17c3545cf68eb5793428",
+        "runtime": {
+          "cpu_seconds": 2.234375,
+          "cpu_cycles": 10716622750,
+          "seconds": 2.1644536
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -0.694444444444442,
+        "cpu_cycles": -0.5298050571634683,
+        "seconds": 5.124365348731619
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r2.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "rka",
+      "feature": "shadow-off",
+      "frames": 6000,
+      "order": [
+        "B",
+        "A"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+        "runtime": {
+          "cpu_seconds": 4.71875,
+          "cpu_cycles": 22145088700,
+          "seconds": 4.8656467
+        }
+      },
+      "B": {
+        "binary_sha256": "f6e448c30c904de0d1e6e74aa882197648ea9c23833bbac2fa3083470677634a",
+        "runtime": {
+          "cpu_seconds": 4.671875,
+          "cpu_cycles": 22663125050,
+          "seconds": 5.0584295
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -0.9933774834437137,
+        "cpu_cycles": 2.3392832470343627,
+        "seconds": 3.9621208009204656
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r2.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "rka",
+      "feature": "shadow-on",
+      "frames": 6000,
+      "order": [
+        "B",
+        "A"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+        "runtime": {
+          "cpu_seconds": 7.1875,
+          "cpu_cycles": 33940063940,
+          "seconds": 6.5393507
+        }
+      },
+      "B": {
+        "binary_sha256": "f6e448c30c904de0d1e6e74aa882197648ea9c23833bbac2fa3083470677634a",
+        "runtime": {
+          "cpu_seconds": 6.734375,
+          "cpu_cycles": 31429753990,
+          "seconds": 5.5973775
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -6.304347826086953,
+        "cpu_cycles": -7.3963029487445375,
+        "seconds": -14.404690055849112
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r2.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "sonic1",
+      "feature": "shadow-off",
+      "frames": 2400,
+      "order": [
+        "B",
+        "A"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+        "runtime": {
+          "cpu_seconds": 2.015625,
+          "cpu_cycles": 8820421850,
+          "seconds": 2.0944154
+        }
+      },
+      "B": {
+        "binary_sha256": "8919ed48d498e05a96aecdb29899b83604dd7c3a1a9c17c3545cf68eb5793428",
+        "runtime": {
+          "cpu_seconds": 1.828125,
+          "cpu_cycles": 8450433150,
+          "seconds": 1.9501362
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -9.302325581395355,
+        "cpu_cycles": -4.194682593327437,
+        "seconds": -6.888757597943562
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r2.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "sonic1",
+      "feature": "shadow-on",
+      "frames": 2400,
+      "order": [
+        "B",
+        "A"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+        "runtime": {
+          "cpu_seconds": 2.375,
+          "cpu_cycles": 10704526360,
+          "seconds": 2.1314089
+        }
+      },
+      "B": {
+        "binary_sha256": "8919ed48d498e05a96aecdb29899b83604dd7c3a1a9c17c3545cf68eb5793428",
+        "runtime": {
+          "cpu_seconds": 2.453125,
+          "cpu_cycles": 11182514950,
+          "seconds": 2.1636098
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 3.289473684210531,
+        "cpu_cycles": 4.465294156181621,
+        "seconds": 1.5107800291159768
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r3.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "rka",
+      "feature": "shadow-off",
+      "frames": 6000,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+        "runtime": {
+          "cpu_seconds": 5.421875,
+          "cpu_cycles": 25015742010,
+          "seconds": 5.6840107
+        }
+      },
+      "B": {
+        "binary_sha256": "f6e448c30c904de0d1e6e74aa882197648ea9c23833bbac2fa3083470677634a",
+        "runtime": {
+          "cpu_seconds": 5.03125,
+          "cpu_cycles": 23550799950,
+          "seconds": 6.0612519
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -7.20461095100865,
+        "cpu_cycles": -5.8560807807115705,
+        "seconds": 6.636884057941694
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r3.json",
+      "source": "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+      "game": "sonic1",
+      "feature": "shadow-on",
+      "frames": 2400,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+        "runtime": {
+          "cpu_seconds": 2.0625,
+          "cpu_cycles": 10904402790,
+          "seconds": 2.0052867
+        }
+      },
+      "B": {
+        "binary_sha256": "8919ed48d498e05a96aecdb29899b83604dd7c3a1a9c17c3545cf68eb5793428",
+        "runtime": {
+          "cpu_seconds": 2.234375,
+          "cpu_cycles": 10680380110,
+          "seconds": 2.0344584
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 8.333333333333325,
+        "cpu_cycles": -2.054424110281783,
+        "seconds": 1.4547396140412339
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r4.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "rka",
+      "feature": "shadow-off",
+      "frames": 6000,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+        "runtime": {
+          "cpu_seconds": 4.796875,
+          "cpu_cycles": 22845328540,
+          "seconds": 5.1717126
+        }
+      },
+      "B": {
+        "binary_sha256": "72a8e6c588f0f8653e4a95971bd22e167d98b2fb9c93890e7abc4e58bef9c525",
+        "runtime": {
+          "cpu_seconds": 5.421875,
+          "cpu_cycles": 25273167120,
+          "seconds": 6.0848818
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 13.029315960912058,
+        "cpu_cycles": 10.627286780967427,
+        "seconds": 17.656998186635487
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r4.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "rka",
+      "feature": "shadow-on",
+      "frames": 6000,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+        "runtime": {
+          "cpu_seconds": 7.078125,
+          "cpu_cycles": 32632130550,
+          "seconds": 6.400308
+        }
+      },
+      "B": {
+        "binary_sha256": "72a8e6c588f0f8653e4a95971bd22e167d98b2fb9c93890e7abc4e58bef9c525",
+        "runtime": {
+          "cpu_seconds": 6.765625,
+          "cpu_cycles": 32502979250,
+          "seconds": 5.9894997
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -4.415011037527594,
+        "cpu_cycles": -0.3957795516970952,
+        "seconds": -6.418570793780553
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r4.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "sonic1",
+      "feature": "shadow-off",
+      "frames": 2400,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+        "runtime": {
+          "cpu_seconds": 1.8125,
+          "cpu_cycles": 8394672820,
+          "seconds": 1.8772128
+        }
+      },
+      "B": {
+        "binary_sha256": "8263faf4711208a9f7ceb9319a12c26143cf1fcc436dcf4bb3bfa06f18368244",
+        "runtime": {
+          "cpu_seconds": 1.890625,
+          "cpu_cycles": 8979732580,
+          "seconds": 2.1456382
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 4.31034482758621,
+        "cpu_cycles": 6.969417064190009,
+        "seconds": 14.299146053127277
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r4.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "sonic1",
+      "feature": "shadow-on",
+      "frames": 2400,
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+        "runtime": {
+          "cpu_seconds": 2.40625,
+          "cpu_cycles": 11410122320,
+          "seconds": 2.1391765
+        }
+      },
+      "B": {
+        "binary_sha256": "8263faf4711208a9f7ceb9319a12c26143cf1fcc436dcf4bb3bfa06f18368244",
+        "runtime": {
+          "cpu_seconds": 2.25,
+          "cpu_cycles": 10545378720,
+          "seconds": 1.8941362
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -6.493506493506496,
+        "cpu_cycles": -7.578740838599529,
+        "seconds": -11.454889299690796
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r5.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "rka",
+      "feature": "shadow-off",
+      "frames": 6000,
+      "order": [
+        "B",
+        "A"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+        "runtime": {
+          "cpu_seconds": 4.828125,
+          "cpu_cycles": 22625943820,
+          "seconds": 4.9073179
+        }
+      },
+      "B": {
+        "binary_sha256": "72a8e6c588f0f8653e4a95971bd22e167d98b2fb9c93890e7abc4e58bef9c525",
+        "runtime": {
+          "cpu_seconds": 4.78125,
+          "cpu_cycles": 22565122530,
+          "seconds": 4.9333384
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -0.9708737864077666,
+        "cpu_cycles": -0.2688121675005539,
+        "seconds": 0.5302387277579923
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r5.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "rka",
+      "feature": "shadow-on",
+      "frames": 6000,
+      "order": [
+        "B",
+        "A"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+        "runtime": {
+          "cpu_seconds": 6.734375,
+          "cpu_cycles": 31649640200,
+          "seconds": 5.8334804
+        }
+      },
+      "B": {
+        "binary_sha256": "72a8e6c588f0f8653e4a95971bd22e167d98b2fb9c93890e7abc4e58bef9c525",
+        "runtime": {
+          "cpu_seconds": 7.0625,
+          "cpu_cycles": 32304402840,
+          "seconds": 5.9978715
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 4.872389791183296,
+        "cpu_cycles": 2.0687838340734066,
+        "seconds": 2.818062095485896
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r5.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "sonic1",
+      "feature": "shadow-off",
+      "frames": 2400,
+      "order": [
+        "B",
+        "A"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+        "runtime": {
+          "cpu_seconds": 1.78125,
+          "cpu_cycles": 8099876130,
+          "seconds": 1.8532778
+        }
+      },
+      "B": {
+        "binary_sha256": "8263faf4711208a9f7ceb9319a12c26143cf1fcc436dcf4bb3bfa06f18368244",
+        "runtime": {
+          "cpu_seconds": 1.78125,
+          "cpu_cycles": 8467909160,
+          "seconds": 1.9571564
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": 0.0,
+        "cpu_cycles": 4.543687139077268,
+        "seconds": 5.605128383882851
+      }
+    },
+    {
+      "kind": "native-cart",
+      "record": "native-qualification-r5.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "sonic1",
+      "feature": "shadow-on",
+      "frames": 2400,
+      "order": [
+        "B",
+        "A"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+        "runtime": {
+          "cpu_seconds": 2.515625,
+          "cpu_cycles": 11585894800,
+          "seconds": 2.5325264
+        }
+      },
+      "B": {
+        "binary_sha256": "8263faf4711208a9f7ceb9319a12c26143cf1fcc436dcf4bb3bfa06f18368244",
+        "runtime": {
+          "cpu_seconds": 2.390625,
+          "cpu_cycles": 10462234780,
+          "seconds": 2.1609952
+        }
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -4.968944099378881,
+        "cpu_cycles": -9.698517373038806,
+        "seconds": -14.670378164665932
+      }
+    },
+    {
+      "kind": "native-CD",
+      "record": "game-e20-compact-fm-r1.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "sonic_cd",
+      "feature": "normal native standalone audio",
+      "frames": 3001,
+      "cost_window": [
+        1800,
+        3000
+      ],
+      "order": [
+        "A",
+        "B"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "9ce167c906304f8b9c8205cabf1b7f1abfa1bd8a8502d68793577cf25e798da1",
+        "cost": {
+          "cpu_seconds": 7.5,
+          "cycles": 35251682600
+        },
+        "wall_seconds": 20.380824799998663
+      },
+      "B": {
+        "binary_sha256": "19f7c6de6d9b1ac4314b4ed7a034fe52af63aa692c373b09087bde39f6c08ff1",
+        "cost": {
+          "cpu_seconds": 6.875,
+          "cycles": 32616479080
+        },
+        "wall_seconds": 20.237861999994493
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -8.333333333333337,
+        "cycles": -7.475397841009723
+      }
+    },
+    {
+      "kind": "native-CD",
+      "record": "game-e20-compact-fm-r2-reverse.json",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "game": "sonic_cd",
+      "feature": "normal native standalone audio",
+      "frames": 3001,
+      "cost_window": [
+        1800,
+        3000
+      ],
+      "order": [
+        "B",
+        "A"
+      ],
+      "exact": true,
+      "A": {
+        "binary_sha256": "9ce167c906304f8b9c8205cabf1b7f1abfa1bd8a8502d68793577cf25e798da1",
+        "cost": {
+          "cpu_seconds": 6.0625,
+          "cycles": 27655031710
+        },
+        "wall_seconds": 20.29921950001153
+      },
+      "B": {
+        "binary_sha256": "19f7c6de6d9b1ac4314b4ed7a034fe52af63aa692c373b09087bde39f6c08ff1",
+        "cost": {
+          "cpu_seconds": 6.015625,
+          "cycles": 29621648950
+        },
+        "wall_seconds": 20.25509659999807
+      },
+      "candidate_change_pct": {
+        "cpu_seconds": -0.773195876288657,
+        "cycles": 7.11124565186767
+      }
+    }
+  ],
+  "records": {
+    "native-qualification-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\native-qualification-r1.json",
+      "sha256": "3b4a66d4bf0c3cbd1f4246a8aed356e1181f5f643b15eed93c61055eb66decdb",
+      "bytes": 108568
+    },
+    "native-qualification-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\native-qualification-r2.json",
+      "sha256": "1afbbcca3788f86bcb34e2979f53de2c1f9e31e316d69d37af5e461d502d6226",
+      "bytes": 108624
+    },
+    "native-qualification-r3.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\native-qualification-r3.json",
+      "sha256": "03672f23b4ab5358d74cbeac1dd1f0691275ca801f1f03ee0ce422d9c1b95f92",
+      "bytes": 60987
+    },
+    "native-qualification-r4.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\native-qualification-r4.json",
+      "sha256": "1db1a628254d344ad562e8135147c588884cf2d42f320a2ef2b475acac0f2f3b",
+      "bytes": 108629
+    },
+    "native-qualification-r5.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\native-qualification-r5.json",
+      "sha256": "828578a4c587cceeae3e6aa5fbdb2e26566d70cab9587c5963a12ee2ddcf15ae",
+      "bytes": 108598
+    },
+    "game-e20-compact-fm-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\game-e20-compact-fm-r1.json",
+      "sha256": "43dd64419c41c5edd03a267a5e3f7c6d3e40514e86499bc1df047e07161fe5a9",
+      "bytes": 489488
+    },
+    "game-e20-compact-fm-r2-reverse.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\game-e20-compact-fm-r2-reverse.json",
+      "sha256": "5d0b1248bf929869908867cf55abf0975b6b4c7e98b2e5f362d72b645a3dd336",
+      "bytes": 489843
+    }
+  },
+  "unit_records": [
+    {
+      "record": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\unit-tests-r1.json",
+      "sha256": "62409fd6e550489f7ef5bf44f34094d3b0ac5e9718322cac9946c5d5f7796827",
+      "source": "5e42063",
+      "passed": true,
+      "tests": 2,
+      "retained_binaries": {
+        "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\unit-binaries-r1\\fm_kernel_fallback.exe": "0ceac03f2146c62fff28a31cf2ac493f3d9bec920b69cbe22ba02ae4b40ee97e",
+        "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\unit-binaries-r1\\fm_kernel_native.exe": "86d18c09317601314dfd31b7293d649c6475bc54684a36afc75546209296da3a"
+      }
+    },
+    {
+      "record": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\unit-tests-r2.json",
+      "sha256": "c5e7d94a3c2da4caa55f3cd3af105b12d91c75947fd7112f934ca9d1bd2da1de",
+      "source": "4adfc3842fe0749e914c0f429cd75c7164675326",
+      "passed": true,
+      "tests": 2,
+      "retained_binaries": {
+        "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\unit-binaries-r2\\fm_kernel_fallback.exe": "e1da56030567eed8407754bd72cfb5920108eb50135639539801bcd60e34ad6f",
+        "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\unit-binaries-r2\\fm_kernel_native.exe": "7bcd40cf57e718a2d4c7503e62a9ffe9a838e1f8bf744f27256a87fcca66fd92"
+      }
+    }
+  ],
+  "adopted_runtime": false,
+  "pr": null,
+  "scope_limit": "Evidence-backed unsuccessful selected FM operator/channel opportunity, not a deferral or a claim that every future phase/envelope/layout algorithm is impossible. Already-shipped sample-block wrapper receives no new credit.",
+  "correctness": "Both variants independent frozen-vendor+wrapper native and compile0 fallback PCM/status/fullstate/write/restore/ring checks pass; all actual cart full WAV/raw/frame/guest/audio/current rollback match; CD full checkpoints/artifacts/WAV match. No claim of CD rollback or exhaustive SSG transition coverage. Envelopes/phase/LFO math unchanged.",
+  "toolchains": {
+    "cart": "MSVC19.44.35229.0; compiler14.44.35207, SDK22621; both baseline/candidate raw configure logs agree",
+    "CD": "Staged MSVC19.41.34123.0 x64 / SDK19041; both arms same supported frozen consumer/archive and five consistent FM TUs/header graph",
+    "unit": "MSVC19.44, x64 native and compile0 fallback for each source; no positive-adoption-only extra-platform/stress matrix for discarded code"
+  },
+  "per_game_decisions": {
+    "rka": "Neither global architecture qualifies; direct-route default wall adverse in all3 pairs with mixed cycles; compact shared-host timing mixed. No universal slowdown claim.",
+    "sonic1": "Direct-route shadowoff improves but shadowon mixed; compact shadowoff cycles+6.97/+4.54percent and wall+14.30/+5.61percent reproducibly adverse. Shadowon gains cannot offset.",
+    "sonic_cd": "Compact only; CPU changes-8.33/-0.773percent, cycles-7.475/+7.111percent; output exact. Baseline between-pair cost varies19/22percent. Neutral/inconclusive, not proven8percent gain and not evidence for a new CD-only default."
+  },
+  "cleanup": [
+    {
+      "scope": "Owned disposable build objects; matching binaries/config/raw logs retained and verified",
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\native-build-r1-rka",
+      "removed": true,
+      "bytes": 101718964
+    },
+    {
+      "scope": "Owned disposable build objects; matching binaries/config/raw logs retained and verified",
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\native-build-r1-sonic1",
+      "removed": true,
+      "bytes": 63424749
+    },
+    {
+      "scope": "Owned disposable build objects; matching binaries/config/raw logs retained and verified",
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\unit-build-r1",
+      "removed": true,
+      "bytes": 2961899
+    },
+    {
+      "scope": "Owned disposable build objects; matching binaries/config/raw logs retained and verified",
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\unit-build-r2",
+      "removed": true,
+      "bytes": 2948442
+    },
+    {
+      "scope": "Exact duplicate CD binaries verified against retained local candidate; source/build caches and tools preserved",
+      "path": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031-server\\cd-binaries",
+      "sha256": {
+        "SonicCD.exe": "19f7c6de6d9b1ac4314b4ed7a034fe52af63aa692c373b09087bde39f6c08ff1",
+        "SDL2.dll": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+      },
+      "removed": true,
+      "bytes": 118319104
+    }
+  ],
+  "validation_gate": "PASS; independent whole bounded rejection/restoration/records/cleanup verified; owning/parent/campaign durable; central push12.4s exit0; explicit original E21 instruction received",
+  "cleanup_bytes": 289373158,
+  "CD_cache_restore": {
+    "passed": true,
+    "capacity_record": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031\\capacity-CD-restore.json",
+    "selection": "CMAKE_PROJECT_INCLUDE:UNINITIALIZED=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+    "source": "original accepted qualified-source.cmake; no E20 source override"
+  },
+  "review": {
+    "verdict": "ENGINE_FM_KERNELS_REVIEW.md",
+    "sha256": "0d0fbf4db52fd52b393a05bef3fc1bf23d517eb4f79f69c12e4f2c88e18dc8a2",
+    "audit": "engine-fm-kernel-review.json",
+    "audit_sha256": "0288de1ada54f77bbb81ad058a9aa1b65643030540ed4e2376a6c5401c3a997f",
+    "reviewed_head": "f6a605d4ad4451ebc8289a0325b3ed86f154a35c",
+    "central_push_seconds": 12.4,
+    "central_push_exit": 0,
+    "explicit_next": "E21"
+  }
+}

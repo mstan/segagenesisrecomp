@@ -13,7 +13,7 @@
 static HANDLE s_timer;
 static int s_timer_attempted;
 
-static int wait_native(uint64_t remaining, uint64_t frequency)
+static int wait_native(uint64_t remaining, uint64_t frequency, int spin_tail)
 {
     if (!s_timer_attempted) {
         s_timer_attempted = 1;
@@ -24,9 +24,9 @@ static int wait_native(uint64_t remaining, uint64_t frequency)
     /* Leave 100 us for the final deadline check. The frame pacer bounds this
      * interval to one NTSC period, so conversion cannot overflow uint64_t. */
     uint64_t units = remaining * 10000000ull / frequency;
-    if (units > 2000) {
+    if (units > (spin_tail ? 2000u : 0u)) {
         LARGE_INTEGER due;
-        due.QuadPart = -(LONGLONG)(units - 1000);
+        due.QuadPart = -(LONGLONG)(units - (spin_tail ? 1000u : 0u));
         if (!SetWaitableTimer(s_timer, &due, 0, NULL, NULL, FALSE) ||
             WaitForSingleObject(s_timer, INFINITE) != WAIT_OBJECT_0) return 0;
     }
@@ -40,8 +40,8 @@ void genesis_host_wait_shutdown(void)
     s_timer_attempted = 0;
 }
 #else
-static int wait_native(uint64_t remaining, uint64_t frequency)
-{ (void)remaining; (void)frequency; return 0; }
+static int wait_native(uint64_t remaining, uint64_t frequency, int spin_tail)
+{ (void)remaining; (void)frequency; (void)spin_tail; return 0; }
 int genesis_host_wait_native_active(void) { return 0; }
 void genesis_host_wait_shutdown(void) { }
 #endif
@@ -50,9 +50,27 @@ void genesis_host_wait_until(uint64_t deadline, uint64_t frequency)
 {
     uint64_t now = SDL_GetPerformanceCounter();
     if (!frequency || now >= deadline) return;
-    if (!wait_native(deadline - now, frequency)) {
+    if (!wait_native(deadline - now, frequency, 1)) {
         uint64_t remaining_ms = (deadline - now) * 1000 / frequency;
         if (remaining_ms > 2) SDL_Delay((Uint32)(remaining_ms - 1));
     }
     while (SDL_GetPerformanceCounter() < deadline) { }
+}
+
+void genesis_host_park_until(uint64_t deadline, uint64_t frequency)
+{
+    if (!frequency) return;
+    uint64_t now = SDL_GetPerformanceCounter();
+    while (now < deadline) {
+        uint64_t remaining = deadline - now;
+        if (!wait_native(remaining, frequency, 0)) {
+            /* Round upward so portable SDL targets sleep through the deadline
+             * instead of burning a millisecond in a busy loop. */
+            uint64_t units = remaining * 1000u;
+            uint64_t ms = units / frequency + (units % frequency != 0);
+            if (ms > UINT32_MAX) ms = UINT32_MAX;
+            SDL_Delay((Uint32)(ms ? ms : 1));
+        }
+        now = SDL_GetPerformanceCounter();
+    }
 }

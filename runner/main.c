@@ -1,5 +1,8 @@
+#include "video/genesis_frame_pixels.h"
+#include "video/genesis_hd_gpu.h"
+#include "video/genesis_raster_jobs.h"
 /*
- * main.c — shared SDL2 frontend for native Genesis recompilation targets.
+ * main.c â€” shared SDL2 frontend for native Genesis recompilation targets.
  *
  * A game repository supplies g_game_spec, generated 68000 code, ROM identity,
  * and launcher metadata. This frontend owns the clean-room machine runtime,
@@ -17,7 +20,7 @@
 #include <io.h>
 #endif
 #ifndef _WIN32
-#include <unistd.h>   /* readlink, ssize_t — exe-dir resolution + popen picker */
+#include <unistd.h>   /* readlink, ssize_t â€” exe-dir resolution + popen picker */
 #ifdef __ANDROID__
 #include <dirent.h>   /* ROM scan of the app files dir (no file dialogs) */
 #include <strings.h>  /* strcasecmp */
@@ -26,11 +29,14 @@
 
 #include <SDL2/SDL.h>
 
-#include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
+#include "backend_decls.h"   /* own decls â€” native builds have no clownmdemu paths */
 #include "genesis_clocks.h"
 #include "frame_pacer.h"
 #include "audio/mixer.h"
 #include "host_wait.h"
+#include "host_stream.h"
+#include "persist_writer.h"
+#include "host_atomic_file.h"
 #include "audio.h"
 #include "host_timing.h"
 #include "cosim.h"
@@ -93,7 +99,7 @@ static void init_exe_dir(const char *argv0)
 #ifdef __ANDROID__
     /* Android: the process image is the system app_process and its directory
      * is read-only. Anchor config/saves in the app's external files dir
-     * (/sdcard/Android/data/<pkg>/files — user- and adb-visible), and chdir
+     * (/sdcard/Android/data/<pkg>/files â€” user- and adb-visible), and chdir
      * there so cwd-relative outputs (dispatch_misses.toml) land with them. */
     {
         const char *ext = SDL_AndroidGetExternalStoragePath();
@@ -136,7 +142,7 @@ const char *exe_relative(const char *filename)
 
 #ifdef __ANDROID__
 /* The app files dir also holds savestates and RAM dumps with ROM-ish
- * extensions (native_save_N.bin, ramdump_native.bin) — a bare extension
+ * extensions (native_save_N.bin, ramdump_native.bin) â€” a bare extension
  * scan can boot one as a "ROM" and abort. Genesis carts carry "SEGA" at
  * 0x100; require it for .bin/.md/.gen (interleaved .smd is exempt). */
 static int rom_has_sega_header(const char *path)
@@ -188,7 +194,7 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
 #include "app_config.h"
 #if RECOMP_LAUNCHER
 /* Shared recomp-ui launcher C ABI. The header is supplied through the game
- * target's include dirs (recomp-ui/src) via recomp_ui.cmake — the engine repo
+ * target's include dirs (recomp-ui/src) via recomp_ui.cmake â€” the engine repo
  * itself does NOT vendor recomp-ui, so this is only reachable when a game opts
  * in by defining RECOMP_LAUNCHER. */
 #include "recomp_launcher.h"
@@ -221,13 +227,13 @@ static int s_frame_stride = NATIVE_SCREEN_STRIDE;
 
 static uint32_t s_native_storage[NATIVE_SCREEN_STRIDE * MAX_SCREEN_HEIGHT];
 static uint32_t *s_framebuf = s_native_storage; /* ARGB8888 */
-static int s_custom_width;
+static GameVideoFrame s_video_frame;
 static SDL_Renderer *s_video_renderer;
 static SDL_Texture **s_video_texture;
 
-/* ── Present-time screen-color LUT (verified-enhancement video) ──────────
+/* â”€â”€ Present-time screen-color LUT (verified-enhancement video) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Opt-in via GENESIS_SCREEN={raw,crt,trinitron,composite,linear}; default
- * raw=passthrough. Applied to a COPY of s_framebuf at SDL-upload time only —
+ * raw=passthrough. Applied to a COPY of s_framebuf at SDL-upload time only â€”
  * NEVER to s_framebuf itself, so [FBHASH], PNG dumps, and any verify path stay
  * defined on the raw VDP output and remain byte-identical with the screen off.
  * See video/color_lut.h. */
@@ -237,6 +243,16 @@ static uint32_t s_present_storage[NATIVE_SCREEN_STRIDE * MAX_SCREEN_HEIGHT];
 static uint32_t *s_present_buf = s_present_storage;
 static ColorLut s_color_lut;
 static int      s_color_lut_on = 0;   /* 0 = raw passthrough (default) */
+#if GENESIS_FINAL_PIXEL_PIPELINE
+static void present_color_row(void *context,const void *source,void *destination,int count)
+{
+    const ColorLut *lut=(const ColorLut *)context;
+    const uint32_t *src=(const uint32_t *)source;
+    uint32_t *dst=(uint32_t *)destination;
+    for(int x=0;x<count;++x)dst[x]=color_lut_map_argb(lut,src[x]);
+}
+#endif
+
 
 static void color_lut_setup(void)
 {
@@ -254,11 +270,11 @@ static void color_lut_setup(void)
     }
 }
 
-/* ── Widescreen (16:9) opt-in ────────────────────────────────────────────
+/* â”€â”€ Widescreen (16:9) opt-in â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * User toggle via GENESIS_WIDESCREEN={1,on,yes,true} (default off) and
  * GENESIS_WIDESCREEN_COLUMNS=<cells/side> (default 8). The toggle only
  * ARMS widescreen; whether a given frame actually renders wide is decided
- * per frame in widescreen_update_for_frame() — it requires the game to be
+ * per frame in widescreen_update_for_frame() â€” it requires the game to be
  * ws_capable (per-game [widescreen] config) AND in an eligible game mode,
  * otherwise the authentic 4:3 view is pillarboxed inside the wider buffer.
  * With the toggle off, ws_extra stays 0 and output is byte-identical 4:3. */
@@ -267,6 +283,8 @@ static int s_ws_user_cells = 8;   /* requested extra 8px cells per side */
 static int s_ws_bgdiag_on  = 0;   /* GENESIS_WS_BGDIAG: Plane B parallax diagnostic */
 static int s_ws_bar_black  = 1;   /* pillarbox bars: black (default); GENESIS_WS_BARS=backdrop for seamless */
 static int s_frame_texture_filtered = 0; /* actual SDL texture scale mode */
+static unsigned s_hd_scale=1;
+static int s_hd_requested;
 #if RECOMP_LAUNCHER
 typedef struct RuntimeUiContext {
     SDL_Window *window;
@@ -283,6 +301,11 @@ static const char *const s_presentation_rates[]={"Off (original rate)","120 Hz",
 static const RecompRuntimeUiItem s_presentation_item={"video.presentation_rate","Mods","High refresh rate","Smooth camera and actors between original ticks; one tick of visual latency. Game and audio speed stay unchanged.",RECOMP_RUNTIME_UI_CHOICE,0,3,1,s_presentation_rates,4};
 static const RecompRuntimeUiItem s_audio_filter_item={"audio.bypass_filter","Audio","Unfiltered audio","Bypass native hardware low-pass filters. A separate enhanced FM path retains its own sound.",RECOMP_RUNTIME_UI_BOOL,0,1,1};
 static const char *const s_mod_aspects[]={"Adaptive","16:9","21:9","32:9"};
+static const int s_hd_scales[]={1,2,4,8,16,32,64};
+static const char *const s_hd_labels[]={"Native","2x","4x","8x","16x","32x","64x"};
+static const RecompRuntimeUiItem s_hd_items[]={
+    {"video.internal_resolution","Video","Internal resolution (restart)","Applies next launch. Unsupported hardware keeps native presentation.",RECOMP_RUNTIME_UI_CHOICE,0,6,1,s_hd_labels,7,NULL}
+};
 static const RecompRuntimeUiItem s_video_mod_items[]={
     {"mods.widescreen.enabled","Mods","Widescreen","Opt-in custom scene renderer with expanded objects and screen-anchored HUD.",RECOMP_RUNTIME_UI_BOOL,0,1,1},
     {"mods.widescreen.aspect","Mods","Aspect ratio","Adaptive follows the whole window without a 32:9 cap.",RECOMP_RUNTIME_UI_CHOICE,0,3,1,s_mod_aspects,4}
@@ -299,15 +322,22 @@ static int runtime_ui_get(void *p, const RecompRuntimeUiItem *i, int *out) {
     else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VIEW_MODE)) *out = c->view_mode;
     else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_LINEAR_FILTER)) *out = g_app_config.linear_filter;
     else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VOLUME)) *out = g_app_config.volume;
-    else if (!strcmp(i->key,"mods.widescreen.enabled")) *out = g_game_spec.video && g_game_spec.video->enabled();
+    else if (!strcmp(i->key,"mods.widescreen.enabled")) *out = game_video_viewport_enabled(g_game_spec.video);
     else if (!strcmp(i->key,"mods.widescreen.aspect")) *out = g_app_config.custom_aspect;
     else if (!strcmp(i->key,"video.presentation_rate")) *out=app_config_presentation_index(g_app_config.presentation_rate);
     else if (!strcmp(i->key,"audio.bypass_filter")) *out=g_app_config.audio_filter_bypass;
     else if (!strcmp(i->key,"states.slot")) *out = s_quickstate_slot;
+    else if (!strcmp(i->key,"video.internal_resolution")) {
+        *out=0;for(int n=0;n<7;++n)if(s_hd_scales[n]==g_app_config.internal_scale)*out=n;
+    }
     else return 0; return 1;
 }
 static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
     RuntimeUiContext *c = (RuntimeUiContext *)p;
+    if(!strcmp(i->key,"video.internal_resolution")) {
+        if(v<0||v>6)return 0;
+        g_app_config.internal_scale=s_hd_scales[v];return 1;
+    }
     if (!strcmp(i->key,"states.slot")) { if (v<1 || v>9) return 0; s_quickstate_slot=v; return 1; }
     if(!strcmp(i->key,"audio.bypass_filter")) {
         g_app_config.audio_filter_bypass=v!=0;audio_mixer_set_filter_bypass(v);return 1;
@@ -321,7 +351,7 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
 #if GENESIS_HAS_RECOMP_NET
         if(genesis_netplay_active())return 0;
 #endif
-        if(!g_game_spec.video)return 0;
+        if(!game_video_has_viewport(g_game_spec.video))return 0;
         if(!strcmp(i->key,"mods.widescreen.enabled"))g_app_config.custom_widescreen=v!=0;
         else if(!strcmp(i->key,"mods.widescreen.aspect") && v>=0 && v<4)g_app_config.custom_aspect=v;
         else return 0;
@@ -339,7 +369,7 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
         if (genesis_netplay_active()) return 0;
 #endif
         c->view_mode = v; s_ws_user_on = v != RECOMP_RUNTIME_UI_VIEW_NATIVE;
-        if (g_game_spec.video)
+        if (game_video_has_viewport(g_game_spec.video))
             g_game_spec.video->configure(v == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE ? "fit" : "off");
         if (v == RECOMP_RUNTIME_UI_VIEW_FIXED_16_9) s_ws_user_cells = 8;
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_LINEAR_FILTER)) {
@@ -414,7 +444,7 @@ static void widescreen_setup(void)
 /* TCP debug hook (`ws_set` in cmd_server.c): arm/disarm the user widescreen
  * request at runtime, exactly like the runtime-overlay view toggle. Lets
  * probes script the mid-level 16:9 arm transition (margin 0 -> N) without a
- * relaunch. Engine-side state only — no game RAM is touched. Returns the new
+ * relaunch. Engine-side state only â€” no game RAM is touched. Returns the new
  * value. The launcher overlay UI (if open) is not re-synced; cosmetic only. */
 int runner_ws_set_user(int on)
 {
@@ -427,16 +457,16 @@ int runner_ws_set_user(int on)
 #define WS_ASPECT_H 9
 /* True while the 16:9 presentation is active: user asked for it AND the game
  * supports widescreen content. */
-static int ws_armed(void) { return !s_custom_width && s_ws_user_on && g_game_layout.ws_capable; }
+static int ws_armed(void) { return !s_video_frame.viewport && s_ws_user_on && g_game_layout.ws_capable; }
 /* Width (px) of the fixed widescreen output canvas the VDP emits every frame. */
 static int ws_canvas_w(void) { return 320 + 2 * s_ws_user_cells * 8; }
 /* Height (px) that makes that canvas width a true 16:9 frame. The canvas is
  * physically wider (2:1 at 8 cells), so the present path scales the authentic
- * 224-line image into this height to fill the 16:9 window edge-to-edge —
+ * 224-line image into this height to fill the 16:9 window edge-to-edge â€”
  * gameplay full-bleed, menus pillarboxed inside it (see gvdp pillarbox). */
 static int ws_canvas_h(void) { return ws_canvas_w() * WS_ASPECT_H / WS_ASPECT_W; }
 
-/* Expanded palette: 192 entries (64 CRAM × 3 brightness levels).
+/* Expanded palette: 192 entries (64 CRAM Ã— 3 brightness levels).
  * colour_updated_cb converts each entry from Genesis format to ARGB8888. */
 static uint32_t s_cram[192];
 
@@ -499,7 +529,7 @@ static void update_render_logical_size(SDL_Renderer *renderer)
     int w;
     int h;
 
-    /* Widescreen: present on a true 16:9 logical canvas (canvas_w × 16:9 height)
+    /* Widescreen: present on a true 16:9 logical canvas (canvas_w Ã— 16:9 height)
      * so the content fills the 16:9 window with no SDL letterbox. The authentic
      * 224-line frame scales into the 16:9 height; gameplay is full-bleed and
      * non-gameplay screens carry their pillarbox bars within the canvas. */
@@ -580,35 +610,46 @@ static void scanline_rendered_cb(void *user_data,
 
 #include "genesis_machine.h"
 /* Own-backend scanline sink: copy our VDP's rendered ARGB row to the framebuf. */
+static const uint32_t *provided_native_row(void *ctx) { return (const uint32_t *)ctx; }
 static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width)
 {
     (void)u;
-    /* `width` already includes any widescreen margins (gvdp_render_scanline
-     * returns w + 2*extra). Track it so the present path scales to the wider
-     * image, mirroring the clownmdemu scanline_rendered_cb. */
-    s_screen_width = s_custom_width ? s_custom_width : width;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
-    if (s_custom_width && g_game_spec.video) {
-        g_game_spec.video->scanline(&g_machine.vdp, line, argb, width, row, s_custom_width);
-    } else {
-        int n = width < MAX_SCREEN_WIDTH ? width : MAX_SCREEN_WIDTH;
-        for (int x = 0; x < n; x++) row[x] = argb[x];
-    }
-    if (g_game_spec.video && g_game_spec.video->overlay_scanline)
-        g_game_spec.video->overlay_scanline(&g_machine.vdp, line, row, s_screen_width);
+    s_screen_width = game_video_draw_row(&s_video_frame, &g_machine.vdp, line,
+        width, row, MAX_SCREEN_WIDTH, provided_native_row, (void *)argb);
 }
+
+static int own_indexed_accepts(void *user,int line,int width)
+{
+    (void)user;
+    return !s_video_frame.owner && line>=0 && line<MAX_SCREEN_HEIGHT && width>0 && width<=MAX_SCREEN_WIDTH;
+}
+static void own_indexed_sink(void *user,int line,const uint8_t *indices,int width,const uint32_t *palette)
+{
+    (void)user;
+    uint32_t *row=s_framebuf+(size_t)line*(size_t)MAX_SCREEN_WIDTH;
+    genesis_pixels_expand(row,indices,width,palette,GVDP_OUTPUT_PALETTE_SIZE,0xff000000u);
+    uint32_t before[GVDP_MAX_WIDTH];
+    int check_overlay=s_hd_requested&&s_video_frame.adapter&&s_video_frame.adapter->overlay_scanline&&width<=GVDP_MAX_WIDTH;
+    if(check_overlay)memcpy(before,row,(size_t)width*4);
+    if(s_video_frame.adapter && s_video_frame.adapter->overlay_scanline)
+        s_video_frame.adapter->overlay_scanline(&g_machine.vdp,line,row,width);
+    if(check_overlay&&memcmp(before,row,(size_t)width*4))gvdp_hd_ineligible();
+    gvdp_hd_bind_palette((unsigned)line,palette,GVDP_OUTPUT_PALETTE_SIZE);
+    s_screen_width=width;
+}
+static GenesisIndexedSink s_direct_pixels={NULL,own_scanline_sink,own_indexed_sink,own_indexed_accepts};
 
 static int own_custom_row_enabled(void *user)
 {
     (void)user;
-    if(!g_game_spec.video)return 0;
-    int capture=g_app_config.presentation_rate && g_game_spec.video->presentation_capture &&
-                (s_custom_width || !s_ws_user_on);
-    if(!s_custom_width)return capture?3:0;
-    if(!g_game_spec.video->scanline_lazy && !g_game_spec.video->scanline_presented)return 0;
-    return 1 | (capture || (g_game_spec.video->scanline_presented && g_game_spec.video->raster_enabled &&
-        g_game_spec.video->raster_enabled(&g_machine.vdp)) ? 2 : 0);
+    const GameVideo *owner=s_video_frame.owner,*adapter=s_video_frame.adapter;
+    int capture=g_app_config.presentation_rate && adapter && adapter->presentation_capture &&
+                (owner || !s_ws_user_on);
+    if(!owner || (!owner->scanline_lazy && !owner->scanline_presented))return capture?3:0;
+    return 1 | (capture || (owner->scanline_presented && owner->raster_enabled &&
+                owner->raster_enabled(&g_machine.vdp)) ? 2 : 0);
 }
 
 static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
@@ -617,21 +658,13 @@ static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
 {
     (void)user;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
-    if(!s_custom_width) {
-        own_scanline_sink(user,line,native_row(native_ctx),native_w);
-        if(g_game_spec.video->presentation_capture)
-            g_game_spec.video->presentation_capture(vdp,line,s_framebuf+line*MAX_SCREEN_WIDTH,native_w,native_w,raster);
-        return;
-    }
-    s_screen_width = s_custom_width;
+    /* The machine supplies actual H32/H40/margin/canvas row geometry. */
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
-    if (g_game_spec.video->scanline_presented)
-        g_game_spec.video->scanline_presented(vdp,line,native_w,row,s_custom_width,native_row,native_ctx,raster);
-    else g_game_spec.video->scanline_lazy(vdp,line,native_w,row,s_custom_width,native_row,native_ctx);
-    if (g_game_spec.video->overlay_scanline)
-        g_game_spec.video->overlay_scanline(vdp, line, row, s_screen_width);
-    if(g_app_config.presentation_rate && g_game_spec.video->presentation_capture)
-        g_game_spec.video->presentation_capture(vdp,line,row,s_screen_width,native_w,raster);
+    s_screen_width = game_video_draw_presented_row(&s_video_frame, vdp, line, native_w,
+        row, MAX_SCREEN_WIDTH, native_row, native_ctx, raster);
+    const GameVideo *adapter=s_video_frame.adapter;
+    if(g_app_config.presentation_rate && adapter && adapter->presentation_capture)
+        adapter->presentation_capture(vdp,line,row,s_screen_width,native_w,raster);
 }
 
 static const GenesisScanlineProducer s_custom_producer = {
@@ -640,26 +673,38 @@ static const GenesisScanlineProducer s_custom_producer = {
 
 static void custom_video_prepare(void)
 {
-    s_custom_width = 0;
-    if (!g_game_spec.video || !g_game_spec.video->enabled()) return;
     int dw = 0, dh = 0;
-    if (s_video_renderer) SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
+    if (g_game_spec.video && s_video_renderer)
+        SDL_GetRendererOutputSize(s_video_renderer, &dw, &dh);
     genesis_replay_viewport(&dw,&dh);
-    /* width() also sets the game's SIMULATION width from the configured mode
-     * (sealed online), so it runs whether or not this machine can present
-     * it; everything below only decides what this machine draws. */
-    int width = g_game_spec.video->width(dw, dh, 320, 224);
-    if (!s_video_renderer || width < 320) return;
+    s_video_frame = game_video_prepare_frame(g_game_spec.video, dw, dh, 320, 224);
+    if (!s_video_renderer || !s_video_frame.owner) {
+        game_video_native_fallback(&s_video_frame);
+        return;
+    }
+    /* An independently selected native producer needs no wide allocation.
+     * width() already published the configured simulation width above. */
+    int width = s_video_frame.width;
+    if (!width) return;
     SDL_RendererInfo info;
+    /* Legacy adapters may derive guest hooks from their published width.
+     * Never invoke one at a smaller local width: preserve its logical request
+     * and use exact native presentation when this host cannot fit it. */
     if (SDL_GetRendererInfo(s_video_renderer, &info) == 0 && info.max_texture_width > 0 &&
-        width > info.max_texture_width) width = info.max_texture_width;
+        width > info.max_texture_width) {
+        game_video_native_fallback(&s_video_frame);
+        return;
+    }
     {   /* Validation only: pretend this machine's GPU has a smaller texture
          * limit (GENESIS_FORCE_MAX_TEXTURE_W), to prove the clamp stays
          * presentation. */
         const char *f = getenv("GENESIS_FORCE_MAX_TEXTURE_W");
-        if (f && f[0] && atoi(f) > 0 && width > atoi(f)) width = atoi(f);
+        if (f && f[0] && atoi(f) > 0 && width > atoi(f)) {
+            game_video_native_fallback(&s_video_frame);
+            return;
+        }
     }
-    if (width < 320) return;
+    if (width < 320) { game_video_native_fallback(&s_video_frame); return; }
     if (width > s_frame_stride) {
         size_t count = (size_t)width * MAX_SCREEN_HEIGHT;
         uint32_t *frame = (uint32_t *)calloc(count, sizeof(uint32_t));
@@ -668,12 +713,7 @@ static void custom_video_prepare(void)
                                               SDL_TEXTUREACCESS_STREAMING, width, MAX_SCREEN_HEIGHT);
         if (!frame || !present || !next) {
             free(frame); free(present); SDL_DestroyTexture(next);
-#if GENESIS_HAS_RECOMP_NET
-            /* Online the mode is sealed simulation config: present natively
-             * this frame, never switch the mode off under the peers. */
-            if (!genesis_netplay_active())
-#endif
-            g_game_spec.video->configure("off");
+            game_video_native_fallback(&s_video_frame);
             fprintf(stderr, "[VIDEO] custom framebuffer allocation failed (%d pixels): %s\n", width, SDL_GetError());
             return;
         }
@@ -687,19 +727,20 @@ static void custom_video_prepare(void)
         if (s_present_buf != s_present_storage) free(s_present_buf);
         s_framebuf = frame; s_present_buf = present; s_frame_stride = width;
     }
-    s_custom_width = width;
+    s_video_frame.width = width;
 }
 
 /* Presentation-only debug control for deterministic resize/mode probes. */
 int runner_custom_video_set(const char *mode, int window_w, int window_h)
 {
-    if (!g_game_spec.video || !s_video_renderer || window_w < 0 || window_h < 0 ||
+    if (!game_video_has_viewport(g_game_spec.video) || !s_video_renderer || window_w < 0 || window_h < 0 ||
         window_w > 65535 || window_h > 65535 || (!window_w != !window_h)) return 0;
-    if (mode && *mode && !g_game_spec.video->configure(mode)) return 0;
+    if (mode && *mode && (!game_video_has_viewport(g_game_spec.video) ||
+                         !g_game_spec.video->configure(mode))) return 0;
     if (window_w && window_h) SDL_SetWindowSize(SDL_RenderGetWindow(s_video_renderer), window_w, window_h);
     s_ws_user_on = 0;
 #if RECOMP_LAUNCHER
-    s_runtime_ui.view_mode = g_game_spec.video->enabled() ? RECOMP_RUNTIME_UI_VIEW_ADAPTIVE : RECOMP_RUNTIME_UI_VIEW_NATIVE;
+    s_runtime_ui.view_mode = game_video_viewport_enabled(g_game_spec.video) ? RECOMP_RUNTIME_UI_VIEW_ADAPTIVE : RECOMP_RUNTIME_UI_VIEW_NATIVE;
 #endif
     return 1;
 }
@@ -707,7 +748,7 @@ int runner_custom_video_set(const char *mode, int window_w, int window_h)
 /* Decide the widescreen margin for the frame about to run, then (a) tell the
  * VDP how many extra columns to render and (b) write the same per-side margin
  * (in pixels) to the per-game RAM word so the recompiled 68K widens its own
- * object-cull / tile-load bounds to match. extra==0 ⇒ authentic 4:3 and a
+ * object-cull / tile-load bounds to match. extra==0 â‡’ authentic 4:3 and a
  * vanilla game frame. Called immediately before machine_run_frame(), where the
  * game executes (scanline-interleaved) and the VDP renders. */
 static void widescreen_update_for_frame(void)
@@ -715,7 +756,7 @@ static void widescreen_update_for_frame(void)
     custom_video_prepare();
     extern int      g_ws_margin;   /* runtime widening signal (defined in glue.c) */
     int extra_px = 0;
-    if (!s_custom_width && s_ws_user_on && g_game_layout.ws_capable) {
+    if (!s_video_frame.viewport && s_ws_user_on && g_game_layout.ws_capable) {
         int cells = s_ws_user_cells;
         if (g_game_layout.ws_max_extra_cells > 0 &&
             cells > g_game_layout.ws_max_extra_cells)
@@ -753,12 +794,12 @@ static void widescreen_update_for_frame(void)
     gvdp_set_bgdiag(s_ws_bgdiag_on);
 
     /* Arm the fixed 16:9 output canvas: while widescreen is on for a capable
-     * game, EVERY frame emits the full canvas width — gameplay fills it with
+     * game, EVERY frame emits the full canvas width â€” gameplay fills it with
      * widened content (extra_px>0), other screens center the authentic view and
-     * pillarbox the sides (extra_px==0) — so the window never resizes. The width
+     * pillarbox the sides (extra_px==0) â€” so the window never resizes. The width
      * matches the window the engine opened ((320 + 2*cells*8) * 2). 0 disarms
      * (authentic 4:3, byte-identical). Decoupled from extra_px on purpose. */
-    int canvas_w = (!s_custom_width && s_ws_user_on && g_game_layout.ws_capable)
+    int canvas_w = (!s_video_frame.viewport && s_ws_user_on && g_game_layout.ws_capable)
                        ? (320 + 2 * s_ws_user_cells * 8) : 0;
     gvdp_set_ws_canvas(canvas_w);
     gvdp_set_ws_bar_black(s_ws_bar_black);
@@ -839,8 +880,8 @@ static cc_bool input_requested_cb(void *user_data,
     /* Dev-driven sources ((.input scripts, --script-* flags, TCP set_input)
      * MERGE with the live keyboard/gamepad instead of replacing it: a button
      * held by ANY source reads as held. Unattended runs stay deterministic
-     * (nobody typing ⇒ identical stream), but a human can always grab the
-     * controls mid-script — previously a script parked on WAIT_RAM16 or a
+     * (nobody typing â‡’ identical stream), but a human can always grab the
+     * controls mid-script â€” previously a script parked on WAIT_RAM16 or a
      * finished TCP probe locked the keyboard out entirely. Sources can only
      * ADD buttons, never mask a live press. Timeline scripts address both
      * native ports; enhanced actors can read the independent P3/P4 masks. */
@@ -884,7 +925,7 @@ static cc_bool input_requested_cb(void *user_data,
         }
     }
 
-    /* TCP debug server input (set_input command) — additive, same merge rule
+    /* TCP debug server input (set_input command) â€” additive, same merge rule
      * as the script sources above. `set_input keys=off` clears it entirely.
      * Bit mapping matches Genesis: Up=0,Down=1,Left=2,Right=3,B=4,C=5,A=6,Start=7 */
     if (player_id == 0 && s_tcp_input_active) {
@@ -998,7 +1039,7 @@ static void collect_sim_input(GenesisSimInput *in)
  * these buffers and flush once per frame so we can mix FM + PSG together.
  *
  * Sizes: ~887 FM stereo frames / video-frame and ~3729 PSG mono frames /
- * video-frame at 60 Hz NTSC.  4× headroom handles timing jitter.
+ * video-frame at 60 Hz NTSC.  4Ã— headroom handles timing jitter.
  */
 #define FM_ACCUM_FRAMES  4096
 #define PSG_ACCUM_FRAMES 16384
@@ -1017,6 +1058,7 @@ static size_t  s_psg_count = 0;
 static void dump_predrc(const cc_s16l *fm, size_t fm_frames,
                         const cc_s16l *psg, size_t psg_frames) {
     static FILE *ff = NULL, *pf = NULL;
+    static GenesisHostStream *fs,*ps;
     static int inited = 0;
     if (!inited) {
         inited = 1;
@@ -1024,15 +1066,42 @@ static void dump_predrc(const cc_s16l *fm, size_t fm_frames,
         if (pfx && *pfx) {
             char p[512];
             snprintf(p, sizeof p, "%s.fm.s16",  pfx); ff = fopen(p, "wb");
+            if(ff)fs=genesis_host_stream_create(ff,256u*1024u);
             snprintf(p, sizeof p, "%s.psg.s16", pfx); pf = fopen(p, "wb");
+            if(pf)ps=genesis_host_stream_create(pf,256u*1024u);
             fprintf(stderr, "[PREDRC] dumping pre-resample mixer output to %s.{fm,psg}.s16\n", pfx);
         }
     }
-    if (ff && fm  && fm_frames)  fwrite(fm,  sizeof(cc_s16l), fm_frames * 2, ff);
-    if (pf && psg && psg_frames) fwrite(psg, sizeof(cc_s16l), psg_frames,    pf);
+    if (ff && fm && fm_frames) {
+        if(fs)genesis_host_stream_write(fs,fm,sizeof(cc_s16l)*fm_frames*2);
+        else fwrite(fm,sizeof(cc_s16l),fm_frames*2,ff);
+    }
+    if (pf && psg && psg_frames) {
+        if(ps)genesis_host_stream_write(ps,psg,sizeof(cc_s16l)*psg_frames);
+        else fwrite(psg,sizeof(cc_s16l),psg_frames,pf);
+    }
 }
 
 #include "audio/mixer.h"          /* audio_mixer_drain */
+#include "audio/fm_shadow.h"
+#include "engine_worker.h"
+
+static GenesisWorker *s_shadow_worker;
+static void shadow_worker_cleanup(void)
+{
+    audio_mixer_set_shadow_executor(NULL,NULL);
+    if(s_shadow_worker)
+        fprintf(stderr,"[Engine work] mode=shadow completed=%llu\n",
+                (unsigned long long)genesis_worker_completed(s_shadow_worker));
+    genesis_worker_destroy(s_shadow_worker);s_shadow_worker=NULL;
+}
+static void execute_shadow_jobs(AudioMixerJob main_job,void *main_context,
+    AudioMixerJob shadow_job,void *shadow_context,void *context)
+{
+    GenesisWorker *worker=(GenesisWorker *)context;
+    (void)genesis_worker_start(worker,shadow_job,shadow_context);
+    main_job(main_context);genesis_worker_join(worker);
+}
 #ifdef GENESIS_COSIM
 #include "cosim.h"                 /* cosim_init / cosim_frame_checkpoint */
 #endif
@@ -1042,6 +1111,7 @@ static void dump_predrc(const cc_s16l *fm, size_t fm_frames,
 #include "audio/sn76489.h"        /* psg_save/load_state */
 extern uint32_t g_audio_cycle_counter;
 extern uint64_t g_frame_count;
+        extern uint64_t g_native_span_count,g_native_direct_calls,g_native_direct_tails;
 extern uint32_t m68k_read32(uint32_t);
 extern uint8_t  m68k_read8 (uint32_t);
 
@@ -1051,15 +1121,10 @@ extern uint8_t  m68k_read8 (uint32_t);
  * ROM loading
  * ========================================================================= */
 
+#include "state_crc.h"
 static uint32_t rom_crc32(const uint8_t *data, size_t len)
 {
-    uint32_t crc = 0xFFFFFFFFu;
-    for (size_t i = 0; i < len; ++i) {
-        crc ^= data[i];
-        for (int bit = 0; bit < 8; ++bit)
-            crc = (crc >> 1) ^ (0xEDB88320u & (uint32_t)-(int32_t)(crc & 1u));
-    }
-    return ~crc;
+    return ~genesis_state_crc32_update(UINT32_MAX, data, len);
 }
 
 /* Reads the ROM file at path.  Allocates and returns a cc_u16l[] buffer
@@ -1136,7 +1201,7 @@ static const char *resolve_runner_path(const char *path, char *buf, size_t buf_l
 /* Own-backend save container: versioned magic, then the glue blob (M68K regs,
  * frame count, cycle accumulators, V-int/H-int latches), WRAM, the whole machine
  * (VDP + bus incl. Z80 RAM/SRAM + the full embedded superzazu Z80 core), and
- * both audio chips. Raw-struct format, private to a build — same convention as
+ * both audio chips. Raw-struct format, private to a build â€” same convention as
  * the clownmdemu-path states (which dumped g_clownmdemu raw); the magic keeps
  * the formats from being confused. GROWNS3 adds pending H-int ownership to
  * the glue state. GROWNS2 used the declown-headers machine
@@ -1277,12 +1342,12 @@ int runner_load_state_file(const char *path)
  * The machine holds cartridge SRAM in its bus state
  * but never writes it to disk: its save_file_* callbacks drive Mega-CD
  * backup RAM only (bus-sub-m68k.c), not cartridge SRAM. So the runner owns
- * SRAM persistence — load the .srm at boot, auto-flush it shortly after the
+ * SRAM persistence â€” load the .srm at boot, auto-flush it shortly after the
  * game writes a save, and flush once more on exit.
  *
  * Fully game-agnostic: cartridges without battery SRAM report size==0 /
  * non_volatile==false (Sonic 1 & 2), so every entry point below no-ops for
- * them. Nothing here knows a game-specific address — the SRAM geometry comes
+ * them. Nothing here knows a game-specific address â€” the SRAM geometry comes
  * from the ROM header parse.
  * ========================================================================= */
 
@@ -1294,6 +1359,8 @@ static const char *s_replay_boot_path;
 static uint64_t s_sram_hash      = 0;  /* last-seen content hash */
 static int      s_sram_dirty     = 0;  /* content changed since last flush */
 static uint32_t s_sram_dirty_at  = 0;  /* frame the pending change was seen */
+static GenesisPersistWriter *s_sram_writer;
+static int s_sram_io_pending;
 
 /* SRAM storage source: the own backend keeps cartridge SRAM in the own bus
  * (header-parsed geometry, genesis_bus.c); the clownmdemu path keeps it in
@@ -1333,42 +1400,53 @@ void runner_replay_sram_flushed(void)
     s_sram_dirty=0;
     if(g_game_spec.sram_flushed)g_game_spec.sram_flushed(s_sram_path,sram_buf(),sram_size());
 }
+/* Callbacks remain on the producer and receive the actual committed image.
+ * Autosave may overlap presentation/pacing, but drains before another guest
+ * frame or input/session/reset change; no simulation advances for a save ACK. */
+static void runner_sram_completed(const char *path,const void *data,size_t n,void *context)
+{
+    (void)context;s_sram_io_pending=0;
+    s_sram_dirty=n!=sram_size()||memcmp(data,sram_buf(),n)!=0;
+    if(g_game_spec.sram_flushed)g_game_spec.sram_flushed(path,data,n);
+    genesis_replay_sram_flushed();
+    fprintf(stderr,"[SRAM] flushed %zu bytes to %s\n",n,path);
+}
+static void runner_sram_complete(int wait)
+{
+    if(!s_sram_writer||!s_sram_io_pending)return;
+    int ok=wait?genesis_persist_wait(s_sram_writer):genesis_persist_poll(s_sram_writer);
+    if(!ok) {
+        (void)genesis_persist_destroy(s_sram_writer);s_sram_writer=NULL;
+        s_sram_io_pending=0;s_sram_dirty=1;
+        fprintf(stderr,"[SRAM] atomic flush failed; previous save retained, retry pending: %s\n",s_sram_path);
+    }
+}
+static void runner_sram_writer_init(void)
+{
+    (void)genesis_persist_destroy(s_sram_writer);
+    s_sram_writer=genesis_persist_create(s_sram_path,sram_buf(),sram_size(),genesis_atomic_file_store);
+    genesis_persist_on_completed(s_sram_writer,runner_sram_completed,NULL);
+}
 static void runner_sram_flush(void)
 {
     if(genesis_replay_playing())return;
+    runner_sram_complete(1);
     if (!s_sram_active) return;
 #if GENESIS_HAS_RECOMP_NET
-    /* Guest sandbox: during a session only the host (the SRAM authority)
-     * persists the battery save; a guest's SRAM holds the host's image and
-     * must never overwrite the guest's own file. */
-    if (!genesis_netplay_sram_writes_allowed()) {
-        s_sram_dirty = 0;
-        return;
+    /* A guest never publishes the host's SRAM to its local progress file. */
+    if (!genesis_netplay_sram_writes_allowed()) {s_sram_dirty=0;return;}
+#endif
+    size_t n=sram_size();
+    if(!genesis_atomic_file_store(s_sram_path,sram_buf(),n)) {
+        fprintf(stderr,"[SRAM] atomic flush failed: %s\n",s_sram_path);return;
     }
-#endif
-    char temporary[sizeof s_sram_path+8];
-    snprintf(temporary,sizeof temporary,"%s.tmp",s_sram_path);
-    FILE *f = fopen(temporary, "wb");
-    if (!f) { fprintf(stderr, "[SRAM] flush failed to open %s\n", s_sram_path); return; }
-    size_t n = sram_size();
-    size_t wrote = fwrite(sram_buf(), 1, n, f);
-    int ok=wrote==n && fflush(f)==0;
-#ifdef _WIN32
-    if(ok)ok=_commit(_fileno(f))==0;
-#else
-    if(ok)ok=fsync(fileno(f))==0;
-#endif
-    if(fclose(f))ok=0;
-#ifdef _WIN32
-    if(ok)ok=MoveFileExA(temporary,s_sram_path,MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)!=0;
-#else
-    if(ok)ok=rename(temporary,s_sram_path)==0;
-#endif
-    if(!ok){fprintf(stderr,"[SRAM] atomic flush failed: %s\n",s_sram_path);return;}
-    s_sram_dirty = 0;
+    s_sram_dirty=0;
+    /* Rebase the committed marker before the notification can modify live
+     * memory. Allocation failure retains the synchronous fallback. */
+    runner_sram_writer_init();
     if(g_game_spec.sram_flushed)g_game_spec.sram_flushed(s_sram_path,sram_buf(),n);
     genesis_replay_sram_flushed();
-    fprintf(stderr, "[SRAM] flushed %zu bytes to %s\n", wrote, s_sram_path);
+    fprintf(stderr,"[SRAM] flushed %zu bytes to %s\n",n,s_sram_path);
 }
 
 /* Resolve <rom-basename>.srm next to the exe, then load it (if present) into
@@ -1411,14 +1489,14 @@ static void runner_sram_init_and_load(const char *rom_path)
          * cart; splicing it in leaves partial/foreign bytes in SRAM and the game
          * can boot into a corrupt save state. Reject -> start fresh (the buffer
          * keeps its power-on contents). Game-agnostic: only the size is checked
-         * here — per-save semantic validity (slot checksums, etc.) is the game's
+         * here â€” per-save semantic validity (slot checksums, etc.) is the game's
          * own responsibility, so a correctly-sized but game-"bad" save still
          * loads (the game must handle that). */
         fseek(f, 0, SEEK_END);
         long fsz = ftell(f);
         fseek(f, 0, SEEK_SET);
         if (fsz != (long)n) {
-            fprintf(stderr, "[SRAM] IGNORING %s — file %ld B != cart SRAM %zu B "
+            fprintf(stderr, "[SRAM] IGNORING %s â€” file %ld B != cart SRAM %zu B "
                     "(truncated/oversized/foreign); starting fresh\n",
                     s_sram_path, fsz, n);
         } else {
@@ -1428,7 +1506,7 @@ static void runner_sram_init_and_load(const char *rom_path)
         }
         fclose(f);
     } else {
-        fprintf(stderr, "[SRAM] no save file yet (%s) — starting fresh\n", s_sram_path);
+        fprintf(stderr, "[SRAM] no save file yet (%s) â€” starting fresh\n", s_sram_path);
     }
     if(s_replay_boot_path && !genesis_replay_boot_sram(s_replay_boot_path,sram_buf(),sram_size(),&loaded)) {
         fprintf(stderr,"[feedback-replay] invalid startup SRAM attachment\n");exit(2);
@@ -1441,6 +1519,7 @@ static void runner_sram_init_and_load(const char *rom_path)
     }
     s_sram_hash  = sram_content_hash();
     s_sram_dirty = 0;
+    runner_sram_writer_init();
     if(g_game_spec.sram_loaded)g_game_spec.sram_loaded(s_sram_path,sram_buf(),sram_size(),loaded);
 }
 
@@ -1450,6 +1529,7 @@ static void runner_sram_init_and_load(const char *rom_path)
  * PRINCIPLES #24). Hashing the buffer is cheap and has no per-frame I/O. */
 static void runner_sram_autosave_tick(uint32_t frame_num)
 {
+    if(genesis_replay_playing())return;
     if (!s_sram_active) return;
     uint64_t h = sram_content_hash();
     if (h != s_sram_hash) {
@@ -1457,8 +1537,15 @@ static void runner_sram_autosave_tick(uint32_t frame_num)
         s_sram_dirty    = 1;
         s_sram_dirty_at = frame_num;
     }
-    if (s_sram_dirty && (frame_num - s_sram_dirty_at) >= 30)
-        runner_sram_flush();
+    if (s_sram_dirty && (frame_num - s_sram_dirty_at) >= 30) {
+#if GENESIS_HAS_RECOMP_NET
+        if(!genesis_netplay_sram_writes_allowed()){s_sram_dirty=0;return;}
+#endif
+        if(s_sram_writer) {
+            s_sram_io_pending=1;
+            if(genesis_persist_submit_force(s_sram_writer,sram_buf())<0)runner_sram_complete(1);
+        } else runner_sram_flush();
+    }
 }
 
 static uint8_t runner_ram_byte(uint32_t addr)
@@ -1596,7 +1683,7 @@ static void write_framelog(uint32_t frame)
     /* Read work RAM as big-endian. The two backends keep WRAM in different
      * buffers: clownmdemu in a word array (state.m68k.ram), the own backend
      * in our byte array (g_ram). Reading the wrong one yields a stale/blank
-     * log — which is why the own-backend framelog must source g_ram so the
+     * log â€” which is why the own-backend framelog must source g_ram so the
      * two logs are directly diffable (clean-room A/B against the oracle). */
     extern uint8_t g_ram[0x010000];
     #define EMU_BYTE(addr) ((uint8_t)g_ram[(addr) & 0xFFFF])
@@ -1606,7 +1693,7 @@ static void write_framelog(uint32_t frame)
 
     /* Universal fields come from g_game_layout. Game-specific fields
      * (cnt $F628, scrl $F700, plc $F680, P1 ctrl mirrors, Sonic-1
-     * object-slot offsets) keep raw addresses — they are S1-shaped
+     * object-slot offsets) keep raw addresses â€” they are S1-shaped
      * debug telemetry and are decorative on other games. Use the
      * FrameRecord ring + per-game fill_frame_record() for game-
      * specific debug data. */
@@ -1619,7 +1706,7 @@ static void write_framelog(uint32_t frame)
     /* Game-agnostic divergence signal: FNV-1a-64 over the full 64 KB of work
      * RAM, sourced from the backend's authoritative WRAM (the EMU_* macros pick
      * g_ram vs clownmdemu ram per build), so a native vs oracle framelog diff
-     * pinpoints the first frame at which 68K memory state diverges — without
+     * pinpoints the first frame at which 68K memory state diverges â€” without
      * relying on any per-game address. The Sonic-shaped fields below stay for
      * S1 telemetry; on other games read `wh` (and DUMP_RAM at the divergent
      * frame to localise the bytes). */
@@ -1648,7 +1735,7 @@ static void write_framelog(uint32_t frame)
             EMU_WORD(player + 0x12),  /* player Y velocity */
             EMU_WORD(player + 0x14),  /* player inertia */
             EMU_BYTE(player + 0x24),  /* player routine     */
-            EMU_BYTE(0xF602),  /* P1 held (logical) — S1-shaped */
+            EMU_BYTE(0xF602),  /* P1 held (logical) â€” S1-shaped */
             EMU_BYTE(0xF603),  /* P1 pressed (logical) */
             EMU_BYTE(0xF604),  /* P1 held (physical) */
             EMU_BYTE(0xF605),  /* P1 pressed (physical) */
@@ -1673,11 +1760,11 @@ static void write_framelog(uint32_t frame)
  * have parked the game fiber at a block-entry breakpoint. When the
  * game fiber is parked we own the main thread and must keep
  * cmd_server polling alive until a TCP command (rdb_step/continue/
- * step_over) sets g_rdb_resume_now — at which point we SwitchToFiber
+ * step_over) sets g_rdb_resume_now â€” at which point we SwitchToFiber
  * back. If the resumed fiber parks again, we loop. Exits when the
  * fiber yielded for any other reason (vblank / cycle budget / done).
  *
- * Safe to call unconditionally after Iterate — if the fiber didn't
+ * Safe to call unconditionally after Iterate â€” if the fiber didn't
  * park for a break, glue_game_yielded_for_break() is 0 and we return
  * immediately.
  */
@@ -1777,6 +1864,7 @@ static void runner_sram_init_and_load(const char *rom_path);
  * fresh process reads it, and host-side playback is flushed. */
 static int genesis_session_reset(const char *rom_path)
 {
+    runner_sram_complete(1);
     if (!s_cold_len || !genesis_rb_load(s_cold_blob, s_cold_len)) {
         fprintf(stderr, "[session] cold reset FAILED\n");
         return 0;
@@ -1818,8 +1906,8 @@ static void capture_local_session_config(const RecompLauncherCSettings *settings
                    ((ws[0] == 'o' || ws[0] == 'O') && (ws[1] == 'n' || ws[1] == 'N'))))
             ws_on = 1;
         if (cols && atoi(cols) > 0) ws_cells = atoi(cols);
-        c.ws_on = (uint8_t)(!g_game_spec.video && ws_on != 0);
-        if (g_game_spec.video) {
+        c.ws_on = (uint8_t)(!game_video_has_viewport(g_game_spec.video) && ws_on != 0);
+        if (game_video_has_viewport(g_game_spec.video)) {
             /* The host's custom-video mode, window-independent. */
             const char *m = s_custom_video_cli ? s_custom_video_cli
                           : g_app_config.custom_widescreen ? app_config_aspect_mode(g_app_config.custom_aspect)
@@ -1887,7 +1975,8 @@ static int netplay_next_session(GenesisNetplayConfig *cfg, int round)
         if (!cfg->enabled) {
             genesis_netplay_adopt_session_config(NULL);
             if (g_game_spec.video) {
-                if (s_custom_video_cli) g_game_spec.video->configure(s_custom_video_cli);
+                if (s_custom_video_cli && game_video_has_viewport(g_game_spec.video))
+                    g_game_spec.video->configure(s_custom_video_cli);
                 else app_config_apply_video(g_game_spec.video);
             }
             if (g_game_spec.netplay_config_adopt)
@@ -1915,7 +2004,8 @@ static int netplay_next_session(GenesisNetplayConfig *cfg, int round)
         s_offline_after_netplay = 1;
         genesis_netplay_adopt_session_config(NULL);
         if (g_game_spec.video) {   /* back to this build's own video mode */
-            if (s_custom_video_cli) g_game_spec.video->configure(s_custom_video_cli);
+            if (s_custom_video_cli && game_video_has_viewport(g_game_spec.video))
+                    g_game_spec.video->configure(s_custom_video_cli);
             else app_config_apply_video(g_game_spec.video);
         }
         if (g_game_spec.netplay_config_adopt)
@@ -1946,7 +2036,7 @@ static int live_post_drain(void *ctx)
     (void)ctx;
     /* Tier-3: deterministic pre-resample mixer capture (env-gated). */
     dump_predrc(s_fm_accum, s_fm_count, s_psg_accum, s_psg_count);
-    /* Observability runs regardless — we want to detect boops in
+    /* Observability runs regardless â€” we want to detect boops in
      * whichever backend is providing samples. */
     audio_obs_ingest_fm ((const int16_t *)s_fm_accum,  s_fm_count);
     audio_obs_ingest_psg((const int16_t *)s_psg_accum, s_psg_count);
@@ -2294,16 +2384,16 @@ int main(int argc, char *argv[])
      * Default 0 = use NTSC 59.94 Hz. Non-zero forces the pacer to wait
      * until 1/N seconds have elapsed per frame. Both binaries can be
      * launched with the same --target-fps so they run in wall-clock
-     * lockstep — making wall-frame N a meaningful sync key in addition
+     * lockstep â€” making wall-frame N a meaningful sync key in addition
      * to the state-marker sync compare_runs.py uses by default. */
     double target_fps_cli = 0.0;
 
-    /* --mem-write-log=ADDR1,ADDR2,...[@FRAMES]  — arm at boot so we catch
+    /* --mem-write-log=ADDR1,ADDR2,...[@FRAMES]  â€” arm at boot so we catch
      * gm=0 writes that TCP arming misses due to startup latency. */
     const char *mem_write_log_spec = NULL;
     const char *wav_path = NULL;
 
-    /* --exec-coverage-out PATH — at exit, dump the clean-room interpreter's
+    /* --exec-coverage-out PATH â€” at exit, dump the clean-room interpreter's
      * always-on executed-PC set as text. With GENESIS_FORCE_INTERP=1 this is
      * whole-program coverage; otherwise it contains only any Tier-3 floor
      * capsules that ran during native execution. */
@@ -2318,7 +2408,7 @@ int main(int argc, char *argv[])
     uint32_t hash_frames = 0;
     int      hash_on_mode = 0;   /* --hash-on-mode: hash on Game_Mode transitions (pacing-invariant) */
 
-    /* --input-script PATH — load a .input scripting file (button
+    /* --input-script PATH â€” load a .input scripting file (button
      * timeline + RAM assertions + EXIT). See runner/input_script.h
      * for the format spec. Combined with --max-frames + --hash-frames,
      * makes the runner a one-shot regression-test driver. */
@@ -2332,7 +2422,7 @@ int main(int argc, char *argv[])
 
     /* --yield-log (or GENESIS_YIELD_LOG=1): write yield_log_native.log, one
      * line per WaitForVBla park (frame, cycle accumulator, V-int counter,
-     * V-int routine). A developer timing trace — off by default so release
+     * V-int routine). A developer timing trace â€” off by default so release
      * builds do not leave a header-only file beside every user's exe (games
      * whose WaitForVBla is not pattern-detected never write a line). */
     int yield_log = 0;
@@ -2385,7 +2475,7 @@ int main(int argc, char *argv[])
             snd_dump_frame = (uint32_t)atol(argv[++i]);   /* [SND-TRACE] */
         } else if (strcmp(argv[i], "--snd-dump-vint") == 0 && i + 1 < argc) {
             snd_dump_vint = (uint32_t)atol(argv[++i]);    /* [CHIP-TRACE] dump when
-                vint_runcount ($FFFE0C) hits N — the cross-backend sync key, so
+                vint_runcount ($FFFE0C) hits N â€” the cross-backend sync key, so
                 native & oracle dump at the SAME logical sound-driver state
                 (frame numbers misalign across backends). */
         } else if (strcmp(argv[i], "--psg-vol-div") == 0 && i + 1 < argc) {
@@ -2429,7 +2519,7 @@ int main(int argc, char *argv[])
              * existing scripts and shortcuts keep working. */
             fprintf(stderr, "[audio] --audio-backend is obsolete (one backend)\n");
         } else if (strcmp(argv[i], "--widescreen") == 0) {
-            if (i + 1 >= argc || !g_game_spec.video || !g_game_spec.video->configure(argv[i+1])) {
+            if (i + 1 >= argc || !game_video_has_viewport(g_game_spec.video) || !g_game_spec.video->configure(argv[i+1])) {
                 fprintf(stderr, "--widescreen requires off, fit, stage, or W:H and a custom renderer\n");
                 return 2;
             }
@@ -2472,7 +2562,7 @@ int main(int argc, char *argv[])
     char settings_ini[600], rom_cfg_path[600];
     snprintf(settings_ini, sizeof settings_ini, "%s", exe_relative("settings.ini"));
     /* rom.cfg is per-game (keyed by short_name) so multiple game exes sharing one
-     * output directory — the Sonic3AndKnucklesRecomp repo's 3 modes — each
+     * output directory â€” the Sonic3AndKnucklesRecomp repo's 3 modes â€” each
      * remember their own last ROM. settings.ini stays shared (one set of
      * controls/video for the repo). */
     {
@@ -2621,7 +2711,7 @@ int main(int argc, char *argv[])
 #elif defined(__ANDROID__)
         /* No file-picker processes on Android. Boot the ROM cached in
          * rom-<short_name>.cfg when it still exists, else the first Genesis
-         * ROM (*.bin/*.md/*.gen/*.smd) in the app files dir (cwd — see
+         * ROM (*.bin/*.md/*.gen/*.smd) in the app files dir (cwd â€” see
          * init_exe_dir). */
         static char droid_rom[600];
         if (rom_cfg_read(rom_cfg_path, droid_rom, sizeof droid_rom)) {
@@ -2742,7 +2832,7 @@ int main(int argc, char *argv[])
 
     /* --- Load symbol table for crash reports ---
      * Look for `annotations_from_disasm.csv` adjacent to the ROM.
-     * Falls back silently if not present — crash reports will just
+     * Falls back silently if not present â€” crash reports will just
      * show raw $XXXXXX addresses without names. */
     {
         extern int crash_report_load_symbols(const char *);
@@ -2778,14 +2868,14 @@ int main(int argc, char *argv[])
                                    ? g_game_spec.display_name : "Sega Genesis";
 
     /* Resolve the widescreen request (env: GENESIS_WIDESCREEN / _COLUMNS /
-     * _BARS) BEFORE sizing the window — ws_armed()/ws_canvas_w() below depend
+     * _BARS) BEFORE sizing the window â€” ws_armed()/ws_canvas_w() below depend
      * on it. Only reads env + the compile-time g_game_layout, so it is safe to
      * run this early. */
     widescreen_setup();
-    if(g_game_spec.video) {
-        /* Aspect CLI overrides do not override the independent FPS choice. */
-        if(g_game_spec.video->presentation_configure)
-            g_game_spec.video->presentation_configure(g_app_config.presentation_rate!=0);
+    /* Presentation is independent of the simulation viewport/CLI mode. */
+    if(g_game_spec.video && g_game_spec.video->presentation_configure)
+        g_game_spec.video->presentation_configure(g_app_config.presentation_rate!=0);
+    if(game_video_has_viewport(g_game_spec.video)) {
         if(custom_video_cli) {
             int aspect=app_config_aspect_index(custom_video_cli);
             g_app_config.custom_widescreen=strcmp(custom_video_cli,"off")!=0;
@@ -2807,7 +2897,7 @@ int main(int argc, char *argv[])
     int win_scale = g_app_config.window_scale;
     if (win_scale < 1) win_scale = 1; else if (win_scale > 8) win_scale = 8;
     int win_w = 320 * win_scale, win_h = 224 * win_scale;   /* scale 2 = 640x448 (4:3) */
-    int custom_video_on = g_game_spec.video && g_game_spec.video->enabled();
+    int custom_video_on = game_video_viewport_enabled(g_game_spec.video);
     if (custom_video_on) {
         win_w = (win_h * 16 + 4) / 9;
     } else if (ws_armed()) {
@@ -2846,6 +2936,8 @@ int main(int argc, char *argv[])
      * another available driver if D3D11 cannot initialize. */
     SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "direct3d11", SDL_HINT_DEFAULT);
 #endif
+    s_hd_scale=genesis_hd_scale((unsigned)g_app_config.internal_scale);
+    s_hd_requested=s_hd_scale>1||getenv("GENESIS_INTERNAL_SCALE")!=NULL;
 
     /* PRESENTVSYNC aligns each present to the display's vblank, which kills
      * the scroll tearing visible without it (notably on macOS/Metal). The
@@ -2855,7 +2947,7 @@ int main(int argc, char *argv[])
     Uint32 renderer_flags = SDL_RENDERER_ACCELERATED;
     if (!benchmark_frames && !runtime_uncapped)
         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, renderer_flags);
+    SDL_Renderer *renderer = genesis_hd_create_renderer(window,renderer_flags,s_hd_scale);
     if (!renderer) {
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     }
@@ -2885,6 +2977,8 @@ int main(int argc, char *argv[])
     }
     s_video_renderer = renderer;
     s_video_texture = &texture;
+    GenesisHdGpu *hd_gpu=NULL;
+    int hd_checked=0;
     {
         SDL_ScaleMode mode = SDL_ScaleModeNearest;
         if (SDL_GetTextureScaleMode(texture, &mode) == 0)
@@ -2898,7 +2992,7 @@ int main(int argc, char *argv[])
     int peer_view_texture_w = 0;
     int peer_view_texture_h = 0;
 
-    /* Output at PSG rate (~223721 Hz NTSC) — matches the reference mixer.
+    /* Output at PSG rate (~223721 Hz NTSC) â€” matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
     if (!benchmark_frames) {
         audio_set_output_rate(g_app_config.audio_freq);
@@ -2916,7 +3010,7 @@ int main(int argc, char *argv[])
         RecompRuntimeUiStandardConfig cfg = {0};
         s_runtime_ui.window = window; s_runtime_ui.renderer = renderer; s_runtime_ui.texture = texture;
         s_runtime_ui.view_mode = s_ws_user_on ? RECOMP_RUNTIME_UI_VIEW_FIXED_16_9 : RECOMP_RUNTIME_UI_VIEW_NATIVE;
-        if (g_game_spec.video && g_game_spec.video->enabled()) s_runtime_ui.view_mode = RECOMP_RUNTIME_UI_VIEW_ADAPTIVE;
+        if (game_video_viewport_enabled(g_game_spec.video)) s_runtime_ui.view_mode = RECOMP_RUNTIME_UI_VIEW_ADAPTIVE;
         cfg.menu.title = g_game_spec.display_name; cfg.menu.subtitle = "Genesis runtime settings"; cfg.menu.theme = "genesis";
         cfg.menu.callbacks.context = &s_runtime_ui; cfg.menu.callbacks.get_value = runtime_ui_get;
         cfg.menu.callbacks.set_value = runtime_ui_set; cfg.menu.callbacks.run_action = runtime_ui_action;
@@ -2927,14 +3021,17 @@ int main(int argc, char *argv[])
             RECOMP_RUNTIME_UI_STANDARD_VOLUME | RECOMP_RUNTIME_UI_STANDARD_RESUME;
         cfg.view_modes = RECOMP_RUNTIME_UI_VIEW_MODE_NATIVE | RECOMP_RUNTIME_UI_VIEW_MODE_FIXED_16_9 |
             RECOMP_RUNTIME_UI_VIEW_MODE_ADAPTIVE;
+        if(game_video_has_viewport(g_game_spec.video)) {
+            cfg.features &= ~RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE;
+        }
         {
-            static RecompRuntimeUiItem items[7];unsigned count=0;
-            if(g_game_spec.video) {
-                cfg.features &= ~RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE;
-                memcpy(items+count,s_video_mod_items,sizeof s_video_mod_items);count+=2;
-                if(g_game_spec.video->interpolate)items[count++]=s_presentation_item;
+            static RecompRuntimeUiItem items[8]; unsigned count=0;
+            if(game_video_has_viewport(g_game_spec.video)) {
+                memcpy(items,s_video_mod_items,sizeof s_video_mod_items);count=2;
             }
+            if(g_game_spec.video && g_game_spec.video->interpolate)items[count++]=s_presentation_item;
             items[count++]=s_audio_filter_item;
+            memcpy(items+count,s_hd_items,sizeof s_hd_items);++count;
             if(!g_game_spec.state_unavailable_reason || !g_game_spec.state_unavailable_reason()) {
                 memcpy(items+count,s_quickstate_items,sizeof s_quickstate_items);count+=3;
             }
@@ -2954,19 +3051,32 @@ int main(int argc, char *argv[])
     /* Battery-backed cartridge SRAM (Sonic 3 save slots): HardReset has run
      * SetUpExternalRAM, so size / non_volatile are now valid. Load the .srm
      * if one exists; a no-op for cartridges without battery save. */
-    /* (battery-SRAM init moved below glue_init — the own backend parses SRAM
+    /* (battery-SRAM init moved below glue_init â€” the own backend parses SRAM
      * geometry from g_rom, which glue_init populates.) */
 
     /* Step 2 / Hybrid: initialise glue (Step 2 also starts the game thread).
-     * The own backend has no clownmdemu instance — glue keeps s_emu NULL and
+     * The own backend has no clownmdemu instance â€” glue keeps s_emu NULL and
      * routes everything through g_machine. */
     glue_init(rom_raw, rom_raw_len);
+    gvdp_hd_enable(s_hd_requested);
 
     /* Audio arch overhaul: initialise our cycle-stamped YM2612 + PSG
      * instances. Safe to call on oracle too (init functions are idempotent
      * no-ops if stubs). */
     audio_mixer_init();
     audio_mixer_set_filter_bypass(g_app_config.audio_filter_bypass);
+    /* Fixed before the first drain. The existing shadow opt-in remains the
+     * feature switch; unavailable workers and diagnostic off use serial. */
+    if(!benchmark_frames && fm_shadow_enabled()){
+        const char *mode=getenv("GENESIS_ENGINE_WORKERS");
+        if(!mode || (strcmp(mode,"off") && strcmp(mode,"0"))){
+            s_shadow_worker=genesis_worker_create();
+            if(s_shadow_worker){
+                audio_mixer_set_shadow_executor(execute_shadow_jobs,s_shadow_worker);
+                atexit(shadow_worker_cleanup);
+            }
+        }
+    }
     audio_obs_init();
     color_lut_setup();   /* present-time screen-color LUT (default raw passthrough) */
     /* widescreen_setup() was hoisted above window creation (it sizes the 16:9
@@ -2985,12 +3095,12 @@ int main(int argc, char *argv[])
 #endif
     free(rom_raw);   /* glue_init copied what it needs */
 
-    /* TCP debug server — only if debug.ini exists next to the exe.
+    /* TCP debug server â€” only if debug.ini exists next to the exe.
      * Port resolution (highest priority first):
      *   1. --port N                  command-line flag
      *   2. "port=N" in debug.ini     project-level config
      *   3. DEFAULT_DEBUG_PORT macro  compile-time default per build target
-     *      (4378 native, 4379 oracle — set in CMakeLists.txt) */
+     *      (4378 native, 4379 oracle â€” set in CMakeLists.txt) */
     static int s_debug_enabled    = 0;
     int    debug_port_from_ini    = 0;
     double target_fps_from_ini    = 0.0;
@@ -3054,7 +3164,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if SONIC_REVERSE_DEBUG
-    /* Always-on Tier 1 store ring — install before the first 68K
+    /* Always-on Tier 1 store ring â€” install before the first 68K
      * instruction so probes have full coverage from boot without any
      * arm-then-attach sequence. Per the global ring-buffer rule:
      * observation must not require timing or pre-arming. */
@@ -3073,7 +3183,7 @@ int main(int argc, char *argv[])
             else if (strcmp(chosen, "fiber") == 0)
                 g_pacing_mode = GLUE_PACING_FIBER_FULL;
             else
-                fprintf(stderr, "[pacing] unknown mode '%s' — using compiled default\n",
+                fprintf(stderr, "[pacing] unknown mode '%s' â€” using compiled default\n",
                         chosen);
         }
         fprintf(stderr, "[pacing] mode=%s\n",
@@ -3187,15 +3297,15 @@ session_begin:;
         genesis_netplay_set_local_session_config(local_session_config());
         sc = genesis_netplay_session_config();
         /* Apply the settled session configuration (the host's, online). */
-        if (g_game_spec.video && !g_game_spec.video->configure(sc->video[0] ? sc->video : "off")) {
-            fprintf(stderr, "genesis_netplay: cannot run the host's custom-video mode (%s) — refusing\n",
+        if (game_video_has_viewport(g_game_spec.video) && !g_game_spec.video->configure(sc->video[0] ? sc->video : "off")) {
+            fprintf(stderr, "genesis_netplay: cannot run the host's custom-video mode (%s) â€” refusing\n",
                     sc->video);
             return 1;
         }
         s_ws_user_on = sc->ws_on;
         if (sc->ws_on && sc->ws_cells) s_ws_user_cells = sc->ws_cells;
         if (g_game_spec.netplay_config_adopt && g_game_spec.netplay_config_adopt(sc->game) != 0) {
-            fprintf(stderr, "genesis_netplay: cannot run the host's configuration (%s) — refusing\n",
+            fprintf(stderr, "genesis_netplay: cannot run the host's configuration (%s) â€” refusing\n",
                     sc->game);
             return 1;
         }
@@ -3288,6 +3398,8 @@ session_begin:;
         uint32_t phase_us[9]={0};
 #define FRAME_PHASE(n) do { Uint64 now=SDL_GetPerformanceCounter(); phase_us[n]=(uint32_t)((now-phase_start)*1000000ull/host_perf_freq); phase_start=now; } while (0)
 
+        runner_sram_complete(1); /* before guest progress or session/input changes */
+
         /* Poll TCP debug server */
         CmdResult cmd_cr = {0};
         if (s_debug_enabled) cmd_cr = cmd_server_poll();
@@ -3302,7 +3414,7 @@ session_begin:;
         }
         /* run_extra_frames handled after normal frame */
 
-        /* Pause loop — hold ring buffer steady for multi-fetch tools.
+        /* Pause loop â€” hold ring buffer steady for multi-fetch tools.
          * Drain SDL events so the window stays responsive; spin on the
          * cmd server so "continue" / "quit" can break us out. */
         if (s_debug_enabled && cmd_server_is_paused()
@@ -3325,6 +3437,9 @@ session_begin:;
         int overlay_request = 0;
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
+            if(ev.type==SDL_RENDER_TARGETS_RESET||ev.type==SDL_RENDER_DEVICE_RESET) {
+                genesis_hd_gpu_destroy(hd_gpu);hd_gpu=NULL;hd_checked=0;
+            }
             gamepad_handle_event(&ev);
 #if RECOMP_LAUNCHER
             if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE && !recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
@@ -3351,7 +3466,7 @@ session_begin:;
 
                 /* Fullscreen toggle: F11, Alt+Enter, or Cmd/Ctrl+F.
                  * FULLSCREEN_DESKTOP keeps the desktop resolution and lets
-                 * SDL_RenderSetLogicalSize letterbox the 320×224 image. */
+                 * SDL_RenderSetLogicalSize letterbox the 320Ã—224 image. */
                 {
                     SDL_Keymod mod = ev.key.keysym.mod;
                     int alt_enter = (ev.key.keysym.sym == SDLK_RETURN) &&
@@ -3487,7 +3602,7 @@ session_begin:;
             /* The rollback driver's coordinated stop (SIGUSR1 in harnesses)
              * finished: leave. */
             if (genesis_netplay_quiesced()) {
-                fprintf(stderr, "genesis_netplay: coordinated stop complete — leaving the match\n");
+                fprintf(stderr, "genesis_netplay: coordinated stop complete â€” leaving the match\n");
                 s_netplay_match_over = 1;
                 running = 0;
                 continue;
@@ -3499,12 +3614,12 @@ session_begin:;
              * driver drains it must keep polling on a dead session. */
             if (!genesis_netplay_rollback_active() || !genesis_netplay_draining())
                 if (genesis_netplay_peer_disconnected(3000)) {
-                    fprintf(stderr, "genesis_netplay: peer gone — ending the match\n");
+                    fprintf(stderr, "genesis_netplay: peer gone â€” ending the match\n");
                     genesis_netplay_request_return_to_lobby();
                 }
             if (genesis_netplay_return_to_lobby_requested()) {
                 const char *why = genesis_netplay_refusal();
-                fprintf(stderr, "genesis_netplay: match over (%s) — return to lobby\n",
+                fprintf(stderr, "genesis_netplay: match over (%s) â€” return to lobby\n",
                         why ? why : "peer left or local request");
                 s_netplay_match_over = 1;
                 running = 0;
@@ -3551,7 +3666,7 @@ session_begin:;
           GenesisSimAudio sim_audio = {
               (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
               (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
-          GenesisSimHooks sim_hooks = { live_pre_raster, own_scanline_sink, NULL,
+          GenesisSimHooks sim_hooks = { live_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                         live_post_drain, NULL, &s_custom_producer };
           int probing = rb_probe_armed()
 #if GENESIS_HAS_RECOMP_NET
@@ -3573,7 +3688,7 @@ session_begin:;
            * every tick; the run must end on the undigested run's machine. */
           if (completed && s_digest_every) { GenesisRbDigest dd; genesis_rb_digest(&dd); }
           FRAME_PHASE(1);
-          s_screen_width  = s_custom_width ? s_custom_width : gvdp_active_width(&g_machine.vdp);
+          s_screen_width = game_video_output_width(&s_video_frame, gvdp_active_width(&g_machine.vdp));
           /* Output height doubles in interlace mode 2 (S2 2P split-screen);
            * the existing interlace display modes (tv squash / raw) take over
            * from here, same as the clownmdemu path. */
@@ -3586,7 +3701,7 @@ session_begin:;
           FRAME_PHASE(7);
 #ifdef GENESIS_COSIM
           /* Differential co-sim FRAME checkpoint. Own-backend: master_cycle is the
-           * ruler. Oracle (pairing #2): no g_machine — use the wall-frame number
+           * ruler. Oracle (pairing #2): no g_machine â€” use the wall-frame number
            * (both backends run one frame per checkpoint; the chain folds the
            * ordinal, so the clock value is report-only). */
           cosim_frame_checkpoint(g_machine.master_cycle);
@@ -3659,7 +3774,7 @@ session_begin:;
          * both always-on rings once at frame N (no F12 needed for agent-driven
          * captures). Strip with the rest of the [SND-TRACE] diagnostics. */
         if (snd_dump_frame && frame_num == snd_dump_frame) {
-            /* chip_ring is the SHARED dev-only stream (chip_trace.c) — both the
+            /* chip_ring is the SHARED dev-only stream (chip_trace.c) â€” both the
              * own backend and the oracle capture it, so dump in BOTH builds for
              * the native-vs-oracle stream diff. */
             { extern void chip_trace_dump(const char *path); chip_trace_dump("chip_ring.txt"); }
@@ -3670,7 +3785,7 @@ session_begin:;
 
         /* [CHIP-TRACE] vint-triggered dump: fire once when vint_runcount reaches
          * the target. vint ($FFFE0C, big-endian longword) is the cross-backend
-         * sync key — both builds reach a given vint at the SAME logical sound
+         * sync key â€” both builds reach a given vint at the SAME logical sound
          * state (unlike wall frame, which misaligns across native/oracle). */
         if (snd_dump_vint && !snd_dump_done) {
             uint32_t vint = g_game_layout.vint_runcount_addr
@@ -3714,7 +3829,7 @@ session_begin:;
                   GenesisSimAudio sim_audio = {
                       (int16_t *)s_fm_accum,  FM_ACCUM_FRAMES,  &s_fm_count,
                       (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
-                  GenesisSimHooks sim_hooks = { widescreen_pre_raster, own_scanline_sink, NULL,
+                  GenesisSimHooks sim_hooks = { widescreen_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                                 rdb_post_drain, NULL, &s_custom_producer };
                   if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
@@ -3724,7 +3839,7 @@ session_begin:;
 
         FRAME_PHASE(3);
         /* audio_flush is normally gated off in turbo (no SDL playback), but
-         * WAV capture lives inside audio_flush — keep flushing while a WAV
+         * WAV capture lives inside audio_flush â€” keep flushing while a WAV
          * is being recorded so --wav works with --turbo for headless
          * paired captures. */
         { extern int audio_wav_active(void);
@@ -3734,7 +3849,7 @@ session_begin:;
                         (const int16_t *)s_psg_accum, s_psg_count); }
 
         FRAME_PHASE(4);
-        /* Audio queue drift monitor — log every 300 frames (~5 seconds) */
+        /* Audio queue drift monitor â€” log every 300 frames (~5 seconds) */
         if (s_debug_enabled && !turbo && (frame_num % 300) == 0 && frame_num > 0) {
             Uint32 qb = audio_queued_bytes();
             Uint32 one_frame_bytes = (Uint32)(s_psg_count * 2 * sizeof(int16_t));
@@ -3749,7 +3864,7 @@ session_begin:;
         if (g_game_spec.state_size) host_state_tick();
 
         /* Tick the input script (if loaded). RAM read helpers route
-         * through clownmdemu's main RAM via emu_read8/16 — same
+         * through clownmdemu's main RAM via emu_read8/16 â€” same
          * accessors the cmd_server uses. Auto-exit if the script
          * ran an EXIT directive. */
         if (input_script_active()) {
@@ -3776,7 +3891,17 @@ session_begin:;
     host_timing_dump(&host_timing, stderr);
                 fprintf(stderr, "[input_script] exiting per script directive (code=%d)\n",
                         input_script_exit_code());
-                if (s_sram_dirty) runner_sram_flush();
+                /* EXIT precedes the ordinary autosave tick. Observe changes
+                 * made by this last guest/script frame, while benchmark runs
+                 * keep their existing read-only battery-save policy. */
+                if(!benchmark_frames&&s_sram_active) {
+                    if(sram_content_hash()!=s_sram_hash)s_sram_dirty=1;
+                    if(s_sram_dirty)runner_sram_flush();
+                }
+                runner_sram_complete(1);
+                (void)genesis_persist_destroy(s_sram_writer);s_sram_writer=NULL;
+                audio_wav_stop();
+                if(!genesis_host_stream_flush_all())fprintf(stderr,"[capture] final write failed\n");
                 genesis_replay_shutdown();
                 return input_script_exit_code();
             }
@@ -3786,7 +3911,7 @@ session_begin:;
          * every `hash_frames` frames when --hash-frames is set so CI /
          * golden-image comparison can detect rendering regressions
          * without a human watching the screen. NOTE: fixed-frame sampling is
-         * drift-fragile — any timing change slides content past the sample
+         * drift-fragile â€” any timing change slides content past the sample
          * points (see GENESIS_ACCURACY_BURNDOWN.md item 8). Prefer
          * --hash-on-mode for a pacing-invariant regression guard. */
         if (hash_frames > 0 && (frame_num % hash_frames) == 0) {
@@ -3827,16 +3952,10 @@ session_begin:;
 
         FRAME_PHASE(5);
         /* Upload framebuffer to GPU texture. When a present-time color model
-         * is enabled, transform a COPY into s_present_buf and upload that —
+         * is enabled, transform a COPY into s_present_buf and upload that â€”
          * s_framebuf (the verified/hashed raw VDP output) is never modified. */
         if (!benchmark_frames) {
         const uint32_t *present_src = s_framebuf;
-        if (s_color_lut_on) {
-            color_lut_map_frame(&s_color_lut, s_framebuf, s_present_buf,
-                                s_screen_width, s_screen_height,
-                                MAX_SCREEN_WIDTH);
-            present_src = s_present_buf;
-        }
 #if RECOMP_LAUNCHER
         if (!g_game_spec.video && s_runtime_ui.view_mode == RECOMP_RUNTIME_UI_VIEW_ADAPTIVE
 #if GENESIS_HAS_RECOMP_NET
@@ -3847,12 +3966,37 @@ session_begin:;
             int ow, oh; SDL_GetRendererOutputSize(renderer, &ow, &oh);
             if (oh > 0) { int cells = (((224 * ow + oh/2) / oh) - 320 + 15) / 16; if (cells < 1) cells = 1; if (cells > 12) cells = 12; s_ws_user_cells = cells; s_ws_user_on = 1; }
         }
-        if (recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
-            if (present_src != s_present_buf) memcpy(s_present_buf, present_src,
-                (size_t)s_frame_stride * MAX_SCREEN_HEIGHT * sizeof(uint32_t));
-            recomp_runtime_ui_render_argb8888(s_runtime_ui.ui, s_present_buf, s_screen_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
-            present_src = s_present_buf;
+#endif
+        int ui_open = 0;
+#if RECOMP_LAUNCHER
+        ui_open = recomp_runtime_ui_is_open(s_runtime_ui.ui);
+#endif
+#if GENESIS_FINAL_PIXEL_PIPELINE
+        GenesisPixelView view;
+        int prepared = genesis_frame_pixels(&view, s_framebuf, s_frame_stride * 4,
+            s_present_buf, (size_t)s_frame_stride * MAX_SCREEN_HEIGHT * sizeof(uint32_t),
+            s_frame_stride * 4, s_screen_width, s_screen_height,
+            s_frame_stride, MAX_SCREEN_HEIGHT, ui_open,
+            s_color_lut_on ? present_color_row : NULL, &s_color_lut);
+        if (prepared) present_src = (const uint32_t *)view.pixels;
+        else
+#endif
+        {
+            if (s_color_lut_on) {
+                color_lut_map_frame(&s_color_lut, s_framebuf, s_present_buf,
+                    s_screen_width, s_screen_height, MAX_SCREEN_WIDTH);
+                present_src = s_present_buf;
+            }
+            if (ui_open && present_src != s_present_buf) {
+                memcpy(s_present_buf, present_src,
+                    (size_t)s_frame_stride * MAX_SCREEN_HEIGHT * sizeof(uint32_t));
+                present_src = s_present_buf;
+            }
         }
+#if RECOMP_LAUNCHER
+        if (ui_open)
+            recomp_runtime_ui_render_argb8888(s_runtime_ui.ui, s_present_buf,
+                s_screen_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
 #endif
         update_render_logical_size(renderer);
         SDL_RenderClear(renderer);
@@ -3865,7 +4009,17 @@ session_begin:;
         const SDL_Rect *base_upload_rect =
             s_frame_texture_filtered ? NULL : &upload_rect;
         SDL_Texture *frame_texture = texture;
-        {
+        if(s_hd_requested&&!ui_open&&!netplay_peer_view_active()&&!s_video_frame.owner) {
+            if(!hd_checked){hd_gpu=genesis_hd_gpu_create(renderer,texture);hd_checked=1;
+                if(!hd_gpu)fprintf(stderr,"[HD_GPU] unavailable; native presentation retained\n");}
+            const GVDPRasterFrame *job=gvdp_hd_acquire();
+            if(job){if(job->width==(unsigned)s_screen_width&&job->height==(unsigned)s_screen_height){
+                SDL_Texture *enhanced=genesis_hd_gpu_render(hd_gpu,job,s_hd_scale,s_color_lut_on?&s_color_lut:NULL);
+                if(enhanced){SDL_SetTextureScaleMode(enhanced,s_frame_texture_filtered?SDL_ScaleModeLinear:SDL_ScaleModeNearest);
+                    frame_texture=enhanced;SDL_QueryTexture(enhanced,NULL,NULL,&src.w,&src.h);src.x=src.y=0;}
+            }gvdp_hd_release(job);}
+        }
+        if(frame_texture==texture) {
             static int peer_view_was_active = 0;
             int peer_view_is_active = netplay_peer_view_active();
             if (peer_view_is_active) {
@@ -4027,6 +4181,7 @@ session_begin:;
     if(g_app_config.presentation_rate)fprintf(stderr,"[presentation] guest_ticks=%u presents=%llu interpolated=%llu counter_frequency=%llu\n",
         frame_num,(unsigned long long)presentation_count,(unsigned long long)interpolation_count,(unsigned long long)perf_frequency);
     free(interpolation_image);
+    runner_sram_complete(1); /* settle last-frame ACK before final state/report */
     host_timing_dump(&host_timing, stderr);
     if (!window_close_requested || host_timing_dump_requested())
         fprintf(stderr, "[session] loop ended: running=%d frame=%u\n", running, (unsigned)frame_num);
@@ -4064,14 +4219,26 @@ session_begin:;
         }
     }
     rb_probe_summary();
+#ifdef GENESIS_Z80_RECOMP
+    if(benchmark_frames||runtime_measure_frames){
+        extern uint64_t z80_recomp_cycles(void);
+        extern uint64_t z80_recomp_fallback_steps(void);
+        extern uint32_t z80_recomp_fallback_unique_pcs(void);
+        fprintf(stderr,"[Z80-AOT] cycles=%llu fallback_steps=%llu fallback_unique_pcs=%u\n",
+            (unsigned long long)z80_recomp_cycles(),
+            (unsigned long long)z80_recomp_fallback_steps(),z80_recomp_fallback_unique_pcs());
+    }
+#endif
 #if GENESIS_HAS_RECOMP_NET
     if (s_netplay_match_over) {
         s_netplay_match_over = 0;
         genesis_netplay_print_summary();
         const char *refusal = genesis_netplay_refusal();
-        genesis_netplay_shutdown();
-        /* The host is the SRAM authority: its save is written once, now. */
+        /* Settle while the session role still identifies its SRAM authority.
+         * shutdown clears that role; flushing afterward would allow a guest's
+         * received host image to overwrite the guest's local progress. */
         if (s_sram_dirty || sram_battery_present()) runner_sram_flush();
+        genesis_netplay_shutdown();
         if (refusal) genesis_host_lobby_set_runtime_error(refusal);
         if (netplay_next_session(&netplay_config, session_round)) {
             genesis_session_reset(rom_path);
@@ -4119,7 +4286,8 @@ session_begin:;
                "\"requested_frames\":%u,\"complete\":%s,"
                "\"audio_flushes\":%u,\"mixed_fm_frames\":%llu,"
                "\"mixed_psg_frames\":%llu,\"audio_pushed_frames\":%llu,"
-               "\"audio_overflow_drops\":%llu}\n",
+               "\"audio_overflow_drops\":%llu,\"native_register_spans\":%llu,"
+               "\"native_direct_calls\":%llu,\"native_direct_tails\":%llu}\n",
                g_game_spec.short_name ? g_game_spec.short_name : "game",
                frame_num, seconds, fps,
                frame_num ? seconds * 1000.0 / (double)frame_num : 0.0,
@@ -4136,7 +4304,10 @@ session_begin:;
                    ? "true" : "false", delivery_stats.total_flushes,
                (unsigned long long)delivery_stats.total_fm_frames,
                (unsigned long long)delivery_stats.total_psg_frames,
-               (unsigned long long)audio_pushed, (unsigned long long)audio_overflow);
+               (unsigned long long)audio_pushed, (unsigned long long)audio_overflow,
+               (unsigned long long)g_native_span_count,
+               (unsigned long long)g_native_direct_calls,
+               (unsigned long long)g_native_direct_tails);
         fflush(stdout);
     }
 
@@ -4174,7 +4345,7 @@ session_begin:;
         } else {
             fprintf(cf, "# executed-PC coverage from the Tier-3 interpreter "
                         "(m68k_interp). One word-aligned address per line.\n");
-            fprintf(cf, "# force_interp=%d — with GENESIS_FORCE_INTERP=1 this is the\n"
+            fprintf(cf, "# force_interp=%d â€” with GENESIS_FORCE_INTERP=1 this is the\n"
                         "# complete set for the run; otherwise it is floor capsules only.\n",
                     _cov_forced);
             long n = m68k_interp_cov_dump(cf);
@@ -4193,16 +4364,23 @@ session_begin:;
     genesis_host_wait_shutdown();
 #if GENESIS_HAS_RECOMP_NET
     genesis_netplay_print_summary();
+#endif
+    runner_sram_complete(1);
+    if (s_sram_dirty) runner_sram_flush();  /* final flush of any pending save */
+    (void)genesis_persist_destroy(s_sram_writer);s_sram_writer=NULL;
+#if GENESIS_HAS_RECOMP_NET
     genesis_netplay_shutdown();
 #endif
-    if (s_sram_dirty) runner_sram_flush();  /* final flush of any pending save */
     if (s_debug_enabled) cmd_server_shutdown();
     if (s_framelog_file) fclose(s_framelog_file);
     { extern int audio_wav_active(void); extern void audio_wav_stop(void);
       if (audio_wav_active()) audio_wav_stop(); }
+    if(!genesis_host_stream_flush_all())fprintf(stderr,"[capture] final write failed\n");
     genesis_local_states_shutdown();
     glue_shutdown();
     audio_close();
+    shadow_worker_cleanup();
+    genesis_hd_gpu_destroy(hd_gpu);
     SDL_DestroyTexture(peer_view_texture);
     SDL_DestroyTexture(texture);
     if (s_framebuf != s_native_storage) free(s_framebuf);

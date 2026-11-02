@@ -1,0 +1,3521 @@
+{
+  "family": "E35",
+  "runtime_commit": "ccf939fbf1ca07b2e0bf4f476db4df204fe135b1",
+  "engine_base": "630a953",
+  "owner": "beads-3z5k.30",
+  "campaign": "beads-2wy8.1",
+  "decision": "Qualified original bounded E35:five retained implementations and seven evidence-backed integrated text-package rejections; independent full-scope technical acceptance, no deferred E35 owner.",
+  "selected_families": [
+    "mixed PCM WAV",
+    "pre-DRC FM/PSG PCM stems",
+    "runtime evidence four-file owner",
+    "cartridge SRAM",
+    "CD BRAM"
+  ],
+  "rejected_text_families": [
+    "yield log",
+    "FM callback trace",
+    "memory-write trace",
+    "main frame log",
+    "game-fiber frame log",
+    "pushed chip-write dump",
+    "applied chip-write dump"
+  ],
+  "rejection_scope": "Evaluated integrated preformatted-text ownership package after per-stream, shared-worker and synchronous-frame hybrid experiments; not seven independently isolated regressions or a universal algorithm impossibility claim. All original text owners restored.",
+  "source_sha256": {
+    "cmake/GenesisRecompRunner.cmake": "83d1c14871a98f12c0da040ae8e2a757007e4c3b6ec81ba26aeab12436071ade",
+    "runner/audio.c": "e1cab7eb17d5a34603bf0bbf038d11de8073f972376bcd618e72f634e0bbae0b",
+    "runner/cd/backup.c": "48d575092b0179fc79e2e0104c2eb2297257bd3fc2a59a24249dc90a334126ae",
+    "runner/cd/standalone.c": "ecc20b3692c9a16180d6cc0940654ca585823ce0c2a9326ef8a5b2b61295a079",
+    "runner/host_atomic_file.c": "c085c55eac6cbdab2a084abb2eac185eea75bef8bda2f02ca0a19ef6a2370bf1",
+    "runner/host_atomic_file.h": "cae0072de46137023b246d19fb82814078687c48a142265c2b331d0238a604ff",
+    "runner/host_stream.c": "ba12d7397d14a93af3db93e5709502ec2ebb178cad2e6910a446e909da60c4c1",
+    "runner/host_stream.h": "3e50e68dd20719460592954d6e5451c202ae4c767e44f9e6d50302f5364e48aa",
+    "runner/main.c": "cff0640f63e3613421ad14196c25703730b7948acf03f2b9c4c757bfc52c25d6",
+    "runner/persist_writer.c": "489d1449f1c4a58ebc13d1d831b00c2fe512e32ddc61af3b75f8c51e46c4c3b5",
+    "runner/persist_writer.h": "28531c81fc320fd4bbdc3f21d0f27db9050a0c8417780e89c1f8941adfc171ca",
+    "runner/runtime_evidence.c": "315879734dd78f935a1bbe65fd712699a5e0e36e233b1db52e9f1d76aebe0ed6",
+    "runner/runtime_evidence.h": "c13cb7e3ab3b70d593288de5bc92d4514ccaf0506d377f89db9635f376795570"
+  },
+  "native_builds": {
+    "package": "E35-immutable-host-io",
+    "engine_base": "630a953",
+    "candidate_commit": "ccf939f",
+    "candidate_source": {
+      "runner/audio.c": "e1cab7eb17d5a34603bf0bbf038d11de8073f972376bcd618e72f634e0bbae0b",
+      "runner/glue.c": "8ceb76aa241cd52ffa7617f01485142e37f00116d663413ff09c131551fe976b",
+      "runner/glue.h": "517f11ceac7c98471685ce11b42a5cbb7c32a5036d2123392e7c77660d0812e9",
+      "runner/main.c": "cff0640f63e3613421ad14196c25703730b7948acf03f2b9c4c757bfc52c25d6",
+      "runner/cmd_server.c": "1b33c22d683b23c1a973ac771c5678d08b38c9a717d2a88787e5b7f3b9e2fc01",
+      "runner/host_stream.c": "ba12d7397d14a93af3db93e5709502ec2ebb178cad2e6910a446e909da60c4c1",
+      "runner/host_stream.h": "3e50e68dd20719460592954d6e5451c202ae4c767e44f9e6d50302f5364e48aa",
+      "runner/host_atomic_file.c": "c085c55eac6cbdab2a084abb2eac185eea75bef8bda2f02ca0a19ef6a2370bf1",
+      "runner/host_atomic_file.h": "cae0072de46137023b246d19fb82814078687c48a142265c2b331d0238a604ff",
+      "runner/persist_writer.c": "489d1449f1c4a58ebc13d1d831b00c2fe512e32ddc61af3b75f8c51e46c4c3b5",
+      "runner/persist_writer.h": "28531c81fc320fd4bbdc3f21d0f27db9050a0c8417780e89c1f8941adfc171ca",
+      "runner/audio/event_queue.c": "a86c653b8b27536ca9215d0d275602c2ae7aecf7d8a4ae61e90d74f60a5bb4c4",
+      "runner/audio/mixer.c": "b4474882ff10c880a599ad11ce18da96dd33d213dd46a5e3092e5ded141f97e9",
+      "runner/runtime_evidence.c": "315879734dd78f935a1bbe65fd712699a5e0e36e233b1db52e9f1d76aebe0ed6",
+      "runner/runtime_evidence.h": "c13cb7e3ab3b70d593288de5bc92d4514ccaf0506d377f89db9635f376795570",
+      "cmake/GenesisRecompRunner.cmake": "83d1c14871a98f12c0da040ae8e2a757007e4c3b6ec81ba26aeab12436071ade"
+    },
+    "reference_source": {
+      "metadata": "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\native-builds-rewind.json",
+      "sha256": "ac6abc783624a4da9fd58b286f8216b187f076eb042d70464861f898efd30a94"
+    },
+    "rbengine": "b29bdde642bc087f21303b827fadba40496b502d",
+    "built": true,
+    "games": {
+      "rka": {
+        "A": {
+          "commands": [
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka",
+              "-B",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\build-rka",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\engine",
+              "-DCMAKE_PROJECT_INCLUDE=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-variant.cmake",
+              "-DE35_REFERENCE=ON",
+              "-UE31_REFERENCE",
+              "-DGEN_ENABLE_TRACE=ON",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF",
+              "-DGENESIS_ENGINE_WORKERS=ON"
+            ],
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "--build",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\build-rka",
+              "--config",
+              "Release",
+              "--target",
+              "RKARecomp",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ]
+          ],
+          "seconds": 48.79700000002049,
+          "binaries": {
+            "RKARecomp.exe": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\rka\\A\\RKARecomp.exe",
+              "bytes": 8846848,
+              "sha256": "e415de66c2c0ce95a8bf502823f655e1ee00a2dd18d71671d3cd17f168c8df1c"
+            },
+            "SDL2.dll": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\rka\\A\\SDL2.dll",
+              "bytes": 2500096,
+              "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+            }
+          },
+          "cache_sha256": "19c58869f5f5d78f8c564b02fbee199fc96f930eaf957dc2e4ee301811cbcfe8"
+        },
+        "B": {
+          "commands": [
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka",
+              "-B",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\build-rka",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\engine",
+              "-DCMAKE_PROJECT_INCLUDE=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-variant.cmake",
+              "-DE35_REFERENCE=OFF",
+              "-UE31_REFERENCE",
+              "-DGEN_ENABLE_TRACE=ON",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF",
+              "-DGENESIS_ENGINE_WORKERS=ON"
+            ],
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "--build",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\build-rka",
+              "--config",
+              "Release",
+              "--target",
+              "RKARecomp",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ]
+          ],
+          "seconds": 7.14100000000326,
+          "binaries": {
+            "RKARecomp.exe": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\rka\\B\\RKARecomp.exe",
+              "bytes": 8855552,
+              "sha256": "09e7f3b282280772b53b81924176e5a12b985968f4b5a6310dcc747e84b7c2d2"
+            },
+            "SDL2.dll": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\rka\\B\\SDL2.dll",
+              "bytes": 2500096,
+              "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+            }
+          },
+          "cache_sha256": "0337ff3c0107ce1697568d9f00b3c754eb7952098d39e1e28f18a7195cfe4f89"
+        }
+      },
+      "sonic1": {
+        "A": {
+          "commands": [
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\sonic1",
+              "-B",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\build-sonic1",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\engine",
+              "-DCMAKE_PROJECT_INCLUDE=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-variant.cmake",
+              "-DE35_REFERENCE=ON",
+              "-UE31_REFERENCE",
+              "-DGEN_ENABLE_TRACE=ON",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF",
+              "-DGENESIS_ENGINE_WORKERS=ON"
+            ],
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "--build",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\build-sonic1",
+              "--config",
+              "Release",
+              "--target",
+              "SonicTheHedgehogRecomp",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ]
+          ],
+          "seconds": 32.89100000000326,
+          "binaries": {
+            "SDL2.dll": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic1\\A\\SDL2.dll",
+              "bytes": 2500096,
+              "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+            },
+            "SonicTheHedgehogRecomp.exe": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic1\\A\\SonicTheHedgehogRecomp.exe",
+              "bytes": 5480960,
+              "sha256": "2840d4a9d4d0d8cd7b6558e9727a2f69bdef3804b9a8cb6925a593e4f0097bc0"
+            }
+          },
+          "cache_sha256": "ed1419bda1699cea6510d88ca3481554a3e7cb293994333f7ae75e4388eafd4c"
+        },
+        "B": {
+          "commands": [
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\sonic1",
+              "-B",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\build-sonic1",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\engine",
+              "-DCMAKE_PROJECT_INCLUDE=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-variant.cmake",
+              "-DE35_REFERENCE=OFF",
+              "-UE31_REFERENCE",
+              "-DGEN_ENABLE_TRACE=ON",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF",
+              "-DGENESIS_ENGINE_WORKERS=ON"
+            ],
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "--build",
+              "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\build-sonic1",
+              "--config",
+              "Release",
+              "--target",
+              "SonicTheHedgehogRecomp",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ]
+          ],
+          "seconds": 2.85999999998603,
+          "binaries": {
+            "SDL2.dll": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic1\\B\\SDL2.dll",
+              "bytes": 2500096,
+              "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+            },
+            "SonicTheHedgehogRecomp.exe": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic1\\B\\SonicTheHedgehogRecomp.exe",
+              "bytes": 5490688,
+              "sha256": "7b9d966a649102e5f437b7707e57c64c1459a1b400e3198e2457edbeefea3559"
+            }
+          },
+          "cache_sha256": "2cf7521ccd50189e1ff51533ea195d47a6b5305714e360c6ce08808321d40c76"
+        }
+      },
+      "sonic3k": {
+        "A": {
+          "commands": [
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\sonic-native-20261027\\s3-family",
+              "-B",
+              "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\build-sonic3k",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\engine",
+              "-DCMAKE_PROJECT_INCLUDE=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-variant.cmake",
+              "-DE35_REFERENCE=ON",
+              "-UE31_REFERENCE",
+              "-DGEN_ENABLE_TRACE=ON",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF",
+              "-DGENESIS_ENGINE_WORKERS=ON"
+            ],
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "--build",
+              "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\build-sonic3k",
+              "--config",
+              "Release",
+              "--target",
+              "Sonic3KRecomp",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ]
+          ],
+          "seconds": 123.51600000000326,
+          "binaries": {
+            "SDL2.dll": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic3k\\A\\SDL2.dll",
+              "bytes": 2500096,
+              "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+            },
+            "Sonic3KRecomp.exe": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic3k\\A\\Sonic3KRecomp.exe",
+              "bytes": 35635712,
+              "sha256": "fb378bb8e58aeaaad7fe3b4aa6bc2a8c407e8eb98d22e79dcc88d613fdb34ef4"
+            }
+          },
+          "cache_sha256": "73497420cf311ae8d2e779172576baa02391c30f1add2694e184c231821b931a"
+        },
+        "B": {
+          "commands": [
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "-S",
+              "C:\\temp\\Codex\\sonic-native-20261027\\s3-family",
+              "-B",
+              "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\build-sonic3k",
+              "-G",
+              "Visual Studio 17 2022",
+              "-A",
+              "x64",
+              "-DGENESIS_RECOMP_ROOT=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\engine",
+              "-DCMAKE_PROJECT_INCLUDE=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-variant.cmake",
+              "-DE35_REFERENCE=OFF",
+              "-UE31_REFERENCE",
+              "-DGEN_ENABLE_TRACE=ON",
+              "-DGEN_DEV_TRACE=OFF",
+              "-DSONIC_REVERSE_DEBUG=OFF",
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
+              "-DGENESISRECOMP_NETPLAY=ON",
+              "-DGENESIS_Z80_RECOMP=OFF",
+              "-DBUILD_TESTS=OFF",
+              "-DGENESIS_ENGINE_WORKERS=ON"
+            ],
+            [
+              "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+              "--build",
+              "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\build-sonic3k",
+              "--config",
+              "Release",
+              "--target",
+              "Sonic3KRecomp",
+              "--parallel",
+              "1",
+              "--",
+              "/nodeReuse:false"
+            ]
+          ],
+          "seconds": 9.64000000001397,
+          "binaries": {
+            "SDL2.dll": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic3k\\B\\SDL2.dll",
+              "bytes": 2500096,
+              "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+            },
+            "Sonic3KRecomp.exe": {
+              "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic3k\\B\\Sonic3KRecomp.exe",
+              "bytes": 35644416,
+              "sha256": "6cf940c4d85903ce8cde5d6221769d57a9f556d43d00fb056deb6043cc9f4968"
+            }
+          },
+          "cache_sha256": "e829c49666e4eb66f364c258c2391b1e7b91e628940f3788cf9bcfc537c0a7c2"
+        }
+      }
+    }
+  },
+  "cd_builds": {
+    "package": "E35-immutable-host-io",
+    "base": "630a953",
+    "runtime_base": "81f7682",
+    "source": {
+      "base": "630a953",
+      "runtime_base": "81f76825dc17f9235a6ae557093de7f141c76d5a",
+      "candidate": {
+        "runner/audio.c": "e1cab7eb17d5a34603bf0bbf038d11de8073f972376bcd618e72f634e0bbae0b",
+        "runner/cd/standalone.c": "ecc20b3692c9a16180d6cc0940654ca585823ce0c2a9326ef8a5b2b61295a079",
+        "runner/cd/backup.c": "48d575092b0179fc79e2e0104c2eb2297257bd3fc2a59a24249dc90a334126ae",
+        "runner/host_stream.c": "ba12d7397d14a93af3db93e5709502ec2ebb178cad2e6910a446e909da60c4c1",
+        "runner/host_stream.h": "3e50e68dd20719460592954d6e5451c202ae4c767e44f9e6d50302f5364e48aa",
+        "runner/persist_writer.c": "489d1449f1c4a58ebc13d1d831b00c2fe512e32ddc61af3b75f8c51e46c4c3b5",
+        "runner/persist_writer.h": "28531c81fc320fd4bbdc3f21d0f27db9050a0c8417780e89c1f8941adfc171ca",
+        "tests/segacd/CMakeLists.txt": "27aafd8404f440afabe3e3ce34c7c7f0e7f605ada677295953394fcf9c1746a5",
+        "runner/host_atomic_file.c": "c085c55eac6cbdab2a084abb2eac185eea75bef8bda2f02ca0a19ef6a2370bf1",
+        "runner/host_atomic_file.h": "cae0072de46137023b246d19fb82814078687c48a142265c2b331d0238a604ff"
+      },
+      "reference": {
+        "audio.c": "9b7d94c512dce06f261da7a4b2d07d9ed1e4e47d42daf544a4d2773f7f237439",
+        "backup.c": "a15a5ef9b000c188358552f06ed2a2fd987c72cb4b9c83125f01e5605ee490cc",
+        "standalone.c": "75098508a2cc78b906fc643b1b7689912dff91320dcbb77835c1efeee066888c"
+      },
+      "baseline_note": "Common existing qualified E34 native core/presentation; A has original synchronous WAV and BRAM owners, B has bounded immutable host stream and acknowledged async BRAM. New helpers link in both arms, unused in A.",
+      "commit": "7e41228983d842cb12c6e9365fc1d0a8c5b5cb74",
+      "package_scope": "Complete E35 shared stream/persistence primitives, CD mixed WAV and native BRAM; other captures/SRAM are cartridge runner paths, not linked in the CD machine."
+    },
+    "built": true,
+    "packages": {
+      "A": {
+        "binary": "G:\\Temp\\Codex\\genesis-engine-persistence-20261101-server\\binaries-complete\\A\\SonicCD.exe",
+        "sha256": "e89a9337f45216bab7e326f9c086372b99de1a72e2ff0d2a06c3afe91f6adafc",
+        "bytes": 115847680,
+        "seconds": 118.90599999995902,
+        "commands": [
+          [
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+            "-C",
+            "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd\\initial-cache.cmake",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_MAKE_PROGRAM=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\ninja\\ninja.exe",
+            "-DCMAKE_C_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+            "-DCMAKE_CXX_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+            "-DCMAKE_C_FLAGS=/DWIN32 /D_WINDOWS /external:env:INCLUDE /external:W0",
+            "-DCMAKE_CXX_FLAGS=/DWIN32 /D_WINDOWS /GR /EHsc /external:env:INCLUDE /external:W0",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+            "-DE15_VDP_SOURCE_OVERRIDE=G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\engine\\runner\\video\\genesis_vdp.c",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\engine",
+            "-DSEGACD_RECOMP_UI_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd-ui",
+            "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\compact",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-persistence-20261101-server\\variant.cmake",
+            "-DE35_REFERENCE=ON"
+          ],
+          [
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+            "--build",
+            "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+            "--target",
+            "SonicCD",
+            "--parallel",
+            "1"
+          ]
+        ]
+      },
+      "B": {
+        "binary": "G:\\Temp\\Codex\\genesis-engine-persistence-20261101-server\\binaries-complete\\B\\SonicCD.exe",
+        "sha256": "80d9a08ddd92d13a0ced8150abe207c6da10851e67eb5efb9692f6603bf99ad2",
+        "bytes": 115852288,
+        "seconds": 41.485000000335276,
+        "commands": [
+          [
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+            "-S",
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd",
+            "-B",
+            "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+            "-C",
+            "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd\\initial-cache.cmake",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_MAKE_PROGRAM=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\ninja\\ninja.exe",
+            "-DCMAKE_C_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+            "-DCMAKE_CXX_COMPILER=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\msvc\\bin\\Hostx64\\x64\\cl.exe",
+            "-DCMAKE_C_FLAGS=/DWIN32 /D_WINDOWS /external:env:INCLUDE /external:W0",
+            "-DCMAKE_CXX_FLAGS=/DWIN32 /D_WINDOWS /GR /EHsc /external:env:INCLUDE /external:W0",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+            "-DE15_VDP_SOURCE_OVERRIDE=G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\engine\\runner\\video\\genesis_vdp.c",
+            "-DGENESIS_RECOMP_ROOT=G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\engine",
+            "-DSEGACD_RECOMP_UI_ROOT=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\cd-ui",
+            "-DSEGACD_COMPACT_CATALOG_DIR=G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\compact",
+            "-DCMAKE_PROJECT_INCLUDE=G:\\Temp\\Codex\\genesis-engine-persistence-20261101-server\\variant.cmake",
+            "-DE35_REFERENCE=OFF"
+          ],
+          [
+            "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+            "--build",
+            "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+            "--target",
+            "SonicCD",
+            "--parallel",
+            "1"
+          ]
+        ]
+      }
+    },
+    "qualified_native_archive": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\native\\segacd_owned_native_program.lib",
+      "sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+      "bytes": 1390473432,
+      "qualification_hook": "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\qualified-source.cmake",
+      "hook_sha256": "ac85c2bb77b42c6358d10f40287cabbd82f1f6c69ea1b4a40aea251626163cd1",
+      "scope": "Existing qualified native archive, identical in both arms; restored original include chain instead of rebuilding unmodified generated catalog"
+    }
+  },
+  "cd_exact_source_reuse": {
+    "runtime_commit": "ccf939f",
+    "qualified_cd_runtime_commit": "7e41228983d842cb12c6e9365fc1d0a8c5b5cb74",
+    "exact_linked_components_unchanged": true,
+    "source_sha256": {
+      "runner/audio.c": {
+        "expected": "e1cab7eb17d5a34603bf0bbf038d11de8073f972376bcd618e72f634e0bbae0b",
+        "actual": "e1cab7eb17d5a34603bf0bbf038d11de8073f972376bcd618e72f634e0bbae0b"
+      },
+      "runner/cd/standalone.c": {
+        "expected": "ecc20b3692c9a16180d6cc0940654ca585823ce0c2a9326ef8a5b2b61295a079",
+        "actual": "ecc20b3692c9a16180d6cc0940654ca585823ce0c2a9326ef8a5b2b61295a079"
+      },
+      "runner/cd/backup.c": {
+        "expected": "48d575092b0179fc79e2e0104c2eb2297257bd3fc2a59a24249dc90a334126ae",
+        "actual": "48d575092b0179fc79e2e0104c2eb2297257bd3fc2a59a24249dc90a334126ae"
+      },
+      "runner/host_stream.c": {
+        "expected": "ba12d7397d14a93af3db93e5709502ec2ebb178cad2e6910a446e909da60c4c1",
+        "actual": "ba12d7397d14a93af3db93e5709502ec2ebb178cad2e6910a446e909da60c4c1"
+      },
+      "runner/host_stream.h": {
+        "expected": "3e50e68dd20719460592954d6e5451c202ae4c767e44f9e6d50302f5364e48aa",
+        "actual": "3e50e68dd20719460592954d6e5451c202ae4c767e44f9e6d50302f5364e48aa"
+      },
+      "runner/persist_writer.c": {
+        "expected": "489d1449f1c4a58ebc13d1d831b00c2fe512e32ddc61af3b75f8c51e46c4c3b5",
+        "actual": "489d1449f1c4a58ebc13d1d831b00c2fe512e32ddc61af3b75f8c51e46c4c3b5"
+      },
+      "runner/persist_writer.h": {
+        "expected": "28531c81fc320fd4bbdc3f21d0f27db9050a0c8417780e89c1f8941adfc171ca",
+        "actual": "28531c81fc320fd4bbdc3f21d0f27db9050a0c8417780e89c1f8941adfc171ca"
+      },
+      "tests/segacd/CMakeLists.txt": {
+        "expected": "27aafd8404f440afabe3e3ce34c7c7f0e7f605ada677295953394fcf9c1746a5",
+        "actual": "27aafd8404f440afabe3e3ce34c7c7f0e7f605ada677295953394fcf9c1746a5"
+      },
+      "runner/host_atomic_file.c": {
+        "expected": "c085c55eac6cbdab2a084abb2eac185eea75bef8bda2f02ca0a19ef6a2370bf1",
+        "actual": "c085c55eac6cbdab2a084abb2eac185eea75bef8bda2f02ca0a19ef6a2370bf1"
+      },
+      "runner/host_atomic_file.h": {
+        "expected": "cae0072de46137023b246d19fb82814078687c48a142265c2b331d0238a604ff",
+        "actual": "cae0072de46137023b246d19fb82814078687c48a142265c2b331d0238a604ff"
+      }
+    },
+    "build_record": "cd-builds-complete.json",
+    "actual_dirty_gate": "game-e35-complete-format-server.json",
+    "reason": "Final hybrid only restores cartridge main/glue frame-log owners. All linked CD source/helper/header/CMake identities exactly match the already qualified final actual dirty-BRAM and WAV build. No CD rerun needed."
+  },
+  "final_game_records": [
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw.json",
+      "sha256": "b4815a5e7587efb1dea0bec28bb2add50aacfaead6de76ed7848d8a7c492b6b9",
+      "pairs": [
+        {
+          "game": "sonic1",
+          "mode": "capture",
+          "screen": "raw",
+          "frames": 2400,
+          "rom_sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+          "inputs_sha256": "f804456b4a09f570ed1f28d62d906b27bf673ac569d19486d962af0c8af5e8c1",
+          "runs": [
+            {
+              "arm": "A",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic1\\A\\SonicTheHedgehogRecomp.exe",
+                "bytes": 5480960,
+                "sha256": "2840d4a9d4d0d8cd7b6558e9727a2f69bdef3804b9a8cb6925a593e4f0097bc0"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-0-A\\bin\\SonicTheHedgehogRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-0-A\\sonic.bin",
+                "--measure-runtime",
+                "2400",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input",
+                "--wav",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-0-A\\audio.wav",
+                "--yield-log",
+                "--mem-write-log",
+                "0xFF0000-0xFFFFFF@120",
+                "--framelog",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-0-A\\frames.log"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-0-A",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.34375,
+                "user_seconds": 2.203125,
+                "process_cycles": 11488669190,
+                "peak_working_set_bytes": 152539136,
+                "peak_commit_bytes": 164868096,
+                "sampled_peak_private_bytes": 164429824,
+                "memory_samples": 23,
+                "wait_wall_seconds": 2.4690000000118744
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic the Hedgehog",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3264,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-0-A\\glue-frames.log",
+                "GENESIS_AUDIO_PREDRC": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-0-A\\stems",
+                "GENESIS_AUDIO_WRITEDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-0-A\\writes.log",
+                "GENESIS_AUDIO_APPLIEDDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-0-A\\applied.log",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "128:4"
+              },
+              "runtime": {
+                "game": "Sonic1",
+                "frames": 2400,
+                "seconds": 2.3658625,
+                "fps": 1014.429,
+                "ms_per_frame": 0.985776,
+                "cpu_seconds": 2.4375,
+                "cpu_fps": 984.615,
+                "cpu_cycles": 10911018510,
+                "cycles_per_frame": 4546257.713,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 2400,
+                "complete": true,
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "audio_overflow_drops": 8395345,
+                "native_register_spans": 1490263,
+                "native_direct_calls": 208299,
+                "native_direct_tails": 1418684
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 2400,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "raw_png_sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+                "wav_sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+                "rollback": [
+                  "18",
+                  "0",
+                  "0"
+                ],
+                "enabled_files": {
+                  "yield_log_native.log": {
+                    "bytes": 44437,
+                    "sha256": "8777bef74b39f674df9a6d0b48015f675faeba9cfc3c728a38b304a445d8e0da"
+                  },
+                  "mem_write_log_native.log": {
+                    "bytes": 12406661,
+                    "sha256": "fb2a972c48e1c7ba24293271f66e5afc2c164d74c8f6224a53d6a0d72a89827b"
+                  },
+                  "frames.log": {
+                    "bytes": 637400,
+                    "sha256": "36890284f1908e1c3272241a3b7fa88b2500d351a14c5671f4d6b60223a520f7"
+                  },
+                  "glue-frames.log": {
+                    "bytes": 184372,
+                    "sha256": "5ed475738680ee2ed19bd4683b2225824cea8c1af81ad7ada60dcf750f63739b"
+                  },
+                  "writes.log": {
+                    "bytes": 33550150,
+                    "sha256": "e41353b6fd00f64c23c9cbd5bf870f27b366303c4209a12711dd2d59687ddb3f"
+                  },
+                  "applied.log": {
+                    "bytes": 25610470,
+                    "sha256": "279867ed75305ae74551247619c2652c0c21a35a750bda5bcc0468bebf8b5be4"
+                  },
+                  "stems.fm.s16": {
+                    "bytes": 8531236,
+                    "sha256": "7e0676bd62d9b2d2ca85c3f4aae7f774db76a889d7c37199f4040372ee04dc08"
+                  },
+                  "stems.psg.s16": {
+                    "bytes": 17913600,
+                    "sha256": "8d8cb26a2be6a14419601e6c3a429092707c6b0299d887564176094db1998023"
+                  }
+                },
+                "frame_hashes_summary": {
+                  "count": 40,
+                  "sha256": "f32a0e0ff9d4d8f12ac6eb7b0683e506ac0aceaba238ce00658146836ce7de89"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "3d1f323a07d660d7d703edc4b68d2841398150c286f54added4d9913d4346e80"
+                }
+              }
+            },
+            {
+              "arm": "B",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic1\\B\\SonicTheHedgehogRecomp.exe",
+                "bytes": 5490688,
+                "sha256": "7b9d966a649102e5f437b7707e57c64c1459a1b400e3198e2457edbeefea3559"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-1-B\\bin\\SonicTheHedgehogRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-1-B\\sonic.bin",
+                "--measure-runtime",
+                "2400",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input",
+                "--wav",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-1-B\\audio.wav",
+                "--yield-log",
+                "--mem-write-log",
+                "0xFF0000-0xFFFFFF@120",
+                "--framelog",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-1-B\\frames.log"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-1-B",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.21875,
+                "user_seconds": 2.078125,
+                "process_cycles": 10843538730,
+                "peak_working_set_bytes": 153997312,
+                "peak_commit_bytes": 166465536,
+                "sampled_peak_private_bytes": 166027264,
+                "memory_samples": 22,
+                "wait_wall_seconds": 2.312999999994645
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic the Hedgehog",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3264,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-1-B\\glue-frames.log",
+                "GENESIS_AUDIO_PREDRC": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-1-B\\stems",
+                "GENESIS_AUDIO_WRITEDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-1-B\\writes.log",
+                "GENESIS_AUDIO_APPLIEDDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw\\sonic1-capture-1-B\\applied.log",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "128:4"
+              },
+              "runtime": {
+                "game": "Sonic1",
+                "frames": 2400,
+                "seconds": 2.2010585,
+                "fps": 1090.384,
+                "ms_per_frame": 0.917108,
+                "cpu_seconds": 2.234375,
+                "cpu_fps": 1074.126,
+                "cpu_cycles": 10333822790,
+                "cycles_per_frame": 4305759.496,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 2400,
+                "complete": true,
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "audio_overflow_drops": 8433718,
+                "native_register_spans": 1490263,
+                "native_direct_calls": 208299,
+                "native_direct_tails": 1418684
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 2400,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "raw_png_sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+                "wav_sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+                "rollback": [
+                  "18",
+                  "0",
+                  "0"
+                ],
+                "enabled_files": {
+                  "yield_log_native.log": {
+                    "bytes": 44437,
+                    "sha256": "8777bef74b39f674df9a6d0b48015f675faeba9cfc3c728a38b304a445d8e0da"
+                  },
+                  "mem_write_log_native.log": {
+                    "bytes": 12406661,
+                    "sha256": "fb2a972c48e1c7ba24293271f66e5afc2c164d74c8f6224a53d6a0d72a89827b"
+                  },
+                  "frames.log": {
+                    "bytes": 637400,
+                    "sha256": "36890284f1908e1c3272241a3b7fa88b2500d351a14c5671f4d6b60223a520f7"
+                  },
+                  "glue-frames.log": {
+                    "bytes": 184372,
+                    "sha256": "5ed475738680ee2ed19bd4683b2225824cea8c1af81ad7ada60dcf750f63739b"
+                  },
+                  "writes.log": {
+                    "bytes": 33550150,
+                    "sha256": "e41353b6fd00f64c23c9cbd5bf870f27b366303c4209a12711dd2d59687ddb3f"
+                  },
+                  "applied.log": {
+                    "bytes": 25610470,
+                    "sha256": "279867ed75305ae74551247619c2652c0c21a35a750bda5bcc0468bebf8b5be4"
+                  },
+                  "stems.fm.s16": {
+                    "bytes": 8531236,
+                    "sha256": "7e0676bd62d9b2d2ca85c3f4aae7f774db76a889d7c37199f4040372ee04dc08"
+                  },
+                  "stems.psg.s16": {
+                    "bytes": 17913600,
+                    "sha256": "8d8cb26a2be6a14419601e6c3a429092707c6b0299d887564176094db1998023"
+                  }
+                },
+                "frame_hashes_summary": {
+                  "count": 40,
+                  "sha256": "f32a0e0ff9d4d8f12ac6eb7b0683e506ac0aceaba238ce00658146836ce7de89"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "3d1f323a07d660d7d703edc4b68d2841398150c286f54added4d9913d4346e80"
+                }
+              }
+            }
+          ],
+          "passed": true,
+          "candidate_change_pct": {
+            "cpu_seconds": -8.333333333333337,
+            "cpu_cycles": -5.290026036258643,
+            "seconds": -6.965916235622327
+          }
+        }
+      ]
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse.json",
+      "sha256": "37e4cf1c1e57b9b8a6aac1c73d984dbd6f775d15eb7396753fea75e134822628",
+      "pairs": [
+        {
+          "game": "sonic1",
+          "mode": "default",
+          "screen": "raw",
+          "frames": 2400,
+          "rom_sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+          "inputs_sha256": "f804456b4a09f570ed1f28d62d906b27bf673ac569d19486d962af0c8af5e8c1",
+          "runs": [
+            {
+              "arm": "B",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic1\\B\\SonicTheHedgehogRecomp.exe",
+                "bytes": 5490688,
+                "sha256": "7b9d966a649102e5f437b7707e57c64c1459a1b400e3198e2457edbeefea3559"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-default-0-B\\bin\\SonicTheHedgehogRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-default-0-B\\sonic.bin",
+                "--measure-runtime",
+                "2400",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-default-0-B",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.109375,
+                "user_seconds": 1.53125,
+                "process_cycles": 7656659080,
+                "peak_working_set_bytes": 45514752,
+                "peak_commit_bytes": 164720640,
+                "sampled_peak_private_bytes": 164487168,
+                "memory_samples": 16,
+                "wait_wall_seconds": 1.6410000000032596
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic the Hedgehog",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3264,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "128:4"
+              },
+              "runtime": {
+                "game": "Sonic1",
+                "frames": 2400,
+                "seconds": 1.5533437,
+                "fps": 1545.054,
+                "ms_per_frame": 0.647227,
+                "cpu_seconds": 1.53125,
+                "cpu_fps": 1567.347,
+                "cpu_cycles": 7154550560,
+                "cycles_per_frame": 2981062.733,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 2400,
+                "complete": true,
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "audio_overflow_drops": 8563129,
+                "native_register_spans": 1490263,
+                "native_direct_calls": 208299,
+                "native_direct_tails": 1418684
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 2400,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "raw_png_sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+                "wav_sha256": null,
+                "rollback": [
+                  "18",
+                  "0",
+                  "0"
+                ],
+                "frame_hashes_summary": {
+                  "count": 40,
+                  "sha256": "f32a0e0ff9d4d8f12ac6eb7b0683e506ac0aceaba238ce00658146836ce7de89"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "3d1f323a07d660d7d703edc4b68d2841398150c286f54added4d9913d4346e80"
+                }
+              }
+            },
+            {
+              "arm": "A",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic1\\A\\SonicTheHedgehogRecomp.exe",
+                "bytes": 5480960,
+                "sha256": "2840d4a9d4d0d8cd7b6558e9727a2f69bdef3804b9a8cb6925a593e4f0097bc0"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-default-1-A\\bin\\SonicTheHedgehogRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-default-1-A\\sonic.bin",
+                "--measure-runtime",
+                "2400",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-default-1-A",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.109375,
+                "user_seconds": 1.578125,
+                "process_cycles": 7667664600,
+                "peak_working_set_bytes": 45539328,
+                "peak_commit_bytes": 164737024,
+                "sampled_peak_private_bytes": 164503552,
+                "memory_samples": 16,
+                "wait_wall_seconds": 1.6410000000032596
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic the Hedgehog",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3264,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "128:4"
+              },
+              "runtime": {
+                "game": "Sonic1",
+                "frames": 2400,
+                "seconds": 1.5544706,
+                "fps": 1543.934,
+                "ms_per_frame": 0.647696,
+                "cpu_seconds": 1.53125,
+                "cpu_fps": 1567.347,
+                "cpu_cycles": 7173507070,
+                "cycles_per_frame": 2988961.279,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 2400,
+                "complete": true,
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "audio_overflow_drops": 8563176,
+                "native_register_spans": 1490263,
+                "native_direct_calls": 208299,
+                "native_direct_tails": 1418684
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 2400,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "raw_png_sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+                "wav_sha256": null,
+                "rollback": [
+                  "18",
+                  "0",
+                  "0"
+                ],
+                "frame_hashes_summary": {
+                  "count": 40,
+                  "sha256": "f32a0e0ff9d4d8f12ac6eb7b0683e506ac0aceaba238ce00658146836ce7de89"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "3d1f323a07d660d7d703edc4b68d2841398150c286f54added4d9913d4346e80"
+                }
+              }
+            }
+          ],
+          "passed": true,
+          "candidate_change_pct": {
+            "cpu_seconds": 0.0,
+            "cpu_cycles": -0.26425721498591903,
+            "seconds": -0.07249413401577698
+          }
+        },
+        {
+          "game": "sonic1",
+          "mode": "capture",
+          "screen": "raw",
+          "frames": 2400,
+          "rom_sha256": "46160baa06362c711c9f1a5017cb7371026444936c8af5e93a78996cf32ff2a6",
+          "inputs_sha256": "f804456b4a09f570ed1f28d62d906b27bf673ac569d19486d962af0c8af5e8c1",
+          "runs": [
+            {
+              "arm": "B",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic1\\B\\SonicTheHedgehogRecomp.exe",
+                "bytes": 5490688,
+                "sha256": "7b9d966a649102e5f437b7707e57c64c1459a1b400e3198e2457edbeefea3559"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-0-B\\bin\\SonicTheHedgehogRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-0-B\\sonic.bin",
+                "--measure-runtime",
+                "2400",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input",
+                "--wav",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-0-B\\audio.wav",
+                "--yield-log",
+                "--mem-write-log",
+                "0xFF0000-0xFFFFFF@120",
+                "--framelog",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-0-B\\frames.log"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-0-B",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.171875,
+                "user_seconds": 2.234375,
+                "process_cycles": 11153054410,
+                "peak_working_set_bytes": 154005504,
+                "peak_commit_bytes": 166449152,
+                "sampled_peak_private_bytes": 166014976,
+                "memory_samples": 22,
+                "wait_wall_seconds": 2.3589999999967404
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic the Hedgehog",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3120,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-0-B\\glue-frames.log",
+                "GENESIS_AUDIO_PREDRC": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-0-B\\stems",
+                "GENESIS_AUDIO_WRITEDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-0-B\\writes.log",
+                "GENESIS_AUDIO_APPLIEDDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-0-B\\applied.log",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "128:4"
+              },
+              "runtime": {
+                "game": "Sonic1",
+                "frames": 2400,
+                "seconds": 2.2758592,
+                "fps": 1054.547,
+                "ms_per_frame": 0.948275,
+                "cpu_seconds": 2.28125,
+                "cpu_fps": 1052.055,
+                "cpu_cycles": 10609866480,
+                "cycles_per_frame": 4420777.7,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 2400,
+                "complete": true,
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "audio_overflow_drops": 8404914,
+                "native_register_spans": 1490263,
+                "native_direct_calls": 208299,
+                "native_direct_tails": 1418684
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 2400,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "raw_png_sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+                "wav_sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+                "rollback": [
+                  "18",
+                  "0",
+                  "0"
+                ],
+                "enabled_files": {
+                  "yield_log_native.log": {
+                    "bytes": 44437,
+                    "sha256": "8777bef74b39f674df9a6d0b48015f675faeba9cfc3c728a38b304a445d8e0da"
+                  },
+                  "mem_write_log_native.log": {
+                    "bytes": 12406661,
+                    "sha256": "fb2a972c48e1c7ba24293271f66e5afc2c164d74c8f6224a53d6a0d72a89827b"
+                  },
+                  "frames.log": {
+                    "bytes": 637400,
+                    "sha256": "36890284f1908e1c3272241a3b7fa88b2500d351a14c5671f4d6b60223a520f7"
+                  },
+                  "glue-frames.log": {
+                    "bytes": 184372,
+                    "sha256": "5ed475738680ee2ed19bd4683b2225824cea8c1af81ad7ada60dcf750f63739b"
+                  },
+                  "writes.log": {
+                    "bytes": 33550150,
+                    "sha256": "e41353b6fd00f64c23c9cbd5bf870f27b366303c4209a12711dd2d59687ddb3f"
+                  },
+                  "applied.log": {
+                    "bytes": 25610470,
+                    "sha256": "279867ed75305ae74551247619c2652c0c21a35a750bda5bcc0468bebf8b5be4"
+                  },
+                  "stems.fm.s16": {
+                    "bytes": 8531236,
+                    "sha256": "7e0676bd62d9b2d2ca85c3f4aae7f774db76a889d7c37199f4040372ee04dc08"
+                  },
+                  "stems.psg.s16": {
+                    "bytes": 17913600,
+                    "sha256": "8d8cb26a2be6a14419601e6c3a429092707c6b0299d887564176094db1998023"
+                  }
+                },
+                "frame_hashes_summary": {
+                  "count": 40,
+                  "sha256": "f32a0e0ff9d4d8f12ac6eb7b0683e506ac0aceaba238ce00658146836ce7de89"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "3d1f323a07d660d7d703edc4b68d2841398150c286f54added4d9913d4346e80"
+                }
+              }
+            },
+            {
+              "arm": "A",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic1\\A\\SonicTheHedgehogRecomp.exe",
+                "bytes": 5480960,
+                "sha256": "2840d4a9d4d0d8cd7b6558e9727a2f69bdef3804b9a8cb6925a593e4f0097bc0"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-1-A\\bin\\SonicTheHedgehogRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-1-A\\sonic.bin",
+                "--measure-runtime",
+                "2400",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\Temp\\Codex\\genesis-engine-native-state-20261028\\reference\\tests\\regression\\sonic1_benchmark_gameplay.input",
+                "--wav",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-1-A\\audio.wav",
+                "--yield-log",
+                "--mem-write-log",
+                "0xFF0000-0xFFFFFF@120",
+                "--framelog",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-1-A\\frames.log"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-1-A",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.234375,
+                "user_seconds": 2.046875,
+                "process_cycles": 11077205340,
+                "peak_working_set_bytes": 152530944,
+                "peak_commit_bytes": 164892672,
+                "sampled_peak_private_bytes": 164454400,
+                "memory_samples": 22,
+                "wait_wall_seconds": 2.3589999999967404
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic the Hedgehog",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3120,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-1-A\\glue-frames.log",
+                "GENESIS_AUDIO_PREDRC": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-1-A\\stems",
+                "GENESIS_AUDIO_WRITEDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-1-A\\writes.log",
+                "GENESIS_AUDIO_APPLIEDDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-reverse\\sonic1-capture-1-A\\applied.log",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "128:4"
+              },
+              "runtime": {
+                "game": "Sonic1",
+                "frames": 2400,
+                "seconds": 2.2648753,
+                "fps": 1059.661,
+                "ms_per_frame": 0.943698,
+                "cpu_seconds": 2.1875,
+                "cpu_fps": 1097.143,
+                "cpu_cycles": 10543838530,
+                "cycles_per_frame": 4393266.054,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 2400,
+                "complete": true,
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "audio_overflow_drops": 8414482,
+                "native_register_spans": 1490263,
+                "native_direct_calls": 208299,
+                "native_direct_tails": 1418684
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 2400,
+                "state_fnv1a64": "227659F4B564BDCF",
+                "audio_state_fnv1a64": "94C37F714B488F9E",
+                "audio_flushes": 2400,
+                "mixed_fm_frames": 2132809,
+                "mixed_psg_frames": 8956800,
+                "audio_pushed_frames": 8956800,
+                "raw_png_sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+                "wav_sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+                "rollback": [
+                  "18",
+                  "0",
+                  "0"
+                ],
+                "enabled_files": {
+                  "yield_log_native.log": {
+                    "bytes": 44437,
+                    "sha256": "8777bef74b39f674df9a6d0b48015f675faeba9cfc3c728a38b304a445d8e0da"
+                  },
+                  "mem_write_log_native.log": {
+                    "bytes": 12406661,
+                    "sha256": "fb2a972c48e1c7ba24293271f66e5afc2c164d74c8f6224a53d6a0d72a89827b"
+                  },
+                  "frames.log": {
+                    "bytes": 637400,
+                    "sha256": "36890284f1908e1c3272241a3b7fa88b2500d351a14c5671f4d6b60223a520f7"
+                  },
+                  "glue-frames.log": {
+                    "bytes": 184372,
+                    "sha256": "5ed475738680ee2ed19bd4683b2225824cea8c1af81ad7ada60dcf750f63739b"
+                  },
+                  "writes.log": {
+                    "bytes": 33550150,
+                    "sha256": "e41353b6fd00f64c23c9cbd5bf870f27b366303c4209a12711dd2d59687ddb3f"
+                  },
+                  "applied.log": {
+                    "bytes": 25610470,
+                    "sha256": "279867ed75305ae74551247619c2652c0c21a35a750bda5bcc0468bebf8b5be4"
+                  },
+                  "stems.fm.s16": {
+                    "bytes": 8531236,
+                    "sha256": "7e0676bd62d9b2d2ca85c3f4aae7f774db76a889d7c37199f4040372ee04dc08"
+                  },
+                  "stems.psg.s16": {
+                    "bytes": 17913600,
+                    "sha256": "8d8cb26a2be6a14419601e6c3a429092707c6b0299d887564176094db1998023"
+                  }
+                },
+                "frame_hashes_summary": {
+                  "count": 40,
+                  "sha256": "f32a0e0ff9d4d8f12ac6eb7b0683e506ac0aceaba238ce00658146836ce7de89"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "3d1f323a07d660d7d703edc4b68d2841398150c286f54added4d9913d4346e80"
+                }
+              }
+            }
+          ],
+          "passed": true,
+          "candidate_change_pct": {
+            "cpu_seconds": 4.285714285714293,
+            "cpu_cycles": 0.6262230762746679,
+            "seconds": 0.4849670973055442
+          }
+        }
+      ]
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining.json",
+      "sha256": "274cedc51793e7ffc1c49f91e37fc51f56adf49e5da552e0cfd99db9a870cc29",
+      "pairs": [
+        {
+          "game": "rka",
+          "mode": "default",
+          "screen": "raw",
+          "frames": 6000,
+          "rom_sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+          "inputs_sha256": "e79740e61386cde1f4912a81095bfe9a0dd40498dd68fa99200d6df4d08231ed",
+          "runs": [
+            {
+              "arm": "B",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\rka\\B\\RKARecomp.exe",
+                "bytes": 8855552,
+                "sha256": "09e7f3b282280772b53b81924176e5a12b985968f4b5a6310dcc747e84b7c2d2"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-default-0-B\\bin\\RKARecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-default-0-B\\rka.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka\\tests\\stage1-walk.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-default-0-B",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.109375,
+                "user_seconds": 4.6875,
+                "process_cycles": 21994281680,
+                "peak_working_set_bytes": 153645056,
+                "peak_commit_bytes": 162271232,
+                "sampled_peak_private_bytes": 161619968,
+                "memory_samples": 46,
+                "wait_wall_seconds": 4.937000000005355
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Rocket Knight Adventures",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3120,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "512:4"
+              },
+              "runtime": {
+                "game": "RKA",
+                "frames": 6000,
+                "seconds": 4.7825122,
+                "fps": 1254.571,
+                "ms_per_frame": 0.797085,
+                "cpu_seconds": 4.671875,
+                "cpu_fps": 1284.281,
+                "cpu_cycles": 21375549240,
+                "cycles_per_frame": 3562591.54,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21283686,
+                "native_register_spans": 1266132,
+                "native_direct_calls": 587984,
+                "native_direct_tails": 332221
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+                "wav_sha256": null,
+                "rollback": [
+                  "11",
+                  "0",
+                  "0"
+                ],
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "70a33d464d4a4d06ec98e1daf003d1f3a8f60f3daf3852e527893fa245ad5dc7"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "44b726cd690cd4e56b4937592d933fb54a3c4c45198b59d8a41008949db3838a"
+                }
+              }
+            },
+            {
+              "arm": "A",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\rka\\A\\RKARecomp.exe",
+                "bytes": 8846848,
+                "sha256": "e415de66c2c0ce95a8bf502823f655e1ee00a2dd18d71671d3cd17f168c8df1c"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-default-1-A\\bin\\RKARecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-default-1-A\\rka.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka\\tests\\stage1-walk.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-default-1-A",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.109375,
+                "user_seconds": 4.640625,
+                "process_cycles": 21676649570,
+                "peak_working_set_bytes": 153583616,
+                "peak_commit_bytes": 162193408,
+                "sampled_peak_private_bytes": 161538048,
+                "memory_samples": 44,
+                "wait_wall_seconds": 4.735000000015134
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Rocket Knight Adventures",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3120,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "512:4"
+              },
+              "runtime": {
+                "game": "RKA",
+                "frames": 6000,
+                "seconds": 4.641143,
+                "fps": 1292.785,
+                "ms_per_frame": 0.773524,
+                "cpu_seconds": 4.65625,
+                "cpu_fps": 1288.591,
+                "cpu_cycles": 21107494140,
+                "cycles_per_frame": 3517915.69,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21317262,
+                "native_register_spans": 1266132,
+                "native_direct_calls": 587984,
+                "native_direct_tails": 332221
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+                "wav_sha256": null,
+                "rollback": [
+                  "11",
+                  "0",
+                  "0"
+                ],
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "70a33d464d4a4d06ec98e1daf003d1f3a8f60f3daf3852e527893fa245ad5dc7"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "44b726cd690cd4e56b4937592d933fb54a3c4c45198b59d8a41008949db3838a"
+                }
+              }
+            }
+          ],
+          "passed": true,
+          "candidate_change_pct": {
+            "cpu_seconds": 0.3355704697986628,
+            "cpu_cycles": 1.269952265399521,
+            "seconds": 3.045999659997567
+          }
+        },
+        {
+          "game": "rka",
+          "mode": "capture",
+          "screen": "raw",
+          "frames": 6000,
+          "rom_sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+          "inputs_sha256": "e79740e61386cde1f4912a81095bfe9a0dd40498dd68fa99200d6df4d08231ed",
+          "runs": [
+            {
+              "arm": "B",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\rka\\B\\RKARecomp.exe",
+                "bytes": 8855552,
+                "sha256": "09e7f3b282280772b53b81924176e5a12b985968f4b5a6310dcc747e84b7c2d2"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-0-B\\bin\\RKARecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-0-B\\rka.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka\\tests\\stage1-walk.input",
+                "--wav",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-0-B\\audio.wav",
+                "--yield-log",
+                "--mem-write-log",
+                "0xFF0000-0xFFFFFF@120",
+                "--framelog",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-0-B\\frames.log"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-0-B",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.28125,
+                "user_seconds": 5.09375,
+                "process_cycles": 25708044490,
+                "peak_working_set_bytes": 155365376,
+                "peak_commit_bytes": 163971072,
+                "sampled_peak_private_bytes": 163315712,
+                "memory_samples": 51,
+                "wait_wall_seconds": 5.5310000000172295
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Rocket Knight Adventures",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 240,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-0-B\\glue-frames.log",
+                "GENESIS_AUDIO_PREDRC": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-0-B\\stems",
+                "GENESIS_AUDIO_WRITEDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-0-B\\writes.log",
+                "GENESIS_AUDIO_APPLIEDDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-0-B\\applied.log",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "512:4"
+              },
+              "runtime": {
+                "game": "RKA",
+                "frames": 6000,
+                "seconds": 5.458155,
+                "fps": 1099.273,
+                "ms_per_frame": 0.909692,
+                "cpu_seconds": 5.265625,
+                "cpu_fps": 1139.466,
+                "cpu_cycles": 25129351820,
+                "cycles_per_frame": 4188225.303,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21144634,
+                "native_register_spans": 1266132,
+                "native_direct_calls": 587984,
+                "native_direct_tails": 332221
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+                "wav_sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+                "rollback": [
+                  "11",
+                  "0",
+                  "0"
+                ],
+                "enabled_files": {
+                  "yield_log_native.log": {
+                    "bytes": 47,
+                    "sha256": "c74acdb4c94a9929a1f28fc0db75e7a99f565eeec4f166c7c680336e65a57864"
+                  },
+                  "mem_write_log_native.log": {
+                    "bytes": 9367204,
+                    "sha256": "cbd4c2758049686bd1cd79deb280c89a4a4bd9b39e45d722e09b162116ca3977"
+                  },
+                  "frames.log": {
+                    "bytes": 1595000,
+                    "sha256": "d9f3fad803b56ee32ba59cc65a2965fb20c809be71b78ce77eebea704106b27d"
+                  },
+                  "glue-frames.log": {
+                    "bytes": 452296,
+                    "sha256": "0fd87465d40abe0d5fc4c096cdbae27086278a1d9192424d364c6a287018a031"
+                  },
+                  "writes.log": {
+                    "bytes": 14143910,
+                    "sha256": "5b466ccb08da6d0dc3b438c340e3e5acd80cc4350b20406ad7dde08ca43cd4ae"
+                  },
+                  "applied.log": {
+                    "bytes": 10505836,
+                    "sha256": "dfd7ee2b3150ce87da551c6f5372e7932d69b911b148156105457a0a8a302f51"
+                  },
+                  "stems.fm.s16": {
+                    "bytes": 21328092,
+                    "sha256": "702b00526ebe7ca2ce6f9ba4b49be074d9d41bd8d5046b8626f624b5197e063d"
+                  },
+                  "stems.psg.s16": {
+                    "bytes": 44784000,
+                    "sha256": "e66ce666d50ab9c0eccd8b046ac737fbeb7f5fae89a2fc099f2d9a454407441e"
+                  }
+                },
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "70a33d464d4a4d06ec98e1daf003d1f3a8f60f3daf3852e527893fa245ad5dc7"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "44b726cd690cd4e56b4937592d933fb54a3c4c45198b59d8a41008949db3838a"
+                }
+              }
+            },
+            {
+              "arm": "A",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\rka\\A\\RKARecomp.exe",
+                "bytes": 8846848,
+                "sha256": "e415de66c2c0ce95a8bf502823f655e1ee00a2dd18d71671d3cd17f168c8df1c"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-1-A\\bin\\RKARecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-1-A\\rka.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka\\tests\\stage1-walk.input",
+                "--wav",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-1-A\\audio.wav",
+                "--yield-log",
+                "--mem-write-log",
+                "0xFF0000-0xFFFFFF@120",
+                "--framelog",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-1-A\\frames.log"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-1-A",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.40625,
+                "user_seconds": 5.5625,
+                "process_cycles": 28206467200,
+                "peak_working_set_bytes": 153636864,
+                "peak_commit_bytes": 162242560,
+                "sampled_peak_private_bytes": 161587200,
+                "memory_samples": 58,
+                "wait_wall_seconds": 6.219000000011874
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Rocket Knight Adventures",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 240,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-1-A\\glue-frames.log",
+                "GENESIS_AUDIO_PREDRC": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-1-A\\stems",
+                "GENESIS_AUDIO_WRITEDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-1-A\\writes.log",
+                "GENESIS_AUDIO_APPLIEDDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\rka-capture-1-A\\applied.log",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "512:4"
+              },
+              "runtime": {
+                "game": "RKA",
+                "frames": 6000,
+                "seconds": 6.0511683,
+                "fps": 991.544,
+                "ms_per_frame": 1.008528,
+                "cpu_seconds": 5.90625,
+                "cpu_fps": 1015.873,
+                "cpu_cycles": 27540173110,
+                "cycles_per_frame": 4590028.852,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21015152,
+                "native_register_spans": 1266132,
+                "native_direct_calls": 587984,
+                "native_direct_tails": 332221
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+                "wav_sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+                "rollback": [
+                  "11",
+                  "0",
+                  "0"
+                ],
+                "enabled_files": {
+                  "yield_log_native.log": {
+                    "bytes": 47,
+                    "sha256": "c74acdb4c94a9929a1f28fc0db75e7a99f565eeec4f166c7c680336e65a57864"
+                  },
+                  "mem_write_log_native.log": {
+                    "bytes": 9367204,
+                    "sha256": "cbd4c2758049686bd1cd79deb280c89a4a4bd9b39e45d722e09b162116ca3977"
+                  },
+                  "frames.log": {
+                    "bytes": 1595000,
+                    "sha256": "d9f3fad803b56ee32ba59cc65a2965fb20c809be71b78ce77eebea704106b27d"
+                  },
+                  "glue-frames.log": {
+                    "bytes": 452296,
+                    "sha256": "0fd87465d40abe0d5fc4c096cdbae27086278a1d9192424d364c6a287018a031"
+                  },
+                  "writes.log": {
+                    "bytes": 14143910,
+                    "sha256": "5b466ccb08da6d0dc3b438c340e3e5acd80cc4350b20406ad7dde08ca43cd4ae"
+                  },
+                  "applied.log": {
+                    "bytes": 10505836,
+                    "sha256": "dfd7ee2b3150ce87da551c6f5372e7932d69b911b148156105457a0a8a302f51"
+                  },
+                  "stems.fm.s16": {
+                    "bytes": 21328092,
+                    "sha256": "702b00526ebe7ca2ce6f9ba4b49be074d9d41bd8d5046b8626f624b5197e063d"
+                  },
+                  "stems.psg.s16": {
+                    "bytes": 44784000,
+                    "sha256": "e66ce666d50ab9c0eccd8b046ac737fbeb7f5fae89a2fc099f2d9a454407441e"
+                  }
+                },
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "70a33d464d4a4d06ec98e1daf003d1f3a8f60f3daf3852e527893fa245ad5dc7"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "44b726cd690cd4e56b4937592d933fb54a3c4c45198b59d8a41008949db3838a"
+                }
+              }
+            }
+          ],
+          "passed": true,
+          "candidate_change_pct": {
+            "cpu_seconds": -10.846560846560848,
+            "cpu_cycles": -8.753834917343406,
+            "seconds": -9.799980278188592
+          }
+        },
+        {
+          "game": "sonic3k",
+          "mode": "default",
+          "screen": "raw",
+          "frames": 6000,
+          "rom_sha256": "fba0677fde9f76df93f3e98d6310d8af68b9847bde16e253d73cd4dd8134ed23",
+          "inputs_sha256": "1aa4beb8eaf838f04d573d457e448f65c46ad7e0f9e6abc596623c2e7c8bb9bf",
+          "runs": [
+            {
+              "arm": "B",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic3k\\B\\Sonic3KRecomp.exe",
+                "bytes": 35644416,
+                "sha256": "6cf940c4d85903ce8cde5d6221769d57a9f556d43d00fb056deb6043cc9f4968"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-0-B\\bin\\Sonic3KRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-0-B\\sonic3k.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\sram-slot.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-0-B",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.125,
+                "user_seconds": 5.109375,
+                "process_cycles": 24492914480,
+                "peak_working_set_bytes": 192942080,
+                "peak_commit_bytes": 174755840,
+                "sampled_peak_private_bytes": 174104576,
+                "memory_samples": 48,
+                "wait_wall_seconds": 5.203000000008615
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic 3 & Knuckles",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 12336,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "256:4"
+              },
+              "runtime": {
+                "game": "Sonic3K",
+                "frames": 6000,
+                "seconds": 5.1088952,
+                "fps": 1174.422,
+                "ms_per_frame": 0.851483,
+                "cpu_seconds": 4.984375,
+                "cpu_fps": 1203.762,
+                "cpu_cycles": 23580781250,
+                "cycles_per_frame": 3930130.208,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21216583,
+                "native_register_spans": 2023894,
+                "native_direct_calls": 702343,
+                "native_direct_tails": 6872197
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "ac1a0a70abc694d4822403da47e20f76f0912c15c4e62f843ca89c242c8bd670",
+                "wav_sha256": null,
+                "rollback": [
+                  "23",
+                  "0",
+                  "0"
+                ],
+                "native_sram_sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "af17b36bcb1c814ec9a10a7886d897f15169e43b8e4001b1fb023a96d2dc60c1"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "892a78bd0e13a5f46c1692da1ae68a7139a14bfbc3dc4bb48aa50721430fe581"
+                }
+              },
+              "native_sram": {
+                "file": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-0-B\\bin\\sonic3k.srm",
+                "bytes": 16384,
+                "sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "lines": [
+                  "[SRAM] no save file yet (C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-0-B\\bin\\sonic3k.srm) \u2014 starting fresh",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-0-B\\bin\\sonic3k.srm",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-0-B\\bin\\sonic3k.srm"
+                ],
+                "periodic_before_final_frame": true
+              }
+            },
+            {
+              "arm": "A",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic3k\\A\\Sonic3KRecomp.exe",
+                "bytes": 35635712,
+                "sha256": "fb378bb8e58aeaaad7fe3b4aa6bc2a8c407e8eb98d22e79dcc88d613fdb34ef4"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-1-A\\bin\\Sonic3KRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-1-A\\sonic3k.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\sram-slot.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-1-A",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.171875,
+                "user_seconds": 4.515625,
+                "process_cycles": 21892874480,
+                "peak_working_set_bytes": 192987136,
+                "peak_commit_bytes": 174862336,
+                "sampled_peak_private_bytes": 174211072,
+                "memory_samples": 44,
+                "wait_wall_seconds": 4.735000000015134
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic 3 & Knuckles",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 12336,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "256:4"
+              },
+              "runtime": {
+                "game": "Sonic3K",
+                "frames": 6000,
+                "seconds": 4.508595,
+                "fps": 1330.792,
+                "ms_per_frame": 0.751432,
+                "cpu_seconds": 4.515625,
+                "cpu_fps": 1328.72,
+                "cpu_cycles": 20968805600,
+                "cycles_per_frame": 3494800.933,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21350912,
+                "native_register_spans": 2023894,
+                "native_direct_calls": 702343,
+                "native_direct_tails": 6872197
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "ac1a0a70abc694d4822403da47e20f76f0912c15c4e62f843ca89c242c8bd670",
+                "wav_sha256": null,
+                "rollback": [
+                  "23",
+                  "0",
+                  "0"
+                ],
+                "native_sram_sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "af17b36bcb1c814ec9a10a7886d897f15169e43b8e4001b1fb023a96d2dc60c1"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "892a78bd0e13a5f46c1692da1ae68a7139a14bfbc3dc4bb48aa50721430fe581"
+                }
+              },
+              "native_sram": {
+                "file": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-1-A\\bin\\sonic3k.srm",
+                "bytes": 16384,
+                "sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "lines": [
+                  "[SRAM] no save file yet (C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-1-A\\bin\\sonic3k.srm) \u2014 starting fresh",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-1-A\\bin\\sonic3k.srm",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-default-1-A\\bin\\sonic3k.srm"
+                ],
+                "periodic_before_final_frame": true
+              }
+            }
+          ],
+          "passed": true,
+          "candidate_change_pct": {
+            "cpu_seconds": 10.380622837370247,
+            "cpu_cycles": 12.456482738339659,
+            "seconds": 13.314573608851553
+          }
+        },
+        {
+          "game": "sonic3k",
+          "mode": "capture",
+          "screen": "raw",
+          "frames": 6000,
+          "rom_sha256": "fba0677fde9f76df93f3e98d6310d8af68b9847bde16e253d73cd4dd8134ed23",
+          "inputs_sha256": "1aa4beb8eaf838f04d573d457e448f65c46ad7e0f9e6abc596623c2e7c8bb9bf",
+          "runs": [
+            {
+              "arm": "B",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic3k\\B\\Sonic3KRecomp.exe",
+                "bytes": 35644416,
+                "sha256": "6cf940c4d85903ce8cde5d6221769d57a9f556d43d00fb056deb6043cc9f4968"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\bin\\Sonic3KRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\sonic3k.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\sram-slot.input",
+                "--wav",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\audio.wav",
+                "--yield-log",
+                "--mem-write-log",
+                "0xFF0000-0xFFFFFF@120",
+                "--framelog",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\frames.log"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.359375,
+                "user_seconds": 6.453125,
+                "process_cycles": 32231383640,
+                "peak_working_set_bytes": 194363392,
+                "peak_commit_bytes": 176242688,
+                "sampled_peak_private_bytes": 175591424,
+                "memory_samples": 67,
+                "wait_wall_seconds": 7.2810000000172295
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic 3 & Knuckles",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 15360,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\glue-frames.log",
+                "GENESIS_AUDIO_PREDRC": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\stems",
+                "GENESIS_AUDIO_WRITEDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\writes.log",
+                "GENESIS_AUDIO_APPLIEDDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\applied.log",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "256:4"
+              },
+              "runtime": {
+                "game": "Sonic3K",
+                "frames": 6000,
+                "seconds": 7.1283948,
+                "fps": 841.704,
+                "ms_per_frame": 1.188066,
+                "cpu_seconds": 6.640625,
+                "cpu_fps": 903.529,
+                "cpu_cycles": 31416863300,
+                "cycles_per_frame": 5236143.883,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 20794509,
+                "native_register_spans": 2023894,
+                "native_direct_calls": 702343,
+                "native_direct_tails": 6872197
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "ac1a0a70abc694d4822403da47e20f76f0912c15c4e62f843ca89c242c8bd670",
+                "wav_sha256": "d65fd9cd31b3394881f5542c5432714b21d66fbef2e1d3ce886976005b8adab0",
+                "rollback": [
+                  "23",
+                  "0",
+                  "0"
+                ],
+                "enabled_files": {
+                  "yield_log_native.log": {
+                    "bytes": 151317,
+                    "sha256": "22fd13c15a1912c37c1d3e697aab30fe3fca64736d02c057a4233fa0f731066c"
+                  },
+                  "mem_write_log_native.log": {
+                    "bytes": 14418256,
+                    "sha256": "d6613eb46128cf26b93ccbbf69741d926db3188df3484e5dba6325aa73fec76e"
+                  },
+                  "frames.log": {
+                    "bytes": 1595000,
+                    "sha256": "5cb191fa8dd4b1e1e89c3250ff6b81f6d72c1fa42a818cfd260147f036cf2d5c"
+                  },
+                  "glue-frames.log": {
+                    "bytes": 455888,
+                    "sha256": "a949f7c86d84f93bd3de6daa31e587ad48f1e46f76ad8121502fea07f6a41323"
+                  },
+                  "writes.log": {
+                    "bytes": 79302257,
+                    "sha256": "ec51dd58ac81b0af8f962b2156194a0e4cc7ef5c648a71ddb0fb10a62bb74b5c"
+                  },
+                  "applied.log": {
+                    "bytes": 60262601,
+                    "sha256": "9067f0bd774a8431f8b67faa45bf502ca79f459d1d2ffb5a77eedc42a26ba323"
+                  },
+                  "stems.fm.s16": {
+                    "bytes": 21328092,
+                    "sha256": "c46930063c2038ea2799f4abd3647a990c50f9e8ebbf8a43561ba05bdcbc0ca2"
+                  },
+                  "stems.psg.s16": {
+                    "bytes": 44784000,
+                    "sha256": "9a2e02f8854599d8d1fca83796b4df441eb05864a15bd4742e7f8f50c2bc14b0"
+                  }
+                },
+                "native_sram_sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "af17b36bcb1c814ec9a10a7886d897f15169e43b8e4001b1fb023a96d2dc60c1"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "892a78bd0e13a5f46c1692da1ae68a7139a14bfbc3dc4bb48aa50721430fe581"
+                }
+              },
+              "native_sram": {
+                "file": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\bin\\sonic3k.srm",
+                "bytes": 16384,
+                "sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "lines": [
+                  "[SRAM] no save file yet (C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\bin\\sonic3k.srm) \u2014 starting fresh",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\bin\\sonic3k.srm",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-0-B\\bin\\sonic3k.srm"
+                ],
+                "periodic_before_final_frame": true
+              }
+            },
+            {
+              "arm": "A",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic3k\\A\\Sonic3KRecomp.exe",
+                "bytes": 35635712,
+                "sha256": "fb378bb8e58aeaaad7fe3b4aa6bc2a8c407e8eb98d22e79dcc88d613fdb34ef4"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\bin\\Sonic3KRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\sonic3k.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\sram-slot.input",
+                "--wav",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\audio.wav",
+                "--yield-log",
+                "--mem-write-log",
+                "0xFF0000-0xFFFFFF@120",
+                "--framelog",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\frames.log"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.78125,
+                "user_seconds": 6.5,
+                "process_cycles": 36854326200,
+                "peak_working_set_bytes": 193359872,
+                "peak_commit_bytes": 175210496,
+                "sampled_peak_private_bytes": 174555136,
+                "memory_samples": 86,
+                "wait_wall_seconds": 9.375
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic 3 & Knuckles",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 15360,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\glue-frames.log",
+                "GENESIS_AUDIO_PREDRC": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\stems",
+                "GENESIS_AUDIO_WRITEDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\writes.log",
+                "GENESIS_AUDIO_APPLIEDDUMP": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\applied.log",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "256:4"
+              },
+              "runtime": {
+                "game": "Sonic3K",
+                "frames": 6000,
+                "seconds": 8.9403692,
+                "fps": 671.113,
+                "ms_per_frame": 1.490062,
+                "cpu_seconds": 7.125,
+                "cpu_fps": 842.105,
+                "cpu_cycles": 35945325050,
+                "cycles_per_frame": 5990887.508,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 20396445,
+                "native_register_spans": 2023894,
+                "native_direct_calls": 702343,
+                "native_direct_tails": 6872197
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "ac1a0a70abc694d4822403da47e20f76f0912c15c4e62f843ca89c242c8bd670",
+                "wav_sha256": "d65fd9cd31b3394881f5542c5432714b21d66fbef2e1d3ce886976005b8adab0",
+                "rollback": [
+                  "23",
+                  "0",
+                  "0"
+                ],
+                "enabled_files": {
+                  "yield_log_native.log": {
+                    "bytes": 151317,
+                    "sha256": "22fd13c15a1912c37c1d3e697aab30fe3fca64736d02c057a4233fa0f731066c"
+                  },
+                  "mem_write_log_native.log": {
+                    "bytes": 14418256,
+                    "sha256": "d6613eb46128cf26b93ccbbf69741d926db3188df3484e5dba6325aa73fec76e"
+                  },
+                  "frames.log": {
+                    "bytes": 1595000,
+                    "sha256": "5cb191fa8dd4b1e1e89c3250ff6b81f6d72c1fa42a818cfd260147f036cf2d5c"
+                  },
+                  "glue-frames.log": {
+                    "bytes": 455888,
+                    "sha256": "a949f7c86d84f93bd3de6daa31e587ad48f1e46f76ad8121502fea07f6a41323"
+                  },
+                  "writes.log": {
+                    "bytes": 79302257,
+                    "sha256": "ec51dd58ac81b0af8f962b2156194a0e4cc7ef5c648a71ddb0fb10a62bb74b5c"
+                  },
+                  "applied.log": {
+                    "bytes": 60262601,
+                    "sha256": "9067f0bd774a8431f8b67faa45bf502ca79f459d1d2ffb5a77eedc42a26ba323"
+                  },
+                  "stems.fm.s16": {
+                    "bytes": 21328092,
+                    "sha256": "c46930063c2038ea2799f4abd3647a990c50f9e8ebbf8a43561ba05bdcbc0ca2"
+                  },
+                  "stems.psg.s16": {
+                    "bytes": 44784000,
+                    "sha256": "9a2e02f8854599d8d1fca83796b4df441eb05864a15bd4742e7f8f50c2bc14b0"
+                  }
+                },
+                "native_sram_sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "af17b36bcb1c814ec9a10a7886d897f15169e43b8e4001b1fb023a96d2dc60c1"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "892a78bd0e13a5f46c1692da1ae68a7139a14bfbc3dc4bb48aa50721430fe581"
+                }
+              },
+              "native_sram": {
+                "file": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\bin\\sonic3k.srm",
+                "bytes": 16384,
+                "sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "lines": [
+                  "[SRAM] no save file yet (C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\bin\\sonic3k.srm) \u2014 starting fresh",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\bin\\sonic3k.srm",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-remaining\\sonic3k-capture-1-A\\bin\\sonic3k.srm"
+                ],
+                "periodic_before_final_frame": true
+              }
+            }
+          ],
+          "passed": true,
+          "candidate_change_pct": {
+            "cpu_seconds": -6.798245614035093,
+            "cpu_cycles": -12.598193906164157,
+            "seconds": -20.26733303139203
+          }
+        }
+      ]
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat.json",
+      "sha256": "d400213093b9eca9cb87cc78354b7feee90cf1c1c7de56031ebfad0a4791e739",
+      "pairs": [
+        {
+          "game": "rka",
+          "mode": "default",
+          "screen": "raw",
+          "frames": 6000,
+          "rom_sha256": "85831d4f7d35bf233b5581c3ed8c05bac64721f65713426bfa00d2f9a792a7aa",
+          "inputs_sha256": "e79740e61386cde1f4912a81095bfe9a0dd40498dd68fa99200d6df4d08231ed",
+          "runs": [
+            {
+              "arm": "A",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\rka\\A\\RKARecomp.exe",
+                "bytes": 8846848,
+                "sha256": "e415de66c2c0ce95a8bf502823f655e1ee00a2dd18d71671d3cd17f168c8df1c"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\rka-default-0-A\\bin\\RKARecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\rka-default-0-A\\rka.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka\\tests\\stage1-walk.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\rka-default-0-A",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.09375,
+                "user_seconds": 4.109375,
+                "process_cycles": 20197242320,
+                "peak_working_set_bytes": 153559040,
+                "peak_commit_bytes": 162164736,
+                "sampled_peak_private_bytes": 161947648,
+                "memory_samples": 40,
+                "wait_wall_seconds": 4.297000000020489
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Rocket Knight Adventures",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 15360,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "512:4"
+              },
+              "runtime": {
+                "game": "RKA",
+                "frames": 6000,
+                "seconds": 4.2122255,
+                "fps": 1424.425,
+                "ms_per_frame": 0.702038,
+                "cpu_seconds": 4.09375,
+                "cpu_fps": 1465.649,
+                "cpu_cycles": 19662274690,
+                "cycles_per_frame": 3277045.782,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21417990,
+                "native_register_spans": 1266132,
+                "native_direct_calls": 587984,
+                "native_direct_tails": 332221
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+                "wav_sha256": null,
+                "rollback": [
+                  "11",
+                  "0",
+                  "0"
+                ],
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "70a33d464d4a4d06ec98e1daf003d1f3a8f60f3daf3852e527893fa245ad5dc7"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "44b726cd690cd4e56b4937592d933fb54a3c4c45198b59d8a41008949db3838a"
+                }
+              }
+            },
+            {
+              "arm": "B",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\rka\\B\\RKARecomp.exe",
+                "bytes": 8855552,
+                "sha256": "09e7f3b282280772b53b81924176e5a12b985968f4b5a6310dcc747e84b7c2d2"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\rka-default-1-B\\bin\\RKARecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\rka-default-1-B\\rka.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka\\tests\\stage1-walk.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\rka-default-1-B",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.078125,
+                "user_seconds": 4.28125,
+                "process_cycles": 20408099830,
+                "peak_working_set_bytes": 153575424,
+                "peak_commit_bytes": 162181120,
+                "sampled_peak_private_bytes": 161525760,
+                "memory_samples": 40,
+                "wait_wall_seconds": 4.35899999999674
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Rocket Knight Adventures",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 15360,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "512:4"
+              },
+              "runtime": {
+                "game": "RKA",
+                "frames": 6000,
+                "seconds": 4.2627252,
+                "fps": 1407.55,
+                "ms_per_frame": 0.710454,
+                "cpu_seconds": 4.234375,
+                "cpu_fps": 1416.974,
+                "cpu_cycles": 19868487660,
+                "cycles_per_frame": 3311414.61,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21403601,
+                "native_register_spans": 1266132,
+                "native_direct_calls": 587984,
+                "native_direct_tails": 332221
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "07065520FC059CBC",
+                "audio_state_fnv1a64": "15BFDD457ABC9D99",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+                "wav_sha256": null,
+                "rollback": [
+                  "11",
+                  "0",
+                  "0"
+                ],
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "70a33d464d4a4d06ec98e1daf003d1f3a8f60f3daf3852e527893fa245ad5dc7"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "44b726cd690cd4e56b4937592d933fb54a3c4c45198b59d8a41008949db3838a"
+                }
+              }
+            }
+          ],
+          "passed": true,
+          "candidate_change_pct": {
+            "cpu_seconds": 3.435114503816794,
+            "cpu_cycles": 1.0487747386871638,
+            "seconds": 1.1988840578454507
+          }
+        },
+        {
+          "game": "sonic3k",
+          "mode": "default",
+          "screen": "raw",
+          "frames": 6000,
+          "rom_sha256": "fba0677fde9f76df93f3e98d6310d8af68b9847bde16e253d73cd4dd8134ed23",
+          "inputs_sha256": "1aa4beb8eaf838f04d573d457e448f65c46ad7e0f9e6abc596623c2e7c8bb9bf",
+          "runs": [
+            {
+              "arm": "A",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-complete\\sonic3k\\A\\Sonic3KRecomp.exe",
+                "bytes": 35635712,
+                "sha256": "fb378bb8e58aeaaad7fe3b4aa6bc2a8c407e8eb98d22e79dcc88d613fdb34ef4"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-0-A\\bin\\Sonic3KRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-0-A\\sonic3k.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\sram-slot.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-0-A",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.171875,
+                "user_seconds": 4.609375,
+                "process_cycles": 22681068240,
+                "peak_working_set_bytes": 192987136,
+                "peak_commit_bytes": 174854144,
+                "sampled_peak_private_bytes": 174202880,
+                "memory_samples": 45,
+                "wait_wall_seconds": 4.842999999993481
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic 3 & Knuckles",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3264,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "256:4"
+              },
+              "runtime": {
+                "game": "Sonic3K",
+                "frames": 6000,
+                "seconds": 4.6719562,
+                "fps": 1284.259,
+                "ms_per_frame": 0.778659,
+                "cpu_seconds": 4.578125,
+                "cpu_fps": 1310.58,
+                "cpu_cycles": 21764979960,
+                "cycles_per_frame": 3627496.66,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21312490,
+                "native_register_spans": 2023894,
+                "native_direct_calls": 702343,
+                "native_direct_tails": 6872197
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "ac1a0a70abc694d4822403da47e20f76f0912c15c4e62f843ca89c242c8bd670",
+                "wav_sha256": null,
+                "rollback": [
+                  "23",
+                  "0",
+                  "0"
+                ],
+                "native_sram_sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "af17b36bcb1c814ec9a10a7886d897f15169e43b8e4001b1fb023a96d2dc60c1"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "892a78bd0e13a5f46c1692da1ae68a7139a14bfbc3dc4bb48aa50721430fe581"
+                }
+              },
+              "native_sram": {
+                "file": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-0-A\\bin\\sonic3k.srm",
+                "bytes": 16384,
+                "sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "lines": [
+                  "[SRAM] no save file yet (C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-0-A\\bin\\sonic3k.srm) \u2014 starting fresh",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-0-A\\bin\\sonic3k.srm",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-0-A\\bin\\sonic3k.srm"
+                ],
+                "periodic_before_final_frame": true
+              }
+            },
+            {
+              "arm": "B",
+              "worker_mode": "serial",
+              "binary": {
+                "path": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-binaries-raw\\sonic3k\\B\\Sonic3KRecomp.exe",
+                "bytes": 35644416,
+                "sha256": "6cf940c4d85903ce8cde5d6221769d57a9f556d43d00fb056deb6043cc9f4968"
+              },
+              "command": [
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-1-B\\bin\\Sonic3KRecomp.exe",
+                "--no-launcher",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-1-B\\sonic3k.bin",
+                "--measure-runtime",
+                "6000",
+                "--runtime-uncapped",
+                "--widescreen",
+                "off",
+                "--hash-frames",
+                "60",
+                "--input-script",
+                "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\sram-slot.input"
+              ],
+              "profile": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-1-B",
+              "whole_process": {
+                "scope": "Whole process CPU/cycles and sampled live memory; includes startup and teardown, separate from inner runtime benchmark",
+                "kernel_seconds": 0.09375,
+                "user_seconds": 4.59375,
+                "process_cycles": 23073463720,
+                "peak_working_set_bytes": 193138688,
+                "peak_commit_bytes": 174977024,
+                "sampled_peak_private_bytes": 174321664,
+                "memory_samples": 46,
+                "wait_wall_seconds": 4.9689999999827705
+              },
+              "exit_code": 0,
+              "windows": [
+                {
+                  "caption": "Sonic 3 & Knuckles",
+                  "visible": false
+                },
+                {
+                  "caption": "Default IME",
+                  "visible": false
+                }
+              ],
+              "affinity_mask": 3264,
+              "environment": {
+                "SDL_AUDIODRIVER": "dummy",
+                "SDL_VIDEODRIVER": "windows",
+                "SDL_RENDER_DRIVER": "software",
+                "SDL_RENDER_VSYNC": "0",
+                "GENESIS_SCREEN": "raw",
+                "GENESIS_ENGINE_WORKERS": "<unset>",
+                "GENESIS_AUDIO_SHADOW": "0",
+                "GENESIS_FRAME_LOG": "<unset>",
+                "GENESIS_AUDIO_PREDRC": "<unset>",
+                "GENESIS_AUDIO_WRITEDUMP": "<unset>",
+                "GENESIS_AUDIO_APPLIEDDUMP": "<unset>",
+                "GENESIS_FM_LADDER": "on",
+                "LNG_SCRIPT": "E32-hidden-no-launcher",
+                "LNG_TEST_HIDDEN": "1",
+                "GENESIS_RB_PROBE": "256:4"
+              },
+              "runtime": {
+                "game": "Sonic3K",
+                "frames": 6000,
+                "seconds": 4.8239881,
+                "fps": 1243.784,
+                "ms_per_frame": 0.803998,
+                "cpu_seconds": 4.5625,
+                "cpu_fps": 1315.068,
+                "cpu_cycles": 22311096460,
+                "cycles_per_frame": 3718516.077,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "vdp_plane_impl": "BATCHED",
+                "host_wait_native": false,
+                "rb_digest_impl": "XXH64-v0.8.3",
+                "workload_scope": "uncapped-runtime",
+                "requested_frames": 6000,
+                "complete": true,
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "audio_overflow_drops": 21278914,
+                "native_register_spans": 2023894,
+                "native_direct_calls": 702343,
+                "native_direct_tails": 6872197
+              },
+              "renderer": {
+                "name": "software",
+                "reported_vsync": 1
+              },
+              "correctness": {
+                "frames": 6000,
+                "state_fnv1a64": "9599900CEF10BEC1",
+                "audio_state_fnv1a64": "A648906B081D6491",
+                "audio_flushes": 6000,
+                "mixed_fm_frames": 5332023,
+                "mixed_psg_frames": 22392000,
+                "audio_pushed_frames": 22392000,
+                "raw_png_sha256": "ac1a0a70abc694d4822403da47e20f76f0912c15c4e62f843ca89c242c8bd670",
+                "wav_sha256": null,
+                "rollback": [
+                  "23",
+                  "0",
+                  "0"
+                ],
+                "native_sram_sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "frame_hashes_summary": {
+                  "count": 100,
+                  "sha256": "af17b36bcb1c814ec9a10a7886d897f15169e43b8e4001b1fb023a96d2dc60c1"
+                },
+                "diagnostics_summary": {
+                  "count": 1,
+                  "sha256": "892a78bd0e13a5f46c1692da1ae68a7139a14bfbc3dc4bb48aa50721430fe581"
+                }
+              },
+              "native_sram": {
+                "file": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-1-B\\bin\\sonic3k.srm",
+                "bytes": 16384,
+                "sha256": "72799b47dca834f9edcda747aebfe9bf0bcf6cee760d609c2060721cbbfc11b2",
+                "lines": [
+                  "[SRAM] no save file yet (C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-1-B\\bin\\sonic3k.srm) \u2014 starting fresh",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-1-B\\bin\\sonic3k.srm",
+                  "[SRAM] flushed 16384 bytes to C:\\temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-raw-default-repeat\\sonic3k-default-1-B\\bin\\sonic3k.srm"
+                ],
+                "periodic_before_final_frame": true
+              }
+            }
+          ],
+          "passed": true,
+          "candidate_change_pct": {
+            "cpu_seconds": -0.34129692832765013,
+            "cpu_cycles": 2.5091523217740663,
+            "seconds": 3.254137956173464
+          }
+        }
+      ]
+    }
+  ],
+  "cd_final_actual_dirty_gate": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\game-e35-complete-format-server.json",
+    "sha256": "645c5329ea3d0d91fd60f1ddd75d0000f476a66eeb6c437a54fab18d87113fb1",
+    "passed": true,
+    "scope": "Actual controller-only FF->formatted BRAM, changed and equal in both arms by frame1322 before quit;11 checkpoints/21 artifacts/full WAV/guest and audio counters exact. See hashed original raw record."
+  },
+  "rejected_experiments": [
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-complete.json",
+      "sha256": "832efa35a6ee8581a75c29e70462d8a976992cde54fa6fd48fdf5df9a97831ce"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-complete-isolated.json",
+      "sha256": "058828da24f6d1f90d79f0c11180ec904d2362e1fff0861b605b93d95a961739"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-isolate-bulk.json",
+      "sha256": "a38bfd43fae374fcee241e96f39ff31683fb3c2bdff9aad91830b30cdc463c69"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-isolate-frames.json",
+      "sha256": "f4c60c59f53d4e33f4cde689a5a4d6c020d729eb854ab9634f115d4a13b7d717"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-shared.json",
+      "sha256": "421b33c2ef15575916d04f331673c6a9bacf667d03f0a2e2075969431051ef76"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-selected.json",
+      "sha256": "0eddf814e62f8b5b9b0b225c66f60b98d9d5b66bba61fcf201ddc8f04975eaf3"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-selected-reverse.json",
+      "sha256": "2d87524add84c36a8a4a45fcf0cfd3a8cf7c37213dc1882135ee18c4b5e735be"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-selected-noeventtext.json",
+      "sha256": "25da8ae36a7c9609207559f4a8587ca4d1a5f796d93fe4c519302b9c9eca1fa8"
+    }
+  ],
+  "discarded_input_contaminated_baseline": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\native-qualification-complete-reverse.json",
+    "sha256": "005464f952684b0352573bb33dd6696f9785c80facbfb84213ccb0ae47473368"
+  },
+  "units": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\unit-results-final.json",
+    "sha256": "5f4afa4b641915a31baaa2ff41218361b5052fc3a740cfa48c4644a5838f3b6d",
+    "data": {
+      "commands": [
+        {
+          "argv": [
+            "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+            "-S",
+            "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\engine\\tests",
+            "-B",
+            "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\unit-msvc",
+            "-G",
+            "Visual Studio 17 2022",
+            "-A",
+            "x64",
+            "-DCMAKE_PROJECT_INCLUDE=C:\\temp\\Codex\\genesis-engine-persistence-20261101\\enable-sdl.cmake",
+            "-DGENESIS_ENGINE_WORK_TESTS=ON"
+          ],
+          "returncode": 0,
+          "log": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\unit-final-0.log"
+        },
+        {
+          "argv": [
+            "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe",
+            "--build",
+            "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\unit-msvc",
+            "--config",
+            "Release",
+            "--target",
+            "host_writers_1_test",
+            "host_writers_0_test",
+            "evidence_ownership_1_test",
+            "evidence_ownership_0_test",
+            "audio_extra_test",
+            "audio_buffer_test",
+            "persist_callbacks_1_test",
+            "persist_callbacks_0_test",
+            "audio_work_test",
+            "segacd_backup_test",
+            "--parallel",
+            "1",
+            "--",
+            "/nodeReuse:false"
+          ],
+          "returncode": 0,
+          "log": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\unit-final-1.log"
+        },
+        {
+          "argv": [
+            "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+            "--test-dir",
+            "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\unit-msvc",
+            "-C",
+            "Release",
+            "-R",
+            "^(host_writers_|evidence_ownership_|persist_callbacks_|host_stream_|audio_(extra|buffer|work)$|segacd_backup$)",
+            "--output-on-failure"
+          ],
+          "returncode": 0,
+          "log": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\unit-final-2.log"
+        },
+        {
+          "argv": [
+            "C:/Windows/System32/wsl.exe",
+            "-d",
+            "Ubuntu",
+            "--",
+            "sh",
+            "/mnt/c/Temp/Codex/genesis-engine-persistence-20261101/unit_linux.sh"
+          ],
+          "returncode": 0,
+          "log": "C:\\temp\\Codex\\genesis-engine-persistence-20261101\\unit-final-3.log"
+        }
+      ],
+      "passed": true,
+      "source_sha256": {
+        "runner\\host_stream.c": "ba12d7397d14a93af3db93e5709502ec2ebb178cad2e6910a446e909da60c4c1",
+        "runner\\persist_writer.c": "489d1449f1c4a58ebc13d1d831b00c2fe512e32ddc61af3b75f8c51e46c4c3b5",
+        "runner\\runtime_evidence.c": "315879734dd78f935a1bbe65fd712699a5e0e36e233b1db52e9f1d76aebe0ed6",
+        "tests\\CMakeLists.txt": "34b31ee5475e498c72f553b270cba3f84afaab1907a8ca044a352a77397238f0",
+        "tests\\runtime\\host_writers_test.c": "e63891ac12ecd27e1e8e50485112c57924aa7ba2601b6c909c9f00da1b8e7feb",
+        "tests\\runtime\\evidence_ownership_test.c": "048546c7e2877ca314b018156dd91e1c9cd88e91d29b1d52cc5c7c9a791c0016",
+        "tests\\runtime\\host_stream_exit.cmake": "972ba91f4bd1e0ea44ef62d586d5802c90da1d901014c9390f24d8043b20e222"
+      }
+    },
+    "msvc": "16/16",
+    "ubuntu_gcc_13_3": "16/16"
+  },
+  "independent_components": [
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\review\\VALIDATOR_COMPONENTS.md",
+      "sha256": "94ec81f9ae2be768ddace60bfca32b42461317990b73004d3aaa4a507e66577b"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\review\\E35_WRITER_SCOPE.md",
+      "sha256": "20d8b7cc65afdaa738348b33dd47c39525c55f32cd6d24eb720dca084cd4656a"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\review\\results-latest.json",
+      "sha256": "f0599837ea29db5000a372cb6a1a72a7a3bd1ba09607e7287748bcbeafe99e2b"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\review\\results-stream-extension.json",
+      "sha256": "79e3743c71f5e480aac119fb00dec7481ed9e264f3178a256553bb0f041cb539"
+    },
+    {
+      "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\review-sram\\REVIEW.md",
+      "sha256": "eadfc48fe902a36f7a3d099fed9466ec7a11bad96e55ae3905a5ddb0fa4520db"
+    }
+  ],
+  "cold_state_cost": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\cold-save-cost\\results.json",
+    "sha256": "9d6ab170c2ffd02184f58f8c706ca3c7e9821b253e0d491d77b6b8a4ae56cc11",
+    "scope": "Actual representative157106B native RKA save1.3515-2.5961ms including local control round trip; original full raw record retained."
+  },
+  "classifications": {
+    "rka": {
+      "default": "neutral/inconclusive; small adverse cycle signs retained, not proven zero cost",
+      "capture": "observed beneficial -10.85% CPU/-8.75% cycles; not isolated effect size"
+    },
+    "sonic1": {
+      "default": "neutral",
+      "capture": "mixed/inconclusive; AB -8.33% CPU/-5.29% cycles; BA +4.29% CPU/+0.63% cycles/+0.49% wall"
+    },
+    "sonic3k": {
+      "default": "INCONCLUSIVE; BA +10.38% CPU/+12.46% cycles outlier retained; reverse CPU-0.34%, cycles+2.51%, wall+3.25%; no proven default neutrality or improvement",
+      "capture": "observed beneficial -6.80% CPU/-12.60% cycles; not isolated effect size"
+    },
+    "soniccd": {
+      "native_bram_format_route": "neutral/inconclusive on contended SERVER; CPU-11.11%, cycles-1.25%"
+    }
+  },
+  "measurement_limits": [
+    "Shared-host observations, no isolated FPS estimate or default gain claim.",
+    "Do not offset a game regression with another game or with another feature mode.",
+    "Same pair fixes cores/configuration; raw telemetry, input masks, source/binary identities and whole-process costs retained.",
+    "Initial partial-package gains are not full selected-package measurements."
+  ],
+  "pr": {
+    "number": 59,
+    "url": "https://github.com/mstan/segagenesisrecomp/pull/59",
+    "base": "codex/engine-host-presentation-20261101",
+    "state": "OPEN READY",
+    "merge_owner_handoff_pending": true,
+    "requested_assignee": "TechnicallyComputers; already verified repo-unassignable404, no access changes"
+  },
+  "cleanup": {
+    "manifest": "C:\\Temp\\Codex\\genesis-engine-persistence-20261101\\cleanup-profile-copies.json",
+    "manifest_sha256": "d9fd58fb47632fea15612b73fdc4157c6eff926d5841d231198d1662964dae53",
+    "removed_files": 189,
+    "removed_bytes": 956112896,
+    "verified_removed": true,
+    "retained": "Frozen build binaries, isolated source/build caches and bounded raw evidence remain for the ongoing combined campaign handoff. Native SRAM/BRAM, owner settings and raw captures preserved. Temporary per-run executable/DLL/ROM copies removed."
+  },
+  "remaining_campaign_items": [
+    "E02",
+    "E36",
+    "E37"
+  ],
+  "consumer_sources": {
+    "rka": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-snapshot-identity-20261101\\rka",
+      "head": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+      "recomp_ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4"
+    },
+    "sonic1": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-snapshot-identity-20261101\\sonic1",
+      "head": "6ecb59efed60b89b58256c03f3fdb351527d0f8f",
+      "recomp_ui": "47005fb27516398381f4fda88413ff74bee14842"
+    },
+    "sonic3k": {
+      "path": "C:\\Temp\\Codex\\sonic-native-20261027\\s3-family",
+      "head": "6ce74a70161f0fe42dd8deda5cc9108c4ed0fd90",
+      "recomp_ui": "4261bad384df17e9b4123c9323939770c12ab0bf"
+    }
+  },
+  "campaign_burndown": {
+    "frozen_families": 37,
+    "resolved": 34,
+    "open": 3,
+    "remaining_families": [
+      "E02",
+      "E36",
+      "E37"
+    ]
+  },
+  "final_independent_review": {
+    "agent": "validate_e35",
+    "technical_acceptance": true,
+    "findings": "No objective implementation or qualification fix remains. Exact source/receipt/PE/CD identities,16/16 each compiler, all12 recurring/cold decisions, candid per-game classifications and cleanup verified. No further benchmark or owner gate required for E35burndown; final combined ownerhandoff remains."
+  }
+}
