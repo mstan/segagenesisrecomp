@@ -147,7 +147,6 @@ uint32_t machine_z80_pc(void)
 }
 
 /* glue.c hooks (recompiled-68K fiber + own-backend interrupt delivery). */
-extern void glue_run_game_chunk(uint32_t cycles);
 extern void glue_own_interrupt(int level, GVDP *vdp);
 extern int  glue_own_vint_service_latched(GVDP *vdp);  /* deliver a V-int latched while 68K IRQs were masked */
 

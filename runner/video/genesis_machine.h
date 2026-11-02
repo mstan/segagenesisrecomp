@@ -28,6 +28,10 @@ typedef struct GenesisMachine {
 
 extern GenesisMachine g_machine;
 
+/* Native CPU scheduler hook, implemented by glue.c. Use the fixed-width public
+ * budget ABI on every host (uint_fast32_t is 64-bit on some platforms). */
+void glue_run_game_chunk(uint32_t cycles);
+
 /* Emit a rendered scanline (ARGB row) to the display. The host (main.c) copies
  * it into its framebuffer. */
 typedef void (*GenesisScanlineSink)(void *user, int line, const uint32_t *argb, int width);
