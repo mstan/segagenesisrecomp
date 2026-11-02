@@ -21,6 +21,36 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* These are host presentation state, never chip/snapshot state. Each paired
+ * stream advances identically regardless of the selected output. */
+static int s_filter_bypass,s_filter_started;
+static unsigned s_fm_filter_mix,s_psg_filter_mix;
+static unsigned s_fm_filter_span=266,s_psg_filter_span=1118;
+
+void audio_mixer_set_filter_bypass(int bypass)
+{
+    s_filter_bypass=bypass!=0;
+    if(!s_filter_started) {
+        s_fm_filter_mix=s_filter_bypass?s_fm_filter_span:0;
+        s_psg_filter_mix=s_filter_bypass?s_psg_filter_span:0;
+    }
+}
+
+static void filter_present(int16_t *out,const int16_t *raw,size_t count,
+                           unsigned channels,unsigned *mix,unsigned span,int apply)
+{
+    unsigned target=s_filter_bypass?span:0;
+    if(!*mix && !target)return; /* Default PCM remains byte-identical. */
+    for(size_t i=0;i<count;++i) {
+        if(apply && *mix)for(unsigned c=0;c<channels;++c) {
+            size_t p=i*channels+c;
+            out[p]=(int16_t)(((int64_t)out[p]*(span-*mix)+(int64_t)raw[p]*(*mix))/span);
+        }
+        if(*mix<target)++*mix;
+        else if(*mix>target)--*mix;
+    }
+}
+
 void audio_mixer_init(void)
 {
     ym2612_init();
@@ -29,6 +59,12 @@ void audio_mixer_init(void)
      * every fm_shadow_* call below is a cheap no-op and audio is
      * byte-identical to the canon path. */
     fm_shadow_init();
+    s_fm_filter_span=ym2612_sample_rate()/200u;
+    s_psg_filter_span=psg_sample_rate()/200u;
+    if(!s_fm_filter_span)s_fm_filter_span=1;
+    if(!s_psg_filter_span)s_psg_filter_span=1;
+    s_filter_started=0;
+    audio_mixer_set_filter_bypass(s_filter_bypass);
 }
 
 /* The own backend pushes events from two stamp axes (68K instruction counter
@@ -198,8 +234,11 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
     size_t fm_n  = fm_avail  < fm_cap  ? fm_avail  : fm_cap;
     size_t psg_n = psg_avail < psg_cap ? psg_avail : psg_cap;
 
-    if (fm_stereo_out && fm_n > 0)  ym2612_render(fm_stereo_out,  fm_n);
-    if (psg_mono_out  && psg_n > 0) psg_render(psg_mono_out,   psg_n);
+    /* Chip scratch capacity is8192 samples. Drain paired outputs once, leaving
+     * the canonical queues/filter history independent of this preference. */
+    static int16_t raw_fm[8192*2],raw_psg[8192];
+    if (fm_stereo_out && fm_n > 0)  ym2612_render_pair(fm_stereo_out,raw_fm,fm_n);
+    if (psg_mono_out  && psg_n > 0) psg_render_pair(psg_mono_out,raw_psg,psg_n);
 
     /* Verified-enhancement FM shadow: feed (canon, shadow) to the verifier and
      * substitute the shadow FM samples into fm_stereo_out only when proven;
@@ -207,6 +246,14 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * is on, so this keeps fm_stereo_out byte-identical by default. Canon FM
      * (just rendered above) remains the authoritative stream and the oracle. */
     if (fm_stereo_out && fm_n > 0) fm_shadow_verify_and_substitute(fm_stereo_out, fm_n);
+
+    /* Enhanced FM remains an explicit separate choice. Never feed unfiltered
+     * native samples to its verifier or replace its proven output silently. */
+    if(fm_stereo_out && fm_n>0)
+        filter_present(fm_stereo_out,raw_fm,fm_n,2,&s_fm_filter_mix,s_fm_filter_span,!fm_shadow_active());
+    if(psg_mono_out && psg_n>0)
+        filter_present(psg_mono_out,raw_psg,psg_n,1,&s_psg_filter_mix,s_psg_filter_span,1);
+    if((fm_stereo_out && fm_n>0) || (psg_mono_out && psg_n>0))s_filter_started=1;
 
     if (fm_written)  *fm_written  = fm_n;
     if (psg_written) *psg_written = psg_n;
