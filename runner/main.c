@@ -1202,14 +1202,15 @@ static const char *resolve_runner_path(const char *path, char *buf, size_t buf_l
 }
 
 /* Own-backend save container: versioned magic, then the glue blob (M68K regs,
- * frame count, cycle accumulators, V-int latch), WRAM, the whole machine
+ * frame count, cycle accumulators, V-int/H-int latches), WRAM, the whole machine
  * (VDP + bus incl. Z80 RAM/SRAM + the full embedded superzazu Z80 core), and
  * both audio chips. Raw-struct format, private to a build â€” same convention as
  * the clownmdemu-path states (which dumped g_clownmdemu raw); the magic keeps
- * the formats from being confused. GROWNS2 = the declown-headers machine
+ * the formats from being confused. GROWNS3 adds pending H-int ownership to
+ * the glue state. GROWNS2 used the declown-headers machine
  * layout (superzazu z80 embedded in g_machine, no side ext blob); GROWNS1
- * saves are rejected with a clear message rather than misloaded. */
-static const char OWN_SAVE_MAGIC[8] = "GROWNS2\0";
+ * and GROWNS2 saves are rejected with a clear message rather than misloaded. */
+static const char OWN_SAVE_MAGIC[8] = "GROWNS3\0";
 #include "host_state.h"
 
 int runner_save_state_file(const char *path)
