@@ -716,7 +716,11 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
             int iy = vf ? (height - 1 - (line - y)) : (line - y);
             int celly = iy >> cell_h_shift, fy = iy & ((1 << cell_h_shift) - 1);
 
-            if(GENESIS_BATCHED_PLANES||gvdp_hd_capturing()) {
+#if GENESIS_BATCHED_PLANES
+            {
+#else
+            if(gvdp_hd_capturing()) {
+#endif
             /* Resolve sprite cell/row addresses once per eight output pixels.
              * VRAM is stable during this scanline call; no persistent cache or
              * invalidation/state migration is involved. */
@@ -764,6 +768,7 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                         (unsigned)pri,visible>>first);
                 }
             }
+#if !GENESIS_BATCHED_PLANES
             } else {
             for (int lx = 0; lx < width; lx++) {
                 int sx = screen_x + lx;
@@ -793,7 +798,7 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                     drawn[sx] = 1;
                 }
             }
-
+#endif
             }
             pixels_budget -= width;
             if (pixels_budget <= 0 && !s_unlimited_sprites) { v->sprite_overflow = 1; break; }

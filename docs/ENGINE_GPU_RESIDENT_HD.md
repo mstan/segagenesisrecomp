@@ -71,9 +71,40 @@ custom fallback. The fixtures actually build and run under Ubuntu GCC 13.3 as
 well as Windows. These are portable job-contract checks, not lower-end GPU
 performance qualification.
 
+The corrected RKA release configuration (`SONIC_REVERSE_DEBUG=OFF`, matching
+E35) passes the existing 6000-frame native-file save/load route at default and
+16x: native/state/audio hashes, every sampled frame, native PNG, complete WAV
+and rollback match. The late post-load full 16x readback has zero mismatches;
+the measured run completes at 242.8 FPS. The earlier debug-enabled RKA build
+was mismatched and is excluded from performance disposition. Corrected default
+CPU is 6.5625 seconds in both file-route arms. Its bounded pinned-core repeat
+changes direction across orders (-9.56%, +2.05% cycles; 11.61-point spread), so
+default timing remains neutral/inconclusive under shared load, with no stable
+regression or speedup claim.
+
+Sonic CD's existing 3000-frame route passes matched fresh E35, default and
+physical 16x: all five inspect/native-picture checkpoints, full WAV and BRAM
+match exactly. Full 16x GPU draw averages 1.573 ms; a late 18,350,080-pixel
+readback is exact. Its paced debug/checkpoint route is not an uncapped FPS
+measurement. Matched E35/default software-SDL CPU observations are 12.9531 and
+12.9688 seconds over frames 600–3000 (neutral); 16x uses physical OpenGL and is
+reported separately. Complete-image SHA256 `37bd642b…` and qualified disc
+payload SHA256 `4e822010…` identify different layers of the same verified media.
+The same qualified 10957-source native archive and compiler are used in both CD
+builds; shared caches and owned media remain unmodified.
+
+Independent review found and fixed two publication boundaries: direct public
+`machine_load_state` now revokes jobs before any potentially partial read, and
+a last-row frontend veto immediately revokes the preceding publication. Narrow
+tests cover both actual valid/partial machine restores and invalidation after
+the last row but before palette binding, retaining exact already-held leases.
+
 Owner `beads-3z5k.17`, campaign `beads-2wy8.1`. Source/binary/ROM/settings/host
 identities and raw logs, CSV, WAV, state files and captures are retained under
 `C:/Temp/Codex/genesis-engine-hd-rendering-20261101`; the GPU summary is
 `qa/sonic1-gpu-scales-summary.json`, native gate `qa/canonical.json`, and detailed
-GPU handoff `qa/e37-gpu-qualification.md`. Combined batch review, owner visual
+GPU handoff `qa/e37-gpu-qualification.md`. Corrected RKA is
+`qa/rka-native-save-fixed.json`; CD is `qa/cd-native/summary.json`; review
+regressions and negative controls are `qa/review-fixes/results.json`.
+Combined batch review, owner visual
 handoff and merge remain separate gates.
