@@ -2171,6 +2171,8 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
                 genesis_host_lobby_config_from_launch(&ls.netplay_launch, netplay_config_v) != 0)
                 fprintf(stderr, "genesis_netplay: launch refused\n");
     #endif
+        }
+        if (lr == 0 || lr == 1) { /* Play or close: keep the same preferences. */
             /* Ordering matters. Re-load settings.ini FIRST so the
              * key/pad rebinds the launcher just wrote reach
              * g_input_map; THEN copy this session's display/audio +
@@ -2203,7 +2205,7 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
                 g_input_map.p[p].deadzone_pct = ls.deadzone[p];
             }
             app_config_save(settings_ini);
-            if (*rom_path_io) rom_cfg_write(rom_cfg_path, *rom_path_io);
+            if (lr == 0 && *rom_path_io) rom_cfg_write(rom_cfg_path, *rom_path_io);
         }
     }
     return lr;
