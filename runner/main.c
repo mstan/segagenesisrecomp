@@ -2037,6 +2037,14 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
     #endif
         lr = recomp_launcher_run_window(ltitle, &ls, &gi, assets_dir,
                                         initial_rom, picked, picked_cap);
+        if (lr == 1 && ls.audio_freq != g_app_config.audio_freq) {
+            /* A selected output rate survives closing the launcher too.
+             * Reload first to preserve bindings/settings written while the
+             * launcher was open, then persist just this selected preference. */
+            app_config_load(settings_ini);
+            g_app_config.audio_freq = ls.audio_freq;
+            app_config_save(settings_ini);
+        }
         if (lr == 0) {                  /* PLAY */
             if (picked[0]) *rom_path_io = picked;
     #if GENESIS_HAS_RECOMP_NET
