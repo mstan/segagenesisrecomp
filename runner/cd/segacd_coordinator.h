@@ -68,7 +68,7 @@ struct SegaCDCoordinator {
     SegaCDCatalogLookup catalog_lookup[2];
     SegaCDCatalogIndex *catalog_index[2];
     uint8_t catalog_index_enabled;
-    uint64_t code_lease_serial;
+    uint64_t code_lease_serial,code_reuses_retired;
     const uint8_t *(*host_code_span)(void *,uint32_t,size_t);
     M68kStepDataResolver host_data_region;
     uint64_t data_resolutions[2];
@@ -96,7 +96,8 @@ int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host
 int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
                               const M68kStepModule *const *,size_t);
 /* Immutable executable-region lease. Generic owners default to no lease.
- * Qualify ALL callbacks/other masters as unable to mutate or remap [begin,end)
+ * Qualify instruction-byte reads as side-effect free, and ALL callbacks/other
+ * masters as unable to mutate or remap [begin,end)
  * until end_code_lease. First use still checks every word. Mutable/unknown
  * regions retain live guards. End before returning to unqualified host code,
  * import/restore or mutation; no asynchronous writer is permitted. */

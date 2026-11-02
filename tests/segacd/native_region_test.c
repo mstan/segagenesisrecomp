@@ -149,7 +149,9 @@ int main(void)
     CHECK(segacd_coordinator_region_effects(&c,SEGACD_MAIN,NULL,0));
     CHECK(segacd_coordinator_region_effects(&c,SEGACD_SUB,NULL,0));
     CHECK(!segacd_coordinator_native_region(&c,c.device_time+100));
-    setup(1,0);c.code_lease_serial=UINT64_MAX;
+    segacd_coordinator_device_limit(NULL,NULL);
+    setup(1,0);c.busy[0]=1;segacd_coordinator_device_limit(&c,third_master_limit);CHECK(!c.device_limit);c.busy[0]=0;
+    c.code_lease_serial=UINT64_MAX;
     CHECK(segacd_coordinator_begin_code_lease(&c,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES));
     CHECK(c.catalog_lookup[0].code_epoch==1);
     CHECK(!segacd_coordinator_begin_code_lease(&c,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES));

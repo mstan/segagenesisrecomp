@@ -12,6 +12,9 @@
  * PAL and hardware bus-cycle phasing need separate qualification. */
 enum { MAIN_DENOM=53693175,MAIN_NUMER=87500000 };
 static M68kStepResult execute_cpu(SegaCDCoordinator *,unsigned);
+static void revoke_code_leases(SegaCDCoordinator *c)
+{c->catalog_lookup[0].code_epoch=c->catalog_lookup[1].code_epoch=0;}
+
 static int device_fault(const SegaCDCoordinator*c)
 {
     return c->devices->drive.unsupported_command || c->devices->media_error || c->devices->cdda_error ||
@@ -330,12 +333,13 @@ int segacd_coordinator_modules(SegaCDCoordinator *c,SegaCDCpu cpu,const M68kStep
 {
     if(!c || (unsigned)cpu>1 || (count && !modules) || c->busy[0] || c->busy[1])return 0;
     for(size_t n=0;n<count;++n)if(!m68k_step_module_valid(modules[n]))return 0;
-    c->modules[cpu]=modules;c->module_count[cpu]=count;
+    revoke_code_leases(c);c->modules[cpu]=modules;c->module_count[cpu]=count;
     c->register_spans[cpu]=NULL;c->register_span_count[cpu]=0;
     c->flow_spans[cpu]=NULL;c->flow_span_count[cpu]=0;
     segacd_catalog_index_destroy(c->catalog_index[cpu]);c->catalog_index[cpu]=NULL;
     if(c->catalog_index_enabled)
         c->catalog_index[cpu]=segacd_catalog_index_create(SEGACD_INDEX_DEFAULT_LIMIT);
+    c->code_reuses_retired+=c->catalog_lookup[cpu].code_reuses;
     segacd_catalog_lookup_reset(&c->catalog_lookup[cpu]);return 1;
 }
 int segacd_coordinator_catalog_index(SegaCDCoordinator *c,int enabled)
@@ -372,17 +376,17 @@ int segacd_coordinator_begin_code_lease(SegaCDCoordinator *c,SegaCDCpu cpu,uint3
 int segacd_coordinator_main_code_span(SegaCDCoordinator *c,const uint8_t *(*span)(void *,uint32_t,size_t))
 {
     if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
-    segacd_coordinator_end_code_lease(c,SEGACD_MAIN);c->host_code_span=span;return 1;
+    revoke_code_leases(c);c->host_code_span=span;return 1;
 }
 int segacd_coordinator_main_data_region(SegaCDCoordinator *c,M68kStepDataResolver resolver)
 {
     if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
-    c->host_data_region=resolver;return 1;
+    revoke_code_leases(c);c->host_data_region=resolver;return 1;
 }
 int segacd_coordinator_floor(SegaCDCoordinator *c,M68kStepResult (*step)(M68kStepContext *))
 {
     if(!c || c->busy[0] || c->busy[1])return 0;
-    c->floor_step=step;return 1;
+    revoke_code_leases(c);c->floor_step=step;return 1;
 }
 int segacd_coordinator_region_effects(SegaCDCoordinator *c,SegaCDCpu cpu,
                                      const M68kStepEffectModule *effects,size_t count)
@@ -448,13 +452,13 @@ int segacd_coordinator_flow_spans(SegaCDCoordinator *c,SegaCDCpu cpu,
 {return register_native_spans(c,cpu,spans,count,1);}
 void segacd_coordinator_main_irq(SegaCDCoordinator*c,unsigned level){if(c && level<=7)c->main_irq=level;}
 void segacd_coordinator_host_clock(SegaCDCoordinator*c,void (*advance)(void *,uint64_t),uint64_t (*next)(void *))
-{if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;c->region_event_valid=0;qualify_event_intervals(c);}}
+{if(c && !c->busy[0] && !c->busy[1]){revoke_code_leases(c);c->host_advance=advance;c->host_next_event=next;c->region_event_valid=0;qualify_event_intervals(c);}}
 void segacd_coordinator_device_limit(SegaCDCoordinator*c,uint64_t (*limit)(void *))
-{if(c && !c->busy[0] && !c->busy[1])c->device_limit=limit;}
+{if(c && !c->busy[0] && !c->busy[1]){revoke_code_leases(c);c->device_limit=limit;}}
 void segacd_coordinator_pcm_sink(SegaCDCoordinator*c,Rf5c164Sink sink,void*user)
-{if(c && !c->busy[0] && !c->busy[1]){c->io.pcm_sink=sink;c->io.pcm_user=user;}}
+{if(c && !c->busy[0] && !c->busy[1]){revoke_code_leases(c);c->io.pcm_sink=sink;c->io.pcm_user=user;}}
 void segacd_coordinator_cdda_sink(SegaCDCoordinator*c,SegaCDCddaSample sink,void*user)
-{if(c && !c->busy[0] && !c->busy[1]){c->io.cdda_sample=sink;c->io.cdda_sample_user=user;}}
+{if(c && !c->busy[0] && !c->busy[1]){revoke_code_leases(c);c->io.cdda_sample=sink;c->io.cdda_sample_user=user;}}
 uint16_t segacd_coordinator_vdp_read16(SegaCDCoordinator*c,uint32_t a)
 {
     uint16_t value=m68k_step_read16(&c->cpu[0],a);a&=0xFFFFFFu;
@@ -477,6 +481,7 @@ void segacd_coordinator_media(SegaCDCoordinator*c,SegaCDReadSector read_sector,v
                              SegaCDCddaSector sink,void*cdda_user)
 {
     if(c && !c->busy[0] && !c->busy[1]) {
+        revoke_code_leases(c);
         if(c->media_cancel)c->media_cancel(c->io.media_user);
         c->media_cancel=NULL;
         c->io.read_sector=read_sector;c->io.media_user=media_user;
@@ -484,7 +489,7 @@ void segacd_coordinator_media(SegaCDCoordinator*c,SegaCDReadSector read_sector,v
     }
 }
 void segacd_coordinator_media_cancel(SegaCDCoordinator*c,void (*cancel)(void *))
-{if(c&&!c->busy[0]&&!c->busy[1])c->media_cancel=cancel;}
+{if(c&&!c->busy[0]&&!c->busy[1]){revoke_code_leases(c);c->media_cancel=cancel;}}
 size_t segacd_coordinator_cdd_trace(const SegaCDCoordinator*c,SegaCDCddSnapshot*snapshot,
                                     SegaCDCddSubmission*events,size_t capacity)
 {

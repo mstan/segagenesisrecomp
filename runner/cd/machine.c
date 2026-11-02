@@ -28,6 +28,52 @@ typedef struct {
     SegaCDMachineVideoStats stats;
 } CapturedVideo;
 static CapturedVideo *captured_video;
+/* Capability binds the exact callback AND user object. A conservative object-
+ * representation mismatch disables the optimization; no state is inferred
+ * immutable merely because a function has the same address. */
+static struct {
+    SegaCDIO io;
+    M68kStepBus host,cpu_bus[2];
+    void *host_user,*cpu_user[2],*audio_user,*video_user;
+    const uint8_t *(*host_code_span)(void *,uint32_t,size_t);
+    const uint8_t *(*cpu_code_span[2])(void *,uint32_t,size_t);
+    M68kStepDataResolver host_data_region,cpu_data_region[2];
+    void (*host_advance)(void *,uint64_t);
+    uint64_t (*host_next_event)(void *),(*device_limit)(void *);
+    void (*media_cancel)(void *);
+    M68kStepResult (*floor_step)(M68kStepContext *);
+    const M68kStepModule *const *modules[2];size_t counts[2];
+    void (*audio_write)(void *,uint64_t,uint8_t,uint8_t);
+    SegaCDMachineVideoObserver video;
+} bios_owner;
+static void capture_bios_owner(SegaCDMachine *m)
+{
+    SegaCDCoordinator *c=&m->coordinator;
+    memcpy(&bios_owner.io,&c->io,sizeof c->io);memcpy(&bios_owner.host,&c->host_main,sizeof c->host_main);
+    bios_owner.host_user=c->host_user;bios_owner.host_code_span=c->host_code_span;bios_owner.host_data_region=c->host_data_region;
+    bios_owner.host_advance=c->host_advance;bios_owner.host_next_event=c->host_next_event;bios_owner.device_limit=c->device_limit;
+    bios_owner.media_cancel=c->media_cancel;bios_owner.floor_step=c->floor_step;
+    bios_owner.audio_write=m->audio_write;bios_owner.audio_user=m->audio_user;bios_owner.video=video_observer;bios_owner.video_user=video_user;
+    for(unsigned n=0;n<2;++n) {
+        memcpy(&bios_owner.cpu_bus[n],&c->cpu[n].bus,sizeof c->cpu[n].bus);bios_owner.cpu_user[n]=c->cpu[n].user;
+        bios_owner.cpu_code_span[n]=c->cpu[n].code_span;bios_owner.cpu_data_region[n]=c->cpu[n].data_region;
+        bios_owner.modules[n]=c->modules[n];bios_owner.counts[n]=c->module_count[n];
+    }
+}
+static int same_bios_owner(const SegaCDMachine *m)
+{
+    const SegaCDCoordinator *c=&m->coordinator;
+    if(memcmp(&bios_owner.io,&c->io,sizeof c->io)||memcmp(&bios_owner.host,&c->host_main,sizeof c->host_main)||
+       bios_owner.host_user!=c->host_user||bios_owner.host_code_span!=c->host_code_span||bios_owner.host_data_region!=c->host_data_region||
+       bios_owner.host_advance!=c->host_advance||bios_owner.host_next_event!=c->host_next_event||bios_owner.device_limit!=c->device_limit||
+       bios_owner.media_cancel!=c->media_cancel||bios_owner.floor_step!=c->floor_step||bios_owner.audio_write!=m->audio_write||
+       bios_owner.audio_user!=m->audio_user||bios_owner.video!=video_observer||bios_owner.video_user!=video_user)return 0;
+    for(unsigned n=0;n<2;++n)if(memcmp(&bios_owner.cpu_bus[n],&c->cpu[n].bus,sizeof c->cpu[n].bus)||
+       bios_owner.cpu_user[n]!=c->cpu[n].user||bios_owner.cpu_code_span[n]!=c->cpu[n].code_span||bios_owner.cpu_data_region[n]!=c->cpu[n].data_region||
+       bios_owner.modules[n]!=c->modules[n]||bios_owner.counts[n]!=c->module_count[n])return 0;
+    return 1;
+}
+
 static void resolve_row(SegaCDMachine *m,unsigned row)
 {
     CapturedRow *r=&captured_video->rows[row];
@@ -295,12 +341,14 @@ int segacd_machine_immutable_bios(SegaCDMachine *m,int enabled)
 {
     if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||m->z80.in_step)return 0;
     segacd_coordinator_end_code_lease(&m->coordinator,SEGACD_MAIN);
+    if(enabled)capture_bios_owner(m);
     m->immutable_bios_qualified=(uint8_t)(enabled!=0);return 1;
 }
 M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
 {
     if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)
         return M68K_STEP_REENTERED;
+    if(m->immutable_bios_qualified&&!same_bios_owner(m))m->immutable_bios_qualified=0;
     int lease=m->immutable_bios_qualified&&segacd_coordinator_begin_code_lease(&m->coordinator,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES);
     M68kStepResult result=run_frame(m);
     if(lease)segacd_coordinator_end_code_lease(&m->coordinator,SEGACD_MAIN);
