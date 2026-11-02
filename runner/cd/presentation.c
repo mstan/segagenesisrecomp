@@ -1,4 +1,6 @@
 #include "../video/genesis_frame_pixels.h"
+#include "../video/genesis_hd_gpu.h"
+#include "../video/genesis_raster_jobs.h"
 #include "presentation.h"
 
 #include "presentation_ui.h"
@@ -28,6 +30,9 @@ struct SegaCDPresentation {
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *texture;
+    GenesisHdGpu *hd_gpu;
+    unsigned internal_scale;
+    int hd_requested,hd_checked,native_jobs;
     SegaCDPresentationUI *ui;
     SegaCDPresentationSettings settings;
     char *settings_path;
@@ -88,6 +93,8 @@ static void load_one_setting(char *line, SegaCDPresentationSettings *settings) {
         settings->volume = clamp_value((int)value, 0, 100);
     else if (strcmp(line, "view_mode") == 0)
         settings->view_mode = clamp_value((int)value, 0, 2);
+    else if (strcmp(line, "internal_scale") == 0)
+        settings->internal_scale = clamp_value((int)value, 1, 64);
 }
 
 static void load_settings(const char *path,
@@ -127,10 +134,17 @@ static void load_settings(const char *path,
     free(data);
 }
 
+unsigned segacd_presentation_startup_scale(const char *path) {
+    SegaCDPresentationSettings settings={0};settings.internal_scale=1;
+    load_settings(path,&settings);return genesis_hd_scale((unsigned)settings.internal_scale);
+}
+void segacd_presentation_native_jobs(SegaCDPresentation *p,int eligible) {
+    if(p)p->native_jobs=eligible!=0;
+}
 static int save_settings(SegaCDPresentation *presentation) {
     static const char format[] =
         "fullscreen=%d\nwindow_scale=%d\nlinear_filter=%d\n"
-        "audio_enabled=%d\nvolume=%d\nview_mode=%d\n";
+        "audio_enabled=%d\nvolume=%d\nview_mode=%d\ninternal_scale=%d\n";
     char contents[192];
     int content_length;
     if (!presentation || !presentation->settings_path) return 0;
@@ -140,7 +154,8 @@ static int save_settings(SegaCDPresentation *presentation) {
                               presentation->settings.linear_filter,
                               presentation->settings.audio_enabled,
                               presentation->settings.volume,
-                              presentation->settings.view_mode);
+                              presentation->settings.view_mode,
+                              presentation->settings.internal_scale);
     if (content_length < 0 || (size_t)content_length >= sizeof(contents)) {
         return 0;
     }
@@ -160,6 +175,10 @@ static void apply_audio(SegaCDPresentation *presentation) {
 static int apply_setting(void *context, const char *key, int value) {
     SegaCDPresentation *presentation = (SegaCDPresentation *)context;
     if (!presentation || !key) return 0;
+    if(!strcmp(key,"video.internal_resolution")){
+        if(value<1||value>64)return 0;
+        presentation->settings.internal_scale=value;return 1;
+    }
     if (strcmp(key, RECOMP_RUNTIME_UI_KEY_FULLSCREEN) == 0) {
         Uint32 flags = 0;
         if (value == 1) flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -358,12 +377,16 @@ SegaCDPresentation *segacd_presentation_create(SDL_Window *window,
     presentation->settings.audio_enabled = 1;
     presentation->settings.volume = 100;
     presentation->settings.view_mode = RECOMP_RUNTIME_UI_VIEW_NATIVE;
+    presentation->settings.internal_scale=1;
     if (!presentation->settings_path) {
         free(presentation->timing);
         free(presentation);
         return NULL;
     }
     load_settings(presentation->settings_path, &presentation->settings);
+    presentation->internal_scale=genesis_hd_scale((unsigned)presentation->settings.internal_scale);
+    presentation->hd_requested=presentation->internal_scale>1||getenv("GENESIS_INTERNAL_SCALE")!=NULL;
+    gvdp_hd_enable(presentation->hd_requested);
 
     /* Owner-facing launches always start in a normal window, even if an older
        settings file requested fullscreen. The UI can still change it in-session. */
@@ -418,6 +441,7 @@ void segacd_presentation_destroy(SegaCDPresentation *presentation) {
         free(presentation->timing);
     }
     segacd_presentation_ui_destroy(presentation->ui);
+    genesis_hd_gpu_destroy(presentation->hd_gpu);
     if (presentation->texture) SDL_DestroyTexture(presentation->texture);
     free(presentation->frame_copy);
     free(presentation->settings_path);
@@ -437,6 +461,9 @@ int segacd_presentation_handle_event(SegaCDPresentation *presentation,
     int was_draining;
     int consumed = 0;
     if (!presentation || !event) return 0;
+    if(event->type==SDL_RENDER_TARGETS_RESET||event->type==SDL_RENDER_DEVICE_RESET){
+        genesis_hd_gpu_destroy(presentation->hd_gpu);presentation->hd_gpu=NULL;presentation->hd_checked=0;
+    }
     was_open = segacd_presentation_ui_is_open(presentation->ui);
     was_draining = presentation->block_until_release;
     if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) {
@@ -586,8 +613,8 @@ int segacd_presentation_present(SegaCDPresentation *presentation,
     if (count > SIZE_MAX / sizeof(uint32_t))return 0;
     const void *upload_pixels=pixels;
     int upload_pitch=source_pitch_bytes;
-#if GENESIS_FINAL_PIXEL_PIPELINE
     int ui_open=segacd_presentation_ui_is_open(presentation->ui);
+#if GENESIS_FINAL_PIXEL_PIPELINE
     int stage=ui_open || (source_pitch_bytes&3);
     if(stage && !ensure_frame_capacity(presentation,count))return 0;
     GenesisPixelView frame;
@@ -611,12 +638,27 @@ int segacd_presentation_present(SegaCDPresentation *presentation,
     upload_pixels=presentation->frame_copy;upload_pitch=width*(int)sizeof(uint32_t);
 #endif
     if (!ensure_texture(presentation, width, height)) return 0;
-    if (SDL_UpdateTexture(presentation->texture, NULL, upload_pixels,
+    SDL_Texture *frame_texture=presentation->texture;
+    if(presentation->hd_requested&&presentation->native_jobs&&!ui_open){
+        if(!presentation->hd_checked){presentation->hd_gpu=genesis_hd_gpu_create(presentation->renderer,presentation->texture);presentation->hd_checked=1;}
+        const GVDPRasterFrame *jobs=gvdp_hd_acquire();
+        if(jobs&&jobs->width==(unsigned)width&&jobs->height==(unsigned)height){
+            SDL_Texture *enhanced=genesis_hd_gpu_render(presentation->hd_gpu,jobs,presentation->internal_scale,NULL);
+            if(enhanced){
+#if SDL_VERSION_ATLEAST(2,0,12)
+                SDL_SetTextureScaleMode(enhanced,presentation->settings.linear_filter?SDL_ScaleModeLinear:SDL_ScaleModeNearest);
+#endif
+                frame_texture=enhanced;
+            }
+        }
+        if(jobs)gvdp_hd_release(jobs);
+    }
+    if (frame_texture==presentation->texture&&SDL_UpdateTexture(presentation->texture, NULL, upload_pixels,
                           upload_pitch) != 0)
         return 0;
     SDL_RenderSetLogicalSize(presentation->renderer, width, height);
     if (SDL_RenderClear(presentation->renderer) != 0) return 0;
-    if (SDL_RenderCopy(presentation->renderer, presentation->texture, NULL,
+    if (SDL_RenderCopy(presentation->renderer, frame_texture, NULL,
                        NULL) != 0)
         return 0;
     uint64_t ready = presentation->running ? SDL_GetPerformanceCounter() : 0;

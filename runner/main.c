@@ -1,4 +1,6 @@
 #include "video/genesis_frame_pixels.h"
+#include "video/genesis_hd_gpu.h"
+#include "video/genesis_raster_jobs.h"
 /*
  * main.c — shared SDL2 frontend for native Genesis recompilation targets.
  *
@@ -278,6 +280,8 @@ static int s_ws_user_cells = 8;   /* requested extra 8px cells per side */
 static int s_ws_bgdiag_on  = 0;   /* GENESIS_WS_BGDIAG: Plane B parallax diagnostic */
 static int s_ws_bar_black  = 1;   /* pillarbox bars: black (default); GENESIS_WS_BARS=backdrop for seamless */
 static int s_frame_texture_filtered = 0; /* actual SDL texture scale mode */
+static unsigned s_hd_scale=1;
+static int s_hd_requested;
 #if RECOMP_LAUNCHER
 typedef struct RuntimeUiContext {
     SDL_Window *window;
@@ -291,6 +295,11 @@ static int s_quickstate_slot=1;
 int runner_save_state_file(const char *path);
 int runner_load_state_file(const char *path);
 static const char *const s_mod_aspects[]={"Adaptive","16:9","21:9","32:9"};
+static const int s_hd_scales[]={1,2,4,8,16,32,64};
+static const char *const s_hd_labels[]={"Native","2x","4x","8x","16x","32x","64x"};
+static const RecompRuntimeUiItem s_hd_items[]={
+    {"video.internal_resolution","Video","Internal resolution (restart)","Applies next launch. Unsupported hardware keeps native presentation.",RECOMP_RUNTIME_UI_CHOICE,0,6,1,s_hd_labels,7,NULL}
+};
 static const RecompRuntimeUiItem s_video_mod_items[]={
     {"mods.widescreen.enabled","Mods","Widescreen","Opt-in custom scene renderer with expanded objects and screen-anchored HUD.",RECOMP_RUNTIME_UI_BOOL,0,1,1},
     {"mods.widescreen.aspect","Mods","Aspect ratio","Adaptive follows the whole window without a 32:9 cap.",RECOMP_RUNTIME_UI_CHOICE,0,3,1,s_mod_aspects,4}
@@ -310,10 +319,17 @@ static int runtime_ui_get(void *p, const RecompRuntimeUiItem *i, int *out) {
     else if (!strcmp(i->key,"mods.widescreen.enabled")) *out = game_video_viewport_enabled(g_game_spec.video);
     else if (!strcmp(i->key,"mods.widescreen.aspect")) *out = g_app_config.custom_aspect;
     else if (!strcmp(i->key,"states.slot")) *out = s_quickstate_slot;
+    else if (!strcmp(i->key,"video.internal_resolution")) {
+        *out=0;for(int n=0;n<7;++n)if(s_hd_scales[n]==g_app_config.internal_scale)*out=n;
+    }
     else return 0; return 1;
 }
 static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
     RuntimeUiContext *c = (RuntimeUiContext *)p;
+    if(!strcmp(i->key,"video.internal_resolution")) {
+        if(v<0||v>6)return 0;
+        g_app_config.internal_scale=s_hd_scales[v];return 1;
+    }
     if (!strcmp(i->key,"states.slot")) { if (v<1 || v>9) return 0; s_quickstate_slot=v; return 1; }
     if (!strncmp(i->key,"mods.widescreen.",16)) {
 #if GENESIS_HAS_RECOMP_NET
@@ -598,8 +614,13 @@ static void own_indexed_sink(void *user,int line,const uint8_t *indices,int widt
     (void)user;
     uint32_t *row=s_framebuf+(size_t)line*(size_t)MAX_SCREEN_WIDTH;
     genesis_pixels_expand(row,indices,width,palette,GVDP_OUTPUT_PALETTE_SIZE,0xff000000u);
+    uint32_t before[GVDP_MAX_WIDTH];
+    int check_overlay=s_hd_requested&&s_video_frame.adapter&&s_video_frame.adapter->overlay_scanline&&width<=GVDP_MAX_WIDTH;
+    if(check_overlay)memcpy(before,row,(size_t)width*4);
     if(s_video_frame.adapter && s_video_frame.adapter->overlay_scanline)
         s_video_frame.adapter->overlay_scanline(&g_machine.vdp,line,row,width);
+    if(check_overlay&&memcmp(before,row,(size_t)width*4))gvdp_hd_ineligible();
+    gvdp_hd_bind_palette((unsigned)line,palette,GVDP_OUTPUT_PALETTE_SIZE);
     s_screen_width=width;
 }
 static GenesisIndexedSink s_direct_pixels={NULL,own_scanline_sink,own_indexed_sink,own_indexed_accepts};
@@ -2797,6 +2818,8 @@ int main(int argc, char *argv[])
      * another available driver if D3D11 cannot initialize. */
     SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "direct3d11", SDL_HINT_DEFAULT);
 #endif
+    s_hd_scale=genesis_hd_scale((unsigned)g_app_config.internal_scale);
+    s_hd_requested=s_hd_scale>1||getenv("GENESIS_INTERNAL_SCALE")!=NULL;
 
     /* PRESENTVSYNC aligns each present to the display's vblank, which kills
      * the scroll tearing visible without it (notably on macOS/Metal). The
@@ -2806,7 +2829,7 @@ int main(int argc, char *argv[])
     Uint32 renderer_flags = SDL_RENDERER_ACCELERATED;
     if (!benchmark_frames && !runtime_uncapped)
         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, renderer_flags);
+    SDL_Renderer *renderer = genesis_hd_create_renderer(window,renderer_flags,s_hd_scale);
     if (!renderer) {
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     }
@@ -2836,6 +2859,8 @@ int main(int argc, char *argv[])
     }
     s_video_renderer = renderer;
     s_video_texture = &texture;
+    GenesisHdGpu *hd_gpu=NULL;
+    int hd_checked=0;
     {
         SDL_ScaleMode mode = SDL_ScaleModeNearest;
         if (SDL_GetTextureScaleMode(texture, &mode) == 0)
@@ -2878,17 +2903,17 @@ int main(int argc, char *argv[])
             RECOMP_RUNTIME_UI_VIEW_MODE_ADAPTIVE;
         if(game_video_has_viewport(g_game_spec.video)) {
             cfg.features &= ~RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE;
-            cfg.extra_items=s_video_mod_items;
-            cfg.extra_item_count=sizeof s_video_mod_items/sizeof s_video_mod_items[0];
         }
-        if (!g_game_spec.state_unavailable_reason ||
-            !g_game_spec.state_unavailable_reason()) {
-            static RecompRuntimeUiItem items[5]; unsigned count=0;
+        {
+            static RecompRuntimeUiItem items[6]; unsigned count=0;
             if (game_video_has_viewport(g_game_spec.video)) {
                 memcpy(items,s_video_mod_items,sizeof s_video_mod_items); count=2;
             }
-            memcpy(items+count,s_quickstate_items,sizeof s_quickstate_items);
-            cfg.extra_items=items; cfg.extra_item_count=count+3;
+            memcpy(items+count,s_hd_items,sizeof s_hd_items);++count;
+            if (!g_game_spec.state_unavailable_reason || !g_game_spec.state_unavailable_reason()) {
+                memcpy(items+count,s_quickstate_items,sizeof s_quickstate_items);count+=3;
+            }
+            cfg.extra_items=items;cfg.extra_item_count=count;
         }
         s_runtime_ui.ui = recomp_runtime_ui_create_standard(&cfg);
     }
@@ -2911,6 +2936,7 @@ int main(int argc, char *argv[])
      * The own backend has no clownmdemu instance — glue keeps s_emu NULL and
      * routes everything through g_machine. */
     glue_init(rom_raw, rom_raw_len);
+    gvdp_hd_enable(s_hd_requested);
 
     /* Audio arch overhaul: initialise our cycle-stamped YM2612 + PSG
      * instances. Safe to call on oracle too (init functions are idempotent
@@ -3261,6 +3287,9 @@ session_begin:;
         int overlay_request = 0;
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
+            if(ev.type==SDL_RENDER_TARGETS_RESET||ev.type==SDL_RENDER_DEVICE_RESET) {
+                genesis_hd_gpu_destroy(hd_gpu);hd_gpu=NULL;hd_checked=0;
+            }
             gamepad_handle_event(&ev);
 #if RECOMP_LAUNCHER
             if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE && !recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
@@ -3819,7 +3848,17 @@ session_begin:;
         const SDL_Rect *base_upload_rect =
             s_frame_texture_filtered ? NULL : &upload_rect;
         SDL_Texture *frame_texture = texture;
-        {
+        if(s_hd_requested&&!ui_open&&!netplay_peer_view_active()&&!s_video_frame.owner) {
+            if(!hd_checked){hd_gpu=genesis_hd_gpu_create(renderer,texture);hd_checked=1;
+                if(!hd_gpu)fprintf(stderr,"[HD_GPU] unavailable; native presentation retained\n");}
+            const GVDPRasterFrame *job=gvdp_hd_acquire();
+            if(job){if(job->width==(unsigned)s_screen_width&&job->height==(unsigned)s_screen_height){
+                SDL_Texture *enhanced=genesis_hd_gpu_render(hd_gpu,job,s_hd_scale,s_color_lut_on?&s_color_lut:NULL);
+                if(enhanced){SDL_SetTextureScaleMode(enhanced,s_frame_texture_filtered?SDL_ScaleModeLinear:SDL_ScaleModeNearest);
+                    frame_texture=enhanced;SDL_QueryTexture(enhanced,NULL,NULL,&src.w,&src.h);src.x=src.y=0;}
+            }gvdp_hd_release(job);}
+        }
+        if(frame_texture==texture) {
             static int peer_view_was_active = 0;
             int peer_view_is_active = netplay_peer_view_active();
             if (peer_view_is_active) {
@@ -4117,6 +4156,7 @@ session_begin:;
     glue_shutdown();
     audio_close();
     shadow_worker_cleanup();
+    genesis_hd_gpu_destroy(hd_gpu);
     SDL_DestroyTexture(peer_view_texture);
     SDL_DestroyTexture(texture);
     if (s_framebuf != s_native_storage) free(s_framebuf);

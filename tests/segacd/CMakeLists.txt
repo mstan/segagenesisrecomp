@@ -794,6 +794,7 @@ if(NOT CMAKE_CROSSCOMPILING)
           ../../runner/cd/machine.c ../../runner/cd/z80_native.c ../../runner/cd/segacd_coordinator.c
           ../../runner/cd/backup.c ../../runner/cd/audio_mix.c ../../runner/cd/audio_native.c ../../runner/cd/debug.c
           ../../runner/video/genesis_bus.c ../../runner/video/genesis_vdp.c
+          ../../runner/video/genesis_raster_jobs.c ../../runner/video/genesis_hd_gpu.c
           ../../runner/audio.c ../../runner/engine_worker.c ../../runner/host_stream.c ../../runner/persist_writer.c ../../runner/host_atomic_file.c
           ../../runner/audio/sn76489.c ../../runner/audio/ym2612_ymfm.cpp
           ../../runner/external/ymfm/src/ymfm_opn.cpp ../../runner/external/ymfm/src/ymfm_ssg.cpp
@@ -812,6 +813,7 @@ if(NOT CMAKE_CROSSCOMPILING)
         endforeach()
         option(GENESIS_ENGINE_WORKERS "Build optional persistent host workers" ON)
         target_compile_definitions(SonicCD PRIVATE ${native_definitions} _CRT_SECURE_NO_WARNINGS
+          GENESIS_HD_JOBS=1
           GENESIS_ENGINE_WORKERS=$<BOOL:${GENESIS_ENGINE_WORKERS}>)
         target_compile_features(SonicCD PRIVATE c_std_11 cxx_std_17)
         set(SEGACD_COMPACT_CATALOG_DIR "" CACHE PATH "Qualified generic compact catalog metadata; empty retains the original registry")

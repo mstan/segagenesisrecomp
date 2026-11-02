@@ -4,6 +4,9 @@
  * Z80, and our VDP, delivering V/H interrupts. Original implementation.
  */
 #include "genesis_machine.h"
+#if GENESIS_HD_JOBS
+#include "genesis_raster_jobs.h"
+#endif
 #ifdef GENESIS_Z80_RECOMP
 #include "../z80_recomp.h"
 #endif
@@ -322,6 +325,9 @@ size_t machine_rb_save(void *dst, size_t cap)
 int machine_rb_load(const void *src, size_t len)
 {
     if (!src || len != machine_rb_save(NULL, 0)) return 0;
+#if GENESIS_HD_JOBS
+    gvdp_hd_reset();
+#endif
     const uint8_t *i = (const uint8_t *)src;
     GVDP_BusReadWord br = g_machine.vdp.bus_read;
     void *bru = g_machine.vdp.bus_read_user;
