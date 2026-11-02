@@ -1,0 +1,876 @@
+{
+  "schema": "GenesisEngineAudioDevicePipeline1",
+  "original_id": "E23",
+  "issue": "beads-3z5k.21",
+  "campaign": "beads-2wy8.1",
+  "disposition": "whole selected bounded opportunity rejected after actual implementation/qualification; no new runtime/test/build selection retained",
+  "accepted_base": "fe66879a240fc408c88de42bc1f08c66deacc479",
+  "restored_head": "4191f5685f6b2402dcbea7e2cf321bc93755bd7f",
+  "restored_tree": "cdceab20c456df607f8799da28967f37109925d8",
+  "accepted_base_tree": "cdceab20c456df607f8799da28967f37109925d8",
+  "all_production_test_build_tree_exact": true,
+  "adopted_runtime": false,
+  "pr": null,
+  "prototypes": [
+    {
+      "source": "df15a7f9da43d048c13c81a3277103c85bc2a34c",
+      "runtime": "c6f20f2fadeb31d6b7c917ac04518981528820c5",
+      "design": "owned complete-frame base/CD mix and trusted coverage plus gain/float-ring block publication",
+      "decision": "RKA default adverse cost repeated; other mixed outcomes do not offset"
+    },
+    {
+      "source": "b6f641bbe9a2041c05704e2c70020245ae873afd",
+      "design": "generic identity master gain bypass to unchanged rab_push; retain owned CD frame and scaled fractional kernel",
+      "decision": "Final RKA balanced cycle costs adverse both paired orders with mixed CPU/drift; added machinery not justified"
+    }
+  ],
+  "distinct_matched_pairs": 10,
+  "actual_complete_runs": 20,
+  "cart_pairs": 8,
+  "CD_pairs": 2,
+  "per_game": {
+    "rka": {
+      "observations": [
+        {
+          "record": "native-qualification-r1.json",
+          "source": "df15a7f9da43d048c13c81a3277103c85bc2a34c",
+          "package": "E23-generated-frame-device-pipeline-r1",
+          "profile": "shadow-off",
+          "order": [
+            "A",
+            "B"
+          ],
+          "frames": 1800,
+          "cost_changes_pct": {
+            "cpu_seconds": 2.857142857142847,
+            "cpu_cycles": 3.2609242102586533,
+            "seconds": -0.29378705946565553
+          },
+          "baseline_drift_pct": null,
+          "samples": [
+            {
+              "arm": "A",
+              "binary": {
+                "bytes": 8801280,
+                "sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                "path": "G:\\Temp\\Codex\\genesis-engine-workers-20261031\\native-binaries-r3\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 1.640625,
+                "cpu_cycles": 8255055090,
+                "seconds": 30.104151
+              },
+              "path_counts": [],
+              "correctness_passed": true
+            },
+            {
+              "arm": "B",
+              "binary": {
+                "bytes": 8803328,
+                "sha256": "35e97ef5e980376b4db1b1c7b74734ab6e46f692bd23f396fccf2d3ea8ff65f2",
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-binaries-r1\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 1.6875,
+                "cpu_cycles": 8524246180,
+                "seconds": 30.0157089
+              },
+              "path_counts": [
+                [
+                  0,
+                  1800
+                ]
+              ],
+              "correctness_passed": true
+            }
+          ]
+        },
+        {
+          "record": "native-qualification-r1.json",
+          "source": "df15a7f9da43d048c13c81a3277103c85bc2a34c",
+          "package": "E23-generated-frame-device-pipeline-r1",
+          "profile": "shadow-on",
+          "order": [
+            "A",
+            "B"
+          ],
+          "frames": 1800,
+          "cost_changes_pct": {
+            "cpu_seconds": 0.0,
+            "cpu_cycles": -1.2141703934051118,
+            "seconds": 0.0020815915523941797
+          },
+          "baseline_drift_pct": null,
+          "samples": [
+            {
+              "arm": "A",
+              "binary": {
+                "bytes": 8801280,
+                "sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                "path": "G:\\Temp\\Codex\\genesis-engine-workers-20261031\\native-binaries-r3\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 2.109375,
+                "cpu_cycles": 9951995260,
+                "seconds": 30.0154946
+              },
+              "path_counts": [],
+              "correctness_passed": true
+            },
+            {
+              "arm": "B",
+              "binary": {
+                "bytes": 8803328,
+                "sha256": "35e97ef5e980376b4db1b1c7b74734ab6e46f692bd23f396fccf2d3ea8ff65f2",
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-binaries-r1\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 2.109375,
+                "cpu_cycles": 9831161080,
+                "seconds": 30.0161194
+              },
+              "path_counts": [
+                [
+                  0,
+                  1800
+                ]
+              ],
+              "correctness_passed": true
+            }
+          ]
+        },
+        {
+          "record": "native-qualification-r2.json",
+          "source": "df15a7f9da43d048c13c81a3277103c85bc2a34c",
+          "package": "E23-generated-frame-device-pipeline-r1",
+          "profile": "shadow-off",
+          "order": [
+            "B",
+            "A"
+          ],
+          "frames": 1800,
+          "cost_changes_pct": {
+            "cpu_seconds": 13.08411214953271,
+            "cpu_cycles": 0.8003439262484147,
+            "seconds": -0.0016614375581980312
+          },
+          "baseline_drift_pct": null,
+          "samples": [
+            {
+              "arm": "B",
+              "binary": {
+                "bytes": 8803328,
+                "sha256": "35e97ef5e980376b4db1b1c7b74734ab6e46f692bd23f396fccf2d3ea8ff65f2",
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-binaries-r1\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 1.890625,
+                "cpu_cycles": 8503089600,
+                "seconds": 30.015676
+              },
+              "path_counts": [
+                [
+                  0,
+                  1800
+                ]
+              ],
+              "correctness_passed": true
+            },
+            {
+              "arm": "A",
+              "binary": {
+                "bytes": 8801280,
+                "sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                "path": "G:\\Temp\\Codex\\genesis-engine-workers-20261031\\native-binaries-r3\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 1.671875,
+                "cpu_cycles": 8435575980,
+                "seconds": 30.0161747
+              },
+              "path_counts": [],
+              "correctness_passed": true
+            }
+          ]
+        },
+        {
+          "record": "native-qualification-r3.json",
+          "source": "b6f641bbe9a2041c05704e2c70020245ae873afd",
+          "package": "E23-identity-gain-bypass-pipeline-r2",
+          "profile": "shadow-off",
+          "order": [
+            "A",
+            "B",
+            "B",
+            "A"
+          ],
+          "frames": 1800,
+          "cost_changes_pct": {
+            "cpu_seconds": [
+              0.0,
+              -9.677419354838712
+            ],
+            "cpu_cycles": [
+              8.74809037344706,
+              3.704642370656197
+            ],
+            "seconds": [
+              0.17957248811129034,
+              -1.0841949153832187
+            ]
+          },
+          "baseline_drift_pct": {
+            "cpu_seconds": -8.148148148148149,
+            "cpu_cycles": -10.044827731295737
+          },
+          "samples": [
+            {
+              "arm": "A",
+              "binary": {
+                "bytes": 8801280,
+                "sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                "path": "G:\\Temp\\Codex\\genesis-engine-workers-20261031\\native-binaries-r3\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 2.109375,
+                "cpu_cycles": 9237859870,
+                "seconds": 30.0911351
+              },
+              "path_counts": [],
+              "correctness_passed": true
+            },
+            {
+              "arm": "B",
+              "binary": {
+                "bytes": 8802816,
+                "sha256": "518b3fc62ca7d91faeb02b3e6ebbd90ff22a046613f4c636a44111c7eb88b848",
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-binaries-r2\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 2.109375,
+                "cpu_cycles": 10045996200,
+                "seconds": 30.1451705
+              },
+              "path_counts": [
+                [
+                  0,
+                  0,
+                  1800
+                ]
+              ],
+              "correctness_passed": true
+            },
+            {
+              "arm": "B",
+              "binary": {
+                "bytes": 8802816,
+                "sha256": "518b3fc62ca7d91faeb02b3e6ebbd90ff22a046613f4c636a44111c7eb88b848",
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-binaries-r2\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 1.75,
+                "cpu_cycles": 8617786050,
+                "seconds": 30.0591506
+              },
+              "path_counts": [
+                [
+                  0,
+                  0,
+                  1800
+                ]
+              ],
+              "correctness_passed": true
+            },
+            {
+              "arm": "A",
+              "binary": {
+                "bytes": 8801280,
+                "sha256": "b0543fbd17b5fcceb98ddcd80ad1ea742d6d905329b5b7c2059705faab53a62f",
+                "path": "G:\\Temp\\Codex\\genesis-engine-workers-20261031\\native-binaries-r3\\rka\\RKARecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 1.9375,
+                "cpu_cycles": 8309932760,
+                "seconds": 30.3886225
+              },
+              "path_counts": [],
+              "correctness_passed": true
+            }
+          ]
+        }
+      ],
+      "decision": "Unresolved adverse default cycle cost repeats across both variants/orders; no supported retained win/nonregression. Reject package."
+    },
+    "sonic1": {
+      "observations": [
+        {
+          "record": "native-qualification-r1.json",
+          "source": "df15a7f9da43d048c13c81a3277103c85bc2a34c",
+          "package": "E23-generated-frame-device-pipeline-r1",
+          "profile": "shadow-off",
+          "order": [
+            "A",
+            "B"
+          ],
+          "frames": 900,
+          "cost_changes_pct": {
+            "cpu_seconds": -6.000000000000005,
+            "cpu_cycles": -0.9685913313029482,
+            "seconds": -0.0012899481096839693
+          },
+          "baseline_drift_pct": null,
+          "samples": [
+            {
+              "arm": "A",
+              "binary": {
+                "bytes": 5435904,
+                "sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                "path": "G:\\Temp\\Codex\\genesis-engine-workers-20261031\\native-binaries-r3\\sonic1\\SonicTheHedgehogRecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 0.78125,
+                "cpu_cycles": 3680745310,
+                "seconds": 15.0006034
+              },
+              "path_counts": [],
+              "correctness_passed": true
+            },
+            {
+              "arm": "B",
+              "binary": {
+                "bytes": 5437440,
+                "sha256": "698c002f2475681b3d70c3af26e1cdc0ace5ee7ec7d222bb2c64893c8a7b934c",
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-binaries-r1\\sonic1\\SonicTheHedgehogRecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 0.734375,
+                "cpu_cycles": 3645093930,
+                "seconds": 15.0004099
+              },
+              "path_counts": [
+                [
+                  0,
+                  900
+                ]
+              ],
+              "correctness_passed": true
+            }
+          ]
+        },
+        {
+          "record": "native-qualification-r1.json",
+          "source": "df15a7f9da43d048c13c81a3277103c85bc2a34c",
+          "package": "E23-generated-frame-device-pipeline-r1",
+          "profile": "shadow-on",
+          "order": [
+            "A",
+            "B"
+          ],
+          "frames": 900,
+          "cost_changes_pct": {
+            "cpu_seconds": 22.222222222222232,
+            "cpu_cycles": -1.55730070093274,
+            "seconds": -0.004762343398800883
+          },
+          "baseline_drift_pct": null,
+          "samples": [
+            {
+              "arm": "A",
+              "binary": {
+                "bytes": 5435904,
+                "sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                "path": "G:\\Temp\\Codex\\genesis-engine-workers-20261031\\native-binaries-r3\\sonic1\\SonicTheHedgehogRecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 0.703125,
+                "cpu_cycles": 4527184760,
+                "seconds": 15.0010182
+              },
+              "path_counts": [],
+              "correctness_passed": true
+            },
+            {
+              "arm": "B",
+              "binary": {
+                "bytes": 5437440,
+                "sha256": "698c002f2475681b3d70c3af26e1cdc0ace5ee7ec7d222bb2c64893c8a7b934c",
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-binaries-r1\\sonic1\\SonicTheHedgehogRecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 0.859375,
+                "cpu_cycles": 4456682880,
+                "seconds": 15.0003038
+              },
+              "path_counts": [
+                [
+                  0,
+                  900
+                ]
+              ],
+              "correctness_passed": true
+            }
+          ]
+        },
+        {
+          "record": "native-qualification-r2.json",
+          "source": "df15a7f9da43d048c13c81a3277103c85bc2a34c",
+          "package": "E23-generated-frame-device-pipeline-r1",
+          "profile": "shadow-on",
+          "order": [
+            "B",
+            "A"
+          ],
+          "frames": 900,
+          "cost_changes_pct": {
+            "cpu_seconds": -18.42105263157895,
+            "cpu_cycles": -0.5938110142581388,
+            "seconds": -0.1305310207449173
+          },
+          "baseline_drift_pct": null,
+          "samples": [
+            {
+              "arm": "B",
+              "binary": {
+                "bytes": 5437440,
+                "sha256": "698c002f2475681b3d70c3af26e1cdc0ace5ee7ec7d222bb2c64893c8a7b934c",
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-binaries-r1\\sonic1\\SonicTheHedgehogRecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 0.96875,
+                "cpu_cycles": 5097897770,
+                "seconds": 15.00142
+              },
+              "path_counts": [
+                [
+                  0,
+                  900
+                ]
+              ],
+              "correctness_passed": true
+            },
+            {
+              "arm": "A",
+              "binary": {
+                "bytes": 5435904,
+                "sha256": "64ba3493a243e731d18425ac1f49034801a13260ffe6d7679ed48fc49a83e245",
+                "path": "G:\\Temp\\Codex\\genesis-engine-workers-20261031\\native-binaries-r3\\sonic1\\SonicTheHedgehogRecomp.exe"
+              },
+              "cost": {
+                "cpu_seconds": 1.1875,
+                "cpu_cycles": 5128350480,
+                "seconds": 15.0210271
+              },
+              "path_counts": [],
+              "correctness_passed": true
+            }
+          ]
+        }
+      ],
+      "decision": "Mixed/neutral-inconclusive; apparent shadow CPU adverse reverses, cannot offset RKA."
+    },
+    "sonic_cd": {
+      "observations": [
+        {
+          "record": "game-e23-frame-pipeline-r1.json",
+          "source": "df15a7f9da43d048c13c81a3277103c85bc2a34c",
+          "order": [
+            "A",
+            "B"
+          ],
+          "cost_changes_pct": {
+            "cpu_seconds": [
+              4.699738903394257
+            ],
+            "cycles": [
+              0.8714845963181617
+            ]
+          },
+          "samples": [
+            {
+              "arm": "A",
+              "binary": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031\\cd-binaries\\candidate-r3\\SonicCD.exe",
+                "bytes": 115823616,
+                "sha256": "9d0c46250badf817875d421fc6f143085321ea13235cec4dca1db88eb1fdf83c"
+              },
+              "cost": {
+                "cpu_seconds": 5.984375,
+                "cycles": 29380885340
+              },
+              "wall_seconds": 20.305009300005622,
+              "path_counts": [],
+              "correctness_passed": true
+            },
+            {
+              "arm": "B",
+              "binary": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\cd-binaries\\candidate-r1\\SonicCD.exe",
+                "bytes": 115827712,
+                "sha256": "c2b6f67a8122b1b344af9dc267f083bb918da61319e94da1f7b75a8caebcc68e"
+              },
+              "cost": {
+                "cpu_seconds": 6.265625,
+                "cycles": 29636935230
+              },
+              "wall_seconds": 20.316133699991042,
+              "path_counts": [
+                [
+                  11196766,
+                  2999
+                ]
+              ],
+              "correctness_passed": true
+            }
+          ]
+        },
+        {
+          "record": "game-e23-frame-pipeline-r2.json",
+          "source": "df15a7f9da43d048c13c81a3277103c85bc2a34c",
+          "order": [
+            "B",
+            "A"
+          ],
+          "cost_changes_pct": {
+            "cpu_seconds": [
+              -4.218362282878408
+            ],
+            "cycles": [
+              -4.104111829928392
+            ]
+          },
+          "samples": [
+            {
+              "arm": "B",
+              "binary": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\cd-binaries\\candidate-r1\\SonicCD.exe",
+                "bytes": 115827712,
+                "sha256": "c2b6f67a8122b1b344af9dc267f083bb918da61319e94da1f7b75a8caebcc68e"
+              },
+              "cost": {
+                "cpu_seconds": 6.03125,
+                "cycles": 27796779480
+              },
+              "wall_seconds": 20.29382289998466,
+              "path_counts": [
+                [
+                  11196766,
+                  2999
+                ]
+              ],
+              "correctness_passed": true
+            },
+            {
+              "arm": "A",
+              "binary": {
+                "path": "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031\\cd-binaries\\candidate-r3\\SonicCD.exe",
+                "bytes": 115823616,
+                "sha256": "9d0c46250badf817875d421fc6f143085321ea13235cec4dca1db88eb1fdf83c"
+              },
+              "cost": {
+                "cpu_seconds": 6.296875,
+                "cycles": 28986414340
+              },
+              "wall_seconds": 20.2571067000099,
+              "path_counts": [],
+              "correctness_passed": true
+            }
+          ]
+        }
+      ],
+      "decision": "Mixed/neutral-inconclusive; no established general gain; source2 CD built only, not tested."
+    }
+  },
+  "focused_contract_checks": 5,
+  "passing_check_executions": 10,
+  "portable_adoption_checks": "Win32 job prepared but unrun after rejection; no portable prototype qualification claim",
+  "unit_binary_relocations": {
+    "r2:segacd_audio_native_test": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r2\\segacd_audio_native_test.exe",
+      "sha256": "bdb2e584f7ccc428e4eeba8d7286dc4577489200af5df0fd62da474c50e38ba8",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\cd\\Release\\segacd_audio_native_test.exe"
+    },
+    "r2:segacd_audio_mix_test": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r2\\segacd_audio_mix_test.exe",
+      "sha256": "e549e793e9dae8bc17eb6cd5b835c19ac27bf4dbddc414e5860c31bd540be06d",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\cd\\Release\\segacd_audio_mix_test.exe"
+    },
+    "r2:audio_extra_test": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r2\\audio_extra_test.exe",
+      "sha256": "075615949aee1bb81c093911778c3628ac65da9ad972dbcb23f3fc83c14e01d6",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\Release\\audio_extra_test.exe"
+    },
+    "r2:audio_drc_test": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r2\\audio_drc_test.exe",
+      "sha256": "1d1d049a3cff58f43d22ea8519245bbe54505b6543dcdea8a2db86bf1eb0dc14",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\Release\\audio_drc_test.exe"
+    },
+    "r3:audio_pipeline_test.exe": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r3\\audio_pipeline_test.exe",
+      "sha256": "9fb2bc8be8ca7dbc352d82ebad75a9dc88e8416a7f63b5cfa5c326114f800894",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\Release\\audio_pipeline_test.exe"
+    },
+    "r4:audio_extra_test.exe": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r4\\audio_extra_test.exe",
+      "sha256": "78d47e68ba77826bf5b317c7b19c903b135871d4f064af8af11ebb5df7d07c51",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\Release\\audio_extra_test.exe"
+    },
+    "r4:audio_pipeline_test.exe": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r4\\audio_pipeline_test.exe",
+      "sha256": "26db65a43cea098348574a8bdfe5577d2984eaa5f5449086ceccb28492a99297",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\Release\\audio_pipeline_test.exe"
+    },
+    "r5:audio_drc_test.exe": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r5\\audio_drc_test.exe",
+      "sha256": "be8f481e6e9ae54b903173b957427f03f7f0da3ce6b689cfea1ba7d415430ab3",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\Release\\audio_drc_test.exe"
+    },
+    "r5:audio_extra_test.exe": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r5\\audio_extra_test.exe",
+      "sha256": "1c2aef1f04bed82e7e85bdd3204d3069df6762a53d75af8c46b4738ab9194288",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\Release\\audio_extra_test.exe"
+    },
+    "r5:audio_pipeline_test.exe": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r5\\audio_pipeline_test.exe",
+      "sha256": "135452f4d38f6201fcd3c8eff6f94e22e081f6581dec8a13d8401c72edecec48",
+      "original_path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-build-r1\\Release\\audio_pipeline_test.exe"
+    }
+  },
+  "unit_sdl_dependency": {
+    "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-support\\SDL2.dll",
+    "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677"
+  },
+  "profile_binary_copy_cleanup": "Each native run.binary.path/sha256 points to retained source package; per-run duplicate bin copies removed after settings.ini preserved in profile root. Original private ROM/input files retained.",
+  "built_preparation_only": {
+    "source2_cd": {
+      "package": "E23-identity-gain-bypass-pipeline-r2",
+      "source": "b6f641bbe9a2041c05704e2c70020245ae873afd",
+      "scope": "Full consistent E22 engine and pinned core headers; unchanged qualified consumer catalogs/native archive/UI/toolchain 19.41; no runtime acceptance from build.",
+      "commands": [
+        [
+          "G:\\Temp\\Codex\\genesis-engine-render-reuse-20261030-server\\consumers\\cd-portable\\tools\\cmake\\bin\\cmake.exe",
+          "--build",
+          "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\build-cd",
+          "--target",
+          "SonicCD",
+          "--parallel",
+          "1"
+        ]
+      ],
+      "baseline_input_record": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-cd-audio-spans-20261031-server\\cd-builds-r3.json",
+        "sha256": "c7c920d911a0e52418720422dd0ed7bf59b1a82e3f45456b4fd5d92b66c27c7b"
+      },
+      "patched_source": {
+        "runner/audio.c": "ca9a860c47bf826c57db7cc3bd28695d3a63f9c1bf23b078fdc92e2664044556",
+        "runner/audio.h": "44fbfdc9ee7f8edfbda5974bc1cce9631518b250880d2bf1dee7693a2865d665",
+        "runner/recomp_audio_drc.h": "4ebe7e41a085c0d84d9b708ce8d69ffc852719fcdfa2d16097fe290969118ea9",
+        "runner/cd/audio_mix.c": "20417133cd7bedbfd0f66132f7d9c06c85a69b6fd0746c8eaeecf46ad1fe07ce",
+        "runner/cd/audio_mix.h": "b233e029702861e8fb0f4f230361d682482566a029a1d15be38fac16ee3418ee",
+        "runner/cd/audio_native.c": "dc641fd2302be106f97628fe74d5c7a3fdb4d58da8ef17fc641cab03c0671da9"
+      },
+      "packages": {
+        "candidate": {
+          "binary": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031-server\\cd-binaries\\candidate-r2\\SonicCD.exe",
+          "sha256": "0a05509e357dc8970987d4d5bab7f4f738b5037ff14e1e4e03b071d1e132bf4a",
+          "bytes": 115827712,
+          "seconds": 92.11000000033528
+        }
+      }
+    },
+    "source2_sonic1": "Compiled in native-builds-r2.json but not runtime-tested; RKA already disqualifies package"
+  },
+  "records": {
+    "unit-tests-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-tests-r2.json",
+      "sha256": "e9edc39b02e105381cccc80a8122c60e3fdafef35c96ece986cfd69f05285837",
+      "bytes": 1581
+    },
+    "unit-tests-r3.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-tests-r3.json",
+      "sha256": "ada22a575d06f12f4080df9d72cf248fa5576c4ec19385671b826d95789c4b8e",
+      "bytes": 1327
+    },
+    "unit-tests-r4.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-tests-r4.json",
+      "sha256": "cb56eaac253ed2061b2140e0f94045a31fa6a3d67476b0ec29f63ba70f2b760b",
+      "bytes": 1537
+    },
+    "unit-tests-r5.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-tests-r5.json",
+      "sha256": "2e974407b75fc0a8597ac64439b5e511f1d28bc9580f3b4efce60e4cbf855f60",
+      "bytes": 1743
+    },
+    "unit-binaries-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\unit-binaries-r2.json",
+      "sha256": "285153c08650018b83a1146d93f49a98b34b55880e17b29f339220a3c2b94e7d",
+      "bytes": 1488
+    },
+    "native-builds-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-builds-r1.json",
+      "sha256": "61d54870d708c57e4488ba62619c7137e49c64131c8332fc1f7471d1226fe8c5",
+      "bytes": 6280
+    },
+    "native-builds-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-builds-r2.json",
+      "sha256": "da43a80cbed07113cd35034da2d2ad3cfdf6ea1c0ee2dc9507b5dee9409f3e58",
+      "bytes": 6288
+    },
+    "native-qualification-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-qualification-r1.json",
+      "sha256": "ea85f54a963ad4dd2975d992c4221d1c0756a2b2d67a18f3a524bfebc4df8498",
+      "bytes": 81435
+    },
+    "native-qualification-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-qualification-r2.json",
+      "sha256": "0e608772e993c6f9cb8c32255717f03d96d913f15c52c18d31576d65e6a81363",
+      "bytes": 47537
+    },
+    "native-qualification-r3.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\native-qualification-r3.json",
+      "sha256": "f2a1cea913623de45ee47504066c44bd10f10ac77a3e0ec3034c281651acf8f3",
+      "bytes": 45515
+    },
+    "cd-builds-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\cd-builds-r1.json",
+      "sha256": "d20fd947cbbe0138b94be2f77882fc4250cf4e5ed3549d2dae1eab05d4571518",
+      "bytes": 1740
+    },
+    "cd-builds-local-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\cd-builds-local-r1.json",
+      "sha256": "3fa93d8fb0fb89d755458c49ffbba9de30bf46739d1e232c0944ecde4533c481",
+      "bytes": 2339
+    },
+    "cd-builds-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\cd-builds-r2.json",
+      "sha256": "b052ef06067aef8eba8122834b4dca3f4dd7becf51fb6bfa538be87623150e00",
+      "bytes": 1739
+    },
+    "game-e23-frame-pipeline-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\game-e23-frame-pipeline-r1.json",
+      "sha256": "c452ffb2a5b1f91b987de1f51988d0939f43461b74d57e1f2749c4594ee6ad26",
+      "bytes": 480650
+    },
+    "game-e23-frame-pipeline-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\game-e23-frame-pipeline-r2.json",
+      "sha256": "6d17b78f37a9fc9a01200f58014e76eea0206daeb5d37b8e7056e969c99a81a2",
+      "bytes": 480620
+    },
+    "cd-cache-restored.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\cd-cache-restored.json",
+      "sha256": "573be0ab8167f0391f22cb7b30e7dee84cd2b69ba202a90aff269d824cb28847",
+      "bytes": 2887
+    },
+    "cleanup-local.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\cleanup-local.json",
+      "sha256": "444ff9135a600d87f8025fa53a458830c5d1819c081493b601dd36f39919ca4a",
+      "bytes": 11840
+    },
+    "cleanup-server.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\cleanup-server.json",
+      "sha256": "a6e936547069cff8734ad1e1f1ce81450126cc1ad0bb207568576adb1bc8d52a",
+      "bytes": 675
+    },
+    "cleanup-private-copy.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\cleanup-private-copy.json",
+      "sha256": "e286aba47b9260542c9f4870c7fc05ac9fffb625f32947a82741296932498ba3",
+      "bytes": 276
+    },
+    "capacity-cd-build-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-cd-build-r1.json",
+      "sha256": "5672c4ee9495033abf51334264f6bd7c5b4f11c128b00d9e5fbc6c7aa43ebf10",
+      "bytes": 3261
+    },
+    "capacity-cd-build-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-cd-build-r2.json",
+      "sha256": "718a2b60a567b4732df0707f0f384b1cf67c258518c33e598c5b82c135915a01",
+      "bytes": 3237
+    },
+    "capacity-cd-cache-restore.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-cd-cache-restore.json",
+      "sha256": "9bf507a6be0f21843c580184deaf014bfbffa83718206e8db51f366356282b13",
+      "bytes": 3232
+    },
+    "capacity-cd-runtime-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-cd-runtime-r1.json",
+      "sha256": "95edccf91ab3321d3e16eda261ca44e2312cd0c92adb85d3b29d7ed67e57da77",
+      "bytes": 3387
+    },
+    "capacity-cd-runtime-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-cd-runtime-r2.json",
+      "sha256": "2f7b7c715f7ef9e20dbd1a2b5da75fc1de8a8d5887351d63c8da24c6a0fb75eb",
+      "bytes": 3401
+    },
+    "capacity-native-build-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-native-build-r1.json",
+      "sha256": "03713858abd5c6ca4f052b2b2e0c5ad9846bf264cb233884955c92d08ad4e688",
+      "bytes": 3410
+    },
+    "capacity-native-build-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-native-build-r2.json",
+      "sha256": "10b0905414402b6a12717b523704170a642aa1f12d5238f8f68e20076f29148c",
+      "bytes": 3386
+    },
+    "capacity-native-build-r3.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-native-build-r3.json",
+      "sha256": "1726f909d12e5a599198990a3b012a4f86fccdb98339d3acfee7ba5e2663fc9f",
+      "bytes": 3386
+    },
+    "capacity-native-runtime-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-native-runtime-r1.json",
+      "sha256": "966c49891fbfe2bd9c3ace8cd4f9e67f2ae49ea333d0709a223e8aa894bee274",
+      "bytes": 3396
+    },
+    "capacity-native-runtime-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-native-runtime-r2.json",
+      "sha256": "79e1f7d1a30d66b4ca819310505d1e0df1edaa0ff0f60019ce612388c4bcbb4d",
+      "bytes": 3389
+    },
+    "capacity-native-runtime-r3.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-native-runtime-r3.json",
+      "sha256": "84aa764a82e7fa7a0604d7225c86e6497cdc70b248011ab9704c1cc814b702e5",
+      "bytes": 3400
+    },
+    "capacity-unit-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-unit-r1.json",
+      "sha256": "f257a2e9c7803b5c4b1babc4a618de879cb5f48dfbb1acd9db6a4710ec0c566d",
+      "bytes": 3377
+    },
+    "capacity-unit-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-unit-r2.json",
+      "sha256": "d2ba20c5ba5f1d797807ad7a879ca831c66ebbbb27925665131cf31452df6738",
+      "bytes": 3411
+    },
+    "capacity-unit-r3.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-unit-r3.json",
+      "sha256": "9aa11d1ce89b2da3b62970f2e545341f42961c6ad29b4041815b74e896131965",
+      "bytes": 3413
+    },
+    "capacity-unit-r4.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-unit-r4.json",
+      "sha256": "f6f8c0f649b9fe8c1d1446d8d07eb587302e055b4185106ed8275904d82588f5",
+      "bytes": 3392
+    },
+    "capacity-unit-r5.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031\\capacity-unit-r5.json",
+      "sha256": "572145f0a6984aa4ef194850c442c642d9a1c657675d74c3d2e1056a0f67e2c1",
+      "bytes": 3407
+    }
+  },
+  "cleanup": {
+    "removed_bytes": 583190637,
+    "shared_cache": "Six S22 source overlays match accepted fe668 Git bytes; original graph rebuilt, cache retained for immediate E24 reuse; oldS16 untouched",
+    "cleanup_due": "Retained shared build scratch cleaned after campaign integration; preserve raw evidence/selected PEs/configurations"
+  },
+  "raw_root": "G:\\Temp\\Codex\\genesis-engine-audio-device-pipeline-20261031",
+  "final_review": "Independent source/records/cleanup gate accepted; final issue closure and central durability verified in Beads/reviewer handoff before E24.",
+  "next_original": "E24 only after reviewer final durable instruction; no further E23 timing/tuning",
+  "no_owner_launch_merge_release": true,
+  "independent_review": {
+    "ENGINE_AUDIO_DEVICE_PIPELINE_REVIEW.md": {
+      "sha256": "420838bc7ab0610774b6b2cf597503b77031ba3d8e19f6a8cae80e2e3822ed03"
+    },
+    "engine-audio-device-pipeline-review.json": {
+      "sha256": "6a14a81eafab9915b5856aaa1182748f11a60142bd03e3d6ae89d2a8f07238e0"
+    }
+  }
+}

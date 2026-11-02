@@ -1,0 +1,248 @@
+{
+  "schema": "genesis-e25-constant-sources-v1",
+  "date": "2026-11-01",
+  "issue": "beads-3z5k.23",
+  "campaign": "beads-2wy8.1",
+  "pr": "https://github.com/mstan/segagenesisrecomp/pull/53",
+  "branch": "codex/engine-source-constant-spans-20261031",
+  "base": "9977e32e52f89cd6508ade09a97931c729ac04c1",
+  "production": "782b70903f263d5e1569104bac4c48b1c020e440",
+  "qualified": true,
+  "disposition": "bounded-delivered-modest-observed-CD-gain",
+  "conclusion": "Exact recorded behavior; Sonic CD cycles lower2.2425%/3.8610%, CPU0%/3.6117% lower. Two matched ambient SERVER pairs; not universal FPS/global/RAM improvement.",
+  "contract": [
+    "Implicit rational PCM/CDDA run preserves every logical timestamp/sample/counter/capacity and interpolation anchor",
+    "Device bulk advances preserve phase/address/loop/FIFO/fader/underflow and future audible state; moving muted voices and unproved cases retain original kernel",
+    "Read-only constant reservation and commit; physical regular/opaque/stale/reentrant/declined fallback retained",
+    "Source-to-logical-queue-to-constant-window path; clipping once after combined sources and base; exact next/last anchors"
+  ],
+  "costs": {
+    "extra_descriptor_bytes_per_queue": 32,
+    "original_physical_slots_per_source_retained": 4096,
+    "no_RAM_saving_claim": true,
+    "additional_owned_sink_pointer_per_source": true,
+    "extra_stack_grant_bytes": 32,
+    "new_worker_or_allocation": false
+  },
+  "unit_checks": [
+    {
+      "arch": "x64",
+      "source": "782b70903f263d5e1569104bac4c48b1c020e440",
+      "record": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-tests-r4.json",
+      "sha256": "dae183ab5ae23da4bc8e1f0f6fb03dbef94456ee3ec34a3c0c5a8eb6f4f5f9a8",
+      "binaries": [
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-x64\\segacd_audio_source_span_test.exe",
+          "sha256": "f834022c46e9ef8d3378742bb57c8f6fc35a388ca8dc853890adb9dd3df4335d",
+          "machine": "0x8664"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-x64\\segacd_audio_mix_test.exe",
+          "sha256": "fe757439d644bda4bf4ccdf539691b5e37f34a106723d0ee2759c2ffacce0cce",
+          "machine": "0x8664"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-x64\\segacd_audio_native_test.exe",
+          "sha256": "60842a9771492b243e425ac830620a070f55a4aa21725dd1c1101f4adb79194d",
+          "machine": "0x8664"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-x64\\segacd_cdda_test.exe",
+          "sha256": "53a2a44fca0d463460052e2c9a5a02ca6b4ad10cc28bd37fed9241160d0e4d61",
+          "machine": "0x8664"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-x64\\segacd_fader_test.exe",
+          "sha256": "dc91925375f5ace4bc7a1e565020af8d4bb902b8a0c444a98517d7ac0115b47d",
+          "machine": "0x8664"
+        }
+      ]
+    },
+    {
+      "arch": "win32",
+      "source": "782b70903f263d5e1569104bac4c48b1c020e440",
+      "record": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-tests-win32-r1.json",
+      "sha256": "d2b2bafc1a7811a7e99e324ad3400d5b7d1d5ad75aceaea39840f2230c1090b9",
+      "binaries": [
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-win32\\segacd_audio_source_span_test.exe",
+          "sha256": "9b64ba8d92cafdf4ceedb63d80632df9cb4acaa8ef978610f56f0b9f1ff8eaf7",
+          "machine": "0x14c"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-win32\\segacd_audio_mix_test.exe",
+          "sha256": "629a86ee481a0be17dfc7245832482843fc3532baa6f58cf4d15403526e2dff7",
+          "machine": "0x14c"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-win32\\segacd_audio_native_test.exe",
+          "sha256": "d0765b0785097e02dca916235e4499a8d2b4f38345dd9165a886c99c273ebbe1",
+          "machine": "0x14c"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-win32\\segacd_cdda_test.exe",
+          "sha256": "c87f21e1694e24ddd60bf448e39cf9e3a852eccfcac0079ebae921af40249bc3",
+          "machine": "0x14c"
+        },
+        {
+          "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\unit-binaries-win32\\segacd_fader_test.exe",
+          "sha256": "21131819da43c3b4d271a2e8897ded519df8f5186026b5f5bcc770e6fd7a71c9",
+          "machine": "0x14c"
+        }
+      ]
+    }
+  ],
+  "frozen_reference": {
+    "source": "9977e32e52f89cd6508ade09a97931c729ac04c1:runner/cd/audio_mix.c",
+    "sha256": "851a753aaa5f838792d6b5311dea7203bde64b99518dd2fa408c6d40beb3a9d0",
+    "contract": "Expanded logical frames plus every nonstorage field and future rendering, full device states. Physical storage/dead slots may differ."
+  },
+  "game_pairs": [
+    {
+      "host": "SERVER",
+      "order": [
+        "A",
+        "B"
+      ],
+      "baseline_cost": {
+        "cpu_seconds": 13.75,
+        "cycles": 46919987071
+      },
+      "candidate_cost": {
+        "cpu_seconds": 13.75,
+        "cycles": 45867804202
+      },
+      "reduction_pct": {
+        "cpu_seconds": 0.0,
+        "cycles": 2.2425046013073713
+      },
+      "correctness_exact": true,
+      "constants": [
+        [
+          1555347,
+          1555347,
+          984144,
+          984146
+        ]
+      ],
+      "raw": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\game-e25-constant-source-r1-server.json",
+      "raw_sha256": "68ce5121f8b75aa7e5a708ec8d8c597b6dc4927bcd3aaa6d3b5e767c764327c4",
+      "remote_raw": "server:G:/Temp/Codex/genesis-engine-source-constant-spans-20261031-server/game-e25-constant-source-r1-server.json",
+      "fixed_affinity": {
+        "host": "SERVER",
+        "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031-server\\game-e25-constant-source-r1-server\\core-headroom.json",
+        "sha256": "47d1e72a88018b57d3563ee04cea5bc3673df34f233b46483bf266b0d92a2b2c",
+        "logical_cpu": 3,
+        "mask": 8
+      },
+      "local_affinity": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\core-headroom-r1-server.json",
+      "scope": "Paced actual Sonic CD process CPU/cycles from frame1800 through3000, including identical checkpoint inspection/capture work; not uncapped throughput or FPS"
+    },
+    {
+      "host": "SERVER",
+      "order": [
+        "B",
+        "A"
+      ],
+      "baseline_cost": {
+        "cpu_seconds": 13.84375,
+        "cycles": 47667515474
+      },
+      "candidate_cost": {
+        "cpu_seconds": 13.34375,
+        "cycles": 45827096338
+      },
+      "reduction_pct": {
+        "cpu_seconds": 3.6117381489842004,
+        "cycles": 3.860950413922548
+      },
+      "correctness_exact": true,
+      "constants": [
+        [
+          1555347,
+          1555347,
+          984144,
+          984146
+        ]
+      ],
+      "raw": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\game-e25-constant-source-r2-server.json",
+      "raw_sha256": "173e49b51b3c8a53980460a757c018838ae37a70fe6f097d5562bd8f3c416e37",
+      "remote_raw": "server:G:/Temp/Codex/genesis-engine-source-constant-spans-20261031-server/game-e25-constant-source-r2-server.json",
+      "fixed_affinity": {
+        "host": "SERVER",
+        "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031-server\\game-e25-constant-source-r2-server\\core-headroom.json",
+        "sha256": "814ec5dfe80b99580b4982bcc2a908a9e7126921ecf44f41135c993c0b19f18b",
+        "logical_cpu": 3,
+        "mask": 8
+      },
+      "local_affinity": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\core-headroom-r2-server.json",
+      "scope": "Paced actual Sonic CD process CPU/cycles from frame1800 through3000, including identical checkpoint inspection/capture work; not uncapped throughput or FPS"
+    }
+  ],
+  "actual_game_runs": 4,
+  "current_candidate": {
+    "path": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\cd-binaries\\candidate-r2\\SonicCD.exe",
+    "sha256": "197fa9141cd8408715ca4b4bd989dbaa715e6e472ec022c52275550c2dc79e69",
+    "SDL2_sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+    "config": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\cd-candidate-r2-CMakeCache.txt"
+  },
+  "baseline": {
+    "binary": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\cd-binaries\\candidate-r2\\SonicCD.exe",
+    "sha256": "75ea09e2cf1829e121f94a64fed9fd6b53bdcf0fa5c15e48d96bfe35ebe6a3c3",
+    "bytes": 115826176,
+    "seconds": 61.734999999869615,
+    "server_binary": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031-server\\cd-binaries\\candidate-r2\\SonicCD.exe"
+  },
+  "inherited_cartridges": {
+    "package": "accepted E24 only; no E25 CD path applied, no new E25 cartridge tests claimed",
+    "record": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-builds-r2.json",
+    "sha256": "a03fc9e3bc7f8ab457e1475b91c8793488a2c4cfa4f8188ad34fb695da39f758",
+    "games": {
+      "rka": {
+        "RKARecomp.exe": {
+          "bytes": 8803840,
+          "sha256": "6b2a4426f8784a4e15bd978f14d1d47f1d9e11e4ca5ac67f14b226160ff8da1a",
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-binaries-r2\\rka\\RKARecomp.exe"
+        },
+        "SDL2.dll": {
+          "bytes": 2500096,
+          "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-binaries-r2\\rka\\SDL2.dll"
+        }
+      },
+      "sonic1": {
+        "SDL2.dll": {
+          "bytes": 2500096,
+          "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-binaries-r2\\sonic1\\SDL2.dll"
+        },
+        "SonicTheHedgehogRecomp.exe": {
+          "bytes": 5438464,
+          "sha256": "f0c0e3aff1d1c70b19b7fa9fd29844019bf26a7178c38b757461b23bc347c573",
+          "path": "G:\\Temp\\Codex\\genesis-engine-audio-buffer-ownership-20261031\\native-binaries-r2\\sonic1\\SonicTheHedgehogRecomp.exe"
+        }
+      }
+    }
+  },
+  "build": {
+    "record": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\cd-builds-r2.json",
+    "sha256": "3dc30ac963c04d87ed65a501a9160c309f069787b2e8daaa250359884d8e9f3a",
+    "dependency_rebuild_log": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\cd-build-r1.log",
+    "native_archive_contract": "10957 native sources:10956 generic M68k module/operation sources plus1Z80 step. Generic CPU headers/pins unchanged; no SegaCDIO layout in archive ABI. Live IO/coordinator/machine users recompiled through existing Ninja dependencies."
+  },
+  "limits": [
+    "Measured paced process cost1800?3000 including identical checkpoint work; frozen correctness provenance separately retained",
+    "Normal100percent gain into silent SDLdummy; no physical-device jitter/deadline claim or new physical matrix",
+    "CD current-build save/load/rollback not claimed; cartridge accepted E24 evidence inherited",
+    "No owner launch, merge or release; combined owner visual/play handoff remains"
+  ],
+  "cleanup": {
+    "state": "complete",
+    "local_audit": "C:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\cleanup-audit.json",
+    "server_audit": "G:\\Temp\\Codex\\genesis-engine-source-constant-spans-20261031\\remote-cleanup-audit.json",
+    "local_removed_bytes": 10914035,
+    "server_removed_bytes": 355029310,
+    "total_removed_bytes": 365943345,
+    "retained": "Local current CD PE/DLL/config,10 final unitPEs/config/details, source/scripts and small raw records; complete per-game logs/PNGs/WAVs/settings remain on SERVER. Shared S22 engine/build and existing PORTABLE input/native/SDK cache retained for next serial item; campaign-end cleanup obligation."
+  }
+}

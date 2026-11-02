@@ -2,6 +2,18 @@
 #include "sector.h"
 #include <string.h>
 
+/* Qualification switch for matched built-runtime measurements, not a setting. */
+#ifndef SEGACD_DMA_IDLE_SPANS
+#define SEGACD_DMA_IDLE_SPANS 1
+#endif
+#ifndef SEGACD_CELL_PERMUTATION
+#define SEGACD_CELL_PERMUTATION 1
+#endif
+
+#ifndef SEGACD_AUDIO_SOURCE_SPANS
+#define SEGACD_AUDIO_SOURCE_SPANS 1
+#endif
+
 enum { RET = 1, DMNA = 2, MODE_1M = 4, PRIORITY = 24 };
 
 void segacd_reset(SegaCD *s)
@@ -90,19 +102,37 @@ void segacd_advance_io(SegaCD *s,uint32_t cycles,const SegaCDIO *io)
             delta=s->stamp.remaining_clocks;
         /* Age the preceding decoder pulse before delivering a new sector at
          * its actual CDD event boundary, even during a long stopped interval. */
-        if(io && io->pcm_timed_sink)
-            rf5c164_advance_timed(&s->pcm,s->drive.cycles,delta,io->pcm_timed_sink,io->pcm_timed_user);
-        else
+        if(io && io->pcm_timed_sink) {
+#if SEGACD_AUDIO_SOURCE_SPANS
+            if(io->pcm_owned.begin&&(uint64_t)s->pcm.phase+delta>=384u)
+                rf5c164_advance_owned(&s->pcm,s->drive.cycles,delta,io->pcm_timed_sink,io->pcm_timed_user,&io->pcm_owned);
+            else
+#endif
+                rf5c164_advance_timed(&s->pcm,s->drive.cycles,delta,io->pcm_timed_sink,io->pcm_timed_user);
+        } else
             rf5c164_advance(&s->pcm,delta,io?io->pcm_sink:NULL,io?io->pcm_user:NULL);
         if(!s->cdda_error) {
-            SegaCDCddaResult result=segacd_cdda_advance_to(&s->cdda,s->drive.cycles+delta,
-                io?io->cdda_sample:NULL,io?io->cdda_sample_user:NULL,NULL);
+            SegaCDCddaResult result;
+#if SEGACD_AUDIO_SOURCE_SPANS
+            if(io&&io->cdda_owned.begin&&s->cdda.phase+(uint64_t)delta*SEGACD_CDDA_RATE>=SEGACD_CDDA_CLOCK)
+                result=segacd_cdda_advance_owned(&s->cdda,s->drive.cycles+delta,
+                    io->cdda_sample,io->cdda_sample_user,NULL,&io->cdda_owned);
+            else
+#endif
+                result=segacd_cdda_advance_to(&s->cdda,s->drive.cycles+delta,
+                    io?io->cdda_sample:NULL,io?io->cdda_sample_user:NULL,NULL);
             if(result!=SEGACD_CDDA_OK)s->cdda_error=(uint8_t)result;
         }
         segacd_cdc_advance(&s->cdc,delta);
         if(!(s->memory_mode&(MODE_1M|RET)) && segacd_stamp_advance(&s->stamp,s->word,(s->memory_mode>>3)&3u,delta))
             s->irq_pending|=1u<<1;
-        (void)segacd_dma_advance(s,&s->dma,delta);
+#if SEGACD_DMA_IDLE_SPANS
+        /* PCM/CDDA/stamp callbacks above may have started DMA in this span.
+         * Resolve ownership here, at the original controller boundary. */
+        if(!s->dma.active)segacd_dma_idle_clock(&s->dma,delta);
+        else
+#endif
+            (void)segacd_dma_advance(s,&s->dma,delta);
         if(segacd_cdd_advance(&s->drive,delta,deliver_sector,&delivery))s->irq_pending|=1u<<4;
         remaining-=delta;
     }
@@ -148,7 +178,21 @@ static uint32_t cell_to_linear(uint32_t offset)
     /* Hardware Manual pp16-17: column-major 8x8 cells, 512-dot bitmap rows.
      * Five independently mapped bands
      * have 32, 16, 8, 4 and 4 vertical cells respectively. */
-    uint32_t base; unsigned rows;
+    uint32_t base;
+#if SEGACD_CELL_PERMUTATION
+    unsigned row_shift;
+    if (offset < 0x10000u) { base = 0; row_shift = 5; }
+    else if (offset < 0x18000u) { base = 0x10000; row_shift = 4; }
+    else if (offset < 0x1C000u) { base = 0x18000; row_shift = 3; }
+    else if (offset < 0x1E000u) { base = 0x1C000; row_shift = 2; }
+    else { base = 0x1E000; row_shift = 2; }
+    uint32_t n=offset-base,row_mask=((1u<<row_shift)-1u)<<5;
+    /* Permute cell-row/in-cell-row bits above the 64-column byte position.
+     * These fields do not overlap. Both byte lanes and each band stay exact;
+     * no layout table, copied view or retained ownership is needed. */
+    return base+(((n&(row_mask|0x1cu))<<6)|((n>>(5+row_shift))<<2)|(n&3u));
+#else
+    unsigned rows;
     if (offset < 0x10000u) { base = 0; rows = 32; }
     else if (offset < 0x18000u) { base = 0x10000; rows = 16; }
     else if (offset < 0x1C000u) { base = 0x18000; rows = 8; }
@@ -157,6 +201,7 @@ static uint32_t cell_to_linear(uint32_t offset)
     uint32_t n = offset - base, tile = n / 32;
     return base + ((tile % rows) * 8 + (n % 32) / 4) * 256
          + (tile / rows) * 4 + (n & 3);
+#endif
 }
 
 static SegaCDResult word_address(const SegaCD *s, SegaCDCpu cpu,
@@ -286,6 +331,37 @@ const uint8_t *segacd_code_span(const SegaCD *s,SegaCDCpu cpu,uint32_t a,size_t 
     return NULL;
 }
 
+int segacd_memory_region(SegaCD *s,SegaCDCpu cpu,uint32_t a,size_t bytes,int write,SegaCDMemoryRegion *view)
+{
+    if(!s||!view||!bytes||a>0xffffffu||bytes>0x1000000u-a)return 0;
+    SegaCDMemoryRegion region={0};
+    if(cpu==SEGACD_MAIN) {
+        if(a<SEGACD_BIOS_BYTES) {
+            if(write||(a<0x74u&&a+bytes>0x72u))return 0;
+            region.address=a<0x72u?0u:0x74u;
+            region.bytes=(a<0x72u?0x72u:SEGACD_BIOS_BYTES)-region.address;
+            region.data=s->bios+region.address;
+        } else if(a>=0x020000u&&a<0x040000u) {
+            if(segacd_sub_runnable(s)||s->prg_bank>=4)return 0;
+            region.address=0x020000u;region.bytes=0x20000u;
+            region.data=s->prg+(size_t)s->prg_bank*0x20000u;
+        }
+    } else if(cpu==SEGACD_SUB&&a<SEGACD_PRG_BYTES) {
+        region.address=write?(unsigned)s->write_protect*512u:0u;
+        region.bytes=SEGACD_PRG_BYTES-region.address;region.data=s->prg+region.address;
+    } else if(cpu!=SEGACD_SUB)return 0;
+    if(!region.data&&!(s->memory_mode&MODE_1M)) {
+        if(cpu==SEGACD_MAIN&&a>=0x200000u&&a<0x240000u&&(s->memory_mode&RET))
+            region.address=0x200000u;
+        else if(cpu==SEGACD_SUB&&a>=0x080000u&&a<0x0c0000u&&!(s->memory_mode&RET))
+            region.address=0x080000u;
+        else return 0;
+        region.bytes=SEGACD_WORD_BYTES;region.data=s->word;
+    }
+    if(!region.data||a<region.address||a-region.address>=region.bytes||bytes>region.bytes-(a-region.address))return 0;
+    *view=region;return 1;
+}
+
 SegaCDResult segacd_read8(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint8_t *v)
 {
     a &= 0xFFFFFFu;
@@ -327,12 +403,44 @@ SegaCDResult segacd_read16(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint16_t *v)
     if((cpu==SEGACD_MAIN && a==0xA12008u) || (cpu==SEGACD_SUB && a==0xFF8008u)) {
         *v=cdc_host_word(s,cpu);return SEGACD_OK;
     }
-    uint8_t hi, lo;
-    SegaCDResult result = segacd_read8(s, cpu, a, &hi);
-    if (result != SEGACD_OK) return result;
-    result = segacd_read8(s, cpu, a + 1, &lo);
-    if (result == SEGACD_OK) *v = (uint16_t)(((unsigned)hi << 8) | lo);
-    return result;
+    /* Resolve the complete bus word once. Plain memory has no observer or
+     * ownership change between its lanes; MMIO still visits both registers
+     * in order, preserving partial effects and word-only ports above. */
+    const uint8_t *p=NULL;
+    if(cpu==SEGACD_MAIN) {
+        if(a<SEGACD_BIOS_BYTES) {
+            if(a==0x72u){*v=s->hint_vector;return SEGACD_OK;}
+            p=s->bios+a;
+        } else if(a>=0x020000u&&a<0x040000u) {
+            if(segacd_sub_runnable(s))return SEGACD_WAIT;
+            p=s->prg+(size_t)s->prg_bank*0x20000u+a-0x020000u;
+        }
+    } else {
+        if(a<SEGACD_PRG_BYTES)p=s->prg+a;
+        else if(a>=0xFE0000u&&a<0xFE4000u) {
+            *v=(uint16_t)(0xFF00u|s->backup[(a-0xFE0000u)/2]);return SEGACD_OK;
+        } else if(a>=0xFF0000u&&a<0xFF4000u) {
+            *v=(uint16_t)(0xFF00u|rf5c164_read(&s->pcm,(a-0xFF0000u)/2));return SEGACD_OK;
+        }
+    }
+    if(p){*v=(uint16_t)(((unsigned)p[0]<<8)|p[1]);return SEGACD_OK;}
+    if((cpu==SEGACD_MAIN&&a>=0xA12000u&&a<0xA12030u)||
+       (cpu!=SEGACD_MAIN&&a>=0xFF8000u&&a<0xFF8200u)) {
+        unsigned reg=a-(cpu==SEGACD_MAIN?0xA12000u:0xFF8000u);
+        uint8_t hi,lo;SegaCDResult result=reg_read(s,cpu,reg,&hi);
+        if(result!=SEGACD_OK)return result;
+        result=reg_read(s,cpu,reg+1,&lo);
+        if(result==SEGACD_OK)*v=(uint16_t)(((unsigned)hi<<8)|lo);
+        return result;
+    }
+    uint32_t offset;int dot;
+    SegaCDResult result=word_address(s,cpu,a,&offset,&dot);
+    if(result!=SEGACD_OK)return result;
+    if(dot) {
+        unsigned packed=s->word[offset];
+        *v=(uint16_t)(((packed>>4)<<8)|(packed&15u));
+    } else *v=(uint16_t)(((unsigned)s->word[offset]<<8)|s->word[offset+1]);
+    return SEGACD_OK;
 }
 
 static void mode_write(SegaCD *s, SegaCDCpu cpu, uint8_t v)
@@ -511,6 +619,40 @@ SegaCDResult segacd_write16(SegaCD *s, SegaCDCpu cpu, uint32_t a, uint16_t v)
         s->stopwatch_origin = s->sub_cycles;
         return SEGACD_OK;
     }
-    SegaCDResult result = segacd_write8(s, cpu, a, (uint8_t)(v >> 8));
-    return result == SEGACD_OK ? segacd_write8(s, cpu, a + 1, (uint8_t)v) : result;
+    uint8_t *p=NULL;
+    if(cpu==SEGACD_MAIN) {
+        if(a<SEGACD_BIOS_BYTES)return SEGACD_OK;
+        if(a>=0x020000u&&a<0x040000u) {
+            if(segacd_sub_runnable(s))return SEGACD_WAIT;
+            p=s->prg+(size_t)s->prg_bank*0x20000u+a-0x020000u;
+        }
+    } else {
+        if(a<SEGACD_PRG_BYTES) {
+            /* Protection boundaries are 512-byte aligned, so an aligned
+             * word is either wholly writable or wholly protected. */
+            if(a<(unsigned)s->write_protect*512u)return SEGACD_OK;
+            p=s->prg+a;
+        } else if(a>=0xFE0000u&&a<0xFE4000u) {
+            s->backup[(a-0xFE0000u)/2]=(uint8_t)v;return SEGACD_OK;
+        } else if(a>=0xFF0000u&&a<0xFF4000u) {
+            rf5c164_write(&s->pcm,(a-0xFF0000u)/2,(uint8_t)v);return SEGACD_OK;
+        }
+    }
+    if(p){p[0]=(uint8_t)(v>>8);p[1]=(uint8_t)v;return SEGACD_OK;}
+    if((cpu==SEGACD_MAIN&&a>=0xA12000u&&a<0xA12030u)||
+       (cpu!=SEGACD_MAIN&&a>=0xFF8000u&&a<0xFF8200u)) {
+        unsigned reg=a-(cpu==SEGACD_MAIN?0xA12000u:0xFF8000u);
+        SegaCDResult result=reg_write(s,cpu,reg,(uint8_t)(v>>8));
+        return result==SEGACD_OK?reg_write(s,cpu,reg+1,(uint8_t)v):result;
+    }
+    uint32_t offset;int dot;
+    SegaCDResult result=word_address(s,cpu,a,&offset,&dot);
+    if(result!=SEGACD_OK)return result;
+    if(dot) {
+        unsigned mode=(s->memory_mode>>3)&3u,old=s->word[offset];
+        if(mode==3)return SEGACD_UNMAPPED;
+        s->word[offset]=(uint8_t)((priority_pixel(old>>4,(v>>8)&15u,mode)<<4)|
+            priority_pixel(old&15u,v&15u,mode));
+    } else {s->word[offset]=(uint8_t)(v>>8);s->word[offset+1]=(uint8_t)v;}
+    return SEGACD_OK;
 }

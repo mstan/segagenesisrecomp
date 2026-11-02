@@ -9,6 +9,8 @@
 typedef struct SegaCDCoordinator SegaCDCoordinator;
 typedef struct {SegaCDCoordinator *owner;SegaCDCpu cpu;} SegaCDBusBinding;
 #define SEGACD_CDD_TRACE_CAPACITY 64u
+enum { SEGACD_REGISTER_SPAN_LIMIT=8192,SEGACD_FLOW_SPAN_LIMIT=32768 };
+#define SEGACD_HAS_FLOW_SPANS 1
 typedef struct {
     uint8_t packet[10];
     uint32_t instruction_pc;
@@ -66,13 +68,41 @@ struct SegaCDCoordinator {
     SegaCDCatalogLookup catalog_lookup[2];
     SegaCDCatalogIndex *catalog_index[2];
     uint8_t catalog_index_enabled;
+    uint64_t code_lease_serial,code_reuses_retired;
     const uint8_t *(*host_code_span)(void *,uint32_t,size_t);
+    M68kStepDataResolver host_data_region;
+    uint64_t data_resolutions[2];
+    /* Immutable generated effect sidecars survive registry prepend/replacement
+     * by module identity. Unlisted callbacks are always observable exits. */
+    const M68kStepEffectModule *region_effects[2];
+    size_t region_effect_count[2];
+    uint64_t region_instructions[2],region_runs,region_device_advances;
+    uint64_t region_event_deadline;
+    uint8_t region_event_valid,event_intervals_qualified;
+    const M68kStepRegisterSpan *register_spans[2];
+    size_t register_span_count[2];
+    uint8_t register_span_qualified[2][SEGACD_REGISTER_SPAN_LIMIT/8];
+    uint64_t span_runs[2],span_instructions[2];
+    const M68kStepFlowSpan *flow_spans[2];
+    size_t flow_span_count[2];
+    uint8_t flow_span_qualified[2][SEGACD_FLOW_SPAN_LIMIT/8];
+    uint64_t flow_runs[2],flow_instructions[2];
+    /* Host-only cancellation notification; never advances guest media state. */
+    void (*media_cancel)(void *);
 };
 
 int segacd_coordinator_init(SegaCDCoordinator *,SegaCD *,const M68kStepBus *host_main,void *host_user);
 /* Descriptors/arrays must remain immutable and alive during execution. */
 int segacd_coordinator_modules(SegaCDCoordinator *,SegaCDCpu,
                               const M68kStepModule *const *,size_t);
+/* Immutable executable-region lease. Generic owners default to no lease.
+ * Qualify instruction-byte reads as side-effect free, and ALL callbacks/other
+ * masters as unable to mutate or remap [begin,end)
+ * until end_code_lease. First use still checks every word. Mutable/unknown
+ * regions retain live guards. End before returning to unqualified host code,
+ * import/restore or mutation; no asynchronous writer is permitted. */
+int segacd_coordinator_begin_code_lease(SegaCDCoordinator *,SegaCDCpu,uint32_t begin,uint32_t end);
+void segacd_coordinator_end_code_lease(SegaCDCoordinator *,SegaCDCpu);
 /* Optional bounded derived lookup; fixed-cache execution remains the default
  * for generic callers. Disable before destroying an enabled coordinator.
  * Configure between completed operations; allocation failure retains fallback. */
@@ -80,6 +110,35 @@ int segacd_coordinator_catalog_index(SegaCDCoordinator *,int enabled);
 /* Optional Main-host executable storage, under the same no-side-effect rules
  * as host_main.fetch16. Code ranges owned by CD devices never delegate here. */
 int segacd_coordinator_main_code_span(SegaCDCoordinator *,const uint8_t *(*)(void *,uint32_t,size_t));
+/* Qualified ordinary Main-host RAM; same per-operation/no-observer contract
+ * as m68k_step_data_regions. NULL keeps the ordinary host bus. */
+int segacd_coordinator_main_data_region(SegaCDCoordinator *,M68kStepDataResolver);
+/* Qualify only with complete effect metadata and interval-composable device
+ * sinks. Host observers must report every observable deadline through
+ * host_next_event; instrumentation observing every old advance call instead
+ * of emulated events must retain the ordinary step interface. Qualified
+ * native regions and all-STOP run_until waits service actual device/host
+ * deadlines, rather than artificial384-clock polls. A host advance callback
+ * without a next-event provider retains the bounded cadence. */
+int segacd_coordinator_region_effects(SegaCDCoordinator *,SegaCDCpu,
+                                     const M68kStepEffectModule *,size_t);
+/* Sorted unique-PC companions for the exact current registry's FIRST entries.
+ * Configuration verifies every member's descriptor/effect/priority and filters
+ * spans shadowed by runtime HLE/other modules. Replacing
+ * modules or effect metadata revokes spans; requalify after all HLE prepends.
+ * No cross-CPU reorder: complete spans must fit before the other CPU is due. */
+int segacd_coordinator_register_spans(SegaCDCoordinator *,SegaCDCpu,
+                                      const M68kStepRegisterSpan *,size_t);
+/* Configure after fixed spans. Their ordinary alternative remains available
+ * whenever a terminal's worst-case charge cannot fit the current budget.
+ * Module/effect/fixed-span replacement revokes these derived qualifications. */
+int segacd_coordinator_flow_spans(SegaCDCoordinator *,SegaCDCpu,
+                                const M68kStepFlowSpan *,size_t);
+/* Run only qualified register operations in the ORIGINAL dual-CPU order.
+ * End at an unknown/observable operation, trace/IRQ, unavailable current code
+ * view, host/device event or caller ceiling. Zero means use the ordinary step.
+ * No bus operation, fault/WAIT scope or arbitrary callback is run inside. */
+uint64_t segacd_coordinator_native_region(SegaCDCoordinator *,uint64_t deadline);
 /* Diagnostics may attach the portable execution floor. Native-only consumers
  * leave it NULL: every uncovered operation is a stop, never skipped code. */
 int segacd_coordinator_floor(SegaCDCoordinator *,M68kStepResult (*)(M68kStepContext *));
@@ -101,12 +160,20 @@ void segacd_coordinator_main_stall(SegaCDCoordinator *,uint32_t main_cycles);
  * TOC on devices->drive and keeps host handles alive until unmounted. */
 void segacd_coordinator_media(SegaCDCoordinator *,SegaCDReadSector,void *media_user,
                              SegaCDCddaSector,void *cdda_user);
+/* Optional non-reentrant host cancellation. Replacement revokes this hook;
+ * install after media(). Transport submissions/reset cancel speculation only. */
+void segacd_coordinator_media_cancel(SegaCDCoordinator *,void (*)(void *));
 /* Run until both elapsed CPU timelines reach the absolute sub-clock deadline.
  * If a device_limit is installed, deadline must not exceed its current value;
  * otherwise returns NO_WAIT_HANDLER without advancing CPUs/devices. Returns
  * at an instruction boundary; STOP advances emulated device time. MISS/faults
  * are diagnostic stops, never skipped code. */
 M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator *,uint64_t deadline);
+/* Qualified isolated-memory observer: settle CPU execution and EVERY due
+ * device event, but permit device counters to remain unpublished between
+ * observable deadlines. Use run_until before MMIO/external accesses and at
+ * interval return. Only the qualified machine/Z80 RAM interval uses this. */
+M68kStepResult segacd_coordinator_run_isolated_until(SegaCDCoordinator *,uint64_t deadline);
 /* One scheduler boundary, useful for instruction/interrupt observations.
  * An idle boundary advances at most to the next timer event / 384 ticks. */
 M68kStepResult segacd_coordinator_step(SegaCDCoordinator *);

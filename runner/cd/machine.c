@@ -1,5 +1,11 @@
 #include "machine.h"
 #include "../video/genesis_dac.h"
+#if GENESIS_HD_JOBS
+#include "../video/genesis_raster_jobs.h"
+#else
+#define gvdp_hd_bind_palette(...) ((void)0)
+#define gvdp_hd_reset() ((void)0)
+#endif
 #include <stdlib.h>
 #include <string.h>
 #ifndef SEGACD_CATALOG_PC_INDEX
@@ -28,6 +34,52 @@ typedef struct {
     SegaCDMachineVideoStats stats;
 } CapturedVideo;
 static CapturedVideo *captured_video;
+/* Capability binds the exact callback AND user object. A conservative object-
+ * representation mismatch disables the optimization; no state is inferred
+ * immutable merely because a function has the same address. */
+static struct {
+    SegaCDIO io;
+    M68kStepBus host,cpu_bus[2];
+    void *host_user,*cpu_user[2],*audio_user,*video_user;
+    const uint8_t *(*host_code_span)(void *,uint32_t,size_t);
+    const uint8_t *(*cpu_code_span[2])(void *,uint32_t,size_t);
+    M68kStepDataResolver host_data_region,cpu_data_region[2];
+    void (*host_advance)(void *,uint64_t);
+    uint64_t (*host_next_event)(void *),(*device_limit)(void *);
+    void (*media_cancel)(void *);
+    M68kStepResult (*floor_step)(M68kStepContext *);
+    const M68kStepModule *const *modules[2];size_t counts[2];
+    void (*audio_write)(void *,uint64_t,uint8_t,uint8_t);
+    SegaCDMachineVideoObserver video;
+} bios_owner;
+static void capture_bios_owner(SegaCDMachine *m)
+{
+    SegaCDCoordinator *c=&m->coordinator;
+    memcpy(&bios_owner.io,&c->io,sizeof c->io);memcpy(&bios_owner.host,&c->host_main,sizeof c->host_main);
+    bios_owner.host_user=c->host_user;bios_owner.host_code_span=c->host_code_span;bios_owner.host_data_region=c->host_data_region;
+    bios_owner.host_advance=c->host_advance;bios_owner.host_next_event=c->host_next_event;bios_owner.device_limit=c->device_limit;
+    bios_owner.media_cancel=c->media_cancel;bios_owner.floor_step=c->floor_step;
+    bios_owner.audio_write=m->audio_write;bios_owner.audio_user=m->audio_user;bios_owner.video=video_observer;bios_owner.video_user=video_user;
+    for(unsigned n=0;n<2;++n) {
+        memcpy(&bios_owner.cpu_bus[n],&c->cpu[n].bus,sizeof c->cpu[n].bus);bios_owner.cpu_user[n]=c->cpu[n].user;
+        bios_owner.cpu_code_span[n]=c->cpu[n].code_span;bios_owner.cpu_data_region[n]=c->cpu[n].data_region;
+        bios_owner.modules[n]=c->modules[n];bios_owner.counts[n]=c->module_count[n];
+    }
+}
+static int same_bios_owner(const SegaCDMachine *m)
+{
+    const SegaCDCoordinator *c=&m->coordinator;
+    if(memcmp(&bios_owner.io,&c->io,sizeof c->io)||memcmp(&bios_owner.host,&c->host_main,sizeof c->host_main)||
+       bios_owner.host_user!=c->host_user||bios_owner.host_code_span!=c->host_code_span||bios_owner.host_data_region!=c->host_data_region||
+       bios_owner.host_advance!=c->host_advance||bios_owner.host_next_event!=c->host_next_event||bios_owner.device_limit!=c->device_limit||
+       bios_owner.media_cancel!=c->media_cancel||bios_owner.floor_step!=c->floor_step||bios_owner.audio_write!=m->audio_write||
+       bios_owner.audio_user!=m->audio_user||bios_owner.video!=video_observer||bios_owner.video_user!=video_user)return 0;
+    for(unsigned n=0;n<2;++n)if(memcmp(&bios_owner.cpu_bus[n],&c->cpu[n].bus,sizeof c->cpu[n].bus)||
+       bios_owner.cpu_user[n]!=c->cpu[n].user||bios_owner.cpu_code_span[n]!=c->cpu[n].code_span||bios_owner.cpu_data_region[n]!=c->cpu[n].data_region||
+       bios_owner.modules[n]!=c->modules[n]||bios_owner.counts[n]!=c->module_count[n])return 0;
+    return 1;
+}
+
 static void resolve_row(SegaCDMachine *m,unsigned row)
 {
     CapturedRow *r=&captured_video->rows[row];
@@ -36,10 +88,11 @@ static void resolve_row(SegaCDMachine *m,unsigned row)
     int width=gvdp_compose_captured(&r->raster,indices);
     /* Captures are internal and validated when produced. Keep the old CD
      * contract for reserved host/bar indices: opaque black. */
-    uint32_t palette[192];
+    uint32_t palette[GVDP_OUTPUT_PALETTE_SIZE];
     unsigned levels=r->raster.shadow_mode||r->raster.diagnostic?3u:1u;
-    for(unsigned i=0;i<levels*64u;++i)
-        palette[i]=genesis_dac_cram_to_argb(r->cram[i%64u],(int)(i/64u));
+    for(unsigned i=0;i<GVDP_OUTPUT_PALETTE_SIZE;++i)
+        palette[i]=i<levels*64u?genesis_dac_cram_to_argb(r->cram[i%64u],(int)(i/64u)):0xff000000u;
+    gvdp_hd_bind_palette(row,palette,GVDP_OUTPUT_PALETTE_SIZE);
     for(int x=0;x<width;++x) {
         unsigned i=indices[x];m->pixels[row][x]=i<levels*64u?palette[i]:0xff000000u;
     }
@@ -135,6 +188,14 @@ static const uint8_t *host_code_span(void *u,uint32_t a,size_t bytes)
     if(a<0xff0000u||a>0xffffffu||!bytes||bytes>0x1000000u-a)return NULL;
     return g_ram+(a&0xffffu);
 }
+static int host_data_region(void *u,uint32_t a,size_t bytes,int write,M68kStepDataRegion *view)
+{
+    (void)write;
+    if(a<0xff0000u||a>0xffffffu||!bytes||bytes>0x1000000u-a)return 0;
+    /* All accesses in this uninterrupted instruction have the same emulated
+     * timestamp. Any intervening bus call discards the view and stamps again. */
+    main_stamp(u);view->address=0xff0000u;view->bytes=sizeof g_ram;view->data=g_ram;return 1;
+}
 static unsigned ack(void *u,unsigned level)
 {SegaCDMachine*m=u;if(level==6)m->irq6=0;if(level==4)m->irq4=0;return M68K_STEP_AUTOVECTOR;}
 static uint16_t dma_read(void *u,uint32_t address)
@@ -179,8 +240,11 @@ static void host_advance(void *u,uint64_t clock)
                 if(width>0&&width<=GVDP_MAX_WIDTH) {
                     m->width=(unsigned)width;
                     if(!deferred) {
-                        for(int x=0;x<width;++x){unsigned i=indices[x];m->pixels[row][x]=i<192?
-                            genesis_dac_cram_to_argb(m->vdp.cram[i%64],(int)(i/64)):0xff000000u;}
+                        uint32_t palette[GVDP_OUTPUT_PALETTE_SIZE];
+                        for(unsigned i=0;i<GVDP_OUTPUT_PALETTE_SIZE;++i)
+                            palette[i]=i<192?genesis_dac_cram_to_argb(m->vdp.cram[i%64],(int)(i/64)):0xff000000u;
+                        gvdp_hd_bind_palette(row,palette,GVDP_OUTPUT_PALETTE_SIZE);
+                        for(int x=0;x<width;++x)m->pixels[row][x]=palette[indices[x]];
                         if(captured_video)++captured_video->stats.eager_rows;
                     }
                     if(video_observer&&row<(unsigned)gvdp_screen_height(&m->vdp)) {
@@ -214,6 +278,7 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
     const SegaCDZ80Bus sound={z80_read,z80_write,z80_bank};
     if(!segacd_z80_init(&m->z80,&m->coordinator,&sound,m,program->z80_step))return 0;
     (void)segacd_coordinator_main_code_span(&m->coordinator,host_code_span);
+    (void)segacd_coordinator_main_data_region(&m->coordinator,host_data_region);
     segacd_coordinator_host_clock(&m->coordinator,host_advance,next_host_event);
     segacd_coordinator_device_limit(&m->coordinator,sound_limit);
     (void)segacd_coordinator_catalog_index(&m->coordinator,SEGACD_CATALOG_PC_INDEX);
@@ -221,6 +286,7 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
 }
 void segacd_machine_close(SegaCDMachine *m)
 {if(m&&current==m&&!observing_video){(void)segacd_coordinator_catalog_index(&m->coordinator,0);
+    gvdp_hd_reset();
     free(captured_video);captured_video=NULL;
     current=NULL;video_observer=NULL;video_user=NULL;}}
 int segacd_machine_video_observer(SegaCDMachine *m,SegaCDMachineVideoObserver observer,void *user)
@@ -249,11 +315,53 @@ M68kStepResult segacd_machine_step(SegaCDMachine *m)
     }else m->result=segacd_coordinator_step(&m->coordinator);
     return m->result;
 }
-M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
+static int z80_interval_running(void *user)
 {
-    if(!m||m!=current)return M68K_STEP_REENTERED;
+    SegaCDMachine *m=user;
+    return !m->bus.z80_reset_pending&&m->bus.z80_reset_off&&!m->bus.z80_busreq;
+}
+static M68kStepResult run_frame(SegaCDMachine *m)
+{
+    if(!m||m!=current||observing_video)return M68K_STEP_REENTERED;
+    if(m->coordinator.busy[0]||m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)
+        return M68K_STEP_REENTERED;
+    if(m->result!=M68K_STEP_OK)return m->result;
     uint64_t frame=m->frames;
-    do {M68kStepResult r=segacd_machine_step(m);if(r!=M68K_STEP_OK)return r;}
+    do {
+        if(m->result==M68K_STEP_OK&&z80_interval_running(m)&&m->z80.time<=m->coordinator.device_time) {
+            SegaCDZ80Result zr=segacd_z80_run_until(&m->z80,line_deadline(m->line),z80_interval_running,m);
+            if(zr!=SEGACD_Z80_OK)return m->result=m->z80.bus_result;
+            continue;
+        }
+        if(!m->bus.z80_reset_pending && m->result==M68K_STEP_OK &&
+           (!m->bus.z80_reset_off||m->bus.z80_busreq||m->z80.time>m->coordinator.device_time)) {
+            uint64_t limit=line_deadline(m->line);
+            if(m->bus.z80_reset_off&&!m->bus.z80_busreq&&m->z80.time<limit)limit=m->z80.time;
+            if(segacd_coordinator_native_region(&m->coordinator,limit)) {
+                if(m->coordinator.last_result!=M68K_STEP_OK)return m->result=m->coordinator.last_result;
+                continue;
+            }
+        }
+        M68kStepResult r=segacd_machine_step(m);if(r!=M68K_STEP_OK)return r;
+    }
     while(m->frames==frame);
     return M68K_STEP_OK;
+}
+
+int segacd_machine_immutable_bios(SegaCDMachine *m,int enabled)
+{
+    if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||m->z80.in_step)return 0;
+    segacd_coordinator_end_code_lease(&m->coordinator,SEGACD_MAIN);
+    if(enabled)capture_bios_owner(m);
+    m->immutable_bios_qualified=(uint8_t)(enabled!=0);return 1;
+}
+M68kStepResult segacd_machine_run_frame(SegaCDMachine *m)
+{
+    if(!m||m!=current||observing_video||m->coordinator.busy[0]||m->coordinator.busy[1]||m->coordinator.external_active||m->z80.in_step)
+        return M68K_STEP_REENTERED;
+    if(m->immutable_bios_qualified&&!same_bios_owner(m))m->immutable_bios_qualified=0;
+    int lease=m->immutable_bios_qualified&&segacd_coordinator_begin_code_lease(&m->coordinator,SEGACD_MAIN,0x74u,SEGACD_BIOS_BYTES);
+    M68kStepResult result=run_frame(m);
+    if(lease)segacd_coordinator_end_code_lease(&m->coordinator,SEGACD_MAIN);
+    return result;
 }

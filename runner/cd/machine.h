@@ -22,6 +22,7 @@ typedef struct {
     uint32_t pixels[GVDP_MAX_HEIGHT][GVDP_MAX_WIDTH];
     unsigned width,height,irq4,irq6;
     M68kStepResult result;
+    uint8_t immutable_bios_qualified;
     /* Emulation-thread host observers. They may queue output, never execute
      * CPUs. Audio events use absolute Sub-clock timestamps for both CPUs. */
     void (*audio_write)(void *,uint64_t,uint8_t port,uint8_t value);
@@ -34,6 +35,11 @@ typedef struct {
 int segacd_machine_init(SegaCDMachine *,const void *bios,size_t bytes,
                         const SegaCDNativeProgram *);
 void segacd_machine_close(SegaCDMachine *);
+/* Qualify only when every installed host/media/audio/video callback preserves
+ * the guest-read-only BIOS. Proofs exist only during run_frame; raw host writes,
+ * restore and callback replacement between frames always get fresh guards.
+ * Generic machines default OFF; ordinary single-step remains guarded. */
+int segacd_machine_immutable_bios(SegaCDMachine *,int enabled);
 void segacd_machine_pad(SegaCDMachine *,unsigned port,uint16_t buttons);
 M68kStepResult segacd_machine_step(SegaCDMachine *);
 M68kStepResult segacd_machine_run_frame(SegaCDMachine *);

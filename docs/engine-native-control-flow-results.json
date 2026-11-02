@@ -1,0 +1,711 @@
+{
+  "schema": "GenesisNativeControlFlowResults1",
+  "date": "2026-10-29",
+  "owners": {
+    "engine": "beads-3z5k.4",
+    "core": "beads-rxq.6",
+    "campaign": "beads-2wy8.1"
+  },
+  "source": {
+    "engine": "c20b0ed670f80d56f8dcf3b25c0f3f3bd6c917d2",
+    "core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+    "engine_base": "5d3d042e220c320e59940abe6f266b12b3efabf6",
+    "core_base": "4479e7e24abe3e4478d943f1eebd41cc264e0140"
+  },
+  "status": "E05 accepted by independent validate_e05: complete scope/source/test/runtime/PR/Beads gates. Explicit instruction E06 fresh verification next. Owner combined visual merge/release clearance and normal remote Beads sync remain pending.",
+  "performance_rule": "Per-game positive or neutral accepted; noisy small mixed results neutral/inconclusive. No aggregate gains or universal speed claims.",
+  "raw_root": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029",
+  "task_root": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029",
+  "packages": {
+    "cartridge_inline_frames": {
+      "label": "E05-inline-native-call-frames-r1",
+      "engine": "39c5fb92f42ca3cbdf997c81fd4557e0ecb6ace4",
+      "core": "da2d8ec4a2be78204ef147e9bc12103f92653a06",
+      "build_receipt": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\builds-r1.json",
+        "bytes": 2331,
+        "sha256": "035e55382ac47cb1e3180ee87430103294df8c01fa7a63e29fbe75588a42adc5"
+      },
+      "raw_samples": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1.json",
+        "bytes": 110898,
+        "sha256": "1f5b260e454321eb95e48cfb311d72ec8e234896e446212a6a5f2dcbf9b10d02"
+      },
+      "games": {
+        "rka": {
+          "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+          "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+          "baseline": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-native-state-20261028\\binaries\\r4\\rka\\RKARecomp.exe",
+            "sha256": "fdd3066574ab309086181e1261aa435189e24a31b1c9fe2564ed4055ad53e46d",
+            "bytes": 8434176,
+            "seconds": 29.57799999997951,
+            "engine": "132b84d27a61acb3657ec12737446ca9625e7bb1",
+            "core": "4479e7e24abe3e4478d943f1eebd41cc264e0140"
+          },
+          "candidate": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\rka-candidate\\Release\\RKARecomp.exe",
+            "sha256": "c01c413748d61e5373a173cdd68901a363092700fb9b24666b785376a17652ff",
+            "bytes": 8778752,
+            "engine": "39c5fb92f42ca3cbdf997c81fd4557e0ecb6ace4",
+            "core": "da2d8ec4a2be78204ef147e9bc12103f92653a06",
+            "seconds": 12.797000000020489
+          },
+          "correctness_passed": true,
+          "classification": "neutral/inconclusive",
+          "reductions_pct": {
+            "cpu_seconds": [
+              -0.7633587786259444,
+              3.797468354430378
+            ],
+            "cpu_cycles": [
+              0.7187602491579126,
+              1.8346116709895388
+            ]
+          },
+          "AA_drift_pct": {
+            "cpu_seconds": 10.559796437659031,
+            "cpu_cycles": 7.842437697076932
+          },
+          "runs": {
+            "16:9": [
+              {
+                "arm": "B",
+                "cpu_seconds": 12.375,
+                "cycles": 58049394500,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\rka-16x9-0-B",
+                "native_calls": 583514,
+                "native_tails": 350044
+              },
+              {
+                "arm": "A",
+                "cpu_seconds": 12.28125,
+                "cycles": 58469651110,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\rka-16x9-1-A",
+                "native_calls": 0,
+                "native_tails": 0
+              },
+              {
+                "arm": "A",
+                "cpu_seconds": 13.578125,
+                "cycles": 63055097070,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\rka-16x9-2-A",
+                "native_calls": 0,
+                "native_tails": 0
+              },
+              {
+                "arm": "B",
+                "cpu_seconds": 13.0625,
+                "cycles": 61898280900,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\rka-16x9-3-B",
+                "native_calls": 583514,
+                "native_tails": 350044
+              }
+            ],
+            "off": [
+              {
+                "arm": "A",
+                "cpu_seconds": 5.84375,
+                "cycles": 27328220970,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\rka-off-0-A",
+                "native_calls": 0,
+                "native_tails": 0
+              },
+              {
+                "arm": "B",
+                "cpu_seconds": 5.96875,
+                "cycles": 27984554350,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\rka-off-1-B",
+                "native_calls": 587984,
+                "native_tails": 332221
+              }
+            ]
+          },
+          "same_body_proof": null
+        },
+        "sonic1": {
+          "consumer": "510679e66abc435f12a29d66c2d6788f4e1008f9",
+          "ui": "47005fb27516398381f4fda88413ff74bee14842",
+          "baseline": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-native-state-20261028\\binaries\\r4\\sonic1\\SonicTheHedgehogRecomp.exe",
+            "sha256": "2ce8dd98fc72631cf8490c1d9d88ed9a4f95ddf6871a9e62b9afa271adf2d17c",
+            "bytes": 5217280,
+            "seconds": 18.625,
+            "engine": "132b84d27a61acb3657ec12737446ca9625e7bb1",
+            "core": "4479e7e24abe3e4478d943f1eebd41cc264e0140"
+          },
+          "candidate": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\sonic1-candidate\\Release\\SonicTheHedgehogRecomp.exe",
+            "sha256": "c12f1011b9abca16c747a381a676fd6c37782824391cb53451822d8d4a2b22cf",
+            "bytes": 5411328,
+            "engine": "39c5fb92f42ca3cbdf997c81fd4557e0ecb6ace4",
+            "core": "da2d8ec4a2be78204ef147e9bc12103f92653a06",
+            "seconds": 34.01599999994505
+          },
+          "correctness_passed": true,
+          "classification": "neutral/inconclusive",
+          "reductions_pct": {
+            "cpu_seconds": [
+              0.0,
+              0.6451612903225823
+            ],
+            "cpu_cycles": [
+              0.7433277690988671,
+              0.6068305012674302
+            ]
+          },
+          "AA_drift_pct": {
+            "cpu_seconds": -3.7267080745341574,
+            "cpu_cycles": -3.55816546722425
+          },
+          "runs": {
+            "16:9": [
+              {
+                "arm": "B",
+                "cpu_seconds": 2.515625,
+                "cycles": 11781779520,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\sonic1-16x9-0-B",
+                "native_calls": 196753,
+                "native_tails": 1411162
+              },
+              {
+                "arm": "A",
+                "cpu_seconds": 2.515625,
+                "cycles": 11870012620,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\sonic1-16x9-1-A",
+                "native_calls": 0,
+                "native_tails": 0
+              },
+              {
+                "arm": "A",
+                "cpu_seconds": 2.421875,
+                "cycles": 11447657930,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\sonic1-16x9-2-A",
+                "native_calls": 0,
+                "native_tails": 0
+              },
+              {
+                "arm": "B",
+                "cpu_seconds": 2.40625,
+                "cycles": 11378190050,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\sonic1-16x9-3-B",
+                "native_calls": 196753,
+                "native_tails": 1411162
+              }
+            ],
+            "off": [
+              {
+                "arm": "A",
+                "cpu_seconds": 1.546875,
+                "cycles": 7233556620,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\sonic1-off-0-A",
+                "native_calls": 0,
+                "native_tails": 0
+              },
+              {
+                "arm": "B",
+                "cpu_seconds": 1.484375,
+                "cycles": 6994898610,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-r1\\sonic1-off-1-B",
+                "native_calls": 208299,
+                "native_tails": 1418684
+              }
+            ]
+          },
+          "same_body_proof": null
+        }
+      }
+    },
+    "cartridge_callgraph_increment": {
+      "label": "E05-common-native-callgraph-placement-r2",
+      "engine": "c1ad2e3f0446133780d8f8e6c1f460ca07463b83",
+      "core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+      "build_receipt": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\builds-placement-r2.json",
+        "bytes": 687292,
+        "sha256": "00c2afc410f5cdcb6c1354550b64bf55d8f9467f0ad72258d0ac95e66c5f8376"
+      },
+      "raw_samples": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2.json",
+        "bytes": 817129,
+        "sha256": "ddb525eed8d016c2e2f11f4e9ab72c59d4138b9043236b5b7ef409d54646f6d8"
+      },
+      "games": {
+        "rka": {
+          "consumer": "de902a0a7328f8d3e50d6deeafde2b0eae133896",
+          "ui": "faa3330fd574fcfc9d64b0381d301cdfb87a62d4",
+          "baseline": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\binaries\\cartridge-r1\\rka\\RKARecomp.exe",
+            "sha256": "c01c413748d61e5373a173cdd68901a363092700fb9b24666b785376a17652ff",
+            "bytes": 8778752,
+            "engine": "39c5fb92f42ca3cbdf997c81fd4557e0ecb6ace4",
+            "core": "da2d8ec4a2be78204ef147e9bc12103f92653a06",
+            "seconds": 12.797000000020489
+          },
+          "candidate": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\rka-candidate\\Release\\RKARecomp.exe",
+            "sha256": "a422f742fb04756983871017f1e4613b90421e4ad4e4a63b987d44a68178e328",
+            "bytes": 8775168,
+            "engine": "c1ad2e3f0446133780d8f8e6c1f460ca07463b83",
+            "core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+            "seconds": 23.155999999959022
+          },
+          "correctness_passed": true,
+          "classification": "neutral/inconclusive",
+          "reductions_pct": {
+            "cpu_seconds": [
+              2.6022304832713727,
+              2.898550724637683
+            ],
+            "cpu_cycles": [
+              1.871836985400832,
+              1.5037435876276262
+            ]
+          },
+          "AA_drift_pct": {
+            "cpu_seconds": 2.6022304832713727,
+            "cpu_cycles": 1.504201898428481
+          },
+          "runs": {
+            "16:9": [
+              {
+                "arm": "B",
+                "cpu_seconds": 12.28125,
+                "cycles": 58253231620,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\rka-16x9-0-B",
+                "native_calls": 583514,
+                "native_tails": 350044
+              },
+              {
+                "arm": "A",
+                "cpu_seconds": 12.609375,
+                "cycles": 59364437110,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\rka-16x9-1-A",
+                "native_calls": 583514,
+                "native_tails": 350044
+              },
+              {
+                "arm": "A",
+                "cpu_seconds": 12.9375,
+                "cycles": 60257398100,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\rka-16x9-2-A",
+                "native_calls": 583514,
+                "native_tails": 350044
+              },
+              {
+                "arm": "B",
+                "cpu_seconds": 12.5625,
+                "cycles": 59351281340,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\rka-16x9-3-B",
+                "native_calls": 583514,
+                "native_tails": 350044
+              }
+            ],
+            "off": [
+              {
+                "arm": "A",
+                "cpu_seconds": 6.109375,
+                "cycles": 28289824520,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\rka-off-0-A",
+                "native_calls": 587984,
+                "native_tails": 332221
+              },
+              {
+                "arm": "B",
+                "cpu_seconds": 5.9375,
+                "cycles": 28205365990,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\rka-off-1-B",
+                "native_calls": 587984,
+                "native_tails": 332221
+              }
+            ]
+          },
+          "same_body_proof": 2947
+        },
+        "sonic1": {
+          "consumer": "510679e66abc435f12a29d66c2d6788f4e1008f9",
+          "ui": "47005fb27516398381f4fda88413ff74bee14842",
+          "baseline": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\binaries\\cartridge-r1\\sonic1\\SonicTheHedgehogRecomp.exe",
+            "sha256": "c12f1011b9abca16c747a381a676fd6c37782824391cb53451822d8d4a2b22cf",
+            "bytes": 5411328,
+            "engine": "39c5fb92f42ca3cbdf997c81fd4557e0ecb6ace4",
+            "core": "da2d8ec4a2be78204ef147e9bc12103f92653a06",
+            "seconds": 34.01599999994505
+          },
+          "candidate": {
+            "binary": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\sonic1-candidate\\Release\\SonicTheHedgehogRecomp.exe",
+            "sha256": "56342b015178bcc77d2f1c91bac0fa6e5e1aa221a14439d98f0f92f5e732cfe5",
+            "bytes": 5412352,
+            "engine": "c1ad2e3f0446133780d8f8e6c1f460ca07463b83",
+            "core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+            "seconds": 14.812999999965541
+          },
+          "correctness_passed": true,
+          "classification": "neutral/inconclusive",
+          "reductions_pct": {
+            "cpu_seconds": [
+              0.6172839506172867,
+              -2.499999999999991
+            ],
+            "cpu_cycles": [
+              2.166103359019833,
+              -0.5435747230283727
+            ]
+          },
+          "AA_drift_pct": {
+            "cpu_seconds": -1.2345679012345734,
+            "cpu_cycles": -2.5479336939558284
+          },
+          "runs": {
+            "16:9": [
+              {
+                "arm": "B",
+                "cpu_seconds": 2.515625,
+                "cycles": 11843200060,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\sonic1-16x9-0-B",
+                "native_calls": 196753,
+                "native_tails": 1411162
+              },
+              {
+                "arm": "A",
+                "cpu_seconds": 2.53125,
+                "cycles": 12105415880,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\sonic1-16x9-1-A",
+                "native_calls": 196753,
+                "native_tails": 1411162
+              },
+              {
+                "arm": "A",
+                "cpu_seconds": 2.5,
+                "cycles": 11796977910,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\sonic1-16x9-2-A",
+                "native_calls": 196753,
+                "native_tails": 1411162
+              },
+              {
+                "arm": "B",
+                "cpu_seconds": 2.5625,
+                "cycles": 11861103300,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\sonic1-16x9-3-B",
+                "native_calls": 196753,
+                "native_tails": 1411162
+              }
+            ],
+            "off": [
+              {
+                "arm": "A",
+                "cpu_seconds": 1.53125,
+                "cycles": 7204778520,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\sonic1-off-0-A",
+                "native_calls": 208299,
+                "native_tails": 1418684
+              },
+              {
+                "arm": "B",
+                "cpu_seconds": 1.59375,
+                "cycles": 7279984160,
+                "profile": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\carts-placement-r2\\sonic1-off-1-B",
+                "native_calls": 208299,
+                "native_tails": 1418684
+              }
+            ]
+          },
+          "same_body_proof": 2081
+        }
+      }
+    },
+    "CD_pure_control": {
+      "label": "E05-canonical-CD-pure-control-spans-r1",
+      "engine": "df04b6bf5bb595fa49a1e0ab6612a1e800cf6a0f",
+      "core": "d805be9f2c1a4a6bd4c2ad0dfda1da6bf59f1cd3",
+      "consumer": "94f57796db9de4990e23476b576b29239095fb22",
+      "ui": "b9ef2f539be3622eeb0e7d4a2ff33c8edf129667",
+      "baseline": {
+        "binary": "G:\\Temp\\Codex\\genesis-engine-native-state-20261028\\binaries\\r4\\SonicCD\\SonicCD.exe",
+        "sha256": "d2f79bd1adadaac41fc9db523a7188fc8d8f88ca0f7e851fba8f4445bcabe4ec",
+        "bytes": 115233792,
+        "seconds": 59.17200000002049,
+        "engine": "132b84d27a61acb3657ec12737446ca9625e7bb1",
+        "core": "4479e7e24abe3e4478d943f1eebd41cc264e0140"
+      },
+      "candidate": {
+        "binary": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd-build-flow-r1\\runtime\\Release\\SonicCD.exe",
+        "sha256": "3dc05856dbd9d119688fb1944223ad0659267f09a98ab9e6623187a60a13458a",
+        "bytes": 115634688
+      },
+      "unchanged_ordinary_archive_sha256": "1ebae703e46fe0c50e10b77c7687e022515ab2fd11320bfe94383732f29d9249",
+      "catalog_proof": {
+        "generation_seconds": 139.375,
+        "manifest_sha256": "283505cde3d56505353d4d686cbaa517b1b178af17134f40dfed09494f2ed552",
+        "canonical_bodies": 147882,
+        "flow_counts": {
+          "MAIN": 1908,
+          "SUB": 622
+        },
+        "descriptors_effects_and_old_callbacks_identical": true,
+        "unchanged_existing_companion_functions": 42989
+      },
+      "excluded_noncanonical_count": 193,
+      "correctness_passed": true,
+      "classification": "neutral/inconclusive",
+      "reductions_pct": {
+        "cpu_seconds": [
+          -5.208333333333326,
+          17.365269461077848
+        ],
+        "cycles": [
+          -4.207032090244267,
+          19.518711094049536
+        ]
+      },
+      "AA_drift_pct": {
+        "cpu_seconds": 30.46875,
+        "cycles": 36.632565687234056
+      },
+      "runs": [
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 6.3125,
+            "cycles": 29067267500
+          },
+          "startup_wall_seconds": 4.3684714999981225,
+          "startup_process_cost": {
+            "cpu_seconds": 0.40625,
+            "cycles": 2281571290
+          },
+          "flow_spans": [
+            [
+              339,
+              832,
+              28353,
+              75325
+            ]
+          ],
+          "differences": []
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 6.0,
+            "cycles": 27893767740
+          },
+          "startup_wall_seconds": 0.9406167999841273,
+          "startup_process_cost": {
+            "cpu_seconds": 0.421875,
+            "cycles": 2104456020
+          },
+          "flow_spans": [],
+          "differences": []
+        },
+        {
+          "arm": "A",
+          "cost": {
+            "cpu_seconds": 7.828125,
+            "cycles": 38111970530
+          },
+          "startup_wall_seconds": 0.8505429000360891,
+          "startup_process_cost": {
+            "cpu_seconds": 0.484375,
+            "cycles": 2057889830
+          },
+          "flow_spans": [],
+          "differences": []
+        },
+        {
+          "arm": "B",
+          "cost": {
+            "cpu_seconds": 6.46875,
+            "cycles": 30673005110
+          },
+          "startup_wall_seconds": 0.8446173000847921,
+          "startup_process_cost": {
+            "cpu_seconds": 0.484375,
+            "cycles": 2288699780
+          },
+          "flow_spans": [
+            [
+              339,
+              832,
+              28353,
+              75325
+            ]
+          ],
+          "differences": []
+        }
+      ],
+      "build_receipt": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\build-cd-flow-r1.json",
+        "bytes": 8721,
+        "sha256": "1161db2c3940032376ce94c6a511c18a77599fb6a2d2812d8fc4d1060b6fb8a0"
+      },
+      "raw_samples": {
+        "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\game-cd-flow-r1.json",
+        "bytes": 953693,
+        "sha256": "3ca7cc101de97393f10177a856c690e173ebd232d99097ae31d11d0d1f7e6005"
+      }
+    }
+  },
+  "tests": {
+    "native_frames": "MSVC/GCC each24 real-generated native/forcedfallback configurations plus promoted RAM JSR/JMP regression cases, including suspended static/dynamic tails, nested skips and head/walk restoration.",
+    "CD": [
+      "MSVC/GCC7/7 gate",
+      "223488 real generated ordinary/flow/independent-control comparisons",
+      "12090 atomic refusal cases",
+      "5280 matched chooser/IRQ/DMA/third-master/variant cases;260flow/40808fixed instructions;446 tight-budget fixed fallbacks",
+      "actual producer output compiles, links and retires; altered canonical prefix/terminal and stale parents filtered",
+      "existing198720 arithmetic and546560 owned-RMW comparisons retained"
+    ],
+    "entries": "MSVC/GCC and GCC+Unix-CMake execute native interior aliases, six sparse-hook cases each, and actual67function callgraph fixture. MSVC fixture bodies exact against frozen prior generator. Validator found/fixed CMake executable-path portability.",
+    "states": "Both first-package A/B current-build file lifecycles pass, Sonic1 seven invalid-state atomicity cases pass; final placement B both games save/load own files, restore exact saved RAM, progress and match qualified baseline artifacts. CD current-build component restore evidence remains E03; no actual full CD game save/load capability claimed.",
+    "failures_retained": [
+      "RAM edge resolver bypass reproduced then fixed before adoption",
+      "initial counter extern build failure fixed",
+      "two old RELEASE-syntax fixture failures corrected to documented bare RELEASE",
+      "initial CD scheduler Sub-reset fixture and valid-suffix expectation errors corrected",
+      "legacy alias fixture lacked SEGA magic and expected removed full.c artifact; repaired and actual execution added",
+      "central Beads push first retry failed under own transfer deadline; no shared server termination/bypass"
+    ]
+  },
+  "pull_requests": {
+    "engine": "https://github.com/mstan/segagenesisrecomp/pull/39",
+    "core": "https://github.com/mstan/m68k-recomp-core/pull/10",
+    "bases": "Stacked on E04 enginePR38/corePR9",
+    "assignee_limit": "TechnicallyComputers user exists, but both repo assignee eligibility endpoints return404; gh creation with assignee refused. PRs created unassigned. No collaborator/invitation/permission changes made."
+  },
+  "retention": "Retain isolated sources/frozen binaries/raw profiles/catalog proof/diagnostic source and patch for ongoing combined handoff; all outside delivery folders. WSL test scratch remains task-owned until no longer needed.",
+  "additional_evidence": {
+    "current-states-r1.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\current-states-r1.json",
+      "bytes": 7764,
+      "sha256": "6d52696c823c12b89aab0bda81c27e0b35b4b770c251a24f221c04ce991a6d55"
+    },
+    "placement-current-states-r2.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\placement-current-states-r2.json",
+      "bytes": 4111,
+      "sha256": "b95d3b386ba8aac7a4bc7b02e061aae2ac130bb23cba6c4b23caf5dff56dbc6a"
+    },
+    "cd-call-census.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd-call-census.json",
+      "bytes": 4259,
+      "sha256": "22c777ea425316fb1a75aa15fee092e28f0c5930694f03d6d5ca2536272f6843"
+    },
+    "cd-census-build.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\cd-census-build.json",
+      "bytes": 4647,
+      "sha256": "ab30bad05df0e7ce29a46f6878c194d525aa4b43e0b2629754bdad7beb80d952"
+    },
+    "placement-source-proof.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\placement-source-proof.json",
+      "bytes": 6005,
+      "sha256": "ca1cd7f91eb9ed8c72f52f6abdae7db352c10ebd6eec4ba062fa3c6ed692a389"
+    },
+    "placement-build.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\placement-build.json",
+      "bytes": 1195,
+      "sha256": "2434530c47e01aa4fd1c68c09b595f2160926232806828d0a1db618f5cfaee65"
+    },
+    "placement-checks.json": {
+      "path": "G:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\placement-checks.json",
+      "bytes": 47305,
+      "sha256": "3e8ed450418f5960ff09fe258c75dc5b78f1432903167d410227d647a25a2df8"
+    }
+  },
+  "capacity_receipts": {
+    "capacity-native-frame-tests-2.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-native-frame-tests-2.json",
+      "bytes": 1677,
+      "sha256": "1bf0f6cc4a38efafaf187007e493f212574911b2eee2ad49066a95d3ad4a9792"
+    },
+    "capacity-portable-frames-2.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-portable-frames-2.json",
+      "bytes": 1700,
+      "sha256": "de57d33e603f9656c0af7a95d0770f0700197e9951592e8c6fd4f51f49e4387f"
+    },
+    "capacity-current-states-r3.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-current-states-r3.json",
+      "bytes": 1703,
+      "sha256": "c5b088b5446a012ca0ec15e6f3af492682c25c71c250e086c131ecc0a8b68a39"
+    },
+    "capacity-cart-checks-r1.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-cart-checks-r1.json",
+      "bytes": 1712,
+      "sha256": "4266354210cd9667a2be0f8f193812c8f3b979ba7d8f64f51f3606536bc6edc4"
+    },
+    "capacity-cd-flow-tests-2.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-cd-flow-tests-2.json",
+      "bytes": 1701,
+      "sha256": "d9ee4566ef899a3c9c6d4842d6d65bb02bcf6bb018ec7c7e4d7deeb258db70bb"
+    },
+    "capacity-flow-catalog-final.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-flow-catalog-final.json",
+      "bytes": 1975,
+      "sha256": "7d1014d2e63edb46f1a304646cdd6a982ed55f6d7c46edf072b3128b5d42aacd"
+    },
+    "capacity-cd-flow-build-1.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-cd-flow-build-1.json",
+      "bytes": 1698,
+      "sha256": "e7180ccfac6de411d23faeb392231331132850be1cc178097f45b92020948511"
+    },
+    "capacity-cd-flow-runtime-1.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-cd-flow-runtime-1.json",
+      "bytes": 1695,
+      "sha256": "a73237f63440ef3f2ad65e76a4a67b80a681beeff2ead94f7ac5867e975ec972"
+    },
+    "capacity-placement-build-1.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-placement-build-1.json",
+      "bytes": 1703,
+      "sha256": "10538af4748877430a9a10e99c3aeb53ce4df515fcad0c72dff0582628bb03ec"
+    },
+    "capacity-scope-checks-1.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-scope-checks-1.json",
+      "bytes": 1692,
+      "sha256": "efffa0bdb62c7c49ad7a9cacdd0931071e5e57ff0bd7eca072c4a71632eb2d27"
+    },
+    "capacity-cd-census-1.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-cd-census-1.json",
+      "bytes": 1682,
+      "sha256": "a76b6a9a0360203e74b5bbccf71c44639c0121195c14d1b8f63c9ed945c4fabb"
+    },
+    "capacity-entry-contracts-2.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-entry-contracts-2.json",
+      "bytes": 1711,
+      "sha256": "0d39ec0a1a3f9c0882deb4667a8bc285c22065dc4e87fb2608c13d22ae13df09"
+    },
+    "capacity-placement-r2-build-1.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-placement-r2-build-1.json",
+      "bytes": 1710,
+      "sha256": "063cd73cb3f36428b5f7141a6a42b95c24f10ab3510fa9174f7f8c7d37432c77"
+    },
+    "capacity-final-carts-1.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-final-carts-1.json",
+      "bytes": 1682,
+      "sha256": "7f0ca3ca9f53b2f3fb05c12587c2abc346bac88c9eb5d1c55d8a911b8a316ab4"
+    },
+    "capacity-portable-cmake-entries.json": {
+      "path": "C:\\temp\\Codex\\genesis-engine-control-flow-20261029\\capacity-portable-cmake-entries.json",
+      "bytes": 1698,
+      "sha256": "735264204e90412df75cbd22b77ef5d9d3272e67cfc540ccbd3a847d54f6bb0c"
+    }
+  },
+  "cost_limits": {
+    "binary_deltas_vs_E04_bytes": {
+      "rka": 340992,
+      "sonic1": 195072,
+      "SonicCD": 400896
+    },
+    "process_RSS_delta": "Not measured; no zero-memory-cost claim. Source tables/bitsets/lookup fallback and binary sizes retained.",
+    "cartridge_frame": "One derived pointer per actual active frame; snapshots are current-build only.",
+    "CD_flow_qualification_bits_bytes": 8192,
+    "compiler_layout": "Same32parts and exact body bijection; source clusters bounded, existing large functions indivisible. Raw build times are retained but unlike cache states are not compared as build speedups."
+  },
+  "independent_review": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-control-flow-20261029\\VALIDATOR_E05.md",
+    "sha256": "1238c61d2774e1bb24db7bf26669a43764f9d94b309c5bca059d7742e5989a5c",
+    "verdict": "ACCEPTED",
+    "reviewed_engine_PR_head": "b3ac9569ef31197d5555c66ab002a919f3c83db3",
+    "reviewed_core_head": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+    "next": "E06 fresh validation-only reviewer; no E07 until that reviewer instructs"
+  }
+}

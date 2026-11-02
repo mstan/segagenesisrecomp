@@ -46,6 +46,7 @@ Track any future implementation under the owning game's normal Beads hierarchy, 
 
 - [ ] **T11: Custom art/effects and renderer adapters** — original N16,N18,N19,N21,N22.
   - Scope: Private art/layout caches, game special effects, custom image-reuse eligibility and title GPU/worker packet generation. Preserve the accepted Blue Spheres composition.
+  - E37: Hardware raster jobs support generic widescreen/private art/extended palettes. Adopting title-owned complete-row or world renderers at enhanced resolution requires a title-owned adapter with equivalent source provenance; the common engine retains their exact existing native output until that adapter is qualified.
   - Disposition: Deferred outside engine goal.
 
 - [ ] **T12: Game launcher media pipeline** — original N33.
@@ -55,6 +56,10 @@ Track any future implementation under the owning game's normal Beads hierarchy, 
 - [ ] **T13: Game system-program services** — original N36.
   - Scope: SP/file-engine or other title routines identified by game-specific code/PC/state; these are not generic BIOS services.
   - Disposition: Deferred outside engine goal.
+
+- [ ] **T14: Sonic 3 & Knuckles campaign save journal** — discovered during E35.
+  - Scope: `tri_save_sram_flushed` calls the title's synchronous `campaign_confirm` journal after a native SRAM commit. This is title policy outside the engine persistence owner; its callback does not mutate guest memory.
+  - Disposition: Retained for a separate title investigation. E35 preserves producer-side acknowledgment of the actual committed bytes; it does not claim to optimize this journal.
 
 ## Retained context
 
