@@ -204,6 +204,15 @@ static void write_player(FILE *f, int player)
     fprintf(f, "\n");
 }
 
+void app_config_reload_preserving_mods(const char *path)
+{
+    int on=g_app_config.custom_widescreen,aspect=g_app_config.custom_aspect,diagnostics=g_app_config.replay_diagnostics;
+    int rate=g_app_config.presentation_rate,bypass=g_app_config.audio_filter_bypass;
+    app_config_load(path);
+    g_app_config.presentation_rate=rate;g_app_config.audio_filter_bypass=bypass;
+    g_app_config.custom_widescreen=on;g_app_config.custom_aspect=aspect;
+    g_app_config.replay_diagnostics=diagnostics;
+}
 int app_config_save(const char *path)
 {
     FILE *f = fopen(path, "wb");
@@ -392,12 +401,7 @@ static int video_mod_commit(void *ctx,const char *image)
 {
     (void)ctx;(void)image;s_mod_error[0]=0;
     /* Keep any controller rebindings the launcher already persisted. */
-    int on=g_app_config.custom_widescreen,aspect=g_app_config.custom_aspect,diagnostics=g_app_config.replay_diagnostics;
-    int rate=g_app_config.presentation_rate,bypass=g_app_config.audio_filter_bypass;
-    app_config_load(s_mod_settings);
-    g_app_config.presentation_rate=rate;g_app_config.audio_filter_bypass=bypass;
-    g_app_config.custom_widescreen=on;g_app_config.custom_aspect=aspect;
-    g_app_config.replay_diagnostics=diagnostics;
+    app_config_reload_preserving_mods(s_mod_settings);
     if(app_config_save(s_mod_settings))return 1;
     MOD_COPY(s_mod_error,"Unable to save widescreen settings.ini");return 0;
 }

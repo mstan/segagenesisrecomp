@@ -131,6 +131,19 @@ int main(int argc,char **argv)
     CHECK(p->feature_enable(p->ctx,"audio-output","unfiltered",0));
     CHECK(p->commit(p->ctx,NULL));app_config_defaults();CHECK(app_config_load(argv[1]));
     CHECK(!g_app_config.presentation_rate && !g_app_config.audio_filter_bypass);
+    /* Closing imports bindings too, without the Play-only provider commit. */
+    g_input_map.p[0].key[GB_A]=321;CHECK(app_config_save(argv[1]));
+    g_input_map.p[0].key[GB_A]=999;
+    g_app_config.presentation_rate=144;g_app_config.audio_filter_bypass=1;
+    g_app_config.custom_widescreen=1;g_app_config.custom_aspect=3;
+    g_app_config.replay_diagnostics=0;
+    app_config_reload_preserving_mods(argv[1]);
+    CHECK(g_input_map.p[0].key[GB_A]==321);
+    CHECK(g_app_config.presentation_rate==144 && g_app_config.audio_filter_bypass);
+    CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==3 && !g_app_config.replay_diagnostics);
+    CHECK(app_config_save(argv[1]));app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(g_app_config.presentation_rate==144 && g_app_config.audio_filter_bypass);
+    CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==3 && !g_app_config.replay_diagnostics);
     CHECK(remove(argv[1])==0); /* this executable owns only its explicit CTest fixture */
     puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence and input binding preservation");
     return 0;
