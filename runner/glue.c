@@ -7,6 +7,9 @@
  */
 
 #include "glue.h"
+#if GENESIS_HD_JOBS
+#include "video/genesis_raster_jobs.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1467,6 +1470,9 @@ void glue_save_state(FILE *sf)
 
 void glue_load_state(FILE *sf)
 {
+#if GENESIS_HD_JOBS
+    gvdp_hd_reset();
+#endif
     fread(&g_cpu, 1, sizeof(g_cpu), sf);
     fread(&g_frame_count, 1, sizeof(g_frame_count), sf);
     fread(&g_cycle_accumulator, 1, sizeof(g_cycle_accumulator), sf);
