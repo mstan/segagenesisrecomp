@@ -196,6 +196,11 @@ class ISO9660:
         limit = getattr(self, "volume_sectors", self.track_sectors)
         if not isinstance(relative_lba, int) or not 0 <= relative_lba < limit:
             raise ValueError("ISO sector outside declared data volume")
+        if hasattr(self.image, 'read_user_sectors'):
+            data = self.image.read_user_sectors(self.track['start'] + relative_lba, 1, self.track)
+            if len(data) != USER_SECTOR:
+                raise ValueError('truncated ISO user sector')
+            return data
         sector = self.image.read_raw_sector(self.track["start"] + relative_lba, self.track)
         if sector[:12] != b"\0" + b"\xff" * 10 + b"\0" or sector[15] != 1:
             raise ValueError("invalid MODE1/2352 data sector")
@@ -232,7 +237,12 @@ class ISO9660:
         result = bytearray()
         for first in range(lba, lba + count, 128):
             n = min(128, lba + count - first)
-            if hasattr(self.image, 'read_raw_sectors'):
+            if hasattr(self.image, 'read_user_sectors'):
+                data = self.image.read_user_sectors(self.track['start'] + first, n, self.track)
+                if len(data) != n * USER_SECTOR:
+                    raise ValueError('truncated ISO user-sector range')
+                result.extend(data)
+            elif hasattr(self.image, 'read_raw_sectors'):
                 raw = self.image.read_raw_sectors(self.track['start'] + first, n, self.track)
                 for offset in range(0, len(raw), RAW_SECTOR):
                     sector = raw[offset:offset + RAW_SECTOR]

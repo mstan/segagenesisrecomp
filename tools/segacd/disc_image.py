@@ -128,6 +128,7 @@ class SourceTrack:
     index00: int = 0
     start: int = 0
     end: int = 0
+    sector_size: int = RAW
 
 
 def frames(value):
@@ -140,7 +141,7 @@ def frames(value):
     return (minute * 60 + second) * 75 + frame
 
 
-def read_cue(cue):
+def read_cue(cue, *, allow_user_data=False):
     cue = Path(cue).resolve(strict=True)
     tracks, current, filename = [], None, None
     for line_no, line in enumerate(cue.read_text(encoding='utf-8-sig').splitlines(), 1):
@@ -154,15 +155,18 @@ def read_cue(cue):
             match = re.fullmatch(r'"([^"]+)"\s+BINARY', arg, re.I)
             if not match:
                 raise ValueError('Only quoted BINARY FILE sources are supported')
-            filename = (cue.parent / match[1]).resolve(strict=True)
+            filename = (cue.parent / match[1].replace('\\', '/')).resolve(strict=True)
             if not filename.is_file():
                 raise ValueError('CUE FILE must be a regular file')
             current = None
         elif command == 'TRACK':
-            match = re.fullmatch(r'(\d+)\s+(MODE1/2352|AUDIO)', arg, re.I)
+            modes = r'MODE1/(?:2352|2048)|AUDIO' if allow_user_data else r'MODE1/2352|AUDIO'
+            match = re.fullmatch(r'(\d+)\s+(' + modes + ')', arg, re.I)
             if not match or filename is None or len(tracks) >= 99 or int(match[1]) != len(tracks) + 1:
                 raise ValueError('Expected consecutive raw MODE1/2352 or AUDIO tracks from 01')
             current = SourceTrack(len(tracks) + 1, filename, match[2].upper() != 'AUDIO')
+            if match[2].upper() == 'MODE1/2048':
+                current.sector_size = 2048
             tracks.append(current)
         elif command == 'INDEX':
             match = re.fullmatch(r'(00|01)\s+(\S+)', arg)
@@ -183,18 +187,20 @@ def read_cue(cue):
         if 1 not in track.indexes:
             raise ValueError('Missing INDEX 01')
         size = track.path.stat().st_size
-        if size % RAW or track.path in finished_files:
+        if size % track.sector_size or track.path in finished_files:
             raise ValueError('Truncated raw sector or non-contiguous FILE reuse')
         track.stored_start = track.indexes.get(0, track.indexes[1])
-        track.stored_end = size // RAW
+        track.stored_end = size // track.sector_size
         if i + 1 < len(tracks) and tracks[i + 1].path == track.path:
             following = tracks[i + 1]
+            if following.sector_size != track.sector_size:
+                raise ValueError('Mixed sector sizes cannot share one CUE FILE')
             if 1 not in following.indexes:
                 raise ValueError('Missing following INDEX 01')
             track.stored_end = following.indexes.get(0, following.indexes[1])
         else:
             finished_files.add(track.path)
-        if not 0 <= track.stored_start <= track.indexes[1] < track.stored_end <= size // RAW:
+        if not 0 <= track.stored_start <= track.indexes[1] < track.stored_end <= size // track.sector_size:
             raise ValueError('Overlapping, empty, reversed or out-of-file track bounds')
         stored_gap = track.indexes[1] - track.stored_start
         if i == 0:
