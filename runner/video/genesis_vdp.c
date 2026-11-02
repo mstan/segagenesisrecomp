@@ -929,9 +929,11 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, uint8_t *private_out, 
                         ((uint32_t)v->vram[pa + 1] << 16) |
                         ((uint32_t)v->vram[pa + 2] << 8) | v->vram[pa + 3];
         uint8_t attr = (uint8_t)(((e >> 9) & 0x30) | ((e >> 8) & 0x80));
+        int line_ext=!(e&0x6000)?gvdp_ext_line(e&0x7ff):0;
         if(gvdp_hd_capturing())
             gvdp_hd_emit(layer,dest_x,(unsigned)n,bits,(unsigned)fx,(e&0x800)!=0,
-                         (unsigned)(((e>>13)&3)*16),(e&0x8000)!=0,255);
+                         line_ext?(unsigned)(GVDP_HOST_PALETTE_BASE+(line_ext-1)*16):
+                                  (unsigned)(((e>>13)&3)*16),(e&0x8000)!=0,255);
 #if GENESIS_NATIVE_TILE_ROWS
         uint64_t pixels = gtile_packed_row(bits, attr, e & 0x800);
         if (n == 8) {
@@ -948,7 +950,7 @@ static void fetch_plane_span(const GVDP *v, uint8_t *out, uint8_t *private_out, 
         }
 #endif
         if (private_out) {
-            int ext = !(e & 0x6000) ? gvdp_ext_line(e & 0x7ff) : 0;
+            int ext = line_ext;
             for (int i = 0; i < n; ++i) {
                 unsigned nib = out[i] & 15u;
                 private_out[i] = ext && nib ?
@@ -1180,12 +1182,11 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     }
 
 #if GENESIS_BATCHED_PLANES
-    /* Native plane bytes pack six-bit color plus opacity/priority. Extended
-     * plane colors require the existing scalar fetch path with full indices.
+    /* Preserve packed priority metadata and separate private plane indices.
      * Host sprite drawing accepts arbitrary nonzero flags; normalize the row
      * for both packed composition and the portable selection-table path. The
      * callback ran exactly once, even if it unregistered itself while drawing. */
-    int batched_planes=s_ext_tiles==NULL;
+    int batched_planes=1;
     if(host_flags)for(int x=0;x<total;++x) {
         s_spr_op[x]=(uint8_t)(s_spr_op[x]!=0);
         s_spr_hi[x]=(uint8_t)(s_spr_hi[x]!=0);
@@ -1198,6 +1199,8 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
      * window addressing so their independent tables never alias each other. */
 #if GENESIS_BATCHED_PLANES
     uint8_t plane_a[GVDP_MAX_WIDTH], plane_b[GVDP_MAX_WIDTH];
+    uint8_t private_a[GVDP_MAX_WIDTH], private_b[GVDP_MAX_WIDTH];
+    int private_planes=s_ext_tiles!=NULL;
     if(batched_planes) {
         for (int x = -content_extra, xo = content_start; xo < content_end;) {
             int boundary;
@@ -1216,11 +1219,11 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
             }
             int window_h_in = window_h_right ? x >= window_x : x < window_x;
             if (x >= 0 && x < w && (window_h_in || window_v_in))
-                fetch_plane_span(v, plane_a + xo, NULL, n, base_w, win_wt, ht, x, line, im2,0,(unsigned)xo);
+                fetch_plane_span(v, plane_a + xo, private_planes?private_a+xo:NULL, n, base_w, win_wt, ht, x, line, im2,0,(unsigned)xo);
             else
-                fetch_plane_span(v, plane_a + xo, NULL, n, base_a, wt, ht,
+                fetch_plane_span(v, plane_a + xo, private_planes?private_a+xo:NULL, n, base_a, wt, ht,
                                  x - hs_a, line + vs_a, im2,0,(unsigned)xo);
-            fetch_plane_span(v, plane_b + xo, NULL, n, base_b, wt, ht,
+            fetch_plane_span(v, plane_b + xo, private_planes?private_b+xo:NULL, n, base_b, wt, ht,
                              x - hs_b, line + vs_b, im2,1,(unsigned)xo);
             x += n; xo += n;
         }
@@ -1236,6 +1239,10 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
             s_spr_idx+content_start,s_spr_op+content_start,s_spr_hi+content_start,
             s_spr_shadow_op+content_start,s_spr_hilite_op+content_start,
             content_block,backdrop,sh_mode);
+        if(private_planes)
+            compose_private_planes(out+content_start,plane_a+content_start,plane_b+content_start,
+                private_a+content_start,private_b+content_start,
+                s_spr_op+content_start,s_spr_hi+content_start,content_block);
         gvdp_hd_end_row();return total;
     }
 #endif
@@ -1247,7 +1254,8 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
         uint8_t a_idx,b_idx;int a_op,a_hi,b_op,b_hi;
 #if GENESIS_BATCHED_PLANES
         if(batched_planes) {
-            a_idx=plane_a[xo]&0x3f;b_idx=plane_b[xo]&0x3f;
+            a_idx=private_planes&&private_a[xo]?private_a[xo]:plane_a[xo]&0x3f;
+            b_idx=private_planes&&private_b[xo]?private_b[xo]:plane_b[xo]&0x3f;
             a_op=(plane_a[xo]&0x40)!=0;a_hi=(plane_a[xo]&0x80)!=0;
             b_op=(plane_b[xo]&0x40)!=0;b_hi=(plane_b[xo]&0x80)!=0;
         } else

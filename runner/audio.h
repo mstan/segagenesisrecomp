@@ -11,6 +11,9 @@
  */
 int  audio_init(int psg_sample_rate);
 void audio_close(void);
+/* Host-device request for the next audio_init; internal emulation/mix rate
+ * and WAV capture are unchanged. SDL may negotiate another supported rate. */
+void audio_set_output_rate(int hz);
 
 /* Master output volume, 0..100 (settings.ini / launcher). Speaker stream only;
  * the WAV capture tap stays bit-exact. */

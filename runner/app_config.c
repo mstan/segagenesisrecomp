@@ -37,6 +37,7 @@ void app_config_defaults(void)
     g_app_config.custom_widescreen = s_default_custom_widescreen;
     g_app_config.custom_aspect = s_default_custom_aspect;
     g_app_config.volume           = 100;
+    g_app_config.audio_freq       = 48000;
     g_app_config.skip_launcher    = 0;
     g_app_config.rewind_enabled   = 1;
     g_app_config.rewind_depth     = 60;
@@ -144,6 +145,11 @@ int app_config_load(const char *path)
             else if (!strcmp(key, "widescreen_cells")) g_app_config.widescreen_cells = atoi(val);
         } else if (section == 1) {
             if (!strcmp(key, "volume")) g_app_config.volume = atoi(val);
+            else if (!strcmp(key, "frequency")) {
+                int rate = atoi(val);
+                g_app_config.audio_freq = rate == 32040 || rate == 32000 ||
+                    rate == 44100 || rate == 48000 ? rate : 48000;
+            }
         } else if (section == 2) {
             if (!strcmp(key, "skip_launcher")) g_app_config.skip_launcher = atoi(val);
         } else if (section == 3) {
@@ -210,7 +216,8 @@ int app_config_save(const char *path)
     fprintf(f, "widescreen = %d\n",       g_app_config.widescreen);
     fprintf(f, "widescreen_cells = %d\n\n", g_app_config.widescreen_cells);
     fprintf(f, "[audio]\n");
-    fprintf(f, "volume = %d\n\n",         g_app_config.volume);
+    fprintf(f, "volume = %d\n",           g_app_config.volume);
+    fprintf(f, "frequency = %d\n\n",      g_app_config.audio_freq);
     fprintf(f, "[launcher]\n");
     fprintf(f, "skip_launcher = %d\n\n",  g_app_config.skip_launcher);
     fprintf(f, "[rewind]\nenabled = %d\ndepth = %d\ninterval = %d\n\n",
