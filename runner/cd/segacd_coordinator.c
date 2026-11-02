@@ -4,11 +4,17 @@
 #ifndef SEGACD_OWNED_CODE_SPANS
 #define SEGACD_OWNED_CODE_SPANS 1
 #endif
+#ifndef SEGACD_EVENT_DEADLINES
+#define SEGACD_EVENT_DEADLINES 1
+#endif
 
 /* NTSC master 53,693,175 Hz; main 68000 master/7; sub 12,500,000 Hz.
  * PAL and hardware bus-cycle phasing need separate qualification. */
 enum { MAIN_DENOM=53693175,MAIN_NUMER=87500000 };
 static M68kStepResult execute_cpu(SegaCDCoordinator *,unsigned);
+static void revoke_code_leases(SegaCDCoordinator *c)
+{c->catalog_lookup[0].code_epoch=c->catalog_lookup[1].code_epoch=0;}
+
 static int device_fault(const SegaCDCoordinator*c)
 {
     return c->devices->drive.unsupported_command || c->devices->media_error || c->devices->cdda_error ||
@@ -16,10 +22,17 @@ static int device_fault(const SegaCDCoordinator*c)
         c->devices->dma.last_result==SEGACD_DMA_ODD_BYTE_COUNT ||
         c->devices->dma.last_result==SEGACD_DMA_UNMAPPED;
 }
-static void advance_devices(SegaCDCoordinator *c)
+static void service_devices(SegaCDCoordinator *c,int coalesce)
 {
+    c->region_event_valid=0;
     uint64_t now=c->time[0];
     if(segacd_sub_runnable(c->devices) && c->time[1]<now)now=c->time[1];
+    /* A qualified interval need not republish an unchanged clock before the
+     * next instruction. Keep cache revocation above: preceding writes can
+     * change device deadlines without advancing the shared minimum clock.
+     * A host event already due NOW still requires its real callback. */
+    if(coalesce && now<=c->device_time &&
+       (!c->host_advance || c->host_next_event(c->host_user)>c->device_time))return;
     /* A third master may be the current limiting clock. External Main byte
      * WAIT is the exception: its Sub owner and devices must continue advancing
      * while the Z80/master making that access is synchronously paused. */
@@ -34,9 +47,24 @@ static void advance_devices(SegaCDCoordinator *c)
     }
     if(c->host_advance)c->host_advance(c->host_user,c->device_time);
 }
-static uint64_t next_event_time(SegaCDCoordinator*c,uint64_t deadline)
+static void advance_devices(SegaCDCoordinator *c)
+{service_devices(c,0);}
+static int event_intervals_qualified(const SegaCDCoordinator *c)
+{return SEGACD_EVENT_DEADLINES && c->event_intervals_qualified;}
+static void qualify_event_intervals(SegaCDCoordinator *c)
 {
-    uint64_t now=c->device_time,next=now+SEGACD_TIMER_DIVISOR;
+    /* region_effects also qualifies interval-composable sinks and complete
+     * host observer deadlines. A callback without a deadline provider keeps
+     * the old bounded service cadence, even with native CPU metadata. */
+    c->event_intervals_qualified=(uint8_t)(
+        (c->region_effect_count[0]||c->region_effect_count[1]) &&
+        (!c->host_advance||c->host_next_event));
+}
+static uint64_t event_time(SegaCDCoordinator*c,uint64_t deadline,int qualified)
+{
+    uint64_t now=c->device_time,next=UINT64_MAX;
+    if(!qualified && UINT64_MAX-now>=SEGACD_TIMER_DIVISOR)
+        next=now+SEGACD_TIMER_DIVISOR;
     if(c->devices->timer_reload) {
         uint64_t timer=c->devices->timer_origin+((uint64_t)c->devices->timer_reload+1)*SEGACD_TIMER_DIVISOR;
         if(timer>now && timer<next)next=timer;
@@ -58,6 +86,8 @@ static uint64_t next_event_time(SegaCDCoordinator*c,uint64_t deadline)
         next=now+6u-c->devices->dma.phase;
     return deadline<next?deadline:next;
 }
+static uint64_t next_event_time(SegaCDCoordinator*c,uint64_t deadline)
+{return event_time(c,deadline,0);}
 static void account(SegaCDCoordinator *c,unsigned cpu,uint64_t cycles)
 {
     if(cpu==SEGACD_SUB)c->time[cpu]+=cycles;
@@ -100,6 +130,10 @@ static void observe_cdd_submission(SegaCDCoordinator*c,SegaCDCpu cpu,uint32_t a,
      * are only staging; an ignored submit (HOCK low) leaves no pending
      * command. Command zero is a status poll, not a transport request. */
     if(!d->command_pending || !d->pending[0])return;
+    unsigned command=d->pending[0];
+    if(c->media_cancel&&(command==1||command==3||command==4||
+        (command>=6&&command<=10)||command==12||command==13))
+        c->media_cancel(c->io.media_user);
     uint64_t sequence=c->cdd_submission_total++;
     SegaCDCddSubmission*entry=&c->cdd_submissions[sequence%SEGACD_CDD_TRACE_CAPACITY];
     memcpy(entry->packet,d->pending,sizeof entry->packet);
@@ -113,7 +147,11 @@ static M68kStepBusResult bus_write8(void *user,uint32_t a,uint8_t v)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     SegaCDResult r=segacd_write8(c->devices,b->cpu,a,v);
-    if(r==SEGACD_OK)observe_cdd_submission(c,b->cpu,a,0);
+    if(r==SEGACD_OK) {
+        if(b->cpu==SEGACD_SUB&&(a&0xFFFFFFu)==0xFF8001u&&!(v&1)&&c->media_cancel)
+            c->media_cancel(c->io.media_user);
+        observe_cdd_submission(c,b->cpu,a,0);
+    }
     if(r!=SEGACD_UNMAPPED)return translate(r);
     if(b->cpu==SEGACD_SUB || main_cd_port(a) || !c->host_main.write8)return M68K_BUS_FAULT;
     return c->host_main.write8(c->host_user,a,v);
@@ -122,7 +160,11 @@ static M68kStepBusResult bus_write16(void *user,uint32_t a,uint16_t v)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     SegaCDResult r=segacd_write16(c->devices,b->cpu,a,v);
-    if(r==SEGACD_OK)observe_cdd_submission(c,b->cpu,a,1);
+    if(r==SEGACD_OK) {
+        if(b->cpu==SEGACD_SUB&&(a&0xFFFFFFu)==0xFF8000u&&!(v&1)&&c->media_cancel)
+            c->media_cancel(c->io.media_user);
+        observe_cdd_submission(c,b->cpu,a,1);
+    }
     if(r!=SEGACD_UNMAPPED)return translate(r);
     if(b->cpu==SEGACD_SUB || main_cd_port(a) || !c->host_main.write16)return M68K_BUS_FAULT;
     return c->host_main.write16(c->host_user,a,v);
@@ -140,6 +182,32 @@ static M68kStepBusResult bus_fetch(void *user,uint32_t a,uint16_t *v)
     if(b->cpu==SEGACD_MAIN && !main_cd_port(a) && c->host_main.fetch16)
         return c->host_main.fetch16(c->host_user,a,v);
     return M68K_BUS_FAULT;
+}
+static int bus_data_region(void *user,uint32_t a,size_t bytes,int write,M68kStepDataRegion *out)
+{
+    SegaCDBusBinding *b=user;SegaCDCoordinator *c=b->owner;
+    SegaCDMemoryRegion region;
+    int memory=b->cpu==SEGACD_MAIN?a<0x40000u||(a>=0x200000u&&a<0x240000u):a<0xe0000u;
+    if(memory) {
+        if(!segacd_memory_region(c->devices,b->cpu,a,bytes,write,&region))return 0;
+        out->address=region.address;out->bytes=region.bytes;out->data=region.data;
+    } else {
+        if(b->cpu!=SEGACD_MAIN||main_cd_port(a)||!c->host_data_region||
+           !c->host_data_region(c->host_user,a,bytes,write,out))return 0;
+        /* A host may expose a broad backing allocation. It never owns the
+         * CD apertures inside that allocation: clip to the one host interval
+         * containing this request before caching the permission/view. */
+        if(!out->data||out->address>0xffffffu||!out->bytes||
+           out->bytes>0x1000000u-out->address)return 0;
+        uint32_t lower=a<0x200000u?0x040000u:a<0xA12000u?0x240000u:0xA12200u;
+        size_t upper=a<0x200000u?0x200000u:a<0xA12000u?0xA12000u:0x1000000u;
+        size_t end=(size_t)out->address+out->bytes;
+        uint32_t start=out->address>lower?out->address:lower;
+        if(end>upper)end=upper;
+        if(a<start||a>=end||bytes>end-a)return 0;
+        out->data+=start-out->address;out->address=start;out->bytes=end-start;
+    }
+    ++c->data_resolutions[b->cpu];return 1;
 }
 #if defined(M68K_STEP_HAS_CODE_SPANS) && M68K_STEP_HAS_CODE_SPANS && SEGACD_OWNED_CODE_SPANS
 static const uint8_t *bus_code_span(void *user,uint32_t a,size_t bytes)
@@ -166,6 +234,7 @@ static void bus_reset(void *user)
 {
     SegaCDBusBinding*b=user;SegaCDCoordinator*c=b->owner;
     if(b->cpu==SEGACD_MAIN) {
+        if(c->media_cancel)c->media_cancel(c->io.media_user);
         segacd_reset(c->devices);
         if(c->host_main.reset_devices)c->host_main.reset_devices(c->host_user);
     }
@@ -233,8 +302,8 @@ static M68kStepResult execute_cpu(SegaCDCoordinator *c,unsigned which)
     if(cpu->state.fault)return (M68kStepResult)cpu->state.fault;
     if(cpu->state.stopped)return M68K_STEP_STOPPED;
     c->busy[which]=1;
-    M68kStepResult result=segacd_catalog_index_execute(c->catalog_index[which],&c->catalog_lookup[which],cpu,
-                                               c->modules[which],c->module_count[which]);
+    M68kStepResult result=segacd_catalog_index_execute_qualified(c->catalog_index[which],&c->catalog_lookup[which],cpu,
+        c->modules[which],c->module_count[which],c->region_effects[which],c->region_effect_count[which]);
     if(result==M68K_STEP_MISS && c->floor_step) {
         result=c->floor_step(cpu);if(result==M68K_STEP_OK)++c->floor_steps[which];
     } else if(result==M68K_STEP_OK)++c->native_steps[which];
@@ -253,6 +322,7 @@ int segacd_coordinator_init(SegaCDCoordinator *c,SegaCD *devices,const M68kStepB
     M68kStepBus bus={bus_read8,bus_read16,bus_write8,bus_write16,bus_fetch,bus_wait,bus_ack,bus_reset};
     for(unsigned n=0;n<2;++n){
         c->binding[n].owner=c;c->binding[n].cpu=(SegaCDCpu)n;m68k_step_init(&c->cpu[n],&bus,&c->binding[n]);
+        (void)m68k_step_data_regions(&c->cpu[n],bus_data_region);
 #if defined(M68K_STEP_HAS_CODE_SPANS) && M68K_STEP_HAS_CODE_SPANS && SEGACD_OWNED_CODE_SPANS
         (void)m68k_step_code_span(&c->cpu[n],bus_code_span);
 #endif
@@ -263,10 +333,13 @@ int segacd_coordinator_modules(SegaCDCoordinator *c,SegaCDCpu cpu,const M68kStep
 {
     if(!c || (unsigned)cpu>1 || (count && !modules) || c->busy[0] || c->busy[1])return 0;
     for(size_t n=0;n<count;++n)if(!m68k_step_module_valid(modules[n]))return 0;
-    c->modules[cpu]=modules;c->module_count[cpu]=count;
+    revoke_code_leases(c);c->modules[cpu]=modules;c->module_count[cpu]=count;
+    c->register_spans[cpu]=NULL;c->register_span_count[cpu]=0;
+    c->flow_spans[cpu]=NULL;c->flow_span_count[cpu]=0;
     segacd_catalog_index_destroy(c->catalog_index[cpu]);c->catalog_index[cpu]=NULL;
     if(c->catalog_index_enabled)
         c->catalog_index[cpu]=segacd_catalog_index_create(SEGACD_INDEX_DEFAULT_LIMIT);
+    c->code_reuses_retired+=c->catalog_lookup[cpu].code_reuses;
     segacd_catalog_lookup_reset(&c->catalog_lookup[cpu]);return 1;
 }
 int segacd_coordinator_catalog_index(SegaCDCoordinator *c,int enabled)
@@ -279,25 +352,113 @@ int segacd_coordinator_catalog_index(SegaCDCoordinator *c,int enabled)
     }
     c->catalog_index_enabled=(uint8_t)(enabled!=0);return 1;
 }
+void segacd_coordinator_end_code_lease(SegaCDCoordinator *c,SegaCDCpu cpu)
+{if(c&&(cpu==SEGACD_MAIN||cpu==SEGACD_SUB))c->catalog_lookup[cpu].code_epoch=0;}
+int segacd_coordinator_begin_code_lease(SegaCDCoordinator *c,SegaCDCpu cpu,uint32_t begin,uint32_t end)
+{
+    if(!c||(cpu!=SEGACD_MAIN&&cpu!=SEGACD_SUB)||c->busy[0]||c->busy[1]||c->external_active||
+       begin>=end||end>0x1000000u||c->catalog_lookup[cpu].code_epoch)return 0;
+#if defined(M68K_STEP_HAS_CODE_INTERVALS) && M68K_STEP_HAS_CODE_INTERVALS
+    if(c->code_lease_serial==UINT64_MAX) {
+        /* A wrapped serial cannot revive old sparse/front proofs. */
+        for(unsigned n=0;n<2;++n) {
+            segacd_catalog_lookup_reset(&c->catalog_lookup[n]);
+            segacd_catalog_index_destroy(c->catalog_index[n]);c->catalog_index[n]=NULL;
+        }
+        c->code_lease_serial=0;
+    }
+    SegaCDCatalogLookup *cache=&c->catalog_lookup[cpu];
+    cache->code_begin=begin;cache->code_end=end;cache->code_epoch=++c->code_lease_serial;return 1;
+#else
+    return 0;
+#endif
+}
 int segacd_coordinator_main_code_span(SegaCDCoordinator *c,const uint8_t *(*span)(void *,uint32_t,size_t))
 {
     if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
-    c->host_code_span=span;return 1;
+    revoke_code_leases(c);c->host_code_span=span;return 1;
+}
+int segacd_coordinator_main_data_region(SegaCDCoordinator *c,M68kStepDataResolver resolver)
+{
+    if(!c||c->busy[0]||c->busy[1]||c->external_active)return 0;
+    revoke_code_leases(c);c->host_data_region=resolver;return 1;
 }
 int segacd_coordinator_floor(SegaCDCoordinator *c,M68kStepResult (*step)(M68kStepContext *))
 {
     if(!c || c->busy[0] || c->busy[1])return 0;
-    c->floor_step=step;return 1;
+    revoke_code_leases(c);c->floor_step=step;return 1;
 }
+int segacd_coordinator_region_effects(SegaCDCoordinator *c,SegaCDCpu cpu,
+                                     const M68kStepEffectModule *effects,size_t count)
+{
+    if(!c||(unsigned)cpu>1||(count&&!effects)||c->busy[0]||c->busy[1]||c->external_active)return 0;
+    c->region_effects[cpu]=effects;c->region_effect_count[cpu]=count;
+    c->region_event_valid=0;
+    qualify_event_intervals(c);
+    c->register_spans[cpu]=NULL;c->register_span_count[cpu]=0;
+    c->flow_spans[cpu]=NULL;c->flow_span_count[cpu]=0;
+    /* All cached effect decisions belong to the old qualification. */
+    segacd_catalog_lookup_reset(&c->catalog_lookup[cpu]);
+    if(c->catalog_index[cpu]) {
+        segacd_catalog_index_destroy(c->catalog_index[cpu]);
+        c->catalog_index[cpu]=segacd_catalog_index_create(SEGACD_INDEX_DEFAULT_LIMIT);
+    }
+    return 1;
+}
+static int register_native_spans(SegaCDCoordinator *c,SegaCDCpu cpu,
+                                const M68kStepRegisterSpan *spans,size_t count,int flow)
+{
+    if(!c || (unsigned)cpu>1 || (count&&!spans) ||
+       count>(size_t)(flow?SEGACD_FLOW_SPAN_LIMIT:SEGACD_REGISTER_SPAN_LIMIT) ||
+       c->busy[0] || c->busy[1] || c->external_active)return 0;
+    c->flow_spans[cpu]=NULL;c->flow_span_count[cpu]=0;
+    uint8_t *qualified_bits=flow?c->flow_span_qualified[cpu]:c->register_span_qualified[cpu];
+    if(!flow){c->register_spans[cpu]=NULL;c->register_span_count[cpu]=0;}
+    memset(qualified_bits,0,(flow?SEGACD_FLOW_SPAN_LIMIT:SEGACD_REGISTER_SPAN_LIMIT)/8u);
+    for(unsigned n=0;n<SEGACD_LOOKUP_SLOTS;++n) {
+        c->catalog_lookup[cpu].slots[n].span=NULL;c->catalog_lookup[cpu].slots[n].span_known=0;
+        c->catalog_lookup[cpu].slots[n].span_fallback=NULL;c->catalog_lookup[cpu].slots[n].span_control=0;
+    }
+    uint32_t previous=0;size_t qualified=0;
+    for(size_t s=0;s<count;++s) {
+        const M68kStepRegisterSpan *span=&spans[s];unsigned cycles=0;uint32_t next=0;int valid=1;
+        if(!span->entries || !span->execute || span->count<2 || span->count>M68K_STEP_REGISTER_SPAN_MAX)return 0;
+        for(unsigned n=0;n<span->count;++n) {
+            const M68kStepEntry *e=span->entries[n];
+            if(!e || (n && e->pc!=next) || (n==0 && s && e->pc<=previous))return 0;
+            const M68kStepModule *module=NULL;const M68kStepEntry *selected=NULL;
+            for(size_t m=0;m<c->module_count[cpu];++m) {
+                selected=segacd_catalog_find(c->modules[cpu][m],e->pc);
+                if(selected){module=c->modules[cpu][m];break;}
+            }
+            if(selected!=e || !(segacd_catalog_register_effect(c->region_effects[cpu],
+                c->region_effect_count[cpu],module,e)&M68K_STEP_EFFECT_REGISTER))valid=0;
+            next=e->pc+e->word_count*2u;cycles+=e->cycles;
+        }
+        if(flow?(span->cycles<cycles || span->cycles-cycles>4u):span->cycles!=cycles)return 0;
+        previous=span->entries[0]->pc;
+        if(valid){qualified_bits[s/8u]|=(uint8_t)(1u<<(s&7u));++qualified;}
+    }
+    if(count && !qualified)return 0;
+    if(flow){c->flow_spans[cpu]=spans;c->flow_span_count[cpu]=count;}
+    else {c->register_spans[cpu]=spans;c->register_span_count[cpu]=count;}
+    return 1;
+}
+int segacd_coordinator_register_spans(SegaCDCoordinator *c,SegaCDCpu cpu,
+                                    const M68kStepRegisterSpan *spans,size_t count)
+{return register_native_spans(c,cpu,spans,count,0);}
+int segacd_coordinator_flow_spans(SegaCDCoordinator *c,SegaCDCpu cpu,
+                                const M68kStepFlowSpan *spans,size_t count)
+{return register_native_spans(c,cpu,spans,count,1);}
 void segacd_coordinator_main_irq(SegaCDCoordinator*c,unsigned level){if(c && level<=7)c->main_irq=level;}
 void segacd_coordinator_host_clock(SegaCDCoordinator*c,void (*advance)(void *,uint64_t),uint64_t (*next)(void *))
-{if(c && !c->busy[0] && !c->busy[1]){c->host_advance=advance;c->host_next_event=next;}}
+{if(c && !c->busy[0] && !c->busy[1]){revoke_code_leases(c);c->host_advance=advance;c->host_next_event=next;c->region_event_valid=0;qualify_event_intervals(c);}}
 void segacd_coordinator_device_limit(SegaCDCoordinator*c,uint64_t (*limit)(void *))
-{if(c && !c->busy[0] && !c->busy[1])c->device_limit=limit;}
+{if(c && !c->busy[0] && !c->busy[1]){revoke_code_leases(c);c->device_limit=limit;}}
 void segacd_coordinator_pcm_sink(SegaCDCoordinator*c,Rf5c164Sink sink,void*user)
-{if(c && !c->busy[0] && !c->busy[1]){c->io.pcm_sink=sink;c->io.pcm_user=user;}}
+{if(c && !c->busy[0] && !c->busy[1]){revoke_code_leases(c);c->io.pcm_sink=sink;c->io.pcm_user=user;}}
 void segacd_coordinator_cdda_sink(SegaCDCoordinator*c,SegaCDCddaSample sink,void*user)
-{if(c && !c->busy[0] && !c->busy[1]){c->io.cdda_sample=sink;c->io.cdda_sample_user=user;}}
+{if(c && !c->busy[0] && !c->busy[1]){revoke_code_leases(c);c->io.cdda_sample=sink;c->io.cdda_sample_user=user;}}
 uint16_t segacd_coordinator_vdp_read16(SegaCDCoordinator*c,uint32_t a)
 {
     uint16_t value=m68k_step_read16(&c->cpu[0],a);a&=0xFFFFFFu;
@@ -320,10 +481,15 @@ void segacd_coordinator_media(SegaCDCoordinator*c,SegaCDReadSector read_sector,v
                              SegaCDCddaSector sink,void*cdda_user)
 {
     if(c && !c->busy[0] && !c->busy[1]) {
+        revoke_code_leases(c);
+        if(c->media_cancel)c->media_cancel(c->io.media_user);
+        c->media_cancel=NULL;
         c->io.read_sector=read_sector;c->io.media_user=media_user;
         c->io.cdda_sector=sink;c->io.cdda_user=cdda_user;
     }
 }
+void segacd_coordinator_media_cancel(SegaCDCoordinator*c,void (*cancel)(void *))
+{if(c&&!c->busy[0]&&!c->busy[1]){revoke_code_leases(c);c->media_cancel=cancel;}}
 size_t segacd_coordinator_cdd_trace(const SegaCDCoordinator*c,SegaCDCddSnapshot*snapshot,
                                     SegaCDCddSubmission*events,size_t capacity)
 {
@@ -351,32 +517,209 @@ size_t segacd_coordinator_cdd_trace(const SegaCDCoordinator*c,SegaCDCddSnapshot*
         events[n]=c->cdd_submissions[(first+n)%SEGACD_CDD_TRACE_CAPACITY];
     return count;
 }
-static void idle_until(SegaCDCoordinator*c,uint64_t deadline)
+static void idle_until(SegaCDCoordinator*c,uint64_t deadline,int qualified)
 {
-    uint64_t next=next_event_time(c,deadline);
+    uint64_t next=event_time(c,deadline,qualified);
     if(c->cpu[0].state.stopped && c->time[0]<next)c->time[0]=next;
     if((!segacd_sub_runnable(c->devices) || c->cpu[1].state.stopped) && c->time[1]<next)c->time[1]=next;
     advance_devices(c);
 }
-M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
+static M68kStepResult coordinator_step(SegaCDCoordinator *c,int coalesce)
 {
     if(!c || c->busy[0] || c->busy[1])return M68K_STEP_REENTERED;
     if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
     M68kStepResult r=refresh_sub(c);if(r!=M68K_STEP_OK)return c->last_result=r;
-    advance_devices(c);
+    service_devices(c,coalesce);
     unsigned which=segacd_sub_runnable(c->devices) && c->time[1]<c->time[0]?1u:0u;
     r=execute_cpu(c,which);
     if(r==M68K_STEP_STOPPED) {
         unsigned other=which^1u;
         if(other==0 || segacd_sub_runnable(c->devices))r=execute_cpu(c,other);
-        if(r==M68K_STEP_STOPPED){idle_until(c,c->device_time+SEGACD_TIMER_DIVISOR);r=M68K_STEP_OK;}
+        if(r==M68K_STEP_STOPPED){idle_until(c,c->device_time+SEGACD_TIMER_DIVISOR,0);r=M68K_STEP_OK;}
         else if(c->time[which]<c->time[other])c->time[which]=c->time[other];
     }
     advance_devices(c);
     if(r==M68K_STEP_OK && device_fault(c)){c->last_cpu=1;r=M68K_STEP_BUS_ERROR;}
     return c->last_result=r;
 }
-M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator*c,uint64_t deadline)
+M68kStepResult segacd_coordinator_step(SegaCDCoordinator *c)
+{return coordinator_step(c,0);}
+static SegaCDLookupSlot *register_slot(SegaCDCoordinator *c,unsigned which)
+{
+    M68kStepContext *cpu=&c->cpu[which];uint32_t pc=cpu->state.regs.PC;
+    unsigned index=((pc>>1)^(pc>>9)^(pc>>17))&(SEGACD_LOOKUP_SLOTS-1);
+    SegaCDLookupSlot *slot=&c->catalog_lookup[which].slots[index];
+    if(!slot->valid||slot->pc!=pc||!slot->count||
+       !(slot->register_only[0]&M68K_STEP_EFFECT_REGISTER)||slot->overflow)return NULL;
+    return slot;
+}
+static int register_irq_ready(const M68kStepContext *cpu,unsigned level)
+{
+    /* Accept/update changed pins through the ordinary architectural boundary.
+     * A stable masked level cannot become eligible without an SR-mask change;
+     * checking SR every operation also covers independently qualified writers. */
+    if(cpu->state.irq_pins!=level || (level &&
+       (level==7?cpu->state.irq_pins!=7:level>((cpu->state.regs.SR>>8)&7u))))return 0;
+    return 1;
+}
+static uint64_t region_event(SegaCDCoordinator *c)
+{
+    if(!c->region_event_valid) {
+        c->region_event_deadline=event_time(c,UINT64_MAX,event_intervals_qualified(c));
+        c->region_event_valid=1;
+    }
+    return c->region_event_deadline;
+}
+static const M68kStepRegisterSpan *register_span(const SegaCDCoordinator *c,unsigned which,uint32_t pc,int flow)
+{
+    const M68kStepRegisterSpan *spans=flow?c->flow_spans[which]:c->register_spans[which];
+    const uint8_t *qualified=flow?c->flow_span_qualified[which]:c->register_span_qualified[which];
+    size_t lo=0,hi=flow?c->flow_span_count[which]:c->register_span_count[which];
+    while(lo<hi) {
+        size_t mid=lo+(hi-lo)/2u;const M68kStepRegisterSpan *span=&spans[mid];
+        uint32_t at=span->entries[0]->pc;
+        if(at<pc)lo=mid+1u;else if(at>pc)hi=mid;
+        else return (qualified[mid/8u]&(1u<<(mid&7u)))?span:NULL;
+    }
+    return NULL;
+}
+static uint64_t register_span_budget(const SegaCDCoordinator *c,unsigned which,int sub,uint64_t deadline,uint64_t event)
+{
+    uint64_t ceiling=deadline<event?deadline:event;
+    /* The original chooser prefers Main at equal clocks. Requiring the span
+     * to END no later than the other's clock is conservative for both CPUs;
+     * it never moves an instruction past an operation the other CPU can run. */
+    if(sub && c->time[which^1u]<ceiling)ceiling=c->time[which^1u];
+    if(ceiling<=c->time[which])return 0;
+    uint64_t delta=ceiling-c->time[which];
+    if(which==SEGACD_SUB)return delta;
+    /* floor((cycles*N+remainder)/D)<=delta. Avoid wide multiplication for
+     * arbitrary host deadlines; generated spans contain at most8 small ops. */
+    if(delta>UINT32_MAX)delta=UINT32_MAX;
+    uint64_t numerator=(delta+1u)*MAIN_DENOM-1u;
+    return numerator<c->main_remainder?0:(numerator-c->main_remainder)/MAIN_NUMER;
+}
+/* Internal execution context is already validated by run_until/native_region.
+ * Do not re-query the third-master clock or redo fault/busy validation for
+ * every short interval. Device IRQ levels are stable until publication. */
+static uint64_t run_register_region_validated(SegaCDCoordinator *c,uint64_t deadline,int publish)
+{
+    int sub=segacd_sub_runnable(c->devices);
+    if(sub&&(!c->sub_initialized||!c->sub_was_running||c->reset_generation!=c->devices->sub_reset_generation))return 0;
+    unsigned which=sub&&c->time[1]<c->time[0]?1u:0u;
+    SegaCDLookupSlot *slot=register_slot(c,which);
+    if(!slot)return 0;
+    uint64_t boundary=region_event(c),retired=0;
+    /* A preceding CPU instruction may have overshot a third-master ceiling.
+     * When that master advances, an event can ALREADY be due before the next
+     * CPU operation. Publish it before sampling IRQ/trace/operation effects,
+     * rather than waiting for another instruction to retire. */
+    uint64_t visible=sub&&c->time[1]<c->time[0]?c->time[1]:c->time[0];
+    if(visible>deadline)visible=deadline;
+    if(visible>=boundary) {
+        advance_devices(c);
+        if(device_fault(c))return 0;
+        boundary=region_event(c);
+    }
+    unsigned level[2]={c->main_irq,sub?segacd_irq_level(c->devices):0};
+    /* No unobservable instruction starts after the ceiling. Finishing the
+     * instruction that crosses it is identical to ordinary step retirement. */
+    while(c->time[0]<deadline || (sub&&c->time[1]<deadline)) {
+        if(!sub){c->sub_was_running=0;c->time[1]=c->time[0];}
+        M68kStepContext *cpu=&c->cpu[which];uint64_t before=cpu->state.cycles;
+        if(!slot||!register_irq_ready(cpu,level[which]))break;
+        M68kStepResult result=M68K_STEP_MISS;unsigned completed=1;
+        c->busy[which]=1;
+        if(!slot->span_known) {
+            const M68kStepRegisterSpan *fixed=register_span(c,which,cpu->state.regs.PC,0);
+            const M68kStepRegisterSpan *flow=register_span(c,which,cpu->state.regs.PC,1);
+            slot->span=flow?flow:fixed;slot->span_control=(uint8_t)(flow!=NULL);
+            slot->span_fallback=flow?fixed:NULL;slot->span_known=1;
+        }
+        SegaCDCatalogLookup *code_cache=&c->catalog_lookup[which];
+        const M68kStepRegisterSpan *span=slot->span;
+        if(span) {
+            uint64_t budget=register_span_budget(c,which,sub,deadline,boundary);
+            int flow=slot->span_control;
+            if(budget>=span->cycles) {
+#if defined(M68K_STEP_HAS_CODE_INTERVALS) && M68K_STEP_HAS_CODE_INTERVALS
+                if(segacd_catalog_code_owned(code_cache,slot)&&slot->owned_span==span) {
+                    result=flow?m68k_step_execute_validated_flow_span(cpu,span,budget):m68k_step_execute_validated_span(cpu,span,budget);
+                    if(result==M68K_STEP_OK)++code_cache->code_reuses;
+                } else
+#endif
+                    result=flow?m68k_step_execute_flow_span(cpu,span,budget):m68k_step_execute_span(cpu,span,budget);
+            }
+            if(result==M68K_STEP_MISS && slot->span_fallback) {
+                span=slot->span_fallback;flow=0;
+                if(budget>=span->cycles) {
+#if defined(M68K_STEP_HAS_CODE_INTERVALS) && M68K_STEP_HAS_CODE_INTERVALS
+                    if(segacd_catalog_code_owned(code_cache,slot)&&slot->owned_span==span) {
+                        result=m68k_step_execute_validated_span(cpu,span,budget);if(result==M68K_STEP_OK)++code_cache->code_reuses;
+                    } else
+#endif
+                        result=m68k_step_execute_span(cpu,span,budget);
+                }
+            }
+            if(result==M68K_STEP_OK) {
+                const M68kStepEntry *first=span->entries[0],*last=span->entries[span->count-1u];
+                if(segacd_catalog_code_claim(code_cache,slot,first->pc,(size_t)(last->pc-first->pc)+last->word_count*2u))slot->owned_span=span;
+                completed=span->count;
+                if(flow){++c->flow_runs[which];c->flow_instructions[which]+=completed;}
+                else {++c->span_runs[which];c->span_instructions[which]+=completed;}
+            }
+        }
+        if(result==M68K_STEP_MISS) {
+            for(unsigned i=0;i<slot->count&&(slot->register_only[i]&M68K_STEP_EFFECT_REGISTER);++i) {
+#if defined(M68K_STEP_HAS_CODE_INTERVALS) && M68K_STEP_HAS_CODE_INTERVALS
+                if(segacd_catalog_code_owned(code_cache,slot)&&slot->owned_entry==slot->entry[i]) {
+                    result=m68k_step_execute_validated_register(cpu,slot->entry[i]);if(result==M68K_STEP_OK)++code_cache->code_reuses;
+                } else
+#endif
+                    result=m68k_step_execute_register(cpu,slot->entry[i]);
+                if(result==M68K_STEP_OK&&segacd_catalog_code_claim(code_cache,slot,slot->entry[i]->pc,(size_t)slot->entry[i]->word_count*2u)) {
+                    slot->owned_entry=slot->entry[i];slot->owned_tracked=0;
+                }
+                if(result!=M68K_STEP_MISS)break;
+            }
+        }
+        c->busy[which]=0;
+        if(result!=M68K_STEP_OK)break;
+        c->catalog_lookup[which].hits+=completed;c->native_steps[which]+=completed;
+        c->region_instructions[which]+=completed;retired+=completed;c->last_cpu=which;
+        if(completed>1 && !sub) {
+            /* Ordinary retirement mirrors an inactive Sub clock at the START
+             * of every Main instruction. Preserve that final published value,
+             * including when the caller ceiling ends this loop immediately. */
+            uint64_t prefix=cpu->state.cycles-before-cpu->charge;
+            c->time[1]=c->time[0]+(prefix*MAIN_NUMER+c->main_remainder)/MAIN_DENOM;
+        }
+        account(c,which,cpu->state.cycles-before);
+        uint64_t now=sub&&c->time[1]<c->time[0]?c->time[1]:c->time[0];
+        if(now>=boundary)break;
+        which=sub&&c->time[1]<c->time[0]?1u:0u;
+        slot=register_slot(c,which);
+    }
+    if(retired) {
+        ++c->region_runs;
+        uint64_t now=sub&&c->time[1]<c->time[0]?c->time[1]:c->time[0];
+        if(publish||now>=boundary) {++c->region_device_advances;advance_devices(c);}
+        c->last_result=M68K_STEP_OK;
+        if(device_fault(c)){c->last_cpu=1;c->last_result=M68K_STEP_BUS_ERROR;}
+    }
+    return retired;
+}
+uint64_t segacd_coordinator_native_region(SegaCDCoordinator *c,uint64_t deadline)
+{
+    if(!c||(!c->region_effect_count[0]&&!c->region_effect_count[1])||
+       c->busy[0]||c->busy[1]||c->external_active||device_fault(c))return 0;
+    if(c->device_limit) {
+        uint64_t limit=c->device_limit(c->host_user);
+        if(deadline>limit)deadline=limit;
+    }
+    return run_register_region_validated(c,deadline,1);
+}
+static M68kStepResult run_until(SegaCDCoordinator*c,uint64_t deadline,int publish)
 {
     if(!c || c->busy[0] || c->busy[1] || c->external_active)return M68K_STEP_REENTERED;
     /* A synchronous caller (notably the Z80 instruction bridge) cannot wait
@@ -387,20 +730,26 @@ M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator*c,uint64_t deadlin
         return c->last_result=M68K_STEP_NO_WAIT_HANDLER;
     while(c->time[0]<deadline || (segacd_sub_runnable(c->devices) && c->time[1]<deadline)) {
         if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
+        if((c->region_effect_count[0]||c->region_effect_count[1])&&
+           run_register_region_validated(c,deadline,0))continue;
         /* Never step an all-STOP system past a host raster deadline. */
         if(c->cpu[0].state.stopped && (!segacd_sub_runnable(c->devices) || c->cpu[1].state.stopped)) {
             advance_devices(c);
             unsigned sub_level=segacd_irq_level(c->devices);
             int main_ready=c->main_irq && (c->main_irq==7 || c->main_irq>((c->cpu[0].state.regs.SR>>8)&7u));
             int sub_ready=sub_level && sub_level>((c->cpu[1].state.regs.SR>>8)&7u);
-            if(!main_ready && !sub_ready){idle_until(c,deadline);continue;}
+            if(!main_ready && !sub_ready){idle_until(c,deadline,event_intervals_qualified(c));continue;}
         }
-        M68kStepResult r=segacd_coordinator_step(c);if(r!=M68K_STEP_OK)return r;
+        M68kStepResult r=coordinator_step(c,event_intervals_qualified(c));if(r!=M68K_STEP_OK)return r;
     }
-    advance_devices(c);
+    if(publish||deadline>=region_event(c))advance_devices(c);
     if(device_fault(c)){c->last_cpu=1;return c->last_result=M68K_STEP_BUS_ERROR;}
     return M68K_STEP_OK;
 }
+M68kStepResult segacd_coordinator_run_until(SegaCDCoordinator*c,uint64_t deadline)
+{return run_until(c,deadline,1);}
+M68kStepResult segacd_coordinator_run_isolated_until(SegaCDCoordinator*c,uint64_t deadline)
+{return run_until(c,deadline,0);}
 
 typedef struct { uint32_t address; uint8_t value; int write; } ExternalByte;
 

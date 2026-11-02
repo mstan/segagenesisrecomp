@@ -1,0 +1,63 @@
+{
+    "schema":  "GenesisE21IndependentReview1",
+    "reviewer":  "/root/validate_e21",
+    "scope":  "validation-only",
+    "original_id":  "E21",
+    "owning_issue":  "beads-3z5k.19",
+    "parent_issue":  "beads-3z5k",
+    "campaign":  "beads-2wy8.1",
+    "disposition":  "whole selected bounded opportunity rejected",
+    "source_record_cleanup_gate":  "PASS",
+    "durability_gate":  "PASS",
+    "reviewed_head":  "e3cdfa293dd4fd37b482ccba2deffe55574ddc54",
+    "branch":  "codex/engine-psg-spans-20261031",
+    "accepted_base":  "f4b10d7b3d525613af97e70cdc86e565fddcecb5",
+    "restored_head":  "d96ca6bb3779487f057218f9ade792b0eb2c920f",
+    "accepted_and_restored_tree":  "a00ea442cc3ad0b3f50893dfe7961105fd425a3a",
+    "runtime_adopted":  false,
+    "runtime_pr":  null,
+    "distinct_game_pairs":  20,
+    "cart_pairs":  17,
+    "CD_pairs":  3,
+    "completed_runs":  40,
+    "exact_unit_checks":  6,
+    "record_hashes_verified":  8,
+    "unit_record_hashes_verified":  3,
+    "unit_binary_hashes_verified":  6,
+    "local_cleanup_paths_verified_absent":  5,
+    "cleanup_bytes":  404764155,
+    "raw_root":  "G:/Temp/Codex/genesis-engine-psg-spans-20261031",
+    "resolved_families":  23,
+    "original_open":  13,
+    "additional_E37_open":  1,
+    "total_open":  14,
+    "total_tracked":  37,
+    "rejection_basis":  [
+                            "Source1 repeated adverse Sonic1 shadow cost; RKA and CD mixed observations cannot offset",
+                            "Source2 Sonic1 shadow cycles/wall adverse in both orders; CD CPU/cycles adverse; RKA mixed",
+                            "No useful per-game-neutral/positive retained package established"
+                        ],
+    "limitations":  [
+                        "Ambient shared-host observations; no universal slowdown or gain claim",
+                        "Small default Sonic1 observations remain within variation",
+                        "CD rollback not claimed",
+                        "Rejection does not assert every future PSG algorithm impossible"
+                    ],
+    "next_required":  "Incorporate exact final review bytes, push evidence-only record commit and send identity for verification; then original E22 with NEW validation-only reviewer",
+    "durability":  {
+                       "owning_status":  "closed",
+                       "owning_labels":  [
+                                             "state:accepted",
+                                             "result:bounded-rejected"
+                                         ],
+                       "final_comments":  {
+                                              "beads-3z5k.19":  "01a194d4-6c73-7ecd-92b2-cbe23f017ba9",
+                                              "beads-2wy8.1":  "01a194d4-6e65-7d8f-82fb-7cb98c53d846",
+                                              "beads-3z5k":  "01a194d4-6d5e-73f4-95ed-d8819fc8ee8f"
+                                          },
+                       "central_push_exit_code":  0,
+                       "central_push_seconds":  16.7,
+                       "central_push_log":  "C:/Users/Matthew/AppData/Local/beads/sync-logs/20261101T015832Z-61124/push.log",
+                       "independently_read_status_comments_and_log":  true
+                   }
+}

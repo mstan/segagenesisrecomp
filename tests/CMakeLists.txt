@@ -21,6 +21,35 @@ endif()
 # a top-level project.  Keep its ROM-independent harnesses runnable directly
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
+foreach(_hd_planes 0 1)
+    add_executable(vdp_hd_jobs_${_hd_planes}_test runtime/vdp_hd_jobs_test.c
+        ../runner/video/genesis_vdp.c ../runner/video/genesis_raster_jobs.c)
+    target_include_directories(vdp_hd_jobs_${_hd_planes}_test PRIVATE ../runner/video)
+    target_compile_features(vdp_hd_jobs_${_hd_planes}_test PRIVATE c_std_11)
+    target_compile_definitions(vdp_hd_jobs_${_hd_planes}_test PRIVATE
+        GENESIS_HD_JOBS=1 GENESIS_BATCHED_PLANES=${_hd_planes})
+    add_test(NAME vdp_hd_jobs_${_hd_planes} COMMAND vdp_hd_jobs_${_hd_planes}_test)
+endforeach()
+add_executable(vdp_hd_machine_restore_test runtime/vdp_hd_machine_restore_test.c
+    ../runner/video/genesis_machine.c ../runner/video/genesis_vdp.c ../runner/video/genesis_raster_jobs.c)
+target_include_directories(vdp_hd_machine_restore_test PRIVATE ../runner/video ../runner ../runner/include ../runner/external/superzazu)
+target_compile_features(vdp_hd_machine_restore_test PRIVATE c_std_11)
+target_compile_definitions(vdp_hd_machine_restore_test PRIVATE GENESIS_HD_JOBS=1 GENESIS_BATCHED_PLANES=1)
+if(MSVC)
+    target_compile_definitions(vdp_hd_machine_restore_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
+add_test(NAME vdp_hd_machine_restore COMMAND vdp_hd_machine_restore_test)
+include("${CMAKE_CURRENT_LIST_DIR}/runtime/layout_emit.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/runtime/final_pixels.cmake")
+add_executable(game_video_frame_test runtime/game_video_frame_test.c)
+target_include_directories(game_video_frame_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+target_compile_features(game_video_frame_test PRIVATE c_std_11)
+if(MSVC)
+    target_compile_options(game_video_frame_test PRIVATE /W4 /WX)
+else()
+    target_compile_options(game_video_frame_test PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME game_video_frame COMMAND game_video_frame_test)
 add_subdirectory(segacd)
 enable_language(CXX)
 
@@ -61,6 +90,30 @@ target_compile_definitions(fm_block_test PRIVATE GENESIS_FM_BLOCK_SAMPLES=1)
 add_test(NAME fm_block COMMAND fm_block_test)
 
 if(TARGET SDL2::SDL2)
+    foreach(_writer_threads 1 0)
+        foreach(_fixture host_writers evidence_ownership persist_callbacks)
+            set(_target ${_fixture}_${_writer_threads}_test)
+            add_executable(${_target} runtime/${_fixture}_test.c)
+            target_compile_features(${_target} PRIVATE c_std_11)
+            target_compile_definitions(${_target} PRIVATE
+                GENESIS_ENGINE_WORKERS=${_writer_threads} _CRT_SECURE_NO_WARNINGS)
+            target_link_libraries(${_target} PRIVATE SDL2::SDL2)
+            set(_output "${CMAKE_CURRENT_BINARY_DIR}/${_fixture}-${_writer_threads}")
+            file(MAKE_DIRECTORY "${_output}")
+            add_test(NAME ${_fixture}_${_writer_threads} COMMAND ${_target} "${_output}")
+            set_tests_properties(${_fixture}_${_writer_threads} PROPERTIES TIMEOUT 30)
+        endforeach()
+        add_test(NAME host_stream_format_failure_${_writer_threads}
+            COMMAND host_writers_${_writer_threads}_test --format-failure)
+        foreach(_quit_first 0 1)
+            add_test(NAME host_stream_exit_${_writer_threads}_${_quit_first}
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DEXE=$<TARGET_FILE:host_writers_${_writer_threads}_test>"
+                    "-DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/host-exit-${_writer_threads}-${_quit_first}.bin"
+                    "-DQUIT_FIRST=${_quit_first}"
+                    -P "${CMAKE_CURRENT_LIST_DIR}/runtime/host_stream_exit.cmake")
+        endforeach()
+    endforeach()
     foreach(_host_wait_variant native portable)
         add_executable(host_wait_${_host_wait_variant}_test runtime/host_wait_test.c
             "${CMAKE_CURRENT_LIST_DIR}/../runner/host_wait.c")
@@ -84,7 +137,9 @@ if(TARGET SDL2::SDL2)
         target_include_directories(diagnostic_replay_test PRIVATE "${CMAKE_SOURCE_DIR}/recomp-ui/src")
     endif()
     add_executable(audio_extra_test runtime/audio_extra_test.c
-        "${CMAKE_CURRENT_LIST_DIR}/../runner/audio.c")
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/audio.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/host_stream.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/engine_worker.c")
     target_include_directories(audio_extra_test PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/../runner")
     target_link_libraries(audio_extra_test PRIVATE SDL2::SDL2)
@@ -92,16 +147,44 @@ if(TARGET SDL2::SDL2)
         target_link_libraries(audio_extra_test PRIVATE m)
     endif()
     add_test(NAME audio_extra COMMAND audio_extra_test "${CMAKE_CURRENT_BINARY_DIR}/audio-extra-test.wav")
+    add_executable(audio_buffer_test runtime/audio_buffer_test.c
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/host_stream.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/engine_worker.c")
+    target_include_directories(audio_buffer_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner")
+    target_link_libraries(audio_buffer_test PRIVATE SDL2::SDL2)
+    if(UNIX)
+        target_link_libraries(audio_buffer_test PRIVATE m)
+    endif()
+    add_test(NAME audio_buffer COMMAND audio_buffer_test "${CMAKE_CURRENT_BINARY_DIR}/audio-buffer-test.wav")
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/GenesisRecompRunner.cmake")
 add_executable(local_states_test runtime/local_states_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/rb_capture.c"
     "${CMAKE_CURRENT_LIST_DIR}/../runner/local_states.c"
     "${CMAKE_CURRENT_LIST_DIR}/../runner/overlay_draw.c")
 target_include_directories(local_states_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_link_libraries(local_states_test PRIVATE retcomm_rbengine)
 add_test(NAME local_states COMMAND local_states_test "${CMAKE_CURRENT_BINARY_DIR}/")
+
+# Both fixtures include production sources directly for allocator interception.
+# Do not also link retcomm_rbengine or compile rb_capture.c into these targets.
+foreach(_fixture rb_capture state_crc)
+    add_executable(${_fixture}_test runtime/${_fixture}_test.c)
+    target_compile_features(${_fixture}_test PRIVATE c_std_11)
+    target_include_directories(${_fixture}_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner"
+        "${CMAKE_CURRENT_LIST_DIR}/../external/rbengine/include")
+    if(MSVC)
+        target_compile_definitions(${_fixture}_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+        target_compile_options(${_fixture}_test PRIVATE /W4 /WX)
+    else()
+        target_compile_options(${_fixture}_test PRIVATE -Wall -Wextra -Werror)
+    endif()
+    add_test(NAME ${_fixture} COMMAND ${_fixture}_test)
+endforeach()
 
 add_executable(frame_pacer_test runtime/frame_pacer_test.c)
 target_include_directories(frame_pacer_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
@@ -169,6 +252,9 @@ add_test(NAME tile_row COMMAND tile_row_test)
 add_executable(vdp_compose_test runtime/vdp_compose_test.c)
 target_include_directories(vdp_compose_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 add_test(NAME vdp_compose COMMAND vdp_compose_test)
+add_executable(graphics_derivation_test runtime/graphics_derivation_test.c)
+target_compile_features(graphics_derivation_test PRIVATE c_std_11)
+add_test(NAME graphics_derivation COMMAND graphics_derivation_test)
 foreach(_digest_variant fast reference)
     add_executable(rb_digest_${_digest_variant}_test runtime/rb_digest_test.c)
     target_include_directories(rb_digest_${_digest_variant}_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
@@ -348,3 +434,11 @@ genesisrecomp_register_test(m68k_effective_address_test)
 target_include_directories(m68k_effective_address_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner/include"
 )
+
+# The pure generator/runtime gates remain usable without an SDL development
+# package. Enable the host-worker ownership fixtures on SDL-equipped targets.
+option(GENESIS_ENGINE_WORK_TESTS "Build SDL host-worker ownership fixtures" OFF)
+if(GENESIS_ENGINE_WORK_TESTS)
+    include("${CMAKE_CURRENT_LIST_DIR}/runtime/engine_work.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/runtime/audio_work.cmake")
+endif()

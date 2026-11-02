@@ -31,6 +31,7 @@ static void dma_trigger_operation(M68kStepContext*ctx)
 {m68k_step_write16(ctx,0xFF0500,0x1234);ctx->state.regs.SR&=0xFFF0;}
 static void cdd_stage_packet(const uint8_t packet[10])
 {for(unsigned n=0;n<9;++n)m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF8042u+n,packet[n]);}
+static void cancel_media(void *user){++*(unsigned*)user;}
 int main(int argc,char**argv)
 {
     CHECK(argc==3);initialize(argv[1],argv[2]);
@@ -116,6 +117,9 @@ int main(int argc,char**argv)
      * status polls. Word writes at 4A submit exactly once on their low byte. */
     initialize(argv[1],argv[2]);
     uint8_t packet1[10]={1,2,3,4,5,6,7,8,9,10};
+    unsigned cancellations=0;
+    segacd_coordinator_media(&c,NULL,&cancellations,NULL,NULL);
+    segacd_coordinator_media_cancel(&c,cancel_media);
     uint8_t packet2[10]={2,3,4,5,6,7,8,9,10,11};
     uint8_t poll[10]={0,1,2,3,4,5,6,7,8,9};
     SegaCDCddSnapshot cdd_snapshot;SegaCDCddSubmission cdd_events[4];
@@ -124,6 +128,7 @@ int main(int argc,char**argv)
     cdd_stage_packet(packet1);m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF804B,packet1[9]);
     CHECK(segacd_coordinator_cdd_trace(&c,&cdd_snapshot,cdd_events,4)==1);
     CHECK(cdd_snapshot.accepted_total==1 && cdd_snapshot.retained_count==1);
+    CHECK(cancellations==1);
     CHECK(!memcmp(cdd_events[0].packet,packet1,sizeof packet1) && cdd_events[0].instruction_pc==0x1234);
     CHECK(cdd_snapshot.command_pending && cdd_snapshot.pending[0]==packet1[0]);
     c.cpu[SEGACD_SUB].state.instruction_pc=0x2345;
@@ -142,6 +147,7 @@ int main(int argc,char**argv)
     cdd_stage_packet(poll);m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF804B,poll[9]);
     CHECK(segacd_coordinator_cdd_trace(&c,&cdd_snapshot,cdd_events,4)==2);
     CHECK(cdd_snapshot.command_pending && cdd_snapshot.pending[0]==0 && cdd_snapshot.status==cd.drive.status);
+    CHECK(cancellations==1); /* TOC/staging/ignored submits/status polls do not cancel. */
     for(unsigned n=0;n<70;++n) {
         uint8_t packet[10];for(unsigned i=0;i<10;++i)packet[i]=(uint8_t)((n+i+1u)&15u);
         packet[0]=(uint8_t)(n%15u+1u);c.cpu[SEGACD_SUB].state.instruction_pc=0x5000u+n;
@@ -153,5 +159,13 @@ int main(int argc,char**argv)
     CHECK(cdd_recent[0].packet[0]==7 && cdd_recent[0].instruction_pc==0x5006);
     CHECK(cdd_recent[SEGACD_CDD_TRACE_CAPACITY-1].packet[0]==10 &&
           cdd_recent[SEGACD_CDD_TRACE_CAPACITY-1].instruction_pc==0x5045);
-    puts("Coordinator CDD packet submission trace and two native original-ISA programs pass");return 0;
+    cancellations=0;
+    m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF8001,1);CHECK(cancellations==0);
+    m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF8001,0);CHECK(cancellations==1);
+    m68k_step_write16(&c.cpu[SEGACD_SUB],0xFF8000,1);CHECK(cancellations==1);
+    m68k_step_write16(&c.cpu[SEGACD_SUB],0xFF8000,0);CHECK(cancellations==2);
+    m68k_step_reset_devices(&c.cpu[SEGACD_MAIN]);CHECK(cancellations==3);
+    segacd_coordinator_media(&c,NULL,NULL,NULL,NULL);CHECK(cancellations==4&&!c.media_cancel);
+    m68k_step_write8(&c.cpu[SEGACD_SUB],0xFF8001,0);CHECK(cancellations==4);
+    puts("Coordinator CDD packet trace, host cancellation and two native original-ISA programs pass");return 0;
 }

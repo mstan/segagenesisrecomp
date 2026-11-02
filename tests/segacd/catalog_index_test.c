@@ -66,6 +66,21 @@ int main(void)
     for(unsigned pass=0;pass<3;++pass)for(unsigned i=0;i<2048;++i)compare(index,&fallback,large_list,1,many[i].pc);
     CHECK(index->visited==2048&&fallback.descriptor_searches==2048&&fallback.hits==4096);
     CHECK(index->bytes<=index->limit);segacd_catalog_index_destroy(index);
+    /* An owner-qualified immutable range reuses the first exact variant,
+     * including sparse eviction. Ending a lease restores full live guards;
+     * changed extensions and a fresh lease cannot revive an earlier proof. */
+    segacd_catalog_lookup_reset(&fallback);index=segacd_catalog_index_create(SEGACD_INDEX_DEFAULT_LIMIT);CHECK(index);
+    M68kStepContext cpu;M68kStepBus bus={0};bus.fetch16=fetch;m68k_step_init(&cpu,&bus,NULL);cpu.state.regs.SR=0x2700;
+    fallback.code_begin=0x1000;fallback.code_end=0x1004;fallback.code_epoch=1;live_words[1]=31;cpu.state.regs.PC=0x1000;
+    count=0;CHECK(segacd_catalog_index_execute(index,&fallback,&cpu,replacement,2)==M68K_STEP_OK);CHECK(count>0);
+    count=0;cpu.state.regs.PC=0x1000;CHECK(segacd_catalog_index_execute(index,&fallback,&cpu,replacement,2)==M68K_STEP_OK);CHECK(!count&&fallback.code_reuses==1);
+    cpu.state.regs.PC=0x4000;CHECK(segacd_catalog_index_execute(index,&fallback,&cpu,replacement,2)==M68K_STEP_MISS);
+    cpu.state.regs.PC=0x1000;count=0;CHECK(segacd_catalog_index_execute(index,&fallback,&cpu,replacement,2)==M68K_STEP_OK);CHECK(!count);
+    fallback.code_epoch=0;live_words[1]=0;cpu.state.regs.PC=0x1000;count=0;
+    CHECK(segacd_catalog_index_execute(index,&fallback,&cpu,replacement,2)==M68K_STEP_OK&&count>0);
+    fallback.code_epoch=2;live_words[1]=31;cpu.state.regs.PC=0x1000;count=0;
+    CHECK(segacd_catalog_index_execute(index,&fallback,&cpu,replacement,2)==M68K_STEP_OK&&count>0);
+    fallback.code_epoch=0;segacd_catalog_index_destroy(index);
     puts("catalog PC index:32live variants,2048retained PCs, module replacement, budget fallback and exact CPU/fetch traces PASS");
     return 0;
 }

@@ -2,59 +2,110 @@
   "schema": "GenesisEngineOptimizationResults1",
   "issue": "beads-3vb.31",
   "campaign": "beads-2wy8.1",
-  "status": "ready_for_owner_visual_review",
-  "updated_utc": "2026-10-28T13:13:39.463580+00:00",
+  "status": "released_batch_remaining_engine_scope_open",
+  "updated_utc": "2026-10-29",
   "source_base": "f422ad52a04b9d253c0e9cbcdb3476aabd563ae8",
   "candidates": {
     "E01": {
       "name": "Native CD execution regions",
       "priority": "P1",
-      "status": "evaluated_rejected",
-      "disposition": "Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.",
+      "status": "implemented_native_regions_game_qualified",
+      "disposition": "E01 original deadline/observer region contract delivered and qualified; final v5 Windows SonicCD processCPU reductions3.1/8.7percent, cycles8.6/7.2percent on matched route. No FPS/universal gain claim. Owner handoff pending; no other E-ID closed.",
       "evidence": [
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-region-cost.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-complete-region-cost.json",
-        "beads-rxq.2",
-        "58da518"
-      ]
+        "ENGINE_NATIVE_REGIONS.md",
+        "engine-native-region-results.json",
+        "beads-ufzc",
+        "beads-7yle"
+      ],
+      "historical_evaluation": {
+        "name": "Native CD execution regions",
+        "priority": "P1",
+        "status": "evaluated_rejected",
+        "disposition": "Two complete native fault-scope layouts passed Windows/Linux game and machine-fault correctness, but neither established runtime benefit. v9 increased instructions1.123/1.236percent. Revised v11 reduced instructions1.378/1.420percent yet CPU rose9.209/11.033percent (A/A drift -8.301percent), and cycles rose5.168/8.214percent. Conservatively rejected after two experiments; engine e817399/9abaa90/58da518 restore owned-spans core53fc7b4. Retain raw BAAB samples and rejected source. Larger execution regions remain deferred on E04 effect metadata and a bounded scheduler contract; this local fault-scope result does not rule out that architectural replacement.",
+        "evidence": [
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-region-cost.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-complete-region-cost.json",
+          "beads-rxq.2",
+          "58da518"
+        ]
+      }
     },
     "E02": {
       "name": "Code identity and invalidation",
       "priority": "P1",
-      "status": "implemented_catalog_guard_elision_deferred",
-      "disposition": "Generic exact-body catalog compaction45b4805 preserves every PC/full-word guard/cycle/operation variant and its original priority in the existing step-module ABI. Qualified source corpus reduces Main descriptors2409238 to1650902 and Sub161321 to137237. Final Windows and four Linux3000-frame runs match the frozen original in full state/pixels/WAV. Windows executable23.13percent smaller; unstripped Linux9.98percent smaller. Linux host instructions3.732percent fewer; CPU timing mixed(-15.08/+11.84percent reductions), not a runtime win. Guard elision remains deferred until all native/direct/import writers have sound ownership/versioning; public arrays are not a reason to preserve that architecture indefinitely.",
+      "status": "completed_unsuccessful_code_identity_package",
+      "remaining_scope_open": true,
+      "disposition": "Final page-version package engine c9db7a1/core5520820 is implemented and correctness-tested but rejected after six variants: 19MSVC+7GCC gates and four exact3000-frame game runs pass; matched Sonic CD CPU cost rises7.71/6.37percent and cycles2.58/2.09percent. Large shared-host variation retained; no adopted gain. Generic qualified ownership, all writers/remaps, opaque callbacks, exact variants and 1M live fallback are documented. Continue from E01 without the rejected runtime. E02 remains unchecked; other identity/region designs are not claimed exhausted. See [ENGINE_CODE_IDENTITY.md](ENGINE_CODE_IDENTITY.md), [results](engine-code-identity-results.json), beads-3z5k.1/beads-rxq.3. Earlier exact catalog compaction remains shipped independently.",
       "evidence": [
-        "runner/cd/catalog_index.h",
-        "runner/cd/segacd.c",
-        "runner/cd/segacd_coordinator.c",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-hybrid-game.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json"
-      ]
+        "ENGINE_CODE_IDENTITY.md",
+        "engine-code-identity-results.json",
+        "beads-3z5k.1",
+        "beads-rxq.3"
+      ],
+      "historical_evaluation": {
+        "name": "Code identity and invalidation",
+        "priority": "P1",
+        "status": "implemented_catalog_guard_elision_deferred",
+        "disposition": "Generic exact-body catalog compaction45b4805 preserves every PC/full-word guard/cycle/operation variant and its original priority in the existing step-module ABI. Qualified source corpus reduces Main descriptors2409238 to1650902 and Sub161321 to137237. Final Windows and four Linux3000-frame runs match the frozen original in full state/pixels/WAV. Windows executable23.13percent smaller; unstripped Linux9.98percent smaller. Linux host instructions3.732percent fewer; CPU timing mixed(-15.08/+11.84percent reductions), not a runtime win. Guard elision remains deferred until all native/direct/import writers have sound ownership/versioning; public arrays are not a reason to preserve that architecture indefinitely.",
+        "evidence": [
+          "runner/cd/catalog_index.h",
+          "runner/cd/segacd.c",
+          "runner/cd/segacd_coordinator.c",
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-hybrid-game.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json"
+        ]
+      }
     },
     "E03": {
       "name": "Owned memory access",
       "priority": "P1",
-      "status": "implemented_game_qualified",
-      "disposition": "Owned code spans core53fc7b4/engine86d2d0c pass final Windows/Linux3000-frame game gates and complete core/machine contracts. Every opcode/extension byte still checks current owned bytes. HINT/MMIO/1M/odd/wrap and ownership WAIT retain the portable fetch path. Remaining data-bus read attribution is below1percent per read helper on the measured route; no unmeasured second data-memory representation added. Generator-core7233852 and runtime-core53fc7b4 identities remain distinct.",
+      "status": "implemented_owned_data_regions_game_qualified_neutral",
+      "remaining_scope_open": false,
+      "disposition": "Implemented generic operation-scoped owned data regions (engine899939b/coreb2d95f2) for qualified generated context-bus operations, with distinct read/write permissions, full live instruction guards, and exits across callbacks/MMIO/WAIT/protection/noncontiguous1M. Complete word-bus mapping is resolved once; cartridge path audited as already single-decode. Two independently found callback/aperture holes reproduced before fixes. 22MSVC+20GCC gates, current-build restore and four exact3000-frame game arms pass. Sonic CD timing is neutral/inconclusive: CPU reductions-3.99/+17.26percent,cycles-0.179/+18.60percent with recorded variation; no proven speedup. Original owned-data contract delivered; no claim cross-instruction designs exhausted. See [ENGINE_OWNED_MEMORY.md](ENGINE_OWNED_MEMORY.md), [results](engine-owned-memory-results.json), beads-3z5k.2/beads-rxq.4. PR/owner handoff pending.",
       "evidence": [
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-owned-spans-game.json",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-windows-game-v8.json",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json",
-        "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json"
-      ]
+        "ENGINE_OWNED_MEMORY.md",
+        "engine-owned-memory-results.json",
+        "beads-3z5k.2",
+        "beads-rxq.4"
+      ],
+      "historical_evaluation": {
+        "name": "Owned memory access",
+        "priority": "P1",
+        "status": "implemented_game_qualified",
+        "disposition": "Owned code spans core53fc7b4/engine86d2d0c pass final Windows/Linux3000-frame game gates and complete core/machine contracts. Every opcode/extension byte still checks current owned bytes. HINT/MMIO/1M/odd/wrap and ownership WAIT retain the portable fetch path. Remaining data-bus read attribution is below1percent per read helper on the measured route; no unmeasured second data-memory representation added. Generator-core7233852 and runtime-core53fc7b4 identities remain distinct.",
+        "evidence": [
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-owned-spans-game.json",
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-windows-game-v8.json",
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json",
+          "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json"
+        ]
+      }
     },
     "E04": {
       "name": "Generated native arithmetic and state",
       "priority": "P2",
-      "status": "evaluated_deferred",
-      "disposition": "Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. The E01 fault-setup-only experiment was evaluated and rejected; a future region package must remove meaningful dispatch/state work rather than only relocating traps.",
+      "status": "implemented_native_state_game_qualified_neutral",
+      "disposition": "Implemented common-emitter local D/A/SR spans, backward CCR liveness and exact grouped cycles, plus single-memory-RMW EA/read-write consolidation under complete managed dual ownership. Original bus/control/HLE/WAIT/fault/trace/unsupported exits remain exact. Engine132b84d/core4479e7e; final MSVC/GCC and all three built-game state/pixel/full-WAV routes and cartridge rollback pass. All final game timing neutral/inconclusive, no claimed speedup; r2/r3 regressions rejected, targeted reverse RKA off run does not reproduce the original24percent slowdown. Body proof131573 symbols/36089 redirects; current bytes and descriptor effects/priority unchanged. Cartridge observable bus limits documented. Independent final PR/record gate accepted; validator instructed E05 next. Owner visual handoff pending. See ENGINE_NATIVE_STATE.md, engine-native-state-results.json, beads-3z5k.3/beads-rxq.5.",
       "evidence": [
-        "external/m68k-recomp-core/profiles/genesis/code_generator.c",
-        "runner/cd/segacd_coordinator.c",
-        "runner/cd/catalog_lookup.h"
-      ]
+        "ENGINE_NATIVE_STATE.md",
+        "engine-native-state-results.json",
+        "beads-3z5k.3",
+        "beads-rxq.5"
+      ],
+      "historical_evaluation": {
+        "name": "Generated native arithmetic and state",
+        "priority": "P2",
+        "status": "evaluated_deferred",
+        "disposition": "Deferred larger local-register/flag-liveness regions on qualified generated effect metadata and observable-exit materialization. Current CD descriptors expose exact instruction boundaries, live code guards and arbitrary operation callbacks; treating every callback as a pure opcode would misclassify HLE. A useful next package can annotate canonical generated pure operations, batch Main-only register work within device/Z80 deadlines, and retain unknown callbacks as exits. This is permitted architectural replacement, not a requirement to preserve the old interface. The E01 fault-setup-only experiment was evaluated and rejected; a future region package must remove meaningful dispatch/state work rather than only relocating traps.",
+        "evidence": [
+          "external/m68k-recomp-core/profiles/genesis/code_generator.c",
+          "runner/cd/segacd_coordinator.c",
+          "runner/cd/catalog_lookup.h"
+        ]
+      },
+      "remaining_scope_open": false
     },
     "E05": {
       "name": "Native call/control-flow consolidation",
@@ -167,13 +218,25 @@
     "E14": {
       "name": "Native Sega CD stamp-device jobs",
       "priority": "P2",
-      "status": "evaluated_deferred",
-      "disposition": "Generic stamp is already a native affine line job with explicit asynchronous completion, nibble priority and WordRAM writes. It has no samples in the recorded3000frame CD gameplay attribution. Defer a new block kernel pending a stamp-heavy built consumer/workload; neither synthetic throughput nor unrelated Blue Spheres title algorithms establish a current-game benefit. Preserve existing stamp/dma correctness fixtures for that future comparison.",
+      "status": "evaluated_complete_bounded_job_span_opportunity_rejected",
+      "disposition": "Independentvalidate_e14 FINAL ACCEPTED: exactfrozenoracle/18gatesperarchitecture includingfinal x64/x86/GCC; all8actualgamearms fullstate/RAM/pixel/WAVexact, allnegatives retained, no newgain. ENGINE_STAMP_JOBS.md and engine-stamp-jobs-results.json. Selected bounded original opportunity decisively evaluated/rejected; futureguardeddesigns not universallyruledout. UsefulPRcombinedownerhandoffpending.",
       "evidence": [
-        "runner/cd/stamp.c",
-        "tests/segacd/stamp_test.c",
-        "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
-      ]
+        "ENGINE_STAMP_JOBS.md",
+        "engine-stamp-jobs-results.json",
+        "ENGINE_STAMP_JOBS_REVIEW.md",
+        "https://github.com/mstan/segagenesisrecomp/pull/46"
+      ],
+      "historical_evaluation": {
+        "name": "Native Sega CD stamp-device jobs",
+        "priority": "P2",
+        "status": "evaluated_deferred",
+        "disposition": "Generic stamp is already a native affine line job with explicit asynchronous completion, nibble priority and WordRAM writes. It has no samples in the recorded3000frame CD gameplay attribution. Defer a new block kernel pending a stamp-heavy built consumer/workload; neither synthetic throughput nor unrelated Blue Spheres title algorithms establish a current-game benefit. Preserve existing stamp/dma correctness fixtures for that future comparison.",
+        "evidence": [
+          "runner/cd/stamp.c",
+          "tests/segacd/stamp_test.c",
+          "G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json"
+        ]
+      }
     },
     "E15": {
       "name": "Reuse unchanged hardware render results",
@@ -573,7 +636,7 @@
       "next_check_not_before_utc": "2026-10-28T08:14:11.1739757Z"
     }
   ],
-  "authoritative_completion": "36/36 families evaluated with explicit implemented/partial, existing, rejected or concrete deferred dispositions. Final representative built-game gates pass and owner review builds are prepared. No merge/release; owner visual acceptance remains.",
+  "authoritative_completion": "The evaluation/release batch is integrated and delivered with owner approval. The implementation audit leaves 30 of the 36 original family scopes open; four selected bounded contracts are delivered and two bounded findings were already present. See completion_audit; family counts overlap and are not performance wins.",
   "catalog_experiments": {
     "direct_layout": {
       "engine": "e8f3159",
@@ -656,7 +719,7 @@
     "cd_windows": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-windows-game.json",
     "cd_linux_four_runs": "G:\\Temp\\Codex\\genesis-engine-burndown-20261027\\cd-catalog-v12-cost.json"
   },
-  "evaluation_summary": "Evaluation complete; deferred goals remain opportunities, not implemented wins. Overlapping families share coherent packages. Timing-host availability is not a blocker and no unqualified FPS claim is made.",
+  "evaluation_summary": "All 36 families received evaluation dispositions. Evaluation closure is not implementation closure; partial delivery, deferral and a rejected narrow mechanism retain open original scope. Accepted releases and per-game evidence remain valid.",
   "evaluation_counts": {
     "rejected": 1,
     "implemented_or_partial": 14,
@@ -1477,5 +1540,50 @@
     "castle_followup": "beads-h7ot closed after owner recheck; no reproducible defect or fix claimed",
     "notes": "G:/Temp/Codex/genesis-engine-burndown-20261027/owner-review/review-notes.json",
     "core_landed": "53fc7b417d5c194a5ebdf8d623c1c4501226eb60 on m68k-recomp-core/main"
+  },
+  "completion_audit": {
+    "date": "2026-10-28",
+    "audit_issue": "beads-1o1d",
+    "remaining_work_issue": "beads-3z5k",
+    "conclusion": "Evaluation/disposition and release pass complete; original implementation scope remains open. No claim that opportunities are exhausted.",
+    "historical_evaluation_counts": {
+      "rejected": 1,
+      "implemented_or_partial": 14,
+      "deferred": 19,
+      "existing": 2
+    },
+    "implementation_counts": {
+      "rejected_mechanism": 1,
+      "partial": 10,
+      "deferred": 19,
+      "existing": 2,
+      "bounded_delivered": 4
+    },
+    "remaining_scope_open_count": 30,
+    "count_caveat": "Families overlap. Bounded delivered closes only the selected contract, not every possible optimization. Partial/deferred/rejected-mechanism rows stay open; row counts are not speedups.",
+    "document": "ENGINE_OPTIMIZATION_COMPLETION_AUDIT.md",
+    "data": "engine-optimization-completion-audit.json"
+  },
+  "historical_evaluation_stage": {
+    "status": "ready_for_owner_visual_review",
+    "authoritative_completion": "36/36 families evaluated with explicit implemented/partial, existing, rejected or concrete deferred dispositions. Final representative built-game gates pass and owner review builds are prepared. No merge/release; owner visual acceptance remains."
+  },
+  "evaluation_counts_scope": "Historical released evaluation pass; current serial implementation is tracked separately.",
+  "serial_implementation": {
+    "current_goal": "E04",
+    "completed": [
+      "E01",
+      "E03",
+      "E04"
+    ],
+    "remaining_original_scopes": 27,
+    "data": "engine-native-state-results.json",
+    "next_task_started": false,
+    "owner_check": "pending",
+    "unsuccessful": [
+      "E02"
+    ],
+    "validation_workflow": "One validation-only subagent per serial task; PR on success or Beads on failure, explicit reviewer instruction before next.",
+    "pr_gate": "E04 accepted: enginePR38/corePR9; validator explicitly instructed E05 next. Owner visual handoff pending."
   }
 }

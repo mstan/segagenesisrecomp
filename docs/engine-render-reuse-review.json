@@ -1,0 +1,1609 @@
+{
+  "reviewer": "validate_e15_resumed",
+  "reviewed_head": "199a313b363b6c6a61ac397b100c22f061e3f52b",
+  "production": "a20ecc5fab83ac0cef53737a0ec1d8f72cd16894",
+  "original_scope": "E15/N19 full bounded current hardware render jobs/regions/results opportunity",
+  "source_runtime_byte_exact_426": true,
+  "emitter_only_code_fix_and_real_generated_C_fixture": true,
+  "final_server_retention_files_verified": 132,
+  "corrected_R2_platforms": "SERVER actual x64/Win32 ten gates each; initial MSVCx64/Win32/GCC ten gates each, unchanged runtime implementation",
+  "final_generated_C_fixture": "real emitter output compiled/count/value/tail verified actual x64 andWin32",
+  "all_R2_clean_arms_and_capture_census_exact": true,
+  "R2_clean_arms_verified": 4,
+  "R2_capture_hits": 496192,
+  "R2_capture_heap_bytes": 1977600,
+  "reported_clean_pairs_verified_against_raw": 8,
+  "diagnostic_costs_excluded": true,
+  "local_cleanup_removed_bytes": 14095398,
+  "local_cleanup_retained_files_verified": 40,
+  "distinct_files_hashed": 392,
+  "total_bytes_hashed": 1982691713,
+  "checked_files": {
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1.json": {
+      "sha256": "3bf44d7d7f20d220732d2423a5f65d5626a3a689c793694cdeeb29519490ec45",
+      "bytes": 61129
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-rka-reverse-r2.json": {
+      "sha256": "56321d2e6897d0da4b31035745b06b7f360a512602c0f001fd87ebc8ee7a1308",
+      "bytes": 44237
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1.json": {
+      "sha256": "19e22cd4c9f03f67cbd301ba90018a2d47b7bd0f86ed3ba44c186c350464f9dc",
+      "bytes": 61134
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1.json": {
+      "sha256": "4e3658b4f01e39dddac1ccd541d4941c79a7952eb879061f5b461330d4a3d026",
+      "bytes": 488269
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2.json": {
+      "sha256": "20e81b5041b695b80039f55a80837b0e60b76f38cb6832c4796146fed76bf35e",
+      "bytes": 488836
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server.json": {
+      "sha256": "629177b810755b4c6160c652a0146bec5cdcda9e0353903fc4c00ae755033722",
+      "bytes": 490251
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1.json": {
+      "sha256": "34ec0057b475563a0dc765250450b770feb9b6ce20d621fa35007185c7a5408f",
+      "bytes": 251878
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server.json": {
+      "sha256": "f97ef740c9cd56b77580e93f728f466325180870692edd5a97d6f3c1016d2b74",
+      "bytes": 253290
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1.json": {
+      "sha256": "1109ac3c26f4fa9a80167344488af78edcb6252a1fe8a126685a7bc6f5bd626a",
+      "bytes": 7209
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\local-runtime-builds.json": {
+      "sha256": "bd819415e6efa8040364e8af622e6ca819705c310cbaed3f612f64f61645252a",
+      "bytes": 17645
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\cd-portable-local-builds.json": {
+      "sha256": "83cd980bf7e241a6eb6106505acb90b0edf05ec660f7ab41ece8eace792e2635",
+      "bytes": 10500
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\r2-cd-local-builds.json": {
+      "sha256": "0a4ecc31e2f518f9539f92f9acc90a60b85b6cb2bb42e9b6d68f299b501ff135",
+      "bytes": 11667
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\retention-manifest.json": {
+      "sha256": "0705ba0702be2f7c44a256e7b7b658d2aabc0fbd8280132ef5108ae9f5ec74a7",
+      "bytes": 23274
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-ui-compat.json": {
+      "sha256": "7aea432c896bdaaff8a69d9c8f884ae4f18952a213a44423431679603bb6397b",
+      "bytes": 9410
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\cd-portable-input-manifest.json": {
+      "sha256": "8af5bb702bd65eef1101ceb02f5a0c5ac9a0cb59dc15c12edb29089607b391cb",
+      "bytes": 3245983
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\audio.wav": {
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\backup-ram.bin": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\cram9.be16": {
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-0.ppm": {
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-1200.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-1500.ppm": {
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-1800.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-2100.ppm": {
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-2400.ppm": {
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-2700.ppm": {
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-300.ppm": {
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-3000.ppm": {
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-600.ppm": {
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame-900.ppm": {
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\frame.argb": {
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\main-ram.bin": {
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\sub-prg.bin": {
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\vdp-registers.bin": {
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\vram.bin": {
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\vsram.be16": {
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\word-ram.bin": {
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\capture\\z80-ram.bin": {
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\commands.jsonl": {
+      "sha256": "3fe4631fe886cf4f8de6fd4b68d531149d474bb37b08701dffa9a58c03b85aaf",
+      "bytes": 220757
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\manifest.json": {
+      "sha256": "1bd9e636cf7ef7c976a5d23be5b4d7db6d5b9351e95a7e032914d2d1b445e8a4",
+      "bytes": 8512
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\run.log": {
+      "sha256": "c7a4bdc55689c3e5f5d13e69a4fd02b0bee05f3f6add83c8c4d13a93893884d2",
+      "bytes": 1423
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\0-b\\sonic-cd.brm": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\core-headroom.json": {
+      "sha256": "31b3eba3d51551b56d31e66444c605680619ea5ad59017b82037ccff8e3b1644",
+      "bytes": 430
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-census-server\\settings.ini": {
+      "sha256": "3da14cc45e6fa1b04934248713009472b971e5cdf9df0d0e3acd0148ed38869d",
+      "bytes": 83
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\audio.wav": {
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\backup-ram.bin": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\cram9.be16": {
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-0.ppm": {
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-1200.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-1500.ppm": {
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-1800.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-2100.ppm": {
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-2400.ppm": {
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-2700.ppm": {
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-300.ppm": {
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-3000.ppm": {
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-600.ppm": {
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame-900.ppm": {
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\frame.argb": {
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\main-ram.bin": {
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\sub-prg.bin": {
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\vdp-registers.bin": {
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\vram.bin": {
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\vsram.be16": {
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\word-ram.bin": {
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\capture\\z80-ram.bin": {
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\commands.jsonl": {
+      "sha256": "9c48bb6ab6db1fff289aee82e2033556efb09be286966b7aa1eca198b5942b66",
+      "bytes": 216758
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\manifest.json": {
+      "sha256": "4da93684ebf2df8e34f111467ec2f27a4b72f11e31eb059d9d6a27eb6ac07391",
+      "bytes": 8512
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\run.log": {
+      "sha256": "0bd225a7c9e3bd8e059071b807117b8fdecd82d285d96c27ec5375e349354bc1",
+      "bytes": 1304
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\0-a\\sonic-cd.brm": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\audio.wav": {
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\backup-ram.bin": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\cram9.be16": {
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-0.ppm": {
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-1200.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-1500.ppm": {
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-1800.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-2100.ppm": {
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-2400.ppm": {
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-2700.ppm": {
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-300.ppm": {
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-3000.ppm": {
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-600.ppm": {
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame-900.ppm": {
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\frame.argb": {
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\main-ram.bin": {
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\sub-prg.bin": {
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\vdp-registers.bin": {
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\vram.bin": {
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\vsram.be16": {
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\word-ram.bin": {
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\capture\\z80-ram.bin": {
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\commands.jsonl": {
+      "sha256": "e1e4e2dc7a26f78511f778fd0efe7be0b5f6e621105549d3b286debd8ef7fee5",
+      "bytes": 217219
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\manifest.json": {
+      "sha256": "d2d8349e2a9a8811b3e2f2d3b020251535d1059032ac279324631725a4f8e6cf",
+      "bytes": 8518
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\run.log": {
+      "sha256": "3e5a565225e0ed01314637019d42b2515e3c9d02b3d33e3cd99d7b57829a1036",
+      "bytes": 1304
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\1-b\\sonic-cd.brm": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\core-headroom.json": {
+      "sha256": "d3760b802975ee55b324866cce731ed30bd8d92384de9d3544b4a178bb0ce329",
+      "bytes": 430
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\game-cd-capture-plane-r2-repeat-server\\settings.ini": {
+      "sha256": "3da14cc45e6fa1b04934248713009472b971e5cdf9df0d0e3acd0148ed38869d",
+      "bytes": 83
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\check-r2-census.py": {
+      "sha256": "5e5b48f68527f2585fa7690c793e93fcb4880ad479ef4c11f26bbf790c168029",
+      "bytes": 7477
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\check-r2-repeat.py": {
+      "sha256": "6feaea1c98a715650bfe6b40d355886bb02b27ad6139ee1f68c0b11fd9e69b4e",
+      "bytes": 7111
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\private-input-identities.json": {
+      "sha256": "23258a9064246d12fae3373ea64142f523eec5f1955b558c0e2b886802ef4d81",
+      "bytes": 1364
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\private-runtime-dlls.json": {
+      "sha256": "fa39cb1321c08be892409128513fb77b1ea00d932f9e443c7367d28c008386e0",
+      "bytes": 2474
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\cd_control.py": {
+      "sha256": "2a63a7766647499e4e5f0157edab81c533de479077709f0254fa53fdb0293bc9",
+      "bytes": 4400
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\runtime\\process_costs.py": {
+      "sha256": "93cf48a4c3cf699cacb54a3d3521f1608d3df4e5242b2ab344154885a9913e92",
+      "bytes": 2339
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\source-manifest.json": {
+      "sha256": "be5e74aa1abe64edba2974f9ab927956205e53fe34205a8fd9e8622a99095397",
+      "bytes": 2558
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64.log": {
+      "sha256": "f79e9a58ff07512410d20ba460d224787ce1f07245959174ec4a65c62265110c",
+      "bytes": 7842
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\cmakecache.txt": {
+      "sha256": "910e12918397bdb145602fc106763b399c2abb055d466df92b121fd891cb1030",
+      "bytes": 13201
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\testing\\temporary\\lasttest.log": {
+      "sha256": "f5759220d4fcb2881e48dbe8249bdaef278637d037ea4d6e15e662e5c67d0b9f",
+      "bytes": 9098
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_compose_test.exe": {
+      "sha256": "4705b06e6cd456027090f3897f4bb07e86aeed37f0fea10b1ae65dbe2d54b7a2",
+      "bytes": 126976
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_render_alloc_allocfail_test.exe": {
+      "sha256": "30915a6ef58b6fc4c3c9e22b5adfe77e7052c6e81f901c1bab97d01328d70b06",
+      "bytes": 143872
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_render_diff_allocfail_test.exe": {
+      "sha256": "6f7d87f40f057a312c1a3bf6975f914683a1c0ab1119d2c5f434809334336e28",
+      "bytes": 158720
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_render_jobs_batched_test.exe": {
+      "sha256": "5b2edf8e55fda1dba3b2293b7563d0a522511b94892f39c3ce3d8fa74311a50c",
+      "bytes": 182272
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_render_jobs_portable_test.exe": {
+      "sha256": "071dcea91b4da6eda6c2c97e4dfcedfc7034f0498dfa51d54cbba9528c0447c3",
+      "bytes": 182272
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_render_jobs_scalar_test.exe": {
+      "sha256": "ab226175a4a07c075b1a01f8c568adbd3d0113e53f4913268e045da93a36fa5d",
+      "bytes": 177664
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_render_reuse_batched_test.exe": {
+      "sha256": "58f5ebb649e4069679bfdeb3af676b8b5386f8fabea329660c32709ef1d6e790",
+      "bytes": 158720
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_render_reuse_disabled_test.exe": {
+      "sha256": "4a296712b8ccb05400ad0e770134da8b0fb95cc5c5bdcba00f66bddd5ee55cef",
+      "bytes": 156160
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_render_reuse_portable_test.exe": {
+      "sha256": "799eafcd32d4210aea9fe7ec392cf5f408fe68fad44a3f0b5cf49163316e3626",
+      "bytes": 158720
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\x64\\release\\vdp_render_reuse_scalar_test.exe": {
+      "sha256": "8d41d57c87654315d725bcd38e1b12425133075167c91f693d9c6066c845eefb",
+      "bytes": 154112
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32.log": {
+      "sha256": "fe1d2a92aefdbe43e6575402959aaad5a789f997e46be850863e8c1b4eef30bd",
+      "bytes": 7882
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\cmakecache.txt": {
+      "sha256": "53100b4990be231058167f8c65e6333483f954d441fe77538802372b2872e2ec",
+      "bytes": 13215
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\testing\\temporary\\lasttest.log": {
+      "sha256": "6fa187850cec63055c5621e866903fec8f37309a61a7384265b97f998f89e0ff",
+      "bytes": 9138
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_compose_test.exe": {
+      "sha256": "4cda30ddfbf4274b920c7b1f86b65d2a5c8cbba182cbd6e2387a18ea53e674bf",
+      "bytes": 105984
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_render_alloc_allocfail_test.exe": {
+      "sha256": "1801bfe4e815ea92b60a21b6663f88a9c8ba8c83152f71261f5d3aa47d081a08",
+      "bytes": 117760
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_render_diff_allocfail_test.exe": {
+      "sha256": "95b85cf46a8c6eae9a508113a9dbf701987f3082dfc572b12c2985350c0996d7",
+      "bytes": 130560
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_render_jobs_batched_test.exe": {
+      "sha256": "c149e554b6a9ae020074ac115d95455dd02824eb6d1890d623202ee794da24d2",
+      "bytes": 146944
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_render_jobs_portable_test.exe": {
+      "sha256": "c149e554b6a9ae020074ac115d95455dd02824eb6d1890d623202ee794da24d2",
+      "bytes": 146944
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_render_jobs_scalar_test.exe": {
+      "sha256": "bb24f9c362f7962c36a69e471677ea9ec7ab22f70875a46f1235f812f08b0d69",
+      "bytes": 142848
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_render_reuse_batched_test.exe": {
+      "sha256": "939506af5fa311360e80bb805e9f5c0e762406e536c12d3234d4a18122482804",
+      "bytes": 130560
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_render_reuse_disabled_test.exe": {
+      "sha256": "471c30e7ae5e1bf3f9718be7336b8e14f6c18deaf209cc82ab732b4b36d2d4f9",
+      "bytes": 128000
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_render_reuse_portable_test.exe": {
+      "sha256": "fc7847b149bc0ac8ceb65ae5e3437593435cd7fb96b9f3009ccacef1abea7981",
+      "bytes": 130560
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\r2-final-units\\win32\\release\\vdp_render_reuse_scalar_test.exe": {
+      "sha256": "1e2f7b40d43d8e38a5a26085444ffd85b656f16983a678e6543800374c67de93",
+      "bytes": 126976
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\source-manifest.json": {
+      "sha256": "9e88cabaa422c74f271f08b3c8f93c3ebd41eb9f4668b9a86d9591d90246946c",
+      "bytes": 1129
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\x64.log": {
+      "sha256": "057529b9193d9d283ea15e8f49bdb2dc01ba31f083e9adeeeae25dc5bb778d34",
+      "bytes": 2135
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\x64\\cmakecache.txt": {
+      "sha256": "ae759592eeb092bc7d0b784a704644b2270010a5a8dbbc461c85c2484f1160b1",
+      "bytes": 13115
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\x64\\testing\\temporary\\lasttest.log": {
+      "sha256": "ebe03c8f6d2da8d3983a04fcf26ab63f062caf7fdb08a8202227ecfad9fa17a5",
+      "bytes": 950
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\x64\\release\\layout-empty.c": {
+      "sha256": "fe8f6a5831e5f9b04b396eac5548beca0d5c5e254e55cd1f6ceac87fe326f298",
+      "bytes": 931
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\x64\\release\\layout-filled.c": {
+      "sha256": "e6626eb2bacc1847ae9b112f61aead9547a41663be749287cbd20ef3acf6df45",
+      "bytes": 947
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\x64\\release\\layout_emit_fixture.exe": {
+      "sha256": "ccf6da226cd92babea8fde0ef3ecedc492390a1009e6154f33fb8cbebfbef15d",
+      "bytes": 134656
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\x64\\release\\layout_generated_test.exe": {
+      "sha256": "331d6f83e17cd82bfd599760b95ae8819a17c037388f6e42787644396d1212dc",
+      "bytes": 125440
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\win32.log": {
+      "sha256": "75bdea00f800d07a698034ae53c543030370606e8758c66d4d5bdabfa00f1681",
+      "bytes": 2149
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\win32\\cmakecache.txt": {
+      "sha256": "88d722297a9a08cc04b72896391db34a460554c200fbb6f69d2264d5d2837708",
+      "bytes": 13129
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\win32\\testing\\temporary\\lasttest.log": {
+      "sha256": "c6f090cf10135decac1007f935ecbb2e74d472e212103f2deb76ff87bc3b8346",
+      "bytes": 954
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\win32\\release\\layout-empty.c": {
+      "sha256": "bd0e32d8073d3acfa72ca083c885a950852e9dd23d544d059416deaaf23c6579",
+      "bytes": 933
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\win32\\release\\layout-filled.c": {
+      "sha256": "0ce5b0514d7a083a06c98f598219bd7c1e7bc27edecf264b8624d5e785558180",
+      "bytes": 949
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\win32\\release\\layout_emit_fixture.exe": {
+      "sha256": "baf94f710b470c257bb55549a509b86a50ec29684597974287536f9efa897dd3",
+      "bytes": 111616
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-final-evidence\\layout-final\\win32\\release\\layout_generated_test.exe": {
+      "sha256": "d4a37db3c3bf8f4a6784a89abd77770f3e81b089a832b23e08f0b721bc83d19d",
+      "bytes": 103936
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\binaries\\reference\\soniccd.exe": {
+      "sha256": "da614219a5c69108ad170a3d20eb56ab76843265b6a5fe3c68e88be80a64cd03",
+      "bytes": 115817984
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\r2-game-evidence\\cd-portable\\binaries\\candidate-r2\\soniccd.exe": {
+      "sha256": "501b8dba6c938d65fcc4eb9b0e096de9e34eaf727a1f4268c9b05703fb3e8612",
+      "bytes": 115820544
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\r2-game-evidence\\cd-portable\\binaries\\census-r2\\soniccd.exe": {
+      "sha256": "10a9fcd7da3d58a662db97542ce51750e554b24079843c0f641aa78a121dbf76",
+      "bytes": 115820544
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\audio.wav": {
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\backup-ram.bin": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\cram9.be16": {
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-0.ppm": {
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-1200.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-1500.ppm": {
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-1800.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-2100.ppm": {
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-2400.ppm": {
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-2700.ppm": {
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-300.ppm": {
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-3000.ppm": {
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-600.ppm": {
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame-900.ppm": {
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\frame.argb": {
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\main-ram.bin": {
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\sub-prg.bin": {
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\vdp-registers.bin": {
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\vram.bin": {
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\vsram.be16": {
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\word-ram.bin": {
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\capture\\z80-ram.bin": {
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\0-b\\run.log": {
+      "sha256": "fb993b08b621a484d3536a48520c84ac7795df572483b7abbca5956539aa5e3b",
+      "bytes": 1261
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\audio.wav": {
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\backup-ram.bin": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\cram9.be16": {
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-0.ppm": {
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-1200.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-1500.ppm": {
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-1800.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-2100.ppm": {
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-2400.ppm": {
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-2700.ppm": {
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-300.ppm": {
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-3000.ppm": {
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-600.ppm": {
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame-900.ppm": {
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\frame.argb": {
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\main-ram.bin": {
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\sub-prg.bin": {
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\vdp-registers.bin": {
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\vram.bin": {
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\vsram.be16": {
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\word-ram.bin": {
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\capture\\z80-ram.bin": {
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-capture-plane-r2\\1-a\\run.log": {
+      "sha256": "056bece8df0399b63e9a4c1e1619740ff86204540e08c046b13abae59d5723d0",
+      "bytes": 1261
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc64\\release\\compose.exe": {
+      "sha256": "7de62cfcf856c5e24fbc8aa0809f1e33d8693e4cec7808022a679ad56cba23d2",
+      "bytes": 143360
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc64\\release\\jobs_batched.exe": {
+      "sha256": "9e06cd9e6c3a06634b53d705ea318a304af67e565d49034e8eed5fc48dc72a33",
+      "bytes": 193024
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc64\\release\\jobs_portable.exe": {
+      "sha256": "95958e409c2797efba9ac83cba63a133b2f0f151ff0ee6f240aafe0c7cac2c95",
+      "bytes": 193024
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc64\\release\\raster_batched.exe": {
+      "sha256": "8225641ba2d4db4e80f22175ceac9212a7f75c7da0e70edbee15b66a83437a1a",
+      "bytes": 177664
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc64\\release\\raster_disabled.exe": {
+      "sha256": "d47af069f8baaed64a49f34db3660c2a0467e9800688074042d11f266bb5b1b9",
+      "bytes": 174080
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc64\\release\\raster_portable.exe": {
+      "sha256": "8e98faf9c42ce0a1e8f98358b2c4caf01d4094a254757e566aa8bd0448a08f3b",
+      "bytes": 177664
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc64\\cmakecache.txt": {
+      "sha256": "376a994d3061bd38f77aae1f2405160816f2c3fb8ae2a09f7df05dfe8a770a3d",
+      "bytes": 13298
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc64\\testing\\temporary\\lasttest.log": {
+      "sha256": "c5ae6752459d8a1596f21511cf7a82925ca10581c52e7c254d11454a405a9741",
+      "bytes": 4839
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc32\\release\\compose.exe": {
+      "sha256": "a937d97d8d717cc0a9f624905d0f7836d9101d7420d37ca5b66b7d1f65a5b6e5",
+      "bytes": 116736
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc32\\release\\jobs_batched.exe": {
+      "sha256": "e135e43b959d18e4be5266ed5cb6ea62a6df60823bb73a628d42bb70972c58ac",
+      "bytes": 154112
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc32\\release\\jobs_portable.exe": {
+      "sha256": "e135e43b959d18e4be5266ed5cb6ea62a6df60823bb73a628d42bb70972c58ac",
+      "bytes": 154112
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc32\\release\\raster_batched.exe": {
+      "sha256": "69bec2077d06b1d9b5943a8502b2d0ce810e1ff3d2e3ea9a9d37ca15c64216ff",
+      "bytes": 144384
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc32\\release\\raster_disabled.exe": {
+      "sha256": "c9384c58a639483440716840346a95b1978366e10bf558497ce8076f6c70b30d",
+      "bytes": 140288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc32\\release\\raster_portable.exe": {
+      "sha256": "69bec2077d06b1d9b5943a8502b2d0ce810e1ff3d2e3ea9a9d37ca15c64216ff",
+      "bytes": 144384
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc32\\cmakecache.txt": {
+      "sha256": "9f978e28c5c4540334c023aad018e9413917c1433cff5b1873e18146cd658ed8",
+      "bytes": 13306
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\tests-msvc32\\testing\\temporary\\lasttest.log": {
+      "sha256": "c9e1463e03e247c814712dd2a2a5edf8045316a2f6928554a2f89db2530992a3",
+      "bytes": 4839
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_compose_test.exe": {
+      "sha256": "2c15358b232b3a59839aabef7ee934800c06a2b5a7d7840cf00e5f577f162c63",
+      "bytes": 143360
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_render_alloc_allocfail_test.exe": {
+      "sha256": "37c89795673c7125a2c334a2e7970a110a30ec688e67d134a41bab51a3888241",
+      "bytes": 160256
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_render_diff_allocfail_test.exe": {
+      "sha256": "8b489c417a0946ac1cc865532d0fa1f431d7d70f6425ec64f56a3952013a60a7",
+      "bytes": 176128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_render_jobs_batched_test.exe": {
+      "sha256": "b3fd3a4d6f3b0896b008e1b6282cdf03e902d1b8106114622d4fcb397db12d46",
+      "bytes": 198656
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_render_jobs_portable_test.exe": {
+      "sha256": "5e6b33fd0c91d5e00068e6298375ff3fbae557bd28a965e8ad34afa49e5a3bb5",
+      "bytes": 199168
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_render_jobs_scalar_test.exe": {
+      "sha256": "44922365d9390084bb71026fa5ac85dd259dd8d286ed823cd7c2b1442048ea5d",
+      "bytes": 193536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_render_reuse_batched_test.exe": {
+      "sha256": "4f5359b29b9e50380e735ea61441b35ac1b9468667e89c5e8bc5ae8b6621f685",
+      "bytes": 176128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_render_reuse_disabled_test.exe": {
+      "sha256": "7dd903fa28b75652eb75a86ed6a2bb01128cc71a989d26d7d672bad7caf8edac",
+      "bytes": 174080
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_render_reuse_portable_test.exe": {
+      "sha256": "864a6270a270878a3172433fd04c1a8f1b77eb7f25307b98962128bb409de03f",
+      "bytes": 176640
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\release\\vdp_render_reuse_scalar_test.exe": {
+      "sha256": "cab2d3a1f687d0a2ffd3fa5fd92a0fb5aae5773e484c464fd02b5f0f3c827846",
+      "bytes": 171008
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\cmakecache.txt": {
+      "sha256": "0e79d08201f662316754b35197b2b6f120d48a7d3704fa922375063968c18b45",
+      "bytes": 13311
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc64\\testing\\temporary\\lasttest.log": {
+      "sha256": "12d378c58f49f428f58dba3a5a727fac10c5d52fc73a9b7c54715ee586aff8ee",
+      "bytes": 8778
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_compose_test.exe": {
+      "sha256": "dcc192e278e7770b0973bb0912e2236e74922067424f0f3501bd4fb8d58c9cf4",
+      "bytes": 116736
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_render_alloc_allocfail_test.exe": {
+      "sha256": "23cec6ebeaa68d6c9d50c062fa3acf143915cc6487e94d6961f512d01c4458b2",
+      "bytes": 128512
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_render_diff_allocfail_test.exe": {
+      "sha256": "9126a5c1fbfd40c695b61cc1407ed82bdf40a0fbb9814ff569b7b6b220199c20",
+      "bytes": 142848
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_render_jobs_batched_test.exe": {
+      "sha256": "563d30e9f81fc6c760b68a2c413968ab0672c9b5d1462b808970fd50a2aa1054",
+      "bytes": 158208
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_render_jobs_portable_test.exe": {
+      "sha256": "563d30e9f81fc6c760b68a2c413968ab0672c9b5d1462b808970fd50a2aa1054",
+      "bytes": 158208
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_render_jobs_scalar_test.exe": {
+      "sha256": "9b4b035f967970d31e1581521f0796eb91f7e297de78efb7d268c02806dd2ff5",
+      "bytes": 153088
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_render_reuse_batched_test.exe": {
+      "sha256": "69c8d12f1bf7ebd421fe2a4432635a5ba2fa23f002fa2082d6cddf2612e49d6a",
+      "bytes": 142848
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_render_reuse_disabled_test.exe": {
+      "sha256": "67e79227f7357b2e38816c55e3bb7458b7f6dc9ce2ab016af0d9ec201f7f2d2f",
+      "bytes": 140288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_render_reuse_portable_test.exe": {
+      "sha256": "69c8d12f1bf7ebd421fe2a4432635a5ba2fa23f002fa2082d6cddf2612e49d6a",
+      "bytes": 142848
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\release\\vdp_render_reuse_scalar_test.exe": {
+      "sha256": "d27cb19ee836307f87181a32c3d985436ca6430bbd31c1dc3ff5136f1abcea9b",
+      "bytes": 138752
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\cmakecache.txt": {
+      "sha256": "0668cf4e32e4013503a5f0c56bc62c31c1ac88028355f52c0f1645676dd2d34d",
+      "bytes": 13319
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\local-retained-unit-builds\\r2-tests-msvc32\\testing\\temporary\\lasttest.log": {
+      "sha256": "9b6ce86b1fe93e57795dfff751568bf92ed8f44d6fd259d85388cbfccf454b67",
+      "bytes": 8778
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\reference\\rkarecomp.exe": {
+      "sha256": "0edf7bacd0f648bb282068c6925e36d9a0100289013c61146d43adfd9965ed26",
+      "bytes": 8710656
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\reference\\sdl2.dll": {
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\candidate\\rkarecomp.exe": {
+      "sha256": "6b963a5dc87136a11273a3693b10b1e2cb7f752c9bc2187a5b0fb86cc576ae14",
+      "bytes": 8714752
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\rka\\candidate\\sdl2.dll": {
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\sonic1\\reference\\sonicthehedgehogrecomp.exe": {
+      "sha256": "fa2e9185890f8609588d5f3ccb5e0e99cc4a19f5f88637711d626f0cc36f2aaa",
+      "bytes": 5410816
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\sonic1\\reference\\sdl2.dll": {
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\sonic1\\candidate\\sonicthehedgehogrecomp.exe": {
+      "sha256": "403458441cdc0de3b1a4e6bbe4081f75ab55485a9c2e5626a111eb9404dcd037",
+      "bytes": 5414912
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\binaries\\sonic1\\candidate\\sdl2.dll": {
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\rka-0-a\\run.log": {
+      "sha256": "17f4cc3f1e40222baaa5dd2a1df71c5d407aed36393a872df101b750e29ba45c",
+      "bytes": 8509
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\rka-0-a\\frame.png": {
+      "sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+      "bytes": 215347
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\rka-0-a\\audio.wav": {
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\rka-1-b\\run.log": {
+      "sha256": "12b7c44fe35f7215a9a6dc15c18c67f9a9e44757d5b21bfad498485fb600fb9f",
+      "bytes": 8503
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\rka-1-b\\frame.png": {
+      "sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+      "bytes": 215347
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\rka-1-b\\audio.wav": {
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\sonic1-0-a\\run.log": {
+      "sha256": "929cd8296eba7f240856c8d24b823064f7f7993a585902277a418dabe8e49e2b",
+      "bytes": 5380
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\sonic1-0-a\\frame.png": {
+      "sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+      "bytes": 215347
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\sonic1-0-a\\audio.wav": {
+      "sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+      "bytes": 35827244
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\sonic1-1-b\\run.log": {
+      "sha256": "e26315f2ad1f688409b32d6ada89446628b253868c9098e7fa181395275fd1a3",
+      "bytes": 5374
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\sonic1-1-b\\frame.png": {
+      "sha256": "d5782df7031c4b977861949054032b514188bfe8c5f644e192d64e0dafacebe0",
+      "bytes": 215347
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-r1\\sonic1-1-b\\audio.wav": {
+      "sha256": "64315dd3c69c8870b0659822072a1565f35b70163af869a68251ff86f8620a18",
+      "bytes": 35827244
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-rka-reverse-r2\\rka-0-b\\run.log": {
+      "sha256": "700d8bd12917eb560690cf8c131be7be32931d93cc327f45393abcfb54d80cc7",
+      "bytes": 8527
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-rka-reverse-r2\\rka-0-b\\frame.png": {
+      "sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+      "bytes": 215347
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-rka-reverse-r2\\rka-0-b\\audio.wav": {
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-rka-reverse-r2\\rka-1-a\\run.log": {
+      "sha256": "243b7dc4a695faec332b8ea672c94f61cc5ed3b148252eac659e75babc868950",
+      "bytes": 8533
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-rka-reverse-r2\\rka-1-a\\frame.png": {
+      "sha256": "812685d4ab515bd7a1847c6748ac686032d21c68293ada429aa4e7a84cda4d89",
+      "bytes": 215347
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-rka-reverse-r2\\rka-1-a\\audio.wav": {
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\rka-0-a\\run.log": {
+      "sha256": "c36b8679c28146006ec1139d4bcdc9a329f48b1432c33164db35976dd24cbcca",
+      "bytes": 8535
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\rka-0-a\\frame.png": {
+      "sha256": "e29adcb1a2fa64fb9b90ceddec47cf72058e94fb2eb2f0f5811119f4325b9b47",
+      "bytes": 267768
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\rka-0-a\\audio.wav": {
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\rka-1-b\\run.log": {
+      "sha256": "2e5d217e969498ba1faf51f634f5345c14b3cfba3eb29c62e36e39f6e80df4f0",
+      "bytes": 8529
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\rka-1-b\\frame.png": {
+      "sha256": "e29adcb1a2fa64fb9b90ceddec47cf72058e94fb2eb2f0f5811119f4325b9b47",
+      "bytes": 267768
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\rka-1-b\\audio.wav": {
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\sonic1-0-a\\run.log": {
+      "sha256": "8b7aff3c4cefed767822db06bc4d9b2c021893a48cbac01a2127504f9a10752b",
+      "bytes": 5405
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\sonic1-0-a\\frame.png": {
+      "sha256": "6bb84b78a964e3097bbeaad93642ccc37a9ea670c78d0b91a71320eca2f4bd2e",
+      "bytes": 267768
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\sonic1-0-a\\audio.wav": {
+      "sha256": "bd0a87f8399223409b11c29b2e399a9fa2e09530f37f5bd7e92a1dde6f432c66",
+      "bytes": 35827244
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\sonic1-1-b\\run.log": {
+      "sha256": "9fb16418839ba5a3e92de2574aa75875996bbb26c244aa2b8ebf96bf4123e465",
+      "bytes": 5399
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\sonic1-1-b\\frame.png": {
+      "sha256": "6bb84b78a964e3097bbeaad93642ccc37a9ea670c78d0b91a71320eca2f4bd2e",
+      "bytes": 267768
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\custom-runtime-r1\\sonic1-1-b\\audio.wav": {
+      "sha256": "bd0a87f8399223409b11c29b2e399a9fa2e09530f37f5bd7e92a1dde6f432c66",
+      "bytes": 35827244
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\rka\\current.state": {
+      "sha256": "dd6f1b465ae719d9464f79abaf7187c679daf0df164c665334375e3755de0615",
+      "bytes": 157106
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\rka\\saved.ram": {
+      "sha256": "6a77e55073de24cba712a4930759de4ffb54f98eb1f5920220e4a138778b3114",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\rka\\loaded.ram": {
+      "sha256": "6a77e55073de24cba712a4930759de4ffb54f98eb1f5920220e4a138778b3114",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\rka\\progressed.ram": {
+      "sha256": "7aa88d10649a99a5cfbbb0f8eaa3b1f8a564702f563823381b26513c8cf196bd",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\rka\\final.png": {
+      "sha256": "cd4a39a1c4143ee66383299f72e8b0156eaa83cfe232574eff62dd947a12a58d",
+      "bytes": 267768
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\rka\\run.log": {
+      "sha256": "a0c28b2e5a10e7b468b33316d555c2209e9177375d425ef0c1ef311c8421fe27",
+      "bytes": 2525
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\sonic1\\current.state": {
+      "sha256": "d6b1fa7ca4d3cf00afe1271339aa45f0164ffb28d1b167b066a3a546d5a93ef6",
+      "bytes": 157106
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\sonic1\\saved.ram": {
+      "sha256": "67b5dfcdaea15f7a19d12bbf315d4b650966f36cdca16ba4737dd7ac22e58b5a",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\sonic1\\loaded.ram": {
+      "sha256": "67b5dfcdaea15f7a19d12bbf315d4b650966f36cdca16ba4737dd7ac22e58b5a",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\sonic1\\progressed.ram": {
+      "sha256": "3bfa9a59ca55c9c7975f0df1edd95c7d3c379010b4099f4bddb87e4f5f437017",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\sonic1\\final.png": {
+      "sha256": "519164594772c86beae05e5918590b30069be0dfe6c3711f43e8ce45dcdaef38",
+      "bytes": 267768
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\current-states-r1\\sonic1\\run.log": {
+      "sha256": "a71c1e54fc3eee2087b1501280e4acb4c769e1a06f69b35d74586dbc23a5f90c",
+      "bytes": 2601
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-census-r1\\rka-0-b\\frame.png": {
+      "sha256": "e29adcb1a2fa64fb9b90ceddec47cf72058e94fb2eb2f0f5811119f4325b9b47",
+      "bytes": 267768
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-census-r1\\rka-0-b\\audio.wav": {
+      "sha256": "b08a5557697c21e9e443e8bf3aa506ed8cf09de945356c8d0c0213149a7590f0",
+      "bytes": 89568044
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\runtime-census-r1\\rka-0-b\\run.log": {
+      "sha256": "b9fc549bddbc3f5c5cb04a82544706236cb9690dd62360d66546a70da3797a5f",
+      "bytes": 8651
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\toolchain.log": {
+      "sha256": "8b75d41cbbf6aa3d956a2f97b873d302e752e8b5113c0cde189b2c4fc4afbe7a",
+      "bytes": 105
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\toolchain-r1.log": {
+      "sha256": "8b75d41cbbf6aa3d956a2f97b873d302e752e8b5113c0cde189b2c4fc4afbe7a",
+      "bytes": 105
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\reference-build-initial-sdk-warning.log": {
+      "sha256": "c8d1ea400a8b71a0dbfcd22547730fbae9c91d197b71ccf37d8bbbf7ab84e370",
+      "bytes": 3885
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\server_build_cd_portable.py": {
+      "sha256": "76df12713cd655f00f3112a1af9b9aa2df933fbea7c7badf31914156461558b9",
+      "bytes": 7765
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\qualified-source.cmake": {
+      "sha256": "ac85c2bb77b42c6358d10f40287cabbd82f1f6c69ea1b4a40aea251626163cd1",
+      "bytes": 1198
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\census_vdp.c": {
+      "sha256": "bedc5d2d8e2e6c5deeff6d23efdae7b6167d653dc9a1b6a257bc4f0eac717cbc",
+      "bytes": 55438
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\binaries\\reference\\sdl2.dll": {
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\reference-build.log": {
+      "sha256": "0de8be4f5bb0d1bfffaa75be0922af42da7ec2da3ae3da543c1e98796a56205b",
+      "bytes": 45414
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\reference\\build.ninja": {
+      "sha256": "7e39ac4ee1253d18396e6d20bbeea9d6345d3b71323f432c6d96873cfb85fd54",
+      "bytes": 58321745
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\reference\\cmakecache.txt": {
+      "sha256": "1f9f51aedc80d5b4f001ab521a94118fa14f711d6834e9c35a146cd6df1770e6",
+      "bytes": 74092
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\reference\\genesis_vdp.c": {
+      "sha256": "cb1207f5517f14b1420e7022a2ee8885ab582ba1ee219807d2f340227ad7f448",
+      "bytes": 54582
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\reference\\initial-cache.cmake": {
+      "sha256": "c69f498e2186399d1dbf5f74d046ea0fdf33b050215d6e6f63a5a9bfd42bd171",
+      "bytes": 54709
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\reference\\qualified-source.cmake": {
+      "sha256": "ac85c2bb77b42c6358d10f40287cabbd82f1f6c69ea1b4a40aea251626163cd1",
+      "bytes": 1198
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\reference\\rules.ninja": {
+      "sha256": "d71c462afeedce9d5f2e314f4cbf4c7d4e612f3ddc215ba1b1a2763a3bd8d5b9",
+      "bytes": 85822
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\binaries\\candidate\\soniccd.exe": {
+      "sha256": "419678a3150729d4e1cb718bad0b0d9112803579a760e6511d2ea8576ca4b846",
+      "bytes": 115822080
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\binaries\\candidate\\sdl2.dll": {
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\candidate-build.log": {
+      "sha256": "d130e51c149623a79e9670aec6a9fdcf0c5792efd31ab84695e3db555645f32f",
+      "bytes": 522
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\candidate\\build.ninja": {
+      "sha256": "1378598547b0458d0f925889fb51b9b25af2ae72a22224f05f66c672d5858bd4",
+      "bytes": 58321737
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\candidate\\cmakecache.txt": {
+      "sha256": "871c8282fbe8c2b4c3c9b1185726e5fe6d435939bff34556de515b171bbe548a",
+      "bytes": 74090
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\candidate\\genesis_vdp.c": {
+      "sha256": "6f440eeeed451fa67dfcc9d20306f3c832921bc51c6a90959e14992bc19304bb",
+      "bytes": 56093
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\candidate\\initial-cache.cmake": {
+      "sha256": "c69f498e2186399d1dbf5f74d046ea0fdf33b050215d6e6f63a5a9bfd42bd171",
+      "bytes": 54709
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\candidate\\qualified-source.cmake": {
+      "sha256": "ac85c2bb77b42c6358d10f40287cabbd82f1f6c69ea1b4a40aea251626163cd1",
+      "bytes": 1198
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\candidate\\rules.ninja": {
+      "sha256": "d71c462afeedce9d5f2e314f4cbf4c7d4e612f3ddc215ba1b1a2763a3bd8d5b9",
+      "bytes": 85822
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\binaries\\census\\soniccd.exe": {
+      "sha256": "3399359fbe7e1dfba34d0ed15b8ea33ab5a6693f3cc0c57d0b8cb64558cba1ed",
+      "bytes": 115822080
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\binaries\\census\\sdl2.dll": {
+      "sha256": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+      "bytes": 2500096
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\census-build.log": {
+      "sha256": "848df26e0b58de6aa69e8f70fe1f68a4d720294ec1768abdfdf0cb1e47ac3348",
+      "bytes": 513
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\census\\build.ninja": {
+      "sha256": "444b55d79a0ac2722fc384667bdaf3e51812f76cad6f11f350633b4ca4542210",
+      "bytes": 58321702
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\census\\census_vdp.c": {
+      "sha256": "bedc5d2d8e2e6c5deeff6d23efdae7b6167d653dc9a1b6a257bc4f0eac717cbc",
+      "bytes": 55438
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\census\\cmakecache.txt": {
+      "sha256": "76859c3d7d115c1449bf849852354182ed7a9dac5c3d6319339ebaaa4be14d00",
+      "bytes": 74081
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\census\\initial-cache.cmake": {
+      "sha256": "c69f498e2186399d1dbf5f74d046ea0fdf33b050215d6e6f63a5a9bfd42bd171",
+      "bytes": 54709
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\census\\qualified-source.cmake": {
+      "sha256": "ac85c2bb77b42c6358d10f40287cabbd82f1f6c69ea1b4a40aea251626163cd1",
+      "bytes": 1198
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\portable-cd-evidence\\retained-build-config\\census\\rules.ninja": {
+      "sha256": "d71c462afeedce9d5f2e314f4cbf4c7d4e612f3ddc215ba1b1a2763a3bd8d5b9",
+      "bytes": 85822
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\audio.wav": {
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\backup-ram.bin": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\cram9.be16": {
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-0.ppm": {
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-1200.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-1500.ppm": {
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-1800.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-2100.ppm": {
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-2400.ppm": {
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-2700.ppm": {
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-300.ppm": {
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-3000.ppm": {
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-600.ppm": {
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame-900.ppm": {
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\frame.argb": {
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\main-ram.bin": {
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\sub-prg.bin": {
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\vdp-registers.bin": {
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\vram.bin": {
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\vsram.be16": {
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\word-ram.bin": {
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\capture\\z80-ram.bin": {
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\0-a\\run.log": {
+      "sha256": "86f401fb0ed5d492242f1af5a8851810afe7949ab33a3635178406f6b89dca0a",
+      "bytes": 1275
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\audio.wav": {
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\backup-ram.bin": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\cram9.be16": {
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-0.ppm": {
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-1200.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-1500.ppm": {
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-1800.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-2100.ppm": {
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-2400.ppm": {
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-2700.ppm": {
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-300.ppm": {
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-3000.ppm": {
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-600.ppm": {
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame-900.ppm": {
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\frame.argb": {
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\main-ram.bin": {
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\sub-prg.bin": {
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\vdp-registers.bin": {
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\vram.bin": {
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\vsram.be16": {
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\word-ram.bin": {
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\capture\\z80-ram.bin": {
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-complete-render-job-portable-r1\\1-b\\run.log": {
+      "sha256": "5921ff8ad149b76dcfcb1c416f2642af9cb6f0d7ce3888b446045db8e2a5f893",
+      "bytes": 1275
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\audio.wav": {
+      "sha256": "627482eeab3acfd345b411892ac777c7864cad20cd40836f32da8ca646ecc355",
+      "bytes": 44787108
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\backup-ram.bin": {
+      "sha256": "94b1f2daef69a321f88fe634c8fb75604ad9d4769e34a268660451357d325a75",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\cram9.be16": {
+      "sha256": "8a8b48ad7d0497f6e892164132f82275da55a31c26d13705b4cd7b52612ed4f9",
+      "bytes": 128
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-0.ppm": {
+      "sha256": "15428e41dc15a5f0c2adbd364f3fd7d1c2f4e602dbde9afd9b956be22aa556d8",
+      "bytes": 215055
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-1200.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-1500.ppm": {
+      "sha256": "d6247b5a8e9cc001351b490a2eabaac9ab6b1a9b6d6da27f00b8ba2e53c587e4",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-1800.ppm": {
+      "sha256": "33eae6d12be9702c0c1e5a986dca6d9c9978a615c6eced2f7d05e0279a55bfea",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-2100.ppm": {
+      "sha256": "6595f0d0f762c85a04ff766eb961914277ec7fc648248417234ec46f011705fd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-2400.ppm": {
+      "sha256": "fb3f405d85a8e51211b99936ee21116bd2e2b3cd15b297a4d1f0fc9f8bb1f5dd",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-2700.ppm": {
+      "sha256": "2c455db82cfa677764fe4c7b81cfe375e3bbe0e7f676c46441032305ac9cee9a",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-300.ppm": {
+      "sha256": "0fb9c8870cb0460f428d2b377f58f8f0ba41cbaf2ae3bf369c92b190e30fba78",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-3000.ppm": {
+      "sha256": "323dd39b029be745226b3f118ad61fcad1de26459decb2bbcb5616d470a70793",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-600.ppm": {
+      "sha256": "0b9f32723759ff59279cf6d33a6772d3abd0459c98a55aa021edfc78f4493040",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame-900.ppm": {
+      "sha256": "96124116ded1a5e4ed24dbac709021747fb56553ab268667261799d59421773d",
+      "bytes": 267471
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\frame.argb": {
+      "sha256": "4506343b09db58f37f47c41c2f4d6d3eeb28fd41201879a96c41d9dfeda4b08f",
+      "bytes": 491520
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\main-ram.bin": {
+      "sha256": "dfa263779038281848c2df7cdda102d3e9cb30b4a3503357d778f1b4f6ec306c",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\sub-prg.bin": {
+      "sha256": "f87ab7833d1c2dc0145b209f7923c5b3543c2c697ebac51996e23864dd04846e",
+      "bytes": 524288
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\vdp-registers.bin": {
+      "sha256": "7b4d53b42b58ef9fff76bd456ad5a0e4e4e3f70a4b617efbe8fb9df55eb1f7f0",
+      "bytes": 24
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\vram.bin": {
+      "sha256": "957595e9ae11c236da6b9fe7573ca49886e52db89dad682be74d81c69194f232",
+      "bytes": 65536
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\vsram.be16": {
+      "sha256": "bfb4b3d8df5bfe0946a3a586d15e71e52e66d478d8484608422a8d4504554674",
+      "bytes": 80
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\word-ram.bin": {
+      "sha256": "7aa54c36ab94dbe14068a18613c574b883ce446337bfaa9c571ec3523aff14e2",
+      "bytes": 262144
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\capture\\z80-ram.bin": {
+      "sha256": "6619fdd02f8637bb751d4dff604f6cc1aded446a49b967289deb66d05d3365b6",
+      "bytes": 8192
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\game-cd-render-job-capture-census-portable-r1\\0-b\\run.log": {
+      "sha256": "9641d9b231a71578a03c040b4808d3cfbf5a0560ed6cf226b1fa66f15bf7e93f",
+      "bytes": 1401
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\generated-layouts\\rka\\reference.c": {
+      "sha256": "94a42f5d5f92e3a36d6bf238e0c785c877a2194ee6f69a3add78232c2c983100",
+      "bytes": 949
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\generated-layouts\\rka\\candidate.c": {
+      "sha256": "554fbd0ad9446d18559a08482952147484327031aa9760a4dd878467b10c6635",
+      "bytes": 949
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\generated-layouts\\sonic1\\reference.c": {
+      "sha256": "46d04ffdf431cdacce1090ff5bc02306b2e5bd589be4b6f36672eff11778ade9",
+      "bytes": 978
+    },
+    "g:\\temp\\codex\\genesis-engine-render-reuse-20261029\\server-suite\\generated-layouts\\sonic1\\candidate.c": {
+      "sha256": "9ba6f2fe21f4705ed511ce3131477555a65915285789823b20841e2ef59e6e6f",
+      "bytes": 978
+    }
+  },
+  "durable_beads_comments": {
+    "beads-3z5k.12": "01a19184-9511-7bb5-a854-5cea775de8da",
+    "beads-3z5k": "01a19184-a1a9-71d0-8f9e-de2fc64d5bfb",
+    "beads-2wy8.1": "01a19184-a2d9-7018-be4d-e65898303a14"
+  },
+  "ready_PR": {
+    "baseRefName": "codex/engine-stamp-jobs-20261029",
+    "headRefName": "codex/engine-render-reuse-20261029",
+    "headRefOid": "199a313b363b6c6a61ac397b100c22f061e3f52b",
+    "isDraft": false,
+    "state": "OPEN",
+    "title": "Fix empty generated level modes and record render reuse evaluation",
+    "url": "https://github.com/mstan/segagenesisrecomp/pull/47"
+  },
+  "findings": [],
+  "scope_judgment": "Both whole coherent architectures implemented/qualified/reached actual native+capture workload, with exact current values/ownership/status contracts. R1 native per-game cost repeats; R2 high true capture reuse has no useful benefit on matched PC/SERVER samples. Bounded rejection is justified, not partial/deferral/universal algorithm impossibility. Retain original runner and useful compiler fix.",
+  "retained_temporary_obligation": "Bounded SERVER toolchain/CD native sources/archive/builds retained explicitly for E16/campaign reuse. WSL temporary unit build remains recorded pending cleanup; preserve needed evidence then clean when no longer needed.",
+  "next_instruction": "After root records accepted bounded_rejected/count20to19, links verdict/PR/Beads, completes remaining bounded scratch retention/cleanup and central sync, original E16 with a NEW validation-only reviewer. E16 preparation already allowed, but qualification/disposition remains serial. No merge/release/owner launch approval."
+}

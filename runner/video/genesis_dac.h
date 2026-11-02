@@ -17,6 +17,7 @@
 #define GENESIS_DAC_H
 
 #include <stdint.h>
+#include "genesis_dac_table.h"
 
 #define GENESIS_DAC_NORMAL    0
 #define GENESIS_DAC_SHADOW    1
@@ -34,10 +35,11 @@ static inline uint8_t genesis_dac_level(int chan3, int level) {
 
 /* Genesis CRAM word (0x0EEE: R bits 3:1, G 7:5, B 11:9) -> 0xFFRRGGBB. */
 static inline uint32_t genesis_dac_cram_to_argb(uint16_t cram, int level) {
-    uint8_t r = genesis_dac_level((cram >> 1) & 7, level);
-    uint8_t g = genesis_dac_level((cram >> 5) & 7, level);
-    uint8_t b = genesis_dac_level((cram >> 9) & 7, level);
-    return 0xFF000000u | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+    /* The complete finite input identity replaces repeated channel derivation.
+     * Unused CRAM bits and unknown levels retain the scalar DAC contract. */
+    unsigned index=((cram>>1)&7u)|((cram>>2)&0x38u)|((cram>>3)&0x1c0u);
+    unsigned shade=level==GENESIS_DAC_SHADOW?1u:level==GENESIS_DAC_HIGHLIGHT?2u:0u;
+    return genesis_dac_colors[shade][index];
 }
 
 /* Nearest normal-level 3-bit index for an 8-bit DAC value (inverse of the

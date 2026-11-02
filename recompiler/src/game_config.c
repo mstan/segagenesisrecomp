@@ -638,6 +638,8 @@ bool game_config_emit_layout(const GameConfig *cfg, const char *output_path) {
         L->game_mode_addr, L->vint_runcount_addr, L->vint_routine_addr,
         L->plc_pending_addr, L->initial_ssp, L->vbla_stack, L->intr_stack,
         L->player_object_addr);
+    if (L->level_mode_count == 0)
+        fprintf(f, " 0");                 /* Keep empty layouts valid portable C. */
     for (int i = 0; i < L->level_mode_count; i++)
         fprintf(f, "%s 0x%02Xu", i ? "," : "", L->level_modes[i]);
     fprintf(f, " },\n"
