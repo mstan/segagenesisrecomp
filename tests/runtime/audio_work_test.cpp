@@ -39,6 +39,7 @@ static void shadow_call(uint64_t value)
 void fm_shadow_init(void){ }
 void ref_fm_shadow_init(void){ }
 int fm_shadow_enabled(void){return 1;}
+int fm_shadow_active(void){return 0;} /* This oracle observes writes, not substituted PCM. */
 void fm_shadow_advance(uint32_t n){shadow_call((1ull<<60)|n);}
 void fm_shadow_write(uint8_t p,uint8_t v){shadow_call((2ull<<60)|((uint64_t)p<<8)|v);}
 void ref_fm_shadow_advance(uint32_t n){reference_shadow_trace.push_back((1ull<<60)|n);}

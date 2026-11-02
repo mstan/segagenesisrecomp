@@ -23,6 +23,7 @@ extern "C" void fm_shadow_init(void) {}
 extern "C" void fm_shadow_advance(uint32_t) {}
 extern "C" void fm_shadow_write(uint8_t,uint8_t) {}
 extern "C" int fm_shadow_active(void) { return shadow_active; }
+extern "C" int fm_shadow_enabled(void) { return shadow_active; }
 extern "C" void fm_shadow_verify_and_substitute(int16_t *out,size_t n)
 {
     shadow_input=14695981039346656037ull;
