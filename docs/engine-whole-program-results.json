@@ -1,6 +1,6 @@
 {
   "family": "E36",
-  "status": "qualification_in_progress",
+  "status": "qualified_independently_accepted",
   "owner": "beads-3z5k.31",
   "PR": "https://github.com/mstan/segagenesisrecomp/pull/61",
   "runtime_source_history": [
@@ -10,7 +10,7 @@
     "76f84cac5533a3a70d636b5de2389075f197bfc9",
     "9479983"
   ],
-  "scope": "Common IPO/PGO and normal/aggressive linker layout; precise arithmetic and existing qualified portable kernels. Native CD10957-source IR and final portable checks pending. No family closure or aggregate regression offset.",
+  "scope": "Common optimized native build pipeline with per-game adoption; actual IPO/PGO/cross-TU and normal/aggressive layout decisions, existing qualified kernels, portable fallback. All original E36 acceptance areas dispositioned; owner-authorized merge/release pipeline is tracked separately.",
   "cartridge_runtime": {
     "raw": {
       "path": "C:\\Temp\\Codex\\genesis-engine-whole-program-20261101\\game-qualified.json",
@@ -10573,7 +10573,7 @@
     "sonic3k": "IPO+freshPGO current5303dfe; favorable shared-host default/capture observations; exact native/currentSRAM and actualACK/startup-context supported replay pass.",
     "sonic3": "IPO-only package rejected. Deliver IPO_OFF/PGO_OFF at0b29685; mixed CPU/variable baseline, adverse cycle/wall observations retained, neutral/inconclusive/no speedup claim.",
     "sandk": "IPO-only package rejected. Deliver IPO_OFF/PGO_OFF at0b29685; mixed CPU/variable baseline, adverse cycle/wall observations retained, neutral/inconclusive/no speedup claim.",
-    "sonic_cd": "PENDING final combined103 full-native-catalog IR/PGO link/train/USE/canonical+16x. SERVER compiler heap failure, then component-only76 codegen completed but missing-SDKrc caused LNK1158 and no executable. All failure costs retained; no runtime result claimed."
+    "sonic_cd": "Accepted full10957-sourceIR+normalPGO in combined E02/E36/E37 source103 batch; exactfull3000 A/B native/audio/BRAM and full16x readback. Single samehostpair CPU-15.144/cycles-13.649 percent observed; not isolatedLTO or holdout/generalizedFPS claim. Valid trainingprefix2650 correctly separated from full3000 validation."
   },
   "CD_failures": {
     "source": "76f84cac5533a3a70d636b5de2389075f197bfc9",
@@ -10606,5 +10606,139 @@
       "sha256": "7c83e242b351d32e4cb28db3c0f70be3551c73751139a7cb2aa907cc04d4806b"
     },
     "contract": "Consumer target GENESIS_NATIVE_IPO_DISABLED explicitly disables both IPO and PGO. MSVC siblings opt out; S3K retains qualified optimizer workflow. Fresh supported configure actual three projects verifies flags; no binary relabel/rebuild."
+  },
+  "CD_final": {
+    "passed": true,
+    "package": "Final103 combined E02/E36/E37 plus full10957-source IR and fresh normal PGO; not isolated LTO evidence",
+    "candidate": {
+      "path": "C:\\temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\B\\SonicCD.exe",
+      "bytes": 113592832,
+      "sha256": "58676c87058eb9fb6c2b00eaabd66e0fa7abe8aa9af73c62771a2594e5e68abe"
+    },
+    "candidate_engine": "103dfea223e560e753cbf4e76e6af90c552c0243",
+    "consumer": "94f57796db9de4990e23476b576b29239095fb22",
+    "baseline": {
+      "engine": "76f84cac5533a3a70d636b5de2389075f197bfc9",
+      "core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
+      "IPO": "OFF",
+      "PGO": "OFF",
+      "binary": {
+        "path": "C:\\temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\baseline\\SonicCD.exe",
+        "bytes": 115852288,
+        "sha256": "bb23bb7f725d5ba3d4b77d605f0f34a5bf7c609a99684ad40dae8c666503d4d4"
+      },
+      "original_receipt": "C:\\Temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\baseline-original-builds-qualified.json",
+      "scope": "Successful original A configure/build only; original overall built=false belongs to later failed instrumented phase"
+    },
+    "canonical": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-final-integration-20261101\\game-final103-combined-fullIR-trainedPGO-local.json",
+      "passed": true,
+      "frames_per_arm": 3000,
+      "exact": "all checkpoints, nativePPM and state dumps, fullWAV and nativeBRAM",
+      "observed_reductions_pct": {
+        "cpu_seconds": [
+          15.14423076923077
+        ],
+        "cycles": [
+          13.649368356712177
+        ]
+      },
+      "scope": "Single matched samehost/core/backend pair, shared ambient load; no quiet-host/isolatedLTO/holdout generalization claim"
+    },
+    "full16x": {
+      "path": "C:\\Temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-gpu-smoke\\gpu16x.json",
+      "passed": true,
+      "verification": [
+        "[HD_VERIFY] frame=2900 serial=2903 output=5120x3584 pixels=18350080 mismatches=0 first=0,0 expected=00000000 actual=00000000"
+      ],
+      "native_reference_exact": true,
+      "native_reference": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-hd-rendering-20261101\\qa\\cd-native\\default.json",
+        "bytes": 87186,
+        "sha256": "c1fc6e7000e8fd4057c6ad352d043bb7300fdea5c154f235ad45f3dd48292814"
+      },
+      "gpu_log": [
+        "[HD_GPU] backend=opengl version=4.6.0 NVIDIA 616.86 max_texture=32768 timestamps=1",
+        "[HD_GPU] target requested=5120x3584 allocated=5120x3584 scale=16 bytes=73400320 admitted=full",
+        "[HD_GPU] target requested=4096x3584 allocated=4096x3584 scale=16 bytes=58720256 admitted=full",
+        "[HD_GPU] target requested=5120x3584 allocated=5120x3584 scale=16 bytes=73400320 admitted=full",
+        "[HD_GPU] frames=2997 upload_bytes=366031872 source_bytes=3011584 job_bytes=363020288 gpu_samples=2996 gpu_upload_ns=45110272 gpu_draw_ns=3755128832 cpu_ticks=16721611 target=5120x3584 bytes=73400320"
+      ],
+      "scope": "One final combined hidden/muted ownerPC full16x smoke versus existing qualified same extended native route, no additional matrix"
+    },
+    "build_costs": {
+      "GENERATE": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\link-GENERATE.json",
+        "seconds": 829.8120000000054,
+        "peak_commit_bytes": 16334258176
+      },
+      "USE": {
+        "path": "C:\\Temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\link-USE.json",
+        "seconds": 1165.265000000014,
+        "peak_commit_bytes": 24175644672,
+        "priority_transition": {
+          "pid": 27104,
+          "observed_at": "2026-11-01T18:31:40.9463026-08:00",
+          "priority": "Normal",
+          "started": "2026-11-01T18:29:15.7062815-08:00",
+          "CPU": 105.171875,
+          "WorkingSet64": 23483629568,
+          "PrivateMemorySize64": 23957364736,
+          "initial_priority": "BelowNormal",
+          "owner_directed_transition": "BelowNormal to Normal while healthy, no restart, same CGTHREADS2/input/profile",
+          "observed_time_scope": "Normal confirmed by observation timestamp; exact set time was root-owned"
+        }
+      },
+      "CGTHREADS_both": 2,
+      "archive_recompiled": false,
+      "native_IR": [
+        {
+          "source": "C:\\Temp\\Codex\\genesis-engine-whole-program-cd-20261101\\runtime\\segacd_owned_native_program.lib",
+          "name": "inputs/256.lib",
+          "bytes": 2241498060,
+          "sha256": "7865150a9aa7ddeedbe0f09dec349939163836ca56b6ed8354f72b249fc2e02a",
+          "reuse": "inputs/249.lib"
+        }
+      ]
+    },
+    "fresh_profile": {
+      "PGD": {
+        "path": "C:\\temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\profiles\\SonicCD.pgd",
+        "bytes": 684535808,
+        "sha256": "f75eac9c8a6e1c4a1d9ec98885517c07f6f9ca10a366261e4137682d129b2104"
+      },
+      "PGCs": [
+        {
+          "path": "C:\\temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\instrumented\\SonicCD!1.pgc",
+          "bytes": 68173464,
+          "sha256": "772fc17679f76460808201d2cbd25c1d018078ba39b993602a4c68ca4f3dfa04"
+        }
+      ],
+      "source": "103dfea223e560e753cbf4e76e6af90c552c0243",
+      "final_summary_frames": 2650,
+      "audio_intervals_delivered": 2649,
+      "normal_child_exit": true,
+      "profiled_functions_used": {
+        "used": 1225271,
+        "total": 1226983
+      },
+      "profiled_instructions_used": {
+        "used": 238199002900,
+        "total": 238199002900
+      },
+      "scope": "Valid finalized fresh final103 combined E02/E36/E37 instrumented boot/menu/stage training prefix. Planned3000 training count was an internal convenience, not acceptance. The reused210s step deadline expired during actual CPU saturation; child then quit normally and flushed own PGC. This is instrumentation cost only; no completed3000-training or final runtime performance claim. Root approved using finalized prefix; full3000 canonicalA/B plus16x gate remain unchanged.",
+      "warning": "PG0188 auto-merge searched the SHA-named PGD basename for additionalPGCs; expected none because own actualPGCs were already explicitly merged. USE log confirms100percent dynamic instructions and99.9percent functions consumed profile data."
+    },
+    "preserved_failures": {
+      "original76_missingRC": "C:\\Temp\\Codex\\genesis-engine-whole-program-20261101\\cd-local-link\\link-GENERATE.json",
+      "initialSDKmissingMidlrtMd": "C:\\Temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\sdk-preflight\\results.json",
+      "fixedSDKvalidation": "C:\\Temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\sdk-preflight\\manifest-dependency-fix.json",
+      "training_fixed_deadline": "C:\\Temp\\Codex\\genesis-engine-final-integration-20261101\\cd-final-local-link\\training-partial-2649.json"
+    },
+    "retained_temporary_data": "Own final link inputs, instrumented/final/reference binaries, fresh PGD/PGC, raw QA/nativeWAV/BRAM/captures and logs retained for final integration/human handoff/reproducibility; first immutable archive/tool inputs remain shared readonly except documented SDK tool dependency addition. Root owns post-delivery cleanup. No more game launches from this worker."
+  },
+  "independent_final_review": {
+    "path": "C:\\Temp\\Codex\\genesis-engine-whole-program-20261101\\review\\FINAL_REVIEW.md",
+    "verdict": "E36 whole-family technically accepted;37of37familiesresolved. No further optimization tests; pins/release completion separate."
   }
 }
