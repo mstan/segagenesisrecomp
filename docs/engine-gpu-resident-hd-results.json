@@ -1,0 +1,65 @@
+{
+  "package": "E37 GPU-resident immutable hardware raster jobs",
+  "owner": "beads-3z5k.17",
+  "campaign": "beads-2wy8.1",
+  "engine_base": "be957a4a542ab3895711102e2633b27bd709fc0c",
+  "implementation_commit": "8288e38",
+  "review_fixes_commit": "03a3ac5",
+  "raw_root": "C:/Temp/Codex/genesis-engine-hd-rendering-20261101",
+  "host": {"gpu": "NVIDIA GeForce RTX 3080 Ti", "opengl": "4.6 NVIDIA 616.86", "qpc_frequency": 10000000},
+  "scope": "Local display-only enhancement. Native remains default. No quiet-host speedup claim; combined branch and owner handoff are separate.",
+  "games": [
+    {
+      "game": "Sonic the Hedgehog",
+      "workload_frames": 1200,
+      "raw": "qa/sonic1-gpu-scales-summary.json",
+      "source_binary_settings_identities": "build-sonic1.json and qa/sonic1-gpu-*x-timing/run.json",
+      "gpu_scales": [
+        {"requested": 1, "actual_width": 320, "actual_height": 224, "gpu_draw_mean_ms": 0.02217955, "gpu_draw_p95_ms": 0.024576, "full_runtime_fps": 748.145},
+        {"requested": 4, "actual_width": 1280, "actual_height": 896, "gpu_draw_mean_ms": 0.10989879, "gpu_draw_p95_ms": 0.120832, "full_runtime_fps": 785.519},
+        {"requested": 16, "actual_width": 5120, "actual_height": 3584, "gpu_draw_mean_ms": 1.50218152, "gpu_draw_p95_ms": 1.649664, "full_runtime_fps": 272.343},
+        {"requested": 32, "actual_width": 10240, "actual_height": 7168, "gpu_draw_mean_ms": 5.76525152, "gpu_draw_p95_ms": 6.346752, "full_runtime_fps": 114.145},
+        {"requested": 64, "actual_width": 10240, "actual_height": 7168, "admission_reduced": true, "full_64x_qualified": false}
+      ],
+      "complete_upload_bytes_each_scale": 127446016,
+      "source_upload_bytes_each_scale": 2010112,
+      "job_upload_bytes_each_scale": 125435904,
+      "native_state_audio_frame_identities_exact": true,
+      "working_restore_gate": "qa/canonical.json: 2400 frames, mutation selftest, 18 rollback probes, warm rewind, post-restore full16x readback exact",
+      "real_window_resize_gate": "qa/sonic1-gpu-16x-resize-debug/run.json",
+      "preexisting_shared_failure": "qa/load-repro.json: native-file load plus rollback probe AV; explicitly not a passed load qualification"
+    },
+    {
+      "game": "Rocket Knight Adventures",
+      "raw": "qa/rka-native-save-fixed.json",
+      "build": "build-rka.json",
+      "workload_frames": 6000,
+      "reverse_debug": false,
+      "native_file_save_load_state_audio_frame_wav_exact": true,
+      "late_full_16x_readback_mismatches": 0,
+      "full_16x_runtime_fps_including_one_readback": 242.784,
+      "default_cpu_seconds_reference_candidate": [6.5625, 6.5625],
+      "default_timing_disposition": "neutral/inconclusive; shared-load repeat changes direction",
+      "default_repeat_cycles_delta_percent": [-9.5572386127, 2.0498469299],
+      "default_repeat_spread_percentage_points": 11.6070855426,
+      "default_repeat_raw": "qa/rka-default-repeat-fixed/result.log",
+      "excluded_mismatched_debug_build": "build-rka-initial-reverse-debug-on.json and qa/rka-native-save; not a valid performance comparison"
+    },
+    {
+      "game": "Sonic CD",
+      "raw": "qa/cd-native/summary.json",
+      "builds": ["cd-baseline-build.json", "cd-build.json"],
+      "workload_frames": 3000,
+      "native_state_audio_frame_bram_identities_exact": true,
+      "late_full_16x_readback_mismatches": 0,
+      "gpu_draw_mean_16x_ms": 1.57262577,
+      "paced_checkpoint_route_is_uncapped_fps": false,
+      "matched_default_cpu_seconds_reference_candidate_frames_600_to_3000": [12.953125, 12.96875],
+      "default_timing_disposition": "neutral observations; matched softwareSDL/dummy video",
+      "whole_image_sha256": "37bd642b13d6b30e169ca9432d601ef312b67cf5e406234c5fd7b0065a362b57",
+      "qualified_payload_sha256": "4e822010e42092681b238ddc7cbff41802c0cfc006c9b1510dcebd6b9dd452b1"
+    }
+  ],
+  "portable_and_review_fixtures": "qa/review-fixes/results.json; WindowsGCC and UbuntuGCC13.3; old-source negative controls, exact native/job rendering, final-row veto, direct machine valid/partial load",
+  "title_owned_custom_adapters": "docs/TITLE_OPTIMIZATION_BACKLOG.md T11; opaque output preserves native fallback"
+}

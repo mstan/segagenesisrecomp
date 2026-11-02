@@ -1,0 +1,405 @@
+# Engine optimization completion audit (2026-10-28; serial update2026-11-01)
+
+**No: the entire original implementation burndown was not completed.** The previous pass completed evaluations/dispositions and released a useful qualified subset. It did not exhaust the reusable engine opportunities. The all-checked presentation made that distinction too easy to miss.
+
+Audit: `beads-1o1d`. Remaining implementation owner: **`beads-3z5k`**, under the Genesis engine meta-project and `beads-2wy8.1` optimization campaign. Existing E34/E35 owners remain `beads-hj4v` / `beads-3vb.11`. Title-specific opportunities remain in [TITLE_OPTIMIZATION_BACKLOG.md](TITLE_OPTIMIZATION_BACKLOG.md).
+
+Current serial update: selected bounded contracts E01/E03-E08/E10/E16/E18/E22/E24/E25/E26/E27/E30/E32/E34 are delivered or qualified. E11/E13/E14/E15/E17/E19/E20/E21/E23/E31 whole bounded opportunities were implemented and evaluated, then rejected. E18 is ready PR50; E22 is ready PR51; E24 is ready PR52; E25 is ready PR53 with modest observed CD gain; E26 is ready PR54 with qualified raw-media prefetch and modest observed CD gain. E22/E24 overall performance is neutral/inconclusive; E24 has a measured component reduction. E27 is ready enginePR55/SonicCDPR2, with bounded Windows loading CPU benefit, neutral gameplay and436.64MiB explicit Linux peakRSS cost. E30 is readyPR56 with complete firmware ABI/menu/native-save qualification and34frame earlier gameplay; CPU neutral/inconclusive. E31 is rejected after complete generic representation/identity implementations and actual RKA adverse runtime; code restored exactly71b19b0. E32 is readyPR57 with shared transactional capture/streamedCRC, neutral/inconclusive timing and explicit memory costs/pre-existingS1failure. E34 is readyPR58 with qualified pre-delivery rational CDpacing and conservativecontendedhostlimits. **3 original families plus E37 remain open:4 across37,33 resolved.** Counts are dispositions, not speedups. Combined owner visual/play and merge handoff remains for meaningful PRs. Historical narrative below describes the released base; the table and machine-readable audit reflect current dispositions. E23 retains no new runtime after full pipeline and unity-bypass qualification; acceptedfe668 restored exactly.
+
+## What was actually closed
+
+The written slash goal required evaluating all 36 families, implementing useful changes and recording evidence-backed dispositions. Its checklist explicitly allowed deferred and rejected evaluations to be checked. Under that wording, the evaluation/release task was completed. That is weaker than implementing or decisively eliminating the original opportunities. A dependency that requires new engine architecture is still work; it is not proof that an opportunity has been exhausted.
+
+The released record contains **14 implemented-or-partial families, 19 deferred families, two existing capabilities and one rejected experiment**. The 14 overlap: E02/E36 share catalog compaction, E09/E12/E16 share deferred raster ownership, and E21/E25 share settled PSG silence. They are not 14 independent optimizations or proven speed wins.
+
+Against the original scope, this audit distinguishes four bounded delivered contracts, ten partial families, nineteen deferrals, one rejected mechanism with its broader family still open, and two existing bounded findings. **30 families retain open original scope.** The other six close only their selected contracts; this is not a claim that no further variants exist. E19 is partial because the cartridge ordering/scratch change did not consolidate all timestamp/deferred-stream representation; it does not imply that cartridge and CD must share one scheduler.
+
+## Audit method and evidence limits
+
+Audited released engine `ae1c742adef48b6ef6ed5b4c1dd4b64514086edd`, engine base `f422ad52a04b9d253c0e9cbcdb3476aabd563ae8`, runtime core `53fc7b417d5c194a5ebdf8d623c1c4501226eb60` and generator core `7233852a6e45d8779b9dae8b29afd6b94d5231dc`. Compared tracked changes, original goals, per-family dispositions, retained profiles and final game/package evidence. This is a source/evidence audit, with no new implementations, builds, benchmarks or game launches.
+
+Key direct checks:
+
+- Core runtime still sets a fault scope, compares every opcode/extension word and invokes one operation per `execute_operation` (`runtime/m68k_step.c:165`). The Genesis code generator is unchanged between the two core identities. CD `execute_cpu` still dispatches one step through the catalog (`runner/cd/segacd_coordinator.c:217`). Code spans made instruction fetch cheaper; they did not provide whole native regions or general data-memory ownership.
+- Generic raster still prepares separate plane/sprite arrays and composes them later (`runner/video/genesis_vdp.c:929`, `:954`). Packed kernels and deferred original rows are useful delivered changes, but do not establish full production fusion or host upload ownership.
+- `sn_silent_span` requires all channels muted and filters settled; active PSG retains per-sample synthesis (`runner/audio/sn76489.c:184`, `:233`). Actual FM kernels, PCM/CDDA/mix pipeline, host audio, generic state storage and stamp kernel files are unchanged in the engine batch.
+- CD presentation still makes a UI copy and uploads it (`runner/cd/presentation.c:522`); CD pacing still uses coarse `SDL_Delay` (`runner/cd/standalone.c:291`). Sequential stdio read-ahead is not asynchronous prefetch.
+
+The retained CD profile is **an earlier candidate on one gameplay route**, not a universal post-release profile: `G:/Temp/Codex/genesis-engine-burndown-20261027/cd-spans-profile-symbolized.json` (3492 samples, engine `86d2d0c`, frames 1800-3000). It contains `execute_cpu` 6.96%, `execute_operation` 6.90%, `segacd_z80_bus_time` 5.18% and `fetch_plane_span` 2.12%, as well as DSO/title work. These self-attributions select possible investigation areas; they are not additive recoverable gains. Its cold `resolve_row` result does not rule out cartridge raster, boot/firmware, stamp-heavy transfers, physical GPU or real audio-device costs. The previous E03 claim that every data-read helper was below 1% is inaccurate: `segacd_read16` is 1.088% in this sample.
+
+## Complete 36-family accounting
+
+“Delivered” means a qualified bounded contract. “Partial”, “Deferred” and “Rejected mechanism” all retain open original scope. Historical evaluation statuses remain in [engine-optimization-results.json](engine-optimization-results.json); the separate [machine-readable audit](engine-optimization-completion-audit.json) records original goals, classifications, remaining work, source anchors and closure approaches.
+
+| ID | Family | Implementation audit | Delivered or existing portion | Remaining original scope |
+| --- | --- | --- | --- | --- |
+| E01 | Native CD execution regions | Delivered (bounded) | Qualified bounded native CPU/deadline regions; engine-native-region-results.json. | Selected original bounded contract delivered; merge/owner handoff pending. Future variants not claimed exhausted. |
+| E02 | Code identity and invalidation | Rejected mechanism; family open | Page-version runtime rejected, family remains open; engine-code-identity-results.json. | Other code-identity architectures remain open; rejection of page versions is not broader closure. |
+| E03 | Owned memory access | Delivered (bounded) | Qualified operation-scoped owned data regions and word bus; engine-owned-memory-results.json. | Selected original bounded contract delivered; merge/owner handoff pending. Future variants not claimed exhausted. |
+| E04 | Generated native arithmetic and state | Delivered (bounded) | Implemented common-emitter local D/A/SR spans, backward CCR liveness and exact grouped cycles, plus single-memory-RMW EA/read-write consolidation under complete managed dual ownership. Original bus/control/HLE/WAIT/fault/trace/unsupported exits remain exact. Engine132b84d/core4479e7e; final MSVC/GCC and all three built-game state/pixel/full-WAV routes and cartridge rollback pass. All final game timing neutral/inconclusive, no claimed speedup; r2/r3 regressions rejected, targeted reverse RKA off run does not reproduce the original24percent slowdown. Body proof131573 symbols/36089 redirects; current bytes and descriptor effects/priority unchanged. Cartridge observable bus limits documented. Independent final PR/record gate accepted; validator instructed E05 next. Owner visual handoff pending. See ENGINE_NATIVE_STATE.md, engine-native-state-results.json, beads-3z5k.3/beads-rxq.5. | Selected original bounded contract delivered; merge/owner handoff pending. Future variants not claimed exhausted. |
+| E05 | Native call/control-flow consolidation | Delivered (bounded) | Inline complete native call frames and proven tail continuations; bounded complete-body/alias callgraph co-location; canonical live-guarded CD arithmetic/pure-control regions with exact variable retirement and fixed fallback. MSVC/GCC and all3 built-game gates pass; per-game timing neutral/inconclusive. EnginePR39/corePR10; independent final gate accepted. | Selected native-call/inlining/control-region contract delivered. Whole CD pure-leaf folding rejected after live upper-bound census0Main/19Sub fits among849238calls. Broader code-identity and compiler-wide choices remain independently owned E02/E36; no all-future-optimizations claim. Owner combined visual merge/release handoff pending. |
+| E06 | Reusable native Z80 backend | Delivered (bounded) | Qualified shared uploaded-code/variant build integration, cartridge native scanline slice publication and reproduced boundary/producer fixes; engine424a990 / producerdc775df; PR40/producerPR3. | Selected original bounded engine contract delivered and independently accepted. Combined owner merge/release handoff pending. No claim all future ISA/driver/region alternatives exhausted. |
+| E07 | Event-driven waits and scheduling | Delivered (bounded) | Actual event deadlines and qualified unchanged-clock pre-instruction service; production2079c51/PR41. Real service calls18.3569% fewer, exact clock/CPU work; final4-game-arm/checkpoint/pixel/WAV and6/6 MSVC+GCC pass. | Selected original bounded contract delivered; combined owner visual/merge/release handoff pending. No claim every future engine/game variant exhausted. |
+| E08 | Transfer spans and layout mapping | Delivered (bounded) | Exact inactive DMA clock spans and all-five-band direct cell permutation; full selected-family inventory qualified. ENGINE_TRANSFER_SPANS.md / engine-transfer-span-results.json. | Selected original bounded contract accepted; combined owner merge/release handoff pending. Future consumer/ownership variants not claimed impossible. |
+| E09 | Single image-production ownership | Delivered (bounded) | Reusable CD lazy original-image capture/composition with exact fallback; cartridge already had lazy rows. | The selected ownership/fallback contract is delivered. Other raster/cache/upload goals remain separate. |
+| E10 | Renderer interface independent of aspect ratio | Delivered (bounded) | Used independent row-ownership/frame plan, logical viewport preservation, exact all-limit native fallback and mechanical consumer adoption; ENGINE_RENDERER_OWNERSHIP.md. | Selected original bounded contract independently accepted; combined owner visual/merge/release handoff pending. No claim title fidelity rollout or all future optimizations exhausted. |
+| E11 | Fused generic VDP raster | Whole bounded opportunity rejected | Complete native direct-stream fusion implemented/qualified/reached, rejected versus best existing BATCHED. Existing BATCHED default adoption and provider compatibility repaired/qualified in50b0854/PR44. | Selected original bounded whole-fusion opportunity decisively rejected, not deferred/partial; no claim every future algorithm is exhausted. Combined owner merge/release handoff remains for useful adoption. |
+| E12 | Shared sprite evaluation jobs | Delivered (bounded) | CD sprite evaluation captured once for both CPU-visible status and deferred image production. | The selected shared-evaluation contract is delivered; additional caching belongs to E13/E15. |
+| E13 | Versioned generic graphics derivation | Whole bounded opportunity rejected | Full art/palette/geometry complete-input architecture1d0aab9 implemented/qualified/actuallyused, rejected for no demonstratedgain. Useful finite immutable DAC domain999f392/PR45 retained and independentlyaccepted; mutable caches removed. | Selected whole bounded opportunity evaluated/rejected, not partial/deferral or universal futuredesign exhaustion. Combined owner merge/release handoff remains for palette-only package. |
+| E14 | Native Sega CD stamp-device jobs | Rejected whole bounded opportunity | Both complete exactjob/span architectures qualified/reached400jobSS1windows, then rejected on observedcost; originalkernel retained. Useful Win32fix+3080joboracle; PR46. | Selected bounded original opportunity decisively rejected; no universalfutureexhaustion. Combinedownerhandoffpending. |
+| E15 | Reuse unchanged hardware render results | Rejected whole bounded opportunity | Both complete current-input result-reuse architectures implemented, qualified and reached; repeated RKA adverse cost and no useful CD gain despite high capture hits. Runtime restored exact; useful portable layout fix/test PR47. | Selected original bounded opportunity decisively rejected; no universal future-algorithm claim. Combined owner handoff pending. |
+| E16 | Final pixels and upload ownership | Delivered (bounded) | Shared indexed conversion, exact inverse-DAC lookup and raw/color/UI/upload ownership in main/CD; functional ea16061, ready PR48. Independent full gate accepted; ENGINE_FINAL_PIXELS.md/results/review. | Selected original bounded contract delivered; combined owner visual/play merge/release handoff pending. No all-future-optimization claim. |
+| E17 | Optional generic GPU raster backend | Rejected (whole bounded opportunity) | Two complete expanded/compact GPU architectures physically correct and actual native game measured; expanded neutral without useful gain, compact repeatedly adverse RKA completion/cycles; all source/build/test wiring restored c94. ENGINE_GPU_RASTER.md/results/review. | Fresh independent whole-family rejection accepted, no production change or PR; no claim all future GPU designs impossible. |
+| E18 | Independent engine work scheduling | Delivered (bounded) | Qualified persistent same-drain independent FM shadow workerfa696e2, ready PR50. Rendering/chips variants rejected. | Selected bounded contract delivered; per-game mixed costs retained, no universal gain claim; owner handoff pending. |
+| E19 | One ordered audio timeline | Whole bounded remaining opportunity rejected | Three broader stream/merge/ownership architectures implemented and measured; source restored exact5d. Existing delivered ordering retained. | No new runtime/PR; repeated per-game regression, independent gate accepted; ENGINE_AUDIO_TIMELINE.md/results/review. |
+| E20 | Faithful FM kernels | Whole bounded opportunity rejected | Fixed routes and compact channel scan independently exact;18 cart plus2 CD pairs. No qualified retained package; all source/test/build restored exact10ace05. | No new runtime/PR; per-game adverse and CD inconclusive evidence retained; ENGINE_FM_KERNELS.md/results. |
+| E21 | PSG event spans | Whole bounded opportunity rejected | Existing settled-muted spans retained; active-run and whole-interval producer architectures independently exact, then rejected by per-game costs. | All new runtime/test/build restored exactf4b10d7; ENGINE_PSG_EVENT_SPANS.md/results; no new PR; independent final gate accepted and central push16.7s exit0. |
+| E22 | Sega CD PCM/CDDA spans | Qualified (bounded); PR51 | Synchronous owned PCM/CDDA queue publication, single-sample and block cadence; frozen complete-state/native x64/Win32 tests and four exact-output Sonic CD pairs. Neutral/inconclusive performance; all adverse/favorable observations retained. Independent source/record/cleanup gate accepted. | Selected contract qualified; combined owner handoff pending. |
+| E23 | Synthesis-to-device pipeline | Rejected whole bounded opportunity | Coherent owned complete-frame source/mix/bridge pipeline and generic unity correction implemented, built and measured. All recorded behavior passes, but RKA cost remains adverse/unresolved. Entire acceptedfe668 tree and shared cache restored; no new runtime/PR. Independent source/records/cleanup gate accepted. | Whole selected opportunity rejected; future algorithms not claimed impossible. |
+| E24 | Audio buffer ownership | Qualified (bounded); PR52 | CD slots and immutable prepared ring publication preserve exact output; shared telemetry race fixed. Five contracts x64/Win32 and16 game runs/8pairs including actual WASAPI/reverse. Neutral/inconclusive whole-game costs; component reduction measured,128KiB scratch cost explicit. | Selected contract qualified; final durability gate and combined owner handoff remain. |
+| E25 | Exact constant/silent spans | Qualified (bounded); PR53 | Compressed rational PCM/CDDA runs preserve every logical sample/timestamp/capacity/counter and future state; constant windows skip redundant interpolation. Five contracts x64/Win32 and4 actual CD runs. Observed cycles2.24?3.86% lower, CPU0?3.61% lower. | Selected contract qualified; combined owner handoff remains. |
+| E26 | Bounded generic media prefetch | Delivered (bounded) | Actual asynchronous same-file raw-sector windows, two512-sector buffers, cancellation and exact synchronous fallback; f88e90b, ENGINE_MEDIA_PREFETCH.md/results. All6 actualCD arms exact;2 matched pairs show observedCPU3.17/4.68% lower with variation. | Original bounded contract qualified; combined owner handoff pending. No startup/cold-disk/universalFPS claim. |
+| E27 | Verified media handoff contract | Delivered (bounded) | Actual single-pass whole/payload validation on immutable owned image2276caa, mechanically adopted; ready enginePR55/SonicCDPR2, full Windows/Linux canonical gates. | Selected original contract qualified; explicit Linux RAM cost, owner combined handoff pending. |
+| E28 | Portable full-media validation | Delivered (bounded) | Optional OpenSSL full-payload SHA outside Windows, existing CNG and full portable restart/fallback. | The selected accelerated full-verification contract is delivered; immutable-sector reuse was not implemented or globally exhausted. |
+| E29 | Resident-media representation | Delivered (bounded) | Read-only mapped first-data-track residency with bounded copied fallback. | The selected lower-private-copy representation is delivered; this does not exhaust all raw/user-sector representation alternatives. |
+| E30 | Reusable console-firmware services | Delivered (bounded) | Guarded native BRMINIT table operation f13bf7c, complete ABI/state/BRAM/UI gates and57-service bounded remainder decisions; readyPR56. | Original selected contract complete; combined owner play/merge/release handoff remains. |
+| E31 | Engine snapshot representation and identity | Rejected whole bounded opportunity | Three actual architectures, exact complete-writer/restore/branch checks and actual native runtime economics evaluated. Final RKA cycles+1.610/+2.040percent; full snapshot/digest code restored exact71b19b0. ENGINE_SNAPSHOT_REPRESENTATION.md/results. | Original bounded opportunity decisively rejected, not deferred/partial. E32 remains independently open; no all-future-algorithm exhaustion claim. |
+| E32 | Serializer and snapshot storage | Delivered (bounded) | Shared local/netplay capture callback reuses existingRBEPR2; safe growth/shrink/publication and64KiBstreamedhostsaveCRC, actualgames/portable/failuregates; runtime717565c/readyPR57. ENGINE_SNAPSHOT_STORAGE.md/results. | Full bounded family resolved. Timingneutral/inconclusive, S1peakcommit+3?3.5MBcost and identicalbaselinecoldloadfailureexplicit. Ownercombinedhandoff/merge and GitHubassigneeeligibility remain. |
+| E33 | Discarded-replay engine work | Existing (bounded) | Discarded cartridge replay already omits derived image work while retaining authoritative status/audio. | No remaining shared cartridge image work demonstrated at this base; title publication remains separate and CD work is E09. |
+| E34 | Host presentation/deadline pipeline | Delivered (bounded) | ExactrationalCDpre-Presentpark/overrunreset; existingcartridgeD3D11/pacer andE16ownershippreserved. Runtime81f7682/readyPR58; actualpacedCD+3/3eachplatform pass. ENGINE_HOST_PRESENTATION.md/results. | Full bounded contract resolved; contendedsubmissionobservationsarenotisolatedorphysicaldisplaygain, CPUneutral/inconclusive. Existingcompositorlimits/ownercombinedhandoff remain; GPUHDE37open. |
+| E35 | Asynchronous engine persistence and diagnostics | Deferred; open | Existing dirty-tracked/minute-rate evidence and opt-in tracing retained. | Async immutable persistence or bounded trace rings for an enabled costly workload. |
+| E36 | Whole-program native build optimization | Partial; open | Generated catalog compaction under ordinary linking, shared with E02. | Actual matched LTO/PGO/cross-TU/hot-cold layout evaluation and qualification. |
+
+## Why several closures were too weak
+
+The weakest closure pattern made the necessary replacement architecture a prerequisite for considering the optimization: effect metadata (E01/E04/E05/E07), complete writer ownership (E02/E03/E13/E31), timed block sinks (E22/E25), and transactional snapshot capacity (E32). These are legitimate correctness requirements, but creating them is part of the authorized engine work. They should lead to coherent packages, not imply that existing subsystem boundaries are permanent.
+
+E27 used the title-backlog exclusion too broadly. A new game-specific launcher/converter/cache design remains title work. A reusable verified media contract plus mechanical consumer adoption is explicitly permitted engine work. It still needs immutable ownership/full-identity proof, including time-of-check/time-of-use behavior and a portable verification fallback.
+
+Other deferrals are reasonable prioritization decisions: no stamp-heavy workload for E14, no default persistence stall for E35, remaining host-delivery scope for E34. They remain deferrals rather than delivered implementations or universally ruled-out candidates. Rejected narrow cache/tail/fault-scope mechanisms must not be repeated unchanged, but do not eliminate materially broader designs.
+
+## Coherent remaining packages
+
+This records remaining work; the audit does not start another implementation campaign. No speedup amount is promised. Use the smallest current cost observation needed to choose useful work, integrate a coherent replacement promptly, and preserve per-game neutral/positive acceptance. A busy benchmark host does not block all progress.
+
+1. **Native execution and memory ownership:** E01-E05/E07, with E08 where transfers benefit. Generate canonical effect/exit metadata, retain unknown callbacks as exits, and run deadline-bounded regions with exact state materialization. Own data/code writers and remaps before versioned guard elision. This addresses repeated cross-boundary work still visible in the CD profile.
+2. **Generic raster production and output ownership:** E10/E11/E13-E18. Start from delivered immutable rows and packed kernels, then examine a representative post-change cartridge pipeline. Replace repeated derivation/passes where useful; do not infer its cost from CD-only resolve_row. GPU/workers are alternatives, not mandatory infrastructure.
+3. **Faithful audio stream production:** remaining E19-E25. Treat FM kernels, timed PCM/CDDA sinks, staging/mix/resample and device handoff as one possible representation change, preserving clipping order, integer arithmetic, filter/DRC state and capture taps. Retain event ordering and silent PSG.
+4. **Verified launch/media ownership:** E27 remains; E26 request-driven prefetch is now qualified. Reuse mandatory complete validation safely within one launch; retain E28/E29 full-validation/mapped-residency fallbacks. Keep title preload tables and file-engine HLE separate.
+5. **Generic snapshot/storage ownership:** E31/E32. Complete writer/restore identity and transactional storage before dirty pages/deltas or serialize-into-owned-capacity. Exclude title payload redesign; do not add old save-state migration work.
+6. **Workload-dependent alternatives:** E14 stamp, E30 firmware service HLE, E34 host delivery (reuse `beads-hj4v`), E35 enabled persistence/tracing (reuse `beads-3vb.11`), E36 actual compiler optimization. Each stays open with a concrete selection/closure approach below.
+
+## Per-family evidence and closure approach
+
+### E01: Native CD execution regions
+
+Core execute_operation still guards and invokes one instruction; coordinator dispatches it per step.
+
+**Next closure:** Generate effect/exit metadata and implement a bounded region removing repeated dispatch/state work; keep unknown callbacks as exits.
+
+Sources: `runner/cd/segacd_coordinator.c:217`, `core/runtime/m68k_step.c:165`. Historical evaluation: `evaluated_rejected`.
+
+### E02: Code identity and invalidation
+
+catalog_index explicitly disclaims code-identity caching; core compares every live instruction word.
+
+**Next closure:** Own all native/direct/import writers and aliases, then qualify versioned regions and invalidation.
+
+Sources: `runner/cd/catalog_index.h:1`, `runner/cd/catalog_lookup.h:1`, `core/runtime/m68k_step.c:179`. Historical evaluation: `implemented_catalog_guard_elision_deferred`.
+
+### E03: Owned memory access
+
+code_span returns instruction bytes; it does not replace general data reads/writes. segacd_read16 is 1.088% in the cited profile, so the old below-1%-per-helper wording is inaccurate.
+
+**Next closure:** Use the E01/E02 ownership contract for safe data regions with MMIO, remap, protection and WAIT exits.
+
+Sources: `runner/cd/segacd.c:266`, `runner/cd/segacd_coordinator.c:145`, `core/runtime/m68k_step.c:181`. Historical evaluation: `implemented_game_qualified`.
+
+### E04: Generated native arithmetic and state
+
+The Genesis code generator is unchanged between generator core 7233852 and runtime core 53fc7b4. Effect metadata is engine work, not an external blocker.
+
+**Next closure:** Add canonical generated-operation effects and exact observable-exit materialization as part of the native region package.
+
+Sources: `core/profiles/genesis/code_generator.c`, `core/runtime/m68k_step.h:70`. Historical evaluation: `evaluated_deferred`.
+
+### E05: Native call/control-flow consolidation
+
+No new generator work; existing calls and a rejected tail-index experiment do not exhaust region fusion.
+
+**Next closure:** Use E04 edge/effect metadata for proven direct regions; retain dynamic-target, guest-stack and IRQ exits.
+
+Sources: `core/profiles/genesis/code_generator.c`, `runner/glue.c`. Historical evaluation: `evaluated_deferred`.
+
+### E06: Reusable native Z80 backend
+
+Historical existing-only finding was overturned by fresh diligence. Shared build wiring, full-state boundary/variant fixes and bounded cartridge native slice publication are delivered and independently accepted (engine424a990/producerdc775df, PR40/producerPR3). Supported consumer/runtime/portable/current-build state contracts pass; timing neutral/inconclusive. See [E06 qualification](ENGINE_Z80_BACKEND.md).
+
+**Next closure:** Owner combined merge/release handoff remains; reviewer explicitly instructed serial E07 next. Driver-specific rollout and a full future Z80 ISA audit are not claimed.
+
+Sources: `runner/z80_recomp.c`, `runner/cd/z80_native.c`, `docs/Z80_STATIC_RECOMP.md`. Historical evaluation: `evaluated_already_native`.
+
+### E07: Event-driven waits and scheduling
+
+Deadline memoization does not change the instruction/synchronization boundary.
+
+**Next closure:** Combine with E01/E04, preserving MMIO, DMA, interrupt and Z80 observer times.
+
+Sources: `runner/cd/machine.c`, `runner/cd/segacd_coordinator.c:217`, `runner/glue.c`. Historical evaluation: `implemented_game_qualified_further_coalescing_deferred`.
+
+### E08: Transfer spans and layout mapping
+
+DMA source is unchanged; the 1.58% CD attribution includes inactive calls and does not measure an eligible transfer-heavy workload.
+
+**Next closure:** Use an actual transfer-heavy consumer; implement spans only across proven unobservable intervals, retaining partial progress and completion clocks.
+
+Sources: `runner/cd/dma.c`, `runner/cd/segacd.c`, `runner/video/genesis_vdp.c`. Historical evaluation: `evaluated_deferred`.
+
+### E09: Single image-production ownership
+
+720000 rows captured, 442800 composed: 38.5% fewer original compositions, with 898600 retained bytes; full state/pixels/WAV checks. This is not an FPS claim.
+
+**Next closure:** Retain exact hardware-status deadlines and per-row palette/fallback contracts.
+
+Sources: `runner/cd/machine.c:30`, `runner/cd/machine.c:62`, `runner/video/genesis_vdp.c:891`. Historical evaluation: `implemented_game_qualified`.
+
+### E10: Renderer interface independent of aspect ratio
+
+Delivered and independently accepted: used optional ownership predicate and host
+frame plan separate requested simulation width, viewport policy and local output.
+Mechanical Sonic1 adoption retains existing eligibility; legacy RKA is unchanged.
+All insufficient local texture limits choose exact native fallback without
+passing a reduced width to any legacy adapter. Actual H32/H40 native ownership,
+forced160 and supported360 fallback, exact state/audio/fullWAV/pixels/rollback and
+current-build state evidence qualify the contract. Timing neutral/inconclusive.
+
+**Next closure:** Combined owner visual/merge/release handoff. Fresh validator
+explicitly instructed serial E11 next. TechnicallyComputers assignment remains
+unavailable through repository eligibility404 and is transparently recorded.
+
+Sources: `runner/main.c`, `runner/game_video.h`,
+`docs/ENGINE_RENDERER_OWNERSHIP.md`, `docs/engine-renderer-ownership-results.json`.
+Production96be781; PR43 revieweda75cd9f; companionPR7 pin6ecb59e.
+
+### E11: Fused generic VDP raster
+
+Complete bounded opportunity independently evaluated and rejected versus best
+existing BATCHED, not deferred or partially delivered. Useful existing BATCHED
+default adoption/provider fixes50b0854/PR44 accepted with exact built outputs,
+portable tests and per-game runtime qualification. See [complete inventory and
+failed experiment evidence](ENGINE_RASTER_FUSION.md). Reviewer instructed E13 next;
+combined owner handoff remains.
+
+### E12: Shared sprite evaluation jobs
+
+Deferred composition consumes captured lanes without repeating sprite evaluation; limits/status/palette gates pass. This overlaps E09.
+
+**Next closure:** Retain current sprite status and exact fallback tests; do not double-count E09/E12 as independent measured wins.
+
+Sources: `runner/video/genesis_vdp.c:929`, `runner/video/genesis_vdp.c:954`, `runner/cd/machine.c`. Historical evaluation: `implemented_game_qualified`.
+
+### E13: Versioned generic graphics derivation
+
+Complete art/palette/geometry immutable-input architecture1d implemented,
+qualified and actually used, then bounded rejected for no demonstrated benefit.
+Pure finite DAC domain999f392/PR45 retained with exact full-platform/color/built-game
+qualification, all timing neutral/inconclusive. Independent final gate accepted
+reviewed5576577. See [full original inventory and evidence](ENGINE_GRAPHICS_DERIVATION.md).
+This is no partial/deferral or universal future-cache exhaustion claim. Reviewer
+explicitly instructed E14 next; combined owner handoff remains.
+
+### E14: Native Sega CD stamp-device jobs
+
+stamp.c is unchanged and had no samples in the recorded CD gameplay route. No stamp-heavy qualification was performed.
+
+**Next closure:** Select a built stamp-heavy workload before choosing a block kernel; preserve partial writes, priority and IRQ timing.
+
+Sources: `runner/cd/stamp.c`. Historical evaluation: `evaluated_deferred`.
+
+### E15: Reuse unchanged hardware render results
+
+Both complete current-input architectures were implemented and reached by actual games. R1 owns native indexed and captured-plane results; R2 removes native overhead and lazily owns only captured planes. Fresh sprites/status/callbacks, live palettes and every direct/port/DMA/import/alias/provider/lifecycle path remain observed. Both passed frozen-original platform and built-game correctness gates. R1 repeatedly slowed RKA; R2 achieved high real CD hit rates without useful gain on PC or SERVER. Both caches are removed and all runner source is byte exact426253e. This decisively rejects the selected bounded opportunity, without claiming every future design impossible.
+
+Useful portable generated-layout fix and actual emitted-C regression fixture remain in a20ecc5/readyPR47. Fresh independent validation accepted whole scope/source/tests/per-game costs/records/cleanup and explicitly instructed E16 after bookkeeping/sync. Combined owner handoff remains pending.
+
+Sources/results: [ENGINE_RENDER_REUSE.md](ENGINE_RENDER_REUSE.md), [engine-render-reuse-results.json](engine-render-reuse-results.json); beads-3z5k.12. Historical evaluation: `evaluated_deferred`.
+
+### E16: Final pixels and upload ownership
+
+This is the E09 deferred-raster package. Host presentation still copies the image for UI and uploads it. Low resolve_row attribution is not physical upload evidence.
+
+**Next closure:** Design shared raw-image/UI/output ownership preserving capture and filter edges; use actual presentation costs to choose fusion.
+
+Sources: `runner/cd/machine.c`, `runner/cd/presentation.c:522`, `runner/main.c`. Historical evaluation: `implemented_lazy_pixels_upload_deferred`.
+
+### E17: Optional generic GPU raster backend
+
+Whole selected bounded opportunity rejected after implementing both coherent expanded-lane and compact-pattern architectures, exact physical GPU/SDL/raw proof and11 actual matched native game pairs. Expanded has no proven useful gain; compact repeatedly increases RKA completion/cycles. Source/build/test wiring restored byte-exact c94. All prototype source/binary/raw identities and181080028byte audited cleanup retained. Fresh independent final gate accepted. See ENGINE_GPU_RASTER.md, machine results and immutable review. No discarded infrastructure ships or needs a PR; this is not proof all future GPU approaches are impossible.
+
+### E18: Independent engine work scheduling
+
+Selected bounded contract delivered: persistent independent same-drain FM shadow workerfa696e2, default only when the existing shadow feature is opted in. Canonical synthesis and state boundaries remain owner-controlled; original serial fallbacks retained. Rendering/chips worker alternatives rejected. Actual mixed per-game costs are explicit; no universal throughput/energy claim. Ready PR50; independent whole gate accepted.
+
+Evidence: ENGINE_WORKERS.md, engine-workers-results.json, ENGINE_WORKERS_REVIEW.md; beads-3z5k.15.
+
+### E19: One ordered audio timeline
+
+Whole selected remaining opportunity rejected after three broader typed merge/owned deferred/flat FIFO architectures and16 matched pairs. Per-game repeated regressions prevent adoption. Production/build/test restored exact5d; existing delivered ordering remains. No new runtime/PR. Independent full gate accepted.
+
+Evidence: ENGINE_AUDIO_TIMELINE.md, engine-audio-timeline-results.json, ENGINE_AUDIO_TIMELINE_REVIEW.md; beads-3z5k.16.
+
+### E20: Faithful FM kernels
+
+Whole selected bounded opportunity rejected after two actual arithmetic/layout implementations. Independent frozen-core/wrapper native/fallback checks4/4 and20 matched game pairs preserve outputs/state. Global variants fail per-game costs; CD-only rollout not justified by neutral/inconclusive samples. All runtime/test/build source restored exact10ace05; no new runtime/PR. No claim every future FM design is impossible. Independent final source/records/cleanup gate accepted; owning issueclosed and central push12.4s exit0; original E21 explicitly next.
+
+Evidence: ENGINE_FM_KERNELS.md, engine-fm-kernel-results.json; beads-3z5k.18.
+
+### E21: PSG event spans
+
+Whole selected bounded opportunity rejected after active-run retirement11e2bac and whole-interval channel/input/filter producerb95058e. Six independent frozen scalar checks and20 matched game pairs preserve recorded behavior, but both fail Sonic1 shadow performance acceptance. RKA/CD mixed observations do not offset; whole-interval CD is adverse. No new runtime/test/build retained; originalf4b10d7 restored exactly byd96ca6b. Existing settled-muted spans are unchanged. Independent final gate accepted, owning issueclosed and central push16.7s exit0; original E22 after final evidence-copy verification. No every-future-algorithm impossibility claim.
+
+Evidence: ENGINE_PSG_EVENT_SPANS.md, engine-psg-event-span-results.json; beads-3z5k.19. E25 PCM/CDDA constant spans remain separate.
+
+### E22: Sega CD PCM/CDDA spans
+
+Qualified synchronous source-to-queue ownership at measured a8f45ad. Actual due
+samples include one-frame service intervals; the first unexercised long-only
+prototype receives no optimization credit. Frozen full-state/sample/queue and
+native failure/binding checks pass x64/Win32; four matched Sonic CD pairs preserve
+all recorded output. Performance is neutral/inconclusive with lower CPU
+observations; the adverse reverse pair is retained. No general speedup claimed.
+Independent source/records/cleanup gate accepted, PR51 ready; central durability
+and combined owner playtest/merge handoff retain their separate gates.
+See ENGINE_CD_AUDIO_SPANS.md, engine-cd-audio-span-results.json and
+ENGINE_CD_AUDIO_SPANS_REVIEW.md. Original E23 follows durable reviewer instruction;
+E25 constant spans remain open.
+
+### E23: Synthesis-to-device pipeline
+
+Whole selected bounded opportunity rejected after a coherent owned complete-frame
+producer combining base/CD mixing, trusted window coverage and gain/bridge
+publication, then a generic unity-gain bypass. Five contracts/ten passing checks
+and20 actual game runs preserve recorded behavior, but RKA default costs remain
+adverse/unresolved in paired order and the final balanced check. CD/Sonic mixed
+observations do not offset. Exact acceptedfe668 complete tree restored by4191f56;
+six remote overlays match Git bytes and cached original graph rebuilt. No new
+runtime/test/build selection or PR. Independent source/records/cleanup gate passes;
+E24 follows durable reviewer instruction. See ENGINE_AUDIO_DEVICE_PIPELINE.md,
+engine-audio-device-pipeline-results.json and ENGINE_AUDIO_DEVICE_PIPELINE_REVIEW.md.
+
+### E24: Audio buffer ownership
+
+Qualified CD frame-slot exchange, immutable normalized producer blocks and synchronized ring-span publication in PR52; existing callback lock and exact scalar overflow/large-count fallback retained. The same lock now protects the previously racy telemetry snapshot.
+
+Five focused contracts pass x64/Win32; sixteen actual runs/eight matched pairs preserve recorded output/state/current cartridge rollback, including actual WASAPI delivery. First adverse RKA observations did not reproduce in reverse order. Overall runtime is neutral/inconclusive; the paused-dummy component reduction is separately measured. Cost:128KiB fixed host scratch plus four private CD pointers. No physical jitter/deadline win or CD rollback qualification is claimed.
+
+See [ownership evidence](ENGINE_AUDIO_BUFFER_OWNERSHIP.md), [raw identities and samples](engine-audio-buffer-ownership-results.json), PR52 and beads-3z5k.22. Final durability review precedes E25; combined owner visual/play and merge handoff remain. Historical evaluation: `evaluated_deferred`, superseded by this serial qualification.
+
+### E25: Exact constant/silent spans
+
+Qualified source?implicit logical queue?constant-window implementation in PR53, preserving all device timers/phase/address/FIFO/fader/underflow and future audible state. Original physical/opaque paths remain fallback; logical capacity/counters and interpolation anchors are unchanged. Previously accepted PSG silence stays unchanged; rejected E21 is not reopened.
+
+Five focused contracts pass x64/Win32; four real CD runs/two fixed-core SERVER pairs preserve11checkpoints/21artifacts/full WAV. Sonic CD cycles improve2.24?3.86%; CPU is neutral to3.61% lower. This is modest observed paced process improvement, not universal FPS/RAM gain. Existing headroom/affinity samples and corrected timing scope are retained separately from frozen correctness provenance. Unaffected cartridges inherit E24 evidence, not new E25 tests.
+
+See ENGINE_SOURCE_CONSTANT_SPANS.md, engine-source-constant-span-results.json and beads-3z5k.23. Final source/records/cleanup/durable review precedes E26; combined owner handoff remains. Historical partial PSG-only evaluation is superseded.
+
+### E26: Bounded generic media prefetch
+
+Qualified f88e90b/PR54 implements actual request-driven raw-sector jobs outside the simulation callback, two512-sector buffers, completed publication, sameverifiedfile positioned I/O, transport/reset/replacement cancellation and exact synchronous fallback. Original1MiB read-ahead and first-data residency remain. Lazybuffer cost2,408,448B plusworker/handles; PE+5120B.
+
+Focused source/lifetime/bytes/failure/cancellation checks pass x64 and Win32 except the identical accepted-baseline Win32 media assertion. Six actualCD arms preserve full11checkpoints/21artifacts/fullWAV; four timed arms/two matched SERVER pairs show observedCPU3.17/4.68% andcycles2.59/6.69% lower, with explicit ambient variation. Raw reads2139 become10/12 plus2129/2127cachehits. Initialpair is correctness-only and excluded from timing. Startupwallmixed; no cold-disk/startup/universalFPS or POSIXruntime claim.
+
+**Next closure:** Original bounded contract independently accepted; durable closeout, then E27 and combined owner handoff. Evidence: ENGINE_MEDIA_PREFETCH.md, engine-media-prefetch-results.json, beads-3z5k.24. Historical read-ahead-only partial evaluation is superseded.
+
+### E27: Verified media handoff contract
+
+Qualified runtime2276caa consolidates actual whole/payload SHA on immutable owned storage, with complete provider restart and portable validation fallback. Cached-CUE launchers mechanically adopt the common contract; source inspection, first conversion and direct SGCD flow remain unchanged. New title converter/cache design stays separate. Ready enginePR55 and SonicCDPR2.
+
+Six Windows and two Linux actual3000-frame runs preserve all11 canonical checkpoints,21 artifact byte counts/SHA and full WAV. Bounded same-affinity Windows verification+initialization CPU is6.16?10.02% lower; gameplay is neutral/inconclusive. Linux gameplay and startup are neutral with457850880B/436.64MiB added actual-game peakRSS. The slower file snapshot was rejected as preferred; real RAM no-FD downstream reads are exercised. Unit/provider/real-launcher gates pass, with the identical baseline Win32 media assertion retained in individual logs and executable identities.
+
+**Next closure:** Finish final record/pin publication and durable Beads closeout, then original E30 with a fresh validation-only reviewer. Combined owner visual/play and merge/release handoff remains. Evidence: ENGINE_VERIFIED_MEDIA_HANDOFF.md, engine-verified-media-handoff-results.json, beads-3z5k.25. The historical deferred/no-handoff evaluation is superseded.
+
+### E28: Portable full-media validation
+
+Provider/failure/fallback checks and parity pass. Earlier balanced Linux launches show bounded 12.4/13.8% wall and 40.2/41.1% process-CPU reductions; not an FPS or Windows claim.
+
+**Next closure:** Keep full corruption detection and fallback; revisit immutable reuse separately only with complete ownership proof.
+
+Sources: `runner/cd/disc_image.c:223`, `runner/cd/sector.c`. Historical evaluation: `implemented_game_qualified`.
+
+### E29: Resident-media representation
+
+Current mappedBytes 139735888 and privateResidentBytes 0 remove the separate private copy. Mapping length is not a measured RSS saving.
+
+**Next closure:** Retain 256 MiB bound, raw/audio/movie readers and allocation/mapping-failure fallback.
+
+Sources: `runner/cd/disc_image.c:40`, `runner/cd/disc_image.h`. Historical evaluation: `implemented_game_qualified`.
+
+### E30: Reusable console-firmware services
+
+Qualified native BRMINIT table operation f13bf7c replaces the dominant quadratic
+firmware computation; all57 manual services have bounded implemented/retained
+decisions. Complete ABI, normal menu format/reboot, actual native save preservation,
+Windows/Linux and atomic snapshot replay pass. Four gameplay pictures match34frames
+earlier; host CPU/startup remains neutral/inconclusive. ReadyPR56; no title-PC HLE
+was moved into the engine. See [whole-family evidence](ENGINE_FIRMWARE_SERVICES.md)
+and [raw results](engine-firmware-services-results.json).
+
+**Next closure:** Combined owner play, merge and release handoff. Current technical
+original E30 is complete; E31 uses a fresh validation-only reviewer.
+
+Sources: `runner/cd/bios_services.c`, `runner/cd/bios_tables.c`, `tests/segacd/bios_tables_test.c`.
+
+### E31: Engine snapshot representation and identity
+
+rb_state.c is unchanged. Dominant title fiber payload is outside scope, but does not rule out generic representation work. Old save-state compatibility is not required.
+
+**Next closure:** Establish complete writer/restore ownership and current per-section cost before choosing a generic page/delta representation.
+
+Sources: `runner/rb_state.c`, `runner/frame_snapshots.c`. Historical evaluation: `evaluated_deferred`.
+
+### E32: Serializer and snapshot storage
+
+rbe_snap_ring_store owns the blob on success, so malloc is not an immediate-copy leak. A new transactional storage contract is feasible shared engine work.
+
+**Next closure:** If allocation/copy cost warrants it, serialize into reserved owned capacity without destroying the previous entry on failure.
+
+Sources: `runner/local_states.c:142`, `runner/rb_state.c`. Historical evaluation: `evaluated_deferred`.
+
+### E33: Discarded-replay engine work
+
+Existing resim hooks/machine frame path establish this bounded terminal finding; current replay checks pass. No new gain is counted.
+
+**Next closure:** Retain current-build replay/state correctness; reopen for newly demonstrated shared derived work.
+
+Sources: `runner/sim_step.c`, `runner/video/genesis_machine.c`, `runner/main.c`. Historical evaluation: `evaluated_already_implemented`.
+
+### E34: Host presentation/deadline pipeline
+
+presentation.c is unchanged and CD still uses coarse SDL_Delay. Blind sleep/spin reuse is not a qualified solution; no new physical delivery comparison was made.
+
+**Next closure:** Reuse beads-hj4v. Select an actual delivery/jitter or copy cost and implement a suitable shared pipeline/nonspinning fallback.
+
+Sources: `runner/cd/presentation.c:522`, `runner/cd/standalone.c:291`, `runner/host_wait.c`, `runner/main.c`. Historical evaluation: `evaluated_deferred`.
+
+### E35: Asynchronous engine persistence and diagnostics
+
+No default hot file stall is demonstrated. This is a reasonable low-priority deferral, not an implemented asynchronous pipeline.
+
+**Next closure:** Reuse beads-3vb.11; pursue a measured enabled trace/save stall and retain transactional saves, shutdown/error handling.
+
+Sources: `runner/runtime_evidence.c`, `runner/local_states.c`, `runner/glue.c`. Historical evaluation: `evaluated_deferred`.
+
+### E36: Whole-program native build optimization
+
+Compaction is not an LTO/PGO experiment. No qualified new compiler alternative was delivered; noisy catalog CPU timing does not decide compiler optimization.
+
+**Next closure:** Use a supported compiler package on built consumers; retain exact arithmetic/portability and record runtime/startup/memory. Benchmark host waiting is not a global blocker.
+
+Sources: `tools/native_catalog_compact.py`, `tools/segacd/native_catalog_build.py`, `cmake`, `core/profiles/genesis/code_generator.c`. Historical evaluation: `implemented_catalog_lto_deferred`.
+
+## Preserve the accepted result
+
+The accepted Windows releases remain valid; this audit does not undo owner visual approval or identify a new runtime regression. Frozen release evidence remains at `G:/Temp/Codex/genesis-engine-release-20261028` with source/build/package identities, downloaded-asset validation and one-current-build delivery records. The historical evaluation/release owner stays closed; remaining engine scope is separately open under `beads-3z5k`.
+
+Keep performance claims bounded: CD executable size fell 23.13%; lazy raster omitted 38.5% of original compositions on the measured route. Separate Linux SHA-provider launch observations have their own package/host limits. Catalog runtime timing was mixed, final broad per-game throughput is not universally qualified, and the RKA owner-capture pair is provisional rather than a controlled benchmark. Do not add component reductions or overlapping packages into a claimed whole-game speedup.

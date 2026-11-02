@@ -6,10 +6,15 @@
 #include "debug.h"
 #include "disc_image.h"
 #include "standalone_services.h"
+#include "bios_services.h"
 #include "presentation.h"
 #include "sonic_cd_widescreen.h"
 #include "sonic_cd_limits.h"
 #include "../audio.h"
+#include "../engine_worker.h"
+#include "../host_wait.h"
+#include "../video/genesis_hd_gpu.h"
+#include "../persist_writer.h"
 #include <SDL2/SDL.h>
 #include <errno.h>
 #include <stdio.h>
@@ -17,6 +22,7 @@
 #include <string.h>
 
 extern const SegaCDNativeProgram *segacd_standalone_program(void);
+extern void segacd_standalone_qualify_regions(SegaCDMachine *);
 extern int segacd_standalone_accept_bios(const uint8_t *,size_t);
 extern int segacd_standalone_accept_disc(const uint8_t *);
 extern uint8_t g_ram[0x10000];
@@ -30,6 +36,19 @@ static int parse_number(const char *text,uint64_t *out)
     char*end;errno=0;unsigned long long v=strtoull(text,&end,0);
     if(errno||*end)return 0;
     *out=(uint64_t)v;return 1;
+}
+static int parse_sha256(const char *text,uint8_t out[32])
+{
+    if(!text||strlen(text)!=64)return 0;
+    for(unsigned n=0;n<64;n++) {
+        unsigned char c=(unsigned char)text[n];unsigned v;
+        if(c>='0'&&c<='9')v=c-'0';
+        else if(c>='a'&&c<='f')v=c-'a'+10u;
+        else if(c>='A'&&c<='F')v=c-'A'+10u;
+        else return 0;
+        if(n&1)out[n/2]|=(uint8_t)v;else out[n/2]=(uint8_t)(v<<4);
+    }
+    return 1;
 }
 static int parse_pad(const char *text)
 {
@@ -58,6 +77,12 @@ static int read_bios(const char *path,uint8_t *bytes)
 }
 static int media_read(void*image,int32_t lba,uint8_t raw[2352])
 {return segacd_image_read(image,lba,raw);}
+static void media_cancel(void *image){segacd_image_prefetch_cancel(image);}
+static void *media_worker_create(void){return genesis_worker_create();}
+static int media_worker_start(void*w,void(*task)(void*),void*user)
+{return genesis_worker_try_start((GenesisWorker*)w,task,user);}
+static int media_worker_busy(void*w){return genesis_worker_busy((GenesisWorker*)w);}
+static void media_worker_destroy(void*w){genesis_worker_destroy((GenesisWorker*)w);}
 static uint16_t keyboard_pad(void)
 {
     const Uint8*k=SDL_GetKeyboardState(NULL);uint16_t mask=0;
@@ -148,6 +173,7 @@ static int debug_capture(void *user,const char *path,const SegaCDMachine *m)
 int main(int argc,char **argv)
 {
     const char *bios_path=NULL,*disc_path=NULL,*backup_path=NULL,*dump_dir=NULL,*wav_path=NULL,*settings_path=NULL;
+    const char *disc_identity=NULL;uint8_t expected_disc[32];
     uint64_t frame_limit=0,debug_port=0,view_width=0;int headless=0,mute=0,debug_requested=0,start_paused=0,scripted_input_only=0;
     for(int i=1;i<argc;++i) {
         if(!strcmp(argv[i],"--headless"))headless=1;
@@ -157,6 +183,7 @@ int main(int argc,char **argv)
         else if(i+1<argc&&!strcmp(argv[i],"--debug-port")){if(!parse_number(argv[++i],&debug_port)||debug_port>65535)return 2;debug_requested=1;}
         else if(i+1<argc&&!strcmp(argv[i],"--bios"))bios_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--disc"))disc_path=argv[++i];
+        else if(i+1<argc&&!strcmp(argv[i],"--disc-image-sha256"))disc_identity=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--backup"))backup_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--settings"))settings_path=argv[++i];
         else if(i+1<argc&&!strcmp(argv[i],"--dump"))dump_dir=argv[++i];
@@ -167,7 +194,10 @@ int main(int argc,char **argv)
         else {fprintf(stderr,"Unknown/incomplete option: %s\n",argv[i]);return 2;}
     }
     if(!bios_path||!disc_path||(headless&&!frame_limit)||(start_paused&&!debug_requested)) {
-        fprintf(stderr,"Sonic CD --bios <owned BIOS> --disc <verified SGCD> [--backup file] [--settings file] [--headless --frames N --mute] [--pad frame:duration:mask] [--dump directory] [--wav file] [--debug-port N [--start-paused]]\n");return 2;
+        fprintf(stderr,"Sonic CD --bios <owned BIOS> --disc <verified SGCD> [--disc-image-sha256 <expected complete image>] [--backup file] [--settings file] [--headless --frames N --mute] [--pad frame:duration:mask] [--dump directory] [--wav file] [--debug-port N [--start-paused]]\n");return 2;
+    }
+    if(disc_identity&&!parse_sha256(disc_identity,expected_disc)) {
+        fprintf(stderr,"Expected disc image SHA-256 must be exactly 64 hex digits\n");return 2;
     }
     if(!headless&&view_width) {
         fprintf(stderr,"--view-width is a headless QA override; use the Graphics menu in a window.\n");
@@ -197,7 +227,7 @@ int main(int argc,char **argv)
     static uint8_t bios[SEGACD_BIOS_BYTES];char error[512];
     if(!read_bios(bios_path,bios)){fprintf(stderr,"BIOS must be exactly %u readable bytes\n",SEGACD_BIOS_BYTES);SDL_Quit();return 2;}
     if(!segacd_standalone_accept_bios(bios,sizeof bios)){fprintf(stderr,"This build requires the qualified US Model 1 v1.10 BIOS (CRC32 C6D10268).\n");SDL_Quit();return 2;}
-    SegaCDImage*image=segacd_image_open(disc_path,error,sizeof error);
+    SegaCDImage*image=segacd_image_open_expected(disc_path,disc_identity?expected_disc:NULL,error,sizeof error);
     if(!image){fprintf(stderr,"Disc: %s\n",error);SDL_Quit();return 2;}
     if(!segacd_standalone_accept_disc(segacd_image_sha256(image))){fprintf(stderr,"This build requires the qualified original Sonic CD US disc image.\n");segacd_image_close(image);SDL_Quit();return 2;}
     if(!segacd_machine_init(&machine,bios,sizeof bios,segacd_standalone_program())){fprintf(stderr,"Native program initialization failed\n");segacd_image_close(image);SDL_Quit();return 2;}
@@ -206,7 +236,16 @@ int main(int argc,char **argv)
     uint8_t persisted[SEGACD_BACKUP_BYTES];memcpy(persisted,machine.devices.backup,sizeof persisted);
     if(!segacd_cdd_mount(&machine.devices.drive,segacd_image_toc(image))){segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
     segacd_coordinator_media(&machine.coordinator,media_read,image,NULL,NULL);
+    const char *prefetch=getenv("GENESIS_CD_MEDIA_PREFETCH");
+    if(!prefetch||strcmp(prefetch,"0")) {
+        const SegaCDImageAsyncHost host={media_worker_create,media_worker_start,
+                                       media_worker_busy,media_worker_destroy};
+        segacd_image_set_async_host(image,&host);
+        segacd_coordinator_media_cancel(&machine.coordinator,media_cancel);
+    }
+    segacd_bios_services_install(&machine.coordinator,bios,sizeof bios);
     segacd_standalone_services_install(&machine,image);
+    segacd_standalone_qualify_regions(&machine);
     SegaCDNativeAudio*audio=segacd_native_audio_create(1);
     if(!audio){fprintf(stderr,"Audio initialization failed\n");segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
     segacd_native_audio_attach_io(audio,&machine.coordinator.io);
@@ -223,10 +262,13 @@ int main(int argc,char **argv)
     SDL_Window*window=NULL;SDL_Renderer*renderer=NULL;SDL_GameController*pad=NULL;
     SegaCDPresentation *presentation=NULL;
     if(!headless) {
-        window=SDL_CreateWindow("Sonic CD",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,960,672,SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI);
+        Uint32 window_flags=SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI;
+        const char *hidden=getenv("LNG_TEST_HIDDEN");
+        if(hidden&&!strcmp(hidden,"1"))window_flags|=SDL_WINDOW_HIDDEN;
+        window=SDL_CreateWindow("Sonic CD",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,960,672,window_flags);
         const char *render_driver=SDL_GetHint(SDL_HINT_RENDER_DRIVER);
         Uint32 renderer_flags=render_driver&&!SDL_strcasecmp(render_driver,"software")?SDL_RENDERER_SOFTWARE:SDL_RENDERER_ACCELERATED;
-        if(window)renderer=SDL_CreateRenderer(window,-1,renderer_flags);
+        if(window)renderer=genesis_hd_create_renderer(window,renderer_flags,segacd_presentation_startup_scale(settings_path));
         if(window&&!renderer)renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_SOFTWARE);
         if(renderer)presentation=segacd_presentation_create(window,renderer,settings_path,mute);
         if(!presentation){fprintf(stderr,"Window/settings: %s\n",SDL_GetError());if(renderer)SDL_DestroyRenderer(renderer);if(window)SDL_DestroyWindow(window);segacd_debug_stop(debug);audio_wav_stop();segacd_native_audio_destroy(audio);segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
@@ -243,8 +285,19 @@ int main(int argc,char **argv)
             segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;
         }
     }
-    int quit=0,paused=0,exit_code=0;uint64_t freq=SDL_GetPerformanceFrequency(),target=SDL_GetPerformanceCounter(),phase=0;
+    GenesisPersistWriter *backup_writer=genesis_persist_create(backup_path,persisted,
+        sizeof persisted,segacd_atomic_file_store);
+#ifndef SEGACD_IMMUTABLE_CODE
+#define SEGACD_IMMUTABLE_CODE 1
+#endif
+    /* Verified media worker, audio queue and read-only presentation/debug
+     * callbacks never mutate the BIOS; debugger commands run between frames. */
+    (void)segacd_machine_immutable_bios(&machine,SEGACD_IMMUTABLE_CODE);
+    int quit=0,paused=0,exit_code=0;
     while(!quit&&(!frame_limit||machine.frames<frame_limit)) {
+        if(backup_writer&&!genesis_persist_poll(backup_writer)) {
+            fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;
+        }
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
             if(event.type==SDL_QUIT)quit=1;
@@ -257,6 +310,7 @@ int main(int argc,char **argv)
         if(quit||segacd_debug_quit_requested(debug))break;
         int run=!segacd_presentation_is_open(presentation)&&
             (debug?segacd_debug_should_run_frame(debug):!paused);
+        segacd_presentation_set_running(presentation,run);
         audio_set_playback_enabled(run);
         if(run) {
             unsigned desired_width=headless ? (view_width ? (unsigned)view_width : 320u) :
@@ -271,34 +325,53 @@ int main(int argc,char **argv)
             if(result!=M68K_STEP_OK){fprintf(stderr,"Native execution stopped result=%u cpu=%u main=%06X sub=%06X Z80=%04X miss=%04X at Subclock=%llu\n",result,machine.coordinator.last_cpu,machine.coordinator.cpu[0].state.regs.PC,machine.coordinator.cpu[1].state.regs.PC,machine.z80.state.pc,machine.z80.miss_pc,(unsigned long long)machine.coordinator.device_time);exit_code=3;break;}
             SegaCDNativeAudioResult ar=segacd_native_audio_finish_frame(audio,machine.frames*896040u,(uint32_t)machine.frames,!headless);
             if(ar!=SEGACD_NATIVE_AUDIO_OK){fprintf(stderr,"Audio stopped result=%u at frame=%llu\n",ar,(unsigned long long)machine.frames);exit_code=3;break;}
-            if(machine.frames%60==0&&memcmp(persisted,machine.devices.backup,sizeof persisted)) {
-                if(segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK){fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;}
-                memcpy(persisted,machine.devices.backup,sizeof persisted);
+            if(machine.frames%60==0) {
+                if(backup_writer) {
+                    if(genesis_persist_submit(backup_writer,machine.devices.backup)<0) {
+                        fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;
+                    }
+                } else if(memcmp(persisted,machine.devices.backup,sizeof persisted)) {
+                    if(segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK){fprintf(stderr,"Backup write failed; previous save retained\n");exit_code=4;break;}
+                    memcpy(persisted,machine.devices.backup,sizeof persisted);
+                }
             }
         }
         if(!headless) {
             unsigned width=machine.width,height=machine.height,pitch=GVDP_MAX_WIDTH*sizeof(uint32_t);
             const uint32_t *pixels=widescreen ?
                 segacd_widescreen_frame(widescreen,&width,&height,&pitch) : segacd_machine_pixels(&machine);
+            segacd_presentation_native_jobs(presentation,pixels==&machine.pixels[0][0]);
             if(!pixels||!segacd_presentation_present(presentation,pixels,
                 (int)width,(int)height,(int)pitch)) {
                 fprintf(stderr,"Presentation: %s\n",SDL_GetError());exit_code=2;break;
             }
         }
-        if(!run){target=SDL_GetPerformanceCounter();phase=0;SDL_Delay(5);continue;}
-        if(!headless) {
-            phase+=freq*896040u;target+=phase/53693175u;phase%=53693175u;
-            uint64_t now=SDL_GetPerformanceCounter();if(target>now){uint64_t ms=(target-now)*1000u/freq;if(ms)SDL_Delay((Uint32)ms);}
-        }
+        if(!run){SDL_Delay(5);continue;}
     }
-    if(!exit_code&&memcmp(persisted,machine.devices.backup,sizeof persisted)&&segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK)exit_code=4;
+    if(backup_writer) {
+        if(!exit_code&&!genesis_persist_flush(backup_writer,machine.devices.backup))exit_code=4;
+        if(!genesis_persist_destroy(backup_writer)&&!exit_code)exit_code=4;
+    } else if(!exit_code&&memcmp(persisted,machine.devices.backup,sizeof persisted)&&segacd_backup_store(backup_path,machine.devices.backup)!=SEGACD_BACKUP_OK)exit_code=4;
     if(dump_dir&&!dump_state(dump_dir))exit_code=4;
     SegaCDNativeAudioStats stats;segacd_native_audio_get_stats(audio,&stats);
+    uint64_t bios_completed=0,bios_declined=0;
+    segacd_bios_services_stats(&bios_completed,&bios_declined);
+    printf("BIOS table services completed=%llu declined=%llu\n",
+        (unsigned long long)bios_completed,(unsigned long long)bios_declined);
     SegaCDImageHostStats image_stats;
     if(segacd_image_host_stats(image,&image_stats))
         printf("Media rawReads=%llu residentReads=%llu hostSeeks=%llu mappedBytes=%zu privateResidentBytes=%zu\n",
             (unsigned long long)image_stats.raw_reads,(unsigned long long)image_stats.resident_reads,
             (unsigned long long)image_stats.host_seeks,image_stats.mapped_view_bytes,image_stats.private_resident_bytes);
+    if(segacd_image_host_stats(image,&image_stats))
+        printf("Media prefetchJobs=%llu prefetchHits=%llu prefetchFailures=%llu prefetchCancels=%llu prefetchBytes=%zu syncReadNs=%llu maxSyncReadNs=%llu\n",
+            (unsigned long long)image_stats.prefetch_jobs,(unsigned long long)image_stats.prefetch_hits,
+            (unsigned long long)image_stats.prefetch_failures,(unsigned long long)image_stats.prefetch_cancels,
+            image_stats.prefetch_bytes,(unsigned long long)image_stats.sync_read_ns,
+            (unsigned long long)image_stats.max_sync_read_ns);
+    if(segacd_image_host_stats(image,&image_stats))
+        printf("Media wholeIdentityChecked=%d privateSnapshotBytes=%zu\n",
+            image_stats.whole_identity_checked,image_stats.private_snapshot_bytes);
     SegaCDMachineVideoStats video_stats;
     if(segacd_machine_video_stats(&machine,&video_stats))
         printf("Raster captured=%llu composed=%llu eager=%llu retainedBytes=%zu deferred=%d\n",
@@ -310,6 +383,24 @@ int main(int argc,char **argv)
         (unsigned long long)machine.coordinator.catalog_lookup[0].descriptor_searches,
         (unsigned long long)machine.coordinator.catalog_lookup[1].descriptor_searches,
         sizeof machine.coordinator.catalog_lookup);
+    printf("Event service regionAdvances=%llu\n",(unsigned long long)machine.coordinator.region_device_advances);
+    printf("Immutable code lease reuses=%llu\n",(unsigned long long)(machine.coordinator.code_reuses_retired+machine.coordinator.catalog_lookup[0].code_reuses+machine.coordinator.catalog_lookup[1].code_reuses));
+    printf("Native regions runs=%llu Main=%llu Sub=%llu\n",
+        (unsigned long long)machine.coordinator.region_runs,
+        (unsigned long long)machine.coordinator.region_instructions[0],
+        (unsigned long long)machine.coordinator.region_instructions[1]);
+    printf("Register spans Main=%llu/%llu Sub=%llu/%llu\n",
+        (unsigned long long)machine.coordinator.span_runs[0],(unsigned long long)machine.coordinator.span_instructions[0],
+        (unsigned long long)machine.coordinator.span_runs[1],(unsigned long long)machine.coordinator.span_instructions[1]);
+    printf("Owned RMW Main=%llu Sub=%llu\n",
+        (unsigned long long)machine.coordinator.cpu[0].owned_rmw_grants,
+        (unsigned long long)machine.coordinator.cpu[1].owned_rmw_grants);
+    printf("Flow spans Main=%llu/%llu Sub=%llu/%llu\n",
+        (unsigned long long)machine.coordinator.flow_runs[0],(unsigned long long)machine.coordinator.flow_instructions[0],
+        (unsigned long long)machine.coordinator.flow_runs[1],(unsigned long long)machine.coordinator.flow_instructions[1]);
+    printf("Owned data regions Main=%llu Sub=%llu\n",
+        (unsigned long long)machine.coordinator.data_resolutions[0],
+        (unsigned long long)machine.coordinator.data_resolutions[1]);
     printf("Catalog PC index visited=%zu/%zu bytes=%zu/%zu\n",
         machine.coordinator.catalog_index[0]?machine.coordinator.catalog_index[0]->visited:0,
         machine.coordinator.catalog_index[1]?machine.coordinator.catalog_index[1]->visited:0,
@@ -336,6 +427,7 @@ int main(int argc,char **argv)
         } else widescreen=NULL;
     }
     segacd_presentation_destroy(presentation);
+    genesis_host_wait_shutdown();
     if(renderer)SDL_DestroyRenderer(renderer);
     if(window)SDL_DestroyWindow(window);
     /* Delivery has one emulated frame of lookahead latency. Stopping does

@@ -59,6 +59,27 @@ int main(void)
         assert(at==last+frequency && phase==0);
         presentation_clock_reset(&c);assert(!c.active);
     }
+    const uint64_t frequencies[] = {1000000, 10000000, 1000000000};
+    for (unsigned f = 0; f < sizeof frequencies / sizeof frequencies[0]; ++f) {
+        uint64_t hz = frequencies[f], exact = origin, phase = 0;
+        assert(frame_pacer_init_ratio(&p, hz, 896040, 53693175));
+        for (uint64_t i = 0; i < 1000000; ++i) {
+            uint64_t ready = i ? exact - p.period / 4 : origin;
+            assert(frame_pacer_deadline(&p, ready) == exact);
+            phase += hz * 896040;
+            exact += phase / 53693175;
+            phase %= 53693175;
+        }
+        /* A blocking present or paused frame must not cause a catch-up burst. */
+        resume = p.next + hz;
+        assert(frame_pacer_deadline(&p, resume) == resume);
+        frame_pacer_reset(&p);
+        assert(frame_pacer_deadline(&p, resume + 1) == resume + 1);
+    }
+    assert(!frame_pacer_init_ratio(&p, 0, 1, 1));
+    assert(!frame_pacer_init_ratio(&p, 1, 0, 1));
+    assert(!frame_pacer_init_ratio(&p, 1, 1, 0));
+    assert(!frame_pacer_init_ratio(&p, UINT64_MAX, UINT32_MAX, 1));
     puts("frame presentation cadence OK");
     return 0;
 }

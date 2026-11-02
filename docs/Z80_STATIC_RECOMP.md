@@ -28,9 +28,28 @@ entry point that executes one instruction and returns to the Genesis scheduler.
    Games that replace or patch their driver later can supply additional RAM
    captures with repeated `--flat-step-variant path/to/z80_ram.bin` arguments.
 
-4. Configure the game with `GENESIS_Z80_RECOMP=ON` and the generated C source.
-   The game consumes the framework's pinned `external/z80-recomp-core`
-   submodule and exposes `GENESIS_Z80_AOT_SOURCE` as a cache variable.
+4. Configure the supported game build with:
+
+   ```sh
+   cmake -S <game> -B <build> \
+     -DGENESIS_Z80_RECOMP=ON \
+     -DGENESIS_Z80_AOT_SOURCE=<absolute-path>/<prefix>_step.c
+   ```
+
+   `cmake/GenesisRecompZ80.cmake` supplies the adapter, generated source,
+   pinned `external/z80-recomp-core` headers and compile definitions. The
+   shared runner reconciler applies this to consumers listing runner sources
+   manually, as well as targets using `genesisrecomp_runner_target()`.
+   Initialize the pinned core submodule before enabling the option.
+
+   The entry defaults to the source basename, e.g. `proof_step.c` means
+   `proof_step()`. Set `GENESIS_Z80_AOT_ENTRY` for a different C identifier.
+   An explicit `GameSpec.z80_step` still takes precedence. Legacy consumer
+   specs conditionally include a generated header and name their own entry:
+   use `rkaz80` for RKA and `s1z80` for Sonic1. Consumers with a NULL hook use
+   the configured entry directly. Do not substitute one title's captured
+   image for another. The helper suppresses the SMS function-form
+   `call_by_address` declaration so it cannot conflict with the68000 ABI.
 
 The ROM-derived RAM image and generated C are local build artifacts and must
 not be committed. Ordinary builds leave `GENESIS_Z80_RECOMP` off and retain the
@@ -68,3 +87,27 @@ recurring self-modified PC through the faithful interpreter fallback.
 Fallback diagnostics are structured and silent: the `z80_state` TCP command
 reports `z80_recomp.fallback_steps` and
 `z80_recomp.fallback_unique_pcs` without writing per-instruction logs.
+
+## Native slice ownership and current qualification
+
+The cartridge scheduler now runs the existing scanline ownership interval
+inside the adapter. Every instruction still performs live guards, bus access,
+its original audio start stamp and IRQ acceptance. The complete legacy
+register/flag representation is published at the slice edge and explicitly
+before interpreter fallback. `GEN_DEV_TRACE` builds retain publication after
+every instruction because trace bus callbacks observe the previous completed
+legacy PC. Reset/BUSREQ are settled at the same boundaries as the prior
+scheduler; this does not change cartridge CPU interleaving.
+
+The one-instruction API remains available. The internal compile-time
+`GENESIS_Z80_STEP_PUBLICATION_REFERENCE` restores the old scheduler loop for
+qualification; it is not a runtime backend switch. CD already owns native
+continuous intervals and retains its coordinator/WAIT/terminal-miss contract.
+
+Fresh E06 diligence found and repaired missing HALT refresh, premature IRQ
+after fallback EI, missing IRQ WZ, Windows64-bit cycle loss through the
+32-bit legacy cycle field, and previously absent shared CMake integration.
+Real-producer variant tests also exposed missing live-operand WZ updates,
+fixed in the SMS/GG producer. See [E06 evidence](ENGINE_Z80_BACKEND.md) for
+the actual scope, identities and per-game qualification; the historical
+driver checks above are retained as earlier evidence, not rerun claims.

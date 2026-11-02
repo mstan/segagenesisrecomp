@@ -18,6 +18,8 @@ static const uint8_t known_digest[32] = {
     0xc8,0xd3,0x8d,0x1a,0x64,0x4f,0xc5,0x03,0x0b,0x64,0x25,0x89,0x66,0x9b,0x83,0xcc
 };
 
+static const uint8_t known_image_digest[32] = {0xc3,0xa1,0x3d,0x62,0x3e,0x56,0x76,0xec,0xf3,0xb8,0xf2,0x0f,0xd9,0x2c,0xe9,0xef,0xea,0x5f,0xfc,0xa2,0x98,0xdf,0xdd,0x82,0x62,0xb0,0x8d,0x29,0x2d,0x4a,0x3c,0xf9};
+
 /* Python hashlib.sha256 over the exact synthetic payload made below: 153 raw
  * sectors, all zero except LBA 0 filled with 0x11 and LBA 2 filled with 0x22. */
 
@@ -138,6 +140,7 @@ int main(void)
 
     CHECK(segacd_image_toc(NULL) == NULL);
     CHECK(segacd_image_sha256(NULL) == NULL);
+    CHECK(segacd_image_whole_sha256(NULL) == NULL);
     CHECK(segacd_image_resident_sector(NULL, 0) == NULL);
     CHECK(segacd_image_resident_bytes(NULL) == 0);
     CHECK(!segacd_image_read(NULL, 0, NULL));
@@ -150,6 +153,7 @@ int main(void)
     CHECK(second != NULL && error[0] == '\0');
     toc = segacd_image_toc(image);
     CHECK(toc != NULL && toc->count == 2 && toc->leadout == 3);
+    CHECK(segacd_image_whole_sha256(image)==NULL);
     CHECK(toc->track[0].index00 == -150 && toc->track[0].start == 0 && toc->track[0].end == 1 && toc->track[0].data == 0);
     CHECK(toc->track[1].index00 == 1 && toc->track[1].start == 2 && toc->track[1].end == 3 && toc->track[1].data == 1);
     CHECK(memcmp(segacd_image_sha256(image), known_digest, sizeof(known_digest)) == 0);
@@ -183,6 +187,40 @@ int main(void)
     CHECK(!segacd_image_read(image, 0, NULL));
     segacd_image_close(image);
     segacd_image_close(second);
+
+    /* The manifest value is only an expectation: the actual complete image
+     * and payload are both checked, and all reads retain the verified object. */
+    image=segacd_image_open_expected(path,known_image_digest,error,sizeof error);
+    CHECK(image&&segacd_image_whole_sha256(image));
+    CHECK(!memcmp(segacd_image_whole_sha256(image),known_image_digest,32));
+    CHECK(!memcmp(segacd_image_sha256(image),known_digest,32));
+    CHECK(segacd_image_host_stats(image,&host_stats)&&host_stats.whole_identity_checked);
+#if !defined(_WIN32) || (defined(SEGACD_IMAGE_FORCE_SNAPSHOT) && SEGACD_IMAGE_FORCE_SNAPSHOT)
+    CHECK(host_stats.private_snapshot_bytes==TOTAL);
+    mutate_byte(path,HEADER+2*TRACK+150*RAW,0x77);
+    CHECK(segacd_image_read(image,0,sector)&&all_byte(sector,sizeof sector,0x11));
+    CHECK(remove(path)==0);make_fixture(path); /* path now names another object */
+    mutate_byte(path,HEADER+2*TRACK+150*RAW,0x66);
+#else
+    CHECK(host_stats.private_snapshot_bytes==0);
+    FILE *writer=fopen(path,"r+b");CHECK(writer==NULL); /* enforced Windows ownership */
+    CHECK(remove(path)!=0);
+#endif
+    CHECK(segacd_image_read(image,0,sector)&&all_byte(sector,sizeof sector,0x11));
+    CHECK(segacd_image_read(image,2,sector)&&all_byte(sector,sizeof sector,0x22));
+    segacd_image_close(image);make_fixture(path);
+    FILE *writer_after=fopen(path,"r+b");CHECK(writer_after&&fclose(writer_after)==0);
+    uint8_t wrong_identity[32];memcpy(wrong_identity,known_image_digest,32);wrong_identity[0]^=1;
+    CHECK(segacd_image_open_expected(path,wrong_identity,error,sizeof error)==NULL);
+    CHECK(strstr(error,"complete image")!=NULL);
+    /* Structurally valid metadata with the unchanged correct payload cannot
+     * satisfy the complete-image expectation. */
+    mutate_byte(path,HEADER+4,1);
+    CHECK(segacd_image_open_expected(path,known_image_digest,error,sizeof error)==NULL);
+    CHECK(strstr(error,"complete image")!=NULL);
+    make_fixture(path);mutate_byte(path,TOTAL-1,1);
+    CHECK(segacd_image_open_expected(path,known_image_digest,error,sizeof error)==NULL);
+    CHECK(strstr(error,"payload")!=NULL);
 
     for (i = 0; i < sizeof(malformed)/sizeof(malformed[0]); ++i) {
         make_fixture(path);

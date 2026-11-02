@@ -7,6 +7,9 @@
  */
 
 #include "glue.h"
+#if GENESIS_HD_JOBS
+#include "video/genesis_raster_jobs.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -76,6 +79,7 @@ uint8_t   g_controller2_buttons = 0;
 
 /* Contextual recompiler cycle tracking */
 uint32_t  g_cycle_accumulator  = 0;
+uint64_t  g_native_span_count  = 0;
 uint32_t  g_vblank_threshold   = 109312;  /* scanline 224 × 488 cycles */
 
 /* Audio event-queue cycle stamp: 68K cycles since wall-frame start. Bumped
@@ -90,7 +94,7 @@ uint32_t  g_vblank_threshold   = 109312;  /* scanline 224 × 488 cycles */
 uint32_t  g_audio_cycle_counter = 0;
 /* NTSC wall-frame cycle budget — used in CYCLE_ACCURATE mode to cap
  * game-fiber work at hardware rate. 262 scanlines × 488 cycles each. */
-#define NTSC_CYCLES_PER_WALL_FRAME 127856u
+#define NTSC_CYCLES_PER_WALL_FRAME GENESIS_NATIVE_WALL_FRAME_CYCLES
 static int s_vblank_fired_this_frame   = 0;  /* cycle-budget latch: 1 means
                                                 * the wall frame's VBla budget
                                                 * has been consumed (whether or
@@ -106,6 +110,7 @@ static int s_vblank_executed_this_frame = 0; /* did the recompiled VBla body
  * compare native per-wall-frame instruction throughput against oracle.
  * Stays 0 on oracle builds (generated func_* bodies never run there). */
 uint64_t g_native_insn_count = 0;
+uint64_t g_native_direct_calls = 0,g_native_direct_tails = 0;
 
 /* Cycle-pacing telemetry. Updated once per wall frame in
  * glue_end_of_wall_frame. cmd_server_record_frame copies this into
@@ -216,8 +221,14 @@ static uint32_t g_rdb_current_func = 0;
 void (*g_fm_write_trace_fn )(uint32_t address,      uint8_t value, uint32_t target_cycle) = NULL;
 void (*g_mem_write_trace_fn)(uint32_t byte_address, uint8_t value, uint32_t target_cycle) = NULL;
 
-#define INSN_WATCHDOG_LIMIT 20000000ull
-static uint64_t s_insn_watchdog_base = 0;
+#define INSN_WATCHDOG_LIMIT GENESIS_NATIVE_WATCHDOG_LIMIT
+GenesisNativeRegisterBudget g_native_register_budget={0,0,0,1,0,0};
+#define s_insn_watchdog_base g_native_register_budget.watchdog_base
+#define s_interleave_active g_native_register_budget.interleave_active
+#define s_in_vblank_service g_native_register_budget.in_vblank_service
+#define s_main_cpu_divisor g_native_register_budget.main_cpu_divisor
+#define s_cycle_budget g_native_register_budget.cycle_budget
+#define s_budget_cyc_seen g_native_register_budget.budget_cyc_seen
 static void dump_bus_ring(void);   /* defined after the bus ring below; both watchdogs use it */
 
 static void instruction_watchdog_reset(void)
@@ -443,7 +454,6 @@ void glue_reset_frame_sync(void)
  * ========================================================================= */
 
 /* Re-entrancy guard (used by glue_check_vblank, must be in global scope) */
-static int s_in_vblank_service = 0;
 
 #include "game_spec.h"      /* g_game_spec.call_entry_point / vblank / hblank / periodic */
 
@@ -639,10 +649,8 @@ static int create_game_fiber(uint32_t resume_pc)
 /* Scanline interleave state */
 #include "main_cpu_clock.h"
 static MainCpuClock s_main_cpu_clock;
-static unsigned s_main_cpu_divisor = 1;
 static uint32_t s_main_cpu_stalls;
 static int s_irq_in_progress = 0; /* also excludes interleaved IRQs from acceleration */
-static int32_t s_cycle_budget = 0;
 static int     s_game_yielded_vblank = 0;
 static int s_state_requested,s_state_parked;
 void glue_state_boundary_request(int requested)
@@ -666,7 +674,6 @@ static uint32_t s_irq_cycle_debt = 0;
 static int s_irq_cycle_debt_level = 0;
 /* g_audio_cycle_counter value at the last budget drain (see
  * check_cycle_budget — the budget drains by real elapsed 68K cycles). */
-static uint32_t s_budget_cyc_seen = 0;
 #if SONIC_REVERSE_DEBUG
 /* Tier-2 reverse debugger: set by glue_yield_for_break when the game
  * fiber parks at a block-entry hook. Main loop reads via
@@ -674,12 +681,11 @@ static uint32_t s_budget_cyc_seen = 0;
  * drains cmd_server until a resume command clears it. */
 static int     s_game_yielded_break = 0;
 #endif
-static int     s_interleave_active = 0;
 
 /* Called from DoCycles (inside Iterate). Runs game code for a chunk. */
 static cc_u32f s_chunk_cycles = 0;  /* budget for current chunk */
 
-void glue_run_game_chunk(cc_u32f cycles)
+void glue_run_game_chunk(uint32_t cycles)
 {
     /* An opt-in quicksave completes the native tick, then keeps its WaitForVint
      * parked until this wall frame's VDP/Z80/audio drain has completed. */
@@ -1368,6 +1374,7 @@ void glue_check_vblank(void)
     return;
 }
 
+
 void glue_end_of_wall_frame(void)
 {
     /* Hardware fires VBla every wall frame regardless of what 68K code
@@ -1463,6 +1470,9 @@ void glue_save_state(FILE *sf)
 
 void glue_load_state(FILE *sf)
 {
+#if GENESIS_HD_JOBS
+    gvdp_hd_reset();
+#endif
     fread(&g_cpu, 1, sizeof(g_cpu), sf);
     fread(&g_frame_count, 1, sizeof(g_frame_count), sf);
     fread(&g_cycle_accumulator, 1, sizeof(g_cycle_accumulator), sf);

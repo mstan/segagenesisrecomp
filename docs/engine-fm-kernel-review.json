@@ -1,0 +1,79 @@
+{
+  "original_goal": "E20/N24 faithful FM operator/channel kernels beyond existing sample-block wrapper",
+  "reviewer": "validate_e20 independent validation-only reviewer",
+  "reviewed_head": "f6a605d4ad4451ebc8289a0325b3ed86f154a35c",
+  "branch": "codex/engine-fm-kernels-20261031",
+  "accepted_base": "10ace05",
+  "restored_head": "02c0fa8d32d1099f8b2d1728301e4b8cbc6a3b92",
+  "restored_complete_tree": "d5ae13ffcc16f6fb652c1343bb3ffbcc0acfb9f0",
+  "prototype_heads": [
+    "5e420634e8ce69cc1becd9e5461425dd4ef682f5",
+    "4adfc3842fe0749e914c0f429cd75c7164675326"
+  ],
+  "verdict": "PASS: whole bounded E20 rejection, exact restoration, records/counts, cleanup and durable Beads/central sync accepted. Proceed to original E21 with a new independent validation-only reviewer.",
+  "checks": {
+    "clean_worktree": true,
+    "remote_branch_matches_reviewed_head": true,
+    "restored_tree_equals_accepted_base": true,
+    "current_head_changes_docs_only": true,
+    "independent_frozen_reference_13_files_equal_base": true,
+    "native_and_fallback_unit_checks_passed": 4,
+    "matched_game_pairs_recounted": 20,
+    "completed_game_runs_recounted": 40,
+    "all_cart_pair_correctness_objects_equal": true,
+    "both_cd_orders_checkpoints_artifact_and_full_wav_hashes_equal": true,
+    "raw_record_hashes_match_committed_manifest": true,
+    "relocated_unit_record_and_binary_hashes_match": true,
+    "counts_recomputed": {
+      "resolved": 22,
+      "original_open": 14,
+      "additional_E37_open": 1,
+      "total_open": 15,
+      "total_tracked": 37
+    },
+    "local_four_disposable_build_roots_absent": true,
+    "cleanup_local_bytes": 171054054,
+    "cleanup_remote_duplicate_bytes": 118319104,
+    "cleanup_total_bytes": 289373158,
+    "server_duplicate_cleanup": "Recorded removed after local matching hash verification; no independent remote crawl.",
+    "shared_cd_cache_original_selection_restored": true,
+    "shared_cd_restore_job_exit_code": 0,
+    "new_runtime_or_pr": false,
+    "new_workloads_or_framework_created_by_reviewer": false
+  },
+  "candidate_decisions": {
+    "fixed_routes": "Correctness-qualified; no qualified global per-game-neutral result. RKA default wall adverse in three orders with mixed CPU/cycles. Do not claim universal arithmetic slowdown.",
+    "compact_global": "Correctness-qualified; rejected because Sonic1 shadow-off cycles +6.97/+4.54% and wall +14.30/+5.61% are repeated adverse results; shadow-on gains do not offset them.",
+    "compact_cd_only": "Correctness-qualified; AB CPU -8.33%, cycles -7.475%; BA CPU -0.773%, cycles +7.111%. Large baseline variation, neutral/inconclusive. No established retained benefit worth a new backend/compiler selection; no such selection ships."
+  },
+  "scope_limits": [
+    "No re-credit for shipped sample-block wrapper.",
+    "No claim every future phase/envelope/layout algorithm is exhausted.",
+    "CD rollback is not claimed; current-wrapper restore unit tests and cart rollback were qualified.",
+    "No owner launch, merge, release, or new PR.",
+    "Native cart compiler corrected from earlier metadata error to actual MSVC19.44; CD matched staged MSVC19.41 is separate."
+  ],
+  "focus_audit": {
+    "actually_evaluated": "Two implemented arithmetic/layout architectures, four independent core checks, twenty actual matched game pairs.",
+    "unnecessary_work_stopped": "Further repeats, instrumentation, speculative compiler/backend rollout and third tuning variant.",
+    "corrective_action_applied": "Finish prepared CD pair and reverse order, then dispose the whole bounded opportunity and restore source."
+  },
+  "durable_beads_and_sync_confirmed": true,
+  "next_original_goal_authorized": true,
+  "next_gate": "E20 final gate complete. Root may copy final audit into repository docs and push evidence-only commit, then proceed original E21 serially in an isolated worktree with a new independent validation-only reviewer.",
+  "evidence_root": "G:\\Temp\\Codex\\genesis-engine-fm-kernels-20261031",
+  "reviewed_utc": "2026-11-01T01:11:45.703853+00:00",
+  "durability": {
+    "owning_issue": "beads-3z5k.18",
+    "owning_status": "closed",
+    "own_comment": "01a194aa-262f-7542-8aaf-4c4f9285f7a8",
+    "parent_comment": "01a194aa-272e-7d45-aec5-0eb20acd995c",
+    "campaign_comment": "01a194aa-282a-73f2-b945-9fdba9872974",
+    "sync_exit_code": 0,
+    "sync_seconds": 12.4,
+    "sync_log": "C:/Users/Matthew/AppData/Local/beads/sync-logs/20261101T011221Z-30184/push.log",
+    "sync_log_completion": "Push complete.",
+    "verification": "Read central owning issue, owning/parent/campaign PASS comments and completed sync log independently; exit/time also recorded by root."
+  },
+  "finalized_utc": "2026-11-01T01:13:37.776502+00:00"
+}

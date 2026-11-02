@@ -6,6 +6,9 @@
 #include <SDL2/SDL.h>
 
 typedef struct SegaCDPresentation SegaCDPresentation;
+unsigned segacd_presentation_startup_scale(const char *settings_path);
+/* Explicit provenance: pixels still belong to the native VDP renderer. */
+void segacd_presentation_native_jobs(SegaCDPresentation *presentation, int eligible);
 
 /* Owns its streaming texture and UI; window and renderer remain host-owned.
    The settings path is explicit so the host can keep all persistent data off C:. */
@@ -14,6 +17,8 @@ SegaCDPresentation *segacd_presentation_create(SDL_Window *window,
                                                const char *settings_path,
                                                int force_mute);
 void segacd_presentation_destroy(SegaCDPresentation *presentation);
+/* Paused/menu/debug-stopped frames do not advance a delivery schedule. */
+void segacd_presentation_set_running(SegaCDPresentation *presentation, int running);
 
 /* Call for every SDL event. Returns nonzero when the event belongs to the menu
    or must be withheld from the game while held inputs drain after menu close. */
@@ -27,7 +32,9 @@ int segacd_presentation_blocks_game_input(
    symmetric even guest-pixel width; the native view is the minimum. */
 unsigned segacd_presentation_view_width(const SegaCDPresentation *presentation);
 
-/* Copies and overlays the host frame; the machine's source pixels are untouched. */
+/* Synchronously uploads the frame, borrowing raw pixels while the UI is closed
+   and owning writable staging for overlays/packed fallback. Source pixels are
+   untouched and are not retained beyond this call. */
 int segacd_presentation_present(SegaCDPresentation *presentation,
                                 const uint32_t *pixels, int width, int height,
                                 int source_pitch_bytes);

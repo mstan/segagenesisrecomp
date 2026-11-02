@@ -46,6 +46,7 @@ function(segacd_target_recomp_ui target)
     endif()
     target_sources("${target}" PRIVATE
         "${_SEGACD_RECOMP_UI_HELPER_DIR}/presentation.c"
+        "${_SEGACD_RECOMP_UI_HELPER_DIR}/../host_wait.c"
         "${_SEGACD_RECOMP_UI_HELPER_DIR}/presentation_ui.c")
     target_include_directories("${target}" PRIVATE
         "${_SEGACD_RECOMP_UI_HELPER_DIR}"

@@ -20,6 +20,7 @@ typedef struct SegaCDPresentationSettings {
     int audio_enabled;    /* boolean */
     int volume;           /* 0..100 */
     int view_mode;        /* RecompRuntimeUiViewMode */
+    int internal_scale;   /* display-only, applies on next launch */
 } SegaCDPresentationSettings;
 
 typedef struct SegaCDPresentationUICallbacks {

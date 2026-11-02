@@ -83,6 +83,78 @@ void audio_mixer_init(void)
  * SFX trailing-boop. Default 0 = current (shipping) behavior. Dev-only. */
 static int s_mix_toggle_read = 0;
 static int s_no_spread = 0, s_no_pairguard = 0, s_no_leftover = 0, s_no_clamp = 0;
+static AudioMixerExecutor s_executor;
+static void *s_executor_context;
+void audio_mixer_set_shadow_executor(AudioMixerExecutor executor,void *context)
+{s_executor=executor;s_executor_context=context;}
+static int mixer_outputs_disjoint(const int16_t *fm,size_t fm_cap,
+                                  const int16_t *psg,size_t psg_cap)
+{
+    if(!fm || !psg || !fm_cap || !psg_cap)return 1;
+    if(fm_cap>SIZE_MAX/(2u*sizeof *fm) || psg_cap>SIZE_MAX/sizeof *psg)return 0;
+    size_t fn=fm_cap*2u*sizeof *fm,pn=psg_cap*sizeof *psg;
+    uintptr_t f=(uintptr_t)fm,p=(uintptr_t)psg;
+    return f<=p ? p-f>=fn : f-p>=pn;
+}
+typedef struct MixerChipJob {
+    const AudioOrderedEvent *events;size_t count;
+    uint32_t end;int16_t *output;size_t capacity,written;
+    int keep_psg_leftover;
+    int16_t *raw_output;
+} MixerChipJob;
+static void mixer_fm_job(void *context)
+{
+    MixerChipJob *job=(MixerChipJob *)context;uint32_t previous=0;
+    for(size_t i=0;i<job->count;i++){
+        AudioEvent e=job->events[i].e;if(e.port==AUDIO_PORT_PSG)continue;
+        if(e.cycle_stamp<previous)e.cycle_stamp=previous;
+        uint32_t delta=e.cycle_stamp-previous;
+        if(delta)ym2612_advance(delta);
+        switch(e.port){
+            case AUDIO_PORT_FM1_ADDR:ym2612_write(0,e.value);break;
+            case AUDIO_PORT_FM1_DATA:ym2612_write(1,e.value);break;
+            case AUDIO_PORT_FM2_ADDR:ym2612_write(2,e.value);break;
+            case AUDIO_PORT_FM2_DATA:ym2612_write(3,e.value);break;
+            default:break;
+        }
+        previous=e.cycle_stamp;
+    }
+    if(job->end>previous)ym2612_advance(job->end-previous);
+    size_t available=ym2612_samples_available();job->written=available<job->capacity?available:job->capacity;
+    if(job->output && job->written)ym2612_render_pair(job->output,job->raw_output,job->written);
+}
+static void mixer_psg_job(void *context)
+{
+    MixerChipJob *job=(MixerChipJob *)context;uint32_t previous=0;
+    for(size_t i=0;i<job->count;i++){
+        AudioEvent e=job->events[i].e;if(e.port!=AUDIO_PORT_PSG)continue;
+        if(e.cycle_stamp<previous)e.cycle_stamp=previous;
+        if(e.cycle_stamp>previous)psg_advance(e.cycle_stamp-previous);
+        psg_write(e.value);previous=e.cycle_stamp;
+    }
+    if(job->end>previous)psg_advance(job->end-previous);
+    if(!job->keep_psg_leftover)psg_reset_leftover();
+    size_t available=psg_samples_available();job->written=available<job->capacity?available:job->capacity;
+    if(job->output && job->written)psg_render_pair(job->output,job->raw_output,job->written);
+}
+typedef struct {MixerChipJob *fm,*psg;} MixerMainJob;
+static void mixer_main_job(void *context)
+{
+    MixerMainJob *job=(MixerMainJob *)context;
+    mixer_fm_job(job->fm);mixer_psg_job(job->psg);
+}
+static void mixer_shadow_job(void *context)
+{
+    MixerChipJob *job=(MixerChipJob *)context;uint32_t previous=0;
+    for(size_t i=0;i<job->count;i++){
+        AudioEvent e=job->events[i].e;if(e.port==AUDIO_PORT_PSG)continue;
+        if(e.cycle_stamp<previous)e.cycle_stamp=previous;
+        if(e.cycle_stamp>previous)fm_shadow_advance(e.cycle_stamp-previous);
+        if(e.port<4u)fm_shadow_write(e.port,e.value);
+        previous=e.cycle_stamp;
+    }
+    if(job->end>previous)fm_shadow_advance(job->end-previous);
+}
 static void mixer_read_toggles(void) {
     if (s_mix_toggle_read) return;
     s_mix_toggle_read = 1;
@@ -179,6 +251,35 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
         audio_event_requeue(defer, d);
     }
 
+    /* Both serial and worker execution consume the same paired chip output.
+     * Selection/fade stays on the owner after shadow verification and join. */
+    static int16_t raw_fm[8192*2],raw_psg[8192];
+    if(s_executor && fm_shadow_enabled() &&
+       mixer_outputs_disjoint(fm_stereo_out,fm_cap,psg_mono_out,psg_cap)){
+        MixerChipJob fm={evs,n_apply,frame_end_cycle,fm_stereo_out,fm_cap,0,0,raw_fm};
+        MixerChipJob psg={evs,n_apply,frame_end_cycle,psg_mono_out,psg_cap,0,s_no_leftover,raw_psg};
+        MixerMainJob main_job={&fm,&psg};
+        s_executor(mixer_main_job,&main_job,mixer_shadow_job,&fm,s_executor_context);
+        if(fm.output && fm.written)fm_shadow_verify_and_substitute(fm.output,fm.written);
+        if(fm.output && fm.written)
+            filter_present(fm.output,raw_fm,fm.written,2,&s_fm_filter_mix,s_fm_filter_span,!fm_shadow_active());
+        if(psg.output && psg.written)
+            filter_present(psg.output,raw_psg,psg.written,1,&s_psg_filter_mix,s_psg_filter_span,1);
+        if((fm.output && fm.written) || (psg.output && psg.written))s_filter_started=1;
+        /* Diagnostics retain the original merged applied order and clamped
+         * stamps. The owner logs only after both jobs really completed. */
+        if(s_ad)for(size_t i=0;i<n_apply;i++){
+            AudioEvent e=evs[i].e;uint32_t *previous=e.port==AUDIO_PORT_PSG?&psg_prev:&fm_prev;
+            if(e.cycle_stamp<*previous)e.cycle_stamp=*previous;
+            *previous=e.cycle_stamp;
+            if(e.port==AUDIO_PORT_PSG)
+                fprintf(s_ad,"f=%lu APP PSG $%02X cyc=%u pi=%u\n",g_snd_frame,e.value,e.cycle_stamp,(unsigned)evs[i].idx);
+            else fprintf(s_ad,"f=%lu APP FM  p%u $%02X cyc=%u pi=%u\n",g_snd_frame,e.port,e.value,e.cycle_stamp,(unsigned)evs[i].idx);
+        }
+        if(fm_written)*fm_written=fm.written;
+        if(psg_written)*psg_written=psg.written;
+        return;
+    }
     for (size_t i = 0; i < n_apply; i++) {
         AudioEvent e = evs[i].e;
         if (e.port == AUDIO_PORT_PSG) {
@@ -236,7 +337,6 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 
     /* Chip scratch capacity is8192 samples. Drain paired outputs once, leaving
      * the canonical queues/filter history independent of this preference. */
-    static int16_t raw_fm[8192*2],raw_psg[8192];
     if (fm_stereo_out && fm_n > 0)  ym2612_render_pair(fm_stereo_out,raw_fm,fm_n);
     if (psg_mono_out  && psg_n > 0) psg_render_pair(psg_mono_out,raw_psg,psg_n);
 

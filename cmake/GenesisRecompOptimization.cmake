@@ -1,0 +1,113 @@
+# Native game optimization only: do not change the generator, build tools,
+# debug configurations, arithmetic model or required CPU instruction set.
+include_guard(GLOBAL)
+set(GENESIS_NATIVE_IPO "AUTO" CACHE STRING "Native game IPO: AUTO, ON or OFF")
+set_property(CACHE GENESIS_NATIVE_IPO PROPERTY STRINGS AUTO ON OFF)
+set(GENESIS_NATIVE_PGO "OFF" CACHE STRING "MSVC native PGO: OFF, GENERATE or USE")
+set_property(CACHE GENESIS_NATIVE_PGO PROPERTY STRINGS OFF GENERATE USE)
+set(GENESIS_NATIVE_PGO_DIR "" CACHE PATH "Native target .pgd training inputs/outputs")
+set(GENESIS_NATIVE_PGO_TARGETS "" CACHE STRING "Native final-link target names to profile (empty means all)")
+string(TOUPPER "${GENESIS_NATIVE_IPO}" _genesis_ipo_mode)
+if(NOT _genesis_ipo_mode MATCHES "^(AUTO|ON|OFF)$")
+    message(FATAL_ERROR "GENESIS_NATIVE_IPO must be AUTO, ON or OFF")
+endif()
+string(TOUPPER "${GENESIS_NATIVE_PGO}" _genesis_pgo_mode)
+if(NOT _genesis_pgo_mode MATCHES "^(OFF|GENERATE|USE)$")
+    message(FATAL_ERROR "GENESIS_NATIVE_PGO must be OFF, GENERATE or USE")
+endif()
+
+function(genesisrecomp_native_optimization target)
+    string(TOUPPER "${GENESIS_NATIVE_IPO}" _genesis_ipo_mode)
+    string(TOUPPER "${GENESIS_NATIVE_PGO}" _genesis_pgo_mode)
+    get_target_property(_type ${target} TYPE)
+    # A consumer's measured per-target qualification can require ordinary
+    # compilation even when sibling targets use project-wide IPO/PGO.
+    get_target_property(_native_disabled ${target} GENESIS_NATIVE_IPO_DISABLED)
+    if(_native_disabled)
+        set(_genesis_ipo_mode "OFF")
+        set(_genesis_pgo_mode "OFF")
+    endif()
+    if(NOT _type STREQUAL "STATIC_LIBRARY" AND GENESIS_NATIVE_PGO_TARGETS AND
+       NOT target IN_LIST GENESIS_NATIVE_PGO_TARGETS)
+        set(_genesis_pgo_mode "OFF")
+    endif()
+    foreach(_config RELEASE RELWITHDEBINFO MINSIZEREL)
+        set_property(TARGET ${target} PROPERTY
+            INTERPROCEDURAL_OPTIMIZATION_${_config} FALSE)
+    endforeach()
+    if(_genesis_ipo_mode STREQUAL "OFF")
+        if(NOT _genesis_pgo_mode STREQUAL "OFF")
+            message(FATAL_ERROR "Native PGO requires native IPO")
+        endif()
+        return()
+    endif()
+
+    get_property(_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
+    list(FILTER _languages INCLUDE REGEX "^(C|CXX)$")
+    include(CheckIPOSupported)
+    cmake_policy(PUSH)
+    cmake_policy(SET CMP0069 NEW)
+    if(POLICY CMP0138)
+        cmake_policy(SET CMP0138 NEW) # Check the actual caller's compiler flags.
+    endif()
+    check_ipo_supported(RESULT _supported OUTPUT _reason LANGUAGES ${_languages})
+    cmake_policy(POP)
+    if(_supported)
+        foreach(_config RELEASE RELWITHDEBINFO MINSIZEREL)
+            set_property(TARGET ${target} PROPERTY
+                INTERPROCEDURAL_OPTIMIZATION_${_config} TRUE)
+        endforeach()
+        message(STATUS "Genesis native IPO: ${target} enabled (${_languages})")
+    elseif(_genesis_ipo_mode STREQUAL "ON")
+        message(FATAL_ERROR "Genesis native IPO requested but unsupported: ${_reason}")
+    else()
+        message(STATUS "Genesis native IPO: ${target} unavailable; ordinary compilation retained: ${_reason}")
+    endif()
+
+    # Static native catalogs participate through their IR. Instrumentation and
+    # profile consumption belong to the final executable, not the archiver.
+    if(_genesis_pgo_mode STREQUAL "OFF")
+        return()
+    endif()
+    if(NOT _supported OR NOT CMAKE_C_COMPILER_ID STREQUAL "MSVC" OR
+       ("CXX" IN_LIST _languages AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"))
+        message(FATAL_ERROR "Native PGO requires supported MSVC C/C++ IPO; use PGO=OFF for ordinary portable builds")
+    endif()
+    # Do not silently turn a requested USE build into an ordinary build when
+    # the compiler finds no merged training counts (including library IR).
+    set(_optimized "$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>")
+    target_compile_options(${target} PRIVATE
+        "$<$<AND:${_optimized},$<COMPILE_LANGUAGE:C,CXX>>:/we4961>")
+    if(_type STREQUAL "STATIC_LIBRARY")
+        return()
+    endif()
+    if(NOT GENESIS_NATIVE_PGO_DIR)
+        message(FATAL_ERROR "Native PGO requires GENESIS_NATIVE_PGO_DIR")
+    endif()
+    get_filename_component(_pgo_dir "${GENESIS_NATIVE_PGO_DIR}" ABSOLUTE
+        BASE_DIR "${CMAKE_BINARY_DIR}")
+    set(_profile "${_pgo_dir}/${target}.pgd")
+    if(_genesis_pgo_mode STREQUAL "GENERATE")
+        file(MAKE_DIRECTORY "${_pgo_dir}")
+        target_link_options(${target} PRIVATE
+            "$<${_optimized}:/LTCG>" "$<${_optimized}:/GENPROFILE:EXACT,PGD=${_profile}>")
+    else()
+        if(NOT EXISTS "${_profile}" OR IS_DIRECTORY "${_profile}")
+            message(FATAL_ERROR "Missing merged native PGO profile: ${_profile}")
+        endif()
+        # A content-named owned copy gives MSBuild a changed linker argument
+        # when training changes, and keeps link-time readers off mutable input.
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${_profile}")
+        file(SHA256 "${_profile}" _profile_hash)
+        set(_owned "${CMAKE_CURRENT_BINARY_DIR}/genesis-pgo/${_profile_hash}.pgd")
+        configure_file("${_profile}" "${_owned}" COPYONLY)
+        file(SHA256 "${_owned}" _owned_hash)
+        if(NOT _owned_hash STREQUAL _profile_hash)
+            message(FATAL_ERROR "Native PGO input changed while copying; finish merging then reconfigure")
+        endif()
+        set_property(TARGET ${target} PROPERTY GENESIS_NATIVE_PGO_SHA256 "${_profile_hash}")
+        target_link_options(${target} PRIVATE
+            "$<${_optimized}:/LTCG>" "$<${_optimized}:/USEPROFILE:PGD=${_owned}>")
+    endif()
+    message(STATUS "Genesis native PGO: ${target} ${_genesis_pgo_mode}, ${_profile}")
+endfunction()
