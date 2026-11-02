@@ -3,9 +3,9 @@
 #include "m68k_step.h"
 #include <string.h>
 
-/* Cache immutable descriptor discovery, never opcode/extension-byte identity.
- * Every attempted entry still passes m68k_step_execute's CURRENT mapped-byte
- * guards, in the original module order. Unknown suffixes are discovered only
+/* Ordinary execution caches descriptor discovery and checks CURRENT bytes.
+ * An explicitly qualified immutable-code lease may retain its first exact
+ * variant only until that lease expires. Unknown suffixes are discovered only
  * when the known prefix misses, so cold execution does no speculative work.
  * Registry replacement resets the cache. Fixed storage has no allocation or
  * lifetime contract; long variant lists use the original universal search. */
