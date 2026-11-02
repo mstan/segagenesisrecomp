@@ -94,11 +94,17 @@ static void indexed_sink(void *user,int line,const uint8_t *indices,int width,co
     Context *c=context(user);uint32_t row[STRIDE];++c->result->indexed;
     genesis_pixels_expand(row,indices,width,palette,GVDP_OUTPUT_PALETTE_SIZE,0xff000000u);store(c,line,row,width);
 }
-static int producer_enabled(void *user){Context *c=context(user);return c->route==5 || c->route==6;}
-static void produce(void *user,const GVDP *v,int line,int width,GenesisNativeRow get,void *ctx)
+static int producer_enabled(void *user){Context *c=context(user);return c->route==10 ? 3 : c->route==5 || c->route==6;}
+static void produce(void *user,const GVDP *v,int line,int width,GenesisNativeRow get,void *ctx,const GVDPRasterRow *raster)
 {
     Context *c=context(user);CHECK(v==&active_machine->vdp);++c->result->producer;
-    if(c->route==5){const uint32_t *a=get(ctx);CHECK(get(ctx)==a);argb_sink(c,line,a,gvdp_active_width(v));}
+    if(c->route==10)CHECK((raster!=NULL)==(active_machine==&g_machine));
+    if(c->route==5 || c->route==10){
+        GVDP before=*v;unsigned host=c->result->host;
+        const uint32_t *a=get(ctx);CHECK(get(ctx)==a);
+        if(raster)CHECK(!memcmp(&before,v,sizeof before) && c->result->host==host);
+        argb_sink(c,line,a,gvdp_active_width(v));
+    }
     else {uint32_t row[STRIDE];CHECK(width<=STRIDE);for(int x=0;x<width;++x)row[x]=0xff332211u+(unsigned)x;store(c,line,row,width);}
 }
 static void run(Result *result,int reference,int route,int mode)
@@ -108,12 +114,12 @@ static void run(Result *result,int reference,int route,int mode)
     GenesisIndexedSink adapter={&c,route==8?NULL:argb_sink,route>=4?NULL:indexed_sink,accepts};
     GenesisScanlineSink sink=argb_sink;void *user=&c;
     if(route==7)sink=NULL;
-    else if(route>=8){sink=reference?drop_sink:genesis_indexed_sink_adapter;user=reference?NULL:route==9?NULL:&adapter;}
+    else if(route==8 || route==9){sink=reference?drop_sink:genesis_indexed_sink_adapter;user=reference?NULL:route==9?NULL:&adapter;}
     else if(!reference && route){sink=genesis_indexed_sink_adapter;user=&adapter;}
-    if(reference)original_machine_run_frame_ex(sink,user,route==5||route==6||route==7?&producer:NULL);
-    else machine_run_frame_ex(sink,user,route==5||route==6||route==7?&producer:NULL);
+    if(reference)original_machine_run_frame_ex(sink,user,route==5||route==6||route==7||route==10?&producer:NULL);
+    else machine_run_frame_ex(sink,user,route==5||route==6||route==7||route==10?&producer:NULL);
     CHECK(result->guest==262 && active_machine->master_cycle==262u*3420u && g_snd_frame==1);
-    CHECK(result->producer==(route==5||route==6?(mode==2?448u:mode==4?240u:224u):0));
+    CHECK(result->producer==(route==5||route==6||route==10?(mode==2?448u:mode==4?240u:224u):0));
     if(!reference && route==1){
 #if GENESIS_FINAL_PIXEL_PIPELINE
         CHECK(result->indexed>0 && result->argb==0);
@@ -128,11 +134,11 @@ static void run(Result *result,int reference,int route,int mode)
 int main(void)
 {
     Result *a=(Result *)malloc(sizeof *a),*b=(Result *)malloc(sizeof *b);CHECK(a&&b);
-    for(int mode=0;mode<6;++mode)for(int route=0;route<10;++route){
+    for(int mode=0;mode<6;++mode)for(int route=0;route<11;++route){
         run(a,1,route,mode);run(b,0,route,mode);
         CHECK(a->state_size==b->state_size && !memcmp(a->state,b->state,a->state_size));
         CHECK(!memcmp(a->frame,b->frame,sizeof a->frame) && !memcmp(a->widths,b->widths,sizeof a->widths));
         CHECK(a->status_trace==b->status_trace && a->host==b->host && a->guest==b->guest && a->interrupts==b->interrupts);
     }
-    free(a);free(b);puts("60 frozen-machine adapter/context/status/palette/interlace/producer cases exact");return 0;
+    free(a);free(b);puts("66 frozen-machine adapter/context/status/palette/interlace/producer cases exact, including presented capture memoization");return 0;
 }

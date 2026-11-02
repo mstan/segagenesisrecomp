@@ -93,6 +93,13 @@ int main(void)
     gvdp_set_host_sprites(host_pixels,NULL);
     for(unsigned y=0;y<224;++y){gvdp_render_scanline(&device,(int)y,row);gvdp_hd_bind_palette(y,palette,256);}
     CHECK(!gvdp_hd_acquire()); /* Arbitrary custom drawing is not misrepresented. */
+    /* Explicit immutable presentation capture must retain that same HD veto. */
+    GVDPRasterRow captured;
+    for(unsigned y=0;y<224;++y){
+        CHECK(gvdp_capture_presented_scanline(&device,(int)y,&captured)>0);
+        gvdp_hd_bind_palette(y,palette,256);
+    }
+    CHECK(!gvdp_hd_acquire());
     gvdp_set_host_sprites(NULL,NULL);gvdp_hd_enable(0);
     puts("32 complete native/job frames exact: H32/H40, IM2, window/scroll, shadow/highlight, odd canvas, direct writes, palettes, private sources/colors, immutable leases/reset/backpressure and custom fallback");
     return 0;

@@ -1000,6 +1000,8 @@ static int capture_scanline(GVDP *v, int line, GVDPRasterRow *row,int presented)
     if(presented)for(unsigned i=0;i<GVDP_HOST_PALETTE_SIZE;++i)row->host_palette[i]=0xFF000000u;
     gvdp_hd_begin_row(v,(unsigned)line,row->width,row->start,row->count,
                       row->backdrop,row->bar,row->display,row->shadow_mode);
+    if(presented && (s_host_sprites || s_ext_tiles || s_sprite_patterns[0] || s_sprite_patterns[1]))
+        gvdp_hd_ineligible();
     if (!row->display){gvdp_hd_end_row();return (int)row->width;}
 
     int im2=MODE4_IM2(v),rline=im2?line>>1:line;

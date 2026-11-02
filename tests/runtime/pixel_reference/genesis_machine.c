@@ -581,7 +581,7 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
                      * row; collision/overflow are sticky, not counters. */
                     gvdp_evaluate_scanline(&m->vdp, row);
                     producer->render(user, &m->vdp, row, gvdp_active_width(&m->vdp),
-                                     native_row_fetch, &native);
+                                     native_row_fetch, &native, NULL); /* Additive row packet API only. */
                 } else {
                     const uint32_t *pixels = native_row_fetch(&native);
                     sink(user, row, pixels, native.width);
