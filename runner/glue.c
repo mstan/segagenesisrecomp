@@ -595,7 +595,10 @@ static void game_fiber_func(void *param)
         uint32_t resume_pc = s_game_fiber_resume_pc & 0xFFFFFFu;
         s_game_fiber_resume_pc = 0;
         g_cpu.A[7] = g_game_layout.initial_ssp;
-        recomp_call_addr(resume_pc);
+        if (g_game_spec.call_resume)
+            g_game_spec.call_resume(resume_pc);
+        else
+            recomp_call_addr(resume_pc);
         if (g_game_spec.dispatch_main_loop_pc) {
             uint32_t dispatch_pc = g_game_spec.dispatch_main_loop_pc & 0xFFFFFFu;
             fprintf(stderr, "[GAME] %s resume loop returned at $%06X; continuing at dispatcher $%06X\n",
