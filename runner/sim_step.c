@@ -1,5 +1,6 @@
 /* sim_step.c -- one simulation tick from sealed inputs (see sim_step.h). */
 #include "sim_step.h"
+#include "diagnostic_replay.h"
 
 #include <string.h>
 
@@ -45,7 +46,9 @@ int genesis_sim_step(const GenesisSimInput *in, const GenesisSimAudio *audio,
 {
     static const GenesisSimHooks no_hooks;
     if (!hooks) hooks = &no_hooks;
-    if (in) s_in = *in;
+    GenesisSimInput sealed=in?*in:s_in;
+    if(!genesis_replay_begin(&sealed))return 0;
+    s_in=sealed;
 
     glue_reset_frame_sync();
     glue_run_game_frame();
@@ -74,5 +77,6 @@ int genesis_sim_step(const GenesisSimInput *in, const GenesisSimAudio *audio,
     glue_service_vblank();
     glue_end_of_wall_frame();
     s_ticks++;
+    genesis_replay_end();
     return 1;
 }

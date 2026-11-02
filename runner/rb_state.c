@@ -12,6 +12,7 @@
 #include "cosim.h"                    /* cosim_fnv_* */
 #include "game_spec.h"
 #include "sim_step.h"
+#include "diagnostic_replay.h"
 #include "include/genesis_runtime.h"  /* g_cpu, g_ram, M68KState */
 #include "video/genesis_machine.h"
 #include "audio/ym2612.h"
@@ -181,24 +182,26 @@ const char *genesis_rb_part_name(int part)
 }
 
 /* ---- blob framing ----------------------------------------------------------
- * "GRB1" u32 nsec, then per section: u32 len, len bytes. */
-static const char k_magic[4] = { 'G', 'R', 'B', '1' };
+ * "GRB2" u32 nsec, u64 diagnostic token, then u32 len + bytes per section.
+ * The token is bookkeeping, excluded from every simulation digest. */
+static const char k_magic[4] = { 'G', 'R', 'B', '2' };
 
 size_t genesis_rb_bound(void)
 {
-    size_t n = sizeof k_magic + sizeof(uint32_t);
+    size_t n = sizeof k_magic + sizeof(uint32_t) + sizeof(uint64_t);
     for (size_t i = 0; i < RB_NSEC; i++)
         n += sizeof(uint32_t) + k_sections[i].save(NULL, 0);
     return n;
 }
 
-size_t genesis_rb_save(void *dst, size_t cap)
+size_t genesis_rb_save_untracked(void *dst, size_t cap)
 {
     uint8_t *o = (uint8_t *)dst, *end = o + cap;
     uint32_t nsec = (uint32_t)RB_NSEC;
-    if (!dst || cap < sizeof k_magic + sizeof nsec) return 0;
+    if (!dst || cap < sizeof k_magic + sizeof nsec + sizeof(uint64_t)) return 0;
     memcpy(o, k_magic, sizeof k_magic); o += sizeof k_magic;
     memcpy(o, &nsec, sizeof nsec);      o += sizeof nsec;
+    memset(o, 0, sizeof(uint64_t)); o += sizeof(uint64_t);
     for (size_t i = 0; i < RB_NSEC; i++) {
         size_t need = k_sections[i].save(NULL, 0);
         if ((size_t)(end - o) < sizeof(uint32_t) + need) return 0;
@@ -214,11 +217,21 @@ size_t genesis_rb_save(void *dst, size_t cap)
     return (size_t)(o - (uint8_t *)dst);
 }
 
+size_t genesis_rb_save(void *dst, size_t cap)
+{
+    size_t n=genesis_rb_save_untracked(dst,cap);
+    if(n) {
+        uint64_t token=genesis_replay_snapshot_saved();
+        memcpy((uint8_t *)dst+8,&token,sizeof token);
+    }
+    return n;
+}
+
 /* Walk the framing; fills off/len per section. 1 when well-formed. */
 static int rb_frame(const uint8_t *b, size_t len, size_t off[RB_NSEC], size_t sl[RB_NSEC])
 {
     uint32_t nsec;
-    size_t p = sizeof k_magic + sizeof nsec;
+    size_t p = sizeof k_magic + sizeof nsec + sizeof(uint64_t);
     if (!b || len < p || memcmp(b, k_magic, sizeof k_magic)) return 0;
     memcpy(&nsec, b + sizeof k_magic, sizeof nsec);
     if (nsec != RB_NSEC) return 0;
@@ -263,6 +276,22 @@ int genesis_rb_load(const void *src, size_t len)
             return 0;
         }
     }
+    uint64_t token;memcpy(&token,b+8,sizeof token);
+    genesis_replay_snapshot_loaded(token);
+    return 1;
+}
+
+int genesis_rb_replay_parts(const void *blob,size_t len,const void *parts[4],size_t sizes[4])
+{
+    size_t off[RB_NSEC],sl[RB_NSEC];const uint8_t *b=blob;
+    if(!rb_frame(b,len,off,sl))return 0;
+    /* EXEC contains native addresses. Every remaining section is the exact
+     * pointer-free digest surface already qualified for netplay. Include
+     * section framing between contiguous sections, which is deterministic. */
+    parts[0]=b+off[1];sizes[0]=off[3]-sizeof(uint32_t)-off[1];
+    parts[1]=b+off[3];sizes[1]=sl[3];
+    parts[2]=b+off[4];sizes[2]=off[RB_NSEC-1]-sizeof(uint32_t)-off[4];
+    parts[3]=b+off[RB_NSEC-1];sizes[3]=sl[RB_NSEC-1];
     return 1;
 }
 
@@ -291,7 +320,7 @@ void genesis_rb_digest(GenesisRbDigest *out)
         if (!nb) return;
         s_dig_buf = nb; s_dig_cap = need;
     }
-    size_t n = genesis_rb_save(s_dig_buf, s_dig_cap);
+    size_t n = genesis_rb_save_untracked(s_dig_buf, s_dig_cap);
     if (!n || !rb_frame(s_dig_buf, n, off, sl)) return;
     digest_blob(s_dig_buf, off, sl, out);
 }

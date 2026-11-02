@@ -25,6 +25,7 @@ import zipfile
 # Forbidden in a release zip. NOTE: ".md" is intentionally NOT here — README.md
 # is markdown. Genesis ROMs in this project are *.bin, covered below.
 FORBIDDEN = [
+    "*.replay*", "*.sav",  # private feedback recordings / machine checkpoints
     "*.bin", "*.gen", "*.smd", "*.md5", "*.sha256",          # ROM images / hashes
     "ramdump*", "*_save_*.bin", "savestate*", "*.srm",       # dumps / saves
     "*.log", "*.map", "*.obj", "*.pdb", "*.ilk", "*.exp", "*.lib",  # build junk
