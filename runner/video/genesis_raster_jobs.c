@@ -127,6 +127,8 @@ void gvdp_hd_enable(int enabled)
 }
 void gvdp_hd_ineligible(void)
 {
+    /* A last-row frontend veto may have no later end_row to revoke old work. */
+    atom_set(&s_published,-1);
     if(s_build)s_build->frame.valid=0;
     s_active=0;
 }
