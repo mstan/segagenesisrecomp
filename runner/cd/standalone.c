@@ -379,7 +379,7 @@ int main(int argc,char **argv)
         (unsigned long long)machine.coordinator.catalog_lookup[1].descriptor_searches,
         sizeof machine.coordinator.catalog_lookup);
     printf("Event service regionAdvances=%llu\n",(unsigned long long)machine.coordinator.region_device_advances);
-    printf("Immutable code lease reuses=%llu\n",(unsigned long long)(machine.coordinator.catalog_lookup[0].code_reuses+machine.coordinator.catalog_lookup[1].code_reuses));
+    printf("Immutable code lease reuses=%llu\n",(unsigned long long)(machine.coordinator.code_reuses_retired+machine.coordinator.catalog_lookup[0].code_reuses+machine.coordinator.catalog_lookup[1].code_reuses));
     printf("Native regions runs=%llu Main=%llu Sub=%llu\n",
         (unsigned long long)machine.coordinator.region_runs,
         (unsigned long long)machine.coordinator.region_instructions[0],

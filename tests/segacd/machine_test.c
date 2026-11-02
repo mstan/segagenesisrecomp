@@ -341,6 +341,12 @@ static void test_immutable_bios_lease(void)
     CHECK(!machine.coordinator.catalog_lookup[0].code_epoch);
     machine.devices.bios[0x103]^=1;machine.result=M68K_STEP_OK;
     CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_OK&&!machine.coordinator.catalog_lookup[0].code_epoch);
+    /* Function and user rebinding revoke owner qualification independently. */
+    machine.audio_user=NULL;
+    CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_OK&&!machine.immutable_bios_qualified);
+    machine.audio_user=&machine;CHECK(segacd_machine_immutable_bios(&machine,1));
+    machine.coordinator.io.pcm_user=&machine;
+    CHECK(segacd_machine_run_frame(&machine)==M68K_STEP_OK&&!machine.immutable_bios_qualified);
     CHECK(segacd_machine_immutable_bios(&machine,0));
     machine.devices.bios[0x103]^=1;
     CHECK(segacd_machine_step(&machine)==M68K_STEP_MISS);
